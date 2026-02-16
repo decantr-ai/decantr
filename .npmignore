@@ -1,0 +1,5 @@
+test/
+.claude/
+.git/
+.npmignore
+decantr.json
