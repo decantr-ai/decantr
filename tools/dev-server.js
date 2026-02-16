@@ -34,6 +34,11 @@ const HMR_CLIENT = `<script>
 })();
 </script>`;
 
+const IMPORT_MAP = {
+  'themes': 'css/themes.js',
+  'styles': 'css/styles.js'
+};
+
 /**
  * @param {string} source
  * @returns {string}
@@ -43,6 +48,8 @@ function rewriteImports(source) {
     /from\s+['"]decantr(?:\/([^'"]*))?\s*['"]/g,
     (match, subpath) => {
       const mod = subpath || 'core';
+      const mapped = IMPORT_MAP[mod];
+      if (mapped) return `from '/__decantr/${mapped}'`;
       return `from '/__decantr/${mod}/index.js'`;
     }
   );

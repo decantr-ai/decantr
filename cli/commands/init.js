@@ -2,244 +2,134 @@ import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, basename } from 'node:path';
-
-const templates = {
-  packageJson: (name) => JSON.stringify({
-    name,
-    version: '0.1.0',
-    type: 'module',
-    scripts: {
-      dev: 'decantr dev',
-      build: 'decantr build',
-      test: 'decantr test'
-    },
-    dependencies: {
-      decantr: '^0.1.0'
-    }
-  }, null, 2),
-
-  config: (name, routerMode, port) => JSON.stringify({
-    $schema: 'https://decantr.ai/schemas/config.v1.json',
-    name,
-    router: routerMode,
-    dev: { port },
-    build: { outDir: 'dist', inline: false, sourcemap: false }
-  }, null, 2),
-
-  indexHtml: (name) => `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>${name}</title>
-  <style>:root{--c0:#111;--c1:#2563eb;--c2:#f8fafc;--c3:#e2e8f0;--c4:#94a3b8;--c5:#475569;--c6:#1e293b;--c7:#f59e0b;--c8:#10b981;--c9:#ef4444}*{margin:0;box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;color:var(--c0);background:var(--c2)}</style>
-</head>
-<body>
-  <div id="app"></div>
-  <script type="module" src="/src/app.js"></script>
-</body>
-</html>`,
-
-  appJs: (routerMode, includeCounter) => `import { h, mount } from 'decantr/core';
-import { createRouter, link } from 'decantr/router';
-import { Home } from './pages/home.js';
-import { About } from './pages/about.js';
-
-const router = createRouter({
-  mode: '${routerMode}',
-  routes: [
-    { path: '/', component: Home },
-    { path: '/about', component: About }
-  ]
-});
-
-function App() {
-  return h('div', null,
-    h('nav', { class: 'flex gap4 p4 bg1' },
-      link({ href: '/', class: 'fg2 nounder' }, 'Home'),
-      link({ href: '/about', class: 'fg2 nounder' }, 'About')
-    ),
-    router.outlet()
-  );
-}
-
-mount(document.getElementById('app'), App);
-`,
-
-  homeJs: (includeCounter) => `import { h } from 'decantr/core';
-${includeCounter ? "import { Counter } from '../components/counter.js';\n" : ''}
-/** @returns {HTMLElement} */
-export function Home() {
-  return h('main', { class: 'p8' },
-    h('h1', { class: 't32 bold' }, 'Welcome to Decantr'),
-    h('p', { class: 'py4 fg5' }, 'AI-first web framework. Zero dependencies.')${includeCounter ? ',\n    h(\'div\', { class: \'py4\' }, Counter({ initial: 0 }))' : ''}
-  );
-}
-`,
-
-  aboutJs: () => `import { h } from 'decantr/core';
-
-/** @returns {HTMLElement} */
-export function About() {
-  return h('main', { class: 'p8' },
-    h('h1', { class: 't32 bold' }, 'About'),
-    h('p', { class: 'py4 fg5' }, 'Built with Decantr — the AI-first framework.')
-  );
-}
-`,
-
-  counterJs: () => `import { h, text } from 'decantr/core';
-import { createSignal } from 'decantr/state';
-
-/**
- * @param {{ initial?: number }} props
- * @returns {HTMLElement}
- */
-export function Counter({ initial = 0 } = {}) {
-  const [count, setCount] = createSignal(initial);
-
-  return h('div', { class: 'flex gap2 p4 aic' },
-    h('button', { onclick: () => setCount(c => c - 1), class: 'p2 px4 r2 bg1 fg2 pointer b0 t16' }, '-'),
-    h('span', { class: 'p2 t20 bold' }, text(() => String(count()))),
-    h('button', { onclick: () => setCount(c => c + 1), class: 'p2 px4 r2 bg1 fg2 pointer b0 t16' }, '+')
-  );
-}
-`,
-
-  counterTestJs: () => `import { describe, it, assert, render, fire, flush } from 'decantr/test';
-import { Counter } from '../src/components/counter.js';
-
-describe('Counter', () => {
-  it('renders with initial value', () => {
-    const { container } = render(() => Counter({ initial: 5 }));
-    assert.ok(container.textContent.includes('5'));
-  });
-
-  it('increments on + click', async () => {
-    const { container, getByText } = render(() => Counter({ initial: 0 }));
-    fire(getByText('+'), 'click');
-    await flush();
-    assert.ok(container.textContent.includes('1'));
-  });
-
-  it('decrements on - click', async () => {
-    const { container, getByText } = render(() => Counter({ initial: 5 }));
-    fire(getByText('-'), 'click');
-    await flush();
-    assert.ok(container.textContent.includes('4'));
-  });
-});
-`,
-
-  manifest: (name, routerMode) => JSON.stringify({
-    $schema: 'https://decantr.ai/schemas/manifest.v1.json',
-    version: '0.1.0',
-    name,
-    router: routerMode,
-    entrypoint: 'src/app.js',
-    shell: 'public/index.html',
-    mountTarget: '#app',
-    components: '.decantr/components.json',
-    routes: '.decantr/routes.json',
-    state: '.decantr/state.json'
-  }, null, 2),
-
-  components: (includeCounter) => JSON.stringify({
-    $schema: 'https://decantr.ai/schemas/components.v1.json',
-    components: includeCounter ? [{
-      id: 'counter',
-      file: 'src/components/counter.js',
-      exportName: 'Counter',
-      description: 'Increment/decrement counter with display',
-      props: [{ name: 'initial', type: 'number', default: 0, required: false }],
-      signals: ['count'],
-      effects: [],
-      children: false
-    }] : []
-  }, null, 2),
-
-  routes: (routerMode) => JSON.stringify({
-    $schema: 'https://decantr.ai/schemas/routes.v1.json',
-    mode: routerMode,
-    routes: [
-      { path: '/', component: 'home', file: 'src/pages/home.js', exportName: 'Home', title: 'Home' },
-      { path: '/about', component: 'about', file: 'src/pages/about.js', exportName: 'About', title: 'About' }
-    ]
-  }, null, 2),
-
-  state: (includeCounter) => JSON.stringify({
-    $schema: 'https://decantr.ai/schemas/state.v1.json',
-    signals: includeCounter ? [{
-      id: 'count',
-      file: 'src/components/counter.js',
-      type: 'number',
-      initial: 0,
-      usedBy: ['Counter']
-    }] : [],
-    effects: [],
-    memos: []
-  }, null, 2)
-};
+import { welcome, success, info, heading } from '../art.js';
+import { packageJson, configJson, indexHtml, manifest } from '../templates/shared.js';
+import { dashboardFiles } from '../templates/dashboard.js';
+import { landingFiles } from '../templates/landing.js';
+import { demoFiles } from '../templates/demo.js';
 
 async function ask(rl, question, defaultVal) {
-  const answer = await rl.question(`${question} (${defaultVal}): `);
+  const answer = await rl.question(`  ${question} (${defaultVal}): `);
   return answer.trim() || defaultVal;
 }
 
-async function askChoice(rl, question, options, defaultVal) {
-  console.log(`\n${question}`);
-  options.forEach((opt, i) => console.log(`  ${i + 1}) ${opt}`));
-  const answer = await rl.question(`Choose [${defaultVal}]: `);
+async function askChoice(rl, question, options, defaultIdx = 0) {
+  console.log(heading(question));
+  options.forEach((opt, i) => {
+    const marker = i === defaultIdx ? '\x1b[36m>' : ' ';
+    console.log(`  ${marker} ${i + 1}) ${opt.label}${opt.desc ? ` \x1b[2m— ${opt.desc}\x1b[0m` : ''}\x1b[0m`);
+  });
+  const answer = await rl.question(`  Choose [${defaultIdx + 1}]: `);
   const idx = parseInt(answer.trim()) - 1;
-  return (idx >= 0 && idx < options.length) ? options[idx] : defaultVal;
+  return (idx >= 0 && idx < options.length) ? options[idx].value : options[defaultIdx].value;
 }
 
 export async function run() {
   const rl = createInterface({ input: stdin, output: stdout });
   const cwd = process.cwd();
 
-  console.log('\n  decantr init — Create a new project\n');
+  console.log(welcome('0.2.0'));
 
   try {
+    // 1. Project name
     const name = await ask(rl, 'Project name?', basename(cwd));
-    const routerMode = await askChoice(rl, 'Router mode?', ['history', 'hash'], 'history');
-    const includeCounterAnswer = await askChoice(rl, 'Include example counter component?', ['yes', 'no'], 'yes');
-    const includeCounter = includeCounterAnswer === 'yes';
+
+    // 2. Project type (or demo mode)
+    const projectType = await askChoice(rl, 'Project type?', [
+      { label: 'Dashboard', desc: 'Sidebar, header, data tables', value: 'dashboard' },
+      { label: 'Landing Page', desc: 'Hero, features, pricing', value: 'landing' },
+      { label: "Don't ask me, just show me!", desc: 'Demo showcase of everything', value: 'demo' }
+    ]);
+
+    // 3. Color theme
+    const theme = await askChoice(rl, 'Color theme?', [
+      { label: 'Light', value: 'light' },
+      { label: 'Dark', value: 'dark' },
+      { label: 'AI', desc: 'Deep purples & cyans', value: 'ai' },
+      { label: 'Nature', desc: 'Earthy greens', value: 'nature' },
+      { label: 'Pastel', desc: 'Soft pinks', value: 'pastel' },
+      { label: 'Spice', desc: 'Warm oranges', value: 'spice' },
+      { label: 'Monochromatic', desc: 'Pure grayscale', value: 'mono' }
+    ]);
+
+    // 4. Design style
+    const style = await askChoice(rl, 'Design style?', [
+      { label: 'Glassmorphism', desc: 'Frosted glass, blur', value: 'glass' },
+      { label: 'Claymorphism', desc: 'Soft, puffy, rounded', value: 'clay' },
+      { label: 'Minimal', desc: 'Clean lines, no effects', value: 'flat' },
+      { label: 'Neobrutalism', desc: 'Bold borders, offset shadows', value: 'brutalist' },
+      { label: 'Skeuomorphic', desc: 'Gradients, 3D depth', value: 'skeuo' },
+      { label: 'Monochromatic', desc: 'Black & white elegance', value: 'mono' },
+      { label: 'Hand-drawn', desc: 'Wobbly borders, sketchy', value: 'sketchy' }
+    ], 2);
+
+    // 5. Router mode
+    const router = await askChoice(rl, 'Router mode?', [
+      { label: 'History', desc: 'Clean URLs (needs server)', value: 'history' },
+      { label: 'Hash', desc: 'Works everywhere', value: 'hash' }
+    ]);
+
+    // 6. Icons
+    const iconsChoice = await askChoice(rl, 'Icon library?', [
+      { label: 'None', desc: 'Skip for now', value: 'none' },
+      { label: 'Material Icons', desc: 'Google Material Design', value: 'material' },
+      { label: 'Lucide', desc: 'Beautiful open-source icons', value: 'lucide' }
+    ]);
+
+    let icons = null;
+    let iconDelivery = null;
+    if (iconsChoice !== 'none') {
+      icons = iconsChoice;
+      iconDelivery = await askChoice(rl, 'Icon delivery?', [
+        { label: 'CDN', desc: 'Link tag, no install', value: 'cdn' },
+        { label: 'npm', desc: 'Install as dependency', value: 'npm' }
+      ]);
+    }
+
+    // 7. Port
     const port = parseInt(await ask(rl, 'Dev server port?', '3000'));
 
+    const opts = { name, projectType, theme, style, router, icons, iconDelivery, port };
+
+    console.log(heading('Decanting your project...'));
+
     // Create directories
-    const dirs = ['src/pages', 'src/components', 'public', '.decantr', 'test'];
+    const dirs = ['public', '.decantr', 'test', 'src/pages', 'src/components'];
+    if (projectType === 'landing') dirs.push('src/sections');
     for (const dir of dirs) {
       await mkdir(join(cwd, dir), { recursive: true });
     }
 
-    // Write files
+    // Shared files
     const files = [
-      ['package.json', templates.packageJson(name)],
-      ['decantr.config.json', templates.config(name, routerMode, port)],
-      ['public/index.html', templates.indexHtml(name)],
-      ['src/app.js', templates.appJs(routerMode, includeCounter)],
-      ['src/pages/home.js', templates.homeJs(includeCounter)],
-      ['src/pages/about.js', templates.aboutJs()],
-      ['.decantr/manifest.json', templates.manifest(name, routerMode)],
-      ['.decantr/components.json', templates.components(includeCounter)],
-      ['.decantr/routes.json', templates.routes(routerMode)],
-      ['.decantr/state.json', templates.state(includeCounter)]
+      ['package.json', packageJson(name)],
+      ['decantr.config.json', configJson(opts)],
+      ['public/index.html', indexHtml(opts)],
+      ['.decantr/manifest.json', manifest(opts)]
     ];
 
-    if (includeCounter) {
-      files.push(['src/components/counter.js', templates.counterJs()]);
-      files.push(['test/counter.test.js', templates.counterTestJs()]);
+    // Project-type files
+    let typeFiles;
+    if (projectType === 'dashboard') {
+      typeFiles = dashboardFiles(opts);
+    } else if (projectType === 'landing') {
+      typeFiles = landingFiles(opts);
+    } else {
+      typeFiles = demoFiles(opts);
     }
+    files.push(...typeFiles);
 
+    // Write all files
     for (const [path, content] of files) {
       await writeFile(join(cwd, path), content + '\n');
+      console.log('  ' + success(path));
     }
 
-    console.log(`\n  Project "${name}" created successfully!\n`);
-    console.log('  Next steps:');
-    console.log('    npm install');
-    console.log('    npx decantr dev\n');
+    console.log(heading('Your project is ready!'));
+    console.log(info('Next steps:'));
+    console.log(`    npm install`);
+    console.log(`    npx decantr dev`);
+    console.log('');
 
   } finally {
     rl.close();

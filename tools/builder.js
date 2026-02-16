@@ -9,6 +9,18 @@ import { extractClassNames, generateCSS } from './css-extract.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const frameworkSrc = resolve(__dirname, '..', 'src');
 
+const BUILD_IMPORT_MAP = {
+  'themes': 'css/themes.js',
+  'styles': 'css/styles.js'
+};
+
+function resolveDecantrImport(subpath) {
+  const mod = subpath || 'core';
+  const mapped = BUILD_IMPORT_MAP[mod];
+  if (mapped) return join(frameworkSrc, mapped);
+  return join(frameworkSrc, mod, 'index.js');
+}
+
 /**
  * @param {string} source
  * @param {string} baseDir
@@ -22,7 +34,7 @@ function findImports(source, baseDir) {
     const specifier = match[1];
     if (specifier.startsWith('decantr')) {
       const subpath = specifier.replace('decantr/', '').replace('decantr', 'core');
-      imports.push(join(frameworkSrc, subpath, 'index.js'));
+      imports.push(resolveDecantrImport(subpath));
     } else if (specifier.startsWith('./') || specifier.startsWith('../')) {
       imports.push(resolve(baseDir, specifier));
     }
@@ -136,7 +148,7 @@ function bundle(modules, entrypoint) {
 function resolveSpecifier(specifier, fromPath) {
   if (specifier.startsWith('decantr')) {
     const subpath = specifier.replace('decantr/', '').replace('decantr', 'core');
-    return join(frameworkSrc, subpath, 'index.js');
+    return resolveDecantrImport(subpath);
   }
   return resolve(dirname(fromPath), specifier);
 }

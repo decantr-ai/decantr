@@ -18,21 +18,24 @@ switch (command) {
   case 'test':
     await import('./commands/test.js').then(m => m.run());
     break;
-  default:
+  default: {
+    const { art } = await import('./art.js');
+    console.log(art());
     console.log(`
-  decantr v0.1.0 — AI-first web framework
+  \x1b[1mdecantr\x1b[0m v0.2.0 \x1b[2m— AI-first web framework\x1b[0m
 
-  Commands:
+  \x1b[1mCommands:\x1b[0m
     init     Create a new decantr project
     dev      Start development server
     build    Build for production
     test     Run tests
 
-  Usage:
+  \x1b[1mUsage:\x1b[0m
     npx decantr init
     npx decantr dev
     npx decantr build
     npx decantr test [--watch]
 `);
     break;
+  }
 }

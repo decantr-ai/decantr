@@ -180,6 +180,11 @@ class Element_ extends Node_ {
 function matchesSelector(el, selector) {
   if (selector.startsWith('#')) return el.id === selector.slice(1);
   if (selector.startsWith('.')) return el.className.split(/\s+/).includes(selector.slice(1));
+  if (selector.startsWith('[')) {
+    const m = selector.match(/^\[([^\]=]+)(?:="([^"]*)")?\]$/);
+    if (m) return el.hasAttribute(m[1]) && (m[2] === undefined || el.getAttribute(m[1]) === m[2]);
+    return false;
+  }
   return el.localName === selector.toLowerCase();
 }
 

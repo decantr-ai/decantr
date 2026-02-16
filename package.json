@@ -1,6 +1,6 @@
 {
   "name": "decantr",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI-first web framework. Zero dependencies. Native JS/CSS/HTML.",
   "type": "module",
   "engines": {
@@ -27,6 +27,15 @@
     },
     "./test": {
       "import": "./src/test/index.js"
+    },
+    "./components": {
+      "import": "./src/components/index.js"
+    },
+    "./themes": {
+      "import": "./src/css/themes.js"
+    },
+    "./styles": {
+      "import": "./src/css/styles.js"
     }
   },
   "files": [
@@ -43,7 +52,10 @@
     "llm",
     "web",
     "signals",
-    "zero-dependency"
+    "zero-dependency",
+    "components",
+    "design-system",
+    "themes"
   ],
   "license": "MIT",
   "author": "David Aimi",
