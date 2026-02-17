@@ -4,6 +4,7 @@ import { flat } from './styles/flat.js';
 import { brutalist } from './styles/brutalist.js';
 import { skeuo } from './styles/skeuo.js';
 import { sketchy } from './styles/sketchy.js';
+import { lava } from './styles/lava.js';
 
 /** @type {Map<string, Object>} */
 const styles = new Map();
@@ -55,7 +56,7 @@ function buildCSS(style) {
   return css;
 }
 
-const builtins = [glass, flat, brutalist, skeuo, sketchy];
+const builtins = [glass, flat, brutalist, skeuo, sketchy, lava];
 for (const s of builtins) styles.set(s.id, s);
 
 /**

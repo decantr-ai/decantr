@@ -19,15 +19,16 @@ beforeEach(() => {
 });
 
 describe('getStyleList()', () => {
-  it('returns 5 built-in styles', () => {
+  it('returns 6 built-in styles', () => {
     const list = getStyleList();
-    assert.equal(list.length, 5);
+    assert.equal(list.length, 6);
     const ids = list.map(s => s.id);
     assert.ok(ids.includes('glass'));
     assert.ok(ids.includes('flat'));
     assert.ok(ids.includes('brutalist'));
     assert.ok(ids.includes('skeuo'));
     assert.ok(ids.includes('sketchy'));
+    assert.ok(ids.includes('lava'));
   });
 
   it('each style has id and name', () => {
@@ -141,8 +142,15 @@ describe('style-specific CSS', () => {
     assert.ok(css.includes('225px'));
   });
 
+  it('lava has gradients and ember glow', () => {
+    setStyle('lava');
+    const css = document.querySelector('[data-decantr-style]').textContent;
+    assert.ok(css.includes('linear-gradient'));
+    assert.ok(css.includes('d-ember-pulse') || css.includes('d-lava-rise'));
+  });
+
   it('all styles include success, warning, and outline button variants', () => {
-    const styleIds = ['glass', 'flat', 'brutalist', 'skeuo', 'sketchy'];
+    const styleIds = ['glass', 'flat', 'brutalist', 'skeuo', 'sketchy', 'lava'];
     for (const id of styleIds) {
       setStyle(id);
       const css = document.querySelector('[data-decantr-style]').textContent;
@@ -168,7 +176,7 @@ describe('registerStyle()', () => {
       }
     });
     const list = getStyleList();
-    assert.equal(list.length, 6);
+    assert.equal(list.length, 7);
     assert.ok(list.some(s => s.id === 'neon'));
   });
 

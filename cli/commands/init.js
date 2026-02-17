@@ -128,7 +128,8 @@ export async function run() {
       { label: 'Minimal', desc: 'Clean lines, no effects', value: 'flat' },
       { label: 'Neobrutalism', desc: 'Bold borders, offset shadows', value: 'brutalist' },
       { label: 'Skeuomorphic', desc: 'Gradients, 3D depth', value: 'skeuo' },
-      { label: 'Hand-drawn', desc: 'Wobbly borders, sketchy', value: 'sketchy' }
+      { label: 'Hand-drawn', desc: 'Wobbly borders, sketchy', value: 'sketchy' },
+      { label: 'Hot Lava', desc: 'Volcanic gradients, ember glow', value: 'lava' }
     ], 1);
 
     // 5. Router mode

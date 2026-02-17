@@ -13,7 +13,12 @@ export function demoFiles(opts) {
     ['src/pages/inputs.js', inputsJs(opts)],
     ['src/pages/cards.js', cardsJs(opts)],
     ['src/pages/badges.js', badgesJs(opts)],
-    ['src/pages/modals.js', modalsJs(opts)]
+    ['src/pages/modals.js', modalsJs(opts)],
+    ['src/pages/forms.js', formsJs()],
+    ['src/pages/layout.js', layoutJs()],
+    ['src/pages/data.js', dataJs()],
+    ['src/pages/feedback.js', feedbackJs()],
+    ['src/pages/blocks.js', blocksJs()]
   ];
 }
 
@@ -29,6 +34,11 @@ import { InputsPage } from './pages/inputs.js';
 import { CardsPage } from './pages/cards.js';
 import { BadgesPage } from './pages/badges.js';
 import { ModalsPage } from './pages/modals.js';
+import { FormsPage } from './pages/forms.js';
+import { LayoutPage } from './pages/layout.js';
+import { DataPage } from './pages/data.js';
+import { FeedbackPage } from './pages/feedback.js';
+import { BlocksPage } from './pages/blocks.js';
 
 setTheme('${opts.theme}');
 setStyle('${opts.style}');
@@ -42,7 +52,12 @@ const router = createRouter({
     { path: '/inputs', component: InputsPage },
     { path: '/cards', component: CardsPage },
     { path: '/badges', component: BadgesPage },
-    { path: '/modals', component: ModalsPage }
+    { path: '/modals', component: ModalsPage },
+    { path: '/forms', component: FormsPage },
+    { path: '/layout', component: LayoutPage },
+    { path: '/data', component: DataPage },
+    { path: '/feedback', component: FeedbackPage },
+    { path: '/blocks', component: BlocksPage }
   ]
 });
 
@@ -53,7 +68,12 @@ const navItems = [
   { href: '/inputs', label: 'Inputs' },
   { href: '/cards', label: 'Cards' },
   { href: '/badges', label: 'Badges' },
-  { href: '/modals', label: 'Modals' }
+  { href: '/modals', label: 'Modals' },
+  { href: '/forms', label: 'Forms' },
+  { href: '/layout', label: 'Layout' },
+  { href: '/data', label: 'Data' },
+  { href: '/feedback', label: 'Feedback' },
+  { href: '/blocks', label: 'Blocks' }
 ];
 
 function App() {
@@ -405,6 +425,258 @@ ${confirmBody},
         Button({ variant: 'destructive', onclick: () => setConfirm(false) }, 'Delete')
       )
     )
+  );
+}
+`;
+}
+
+function formsJs() {
+  return `import { h } from 'decantr/core';
+import { createSignal } from 'decantr/state';
+import { Textarea, Checkbox, Switch, Select, Card } from 'decantr/components';
+
+export function FormsPage() {
+  const [checked, setChecked] = createSignal(false);
+  const [switchOn, setSwitchOn] = createSignal(false);
+  const [selectVal, setSelectVal] = createSignal('');
+
+  function section(title, ...children) {
+    return h('div', { style: { marginBottom: '2rem' } },
+      h('h3', { style: { fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--c4)' } }, title),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '400px' } }, ...children)
+    );
+  }
+
+  function row(...children) {
+    return h('div', { style: { display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' } }, ...children);
+  }
+
+  return h('div', null,
+    h('h2', { style: { fontSize: '1.5rem', fontWeight: '700', marginBottom: '1.5rem' } }, 'Form Components'),
+    section('Textarea',
+      Textarea({ placeholder: 'Write something...' }),
+      Textarea({ placeholder: 'With 6 rows', rows: 6 }),
+      Textarea({ disabled: true, value: 'Disabled textarea' }),
+      Textarea({ error: true, placeholder: 'Error state' })
+    ),
+    h('div', { style: { marginBottom: '2rem' } },
+      h('h3', { style: { fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--c4)' } }, 'Checkbox'),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '0.75rem' } },
+        row(Checkbox({ label: 'Accept terms' }), Checkbox({ label: 'Checked', checked: true }), Checkbox({ label: 'Disabled', disabled: true })),
+        row(Checkbox({ label: 'Reactive', checked, onchange: v => setChecked(v) }), h('span', { style: { fontSize: '0.875rem', color: 'var(--c4)' } }, 'checked: ', h('strong', null, () => String(checked()))))
+      )
+    ),
+    h('div', { style: { marginBottom: '2rem' } },
+      h('h3', { style: { fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--c4)' } }, 'Switch'),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '0.75rem' } },
+        row(Switch({ label: 'Dark mode' }), Switch({ label: 'Enabled', checked: true }), Switch({ label: 'Disabled', disabled: true })),
+        row(Switch({ label: 'Reactive toggle', checked: switchOn, onchange: v => setSwitchOn(v) }), h('span', { style: { fontSize: '0.875rem', color: 'var(--c4)' } }, 'on: ', h('strong', null, () => String(switchOn()))))
+      )
+    ),
+    section('Select',
+      Select({ options: [{ value: 'react', label: 'React' }, { value: 'vue', label: 'Vue' }, { value: 'svelte', label: 'Svelte' }, { value: 'decantr', label: 'decantr' }], placeholder: 'Choose a framework', value: selectVal, onchange: v => setSelectVal(v) }),
+      Select({ options: [{ value: 'sm', label: 'Small' }, { value: 'md', label: 'Medium' }, { value: 'lg', label: 'Large' }], value: 'md' }),
+      Select({ options: [{ value: 'a', label: 'Disabled' }], disabled: true, value: 'a' }),
+      Select({ options: [{ value: 'a', label: 'Alpha' }], error: true, placeholder: 'Error state' })
+    )
+  );
+}
+`;
+}
+
+function layoutJs() {
+  return `import { h } from 'decantr/core';
+import { Tabs, Accordion, Separator, Breadcrumb } from 'decantr/components';
+
+export function LayoutPage() {
+  function section(title, ...children) {
+    return h('div', { style: { marginBottom: '2.5rem' } },
+      h('h3', { style: { fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--c4)' } }, title),
+      ...children
+    );
+  }
+
+  return h('div', null,
+    h('h2', { style: { fontSize: '1.5rem', fontWeight: '700', marginBottom: '1.5rem' } }, 'Layout Components'),
+    section('Tabs',
+      Tabs({ tabs: [
+        { id: 'overview', label: 'Overview', content: () => h('p', null, 'This is the overview tab. Use arrow keys to navigate.') },
+        { id: 'features', label: 'Features', content: () => h('ul', { style: { paddingLeft: '1.25rem' } }, h('li', null, 'Keyboard navigable'), h('li', null, 'ARIA roles'), h('li', null, 'Reactive active tab')) },
+        { id: 'code', label: 'Code', content: () => h('pre', { style: { background: 'var(--c2)', padding: '1rem', borderRadius: '6px', fontSize: '0.875rem' } }, "Tabs({ tabs: [...] })") }
+      ]})
+    ),
+    section('Accordion',
+      Accordion({ items: [
+        { id: 'what', title: 'What is decantr?', content: () => h('p', null, 'An AI-first web framework with zero dependencies.') },
+        { id: 'themes', title: 'How do themes work?', content: () => h('p', null, 'Themes define CSS custom properties (--c0 through --c9) that all components use.') },
+        { id: 'styles', title: 'What are design styles?', content: () => h('p', null, 'Styles control visual treatment — glass, flat, brutalist, skeuo, sketchy, and lava.') }
+      ]})
+    ),
+    section('Separator',
+      h('div', { style: { maxWidth: '400px' } },
+        h('p', null, 'Content above'),
+        Separator({}),
+        h('p', null, 'Content below'),
+        Separator({ label: 'OR' }),
+        h('p', null, 'Alternative content'),
+        h('div', { style: { display: 'flex', alignItems: 'center', height: '60px', gap: '1rem' } },
+          h('span', null, 'Left'), Separator({ vertical: true }), h('span', null, 'Right')
+        )
+      )
+    ),
+    section('Breadcrumb',
+      Breadcrumb({ items: [{ label: 'Home', href: '#/' }, { label: 'Components', href: '#/home' }, { label: 'Layout' }] }),
+      h('div', { style: { marginTop: '1rem' } },
+        Breadcrumb({ separator: '>', items: [{ label: 'Products', href: '#/' }, { label: 'Electronics', href: '#/' }, { label: 'Phones' }] })
+      )
+    )
+  );
+}
+`;
+}
+
+function dataJs() {
+  return `import { h } from 'decantr/core';
+import { createSignal } from 'decantr/state';
+import { Table, Avatar, Progress, Skeleton, Card, Button } from 'decantr/components';
+
+export function DataPage() {
+  const [progress, setProgress] = createSignal(45);
+
+  function section(title, ...children) {
+    return h('div', { style: { marginBottom: '2.5rem' } },
+      h('h3', { style: { fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--c4)' } }, title),
+      ...children
+    );
+  }
+
+  return h('div', null,
+    h('h2', { style: { fontSize: '1.5rem', fontWeight: '700', marginBottom: '1.5rem' } }, 'Data Display'),
+    section('Table',
+      Table({ striped: true, hoverable: true, columns: [
+        { key: 'name', label: 'Name' },
+        { key: 'role', label: 'Role' },
+        { key: 'status', label: 'Status', render: (v) => h('span', { style: { color: v === 'Active' ? 'var(--c7)' : 'var(--c4)' } }, v) }
+      ], data: [
+        { name: 'Alice Johnson', role: 'Engineer', status: 'Active' },
+        { name: 'Bob Smith', role: 'Designer', status: 'Active' },
+        { name: 'Carol Williams', role: 'PM', status: 'Away' }
+      ]})
+    ),
+    section('Avatar',
+      h('div', { style: { display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' } },
+        Avatar({ alt: 'Alice Johnson', size: 'sm' }),
+        Avatar({ alt: 'Bob Smith' }),
+        Avatar({ alt: 'Carol Williams', size: 'lg' }),
+        Avatar({ fallback: 'D', size: 'lg' })
+      )
+    ),
+    section('Progress',
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '400px' } },
+        Progress({ value: progress, label: true }),
+        h('div', { style: { display: 'flex', gap: '0.5rem' } },
+          Button({ size: 'sm', onclick: () => setProgress(Math.max(0, progress() - 10)) }, '-10'),
+          Button({ size: 'sm', onclick: () => setProgress(Math.min(100, progress() + 10)) }, '+10')
+        ),
+        Progress({ value: 75, variant: 'success' }),
+        Progress({ value: 50, variant: 'warning', striped: true }),
+        Progress({ value: 30, variant: 'error' })
+      )
+    ),
+    section('Skeleton',
+      Card({},
+        h('div', { style: { display: 'flex', gap: '1rem', alignItems: 'flex-start' } },
+          Skeleton({ variant: 'circle', width: '48px', height: '48px' }),
+          h('div', { style: { flex: 1 } }, Skeleton({ lines: 3 }))
+        )
+      )
+    )
+  );
+}
+`;
+}
+
+function feedbackJs() {
+  return `import { h } from 'decantr/core';
+import { Tooltip, Alert, Button } from 'decantr/components';
+import { toast } from 'decantr/components';
+
+export function FeedbackPage() {
+  function section(title, ...children) {
+    return h('div', { style: { marginBottom: '2.5rem' } },
+      h('h3', { style: { fontSize: '1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--c4)' } }, title),
+      ...children
+    );
+  }
+
+  return h('div', null,
+    h('h2', { style: { fontSize: '1.5rem', fontWeight: '700', marginBottom: '1.5rem' } }, 'Feedback & Overlays'),
+    section('Tooltip',
+      h('div', { style: { display: 'flex', gap: '1.5rem', flexWrap: 'wrap' } },
+        Tooltip({ content: 'Top tooltip' }, Button({}, 'Hover me')),
+        Tooltip({ content: 'Bottom', position: 'bottom' }, Button({ variant: 'secondary' }, 'Bottom')),
+        Tooltip({ content: 'Left', position: 'left' }, Button({ variant: 'outline' }, 'Left')),
+        Tooltip({ content: 'Right', position: 'right' }, Button({ variant: 'ghost' }, 'Right'))
+      )
+    ),
+    section('Alert',
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '0.75rem' } },
+        Alert({ variant: 'info' }, 'This is an informational message.'),
+        Alert({ variant: 'success' }, 'Operation completed successfully!'),
+        Alert({ variant: 'warning' }, 'Please review before proceeding.'),
+        Alert({ variant: 'error' }, 'An error occurred. Please try again.'),
+        Alert({ variant: 'info', dismissible: true }, 'This alert can be dismissed.')
+      )
+    ),
+    section('Toast',
+      h('p', { style: { color: 'var(--c4)', marginBottom: '0.75rem' } }, 'Click to trigger toasts:'),
+      h('div', { style: { display: 'flex', gap: '0.75rem', flexWrap: 'wrap' } },
+        Button({ onclick: () => toast({ message: 'Info toast', variant: 'info' }) }, 'Info'),
+        Button({ variant: 'success', onclick: () => toast({ message: 'Saved!', variant: 'success' }) }, 'Success'),
+        Button({ variant: 'warning', onclick: () => toast({ message: 'Check input', variant: 'warning' }) }, 'Warning'),
+        Button({ variant: 'destructive', onclick: () => toast({ message: 'Error occurred', variant: 'error' }) }, 'Error')
+      )
+    )
+  );
+}
+`;
+}
+
+function blocksJs() {
+  return `import { h } from 'decantr/core';
+import { Hero, Features, Pricing, Testimonials, CTA, Footer } from 'decantr/blocks';
+import { Separator } from 'decantr/components';
+
+export function BlocksPage() {
+  return h('div', null,
+    h('h2', { style: { fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.5rem' } }, 'Content Blocks'),
+    h('p', { style: { color: 'var(--c4)', marginBottom: '2rem' } }, 'Composable page-level sections for landing pages.'),
+    Hero({ headline: 'Build faster with decantr', description: 'An AI-first web framework with zero dependencies.', cta: { label: 'Get Started' }, ctaSecondary: { label: 'Learn More' } }),
+    Separator({}),
+    Features({ columns: 3, items: [
+      { icon: '\\u26A1', title: 'Zero Dependencies', description: 'No build tools required.' },
+      { icon: '\\uD83C\\uDFA8', title: '48 Visual Combos', description: '8 themes and 6 design styles.' },
+      { icon: '\\uD83D\\uDD27', title: 'Signal Reactivity', description: 'Fine-grained reactivity with signals.' }
+    ]}),
+    Separator({}),
+    Pricing({ plans: [
+      { name: 'Free', price: '\\$0', period: 'mo', features: ['5 projects', 'Basic themes'], cta: { label: 'Start', variant: 'outline' } },
+      { name: 'Pro', price: '\\$29', period: 'mo', features: ['Unlimited projects', 'All themes', 'Priority support'], highlighted: true, cta: { label: 'Try Free' } },
+      { name: 'Enterprise', price: '\\$99', period: 'mo', features: ['Everything in Pro', 'SLA', 'Dedicated support'], cta: { label: 'Contact', variant: 'outline' } }
+    ]}),
+    Separator({}),
+    Testimonials({ items: [
+      { quote: 'decantr replaced our entire React stack.', author: 'Sarah Chen', role: 'CTO, TechCo' },
+      { quote: 'The theme system saved us weeks of design work.', author: 'Marcus Rivera', role: 'Designer, StartupXYZ' }
+    ]}),
+    Separator({}),
+    CTA({ headline: 'Ready to get started?', description: 'Join thousands of developers building with decantr.', cta: { label: 'Start Building' } }),
+    Separator({}),
+    Footer({ columns: [
+      { title: 'Product', links: [{ label: 'Features', href: '#/' }, { label: 'Pricing', href: '#/' }] },
+      { title: 'Developers', links: [{ label: 'Docs', href: '#/' }, { label: 'API', href: '#/' }] },
+      { title: 'Company', links: [{ label: 'About', href: '#/' }, { label: 'Blog', href: '#/' }] }
+    ], copyright: '\\u00A9 2026 decantr. All rights reserved.' })
   );
 }
 `;

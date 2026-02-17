@@ -76,6 +76,15 @@ const builtins = [
       '--c6': '#404040', '--c7': '#525252', '--c8': '#737373', '--c9': '#a3a3a3'
     },
     meta: { isDark: false, contrastText: '#ffffff', surfaceAlpha: 'rgba(245,245,245,0.8)' }
+  },
+  {
+    id: 'lava', name: 'Hot Lava',
+    colors: {
+      '--c0': '#0c0a09', '--c1': '#f97316', '--c2': '#1c1410',
+      '--c3': '#fef2e8', '--c4': '#a8907a', '--c5': '#3d2c20',
+      '--c6': '#fb923c', '--c7': '#4ade80', '--c8': '#fbbf24', '--c9': '#ef4444'
+    },
+    meta: { isDark: true, contrastText: '#ffffff', surfaceAlpha: 'rgba(28,20,16,0.9)' }
   }
 ];
 

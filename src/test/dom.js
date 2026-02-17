@@ -104,6 +104,22 @@ class Comment_ extends Node_ {
   }
 }
 
+class ClassList_ {
+  constructor(el) { this._el = el; }
+  _classes() { return (this._el._attrs.get('class') || '').split(/\s+/).filter(Boolean); }
+  _set(arr) { this._el._attrs.set('class', arr.join(' ')); }
+  add(...tokens) { const c = this._classes(); for (const t of tokens) if (!c.includes(t)) c.push(t); this._set(c); }
+  remove(...tokens) { this._set(this._classes().filter(c => !tokens.includes(c))); }
+  toggle(token, force) {
+    const has = this.contains(token);
+    if (force !== undefined) { if (force) { if (!has) this.add(token); } else { this.remove(token); } return force; }
+    if (has) { this.remove(token); return false; }
+    this.add(token); return true;
+  }
+  contains(token) { return this._classes().includes(token); }
+  get length() { return this._classes().length; }
+}
+
 class Element_ extends Node_ {
   constructor(tagName) {
     super(1);
@@ -112,7 +128,9 @@ class Element_ extends Node_ {
     /** @type {Map<string, string>} */
     this._attrs = new Map();
     this.style = {};
+    this.classList = new ClassList_(this);
   }
+  click() { this.dispatchEvent(new Event_('click', { bubbles: true })); }
   getAttribute(name) { return this._attrs.get(name) ?? null; }
   setAttribute(name, value) { this._attrs.set(name, String(value)); }
   removeAttribute(name) { this._attrs.delete(name); }

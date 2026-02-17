@@ -10,8 +10,9 @@ src/
   state/        — Reactivity: signals, effects, memos, stores, batching
   router/       — Client-side routing: hash and history strategies
   css/          — Themes, design styles, atomic CSS, runtime injection
-    styles/     — 5 design style definitions (glass, flat, brutalist, skeuo, sketchy)
-  components/   — UI component library (Button, Input, Card, Badge, Modal, icon)
+    styles/     — 6 design style definitions (glass, flat, brutalist, skeuo, sketchy, lava)
+  components/   — UI component library (21 components + icon)
+  blocks/       — Content block library (Hero, Features, Pricing, Testimonials, CTA, Footer)
   test/         — Test runner with lightweight DOM implementation
 cli/
   commands/     — CLI commands: init, dev, build, test
@@ -61,11 +62,34 @@ Strategies: `hash` (default), `history` (History API)
 - `setAnimations(enabled)` / `getAnimations()` — JS animation control (disable all transitions/animations)
 
 ### `decantr/components` — src/components/index.js
+
+**Form Components:**
 - `Button(props, ...children)` — `{ variant: 'primary'|'secondary'|'destructive'|'success'|'warning'|'outline'|'ghost'|'link', size: 'sm'|'lg', disabled, loading, block, onclick }`
 - `Input(props)` — `{ type, placeholder, value, disabled, error, prefix, suffix, readonly, oninput, ref }`
+- `Textarea(props)` — `{ placeholder, value, disabled, error, rows, resize, oninput, ref }`
+- `Checkbox(props)` — `{ checked, disabled, label, indeterminate, onchange }`
+- `Switch(props)` — `{ checked, disabled, label, onchange }`
+- `Select(props)` — `{ options: [{value,label,disabled?}], value, placeholder, disabled, error, onchange }` — Custom dropdown, keyboard navigable
+
+**Display Components:**
 - `Card(props, ...children)` — `{ title, hoverable }` with `Card.Header()`, `Card.Body()`, `Card.Footer()`
 - `Badge(props, ...children)` — `{ count, dot, status: 'success'|'error'|'warning'|'processing' }`
+- `Table(props)` — `{ columns: [{key,label,width?,render?}], data, striped, hoverable, compact }`
+- `Avatar(props)` — `{ src, alt, size: 'sm'|'lg', fallback }`
+- `Progress(props)` — `{ value, max, label, variant, striped, animated }` — reactive value
+- `Skeleton(props)` — `{ variant: 'text'|'rect'|'circle', width, height, lines }`
+
+**Layout Components:**
+- `Tabs(props)` — `{ tabs: [{id,label,content:()=>Node}], active, onchange }` — keyboard navigable
+- `Accordion(props)` — `{ items: [{id,title,content:()=>Node}], multiple }`
+- `Separator(props)` — `{ vertical, label }`
+- `Breadcrumb(props)` — `{ items: [{label,href?,onclick?}], separator }`
+
+**Overlay & Feedback:**
 - `Modal(props, ...children)` — `{ title, visible, onClose, width }` portals to body, Escape + click-outside
+- `Tooltip(props, ...children)` — `{ content, position: 'top'|'bottom'|'left'|'right', delay }`
+- `Alert(props, ...children)` — `{ variant: 'info'|'success'|'warning'|'error', dismissible, onDismiss, icon }`
+- `toast(props)` — `{ message, variant, duration, position }` — imperative API, returns `{ dismiss }`
 - `icon(name, props)` — `{ size, color, class }` inline SVG icons
 
 ### `decantr/test` — src/test/index.js
@@ -78,7 +102,7 @@ Strategies: `hash` (default), `history` (History API)
 
 ## Color Variable Semantics
 
-All 7 themes use CSS variables `--c0` through `--c9` with consistent semantic meaning:
+All 8 themes use CSS variables `--c0` through `--c9` with consistent semantic meaning:
 
 | Variable | Semantic Role  | Example (light)  | Example (dark)   |
 |----------|---------------|------------------|------------------|
@@ -106,6 +130,7 @@ Each design style sets CSS custom properties for consistent component rendering:
 | glass       | `12px`       | `16px`          | `0 8px 32px rgba(0,0,0,0.1)`                         | `all 0.2s ease`                        |
 | skeuo       | `8px`        | `10px`          | `0 2px 4px rgba(0,0,0,0.2), 0 1px 2px ...`           | `all 0.2s ease`                        |
 | sketchy     | `255px 15px 225px 15px / 15px 225px 15px 255px` | `255px 25px 225px 25px / 25px 225px 25px 255px` | `2px 3px 0 rgba(0,0,0,0.15)` | `all 0.2s cubic-bezier(0.34,1.56,0.64,1)` |
+| lava        | `10px`       | `14px`          | `0 4px 24px rgba(249,115,22,0.15), 0 2px 8px ...` | `all 0.3s cubic-bezier(0.22,1,0.36,1)` |
 
 Each style also defines component-specific CSS for button, card, input, badge, and modal.
 
@@ -127,7 +152,7 @@ decantr test --watch  # Watch mode
 - **Signal reactivity** — Pass getter functions for reactive props: `Button({ disabled: () => isLoading() })`
 - **Real DOM** — `h()` returns actual DOM nodes, not virtual DOM
 - **Atomic CSS** — `css('p4', 'flex', 'bg1')` for utility classes (150+ atoms available)
-- **Any theme + any style** — 7 themes × 5 styles = 35 visual combinations
+- **Any theme + any style** — 8 themes × 6 styles = 48 visual combinations
 
 ## Testing
 

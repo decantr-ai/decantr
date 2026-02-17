@@ -15,9 +15,9 @@ after(() => {
 });
 
 describe('getThemeList()', () => {
-  it('returns 7 built-in themes', () => {
+  it('returns 8 built-in themes', () => {
     const list = getThemeList();
-    assert.equal(list.length, 7);
+    assert.equal(list.length, 8);
     const ids = list.map(t => t.id);
     assert.ok(ids.includes('light'));
     assert.ok(ids.includes('dark'));
@@ -26,6 +26,7 @@ describe('getThemeList()', () => {
     assert.ok(ids.includes('pastel'));
     assert.ok(ids.includes('spice'));
     assert.ok(ids.includes('mono'));
+    assert.ok(ids.includes('lava'));
   });
 
   it('each theme has id and name', () => {
@@ -114,7 +115,7 @@ describe('registerTheme()', () => {
       meta: { isDark: true, contrastText: '#0a192f', surfaceAlpha: 'rgba(17,34,64,0.85)' }
     });
     const list = getThemeList();
-    assert.equal(list.length, 8);
+    assert.equal(list.length, 9);
     assert.ok(list.some(t => t.id === 'ocean'));
   });
 
