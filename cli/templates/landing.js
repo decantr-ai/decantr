@@ -2,13 +2,13 @@
  * Landing page scaffold: welcome + pricing + footer.
  */
 
-import { welcomeJs } from './shared.js';
+import { welcomeJs, iconName, iconExpr, iconImport } from './shared.js';
 
 export function landingFiles(opts) {
   return [
     ['src/app.js', appJs(opts)],
     ['src/sections/welcome.js', welcomeJs(opts)],
-    ['src/sections/pricing.js', pricingJs()],
+    ['src/sections/pricing.js', pricingJs(opts)],
     ['src/sections/footer.js', footerJs(opts)],
     ['test/welcome.test.js', welcomeTestJs(opts)]
   ];
@@ -37,15 +37,39 @@ mount(document.getElementById('app'), App);
 `;
 }
 
-function pricingJs() {
-  return `import { h } from 'decantr/core';
-import { Card, Button, Badge } from 'decantr/components';
+function pricingJs(opts) {
+  const hasIcons = !!opts.icons;
 
-const plans = [
+  const planIcons = { Starter: 'star', Pro: 'bolt', Enterprise: 'shield' };
+
+  const planNameExpr = hasIcons
+    ? `              h('h3', { style: { fontSize: '1.25rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' } },
+                  plan.planIcon, plan.name
+                )`
+    : `              h('h3', { style: { fontSize: '1.25rem', fontWeight: '600' } }, plan.name)`;
+
+  const featureItem = hasIcons
+    ? `                  h('li', { style: { padding: '0.375rem 0', color: 'var(--c4)', display: 'flex', alignItems: 'center', gap: '0.5rem' } },
+                    ${iconExpr('check', opts, { size: '1em', 'aria-hidden': 'true' })}, f
+                  )`
+    : `                  h('li', { style: { padding: '0.375rem 0', color: 'var(--c4)' } }, '\\u2713 ' + f)`;
+
+  const plansDef = hasIcons
+    ? `const plans = [
+  { name: 'Starter', price: 'Free', features: ['5 projects', 'Community support', 'Basic themes'], cta: 'Get Started', planIcon: ${iconExpr('star', opts)} },
+  { name: 'Pro', price: '$29/mo', features: ['Unlimited projects', 'Priority support', 'All themes & styles', 'Custom components'], cta: 'Go Pro', popular: true, planIcon: ${iconExpr('bolt', opts)} },
+  { name: 'Enterprise', price: 'Custom', features: ['Everything in Pro', 'Dedicated support', 'SLA guarantee', 'Custom integrations'], cta: 'Contact Sales', planIcon: ${iconExpr('shield', opts)} }
+];`
+    : `const plans = [
   { name: 'Starter', price: 'Free', features: ['5 projects', 'Community support', 'Basic themes'], cta: 'Get Started' },
   { name: 'Pro', price: '$29/mo', features: ['Unlimited projects', 'Priority support', 'All themes & styles', 'Custom components'], cta: 'Go Pro', popular: true },
   { name: 'Enterprise', price: 'Custom', features: ['Everything in Pro', 'Dedicated support', 'SLA guarantee', 'Custom integrations'], cta: 'Contact Sales' }
-];
+];`;
+
+  return `import { h } from 'decantr/core';
+import { Card, Button, Badge } from 'decantr/components';
+${iconImport(opts)}
+${plansDef}
 
 export function Pricing() {
   return h('section', {
@@ -65,7 +89,7 @@ export function Pricing() {
           const card = Card({},
             Card.Header({},
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                h('h3', { style: { fontSize: '1.25rem', fontWeight: '600' } }, plan.name),
+${planNameExpr},
                 plan.popular ? Badge({ status: 'success', count: 'Popular' }) : null
               )
             ),
@@ -73,7 +97,7 @@ export function Pricing() {
               h('p', { style: { fontSize: '2.5rem', fontWeight: '800', marginBottom: '1.5rem' } }, plan.price),
               h('ul', { style: { listStyle: 'none', padding: '0', marginBottom: '1.5rem' } },
                 ...plan.features.map(f =>
-                  h('li', { style: { padding: '0.375rem 0', color: 'var(--c4)' } }, '\\u2713 ' + f)
+${featureItem}
                 )
               ),
               Button({ variant: plan.popular ? 'primary' : 'secondary', block: true }, plan.cta)
@@ -89,8 +113,23 @@ export function Pricing() {
 }
 
 function footerJs(opts) {
-  return `import { h } from 'decantr/core';
+  const hasIcons = !!opts.icons;
 
+  const footerBottom = hasIcons
+    ? `    h('div', {
+      style: { maxWidth: '1080px', margin: '2rem auto 0', paddingTop: '1.5rem', borderTop: '1px solid var(--c5)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem' }
+    },
+      h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', 'aria-label': 'Source code', style: { color: 'var(--c4)' } },
+        ${iconExpr('code', opts, { size: '1.25em', 'aria-hidden': 'true' })}
+      ),
+      h('span', { style: { color: 'var(--c4)', fontSize: '0.875rem' } }, '\\u00a9 2025 decantr. All rights reserved.')
+    )`
+    : `    h('div', {
+      style: { maxWidth: '1080px', margin: '2rem auto 0', paddingTop: '1.5rem', borderTop: '1px solid var(--c5)', textAlign: 'center', color: 'var(--c4)', fontSize: '0.875rem' }
+    }, '\\u00a9 2025 decantr. All rights reserved.')`;
+
+  return `import { h } from 'decantr/core';
+${iconImport(opts)}
 const links = {
   Product: ['Features', 'Pricing', 'Docs', 'Changelog'],
   Company: ['About', 'Blog', 'Careers', 'Contact'],
@@ -121,9 +160,7 @@ export function Footer() {
         )
       )
     ),
-    h('div', {
-      style: { maxWidth: '1080px', margin: '2rem auto 0', paddingTop: '1.5rem', borderTop: '1px solid var(--c5)', textAlign: 'center', color: 'var(--c4)', fontSize: '0.875rem' }
-    }, '\\u00a9 2025 decantr. All rights reserved.')
+${footerBottom}
   );
 }
 `;

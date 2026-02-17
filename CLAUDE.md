@@ -10,7 +10,7 @@ src/
   state/        — Reactivity: signals, effects, memos, stores, batching
   router/       — Client-side routing: hash and history strategies
   css/          — Themes, design styles, atomic CSS, runtime injection
-    styles/     — 7 design style definitions (glass, clay, flat, brutalist, skeuo, mono, sketchy)
+    styles/     — 5 design style definitions (glass, flat, brutalist, skeuo, sketchy)
   components/   — UI component library (Button, Input, Card, Badge, Modal, icon)
   test/         — Test runner with lightweight DOM implementation
 cli/
@@ -58,9 +58,10 @@ Strategies: `hash` (default), `history` (History API)
 - `registerStyle(style)` / `getStyleList()` — Custom styles
 - `getActiveCSS()` — Get complete CSS for active style
 - `resetStyles()` — Reset to default (flat) style
+- `setAnimations(enabled)` / `getAnimations()` — JS animation control (disable all transitions/animations)
 
 ### `decantr/components` — src/components/index.js
-- `Button(props, ...children)` — `{ variant: 'primary'|'secondary'|'destructive'|'ghost'|'link', size: 'sm'|'lg', disabled, loading, block, onclick }`
+- `Button(props, ...children)` — `{ variant: 'primary'|'secondary'|'destructive'|'success'|'warning'|'outline'|'ghost'|'link', size: 'sm'|'lg', disabled, loading, block, onclick }`
 - `Input(props)` — `{ type, placeholder, value, disabled, error, prefix, suffix, readonly, oninput, ref }`
 - `Card(props, ...children)` — `{ title, hoverable }` with `Card.Header()`, `Card.Body()`, `Card.Footer()`
 - `Badge(props, ...children)` — `{ count, dot, status: 'success'|'error'|'warning'|'processing' }`
@@ -103,9 +104,7 @@ Each design style sets CSS custom properties for consistent component rendering:
 | flat        | `6px`        | `8px`           | `none`                                                | `all 0.15s ease`                       |
 | brutalist   | `4px`        | `4px`           | `4px 4px 0 var(--c3)`                                | `all 0.1s ease`                        |
 | glass       | `12px`       | `16px`          | `0 8px 32px rgba(0,0,0,0.1)`                         | `all 0.2s ease`                        |
-| clay        | `16px`       | `24px`          | `8px 8px 16px rgba(0,0,0,0.1), -8px -8px 16px ...`  | `all 0.25s ease`                       |
 | skeuo       | `8px`        | `10px`          | `0 2px 4px rgba(0,0,0,0.2), 0 1px 2px ...`           | `all 0.2s ease`                        |
-| mono        | `6px`        | `8px`           | `0 1px 3px rgba(0,0,0,0.08)`                         | `all 0.2s ease`                        |
 | sketchy     | `255px 15px 225px 15px / 15px 225px 15px 255px` | `255px 25px 225px 25px / 25px 225px 25px 255px` | `2px 3px 0 rgba(0,0,0,0.15)` | `all 0.2s cubic-bezier(0.34,1.56,0.64,1)` |
 
 Each style also defines component-specific CSS for button, card, input, badge, and modal.
@@ -128,7 +127,7 @@ decantr test --watch  # Watch mode
 - **Signal reactivity** — Pass getter functions for reactive props: `Button({ disabled: () => isLoading() })`
 - **Real DOM** — `h()` returns actual DOM nodes, not virtual DOM
 - **Atomic CSS** — `css('p4', 'flex', 'bg1')` for utility classes (150+ atoms available)
-- **Any theme + any style** — 7 themes × 7 styles = 49 visual combinations
+- **Any theme + any style** — 7 themes × 5 styles = 35 visual combinations
 
 ## Testing
 
@@ -151,3 +150,18 @@ Run: `node --test test/*.test.js`
 - `builder.js` — Production bundler (HTML, JS, CSS extraction)
 - `css-extract.js` — Extract and deduplicate atomic CSS from source
 - `minify.js` — JS/CSS/HTML minification
+
+## Accessibility (WCAG 2.1 AA)
+
+All generated code **must** meet WCAG 2.1 AA. Follow these rules:
+
+- **Accessible names** — Every interactive element must have an accessible name (visible text, `aria-label`, or `aria-labelledby`)
+- **Icon-only buttons** — Must include `aria-label`: `Button({ 'aria-label': 'Close' }, icon('x'))`
+- **Decorative icons** — Use `aria-hidden="true"` on icons that don't convey meaning
+- **Modal** — Use `role="dialog"`, `aria-modal="true"`, `aria-labelledby` pointing to the title, and trap focus within the modal while open
+- **Focus indicators** — All interactive elements must have visible focus indicators (`:focus-visible` outline)
+- **Color is not enough** — Never use color as the sole indicator of state; pair with text, icons, or patterns
+- **Reduced motion** — `prefers-reduced-motion` is respected automatically via base CSS; use `setAnimations(false)` for in-app animation toggle
+- **Semantic HTML** — Use `<button>`, `<nav>`, `<main>`, `<header>`, `<footer>`, `<section>` over generic `<div>`/`<span>` where appropriate
+- **Keyboard navigation** — All interactive components must be operable with keyboard alone (Tab, Enter, Escape, arrow keys)
+- **No flashing** — Content must not flash more than 3 times per second

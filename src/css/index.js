@@ -2,7 +2,7 @@ import { atomMap } from './atoms.js';
 import { inject } from './runtime.js';
 export { extractCSS, reset } from './runtime.js';
 export { setTheme, getTheme, getThemeMeta, registerTheme, getThemeList } from './themes.js';
-export { setStyle, getStyle, getStyleList, registerStyle, getActiveCSS, resetStyles } from './styles.js';
+export { setStyle, getStyle, getStyleList, registerStyle, getActiveCSS, resetStyles, setAnimations, getAnimations } from './styles.js';
 
 /** @type {Map<string, string>} */
 const customAtoms = new Map();

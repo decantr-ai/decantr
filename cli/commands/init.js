@@ -3,7 +3,7 @@ import { stdin, stdout } from 'node:process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { welcome, success, info, heading } from '../art.js';
-import { packageJson, configJson, indexHtml, manifest, claudeMd } from '../templates/shared.js';
+import { packageJson, configJson, indexHtml, manifest, claudeMd, vendorIconsJs } from '../templates/shared.js';
 import { dashboardFiles } from '../templates/dashboard.js';
 import { landingFiles } from '../templates/landing.js';
 import { demoFiles } from '../templates/demo.js';
@@ -47,10 +47,14 @@ async function askChoice(rl, question, options, defaultIdx = 0) {
     stdin.resume();
 
     function done(value) {
-      stdin.setRawMode(false);
       stdin.removeListener('data', onData);
-      rl.resume();
-      resolve(value);
+      stdin.setRawMode(false);
+      stdin.pause();
+      while (stdin.read() !== null);
+      setImmediate(() => {
+        rl.resume();
+        resolve(value);
+      });
     }
 
     function onData(buf) {
@@ -121,13 +125,11 @@ export async function run() {
     // 4. Design style
     const style = await askChoice(rl, 'Design style?', [
       { label: 'Glassmorphism', desc: 'Frosted glass, blur', value: 'glass' },
-      { label: 'Claymorphism', desc: 'Soft, puffy, rounded', value: 'clay' },
       { label: 'Minimal', desc: 'Clean lines, no effects', value: 'flat' },
       { label: 'Neobrutalism', desc: 'Bold borders, offset shadows', value: 'brutalist' },
       { label: 'Skeuomorphic', desc: 'Gradients, 3D depth', value: 'skeuo' },
-      { label: 'Monochromatic', desc: 'Black & white elegance', value: 'mono' },
       { label: 'Hand-drawn', desc: 'Wobbly borders, sketchy', value: 'sketchy' }
-    ], 2);
+    ], 1);
 
     // 5. Router mode
     const router = await askChoice(rl, 'Router mode?', [
@@ -153,7 +155,7 @@ export async function run() {
     }
 
     // 7. Port
-    const port = parseInt(await ask(rl, 'Dev server port?', '3000'));
+    const port = parseInt(await ask(rl, 'Dev server port?', '4200'));
 
     const opts = { name, projectType, theme, style, router, icons, iconDelivery, port };
 
@@ -162,18 +164,23 @@ export async function run() {
     // Create directories
     const dirs = ['public', '.decantr', 'test', 'src/pages', 'src/components'];
     if (projectType === 'landing') dirs.push('src/sections');
+    if (iconDelivery === 'npm') dirs.push('scripts');
     for (const dir of dirs) {
       await mkdir(join(cwd, dir), { recursive: true });
     }
 
     // Shared files
     const files = [
-      ['package.json', packageJson(name)],
+      ['package.json', packageJson(name, opts)],
       ['decantr.config.json', configJson(opts)],
       ['public/index.html', indexHtml(opts)],
       ['.decantr/manifest.json', manifest(opts)],
       ['CLAUDE.md', claudeMd(opts)]
     ];
+
+    if (iconDelivery === 'npm') {
+      files.push(['scripts/vendor-icons.js', vendorIconsJs(opts)]);
+    }
 
     // Project-type files
     let typeFiles;

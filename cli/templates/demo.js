@@ -2,18 +2,18 @@
  * Demo mode scaffold: multi-page showcase of all themes, styles, and components.
  */
 
-import { welcomeJs } from './shared.js';
+import { welcomeJs, iconName, iconExpr, iconImport } from './shared.js';
 
 export function demoFiles(opts) {
   return [
     ['src/app.js', appJs(opts)],
     ['src/pages/welcome.js', welcomeJs(opts)],
     ['src/pages/home.js', homeJs()],
-    ['src/pages/buttons.js', buttonsJs()],
-    ['src/pages/inputs.js', inputsJs()],
-    ['src/pages/cards.js', cardsJs()],
-    ['src/pages/badges.js', badgesJs()],
-    ['src/pages/modals.js', modalsJs()]
+    ['src/pages/buttons.js', buttonsJs(opts)],
+    ['src/pages/inputs.js', inputsJs(opts)],
+    ['src/pages/cards.js', cardsJs(opts)],
+    ['src/pages/badges.js', badgesJs(opts)],
+    ['src/pages/modals.js', modalsJs(opts)]
   ];
 }
 
@@ -130,6 +130,9 @@ export function Home() {
         Button({ variant: 'primary' }, 'Primary'),
         Button({ variant: 'secondary' }, 'Secondary'),
         Button({ variant: 'destructive' }, 'Destructive'),
+        Button({ variant: 'success' }, 'Success'),
+        Button({ variant: 'warning' }, 'Warning'),
+        Button({ variant: 'outline' }, 'Outline'),
         Button({ variant: 'ghost' }, 'Ghost'),
         Button({ variant: 'link' }, 'Link')
       )
@@ -139,11 +142,23 @@ export function Home() {
 `;
 }
 
-function buttonsJs() {
+function buttonsJs(opts) {
+  const hasIcons = !!opts.icons;
+
+  const iconSection = hasIcons
+    ? `,
+    section('With Icons',
+      Button({ variant: 'primary' }, ${iconExpr('save', opts)}, ' Save'),
+      Button({ variant: 'destructive' }, ${iconExpr('delete', opts)}, ' Delete'),
+      Button({ 'aria-label': 'Search' }, ${iconExpr('search', opts)}),
+      Button({ variant: 'ghost', 'aria-label': 'Settings' }, ${iconExpr('settings', opts)})
+    )`
+    : '';
+
   return `import { h } from 'decantr/core';
 import { createSignal } from 'decantr/state';
 import { Button } from 'decantr/components';
-
+${iconImport(opts)}
 export function ButtonsPage() {
   const [loading, setLoading] = createSignal(false);
 
@@ -161,6 +176,9 @@ export function ButtonsPage() {
       Button({}, 'Default'),
       Button({ variant: 'secondary' }, 'Secondary'),
       Button({ variant: 'destructive' }, 'Destructive'),
+      Button({ variant: 'success' }, 'Success'),
+      Button({ variant: 'warning' }, 'Warning'),
+      Button({ variant: 'outline' }, 'Outline'),
       Button({ variant: 'ghost' }, 'Ghost'),
       Button({ variant: 'link' }, 'Link')
     ),
@@ -176,17 +194,28 @@ export function ButtonsPage() {
         setTimeout(() => setLoading(false), 2000);
       }}, 'Click to Load'),
       Button({ variant: 'primary', block: true }, 'Block Button')
-    )
+    )${iconSection}
   );
 }
 `;
 }
 
-function inputsJs() {
+function inputsJs(opts) {
+  const hasIcons = !!opts.icons;
+
+  const iconPrefixSection = hasIcons
+    ? `,
+    section('Icon Prefixes',
+      Input({ prefix: ${iconExpr('search', opts)}, placeholder: 'Search...' }),
+      Input({ prefix: ${iconExpr('mail', opts)}, type: 'email', placeholder: 'Email address' }),
+      Input({ prefix: ${iconExpr('lock', opts)}, type: 'password', placeholder: 'Password' })
+    )`
+    : '';
+
   return `import { h } from 'decantr/core';
 import { createSignal } from 'decantr/state';
 import { Input } from 'decantr/components';
-
+${iconImport(opts)}
 export function InputsPage() {
   const [val, setVal] = createSignal('');
   const [err, setErr] = createSignal(false);
@@ -217,16 +246,32 @@ export function InputsPage() {
       Input({ prefix: '$', placeholder: '0.00' }),
       Input({ suffix: '@gmail.com', placeholder: 'username' }),
       Input({ prefix: 'https://', suffix: '.com', placeholder: 'domain' })
-    )
+    )${iconPrefixSection}
   );
 }
 `;
 }
 
-function cardsJs() {
+function cardsJs(opts) {
+  const hasIcons = !!opts.icons;
+
+  const iconCard = hasIcons
+    ? `,
+      Card({},
+        Card.Header({},
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '0.5rem' } },
+            ${iconExpr('settings', opts)}, 'With Icon'
+          )
+        ),
+        Card.Body({},
+          h('p', { style: { color: 'var(--c4)' } }, 'Cards can include icons in their headers for visual context.')
+        )
+      )`
+    : '';
+
   return `import { h } from 'decantr/core';
 import { Card, Button } from 'decantr/components';
-
+${iconImport(opts)}
 export function CardsPage() {
   return h('div', null,
     h('h2', { style: { fontSize: '1.5rem', fontWeight: '700', marginBottom: '1.5rem' } }, 'Cards'),
@@ -251,17 +296,28 @@ export function CardsPage() {
           h('h3', { style: { fontWeight: '600', marginBottom: '0.5rem' } }, 'No Header'),
           h('p', { style: { color: 'var(--c4)' } }, 'A card with just a body section. Clean and minimal.')
         )
-      )
+      )${iconCard}
     )
   );
 }
 `;
 }
 
-function badgesJs() {
+function badgesJs(opts) {
+  const hasIcons = !!opts.icons;
+
+  const iconWrappedSection = hasIcons
+    ? `,
+    section('Icon Buttons',
+      Badge({ count: 3 },
+        Button({ 'aria-label': 'Notifications' }, ${iconExpr('bell', opts)})
+      )
+    )`
+    : '';
+
   return `import { h } from 'decantr/core';
 import { Badge, Button } from 'decantr/components';
-
+${iconImport(opts)}
 export function BadgesPage() {
   function section(title, ...children) {
     return h('div', { style: { marginBottom: '2rem' } },
@@ -292,17 +348,30 @@ export function BadgesPage() {
     section('Wrapped',
       Badge({ count: 3 }, Button({}, 'Messages')),
       Badge({ count: 12 }, Button({ variant: 'primary' }, 'Notifications'))
-    )
+    )${iconWrappedSection}
   );
 }
 `;
 }
 
-function modalsJs() {
+function modalsJs(opts) {
+  const hasIcons = !!opts.icons;
+
+  const confirmBtn = hasIcons
+    ? `Button({ variant: 'destructive', onclick: () => setConfirm(true) }, ${iconExpr('alert', opts)}, ' Confirm Modal')`
+    : `Button({ variant: 'destructive', onclick: () => setConfirm(true) }, 'Confirm Modal')`;
+
+  const confirmBody = hasIcons
+    ? `      h('div', { style: { display: 'flex', gap: '0.75rem', alignItems: 'flex-start' } },
+        h('div', { style: { color: 'var(--c9)', flexShrink: '0', marginTop: '0.125rem' } }, ${iconExpr('alert', opts, { size: '1.5em', 'aria-hidden': 'true' })}),
+        h('p', null, 'This action cannot be undone. This will permanently delete the item.')
+      )`
+    : `      h('p', null, 'This action cannot be undone. This will permanently delete the item.')`;
+
   return `import { h } from 'decantr/core';
 import { createSignal } from 'decantr/state';
 import { Button, Modal, Card } from 'decantr/components';
-
+${iconImport(opts)}
 export function ModalsPage() {
   const [basic, setBasic] = createSignal(false);
   const [form, setForm] = createSignal(false);
@@ -313,7 +382,7 @@ export function ModalsPage() {
     h('div', { style: { display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '2rem' } },
       Button({ variant: 'primary', onclick: () => setBasic(true) }, 'Basic Modal'),
       Button({ onclick: () => setForm(true) }, 'Form Modal'),
-      Button({ variant: 'destructive', onclick: () => setConfirm(true) }, 'Confirm Modal')
+      ${confirmBtn}
     ),
     Card({},
       h('p', { style: { color: 'var(--c4)' } }, 'Click the buttons above to open different modal types. Modals support title, close button, click-outside-to-close, and Escape key.')
@@ -330,7 +399,7 @@ export function ModalsPage() {
       )
     ),
     Modal({ visible: confirm, title: 'Are you sure?', onClose: () => setConfirm(false), width: '400px' },
-      h('p', null, 'This action cannot be undone. This will permanently delete the item.'),
+${confirmBody},
       h('div', { style: { display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.5rem' } },
         Button({ onclick: () => setConfirm(false) }, 'Cancel'),
         Button({ variant: 'destructive', onclick: () => setConfirm(false) }, 'Delete')

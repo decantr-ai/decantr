@@ -12,19 +12,80 @@ const THEME_CSS = {
   mono: ':root{--c0:#ffffff;--c1:#171717;--c2:#f5f5f5;--c3:#171717;--c4:#737373;--c5:#d4d4d4;--c6:#404040;--c7:#525252;--c8:#737373;--c9:#a3a3a3}'
 };
 
-export function packageJson(name) {
+const ICON_MAP = {
+  home:           { material: 'home',          lucide: 'home' },
+  dashboard:      { material: 'dashboard',     lucide: 'layout-dashboard' },
+  table:          { material: 'table_chart',   lucide: 'table' },
+  settings:       { material: 'settings',      lucide: 'settings' },
+  bell:           { material: 'notifications', lucide: 'bell' },
+  user:           { material: 'person',        lucide: 'user' },
+  'trending-up':  { material: 'trending_up',   lucide: 'trending-up' },
+  'trending-down':{ material: 'trending_down', lucide: 'trending-down' },
+  users:          { material: 'group',         lucide: 'users' },
+  dollar:         { material: 'attach_money',  lucide: 'dollar-sign' },
+  activity:       { material: 'show_chart',    lucide: 'activity' },
+  chart:          { material: 'bar_chart',     lucide: 'bar-chart-3' },
+  search:         { material: 'search',        lucide: 'search' },
+  edit:           { material: 'edit',          lucide: 'pencil' },
+  delete:         { material: 'delete',        lucide: 'trash-2' },
+  'user-plus':    { material: 'person_add',    lucide: 'user-plus' },
+  save:           { material: 'save',          lucide: 'save' },
+  bolt:           { material: 'bolt',          lucide: 'zap' },
+  package:        { material: 'inventory_2',   lucide: 'package' },
+  bot:            { material: 'smart_toy',     lucide: 'bot' },
+  compress:       { material: 'compress',      lucide: 'minimize-2' },
+  palette:        { material: 'palette',       lucide: 'palette' },
+  flask:          { material: 'science',       lucide: 'flask-conical' },
+  code:           { material: 'code',          lucide: 'code' },
+  check:          { material: 'check',         lucide: 'check' },
+  star:           { material: 'star',          lucide: 'star' },
+  shield:         { material: 'shield',        lucide: 'shield' },
+  mail:           { material: 'mail',          lucide: 'mail' },
+  lock:           { material: 'lock',          lucide: 'lock' },
+  alert:          { material: 'warning',       lucide: 'alert-triangle' }
+};
+
+export function iconName(semantic, opts) {
+  if (!opts || !opts.icons) return null;
+  const entry = ICON_MAP[semantic];
+  return entry ? entry[opts.icons] : null;
+}
+
+export function iconExpr(semantic, opts, props = {}) {
+  const name = iconName(semantic, opts);
+  if (!name) return '';
+  const propsEntries = Object.entries({ size: '1em', 'aria-hidden': 'true', ...props });
+  const propsStr = propsEntries.map(([k, v]) => `'${k}': '${v}'`).join(', ');
+  return `icon('${name}', { ${propsStr} })`;
+}
+
+export function iconImport(opts) {
+  if (!opts || !opts.icons) return '';
+  return "import { icon } from 'decantr/components';\n";
+}
+
+export function packageJson(name, opts = {}) {
+  const scripts = {
+    dev: 'decantr dev',
+    build: 'decantr build',
+    test: 'decantr test'
+  };
+  const dependencies = {
+    decantr: '^0.2.0'
+  };
+
+  if (opts.iconDelivery === 'npm') {
+    scripts.postinstall = 'node scripts/vendor-icons.js';
+    if (opts.icons === 'lucide') dependencies.lucide = '^0.474.0';
+    if (opts.icons === 'material') dependencies['material-icons'] = '^1.13.12';
+  }
+
   return JSON.stringify({
     name,
     version: '0.1.0',
     type: 'module',
-    scripts: {
-      dev: 'decantr dev',
-      build: 'decantr build',
-      test: 'decantr test'
-    },
-    dependencies: {
-      decantr: '^0.2.0'
-    }
+    scripts,
+    dependencies
   }, null, 2);
 }
 
@@ -50,8 +111,12 @@ export function indexHtml(opts) {
   let iconLink = '';
   if (opts.icons === 'material' && opts.iconDelivery === 'cdn') {
     iconLink = '\n  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" data-icons="material">';
+  } else if (opts.icons === 'material' && opts.iconDelivery === 'npm') {
+    iconLink = '\n  <link href="/vendor/material-icons/material-icons.css" rel="stylesheet" data-icons="material">';
   } else if (opts.icons === 'lucide' && opts.iconDelivery === 'cdn') {
-    iconLink = '\n  <script src="https://unpkg.com/lucide@latest" data-icons="lucide"></script>';
+    iconLink = '\n  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" data-icons="lucide"></script>';
+  } else if (opts.icons === 'lucide' && opts.iconDelivery === 'npm') {
+    iconLink = '\n  <script src="/vendor/lucide.min.js" data-icons="lucide"></script>';
   }
 
   return `<!DOCTYPE html>
@@ -60,7 +125,7 @@ export function indexHtml(opts) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${opts.name}</title>${iconLink}
-  <style>${themeCSS}*{margin:0;box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;color:var(--c3);background:var(--c0);min-height:100vh}a{color:var(--c1);text-decoration:none}a:hover{color:var(--c6)}</style>
+  <style>${themeCSS}*{margin:0;box-sizing:border-box}body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,system-ui,'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--c3);background:var(--c0);min-height:100vh}a{color:var(--c1);text-decoration:none}a:hover{color:var(--c6)}</style>
 </head>
 <body>
   <div id="app"></div>
@@ -114,9 +179,9 @@ Components are plain functions: \`function(props, ...children) → HTMLElement\`
 - Current theme: **${opts.theme}** — colors via CSS variables \`--c0\` through \`--c9\`
 - Current style: **${opts.style}** — visual treatment (shadows, borders, radius)
 - 7 themes: light, dark, ai, nature, pastel, spice, mono
-- 7 styles: glass, clay, flat, brutalist, skeuo, mono, sketchy
+- 5 styles: glass, flat, brutalist, skeuo, sketchy
 - Switch at runtime: \`setTheme('dark')\`, \`setStyle('glass')\`
-- Any theme works with any style (49 combinations)
+- Any theme works with any style (35 combinations)
 
 #### Color Variable Semantics
 | Variable | Role           |
@@ -138,17 +203,27 @@ Components are plain functions: \`function(props, ...children) → HTMLElement\`
 | flat | 6px | 8px | none |
 | brutalist | 4px | 4px | 4px 4px 0 var(--c3) |
 | glass | 12px | 16px | 0 8px 32px rgba(0,0,0,0.1) |
-| clay | 16px | 24px | 8px 8px 16px ... (neumorphic) |
 | skeuo | 8px | 10px | 0 2px 4px rgba(0,0,0,0.2) ... |
-| mono | 6px | 8px | 0 1px 3px rgba(0,0,0,0.08) |
 | sketchy | 255px 15px ... | 255px 25px ... | 2px 3px 0 rgba(0,0,0,0.15) |
 
 ### Component API
-- **Button**: \`{ variant: 'primary'|'secondary'|'destructive'|'ghost'|'link', size: 'sm'|'lg', disabled, loading, block, onclick }\`
+- **Button**: \`{ variant: 'primary'|'secondary'|'destructive'|'success'|'warning'|'outline'|'ghost'|'link', size: 'sm'|'lg', disabled, loading, block, onclick }\`
 - **Input**: \`{ type, placeholder, value, disabled, error, prefix, suffix, readonly, oninput, ref }\`
 - **Card**: \`{ title, hoverable }\` — composable with \`Card.Header()\`, \`Card.Body()\`, \`Card.Footer()\`
 - **Badge**: \`{ count, dot, status: 'success'|'error'|'warning'|'processing' }\` — wraps children for superscript
 - **Modal**: \`{ title, visible, onClose, width }\` — portals to document.body, supports Escape and click-outside
+
+### Accessibility (WCAG 2.1 AA)
+- Every interactive element must have an accessible name (visible text or \`aria-label\`)
+- Icon-only buttons need \`aria-label\`: \`Button({ 'aria-label': 'Close' }, icon('x'))\`
+- Decorative icons: \`aria-hidden="true"\`
+- Modal: \`role="dialog"\`, \`aria-modal="true"\`, \`aria-labelledby\`, focus trap
+- Visible focus indicators on all interactive elements
+- Color must not be the sole state indicator — pair with text/icons
+- \`prefers-reduced-motion\` respected automatically; use \`setAnimations(false)\` for in-app toggle
+- Use semantic HTML (\`<button>\`, \`<nav>\`, \`<main>\`) over generic \`<div>\`/\`<span>\`
+- All components must be keyboard-operable
+- No content flashing more than 3 times/second
 
 ### Commands
 - \`npx decantr dev\` — Dev server with hot reload (port ${opts.port})
@@ -163,19 +238,61 @@ Components are plain functions: \`function(props, ...children) → HTMLElement\`
 }
 
 export function welcomeJs(opts) {
+  const hasIcons = !!opts.icons;
+  const featureIcons = ['bolt', 'package', 'bot', 'compress', 'palette', 'flask'];
+
+  const featureIconExprs = featureIcons.map(name => iconExpr(name, opts));
+
+  const featureCards = hasIcons
+    ? `          ...features.map((f, i) =>
+            Card({ hoverable: true },
+              h('h3', { style: { fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' } },
+                featureIcons[i], f.title
+              ),
+              h('p', { style: { color: 'var(--c4)', lineHeight: '1.6' } }, f.desc)
+            )
+          )`
+    : `          ...features.map(f =>
+            Card({ hoverable: true },
+              h('h3', { style: { fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem' } }, f.title),
+              h('p', { style: { color: 'var(--c4)', lineHeight: '1.6' } }, f.desc)
+            )
+          )`;
+
+  const heroButton = hasIcons
+    ? `          Button({ variant: 'primary', size: 'lg' }, 'Get Started'),
+          h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', style: { textDecoration: 'none' } },
+            Button({ size: 'lg' }, ${iconExpr('code', opts)}, ' GitHub')
+          )`
+    : `          Button({ variant: 'primary', size: 'lg' }, 'Get Started'),
+          h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', style: { textDecoration: 'none' } },
+            Button({ size: 'lg' }, 'GitHub')
+          )`;
+
+  const footerIcon = hasIcons
+    ? `      h('div', { style: { display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' } },
+        h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', 'aria-label': 'Source code', style: { color: 'var(--c4)' } },
+          ${iconExpr('code', opts, { size: '1.5em', 'aria-hidden': 'true' })}
+        )
+      ),`
+    : '';
+
+  const featureIconsArray = hasIcons
+    ? `\nconst featureIcons = [\n${featureIconExprs.map(e => `  ${e}`).join(',\n')}\n];\n`
+    : '';
+
   return `import { h } from 'decantr/core';
 import { Card, Button } from 'decantr/components';
-import { icon } from 'decantr/components';
-
+${iconImport(opts)}
 const features = [
   { title: 'Lightning Fast', desc: 'Sub-millisecond rendering with signal-based reactivity. No virtual DOM overhead.' },
   { title: 'Zero Dependencies', desc: 'Pure JavaScript, CSS, and HTML. Nothing to install, nothing to break.' },
   { title: 'AI-Native', desc: 'Designed for AI agents to read, generate, and maintain. Machine-readable manifests.' },
   { title: 'Tiny Bundle', desc: 'Under 2KB gzipped for a hello world. Your users will thank you.' },
-  { title: 'Beautiful Defaults', desc: '7 themes and 7 design styles. Pick your aesthetic, switch at runtime.' },
+  { title: 'Beautiful Defaults', desc: '7 themes and 5 design styles. Pick your aesthetic, switch at runtime.' },
   { title: 'Built-in Testing', desc: 'Test runner with DOM helpers. No config, no setup, just write tests.' }
 ];
-
+${featureIconsArray}
 export function Welcome() {
   return h('div', null,
     h('section', {
@@ -192,10 +309,7 @@ export function Welcome() {
           'Built with decantr \\u2014 the AI-first web framework.'
         ),
         h('div', { style: { display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' } },
-          Button({ variant: 'primary', size: 'lg' }, 'Get Started'),
-          h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', style: { textDecoration: 'none' } },
-            Button({ size: 'lg' }, icon('github', { size: '1em' }), ' GitHub')
-          )
+${heroButton}
         )
       )
     ),
@@ -210,23 +324,14 @@ export function Welcome() {
             gap: '1.5rem'
           }
         },
-          ...features.map(f =>
-            Card({ hoverable: true },
-              h('h3', { style: { fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem' } }, f.title),
-              h('p', { style: { color: 'var(--c4)', lineHeight: '1.6' } }, f.desc)
-            )
-          )
+${featureCards}
         )
       )
     ),
     h('footer', {
       style: { padding: '2rem', borderTop: '1px solid var(--c5)', textAlign: 'center' }
     },
-      h('div', { style: { display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' } },
-        h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', style: { color: 'var(--c4)' } },
-          icon('github', { size: '1.5em' })
-        )
-      ),
+${footerIcon}
       h('p', { style: { color: 'var(--c4)', fontSize: '0.875rem' } },
         'Built with decantr v0.2.0 \\u2014 AI-first web framework'
       ),
@@ -237,6 +342,56 @@ export function Welcome() {
   );
 }
 `;
+}
+
+export function vendorIconsJs(opts) {
+  if (opts.icons === 'lucide') {
+    return `import { existsSync, mkdirSync, copyFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const src = join(root, 'node_modules', 'lucide', 'dist', 'umd', 'lucide.min.js');
+const dest = join(root, 'public', 'vendor', 'lucide.min.js');
+
+if (!existsSync(src)) {
+  console.log('lucide not found in node_modules — skipping vendor copy');
+  process.exit(0);
+}
+
+mkdirSync(dirname(dest), { recursive: true });
+copyFileSync(src, dest);
+console.log('Copied lucide.min.js to public/vendor/');
+`;
+  }
+
+  if (opts.icons === 'material') {
+    return `import { existsSync, mkdirSync, copyFileSync, readdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const srcDir = join(root, 'node_modules', 'material-icons', 'iconfont');
+const destDir = join(root, 'public', 'vendor', 'material-icons');
+
+if (!existsSync(srcDir)) {
+  console.log('material-icons not found in node_modules — skipping vendor copy');
+  process.exit(0);
+}
+
+mkdirSync(destDir, { recursive: true });
+
+const files = readdirSync(srcDir).filter(f =>
+  f.endsWith('.css') || f.endsWith('.woff') || f.endsWith('.woff2')
+);
+for (const f of files) {
+  copyFileSync(join(srcDir, f), join(destDir, f));
+}
+console.log(\`Copied \${files.length} material-icons files to public/vendor/material-icons/\`);
+`;
+  }
+
+  return '';
 }
 
 export function manifest(opts) {

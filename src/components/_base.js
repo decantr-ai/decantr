@@ -16,7 +16,8 @@ const BASE_CSS = [
   '@keyframes d-spin{to{transform:rotate(360deg)}}',
   '.d-btn-loading{position:relative;color:transparent !important}',
   '.d-btn-loading::after{content:"";position:absolute;width:1em;height:1em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:d-spin 0.6s linear infinite;color:var(--c3)}',
-  '.d-btn-primary.d-btn-loading::after,.d-btn-destructive.d-btn-loading::after{color:#fff}',
+  '.d-btn-primary.d-btn-loading::after,.d-btn-destructive.d-btn-loading::after,.d-btn-success.d-btn-loading::after,.d-btn-warning.d-btn-loading::after{color:#fff}',
+  '.d-btn-outline.d-btn-loading::after{color:var(--c1)}',
 
   // Input structure
   '.d-input-wrap{display:flex;align-items:center}',
@@ -41,7 +42,10 @@ const BASE_CSS = [
   '.d-modal-content{max-width:90vw;max-height:85vh;overflow:auto}',
   '.d-modal-header{display:flex;justify-content:space-between;align-items:center}',
   '.d-modal-footer{display:flex;justify-content:flex-end;gap:0.5rem}',
-  '.d-modal-close{cursor:pointer;line-height:1}'
+  '.d-modal-close{cursor:pointer;line-height:1}',
+
+  // Reduced motion
+  '@media(prefers-reduced-motion:reduce){.d-btn,.d-card,.d-input-wrap,.d-badge,.d-badge-dot,.d-modal-overlay,.d-modal-content,.d-btn-loading::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}}'
 ].join('');
 
 export function injectBase() {

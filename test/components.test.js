@@ -92,6 +92,21 @@ describe('Button', () => {
     assert.ok(clicked);
   });
 
+  it('applies success variant class', () => {
+    const btn = Button({ variant: 'success' }, 'OK');
+    assert.ok(btn.className.includes('d-btn-success'));
+  });
+
+  it('applies warning variant class', () => {
+    const btn = Button({ variant: 'warning' }, 'Warn');
+    assert.ok(btn.className.includes('d-btn-warning'));
+  });
+
+  it('applies outline variant class', () => {
+    const btn = Button({ variant: 'outline' }, 'Outline');
+    assert.ok(btn.className.includes('d-btn-outline'));
+  });
+
   it('injects base CSS on first render', () => {
     Button({}, 'Test');
     const baseEl = document.querySelector('[data-decantr-base]');
@@ -275,6 +290,14 @@ describe('Modal', () => {
     assert.ok(closeBtn);
     closeBtn.dispatchEvent(new window.Event('click'));
     assert.ok(closed);
+  });
+});
+
+describe('base CSS', () => {
+  it('contains prefers-reduced-motion media query', () => {
+    Button({}, 'Test');
+    const baseEl = document.querySelector('[data-decantr-base]');
+    assert.ok(baseEl.textContent.includes('prefers-reduced-motion:reduce'));
   });
 });
 

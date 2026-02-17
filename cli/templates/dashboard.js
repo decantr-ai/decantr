@@ -2,18 +2,18 @@
  * Dashboard scaffold: sidebar + header + pages (Welcome, Overview, Data, Settings).
  */
 
-import { welcomeJs } from './shared.js';
+import { welcomeJs, iconName, iconExpr, iconImport } from './shared.js';
 
 export function dashboardFiles(opts) {
   return [
     ['src/app.js', appJs(opts)],
     ['src/components/sidebar.js', sidebarJs(opts)],
-    ['src/components/header.js', headerJs()],
-    ['src/components/stats-card.js', statsCardJs()],
+    ['src/components/header.js', headerJs(opts)],
+    ['src/components/stats-card.js', statsCardJs(opts)],
     ['src/pages/welcome.js', welcomeJs(opts)],
-    ['src/pages/overview.js', overviewJs()],
-    ['src/pages/data.js', dataJs()],
-    ['src/pages/settings.js', settingsJs()],
+    ['src/pages/overview.js', overviewJs(opts)],
+    ['src/pages/data.js', dataJs(opts)],
+    ['src/pages/settings.js', settingsJs(opts)],
     ['test/overview.test.js', overviewTestJs()]
   ];
 }
@@ -60,20 +60,49 @@ mount(document.getElementById('app'), App);
 }
 
 function sidebarJs(opts) {
-  return `import { h } from 'decantr/core';
-import { createSignal } from 'decantr/state';
-import { link } from 'decantr/router';
-import { Button } from 'decantr/components';
+  const hasIcons = !!opts.icons;
+  const navIconSemantics = ['home', 'dashboard', 'table', 'settings'];
 
-export function Sidebar({ router }) {
-  const [collapsed, setCollapsed] = createSignal(false);
-
-  const navItems = [
+  const navItemsDef = hasIcons
+    ? `  const navItems = [
+    { href: '/', label: 'Welcome', icon: '${iconName('home', opts)}' },
+    { href: '/overview', label: 'Overview', icon: '${iconName('dashboard', opts)}' },
+    { href: '/data', label: 'Data', icon: '${iconName('table', opts)}' },
+    { href: '/settings', label: 'Settings', icon: '${iconName('settings', opts)}' }
+  ];`
+    : `  const navItems = [
     { href: '/', label: 'Welcome' },
     { href: '/overview', label: 'Overview' },
     { href: '/data', label: 'Data' },
     { href: '/settings', label: 'Settings' }
-  ];
+  ];`;
+
+  const navLinkContent = hasIcons
+    ? `        link({
+          href: item.href,
+          style: {
+            display: 'flex', alignItems: 'center', gap: '0.75rem',
+            padding: '0.625rem 1rem', borderRadius: '6px',
+            color: 'var(--c3)', marginBottom: '0.25rem', transition: 'background 0.15s ease'
+          }
+        }, icon(item.icon, { size: '1.125em', 'aria-hidden': 'true' }), item.label)`
+    : `        link({
+          href: item.href,
+          style: {
+            display: 'block', padding: '0.625rem 1rem', borderRadius: '6px',
+            color: 'var(--c3)', marginBottom: '0.25rem', transition: 'background 0.15s ease'
+          }
+        }, item.label)`;
+
+  return `import { h } from 'decantr/core';
+import { createSignal } from 'decantr/state';
+import { link } from 'decantr/router';
+import { Button } from 'decantr/components';
+${iconImport(opts)}
+export function Sidebar({ router }) {
+  const [collapsed, setCollapsed] = createSignal(false);
+
+${navItemsDef}
 
   return h('aside', {
     style: {
@@ -85,13 +114,7 @@ export function Sidebar({ router }) {
     h('div', { style: { padding: '1.25rem', fontWeight: '700', fontSize: '1.125rem', color: 'var(--c1)' } }, '${opts.name}'),
     h('nav', { style: { flex: '1', padding: '0.5rem' } },
       ...navItems.map(item =>
-        link({
-          href: item.href,
-          style: {
-            display: 'block', padding: '0.625rem 1rem', borderRadius: '6px',
-            color: 'var(--c3)', marginBottom: '0.25rem', transition: 'background 0.15s ease'
-          }
-        }, item.label)
+${navLinkContent}
       )
     ),
     h('div', { style: { padding: '1rem', borderTop: '1px solid var(--c5)' } },
@@ -102,9 +125,24 @@ export function Sidebar({ router }) {
 `;
 }
 
-function headerJs() {
-  return `import { h } from 'decantr/core';
+function headerJs(opts) {
+  const hasIcons = !!opts.icons;
 
+  const headerRight = hasIcons
+    ? `      Badge({ count: 3 },
+        Button({ variant: 'ghost', 'aria-label': 'Notifications' }, ${iconExpr('bell', opts)})
+      ),
+      Button({ variant: 'ghost', 'aria-label': 'User profile' }, ${iconExpr('user', opts)}),
+      h('span', { style: { color: 'var(--c4)', fontSize: '0.875rem' } }, 'Welcome back')`
+    : `      h('span', { style: { color: 'var(--c4)', fontSize: '0.875rem' } }, 'Welcome back')`;
+
+  const headerImports = hasIcons
+    ? `import { h } from 'decantr/core';
+import { Button, Badge } from 'decantr/components';
+${iconImport(opts)}`
+    : `import { h } from 'decantr/core';`;
+
+  return `${headerImports}
 export function Header({ title }) {
   return h('header', {
     style: {
@@ -114,20 +152,44 @@ export function Header({ title }) {
   },
     h('h1', { style: { fontSize: '1.25rem', fontWeight: '600' } }, title),
     h('div', { style: { display: 'flex', gap: '0.75rem', alignItems: 'center' } },
-      h('span', { style: { color: 'var(--c4)', fontSize: '0.875rem' } }, 'Welcome back')
+${headerRight}
     )
   );
 }
 `;
 }
 
-function statsCardJs() {
+function statsCardJs(opts) {
+  const hasIcons = !!opts.icons;
+
+  const trendIcon = hasIcons
+    ? `
+      const trendIcon = isUp
+        ? ${iconExpr('trending-up', opts, { size: '0.875em', 'aria-hidden': 'true' })}
+        : ${iconExpr('trending-down', opts, { size: '0.875em', 'aria-hidden': 'true' })};`
+    : '';
+
+  const badgeContent = hasIcons
+    ? `      change ? h('div', { style: { display: 'flex', alignItems: 'center', gap: '0.25rem' } },
+        Badge({ status: isUp ? 'success' : 'error', count: change }),
+        trendIcon
+      ) : null`
+    : `      change ? Badge({ status: isUp ? 'success' : 'error', count: change }) : null`;
+
+  const categoryIconProp = hasIcons
+    ? `\n      categoryIcon ? h('div', { style: { color: 'var(--c4)' } }, categoryIcon) : null`
+    : '';
+
+  const fnParams = hasIcons
+    ? `{ title, value, change, status, categoryIcon }`
+    : `{ title, value, change, status }`;
+
   return `import { h, text } from 'decantr/core';
 import { Card, Badge } from 'decantr/components';
-
-export function StatsCard({ title, value, change, status }) {
+${iconImport(opts)}
+export function StatsCard(${fnParams}) {
   const isUp = change && change.startsWith('+');
-
+${trendIcon}
   return Card({ hoverable: true },
     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
       h('div', null,
@@ -136,26 +198,46 @@ export function StatsCard({ title, value, change, status }) {
           typeof value === 'function' ? text(value) : value
         )
       ),
-      change ? Badge({ status: isUp ? 'success' : 'error', count: change }) : null
+      h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' } },
+${badgeContent},
+${categoryIconProp}
+      )
     )
   );
 }
 `;
 }
 
-function overviewJs() {
-  return `import { h } from 'decantr/core';
-import { createSignal } from 'decantr/state';
-import { StatsCard } from '../components/stats-card.js';
-import { Card } from 'decantr/components';
+function overviewJs(opts) {
+  const hasIcons = !!opts.icons;
 
-export function Overview() {
+  const categoryIcons = ['users', 'dollar', 'activity', 'chart'];
+
+  const statsDef = hasIcons
+    ? `  const categoryIcons = [
+    ${categoryIcons.map(name => iconExpr(name, opts, { size: '1.5em', 'aria-hidden': 'true' })).join(',\n    ')}
+  ];
+
   const stats = [
+    { title: 'Total Users', value: '12,847', change: '+12%', status: 'success', categoryIcon: categoryIcons[0] },
+    { title: 'Revenue', value: '$48,290', change: '+8%', status: 'success', categoryIcon: categoryIcons[1] },
+    { title: 'Active Sessions', value: '1,429', change: '-3%', status: 'error', categoryIcon: categoryIcons[2] },
+    { title: 'Conversion', value: '3.24%', change: '+0.5%', status: 'success', categoryIcon: categoryIcons[3] }
+  ];`
+    : `  const stats = [
     { title: 'Total Users', value: '12,847', change: '+12%', status: 'success' },
     { title: 'Revenue', value: '$48,290', change: '+8%', status: 'success' },
     { title: 'Active Sessions', value: '1,429', change: '-3%', status: 'error' },
     { title: 'Conversion', value: '3.24%', change: '+0.5%', status: 'success' }
-  ];
+  ];`;
+
+  return `import { h } from 'decantr/core';
+import { createSignal } from 'decantr/state';
+import { StatsCard } from '../components/stats-card.js';
+import { Card } from 'decantr/components';
+${iconImport(opts)}
+export function Overview() {
+${statsDef}
 
   return h('div', null,
     h('h2', { style: { fontSize: '1.5rem', fontWeight: '600', marginBottom: '1.5rem' } }, 'Overview'),
@@ -168,7 +250,7 @@ export function Overview() {
       ...stats.map(s => StatsCard(s))
     ),
     Card({ title: 'Recent Activity' },
-      h('p', { style: { color: 'var(--c4)' } }, 'Chart placeholder — integrate your preferred charting library here.'),
+      h('p', { style: { color: 'var(--c4)' } }, 'Chart placeholder \\u2014 integrate your preferred charting library here.'),
       h('div', {
         style: {
           height: '200px', background: 'var(--c2)', borderRadius: '8px',
@@ -182,11 +264,27 @@ export function Overview() {
 `;
 }
 
-function dataJs() {
+function dataJs(opts) {
+  const hasIcons = !!opts.icons;
+
+  const searchInput = hasIcons
+    ? `Input({ placeholder: 'Search...', prefix: ${iconExpr('search', opts, { size: '1em', 'aria-hidden': 'true' })}, oninput: e => setSearch(e.target ? e.target.value : '') })`
+    : `Input({ placeholder: 'Search...', oninput: e => setSearch(e.target ? e.target.value : '') })`;
+
+  const addUserBtn = hasIcons
+    ? `Button({ variant: 'primary' }, ${iconExpr('user-plus', opts)}, ' Add User')`
+    : `Button({ variant: 'primary' }, 'Add User')`;
+
+  const actionBtns = hasIcons
+    ? `                  Button({ size: 'sm', 'aria-label': 'Edit' }, ${iconExpr('edit', opts)}),
+                  Button({ size: 'sm', variant: 'destructive', 'aria-label': 'Delete' }, ${iconExpr('delete', opts)})`
+    : `                  Button({ size: 'sm' }, 'Edit'),
+                  Button({ size: 'sm', variant: 'destructive' }, 'Delete')`;
+
   return `import { h } from 'decantr/core';
 import { createSignal } from 'decantr/state';
 import { Card, Button, Badge, Input } from 'decantr/components';
-
+${iconImport(opts)}
 const mockData = [
   { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin', status: 'Active' },
   { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'Editor', status: 'Active' },
@@ -205,8 +303,8 @@ export function DataPage() {
     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' } },
       h('h2', { style: { fontSize: '1.5rem', fontWeight: '600' } }, 'Data Table'),
       h('div', { style: { display: 'flex', gap: '0.75rem' } },
-        Input({ placeholder: 'Search...', oninput: e => setSearch(e.target ? e.target.value : '') }),
-        Button({ variant: 'primary' }, 'Add User')
+        ${searchInput},
+        ${addUserBtn}
       )
     ),
     Card({},
@@ -233,8 +331,7 @@ export function DataPage() {
               ),
               h('td', { style: cellStyle },
                 h('div', { style: { display: 'flex', gap: '0.5rem' } },
-                  Button({ size: 'sm' }, 'Edit'),
-                  Button({ size: 'sm', variant: 'destructive' }, 'Delete')
+${actionBtns}
                 )
               )
             )
@@ -247,11 +344,17 @@ export function DataPage() {
 `;
 }
 
-function settingsJs() {
+function settingsJs(opts) {
+  const hasIcons = !!opts.icons;
+
+  const saveBtn = hasIcons
+    ? `Button({ variant: 'primary', onclick: handleSave }, ${iconExpr('save', opts)}, ' Save Changes')`
+    : `Button({ variant: 'primary', onclick: handleSave }, 'Save Changes')`;
+
   return `import { h } from 'decantr/core';
 import { createSignal } from 'decantr/state';
 import { Card, Button, Input } from 'decantr/components';
-
+${iconImport(opts)}
 export function Settings() {
   const [name, setName] = createSignal('John Doe');
   const [email, setEmail] = createSignal('john@example.com');
@@ -277,7 +380,7 @@ export function Settings() {
         Input({ type: 'email', value: email, oninput: e => setEmail(e.target ? e.target.value : '') })
       ),
       h('div', { style: { display: 'flex', gap: '0.75rem', alignItems: 'center' } },
-        Button({ variant: 'primary', onclick: handleSave }, 'Save Changes'),
+        ${saveBtn},
         Button({ variant: 'ghost' }, 'Cancel')
       )
     )

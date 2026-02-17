@@ -1,7 +1,7 @@
 import { describe, it, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createDOM } from '../src/test/dom.js';
-import { setStyle, getStyle, getStyleList, registerStyle, getActiveCSS, resetStyles } from '../src/css/styles.js';
+import { setStyle, getStyle, getStyleList, registerStyle, getActiveCSS, resetStyles, setAnimations, getAnimations } from '../src/css/styles.js';
 
 let cleanup;
 
@@ -19,16 +19,14 @@ beforeEach(() => {
 });
 
 describe('getStyleList()', () => {
-  it('returns 7 built-in styles', () => {
+  it('returns 5 built-in styles', () => {
     const list = getStyleList();
-    assert.equal(list.length, 7);
+    assert.equal(list.length, 5);
     const ids = list.map(s => s.id);
     assert.ok(ids.includes('glass'));
-    assert.ok(ids.includes('clay'));
     assert.ok(ids.includes('flat'));
     assert.ok(ids.includes('brutalist'));
     assert.ok(ids.includes('skeuo'));
-    assert.ok(ids.includes('mono'));
     assert.ok(ids.includes('sketchy'));
   });
 
@@ -117,12 +115,6 @@ describe('style-specific CSS', () => {
     assert.ok(css.includes('backdrop-filter:blur('));
   });
 
-  it('clay has inset shadows', () => {
-    setStyle('clay');
-    const css = document.querySelector('[data-decantr-style]').textContent;
-    assert.ok(css.includes('inset'));
-  });
-
   it('flat has no shadows', () => {
     setStyle('flat');
     const css = document.querySelector('[data-decantr-style]').textContent;
@@ -142,19 +134,22 @@ describe('style-specific CSS', () => {
     assert.ok(css.includes('linear-gradient'));
   });
 
-  it('mono uses theme colors without extra effects', () => {
-    setStyle('mono');
-    const css = document.querySelector('[data-decantr-style]').textContent;
-    assert.ok(css.includes('var(--c3)'));
-    assert.ok(!css.includes('backdrop-filter'));
-    assert.ok(!css.includes('linear-gradient'));
-  });
-
   it('sketchy has asymmetric border-radius', () => {
     setStyle('sketchy');
     const css = document.querySelector('[data-decantr-style]').textContent;
     assert.ok(css.includes('255px'));
     assert.ok(css.includes('225px'));
+  });
+
+  it('all styles include success, warning, and outline button variants', () => {
+    const styleIds = ['glass', 'flat', 'brutalist', 'skeuo', 'sketchy'];
+    for (const id of styleIds) {
+      setStyle(id);
+      const css = document.querySelector('[data-decantr-style]').textContent;
+      assert.ok(css.includes('.d-btn-success'), `${id} missing .d-btn-success`);
+      assert.ok(css.includes('.d-btn-warning'), `${id} missing .d-btn-warning`);
+      assert.ok(css.includes('.d-btn-outline'), `${id} missing .d-btn-outline`);
+    }
   });
 });
 
@@ -173,7 +168,7 @@ describe('registerStyle()', () => {
       }
     });
     const list = getStyleList();
-    assert.equal(list.length, 8);
+    assert.equal(list.length, 6);
     assert.ok(list.some(s => s.id === 'neon'));
   });
 
@@ -182,5 +177,37 @@ describe('registerStyle()', () => {
     assert.equal(getStyle()(), 'neon');
     const css = document.querySelector('[data-decantr-style]').textContent;
     assert.ok(css.includes('0 0 15px'));
+  });
+});
+
+describe('animation control', () => {
+  it('getAnimations() returns signal getter defaulting to true', () => {
+    const getter = getAnimations();
+    assert.equal(typeof getter, 'function');
+    assert.equal(getter(), true);
+  });
+
+  it('setAnimations(false) injects disabling CSS', () => {
+    setAnimations(false);
+    const el = document.querySelector('[data-decantr-anim]');
+    assert.ok(el);
+    assert.ok(el.textContent.includes('animation-duration:0.01ms'));
+    assert.ok(el.textContent.includes('transition-duration:0.01ms'));
+  });
+
+  it('setAnimations(true) clears the override', () => {
+    setAnimations(false);
+    const el = document.querySelector('[data-decantr-anim]');
+    assert.ok(el.textContent.length > 0);
+    setAnimations(true);
+    assert.equal(el.textContent, '');
+  });
+
+  it('resetStyles() resets animation state', () => {
+    setAnimations(false);
+    assert.equal(getAnimations()(), false);
+    resetStyles();
+    assert.equal(getAnimations()(), true);
+    assert.ok(!document.querySelector('[data-decantr-anim]'));
   });
 });

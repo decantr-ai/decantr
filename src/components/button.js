@@ -4,7 +4,7 @@ import { injectBase, cx } from './_base.js';
 
 /**
  * @param {Object} [props]
- * @param {string} [props.variant] - primary|secondary|destructive|ghost|link (default: none)
+ * @param {string} [props.variant] - primary|secondary|destructive|success|warning|outline|ghost|link (default: none)
  * @param {string} [props.size] - sm|lg (default: normal)
  * @param {boolean|Function} [props.disabled]
  * @param {boolean|Function} [props.loading]

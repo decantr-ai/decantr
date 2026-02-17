@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, stat, readdir, copyFile } from 'node:fs/promises';
 import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -217,6 +217,26 @@ export async function build(projectRoot, options = {}) {
   }
 
   await writeFile(join(outDir, 'index.html'), html);
+
+  // Copy public/ assets (excluding index.html) to dist/
+  const publicDir = join(projectRoot, 'public');
+  async function copyPublicDir(srcDir, destDir) {
+    let entries;
+    try { entries = await readdir(srcDir, { withFileTypes: true }); } catch { return; }
+    for (const entry of entries) {
+      if (srcDir === publicDir && entry.name === 'index.html') continue;
+      const srcPath = join(srcDir, entry.name);
+      const destPath = join(destDir, entry.name);
+      if (entry.isDirectory()) {
+        await mkdir(destPath, { recursive: true });
+        await copyPublicDir(srcPath, destPath);
+      } else {
+        await mkdir(dirname(destPath), { recursive: true });
+        await copyFile(srcPath, destPath);
+      }
+    }
+  }
+  await copyPublicDir(publicDir, outDir);
 
   // Report sizes
   const jsSize = Buffer.byteLength(minified);
