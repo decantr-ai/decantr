@@ -178,10 +178,10 @@ Components are plain functions: \`function(props, ...children) → HTMLElement\`
 ### Theming
 - Current theme: **${opts.theme}** — colors via CSS variables \`--c0\` through \`--c9\`
 - Current style: **${opts.style}** — visual treatment (shadows, borders, radius)
-- 7 themes: light, dark, ai, nature, pastel, spice, mono
-- 5 styles: glass, flat, brutalist, skeuo, sketchy
+- 8 themes: light, dark, ai, nature, pastel, spice, mono, lava
+- 6 styles: glass, flat, brutalist, skeuo, sketchy, lava
 - Switch at runtime: \`setTheme('dark')\`, \`setStyle('glass')\`
-- Any theme works with any style (35 combinations)
+- Any theme works with any style (48 combinations)
 
 #### Color Variable Semantics
 | Variable | Role           |
@@ -205,6 +205,7 @@ Components are plain functions: \`function(props, ...children) → HTMLElement\`
 | glass | 12px | 16px | 0 8px 32px rgba(0,0,0,0.1) |
 | skeuo | 8px | 10px | 0 2px 4px rgba(0,0,0,0.2) ... |
 | sketchy | 255px 15px ... | 255px 25px ... | 2px 3px 0 rgba(0,0,0,0.15) |
+| lava | 10px | 14px | 0 4px 24px rgba(249,115,22,0.15) ... |
 
 ### Component API
 - **Button**: \`{ variant: 'primary'|'secondary'|'destructive'|'success'|'warning'|'outline'|'ghost'|'link', size: 'sm'|'lg', disabled, loading, block, onclick }\`
@@ -261,17 +262,17 @@ export function welcomeJs(opts) {
 
   const heroButton = hasIcons
     ? `          Button({ variant: 'primary', size: 'lg' }, 'Get Started'),
-          h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', style: { textDecoration: 'none' } },
+          h('a', { href: 'https://github.com/decantr-ai/decantr', target: '_blank', style: { textDecoration: 'none' } },
             Button({ size: 'lg' }, ${iconExpr('code', opts)}, ' GitHub')
           )`
     : `          Button({ variant: 'primary', size: 'lg' }, 'Get Started'),
-          h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', style: { textDecoration: 'none' } },
+          h('a', { href: 'https://github.com/decantr-ai/decantr', target: '_blank', style: { textDecoration: 'none' } },
             Button({ size: 'lg' }, 'GitHub')
           )`;
 
   const footerIcon = hasIcons
     ? `      h('div', { style: { display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' } },
-        h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', 'aria-label': 'Source code', style: { color: 'var(--c4)' } },
+        h('a', { href: 'https://github.com/decantr-ai/decantr', target: '_blank', 'aria-label': 'Source code', style: { color: 'var(--c4)' } },
           ${iconExpr('code', opts, { size: '1.5em', 'aria-hidden': 'true' })}
         )
       ),`
@@ -289,7 +290,7 @@ const features = [
   { title: 'Zero Dependencies', desc: 'Pure JavaScript, CSS, and HTML. Nothing to install, nothing to break.' },
   { title: 'AI-Native', desc: 'Designed for AI agents to read, generate, and maintain. Machine-readable manifests.' },
   { title: 'Tiny Bundle', desc: 'Under 2KB gzipped for a hello world. Your users will thank you.' },
-  { title: 'Beautiful Defaults', desc: '7 themes and 5 design styles. Pick your aesthetic, switch at runtime.' },
+  { title: 'Beautiful Defaults', desc: '8 themes and 6 design styles. Pick your aesthetic, switch at runtime.' },
   { title: 'Built-in Testing', desc: 'Test runner with DOM helpers. No config, no setup, just write tests.' }
 ];
 ${featureIconsArray}

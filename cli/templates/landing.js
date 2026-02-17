@@ -119,7 +119,7 @@ function footerJs(opts) {
     ? `    h('div', {
       style: { maxWidth: '1080px', margin: '2rem auto 0', paddingTop: '1.5rem', borderTop: '1px solid var(--c5)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem' }
     },
-      h('a', { href: 'https://github.com/david-aimi/decantr', target: '_blank', 'aria-label': 'Source code', style: { color: 'var(--c4)' } },
+      h('a', { href: 'https://github.com/decantr-ai/decantr', target: '_blank', 'aria-label': 'Source code', style: { color: 'var(--c4)' } },
         ${iconExpr('code', opts, { size: '1.25em', 'aria-hidden': 'true' })}
       ),
       h('span', { style: { color: 'var(--c4)', fontSize: '0.875rem' } }, '\\u00a9 2025 decantr. All rights reserved.')

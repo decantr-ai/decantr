@@ -49,7 +49,7 @@ export function Header() {
       'Style', styleSelect
     ),
     h('a', {
-      href: 'https://github.com/david-aimi/decantr',
+      href: 'https://github.com/decantr-ai/decantr',
       target: '_blank',
       rel: 'noopener',
       style: { color: 'var(--c4)', fontSize: '0.8125rem' }

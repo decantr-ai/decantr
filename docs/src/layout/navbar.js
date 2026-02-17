@@ -60,7 +60,7 @@ export function Navbar() {
       link({ href: '/getting-started', style: { textDecoration: 'none', color: 'var(--c3)', fontSize: '0.875rem', fontWeight: '500' } }, 'Docs'),
       link({ href: '/components', style: { textDecoration: 'none', color: 'var(--c3)', fontSize: '0.875rem', fontWeight: '500' } }, 'Components'),
       h('a', {
-        href: 'https://github.com/david-aimi/decantr', target: '_blank', rel: 'noopener',
+        href: 'https://github.com/decantr-ai/decantr', target: '_blank', rel: 'noopener',
         style: { textDecoration: 'none', color: 'var(--c3)', fontSize: '0.875rem', fontWeight: '500' }
       }, 'GitHub')
     ),

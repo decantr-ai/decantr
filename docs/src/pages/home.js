@@ -129,7 +129,7 @@ function HeroSection() {
           Button({ variant: 'primary', size: 'lg' }, 'Get Started')
         ),
         h('a', {
-          href: 'https://github.com/david-aimi/decantr', target: '_blank', rel: 'noopener',
+          href: 'https://github.com/decantr-ai/decantr', target: '_blank', rel: 'noopener',
           style: { textDecoration: 'none' }
         },
           Button({ size: 'lg' }, 'GitHub')
