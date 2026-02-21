@@ -90,8 +90,27 @@ function bundle(modules, entrypoint) {
     moduleIds.set(path, `_m${idCounter++}`);
   }
 
-  // Reverse module order so dependencies are defined before dependents
-  const moduleList = [...modules.entries()].reverse();
+  // Topological sort so dependencies are defined before dependents
+  const deps = new Map();
+  for (const [path, source] of modules) {
+    deps.set(path, findImports(source, dirname(path))
+      .map(imp => imp.resolved)
+      .filter(p => modules.has(p)));
+  }
+  const sorted = [];
+  const visiting = new Set();
+  const visited = new Set();
+  function visit(path) {
+    if (visited.has(path)) return;
+    if (visiting.has(path)) return; // circular dependency guard
+    visiting.add(path);
+    for (const dep of deps.get(path) || []) visit(dep);
+    visiting.delete(path);
+    visited.add(path);
+    sorted.push(path);
+  }
+  for (const path of modules.keys()) visit(path);
+  const moduleList = sorted.map(path => [path, modules.get(path)]);
 
   let output = '(function(){\n';
 

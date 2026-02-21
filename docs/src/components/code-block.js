@@ -2,8 +2,8 @@ import { h } from 'decantr/core';
 
 const RULES = [
   // Strings (single and double quoted, template literals)
-  { pattern: /(&#39;[^&#39;]*&#39;|&quot;[^&quot;]*&quot;|`[^`]*`)/g, cls: 'code-str' },
-  { pattern: /('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)/g, cls: 'code-str' },
+  { pattern: /(&#39;[^&#39;]*&#39;|&quot;[^&quot;]*&quot;|\`[^\`]*\`)/g, cls: 'code-str' },
+  { pattern: /('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|\`(?:[^\`\\]|\\.)*\`)/g, cls: 'code-str' },
   // Comments
   { pattern: /(\/\/.*$)/gm, cls: 'code-cmt' },
   // Keywords
@@ -27,7 +27,7 @@ function highlight(code) {
   let id = 0;
 
   // Extract strings first
-  escaped = escaped.replace(/('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)/g, (m) => {
+  escaped = escaped.replace(/('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|\`(?:[^\`\\]|\\.)*\`)/g, (m) => {
     const placeholder = `\x00S${id++}\x00`;
     tokens.push({ placeholder, html: `<span class="code-str">${m}</span>` });
     return placeholder;

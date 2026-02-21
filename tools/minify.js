@@ -16,8 +16,8 @@ export function minify(source) {
   result = result.replace(/\/\*\*[\s\S]*?\*\//g, '');
   result = result.replace(/\/\*[\s\S]*?\*\//g, '');
 
-  // Remove single-line comments (but not URLs with //)
-  result = result.replace(/([^:])\/\/[^\n]*/g, '$1');
+  // Remove single-line comments (but not URLs with // and not past stashed template placeholders)
+  result = result.replace(/([^:])\/\/[^\n`]*/g, '$1');
 
   // Process line by line
   const lines = result.split('\n');
