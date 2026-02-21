@@ -57,7 +57,8 @@
     "test": "node --test test/**/*.test.js",
     "docs:dev": "cd docs && npx decantr dev",
     "docs:build": "cd docs && npx decantr build",
-    "reset": "node tools/reset-playground.js"
+    "reset": "node tools/reset-playground.js",
+    "prepare": "sh tools/install-hooks.sh"
   },
   "keywords": [
     "framework",

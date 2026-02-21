@@ -1,0 +1,2 @@
+#!/bin/sh
+node --test test/**/*.test.js
