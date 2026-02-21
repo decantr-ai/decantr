@@ -164,12 +164,6 @@ function bundle(modules, entrypoint) {
       }
     );
 
-    // Rewrite exports to module object
-    processed = processed.replace(/export\s+function\s+(\w+)/g, `function $1`);
-    processed = processed.replace(/export\s+const\s+/g, 'const ');
-    processed = processed.replace(/export\s+let\s+/g, 'let ');
-    processed = processed.replace(/export\s*\{[^}]*\}\s*;?/g, '');
-
     // Find exported names from original source
     const exportedNames = [];
     const funcExports = source.matchAll(/export\s+function\s+(\w+)/g);
@@ -197,6 +191,13 @@ function bundle(modules, entrypoint) {
 
     // Restore stashed template literals
     processed = processed.replace(/`__TPL_(\d+)__`/g, (_, i) => stash[i]);
+
+    // Rewrite exports to module object (after template restoration so exports
+    // inside code that was accidentally stashed are still rewritten)
+    processed = processed.replace(/export\s+function\s+(\w+)/g, `function $1`);
+    processed = processed.replace(/export\s+const\s+/g, 'const ');
+    processed = processed.replace(/export\s+let\s+/g, 'let ');
+    processed = processed.replace(/export\s*\{[^}]*\}\s*;?/g, '');
 
     output += `// ${relative(process.cwd(), path)}\n`;
     output += `const ${id} = (function(){\n${processed}\nreturn {${exportedNames.join(',')}};\n})();\n\n`;
