@@ -266,10 +266,10 @@ export async function build(projectRoot, options = {}) {
   function transformHtml(html) {
     html = html.replace(
       /<script type="module"[^>]*><\/script>/,
-      `<script src="/assets/${jsFile}"></script>`
+      `<script src="./assets/${jsFile}"></script>`
     );
     if (cssOutput) {
-      html = html.replace('</head>', `<link rel="stylesheet" href="/assets/${cssFile}">\n</head>`);
+      html = html.replace('</head>', `<link rel="stylesheet" href="./assets/${cssFile}">\n</head>`);
     }
     return html;
   }

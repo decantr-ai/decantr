@@ -60,7 +60,7 @@ function HeroSection() {
     // Content
     h('div', { style: { position: 'relative', zIndex: '1', maxWidth: '900px', margin: '0 auto' } },
       h('img', {
-        src: '/images/logo.jpg',
+        src: './images/logo.jpg',
         alt: '',
         'aria-hidden': 'true',
         class: 'landing-animate',

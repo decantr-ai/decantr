@@ -129,11 +129,11 @@ export function indexHtml(opts) {
   if (opts.icons === 'material' && opts.iconDelivery === 'cdn') {
     iconLink = '\n  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" data-icons="material">';
   } else if (opts.icons === 'material' && opts.iconDelivery === 'npm') {
-    iconLink = '\n  <link href="/vendor/material-icons/material-icons.css" rel="stylesheet" data-icons="material">';
+    iconLink = '\n  <link href="./vendor/material-icons/material-icons.css" rel="stylesheet" data-icons="material">';
   } else if (opts.icons === 'lucide' && opts.iconDelivery === 'cdn') {
     iconLink = '\n  <script src="https://unpkg.com/lucide@0.474.0/dist/umd/lucide.js" data-icons="lucide"></script>';
   } else if (opts.icons === 'lucide' && opts.iconDelivery === 'npm') {
-    iconLink = '\n  <script src="/vendor/lucide.min.js" data-icons="lucide"></script>';
+    iconLink = '\n  <script src="./vendor/lucide.min.js" data-icons="lucide"></script>';
   }
 
   return `<!DOCTYPE html>
@@ -146,7 +146,7 @@ export function indexHtml(opts) {
 </head>
 <body>
   <div id="app"></div>
-  <script type="module" src="/src/app.js"></script>
+  <script type="module" src="./src/app.js"></script>
 </body>
 </html>`;
 }

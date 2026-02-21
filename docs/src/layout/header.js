@@ -33,7 +33,7 @@ export function Header() {
       'aria-label': 'decantr home'
     },
       h('img', {
-        src: '/images/logo.jpg',
+        src: './images/logo.jpg',
         alt: 'decantr',
         style: { height: '28px', width: 'auto', borderRadius: '4px' }
       })
