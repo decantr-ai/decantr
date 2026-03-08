@@ -27,7 +27,7 @@ export function PostList(props = {}) {
         ? h('a', {
             href: post.href,
             class: css('_t16 _bold _fg3 _nounder _block _mb2'),
-            style: 'text-decoration:none;line-height:1.3'
+            style: 'line-height:1.3'
           }, post.title)
         : h('h3', {
             class: css('_t16 _bold _fg3 _mb2'),
@@ -41,8 +41,8 @@ export function PostList(props = {}) {
     if (post.excerpt) {
       bodyParts.push(
         h('p', {
-          class: css('_t14 _fg4 _mb3'),
-          style: 'margin:0 0 0.75rem;line-height:1.5'
+          class: css('_t14 _fg4 _mb3 _lhnormal'),
+          style: 'margin-top:0'
         }, post.excerpt)
       );
     }

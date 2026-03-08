@@ -29,7 +29,7 @@ export function ActivityFeed(props = {}) {
 
   // Build card content
   const headerEl = Card.Header({},
-    h('span', { style: { fontSize: '1rem', fontWeight: '600', color: 'var(--c3)' } }, title)
+    h('span', { class: css('_textmd _fwtitle _fg3') }, title)
   );
 
   const bodyContent = h('div', { class: css('_flex _col _gap3') });
@@ -57,7 +57,7 @@ export function ActivityFeed(props = {}) {
     });
 
     const actionText = h('span', {
-      style: { fontSize: '0.875rem', color: 'var(--c3)' }
+      class: css('_textbase _fg3')
     });
     actionText.appendChild(
       h('strong', null, item.user || 'Unknown')
@@ -70,7 +70,7 @@ export function ActivityFeed(props = {}) {
     if (item.time) {
       textCol.appendChild(
         h('span', {
-          style: { fontSize: '0.75rem', color: 'var(--c4)' }
+          class: css('_textsm _fg4')
         }, item.time)
       );
     }

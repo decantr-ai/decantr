@@ -1,4 +1,5 @@
 import { createSignal, createEffect } from '../state/index.js';
+import { getAnimations } from '../css/theme-registry.js';
 import { h } from '../core/index.js';
 import { hashStrategy } from './hash.js';
 import { historyStrategy } from './history.js';
@@ -19,10 +20,11 @@ function compileRoute(route) {
 }
 
 /**
- * @param {{ mode: 'hash'|'history', routes: Array<{path: string, component: Function}> }} config
+ * @param {{ mode: 'hash'|'history', routes: Array<{path: string, component: Function}>, transitions?: boolean }} config
  */
 export function createRouter(config) {
   const strategy = config.mode === 'hash' ? hashStrategy : historyStrategy;
+  const useTransitions = !!config.transitions;
   const compiled = config.routes.map(r => ({
     ...r,
     ...compileRoute(r)
@@ -62,13 +64,20 @@ export function createRouter(config) {
 
     createEffect(() => {
       const r = route();
-      if (currentNode) {
-        container.removeChild(currentNode);
-        currentNode = null;
-      }
-      if (r.component) {
-        currentNode = r.component(r.params);
-        if (currentNode) container.appendChild(currentNode);
+      const swap = () => {
+        if (currentNode) {
+          container.removeChild(currentNode);
+          currentNode = null;
+        }
+        if (r.component) {
+          currentNode = r.component(r.params);
+          if (currentNode) container.appendChild(currentNode);
+        }
+      };
+      if (useTransitions && document.startViewTransition && getAnimations()()) {
+        document.startViewTransition(swap);
+      } else {
+        swap();
       }
     });
 

@@ -53,7 +53,6 @@ export function AuthorCard(props = {}) {
       h('a', {
         href: s.href,
         class: css('_fg1 _t12 _nounder'),
-        style: 'text-decoration:none',
         target: '_blank',
         rel: 'noopener noreferrer',
         'aria-label': s.label

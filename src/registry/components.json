@@ -92,6 +92,9 @@
             "processing"
           ]
         },
+        "variant": {
+          "type": "string"
+        },
         "class": {
           "type": "string"
         }
@@ -116,11 +119,12 @@
       },
       "returns": "HTMLElement"
     },
-    "Button": {
+    "buttonVariants": {
       "props": {
         "variant": {
           "type": "string",
           "enum": [
+            "default",
             "primary",
             "secondary",
             "destructive",
@@ -129,16 +133,52 @@
             "outline",
             "ghost",
             "link"
-          ],
-          "default": "none"
+          ]
         },
         "size": {
           "type": "string",
           "enum": [
+            "default",
+            "xs",
             "sm",
-            "lg"
-          ],
-          "default": "normal"
+            "lg",
+            "icon",
+            "icon-xs",
+            "icon-sm",
+            "icon-lg"
+          ]
+        }
+      },
+      "returns": "string"
+    },
+    "Button": {
+      "props": {
+        "variant": {
+          "type": "string",
+          "enum": [
+            "default",
+            "primary",
+            "secondary",
+            "destructive",
+            "success",
+            "warning",
+            "outline",
+            "ghost",
+            "link"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "default",
+            "xs",
+            "sm",
+            "lg",
+            "icon",
+            "icon-xs",
+            "icon-sm",
+            "icon-lg"
+          ]
         },
         "disabled": {
           "type": "boolean|Function",
@@ -154,12 +194,18 @@
         "block": {
           "type": "boolean"
         },
+        "rounded": {
+          "type": "boolean"
+        },
         "onclick": {
           "type": "Function"
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "subComponents": [
+        "Group"
+      ]
     },
     "Card": {
       "props": {
@@ -199,6 +245,127 @@
         },
         "onchange": {
           "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Chip": {
+      "props": {
+        "icon": {
+          "type": "string|Node"
+        },
+        "label": {
+          "type": "string",
+          "required": true
+        },
+        "variant": {
+          "type": "string",
+          "enum": [
+            "default",
+            "outline",
+            "filled"
+          ],
+          "default": "'default'"
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "sm",
+            "md"
+          ],
+          "default": "'md'"
+        },
+        "removable": {
+          "type": "boolean"
+        },
+        "onRemove": {
+          "type": "Function"
+        },
+        "onClick": {
+          "type": "Function"
+        },
+        "selected": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Combobox": {
+      "props": {
+        "options": {
+          "type": "{ value: string, label: string, disabled?: boolean }[]"
+        },
+        "value": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "error": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "onfilter": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Drawer": {
+      "props": {
+        "visible": {
+          "type": "Function",
+          "required": true
+        },
+        "onClose": {
+          "type": "Function"
+        },
+        "side": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "width": {
+          "type": "string"
+        },
+        "height": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLDialogElement"
+    },
+    "Dropdown": {
+      "props": {
+        "trigger": {
+          "type": "Function"
+        },
+        "items": {
+          "type": "{ label: string, value?: string, icon?: string|Node, shortcut?: string, disabled?: boolean, separator?: boolean, onclick?: Function }[]",
+          "reactive": true
+        },
+        "align": {
+          "type": "string"
         },
         "class": {
           "type": "string"
@@ -302,6 +469,49 @@
         }
       },
       "children": "...Node",
+      "returns": "HTMLDialogElement"
+    },
+    "Pagination": {
+      "props": {
+        "total": {
+          "type": "number|Function",
+          "reactive": true,
+          "required": true
+        },
+        "perPage": {
+          "type": "number"
+        },
+        "current": {
+          "type": "number|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "siblings": {
+          "type": "number"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Popover": {
+      "props": {
+        "trigger": {
+          "type": "Function"
+        },
+        "position": {
+          "type": "string"
+        },
+        "align": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
       "returns": "HTMLElement"
     },
     "Progress": {
@@ -326,11 +536,49 @@
             "error"
           ]
         },
+        "size": {
+          "type": "string",
+          "enum": [
+            "sm",
+            "md",
+            "lg"
+          ],
+          "default": "base 8px"
+        },
         "striped": {
           "type": "boolean"
         },
         "animated": {
           "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "RadioGroup": {
+      "props": {
+        "options": {
+          "type": "{ value: string, label: string, disabled?: boolean }[]",
+          "required": true
+        },
+        "value": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "orientation": {
+          "type": "string"
+        },
+        "onchange": {
+          "type": "Function"
         },
         "class": {
           "type": "string"
@@ -400,6 +648,62 @@
         },
         "lines": {
           "type": "number"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Slider": {
+      "props": {
+        "value": {
+          "type": "number|Function",
+          "reactive": true
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "oninput": {
+          "type": "Function"
+        },
+        "showValue": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Spinner": {
+      "props": {
+        "size": {
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "default",
+            "lg"
+          ],
+          "default": "'default'"
+        },
+        "label": {
+          "type": "string",
+          "default": "'Loading'"
         },
         "class": {
           "type": "string"

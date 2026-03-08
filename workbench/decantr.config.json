@@ -1,0 +1,5 @@
+{
+  "name": "decantr-workbench",
+  "theme": "light",
+  "dev": { "port": 4300 }
+}

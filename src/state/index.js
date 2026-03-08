@@ -124,6 +124,17 @@ export function untrack(fn) {
   }
 }
 
+/**
+ * Read a signal getter without subscribing. Alias for untrack().
+ * Aligns with TC39 Signals proposal terminology.
+ * @template T
+ * @param {() => T} getter
+ * @returns {T}
+ */
+export function peek(getter) {
+  return untrack(getter);
+}
+
 export function createStore(initialValue) {
   /** @type {Map<string|symbol, Set<{run: Function}>>} */
   const subscribers = new Map();

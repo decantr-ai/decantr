@@ -12,16 +12,16 @@ export function CLIPage() {
     // init
     h('h2', { style: { fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.75rem' } }, 'decantr init'),
     h('p', { style: { marginBottom: '0.75rem', lineHeight: '1.6' } },
-      'Interactive project scaffolding. Creates a complete project with package.json, HTML shell, app entry, sample pages, and config.'
+      'Creates a minimal project skeleton with package.json, HTML shell, example app.js, AGENTS.md, and CLAUDE.md. Then prompt your AI to build your app.'
     ),
     CodeBlock({ code: `npx decantr init my-app`, lang: 'bash' }),
     h('p', { style: { marginTop: '0.75rem', marginBottom: '0.5rem', lineHeight: '1.6' } },
-      'The wizard asks you to choose:'
+      'Generated files:'
     ),
     h('ul', { style: { lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' } },
-      h('li', null, h('strong', null, 'Template'), ' \u2014 dashboard (sidebar + router), landing (sections), or demo (both)'),
-      h('li', null, h('strong', null, 'Theme'), ' \u2014 light, dark, retro, hot-lava, or stormy-ai'),
-      h('li', null, h('strong', null, 'Router'), ' \u2014 hash (default) or history')
+      h('li', null, h('strong', null, 'src/app.js'), ' \u2014 example Hello World entry point'),
+      h('li', null, h('strong', null, 'AGENTS.md'), ' \u2014 AI translation layer (React/Vue/Angular \u2192 decantr)'),
+      h('li', null, h('strong', null, 'CLAUDE.md'), ' \u2014 project-level framework reference')
     ),
 
     // dev
@@ -92,17 +92,14 @@ describe('MyComponent', () => {
     ),
     CodeBlock({ code: `{
   "name": "my-app",
-  "projectType": "dashboard",
   "theme": "light",
-  "router": "hash",
-  "dev": { "port": 3000 },
-  "build": { "outDir": "dist" }
+  "dev": { "port": 4200 }
 }` }),
 
     // API summary
     h('h2', { style: { fontSize: '1.5rem', fontWeight: '600', marginTop: '2rem', marginBottom: '0.75rem' } }, 'Command Summary'),
     ApiTable({ rows: [
-      { name: 'init', signature: 'decantr init [name]', description: 'Interactive project scaffolding.' },
+      { name: 'init', signature: 'decantr init [name]', description: 'Create minimal project skeleton.' },
       { name: 'dev', signature: 'decantr dev', description: 'Dev server with hot reload.' },
       { name: 'build', signature: 'decantr build', description: 'Production build to dist/.' },
       { name: 'test', signature: 'decantr test [--watch]', description: 'Run tests with Node.js test runner.' }

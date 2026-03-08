@@ -238,11 +238,12 @@ describe('theme component CSS completeness', () => {
     'button', 'card', 'input', 'badge', 'modal',
     'textarea', 'checkbox', 'switch', 'select', 'tabs',
     'accordion', 'separator', 'breadcrumb', 'table', 'avatar',
-    'progress', 'skeleton', 'tooltip', 'alert', 'chip', 'toast'
+    'progress', 'skeleton', 'tooltip', 'alert', 'chip', 'toast', 'spinner',
+    'dropdown', 'drawer', 'pagination', 'radiogroup', 'popover', 'combobox', 'slider'
   ];
 
   for (const themeId of ['light', 'dark', 'retro', 'hot-lava', 'stormy-ai']) {
-    it(`${themeId} has all 21 component CSS keys`, () => {
+    it(`${themeId} has all 29 component CSS keys`, () => {
       setTheme(themeId);
       const css = getActiveCSS();
       assert.ok(css.length > 0, `${themeId} CSS is empty`);
@@ -253,6 +254,13 @@ describe('theme component CSS completeness', () => {
       assert.ok(css.includes('.d-badge'), `${themeId} missing .d-badge`);
       assert.ok(css.includes('.d-modal'), `${themeId} missing .d-modal`);
       assert.ok(css.includes('.d-chip'), `${themeId} missing .d-chip`);
+      assert.ok(css.includes('.d-dropdown'), `${themeId} missing .d-dropdown`);
+      assert.ok(css.includes('.d-drawer'), `${themeId} missing .d-drawer`);
+      assert.ok(css.includes('.d-pagination'), `${themeId} missing .d-pagination`);
+      assert.ok(css.includes('.d-radio'), `${themeId} missing .d-radio`);
+      assert.ok(css.includes('.d-popover'), `${themeId} missing .d-popover`);
+      assert.ok(css.includes('.d-combobox'), `${themeId} missing .d-combobox`);
+      assert.ok(css.includes('.d-slider'), `${themeId} missing .d-slider`);
     });
 
     it(`${themeId} has all button variants`, () => {

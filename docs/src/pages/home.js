@@ -31,8 +31,8 @@ const features = [
   { title: 'Signal Reactivity', desc: 'Fine-grained reactivity with signals, effects, memos, and stores. No virtual DOM overhead.', accent: 'var(--c6)' },
   { title: 'AI-Native Design', desc: 'Designed for AI agents to generate, read, and maintain. Simple patterns, zero magic.', accent: 'var(--c7)' },
   { title: 'Tiny Bundle', desc: 'Under 2KB gzipped for hello world. Real DOM nodes, no runtime diffing overhead.', accent: 'var(--c8)' },
-  { title: 'AI Prompt Ready', desc: 'Pre-constructed prompts and machine-readable manifests. Scaffold with 100% accuracy via ChatGPT or Claude.', accent: 'var(--c9)' },
-  { title: 'Built-in Tooling', desc: 'Dev server with hot reload, production builder, test runner, and CLI scaffolding.', accent: 'var(--c4)' }
+  { title: 'AI Prompt Ready', desc: 'AGENTS.md maps React, Vue, Angular, and 20+ frameworks to decantr equivalents. Your AI generates correct code on the first try.', accent: 'var(--c9)' },
+  { title: 'Built-in Tooling', desc: 'Dev server with hot reload, production builder, test runner, and CLI.', accent: 'var(--c4)' }
 ];
 
 const stats = [

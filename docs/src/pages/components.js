@@ -1,6 +1,6 @@
 import { h } from 'decantr/core';
 import { createSignal } from 'decantr/state';
-import { Button, Input, Card, Badge, Modal } from 'decantr/components';
+import { Button, buttonVariants, Spinner, Input, Card, Badge, Modal, icon } from 'decantr/components';
 import { CodeBlock } from '../components/code-block.js';
 import { ExampleCard } from '../components/example-card.js';
 import { ApiTable } from '../components/api-table.js';
@@ -23,46 +23,136 @@ export function ComponentsPage() {
     // Button
     h('h2', { style: { fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.75rem' } }, 'Button'),
     ExampleCard({
-      title: 'Button variants',
-      code: `Button({ variant: 'primary' }, 'Primary')
+      title: 'All 9 variants',
+      code: `Button({}, 'Default')
+Button({ variant: 'primary' }, 'Primary')
 Button({ variant: 'secondary' }, 'Secondary')
-Button({ variant: 'destructive' }, 'Delete')
+Button({ variant: 'destructive' }, 'Destructive')
+Button({ variant: 'success' }, 'Success')
+Button({ variant: 'warning' }, 'Warning')
+Button({ variant: 'outline' }, 'Outline')
 Button({ variant: 'ghost' }, 'Ghost')
 Button({ variant: 'link' }, 'Link')`
     },
       h('div', { style: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' } },
+        Button({}, 'Default'),
         Button({ variant: 'primary' }, 'Primary'),
         Button({ variant: 'secondary' }, 'Secondary'),
-        Button({ variant: 'destructive' }, 'Delete'),
+        Button({ variant: 'destructive' }, 'Destructive'),
+        Button({ variant: 'success' }, 'Success'),
+        Button({ variant: 'warning' }, 'Warning'),
+        Button({ variant: 'outline' }, 'Outline'),
         Button({ variant: 'ghost' }, 'Ghost'),
         Button({ variant: 'link' }, 'Link')
       )
     ),
 
     ExampleCard({
-      title: 'Button sizes & states',
-      code: `Button({ size: 'sm' }, 'Small')
+      title: 'All sizes',
+      code: `Button({ size: 'xs' }, 'Extra Small')
+Button({ size: 'sm' }, 'Small')
 Button({}, 'Default')
 Button({ size: 'lg' }, 'Large')
-Button({ disabled: true }, 'Disabled')
-Button({ loading: true }, 'Loading')`
+Button({ size: 'icon', 'aria-label': 'Settings' }, icon('settings'))
+Button({ size: 'icon-xs', 'aria-label': 'Close' }, icon('x'))
+Button({ size: 'icon-sm', 'aria-label': 'Edit' }, icon('edit'))
+Button({ size: 'icon-lg', 'aria-label': 'Menu' }, icon('menu'))`
     },
       h('div', { style: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' } },
+        Button({ size: 'xs' }, 'Extra Small'),
         Button({ size: 'sm' }, 'Small'),
         Button({}, 'Default'),
         Button({ size: 'lg' }, 'Large'),
-        Button({ disabled: true }, 'Disabled'),
-        Button({ loading: true }, 'Loading')
+        Button({ variant: 'primary', size: 'icon', 'aria-label': 'Settings' }, icon('settings')),
+        Button({ variant: 'primary', size: 'icon-xs', 'aria-label': 'Close' }, icon('x')),
+        Button({ variant: 'primary', size: 'icon-sm', 'aria-label': 'Edit' }, icon('edit')),
+        Button({ variant: 'primary', size: 'icon-lg', 'aria-label': 'Menu' }, icon('menu'))
+      )
+    ),
+
+    ExampleCard({
+      title: 'Rounded buttons',
+      code: `Button({ variant: 'primary', rounded: true }, 'Rounded Primary')
+Button({ variant: 'outline', rounded: true }, 'Rounded Outline')
+Button({ variant: 'destructive', rounded: true, size: 'sm' }, 'Small Rounded')`
+    },
+      h('div', { style: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' } },
+        Button({ variant: 'primary', rounded: true }, 'Rounded Primary'),
+        Button({ variant: 'outline', rounded: true }, 'Rounded Outline'),
+        Button({ variant: 'destructive', rounded: true, size: 'sm' }, 'Small Rounded')
+      )
+    ),
+
+    ExampleCard({
+      title: 'Button.Group',
+      code: `Button.Group({},
+  Button({ variant: 'outline' }, 'Left'),
+  Button({ variant: 'outline' }, 'Center'),
+  Button({ variant: 'outline' }, 'Right')
+)`
+    },
+      Button.Group({},
+        Button({ variant: 'outline' }, 'Left'),
+        Button({ variant: 'outline' }, 'Center'),
+        Button({ variant: 'outline' }, 'Right')
+      )
+    ),
+
+    ExampleCard({
+      title: 'States',
+      code: `Button({ disabled: true }, 'Disabled')
+Button({ loading: true }, 'Loading')
+Button({ variant: 'primary', loading: true }, 'Saving...')
+Button({ block: true, variant: 'primary' }, 'Full Width')`
+    },
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' } },
+        h('div', { style: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' } },
+          Button({ disabled: true }, 'Disabled'),
+          Button({ loading: true }, 'Loading'),
+          Button({ variant: 'primary', loading: true }, 'Saving...')
+        ),
+        Button({ block: true, variant: 'primary' }, 'Full Width')
+      )
+    ),
+
+    CodeBlock({ code: `// buttonVariants — reusable primitive
+import { buttonVariants } from 'decantr/components';
+const cls = buttonVariants({ variant: 'primary', size: 'lg' });
+// → 'd-btn d-btn-primary d-btn-lg'` }),
+
+    ApiTable({ rows: [
+      { name: 'variant', signature: "'default' | 'primary' | 'secondary' | 'destructive' | 'success' | 'warning' | 'outline' | 'ghost' | 'link'", description: 'Visual variant. Default: default.' },
+      { name: 'size', signature: "'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg'", description: 'Button size. Default: default.' },
+      { name: 'disabled', signature: 'boolean | () => boolean', description: 'Disable the button. Reactive.' },
+      { name: 'loading', signature: 'boolean | () => boolean', description: 'Show loading spinner. Reactive.' },
+      { name: 'block', signature: 'boolean', description: 'Full-width button.' },
+      { name: 'rounded', signature: 'boolean', description: 'Pill-shaped (border-radius: 9999px).' },
+      { name: 'onclick', signature: 'Function', description: 'Click handler.' },
+      { name: 'Button.Group', signature: 'Button.Group(props, ...children)', description: 'Groups buttons with connected borders.' },
+      { name: 'buttonVariants', signature: 'buttonVariants({ variant, size })', description: 'Returns CSS class string. Reusable by any element.' }
+    ]}),
+
+    // Spinner
+    h('h2', { style: { fontSize: '1.5rem', fontWeight: '600', marginTop: '1.5rem', marginBottom: '0.75rem' } }, 'Spinner'),
+    ExampleCard({
+      title: 'Spinner sizes',
+      code: `Spinner({ size: 'xs' })
+Spinner({ size: 'sm' })
+Spinner({})
+Spinner({ size: 'lg' })`
+    },
+      h('div', { style: { display: 'flex', gap: '1rem', alignItems: 'center' } },
+        Spinner({ size: 'xs' }),
+        Spinner({ size: 'sm' }),
+        Spinner({}),
+        Spinner({ size: 'lg' })
       )
     ),
 
     ApiTable({ rows: [
-      { name: 'variant', signature: "'primary' | 'secondary' | 'destructive' | 'ghost' | 'link'", description: 'Visual variant. Default: secondary.' },
-      { name: 'size', signature: "'sm' | 'lg'", description: 'Button size. Default: medium.' },
-      { name: 'disabled', signature: 'boolean', description: 'Disable the button.' },
-      { name: 'loading', signature: 'boolean', description: 'Show loading spinner.' },
-      { name: 'block', signature: 'boolean', description: 'Full-width button.' },
-      { name: 'onclick', signature: 'Function', description: 'Click handler.' }
+      { name: 'size', signature: "'xs' | 'sm' | 'default' | 'lg'", description: 'Spinner size. Default: default (20px).' },
+      { name: 'label', signature: 'string', description: "Accessible label. Default: 'Loading'." },
+      { name: 'class', signature: 'string', description: 'Additional CSS classes.' }
     ]}),
 
     // Input

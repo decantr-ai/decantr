@@ -1,9 +1,0 @@
-{
-  "category": "dashboard",
-  "variants": [
-    { "id": "analytics", "name": "Analytics Dashboard", "description": "KPI cards, charts, activity feed, and data tables." },
-    { "id": "stock-tracker", "name": "Stock Tracker", "description": "Portfolio overview, watchlist, price charts, and trade history." },
-    { "id": "daily-planner", "name": "Daily Planner", "description": "Task lists, calendar view, habits tracker, and productivity stats." },
-    { "id": "project-manager", "name": "Project Manager", "description": "Project boards, team members, milestones, and progress tracking." }
-  ]
-}

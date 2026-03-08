@@ -31,20 +31,12 @@ export function Switch(props = {}) {
   }
 
   if (typeof checked === 'function') {
-    createEffect(() => {
-      input.checked = checked();
-      wrapper.classList.toggle('d-switch-checked', input.checked);
-    });
+    createEffect(() => { input.checked = checked(); });
   } else if (checked) {
     input.checked = true;
-    wrapper.classList.add('d-switch-checked');
   }
 
   reactiveAttr(input, disabled, 'disabled');
-
-  input.addEventListener('change', () => {
-    wrapper.classList.toggle('d-switch-checked', input.checked);
-  });
 
   return wrapper;
 }

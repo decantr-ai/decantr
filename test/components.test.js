@@ -24,6 +24,13 @@ import { Skeleton } from '../src/components/skeleton.js';
 import { Tooltip } from '../src/components/tooltip.js';
 import { Alert } from '../src/components/alert.js';
 import { toast, resetToasts } from '../src/components/toast.js';
+import { Dropdown } from '../src/components/dropdown.js';
+import { Drawer } from '../src/components/drawer.js';
+import { Pagination } from '../src/components/pagination.js';
+import { RadioGroup } from '../src/components/radiogroup.js';
+import { Popover } from '../src/components/popover.js';
+import { Combobox } from '../src/components/combobox.js';
+import { Slider } from '../src/components/slider.js';
 
 let cleanup;
 
@@ -270,38 +277,38 @@ describe('Card', () => {
 });
 
 describe('Modal', () => {
-  it('returns a sentinel element', () => {
+  it('returns a dialog element', () => {
     const [vis] = createSignal(false);
     const m = Modal({ visible: vis });
-    assert.equal(m.tagName, 'D-MODAL');
+    assert.equal(m.tagName, 'DIALOG');
+    assert.ok(m.className.includes('d-modal-content'));
   });
 
-  it('renders overlay to body when visible', () => {
+  it('opens dialog when visible signal is true', () => {
     const [vis, setVis] = createSignal(false);
-    Modal({ visible: vis, title: 'Test' }, 'Content');
-    assert.ok(!document.body.querySelector('.d-modal-overlay'));
+    const dialog = Modal({ visible: vis, title: 'Test' }, 'Content');
+    assert.equal(dialog.open, false);
 
     setVis(true);
-    const overlay = document.body.querySelector('.d-modal-overlay');
-    assert.ok(overlay);
-    assert.ok(overlay.querySelector('.d-modal-content'));
-    assert.ok(overlay.querySelector('.d-modal-header'));
+    assert.equal(dialog.open, true);
+    assert.ok(dialog.querySelector('.d-modal-header'));
+    assert.ok(dialog.querySelector('.d-modal-body'));
   });
 
-  it('removes overlay when hidden', () => {
+  it('closes dialog when visible becomes false', () => {
     const [vis, setVis] = createSignal(true);
-    Modal({ visible: vis }, 'Hello');
-    assert.ok(document.body.querySelector('.d-modal-overlay'));
+    const dialog = Modal({ visible: vis }, 'Hello');
+    assert.equal(dialog.open, true);
 
     setVis(false);
-    assert.ok(!document.body.querySelector('.d-modal-overlay'));
+    assert.equal(dialog.open, false);
   });
 
   it('calls onClose on close button click', () => {
     let closed = false;
     const [vis] = createSignal(true);
-    Modal({ visible: vis, title: 'X', onClose: () => { closed = true; } });
-    const closeBtn = document.body.querySelector('.d-modal-close');
+    const dialog = Modal({ visible: vis, title: 'X', onClose: () => { closed = true; } });
+    const closeBtn = dialog.querySelector('.d-modal-close');
     assert.ok(closeBtn);
     closeBtn.dispatchEvent(new window.Event('click'));
     assert.ok(closed);
@@ -502,7 +509,6 @@ describe('Checkbox', () => {
   it('handles static checked', () => {
     const el = Checkbox({ checked: true });
     assert.ok(el.querySelector('input').checked);
-    assert.ok(el.className.includes('d-checkbox-checked'));
   });
 
   it('handles reactive checked', () => {
@@ -511,7 +517,6 @@ describe('Checkbox', () => {
     assert.ok(!el.querySelector('input').checked);
     setChecked(true);
     assert.ok(el.querySelector('input').checked);
-    assert.ok(el.className.includes('d-checkbox-checked'));
   });
 
   it('calls onchange', () => {
@@ -535,9 +540,9 @@ describe('Switch', () => {
   it('handles reactive checked', () => {
     const [checked, setChecked] = createSignal(false);
     const el = Switch({ checked });
-    assert.ok(!el.className.includes('d-switch-checked'));
+    assert.ok(!el.querySelector('input').checked);
     setChecked(true);
-    assert.ok(el.className.includes('d-switch-checked'));
+    assert.ok(el.querySelector('input').checked);
   });
 
   it('renders label', () => {
@@ -829,5 +834,247 @@ describe('toast', () => {
     const { dismiss } = toast({ message: 'Test', duration: 0 });
     assert.equal(typeof dismiss, 'function');
     dismiss();
+  });
+});
+
+describe('Dropdown', () => {
+  it('creates a dropdown with trigger', () => {
+    const el = Dropdown({
+      trigger: () => document.createElement('button'),
+      items: [{ label: 'Edit' }, { label: 'Delete' }]
+    });
+    assert.ok(el.className.includes('d-dropdown'));
+    assert.ok(el.querySelector('[aria-haspopup="menu"]'));
+  });
+
+  it('renders menu items on click', () => {
+    const btn = document.createElement('button');
+    btn.textContent = 'Menu';
+    const el = Dropdown({
+      trigger: () => btn,
+      items: [{ label: 'Copy' }, { separator: true }, { label: 'Paste' }]
+    });
+    document.body.appendChild(el);
+    btn.click();
+    const items = el.querySelectorAll('.d-dropdown-item');
+    assert.equal(items.length, 2);
+    const sep = el.querySelector('.d-dropdown-separator');
+    assert.ok(sep);
+    document.body.removeChild(el);
+  });
+
+  it('calls onclick on item selection', () => {
+    let clicked = null;
+    const btn = document.createElement('button');
+    const el = Dropdown({
+      trigger: () => btn,
+      items: [{ label: 'Save', value: 'save', onclick: (v) => { clicked = v; } }]
+    });
+    document.body.appendChild(el);
+    btn.click();
+    el.querySelector('.d-dropdown-item').click();
+    assert.equal(clicked, 'save');
+    document.body.removeChild(el);
+  });
+});
+
+describe('Drawer', () => {
+  it('creates a drawer dialog element', () => {
+    const [visible] = createSignal(false);
+    const el = Drawer({ visible, title: 'Settings' }, document.createTextNode('Content'));
+    assert.equal(el.tagName, 'DIALOG');
+    assert.ok(el.querySelector('.d-drawer-panel'));
+    assert.ok(el.querySelector('.d-drawer-title').textContent === 'Settings');
+    assert.ok(el.querySelector('.d-drawer-body').textContent === 'Content');
+  });
+
+  it('applies side class', () => {
+    const [visible] = createSignal(false);
+    const el = Drawer({ visible, side: 'left' });
+    assert.ok(el.querySelector('.d-drawer-left'));
+  });
+
+  it('opens when visible signal is true', () => {
+    const [visible, setVisible] = createSignal(false);
+    const el = Drawer({ visible });
+    assert.equal(el.open, false);
+    setVisible(true);
+    assert.equal(el.open, true);
+  });
+});
+
+describe('Pagination', () => {
+  it('creates pagination navigation', () => {
+    const el = Pagination({ total: 50, perPage: 10 });
+    assert.equal(el.tagName, 'NAV');
+    assert.ok(el.getAttribute('aria-label') === 'Pagination');
+  });
+
+  it('renders correct number of pages', () => {
+    const el = Pagination({ total: 30, perPage: 10, current: 1 });
+    const allBtns = el.querySelectorAll('.d-pagination-btn');
+    // Filter out prev/next buttons
+    const pageButtons = allBtns.filter(b =>
+      !b.className.includes('d-pagination-prev') && !b.className.includes('d-pagination-next')
+    );
+    assert.equal(pageButtons.length, 3); // 1, 2, 3
+  });
+
+  it('marks current page as active', () => {
+    const el = Pagination({ total: 50, perPage: 10, current: 2 });
+    const active = el.querySelector('.d-pagination-active');
+    assert.ok(active);
+    assert.equal(active.textContent, '2');
+  });
+
+  it('calls onchange on page click', () => {
+    let page = null;
+    const el = Pagination({ total: 30, perPage: 10, current: 1, onchange: (p) => { page = p; } });
+    const buttons = el.querySelectorAll('.d-pagination-btn');
+    // Click page 2 (index: 0=prev, 1=page1, 2=page2, 3=page3, 4=next)
+    buttons[2].click();
+    assert.equal(page, 2);
+  });
+});
+
+describe('RadioGroup', () => {
+  const opts = [
+    { value: 'a', label: 'Option A' },
+    { value: 'b', label: 'Option B' },
+    { value: 'c', label: 'Option C' }
+  ];
+
+  it('creates radio group with options', () => {
+    const el = RadioGroup({ options: opts });
+    assert.ok(el.className.includes('d-radiogroup'));
+    const radios = el.querySelectorAll('.d-radio');
+    assert.equal(radios.length, 3);
+  });
+
+  it('selects value', () => {
+    const el = RadioGroup({ options: opts, value: 'b' });
+    const radios = el.querySelectorAll('.d-radio');
+    const checkedRadio = radios.find(r => r.querySelector('input').checked);
+    assert.ok(checkedRadio);
+    assert.ok(checkedRadio.textContent.includes('Option B'));
+  });
+
+  it('calls onchange', () => {
+    let selected = null;
+    const el = RadioGroup({ options: opts, onchange: (v) => { selected = v; } });
+    // Find inputs inside each .d-radio wrapper
+    const radios = el.querySelectorAll('.d-radio');
+    const input = radios[1].querySelector('input');
+    input.checked = true;
+    input.dispatchEvent(new window.Event('change'));
+    assert.equal(selected, 'b');
+  });
+
+  it('supports horizontal orientation', () => {
+    const el = RadioGroup({ options: opts, orientation: 'horizontal' });
+    assert.ok(el.className.includes('d-radiogroup-horizontal'));
+  });
+});
+
+describe('Popover', () => {
+  it('creates a popover with trigger', () => {
+    const el = Popover({
+      trigger: () => document.createElement('button')
+    }, document.createTextNode('Popover content'));
+    assert.ok(el.className.includes('d-popover'));
+    assert.ok(el.querySelector('.d-popover-content'));
+  });
+
+  it('applies position class', () => {
+    const el = Popover({
+      trigger: () => document.createElement('button'),
+      position: 'top'
+    }, document.createTextNode('Content'));
+    assert.ok(el.querySelector('.d-popover-top'));
+  });
+
+  it('toggles on trigger click', () => {
+    const btn = document.createElement('button');
+    const el = Popover({ trigger: () => btn }, document.createTextNode('Content'));
+    document.body.appendChild(el);
+    assert.equal(btn.getAttribute('aria-expanded'), 'false');
+    btn.click();
+    assert.equal(btn.getAttribute('aria-expanded'), 'true');
+    assert.ok(el.classList.contains('d-popover-open'));
+    btn.click();
+    assert.equal(btn.getAttribute('aria-expanded'), 'false');
+    document.body.removeChild(el);
+  });
+});
+
+describe('Combobox', () => {
+  const opts = [
+    { value: 'apple', label: 'Apple' },
+    { value: 'banana', label: 'Banana' },
+    { value: 'cherry', label: 'Cherry' }
+  ];
+
+  it('creates a combobox with input', () => {
+    const el = Combobox({ options: opts, placeholder: 'Search fruit' });
+    assert.ok(el.className.includes('d-combobox'));
+    const input = el.querySelector('input');
+    assert.ok(input);
+    assert.equal(input.getAttribute('placeholder'), 'Search fruit');
+  });
+
+  it('shows selected value in input', () => {
+    const el = Combobox({ options: opts, value: 'banana' });
+    const input = el.querySelector('input');
+    assert.equal(input.value, 'Banana');
+  });
+
+  it('applies error state', () => {
+    const el = Combobox({ options: opts, error: true });
+    assert.ok(el.className.includes('d-combobox-error'));
+  });
+});
+
+describe('Slider', () => {
+  it('creates a slider with track and thumb', () => {
+    const el = Slider({ value: 50 });
+    assert.ok(el.className.includes('d-slider'));
+    assert.ok(el.querySelector('.d-slider-track'));
+    assert.ok(el.querySelector('.d-slider-fill'));
+    assert.ok(el.querySelector('.d-slider-thumb'));
+  });
+
+  it('sets initial value position', () => {
+    const el = Slider({ value: 50, min: 0, max: 100 });
+    const fill = el.querySelector('.d-slider-fill');
+    assert.equal(fill.style.width, '50%');
+    const thumb = el.querySelector('.d-slider-thumb');
+    assert.equal(thumb.getAttribute('aria-valuenow'), '50');
+  });
+
+  it('handles reactive value', () => {
+    const [val, setVal] = createSignal(25);
+    const el = Slider({ value: val });
+    assert.equal(el.querySelector('.d-slider-fill').style.width, '25%');
+    setVal(75);
+    assert.equal(el.querySelector('.d-slider-fill').style.width, '75%');
+  });
+
+  it('shows value label when showValue is true', () => {
+    const el = Slider({ value: 42, showValue: true });
+    const label = el.querySelector('.d-slider-value');
+    assert.ok(label);
+    assert.equal(label.textContent, '42');
+  });
+
+  it('respects min/max/step', () => {
+    const el = Slider({ value: 50, min: 0, max: 100, step: 10 });
+    const thumb = el.querySelector('.d-slider-thumb');
+    assert.equal(thumb.getAttribute('aria-valuemin'), '0');
+    assert.equal(thumb.getAttribute('aria-valuemax'), '100');
+  });
+
+  it('applies disabled state', () => {
+    const el = Slider({ value: 50, disabled: true });
+    assert.ok(el.className.includes('d-slider-disabled'));
   });
 });

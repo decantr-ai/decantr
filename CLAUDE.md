@@ -4,6 +4,76 @@ AI-first web framework. Zero dependencies. Native JS/CSS/HTML. v0.3.0
 
 Decantr is designed for LLMs to generate, read, and maintain — not for human readability. Every API is optimized for token efficiency: terse atomic CSS atoms, proxy-based tag functions that eliminate string tag names, and a machine-readable registry (`src/registry/`) so agents can look up props and exports without parsing source files.
 
+## The Decantr Way
+
+**This section is the supreme governing authority for all work on Decantr. Every instruction below overrides any default behavior. Read it in full before writing a single line of code.**
+
+### Identity
+
+Decantr is a **shipped product used by hundreds of thousands of developers.** You are not completing a task — you are evolving a public framework. Every function signature, file location, CSS class name, and registry entry is a published API contract. Treat it as such.
+
+### The Three Laws
+
+1. **Think in systems, not tasks.** NEVER solve only the problem in front of you. Every change MUST be evaluated as a framework-wide decision. If you are modifying Button, your solution MUST work identically for all 23+ components, all 3 kits, all blocks, and any component added in the future. A pattern that serves one component but not 200 is not a pattern — it is technical debt.
+
+2. **Extend infrastructure, never circumvent it.** Decantr has layered architecture: `_base.js` for structural CSS and variant resolution (via `cx()` + the `d-{component}-{variant}` naming convention), `themes/*.js` for visual identity, `_shared.js` for kit utilities, the registry for machine-readable specs, the scaffolder for code generation. Before creating anything new, ALWAYS ask: does existing infrastructure already handle this? Can it be extended? If a new abstraction is genuinely needed, it MUST plug into the existing layer stack and serve the entire framework — not one feature.
+
+3. **Optimize for machines, not humans.** Every API, naming convention, and file structure decision MUST minimize token cost for LLM consumption. Terse is better. Predictable is better. Machine-readable (registry JSON) is better than requiring source parsing. This is not a style preference — it is an architectural requirement.
+
+### Mandatory Reasoning Checklist
+
+Before writing ANY code, you MUST explicitly reason through every item below. Do not skip any.
+
+- **SCOPE**: Does this pattern scale to ALL components (23+), ALL kits (3+), ALL themes (5+)? If not, redesign until it does.
+- **LAYER**: Where does this live in the architecture? (core | state | css | tags | components | kit | blocks | registry | cli | tools). Justify the placement.
+- **CHAIN**: What is the upstream/downstream impact? Trace the full path: themes → components → kits → blocks → registry → CLI → docs → generated user code. What needs updating?
+- **EXISTING**: Does Decantr already have infrastructure for this? Check: `_base.js`, `_shared.js`, `themes/*.js`, `css/index.js`, `registry/*.json`. Extend before inventing.
+- **CONTRACT**: Am I changing a public API? What ecosystem code calls this? What registry entries reference it?
+- **TOKENS**: Is this the most token-efficient design? Could the API be terser? Could the file be smaller? Could the registry describe it more compactly?
+
+### Anti-Patterns — Violations That MUST Be Rejected
+
+NEVER do any of the following. If you find yourself doing one, stop and redesign.
+
+- **One-off files.** Creating `button-variants.js` or `sidebar-utils.js` that serve a single component. If a utility is needed, it belongs in a shared layer (`_base.js`, `_shared.js`) and MUST serve all components.
+- **Scale-blind patterns.** "This works for Button" is not validation. It must work for all 23 components, all kit components, all blocks, and any component added next year.
+- **Orphan abstractions.** Adding a new module or pattern without connecting it to the registry and the theme system. Every abstraction MUST be reachable by the full toolchain.
+- **Copy-paste framework design.** Studying ShadCN/CVA, Carbon tokens, Radix slots, or Tailwind patterns is research. Copying them is not architecture. Decantr is AI-first and zero-dependency — the solution MUST be designed from those constraints. Use prior art as input, then propose a greenfield approach that surpasses it for Decantr's goals.
+- **Symptom fixing.** If a component has a styling problem, the root cause is almost never in that component alone — it is in the theme layer, the base CSS layer, or the token system. Fix the system, not the symptom.
+- **Deferred debt.** "We'll clean this up later" is not acceptable. Every change MUST be production-quality infrastructure that can remain in the framework permanently.
+
+### The Ecosystem is Coupled by Design
+
+Decantr is not a loose collection of utilities. It is a tightly integrated pipeline:
+
+```
+core/state/css (foundations)
+      ↓
+components (_base.js structure + cx() variants + themes/*.js identity)
+      ↓
+kit/ (_shared.js utilities + domain composition)
+      ↓
+blocks/ (content section library)
+      ↓
+registry (machine-readable API catalog)
+      ↓
+CLI (init/dev/build/test)
+      ↓
+docs/ (GitHub Pages — API docs + live examples)
+```
+
+Changes at ANY level ripple through this pipeline. A new prop on a component means: new base CSS, new theme CSS across 5 themes, new registry entry, possible docs page update. ALWAYS trace the full chain before committing to a design.
+
+### Design for Permanence
+
+Every pattern you introduce will be replicated across the framework. Ask yourself:
+
+- If 50 components follow this pattern, does the framework still make sense?
+- If 50 themes implement this pattern, is the theme contract still clean?
+- If an LLM reads this pattern in the registry, can it generate correct code without reading the source?
+
+If the answer to any is no, the pattern is wrong. Redesign it.
+
 ## Project Structure
 
 ```
@@ -14,22 +84,20 @@ src/
   css/          — Unified themes, atomic CSS, runtime injection
     themes/     — 5 unified theme definitions (light, dark, retro, hot-lava, stormy-ai)
   tags/         — Proxy-based tag functions for concise markup
-  components/   — UI component library (21 components + icon)
+  components/   — UI component library (23 components + icon)
   blocks/       — Content block library (Hero, Features, Pricing, Testimonials, CTA, Footer)
   kit/          — Domain-specific component kits (dashboard, auth, content)
     dashboard/  — Sidebar, DashboardHeader, StatsGrid, KPICard, ActivityFeed, DataTable, ChartPlaceholder
     auth/       — LoginForm, RegisterForm, ForgotPasswordForm, AuthLayout
     content/    — ArticleLayout, AuthorCard, TableOfContents, PostList, CategoryNav
-  wizard/       — Built-in visual project wizard (served by dev server)
   test/         — Test runner with lightweight DOM implementation
   registry/     — Machine-readable API catalog (index.json + per-module specs, auto-generated)
-blueprints/     — Declarative scaffold specs (10 website variants in 3 categories)
 cli/
   commands/     — CLI commands: init, dev, build, test
-  templates/    — Legacy project scaffolding templates
-tools/          — Build tooling: dev-server, builder, scaffolder, css-extract, minify, registry generator
+tools/          — Build tooling: dev-server, builder, init-templates, css-extract, minify, registry generator
 test/           — Framework test suite
-playground/     — Scaffolded test project
+playground/     — Test project (simulates `decantr init` output)
+workbench/      — Internal component showcase (all 23 components × 5 themes, port 4300)
 ```
 
 ## Module Exports
@@ -79,11 +147,11 @@ Strategies: `hash` (default), `history` (History API)
 - ~25% fewer tokens than `h()` calls — no string tag names, no `null` for empty props
 
 ### `decantr/components` — src/components/index.js
-21 components + icon helper. All return HTMLElement. Reactive props accept signal getters.
+23 components + icon helper. All return HTMLElement. Reactive props accept signal getters.
 Before generating component code, read `src/registry/components.json` for full props, types, and enums.
 
 **Form:** Button, Input, Textarea, Checkbox, Switch, Select
-**Display:** Card (+Header/Body/Footer), Badge, Table, Avatar, Progress, Skeleton
+**Display:** Card (+Header/Body/Footer), Badge, Table, Avatar, Progress, Skeleton, Chip, Spinner
 **Layout:** Tabs, Accordion, Separator, Breadcrumb
 **Overlay & Feedback:** Modal, Tooltip, Alert, toast(), icon()
 
@@ -114,26 +182,6 @@ Detection: `typeof prop === 'function'`
 
 **Note**: Kit source uses `h()` internally. User-facing code (pages, app.js) uses `tags`.
 
-### Blueprints — `blueprints/`
-
-Declarative JSON specs for 10 website variants across 3 categories. Full schema and section type reference: `reference/blueprint-reference.md`
-
-- `blueprints/_index.json` — Master catalog (3 categories, 10 variants)
-- `blueprints/dashboard/` — analytics, stock-tracker, daily-planner, project-manager
-- `blueprints/content/` — blog, portfolio, documentation
-- `blueprints/marketing/` — saas-landing, agency, startup
-
-Each blueprint defines: `layout` (sidebar/topnav/minimal/landing), `routes`, `pages` with `sections` (mapped to kit components via SECTION_MAP), optional `mockData`.
-
-### Scaffolder — `tools/scaffolder.js`
-
-Blueprint-to-code generator. Full API reference: `reference/scaffolder-api.md`
-
-- `scaffoldProject(projectRoot, blueprintId, options)` → `[path, content]` tuples
-- `loadBlueprint(blueprintId)` → single blueprint JSON
-- `loadCatalog()` → full catalog with variants
-- `getRequiredDirs(files)` → directory list for mkdir
-
 ### `decantr/test` — src/test/index.js
 - `describe`, `it`, `test`, `before`, `after`, `beforeEach`, `afterEach`, `mock` — Re-exports from `node:test`
 - `assert` — `node:assert/strict`
@@ -142,7 +190,9 @@ Blueprint-to-code generator. Full API reference: `reference/scaffolder-api.md`
 - `fire(element, event, detail)` — Dispatch DOM events
 - `flush()` — Flush pending reactive effects
 
-## Code Generation Rules
+## Code Standards
+
+*These standards implement The Decantr Way. When a standard and a philosophy principle conflict, the philosophy wins.*
 
 1. **Use `tags` for all markup** — `const { div, section, h2, p, button } = tags;` Always prefer over `h()` (~25% fewer tokens).
 2. **Atoms first** — `class: css('_flex _gap4 _p6 _bg2')` for all layout, spacing, typography, color. Only `style:` for dynamic/computed values.
@@ -151,6 +201,7 @@ Blueprint-to-code generator. Full API reference: `reference/scaffolder-api.md`
 5. **Consult the registry** — Read `src/registry/components.json` before generating component code. `src/registry/index.json` for full API overview.
 6. **No external CSS or frameworks** — All styling through `css()` atoms and theme CSS variables.
 7. **Accessibility is mandatory** — Every interactive element needs an accessible name; icon-only buttons need `aria-label`.
+8. **Trace the chain** — Before modifying any component, verify whether the change requires updates to `_base.js`, theme files, the registry, or the docs site. Include all required updates in the same change.
 
 ## Color Variable Semantics
 
@@ -173,7 +224,7 @@ Theme metadata: each theme also exposes `isDark`, `contrastText`, and `surfaceAl
 
 ## Unified Themes
 
-Each theme is a complete visual identity: colors, design tokens, global CSS, and per-component CSS (20 components).
+Each theme is a complete visual identity: colors, design tokens, global CSS, and per-component CSS (22 components).
 
 | Theme      | Description                                    | isDark |
 |------------|------------------------------------------------|--------|
@@ -183,7 +234,7 @@ Each theme is a complete visual identity: colors, design tokens, global CSS, and
 | hot-lava   | Deep space, coral & cyan glassmorphism         | true   |
 | stormy-ai  | Storm grays, lightning blue/cyan glows         | true   |
 
-Design tokens are bundled per-theme (`--d-radius`, `--d-radius-lg`, `--d-shadow`, `--d-transition`, `--d-pad`).
+Design tokens are bundled per-theme (`--d-radius`, `--d-radius-lg`, `--d-shadow`, `--d-transition`, `--d-pad`, plus typography and spacing tokens — see Design Token Architecture below).
 
 ### Custom Themes
 
@@ -193,44 +244,96 @@ registerTheme({
   name: 'My Theme',
   colors: { '--c0': '#fff', '--c1': '#000', /* ... c2-c9 */ },
   meta: { isDark: false, contrastText: '#fff', surfaceAlpha: 'rgba(255,255,255,0.8)' },
-  tokens: { '--d-radius': '8px', '--d-radius-lg': '16px', '--d-shadow': 'none', '--d-transition': 'all 0.2s ease', '--d-pad': '1.25rem' },
+  tokens: { '--d-radius': '8px', '--d-radius-lg': '16px', '--d-shadow': 'none', '--d-transition': 'all 0.2s ease', '--d-pad': '1.25rem', '--d-fw-heading': '700', '--d-fw-title': '600', '--d-ls-heading': '-0.025em' /* ...plus font, spacing, type scale tokens */ },
   global: '',       // optional: body styles, keyframes, scrollbar CSS
-  components: {}    // optional: 20 component CSS keys (button, card, input, etc.)
+  components: {}    // optional: 22 component CSS keys (button, card, input, etc.)
 });
 ```
 
-## Component Spacing Architecture
+## Design Token Architecture
 
-Components use a two-layer CSS system: base CSS (`_base.js`) for structure, theme CSS (`themes/*.js`) for visual identity.
+Components use a two-layer CSS system: base CSS (`_base.js`) for structure, theme CSS (`themes/*.js`) for visual identity. All spacing and typography in base/theme CSS references design tokens via `var()` with fallbacks.
 
-**Spacing token `--d-pad`** controls internal padding for container components (card header/body/footer, modal header/body/footer). Base CSS uses `var(--d-pad, 1.25rem)` as the fallback, and each theme sets its own value:
+### Typography Tokens
+
+| Token | Default | Semantic Role |
+|-------|---------|---------------|
+| `--d-font` | `Inter,"Inter Fallback",system-ui,sans-serif` | Body font family |
+| `--d-font-mono` | `ui-monospace,"JetBrains Mono",monospace` | Code font family |
+| `--d-text-xs` | `0.625rem` | Progress labels, avatar-fallback-sm |
+| `--d-text-sm` | `0.75rem` | Badges, tooltips, captions |
+| `--d-text-base` | `0.875rem` | Body default, inputs, tables, tabs, alerts |
+| `--d-text-md` | `1rem` | Feature titles, btn-lg |
+| `--d-text-lg` | `1.125rem` | Card headers, lead text |
+| `--d-text-xl` | `1.25rem` | Dashboard header, sidebar branding |
+| `--d-text-2xl` | `1.5rem` | Section titles |
+| `--d-text-3xl` | `2rem` | Article/page headings, stat values |
+| `--d-text-4xl` | `2.5rem` | Hero headlines, pricing price |
+| `--d-lh-none` | `1` | Single-line (buttons, badges, icons) |
+| `--d-lh-tight` | `1.1` | Large headings, hero text |
+| `--d-lh-snug` | `1.25` | Subheadings |
+| `--d-lh-normal` | `1.5` | Body text, tables, form labels |
+| `--d-lh-relaxed` | `1.6` | Descriptive/long-form text |
+| `--d-lh-loose` | `1.75` | Article body, reading mode |
+| `--d-fw-heading` | `700` | Heading font-weight (retro: `800`) |
+| `--d-fw-title` | `600` | Title/subtitle font-weight (retro: `800`) |
+| `--d-ls-heading` | `-0.025em` | Heading letter-spacing (retro: `0.05em`, stormy-ai: `-0.015em`) |
+
+### Spacing Tokens
+
+| Token | Default | Common Usage |
+|-------|---------|-------------|
+| `--d-sp-1` | `0.25rem` | Badge padding, minimal gaps |
+| `--d-sp-1-5` | `0.375rem` | Button-sm padding, tooltip padding, chip gap, table-compact |
+| `--d-sp-2` | `0.5rem` | Button gap, input padding, control gaps |
+| `--d-sp-2-5` | `0.625rem` | Button-lg padding, tab vertical padding, tooltip horizontal |
+| `--d-sp-3` | `0.75rem` | Cell padding, alert/toast, accordion |
+| `--d-sp-4` | `1rem` | Tab/accordion padding, element spacing |
+| `--d-sp-5` | `1.25rem` | Container padding (dark/retro `--d-pad`) |
+| `--d-sp-6` | `1.5rem` | Container padding (light), card/feature padding |
+| `--d-sp-8` | `2rem` | Section inline padding, hero margins |
+| `--d-sp-10` | `2.5rem` | Reserved for larger layouts |
+| `--d-sp-12` | `3rem` | Section block padding |
+| `--d-sp-16` | `4rem` | Hero block padding |
+| `--d-pad` | `1.25rem` | Card/Modal container padding (per-theme) |
+
+**Theme-specific token overrides:**
 
 | Token | light | dark | retro | hot-lava | stormy-ai |
 |-------|-------|------|-------|----------|-----------|
 | `--d-pad` | 1.5rem | 1.25rem | 1.25rem | 1.5rem | 1.5rem |
+| `--d-fw-heading` | 700 | 700 | 800 | 700 | 700 |
+| `--d-fw-title` | 600 | 600 | 800 | 600 | 600 |
+| `--d-ls-heading` | -0.025em | -0.025em | 0.05em | -0.025em | -0.015em |
 
-**Composition guidelines:**
+### Composition Guidelines
+
 - **External layout** — Use atomic CSS (`_gap4`, `_grid _gc3`, `_p6`) for spacing between components
 - **Internal spacing** — Components handle their own padding via `--d-pad` token; don't add padding inside Card/Modal wrappers
 - **Theme overrides** — Only add padding in theme CSS when it intentionally differs from base (e.g. retro's accordion/tabs)
+- **Token-backed atoms** — Use `_textbase`, `_fwheading`, `_lhnormal` etc. in kit/block code for theme-customizable typography (see Atomic CSS Reference)
 
 ## CLI Commands
 
 ```
-decantr init [name]   # Create minimal skeleton, then run `decantr dev` for visual wizard
-decantr dev           # Dev server with hot reload (serves wizard if unscaffolded)
+decantr init [name]   # Create minimal project skeleton with AGENTS.md
+decantr dev           # Dev server with hot reload
 decantr build         # Production build to dist/
 decantr test          # Run tests via node --test
 decantr test --watch  # Watch mode
 ```
 
-### New Init Flow
+### Internal Dev Scripts
 
-1. `decantr init myapp` — creates minimal skeleton (package.json, config, HTML shell, empty src/)
-2. `cd myapp && npm install && npx decantr dev` — dev server detects unscaffolded project
-3. Browser opens → visual wizard at localhost
-4. Wizard: Category → Variant → Theme → Customize → Scaffold
-5. Scaffolder writes all files, HMR reloads → user sees their app
+```
+npm run workbench:dev   # Component showcase on localhost:4300 — all 23 components, live theme switching, HMR on framework src/ changes
+```
+
+### Init Flow
+
+1. `decantr init myapp` — creates minimal skeleton (package.json, config, HTML shell, AGENTS.md, example app.js)
+2. `cd myapp && npm install && npx decantr dev` — dev server starts
+3. User prompts their AI to build the app using AGENTS.md as the translation layer
 
 ## Framework Conventions
 
@@ -255,22 +358,19 @@ Run: `node --test test/*.test.js`
 
 ## Build Tooling (tools/)
 
-- `dev-server.js` — Development server with file watching, hot reload, wizard serving, blueprint API, scaffold endpoint. Routes reference: `reference/dev-server-routes.md`
+- `dev-server.js` — Development server with file watching, hot reload, import rewriting. Accepts optional `options.watchDirs` array for watching additional directories (used by workbench). Routes reference: `reference/dev-server-routes.md`
 - `builder.js` — Production bundler (HTML, JS, CSS extraction)
-- `scaffolder.js` — Blueprint → code generator. API reference: `reference/scaffolder-api.md`
-- `scaffold-templates.js` — Template utilities for scaffolder (packageJson, indexHtml, configJson, etc.)
+- `init-templates.js` — Template functions for `decantr init` (packageJson, indexHtml, configJson, claudeMd, appJs, agentsMd)
 - `css-extract.js` — Extract and deduplicate atomic CSS from source
 - `minify.js` — JS/CSS/HTML minification
-- `registry.js` — Auto-generates `src/registry/` (index + per-module specs) from JSDoc annotations. Run: `node tools/registry.js`
+- `registry.js` — Auto-generates `src/registry/` (index + per-module specs) from JSDoc annotations. Auto-runs in pre-commit hook; manual: `node tools/registry.js`
 
 ## Reference Docs (reference/)
 
 Deep-dive documentation for each subsystem. Read when working on that specific area.
 
 - `reference/kit-architecture.md` — Kit component patterns, _shared.js utilities, reactive props, how to add new kits
-- `reference/blueprint-reference.md` — Full blueprint schema, SECTION_MAP, mock data format, adding new blueprints
-- `reference/scaffolder-api.md` — scaffoldProject() API, generated file structure, code generation flow
-- `reference/dev-server-routes.md` — Special routes, import rewriting, wizard serving, scaffold detection
+- `reference/dev-server-routes.md` — Special routes, import rewriting, HMR, framework source serving
 
 ## Accessibility (WCAG 2.1 AA)
 
@@ -406,7 +506,22 @@ All atoms are available via `css()`. Example: `css('_grid _gc3 _gap4 _p6 _ctr')`
 `_lh1` (1), `_lh1a`/`_lh125` (1.25), `_lh1b`/`_lh150` (1.5), `_lh175` (1.75), `_lh2` (2)
 
 ### Typography
-`_t10`-`_t48` (font-size), `_bold/_medium/_normal/_light` (weight), `_italic`, `_underline/_strike/_nounder`, `_upper/_lower/_cap`, `_tl/_tc/_tr`
+`_t10`-`_t48` (font-size, fixed rem), `_bold/_medium/_normal/_light` (weight), `_italic`, `_underline/_strike/_nounder`, `_upper/_lower/_cap`, `_tl/_tc/_tr`
+
+### Token-Backed Typography (theme-customizable)
+| Atom | CSS Output |
+|------|-----------|
+| `_textxs`-`_text4xl` | `font-size:var(--d-text-{size},{fallback})` — xs/sm/base/md/lg/xl/2xl/3xl/4xl |
+| `_lhtight` | `line-height:var(--d-lh-tight,1.1)` |
+| `_lhsnug` | `line-height:var(--d-lh-snug,1.25)` |
+| `_lhnormal` | `line-height:var(--d-lh-normal,1.5)` |
+| `_lhrelaxed` | `line-height:var(--d-lh-relaxed,1.6)` |
+| `_lhloose` | `line-height:var(--d-lh-loose,1.75)` |
+| `_fwheading` | `font-weight:var(--d-fw-heading,700)` |
+| `_fwtitle` | `font-weight:var(--d-fw-title,600)` |
+| `_lsheading` | `letter-spacing:var(--d-ls-heading,-0.025em)` |
+
+Use `_text*`/`_lh*`/`_fw*` atoms in components/kits/blocks for theme-customizable typography. Use `_t10`-`_t48` for fixed sizes that should not change per theme.
 
 ### Colors
 `_bg0`-`_bg9`, `_fg0`-`_fg9`, `_bc0`-`_bc9` (use theme CSS variables --c0 through --c9)

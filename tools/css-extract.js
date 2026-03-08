@@ -37,5 +37,6 @@ export function generateCSS(classNames) {
       rules.push(`.${name}{${decl}}`);
     }
   }
-  return rules.join('\n');
+  if (rules.length === 0) return '';
+  return `@layer d.atoms{${rules.join('')}}`;
 }

@@ -1,0 +1,12 @@
+{
+  "name": "decantr-workbench",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.js"
+  },
+  "dependencies": {
+    "decantr": "file:.."
+  }
+}

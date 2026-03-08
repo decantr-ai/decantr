@@ -61,15 +61,16 @@ function getStyleElement() {
  * @returns {string}
  */
 function buildCSS(theme) {
-  let css = '';
-  if (theme.global) css += theme.global;
+  let base = '';
+  let comp = '';
+  if (theme.global) base += theme.global;
   if (theme.components) {
     for (const rules of Object.values(theme.components)) {
-      if (Array.isArray(rules)) css += rules.join('');
-      else css += rules;
+      if (Array.isArray(rules)) comp += rules.join('');
+      else comp += rules;
     }
   }
-  return css;
+  return `@layer d.theme{${base}${comp}}`;
 }
 
 /**
@@ -105,7 +106,16 @@ export function getThemeMeta() {
 export function registerTheme(theme) {
   // Fill defaults for missing optional fields
   if (!theme.meta) theme.meta = { isDark: false, contrastText: '#ffffff', surfaceAlpha: 'rgba(255,255,255,0.8)' };
-  if (!theme.tokens) theme.tokens = { '--d-radius': '8px', '--d-radius-lg': '16px', '--d-shadow': 'none', '--d-transition': 'all 0.2s ease', '--d-pad': '1.25rem' };
+  if (!theme.tokens) theme.tokens = {
+    '--d-radius': '8px', '--d-radius-lg': '16px', '--d-shadow': 'none', '--d-transition': 'all 0.2s ease', '--d-pad': '1.25rem',
+    '--d-font': 'Inter,"Inter Fallback",system-ui,sans-serif', '--d-font-mono': 'ui-monospace,"JetBrains Mono",monospace',
+    '--d-text-xs': '0.625rem', '--d-text-sm': '0.75rem', '--d-text-base': '0.875rem', '--d-text-md': '1rem',
+    '--d-text-lg': '1.125rem', '--d-text-xl': '1.25rem', '--d-text-2xl': '1.5rem', '--d-text-3xl': '2rem', '--d-text-4xl': '2.5rem',
+    '--d-lh-none': '1', '--d-lh-tight': '1.1', '--d-lh-snug': '1.25', '--d-lh-normal': '1.5', '--d-lh-relaxed': '1.6', '--d-lh-loose': '1.75',
+    '--d-fw-heading': '700', '--d-fw-title': '600', '--d-fw-medium': '500', '--d-ls-heading': '-0.025em',
+    '--d-sp-1': '0.25rem', '--d-sp-1-5': '0.375rem', '--d-sp-2': '0.5rem', '--d-sp-2-5': '0.625rem', '--d-sp-3': '0.75rem', '--d-sp-4': '1rem', '--d-sp-5': '1.25rem',
+    '--d-sp-6': '1.5rem', '--d-sp-8': '2rem', '--d-sp-10': '2.5rem', '--d-sp-12': '3rem', '--d-sp-16': '4rem'
+  };
   if (!theme.global) theme.global = '';
   if (!theme.components) theme.components = {};
   themes.set(theme.id, theme);

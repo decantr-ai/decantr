@@ -6,7 +6,7 @@
       "params": [
         {
           "name": "config",
-          "type": "{ mode: 'hash'|'history', routes: Array<{path: string, component: Function}> }"
+          "type": "{ mode: 'hash'|'history', routes: Array<{path: string, component: Function}>, transitions?: boolean }"
         }
       ]
     },

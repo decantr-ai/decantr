@@ -38,54 +38,46 @@ const steps = [
   },
   {
     number: '02',
-    title: 'Choose Your Project',
-    desc: 'Dashboard with sidebar and data tables? Landing page with hero and pricing? Portfolio with a showcase grid? The wizard guides you through it.',
-    badges: ['Dashboard', 'Landing Page', 'Portfolio', 'Demo Showcase'],
+    title: 'Start the Dev Server',
+    desc: 'Run the dev server with hot reload. Your project includes AGENTS.md \u2014 a translation layer that maps React, Vue, Angular, and other frameworks to decantr equivalents.',
+    code: 'cd my-app && npm install\nnpx decantr dev',
     accent: 'var(--c7)'
   },
   {
     number: '03',
-    title: 'Select Features',
-    desc: 'Pick from a library of pre-built features. Auth login, profile pages, social feeds, admin panels \u2014 all scaffolded instantly with production-ready code.',
-    badges: ['Auth Login', 'Profile Page', 'Social Feed', 'Admin Panel', 'Settings', 'Data Tables'],
+    title: 'Prompt Your AI',
+    desc: 'Open your AI coding assistant and describe what you want to build. The AGENTS.md file ensures your AI generates correct decantr code \u2014 no hallucinated APIs, no wrong imports.',
+    badges: ['Dashboard', 'Landing Page', 'Portfolio', 'Auth Flow', 'Data Tables', 'Admin Panel'],
     accent: 'var(--c8)'
   },
   {
     number: '04',
-    title: 'Generate with AI',
-    desc: 'Use the decantr prompt generator to create pre-constructed prompts for ChatGPT or Claude. The prompts include your project context, component APIs, and constraints \u2014 so the AI scaffolds with 100% accuracy.',
-    code: 'npx decantr prompt --type dashboard --features auth,profile,feed',
+    title: 'Ship It',
+    desc: 'Build for production with a single command. Bundled, minified, and hashed \u2014 ready to deploy anywhere.',
+    code: 'npx decantr build',
     accent: 'var(--c9)'
   }
 ];
 
 const scaffoldFeatures = [
-  { title: 'Auth & Login', desc: 'Modal-based authentication with form validation, session state, and protected routes.' },
-  { title: 'User Profile', desc: 'Editable profile page with avatar, input fields, save/cancel actions, and signal-based form state.' },
-  { title: 'Social Feed', desc: 'Scrollable feed with post cards, like/comment actions, and dynamic content loading.' },
-  { title: 'Admin Dashboard', desc: 'Sidebar navigation, stats cards with trend badges, data tables, and overview charts.' },
-  { title: 'Settings Panel', desc: 'Theme switching, notification preferences, account management, and form persistence.' },
-  { title: 'Data Tables', desc: 'Sortable, filterable tables with search, pagination, row actions, and status badges.' }
+  { title: '23+ Components', desc: 'Buttons, inputs, modals, tabs, tables, tooltips, accordions \u2014 all themed and accessible out of the box.' },
+  { title: 'Dashboard Kit', desc: 'Sidebar, stats grid, KPI cards, activity feed, data tables, and chart placeholders.' },
+  { title: 'Auth Kit', desc: 'Login, register, and forgot-password forms with layout wrapper and signal-based state.' },
+  { title: 'Content Kit', desc: 'Article layout, author cards, table of contents, post lists, and category navigation.' },
+  { title: '5 Themes', desc: 'Light, dark, retro, hot-lava, and stormy-ai \u2014 switch with a single function call.' },
+  { title: 'Signal Reactivity', desc: 'Fine-grained signals, effects, memos, and stores. No virtual DOM, no diffing overhead.' }
 ];
 
-const examplePrompt = `You are building a decantr web application.
+const examplePrompt = `Build a dashboard page with:
+- Sidebar navigation with 5 links
+- Stats grid showing 4 KPI cards
+- Activity feed with recent events
+- Data table for user management
 
-Framework: decantr v0.2.0
-Theme: stormy-ai
-Router: hash
-Project type: dashboard
+Use decantr components and the dashboard kit.
+Theme: stormy-ai`;
 
-Scaffold a user profile page at /profile with:
-- Avatar component (size: 'lg', fallback initials)
-- Editable Input fields for name, email, bio
-- Save button with loading state via reactive signal
-- Card layout with Card.Header and Card.Body
-- Signal-based form state with createSignal
-
-Use h() hyperscript, inline styles, decantr/components imports.
-Do NOT use JSX, React, or external CSS frameworks.`;
-
-const customPromptExample = `I want to add a contact form to my decantr landing page
+const customPromptExample = `I want to add a contact form to my landing page
 that collects name, email, and message. It should use
 Input and Textarea components with validation, a Submit
 button with loading state, and display a success Toast
@@ -117,7 +109,7 @@ function HeroSection() {
           fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'var(--c4)',
           lineHeight: '1.6', maxWidth: '600px', margin: '0 auto'
         }
-      }, 'From idea to production in minutes. Choose what to build, scaffold it, and let AI handle the rest.')
+      }, 'From idea to production in minutes. Prompt your AI, and it builds with decantr.')
     )
   );
 }
@@ -195,13 +187,13 @@ function FeaturesListSection() {
           fontSize: '1.75rem', fontWeight: '700', textAlign: 'center',
           marginBottom: '0.75rem', color: 'var(--c3)'
         }
-      }, 'What you can build'),
+      }, 'What you get'),
       h('p', {
         style: {
           textAlign: 'center', color: 'var(--c4)', marginBottom: '3rem',
           fontSize: '1.125rem'
         }
-      }, 'Select features from the scaffold menu. Each one generates production-ready code.'),
+      }, 'A complete framework designed for AI to generate production-ready code.'),
 
       h('div', {
         class: 'hiw-features-grid',
@@ -239,7 +231,7 @@ function PromptShowcaseSection() {
           textAlign: 'center', color: 'var(--c4)', marginBottom: '3rem',
           fontSize: '1.125rem', lineHeight: '1.6'
         }
-      }, 'The prompt generator creates precise instructions for ChatGPT and Claude. No hallucinated APIs. No wrong imports. 100% accuracy.'),
+      }, 'AGENTS.md maps every React/Vue/Angular pattern to decantr equivalents. Your AI generates correct code on the first try.'),
 
       h('div', {
         class: 'hiw-prompt-grid',
@@ -269,10 +261,10 @@ function PromptShowcaseSection() {
                 display: 'flex', alignItems: 'center', gap: '0.5rem'
               }
             },
-              Badge({ status: 'success' }, 'Auto-generated'),
+              Badge({ status: 'success' }, 'AI Prompt'),
               h('span', {
                 style: { fontSize: '0.75rem', color: 'var(--c4)' }
-              }, 'from decantr prompt')
+              }, 'describe what you want')
             ),
             CodeBlock({ code: examplePrompt })
           )
@@ -332,7 +324,7 @@ function CTASection() {
       }, 'Ready to build?'),
       h('p', {
         style: { color: 'var(--c4)', marginBottom: '2rem', fontSize: '1.125rem', lineHeight: '1.6' }
-      }, 'Install decantr, run the wizard, and ship your first app in under a minute.'),
+      }, 'Install decantr, prompt your AI, and ship your first app in minutes.'),
       h('div', { style: { display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' } },
         link({ href: '/getting-started', style: { textDecoration: 'none' } },
           Button({ variant: 'primary', size: 'lg' }, 'Get Started')

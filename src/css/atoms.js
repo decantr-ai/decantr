@@ -287,6 +287,23 @@ atomMap.set('_lh125', 'line-height:1.25');
 atomMap.set('_lh150', 'line-height:1.5');
 atomMap.set('_lh175', 'line-height:1.75');
 
+// Token-backed semantic typography
+for (const [name, token, fallback] of [
+  ['textxs','xs','0.625rem'],['textsm','sm','0.75rem'],['textbase','base','0.875rem'],
+  ['textmd','md','1rem'],['textlg','lg','1.125rem'],['textxl','xl','1.25rem'],
+  ['text2xl','2xl','1.5rem'],['text3xl','3xl','2rem'],['text4xl','4xl','2.5rem']
+]) atomMap.set(`_${name}`, `font-size:var(--d-text-${token},${fallback})`);
+
+for (const [name, token, fallback] of [
+  ['lhtight','tight','1.1'],['lhsnug','snug','1.25'],['lhnormal','normal','1.5'],
+  ['lhrelaxed','relaxed','1.6'],['lhloose','loose','1.75']
+]) atomMap.set(`_${name}`, `line-height:var(--d-lh-${token},${fallback})`);
+
+atomMap.set('_fwheading', 'font-weight:var(--d-fw-heading,700)');
+atomMap.set('_fwtitle', 'font-weight:var(--d-fw-title,600)');
+atomMap.set('_fwmedium', 'font-weight:var(--d-fw-medium,500)');
+atomMap.set('_lsheading', 'letter-spacing:var(--d-ls-heading,-0.025em)');
+
 // Colors (CSS custom properties --c0 through --c9)
 for (let i = 0; i <= 9; i++) {
   atomMap.set(`_bg${i}`, `background:var(--c${i})`);
@@ -367,3 +384,8 @@ atomMap.set('_shadow', 'box-shadow:0 1px 3px rgba(0,0,0,0.12),0 1px 2px rgba(0,0
 atomMap.set('_shadowmd', 'box-shadow:0 4px 6px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06)');
 atomMap.set('_shadowlg', 'box-shadow:0 10px 15px rgba(0,0,0,0.1),0 4px 6px rgba(0,0,0,0.05)');
 atomMap.set('_shadowno', 'box-shadow:none');
+
+// Container queries
+atomMap.set('_cqinl', 'container-type:inline-size');
+atomMap.set('_cqsz', 'container-type:size');
+atomMap.set('_cqnorm', 'container-type:normal');

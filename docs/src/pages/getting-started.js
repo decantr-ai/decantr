@@ -15,12 +15,12 @@ export function GettingStarted() {
 
     h('h2', { style: { fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' } }, '1. Create a project'),
     h('p', { style: { marginBottom: '0.75rem', lineHeight: '1.6' } },
-      'The CLI walks you through project setup \u2014 choose a template, theme, and design style.'
+      'The CLI creates a minimal project skeleton with everything your AI needs to start building.'
     ),
     CodeBlock({ code: 'npx decantr init my-app', lang: 'bash' }),
 
     h('p', { style: { marginTop: '1rem', marginBottom: '1.5rem', lineHeight: '1.6' } },
-      'This scaffolds a project with a package.json, HTML shell, app entry point, and sample pages.'
+      'This creates a project with package.json, HTML shell, example app.js, and AGENTS.md \u2014 a translation layer that maps React/Vue/Angular patterns to decantr equivalents.'
     ),
 
     h('h2', { style: { fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' } }, '2. Start the dev server'),

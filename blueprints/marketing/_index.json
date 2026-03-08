@@ -1,8 +1,0 @@
-{
-  "category": "marketing",
-  "variants": [
-    { "id": "saas-landing", "name": "SaaS Landing Page", "description": "Hero section, features grid, pricing tiers, testimonials, and CTA." },
-    { "id": "agency", "name": "Agency Site", "description": "Portfolio showcase, services, team members, and contact page." },
-    { "id": "startup", "name": "Startup Launch", "description": "Product hero, benefits, social proof, early access signup." }
-  ]
-}

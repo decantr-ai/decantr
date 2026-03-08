@@ -1,8 +1,0 @@
-{
-  "category": "content",
-  "variants": [
-    { "id": "blog", "name": "Blog", "description": "Post listings, article pages, categories, and author profiles." },
-    { "id": "portfolio", "name": "Portfolio", "description": "Sophisticated 5-page developer portfolio with career timeline, project showcase, skill categories, hobby cards, and glassmorphic contact layout." },
-    { "id": "documentation", "name": "Documentation", "description": "Sidebar navigation, markdown-style pages, search, and table of contents." }
-  ]
-}

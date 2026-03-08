@@ -1,2 +1,4 @@
 #!/bin/sh
+node tools/registry.js
+git add src/registry/
 node --test test/**/*.test.js

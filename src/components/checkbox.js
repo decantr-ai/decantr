@@ -32,21 +32,12 @@ export function Checkbox(props = {}) {
   }
 
   if (typeof checked === 'function') {
-    createEffect(() => {
-      input.checked = checked();
-      wrapper.classList.toggle('d-checkbox-checked', input.checked);
-    });
+    createEffect(() => { input.checked = checked(); });
   } else if (checked) {
     input.checked = true;
-    wrapper.classList.add('d-checkbox-checked');
   }
 
   reactiveAttr(input, disabled, 'disabled');
-
-  // Sync visual state on native change
-  input.addEventListener('change', () => {
-    wrapper.classList.toggle('d-checkbox-checked', input.checked);
-  });
 
   return wrapper;
 }

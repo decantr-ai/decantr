@@ -29,7 +29,7 @@
       ],
       "returns": "() => T"
     },
-    "createStore": {
+    "untrack": {
       "params": [
         {
           "name": "initialValue",
@@ -37,6 +37,16 @@
         }
       ],
       "returns": "T"
+    },
+    "peek": {
+      "params": [
+        {
+          "name": "getter",
+          "type": "() => T"
+        }
+      ],
+      "returns": "T",
+      "description": "Read a signal getter without subscribing. Alias for untrack(). Aligns with TC39 Signals proposal terminology."
     },
     "useLocalStorage": {
       "params": [

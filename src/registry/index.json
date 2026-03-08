@@ -1,7 +1,7 @@
 {
   "$schema": "https://decantr.ai/schemas/registry.v1.json",
   "version": "0.3.0",
-  "generated": "2026-02-21",
+  "generated": "2026-03-08",
   "modules": {
     "decantr/core": {
       "description": "DOM engine — hyperscript rendering, conditional, list, mount, lifecycle",
@@ -11,7 +11,7 @@
     "decantr/state": {
       "description": "Reactive primitives — signals, effects, memos, stores, batch",
       "file": "state.json",
-      "exports": 6
+      "exports": 7
     },
     "decantr/router": {
       "description": "Client-side routing — hash or history mode",
@@ -26,7 +26,7 @@
     "decantr/components": {
       "description": "UI components — all return HTMLElement, all accept inline styles",
       "file": "components.json",
-      "exports": 21
+      "exports": 31
     },
     "decantr/kit/auth": {
       "description": "auth domain kit",

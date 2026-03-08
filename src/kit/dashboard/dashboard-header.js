@@ -33,7 +33,7 @@ export function DashboardHeader(props = {}, ...children) {
   if (title) {
     left.appendChild(
       h('h1', {
-        style: { margin: '0', fontSize: '1.25rem', fontWeight: '600', color: 'var(--c3)' }
+        class: css('_m0 _textxl _fwtitle _fg3')
       }, title)
     );
   }

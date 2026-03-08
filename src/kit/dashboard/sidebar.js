@@ -52,8 +52,7 @@ export function Sidebar(props = {}, ...children) {
   // Branding
   if (branding) {
     const brandEl = h('div', {
-      class: css('_flex _aic _px4 _py4'),
-      style: { fontWeight: '600', fontSize: '1.125rem', color: 'var(--c3)', whiteSpace: 'nowrap' }
+      class: css('_flex _aic _px4 _py4 _fwtitle _textlg _fg3 _wsnw')
     }, branding);
 
     // Hide brand text when collapsed
@@ -68,15 +67,11 @@ export function Sidebar(props = {}, ...children) {
   // Collapsible toggle button
   if (collapsible) {
     const toggleBtn = h('button', {
-      class: css('_flex _aic _jcc _p2 _mx2 _mb2'),
+      class: css('_flex _aic _jcc _p2 _mx2 _mb2 _textsm _lh1 _fg4 _pointer'),
       style: {
         background: 'transparent',
         border: '1px solid var(--c5)',
-        borderRadius: 'var(--d-radius, 6px)',
-        cursor: 'pointer',
-        color: 'var(--c4)',
-        fontSize: '0.75rem',
-        lineHeight: '1'
+        borderRadius: 'var(--d-radius, 6px)'
       },
       'aria-label': 'Toggle sidebar',
       onclick() {
@@ -119,11 +114,8 @@ export function Sidebar(props = {}, ...children) {
     const linkEl = link(
       {
         href: item.href,
-        class: css('_flex _aic _gap2 _px4 _py2'),
+        class: css('_flex _aic _gap2 _px4 _py2 _nounder _fg3 _textbase'),
         style: {
-          textDecoration: 'none',
-          color: 'var(--c3)',
-          fontSize: '0.875rem',
           borderRadius: 'var(--d-radius, 6px)',
           transition: 'background 0.15s ease'
         }

@@ -15,14 +15,11 @@ export function ChartPlaceholder(props = {}) {
   const { title = 'Chart', height = '200px', class: cls } = props;
 
   const placeholder = h('div', {
-    class: css('_flex _center'),
+    class: css('_flex _center _textbase _medium _fg4'),
     style: {
       height,
       border: '2px dashed var(--c5)',
-      borderRadius: 'var(--d-radius, 6px)',
-      color: 'var(--c4)',
-      fontSize: '0.875rem',
-      fontWeight: '500'
+      borderRadius: 'var(--d-radius, 6px)'
     }
   }, `Chart: ${title}`);
 

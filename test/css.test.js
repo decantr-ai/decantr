@@ -528,3 +528,175 @@ describe('line-height aliases', () => {
     assert.ok(output.includes('._lh175{line-height:1.75}'));
   });
 });
+
+describe('responsive breakpoints', () => {
+  it('returns responsive class names', () => {
+    const result = css('_grid _gc1 _sm:gc2 _lg:gc3');
+    assert.equal(result, '_grid _gc1 _sm:gc2 _lg:gc3');
+  });
+
+  it('injects responsive CSS with media queries', () => {
+    css('_sm:gc2');
+    const output = extractCSS();
+    assert.ok(output.includes('@media(min-width:640px)'));
+    assert.ok(output.includes('._sm\\:gc2{grid-template-columns:repeat(2,minmax(0,1fr))}'));
+  });
+
+  it('supports all four breakpoints', () => {
+    css('_sm:flex _md:grid _lg:none _xl:block');
+    const output = extractCSS();
+    assert.ok(output.includes('@media(min-width:640px)'));
+    assert.ok(output.includes('@media(min-width:768px)'));
+    assert.ok(output.includes('@media(min-width:1024px)'));
+    assert.ok(output.includes('@media(min-width:1280px)'));
+  });
+
+  it('works with spacing atoms', () => {
+    css('_p4 _md:p8');
+    const output = extractCSS();
+    assert.ok(output.includes('._p4{padding:1rem}'));
+    assert.ok(output.includes('@media(min-width:768px){._md\\:p8{padding:2rem}}'));
+  });
+
+  it('works with typography atoms', () => {
+    css('_t16 _lg:t24');
+    const output = extractCSS();
+    assert.ok(output.includes('._t16{font-size:1rem}'));
+    assert.ok(output.includes('@media(min-width:1024px){._lg\\:t24{font-size:1.5rem}}'));
+  });
+
+  it('works with display atoms', () => {
+    css('_none _sm:block');
+    const output = extractCSS();
+    assert.ok(output.includes('._none{display:none}'));
+    assert.ok(output.includes('@media(min-width:640px){._sm\\:block{display:block}}'));
+  });
+
+  it('works with negative margins', () => {
+    css('_sm:-mt4');
+    const output = extractCSS();
+    assert.ok(output.includes('@media(min-width:640px){._sm\\:-mt4{margin-top:-1rem}}'));
+  });
+
+  it('deduplicates responsive injections', () => {
+    css('_sm:gc3');
+    css('_sm:gc3');
+    const output = extractCSS();
+    const count = output.split('._sm\\:gc3{').length - 1;
+    assert.equal(count, 1);
+  });
+
+  it('passes through unknown responsive atoms', () => {
+    const result = css('_sm:nonexistent');
+    assert.equal(result, '_sm:nonexistent');
+  });
+
+  it('works in space-separated string', () => {
+    const result = css('_grid _gc1 _md:gc3 _gap4');
+    assert.equal(result, '_grid _gc1 _md:gc3 _gap4');
+    const output = extractCSS();
+    assert.ok(output.includes('@media(min-width:768px){._md\\:gc3{grid-template-columns:repeat(3,minmax(0,1fr))}'));
+  });
+
+  it('works with color atoms', () => {
+    css('_bg0 _sm:bg1');
+    const output = extractCSS();
+    assert.ok(output.includes('@media(min-width:640px){._sm\\:bg1{background:var(--c1)}}'));
+  });
+
+  it('extractCSS includes responsive rules', () => {
+    css('_p4 _sm:p8 _lg:gc3');
+    const output = extractCSS();
+    assert.ok(output.includes('._p4{'));
+    assert.ok(output.includes('@media(min-width:640px)'));
+    assert.ok(output.includes('@media(min-width:1024px)'));
+  });
+
+  it('reset clears responsive rules', () => {
+    css('_sm:p4');
+    reset();
+    const output = extractCSS();
+    assert.ok(!output.includes('@media'));
+  });
+});
+
+describe('@layer cascade layers', () => {
+  it('extractCSS includes layer order declaration', () => {
+    css('_p4');
+    const output = extractCSS();
+    assert.ok(output.includes('@layer d.base,d.theme,d.atoms,d.user;'));
+  });
+
+  it('wraps atom rules in @layer d.atoms', () => {
+    css('_flex');
+    const output = extractCSS();
+    assert.ok(output.includes('@layer d.atoms{._flex{display:flex}}'));
+  });
+
+  it('wraps responsive rules in @layer d.atoms', () => {
+    css('_sm:gc3');
+    const output = extractCSS();
+    assert.ok(output.includes('@layer d.atoms{@media(min-width:640px)'));
+  });
+
+  it('layer order appears before atom rules', () => {
+    css('_p4');
+    const output = extractCSS();
+    const layerIdx = output.indexOf('@layer d.base,d.theme,d.atoms,d.user;');
+    const atomIdx = output.indexOf('@layer d.atoms{._p4{');
+    assert.ok(layerIdx < atomIdx, 'layer order should precede atom rules');
+  });
+});
+
+describe('container query atoms', () => {
+  it('generates container-type atoms', () => {
+    css('_cqinl', '_cqsz', '_cqnorm');
+    const output = extractCSS();
+    assert.ok(output.includes('._cqinl{container-type:inline-size}'));
+    assert.ok(output.includes('._cqsz{container-type:size}'));
+    assert.ok(output.includes('._cqnorm{container-type:normal}'));
+  });
+
+  it('injects container query rules with _cq prefix', () => {
+    css('_cq640:gc3');
+    const output = extractCSS();
+    assert.ok(output.includes('@container(min-width:640px)'));
+    assert.ok(output.includes('._cq640\\:gc3{grid-template-columns:repeat(3,minmax(0,1fr))}'));
+  });
+
+  it('supports all container query widths', () => {
+    css('_cq320:flex _cq480:grid _cq640:none _cq768:block _cq1024:col');
+    const output = extractCSS();
+    assert.ok(output.includes('@container(min-width:320px)'));
+    assert.ok(output.includes('@container(min-width:480px)'));
+    assert.ok(output.includes('@container(min-width:640px)'));
+    assert.ok(output.includes('@container(min-width:768px)'));
+    assert.ok(output.includes('@container(min-width:1024px)'));
+  });
+
+  it('wraps container query rules in @layer d.atoms', () => {
+    css('_cq640:p4');
+    const output = extractCSS();
+    assert.ok(output.includes('@layer d.atoms{@container(min-width:640px)'));
+  });
+
+  it('deduplicates container query injections', () => {
+    css('_cq640:gc3');
+    css('_cq640:gc3');
+    const output = extractCSS();
+    const count = output.split('._cq640\\:gc3{').length - 1;
+    assert.equal(count, 1);
+  });
+
+  it('passes through invalid container query widths', () => {
+    const result = css('_cq999:flex');
+    assert.equal(result, '_cq999:flex');
+  });
+
+  it('reset clears container query rules', () => {
+    css('_cq640:gc3');
+    reset();
+    const output = extractCSS();
+    assert.ok(!output.includes('@container'));
+  });
+});

@@ -39,7 +39,7 @@ export function KPICard(props = {}) {
   if (title) {
     topRow.appendChild(
       h('span', {
-        style: { fontSize: '0.875rem', color: 'var(--c4)', fontWeight: '500' }
+        class: css('_textbase _fg4 _medium')
       }, title)
     );
   }
@@ -54,7 +54,8 @@ export function KPICard(props = {}) {
 
   // Value row
   const valueEl = h('div', {
-    style: { fontSize: '2rem', fontWeight: '700', color: 'var(--c3)', lineHeight: '1.2' }
+    class: css('_text3xl _fwheading _fg3'),
+    style: { lineHeight: '1.2' }
   });
 
   if (typeof value === 'function') {
@@ -72,14 +73,16 @@ export function KPICard(props = {}) {
     if (statusArrow) {
       changeRow.appendChild(
         h('span', {
-          style: { color: statusColor, fontSize: '0.875rem', fontWeight: '600' }
+          class: css('_textbase _fwtitle'),
+          style: { color: statusColor }
         }, statusArrow)
       );
     }
 
     changeRow.appendChild(
       h('span', {
-        style: { color: statusColor, fontSize: '0.875rem', fontWeight: '500' }
+        class: css('_textbase _medium'),
+        style: { color: statusColor }
       }, change)
     );
 

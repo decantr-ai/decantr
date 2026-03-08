@@ -45,19 +45,24 @@
     },
     "./kit/content": {
       "import": "./src/kit/content/index.js"
+    },
+    "./chart": {
+      "import": "./src/chart/index.js"
     }
   },
   "files": [
     "src/",
     "cli/",
     "tools/",
-    "blueprints/"
+    "AGENTS.md"
   ],
   "scripts": {
     "test": "node --test test/**/*.test.js",
     "docs:dev": "cd docs && npx decantr dev",
     "docs:build": "cd docs && npx decantr build",
+    "registry": "node tools/registry.js",
     "reset": "node tools/reset-playground.js",
+    "workbench:dev": "node workbench/scripts/dev.js",
     "prepare": "sh tools/install-hooks.sh"
   },
   "keywords": [

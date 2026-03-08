@@ -1,0 +1,70 @@
+{
+  "module": "decantr/chart",
+  "file": "src/chart/index.js",
+  "exports": {
+    "Chart": {
+      "params": [
+        {
+          "name": "spec",
+          "type": "Object",
+          "properties": {
+            "type": { "type": "string", "enum": ["line", "bar", "area", "pie"], "default": "line" },
+            "data": { "type": "Object[]|() => Object[]", "required": true },
+            "x": { "type": "string", "description": "Field name for x-axis values" },
+            "y": { "type": "string|string[]", "description": "Field name(s) for y-axis values" },
+            "series": { "type": "string", "description": "Field to split data into series" },
+            "title": { "type": "string|() => string" },
+            "xFormat": { "type": "(value) => string", "description": "Custom x-axis label formatter" },
+            "yFormat": { "type": "(value) => string", "description": "Custom y-axis label formatter" },
+            "tooltip": { "type": "boolean|((point) => HTMLElement)", "default": true },
+            "legend": { "type": "boolean", "default": true },
+            "grid": { "type": "boolean", "default": true },
+            "stacked": { "type": "boolean", "default": false },
+            "donut": { "type": "boolean", "default": true, "description": "Pie chart inner radius (false = full pie)" },
+            "animate": { "type": "boolean", "default": true },
+            "renderer": { "type": "string", "enum": ["auto", "svg", "canvas", "webgpu"], "default": "auto" },
+            "height": { "type": "string", "default": "300px" },
+            "tableAlt": { "type": "boolean", "default": true, "description": "Accessible data table fallback" },
+            "aria-label": { "type": "string" },
+            "class": { "type": "string" }
+          }
+        }
+      ],
+      "returns": "HTMLElement",
+      "description": "Create a themed, reactive chart from a declarative spec."
+    },
+    "Sparkline": {
+      "params": [
+        {
+          "name": "spec",
+          "type": "Object",
+          "properties": {
+            "data": { "type": "number[]|Object[]|() => number[]", "required": true },
+            "x": { "type": "string", "description": "Field for x values (if object data)" },
+            "y": { "type": "string", "description": "Field for y values (if object data)" },
+            "height": { "type": "string", "default": "32px" },
+            "width": { "type": "string", "default": "120px" },
+            "aria-label": { "type": "string" },
+            "class": { "type": "string" }
+          }
+        }
+      ],
+      "returns": "HTMLElement",
+      "description": "Inline sparkline — no axes, no legend, no title."
+    },
+    "chartSpec": {
+      "params": [
+        { "name": "overrides", "type": "Object", "default": "{}" }
+      ],
+      "returns": "Object",
+      "description": "Validate and fill defaults for a chart spec."
+    },
+    "chartColor": {
+      "params": [
+        { "name": "index", "type": "number" }
+      ],
+      "returns": "string",
+      "description": "Get CSS variable reference for chart color at series index."
+    }
+  }
+}

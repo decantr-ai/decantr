@@ -17,31 +17,27 @@ export function Tooltip(props = {}, ...children) {
 
   const tooltipEl = h('div', {
     class: cx('d-tooltip', `d-tooltip-${position}`, cls),
-    role: 'tooltip'
+    role: 'tooltip',
+    popover: 'manual'
   }, content);
-  tooltipEl.style.display = 'none';
 
   const wrapper = h('div', { class: 'd-tooltip-wrap' }, ...children, tooltipEl);
 
   let showTimer = null;
 
-  wrapper.addEventListener('mouseenter', () => {
-    showTimer = setTimeout(() => { tooltipEl.style.display = ''; }, delay);
-  });
+  function show() {
+    showTimer = setTimeout(() => tooltipEl.showPopover(), delay);
+  }
 
-  wrapper.addEventListener('mouseleave', () => {
+  function hide() {
     clearTimeout(showTimer);
-    tooltipEl.style.display = 'none';
-  });
+    tooltipEl.hidePopover();
+  }
 
-  wrapper.addEventListener('focusin', () => {
-    showTimer = setTimeout(() => { tooltipEl.style.display = ''; }, delay);
-  });
-
-  wrapper.addEventListener('focusout', () => {
-    clearTimeout(showTimer);
-    tooltipEl.style.display = 'none';
-  });
+  wrapper.addEventListener('mouseenter', show);
+  wrapper.addEventListener('mouseleave', hide);
+  wrapper.addEventListener('focusin', show);
+  wrapper.addEventListener('focusout', hide);
 
   return wrapper;
 }

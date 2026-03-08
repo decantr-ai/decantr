@@ -129,6 +129,27 @@ class Element_ extends Node_ {
     this._attrs = new Map();
     this.style = {};
     this.classList = new ClassList_(this);
+    this._open = false;
+  }
+  get open() { return this._open; }
+  showModal() { this._open = true; }
+  close() {
+    if (this._open) {
+      this._open = false;
+      this.dispatchEvent(new Event_('close'));
+    }
+  }
+  showPopover() {
+    this._popoverOpen = true;
+    const e = new Event_('toggle'); e.newState = 'open'; e.oldState = 'closed';
+    this.dispatchEvent(e);
+  }
+  hidePopover() {
+    if (this._popoverOpen) {
+      this._popoverOpen = false;
+      const e = new Event_('toggle'); e.newState = 'closed'; e.oldState = 'open';
+      this.dispatchEvent(e);
+    }
   }
   click() { this.dispatchEvent(new Event_('click', { bubbles: true })); }
   getAttribute(name) { return this._attrs.get(name) ?? null; }

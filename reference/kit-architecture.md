@@ -5,7 +5,7 @@ Domain-specific component kits that compose primitives into higher-level, ready-
 ## Three-Tier Model
 
 ```
-Primitives (decantr/components)  →  21 abstract components (Button, Input, Card...)
+Primitives (decantr/components)  →  23 abstract components (Button, Input, Card...)
          ↓ composed by
 Kits (decantr/kit/*)             →  Domain-specific (Sidebar, LoginForm, PostList...)
          ↓ referenced by
@@ -214,7 +214,7 @@ Kit components are auto-registered by `tools/registry.js` via `scanKits()`. Each
 - `src/registry/kit-{name}.json` — full component specs with props, types, children
 - Entry in `src/registry/index.json` — summary with export count
 
-Run `node tools/registry.js` after adding/modifying kit components.
+Run `node tools/registry.js` after adding/modifying kit components (auto-runs in pre-commit hook).
 
 ## Adding a New Kit
 
@@ -222,7 +222,7 @@ Run `node tools/registry.js` after adding/modifying kit components.
 2. Add JSDoc to all exported functions (required for registry)
 3. Add export to `package.json` under `exports`: `"./kit/{name}": { "import": "./src/kit/{name}/index.js" }`
 4. Add to `src/kit/index.js` re-exports
-5. Run `node tools/registry.js` to generate registry
+5. Run `node tools/registry.js` to generate registry (auto-runs in pre-commit hook)
 6. Add tests in `test/kit-{name}.test.js`
 7. If blueprint-compatible, add entries to `SECTION_MAP` in `tools/scaffolder.js`
 
@@ -231,5 +231,5 @@ Run `node tools/registry.js` after adding/modifying kit components.
 1. Create `src/kit/{name}/{component-name}.js` following the pattern above
 2. Add JSDoc with all `@param` tags
 3. Export from `src/kit/{name}/index.js`
-4. Run `node tools/registry.js`
+4. Run `node tools/registry.js` (auto-runs in pre-commit hook)
 5. Add tests

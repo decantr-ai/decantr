@@ -7,6 +7,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.color] - CSS color override
  * @param {boolean} [props.dot] - Show as dot instead of pill
  * @param {string} [props.status] - success|error|warning|processing
+ * @param {string} [props.variant] - Alias for status
  * @param {string} [props.class]
  * @param {...Node} children - If provided, badge wraps as superscript
  * @returns {HTMLElement}
@@ -14,19 +15,20 @@ import { injectBase, cx } from './_base.js';
 export function Badge(props = {}, ...children) {
   injectBase();
 
-  const { count, color, dot, status, class: cls } = props;
+  const { count, color, dot, status, variant, class: cls } = props;
+  const resolvedStatus = status || variant;
 
-  const statusColor = status === 'success' ? 'var(--c7)'
-    : status === 'error' ? 'var(--c9)'
-    : status === 'warning' ? 'var(--c8)'
-    : status === 'processing' ? 'var(--c1)'
+  const statusColor = resolvedStatus === 'success' ? 'var(--c7)'
+    : resolvedStatus === 'error' ? 'var(--c9)'
+    : resolvedStatus === 'warning' ? 'var(--c8)'
+    : resolvedStatus === 'processing' ? 'var(--c1)'
     : null;
 
   const bgColor = color || statusColor;
 
   if (dot) {
     const dotEl = h('span', {
-      class: cx('d-badge-dot', status === 'processing' && 'd-badge-processing', cls)
+      class: cx('d-badge-dot', resolvedStatus === 'processing' && 'd-badge-processing', cls)
     });
     if (bgColor) dotEl.style.background = bgColor;
 
@@ -39,7 +41,7 @@ export function Badge(props = {}, ...children) {
     return dotEl;
   }
 
-  const badgeClass = cx('d-badge', status === 'processing' && 'd-badge-processing', cls);
+  const badgeClass = cx('d-badge', resolvedStatus === 'processing' && 'd-badge-processing', cls);
   const badgeEl = h('span', { class: badgeClass });
   if (bgColor) badgeEl.style.background = bgColor;
 
