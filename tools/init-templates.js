@@ -11,7 +11,7 @@ const frameworkRoot = resolve(__dirname, '..');
 
 /** Minimal CSS custom properties for initial page render (before JS hydrates the full token set) */
 export const THEME_CSS = {
-  'light': ':root{--d-bg:#ffffff;--d-fg:#09090b;--d-primary:#1366D9;--d-primary-hover:#0f52b5;--d-muted:#71717a;--d-border:#e4e4e7;--d-surface-1:#f8fafc;--d-error:#ef4444;--d-success:#22c55e;--d-warning:#f59e0b;--d-overlay:rgba(0,0,0,0.5);--d-radius:8px;--d-radius-lg:12px;--d-font:Inter,"Inter Fallback",system-ui,sans-serif;--c0:#ffffff;--c1:#1366D9;--c2:#f8fafc;--c3:#09090b;--c4:#71717a;--c5:#e4e4e7;--c6:#0f52b5;--c7:#22c55e;--c8:#f59e0b;--c9:#ef4444}',
+  'dark': ':root{--d-bg:#060918;--d-fg:#fafafa;--d-primary:#6500C6;--d-primary-hover:#7a1ad4;--d-muted:#8892a4;--d-border:rgba(255,255,255,0.08);--d-surface-1:rgba(12,15,40,0.55);--d-error:#D80F4A;--d-success:#00C388;--d-warning:#FDA303;--d-overlay:rgba(0,0,0,0.6);--d-radius:12px;--d-radius-lg:16px;--d-font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--c0:#060918;--c1:#6500C6;--c2:rgba(12,15,40,0.55);--c3:#fafafa;--c4:#8892a4;--c5:rgba(255,255,255,0.08);--c6:#7a1ad4;--c7:#00C388;--c8:#FDA303;--c9:#D80F4A}',
 };
 
 export function packageJson(name) {
@@ -34,8 +34,8 @@ export function configJson(name) {
   return JSON.stringify({
     $schema: 'https://decantr.ai/schemas/config.v2.json',
     name,
-    style: 'clean',
-    mode: 'auto',
+    style: 'auradecantism',
+    mode: 'dark',
     router: 'hash',
     dev: { port: 4200 },
     build: {
@@ -57,7 +57,7 @@ export function indexHtml(name) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${name}</title>
-  <style>${THEME_CSS.light}*{margin:0;box-sizing:border-box}body{font-family:var(--d-font);color:var(--d-fg);background:var(--d-bg);min-height:100vh}a{color:var(--d-primary);text-decoration:none}a:hover{color:var(--d-primary-hover)}</style>
+  <style>${THEME_CSS.dark}*{margin:0;box-sizing:border-box}body{font-family:var(--d-font);color:var(--d-fg);background:var(--d-bg);min-height:100vh}a{color:var(--d-primary);text-decoration:none}a:hover{color:var(--d-primary-hover)}</style>
 </head>
 <body>
   <div id="app"></div>
@@ -130,11 +130,12 @@ For multi-page apps, consult the architect registry before generating code:
 export function appJs() {
   return `import { mount } from 'decantr/core';
 import { tags } from 'decantr/tags';
-import { css, setTheme } from 'decantr/css';
+import { css, setStyle, setMode } from 'decantr/css';
 
 const { div, h1, p } = tags;
 
-setTheme('light');
+setStyle('auradecantism');
+setMode('dark');
 
 const app = div({ class: css('_flex _col _center _minhscreen _bg0') },
   h1({ class: css('_t24 _bold _fg3') }, 'Welcome to My App'),

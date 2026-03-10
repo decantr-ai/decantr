@@ -220,8 +220,10 @@ Decantr uses an orthogonal **style × mode** architecture. Visual personality (s
 
 | Style | Description | Personality |
 |-------|-------------|-------------|
+| auradecantism | **(default)** Dark glass aesthetic — vibrant purple/cyan/pink palette, mesh gradients, luminous glow, frosted surfaces | radius:pill, elevation:glass, motion:bouncy, borders:thin |
 | clean | Modern minimal — rounded corners, subtle shadows, smooth motion | radius:rounded, elevation:subtle, motion:smooth, borders:thin |
 | retro | Neobrutalism — sharp corners, offset shadows, bold borders | radius:sharp, elevation:brutalist, motion:snappy, borders:bold |
+| glassmorphism | Frosted glass — translucent surfaces, vivid gradients, bouncy motion | radius:pill, elevation:glass, motion:bouncy, borders:thin |
 
 ### Modes
 
@@ -323,8 +325,8 @@ Components use a two-layer CSS system: base CSS (`_base.js`) for structure, styl
 
 | Token | Default | Semantic Role |
 |-------|---------|---------------|
-| `--d-font` | `Inter,"Inter Fallback",system-ui,sans-serif` | Body font family |
-| `--d-font-mono` | `ui-monospace,"JetBrains Mono",monospace` | Code font family |
+| `--d-font` | `system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif` | Body font family |
+| `--d-font-mono` | `ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace` | Code font family |
 | `--d-text-xs` | `0.625rem` | Progress labels, avatar-fallback-sm |
 | `--d-text-sm` | `0.75rem` | Badges, tooltips, captions |
 | `--d-text-base` | `0.875rem` | Body default, inputs, tables, tabs, alerts |

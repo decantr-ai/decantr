@@ -450,8 +450,8 @@ function SearchModal(visible, setVisible, navigateTo) {
 // ─── App ─────────────────────────────────────────────────────────
 function App() {
   const styles = getStyleList();
-  const [activeStyle, setActiveStyle] = createSignal('clean');
-  const [activeMode, setActiveMode] = createSignal('light');
+  const [activeStyle, setActiveStyle] = createSignal('auradecantism');
+  const [activeMode, setActiveMode] = createSignal('dark');
   const [route, setRoute] = createSignal(parseRoute(getHash()));
   const [sidebarCompact, setSidebarCompact] = createSignal(false);
   const [sidebarFilter, setSidebarFilter] = createSignal('');

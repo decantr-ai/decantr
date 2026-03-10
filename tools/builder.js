@@ -134,22 +134,35 @@ function treeShakeModule(source, usedExports, allExportedNames) {
     // Count references — if only the export declaration references it, safe to remove
     const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const refCount = (source.match(new RegExp(`\\b${escapedName}\\b`, 'g')) || []).length;
-    // The export declaration itself counts as 1 reference (export function X / export const X / export { X })
-    // Plus one for the definition. If total refs <= 2, it's only defined + exported, not internally used
-    if (refCount > 2) continue;
+    // For `export const/function X`, the declaration is 1 reference.
+    // Any internal usage adds more. If refCount >= 2, it's used internally — keep it.
+    // For `export { X }` re-exports, X appears once — safe to remove if unused externally.
+    if (refCount >= 2) continue;
 
     // Remove exported function declaration
-    const funcRe = new RegExp(`export\\s+function\\s+${escapedName}\\s*\\([^)]*\\)\\s*\\{`, 'g');
+    const funcRe = new RegExp(`export\\s+function\\s+${escapedName}\\s*\\(`, 'g');
     if (funcRe.test(processed)) {
       // Find the full function body by brace counting
       const startIdx = processed.search(new RegExp(`export\\s+function\\s+${escapedName}\\s*\\(`));
       if (startIdx !== -1) {
+        // Step 1: Skip past the parameter list by counting parens
+        // This avoids matching braces inside default params like options = {}
+        const parenStart = processed.indexOf('(', startIdx);
+        let parenDepth = 0;
+        let bodySearchStart = parenStart;
+        for (let i = parenStart; i < processed.length; i++) {
+          const ch = processed[i];
+          if (ch === '(') parenDepth++;
+          if (ch === ')') parenDepth--;
+          if (parenDepth === 0) { bodySearchStart = i + 1; break; }
+        }
+        // Step 2: Brace-count from AFTER the params to find function body
         let braceDepth = 0;
         let inStr = false;
         let strCh = '';
         let endIdx = startIdx;
         let foundOpen = false;
-        for (let i = startIdx; i < processed.length; i++) {
+        for (let i = bodySearchStart; i < processed.length; i++) {
           const ch = processed[i];
           if (inStr) {
             if (ch === strCh && processed[i - 1] !== '\\') inStr = false;

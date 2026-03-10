@@ -11,7 +11,8 @@ import { componentCSS } from './components.js';
 import { clean } from './styles/clean.js';
 import { retro } from './styles/retro.js';
 import { glassmorphism } from './styles/glassmorphism.js';
-import { liquidGlass } from './styles/liquid-glass.js';
+import { auradecantism } from './styles/auradecantism.js';
+
 
 // ============================================================
 // State
@@ -20,9 +21,9 @@ import { liquidGlass } from './styles/liquid-glass.js';
 /** @type {Map<string, Object>} Registered styles */
 const styles = new Map();
 
-const [_getStyleId, _setStyleId] = createSignal('clean');
-const [_getMode, _setMode] = createSignal('light');
-const [_getResolvedMode, _setResolvedMode] = createSignal('light');
+const [_getStyleId, _setStyleId] = createSignal('auradecantism');
+const [_getMode, _setMode] = createSignal('dark');
+const [_getResolvedMode, _setResolvedMode] = createSignal('dark');
 const [_getAnimations, _setAnimations] = createSignal(true);
 
 /** @type {HTMLStyleElement|null} */
@@ -41,7 +42,7 @@ const ANIM_OFF_CSS = '*{animation-duration:0.01ms !important;animation-iteration
 // Built-in Styles
 // ============================================================
 
-const builtins = [clean, retro, glassmorphism, liquidGlass];
+const builtins = [auradecantism, clean, retro, glassmorphism];
 for (const s of builtins) styles.set(s.id, s);
 
 // ============================================================
@@ -356,8 +357,8 @@ export function resetStyles() {
     mediaHandler = null;
   }
   modeListeners.clear();
-  _setStyleId('clean');
-  _setMode('light');
-  _setResolvedMode('light');
+  _setStyleId('auradecantism');
+  _setMode('dark');
+  _setResolvedMode('dark');
   _setAnimations(true);
 }

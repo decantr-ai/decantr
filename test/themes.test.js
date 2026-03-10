@@ -209,7 +209,7 @@ describe('getStyleList()', () => {
     assert.ok(ids.includes('clean'));
     assert.ok(ids.includes('retro'));
     assert.ok(ids.includes('glassmorphism'));
-    assert.ok(ids.includes('liquid-glass'));
+    assert.ok(ids.includes('auradecantism'));
   });
 
   it('each style has id and name', () => {
@@ -227,10 +227,10 @@ describe('getThemeList()', () => {
 });
 
 describe('getTheme()', () => {
-  it('returns a signal getter defaulting to clean', () => {
+  it('returns a signal getter defaulting to auradecantism', () => {
     const theme = getTheme();
     assert.equal(typeof theme, 'function');
-    assert.equal(theme(), 'clean');
+    assert.equal(theme(), 'auradecantism');
   });
 });
 
@@ -238,7 +238,7 @@ describe('getStyle()', () => {
   it('returns a signal getter for style ID', () => {
     const style = getStyle();
     assert.equal(typeof style, 'function');
-    assert.equal(style(), 'clean');
+    assert.equal(style(), 'auradecantism');
   });
 });
 
@@ -438,18 +438,19 @@ describe('getActiveCSS()', () => {
 });
 
 describe('resetStyles()', () => {
-  it('resets to clean + light and removes style element', () => {
+  it('resets to auradecantism + dark and removes style element', () => {
     setStyle('retro');
-    setMode('dark');
+    setMode('light');
     resetStyles();
-    assert.equal(getStyle()(), 'clean');
-    assert.equal(getMode()(), 'light');
+    assert.equal(getStyle()(), 'auradecantism');
+    assert.equal(getMode()(), 'dark');
     assert.ok(!document.querySelector('[data-decantr-style]'));
   });
 });
 
 describe('onModeChange()', () => {
   it('fires callback on mode change', () => {
+    setMode('light');
     const calls = [];
     const unsub = onModeChange(mode => calls.push(mode));
     setMode('dark');

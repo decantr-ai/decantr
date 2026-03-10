@@ -361,8 +361,8 @@ export const defaultPersonality = {
 // ============================================================
 
 const TYPOGRAPHY = {
-  '--d-font': 'Inter,"Inter Fallback",system-ui,sans-serif',
-  '--d-font-mono': 'ui-monospace,"JetBrains Mono",monospace',
+  '--d-font': 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif',
+  '--d-font-mono': 'ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace',
   '--d-text-xs': '0.625rem', '--d-text-sm': '0.75rem', '--d-text-base': '0.875rem',
   '--d-text-md': '1rem', '--d-text-lg': '1.125rem', '--d-text-xl': '1.25rem',
   '--d-text-2xl': '1.5rem', '--d-text-3xl': '2rem', '--d-text-4xl': '2.5rem',
