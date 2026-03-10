@@ -1,4 +1,4 @@
-import { h } from '../core/index.js';
+import { h, onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx, reactiveAttr, reactiveClass } from './_base.js';
 import { caret } from './_behaviors.js';
@@ -128,11 +128,18 @@ export function Select(props = {}) {
   }
 
   // Click outside to close
+  const onDocMousedown = (e) => {
+    if (open && !wrap.contains(e.target)) closeDropdown();
+  };
   if (typeof document !== 'undefined') {
-    document.addEventListener('mousedown', (e) => {
-      if (open && !wrap.contains(e.target)) closeDropdown();
-    });
+    document.addEventListener('mousedown', onDocMousedown);
   }
+
+  onDestroy(() => {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('mousedown', onDocMousedown);
+    }
+  });
 
   updateDisplay();
 

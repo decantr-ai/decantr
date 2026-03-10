@@ -6,6 +6,7 @@
  */
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
+import { getResolvedMode } from '../css/index.js';
 
 /**
  * @param {Object} [props]
@@ -25,7 +26,8 @@ import { injectBase, cx } from './_base.js';
 export function Watermark(props = {}, ...children) {
   injectBase();
   const {
-    content, image, rotate = -22, fontSize = 14, fontColor = 'rgba(0,0,0,0.1)',
+    content, image, rotate = -22, fontSize = 14,
+    fontColor = getResolvedMode() === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
     gap = [100, 100], offset = [0, 0], zIndex = 9, class: cls
   } = props;
 

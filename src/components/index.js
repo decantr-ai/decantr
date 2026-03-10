@@ -108,3 +108,6 @@ export { DateTimePicker } from './datetime-picker.js';
 
 // ─── Utility ────────────────────────────────────────────────────
 export { VisuallyHidden } from './visually-hidden.js';
+
+// ─── Behaviors ──────────────────────────────────────────────────
+export { createScrollSpy } from './_behaviors.js';

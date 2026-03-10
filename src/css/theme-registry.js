@@ -6,7 +6,7 @@
  * @module theme-registry
  */
 import { createSignal } from '../state/index.js';
-import { derive, legacyColorMap, densityCSS } from './derive.js';
+import { derive, legacyColorMap, densityCSS, getShapeTokens } from './derive.js';
 import { componentCSS } from './components.js';
 import { clean } from './styles/clean.js';
 import { retro } from './styles/retro.js';
@@ -25,6 +25,9 @@ const [_getStyleId, _setStyleId] = createSignal('auradecantism');
 const [_getMode, _setMode] = createSignal('dark');
 const [_getResolvedMode, _setResolvedMode] = createSignal('dark');
 const [_getAnimations, _setAnimations] = createSignal(true);
+const [_getShape, _setShape] = createSignal(null);
+
+const SHAPES = ['sharp', 'rounded', 'pill'];
 
 /** @type {HTMLStyleElement|null} */
 let styleEl = null;
@@ -130,6 +133,9 @@ function applyCurrentState() {
     densityEl.textContent = `@layer d.base{${densityCSS()}}`;
     document.head.appendChild(densityEl);
   }
+
+  // Apply shape override if set (re-apply after derive to win specificity)
+  applyShape();
 
   // Inject shared + style-specific component CSS into d.theme layer
   const styleCSS = style.components || '';
@@ -335,6 +341,40 @@ export function setAnimations(enabled) {
 export function getAnimations() { return _getAnimations; }
 
 // ============================================================
+// Public API: Shape
+// ============================================================
+
+/**
+ * Set the shape (border-radius preset), independent of style.
+ * @param {string|null} shape - 'sharp', 'rounded', 'pill', or null for style default
+ */
+export function setShape(shape) {
+  if (shape !== null && !SHAPES.includes(shape)) {
+    throw new Error(`[decantr] Invalid shape: "${shape}". Use 'sharp', 'rounded', 'pill', or null for style default.`);
+  }
+  _setShape(shape);
+  // Re-derive to restore style defaults, then applyShape() overrides if shape is set
+  applyCurrentState();
+}
+
+/** @returns {() => string|null} Signal getter for current shape (null = style default) */
+export function getShape() { return _getShape; }
+
+/** @returns {{ id: string, label: string }[]} List of available shape presets */
+export function getShapeList() {
+  return SHAPES.map(s => ({ id: s, label: s.charAt(0).toUpperCase() + s.slice(1) }));
+}
+
+/** Apply shape tokens to :root inline styles (overrides derive output) */
+function applyShape() {
+  if (typeof document === 'undefined') return;
+  const shape = _getShape();
+  if (!shape) return; // null = style default, already set by derive()
+  const tokens = getShapeTokens(shape);
+  if (tokens) applyTokens(tokens);
+}
+
+// ============================================================
 // Public API: CSS Extraction & Reset
 // ============================================================
 
@@ -361,4 +401,5 @@ export function resetStyles() {
   _setMode('dark');
   _setResolvedMode('dark');
   _setAnimations(true);
+  _setShape(null);
 }

@@ -6,6 +6,7 @@
 import { h } from '../core/index.js';
 import { createEffect, createSignal } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
+import { createCheckControl } from './_behaviors.js';
 
 /**
  * @param {Object} [props]
@@ -40,7 +41,7 @@ export function Transfer(props = {}) {
 
     // Header
     const allChecked = items.length > 0 && items.filter(i => !i.disabled).every(i => checked.has(i.key));
-    const selectAll = h('input', { type: 'checkbox' });
+    const { wrap: selectAllWrap, input: selectAll } = createCheckControl();
     selectAll.checked = allChecked;
     selectAll.indeterminate = checked.size > 0 && !allChecked;
     selectAll.addEventListener('change', () => {
@@ -51,7 +52,7 @@ export function Transfer(props = {}) {
 
     const header = h('div', { class: 'd-transfer-header' },
       h('label', { style: { display: 'flex', alignItems: 'center', gap: 'var(--d-sp-2)', cursor: 'pointer' } },
-        selectAll,
+        selectAllWrap,
         h('span', null, `${checked.size}/${items.length}`)
       ),
       h('span', null, title)
@@ -80,7 +81,7 @@ export function Transfer(props = {}) {
     // Body
     const body = h('div', { class: 'd-transfer-body' });
     filteredItems.forEach(item => {
-      const cb = h('input', { type: 'checkbox', disabled: item.disabled ? '' : undefined });
+      const { wrap: cbWrap, input: cb } = createCheckControl({ disabled: item.disabled ? '' : undefined });
       cb.checked = checked.has(item.key);
       cb.addEventListener('change', () => {
         if (cb.checked) checked.add(item.key);
@@ -90,7 +91,7 @@ export function Transfer(props = {}) {
 
       const row = h('div', {
         class: cx('d-transfer-item', item.disabled && 'd-transfer-item-disabled')
-      }, cb, h('span', null, item.label));
+      }, cbWrap, h('span', null, item.label));
 
       if (!item.disabled) {
         row.addEventListener('click', (e) => {

@@ -7,6 +7,7 @@
 import { h } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
+import { icon } from './icon.js';
 
 /**
  * @param {Object} [props]
@@ -43,8 +44,8 @@ export function Steps(props = {}) {
         ? h('span', null, item.icon)
         : item.icon;
     }
-    if (status === 'finish') return h('span', null, '\u2713');
-    if (status === 'error') return h('span', null, '\u2717');
+    if (status === 'finish') return icon('check', { size: '1em' });
+    if (status === 'error') return icon('x', { size: '1em' });
     return h('span', null, String(index + 1));
   }
 

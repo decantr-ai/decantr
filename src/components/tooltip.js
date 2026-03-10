@@ -1,4 +1,4 @@
-import { h } from '../core/index.js';
+import { h, onDestroy } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
 
 /**
@@ -38,6 +38,10 @@ export function Tooltip(props = {}, ...children) {
   wrapper.addEventListener('mouseleave', hide);
   wrapper.addEventListener('focusin', show);
   wrapper.addEventListener('focusout', hide);
+
+  onDestroy(() => {
+    clearTimeout(showTimer);
+  });
 
   return wrapper;
 }

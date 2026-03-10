@@ -1,4 +1,4 @@
-import { h } from '../core/index.js';
+import { h, onDestroy } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
 
 /**
@@ -131,11 +131,18 @@ export function Dropdown(props = {}) {
   });
 
   // Outside click to close
+  const onDocClick = (e) => {
+    if (open && !wrap.contains(e.target)) closeMenu();
+  };
   if (typeof document !== 'undefined') {
-    document.addEventListener('click', (e) => {
-      if (open && !wrap.contains(e.target)) closeMenu();
-    });
+    document.addEventListener('click', onDocClick);
   }
+
+  onDestroy(() => {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('click', onDocClick);
+    }
+  });
 
   return wrap;
 }

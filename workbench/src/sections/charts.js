@@ -2,22 +2,9 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { Chart, Sparkline } from 'decantr/chart';
 import { Separator } from 'decantr/components';
+import { SectionHeader, DemoGroup, DemoRow } from './_shared.js';
 
-const { div, section, h2, h3, p, span } = tags;
-
-function DemoGroup(label, description, ...children) {
-  return div({ class: css('_flex _col _gap4') },
-    div({ class: css('_flex _col _gap1') },
-      h3({ class: css('_textlg _fwheading _lhsnug') }, label),
-      description ? p({ class: css('_textsm _fg4 _lhnormal') }, description) : null
-    ),
-    ...children
-  );
-}
-
-function DemoRow(...children) {
-  return div({ class: css('_flex _gap3 _wrap _aic') }, ...children);
-}
+const { div, section, h3, p, span } = tags;
 
 // --- Demo data ---
 
@@ -201,12 +188,7 @@ const RADIAL_DATA = [
 
 export function ChartSection() {
   return section({ id: 'chart', class: css('_flex _col _gap10') },
-    div({ class: css('_flex _col _gap1') },
-      h2({ class: css('_text2xl _fwheading _lhtight _lsheading') }, 'Charts'),
-      p({ class: css('_textsm _fg4') }, '25 chart types — cartesian, polar, hierarchical, and specialty.')
-    ),
-
-    Separator({}),
+    SectionHeader('Charts', '25 chart types — cartesian, polar, hierarchical, and specialty.'),
 
     // ---- CARTESIAN ----
 

@@ -53,6 +53,7 @@ const IMPORT_MAP_ENTRIES = {
   'decantr/kit/dashboard': '/__decantr/kit/dashboard/index.js',
   'decantr/kit/auth': '/__decantr/kit/auth/index.js',
   'decantr/kit/content': '/__decantr/kit/content/index.js',
+  'decantr/blocks': '/__decantr/blocks/index.js',
   'decantr/chart': '/__decantr/chart/index.js'
 };
 

@@ -5,6 +5,7 @@
  */
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
+import { icon } from './icon.js';
 
 /**
  * @param {Object} [props]
@@ -21,7 +22,7 @@ export function BackTop(props = {}, ...children) {
   const hasCustomContent = children.flat().filter(c => c && c.nodeType).length > 0;
   const content = hasCustomContent
     ? children.flat().filter(c => c && c.nodeType)
-    : [h('span', { 'aria-hidden': 'true' }, '\u2191')];
+    : [icon('arrow-up', { size: '1.25em' })];
 
   const btn = h('button', {
     type: 'button',

@@ -1,26 +1,13 @@
 import { createSignal, createEffect } from 'decantr/state';
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { icon, Input, Separator } from 'decantr/components';
+import { icon, Input } from 'decantr/components';
 import { getIconNames } from 'decantr/icons';
+import { SectionHeader, DemoGroup, DemoRow } from './_shared.js';
 
-const { div, section, h2, h3, span, p, code, pre } = tags;
+const { div, section, h3, span, p, code, pre } = tags;
 
 const SIZES = ['0.75em', '1em', '1.25em', '1.5em', '2em'];
-
-function DemoGroup(label, description, ...children) {
-  return div({ class: css('_flex _col _gap4') },
-    div({ class: css('_flex _col _gap1') },
-      h3({ class: css('_textlg _fwheading _lhsnug') }, label),
-      description ? p({ class: css('_textsm _fg4 _lhnormal') }, description) : null
-    ),
-    ...children
-  );
-}
-
-function DemoRow(...children) {
-  return div({ class: css('_flex _gap3 _wrap _aic') }, ...children);
-}
 
 function IconGrid(names, label) {
   return div({},
@@ -45,12 +32,7 @@ export function IconSection() {
   const allNames = getIconNames().sort();
 
   const container = section({ id: 'icons', class: css('_flex _col _gap10') },
-    div({ class: css('_flex _col _gap1') },
-      h2({ class: css('_text2xl _fwheading _lhtight _lsheading') }, 'Icons'),
-      p({ class: css('_textsm _fg4') }, `${allNames.length} essential icons. Add more via registerIcon() or tools/icons.js.`)
-    ),
-
-    Separator({}),
+    SectionHeader('Icons', `${allNames.length} essential icons. Add more via registerIcon() or tools/icons.js.`),
 
     DemoGroup('Sizes', 'Icon scaling from 0.75em to 2em.',
       DemoRow(

@@ -1,5 +1,6 @@
 import { h, createEffect, css, injectBase, cx, resolve } from '../_shared.js';
 import { createSignal } from '../../state/index.js';
+import { createScrollSpy } from '../../components/_behaviors.js';
 
 /**
  * Table of contents with scroll tracking via IntersectionObserver.
@@ -63,28 +64,20 @@ export function TableOfContents(props = {}) {
     }
   });
 
-  // Intersection observer for scroll tracking
+  // Scroll tracking via createScrollSpy
   if (typeof IntersectionObserver !== 'undefined') {
-    // Defer observer setup to allow DOM to be mounted
     requestAnimationFrame(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting) {
-              setActiveId(entry.target.id);
-            }
-          }
-        },
-        { rootMargin: '-80px 0px -60% 0px', threshold: 0 }
-      );
+      const spy = createScrollSpy(null, {
+        rootMargin: '-80px 0px -60% 0px',
+        onActiveChange: (el) => setActiveId(el.id)
+      });
 
       for (const heading of headings) {
         const target = document.getElementById(heading.id);
-        if (target) observer.observe(target);
+        if (target) spy.observe(target);
       }
 
-      // Store observer reference for cleanup
-      nav._tocObserver = observer;
+      nav._tocObserver = spy;
     });
   }
 

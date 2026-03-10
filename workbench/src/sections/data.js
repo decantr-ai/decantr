@@ -1,34 +1,16 @@
 import { createSignal } from 'decantr/state';
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { List, Tree, Calendar, Carousel, Image, Timeline, HoverCard, Separator } from 'decantr/components';
+import { List, Tree, Calendar, Carousel, Image, Timeline, HoverCard } from 'decantr/components';
+import { SectionHeader, DemoGroup, DemoRow } from './_shared.js';
 
-const { div, section, h2, h3, p, span, a } = tags;
-
-function DemoGroup(label, description, ...children) {
-  return div({ class: css('_flex _col _gap4') },
-    div({ class: css('_flex _col _gap1') },
-      h3({ class: css('_textlg _fwheading _lhsnug') }, label),
-      description ? p({ class: css('_textsm _fg4 _lhnormal') }, description) : null
-    ),
-    ...children
-  );
-}
-
-function DemoRow(...children) {
-  return div({ class: css('_flex _gap3 _wrap _aic') }, ...children);
-}
+const { div, section, h3, p, span, a } = tags;
 
 export function DataSection() {
   const [calDate, setCalDate] = createSignal(new Date());
 
   return section({ id: 'data', class: css('_flex _col _gap10') },
-    div({ class: css('_flex _col _gap1') },
-      h2({ class: css('_text2xl _fwheading _lhtight _lsheading') }, 'Data Components'),
-      p({ class: css('_textsm _fg4') }, 'Lists, trees, calendars, carousels, timelines, and interactive data views.')
-    ),
-
-    Separator({}),
+    SectionHeader('Data Components', 'Lists, trees, calendars, carousels, timelines, and interactive data views.'),
 
     DemoGroup('List', 'Bordered list with title and description per item.',
       div({ style: 'max-width:480px' },

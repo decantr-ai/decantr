@@ -6,6 +6,7 @@
 import { h } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
+import { pickForeground } from '../css/derive.js';
 
 /**
  * @param {Object} [props]
@@ -28,6 +29,7 @@ export function Tag(props = {}, ...children) {
   const className = cx(
     'd-tag',
     color && !isCustomColor && `d-tag-${color}`,
+    isCustomColor && 'd-tag-custom',
     isCheckable && 'd-tag-checkable',
     cls
   );
@@ -37,9 +39,8 @@ export function Tag(props = {}, ...children) {
     : h('span', { class: className, ...rest });
 
   if (isCustomColor) {
-    tag.style.backgroundColor = color;
-    tag.style.color = '#fff';
-    tag.style.borderColor = color;
+    tag.style.setProperty('--d-tag-bg', color);
+    tag.style.setProperty('--d-tag-fg', pickForeground(color));
   }
 
   children.forEach(child => {

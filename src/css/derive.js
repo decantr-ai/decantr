@@ -186,9 +186,9 @@ function adjustForContrast(fgHex, bgHex, targetRatio) {
 // ============================================================
 
 const RADIUS = {
-  sharp:   { sm: '2px',  default: '0',    lg: '0',    full: '9999px' },
-  rounded: { sm: '4px',  default: '8px',  lg: '12px', full: '9999px' },
-  pill:    { sm: '6px',  default: '12px', lg: '16px', full: '9999px' },
+  sharp:   { sm: '2px',    default: '0',      lg: '0',      full: '9999px', panel: '0',    inner: '0'   },
+  rounded: { sm: '4px',    default: '8px',    lg: '12px',   full: '9999px', panel: '8px',  inner: '6px' },
+  pill:    { sm: '9999px', default: '9999px', lg: '24px',   full: '9999px', panel: '16px', inner: '8px' },
 };
 
 const ELEVATION = {
@@ -449,21 +449,21 @@ function deriveSurfaces(neutralHex, bgHex, fgHex, mode, elevationType) {
   const s0 = bgHex;
   const s1 = isGlass
     ? (isDark ? alpha(lighten(bgHex, 8), 0.7) : alpha(bgHex, 0.7))
-    : (isDark ? lighten(bgHex, 4) : mixColors(bgHex, neutralHex, 0.03));
+    : (isDark ? lighten(bgHex, 4) : mixColors(bgHex, neutralHex, 0.04));
   const s2 = isGlass
     ? (isDark ? alpha(lighten(bgHex, 10), 0.8) : alpha(bgHex, 0.8))
-    : (isDark ? lighten(bgHex, 7) : mixColors(bgHex, neutralHex, 0.02));
+    : (isDark ? lighten(bgHex, 7) : mixColors(bgHex, neutralHex, 0.07));
   const s3 = isGlass
     ? (isDark ? alpha(lighten(bgHex, 6), 0.85) : alpha(bgHex, 0.85))
-    : (isDark ? lighten(bgHex, 3) : bgHex);
+    : (isDark ? lighten(bgHex, 3) : mixColors(bgHex, neutralHex, 0.10));
 
   const blur = SURFACE_BLUR[elevationType] || SURFACE_BLUR.subtle;
 
   return {
     '--d-surface-0': s0, '--d-surface-0-fg': fgHex, '--d-surface-0-border': isDark ? lighten(bgHex, 12) : darken(bgHex, 12),
     '--d-surface-1': s1, '--d-surface-1-fg': fgHex, '--d-surface-1-border': isDark ? lighten(bgHex, 15) : darken(bgHex, 10),
-    '--d-surface-2': s2, '--d-surface-2-fg': fgHex, '--d-surface-2-border': isDark ? lighten(bgHex, 18) : darken(bgHex, 8),
-    '--d-surface-3': s3, '--d-surface-3-fg': fgHex, '--d-surface-3-border': isDark ? lighten(bgHex, 10) : darken(bgHex, 6),
+    '--d-surface-2': s2, '--d-surface-2-fg': fgHex, '--d-surface-2-border': isDark ? lighten(bgHex, 18) : darken(bgHex, 12),
+    '--d-surface-3': s3, '--d-surface-3-fg': fgHex, '--d-surface-3-border': isDark ? lighten(bgHex, 10) : darken(bgHex, 14),
     '--d-surface-1-filter': blur[0],
     '--d-surface-2-filter': blur[1],
     '--d-surface-3-filter': blur[2],
@@ -569,13 +569,21 @@ export function derive(seed, personality, mode, typography, overrides) {
     '--d-easing-bounce': m.bounce,
   };
 
-  // --- Radius (4 tokens) ---
+  // --- Radius (6 tokens) ---
   const rad = RADIUS[p.radius] || RADIUS.rounded;
   const radius = {
     '--d-radius-sm': rad.sm,
     '--d-radius': rad.default,
     '--d-radius-lg': rad.lg,
     '--d-radius-full': rad.full,
+    '--d-radius-panel': rad.panel,
+    '--d-radius-inner': rad.inner,
+  };
+
+  // --- Checkbox (2 tokens) ---
+  const checkbox = {
+    '--d-checkbox-size': '1.125rem',
+    '--d-checkbox-radius': rad.sm,
   };
 
   // --- Border (3 tokens) ---
@@ -651,6 +659,7 @@ export function derive(seed, personality, mode, typography, overrides) {
     ...interaction,
     ...motion,
     ...radius,
+    ...checkbox,
     ...border,
     ...density,
     ...Z_INDEX,
@@ -706,4 +715,22 @@ export function densityCSS() {
     css += `.d-${name}{--d-density-pad-x:${d.padX};--d-density-pad-y:${d.padY};--d-density-gap:${d.gap};--d-density-min-h:${d.minH};--d-density-text:${d.text};--d-compound-pad:${d.compoundPad};--d-compound-gap:${d.compoundGap}}`;
   }
   return css;
+}
+
+/**
+ * Get the radius token values for a given shape preset.
+ * @param {string} shape - 'sharp', 'rounded', or 'pill'
+ * @returns {{ '--d-radius-sm': string, '--d-radius': string, '--d-radius-lg': string, '--d-checkbox-radius': string }|null}
+ */
+export function getShapeTokens(shape) {
+  const r = RADIUS[shape];
+  if (!r) return null;
+  return {
+    '--d-radius-sm': r.sm,
+    '--d-radius': r.default,
+    '--d-radius-lg': r.lg,
+    '--d-radius-panel': r.panel,
+    '--d-radius-inner': r.inner,
+    '--d-checkbox-radius': r.sm,
+  };
 }

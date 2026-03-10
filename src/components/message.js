@@ -6,6 +6,7 @@
  */
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
+import { icon as makeIcon } from './icon.js';
 
 let _container = null;
 
@@ -17,12 +18,12 @@ function getContainer() {
   return _container;
 }
 
-const ICONS = {
-  info: '\u2139\ufe0f',
-  success: '\u2705',
-  warning: '\u26a0\ufe0f',
-  error: '\u274c',
-  loading: '\u23f3'
+const ICON_MAP = {
+  info: 'info',
+  success: 'check-circle',
+  warning: 'alert-triangle',
+  error: 'x-circle',
+  loading: 'loader'
 };
 
 /**
@@ -44,7 +45,7 @@ export function message(props = {}) {
 
   const iconEl = icon
     ? (typeof icon === 'string' ? h('span', { class: 'd-message-icon' }, icon) : icon)
-    : h('span', { class: 'd-message-icon' }, ICONS[type] || ICONS.info);
+    : h('span', { class: 'd-message-icon' }, makeIcon(ICON_MAP[type] || 'info', { size: '1.25em' }));
 
   const el = h('div', {
     class: cx('d-message', `d-message-${type}`, cls),

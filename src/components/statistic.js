@@ -7,6 +7,7 @@
 import { h } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
+import { icon } from './icon.js';
 
 /**
  * @param {Object} [props]
@@ -81,8 +82,7 @@ export function Statistic(props = {}) {
     const trendEl = h('div', {
       class: cx('d-statistic-trend', `d-statistic-trend-${trend}`)
     });
-    const arrow = trend === 'up' ? '\u2191' : '\u2193';
-    trendEl.appendChild(h('span', null, arrow));
+    trendEl.appendChild(icon(trend === 'up' ? 'trending-up' : 'trending-down', { size: '1em' }));
     if (trendValue) trendEl.appendChild(h('span', null, trendValue));
     container.appendChild(trendEl);
   }

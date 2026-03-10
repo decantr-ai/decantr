@@ -23,6 +23,55 @@ let cqEl = null;
 /** CSS cascade layer order declaration */
 const LAYER_ORDER = '@layer d.base,d.theme,d.atoms,d.user;';
 
+// ─── Buffered injection ─────────────────────────────────────────
+// Rules are buffered in arrays and flushed to DOM in batches via
+// microtask, avoiding O(n²) string concatenation on textContent.
+
+/** @type {string[]} */
+let atomBuffer = [];
+/** @type {Record<string, string[]>} */
+let bpBuffers = {};
+/** @type {string[]} */
+let cqBuffer = [];
+/** @type {boolean} */
+let flushScheduled = false;
+
+function scheduleFlush() {
+  if (flushScheduled) return;
+  flushScheduled = true;
+  if (typeof queueMicrotask === 'function') {
+    queueMicrotask(flushBuffers);
+  } else {
+    Promise.resolve().then(flushBuffers);
+  }
+}
+
+function flushBuffers() {
+  flushScheduled = false;
+  if (atomBuffer.length) {
+    const el = getStyleElement();
+    if (el) el.textContent = (el.textContent || '') + atomBuffer.join('');
+    atomBuffer.length = 0;
+  }
+  if (Object.keys(bpBuffers).length) {
+    const els = ensureBpElements();
+    if (els) {
+      for (const bp of BP_ORDER) {
+        if (bpBuffers[bp] && bpBuffers[bp].length) {
+          els[bp].textContent = (els[bp].textContent || '') + bpBuffers[bp].join('');
+          bpBuffers[bp].length = 0;
+        }
+      }
+    }
+    bpBuffers = {};
+  }
+  if (cqBuffer.length) {
+    const el = ensureCqElement();
+    if (el) el.textContent = (el.textContent || '') + cqBuffer.join('');
+    cqBuffer.length = 0;
+  }
+}
+
 function ensureLayerOrder() {
   if (layerEl) return;
   if (typeof document === 'undefined') return;
@@ -64,9 +113,9 @@ function ensureBpElements() {
 export function inject(className, declaration) {
   if (injected.has(className)) return;
   injected.add(className);
-  const style = getStyleElement();
-  if (!style) return;
-  style.textContent = (style.textContent || '') + `@layer d.atoms{.${className}{${declaration}}}`;
+  if (typeof document === 'undefined') return;
+  atomBuffer.push(`@layer d.atoms{.${className}{${declaration}}}`);
+  scheduleFlush();
 }
 
 /**
@@ -78,11 +127,11 @@ export function inject(className, declaration) {
 export function injectResponsive(className, declaration, bp) {
   if (injected.has(className)) return;
   injected.add(className);
-  const els = ensureBpElements();
-  if (!els) return;
-  const el = els[bp];
+  if (typeof document === 'undefined') return;
   const escaped = className.replace(/:/g, '\\:');
-  el.textContent = (el.textContent || '') + `@layer d.atoms{@media(min-width:${BREAKPOINTS[bp]}px){.${escaped}{${declaration}}}}`;
+  if (!bpBuffers[bp]) bpBuffers[bp] = [];
+  bpBuffers[bp].push(`@layer d.atoms{@media(min-width:${BREAKPOINTS[bp]}px){.${escaped}{${declaration}}}}`);
+  scheduleFlush();
 }
 
 function ensureCqElement() {
@@ -104,16 +153,17 @@ function ensureCqElement() {
 export function injectContainer(className, declaration, width) {
   if (injected.has(className)) return;
   injected.add(className);
-  const el = ensureCqElement();
-  if (!el) return;
+  if (typeof document === 'undefined') return;
   const escaped = className.replace(/:/g, '\\:');
-  el.textContent = (el.textContent || '') + `@layer d.atoms{@container(min-width:${width}px){.${escaped}{${declaration}}}}`;
+  cqBuffer.push(`@layer d.atoms{@container(min-width:${width}px){.${escaped}{${declaration}}}}`);
+  scheduleFlush();
 }
 
 /**
  * @returns {string}
  */
 export function extractCSS() {
+  flushBuffers();
   let css = layerEl ? layerEl.textContent || '' : '';
   css += styleEl ? styleEl.textContent || '' : '';
   if (bpEls) {
@@ -134,6 +184,10 @@ export function getInjectedClasses() {
 
 export function reset() {
   injected.clear();
+  atomBuffer.length = 0;
+  bpBuffers = {};
+  cqBuffer.length = 0;
+  flushScheduled = false;
   if (layerEl) {
     layerEl.textContent = LAYER_ORDER;
   }

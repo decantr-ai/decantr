@@ -47,7 +47,8 @@ export function Rate(props = {}) {
       const val = i + 1;
       const filled = displayVal >= val;
       const halfFilled = half && displayVal >= val - 0.5 && displayVal < val;
-      star.style.opacity = filled ? '1' : halfFilled ? '0.5' : '0.2';
+      star.classList.toggle('d-rate-star-active', filled);
+      star.classList.toggle('d-rate-star-half', halfFilled && !filled);
       star.setAttribute('aria-checked', filled || halfFilled ? 'true' : 'false');
     });
   }

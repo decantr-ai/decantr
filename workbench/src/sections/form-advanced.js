@@ -1,23 +1,10 @@
 import { createSignal } from 'decantr/state';
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { Separator, ColorPicker, DatePicker, DateRangePicker, TimePicker, TimeRangePicker, Upload, Transfer, Cascader, TreeSelect, Form, Field, Input, Button } from 'decantr/components';
+import { ColorPicker, DatePicker, DateRangePicker, TimePicker, TimeRangePicker, Upload, Transfer, Cascader, TreeSelect, Form, Field, Input, Button } from 'decantr/components';
+import { SectionHeader, DemoGroup, DemoRow } from './_shared.js';
 
-const { div, section, h2, h3, p } = tags;
-
-function DemoGroup(label, description, ...children) {
-  return div({ class: css('_flex _col _gap4') },
-    div({ class: css('_flex _col _gap1') },
-      h3({ class: css('_textlg _fwheading _lhsnug') }, label),
-      description ? p({ class: css('_textsm _fg4 _lhnormal') }, description) : null
-    ),
-    ...children
-  );
-}
-
-function DemoRow(...children) {
-  return div({ class: css('_flex _gap3 _wrap _aic') }, ...children);
-}
+const { div, section, h3, p } = tags;
 
 export function FormAdvancedSection() {
   const [color, setColor] = createSignal('#1366D9');
@@ -25,11 +12,7 @@ export function FormAdvancedSection() {
   const [time, setTime] = createSignal(null);
 
   return section({ id: 'form-advanced', class: css('_flex _col _gap10') },
-    div({ class: css('_flex _col _gap1') },
-      h2({ class: css('_text2xl _fwheading _lhtight _lsheading') }, 'Advanced Form Components'),
-      p({ class: css('_textsm _fg4') }, 'Specialized inputs for color, date, time, file upload, data transfer, cascading selection, and structured forms.')
-    ),
-    Separator({}),
+    SectionHeader('Advanced Form Components', 'Specialized inputs for color, date, time, file upload, data transfer, cascading selection, and structured forms.'),
 
     DemoGroup('ColorPicker', 'Inline color selection with optional preset swatches.',
       DemoRow(

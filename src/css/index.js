@@ -5,7 +5,8 @@ export {
   setTheme, getTheme, getThemeMeta, registerTheme, getThemeList,
   getActiveCSS, resetStyles, setAnimations, getAnimations,
   setStyle, getStyle, getStyleList, registerStyle,
-  setMode, getMode, getResolvedMode, onModeChange
+  setMode, getMode, getResolvedMode, onModeChange,
+  setShape, getShape, getShapeList
 } from './theme-registry.js';
 
 /** @type {Map<string, string>} */

@@ -8,7 +8,7 @@
 import { h } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
-import { createOverlay, caret } from './_behaviors.js';
+import { createOverlay, caret, createCheckControl } from './_behaviors.js';
 
 /**
  * @typedef {Object} TreeSelectNode
@@ -160,15 +160,13 @@ export function TreeSelect(props = {}) {
 
     // Checkbox
     if (checkable) {
-      const cb = h('input', {
-        type: 'checkbox',
-        class: 'd-tree-node-checkbox',
+      const { wrap: cbWrap, input: cb } = createCheckControl({
         tabindex: '-1',
         disabled: node.disabled ? '' : undefined
       });
       cb.checked = isSelected;
       cb.addEventListener('change', (e) => { e.stopPropagation(); selectNode(node); });
-      content.appendChild(cb);
+      content.appendChild(cbWrap);
     }
 
     // Label

@@ -5,15 +5,16 @@
  */
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
+import { icon as makeIcon } from './icon.js';
 
-const STATUS_ICONS = {
-  success: '\u2705',
-  error: '\u274c',
-  info: '\u2139\ufe0f',
-  warning: '\u26a0\ufe0f',
-  403: '\ud83d\udeab',
-  404: '\ud83d\udd0d',
-  500: '\ud83d\udca5'
+const STATUS_ICON_MAP = {
+  success: 'check-circle',
+  error: 'x-circle',
+  info: 'info',
+  warning: 'alert-triangle',
+  403: 'shield',
+  404: 'search',
+  500: 'alert-circle'
 };
 
 /**
@@ -33,7 +34,7 @@ export function Result(props = {}, ...children) {
 
   const iconNode = icon
     ? (typeof icon === 'string' ? h('div', { class: 'd-result-icon' }, icon) : h('div', { class: 'd-result-icon' }, icon))
-    : h('div', { class: cx('d-result-icon', `d-result-icon-${status}`) }, STATUS_ICONS[status] || STATUS_ICONS.info);
+    : h('div', { class: cx('d-result-icon', `d-result-icon-${status}`) }, makeIcon(STATUS_ICON_MAP[status] || 'info', { size: '3rem' }));
 
   const el = h('div', { class: cx('d-result', cls) });
   el.appendChild(iconNode);

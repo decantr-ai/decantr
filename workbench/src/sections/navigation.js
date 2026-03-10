@@ -1,49 +1,31 @@
 import { createSignal } from 'decantr/state';
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { Menu, Steps, Segmented, ContextMenu, NavigationMenu, BackTop, Affix, Separator, Button } from 'decantr/components';
+import { Menu, Steps, Segmented, ContextMenu, NavigationMenu, BackTop, Affix, Button, icon } from 'decantr/components';
+import { SectionHeader, DemoGroup, DemoRow } from './_shared.js';
 
-const { div, section, h2, h3, p, span, a } = tags;
-
-function DemoGroup(label, description, ...children) {
-  return div({ class: css('_flex _col _gap4') },
-    div({ class: css('_flex _col _gap1') },
-      h3({ class: css('_textlg _fwheading _lhsnug') }, label),
-      description ? p({ class: css('_textsm _fg4 _lhnormal') }, description) : null
-    ),
-    ...children
-  );
-}
-
-function DemoRow(...children) {
-  return div({ class: css('_flex _gap3 _wrap _aic') }, ...children);
-}
+const { div, section, h3, p, span, a } = tags;
 
 export function NavigationSection() {
   const [step, setStep] = createSignal(1);
   const [segVal, setSegVal] = createSignal('daily');
 
   return section({ id: 'navigation', class: css('_flex _col _gap10') },
-    div({ class: css('_flex _col _gap1') },
-      h2({ class: css('_text2xl _fwheading _lhtight _lsheading') }, 'Navigation Components'),
-      p({ class: css('_textsm _fg4') }, 'Menus, steps, segmented controls, and context menus.')
-    ),
-
-    Separator({}),
+    SectionHeader('Navigation Components', 'Menus, steps, segmented controls, and context menus.'),
 
     DemoGroup('Menu', 'Vertical navigation with nested submenus and separators.',
       DemoRow(
         div({ style: 'width:220px;border:1px solid var(--d-border);border-radius:var(--d-radius)' },
           Menu({
             items: [
-              { label: 'Dashboard', value: 'dashboard', icon: '\ud83d\udcca' },
-              { label: 'Projects', value: 'projects', icon: '\ud83d\udcc1', children: [
+              { label: 'Dashboard', value: 'dashboard', icon: icon('bar-chart') },
+              { label: 'Projects', value: 'projects', icon: icon('folder'), children: [
                 { label: 'Active', value: 'active' },
                 { label: 'Archived', value: 'archived' }
               ]},
               { separator: true },
-              { label: 'Settings', value: 'settings', icon: '\u2699\ufe0f' },
-              { label: 'Logout', value: 'logout', icon: '\ud83d\udeaa' }
+              { label: 'Settings', value: 'settings', icon: icon('settings') },
+              { label: 'Logout', value: 'logout', icon: icon('log-out') }
             ],
             onSelect: v => {}
           })
@@ -104,9 +86,9 @@ export function NavigationSection() {
         }),
         Segmented({
           options: [
-            { label: 'List', value: 'list', icon: '\u2630' },
-            { label: 'Grid', value: 'grid', icon: '\u2637' },
-            { label: 'Board', value: 'board', icon: '\u25a6' }
+            { label: 'List', value: 'list', icon: icon('list') },
+            { label: 'Grid', value: 'grid', icon: icon('grid-3x3') },
+            { label: 'Board', value: 'board', icon: icon('kanban') }
           ],
           value: 'list',
           size: 'lg'

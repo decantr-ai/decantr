@@ -9,6 +9,7 @@ import { h } from '../core/index.js';
 import { createSignal, createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { createListbox, createFocusTrap } from './_behaviors.js';
+import { icon } from './icon.js';
 
 /**
  * @param {Object} [props]
@@ -34,7 +35,7 @@ export function Command(props = {}) {
   });
 
   const searchWrap = h('div', { class: 'd-command-search' },
-    h('span', { class: 'd-command-search-icon', 'aria-hidden': 'true' }, '\ud83d\udd0d'),
+    h('span', { class: 'd-command-search-icon', 'aria-hidden': 'true' }, icon('search', { size: '1em' })),
     input
   );
 

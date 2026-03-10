@@ -121,6 +121,22 @@
       ],
       "description": "Legacy registerTheme — wraps registerStyle."
     },
+    "setShape": {
+      "params": [
+        {
+          "name": "shape",
+          "type": "string|null",
+          "description": "'sharp', 'rounded', 'pill', or null for style default"
+        }
+      ],
+      "description": "Set the shape (border-radius preset), independent of style."
+    },
+    "getShape": {
+      "returns": "() => string|null"
+    },
+    "getShapeList": {
+      "returns": "{ id: string, label: string }[]"
+    },
     "getActiveCSS": {
       "returns": "string"
     }

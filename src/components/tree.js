@@ -6,7 +6,7 @@
  */
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
-import { caret } from './_behaviors.js';
+import { caret, createCheckControl } from './_behaviors.js';
 
 /**
  * @typedef {Object} TreeNode
@@ -84,9 +84,7 @@ export function Tree(props = {}) {
 
     // Checkbox
     if (checkable) {
-      const cb = h('input', {
-        type: 'checkbox',
-        class: 'd-tree-node-checkbox',
+      const { wrap: cbWrap, input: cb } = createCheckControl({
         disabled: node.disabled ? '' : undefined
       });
       cb.checked = isChecked;
@@ -96,7 +94,7 @@ export function Tree(props = {}) {
         else checked.delete(node.key);
         if (onCheck) onCheck([...checked], { node, checked: cb.checked });
       });
-      content.appendChild(cb);
+      content.appendChild(cbWrap);
     }
 
     // Icon

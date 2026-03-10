@@ -7,6 +7,7 @@
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
 import { createDrag } from './_behaviors.js';
+import { icon } from './icon.js';
 
 /**
  * @param {Object} props
@@ -61,7 +62,7 @@ export function SortableList(props = {}) {
       const handle = h('div', {
         class: 'd-sortable-handle',
         'aria-hidden': 'true',
-      }, '\u2261');
+      }, icon('grip-vertical', { size: '1em' }));
 
       const row = renderFn(item, i, handle);
       row.setAttribute('role', 'listitem');

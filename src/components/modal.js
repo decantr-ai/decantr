@@ -1,6 +1,7 @@
-import { h } from '../core/index.js';
+import { h, onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
+import { createFocusTrap } from './_behaviors.js';
 
 const MODAL_SECTIONS = ['d-modal-header', 'd-modal-body', 'd-modal-footer'];
 
@@ -89,15 +90,25 @@ export function Modal(props = {}, ...children) {
     if (onClose) onClose();
   });
 
+  // Focus trap for accessibility (WCAG AA)
+  const focusTrap = createFocusTrap(panel);
+
   if (typeof visible === 'function') {
     createEffect(() => {
       if (visible()) {
         if (!dialog.open) dialog.showModal();
+        focusTrap.activate();
       } else {
+        focusTrap.deactivate();
         if (dialog.open) dialog.close();
       }
     });
   }
+
+  onDestroy(() => {
+    focusTrap.deactivate();
+    if (dialog.open) dialog.close();
+  });
 
   return dialog;
 }

@@ -1,7 +1,7 @@
 import { h, text } from '../core/index.js';
 import { createSignal, createEffect, batch } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
-import { caret } from './_behaviors.js';
+import { caret, createCheckControl } from './_behaviors.js';
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS
@@ -455,13 +455,11 @@ export function DataTable(props = {}) {
   // Selection column
   if (selection === 'multi') {
     const selAllTh = h('th', { class: 'd-datatable-th', style: { width: '40px' } });
-    const cb = h('input', {
-      type: 'checkbox',
-      class: 'd-datatable-checkbox',
-      'aria-label': 'Select all rows',
-      onchange: toggleSelectAll
+    const { wrap: selAllWrap, input: selAllCb } = createCheckControl({
+      'aria-label': 'Select all rows'
     });
-    selAllTh.appendChild(cb);
+    selAllCb.addEventListener('change', toggleSelectAll);
+    selAllTh.appendChild(selAllWrap);
     headerRow.appendChild(selAllTh);
 
     // Sync select-all state
@@ -471,8 +469,8 @@ export function DataTable(props = {}) {
       const allKeys = rows.map((r, i) => rowKey(r, i));
       const allSel = allKeys.length > 0 && allKeys.every(k => sel.has(k));
       const someSel = !allSel && allKeys.some(k => sel.has(k));
-      cb.checked = allSel;
-      cb.indeterminate = someSel;
+      selAllCb.checked = allSel;
+      selAllCb.indeterminate = someSel;
     });
   }
 
@@ -630,16 +628,13 @@ export function DataTable(props = {}) {
     // Selection checkbox cell
     if (selection === 'multi') {
       const cbTd = h('td', { class: 'd-datatable-td', style: { width: '40px', textAlign: 'center' } });
-      const cb = h('input', {
-        type: 'checkbox',
-        class: 'd-datatable-checkbox',
-        checked: isSelected ? '' : undefined,
-        'aria-label': `Select row ${idx + 1}`,
-        onclick(e) { e.stopPropagation(); },
-        onchange() { toggleSelect(row, idx, false); }
+      const { wrap: cbWrap, input: rowCb } = createCheckControl({
+        'aria-label': `Select row ${idx + 1}`
       });
-      if (isSelected) cb.checked = true;
-      cbTd.appendChild(cb);
+      rowCb.checked = isSelected;
+      rowCb.addEventListener('click', (e) => { e.stopPropagation(); });
+      rowCb.addEventListener('change', () => { toggleSelect(row, idx, false); });
+      cbTd.appendChild(cbWrap);
       tr.appendChild(cbTd);
     }
 

@@ -1,4 +1,4 @@
-import { h } from '../core/index.js';
+import { h, onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret } from './_behaviors.js';
@@ -159,14 +159,21 @@ export function Combobox(props = {}) {
   });
 
   // Click outside
+  const onDocClick = (e) => {
+    if (open && !wrap.contains(e.target)) {
+      closeList();
+      updateDisplay();
+    }
+  };
   if (typeof document !== 'undefined') {
-    document.addEventListener('click', (e) => {
-      if (open && !wrap.contains(e.target)) {
-        closeList();
-        updateDisplay();
-      }
-    });
+    document.addEventListener('click', onDocClick);
   }
+
+  onDestroy(() => {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('click', onDocClick);
+    }
+  });
 
   updateDisplay();
 

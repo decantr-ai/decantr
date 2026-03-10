@@ -1,8 +1,8 @@
 import { mount, h } from 'decantr/core';
 import { createSignal, createEffect } from 'decantr/state';
-import { css, setStyle, getStyleList, setMode, getMode, getResolvedMode } from 'decantr/css';
+import { css, setStyle, getStyleList, setMode, getMode, getResolvedMode, setShape } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { Select, Badge, icon } from 'decantr/components';
+import { Select, Badge, icon, createScrollSpy } from 'decantr/components';
 import { ActionSection } from './sections/action.js';
 import { InputSection } from './sections/form.js';
 import { FormAdvancedSection } from './sections/form-advanced.js';
@@ -14,6 +14,8 @@ import { FeedbackSection } from './sections/feedback.js';
 import { TypographySection } from './sections/typography.js';
 import { ChartSection } from './sections/charts.js';
 import { IconSection } from './sections/icons.js';
+import { BlocksSection } from './sections/blocks.js';
+import { KitsSection } from './sections/kits.js';
 
 const { div, header, main, nav, section, h1, h2, h3, p, span, button, input, a, small, strong, code } = tags;
 
@@ -24,12 +26,14 @@ const CATEGORIES = [
   { id: 'form-advanced', label: 'Form Advanced', children: ['ColorPicker', 'DatePicker', 'DateRangePicker', 'TimePicker', 'TimeRangePicker', 'Upload', 'Transfer', 'Cascader', 'TreeSelect', 'Form/Field'], section: FormAdvancedSection },
   { id: 'display', label: 'Display', children: ['Card', 'Badge', 'Tag', 'Table', 'DataTable', 'Descriptions', 'Statistic', 'Avatar', 'AvatarGroup', 'Progress', 'Skeleton', 'Chip', 'Empty'], section: DisplaySection },
   { id: 'data', label: 'Data', children: ['List', 'Tree', 'Calendar', 'Carousel', 'Image', 'Timeline', 'HoverCard'], section: DataSection },
-  { id: 'layout', label: 'Layout', children: ['Tabs', 'Accordion', 'Collapsible', 'Space', 'AspectRatio', 'Resizable', 'Splitter', 'ScrollArea', 'Separator', 'Pagination', 'Breadcrumb'], section: LayoutSection },
+  { id: 'layout', label: 'Layout', children: ['Tabs', 'Accordion', 'Collapsible', 'Space', 'AspectRatio', 'Resizable', 'Splitter', 'ScrollArea', 'Separator', 'Separator \u2014 Labeled', 'Separator \u2014 Decorative', 'Separator \u2014 Vertical', 'Separator \u2014 In Context', 'Pagination', 'Breadcrumb'], section: LayoutSection },
   { id: 'navigation', label: 'Navigation', children: ['Menu', 'NavigationMenu', 'Steps', 'Segmented', 'ContextMenu', 'BackTop', 'Affix'], section: NavigationSection },
   { id: 'feedback', label: 'Feedback', children: ['Modal', 'AlertDialog', 'Sheet', 'Drawer', 'Command', 'Popconfirm', 'Popover', 'Tooltip', 'Alert', 'Result', 'Toast', 'Notification', 'Message', 'FloatButton', 'Tour'], section: FeedbackSection },
   { id: 'typography', label: 'Typography', children: ['Title', 'Text', 'Paragraph', 'Link', 'Blockquote', 'Kbd', 'Watermark', 'VisuallyHidden'], section: TypographySection },
   { id: 'chart', label: 'Chart', children: ['Line', 'Bar', 'Area', 'Scatter', 'Bubble', 'Histogram', 'BoxPlot', 'Candlestick', 'Waterfall', 'RangeBar', 'RangeArea', 'Heatmap', 'Combination', 'Pie', 'Radar', 'Radial', 'Gauge', 'Funnel', 'Treemap', 'Sunburst', 'Sankey', 'Chord', 'Sparkline', 'Swimlane', 'OrgChart'], section: ChartSection },
   { id: 'icons', label: 'Icons', children: ['Essential', 'Custom', 'Sizes'], section: IconSection },
+  { id: 'blocks', label: 'Blocks', children: ['Hero', 'Features', 'Pricing', 'Testimonials', 'CTA', 'Footer', 'Timeline', 'StatsRow', 'ProjectGrid'], section: BlocksSection },
+  { id: 'kits', label: 'Kits', children: ['Sidebar', 'DashboardHeader', 'StatsGrid', 'KPICard', 'ActivityFeed', 'ChartPlaceholder', 'LoginForm', 'RegisterForm', 'ForgotPasswordForm', 'AuthorCard', 'PostList', 'CategoryNav', 'TableOfContents'], section: KitsSection },
 ];
 
 const TOTAL_COMPONENTS = CATEGORIES.reduce((n, c) => n + c.children.length, 0);
@@ -452,16 +456,24 @@ function App() {
   const styles = getStyleList();
   const [activeStyle, setActiveStyle] = createSignal('auradecantism');
   const [activeMode, setActiveMode] = createSignal('dark');
+  const [activeShape, setActiveShape] = createSignal('');
   const [route, setRoute] = createSignal(parseRoute(getHash()));
   const [sidebarCompact, setSidebarCompact] = createSignal(false);
   const [sidebarFilter, setSidebarFilter] = createSignal('');
   const [viewport, setViewport] = createSignal('full');
   const [searchVisible, setSearchVisible] = createSignal(false);
   const [collapsed, setCollapsed] = createSignal({});
+  const [activeDemo, setActiveDemo] = createSignal(null);
 
-  // Apply style and mode
+  // Map from sidebar child name → array of DemoGroup IDs
+  let componentToIdMap = {};
+  // Current scrollspy instance (disconnect on route change)
+  let scrollSpy = null;
+
+  // Apply style, mode, and shape
   createEffect(() => setStyle(activeStyle()));
   createEffect(() => setMode(activeMode()));
+  createEffect(() => setShape(activeShape() || null));
 
   // Hash change listener
   function onHashChange() {
@@ -490,6 +502,12 @@ function App() {
     { value: 'dark', label: 'Dark' },
     { value: 'auto', label: 'Auto' },
   ];
+  const shapeOptions = [
+    { value: '', label: 'Default' },
+    { value: 'sharp', label: 'Sharp' },
+    { value: 'rounded', label: 'Rounded' },
+    { value: 'pill', label: 'Pill' },
+  ];
 
   // ─── Content area ────────────────────────────────────────────
   const contentArea = div({ class: 'wb-content' });
@@ -499,6 +517,11 @@ function App() {
   }
 
   function renderContent() {
+    // Disconnect previous scrollspy
+    if (scrollSpy) { scrollSpy.disconnect(); scrollSpy = null; }
+    setActiveDemo(null);
+    componentToIdMap = {};
+
     clearContent();
     const r = route();
     let el;
@@ -525,6 +548,31 @@ function App() {
       }
     }
     if (el) contentArea.appendChild(el);
+
+    // Set up scrollspy for category pages
+    if (r.page === 'category') {
+      requestAnimationFrame(() => {
+        const sections = contentArea.querySelectorAll('[data-demo-label]');
+        if (sections.length === 0) return;
+
+        // Build componentToIdMap: "Button" → ["demo-button-variants", "demo-button-sizes"]
+        const map = {};
+        for (const sec of sections) {
+          const label = sec.getAttribute('data-demo-label');
+          const name = label.split(/\s*[\u2014\u2013\u2012—–-]\s*/)[0].trim();
+          if (!map[name]) map[name] = [];
+          map[name].push(sec.id);
+        }
+        componentToIdMap = map;
+
+        // Create scrollspy — root is mainArea (.wb-main), the scroll container
+        scrollSpy = createScrollSpy(mainArea, {
+          rootMargin: '-12px 0px -60% 0px',
+          onActiveChange: (el) => setActiveDemo(el.id)
+        });
+        for (const sec of sections) scrollSpy.observe(sec);
+      });
+    }
   }
 
   createEffect(renderContent);
@@ -554,9 +602,31 @@ function App() {
   createEffect(updateViewport);
 
   // ─── Sidebar ─────────────────────────────────────────────────
-  function toggleCollapse(catId) {
+  // Animated collapse: measure scrollHeight, transition to/from 0
+  function toggleCollapse(catId, itemsEl) {
     const c = { ...collapsed() };
-    c[catId] = !c[catId];
+    const willCollapse = !c[catId];
+    c[catId] = willCollapse;
+
+    if (itemsEl) {
+      if (willCollapse) {
+        // Collapse: set explicit height, then transition to 0
+        itemsEl.style.height = itemsEl.scrollHeight + 'px';
+        requestAnimationFrame(() => { itemsEl.style.height = '0'; });
+      } else {
+        // Expand: transition from 0 to scrollHeight, then clear height
+        itemsEl.style.height = '0';
+        requestAnimationFrame(() => {
+          itemsEl.style.height = itemsEl.scrollHeight + 'px';
+          const onEnd = () => {
+            itemsEl.style.height = '';
+            itemsEl.removeEventListener('transitionend', onEnd);
+          };
+          itemsEl.addEventListener('transitionend', onEnd);
+        });
+      }
+    }
+
     setCollapsed(c);
   }
 
@@ -565,6 +635,7 @@ function App() {
     const compact = sidebarCompact();
     const r = route();
     const activeCat = r.category;
+    const currentDemo = activeDemo();
 
     const groups = CATEGORIES.map(cat => {
       const matchingChildren = filter
@@ -586,22 +657,59 @@ function App() {
         return btn;
       }
 
+      // Chevron icon for collapse state
+      const chevron = icon('chevron-down', { size: '0.75em' });
+      chevron.classList.add('wb-nav-chevron');
+      if (isCollapsed) chevron.classList.add('wb-rotated');
+
       const headerEl = button({
         class: 'wb-nav-header',
-        onclick: () => toggleCollapse(cat.id)
+        onclick: () => {
+          // Find the sibling items container for animation
+          const group = headerEl.parentElement;
+          const itemsEl = group ? group.querySelector('.wb-nav-items') : null;
+          toggleCollapse(cat.id, itemsEl);
+        }
       },
         span({}, cat.label),
-        span({ class: 'wb-count' }, String(matchingChildren.length))
+        div({ class: css('_flex _aic _gap1') },
+          span({ class: 'wb-count' }, String(matchingChildren.length)),
+          chevron
+        )
       );
 
-      const items = matchingChildren.map(child =>
-        button({
-          class: 'wb-nav-item' + (isActive ? ' wb-active' : ''),
-          onclick: () => navigateTo(`/components/${cat.id}`)
-        }, child)
-      );
+      const items = matchingChildren.map(child => {
+        // Per-item active state: check if this child's DemoGroup IDs include the current activeDemo
+        const childIds = componentToIdMap[child] || [];
+        const isItemActive = isActive && childIds.includes(currentDemo);
 
-      const itemsContainer = div({ class: 'wb-nav-items' + (isCollapsed ? ' wb-collapsed' : '') }, ...items);
+        return button({
+          class: 'wb-nav-item' + (isItemActive ? ' wb-active' : ''),
+          onclick: () => {
+            // Navigate to category if not already there
+            if (r.category !== cat.id) {
+              navigateTo(`/components/${cat.id}`);
+              // Wait for content to render, then scroll
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  const ids = componentToIdMap[child] || [];
+                  const targetEl = ids[0] ? document.getElementById(ids[0]) : null;
+                  if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+              });
+            } else {
+              // Already on this category — just scroll
+              const targetEl = childIds[0] ? document.getElementById(childIds[0]) : null;
+              if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
+        }, child);
+      });
+
+      const itemsContainer = div({
+        class: 'wb-nav-items',
+        style: isCollapsed ? 'height:0' : ''
+      }, ...items);
 
       return div({ class: 'wb-nav-group' }, headerEl, itemsContainer);
     }).filter(Boolean);
@@ -615,11 +723,15 @@ function App() {
     while (sidebarContent.firstChild) sidebarContent.removeChild(sidebarContent.firstChild);
     const groups = buildSidebar();
     for (const g of groups) sidebarContent.appendChild(g);
+
+    // Auto-scroll sidebar to keep active item visible
+    const activeItem = sidebarContent.querySelector('.wb-nav-item.wb-active');
+    if (activeItem) activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
-  // Refresh sidebar when route, filter, compact, or collapsed changes
+  // Refresh sidebar when route, filter, compact, collapsed, or activeDemo changes
   createEffect(() => {
-    route(); sidebarFilter(); sidebarCompact(); collapsed();
+    route(); sidebarFilter(); sidebarCompact(); collapsed(); activeDemo();
     refreshSidebar();
   });
 
@@ -711,6 +823,14 @@ function App() {
         options: modeOptions,
         value: activeMode,
         onchange: v => setActiveMode(v),
+        size: 'sm'
+      }),
+      // Shape selector
+      span({ style: 'font-size:0.6875rem;color:var(--d-muted)' }, 'Shape'),
+      Select({
+        options: shapeOptions,
+        value: activeShape,
+        onchange: v => setActiveShape(v),
         size: 'sm'
       }),
       // Divider

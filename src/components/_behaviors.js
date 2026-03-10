@@ -864,3 +864,66 @@ export function createMasonry(containerEl, opts = {}) {
 
   return { refresh, setColumns, destroy };
 }
+
+// ─── SCROLL SPY ─────────────────────────────────────────────────
+// Used by: TableOfContents, workbench navigation, documentation layouts
+
+/**
+ * Tracks which observed elements are visible in a scroll container.
+ * Calls onActiveChange when the topmost visible section changes.
+ *
+ * @param {HTMLElement|null} root - Scroll container (null = viewport)
+ * @param {Object} opts
+ * @param {string} [opts.rootMargin='-20% 0px -60% 0px'] - IntersectionObserver margin
+ * @param {number} [opts.threshold=0]
+ * @param {Function} opts.onActiveChange - Called with (element) when active section changes
+ * @returns {{ observe: Function, unobserve: Function, disconnect: Function }}
+ */
+export function createScrollSpy(root, opts = {}) {
+  const {
+    rootMargin = '-20% 0px -60% 0px',
+    threshold = 0,
+    onActiveChange
+  } = opts;
+
+  let currentEl = null;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      let topEntry = null;
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          if (!topEntry || entry.boundingClientRect.top < topEntry.boundingClientRect.top) {
+            topEntry = entry;
+          }
+        }
+      }
+      if (topEntry && topEntry.target !== currentEl) {
+        currentEl = topEntry.target;
+        onActiveChange(currentEl);
+      }
+    },
+    { root, rootMargin, threshold }
+  );
+
+  function observe(el) { observer.observe(el); }
+  function unobserve(el) { observer.unobserve(el); }
+  function disconnect() { observer.disconnect(); currentEl = null; }
+
+  return { observe, unobserve, disconnect };
+}
+
+/**
+ * Shared checkbox control for embedding styled checkboxes inside
+ * compound components (Transfer, Tree, TreeSelect, DataTable).
+ * Returns the same d-checkbox-native + d-checkbox-check structure
+ * used by the Checkbox component, wrapped in d-checkbox-inline.
+ * @param {Object} [opts] - Attributes for the <input type="checkbox">
+ * @returns {{ wrap: HTMLElement, input: HTMLInputElement }}
+ */
+export function createCheckControl(opts = {}) {
+  const input = h('input', { type: 'checkbox', class: 'd-checkbox-native', ...opts });
+  const check = h('span', { class: 'd-checkbox-check' });
+  const wrap = h('span', { class: 'd-checkbox-inline' }, input, check);
+  return { wrap, input };
+}

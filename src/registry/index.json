@@ -21,7 +21,7 @@
     "decantr/css": {
       "description": "Atomic CSS engine + theme management",
       "file": "css.json",
-      "exports": 17
+      "exports": 20
     },
     "decantr/components": {
       "description": "UI components — all return HTMLElement, all accept inline styles",

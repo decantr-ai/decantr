@@ -1,23 +1,10 @@
 import { createSignal } from 'decantr/state';
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { Modal, Drawer, Tooltip, Popover, Alert, toast, Button, AlertDialog, Sheet, notification, message, Result, Popconfirm, Command, FloatButton, Tour, Separator } from 'decantr/components';
+import { Modal, Drawer, Tooltip, Popover, Alert, toast, Button, AlertDialog, Sheet, notification, message, Result, Popconfirm, Command, FloatButton, Tour, icon } from 'decantr/components';
+import { SectionHeader, DemoGroup, DemoRow } from './_shared.js';
 
-const { div, section, h2, h3, p, span } = tags;
-
-function DemoGroup(label, description, ...children) {
-  return div({ class: css('_flex _col _gap4') },
-    div({ class: css('_flex _col _gap1') },
-      h3({ class: css('_textlg _fwheading _lhsnug') }, label),
-      description ? p({ class: css('_textsm _fg4 _lhnormal') }, description) : null
-    ),
-    ...children
-  );
-}
-
-function DemoRow(...children) {
-  return div({ class: css('_flex _gap3 _wrap _aic') }, ...children);
-}
+const { div, section, h3, p, span } = tags;
 
 export function FeedbackSection() {
   const [modalVisible, setModalVisible] = createSignal(false);
@@ -29,11 +16,7 @@ export function FeedbackSection() {
   const [cmdVisible, setCmdVisible] = createSignal(false);
 
   return section({ id: 'feedback', class: css('_flex _col _gap10') },
-    div({},
-      h2({ class: css('_text2xl _fwheading _lhtight _lsheading') }, 'Feedback Components'),
-      p({ class: css('_textsm _fg4') }, 'Modals, dialogs, overlays, alerts, toasts, and other feedback patterns.')
-    ),
-    Separator({}),
+    SectionHeader('Feedback Components', 'Modals, dialogs, overlays, alerts, toasts, and other feedback patterns.'),
 
     DemoGroup('Modal', 'Dialog overlay with backdrop, close on Escape or outside click.',
       Button({ variant: 'primary', onclick: () => setModalVisible(true) }, 'Open Modal'),
@@ -118,13 +101,13 @@ export function FeedbackSection() {
         visible: cmdVisible,
         onClose: () => setCmdVisible(false),
         items: [
-          { label: 'Go to Dashboard', group: 'Navigation', icon: '\ud83d\udcca', shortcut: '\u2318D' },
-          { label: 'Go to Settings', group: 'Navigation', icon: '\u2699\ufe0f', shortcut: '\u2318,' },
-          { label: 'Go to Profile', group: 'Navigation', icon: '\ud83d\udc64' },
-          { label: 'Create New File', group: 'Actions', icon: '\ud83d\udcc4', shortcut: '\u2318N' },
-          { label: 'Search Files', group: 'Actions', icon: '\ud83d\udd0d', shortcut: '\u2318P' },
-          { label: 'Toggle Theme', group: 'Actions', icon: '\ud83c\udf19' },
-          { label: 'Sign Out', group: 'Account', icon: '\ud83d\udeaa' }
+          { label: 'Go to Dashboard', group: 'Navigation', icon: icon('bar-chart'), shortcut: '\u2318D' },
+          { label: 'Go to Settings', group: 'Navigation', icon: icon('settings'), shortcut: '\u2318,' },
+          { label: 'Go to Profile', group: 'Navigation', icon: icon('user') },
+          { label: 'Create New File', group: 'Actions', icon: icon('file'), shortcut: '\u2318N' },
+          { label: 'Search Files', group: 'Actions', icon: icon('search'), shortcut: '\u2318P' },
+          { label: 'Toggle Theme', group: 'Actions', icon: icon('moon') },
+          { label: 'Sign Out', group: 'Account', icon: icon('log-out') }
         ],
         onSelect: item => {}
       })
@@ -264,7 +247,7 @@ export function FeedbackSection() {
       div({ style: 'position:relative;height:120px;border:1px solid var(--d-border);border-radius:var(--d-radius);overflow:hidden' },
         p({ class: css('_p4 _fg4 _textsm') }, 'Float buttons are typically fixed to the viewport. This demo is contained.'),
         FloatButton({
-          icon: '\u2191',
+          icon: icon('arrow-up'),
           tooltip: 'Back to top',
           position: 'right-bottom',
           onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' })

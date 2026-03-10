@@ -5,7 +5,7 @@
  *
  * @module decantr/components/context-menu
  */
-import { h } from '../core/index.js';
+import { h, onDestroy } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
 import { createListbox } from './_behaviors.js';
 
@@ -98,16 +98,25 @@ export function ContextMenu(props = {}) {
   }
 
   // Outside click to close
+  const onDocClick = (e) => {
+    if (_open && !menu.contains(e.target)) closeMenu();
+  };
   if (typeof document !== 'undefined') {
-    document.addEventListener('click', (e) => {
-      if (_open && !menu.contains(e.target)) closeMenu();
-    });
+    document.addEventListener('click', onDocClick);
   }
 
   // Append to body for proper z-index stacking
   if (typeof document !== 'undefined') {
     document.body.appendChild(menu);
   }
+
+  onDestroy(() => {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('click', onDocClick);
+    }
+    listbox.destroy();
+    if (menu.parentNode) menu.parentNode.removeChild(menu);
+  });
 
   return menu;
 }

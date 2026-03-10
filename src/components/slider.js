@@ -1,4 +1,4 @@
-import { h } from '../core/index.js';
+import { h, onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 
@@ -140,6 +140,12 @@ export function Slider(props = {}) {
   });
 
   updateUI();
+
+  onDestroy(() => {
+    // Clean up any in-progress drag listeners
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+  });
 
   // Reactive value
   if (typeof value === 'function') {
