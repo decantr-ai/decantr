@@ -18,7 +18,7 @@ export function Tooltip(props = {}, ...children) {
   const tooltipEl = h('div', {
     class: cx('d-tooltip', `d-tooltip-${position}`, cls),
     role: 'tooltip',
-    popover: 'manual'
+    style: { display: 'none' }
   }, content);
 
   const wrapper = h('div', { class: 'd-tooltip-wrap' }, ...children, tooltipEl);
@@ -26,12 +26,12 @@ export function Tooltip(props = {}, ...children) {
   let showTimer = null;
 
   function show() {
-    showTimer = setTimeout(() => tooltipEl.showPopover(), delay);
+    showTimer = setTimeout(() => { tooltipEl.style.display = ''; }, delay);
   }
 
   function hide() {
     clearTimeout(showTimer);
-    tooltipEl.hidePopover();
+    tooltipEl.style.display = 'none';
   }
 
   wrapper.addEventListener('mouseenter', show);

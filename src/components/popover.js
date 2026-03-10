@@ -1,5 +1,6 @@
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
+import { createOverlay } from './_behaviors.js';
 
 /**
  * @param {Object} [props]
@@ -19,12 +20,10 @@ export function Popover(props = {}, ...children) {
     class: cls
   } = props;
 
-  let open = false;
-
   const content = h('div', {
     class: cx('d-popover-content', `d-popover-${position}`, align !== 'center' && `d-popover-align-${align}`, cls),
     role: 'dialog',
-    popover: 'auto'
+    style: { display: 'none' }
   }, ...children);
 
   const wrap = h('div', { class: 'd-popover' });
@@ -35,17 +34,12 @@ export function Popover(props = {}, ...children) {
   wrap.appendChild(triggerEl);
   wrap.appendChild(content);
 
-  triggerEl.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (open) content.hidePopover();
-    else content.showPopover();
-  });
-
-  content.addEventListener('toggle', (e) => {
-    open = e.newState === 'open';
-    triggerEl.setAttribute('aria-expanded', String(open));
-    if (open) wrap.classList.add('d-popover-open');
-    else wrap.classList.remove('d-popover-open');
+  createOverlay(triggerEl, content, {
+    trigger: 'click',
+    closeOnEscape: true,
+    closeOnOutside: true,
+    onOpen: () => wrap.classList.add('d-popover-open'),
+    onClose: () => wrap.classList.remove('d-popover-open')
   });
 
   return wrap;

@@ -31,6 +31,7 @@ import { RadioGroup } from '../src/components/radiogroup.js';
 import { Popover } from '../src/components/popover.js';
 import { Combobox } from '../src/components/combobox.js';
 import { Slider } from '../src/components/slider.js';
+import { InputGroup, CompactGroup } from '../src/components/input-group.js';
 
 let cleanup;
 
@@ -165,7 +166,7 @@ describe('Badge', () => {
 
   it('applies status color', () => {
     const b = Badge({ status: 'error', count: 1 });
-    assert.ok(b.style.background === 'var(--c9)');
+    assert.ok(b.style.background === 'var(--d-error)');
   });
 
   it('adds processing animation class', () => {
@@ -324,141 +325,40 @@ describe('base CSS', () => {
 });
 
 describe('icon', () => {
-  it('returns fallback span without icon libraries', () => {
-    const el = icon('home');
+  it('renders span with d-i base class', () => {
+    const el = icon('check');
     assert.equal(el.tagName, 'SPAN');
-    assert.equal(el.getAttribute('title'), 'home');
+    assert.ok(el.className.includes('d-i'));
+    assert.ok(el.className.includes('d-i-check'));
   });
 
-  it('detects Material Icons when indicator present', () => {
-    const indicator = document.createElement('link');
-    indicator.setAttribute('data-icons', 'material');
-    document.head.appendChild(indicator);
-    const el = icon('home');
-    assert.ok(el.className.includes('material-icons'));
-    assert.ok(el.textContent.includes('home'));
+  it('sets role and aria-hidden for accessibility', () => {
+    const el = icon('star');
+    assert.equal(el.getAttribute('role'), 'img');
+    assert.equal(el.getAttribute('aria-hidden'), 'true');
   });
 
   it('applies custom size', () => {
     const el = icon('star', { size: '2rem' });
-    assert.equal(el.style.width || el.style.fontSize, '2rem');
+    assert.equal(el.style.width, '2rem');
+    assert.equal(el.style.height, '2rem');
   });
 
   it('applies custom class', () => {
     const el = icon('check', { class: 'my-icon' });
     assert.ok(el.className.includes('my-icon'));
+    assert.ok(el.className.includes('d-i'));
   });
 
-  it('forwards extra opts on fallback span', () => {
-    const el = icon('star', { 'aria-hidden': 'true', 'aria-label': 'Star' });
-    assert.equal(el.getAttribute('aria-hidden'), 'true');
+  it('forwards extra attributes', () => {
+    const el = icon('star', { 'aria-label': 'Star' });
     assert.equal(el.getAttribute('aria-label'), 'Star');
   });
 
-  it('forwards extra opts on Material Icons span', () => {
-    const indicator = document.createElement('link');
-    indicator.setAttribute('data-icons', 'material');
-    document.head.appendChild(indicator);
-    const el = icon('home', { 'aria-hidden': 'true' });
-    assert.equal(el.getAttribute('aria-hidden'), 'true');
-    assert.ok(el.className.includes('material-icons'));
-  });
-
-  it('creates SVG directly from lucide.icons data', () => {
-    window.lucide = {
-      icons: {
-        Home: ['svg', {
-          xmlns: 'http://www.w3.org/2000/svg', width: '24', height: '24',
-          viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2'
-        }, [
-          ['path', { d: 'M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8' }],
-          ['path', { d: 'M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' }]
-        ]]
-      }
-    };
+  it('uses default size of 1.25em', () => {
     const el = icon('home');
-    assert.equal(el.tagName, 'SVG');
-    assert.equal(el.getAttribute('stroke'), 'currentColor');
-    assert.equal(el.children.length, 2);
-    assert.equal(el.children[0].tagName, 'PATH');
-    delete window.lucide;
-  });
-
-  it('converts kebab-case to PascalCase for lucide lookup', () => {
-    window.lucide = {
-      icons: {
-        LayoutDashboard: ['svg', {
-          xmlns: 'http://www.w3.org/2000/svg', width: '24', height: '24',
-          viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor'
-        }, [
-          ['rect', { width: '7', height: '9', x: '3', y: '3', rx: '1' }]
-        ]]
-      }
-    };
-    const el = icon('layout-dashboard');
-    assert.equal(el.tagName, 'SVG');
-    assert.equal(el.children.length, 1);
-    assert.equal(el.children[0].tagName, 'RECT');
-    delete window.lucide;
-  });
-
-  it('sets size and class on lucide SVG', () => {
-    window.lucide = {
-      icons: {
-        Home: ['svg', {
-          xmlns: 'http://www.w3.org/2000/svg', width: '24', height: '24',
-          viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor'
-        }, []]
-      }
-    };
-    const el = icon('home', { size: '2rem', class: 'my-svg' });
-    assert.equal(el.getAttribute('width'), '2rem');
-    assert.equal(el.getAttribute('height'), '2rem');
-    assert.equal(el.getAttribute('class'), 'my-svg');
-    delete window.lucide;
-  });
-
-  it('forwards extra opts on lucide SVG', () => {
-    window.lucide = {
-      icons: {
-        Home: ['svg', {
-          xmlns: 'http://www.w3.org/2000/svg', width: '24', height: '24',
-          viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor'
-        }, []]
-      }
-    };
-    const el = icon('home', { 'aria-hidden': 'true', 'aria-label': 'Home icon' });
-    assert.equal(el.getAttribute('aria-hidden'), 'true');
-    assert.equal(el.getAttribute('aria-label'), 'Home icon');
-    delete window.lucide;
-  });
-
-  it('renders pending placeholder when lucide tag exists but not loaded', () => {
-    const script = document.createElement('script');
-    script.setAttribute('data-icons', 'lucide');
-    document.head.appendChild(script);
-    // No window.lucide set
-    delete window.lucide;
-    const el = icon('home');
-    assert.equal(el.tagName, 'SPAN');
-    assert.equal(el.getAttribute('data-lucide-pending'), 'home');
-    assert.equal(el.getAttribute('title'), 'home');
-  });
-
-  it('falls through to fallback for unknown lucide icon name', () => {
-    window.lucide = {
-      icons: {
-        Home: ['svg', {
-          xmlns: 'http://www.w3.org/2000/svg', width: '24', height: '24',
-          viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor'
-        }, []]
-      }
-    };
-    const el = icon('nonexistent-icon');
-    // Not in lucide.icons, no [data-icons="lucide"] tag, should be fallback span
-    assert.equal(el.tagName, 'SPAN');
-    assert.equal(el.getAttribute('title'), 'nonexistent-icon');
-    delete window.lucide;
+    assert.equal(el.style.width, '1.25em');
+    assert.equal(el.style.height, '1.25em');
   });
 });
 
@@ -1076,5 +976,72 @@ describe('Slider', () => {
   it('applies disabled state', () => {
     const el = Slider({ value: 50, disabled: true });
     assert.ok(el.className.includes('d-slider-disabled'));
+  });
+});
+
+describe('InputGroup', () => {
+  it('renders with d-input-group class and role=group', () => {
+    const el = InputGroup({});
+    assert.ok(el.className.includes('d-input-group'));
+    assert.equal(el.getAttribute('role'), 'group');
+  });
+
+  it('applies vertical class', () => {
+    const el = InputGroup({ vertical: true });
+    assert.ok(el.className.includes('d-input-group-vertical'));
+  });
+
+  it('applies error state', () => {
+    const el = InputGroup({ error: true });
+    assert.ok(el.className.includes('d-input-group-error'));
+  });
+
+  it('applies disabled state', () => {
+    const el = InputGroup({ disabled: true });
+    assert.ok(el.hasAttribute('data-disabled'));
+  });
+
+  it('applies size class', () => {
+    const el = InputGroup({ size: 'sm' });
+    assert.ok(el.className.includes('d-input-group-sm'));
+  });
+});
+
+describe('InputGroup.Addon', () => {
+  it('renders with d-input-group-addon class', () => {
+    const el = InputGroup.Addon('$');
+    assert.ok(el.className.includes('d-input-group-addon'));
+    assert.equal(el.textContent, '$');
+  });
+
+  it('accepts string shorthand', () => {
+    const el = InputGroup.Addon('prefix');
+    assert.equal(el.textContent, 'prefix');
+  });
+
+  it('accepts props object', () => {
+    const el = InputGroup.Addon({ class: 'custom' }, 'text');
+    assert.ok(el.className.includes('d-input-group-addon'));
+    assert.ok(el.className.includes('custom'));
+    assert.equal(el.textContent, 'text');
+  });
+
+  it('accepts null (empty addon)', () => {
+    const el = InputGroup.Addon(null);
+    assert.ok(el.className.includes('d-input-group-addon'));
+  });
+});
+
+describe('CompactGroup', () => {
+  it('renders with d-compact-group class and role=group', () => {
+    const el = CompactGroup({});
+    assert.ok(el.className.includes('d-compact-group'));
+    assert.equal(el.getAttribute('role'), 'group');
+  });
+
+  it('applies custom class', () => {
+    const el = CompactGroup({ class: 'my-group' });
+    assert.ok(el.className.includes('d-compact-group'));
+    assert.ok(el.className.includes('my-group'));
   });
 });

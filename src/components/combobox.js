@@ -1,6 +1,7 @@
 import { h } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
+import { caret } from './_behaviors.js';
 
 /**
  * @param {Object} [props]
@@ -44,7 +45,7 @@ export function Combobox(props = {}) {
     'aria-autocomplete': 'list'
   });
 
-  const arrow = h('span', { class: 'd-combobox-arrow' }, '\u25BE');
+  const arrow = caret('down', { class: 'd-combobox-arrow' });
   const inputWrap = h('div', { class: 'd-combobox-input-wrap' }, input, arrow);
 
   const listbox = h('div', { class: 'd-combobox-listbox', role: 'listbox' });

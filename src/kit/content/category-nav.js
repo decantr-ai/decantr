@@ -73,7 +73,7 @@ export function CategoryNav(props = {}) {
   for (const { el } of buttonEls) {
     el.addEventListener('mouseenter', () => {
       if (el.getAttribute('aria-pressed') !== 'true') {
-        el.style.background = 'var(--c5)';
+        el.style.background = 'var(--d-border)';
       }
     });
     el.addEventListener('mouseleave', () => {
@@ -112,8 +112,8 @@ function buildPillStyleObj(isActive) {
     cursor: 'pointer',
     fontFamily: 'inherit',
     transition: 'background 0.15s ease, color 0.15s ease',
-    background: isActive ? 'var(--c1)' : 'transparent',
-    color: isActive ? 'var(--c0)' : 'var(--c3)',
+    background: isActive ? 'var(--d-primary)' : 'transparent',
+    color: isActive ? 'var(--d-bg)' : 'var(--d-fg)',
     outline: 'none'
   };
 }

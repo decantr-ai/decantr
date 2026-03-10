@@ -3,21 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>decantr — AI-first web framework</title>
-  <meta name="description" content="Zero dependencies. Native JS/CSS/HTML. Signal reactivity. 5 unified themes, built-in components.">
-  <meta property="og:title" content="decantr — AI-first web framework">
-  <meta property="og:description" content="Zero dependencies. Native JS/CSS/HTML. Signal reactivity. 5 unified themes, built-in components.">
+  <title>decantr — The Most Powerful UI Framework</title>
+  <meta name="description" content="AI-first. Zero dependencies. 97+ components. 170+ design tokens. The web framework that changes everything.">
+  <meta property="og:title" content="decantr — The Most Powerful UI Framework">
+  <meta property="og:description" content="AI-first. Zero dependencies. Pure native power. The web framework that changes everything.">
   <meta property="og:url" content="https://decantr.ai">
   <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="decantr — AI-first web framework">
-  <meta name="twitter:description" content="Zero dependencies. Native JS/CSS/HTML. Signal reactivity. 5 unified themes, built-in components.">
+  <meta property="og:image" content="https://decantr.ai/images/logo.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="decantr — The Most Powerful UI Framework">
+  <meta name="twitter:description" content="AI-first. Zero dependencies. Pure native power.">
+  <meta name="theme-color" content="#060918">
   <link rel="icon" href="./favicon.ico" sizes="48x48">
   <link rel="icon" href="./favicon-32x32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="./favicon-16x16.png" sizes="16x16" type="image/png">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="manifest" href="./site.webmanifest">
-  <style>:root{--c0:#ffffff;--c1:#3b82f6;--c2:#f8fafc;--c3:#0f172a;--c4:#64748b;--c5:#e2e8f0;--c6:#2563eb;--c7:#22c55e;--c8:#f59e0b;--c9:#ef4444}*{margin:0;box-sizing:border-box}body{font-family:Inter,"Inter Fallback",system-ui,sans-serif;color:var(--c3);background:var(--c0);min-height:100vh}a{color:var(--c1);text-decoration:none}a:hover{color:var(--c6)}:focus-visible{outline:2px solid var(--c1);outline-offset:2px}</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    @layer d.base, d.theme, d.atoms, d.user;
+
+    *, *::before, *::after { margin: 0; box-sizing: border-box; }
+
+    html {
+      font-family: Inter, "Inter Fallback", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #060918;
+      color: #fafafa;
+    }
+
+    @layer d.base {
+      :focus-visible { outline: 2px solid #6500C6; outline-offset: 2px; border-radius: 8px; }
+    }
+
+    /* Prevent FOUC — hide until JS loads */
+    #app { opacity: 0; transition: opacity 0.3s ease; }
+    #app.ds-ready { opacity: 1; }
+  </style>
 </head>
 <body>
   <div id="app"></div>

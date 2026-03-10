@@ -18,6 +18,57 @@
       },
       "returns": "HTMLElement"
     },
+    "Affix": {
+      "props": {
+        "offsetTop=0": {
+          "type": "number"
+        },
+        "offsetBottom": {
+          "type": "number"
+        },
+        "onChange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "AlertDialog": {
+      "props": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "visible": {
+          "type": "Function",
+          "required": true
+        },
+        "onConfirm": {
+          "type": "Function"
+        },
+        "onCancel": {
+          "type": "Function"
+        },
+        "confirmText='Confirm'": {
+          "type": "string"
+        },
+        "cancelText='Cancel'": {
+          "type": "string"
+        },
+        "variant='destructive'": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLDialogElement"
+    },
     "Alert": {
       "props": {
         "variant": {
@@ -46,6 +97,33 @@
       "children": "...(string|Node)",
       "returns": "HTMLElement"
     },
+    "AspectRatio": {
+      "props": {
+        "ratio=16/9": {
+          "type": "number"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "AvatarGroup": {
+      "props": {
+        "max=5": {
+          "type": "number"
+        },
+        "size": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
     "Avatar": {
       "props": {
         "src": {
@@ -69,6 +147,22 @@
           "type": "string"
         }
       },
+      "returns": "HTMLElement"
+    },
+    "BackTop": {
+      "props": {
+        "visibilityHeight=400": {
+          "type": "number"
+        },
+        "target": {
+          "type": "HTMLElement",
+          "default": "window"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
       "returns": "HTMLElement"
     },
     "Badge": {
@@ -100,6 +194,33 @@
         }
       },
       "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "Banner": {
+      "props": {
+        "variant='info'": {
+          "type": "'info'|'success'|'warning'|'error'"
+        },
+        "dismissible=false": {
+          "type": "boolean"
+        },
+        "onDismiss": {
+          "type": "Function"
+        },
+        "sticky=false": {
+          "type": "'top'|'bottom'|false"
+        },
+        "icon": {
+          "type": "string|Node"
+        },
+        "action": {
+          "type": "string|Node"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
       "returns": "HTMLElement"
     },
     "Breadcrumb": {
@@ -207,6 +328,33 @@
         "Group"
       ]
     },
+    "Calendar": {
+      "props": {
+        "value": {
+          "type": "Date|Function",
+          "reactive": true
+        },
+        "mode='month'": {
+          "type": "'month'|'year'"
+        },
+        "mini=false": {
+          "type": "boolean"
+        },
+        "dateCellRender": {
+          "type": "Function"
+        },
+        "onSelect": {
+          "type": "Function"
+        },
+        "onPanelChange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
     "Card": {
       "props": {
         "title": {
@@ -226,6 +374,70 @@
         "Body",
         "Footer"
       ]
+    },
+    "Carousel": {
+      "props": {
+        "slides": {
+          "type": "Node[]"
+        },
+        "autoplay=false": {
+          "type": "boolean"
+        },
+        "interval=3000": {
+          "type": "number"
+        },
+        "arrows=true": {
+          "type": "boolean"
+        },
+        "dots=true": {
+          "type": "boolean"
+        },
+        "loop=true": {
+          "type": "boolean"
+        },
+        "onChange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Cascader": {
+      "props": {
+        "options": {
+          "type": "CascaderOption[]"
+        },
+        "value": {
+          "type": "string[]"
+        },
+        "onChange": {
+          "type": "Function"
+        },
+        "placeholder='Select'": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "clearable=true": {
+          "type": "boolean"
+        },
+        "separator='": {
+          "type": "string"
+        },
+        "expandTrigger='click'": {
+          "type": "'click'|'hover'"
+        },
+        "searchable=false": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
     },
     "Checkbox": {
       "props": {
@@ -296,6 +508,72 @@
       },
       "returns": "HTMLElement"
     },
+    "CodeBlock": {
+      "props": {
+        "language": {
+          "type": "string"
+        },
+        "lineNumbers=false": {
+          "type": "boolean"
+        },
+        "copyable=true": {
+          "type": "boolean"
+        },
+        "maxHeight": {
+          "type": "number"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...string",
+      "returns": "HTMLElement"
+    },
+    "Collapsible": {
+      "props": {
+        "open=false": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onToggle": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        },
+        "trigger": {
+          "type": "Function",
+          "required": true
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "ColorPicker": {
+      "props": {
+        "value='#1366D9'": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "alpha=false": {
+          "type": "boolean"
+        },
+        "presets": {
+          "type": "string[]"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
     "Combobox": {
       "props": {
         "options": {
@@ -321,6 +599,229 @@
         },
         "onfilter": {
           "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Command": {
+      "props": {
+        "visible": {
+          "type": "Function",
+          "required": true
+        },
+        "items": {
+          "type": "{ label: string, value?: string, icon?: string|Node, group?: string, shortcut?: string, disabled?: boolean, onSelect?: Function }[]",
+          "reactive": true
+        },
+        "onSelect": {
+          "type": "Function"
+        },
+        "onClose": {
+          "type": "Function"
+        },
+        "placeholder='Type": {
+          "type": "string"
+        },
+        "filter": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLDialogElement"
+    },
+    "ContextMenu": {
+      "props": {
+        "target": {
+          "type": "HTMLElement",
+          "required": true
+        },
+        "items": {
+          "type": "{ label: string, value?: string, icon?: string|Node, shortcut?: string, disabled?: boolean, separator?: boolean, onclick?: Function }[]",
+          "reactive": true
+        },
+        "onSelect": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "DataTable": {
+      "props": {
+        "columns": {
+          "type": "Array<{key:string,label:string,width?:string,sortable?:boolean,filterable?:boolean,pinned?:'left'|'right',render?:Function,editable?:boolean,align?:'left'|'center'|'right',sort?:Function}>",
+          "reactive": true,
+          "required": true
+        },
+        "data": {
+          "type": "Array<Object>|Function",
+          "reactive": true,
+          "required": true
+        },
+        "pagination": {
+          "type": "Object"
+        },
+        "selection='none'": {
+          "type": "'single'|'multi'|'none'"
+        },
+        "onSelectionChange": {
+          "type": "Function"
+        },
+        "striped=false": {
+          "type": "boolean"
+        },
+        "hoverable=true": {
+          "type": "boolean"
+        },
+        "stickyHeader=false": {
+          "type": "boolean"
+        },
+        "onSort": {
+          "type": "Function"
+        },
+        "rowKey": {
+          "type": "Function"
+        },
+        "onCellEdit": {
+          "type": "Function"
+        },
+        "expandable=false": {
+          "type": "boolean"
+        },
+        "expandRender": {
+          "type": "Function"
+        },
+        "exportable=false": {
+          "type": "boolean"
+        },
+        "emptyText='No": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "DatePicker": {
+      "props": {
+        "value": {
+          "type": "Date|string|Function",
+          "reactive": true
+        },
+        "placeholder='Select": {
+          "type": "string"
+        },
+        "format='yyyy": {
+          "type": "string"
+        },
+        "min": {
+          "type": "Date"
+        },
+        "max": {
+          "type": "Date"
+        },
+        "disabledDate": {
+          "type": "Function"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "DateRangePicker": {
+      "props": {
+        "value": {
+          "type": "Array<Date>|Function",
+          "reactive": true
+        },
+        "placeholder='Select": {
+          "type": "string"
+        },
+        "min": {
+          "type": "Date"
+        },
+        "max": {
+          "type": "Date"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "DateTimePicker": {
+      "props": {
+        "value": {
+          "type": "Date|string|Function",
+          "reactive": true
+        },
+        "placeholder='Select": {
+          "type": "string"
+        },
+        "min": {
+          "type": "Date"
+        },
+        "max": {
+          "type": "Date"
+        },
+        "seconds=false": {
+          "type": "boolean"
+        },
+        "use12h=false": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Descriptions": {
+      "props": {
+        "title": {
+          "type": "string"
+        },
+        "items": {
+          "type": "{ label: string, value: string|Node, span?: number }[]"
+        },
+        "columns=3": {
+          "type": "number"
+        },
+        "layout='horizontal'": {
+          "type": "'horizontal'|'vertical'"
+        },
+        "bordered=false": {
+          "type": "boolean"
         },
         "class": {
           "type": "string"
@@ -373,11 +874,118 @@
       },
       "returns": "HTMLElement"
     },
+    "Empty": {
+      "props": {
+        "icon": {
+          "type": "string|Node",
+          "default": "generic empty icon"
+        },
+        "description='No": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "FloatButton": {
+      "props": {
+        "icon='+''": {
+          "type": "string|Node"
+        },
+        "tooltip": {
+          "type": "string"
+        },
+        "shape='circle'": {
+          "type": "'circle'|'square'"
+        },
+        "type='default'": {
+          "type": "'default'|'primary'"
+        },
+        "onClick": {
+          "type": "Function"
+        },
+        "position='right": {
+          "type": "'right-bottom'|'right-top'|'left-bottom'|'left-top'"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement",
+      "subComponents": [
+        "Group"
+      ]
+    },
+    "Form": {
+      "props": {
+        "layout='vertical'": {
+          "type": "'vertical'|'horizontal'|'inline'"
+        },
+        "onSubmit": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement",
+      "subComponents": [
+        "Actions"
+      ]
+    },
+    "Field": {
+      "props": {
+        "label": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "HoverCard": {
+      "props": {
+        "trigger": {
+          "type": "Function"
+        },
+        "position='bottom'": {
+          "type": "'top'|'bottom'|'left'|'right'"
+        },
+        "openDelay=300": {
+          "type": "number"
+        },
+        "closeDelay=200": {
+          "type": "number"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
     "icon": {
       "params": [
         {
           "name": "name",
-          "type": "string"
+          "type": "string",
+          "description": "Icon name (kebab-case, e.g. 'check', 'chevron-down')"
         },
         {
           "name": "opts",
@@ -399,6 +1007,143 @@
       ],
       "returns": "HTMLElement",
       "_type": "function"
+    },
+    "Image": {
+      "props": {
+        "src": {
+          "type": "string"
+        },
+        "alt=''": {
+          "type": "string"
+        },
+        "width": {
+          "type": "string"
+        },
+        "height": {
+          "type": "string"
+        },
+        "fit='cover'": {
+          "type": "'cover'|'contain'|'fill'|'none'"
+        },
+        "preview=false": {
+          "type": "boolean"
+        },
+        "fallback": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement",
+      "subComponents": [
+        "Group"
+      ]
+    },
+    "InputGroup": {
+      "props": {
+        "vertical=false": {
+          "type": "boolean"
+        },
+        "size": {
+          "type": "'sm'|'default'|'lg'"
+        },
+        "error": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement",
+      "subComponents": [
+        "Addon"
+      ]
+    },
+    "CompactGroup": {
+      "props": {
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "InputNumber": {
+      "props": {
+        "value": {
+          "type": "number|Function",
+          "reactive": true
+        },
+        "min=": {
+          "type": "number"
+        },
+        "max=Infinity": {
+          "type": "number"
+        },
+        "step=1": {
+          "type": "number"
+        },
+        "precision": {
+          "type": "number"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "controls=true": {
+          "type": "boolean"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "InputOTP": {
+      "props": {
+        "length=6": {
+          "type": "number"
+        },
+        "value": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "masked=false": {
+          "type": "boolean"
+        },
+        "separator": {
+          "type": "number"
+        },
+        "onComplete": {
+          "type": "Function"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
     },
     "Input": {
       "props": {
@@ -448,10 +1193,197 @@
       },
       "returns": "HTMLElement"
     },
+    "Kbd": {
+      "props": {
+        "keys": {
+          "type": "string|string[]"
+        },
+        "separator='+'": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
+      "returns": "HTMLElement"
+    },
+    "Label": {
+      "props": {
+        "for": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
+      "returns": "HTMLElement"
+    },
+    "List": {
+      "props": {
+        "items": {
+          "type": "{ title?: string, description?: string, avatar?: Node, extra?: Node, actions?: Node[] }[]|Function",
+          "reactive": true
+        },
+        "renderItem": {
+          "type": "Function"
+        },
+        "header": {
+          "type": "string"
+        },
+        "footer": {
+          "type": "string"
+        },
+        "bordered=false": {
+          "type": "boolean"
+        },
+        "grid": {
+          "type": "number"
+        },
+        "loading=false": {
+          "type": "boolean"
+        },
+        "emptyText='No": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement",
+      "subComponents": [
+        "Item"
+      ]
+    },
+    "MaskedInput": {
+      "props": {
+        "mask": {
+          "type": "string",
+          "required": true
+        },
+        "placeholder='_'": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "oncomplete": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Mentions": {
+      "props": {
+        "options": {
+          "type": "{ value: string, label: string }[]"
+        },
+        "prefix='@'": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "rows=3": {
+          "type": "number"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "onSelect": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Menu": {
+      "props": {
+        "items": {
+          "type": "MenuItem[]"
+        },
+        "selected": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "onSelect": {
+          "type": "Function"
+        },
+        "collapsed=false": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement",
+      "subComponents": [
+        "Bar"
+      ]
+    },
+    "message": {
+      "props": {
+        "content": {
+          "type": "string",
+          "required": true
+        },
+        "type='info'": {
+          "type": "'info'|'success'|'warning'|'error'|'loading'"
+        },
+        "duration=3000": {
+          "type": "number"
+        },
+        "icon": {
+          "type": "Node"
+        },
+        "onClose": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "{ close: Function }"
+    },
+    "resetMessages": {},
     "Modal": {
       "props": {
         "title": {
           "type": "string"
+        },
+        "footer": {
+          "type": "Node|Node[]"
         },
         "visible": {
           "type": "Function",
@@ -469,8 +1401,57 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLDialogElement"
+      "returns": "HTMLDialogElement",
+      "subComponents": [
+        "Header",
+        "Body",
+        "Footer"
+      ]
     },
+    "NavigationMenu": {
+      "props": {
+        "items": {
+          "type": "NavMenuItem[]"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "notification": {
+      "props": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "type='info'": {
+          "type": "'info'|'success'|'warning'|'error'"
+        },
+        "duration=4500": {
+          "type": "number"
+        },
+        "placement='top": {
+          "type": "'top-right'|'top-left'|'bottom-right'|'bottom-left'"
+        },
+        "icon": {
+          "type": "Node"
+        },
+        "action": {
+          "type": "Node"
+        },
+        "onClose": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "{ close: Function }"
+    },
+    "resetNotifications": {},
     "Pagination": {
       "props": {
         "total": {
@@ -490,6 +1471,42 @@
         },
         "siblings": {
           "type": "number"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Popconfirm": {
+      "props": {
+        "title='Are": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "onConfirm": {
+          "type": "Function"
+        },
+        "onCancel": {
+          "type": "Function"
+        },
+        "confirmText='Yes'": {
+          "type": "string"
+        },
+        "cancelText='No'": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "Node"
+        },
+        "position='top'": {
+          "type": "'top'|'bottom'|'left'|'right'"
+        },
+        "trigger": {
+          "type": "Function",
+          "required": true
         },
         "class": {
           "type": "string"
@@ -586,6 +1603,168 @@
       },
       "returns": "HTMLElement"
     },
+    "RangeSlider": {
+      "props": {
+        "value": {
+          "type": "Array<number>|Function",
+          "reactive": true
+        },
+        "min=0": {
+          "type": "number"
+        },
+        "max=100": {
+          "type": "number"
+        },
+        "step=1": {
+          "type": "number"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Rate": {
+      "props": {
+        "value=0": {
+          "type": "number|Function",
+          "reactive": true
+        },
+        "count=5": {
+          "type": "number"
+        },
+        "half=false": {
+          "type": "boolean"
+        },
+        "disabled=false": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "readonly=false": {
+          "type": "boolean"
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "sm",
+            "default",
+            "lg"
+          ]
+        },
+        "character='★'": {
+          "type": "string"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Resizable": {
+      "props": {
+        "direction='horizontal'": {
+          "type": "'horizontal'|'vertical'"
+        },
+        "defaultSize=50": {
+          "type": "number"
+        },
+        "minSize=10": {
+          "type": "number"
+        },
+        "maxSize=90": {
+          "type": "number"
+        },
+        "onResize": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "Result": {
+      "props": {
+        "status='info'": {
+          "type": "'success'|'error'|'info'|'warning'|'403'|'404'|'500'"
+        },
+        "title": {
+          "type": "string"
+        },
+        "subTitle": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "Node"
+        },
+        "extra": {
+          "type": "Node[]"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "ScrollArea": {
+      "props": {
+        "height": {
+          "type": "string"
+        },
+        "width": {
+          "type": "string"
+        },
+        "direction='vertical'": {
+          "type": "'vertical'|'horizontal'|'both'"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "Segmented": {
+      "props": {
+        "options": {
+          "type": "{ value: string, label?: string, icon?: string|Node, disabled?: boolean }[]"
+        },
+        "value": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "block=false": {
+          "type": "boolean"
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "default",
+            "sm",
+            "lg"
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
     "Select": {
       "props": {
         "options": {
@@ -605,6 +1784,9 @@
         "error": {
           "type": "boolean|Function",
           "reactive": true
+        },
+        "size": {
+          "type": "string"
         },
         "onchange": {
           "type": "Function"
@@ -628,6 +1810,43 @@
         }
       },
       "returns": "HTMLElement"
+    },
+    "Sheet": {
+      "props": {
+        "title": {
+          "type": "string"
+        },
+        "footer": {
+          "type": "Node|Node[]"
+        },
+        "visible": {
+          "type": "Function",
+          "required": true
+        },
+        "onClose": {
+          "type": "Function"
+        },
+        "side='right'": {
+          "type": "'left'|'right'|'top'|'bottom'"
+        },
+        "size": {
+          "type": "string",
+          "default": "320px"
+        },
+        "closeOnOutside=true": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLDialogElement",
+      "subComponents": [
+        "Header",
+        "Body",
+        "Footer"
+      ]
     },
     "Skeleton": {
       "props": {
@@ -689,21 +1908,150 @@
       },
       "returns": "HTMLElement"
     },
+    "SortableList": {
+      "props": {
+        "items": {
+          "type": "Array",
+          "required": true
+        },
+        "keyFn": {
+          "type": "Function"
+        },
+        "renderFn": {
+          "type": "Function",
+          "required": true
+        },
+        "onReorder": {
+          "type": "Function"
+        },
+        "direction='vertical'": {
+          "type": "'vertical'|'horizontal'"
+        },
+        "disabled=false": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Space": {
+      "props": {
+        "direction='horizontal'": {
+          "type": "'horizontal'|'vertical'"
+        },
+        "align": {
+          "type": "'start'|'center'|'end'|'between'|'around'|'evenly'"
+        },
+        "gap": {
+          "type": "number|string"
+        },
+        "wrap=false": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
     "Spinner": {
       "props": {
+        "variant='ring'": {
+          "type": "'ring'|'dots'|'pulse'|'bars'|'orbit'"
+        },
         "size": {
           "type": "string",
           "enum": [
             "xs",
             "sm",
             "default",
-            "lg"
-          ],
-          "default": "'default'"
+            "lg",
+            "xl"
+          ]
+        },
+        "icon": {
+          "type": "string"
         },
         "label": {
           "type": "string",
           "default": "'Loading'"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Splitter": {
+      "props": {
+        "direction='horizontal'": {
+          "type": "'horizontal'|'vertical'"
+        },
+        "panels": {
+          "type": "SplitterPanel[]"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Statistic": {
+      "props": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number|string|Function",
+          "reactive": true
+        },
+        "precision": {
+          "type": "number"
+        },
+        "prefix": {
+          "type": "string|Node"
+        },
+        "suffix": {
+          "type": "string|Node"
+        },
+        "trend": {
+          "type": "'up'|'down'"
+        },
+        "trendValue": {
+          "type": "string"
+        },
+        "groupSeparator=true": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement",
+      "subComponents": [
+        "Countdown"
+      ]
+    },
+    "Steps": {
+      "props": {
+        "items": {
+          "type": "{ title: string, description?: string, icon?: string|Node, status?: 'wait'|'process'|'finish'|'error' }[]"
+        },
+        "current=0": {
+          "type": "number|Function",
+          "reactive": true
+        },
+        "direction='horizontal'": {
+          "type": "'horizontal'|'vertical'"
+        },
+        "onChange": {
+          "type": "Function"
+        },
+        "clickable=false": {
+          "type": "boolean"
         },
         "class": {
           "type": "string"
@@ -779,6 +2127,34 @@
       },
       "returns": "HTMLElement"
     },
+    "Tag": {
+      "props": {
+        "color": {
+          "type": "string"
+        },
+        "closable=false": {
+          "type": "boolean"
+        },
+        "checked": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onClose": {
+          "type": "Function"
+        },
+        "onCheck": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
+      "returns": "HTMLElement",
+      "subComponents": [
+        "CheckableGroup"
+      ]
+    },
     "Textarea": {
       "props": {
         "placeholder": {
@@ -815,6 +2191,82 @@
         },
         "ref": {
           "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "TimePicker": {
+      "props": {
+        "value": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "placeholder='Select": {
+          "type": "string"
+        },
+        "seconds=false": {
+          "type": "boolean"
+        },
+        "use12h=false": {
+          "type": "boolean"
+        },
+        "hourStep=1": {
+          "type": "number"
+        },
+        "minuteStep=1": {
+          "type": "number"
+        },
+        "secondStep=1": {
+          "type": "number"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "TimeRangePicker": {
+      "props": {
+        "value": {
+          "type": "Array<string>|Function",
+          "reactive": true
+        },
+        "placeholder='Select": {
+          "type": "string"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Timeline": {
+      "props": {
+        "items": {
+          "type": "{ label?: string, content: string|Node, color?: string, icon?: string|Node, time?: string }[]"
+        },
+        "mode='left'": {
+          "type": "'left'|'right'|'alternate'"
+        },
+        "pending=false": {
+          "type": "boolean"
         },
         "class": {
           "type": "string"
@@ -870,6 +2322,71 @@
       "description": "Show a toast notification.",
       "_type": "function"
     },
+    "Toggle": {
+      "props": {
+        "pressed=false": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "variant": {
+          "type": "string",
+          "enum": [
+            "default",
+            "outline"
+          ]
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "default",
+            "sm",
+            "lg"
+          ]
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
+      "returns": "HTMLElement"
+    },
+    "ToggleGroup": {
+      "props": {
+        "items": {
+          "type": "{ value: string, label?: string, icon?: string|Node, disabled?: boolean }[]"
+        },
+        "value": {
+          "type": "string|string[]|Function",
+          "reactive": true
+        },
+        "type='single'": {
+          "type": "'single'|'multiple'"
+        },
+        "multiple": {
+          "type": "boolean"
+        },
+        "variant": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
     "Tooltip": {
       "props": {
         "content": {
@@ -889,6 +2406,333 @@
         "delay": {
           "type": "number",
           "default": "200"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "Tour": {
+      "props": {
+        "steps": {
+          "type": "{ target: HTMLElement|string, title?: string, description?: string, placement?: 'top'|'bottom'|'left'|'right' }[]",
+          "required": true
+        },
+        "onFinish": {
+          "type": "Function"
+        },
+        "onChange": {
+          "type": "Function"
+        },
+        "onClose": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "{ start: Function, next: Function, prev: Function, close: Function, goTo: Function }"
+    },
+    "Transfer": {
+      "props": {
+        "dataSource=[": {
+          "type": "{ key: string, label: string, disabled?: boolean }[]"
+        },
+        "targetKeys=[": {
+          "type": "string[]"
+        },
+        "searchable=false": {
+          "type": "boolean"
+        },
+        "titles=['Source'": {
+          "type": "string[]"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "TreeSelect": {
+      "props": {
+        "options": {
+          "type": "TreeSelectNode[]"
+        },
+        "value": {
+          "type": "string|Array<string>|Function",
+          "reactive": true
+        },
+        "multiple=false": {
+          "type": "boolean"
+        },
+        "checkable=false": {
+          "type": "boolean"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "placeholder='Select'": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Tree": {
+      "props": {
+        "data": {
+          "type": "TreeNode[]"
+        },
+        "expandedKeys": {
+          "type": "string[]"
+        },
+        "selectedKeys": {
+          "type": "string[]"
+        },
+        "checkedKeys": {
+          "type": "string[]"
+        },
+        "checkable=false": {
+          "type": "boolean"
+        },
+        "selectable=true": {
+          "type": "boolean"
+        },
+        "defaultExpandAll=false": {
+          "type": "boolean"
+        },
+        "onSelect": {
+          "type": "Function"
+        },
+        "onCheck": {
+          "type": "Function"
+        },
+        "onExpand": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement"
+    },
+    "Title": {
+      "props": {
+        "level=3": {
+          "type": "1|2|3|4|5"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "secondary",
+            "success",
+            "warning",
+            "danger"
+          ]
+        },
+        "mark": {
+          "type": "boolean"
+        },
+        "underline": {
+          "type": "boolean"
+        },
+        "strikethrough": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
+      "returns": "HTMLElement"
+    },
+    "Text": {
+      "props": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "secondary",
+            "success",
+            "warning",
+            "danger"
+          ]
+        },
+        "strong": {
+          "type": "boolean"
+        },
+        "italic": {
+          "type": "boolean"
+        },
+        "underline": {
+          "type": "boolean"
+        },
+        "strikethrough": {
+          "type": "boolean"
+        },
+        "code": {
+          "type": "boolean"
+        },
+        "keyboard": {
+          "type": "boolean"
+        },
+        "mark": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
+      "returns": "HTMLElement"
+    },
+    "Paragraph": {
+      "props": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "secondary",
+            "success",
+            "warning",
+            "danger"
+          ]
+        },
+        "strong": {
+          "type": "boolean"
+        },
+        "italic": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
+      "returns": "HTMLElement"
+    },
+    "Link": {
+      "props": {
+        "href": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "secondary",
+            "success",
+            "warning",
+            "danger"
+          ]
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
+      "returns": "HTMLElement"
+    },
+    "Blockquote": {
+      "props": {
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(string|Node)",
+      "returns": "HTMLElement"
+    },
+    "Upload": {
+      "props": {
+        "multiple=false": {
+          "type": "boolean"
+        },
+        "accept": {
+          "type": "string"
+        },
+        "drag=false": {
+          "type": "boolean"
+        },
+        "maxSize": {
+          "type": "number"
+        },
+        "maxCount": {
+          "type": "number"
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "onRemove": {
+          "type": "Function"
+        },
+        "customRequest": {
+          "type": "Function"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "VisuallyHidden": {
+      "props": {
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement"
+    },
+    "Watermark": {
+      "props": {
+        "content": {
+          "type": "string[]"
+        },
+        "image": {
+          "type": "string"
+        },
+        "rotate=": {
+          "type": "number"
+        },
+        "fontSize=14": {
+          "type": "number"
+        },
+        "fontColor='rgba(0": {
+          "type": "string"
+        },
+        "gap=[100": {
+          "type": "number[]"
+        },
+        "offset=[0": {
+          "type": "number[]"
+        },
+        "zIndex=9": {
+          "type": "number"
         },
         "class": {
           "type": "string"

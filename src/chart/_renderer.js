@@ -1,38 +1,54 @@
 /**
  * Renderer interface and auto-selection dispatch.
  * Selects SVG, Canvas, or WebGPU based on data size or explicit override.
+ * Fallback chain: WebGPU → Canvas → SVG.
+ * @module _renderer
  */
 
 import { renderSVG } from './renderers/svg.js';
+import { renderCanvas } from './renderers/canvas.js';
 
 /** @type {number} Threshold below which SVG is used */
 const SVG_THRESHOLD = 3000;
 
 /** @type {number} Threshold below which Canvas 2D is used (above → WebGPU) */
-// const CANVAS_THRESHOLD = 10000;  // Phase 3+
+const CANVAS_THRESHOLD = 50000;
 
 /**
  * Auto-select and invoke the appropriate renderer.
- * @param {Object} layout — computed layout from type module
- * @param {Object} spec — original chart spec (for renderer override, dimensions)
+ * @param {Object} sceneGraph — scene graph from layout function
+ * @param {Object} spec — original chart spec (for renderer override)
  * @returns {SVGElement|HTMLCanvasElement}
  */
-export function render(layout, spec) {
+export function render(sceneGraph, spec) {
   const renderer = spec.renderer || 'auto';
-  const dataLen = layout.dataLength || 0;
+  const dataLen = sceneGraph.meta?.dataLength || 0;
 
   if (renderer === 'svg' || (renderer === 'auto' && dataLen < SVG_THRESHOLD)) {
-    return renderSVG(layout, spec);
+    return renderSVG(sceneGraph);
   }
 
-  // Phase 3: Canvas 2D
-  // if (renderer === 'canvas' || (renderer === 'auto' && dataLen < CANVAS_THRESHOLD)) {
-  //   return renderCanvas(layout, spec);
-  // }
+  if (renderer === 'canvas' || (renderer === 'auto' && dataLen < CANVAS_THRESHOLD)) {
+    return renderCanvas(sceneGraph);
+  }
 
-  // Phase 4: WebGPU
-  // return renderWebGPU(layout, spec);
+  if (renderer === 'webgpu' || (renderer === 'auto' && dataLen >= CANVAS_THRESHOLD)) {
+    // WebGPU — fallback chain: WebGPU → Canvas → SVG
+    if (renderWebGPU) return renderWebGPU(sceneGraph);
+    return renderCanvas(sceneGraph);
+  }
 
-  // Fallback to SVG until Canvas/WebGPU are implemented
-  return renderSVG(layout, spec);
+  return renderSVG(sceneGraph);
+}
+
+// WebGPU renderer reference (set when loaded)
+let renderWebGPU = null;
+
+/**
+ * Register a renderer implementation.
+ * @param {'webgpu'} type
+ * @param {Function} renderFn
+ */
+export function registerRenderer(type, renderFn) {
+  if (type === 'webgpu') renderWebGPU = renderFn;
 }

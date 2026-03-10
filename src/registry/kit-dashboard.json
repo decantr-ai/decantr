@@ -57,14 +57,26 @@
     "DataTable": {
       "props": {
         "columns": {
-          "type": "Array<{key: string, label: string, width?: string}>"
+          "type": "Array<{key: string, label: string, sortable?: boolean, filterable?: boolean, width?: string}>"
         },
         "data": {
           "type": "Array<Object>|Function",
           "reactive": true
         },
-        "searchable": {
+        "searchable=true": {
           "type": "boolean"
+        },
+        "striped=true": {
+          "type": "boolean"
+        },
+        "hoverable=true": {
+          "type": "boolean"
+        },
+        "stickyHeader=true": {
+          "type": "boolean"
+        },
+        "pagination": {
+          "type": "Object"
         },
         "class": {
           "type": "string"

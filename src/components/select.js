@@ -1,6 +1,7 @@
 import { h } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx, reactiveAttr, reactiveClass } from './_base.js';
+import { caret } from './_behaviors.js';
 
 /**
  * @param {Object} [props]
@@ -9,6 +10,7 @@ import { injectBase, cx, reactiveAttr, reactiveClass } from './_base.js';
  * @param {string} [props.placeholder]
  * @param {boolean|Function} [props.disabled]
  * @param {boolean|Function} [props.error]
+ * @param {string} [props.size] - 'sm'|'default'|'lg'
  * @param {Function} [props.onchange]
  * @param {string} [props.class]
  * @returns {HTMLElement}
@@ -16,15 +18,15 @@ import { injectBase, cx, reactiveAttr, reactiveClass } from './_base.js';
 export function Select(props = {}) {
   injectBase();
 
-  const { options = [], value, placeholder, disabled, error, onchange, class: cls } = props;
+  const { options = [], value, placeholder, disabled, error, size, onchange, class: cls } = props;
 
   let open = false;
   let activeIndex = -1;
   let currentValue = typeof value === 'function' ? value() : (value || '');
 
-  const wrapClass = cx('d-select-wrap', cls);
+  const wrapClass = cx('d-select-wrap', size && `d-select-${size}`, cls);
   const display = h('span', { class: 'd-select-display' });
-  const arrow = h('span', { class: 'd-select-arrow' }, '\u25BE');
+  const arrow = caret('down', { class: 'd-select-arrow' });
   const trigger = h('button', {
     type: 'button',
     class: 'd-select',
@@ -54,7 +56,8 @@ export function Select(props = {}) {
         'aria-selected': opt.value === currentValue ? 'true' : 'false'
       }, opt.label);
       if (!opt.disabled) {
-        el.addEventListener('click', (e) => {
+        el.addEventListener('mousedown', (e) => {
+          e.preventDefault();
           e.stopPropagation();
           selectOption(opt.value);
         });
@@ -88,7 +91,8 @@ export function Select(props = {}) {
     wrap.classList.remove('d-select-open');
   }
 
-  trigger.addEventListener('click', () => {
+  trigger.addEventListener('mousedown', (e) => {
+    e.preventDefault();
     if (open) closeDropdown();
     else openDropdown();
   });
@@ -125,7 +129,7 @@ export function Select(props = {}) {
 
   // Click outside to close
   if (typeof document !== 'undefined') {
-    document.addEventListener('click', (e) => {
+    document.addEventListener('mousedown', (e) => {
       if (open && !wrap.contains(e.target)) closeDropdown();
     });
   }

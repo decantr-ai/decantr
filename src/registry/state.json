@@ -63,6 +63,62 @@
       ],
       "returns": "[() => T, (v: T | ((prev: T) => T)) => void]"
     },
+    "createResource": {
+      "params": [
+        {
+          "name": "fetcher",
+          "type": "() => Promise<T>"
+        },
+        {
+          "name": "options",
+          "type": "{ initialValue?: T, lazy?: boolean }",
+          "optional": true
+        }
+      ],
+      "returns": "{ data: () => T|undefined, loading: () => boolean, error: () => Error|null, refetch: () => Promise<void>, mutate: (v: T) => void }"
+    },
+    "createContext": {
+      "params": [
+        {
+          "name": "defaultValue",
+          "type": "T",
+          "optional": true
+        }
+      ],
+      "returns": "{ Provider: (value: T) => (() => void), consume: () => T }"
+    },
+    "createSelector": {
+      "params": [
+        {
+          "name": "source",
+          "type": "() => T"
+        }
+      ],
+      "returns": "(key: U) => boolean"
+    },
+    "createDeferred": {
+      "params": [
+        {
+          "name": "fn",
+          "type": "() => T"
+        }
+      ],
+      "returns": "() => T"
+    },
+    "createHistory": {
+      "params": [
+        {
+          "name": "signal",
+          "type": "[() => T, (v: T) => void]"
+        },
+        {
+          "name": "options",
+          "type": "{ maxLength?: number }",
+          "optional": true
+        }
+      ],
+      "returns": "{ undo: () => void, redo: () => void, canUndo: () => boolean, canRedo: () => boolean, clear: () => void }"
+    },
     "batch": {
       "params": [
         {

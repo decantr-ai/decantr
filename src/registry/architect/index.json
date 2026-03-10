@@ -1,0 +1,26 @@
+{
+  "$schema": "https://decantr.ai/schemas/architect.v1.json",
+  "version": "0.1.0",
+  "description": "Application Architect — domain knowledge graphs for blueprint generation",
+  "domains": {
+    "ecommerce": {
+      "name": "eCommerce",
+      "file": "domains/ecommerce.json",
+      "features": 18,
+      "suggested_theme": ["light", "dark"]
+    }
+  },
+  "cross_cutting": "cross-cutting.json",
+  "algorithms": {
+    "classification": "Weighted keyword matching — see AGENTS.md § Application Architect",
+    "activation": "DAG forward-chaining with 0.85 decay — see AGENTS.md § Application Architect",
+    "scoring": "Tier-stratified weighted coverage — see AGENTS.md § Application Architect",
+    "questions": "Priority-weighted gap scoring, max 5 per round — see AGENTS.md § Application Architect",
+    "blueprint": "Structured JSON spec — see AGENTS.md § Application Architect"
+  },
+  "tiers": {
+    "core": { "range": [0.85, 1.0], "behavior": "Auto-included, never questioned" },
+    "should": { "range": [0.5, 0.8], "behavior": "Included by default, can be deferred" },
+    "nice": { "range": [0.2, 0.45], "behavior": "Surfaced via questions" }
+  }
+}

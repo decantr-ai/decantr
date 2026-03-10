@@ -562,3 +562,122 @@ const [cart, setCart] = useLocalStorage('cart-items', []);
 - **Input sanitization**: Always validate/sanitize user input at system boundaries (API responses, URL params, form inputs) before rendering
 - **HTTPS**: Always serve over HTTPS in production
 - **Dependencies**: Zero framework dependencies means zero supply chain attack surface from the framework itself
+
+---
+
+## Application Architect
+
+Before generating a multi-page application, consult the architect registry to produce a comprehensive blueprint. This turns a naive user prompt ("build me a shopping cart") into a complete application spec with all the features, routes, state, and components a real app needs.
+
+**Registry location:** `node_modules/decantr/src/registry/architect/` (or `src/registry/architect/` in framework source)
+
+### When to Use
+
+Use the architect when the user requests a **multi-page application** or describes an **application domain** (e.g., "online store", "SaaS dashboard", "blog platform"). Do NOT use for single-component requests or small utilities.
+
+### Step-by-Step Algorithm
+
+Follow these 5 steps in order. Each step produces input for the next.
+
+#### Step 1: Domain Classification (Weighted Keyword Matching)
+
+1. Read `src/registry/architect/index.json` to get available domains
+2. Normalize the user prompt to lowercase tokens
+3. For each domain, load its file and score against `triggers`:
+   - Each `primary` keyword match: **+3.0 points**
+   - Each `secondary` keyword match: **+1.0 points**
+   - Each `negative` keyword match: **−5.0 points**
+   - If 2+ primary hits: multiply total score by **1.5×**
+   - If 0 primary hits: multiply total score by **0.4×**
+4. Decision:
+   - Top score < 2.0 → domain unclear, treat as "general" (skip architect)
+   - Top two scores within 30% of each other → ambiguous, consider both domains
+   - Otherwise → confident single domain match
+
+#### Step 2: Feature Graph Activation (DAG Forward-Chaining)
+
+Given the matched domain file:
+
+1. **Explicit activation**: Scan the user prompt for keywords matching feature `label` or `desc`. Set confidence = 1.0 for matches.
+2. **Forward propagation via `implies` edges**: For each activated feature, activate its `implies` targets. Confidence decays **0.85× per hop**. Stop propagating when confidence drops below **0.3**.
+3. **Backward dependency resolution**: For every activated feature, ensure all `requires` features are also active (confidence = 1.0). Repeat until stable.
+4. **Auto-include tier=core**: Activate all features with `"t": "core"` regardless of prompt mentions.
+5. **Add cross-cutting concerns**: Load `cross-cutting.json` and apply all concerns listed in the domain's `cross_cutting` array.
+
+#### Step 3: Completeness Scoring
+
+Calculate a composite score from activated features vs. total available:
+
+```
+composite = (
+  core_coverage   × 0.60 +    // % of core features activated
+  should_coverage × 0.25 +    // % of should features activated
+  nice_coverage   × 0.10 +    // % of nice features activated
+  cross_coverage  × 0.05      // % of cross-cutting concerns addressed
+)
+```
+
+Grade: **A** (≥0.9) | **B** (≥0.75) | **C** (≥0.5) | **D** (<0.5)
+
+Identify gaps — features NOT activated — categorized as:
+- **Critical gaps**: core features missing (should not happen after Step 2)
+- **Recommended gaps**: should-tier features not activated
+- **Optional gaps**: nice-tier features not activated
+
+#### Step 4: Question Generation (max 5 per round)
+
+Collect question candidates from 3 sources:
+
+1. **Feature-embedded questions** (from activated features' `questions` arrays) — priority: `weight × 2.0`
+2. **Critical gap questions** ("Your app needs X. Include it?") — priority: `weight × 3.0`
+3. **Recommended gap questions** ("Would you like X?") — priority: `weight × 1.5`
+
+De-duplicate by affected feature. Take top 5 by priority. Present to user.
+
+**Stop criteria**: Stop asking if completeness ≥ 0.75 AND no critical gaps. Max 2 rounds of questions.
+
+#### Step 5: Blueprint Generation
+
+Produce a structured blueprint JSON with these sections:
+
+```json
+{
+  "domain": "<domain-id>",
+  "theme": "<suggested-theme>",
+  "score": { "composite": 0.87, "grade": "B" },
+  "routes": [
+    { "path": "/", "component": "HomePage" },
+    { "path": "/products", "component": "ProductListPage" }
+  ],
+  "files": [
+    { "path": "src/app.js", "type": "entry", "desc": "Router + layout + theme init" },
+    { "path": "src/state/store.js", "type": "state", "signals": ["..."], "stores": ["..."], "memos": ["..."] },
+    { "path": "src/pages/products.js", "type": "page", "components": ["Card", "Badge"], "features": ["product-catalog"] }
+  ],
+  "cross_cutting": {
+    "loading": { "applies": ["products", "cart", "checkout"] },
+    "errors": { "components": ["Alert", "toast"] },
+    "empty": { "applies": ["product-list", "cart", "search-results"] },
+    "a11y": true,
+    "responsive": true
+  }
+}
+```
+
+**Blueprint rules:**
+- Every activated feature's `routes` → merged into `routes` array
+- Every activated feature's `state` → merged into a single state file
+- Every activated feature's `components` → listed in the relevant page file
+- Every activated feature's `ux` hints → used when generating the page code
+- `cross_cutting` concerns → applied to every relevant page
+- Only reference components that exist in the Decantr component registry
+
+### Example Trace
+
+User prompt: **"build me a shopping cart"**
+
+1. **Domain**: "cart" = primary hit (+3.0), score = 4.5 → **ecommerce** (confident)
+2. **Activation**: cart (explicit, 1.0) → implies checkout (0.85) → implies auth (0.72), order-confirmation (0.72), payment-integration (0.72) → auth implies user-profile (0.61). All core features auto-included: product-catalog, product-detail, cart, checkout, auth, search, order-confirmation, navbar.
+3. **Score**: core 100%, should ~60%, nice 0% → composite ≈ 0.78, grade **B**
+4. **Questions**: "Allow guest checkout or require account?" (from checkout), "Which payment provider?" (from payment-integration), "Would you like product reviews?" (nice gap), "Would you like wishlists?" (nice gap)
+5. **Blueprint**: 8 routes, 12 files, 15+ components, full cross-cutting coverage

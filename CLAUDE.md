@@ -27,7 +27,7 @@ Before writing ANY code, you MUST explicitly reason through every item below. Do
 - **SCOPE**: Does this pattern scale to ALL components (23+), ALL kits (3+), ALL themes (5+)? If not, redesign until it does.
 - **LAYER**: Where does this live in the architecture? (core | state | css | tags | components | kit | blocks | registry | cli | tools). Justify the placement.
 - **CHAIN**: What is the upstream/downstream impact? Trace the full path: themes → components → kits → blocks → registry → CLI → docs → generated user code. What needs updating?
-- **EXISTING**: Does Decantr already have infrastructure for this? Check: `_base.js`, `_shared.js`, `themes/*.js`, `css/index.js`, `registry/*.json`. Extend before inventing.
+- **EXISTING**: Does Decantr already have infrastructure for this? Check: `_base.js`, `_shared.js`, `css/styles/*.js`, `css/derive.js`, `css/index.js`, `registry/*.json`. Extend before inventing.
 - **CONTRACT**: Am I changing a public API? What ecosystem code calls this? What registry entries reference it?
 - **TOKENS**: Is this the most token-efficient design? Could the API be terser? Could the file be smaller? Could the registry describe it more compactly?
 
@@ -41,6 +41,9 @@ NEVER do any of the following. If you find yourself doing one, stop and redesign
 - **Copy-paste framework design.** Studying ShadCN/CVA, Carbon tokens, Radix slots, or Tailwind patterns is research. Copying them is not architecture. Decantr is AI-first and zero-dependency — the solution MUST be designed from those constraints. Use prior art as input, then propose a greenfield approach that surpasses it for Decantr's goals.
 - **Symptom fixing.** If a component has a styling problem, the root cause is almost never in that component alone — it is in the theme layer, the base CSS layer, or the token system. Fix the system, not the symptom.
 - **Deferred debt.** "We'll clean this up later" is not acceptable. Every change MUST be production-quality infrastructure that can remain in the framework permanently.
+- **Hardcoded values in `_base.js`.** ALL spacing, offset, and typography values in component CSS MUST use `var(--d-*)` tokens. Never write `2px`, `4px`, `0.25rem`, or any literal dimension — use the token system (`--d-sp-*`, `--d-offset-*`, `--d-text-*`, etc.). If a token does not exist for the value you need, create one in `derive.js` SPACING first.
+- **Inconsistent compound layouts.** ALL header/body/footer compound components MUST follow the compound spacing contract (`--d-compound-pad`, `--d-compound-gap`). Never invent per-component padding for these sections.
+- **Raw pixel offsets on floating elements.** ALL popup/tooltip/popover offsets MUST use offset tokens (`--d-offset-dropdown`, `--d-offset-menu`, `--d-offset-tooltip`, `--d-offset-popover`). Never hardcode `margin-top: 2px` or similar.
 
 ### The Ecosystem is Coupled by Design
 
@@ -81,8 +84,9 @@ src/
   core/         — DOM engine: h(), text(), cond(), list(), mount(), lifecycle hooks
   state/        — Reactivity: signals, effects, memos, stores, batching
   router/       — Client-side routing: hash and history strategies
-  css/          — Unified themes, atomic CSS, runtime injection
-    themes/     — 5 unified theme definitions (light, dark, retro, hot-lava, stormy-ai)
+  css/          — Style/mode system, atomic CSS, runtime injection, seed-derived tokens
+    styles/     — Style definitions (clean.js, retro.js)
+    derive.js   — Derivation engine: 10 seeds → 170+ tokens
   tags/         — Proxy-based tag functions for concise markup
   components/   — UI component library (23 components + icon)
   blocks/       — Content block library (Hero, Features, Pricing, Testimonials, CTA, Footer)
@@ -131,12 +135,17 @@ Strategies: `hash` (default), `history` (History API)
 - `define(name, declarations)` — Define custom atomic classes
 - `extractCSS()` — Get all generated CSS as string
 - `reset()` — Clear injected styles
-- `setTheme(id)` / `getTheme()` / `getThemeMeta()` — Theme control (5 unified themes)
-- `registerTheme(theme)` / `getThemeList()` — Custom themes
-- `getActiveCSS()` — Get complete CSS for active theme
-- `resetStyles()` — Reset to default (light) theme
+- **Style API** (visual personality):
+  - `setStyle(id)` / `getStyle()` / `getStyleList()` / `registerStyle(style)` — Set/get/register visual styles ('clean', 'retro', or custom)
+- **Mode API** (light/dark):
+  - `setMode('light'|'dark'|'auto')` / `getMode()` / `getResolvedMode()` — Color mode control ('auto' tracks system preference)
+  - `onModeChange(fn)` — Register callback for resolved mode changes, returns unsubscribe function
+- **Convenience / backward compat**:
+  - `setTheme(id, mode?)` — Combines setStyle + setMode; accepts legacy theme IDs
+  - `getTheme()` / `getThemeMeta()` / `getThemeList()` / `registerTheme(theme)` — Backward-compatible wrappers
+- `getActiveCSS()` — Get complete CSS for active style's theme layer
+- `resetStyles()` — Reset to default (clean + light)
 - `setAnimations(enabled)` / `getAnimations()` — JS animation control (disable all transitions/animations)
-- `setStyle()` / `getStyle()` / `getStyleList()` / `registerStyle()` — **Deprecated** (log warnings, no-op)
 
 ### `decantr/tags` — src/tags/index.js (primary API for code generation — always prefer over h())
 - `tags` — Proxy object that creates tag functions on demand
@@ -201,58 +210,114 @@ Detection: `typeof prop === 'function'`
 5. **Consult the registry** — Read `src/registry/components.json` before generating component code. `src/registry/index.json` for full API overview.
 6. **No external CSS or frameworks** — All styling through `css()` atoms and theme CSS variables.
 7. **Accessibility is mandatory** — Every interactive element needs an accessible name; icon-only buttons need `aria-label`.
-8. **Trace the chain** — Before modifying any component, verify whether the change requires updates to `_base.js`, theme files, the registry, or the docs site. Include all required updates in the same change.
+8. **Trace the chain** — Before modifying any component, verify whether the change requires updates to `_base.js`, style definitions, `derive.js`, the registry, or the docs site. Include all required updates in the same change.
 
-## Color Variable Semantics
+## Style + Mode System
 
-All 5 unified themes use CSS variables `--c0` through `--c9` with consistent semantic meaning:
+Decantr uses an orthogonal **style × mode** architecture. Visual personality (style) is independent from color mode (light/dark/auto).
 
-| Variable | Semantic Role  | Example (light)  | Example (dark)   |
-|----------|---------------|------------------|------------------|
-| `--c0`   | background    | `#ffffff`        | `#1F1F1F`        |
-| `--c1`   | primary       | `#1366D9`        | `#0078D4`        |
-| `--c2`   | surface       | `#f8fafc`        | `#181818`        |
-| `--c3`   | foreground    | `#020817`        | `#CCCCCC`        |
-| `--c4`   | muted         | `#606D80`        | `#858585`        |
-| `--c5`   | border        | `#DDE3ED`        | `#3C3C3C`        |
-| `--c6`   | primary-hover | `#0f52b5`        | `#026EC1`        |
-| `--c7`   | success       | `#22c55e`        | `#2EA043`        |
-| `--c8`   | warning       | `#f59e0b`        | `#CCA700`        |
-| `--c9`   | destructive   | `#ef4444`        | `#F85149`        |
+### Styles (Visual Personality)
 
-Theme metadata: each theme also exposes `isDark`, `contrastText`, and `surfaceAlpha` via `getThemeMeta()`.
+| Style | Description | Personality |
+|-------|-------------|-------------|
+| clean | Modern minimal — rounded corners, subtle shadows, smooth motion | radius:rounded, elevation:subtle, motion:smooth, borders:thin |
+| retro | Neobrutalism — sharp corners, offset shadows, bold borders | radius:sharp, elevation:brutalist, motion:snappy, borders:bold |
 
-## Unified Themes
+### Modes
 
-Each theme is a complete visual identity: colors, design tokens, global CSS, and per-component CSS (22 components).
+| Mode | Behavior |
+|------|----------|
+| light | Light color scheme |
+| dark | Dark color scheme |
+| auto | Tracks system `prefers-color-scheme`, listens for changes |
 
-| Theme      | Description                                    | isDark |
-|------------|------------------------------------------------|--------|
-| light      | Clean flat + frosted glass cards, blue accents | false  |
-| dark       | Same design approach, deep navy palette        | true   |
-| retro      | Neobrutalism — bold borders, offset shadows    | false  |
-| hot-lava   | Deep space, coral & cyan glassmorphism         | true   |
-| stormy-ai  | Storm grays, lightning blue/cyan glows         | true   |
+### Seed-Derived Token System
 
-Design tokens are bundled per-theme (`--d-radius`, `--d-radius-lg`, `--d-shadow`, `--d-transition`, `--d-pad`, plus typography and spacing tokens — see Design Token Architecture below).
+10 seed colors + 6 personality traits are algorithmically expanded into **170+ CSS custom properties** by `src/css/derive.js`. No manual color definitions needed — everything is computed.
 
-### Custom Themes
+**Seed colors:** primary, accent, tertiary, neutral, success, warning, error, info, bg, bgDark
+**Personality traits:** radius (sharp/rounded/pill), elevation (flat/subtle/raised/glass/brutalist), motion (instant/snappy/smooth/bouncy), borders (none/thin/bold), density (compact/comfortable/spacious), gradient (none/subtle/vivid/mesh)
+
+### Semantic Color Tokens
+
+| Token Pattern | Count | Description |
+|---------------|-------|-------------|
+| `--d-{role}` | 7 | Base palette: primary, accent, tertiary, success, warning, error, info |
+| `--d-{role}-fg` | 7 | WCAG AA foreground on base |
+| `--d-{role}-hover` | 7 | Hover state |
+| `--d-{role}-active` | 7 | Active/pressed state |
+| `--d-{role}-subtle` | 7 | Low-opacity tint background |
+| `--d-{role}-subtle-fg` | 7 | Text on subtle background |
+| `--d-{role}-border` | 7 | Semi-transparent border |
+| `--d-bg`, `--d-fg` | 2 | Page background / foreground |
+| `--d-muted`, `--d-muted-fg` | 2 | Muted text (labels, descriptions) |
+| `--d-border`, `--d-border-strong` | 2 | Border colors |
+| `--d-ring` | 1 | Focus ring color (defaults to primary) |
+| `--d-overlay` | 1 | Modal/dialog backdrop |
+| `--d-surface-{0-3}` | 4 | Surface backgrounds (canvas → overlay) |
+| `--d-surface-{0-3}-fg` | 4 | Surface foregrounds |
+| `--d-surface-{0-3}-border` | 4 | Surface borders |
+| `--d-surface-{1-3}-filter` | 3 | Backdrop-filter for glass styles |
+| `--d-elevation-{0-3}` | 4 | Box-shadow by level |
+
+### Z-Index Tokens
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--d-z-dropdown` | 1000 | Select, combobox, datepicker, cascader, dropdown, menu |
+| `--d-z-sticky` | 1100 | Affix, float button |
+| `--d-z-modal` | 1200 | Modal, drawer, sheet, image overlay, tour |
+| `--d-z-popover` | 1300 | Popover, popconfirm, context menu, hovercard |
+| `--d-z-toast` | 1400 | Toast, notification, message containers |
+| `--d-z-tooltip` | 1500 | Tooltip |
+
+### Interaction Tokens
+
+`--d-hover-translate`, `--d-hover-shadow`, `--d-hover-brightness`, `--d-active-scale`, `--d-active-translate`, `--d-active-shadow`, `--d-focus-ring-width`, `--d-focus-ring-color`, `--d-focus-ring-offset`, `--d-focus-ring-style`, `--d-selection-bg`, `--d-selection-fg`
+
+### Motion Tokens
+
+`--d-duration-instant`, `--d-duration-fast`, `--d-duration-normal`, `--d-duration-slow`, `--d-easing-standard`, `--d-easing-decelerate`, `--d-easing-accelerate`, `--d-easing-bounce`
+
+### Gradient Tokens
+
+`--d-gradient-brand`, `--d-gradient-brand-alt`, `--d-gradient-brand-full`, `--d-gradient-surface`, `--d-gradient-overlay`, `--d-gradient-subtle`, `--d-gradient-text`, `--d-gradient-text-alt`, `--d-gradient-angle`, `--d-gradient-intensity`
+
+### Chart Tokens
+
+`--d-chart-0` through `--d-chart-7` (resolved hex for SVG/canvas compat), `--d-chart-tooltip-bg`
+
+### Density Classes
+
+`.d-compact`, `.d-comfortable`, `.d-spacious` — cascade to children, override `--d-density-pad-x`, `--d-density-pad-y`, `--d-density-gap`, `--d-density-min-h`, `--d-density-text`, `--d-compound-pad`, `--d-compound-gap`
+
+| Density | `--d-compound-pad` | `--d-compound-gap` | Controls | Interiors |
+|---------|--------------------|--------------------|----------|-----------|
+| compact | `var(--d-sp-3)` | `var(--d-sp-2)` | Tighter | Tighter |
+| comfortable | `var(--d-sp-5)` | `var(--d-sp-3)` | Default | Default |
+| spacious | `var(--d-sp-8)` | `var(--d-sp-4)` | Wider | Wider |
+
+### Custom Styles
 
 ```javascript
-registerTheme({
-  id: 'my-theme',
-  name: 'My Theme',
-  colors: { '--c0': '#fff', '--c1': '#000', /* ... c2-c9 */ },
-  meta: { isDark: false, contrastText: '#fff', surfaceAlpha: 'rgba(255,255,255,0.8)' },
-  tokens: { '--d-radius': '8px', '--d-radius-lg': '16px', '--d-shadow': 'none', '--d-transition': 'all 0.2s ease', '--d-pad': '1.25rem', '--d-fw-heading': '700', '--d-fw-title': '600', '--d-ls-heading': '-0.025em' /* ...plus font, spacing, type scale tokens */ },
-  global: '',       // optional: body styles, keyframes, scrollbar CSS
-  components: {}    // optional: 22 component CSS keys (button, card, input, etc.)
+registerStyle({
+  id: 'my-style',
+  name: 'My Style',
+  seed: { primary: '#6366f1', accent: '#ec4899', bg: '#ffffff', bgDark: '#0a0a0a' },
+  personality: { radius: 'pill', elevation: 'glass', motion: 'bouncy', borders: 'none' },
+  typography: { '--d-fw-heading': '800' },  // optional overrides
+  overrides: { light: {}, dark: {} },       // optional per-mode token overrides
+  components: '',                            // optional component CSS
 });
 ```
 
+### Legacy Backward Compatibility
+
+`--c0` through `--c9` are automatically mapped from the new tokens via `legacyColorMap()`. Legacy atoms `_bg0`-`_bg9`, `_fg0`-`_fg9`, `_bc0`-`_bc9` still work. `setTheme()`, `getTheme()`, `registerTheme()` are backward-compatible wrappers.
+
 ## Design Token Architecture
 
-Components use a two-layer CSS system: base CSS (`_base.js`) for structure, theme CSS (`themes/*.js`) for visual identity. All spacing and typography in base/theme CSS references design tokens via `var()` with fallbacks.
+Components use a two-layer CSS system: base CSS (`_base.js`) for structure, style CSS (`styles/*.js` + `derive.js`) for visual identity. All spacing and typography references design tokens via `var()` with fallbacks.
 
 ### Typography Tokens
 
@@ -296,15 +361,21 @@ Components use a two-layer CSS system: base CSS (`_base.js`) for structure, them
 | `--d-sp-12` | `3rem` | Section block padding |
 | `--d-sp-16` | `4rem` | Hero block padding |
 | `--d-pad` | `1.25rem` | Card/Modal container padding (per-theme) |
+| `--d-compound-gap` | `var(--d-sp-3)` | Gap between header↔body↔footer in compound components |
+| `--d-compound-pad` | `var(--d-pad)` | Inline + block-end padding in compound components |
+| `--d-offset-dropdown` | `2px` | Trigger→panel offset for form dropdowns (select, combobox, etc.) |
+| `--d-offset-menu` | `4px` | Trigger→panel offset for dropdown/context menus |
+| `--d-offset-tooltip` | `6px` | Trigger→panel offset for tooltips |
+| `--d-offset-popover` | `8px` | Trigger→panel offset for popovers/hovercards |
 
-**Theme-specific token overrides:**
+**Style-specific token overrides (retro):**
 
-| Token | light | dark | retro | hot-lava | stormy-ai |
-|-------|-------|------|-------|----------|-----------|
-| `--d-pad` | 1.5rem | 1.25rem | 1.25rem | 1.5rem | 1.5rem |
-| `--d-fw-heading` | 700 | 700 | 800 | 700 | 700 |
-| `--d-fw-title` | 600 | 600 | 800 | 600 | 600 |
-| `--d-ls-heading` | -0.025em | -0.025em | 0.05em | -0.025em | -0.015em |
+| Token | clean (default) | retro |
+|-------|----------------|-------|
+| `--d-fw-heading` | 700 | 800 |
+| `--d-fw-title` | 600 | 800 |
+| `--d-fw-medium` | 500 | 700 |
+| `--d-ls-heading` | -0.025em | 0.05em |
 
 ### Composition Guidelines
 
@@ -312,6 +383,56 @@ Components use a two-layer CSS system: base CSS (`_base.js`) for structure, them
 - **Internal spacing** — Components handle their own padding via `--d-pad` token; don't add padding inside Card/Modal wrappers
 - **Theme overrides** — Only add padding in theme CSS when it intentionally differs from base (e.g. retro's accordion/tabs)
 - **Token-backed atoms** — Use `_textbase`, `_fwheading`, `_lhnormal` etc. in kit/block code for theme-customizable typography (see Atomic CSS Reference)
+
+### Compound Spacing Contract
+
+All compound components (Card, Modal, AlertDialog, Drawer, Sheet) follow a unified spacing contract via `--d-compound-pad` and `--d-compound-gap`. This ensures consistent header↔body↔footer spacing across all overlay and container components.
+
+| Section | Padding Rule |
+|---------|-------------|
+| **Header** | `var(--d-compound-pad) var(--d-compound-pad) 0` |
+| **Body** | `var(--d-compound-gap) var(--d-compound-pad)` |
+| **Body:last-child** | adds `padding-bottom: var(--d-compound-pad)` |
+| **Footer** | `var(--d-compound-gap) var(--d-compound-pad) var(--d-compound-pad)` |
+
+New compound components MUST follow this contract. Never hardcode padding in header/body/footer — use the compound tokens.
+
+### Popup Offset Hierarchy
+
+All floating elements use offset tokens for trigger→panel distance. The hierarchy reflects visual weight:
+
+`--d-offset-dropdown` (2px) < `--d-offset-menu` (4px) < `--d-offset-tooltip` (6px) < `--d-offset-popover` (8px)
+
+New floating components MUST use the appropriate offset token, never hardcoded pixel values.
+
+### Prose System
+
+`.d-prose` — auto-applies vertical rhythm to child elements. Use for long-form content (articles, documentation, modal descriptions).
+
+- Base: `font-size:var(--d-text-base); line-height:var(--d-lh-relaxed)`
+- Between siblings: `> * + * { margin-top: var(--d-sp-4) }`
+- Headings: graduated margin-top (sp-12→sp-10→sp-8→sp-6) + margin-bottom (sp-4→sp-3)
+- Lists: left padding, per-item spacing
+- Blockquote: left border + padding + italic
+- Code/pre: mono font, padding, surface background
+- Tables: cell padding, bottom borders
+
+Usage: `div({ class: 'd-prose' }, h1('Title'), p('Body text...'), ul(li('Item')))`
+
+### Spacing Utilities
+
+Child-spacing utilities use the `d-` prefix (not `_` atom prefix) because they require child combinators (`> * + *`) which cannot be expressed in the flat atomMap.
+
+| Class | Effect |
+|-------|--------|
+| `d-spacey-{1-24}` | `> * + * { margin-top: {scale} }` — vertical child spacing |
+| `d-spacex-{1-24}` | `> * + * { margin-left: {scale} }` — horizontal child spacing |
+| `d-dividey` | `> * + * { border-top: 1px solid var(--d-border) }` |
+| `d-dividex` | `> * + * { border-left: 1px solid var(--d-border) }` |
+| `d-dividey-strong` | `> * + * { border-top: 1px solid var(--d-border-strong) }` |
+| `d-dividex-strong` | `> * + * { border-left: 1px solid var(--d-border-strong) }` |
+
+Scale: 1 (0.25rem) through 24 (6rem). Same spacing scale as `_p`/`_m` atoms.
 
 ## CLI Commands
 
@@ -326,7 +447,7 @@ decantr test --watch  # Watch mode
 ### Internal Dev Scripts
 
 ```
-npm run workbench:dev   # Component showcase on localhost:4300 — all 23 components, live theme switching, HMR on framework src/ changes
+npm run workbench:dev   # Component showcase on localhost:4300 — all components, style/mode switching, HMR on framework src/ changes
 ```
 
 ### Init Flow
@@ -338,7 +459,7 @@ npm run workbench:dev   # Component showcase on localhost:4300 — all 23 compon
 ## Framework Conventions
 
 - **Function components** — `function(props, ...children) → HTMLElement`. Real DOM nodes, not virtual DOM.
-- **Unified themes** — 5 complete visual identities (light, dark, retro, hot-lava, stormy-ai), switchable via `setTheme(id)`.
+- **Style + Mode system** — Visual personality (clean, retro) × color mode (light/dark/auto), controlled via `setStyle(id)` + `setMode(mode)`. 170+ tokens derived from 10 seed colors.
 - **Atomic CSS engine** — 1000+ utility atoms available via `css()`. All atoms are prefixed with `_` for namespace safety. See reference below.
 
 ## Testing
@@ -522,6 +643,26 @@ All atoms are available via `css()`. Example: `css('_grid _gc3 _gap4 _p6 _ctr')`
 | `_lsheading` | `letter-spacing:var(--d-ls-heading,-0.025em)` |
 
 Use `_text*`/`_lh*`/`_fw*` atoms in components/kits/blocks for theme-customizable typography. Use `_t10`-`_t48` for fixed sizes that should not change per theme.
+
+### Typography Presets (compound atoms)
+
+Bundles of size+weight+lineHeight+letterSpacing for common text roles. All token-backed with `var()` fallbacks — theme-customizable automatically (retro gets bolder headings, etc.).
+
+| Atom | Size | Weight | Line Height | Extra |
+|------|------|--------|-------------|-------|
+| `_heading1` | `--d-text-4xl` | `--d-fw-heading` | `--d-lh-tight` | `--d-ls-heading` |
+| `_heading2` | `--d-text-3xl` | `--d-fw-heading` | `--d-lh-tight` | `--d-ls-heading` |
+| `_heading3` | `--d-text-2xl` | `--d-fw-heading` | `--d-lh-snug` | `--d-ls-heading` |
+| `_heading4` | `--d-text-xl` | `--d-fw-title` | `--d-lh-snug` | — |
+| `_heading5` | `--d-text-lg` | `--d-fw-title` | `--d-lh-snug` | — |
+| `_heading6` | `--d-text-md` | `--d-fw-title` | `--d-lh-normal` | — |
+| `_body` | `--d-text-base` | — | `--d-lh-normal` | — |
+| `_bodylg` | `--d-text-md` | — | `--d-lh-relaxed` | — |
+| `_caption` | `--d-text-sm` | — | `--d-lh-normal` | `color:--d-muted-fg` |
+| `_label` | `--d-text-sm` | `--d-fw-medium` | `--d-lh-none` | — |
+| `_overline` | `--d-text-xs` | `--d-fw-medium` | `--d-lh-none` | `uppercase; ls:0.08em` |
+
+Usage: `h1({ class: css('_heading1') }, 'Page Title')` — one atom replaces 3-4 individual atoms.
 
 ### Colors
 `_bg0`-`_bg9`, `_fg0`-`_fg9`, `_bc0`-`_bc9` (use theme CSS variables --c0 through --c9)

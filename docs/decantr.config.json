@@ -1,9 +1,8 @@
 {
   "$schema": "https://decantr.ai/schemas/config.v2.json",
-  "name": "decantr-docs",
-  "projectType": "dashboard",
-  "theme": "light",
-  "router": "hash",
+  "name": "decantr-site",
+  "projectType": "app",
+  "theme": "dark",
   "dev": { "port": 3001 },
   "build": { "outDir": "dist" }
 }

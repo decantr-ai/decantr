@@ -52,11 +52,11 @@ export function TableOfContents(props = {}) {
     const current = activeId();
     for (const { el, id } of linkEls) {
       if (id === current) {
-        el.style.color = 'var(--c1)';
-        el.style.borderLeftColor = 'var(--c1)';
+        el.style.color = 'var(--d-primary)';
+        el.style.borderLeftColor = 'var(--d-primary)';
         el.style.fontWeight = '600';
       } else {
-        el.style.color = 'var(--c4)';
+        el.style.color = 'var(--d-muted)';
         el.style.borderLeftColor = 'transparent';
         el.style.fontWeight = '400';
       }

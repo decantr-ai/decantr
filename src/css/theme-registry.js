@@ -1,51 +1,70 @@
+/**
+ * Decantr Design System v2 — Style & Mode Registry
+ * Manages style (visual personality) and mode (light/dark/auto) independently.
+ * Replaces the old theme system with seed-derived, mode-aware styling.
+ *
+ * @module theme-registry
+ */
 import { createSignal } from '../state/index.js';
-import { light } from './themes/light.js';
-import { dark } from './themes/dark.js';
-import { retro } from './themes/retro.js';
-import { hotLava } from './themes/hot-lava.js';
-import { stormyAi } from './themes/stormy-ai.js';
+import { derive, legacyColorMap, densityCSS } from './derive.js';
+import { componentCSS } from './components.js';
+import { clean } from './styles/clean.js';
+import { retro } from './styles/retro.js';
+import { glassmorphism } from './styles/glassmorphism.js';
+import { liquidGlass } from './styles/liquid-glass.js';
 
-/** @type {Map<string, Object>} */
-const themes = new Map();
-const [_getTheme, _setTheme] = createSignal('light');
+// ============================================================
+// State
+// ============================================================
+
+/** @type {Map<string, Object>} Registered styles */
+const styles = new Map();
+
+const [_getStyleId, _setStyleId] = createSignal('clean');
+const [_getMode, _setMode] = createSignal('light');
+const [_getResolvedMode, _setResolvedMode] = createSignal('light');
+const [_getAnimations, _setAnimations] = createSignal(true);
 
 /** @type {HTMLStyleElement|null} */
 let styleEl = null;
-
-const [_getAnimations, _setAnimations] = createSignal(true);
+let densityEl = null;
 let animEl = null;
+let mediaQuery = null;
+let mediaHandler = null;
 
-const ANIM_OFF_CSS = '.d-btn,.d-card,.d-input-wrap,.d-badge,.d-badge-dot,.d-modal-overlay,.d-modal-content,.d-btn-loading::after,.d-accordion-icon,.d-accordion-region{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}';
+/** @type {Set<Function>} Mode change listeners */
+const modeListeners = new Set();
 
-const LEGACY_MAP = {
-  'ai': 'stormy-ai',
-  'nature': 'light',
-  'pastel': 'light',
-  'spice': 'hot-lava',
-  'mono': 'dark',
-  'lava': 'hot-lava'
+const ANIM_OFF_CSS = '*{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}';
+
+// ============================================================
+// Built-in Styles
+// ============================================================
+
+const builtins = [clean, retro, glassmorphism, liquidGlass];
+for (const s of builtins) styles.set(s.id, s);
+
+// ============================================================
+// Legacy Theme ID Mapping
+// ============================================================
+
+const LEGACY_THEME_MAP = {
+  'light': { style: 'clean', mode: 'light' },
+  'dark': { style: 'clean', mode: 'dark' },
+  'retro': { style: 'retro', mode: 'auto' },
+  'hot-lava': { style: 'clean', mode: 'dark' },
+  'stormy-ai': { style: 'clean', mode: 'dark' },
+  'ai': { style: 'clean', mode: 'dark' },
+  'nature': { style: 'clean', mode: 'light' },
+  'pastel': { style: 'clean', mode: 'light' },
+  'spice': { style: 'clean', mode: 'dark' },
+  'mono': { style: 'clean', mode: 'dark' },
+  'lava': { style: 'clean', mode: 'dark' },
 };
 
-const builtins = [light, dark, retro, hotLava, stormyAi];
-for (const t of builtins) themes.set(t.id, t);
-
-function applyColors(colors) {
-  if (typeof document === 'undefined') return;
-  const el = document.documentElement;
-  for (const [key, value] of Object.entries(colors)) {
-    if (el.style.setProperty) el.style.setProperty(key, value);
-    else el.style[key] = value;
-  }
-}
-
-function applyTokens(tokens) {
-  if (typeof document === 'undefined') return;
-  const el = document.documentElement;
-  for (const [key, value] of Object.entries(tokens)) {
-    if (el.style.setProperty) el.style.setProperty(key, value);
-    else el.style[key] = value;
-  }
-}
+// ============================================================
+// DOM Injection
+// ============================================================
 
 function getStyleElement() {
   if (!styleEl && typeof document !== 'undefined') {
@@ -56,90 +75,246 @@ function getStyleElement() {
   return styleEl;
 }
 
-/**
- * @param {Object} theme
- * @returns {string}
- */
-function buildCSS(theme) {
-  let base = '';
-  let comp = '';
-  if (theme.global) base += theme.global;
-  if (theme.components) {
-    for (const rules of Object.values(theme.components)) {
-      if (Array.isArray(rules)) comp += rules.join('');
-      else comp += rules;
-    }
+/** Apply token map to :root */
+function applyTokens(tokens) {
+  if (typeof document === 'undefined') return;
+  const el = document.documentElement;
+  for (const [key, value] of Object.entries(tokens)) {
+    if (el.style.setProperty) el.style.setProperty(key, value);
+    else el.style[key] = value;
   }
-  return `@layer d.theme{${base}${comp}}`;
 }
 
-/**
- * @param {string} id
- */
-export function setTheme(id) {
-  // Legacy ID mapping
-  if (LEGACY_MAP[id]) {
-    console.warn(`[decantr] Theme "${id}" has been removed. Falling back to "${LEGACY_MAP[id]}". Update your code to use the new theme ID.`);
-    id = LEGACY_MAP[id];
+/** Clear all custom properties from :root */
+function clearTokens(tokens) {
+  if (typeof document === 'undefined') return;
+  const el = document.documentElement;
+  for (const key of Object.keys(tokens)) {
+    el.style.removeProperty(key);
   }
-  const theme = themes.get(id);
-  if (!theme) throw new Error(`Unknown theme: ${id}`);
-  _setTheme(id);
-  applyColors(theme.colors);
-  if (theme.tokens) applyTokens(theme.tokens);
+}
+
+// ============================================================
+// Core: Apply Style + Mode
+// ============================================================
+
+/** Derive and apply all tokens for the current style + mode */
+function applyCurrentState() {
+  const styleId = _getStyleId();
+  const style = styles.get(styleId);
+  if (!style) return;
+
+  const resolvedMode = _getResolvedMode();
+
+  // Derive full token set
+  const modeOverrides = style.overrides?.[resolvedMode] || {};
+  const tokens = derive(
+    style.seed,
+    style.personality,
+    resolvedMode,
+    style.typography,
+    modeOverrides,
+  );
+
+  // Apply all tokens to :root
+  applyTokens(tokens);
+
+  // Apply legacy --c0 through --c9 for backward compat
+  applyTokens(legacyColorMap(tokens));
+
+  // Inject density classes into d.base layer (once)
+  if (!densityEl && typeof document !== 'undefined') {
+    densityEl = document.createElement('style');
+    densityEl.setAttribute('data-decantr-density', '');
+    densityEl.textContent = `@layer d.base{${densityCSS()}}`;
+    document.head.appendChild(densityEl);
+  }
+
+  // Inject shared + style-specific component CSS into d.theme layer
+  const styleCSS = style.components || '';
   const el = getStyleElement();
-  if (el) el.textContent = buildCSS(theme);
+  if (el) el.textContent = `@layer d.theme{${componentCSS}${styleCSS}}`;
 }
 
-/** @returns {() => string} */
-export function getTheme() { return _getTheme; }
+// ============================================================
+// Mode System
+// ============================================================
 
-/** @returns {{ isDark: boolean, contrastText: string, surfaceAlpha: string } | null} */
-export function getThemeMeta() {
-  const theme = themes.get(_getTheme());
-  return theme ? { ...theme.meta } : null;
+/** Resolve 'auto' mode to 'light' or 'dark' based on system preference */
+function resolveAutoMode() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+/** Set up or tear down the prefers-color-scheme listener */
+function updateMediaListener() {
+  // Clean up existing listener
+  if (mediaQuery && mediaHandler) {
+    mediaQuery.removeEventListener('change', mediaHandler);
+    mediaQuery = null;
+    mediaHandler = null;
+  }
+
+  if (_getMode() === 'auto' && typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+    mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaHandler = () => {
+      const newMode = resolveAutoMode();
+      const prev = _getResolvedMode();
+      if (newMode !== prev) {
+        _setResolvedMode(newMode);
+        applyCurrentState();
+        for (const fn of modeListeners) fn(newMode);
+      }
+    };
+    mediaQuery.addEventListener('change', mediaHandler);
+  }
+}
+
+// ============================================================
+// Public API: Style
+// ============================================================
+
+/**
+ * Set the visual style (personality).
+ * @param {string} id - Style ID ('clean', 'retro', or custom registered style)
+ */
+export function setStyle(id) {
+  if (!styles.has(id)) throw new Error(`[decantr] Unknown style: "${id}". Available: ${[...styles.keys()].join(', ')}`);
+  _setStyleId(id);
+  applyCurrentState();
+}
+
+/** @returns {() => string} Signal getter for current style ID */
+export function getStyle() { return _getStyleId; }
+
+/** @returns {{ id: string, name: string }[]} List of registered styles */
+export function getStyleList() {
+  return [...styles.values()].map(s => ({ id: s.id, name: s.name }));
 }
 
 /**
- * @param {{ id: string, name: string, colors: Object, meta?: Object, tokens?: Object, global?: string, components?: Object }} theme
+ * Register a custom style.
+ * @param {Object} style - Style definition { id, name, seed, personality, typography?, overrides?, components? }
+ */
+export function registerStyle(style) {
+  if (!style.id || !style.name) throw new Error('[decantr] Style must have id and name');
+  if (!style.seed) throw new Error('[decantr] Style must have seed colors');
+  if (!style.personality) style.personality = {};
+  if (!style.overrides) style.overrides = {};
+  styles.set(style.id, style);
+}
+
+// ============================================================
+// Public API: Mode
+// ============================================================
+
+/**
+ * Set color mode.
+ * @param {'light'|'dark'|'auto'} mode
+ */
+export function setMode(mode) {
+  if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') {
+    throw new Error(`[decantr] Invalid mode: "${mode}". Use 'light', 'dark', or 'auto'.`);
+  }
+  _setMode(mode);
+  const resolved = mode === 'auto' ? resolveAutoMode() : mode;
+  const prev = _getResolvedMode();
+  _setResolvedMode(resolved);
+  updateMediaListener();
+  applyCurrentState();
+  if (resolved !== prev) {
+    for (const fn of modeListeners) fn(resolved);
+  }
+}
+
+/** @returns {() => string} Signal getter for current mode setting ('light'|'dark'|'auto') */
+export function getMode() { return _getMode; }
+
+/** @returns {'light'|'dark'} Resolved mode (never 'auto') */
+export function getResolvedMode() { return _getResolvedMode(); }
+
+/**
+ * Register a callback for mode changes (fires when resolved mode changes).
+ * @param {Function} fn - Callback receiving the new resolved mode ('light'|'dark')
+ * @returns {Function} Unsubscribe function
+ */
+export function onModeChange(fn) {
+  modeListeners.add(fn);
+  return () => modeListeners.delete(fn);
+}
+
+// ============================================================
+// Public API: Theme (convenience / backward compat)
+// ============================================================
+
+/**
+ * Set theme — convenience API combining setStyle + setMode.
+ * @param {string} id - Style ID or legacy theme ID
+ * @param {'light'|'dark'|'auto'} [mode='auto'] - Color mode
+ */
+export function setTheme(id, mode) {
+  // Handle legacy theme IDs
+  const legacy = LEGACY_THEME_MAP[id];
+  if (legacy && !styles.has(id)) {
+    const targetStyle = legacy.style;
+    const targetMode = mode || legacy.mode;
+    if (_getStyleId() !== targetStyle) _setStyleId(targetStyle);
+    setMode(targetMode);
+    return;
+  }
+
+  // New-style: id is a style, mode defaults to 'auto'
+  if (styles.has(id)) {
+    _setStyleId(id);
+    setMode(mode || 'auto');
+  } else {
+    throw new Error(`[decantr] Unknown theme/style: "${id}". Available: ${[...styles.keys()].join(', ')}`);
+  }
+}
+
+/** @returns {() => string} Signal getter for current style ID (backward compat alias) */
+export function getTheme() { return _getStyleId; }
+
+/**
+ * Get metadata about current style + mode.
+ * @returns {{ isDark: boolean, style: string, mode: string, resolvedMode: string }}
+ */
+export function getThemeMeta() {
+  return {
+    isDark: _getResolvedMode() === 'dark',
+    style: _getStyleId(),
+    mode: _getMode(),
+    resolvedMode: _getResolvedMode(),
+  };
+}
+
+/** @returns {{ id: string, name: string }[]} List of registered styles */
+export function getThemeList() { return getStyleList(); }
+
+/**
+ * Legacy registerTheme — wraps registerStyle.
+ * @param {Object} theme - Old theme object or new style object
  */
 export function registerTheme(theme) {
-  // Fill defaults for missing optional fields
-  if (!theme.meta) theme.meta = { isDark: false, contrastText: '#ffffff', surfaceAlpha: 'rgba(255,255,255,0.8)' };
-  if (!theme.tokens) theme.tokens = {
-    '--d-radius': '8px', '--d-radius-lg': '16px', '--d-shadow': 'none', '--d-transition': 'all 0.2s ease', '--d-pad': '1.25rem',
-    '--d-font': 'Inter,"Inter Fallback",system-ui,sans-serif', '--d-font-mono': 'ui-monospace,"JetBrains Mono",monospace',
-    '--d-text-xs': '0.625rem', '--d-text-sm': '0.75rem', '--d-text-base': '0.875rem', '--d-text-md': '1rem',
-    '--d-text-lg': '1.125rem', '--d-text-xl': '1.25rem', '--d-text-2xl': '1.5rem', '--d-text-3xl': '2rem', '--d-text-4xl': '2.5rem',
-    '--d-lh-none': '1', '--d-lh-tight': '1.1', '--d-lh-snug': '1.25', '--d-lh-normal': '1.5', '--d-lh-relaxed': '1.6', '--d-lh-loose': '1.75',
-    '--d-fw-heading': '700', '--d-fw-title': '600', '--d-fw-medium': '500', '--d-ls-heading': '-0.025em',
-    '--d-sp-1': '0.25rem', '--d-sp-1-5': '0.375rem', '--d-sp-2': '0.5rem', '--d-sp-2-5': '0.625rem', '--d-sp-3': '0.75rem', '--d-sp-4': '1rem', '--d-sp-5': '1.25rem',
-    '--d-sp-6': '1.5rem', '--d-sp-8': '2rem', '--d-sp-10': '2.5rem', '--d-sp-12': '3rem', '--d-sp-16': '4rem'
-  };
-  if (!theme.global) theme.global = '';
-  if (!theme.components) theme.components = {};
-  themes.set(theme.id, theme);
+  // If it has seed + personality, it's a new-style definition
+  if (theme.seed) {
+    registerStyle(theme);
+    return;
+  }
+  // Legacy theme object — wrap it as a minimal style
+  console.warn(`[decantr] registerTheme() with old format is deprecated. Use registerStyle() with seed + personality.`);
+  registerStyle({
+    id: theme.id,
+    name: theme.name || theme.id,
+    seed: {},
+    personality: {},
+    components: theme.global || '',
+  });
 }
 
-/** @returns {{ id: string, name: string }[]} */
-export function getThemeList() {
-  return [...themes.values()].map(t => ({ id: t.id, name: t.name }));
-}
-
-/** @returns {string} */
-export function getActiveCSS() {
-  const theme = themes.get(_getTheme());
-  return theme ? buildCSS(theme) : '';
-}
-
-export function resetStyles() {
-  if (styleEl && styleEl.parentNode) styleEl.parentNode.removeChild(styleEl);
-  styleEl = null;
-  _setTheme('light');
-  if (animEl && animEl.parentNode) animEl.parentNode.removeChild(animEl);
-  animEl = null;
-  _setAnimations(true);
-}
+// ============================================================
+// Public API: Animations
+// ============================================================
 
 export function setAnimations(enabled) {
   _setAnimations(!!enabled);
@@ -158,25 +333,31 @@ export function setAnimations(enabled) {
 
 export function getAnimations() { return _getAnimations; }
 
-// Deprecated stubs — kept for backward compatibility
-/** @deprecated Use setTheme() instead */
-export function setStyle(id) {
-  console.warn(`[decantr] setStyle() is deprecated. Styles are now part of unified themes. Use setTheme() instead.`);
+// ============================================================
+// Public API: CSS Extraction & Reset
+// ============================================================
+
+/** @returns {string} Active theme layer CSS */
+export function getActiveCSS() {
+  const style = styles.get(_getStyleId());
+  return style ? `@layer d.theme{${componentCSS}${style.components || ''}}` : '';
 }
 
-/** @deprecated Use getTheme() instead */
-export function getStyle() {
-  console.warn(`[decantr] getStyle() is deprecated. Styles are now part of unified themes. Use getTheme() instead.`);
-  return _getTheme;
-}
-
-/** @deprecated Use getThemeList() instead */
-export function getStyleList() {
-  console.warn(`[decantr] getStyleList() is deprecated. Styles are now part of unified themes. Use getThemeList() instead.`);
-  return [];
-}
-
-/** @deprecated Use registerTheme() instead */
-export function registerStyle(style) {
-  console.warn(`[decantr] registerStyle() is deprecated. Use registerTheme() with the unified theme object instead.`);
+export function resetStyles() {
+  if (styleEl && styleEl.parentNode) styleEl.parentNode.removeChild(styleEl);
+  styleEl = null;
+  if (densityEl && densityEl.parentNode) densityEl.parentNode.removeChild(densityEl);
+  densityEl = null;
+  if (animEl && animEl.parentNode) animEl.parentNode.removeChild(animEl);
+  animEl = null;
+  if (mediaQuery && mediaHandler) {
+    mediaQuery.removeEventListener('change', mediaHandler);
+    mediaQuery = null;
+    mediaHandler = null;
+  }
+  modeListeners.clear();
+  _setStyleId('clean');
+  _setMode('light');
+  _setResolvedMode('light');
+  _setAnimations(true);
 }

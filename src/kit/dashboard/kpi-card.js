@@ -22,9 +22,9 @@ export function KPICard(props = {}) {
     ? (change.startsWith('+') ? 'up' : change.startsWith('-') ? 'down' : 'neutral')
     : 'neutral');
 
-  const statusColor = derivedStatus === 'up' ? 'var(--c7)'
-    : derivedStatus === 'down' ? 'var(--c9)'
-    : 'var(--c4)';
+  const statusColor = derivedStatus === 'up' ? 'var(--d-success)'
+    : derivedStatus === 'down' ? 'var(--d-error)'
+    : 'var(--d-muted)';
 
   const statusArrow = derivedStatus === 'up' ? '\u2191'
     : derivedStatus === 'down' ? '\u2193'
@@ -46,7 +46,7 @@ export function KPICard(props = {}) {
 
   if (iconName) {
     const iconEl = iconFn(iconName, { size: '1.5em' });
-    iconEl.style.color = 'var(--c1)';
+    iconEl.style.color = 'var(--d-primary)';
     topRow.appendChild(iconEl);
   }
 

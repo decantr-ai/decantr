@@ -14,13 +14,13 @@ import { injectBase, cx, reactiveAttr } from './_base.js';
 export function Switch(props = {}) {
   injectBase();
 
-  const { checked, disabled, label, onchange, class: cls } = props;
+  const { checked, disabled, label, size, onchange, class: cls } = props;
 
   const input = h('input', { type: 'checkbox', class: 'd-switch-native', role: 'switch' });
   const track = h('span', { class: 'd-switch-track' },
     h('span', { class: 'd-switch-thumb' })
   );
-  const wrapper = h('label', { class: cx('d-switch', cls) }, input, track);
+  const wrapper = h('label', { class: cx('d-switch', size && `d-switch-${size}`, cls) }, input, track);
 
   if (label) {
     wrapper.appendChild(h('span', { class: 'd-switch-label' }, label));

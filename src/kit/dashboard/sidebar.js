@@ -42,8 +42,8 @@ export function Sidebar(props = {}, ...children) {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    background: 'var(--c2)',
-    borderRight: '1px solid var(--c5)',
+    background: 'var(--d-surface-1)',
+    borderRight: '1px solid var(--d-border)',
     transition: 'width 0.2s ease',
     overflow: 'hidden',
     flexShrink: '0'
@@ -70,7 +70,7 @@ export function Sidebar(props = {}, ...children) {
       class: css('_flex _aic _jcc _p2 _mx2 _mb2 _textsm _lh1 _fg4 _pointer'),
       style: {
         background: 'transparent',
-        border: '1px solid var(--c5)',
+        border: '1px solid var(--d-border)',
         borderRadius: 'var(--d-radius, 6px)'
       },
       'aria-label': 'Toggle sidebar',
@@ -124,7 +124,7 @@ export function Sidebar(props = {}, ...children) {
     );
 
     linkEl.addEventListener('mouseenter', () => {
-      linkEl.style.background = 'var(--c5)';
+      linkEl.style.background = 'var(--d-border)';
     });
     linkEl.addEventListener('mouseleave', () => {
       linkEl.style.background = 'transparent';

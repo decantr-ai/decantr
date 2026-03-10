@@ -1,32 +1,32 @@
 {
   "$schema": "https://decantr.ai/schemas/registry.v1.json",
   "version": "0.3.0",
-  "generated": "2026-03-08",
+  "generated": "2026-03-10",
   "modules": {
     "decantr/core": {
       "description": "DOM engine — hyperscript rendering, conditional, list, mount, lifecycle",
       "file": "core.json",
-      "exports": 7
+      "exports": 14
     },
     "decantr/state": {
       "description": "Reactive primitives — signals, effects, memos, stores, batch",
       "file": "state.json",
-      "exports": 7
+      "exports": 12
     },
     "decantr/router": {
       "description": "Client-side routing — hash or history mode",
       "file": "router.json",
-      "exports": 4
+      "exports": 5
     },
     "decantr/css": {
       "description": "Atomic CSS engine + theme management",
       "file": "css.json",
-      "exports": 8
+      "exports": 17
     },
     "decantr/components": {
       "description": "UI components — all return HTMLElement, all accept inline styles",
       "file": "components.json",
-      "exports": 31
+      "exports": 102
     },
     "decantr/kit/auth": {
       "description": "auth domain kit",
@@ -46,6 +46,10 @@
     "decantr/tags": {
       "description": "Proxy-based tag functions for concise markup",
       "usage": "import { tags } from 'decantr/tags'; const { div, p } = tags; div({ class: 'card' }, p('Content'))"
+    },
+    "decantr/icons": {
+      "description": "First-party icon suite — undefined Lucide icons via CSS mask-image",
+      "file": "icons.json"
     }
   }
 }

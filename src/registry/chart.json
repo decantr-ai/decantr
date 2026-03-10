@@ -8,10 +8,11 @@
           "name": "spec",
           "type": "Object",
           "properties": {
-            "type": { "type": "string", "enum": ["line", "bar", "area", "pie"], "default": "line" },
+            "type": { "type": "string", "enum": ["line", "bar", "area", "pie", "scatter", "bubble", "histogram", "box-plot", "candlestick", "waterfall", "range-bar", "range-area", "heatmap", "combination", "radar", "radial", "gauge", "funnel", "treemap", "sunburst", "sankey", "chord", "swimlane", "org-chart"], "default": "line" },
             "data": { "type": "Object[]|() => Object[]", "required": true },
             "x": { "type": "string", "description": "Field name for x-axis values" },
             "y": { "type": "string|string[]", "description": "Field name(s) for y-axis values" },
+            "y2": { "type": "string", "description": "Secondary y-axis field" },
             "series": { "type": "string", "description": "Field to split data into series" },
             "title": { "type": "string|() => string" },
             "xFormat": { "type": "(value) => string", "description": "Custom x-axis label formatter" },
@@ -20,11 +21,29 @@
             "legend": { "type": "boolean", "default": true },
             "grid": { "type": "boolean", "default": true },
             "stacked": { "type": "boolean", "default": false },
+            "horizontal": { "type": "boolean", "default": false, "description": "Swap axes for horizontal orientation" },
             "donut": { "type": "boolean", "default": true, "description": "Pie chart inner radius (false = full pie)" },
+            "smooth": { "type": "boolean", "default": false, "description": "Smooth curve interpolation (Catmull-Rom)" },
+            "labels": { "type": "boolean", "default": false, "description": "Show data point labels" },
             "animate": { "type": "boolean", "default": true },
+            "zoom": { "type": "boolean", "default": false, "description": "Enable zoom/pan" },
+            "brush": { "type": "boolean|string", "enum": [false, "x", "y", "xy", true], "default": false, "description": "Brush selection mode" },
+            "crosshair": { "type": "boolean", "default": false, "description": "Enable crosshair guides" },
+            "live": { "type": "boolean", "default": false, "description": "Streaming mode optimizations" },
+            "interactive": { "type": "boolean", "default": false, "description": "Enable drag/drop, expand/collapse" },
+            "annotations": { "type": "Object[]", "description": "Annotation overlays [{type,value,label,color}]" },
+            "colorScale": { "type": "Function", "description": "Continuous color mapping for heatmap/treemap" },
             "renderer": { "type": "string", "enum": ["auto", "svg", "canvas", "webgpu"], "default": "auto" },
+            "width": { "type": "string", "description": "Explicit chart width" },
             "height": { "type": "string", "default": "300px" },
             "tableAlt": { "type": "boolean", "default": true, "description": "Accessible data table fallback" },
+            "onClick": { "type": "Function", "description": "Click callback ({point, series, event})" },
+            "onBrush": { "type": "Function", "description": "Brush selection callback ({range})" },
+            "onZoom": { "type": "Function", "description": "Zoom callback ({domain})" },
+            "onMove": { "type": "Function", "description": "Drag reorder callback ({item, from, to}) — swimlane" },
+            "onToggle": { "type": "Function", "description": "Expand/collapse callback ({node, expanded}) — org-chart/sunburst" },
+            "onDrillDown": { "type": "Function", "description": "Drill-down callback ({node, depth}) — treemap/sunburst" },
+            "onLegendToggle": { "type": "Function", "description": "Legend toggle callback ({series, visible})" },
             "aria-label": { "type": "string" },
             "class": { "type": "string" }
           }
@@ -65,6 +84,50 @@
       ],
       "returns": "string",
       "description": "Get CSS variable reference for chart color at series index."
+    },
+    "PALETTE_SIZE": {
+      "type": "number",
+      "value": 8,
+      "description": "Number of chart palette colors (--d-chart-0 through --d-chart-7)."
+    },
+    "createStream": {
+      "params": [
+        { "name": "opts", "type": "Object", "properties": { "maxPoints": { "type": "number", "default": 500 } } }
+      ],
+      "returns": "{ append, data, window, destroy }",
+      "description": "Create streaming data source for live charts."
+    },
+    "colorScale": {
+      "params": [
+        { "name": "domain", "type": "number[]" },
+        { "name": "stops", "type": "string[]" }
+      ],
+      "returns": "(value: number) => string",
+      "description": "Continuous color scale for heatmaps/treemaps."
+    },
+    "resolvePalette": {
+      "params": [
+        { "name": "count", "type": "number" },
+        { "name": "el", "type": "HTMLElement", "optional": true }
+      ],
+      "returns": "string[]",
+      "description": "Resolve palette to hex values for Canvas/WebGPU."
+    },
+    "registerChartType": {
+      "params": [
+        { "name": "type", "type": "string" },
+        { "name": "layoutFn", "type": "Function" }
+      ],
+      "returns": "void",
+      "description": "Register a custom chart type layout."
+    },
+    "registerRenderer": {
+      "params": [
+        { "name": "type", "type": "string", "enum": ["webgpu"] },
+        { "name": "renderFn", "type": "Function" }
+      ],
+      "returns": "void",
+      "description": "Register a renderer implementation."
     }
   }
 }

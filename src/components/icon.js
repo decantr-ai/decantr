@@ -1,36 +1,37 @@
 import { h } from '../core/index.js';
+import { getIconPath } from '../icons/index.js';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
+let styleEl = null;
+const injectedIcons = new Set();
 
-function kebabToPascal(str) {
-  return str.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+function ensureStyleEl() {
+  if (styleEl) return styleEl;
+  if (typeof document === 'undefined') return null;
+  styleEl = document.querySelector('style[data-decantr-icons]');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.setAttribute('data-decantr-icons', '');
+    document.head.appendChild(styleEl);
+  }
+  return styleEl;
 }
 
-function createLucideSVG(iconDef, size, extraAttrs) {
-  const [, defaults, children] = iconDef;
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  for (const [k, v] of Object.entries(defaults)) {
-    svg.setAttribute(k, String(v));
-  }
-  svg.setAttribute('width', String(size));
-  svg.setAttribute('height', String(size));
-  for (const [k, v] of Object.entries(extraAttrs)) {
-    svg.setAttribute(k, String(v));
-  }
-  for (const [childTag, childAttrs] of children) {
-    const child = document.createElementNS(SVG_NS, childTag);
-    for (const [k, v] of Object.entries(childAttrs)) {
-      child.setAttribute(k, String(v));
-    }
-    svg.appendChild(child);
-  }
-  svg.style.display = 'inline-block';
-  svg.style.verticalAlign = 'middle';
-  return svg;
+function buildDataUri(inner) {
+  return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>${inner}</svg>`)}")`;
+}
+
+function injectIconCSS(name, inner) {
+  if (injectedIcons.has(name)) return;
+  injectedIcons.add(name);
+  const el = ensureStyleEl();
+  if (!el) return;
+  const uri = buildDataUri(inner);
+  const sel = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(`d-i-${name}`) : `d-i-${name}`;
+  el.textContent += `.${sel}{-webkit-mask-image:${uri};mask-image:${uri}}`;
 }
 
 /**
- * @param {string} name
+ * @param {string} name - Icon name (kebab-case, e.g. 'check', 'chevron-down')
  * @param {Object} [opts]
  * @param {string|number} [opts.size] - CSS size (default: 1.25em)
  * @param {string} [opts.class]
@@ -39,47 +40,19 @@ function createLucideSVG(iconDef, size, extraAttrs) {
 export function icon(name, opts = {}) {
   const { size = '1.25em', class: cls, ...rest } = opts;
 
-  // Detect Material Icons (class on element or data attribute)
-  if (typeof document !== 'undefined' &&
-      (document.querySelector('.material-icons') ||
-       document.querySelector('[data-icons="material"]'))) {
-    const el = h('span', {
-      class: cls ? `material-icons ${cls}` : 'material-icons',
-      style: { fontSize: size, lineHeight: '1', verticalAlign: 'middle' },
-      ...rest
-    }, name);
-    return el;
-  }
-
-  // Detect Lucide with icons data loaded — direct SVG creation
-  if (typeof window !== 'undefined' && window.lucide && window.lucide.icons) {
-    const pascalName = kebabToPascal(name);
-    const iconDef = window.lucide.icons[pascalName];
-    if (iconDef) {
-      const extraAttrs = {};
-      if (cls) extraAttrs.class = cls;
-      Object.assign(extraAttrs, rest);
-      return createLucideSVG(iconDef, size, extraAttrs);
-    }
-  }
-
-  // Lucide tag present but not yet loaded — pending placeholder
-  if (typeof document !== 'undefined' &&
-      document.querySelector('[data-icons="lucide"]')) {
-    return h('span', {
-      title: name,
-      'data-lucide-pending': name,
-      class: cls || '',
-      style: { display: 'inline-block', width: size, height: size },
-      ...rest
-    });
-  }
-
-  // Fallback: empty span with title
-  return h('span', {
-    class: cls || '',
-    title: name,
-    style: { display: 'inline-block', width: size, height: size },
+  const className = cls ? `d-i d-i-${name} ${cls}` : `d-i d-i-${name}`;
+  const el = h('span', {
+    class: className,
+    role: 'img',
+    'aria-hidden': 'true',
+    style: { width: size, height: size },
     ...rest
   });
+
+  const inner = getIconPath(name);
+  if (inner) {
+    injectIconCSS(name, inner);
+  }
+
+  return el;
 }

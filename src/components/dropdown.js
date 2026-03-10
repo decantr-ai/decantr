@@ -21,7 +21,7 @@ export function Dropdown(props = {}) {
     class: cx('d-dropdown-menu', align === 'right' && 'd-dropdown-right'),
     role: 'menu',
     tabindex: '-1',
-    popover: 'auto'
+    style: { display: 'none' }
   });
 
   const wrap = h('div', { class: cx('d-dropdown', cls) });
@@ -57,7 +57,7 @@ export function Dropdown(props = {}) {
       if (!item.disabled) {
         el.addEventListener('click', (e) => {
           e.stopPropagation();
-          menu.hidePopover();
+          closeMenu();
           if (item.onclick) item.onclick(item.value || item.label);
         });
       }
@@ -77,26 +77,36 @@ export function Dropdown(props = {}) {
     activeIndex = idx;
   }
 
+  function openMenu() {
+    if (open) return;
+    open = true;
+    activeIndex = -1;
+    renderItems();
+    menu.style.display = '';
+    triggerEl.setAttribute('aria-expanded', 'true');
+    wrap.classList.add('d-dropdown-open');
+    if (typeof menu.focus === 'function') menu.focus();
+  }
+
+  function closeMenu() {
+    if (!open) return;
+    open = false;
+    menu.style.display = 'none';
+    triggerEl.setAttribute('aria-expanded', 'false');
+    wrap.classList.remove('d-dropdown-open');
+    if (typeof triggerEl.focus === 'function') triggerEl.focus();
+  }
+
   triggerEl.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (open) {
-      menu.hidePopover();
-    } else {
-      activeIndex = -1;
-      renderItems();
-      menu.showPopover();
-      if (typeof menu.focus === 'function') menu.focus();
-    }
+    if (open) closeMenu();
+    else openMenu();
   });
 
   triggerEl.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      if (!open) {
-        activeIndex = -1;
-        renderItems();
-        menu.showPopover();
-      }
+      if (!open) openMenu();
       highlightIndex(0);
     }
   });
@@ -116,20 +126,16 @@ export function Dropdown(props = {}) {
         selectables[activeIndex].click();
       }
     } else if (e.key === 'Escape' || e.key === 'Tab') {
-      menu.hidePopover();
+      closeMenu();
     }
   });
 
-  // Sync state from toggle event (handles light-dismiss too)
-  menu.addEventListener('toggle', (e) => {
-    open = e.newState === 'open';
-    triggerEl.setAttribute('aria-expanded', String(open));
-    if (open) wrap.classList.add('d-dropdown-open');
-    else {
-      wrap.classList.remove('d-dropdown-open');
-      if (typeof triggerEl.focus === 'function') triggerEl.focus();
-    }
-  });
+  // Outside click to close
+  if (typeof document !== 'undefined') {
+    document.addEventListener('click', (e) => {
+      if (open && !wrap.contains(e.target)) closeMenu();
+    });
+  }
 
   return wrap;
 }

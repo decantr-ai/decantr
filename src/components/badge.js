@@ -18,10 +18,10 @@ export function Badge(props = {}, ...children) {
   const { count, color, dot, status, variant, class: cls } = props;
   const resolvedStatus = status || variant;
 
-  const statusColor = resolvedStatus === 'success' ? 'var(--c7)'
-    : resolvedStatus === 'error' ? 'var(--c9)'
-    : resolvedStatus === 'warning' ? 'var(--c8)'
-    : resolvedStatus === 'processing' ? 'var(--c1)'
+  const statusColor = resolvedStatus === 'success' ? 'var(--d-success)'
+    : resolvedStatus === 'error' ? 'var(--d-error)'
+    : resolvedStatus === 'warning' ? 'var(--d-warning)'
+    : resolvedStatus === 'processing' ? 'var(--d-primary)'
     : null;
 
   const bgColor = color || statusColor;

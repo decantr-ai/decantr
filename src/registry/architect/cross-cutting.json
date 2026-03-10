@@ -1,0 +1,44 @@
+{
+  "loading-states": {
+    "w": 0.85,
+    "components": ["Skeleton", "Spinner", "Progress"],
+    "rule": "Every async operation shows loading feedback"
+  },
+  "error-handling": {
+    "w": 0.9,
+    "components": ["Alert", "toast"],
+    "rule": "Every async operation handles and displays errors"
+  },
+  "empty-states": {
+    "w": 0.75,
+    "components": ["Empty", "Button"],
+    "rule": "Every list/collection view needs an empty state with action CTA"
+  },
+  "a11y": {
+    "w": 1.0,
+    "rules": [
+      "Accessible names on all interactives",
+      "Icon-only buttons need aria-label",
+      "Keyboard nav for all flows",
+      "Color is not sole state indicator"
+    ]
+  },
+  "responsive": {
+    "w": 0.95,
+    "atoms": "_gcaf280 _wrap",
+    "rule": "All layouts work 320px–1920px"
+  },
+  "mobile-nav": {
+    "w": 0.85,
+    "components": ["Drawer", "Button"],
+    "rule": "Nav collapses to hamburger below 768px"
+  },
+  "seo-meta": {
+    "w": 0.5,
+    "rule": "Set document.title and meta description per route"
+  },
+  "persistence": {
+    "w": 0.6,
+    "rule": "Use useLocalStorage for user preferences and transient state"
+  }
+}

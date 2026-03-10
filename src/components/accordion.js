@@ -1,5 +1,6 @@
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
+import { caret } from './_behaviors.js';
 
 const ANIM_MS = 250;
 
@@ -76,7 +77,7 @@ export function Accordion(props = {}) {
       type: 'button',
       class: 'd-accordion-trigger',
       'aria-expanded': 'false'
-    }, item.title, h('span', { class: 'd-accordion-icon' }, '\u25BE'));
+    }, item.title, caret('down', { class: 'd-accordion-icon' }));
 
     const section = h('div', { class: 'd-accordion-item' }, trigger, region);
     sections.push(section);

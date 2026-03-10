@@ -261,6 +261,7 @@ class Document_ extends Node_ {
   createElementNS(ns, tag) { return new Element_(tag); }
   createTextNode(data) { return new Text_(data); }
   createComment(data) { return new Comment_(data); }
+  createDocumentFragment() { return new Element_('d-fragment'); }
   getElementById(id) { return queryOne(this.documentElement, `#${id}`); }
   querySelector(sel) { return queryOne(this.documentElement, sel); }
   querySelectorAll(sel) {

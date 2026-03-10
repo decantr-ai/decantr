@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir, stat, readdir, copyFile, rm } from 'node:fs
 import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { gzipSync } from 'node:zlib';
+import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'node:zlib';
 import { minify } from './minify.js';
 import { extractClassNames, generateCSS } from './css-extract.js';
 
@@ -24,21 +24,24 @@ function resolveDecantrImport(subpath) {
 /**
  * @param {string} source
  * @param {string} baseDir
- * @returns {string[]}
+ * @returns {Array<{resolved: string, specifier: string, names?: string[]}>}
  */
 function findImports(source, baseDir) {
-  // Strip template literal contents to avoid matching imports inside code examples
   const cleaned = source.replace(/`(?:[^`\\]|\\.)*`/gs, '""');
   const imports = [];
-  const regex = /(?:import|export)\s+(?:[\s\S]*?from\s+)?['"](.+?)['"]/g;
+  const regex = /(?:import|export)\s+(?:\{([^}]+)\}\s+from\s+)?['"](.+?)['"]/g;
   let match;
   while ((match = regex.exec(cleaned)) !== null) {
-    const specifier = match[1];
+    const names = match[1] ? match[1].split(',').map(n => {
+      const parts = n.trim().split(/\s+as\s+/);
+      return (parts[1] || parts[0]).trim();
+    }) : undefined;
+    const specifier = match[2];
     if (specifier.startsWith('decantr')) {
       const subpath = specifier.replace('decantr/', '').replace('decantr', 'core');
-      imports.push({ resolved: resolveDecantrImport(subpath), specifier });
+      imports.push({ resolved: resolveDecantrImport(subpath), specifier, names });
     } else if (specifier.startsWith('./') || specifier.startsWith('../')) {
-      imports.push({ resolved: resolve(baseDir, specifier), specifier });
+      imports.push({ resolved: resolve(baseDir, specifier), specifier, names });
     }
   }
   return imports;
@@ -68,7 +71,6 @@ async function resolveModules(entrypoint) {
       const fromRel = fromFile ? relative(process.cwd(), fromFile) : 'entrypoint';
       if (specifier && specifier.startsWith('decantr')) {
         console.error(`  [error] Could not resolve import '${specifier}' from ${fromRel}`);
-        console.error(`    Available modules: decantr/core, decantr/state, decantr/router, decantr/css, decantr/tags, decantr/components, decantr/blocks, decantr/test`);
       } else {
         console.error(`  [error] Could not resolve '${specifier || filePath}' from ${fromRel}`);
       }
@@ -79,16 +81,137 @@ async function resolveModules(entrypoint) {
 }
 
 /**
+ * Build a graph of which exports each module provides and which are actually used.
+ * @param {Map<string, string>} modules
+ * @returns {Map<string, Set<string>>} map of filePath → set of used export names
+ */
+function buildUsageGraph(modules) {
+  /** @type {Map<string, Set<string>>} */
+  const usedExports = new Map();
+  for (const path of modules.keys()) usedExports.set(path, new Set());
+
+  // For each module, find what it imports from other modules
+  for (const [path, source] of modules) {
+    const imports = findImports(source, dirname(path));
+    for (const imp of imports) {
+      if (imp.names && modules.has(imp.resolved)) {
+        const used = usedExports.get(imp.resolved);
+        for (const name of imp.names) used.add(name);
+      } else if (!imp.names && modules.has(imp.resolved)) {
+        // Side-effect import or default — mark all exports as used
+        const used = usedExports.get(imp.resolved);
+        used.add('*');
+      }
+    }
+  }
+
+  return usedExports;
+}
+
+/**
+ * Dead code elimination: remove unexported functions and constants
+ * that are not referenced anywhere in the module's own code.
+ * @param {string} source - module source
+ * @param {Set<string>} usedExports - exports actually used by consumers
+ * @param {string[]} allExportedNames - all export names from the module
+ * @returns {{source: string, removedExports: string[]}}
+ */
+function treeShakeModule(source, usedExports, allExportedNames) {
+  // If wildcard is used, keep everything
+  if (usedExports.has('*')) return { source, removedExports: [] };
+  if (usedExports.size === 0 && allExportedNames.length > 0) {
+    // Nothing is used from this module but it was imported (side-effect)
+    return { source, removedExports: [] };
+  }
+
+  const removedExports = [];
+  let processed = source;
+
+  for (const name of allExportedNames) {
+    if (usedExports.has(name)) continue;
+
+    // Check if name is used internally within the same module
+    // Count references — if only the export declaration references it, safe to remove
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const refCount = (source.match(new RegExp(`\\b${escapedName}\\b`, 'g')) || []).length;
+    // The export declaration itself counts as 1 reference (export function X / export const X / export { X })
+    // Plus one for the definition. If total refs <= 2, it's only defined + exported, not internally used
+    if (refCount > 2) continue;
+
+    // Remove exported function declaration
+    const funcRe = new RegExp(`export\\s+function\\s+${escapedName}\\s*\\([^)]*\\)\\s*\\{`, 'g');
+    if (funcRe.test(processed)) {
+      // Find the full function body by brace counting
+      const startIdx = processed.search(new RegExp(`export\\s+function\\s+${escapedName}\\s*\\(`));
+      if (startIdx !== -1) {
+        let braceDepth = 0;
+        let inStr = false;
+        let strCh = '';
+        let endIdx = startIdx;
+        let foundOpen = false;
+        for (let i = startIdx; i < processed.length; i++) {
+          const ch = processed[i];
+          if (inStr) {
+            if (ch === strCh && processed[i - 1] !== '\\') inStr = false;
+            continue;
+          }
+          if (ch === '"' || ch === "'" || ch === '`') { inStr = true; strCh = ch; continue; }
+          if (ch === '{') { braceDepth++; foundOpen = true; }
+          if (ch === '}') { braceDepth--; }
+          if (foundOpen && braceDepth === 0) { endIdx = i + 1; break; }
+        }
+        processed = processed.slice(0, startIdx) + processed.slice(endIdx);
+        removedExports.push(name);
+      }
+      continue;
+    }
+
+    // Remove exported const/let
+    const constRe = new RegExp(`export\\s+(?:const|let)\\s+${escapedName}\\s*=`);
+    if (constRe.test(processed)) {
+      const startIdx = processed.search(constRe);
+      if (startIdx !== -1) {
+        // Find end of statement (semicolon at depth 0)
+        let depth = 0;
+        let inStr = false;
+        let strCh = '';
+        let endIdx = startIdx;
+        for (let i = startIdx; i < processed.length; i++) {
+          const ch = processed[i];
+          if (inStr) {
+            if (ch === strCh && processed[i - 1] !== '\\') inStr = false;
+            continue;
+          }
+          if (ch === '"' || ch === "'" || ch === '`') { inStr = true; strCh = ch; continue; }
+          if (ch === '(' || ch === '{' || ch === '[') depth++;
+          if (ch === ')' || ch === '}' || ch === ']') depth--;
+          if (ch === ';' && depth === 0) { endIdx = i + 1; break; }
+          if (ch === '\n' && depth === 0 && i > startIdx + 20) { endIdx = i; break; }
+        }
+        processed = processed.slice(0, startIdx) + processed.slice(endIdx);
+        removedExports.push(name);
+      }
+    }
+  }
+
+  return { source: processed, removedExports };
+}
+
+/**
  * @param {Map<string, string>} modules
  * @param {string} entrypoint
- * @returns {string}
+ * @param {{ sourcemap?: boolean, treeShake?: boolean }} opts
+ * @returns {{ code: string, sourcemap?: string }}
  */
-function bundle(modules, entrypoint) {
+function bundle(modules, entrypoint, opts = {}) {
   const moduleIds = new Map();
   let idCounter = 0;
   for (const path of modules.keys()) {
     moduleIds.set(path, `_m${idCounter++}`);
   }
+
+  // Build usage graph for tree shaking
+  const usedExports = opts.treeShake ? buildUsageGraph(modules) : null;
 
   // Topological sort so dependencies are defined before dependents
   const deps = new Map();
@@ -102,7 +225,7 @@ function bundle(modules, entrypoint) {
   const visited = new Set();
   function visit(path) {
     if (visited.has(path)) return;
-    if (visiting.has(path)) return; // circular dependency guard
+    if (visiting.has(path)) return;
     visiting.add(path);
     for (const dep of deps.get(path) || []) visit(dep);
     visiting.delete(path);
@@ -114,9 +237,33 @@ function bundle(modules, entrypoint) {
 
   let output = '(function(){\n';
 
+  // Source map tracking
+  const mappings = [];
+  let outputLine = 1; // start after IIFE wrapper
+
+  let totalTreeShaken = 0;
+
   for (const [path, source] of moduleList) {
     const id = moduleIds.get(path);
-    let processed = source;
+
+    // Find exported names from original source (before tree shaking)
+    const exportedNames = extractExportedNames(source);
+
+    // Tree shake if enabled
+    let processedSource = source;
+    if (usedExports) {
+      const used = usedExports.get(path) || new Set();
+      const result = treeShakeModule(source, used, exportedNames);
+      processedSource = result.source;
+      totalTreeShaken += result.removedExports.length;
+      // Remove shaken exports from the return list
+      for (const removed of result.removedExports) {
+        const idx = exportedNames.indexOf(removed);
+        if (idx !== -1) exportedNames.splice(idx, 1);
+      }
+    }
+
+    let processed = processedSource;
 
     // Stash template literal contents to protect them from import/export rewriting
     const stash = [];
@@ -183,48 +330,74 @@ function bundle(modules, entrypoint) {
       }
     );
 
-    // Find exported names from original source
-    const exportedNames = [];
-    const funcExports = source.matchAll(/export\s+function\s+(\w+)/g);
-    for (const m of funcExports) exportedNames.push(m[1]);
-    const constExports = source.matchAll(/export\s+(?:const|let)\s+(\w+)/g);
-    for (const m of constExports) exportedNames.push(m[1]);
-    // Re-exports: export { X } from 'Y' — extract the local names
-    const reExports = source.matchAll(/export\s*\{([^}]+)\}\s*from\s/g);
-    for (const m of reExports) {
-      m[1].split(',').forEach(n => {
-        const name = n.trim().split(/\s+as\s+/);
-        exportedNames.push((name[1] || name[0]).trim());
-      });
-    }
-    // Plain re-exports: export { X }
-    const namedExports = source.matchAll(/export\s*\{([^}]+)\}\s*;/g);
-    for (const m of namedExports) {
-      // Skip if this is a re-export (already handled above)
-      if (/from\s/.test(m[0])) continue;
-      m[1].split(',').forEach(n => {
-        const name = n.trim().split(/\s+as\s+/);
-        exportedNames.push((name[1] || name[0]).trim());
-      });
-    }
-
     // Restore stashed template literals
     processed = processed.replace(/`__TPL_(\d+)__`/g, (_, i) => stash[i]);
 
-    // Rewrite exports to module object (after template restoration so exports
-    // inside code that was accidentally stashed are still rewritten)
+    // Rewrite exports to module object
     processed = processed.replace(/export\s+function\s+(\w+)/g, `function $1`);
     processed = processed.replace(/export\s+const\s+/g, 'const ');
     processed = processed.replace(/export\s+let\s+/g, 'let ');
     processed = processed.replace(/export\s*\{[^}]*\}\s*;?/g, '');
 
-    output += `// ${relative(process.cwd(), path)}\n`;
-    output += `const ${id} = (function(){\n${processed}\nreturn {${exportedNames.join(',')}};\n})();\n\n`;
+    const relPath = relative(process.cwd(), path);
+    const moduleHeader = `// ${relPath}\n`;
+    const moduleCode = `const ${id} = (function(){\n${processed}\nreturn {${exportedNames.join(',')}};\n})();\n\n`;
+
+    // Track source map mappings
+    if (opts.sourcemap) {
+      const headerLines = moduleHeader.split('\n').length - 1;
+      const codeLines = moduleCode.split('\n').length - 1;
+      mappings.push({
+        sourceFile: relPath,
+        outputStartLine: outputLine,
+        outputEndLine: outputLine + headerLines + codeLines,
+        sourceLines: source.split('\n').length
+      });
+      outputLine += headerLines + codeLines;
+    }
+
+    output += moduleHeader;
+    output += moduleCode;
   }
 
-  // Entry module runs last (mount call is in the entry)
   output += '})();\n';
-  return output;
+
+  if (opts.treeShake && totalTreeShaken > 0) {
+    console.log(`  Tree-shaken ${totalTreeShaken} unused exports`);
+  }
+
+  // Generate source map if requested
+  let sourcemap = null;
+  if (opts.sourcemap) {
+    sourcemap = generateSourceMap(mappings, modules);
+  }
+
+  return { code: output, sourcemap };
+}
+
+/**
+ * Extract all exported names from a module source.
+ * @param {string} source
+ * @returns {string[]}
+ */
+function extractExportedNames(source) {
+  const exportedNames = [];
+  for (const m of source.matchAll(/export\s+function\s+(\w+)/g)) exportedNames.push(m[1]);
+  for (const m of source.matchAll(/export\s+(?:const|let)\s+(\w+)/g)) exportedNames.push(m[1]);
+  for (const m of source.matchAll(/export\s*\{([^}]+)\}\s*from\s/g)) {
+    m[1].split(',').forEach(n => {
+      const name = n.trim().split(/\s+as\s+/);
+      exportedNames.push((name[1] || name[0]).trim());
+    });
+  }
+  for (const m of source.matchAll(/export\s*\{([^}]+)\}\s*;/g)) {
+    if (/from\s/.test(m[0])) continue;
+    m[1].split(',').forEach(n => {
+      const name = n.trim().split(/\s+as\s+/);
+      exportedNames.push((name[1] || name[0]).trim());
+    });
+  }
+  return exportedNames;
 }
 
 function resolveSpecifier(specifier, fromPath) {
@@ -235,41 +408,482 @@ function resolveSpecifier(specifier, fromPath) {
   return resolve(dirname(fromPath), specifier);
 }
 
-function hash(content) {
-  return createHash('md5').update(content).digest('hex').slice(0, 8);
+/**
+ * Tree-shake icon data: scan bundled output for icon('name') calls,
+ * then rewrite ESSENTIAL and EXTENDED objects to only include referenced icons.
+ */
+function treeShakeIcons(bundled) {
+  const usedIcons = new Set();
+  const iconCallRe = /icon\(\s*['"]([a-z][a-z0-9-]*)['"](?:\s*[,)])/g;
+  let m;
+  while ((m = iconCallRe.exec(bundled)) !== null) {
+    usedIcons.add(m[1]);
+  }
+
+  if (usedIcons.size === 0) return bundled;
+
+  bundled = bundled.replace(
+    /((?:ESSENTIAL|EXTENDED)\s*=\s*\{)([\s\S]*?)(\})/g,
+    (match, prefix, body, suffix) => {
+      const entries = [];
+      const entryRe = /'([a-z][a-z0-9-]*)'\s*:\s*'((?:[^'\\]|\\.)*)'/g;
+      let em;
+      while ((em = entryRe.exec(body)) !== null) {
+        if (usedIcons.has(em[1])) {
+          entries.push(`'${em[1]}':'${em[2]}'`);
+        }
+      }
+      return `${prefix}${entries.join(',')}${suffix}`;
+    }
+  );
+
+  return bundled;
 }
 
 /**
+ * Generate a v3 source map JSON string.
+ * @param {Array<{sourceFile: string, outputStartLine: number, outputEndLine: number, sourceLines: number}>} mappings
+ * @param {Map<string, string>} modules
+ * @returns {string}
+ */
+function generateSourceMap(mappings, modules) {
+  const sources = [];
+  const sourcesContent = [];
+
+  for (const m of mappings) {
+    sources.push(m.sourceFile);
+    sourcesContent.push(modules.get(resolve(process.cwd(), m.sourceFile)) || '');
+  }
+
+  // Build VLQ mappings: for each output line, map to the corresponding source file + line
+  const vlqMappings = [];
+  let prevSourceIdx = 0;
+  let prevSourceLine = 0;
+  let prevSourceCol = 0;
+
+  // Pre-compute output line → source mapping
+  const lineMap = new Map();
+  for (let i = 0; i < mappings.length; i++) {
+    const m = mappings[i];
+    const sourceLineCount = m.sourceLines;
+    const outputLineCount = m.outputEndLine - m.outputStartLine;
+    const linesPerSource = sourceLineCount / Math.max(outputLineCount, 1);
+
+    for (let outLine = m.outputStartLine; outLine < m.outputEndLine; outLine++) {
+      const sourceLine = Math.min(
+        Math.floor((outLine - m.outputStartLine) * linesPerSource),
+        sourceLineCount - 1
+      );
+      lineMap.set(outLine, { sourceIdx: i, sourceLine });
+    }
+  }
+
+  // Get total output lines
+  const maxLine = mappings.length > 0
+    ? mappings[mappings.length - 1].outputEndLine
+    : 0;
+
+  for (let line = 0; line <= maxLine; line++) {
+    const info = lineMap.get(line);
+    if (!info) {
+      vlqMappings.push('');
+      continue;
+    }
+
+    const sourceIdxDelta = info.sourceIdx - prevSourceIdx;
+    const sourceLineDelta = info.sourceLine - prevSourceLine;
+    const sourceColDelta = 0 - prevSourceCol;
+
+    // Segment: [outputCol, sourceIdx, sourceLine, sourceCol]
+    vlqMappings.push(vlqEncode(0) + vlqEncode(sourceIdxDelta) + vlqEncode(sourceLineDelta) + vlqEncode(sourceColDelta));
+
+    prevSourceIdx = info.sourceIdx;
+    prevSourceLine = info.sourceLine;
+    prevSourceCol = 0;
+  }
+
+  return JSON.stringify({
+    version: 3,
+    file: 'app.js',
+    sources,
+    sourcesContent,
+    mappings: vlqMappings.join(';')
+  });
+}
+
+/**
+ * VLQ encode a single integer for source maps.
+ * @param {number} value
+ * @returns {string}
+ */
+function vlqEncode(value) {
+  const VLQ_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  let vlq = value < 0 ? ((-value) << 1) + 1 : (value << 1);
+  let encoded = '';
+  do {
+    let digit = vlq & 0x1f;
+    vlq >>>= 5;
+    if (vlq > 0) digit |= 0x20;
+    encoded += VLQ_CHARS[digit];
+  } while (vlq > 0);
+  return encoded;
+}
+
+function hashContent(content) {
+  return createHash('md5').update(content).digest('hex').slice(0, 8);
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function brotliSize(content) {
+  return brotliCompressSync(Buffer.from(content), {
+    params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 11 }
+  }).length;
+}
+
+/**
+ * Detect route-based dynamic imports for code splitting.
+ * Finds patterns like: `component: () => import('./pages/home.js')`
+ * @param {string} source
+ * @param {string} baseDir
+ * @returns {Array<{specifier: string, resolved: string}>}
+ */
+function findDynamicImports(source, baseDir) {
+  const results = [];
+  const re = /import\s*\(\s*['"](.+?)['"]\s*\)/g;
+  let m;
+  while ((m = re.exec(source)) !== null) {
+    const spec = m[1];
+    if (spec.startsWith('./') || spec.startsWith('../')) {
+      results.push({ specifier: spec, resolved: resolve(baseDir, spec) });
+    } else if (spec.startsWith('decantr')) {
+      const subpath = spec.replace('decantr/', '').replace('decantr', 'core');
+      results.push({ specifier: spec, resolved: resolveDecantrImport(subpath) });
+    }
+  }
+  return results;
+}
+
+/**
+ * Code splitting: resolve dynamic imports into separate chunks.
+ * @param {Map<string, string>} mainModules - modules in the main bundle
  * @param {string} projectRoot
- * @param {{ outDir?: string, inline?: boolean }} options
+ * @returns {Promise<Map<string, Map<string, string>>>} chunkName → modules
+ */
+async function resolveChunks(mainModules, projectRoot) {
+  /** @type {Map<string, Map<string, string>>} */
+  const chunks = new Map();
+
+  // Scan all modules for dynamic imports
+  const dynamicImports = [];
+  for (const [path, source] of mainModules) {
+    const dImports = findDynamicImports(source, dirname(path));
+    dynamicImports.push(...dImports);
+  }
+
+  if (dynamicImports.length === 0) return chunks;
+
+  // For each dynamic import, resolve its dependency tree as a separate chunk
+  for (const { specifier, resolved: entryPath } of dynamicImports) {
+    if (mainModules.has(entryPath)) continue; // Already in main bundle
+
+    const chunkName = specifier
+      .replace(/^\.\//, '').replace(/\.js$/, '')
+      .replace(/[/\\]/g, '-');
+
+    if (chunks.has(chunkName)) continue;
+
+    const chunkModules = await resolveModules(entryPath);
+    // Remove modules already in main bundle (shared code stays in main)
+    for (const path of chunkModules.keys()) {
+      if (mainModules.has(path)) chunkModules.delete(path);
+    }
+
+    if (chunkModules.size > 0) {
+      chunks.set(chunkName, chunkModules);
+    }
+  }
+
+  return chunks;
+}
+
+/**
+ * Rewrite dynamic import() calls to load chunk files.
+ * @param {string} bundled - main bundle code
+ * @param {Map<string, string>} chunkFileMap - specifier → chunk filename
+ * @returns {string}
+ */
+function rewriteDynamicImports(bundled, chunkFileMap) {
+  return bundled.replace(
+    /import\s*\(\s*['"](.+?)['"]\s*\)/g,
+    (match, specifier) => {
+      for (const [spec, file] of chunkFileMap) {
+        if (specifier === spec || specifier.endsWith(spec)) {
+          return `__decantrLoadChunk('./assets/${file}')`;
+        }
+      }
+      return match;
+    }
+  );
+}
+
+/** Runtime chunk loader injected into the main bundle */
+const CHUNK_LOADER = `function __decantrLoadChunk(url){return new Promise(function(r,e){var s=document.createElement('script');s.src=url;s.onload=function(){r(window.__decantrChunk)};s.onerror=e;document.head.appendChild(s)})}\n`;
+
+// ─── Incremental Build Cache ─────────────────────────────────────
+
+/**
+ * @param {string} cacheDir
+ * @returns {Promise<{fileHashes: Record<string, string>, buildHash: string} | null>}
+ */
+async function loadBuildCache(cacheDir) {
+  try {
+    const raw = await readFile(join(cacheDir, 'build-cache.json'), 'utf-8');
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @param {string} cacheDir
+ * @param {Record<string, string>} fileHashes
+ * @param {string} buildHash
+ */
+async function saveBuildCache(cacheDir, fileHashes, buildHash) {
+  await mkdir(cacheDir, { recursive: true });
+  await writeFile(join(cacheDir, 'build-cache.json'), JSON.stringify({ fileHashes, buildHash }));
+}
+
+/**
+ * Compute hashes for all source files.
+ * @param {Map<string, string>} modules
+ * @returns {Record<string, string>}
+ */
+function computeFileHashes(modules) {
+  const hashes = {};
+  for (const [path, source] of modules) {
+    hashes[path] = createHash('md5').update(source).digest('hex');
+  }
+  return hashes;
+}
+
+/**
+ * Check if any files changed since last build.
+ * @param {Record<string, string>} currentHashes
+ * @param {Record<string, string>} cachedHashes
+ * @returns {boolean}
+ */
+function hasChanges(currentHashes, cachedHashes) {
+  const currentKeys = Object.keys(currentHashes);
+  const cachedKeys = Object.keys(cachedHashes);
+  if (currentKeys.length !== cachedKeys.length) return true;
+  for (const key of currentKeys) {
+    if (currentHashes[key] !== cachedHashes[key]) return true;
+  }
+  return false;
+}
+
+// ─── CSS Purging ─────────────────────────────────────────────────
+
+/**
+ * Purge unused CSS atoms from generated CSS output.
+ * Scans the bundled JS for class name references and removes unreferenced atoms.
+ * @param {string} cssOutput - generated CSS
+ * @param {string} bundledJS - bundled JavaScript
+ * @returns {{ css: string, purged: number }}
+ */
+function purgeCSS(cssOutput, bundledJS) {
+  if (!cssOutput) return { css: '', purged: 0 };
+
+  // Extract all string literals from bundled JS to find referenced class names
+  const referencedClasses = new Set();
+  const strRe = /['"`]([^'"`]*?)['"` ]/g;
+  let m;
+  while ((m = strRe.exec(bundledJS)) !== null) {
+    const val = m[1];
+    if (val.includes('_')) {
+      val.split(/\s+/).forEach(c => { if (c.startsWith('_')) referencedClasses.add(c); });
+    }
+  }
+
+  // Also scan for css() calls more precisely
+  const cssCallRe = /css\s*\(\s*['"`]([^'"`]*?)['"`]\s*\)/g;
+  while ((m = cssCallRe.exec(bundledJS)) !== null) {
+    m[1].split(/\s+/).forEach(c => { if (c) referencedClasses.add(c); });
+  }
+
+  // Also scan class: 'xxx' patterns in the bundled output
+  const classPropRe = /class:\s*['"]([^'"]*?)['"]/g;
+  while ((m = classPropRe.exec(bundledJS)) !== null) {
+    m[1].split(/\s+/).forEach(c => { if (c) referencedClasses.add(c); });
+  }
+
+  // Parse CSS rules and keep only referenced ones
+  // Format: @layer d.atoms{.class{...}.class{...}}
+  const layerMatch = cssOutput.match(/^(@layer\s+d\.atoms\s*\{)([\s\S]*?)(\})$/);
+  if (!layerMatch) return { css: cssOutput, purged: 0 };
+
+  const prefix = layerMatch[1];
+  const body = layerMatch[2];
+  const suffix = layerMatch[3];
+
+  // Split into individual rules
+  const ruleRe = /\.([^\s{]+)\{[^}]*\}/g;
+  const kept = [];
+  let purged = 0;
+  let ruleMatch;
+  while ((ruleMatch = ruleRe.exec(body)) !== null) {
+    const className = ruleMatch[1];
+    if (referencedClasses.has(className)) {
+      kept.push(ruleMatch[0]);
+    } else {
+      purged++;
+    }
+  }
+
+  return {
+    css: kept.length > 0 ? `${prefix}${kept.join('')}${suffix}` : '',
+    purged
+  };
+}
+
+// ─── Main Build Function ─────────────────────────────────────────
+
+/**
+ * @param {string} projectRoot
+ * @param {{ outDir?: string, inline?: boolean, sourcemap?: boolean, analyze?: boolean, incremental?: boolean, codeSplit?: boolean, purgeCSS?: boolean, treeShake?: boolean }} options
  */
 export async function build(projectRoot, options = {}) {
   const outDir = join(projectRoot, options.outDir || 'dist');
   const entrypoint = join(projectRoot, 'src', 'app.js');
+  const cacheDir = join(projectRoot, 'node_modules', '.decantr-cache');
 
-  // Clean previous build output
-  await rm(outDir, { recursive: true, force: true });
+  const enableSourcemap = options.sourcemap !== false;
+  const enableAnalyze = options.analyze !== false;
+  const enableIncremental = options.incremental !== false;
+  const enableCodeSplit = options.codeSplit !== false;
+  const enablePurgeCSS = options.purgeCSS !== false;
+  const enableTreeShake = options.treeShake !== false;
 
   console.log('\n  decantr build\n');
+
+  // Resolve modules
   console.log('  Resolving modules...');
   const modules = await resolveModules(entrypoint);
   console.log(`  Found ${modules.size} modules`);
 
-  // Bundle
+  // Incremental build check
+  if (enableIncremental) {
+    const currentHashes = computeFileHashes(modules);
+    const cache = await loadBuildCache(cacheDir);
+
+    // Also check if HTML changed
+    let htmlHash = '';
+    try {
+      const htmlContent = await readFile(join(projectRoot, 'public', 'index.html'), 'utf-8');
+      htmlHash = createHash('md5').update(htmlContent).digest('hex');
+    } catch {}
+
+    const combinedHash = createHash('md5')
+      .update(JSON.stringify(currentHashes))
+      .update(htmlHash)
+      .digest('hex');
+
+    if (cache && cache.buildHash === combinedHash) {
+      // Check dist exists
+      try {
+        await stat(outDir);
+        console.log('  No changes detected — skipping rebuild (cached)');
+        console.log(`  Output: ${relative(process.cwd(), outDir)}/\n`);
+        return;
+      } catch {
+        // dist was deleted, rebuild
+      }
+    }
+
+    // Save cache after build (at end)
+    var _currentHashes = currentHashes;
+    var _combinedHash = combinedHash;
+  }
+
+  // Clean previous build output
+  await rm(outDir, { recursive: true, force: true });
+
+  // Bundle (with tree shaking)
   console.log('  Bundling...');
-  let bundled = bundle(modules, entrypoint);
+  const { code: bundled, sourcemap: rawSourcemap } = bundle(modules, entrypoint, {
+    sourcemap: enableSourcemap,
+    treeShake: enableTreeShake
+  });
+
+  // Tree-shake icons
+  console.log('  Tree-shaking icons...');
+  let processedBundle = treeShakeIcons(bundled);
+
+  // Code splitting: detect dynamic imports and create chunks
+  /** @type {Map<string, string>} specifier → chunkFilename */
+  const chunkFileMap = new Map();
+  const chunkOutputs = [];
+
+  if (enableCodeSplit) {
+    console.log('  Code splitting...');
+    const chunks = await resolveChunks(modules, projectRoot);
+
+    if (chunks.size > 0) {
+      for (const [chunkName, chunkModules] of chunks) {
+        const { code: chunkCode } = bundle(chunkModules, '', { treeShake: enableTreeShake });
+        // Wrap chunk to expose its module as window.__decantrChunk
+        const wrappedChunk = `window.__decantrChunk=${chunkCode.replace(/^\(function\(\)\{\n/, '(function(){').replace(/\}\)\(\);\n$/, '})()')};\n`;
+        const minifiedChunk = minify(wrappedChunk);
+        const chunkHash = hashContent(minifiedChunk);
+        const chunkFile = `${chunkName}.${chunkHash}.js`;
+
+        // Find the specifier that maps to this chunk
+        for (const [path, source] of modules) {
+          const dImports = findDynamicImports(source, dirname(path));
+          for (const di of dImports) {
+            const name = di.specifier.replace(/^\.\//, '').replace(/\.js$/, '').replace(/[/\\]/g, '-');
+            if (name === chunkName) {
+              chunkFileMap.set(di.specifier, chunkFile);
+            }
+          }
+        }
+
+        chunkOutputs.push({ name: chunkFile, content: minifiedChunk });
+      }
+      console.log(`  Created ${chunks.size} chunk(s)`);
+
+      // Rewrite dynamic imports in main bundle
+      processedBundle = rewriteDynamicImports(processedBundle, chunkFileMap);
+      // Inject chunk loader
+      processedBundle = processedBundle.replace('(function(){\n', `(function(){\n${CHUNK_LOADER}`);
+    }
+  }
 
   // Extract CSS
   console.log('  Extracting CSS...');
   const allSource = [...modules.values()].join('\n');
   const classNames = extractClassNames(allSource);
-  const cssOutput = generateCSS(classNames);
+  let cssOutput = generateCSS(classNames);
+
+  // CSS Purging
+  if (enablePurgeCSS && cssOutput) {
+    console.log('  Purging unused CSS...');
+    const { css: purgedCSS, purged } = purgeCSS(cssOutput, processedBundle);
+    cssOutput = purgedCSS;
+    if (purged > 0) console.log(`  Purged ${purged} unused CSS rules`);
+  }
 
   // Minify
   console.log('  Minifying...');
-  const minified = minify(bundled);
-  const jsHash = hash(minified);
-  const cssHash = hash(cssOutput);
+  const minified = minify(processedBundle);
+  const jsHash = hashContent(minified);
+  const cssHash = hashContent(cssOutput || '');
 
   // Write output
   await mkdir(join(outDir, 'assets'), { recursive: true });
@@ -277,12 +891,25 @@ export async function build(projectRoot, options = {}) {
   const jsFile = `app.${jsHash}.js`;
   const cssFile = `app.${cssHash}.css`;
 
-  await writeFile(join(outDir, 'assets', jsFile), minified);
+  // Write JS (with optional sourcemap reference)
+  let jsContent = minified;
+  if (enableSourcemap && rawSourcemap) {
+    const mapFile = `app.${jsHash}.js.map`;
+    jsContent += `\n//# sourceMappingURL=./${mapFile}`;
+    await writeFile(join(outDir, 'assets', mapFile), rawSourcemap);
+  }
+  await writeFile(join(outDir, 'assets', jsFile), jsContent);
+
   if (cssOutput) {
     await writeFile(join(outDir, 'assets', cssFile), cssOutput);
   }
 
-  // Transform HTML: replace dev script tag with bundled script + CSS link
+  // Write chunks
+  for (const chunk of chunkOutputs) {
+    await writeFile(join(outDir, 'assets', chunk.name), chunk.content);
+  }
+
+  // Transform HTML
   function transformHtml(html) {
     html = html.replace(
       /<script type="module"[^>]*><\/script>/,
@@ -294,7 +921,6 @@ export async function build(projectRoot, options = {}) {
     return html;
   }
 
-  // Read and transform index.html
   let html;
   try {
     html = await readFile(join(projectRoot, 'public', 'index.html'), 'utf-8');
@@ -304,7 +930,7 @@ export async function build(projectRoot, options = {}) {
   html = transformHtml(html);
   await writeFile(join(outDir, 'index.html'), html);
 
-  // Copy public/ assets (excluding index.html) to dist/
+  // Copy public/ assets
   const publicDir = join(projectRoot, 'public');
   async function copyPublicDir(srcDir, destDir) {
     let entries;
@@ -329,19 +955,92 @@ export async function build(projectRoot, options = {}) {
   }
   await copyPublicDir(publicDir, outDir);
 
-  // Report sizes
-  const jsSize = Buffer.byteLength(minified);
-  const cssSize = Buffer.byteLength(cssOutput);
-  const jsGzip = gzipSync(minified).length;
-  const cssGzip = cssOutput ? gzipSync(cssOutput).length : 0;
+  // ─── Report ────────────────────────────────────────────────────
+
+  const jsSize = Buffer.byteLength(jsContent);
+  const cssSize = Buffer.byteLength(cssOutput || '');
   const htmlSize = Buffer.byteLength(html);
+  const jsGzip = gzipSync(jsContent).length;
+  const cssGzip = cssOutput ? gzipSync(cssOutput).length : 0;
   const htmlGzip = gzipSync(html).length;
+  const jsBrotli = brotliSize(jsContent);
+  const cssBrotli = cssOutput ? brotliSize(cssOutput) : 0;
+  const htmlBrotli = brotliSize(html);
 
   console.log('\n  Output:');
-  console.log(`    assets/${jsFile}   ${jsSize} B (${jsGzip} B gzip)`);
+  console.log(`    assets/${jsFile}`);
+  console.log(`      ${formatSize(jsSize)} │ ${formatSize(jsGzip)} gz │ ${formatSize(jsBrotli)} br`);
   if (cssOutput) {
-    console.log(`    assets/${cssFile}  ${cssSize} B (${cssGzip} B gzip)`);
+    console.log(`    assets/${cssFile}`);
+    console.log(`      ${formatSize(cssSize)} │ ${formatSize(cssGzip)} gz │ ${formatSize(cssBrotli)} br`);
   }
-  console.log(`    index.html         ${htmlSize} B (${htmlGzip} B gzip)`);
-  console.log(`\n  Total gzipped: ${jsGzip + cssGzip + htmlGzip} B\n`);
+  console.log(`    index.html`);
+  console.log(`      ${formatSize(htmlSize)} │ ${formatSize(htmlGzip)} gz │ ${formatSize(htmlBrotli)} br`);
+
+  // Chunk sizes
+  for (const chunk of chunkOutputs) {
+    const cSize = Buffer.byteLength(chunk.content);
+    const cGzip = gzipSync(chunk.content).length;
+    const cBrotli = brotliSize(chunk.content);
+    console.log(`    assets/${chunk.name}`);
+    console.log(`      ${formatSize(cSize)} │ ${formatSize(cGzip)} gz │ ${formatSize(cBrotli)} br`);
+  }
+
+  if (enableSourcemap) {
+    console.log(`    assets/app.${jsHash}.js.map`);
+  }
+
+  const totalRaw = jsSize + cssSize + htmlSize + chunkOutputs.reduce((s, c) => s + Buffer.byteLength(c.content), 0);
+  const totalGzip = jsGzip + cssGzip + htmlGzip + chunkOutputs.reduce((s, c) => s + gzipSync(c.content).length, 0);
+  const totalBrotli = jsBrotli + cssBrotli + htmlBrotli + chunkOutputs.reduce((s, c) => s + brotliSize(c.content), 0);
+
+  console.log('  ──────────────────────────────────────────');
+  console.log(`    Total: ${formatSize(totalRaw)} │ ${formatSize(totalGzip)} gz │ ${formatSize(totalBrotli)} br`);
+
+  // Compression ratios
+  if (jsSize > 0) {
+    const jsGzRatio = ((1 - jsGzip / jsSize) * 100).toFixed(1);
+    const jsBrRatio = ((1 - jsBrotli / jsSize) * 100).toFixed(1);
+    console.log(`\n  Compression: JS ${jsGzRatio}% gzip │ ${jsBrRatio}% brotli`);
+  }
+  if (cssSize > 0) {
+    const cssGzRatio = ((1 - cssGzip / cssSize) * 100).toFixed(1);
+    const cssBrRatio = ((1 - cssBrotli / cssSize) * 100).toFixed(1);
+    console.log(`  Compression: CSS ${cssGzRatio}% gzip │ ${cssBrRatio}% brotli`);
+  }
+
+  // Module breakdown (analyze)
+  if (enableAnalyze) {
+    console.log('\n  Module Breakdown:');
+    const moduleMarkerRe = /\/\/ (.+?)\nconst _m\d+ = \(function\(\)\{([\s\S]*?)return \{/g;
+    const moduleSizes = [];
+    let marker;
+    while ((marker = moduleMarkerRe.exec(processedBundle)) !== null) {
+      const modPath = marker[1];
+      const modSize = Buffer.byteLength(marker[2]);
+      moduleSizes.push({ path: modPath, size: modSize });
+    }
+    moduleSizes.sort((a, b) => b.size - a.size);
+    const top = moduleSizes.slice(0, 15);
+    const maxSize = top[0]?.size || 1;
+    const barWidth = 20;
+
+    for (const mod of top) {
+      const pct = ((mod.size / jsSize) * 100).toFixed(1);
+      const filled = Math.round((mod.size / maxSize) * barWidth);
+      const bar = '█'.repeat(filled) + '░'.repeat(barWidth - filled);
+      const name = mod.path.length > 40 ? '...' + mod.path.slice(-37) : mod.path;
+      console.log(`    ${bar}  ${formatSize(mod.size).padStart(8)}  (${pct.padStart(5)}%)  ${name}`);
+    }
+    if (moduleSizes.length > 15) {
+      console.log(`    ... and ${moduleSizes.length - 15} more modules`);
+    }
+  }
+
+  console.log('');
+
+  // Save incremental build cache
+  if (enableIncremental && _currentHashes && _combinedHash) {
+    await saveBuildCache(cacheDir, _currentHashes, _combinedHash);
+  }
 }

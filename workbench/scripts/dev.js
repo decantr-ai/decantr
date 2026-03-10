@@ -6,4 +6,5 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(__dirname, '..');
 const frameworkSrc = resolve(__dirname, '../../src');
 
-startDevServer(projectRoot, 4300, { watchDirs: [frameworkSrc] });
+const port = parseInt(process.env.PORT, 10) || 4300;
+startDevServer(projectRoot, port, { watchDirs: [frameworkSrc] });

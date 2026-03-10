@@ -339,6 +339,139 @@ function scanKits() {
   return kits;
 }
 
+// --- Architect validator ---
+
+function scanArchitect() {
+  const archDir = join(src, 'registry', 'architect');
+  if (!existsSync(archDir)) return;
+
+  const indexPath = join(archDir, 'index.json');
+  if (!existsSync(indexPath)) return;
+
+  const archIndex = JSON.parse(readFile(indexPath));
+
+  // Load cross-cutting for component validation
+  const crossPath = join(archDir, archIndex.cross_cutting || 'cross-cutting.json');
+  let crossCutting = {};
+  if (existsSync(crossPath)) {
+    crossCutting = JSON.parse(readFile(crossPath));
+  }
+
+  // Load component registry for validation
+  const compPath = join(src, 'registry', 'components.json');
+  let knownComponents = new Set();
+  if (existsSync(compPath)) {
+    const compData = JSON.parse(readFile(compPath));
+    knownComponents = new Set(Object.keys(compData.components || {}));
+  }
+
+  const errors = [];
+
+  // Validate cross-cutting component references
+  for (const [id, concern] of Object.entries(crossCutting)) {
+    if (concern.components) {
+      for (const comp of concern.components) {
+        if (comp !== 'toast' && comp !== 'notification' && comp !== 'message' && !knownComponents.has(comp)) {
+          errors.push(`cross-cutting "${id}" references unknown component: ${comp}`);
+        }
+      }
+    }
+  }
+
+  // Validate each domain
+  for (const [domainId, domainMeta] of Object.entries(archIndex.domains || {})) {
+    const domainPath = join(archDir, domainMeta.file);
+    if (!existsSync(domainPath)) {
+      errors.push(`Domain "${domainId}" file not found: ${domainMeta.file}`);
+      continue;
+    }
+
+    const domain = JSON.parse(readFile(domainPath));
+    const featureIds = new Set(Object.keys(domain.features || {}));
+
+    for (const [fid, feature] of Object.entries(domain.features || {})) {
+      // Validate tier
+      if (!['core', 'should', 'nice'].includes(feature.t)) {
+        errors.push(`${domainId}.${fid}: invalid tier "${feature.t}"`);
+      }
+
+      // Validate weight
+      if (typeof feature.w !== 'number' || feature.w < 0 || feature.w > 1) {
+        errors.push(`${domainId}.${fid}: weight must be 0.0-1.0, got ${feature.w}`);
+      }
+
+      // Validate requires/implies point to valid feature IDs
+      for (const dep of (feature.requires || [])) {
+        if (!featureIds.has(dep)) {
+          errors.push(`${domainId}.${fid}: requires unknown feature "${dep}"`);
+        }
+      }
+      for (const dep of (feature.implies || [])) {
+        if (!featureIds.has(dep)) {
+          errors.push(`${domainId}.${fid}: implies unknown feature "${dep}"`);
+        }
+      }
+
+      // Validate component references
+      if (feature.decantr && feature.decantr.components) {
+        for (const comp of feature.decantr.components) {
+          if (!knownComponents.has(comp)) {
+            errors.push(`${domainId}.${fid}: references unknown component "${comp}"`);
+          }
+        }
+      }
+    }
+
+    // DAG acyclicity check via topological sort (Kahn's algorithm)
+    const inDegree = new Map();
+    const adjList = new Map();
+    for (const fid of featureIds) {
+      inDegree.set(fid, 0);
+      adjList.set(fid, []);
+    }
+    for (const [fid, feature] of Object.entries(domain.features || {})) {
+      for (const dep of (feature.requires || [])) {
+        if (featureIds.has(dep)) {
+          adjList.get(dep).push(fid);
+          inDegree.set(fid, (inDegree.get(fid) || 0) + 1);
+        }
+      }
+    }
+    const queue = [];
+    for (const [fid, deg] of inDegree) {
+      if (deg === 0) queue.push(fid);
+    }
+    let visited = 0;
+    while (queue.length > 0) {
+      const node = queue.shift();
+      visited++;
+      for (const neighbor of (adjList.get(node) || [])) {
+        inDegree.set(neighbor, inDegree.get(neighbor) - 1);
+        if (inDegree.get(neighbor) === 0) queue.push(neighbor);
+      }
+    }
+    if (visited !== featureIds.size) {
+      errors.push(`${domainId}: dependency cycle detected in requires graph`);
+    }
+
+    // Validate cross_cutting references
+    for (const cc of (domain.cross_cutting || [])) {
+      if (!crossCutting[cc]) {
+        errors.push(`${domainId}: references unknown cross-cutting concern "${cc}"`);
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    console.error('\nArchitect validation errors:');
+    for (const err of errors) console.error(`  ✗ ${err}`);
+    process.exitCode = 1;
+  } else {
+    const domainCount = Object.keys(archIndex.domains || {}).length;
+    console.log(`\nArchitect validated: ${domainCount} domain(s), ${Object.keys(crossCutting).length} cross-cutting concerns`);
+  }
+}
+
 // --- Build registry ---
 
 const generated = new Date().toISOString().split('T')[0];
@@ -413,6 +546,17 @@ for (const [kitName, kitData] of Object.entries(kits)) {
   };
 }
 
+// Include icons catalog if it exists
+const iconsPath = join(outDir, 'icons.json');
+if (existsSync(iconsPath)) {
+  const iconData = JSON.parse(readFile(iconsPath));
+  index.modules['decantr/icons'] = {
+    description: `First-party icon suite — ${iconData.total} Lucide icons via CSS mask-image`,
+    file: 'icons.json',
+    exports: iconData.total
+  };
+}
+
 writeJSON(join(outDir, 'index.json'), index);
 
 // Summary
@@ -430,3 +574,6 @@ for (const [name, count] of counts) {
 }
 console.log(`  decantr/tags:${' '.repeat(15)}proxy (any HTML tag)`);
 console.log(`  Total: ${total} exports`);
+
+// Validate architect data
+scanArchitect();

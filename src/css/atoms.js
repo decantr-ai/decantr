@@ -304,12 +304,68 @@ atomMap.set('_fwtitle', 'font-weight:var(--d-fw-title,600)');
 atomMap.set('_fwmedium', 'font-weight:var(--d-fw-medium,500)');
 atomMap.set('_lsheading', 'letter-spacing:var(--d-ls-heading,-0.025em)');
 
-// Colors (CSS custom properties --c0 through --c9)
+// Typography presets — compound atoms bundling size + weight + line-height + letter-spacing
+atomMap.set('_heading1', 'font-size:var(--d-text-4xl,2.5rem);font-weight:var(--d-fw-heading,700);line-height:var(--d-lh-tight,1.1);letter-spacing:var(--d-ls-heading,-0.025em)');
+atomMap.set('_heading2', 'font-size:var(--d-text-3xl,2rem);font-weight:var(--d-fw-heading,700);line-height:var(--d-lh-tight,1.1);letter-spacing:var(--d-ls-heading,-0.025em)');
+atomMap.set('_heading3', 'font-size:var(--d-text-2xl,1.5rem);font-weight:var(--d-fw-heading,700);line-height:var(--d-lh-snug,1.25);letter-spacing:var(--d-ls-heading,-0.025em)');
+atomMap.set('_heading4', 'font-size:var(--d-text-xl,1.25rem);font-weight:var(--d-fw-title,600);line-height:var(--d-lh-snug,1.25)');
+atomMap.set('_heading5', 'font-size:var(--d-text-lg,1.125rem);font-weight:var(--d-fw-title,600);line-height:var(--d-lh-snug,1.25)');
+atomMap.set('_heading6', 'font-size:var(--d-text-md,1rem);font-weight:var(--d-fw-title,600);line-height:var(--d-lh-normal,1.5)');
+atomMap.set('_body', 'font-size:var(--d-text-base,0.875rem);line-height:var(--d-lh-normal,1.5)');
+atomMap.set('_bodylg', 'font-size:var(--d-text-md,1rem);line-height:var(--d-lh-relaxed,1.6)');
+atomMap.set('_caption', 'font-size:var(--d-text-sm,0.75rem);line-height:var(--d-lh-normal,1.5);color:var(--d-muted-fg)');
+atomMap.set('_label', 'font-size:var(--d-text-sm,0.75rem);font-weight:var(--d-fw-medium,500);line-height:var(--d-lh-none,1)');
+atomMap.set('_overline', 'font-size:var(--d-text-xs,0.625rem);font-weight:var(--d-fw-medium,500);line-height:var(--d-lh-none,1);text-transform:uppercase;letter-spacing:0.08em');
+
+// Legacy colors (CSS custom properties --c0 through --c9) — deprecated, use semantic atoms
 for (let i = 0; i <= 9; i++) {
   atomMap.set(`_bg${i}`, `background:var(--c${i})`);
   atomMap.set(`_fg${i}`, `color:var(--c${i})`);
   atomMap.set(`_bc${i}`, `border-color:var(--c${i})`);
 }
+
+// Semantic color atoms — palette roles
+for (const role of ['primary', 'accent', 'tertiary', 'success', 'warning', 'error', 'info']) {
+  atomMap.set(`_bg${role}`, `background:var(--d-${role})`);
+  atomMap.set(`_fg${role}`, `color:var(--d-${role})`);
+  atomMap.set(`_bc${role}`, `border-color:var(--d-${role})`);
+  // Subtle variants (low-opacity tint backgrounds)
+  atomMap.set(`_bg${role}sub`, `background:var(--d-${role}-subtle)`);
+  atomMap.set(`_fg${role}sub`, `color:var(--d-${role}-subtle-fg)`);
+  atomMap.set(`_bc${role}bdr`, `border-color:var(--d-${role}-border)`);
+  // Foreground-on-base (text color that contrasts with base)
+  atomMap.set(`_fg${role}on`, `color:var(--d-${role}-fg)`);
+}
+
+// Semantic neutral atoms
+atomMap.set('_bgbg', 'background:var(--d-bg)');
+atomMap.set('_fgfg', 'color:var(--d-fg)');
+atomMap.set('_bgmuted', 'background:var(--d-muted)');
+atomMap.set('_fgmuted', 'color:var(--d-muted)');
+atomMap.set('_fgmutedfg', 'color:var(--d-muted-fg)');
+atomMap.set('_bcborder', 'border-color:var(--d-border)');
+atomMap.set('_bcstrong', 'border-color:var(--d-border-strong)');
+
+// Surface atoms
+for (let i = 0; i <= 3; i++) {
+  atomMap.set(`_surface${i}`, `background:var(--d-surface-${i})`);
+  atomMap.set(`_fgsurface${i}`, `color:var(--d-surface-${i}-fg)`);
+  atomMap.set(`_bcsurface${i}`, `border-color:var(--d-surface-${i}-border)`);
+}
+
+// Elevation atoms
+for (let i = 0; i <= 3; i++) {
+  atomMap.set(`_elev${i}`, `box-shadow:var(--d-elevation-${i})`);
+}
+
+// Gradient atoms
+atomMap.set('_gradbrand', 'background:var(--d-gradient-brand)');
+atomMap.set('_gradbrandalt', 'background:var(--d-gradient-brand-alt)');
+atomMap.set('_gradbrandfull', 'background:var(--d-gradient-brand-full)');
+atomMap.set('_gradsurface', 'background:var(--d-gradient-surface)');
+atomMap.set('_gradoverlay', 'background:var(--d-gradient-overlay)');
+atomMap.set('_gradtext', 'background:var(--d-gradient-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent');
+atomMap.set('_gradtextalt', 'background:var(--d-gradient-text-alt);-webkit-background-clip:text;-webkit-text-fill-color:transparent');
 
 // Borders
 atomMap.set('_b0', 'border:0');
@@ -384,6 +440,35 @@ atomMap.set('_shadow', 'box-shadow:0 1px 3px rgba(0,0,0,0.12),0 1px 2px rgba(0,0
 atomMap.set('_shadowmd', 'box-shadow:0 4px 6px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06)');
 atomMap.set('_shadowlg', 'box-shadow:0 10px 15px rgba(0,0,0,0.1),0 4px 6px rgba(0,0,0,0.05)');
 atomMap.set('_shadowno', 'box-shadow:none');
+
+// Logical margin (margin-inline-start/end, margin-block-start/end)
+atomMap.set('_mis0', 'margin-inline-start:0'); atomMap.set('_mis1', 'margin-inline-start:0.25rem'); atomMap.set('_mis2', 'margin-inline-start:0.5rem'); atomMap.set('_mis3', 'margin-inline-start:0.75rem'); atomMap.set('_mis4', 'margin-inline-start:1rem'); atomMap.set('_mis6', 'margin-inline-start:1.5rem'); atomMap.set('_mis8', 'margin-inline-start:2rem');
+atomMap.set('_mie0', 'margin-inline-end:0'); atomMap.set('_mie1', 'margin-inline-end:0.25rem'); atomMap.set('_mie2', 'margin-inline-end:0.5rem'); atomMap.set('_mie3', 'margin-inline-end:0.75rem'); atomMap.set('_mie4', 'margin-inline-end:1rem'); atomMap.set('_mie6', 'margin-inline-end:1.5rem'); atomMap.set('_mie8', 'margin-inline-end:2rem');
+atomMap.set('_mbs0', 'margin-block-start:0'); atomMap.set('_mbs1', 'margin-block-start:0.25rem'); atomMap.set('_mbs2', 'margin-block-start:0.5rem'); atomMap.set('_mbs4', 'margin-block-start:1rem');
+atomMap.set('_mbe0', 'margin-block-end:0'); atomMap.set('_mbe1', 'margin-block-end:0.25rem'); atomMap.set('_mbe2', 'margin-block-end:0.5rem'); atomMap.set('_mbe4', 'margin-block-end:1rem');
+
+// Logical padding
+atomMap.set('_pis0', 'padding-inline-start:0'); atomMap.set('_pis1', 'padding-inline-start:0.25rem'); atomMap.set('_pis2', 'padding-inline-start:0.5rem'); atomMap.set('_pis3', 'padding-inline-start:0.75rem'); atomMap.set('_pis4', 'padding-inline-start:1rem'); atomMap.set('_pis6', 'padding-inline-start:1.5rem'); atomMap.set('_pis8', 'padding-inline-start:2rem');
+atomMap.set('_pie0', 'padding-inline-end:0'); atomMap.set('_pie1', 'padding-inline-end:0.25rem'); atomMap.set('_pie2', 'padding-inline-end:0.5rem'); atomMap.set('_pie3', 'padding-inline-end:0.75rem'); atomMap.set('_pie4', 'padding-inline-end:1rem'); atomMap.set('_pie6', 'padding-inline-end:1.5rem'); atomMap.set('_pie8', 'padding-inline-end:2rem');
+atomMap.set('_pbs0', 'padding-block-start:0'); atomMap.set('_pbs1', 'padding-block-start:0.25rem'); atomMap.set('_pbs2', 'padding-block-start:0.5rem'); atomMap.set('_pbs4', 'padding-block-start:1rem');
+atomMap.set('_pbe0', 'padding-block-end:0'); atomMap.set('_pbe1', 'padding-block-end:0.25rem'); atomMap.set('_pbe2', 'padding-block-end:0.5rem'); atomMap.set('_pbe4', 'padding-block-end:1rem');
+
+// Logical inset
+atomMap.set('_insetis0', 'inset-inline-start:0'); atomMap.set('_insetie0', 'inset-inline-end:0');
+atomMap.set('_insetbs0', 'inset-block-start:0'); atomMap.set('_insetbe0', 'inset-block-end:0');
+
+// Logical border-radius
+atomMap.set('_rss', 'border-start-start-radius:var(--d-radius)'); atomMap.set('_rse', 'border-start-end-radius:var(--d-radius)');
+atomMap.set('_res', 'border-end-start-radius:var(--d-radius)'); atomMap.set('_ree', 'border-end-end-radius:var(--d-radius)');
+
+// Text alignment logical
+atomMap.set('_tstart', 'text-align:start'); atomMap.set('_tend', 'text-align:end');
+
+// Float logical
+atomMap.set('_floatis', 'float:inline-start'); atomMap.set('_floatie', 'float:inline-end');
+
+// Inline/block sizing
+atomMap.set('_wi', 'inline-size:100%'); atomMap.set('_wb', 'block-size:100%');
 
 // Container queries
 atomMap.set('_cqinl', 'container-type:inline-size');

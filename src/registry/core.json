@@ -75,6 +75,113 @@
         }
       ]
     },
+    "unmount": {
+      "params": [
+        {
+          "name": "root",
+          "type": "HTMLElement"
+        }
+      ],
+      "description": "Unmount a previously mounted component tree."
+    },
+    "_getBoundaryHandler": {
+      "returns": "Function|null",
+      "description": "Get the current boundary error handler (used by effect patching)."
+    },
+    "ErrorBoundary": {
+      "params": [
+        {
+          "name": "props",
+          "type": "Object"
+        },
+        {
+          "name": "props.fallback",
+          "type": "Function"
+        },
+        {
+          "name": "children",
+          "type": "...Node"
+        }
+      ],
+      "returns": "HTMLElement",
+      "description": "Error catching component. Wraps children in try/catch during render. Also catches errors thrown inside createEffect within its subtree."
+    },
+    "Portal": {
+      "params": [
+        {
+          "name": "props",
+          "type": "Object"
+        },
+        {
+          "name": "props.target",
+          "type": "HTMLElement|string",
+          "optional": true
+        },
+        {
+          "name": "children",
+          "type": "...Node"
+        }
+      ],
+      "returns": "Comment",
+      "description": "Render children outside the component tree into a target element."
+    },
+    "Suspense": {
+      "params": [
+        {
+          "name": "props",
+          "type": "Object"
+        },
+        {
+          "name": "props.fallback",
+          "type": "Function"
+        },
+        {
+          "name": "children",
+          "type": "...Node"
+        }
+      ],
+      "returns": "HTMLElement",
+      "description": "Async boundary. Shows fallback while any createResource() in children is loading."
+    },
+    "Transition": {
+      "params": [
+        {
+          "name": "props",
+          "type": "Object"
+        },
+        {
+          "name": "props.enter",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "props.exit",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "props.duration=200",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "name": "child",
+          "type": "Function"
+        }
+      ],
+      "returns": "HTMLElement",
+      "description": "Enter/exit animation wrapper for conditional content."
+    },
+    "forwardRef": {
+      "params": [
+        {
+          "name": "component",
+          "type": "Function"
+        }
+      ],
+      "returns": "Function",
+      "description": "Extract ref from props and pass it as second argument to a component."
+    },
     "onMount": {
       "params": [
         {

@@ -1,0 +1,293 @@
+{
+  "id": "ecommerce",
+  "name": "eCommerce",
+  "triggers": {
+    "primary": ["shop", "store", "cart", "checkout", "product", "ecommerce", "e-commerce"],
+    "secondary": ["catalog", "inventory", "pricing", "shipping", "coupon", "order", "payment", "sku", "warehouse", "wishlist", "discount", "buy", "sell", "merchandise"],
+    "negative": ["blog-only", "portfolio-only", "dashboard-only"]
+  },
+  "features": {
+    "product-catalog": {
+      "t": "core",
+      "w": 1.0,
+      "label": "Product Catalog",
+      "desc": "Browse and search products",
+      "requires": [],
+      "implies": ["product-detail", "search", "filtering"],
+      "ux": ["grid layout with Card per product", "Badge for sale/new/out-of-stock"],
+      "decantr": {
+        "components": ["Card", "Badge", "Pagination", "Input", "Select", "Skeleton", "Empty"],
+        "atoms": "_grid _gcaf280 _gap4 _p6",
+        "state": ["products:list", "filters:store"],
+        "routes": ["/products"]
+      }
+    },
+    "product-detail": {
+      "t": "core",
+      "w": 0.95,
+      "label": "Product Detail Page",
+      "desc": "Single product view with images, description, add-to-cart",
+      "requires": ["product-catalog"],
+      "implies": ["cart", "reviews"],
+      "ux": ["image gallery or carousel", "size/variant Select", "add-to-cart Button prominent"],
+      "decantr": {
+        "components": ["Card", "Button", "Badge", "Select", "Tabs", "Separator", "Carousel", "Image"],
+        "atoms": "_grid _gc2 _gap8 _ctr",
+        "state": ["selectedVariant:signal", "quantity:signal"],
+        "routes": ["/products/:id"]
+      }
+    },
+    "cart": {
+      "t": "core",
+      "w": 0.98,
+      "label": "Shopping Cart",
+      "desc": "View and manage cart items",
+      "requires": [],
+      "implies": ["cart-persistence", "checkout"],
+      "ux": ["Badge cart count in nav", "inline quantity edit", "empty cart CTA to products"],
+      "decantr": {
+        "components": ["Table", "Button", "InputNumber", "Card", "Separator", "Badge", "Empty"],
+        "atoms": "_flex _col _gap4",
+        "state": ["cartItems:store", "cartTotal:memo"],
+        "routes": ["/cart"]
+      }
+    },
+    "cart-persistence": {
+      "t": "should",
+      "w": 0.8,
+      "label": "Cart Persistence",
+      "desc": "Cart survives page reload via localStorage",
+      "requires": ["cart"],
+      "implies": [],
+      "ux": ["useLocalStorage for cartItems", "sync across tabs"],
+      "decantr": {
+        "components": [],
+        "atoms": "",
+        "state": ["cartItems:localStorage"],
+        "routes": []
+      }
+    },
+    "checkout": {
+      "t": "core",
+      "w": 0.95,
+      "label": "Checkout Flow",
+      "desc": "Multi-step or single-page purchase flow",
+      "requires": ["cart"],
+      "implies": ["auth", "order-confirmation", "payment-integration"],
+      "questions": [
+        { "id": "guest-checkout", "q": "Allow guest checkout or require account?", "opts": ["guest", "account-required", "both"], "default": "both" },
+        { "id": "checkout-steps", "q": "Single-page or multi-step checkout?", "opts": ["single", "multi-step"], "default": "multi-step" }
+      ],
+      "ux": ["Steps component for multi-step", "progress indicator", "order summary sidebar"],
+      "decantr": {
+        "components": ["Steps", "Input", "Select", "Button", "Card", "Separator", "RadioGroup"],
+        "atoms": "_flex _col _gap6 _ctrsm",
+        "state": ["checkoutStep:signal", "shippingAddress:store", "paymentMethod:signal"],
+        "routes": ["/checkout", "/checkout/shipping", "/checkout/payment"]
+      }
+    },
+    "auth": {
+      "t": "core",
+      "w": 0.9,
+      "label": "Authentication",
+      "desc": "Login, register, password reset",
+      "requires": [],
+      "implies": ["user-profile"],
+      "questions": [
+        { "id": "auth-provider", "q": "Which auth provider?", "opts": ["supabase", "firebase", "custom-api", "none-yet"], "default": "none-yet" }
+      ],
+      "ux": ["centered Card layout", "toast on auth errors", "redirect after login"],
+      "decantr": {
+        "components": ["Card", "Input", "Button", "Alert", "Separator"],
+        "atoms": "_flex _center _minhscreen",
+        "state": ["user:signal", "isAuthenticated:memo", "authLoading:signal"],
+        "routes": ["/login", "/register", "/forgot-password"]
+      }
+    },
+    "user-profile": {
+      "t": "should",
+      "w": 0.65,
+      "label": "User Profile",
+      "desc": "View and edit account details",
+      "requires": ["auth"],
+      "implies": ["order-history"],
+      "ux": ["Avatar with user initials", "editable form fields", "Tabs for profile sections"],
+      "decantr": {
+        "components": ["Card", "Input", "Button", "Avatar", "Tabs", "Separator"],
+        "atoms": "_flex _col _gap4 _ctrsm",
+        "state": ["profileForm:store"],
+        "routes": ["/account", "/account/profile"]
+      }
+    },
+    "search": {
+      "t": "core",
+      "w": 0.88,
+      "label": "Product Search",
+      "desc": "Search products by keyword",
+      "requires": ["product-catalog"],
+      "implies": [],
+      "ux": ["Input with search icon in nav", "debounced query", "highlight matches"],
+      "decantr": {
+        "components": ["Input", "Combobox", "Spinner"],
+        "atoms": "_flex _gap2",
+        "state": ["searchQuery:signal", "searchResults:signal"],
+        "routes": ["/search"]
+      }
+    },
+    "filtering": {
+      "t": "should",
+      "w": 0.7,
+      "label": "Product Filtering",
+      "desc": "Filter by category, price, attributes",
+      "requires": ["product-catalog"],
+      "implies": [],
+      "ux": ["sidebar or Drawer filters on mobile", "Checkbox groups for categories", "Slider for price range"],
+      "decantr": {
+        "components": ["Select", "Checkbox", "Slider", "Button", "Drawer", "Separator", "Chip"],
+        "atoms": "_flex _col _gap3",
+        "state": ["activeFilters:store"],
+        "routes": []
+      }
+    },
+    "order-confirmation": {
+      "t": "core",
+      "w": 0.85,
+      "label": "Order Confirmation",
+      "desc": "Success page after checkout",
+      "requires": ["checkout"],
+      "implies": [],
+      "ux": ["Result component with success status", "order summary Card", "CTA to continue shopping"],
+      "decantr": {
+        "components": ["Result", "Card", "Button", "Separator", "Badge"],
+        "atoms": "_flex _col _center _gap6 _ctr",
+        "state": ["lastOrder:signal"],
+        "routes": ["/order-confirmation"]
+      }
+    },
+    "order-history": {
+      "t": "should",
+      "w": 0.6,
+      "label": "Order History",
+      "desc": "View past orders and their status",
+      "requires": ["auth"],
+      "implies": [],
+      "ux": ["Table with order rows", "Badge for order status", "expandable order detail"],
+      "decantr": {
+        "components": ["Table", "Badge", "Card", "Pagination", "Empty", "Skeleton"],
+        "atoms": "_flex _col _gap4",
+        "state": ["orders:signal", "ordersLoading:signal"],
+        "routes": ["/account/orders"]
+      }
+    },
+    "payment-integration": {
+      "t": "should",
+      "w": 0.75,
+      "label": "Payment Integration",
+      "desc": "Stripe or similar payment processing",
+      "requires": ["checkout"],
+      "implies": [],
+      "questions": [
+        { "id": "payment-provider", "q": "Which payment provider?", "opts": ["stripe", "paypal", "both", "placeholder"], "default": "stripe" }
+      ],
+      "ux": ["embedded card element", "Spinner during processing", "Alert on payment error"],
+      "decantr": {
+        "components": ["Card", "Button", "Spinner", "Alert"],
+        "atoms": "_flex _col _gap4",
+        "state": ["paymentProcessing:signal", "paymentError:signal"],
+        "routes": []
+      }
+    },
+    "reviews": {
+      "t": "nice",
+      "w": 0.4,
+      "label": "Product Reviews",
+      "desc": "Customer ratings and reviews",
+      "requires": ["product-detail"],
+      "implies": [],
+      "ux": ["Rate component for star rating", "review list with Avatar", "sort by recent/helpful"],
+      "decantr": {
+        "components": ["Rate", "Card", "Avatar", "Button", "Textarea", "Pagination", "Empty"],
+        "atoms": "_flex _col _gap4",
+        "state": ["reviews:signal", "newReview:store"],
+        "routes": []
+      }
+    },
+    "wishlist": {
+      "t": "nice",
+      "w": 0.35,
+      "label": "Wishlist",
+      "desc": "Save products for later",
+      "requires": ["auth", "product-catalog"],
+      "implies": [],
+      "ux": ["heart icon toggle on product cards", "dedicated wishlist page", "move to cart action"],
+      "decantr": {
+        "components": ["Card", "Button", "Badge", "Empty"],
+        "atoms": "_grid _gcaf280 _gap4",
+        "state": ["wishlistItems:store"],
+        "routes": ["/wishlist"]
+      }
+    },
+    "coupons": {
+      "t": "nice",
+      "w": 0.3,
+      "label": "Coupon / Discount Codes",
+      "desc": "Apply discount codes at checkout",
+      "requires": ["checkout"],
+      "implies": [],
+      "ux": ["Input + apply Button in cart/checkout", "Badge showing discount applied", "toast on invalid code"],
+      "decantr": {
+        "components": ["Input", "Button", "Badge", "Alert"],
+        "atoms": "_flex _gap2 _aic",
+        "state": ["couponCode:signal", "couponDiscount:signal"],
+        "routes": []
+      }
+    },
+    "categories": {
+      "t": "should",
+      "w": 0.7,
+      "label": "Category Navigation",
+      "desc": "Browse products by category hierarchy",
+      "requires": ["product-catalog"],
+      "implies": [],
+      "ux": ["nav or sidebar category tree", "Breadcrumb for category path", "category landing pages"],
+      "decantr": {
+        "components": ["Breadcrumb", "Menu", "Card", "Badge"],
+        "atoms": "_flex _col _gap3",
+        "state": ["categories:signal", "activeCategory:signal"],
+        "routes": ["/category/:slug"]
+      }
+    },
+    "navbar": {
+      "t": "core",
+      "w": 0.92,
+      "label": "Navigation Bar",
+      "desc": "App header with links, search, cart badge, user menu",
+      "requires": [],
+      "implies": [],
+      "ux": ["sticky top nav", "cart Badge with count", "Drawer for mobile", "Dropdown for user menu"],
+      "decantr": {
+        "components": ["Button", "Badge", "Drawer", "Dropdown", "Avatar"],
+        "atoms": "_flex _aic _jcsb _px6 _py3 _bg0 _sticky _top0 _z30",
+        "state": ["mobileNavOpen:signal"],
+        "routes": []
+      }
+    },
+    "footer": {
+      "t": "should",
+      "w": 0.5,
+      "label": "Site Footer",
+      "desc": "Footer with links, branding, legal",
+      "requires": [],
+      "implies": [],
+      "ux": ["multi-column grid layout", "Separator above footer", "muted text links"],
+      "decantr": {
+        "components": ["Separator"],
+        "atoms": "_grid _gc4 _gap8 _p8 _bg2 _fg4",
+        "state": [],
+        "routes": []
+      }
+    }
+  },
+  "cross_cutting": ["responsive", "mobile-nav", "loading-states", "error-handling", "empty-states", "a11y", "persistence"],
+  "suggested_theme": ["light", "dark"]
+}

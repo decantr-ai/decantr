@@ -102,6 +102,117 @@ export function scaleTime(domain, range) {
   return scale;
 }
 
+// --- Extended scales ---
+
+/**
+ * Logarithmic scale.
+ * @param {number[]} domain
+ * @param {number[]} range
+ * @param {number} [base=10]
+ * @returns {Function}
+ */
+export function scaleLog(domain, range, base = 10) {
+  const [d0, d1] = domain;
+  const [r0, r1] = range;
+  const logBase = Math.log(base);
+  const ld0 = Math.log(Math.max(1e-10, d0)) / logBase;
+  const ld1 = Math.log(Math.max(1e-10, d1)) / logBase;
+  const span = ld1 - ld0 || 1;
+  const rSpan = r1 - r0;
+
+  function scale(v) {
+    const lv = Math.log(Math.max(1e-10, v)) / logBase;
+    return r0 + ((lv - ld0) / span) * rSpan;
+  }
+  scale.invert = px => Math.pow(base, ld0 + ((px - r0) / rSpan) * span);
+  scale.ticks = (count = 5) => {
+    const result = [];
+    const start = Math.ceil(ld0);
+    const end = Math.floor(ld1);
+    for (let i = start; i <= end; i++) result.push(Math.pow(base, i));
+    return result;
+  };
+  return scale;
+}
+
+/**
+ * Square root scale.
+ * @param {number[]} domain
+ * @param {number[]} range
+ * @returns {Function}
+ */
+export function scaleSqrt(domain, range) {
+  const [d0, d1] = domain;
+  const [r0, r1] = range;
+  const sd0 = Math.sqrt(Math.max(0, d0));
+  const sd1 = Math.sqrt(Math.max(0, d1));
+  const span = sd1 - sd0 || 1;
+  const rSpan = r1 - r0;
+
+  function scale(v) {
+    const sv = Math.sqrt(Math.max(0, v));
+    return r0 + ((sv - sd0) / span) * rSpan;
+  }
+  scale.invert = px => Math.pow(sd0 + ((px - r0) / rSpan) * span, 2);
+  scale.ticks = (count = 5) => scaleLinear(domain, range).ticks(count);
+  return scale;
+}
+
+/**
+ * Point scale — discrete values → evenly spaced points.
+ * @param {any[]} domain
+ * @param {number[]} range
+ * @param {number} [padding=0.5]
+ * @returns {Function}
+ */
+export function scalePoint(domain, range, padding = 0.5) {
+  const [r0, r1] = range;
+  const n = domain.length || 1;
+  const step = (r1 - r0) / (n - 1 + padding * 2) || 0;
+  const offset = r0 + step * padding;
+  const map = new Map();
+  for (let i = 0; i < domain.length; i++) {
+    map.set(domain[i], offset + i * step);
+  }
+  function scale(v) { return map.get(v) ?? r0; }
+  scale.step = () => step;
+  return scale;
+}
+
+/**
+ * Ordinal scale — discrete → discrete mapping.
+ * @param {any[]} domain
+ * @param {any[]} range
+ * @returns {Function}
+ */
+export function scaleOrdinal(domain, range) {
+  const map = new Map();
+  for (let i = 0; i < domain.length; i++) {
+    map.set(domain[i], range[i % range.length]);
+  }
+  return function scale(v) { return map.get(v) ?? range[0]; };
+}
+
+/**
+ * Diverging scale — maps a domain with a midpoint.
+ * @param {number[]} domain — [min, mid, max]
+ * @param {any[]} range — [minVal, midVal, maxVal]
+ * @returns {Function}
+ */
+export function scaleDiverging(domain, range) {
+  const [d0, dMid, d1] = domain;
+  const [r0, rMid, r1] = range;
+
+  return function scale(v) {
+    if (v <= dMid) {
+      const t = (v - d0) / (dMid - d0 || 1);
+      return typeof r0 === 'number' ? r0 + (rMid - r0) * t : r0;
+    }
+    const t = (v - dMid) / (d1 - dMid || 1);
+    return typeof rMid === 'number' ? rMid + (r1 - rMid) * t : rMid;
+  };
+}
+
 // --- Nice step for axis ticks ---
 
 function niceStep(rawStep) {

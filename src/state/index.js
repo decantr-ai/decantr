@@ -187,3 +187,212 @@ export function useLocalStorage(key, initialValue) {
     if (typeof localStorage !== 'undefined') localStorage.setItem(key, JSON.stringify(next));
   }];
 }
+
+/** @type {Set<Promise>} */
+export const _pendingResources = new Set();
+
+/**
+ * @template T
+ * @param {() => Promise<T>} fetcher
+ * @param {{ initialValue?: T, lazy?: boolean }} [options]
+ * @returns {{ data: () => T|undefined, loading: () => boolean, error: () => Error|null, refetch: () => Promise<void>, mutate: (v: T) => void }}
+ */
+export function createResource(fetcher, options = {}) {
+  const [data, setData] = createSignal(options.initialValue);
+  const [loading, setLoading] = createSignal(false);
+  const [error, setError] = createSignal(null);
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    const p = fetcher();
+    _pendingResources.add(p);
+    try {
+      const result = await p;
+      setData(() => result);
+      setLoading(false);
+    } catch (e) {
+      setError(() => e instanceof Error ? e : new Error(String(e)));
+      setLoading(false);
+    } finally {
+      _pendingResources.delete(p);
+    }
+  }
+
+  if (!options.lazy) load();
+
+  return {
+    data,
+    loading,
+    error,
+    refetch: load,
+    mutate(v) { setData(() => v); }
+  };
+}
+
+/** @type {number} */
+let _ctxId = 0;
+/** @type {Map<number, any>} */
+const _ctxMap = new Map();
+
+/**
+ * @template T
+ * @param {T} [defaultValue]
+ * @returns {{ Provider: (value: T) => (() => void), consume: () => T }}
+ */
+export function createContext(defaultValue) {
+  const id = _ctxId++;
+  return {
+    Provider(value) {
+      const prev = _ctxMap.get(id);
+      const hadPrev = _ctxMap.has(id);
+      _ctxMap.set(id, value);
+      return () => {
+        if (hadPrev) _ctxMap.set(id, prev);
+        else _ctxMap.delete(id);
+      };
+    },
+    consume() {
+      return _ctxMap.has(id) ? _ctxMap.get(id) : defaultValue;
+    }
+  };
+}
+
+/**
+ * @template T, U
+ * @param {() => T} source — signal getter returning current selected key
+ * @returns {(key: U) => boolean} — returns a signal-like getter that's true only when key matches source
+ */
+export function createSelector(source) {
+  /** @type {Map<any, Set<{run: Function}>>} */
+  const subs = new Map();
+  let prev;
+
+  createEffect(() => {
+    const next = source();
+    if (!Object.is(prev, next)) {
+      const prevSubs = subs.get(prev);
+      const nextSubs = subs.get(next);
+      prev = next;
+      if (prevSubs) {
+        const arr = [...prevSubs];
+        for (let i = 0; i < arr.length; i++) arr[i].run();
+      }
+      if (nextSubs) {
+        const arr = [...nextSubs];
+        for (let i = 0; i < arr.length; i++) arr[i].run();
+      }
+    }
+  });
+
+  return function isSelected(key) {
+    if (currentEffect) {
+      let set = subs.get(key);
+      if (!set) { set = new Set(); subs.set(key, set); }
+      set.add(currentEffect);
+    }
+    return Object.is(key, source());
+  };
+}
+
+/**
+ * @template T
+ * @param {() => T} fn
+ * @returns {() => T}
+ */
+export function createDeferred(fn) {
+  /** @type {T} */
+  let cached;
+  let dirty = true;
+  let initialized = false;
+  /** @type {Set<{run: Function}>} */
+  const subscribers = new Set();
+
+  const effect = {
+    run() {
+      dirty = true;
+      const arr = [...subscribers];
+      for (let i = 0; i < arr.length; i++) arr[i].run();
+    }
+  };
+
+  return function getter() {
+    if (currentEffect) subscribers.add(currentEffect);
+    if (!initialized || dirty) {
+      const prev = currentEffect;
+      setCurrentEffect(effect);
+      try {
+        cached = fn();
+        dirty = false;
+        initialized = true;
+      } finally {
+        setCurrentEffect(prev);
+      }
+    }
+    return cached;
+  };
+}
+
+/**
+ * @template T
+ * @param {[() => T, (v: T) => void]} signal — [getter, setter] tuple from createSignal
+ * @param {{ maxLength?: number }} [options]
+ * @returns {{ undo: () => void, redo: () => void, canUndo: () => boolean, canRedo: () => boolean, clear: () => void }}
+ */
+export function createHistory(signal, options = {}) {
+  const maxLength = options.maxLength || 100;
+  const [get, set] = signal;
+  /** @type {T[]} */
+  const undoStack = [];
+  /** @type {T[]} */
+  const redoStack = [];
+  const [canUndo, setCanUndo] = createSignal(false);
+  const [canRedo, setCanRedo] = createSignal(false);
+  let skipTrack = false;
+
+  // Track changes to the signal
+  createEffect(() => {
+    const v = get();
+    if (skipTrack) return;
+    if (undoStack.length === 0 || !Object.is(undoStack[undoStack.length - 1], v)) {
+      undoStack.push(v);
+      if (undoStack.length > maxLength + 1) undoStack.shift();
+      redoStack.length = 0;
+      setCanUndo(undoStack.length > 1);
+      setCanRedo(false);
+    }
+  });
+
+  return {
+    canUndo,
+    canRedo,
+    undo() {
+      if (undoStack.length <= 1) return;
+      const current = undoStack.pop();
+      redoStack.push(current);
+      skipTrack = true;
+      set(undoStack[undoStack.length - 1]);
+      skipTrack = false;
+      setCanUndo(undoStack.length > 1);
+      setCanRedo(true);
+    },
+    redo() {
+      if (redoStack.length === 0) return;
+      const v = redoStack.pop();
+      undoStack.push(v);
+      skipTrack = true;
+      set(v);
+      skipTrack = false;
+      setCanUndo(true);
+      setCanRedo(redoStack.length > 0);
+    },
+    clear() {
+      const current = get();
+      undoStack.length = 0;
+      redoStack.length = 0;
+      undoStack.push(current);
+      setCanUndo(false);
+      setCanRedo(false);
+    }
+  };
+}

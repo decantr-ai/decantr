@@ -6,33 +6,47 @@
       "params": [
         {
           "name": "config",
-          "type": "{ mode: 'hash'|'history', routes: Array<{path: string, component: Function}>, transitions?: boolean }"
+          "type": "RouterConfig"
         }
-      ]
+      ],
+      "returns": "{ navigate: Function, outlet: Function, current: Function, path: Function, destroy: Function }",
+      "description": "Create a router instance."
+    },
+    "navigate": {
+      "params": [
+        {
+          "name": "to",
+          "type": "string|{ name: string, params?: Object }"
+        },
+        {
+          "name": "opts",
+          "type": "{ replace?: boolean }",
+          "optional": true
+        }
+      ],
+      "description": "Navigate programmatically. Delegates to active router."
     },
     "link": {
       "params": [
         {
           "name": "props",
-          "type": "{ href: string, class?: string }"
+          "type": "{ href: string, activeClass?: string, exact?: boolean, class?: string }"
         },
         {
           "name": "children",
           "type": "...any"
         }
       ],
-      "returns": "HTMLAnchorElement"
-    },
-    "navigate": {
-      "params": [
-        {
-          "name": "path",
-          "type": "string"
-        }
-      ]
+      "returns": "HTMLAnchorElement",
+      "description": "Create a router-aware anchor element with active link detection."
     },
     "useRoute": {
-      "returns": "() => { path: string, params: Object, component: Function|null, matched: boolean }"
+      "returns": "() => { path: string, params: Object, query: Object, component: Function|null, components: Function[], matched: boolean, name?: string }",
+      "description": "Get current route signal."
+    },
+    "useSearchParams": {
+      "returns": "[() => URLSearchParams, (params: Object|URLSearchParams) => void]",
+      "description": "Reactive search params. Returns [getter, setter] tuple. Getter returns URLSearchParams from current URL query string. Setter updates query params without triggering full navigation."
     }
   }
 }

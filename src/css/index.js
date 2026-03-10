@@ -4,7 +4,8 @@ export { extractCSS, reset, BREAKPOINTS, CQ_WIDTHS } from './runtime.js';
 export {
   setTheme, getTheme, getThemeMeta, registerTheme, getThemeList,
   getActiveCSS, resetStyles, setAnimations, getAnimations,
-  setStyle, getStyle, getStyleList, registerStyle
+  setStyle, getStyle, getStyleList, registerStyle,
+  setMode, getMode, getResolvedMode, onModeChange
 } from './theme-registry.js';
 
 /** @type {Map<string, string>} */
@@ -82,4 +83,15 @@ export function css(...classes) {
  */
 export function define(name, declaration) {
   customAtoms.set(name, declaration);
+}
+
+/**
+ * Sanitizes a string for safe use in HTML attributes.
+ * Escapes <, >, ", ', & characters.
+ * @param {string} str
+ * @returns {string}
+ */
+export function sanitize(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
 }

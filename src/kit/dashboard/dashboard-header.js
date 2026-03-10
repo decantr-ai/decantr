@@ -20,8 +20,8 @@ export function DashboardHeader(props = {}, ...children) {
   const header = h('header', {
     class: cx(css('_flex _aic _jcsb _px6 _py3'), cls),
     style: {
-      background: 'var(--c0)',
-      borderBottom: '1px solid var(--c5)',
+      background: 'var(--d-bg)',
+      borderBottom: '1px solid var(--d-border)',
       minHeight: '56px',
       flexShrink: '0'
     }
@@ -60,7 +60,7 @@ export function DashboardHeader(props = {}, ...children) {
       bellIcon
     );
     right.appendChild(
-      Badge({ count: 3, color: 'var(--c9)' }, bellBtn)
+      Badge({ count: 3, color: 'var(--d-error)' }, bellBtn)
     );
   }
 

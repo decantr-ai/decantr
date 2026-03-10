@@ -9,12 +9,9 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const frameworkRoot = resolve(__dirname, '..');
 
+/** Minimal CSS custom properties for initial page render (before JS hydrates the full token set) */
 export const THEME_CSS = {
-  'light': ':root{--c0:#ffffff;--c1:#1366D9;--c2:#f8fafc;--c3:#020817;--c4:#606D80;--c5:#DDE3ED;--c6:#0f52b5;--c7:#22c55e;--c8:#f59e0b;--c9:#ef4444;--d-radius:8px;--d-radius-lg:16px;--d-shadow:none;--d-transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}',
-  'dark': ':root{--c0:#1F1F1F;--c1:#0078D4;--c2:#181818;--c3:#CCCCCC;--c4:#858585;--c5:#3C3C3C;--c6:#026EC1;--c7:#2EA043;--c8:#CCA700;--c9:#F85149;--d-radius:4px;--d-radius-lg:6px;--d-shadow:none;--d-transition:all 0.15s ease}',
-  'retro': ':root{--c0:#fffef5;--c1:#e63946;--c2:#fff8e7;--c3:#1a1a1a;--c4:#6b7280;--c5:#1a1a1a;--c6:#c1121f;--c7:#2d6a4f;--c8:#f77f00;--c9:#d00000;--d-radius:4px;--d-radius-lg:4px;--d-shadow:4px 4px 0 #1a1a1a;--d-transition:all 0.1s ease}',
-  'hot-lava': ':root{--c0:#050810;--c1:#ff4d4d;--c2:#0a0f1a;--c3:#f0f4ff;--c4:#8892b0;--c5:rgba(136,146,176,0.15);--c6:#e63946;--c7:#00e5cc;--c8:#fbbf24;--c9:#ef4444;--d-radius:12px;--d-radius-lg:16px;--d-shadow:0 4px 24px rgba(255,77,77,0.15),0 2px 8px rgba(0,0,0,0.3);--d-transition:all 0.3s cubic-bezier(0.22,1,0.36,1)}',
-  'stormy-ai': ':root{--c0:#0a0c10;--c1:#38bdf8;--c2:#111318;--c3:#c5d3e8;--c4:#6b7a94;--c5:#252a33;--c6:#7dd3fc;--c7:#4ade80;--c8:#fbbf24;--c9:#ef4444;--d-radius:12px;--d-radius-lg:16px;--d-shadow:0 8px 32px rgba(0,0,0,0.3);--d-transition:all 0.25s cubic-bezier(0.4,0,0.2,1)}'
+  'light': ':root{--d-bg:#ffffff;--d-fg:#09090b;--d-primary:#1366D9;--d-primary-hover:#0f52b5;--d-muted:#71717a;--d-border:#e4e4e7;--d-surface-1:#f8fafc;--d-error:#ef4444;--d-success:#22c55e;--d-warning:#f59e0b;--d-overlay:rgba(0,0,0,0.5);--d-radius:8px;--d-radius-lg:12px;--d-font:Inter,"Inter Fallback",system-ui,sans-serif;--c0:#ffffff;--c1:#1366D9;--c2:#f8fafc;--c3:#09090b;--c4:#71717a;--c5:#e4e4e7;--c6:#0f52b5;--c7:#22c55e;--c8:#f59e0b;--c9:#ef4444}',
 };
 
 export function packageJson(name) {
@@ -37,10 +34,19 @@ export function configJson(name) {
   return JSON.stringify({
     $schema: 'https://decantr.ai/schemas/config.v2.json',
     name,
-    theme: 'light',
+    style: 'clean',
+    mode: 'auto',
     router: 'hash',
     dev: { port: 4200 },
-    build: { outDir: 'dist' }
+    build: {
+      outDir: 'dist',
+      sourcemap: true,
+      treeShake: true,
+      codeSplit: true,
+      purgeCSS: true,
+      incremental: true,
+      analyze: true
+    }
   }, null, 2);
 }
 
@@ -51,7 +57,7 @@ export function indexHtml(name) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${name}</title>
-  <style>${THEME_CSS.light}*{margin:0;box-sizing:border-box}body{font-family:Inter,"Inter Fallback",system-ui,sans-serif;color:var(--c3);background:var(--c0);min-height:100vh}a{color:var(--c1);text-decoration:none}a:hover{color:var(--c6)}</style>
+  <style>${THEME_CSS.light}*{margin:0;box-sizing:border-box}body{font-family:var(--d-font);color:var(--d-fg);background:var(--d-bg);min-height:100vh}a{color:var(--d-primary);text-decoration:none}a:hover{color:var(--d-primary-hover)}</style>
 </head>
 <body>
   <div id="app"></div>
@@ -106,6 +112,12 @@ import { Button, Input, Card, Modal, Tabs, ... } from 'decantr/components';
 
 Colors: \`--c0\` (bg) through \`--c9\` (destructive). Switch: \`setTheme('dark')\`
 Available: light, dark, retro, hot-lava, stormy-ai
+
+## Application Architect
+
+For multi-page apps, consult the architect registry before generating code:
+- \`node_modules/decantr/src/registry/architect/index.json\` — available domains
+- See AGENTS.md § Application Architect for the full algorithm
 
 ## Commands
 

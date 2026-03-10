@@ -23,30 +23,103 @@
         }
       ]
     },
+    "sanitize": {
+      "params": [
+        {
+          "name": "str",
+          "type": "string"
+        }
+      ],
+      "returns": "string",
+      "description": "Sanitizes a string for safe use in HTML attributes. Escapes <, >, \", ', & characters."
+    },
+    "setStyle": {
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Style ID ('clean', 'retro', or custom registered style)"
+        }
+      ],
+      "description": "Set the visual style (personality)."
+    },
+    "getStyle": {
+      "returns": "() => string"
+    },
+    "getStyleList": {
+      "returns": "{ id: string, name: string }[]"
+    },
+    "registerStyle": {
+      "params": [
+        {
+          "name": "style",
+          "type": "Object",
+          "description": "Style definition { id, name, seed, personality, typography?, overrides?, components? }"
+        }
+      ],
+      "description": "Register a custom style."
+    },
+    "setMode": {
+      "params": [
+        {
+          "name": "mode",
+          "type": "'light'|'dark'|'auto'"
+        }
+      ],
+      "description": "Set color mode."
+    },
+    "getMode": {
+      "returns": "() => string"
+    },
+    "getResolvedMode": {
+      "returns": "'light'|'dark'"
+    },
+    "onModeChange": {
+      "params": [
+        {
+          "name": "fn",
+          "type": "Function",
+          "description": "Callback receiving the new resolved mode ('light'|'dark')"
+        }
+      ],
+      "returns": "Function",
+      "description": "Register a callback for mode changes (fires when resolved mode changes)."
+    },
     "setTheme": {
       "params": [
         {
           "name": "id",
-          "type": "string"
+          "type": "string",
+          "description": "Style ID or legacy theme ID"
+        },
+        {
+          "name": "mode='auto'",
+          "type": "'light'|'dark'|'auto'",
+          "optional": true,
+          "description": "Color mode"
         }
-      ]
+      ],
+      "description": "Set theme — convenience API combining setStyle + setMode."
     },
     "getTheme": {
       "returns": "() => string"
     },
     "getThemeMeta": {
-      "returns": "{ isDark: boolean, contrastText: string, surfaceAlpha: string } | null"
+      "returns": "{ isDark: boolean, style: string, mode: string, resolvedMode: string }",
+      "description": "Get metadata about current style + mode."
+    },
+    "getThemeList": {
+      "returns": "{ id: string, name: string }[]"
     },
     "registerTheme": {
       "params": [
         {
           "name": "theme",
-          "type": "{ id: string, name: string, colors: Object, meta?: Object, tokens?: Object, global?: string, components?: Object }"
+          "type": "Object",
+          "description": "Old theme object or new style object"
         }
-      ]
-    },
-    "getThemeList": {
-      "returns": "{ id: string, name: string }[]"
+      ],
+      "description": "Legacy registerTheme — wraps registerStyle."
     },
     "getActiveCSS": {
       "returns": "string"

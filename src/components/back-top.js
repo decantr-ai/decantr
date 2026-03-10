@@ -1,0 +1,74 @@
+/**
+ * BackTop — Floating scroll-to-top button that appears after scrolling.
+ *
+ * @module decantr/components/back-top
+ */
+import { h } from '../core/index.js';
+import { injectBase, cx } from './_base.js';
+
+/**
+ * @param {Object} [props]
+ * @param {number} [props.visibilityHeight=400] - Scroll threshold in px
+ * @param {HTMLElement} [props.target] - Scroll container (default: window)
+ * @param {string} [props.class]
+ * @param {...Node} children - Custom button content
+ * @returns {HTMLElement}
+ */
+export function BackTop(props = {}, ...children) {
+  injectBase();
+  const { visibilityHeight = 400, target, class: cls } = props;
+
+  const hasCustomContent = children.flat().filter(c => c && c.nodeType).length > 0;
+  const content = hasCustomContent
+    ? children.flat().filter(c => c && c.nodeType)
+    : [h('span', { 'aria-hidden': 'true' }, '\u2191')];
+
+  const btn = h('button', {
+    type: 'button',
+    class: cx('d-backtop', 'd-backtop-hidden', cls),
+    'aria-label': 'Scroll to top'
+  }, ...content);
+
+  function getScrollTop() {
+    if (target) return target.scrollTop;
+    return document.documentElement.scrollTop || document.body.scrollTop;
+  }
+
+  function scrollToTop() {
+    const scrollEl = target || window;
+    if (scrollEl.scrollTo) {
+      scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      scrollEl.scrollTop = 0;
+    }
+  }
+
+  function onScroll() {
+    const scrollTop = getScrollTop();
+    if (scrollTop >= visibilityHeight) {
+      btn.classList.remove('d-backtop-hidden');
+      btn.classList.add('d-backtop-visible');
+    } else {
+      btn.classList.remove('d-backtop-visible');
+      btn.classList.add('d-backtop-hidden');
+    }
+  }
+
+  btn.addEventListener('click', scrollToTop);
+
+  // Attach scroll listener
+  const scrollTarget = target || window;
+  scrollTarget.addEventListener('scroll', onScroll, { passive: true });
+
+  // Initial check
+  if (typeof requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame(onScroll);
+  }
+
+  // Expose destroy for cleanup
+  btn._destroy = () => {
+    scrollTarget.removeEventListener('scroll', onScroll);
+  };
+
+  return btn;
+}

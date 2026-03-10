@@ -18,7 +18,7 @@ export function ChartPlaceholder(props = {}) {
     class: css('_flex _center _textbase _medium _fg4'),
     style: {
       height,
-      border: '2px dashed var(--c5)',
+      border: '2px dashed var(--d-border)',
       borderRadius: 'var(--d-radius, 6px)'
     }
   }, `Chart: ${title}`);

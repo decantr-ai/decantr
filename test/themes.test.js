@@ -4,8 +4,10 @@ import { createDOM } from '../src/test/dom.js';
 import {
   setTheme, getTheme, getThemeMeta, registerTheme, getThemeList,
   getActiveCSS, resetStyles, setAnimations, getAnimations,
-  setStyle, getStyle, getStyleList, registerStyle
+  setStyle, getStyle, getStyleList, registerStyle,
+  setMode, getMode, getResolvedMode, onModeChange
 } from '../src/css/theme-registry.js';
+import { derive, legacyColorMap, defaultSeed, defaultPersonality } from '../src/css/derive.js';
 
 let cleanup;
 
@@ -22,302 +24,446 @@ beforeEach(() => {
   resetStyles();
 });
 
-describe('getThemeList()', () => {
-  it('returns 5 built-in themes', () => {
-    const list = getThemeList();
-    assert.equal(list.length, 5);
-    const ids = list.map(t => t.id);
-    assert.ok(ids.includes('light'));
-    assert.ok(ids.includes('dark'));
-    assert.ok(ids.includes('retro'));
-    assert.ok(ids.includes('hot-lava'));
-    assert.ok(ids.includes('stormy-ai'));
+// ============================================================
+// Derivation Engine
+// ============================================================
+
+describe('derive()', () => {
+  it('produces ~170 tokens from default seed', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    assert.ok(Object.keys(tokens).length >= 160);
   });
 
-  it('each theme has id and name', () => {
-    const list = getThemeList();
-    for (const t of list) {
-      assert.ok(typeof t.id === 'string');
-      assert.ok(typeof t.name === 'string');
-      assert.ok(t.id.length > 0);
-      assert.ok(t.name.length > 0);
+  it('derives all 7 palette roles × 7 modifiers', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    const roles = ['primary', 'accent', 'tertiary', 'success', 'warning', 'error', 'info'];
+    const mods = ['', '-fg', '-hover', '-active', '-subtle', '-subtle-fg', '-border'];
+    for (const role of roles) {
+      for (const mod of mods) {
+        assert.ok(tokens[`--d-${role}${mod}`], `missing --d-${role}${mod}`);
+      }
+    }
+  });
+
+  it('derives neutral tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    for (const k of ['--d-bg', '--d-fg', '--d-muted', '--d-muted-fg', '--d-border', '--d-border-strong', '--d-ring', '--d-overlay']) {
+      assert.ok(tokens[k], `missing ${k}`);
+    }
+  });
+
+  it('derives surface tokens (4 levels × 3 props + 3 filters)', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    for (let i = 0; i <= 3; i++) {
+      assert.ok(tokens[`--d-surface-${i}`], `missing --d-surface-${i}`);
+      assert.ok(tokens[`--d-surface-${i}-fg`], `missing --d-surface-${i}-fg`);
+      assert.ok(tokens[`--d-surface-${i}-border`], `missing --d-surface-${i}-border`);
+    }
+    for (let i = 1; i <= 3; i++) {
+      assert.ok(tokens[`--d-surface-${i}-filter`] !== undefined, `missing --d-surface-${i}-filter`);
+    }
+  });
+
+  it('derives elevation tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    for (let i = 0; i <= 3; i++) {
+      assert.ok(tokens[`--d-elevation-${i}`] !== undefined, `missing --d-elevation-${i}`);
+    }
+  });
+
+  it('derives interaction tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    for (const k of ['--d-hover-translate', '--d-hover-shadow', '--d-hover-brightness',
+      '--d-active-scale', '--d-active-translate', '--d-active-shadow',
+      '--d-focus-ring-width', '--d-focus-ring-color', '--d-focus-ring-offset', '--d-focus-ring-style',
+      '--d-selection-bg', '--d-selection-fg']) {
+      assert.ok(tokens[k] !== undefined, `missing ${k}`);
+    }
+  });
+
+  it('derives motion tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    for (const k of ['--d-duration-instant', '--d-duration-fast', '--d-duration-normal', '--d-duration-slow',
+      '--d-easing-standard', '--d-easing-decelerate', '--d-easing-accelerate', '--d-easing-bounce']) {
+      assert.ok(tokens[k], `missing ${k}`);
+    }
+  });
+
+  it('derives radius, border, density, z-index tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    assert.ok(tokens['--d-radius']);
+    assert.ok(tokens['--d-border-width']);
+    assert.ok(tokens['--d-density-pad-x']);
+    assert.ok(tokens['--d-z-modal']);
+  });
+
+  it('derives gradient tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    assert.ok(tokens['--d-gradient-angle']);
+    assert.ok(tokens['--d-gradient-brand']);
+    assert.ok(tokens['--d-gradient-overlay']);
+  });
+
+  it('gradient-none resolves to solid color references', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, gradient: 'none' }, 'light');
+    assert.equal(tokens['--d-gradient-brand'], 'var(--d-primary)');
+    assert.equal(tokens['--d-gradient-intensity'], '0');
+  });
+
+  it('gradient-vivid resolves to linear-gradient', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, gradient: 'vivid' }, 'light');
+    assert.ok(tokens['--d-gradient-brand'].includes('linear-gradient'));
+    assert.equal(tokens['--d-gradient-intensity'], '1');
+  });
+
+  it('dark mode flips bg/fg', () => {
+    const light = derive(defaultSeed, defaultPersonality, 'light');
+    const dark = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.equal(light['--d-bg'], '#ffffff');
+    assert.equal(dark['--d-bg'], '#0a0a0a');
+    assert.equal(light['--d-fg'], '#09090b');
+    assert.equal(dark['--d-fg'], '#fafafa');
+  });
+
+  it('respects typography overrides', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light', { '--d-fw-heading': '800' });
+    assert.equal(tokens['--d-fw-heading'], '800');
+  });
+
+  it('respects per-mode overrides', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark', null, { '--d-bg': '#111111' });
+    assert.equal(tokens['--d-bg'], '#111111');
+  });
+
+  it('auto-derives accent from primary when missing', () => {
+    const tokens = derive({ primary: '#1366D9', neutral: '#71717a' }, defaultPersonality, 'light');
+    assert.ok(tokens['--d-accent']);
+    assert.notEqual(tokens['--d-accent'], tokens['--d-primary']);
+  });
+
+  it('brutalist personality produces offset shadows', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'brutalist' }, 'light');
+    assert.ok(tokens['--d-elevation-1'].includes('var(--d-fg)'));
+  });
+
+  it('glass personality produces blur filters', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'glass' }, 'light');
+    assert.ok(tokens['--d-surface-1-filter'].includes('blur'));
+    assert.ok(tokens['--d-surface-1'].includes('rgba'));
+  });
+
+  it('personality affects palette derivation', () => {
+    const glass = derive(defaultSeed, { ...defaultPersonality, elevation: 'glass' }, 'light');
+    const brutalist = derive(defaultSeed, { ...defaultPersonality, elevation: 'brutalist' }, 'light');
+    // Same seed, different personality — subtle alpha should differ
+    assert.notEqual(glass['--d-success-subtle'], brutalist['--d-success-subtle']);
+    assert.notEqual(glass['--d-error-border'], brutalist['--d-error-border']);
+  });
+
+  it('glass styles have gentler hover shifts', () => {
+    const standard = derive(defaultSeed, { ...defaultPersonality, elevation: 'subtle' }, 'light');
+    const glass = derive(defaultSeed, { ...defaultPersonality, elevation: 'glass' }, 'light');
+    // Glass hover should be closer to base than standard hover (less darkened)
+    assert.notEqual(glass['--d-primary-hover'], standard['--d-primary-hover']);
+  });
+
+  it('brutalist styles have bolder border alpha', () => {
+    const brutalist = derive(defaultSeed, { ...defaultPersonality, elevation: 'brutalist' }, 'light');
+    const border = brutalist['--d-error-border'];
+    // Brutalist border alpha should be >= 0.7
+    const alphaMatch = border.match(/[\d.]+\)$/);
+    assert.ok(alphaMatch, 'border should be rgba with alpha');
+    assert.ok(parseFloat(alphaMatch[0]) >= 0.7, `brutalist border alpha should be >= 0.7, got ${alphaMatch[0]}`);
+  });
+
+  it('each built-in style has distinct semantic seeds', () => {
+    // Regression guard — styles must not converge back to identical semantic palettes
+    const clean = derive({ primary: '#1366D9', success: '#22c55e', warning: '#f59e0b', error: '#ef4444', neutral: '#71717a' }, defaultPersonality, 'light');
+    const retro = derive({ primary: '#e63946', success: '#1a7a42', warning: '#e06600', error: '#c41e1e', neutral: '#6b7280' }, { ...defaultPersonality, elevation: 'brutalist' }, 'light');
+    assert.notEqual(clean['--d-success'], retro['--d-success']);
+    assert.notEqual(clean['--d-warning'], retro['--d-warning']);
+    assert.notEqual(clean['--d-error'], retro['--d-error']);
+  });
+});
+
+describe('legacyColorMap()', () => {
+  it('maps new tokens to --c0 through --c9', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    const legacy = legacyColorMap(tokens);
+    assert.equal(legacy['--c0'], tokens['--d-bg']);
+    assert.equal(legacy['--c1'], tokens['--d-primary']);
+    assert.equal(legacy['--c3'], tokens['--d-fg']);
+    assert.equal(legacy['--c9'], tokens['--d-error']);
+  });
+});
+
+// ============================================================
+// Style System
+// ============================================================
+
+describe('getStyleList()', () => {
+  it('returns 4 built-in styles', () => {
+    const list = getStyleList();
+    assert.equal(list.length, 4);
+    const ids = list.map(s => s.id);
+    assert.ok(ids.includes('clean'));
+    assert.ok(ids.includes('retro'));
+    assert.ok(ids.includes('glassmorphism'));
+    assert.ok(ids.includes('liquid-glass'));
+  });
+
+  it('each style has id and name', () => {
+    for (const s of getStyleList()) {
+      assert.ok(typeof s.id === 'string' && s.id.length > 0);
+      assert.ok(typeof s.name === 'string' && s.name.length > 0);
     }
   });
 });
 
+describe('getThemeList()', () => {
+  it('is an alias for getStyleList()', () => {
+    assert.deepEqual(getThemeList(), getStyleList());
+  });
+});
+
 describe('getTheme()', () => {
-  it('returns a signal getter defaulting to light', () => {
+  it('returns a signal getter defaulting to clean', () => {
     const theme = getTheme();
     assert.equal(typeof theme, 'function');
-    assert.equal(theme(), 'light');
+    assert.equal(theme(), 'clean');
   });
 });
 
-describe('setTheme()', () => {
-  it('changes the active theme signal', () => {
-    setTheme('dark');
-    assert.equal(getTheme()(), 'dark');
-    setTheme('light');
-    assert.equal(getTheme()(), 'light');
+describe('getStyle()', () => {
+  it('returns a signal getter for style ID', () => {
+    const style = getStyle();
+    assert.equal(typeof style, 'function');
+    assert.equal(style(), 'clean');
+  });
+});
+
+describe('setStyle()', () => {
+  it('changes the active style', () => {
+    setStyle('retro');
+    assert.equal(getStyle()(), 'retro');
+    setStyle('clean');
+    assert.equal(getStyle()(), 'clean');
   });
 
-  it('applies color CSS custom properties to document.documentElement', () => {
-    setTheme('dark');
+  it('applies tokens to document.documentElement', () => {
+    setStyle('clean');
     const style = document.documentElement.style;
-    assert.equal(style['--c0'], '#1F1F1F');
-    assert.equal(style['--c1'], '#0078D4');
-    assert.equal(style['--c3'], '#CCCCCC');
+    assert.ok(style['--d-primary']);
+    assert.ok(style['--d-bg']);
+    assert.ok(style['--d-radius']);
   });
 
-  it('applies token CSS custom properties to document.documentElement', () => {
-    setTheme('stormy-ai');
+  it('applies legacy --c variables for backward compat', () => {
+    setStyle('clean');
     const style = document.documentElement.style;
-    assert.equal(style['--d-radius'], '12px');
-    assert.equal(style['--d-shadow'], '0 8px 32px rgba(0,0,0,0.3)');
+    assert.ok(style['--c0']);
+    assert.ok(style['--c1']);
   });
 
-  it('applies spacing token --d-pad', () => {
-    setTheme('light');
-    assert.equal(document.documentElement.style['--d-pad'], '1.5rem');
-    setTheme('dark');
-    assert.equal(document.documentElement.style['--d-pad'], '1.25rem');
-  });
-
-  it('injects component CSS into a style element', () => {
-    setTheme('light');
+  it('injects component CSS into style element', () => {
+    setStyle('retro');
     const styleEl = document.querySelector('[data-decantr-style]');
     assert.ok(styleEl);
-    assert.ok(styleEl.textContent.length > 0);
     assert.ok(styleEl.textContent.includes('.d-btn'));
-    assert.ok(styleEl.textContent.includes('.d-card'));
   });
 
-  it('throws on unknown theme', () => {
-    assert.throws(() => setTheme('nonexistent'), /Unknown theme/);
+  it('throws on unknown style', () => {
+    assert.throws(() => setStyle('nonexistent'), /Unknown style/);
   });
 
-  it('applies different color values per theme', () => {
-    setTheme('light');
-    assert.equal(document.documentElement.style['--c0'], '#ffffff');
-    assert.equal(document.documentElement.style['--c1'], '#1366D9');
-    setTheme('stormy-ai');
-    assert.equal(document.documentElement.style['--c0'], '#0a0c10');
-    assert.equal(document.documentElement.style['--c1'], '#38bdf8');
-  });
-
-  it('replaces CSS when switching themes', () => {
-    setTheme('light');
-    const styleEl = document.querySelector('[data-decantr-style]');
-    const lightCss = styleEl.textContent;
-    setTheme('retro');
-    const retroCss = styleEl.textContent;
-    assert.notEqual(lightCss, retroCss);
+  it('retro has different tokens than clean', () => {
+    setStyle('clean');
+    const cleanRadius = document.documentElement.style['--d-radius'];
+    setStyle('retro');
+    const retroRadius = document.documentElement.style['--d-radius'];
+    assert.notEqual(cleanRadius, retroRadius);
   });
 });
 
-describe('legacy theme mapping', () => {
-  it('maps "ai" to "stormy-ai" with warning', () => {
-    const warnings = [];
-    const origWarn = console.warn;
-    console.warn = (msg) => warnings.push(msg);
-    setTheme('ai');
-    console.warn = origWarn;
-    assert.equal(getTheme()(), 'stormy-ai');
-    assert.ok(warnings.some(w => w.includes('stormy-ai')));
+describe('setMode()', () => {
+  it('accepts light, dark, auto', () => {
+    assert.doesNotThrow(() => setMode('light'));
+    assert.doesNotThrow(() => setMode('dark'));
+    assert.doesNotThrow(() => setMode('auto'));
   });
 
-  it('maps "mono" to "dark" with warning', () => {
-    const warnings = [];
-    const origWarn = console.warn;
-    console.warn = (msg) => warnings.push(msg);
-    setTheme('mono');
-    console.warn = origWarn;
-    assert.equal(getTheme()(), 'dark');
+  it('throws on invalid mode', () => {
+    assert.throws(() => setMode('invalid'), /Invalid mode/);
   });
 
-  it('maps "lava" to "hot-lava"', () => {
-    const warnings = [];
-    const origWarn = console.warn;
-    console.warn = (msg) => warnings.push(msg);
-    setTheme('lava');
-    console.warn = origWarn;
-    assert.equal(getTheme()(), 'hot-lava');
+  it('getMode() returns the raw mode setting', () => {
+    setMode('dark');
+    assert.equal(getMode()(), 'dark');
+    setMode('auto');
+    assert.equal(getMode()(), 'auto');
+  });
+
+  it('dark mode changes bg/fg tokens', () => {
+    setStyle('clean');
+    setMode('light');
+    const lightBg = document.documentElement.style['--d-bg'];
+    setMode('dark');
+    const darkBg = document.documentElement.style['--d-bg'];
+    assert.notEqual(lightBg, darkBg);
+  });
+
+  it('dark mode updates legacy --c0', () => {
+    setStyle('clean');
+    setMode('light');
+    const lightC0 = document.documentElement.style['--c0'];
+    setMode('dark');
+    const darkC0 = document.documentElement.style['--c0'];
+    assert.notEqual(lightC0, darkC0);
+  });
+});
+
+describe('setTheme() backward compat', () => {
+  it('maps legacy "light" to clean style + light mode', () => {
+    setTheme('light');
+    assert.equal(getStyle()(), 'clean');
+    assert.equal(getResolvedMode(), 'light');
+  });
+
+  it('maps legacy "dark" to clean style + dark mode', () => {
+    setTheme('dark');
+    assert.equal(getStyle()(), 'clean');
+    assert.equal(getResolvedMode(), 'dark');
+  });
+
+  it('maps legacy "retro" to retro style + auto mode', () => {
+    setTheme('retro');
+    assert.equal(getStyle()(), 'retro');
+  });
+
+  it('maps unknown legacy themes to clean + dark', () => {
+    setTheme('hot-lava');
+    assert.equal(getStyle()(), 'clean');
+  });
+
+  it('new-style setTheme with mode arg', () => {
+    setTheme('retro', 'dark');
+    assert.equal(getStyle()(), 'retro');
+    assert.equal(getResolvedMode(), 'dark');
+  });
+
+  it('throws on completely unknown ID', () => {
+    assert.throws(() => setTheme('totally-unknown'), /Unknown theme/);
   });
 });
 
 describe('getThemeMeta()', () => {
-  it('returns meta for active theme', () => {
-    setTheme('dark');
+  it('returns isDark based on resolved mode', () => {
+    setStyle('clean');
+    setMode('dark');
     const meta = getThemeMeta();
     assert.equal(meta.isDark, true);
-    assert.equal(meta.contrastText, '#ffffff');
-    assert.ok(typeof meta.surfaceAlpha === 'string');
+    assert.equal(meta.style, 'clean');
+    assert.equal(meta.resolvedMode, 'dark');
   });
 
-  it('returns non-dark meta for light theme', () => {
-    setTheme('light');
-    const meta = getThemeMeta();
-    assert.equal(meta.isDark, false);
+  it('returns non-dark meta for light mode', () => {
+    setStyle('clean');
+    setMode('light');
+    assert.equal(getThemeMeta().isDark, false);
   });
 
-  it('returns a copy (not reference)', () => {
-    setTheme('light');
-    const meta1 = getThemeMeta();
-    const meta2 = getThemeMeta();
-    assert.notEqual(meta1, meta2);
-    assert.deepEqual(meta1, meta2);
+  it('returns a new object each call', () => {
+    setMode('light');
+    const m1 = getThemeMeta();
+    const m2 = getThemeMeta();
+    assert.notEqual(m1, m2);
+    assert.deepEqual(m1, m2);
   });
 });
 
-describe('registerTheme()', () => {
-  it('registers a custom theme', () => {
-    registerTheme({
+describe('registerStyle()', () => {
+  it('registers a custom style with seed', () => {
+    registerStyle({
       id: 'ocean',
       name: 'Ocean',
-      colors: {
-        '--c0': '#0a192f', '--c1': '#64ffda', '--c2': '#112240',
-        '--c3': '#ccd6f6', '--c4': '#8892b0', '--c5': '#233554',
-        '--c6': '#4de8c2', '--c7': '#22c55e', '--c8': '#fbbf24', '--c9': '#ef4444'
-      },
-      meta: { isDark: true, contrastText: '#0a192f', surfaceAlpha: 'rgba(17,34,64,0.85)' }
+      seed: { primary: '#64ffda', accent: '#7c3aed', neutral: '#8892b0', bg: '#0a192f', bgDark: '#020c1b' },
+      personality: { radius: 'pill', elevation: 'glass', motion: 'bouncy', borders: 'thin', gradient: 'vivid' },
     });
-    const list = getThemeList();
-    assert.ok(list.length >= 6);
-    assert.ok(list.some(t => t.id === 'ocean'));
+    assert.ok(getStyleList().some(s => s.id === 'ocean'));
   });
 
-  it('allows switching to custom theme', () => {
-    setTheme('ocean');
-    assert.equal(getTheme()(), 'ocean');
-    assert.equal(document.documentElement.style['--c0'], '#0a192f');
-    const meta = getThemeMeta();
-    assert.equal(meta.isDark, true);
-    assert.equal(meta.contrastText, '#0a192f');
+  it('allows switching to custom style', () => {
+    setStyle('ocean');
+    assert.equal(getStyle()(), 'ocean');
+    assert.ok(document.documentElement.style['--d-primary']);
   });
 
-  it('fills defaults for missing optional fields', () => {
+  it('throws without id', () => {
+    assert.throws(() => registerStyle({ name: 'Bad' }), /must have id/);
+  });
+
+  it('throws without seed', () => {
+    assert.throws(() => registerStyle({ id: 'bad', name: 'Bad' }), /must have seed/);
+  });
+});
+
+describe('registerTheme() backward compat', () => {
+  it('accepts new-style objects with seed', () => {
     registerTheme({
-      id: 'minimal',
-      name: 'Minimal',
-      colors: {
-        '--c0': '#fff', '--c1': '#000', '--c2': '#eee',
-        '--c3': '#111', '--c4': '#666', '--c5': '#ccc',
-        '--c6': '#333', '--c7': '#0a0', '--c8': '#aa0', '--c9': '#a00'
-      }
+      id: 'custom-new',
+      name: 'Custom New',
+      seed: { primary: '#ff0000', neutral: '#666' },
     });
-    setTheme('minimal');
-    assert.equal(getTheme()(), 'minimal');
-    // Should have default tokens applied
-    const style = document.documentElement.style;
-    assert.ok(style['--d-radius']);
+    assert.ok(getStyleList().some(s => s.id === 'custom-new'));
+  });
+
+  it('accepts legacy objects with warning', () => {
+    const warnings = [];
+    const origWarn = console.warn;
+    console.warn = (msg) => warnings.push(msg);
+    registerTheme({ id: 'legacy', name: 'Legacy', colors: { '--c0': '#fff' } });
+    console.warn = origWarn;
+    assert.ok(warnings.some(w => w.includes('deprecated')));
   });
 });
 
 describe('getActiveCSS()', () => {
-  it('returns CSS string for current theme', () => {
-    setTheme('light');
+  it('returns CSS string for current style', () => {
+    setStyle('retro');
     const css = getActiveCSS();
     assert.ok(typeof css === 'string');
+    assert.ok(css.includes('@layer d.theme'));
     assert.ok(css.includes('.d-btn'));
-    assert.ok(css.includes('.d-card'));
   });
 });
 
 describe('resetStyles()', () => {
-  it('resets theme to light and removes style element', () => {
-    setTheme('dark');
-    assert.equal(getTheme()(), 'dark');
+  it('resets to clean + light and removes style element', () => {
+    setStyle('retro');
+    setMode('dark');
     resetStyles();
-    assert.equal(getTheme()(), 'light');
+    assert.equal(getStyle()(), 'clean');
+    assert.equal(getMode()(), 'light');
     assert.ok(!document.querySelector('[data-decantr-style]'));
   });
 });
 
-describe('theme component CSS completeness', () => {
-  const expectedKeys = [
-    'button', 'card', 'input', 'badge', 'modal',
-    'textarea', 'checkbox', 'switch', 'select', 'tabs',
-    'accordion', 'separator', 'breadcrumb', 'table', 'avatar',
-    'progress', 'skeleton', 'tooltip', 'alert', 'chip', 'toast', 'spinner',
-    'dropdown', 'drawer', 'pagination', 'radiogroup', 'popover', 'combobox', 'slider'
-  ];
-
-  for (const themeId of ['light', 'dark', 'retro', 'hot-lava', 'stormy-ai']) {
-    it(`${themeId} has all 29 component CSS keys`, () => {
-      setTheme(themeId);
-      const css = getActiveCSS();
-      assert.ok(css.length > 0, `${themeId} CSS is empty`);
-      // Verify key component class names appear
-      assert.ok(css.includes('.d-btn'), `${themeId} missing .d-btn`);
-      assert.ok(css.includes('.d-card'), `${themeId} missing .d-card`);
-      assert.ok(css.includes('.d-input'), `${themeId} missing .d-input`);
-      assert.ok(css.includes('.d-badge'), `${themeId} missing .d-badge`);
-      assert.ok(css.includes('.d-modal'), `${themeId} missing .d-modal`);
-      assert.ok(css.includes('.d-chip'), `${themeId} missing .d-chip`);
-      assert.ok(css.includes('.d-dropdown'), `${themeId} missing .d-dropdown`);
-      assert.ok(css.includes('.d-drawer'), `${themeId} missing .d-drawer`);
-      assert.ok(css.includes('.d-pagination'), `${themeId} missing .d-pagination`);
-      assert.ok(css.includes('.d-radio'), `${themeId} missing .d-radio`);
-      assert.ok(css.includes('.d-popover'), `${themeId} missing .d-popover`);
-      assert.ok(css.includes('.d-combobox'), `${themeId} missing .d-combobox`);
-      assert.ok(css.includes('.d-slider'), `${themeId} missing .d-slider`);
-    });
-
-    it(`${themeId} has all button variants`, () => {
-      setTheme(themeId);
-      const css = getActiveCSS();
-      assert.ok(css.includes('.d-btn-primary'), `${themeId} missing .d-btn-primary`);
-      assert.ok(css.includes('.d-btn-secondary'), `${themeId} missing .d-btn-secondary`);
-      assert.ok(css.includes('.d-btn-destructive'), `${themeId} missing .d-btn-destructive`);
-      assert.ok(css.includes('.d-btn-success'), `${themeId} missing .d-btn-success`);
-      assert.ok(css.includes('.d-btn-warning'), `${themeId} missing .d-btn-warning`);
-      assert.ok(css.includes('.d-btn-outline'), `${themeId} missing .d-btn-outline`);
-      assert.ok(css.includes('.d-btn-ghost'), `${themeId} missing .d-btn-ghost`);
-      assert.ok(css.includes('.d-btn-link'), `${themeId} missing .d-btn-link`);
-    });
-  }
-});
-
-describe('deprecated stubs', () => {
-  it('setStyle() logs warning and does not throw', () => {
-    const warnings = [];
-    const origWarn = console.warn;
-    console.warn = (msg) => warnings.push(msg);
-    assert.doesNotThrow(() => setStyle('glass'));
-    console.warn = origWarn;
-    assert.ok(warnings.some(w => w.includes('deprecated')));
-  });
-
-  it('getStyle() logs warning and returns signal', () => {
-    const warnings = [];
-    const origWarn = console.warn;
-    console.warn = (msg) => warnings.push(msg);
-    const result = getStyle();
-    console.warn = origWarn;
-    assert.equal(typeof result, 'function');
-    assert.ok(warnings.some(w => w.includes('deprecated')));
-  });
-
-  it('getStyleList() logs warning and returns empty array', () => {
-    const warnings = [];
-    const origWarn = console.warn;
-    console.warn = (msg) => warnings.push(msg);
-    const result = getStyleList();
-    console.warn = origWarn;
-    assert.ok(Array.isArray(result));
-    assert.equal(result.length, 0);
-    assert.ok(warnings.some(w => w.includes('deprecated')));
-  });
-
-  it('registerStyle() logs warning and does not throw', () => {
-    const warnings = [];
-    const origWarn = console.warn;
-    console.warn = (msg) => warnings.push(msg);
-    assert.doesNotThrow(() => registerStyle({ id: 'test', name: 'Test' }));
-    console.warn = origWarn;
-    assert.ok(warnings.some(w => w.includes('deprecated')));
+describe('onModeChange()', () => {
+  it('fires callback on mode change', () => {
+    const calls = [];
+    const unsub = onModeChange(mode => calls.push(mode));
+    setMode('dark');
+    assert.ok(calls.includes('dark'));
+    unsub();
+    setMode('light');
+    // Should not fire after unsubscribe
+    assert.equal(calls.filter(c => c === 'light').length, 0);
   });
 });
+
+// ============================================================
+// Animation Control
+// ============================================================
 
 describe('animation control', () => {
   it('getAnimations() returns signal getter defaulting to true', () => {

@@ -2,6 +2,7 @@ import { h } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx, reactiveAttr } from './_base.js';
 import { Spinner } from './spinner.js';
+import { icon as renderIcon } from './icon.js';
 
 const SPINNER_SIZE = {
   xs: 'xs', sm: 'xs', default: 'sm', lg: 'default',
@@ -35,7 +36,7 @@ export function buttonVariants({ variant = 'default', size = 'default' } = {}) {
 export function Button(props = {}, ...children) {
   injectBase();
 
-  const { variant, size, disabled, loading, block, rounded, class: cls, onclick, type, ...rest } = props;
+  const { variant, size, disabled, loading, block, rounded, iconLeft, iconRight, class: cls, onclick, type, ...rest } = props;
 
   const variantCls = buttonVariants({ variant, size });
   const className = cx(
@@ -48,7 +49,16 @@ export function Button(props = {}, ...children) {
   const btnProps = { class: className, type: type || 'button', ...rest };
   if (onclick) btnProps.onclick = onclick;
 
-  const el = h('button', btnProps, ...children);
+  // Resolve icon props — accept string name or Node
+  const leftIcon = iconLeft ? (typeof iconLeft === 'string' ? renderIcon(iconLeft, { size: '1em' }) : iconLeft) : null;
+  const rightIcon = iconRight ? (typeof iconRight === 'string' ? renderIcon(iconRight, { size: '1em' }) : iconRight) : null;
+
+  const allChildren = [];
+  if (leftIcon) allChildren.push(leftIcon);
+  allChildren.push(...children);
+  if (rightIcon) allChildren.push(rightIcon);
+
+  const el = h('button', btnProps, ...allChildren);
 
   reactiveAttr(el, disabled, 'disabled');
 

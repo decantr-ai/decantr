@@ -1,57 +1,81 @@
 /**
- * Pie / Donut chart layout.
- * Computes arc angles from spec data.
+ * Pie / Donut chart layout — produces scene graph.
+ * Supports: variable radius, multiple rings, nested donut.
+ * @module types/pie
  */
 
-import { MARGINS_NONE, chartColor } from './_type-base.js';
+import { scene, arc, text } from '../_scene.js';
+import { polar, sliceAngles } from '../layouts/polar.js';
+import { chartColor, MARGINS_NONE } from '../layouts/_layout-base.js';
 import { resolve } from '../_shared.js';
 
 /**
  * @param {Object} spec — resolved chart spec
  * @param {number} width
  * @param {number} height
- * @returns {Object} layout
+ * @returns {Object} scene graph
  */
 export function layoutPie(spec, width, height) {
   const data = resolve(spec.data);
   const yField = Array.isArray(spec.y) ? spec.y[0] : spec.y;
   const xField = spec.x;
 
-  // Compute total
+  const innerRadiusRatio = spec.donut !== false ? 0.55 : 0;
+  const coords = polar(width, height, { innerRadiusRatio, padding: 8 });
+  const { cx, cy, radius, innerRadius, startAngle, totalAngle } = coords;
+
+  const values = data.map(d => Math.abs(+d[yField] || 0));
+  const angles = sliceAngles(values, startAngle, totalAngle);
   let total = 0;
-  for (let i = 0; i < data.length; i++) total += Math.abs(+data[i][yField] || 0);
-  if (total === 0) total = 1;
+  for (const v of values) total += v;
 
-  // Compute slices
-  let angle = -Math.PI / 2; // Start at top
-  const slices = data.map((d, i) => {
-    const value = Math.abs(+d[yField] || 0);
-    const startAngle = angle;
-    const sweep = (value / total) * Math.PI * 2;
-    angle += sweep;
-    return {
-      label: d[xField],
-      value,
-      percentage: (value / total) * 100,
-      startAngle,
-      endAngle: startAngle + sweep,
-      color: chartColor(i),
-      raw: d
-    };
-  });
+  const slices = data.map((d, i) => ({
+    label: d[xField],
+    value: values[i],
+    percentage: angles[i].percentage,
+    startAngle: angles[i].startAngle,
+    endAngle: angles[i].endAngle,
+    color: chartColor(i),
+    raw: d
+  }));
 
-  const cx = width / 2;
-  const cy = height / 2;
-  const radius = Math.min(cx, cy) - 8;
-  const innerRadius = spec.donut !== false ? radius * 0.55 : 0;
+  // Build scene
+  const children = [];
+  for (const s of slices) {
+    children.push(arc({
+      cx, cy, outerR: radius, innerR: innerRadius,
+      startAngle: s.startAngle, endAngle: s.endAngle,
+      fill: s.color, class: 'd-chart-slice',
+      data: {
+        label: s.label, value: s.value,
+        ariaLabel: `${s.label}: ${s.value} (${s.percentage.toFixed(1)}%)`,
+        series: s.label
+      },
+      key: `slice-${s.label}`
+    }));
 
-  return {
-    type: 'pie',
-    width, height,
+    // Labels
+    if (spec.labels) {
+      const midAngle = (s.startAngle + s.endAngle) / 2;
+      const labelR = (radius + innerRadius) / 2;
+      const lx = cx + labelR * Math.cos(midAngle);
+      const ly = cy + labelR * Math.sin(midAngle);
+      children.push(text({
+        x: lx, y: ly, content: `${s.percentage.toFixed(0)}%`,
+        anchor: 'middle', baseline: 'middle',
+        class: 'd-chart-axis', fontSize: 'var(--d-text-xs)',
+        fill: 'var(--d-fg)'
+      }));
+    }
+  }
+
+  const series = slices.map(s => ({ key: s.label, color: s.color }));
+
+  return scene(width, height, children, {
+    type: 'pie', series, slices,
+    cx, cy, radius, innerRadius,
     margins: MARGINS_NONE,
     innerW: width, innerH: height,
-    cx, cy, radius, innerRadius,
-    slices,
     dataLength: data.length
-  };
+  });
 }
