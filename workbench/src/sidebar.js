@@ -7,6 +7,7 @@ import { loadFoundationItems } from './explorer/foundations.js';
 import { loadAtomItems } from './explorer/atoms.js';
 import { loadTokenItems } from './explorer/tokens.js';
 import { loadComponentItems } from './explorer/components.js';
+import { loadIconItems } from './explorer/icons.js';
 import { loadChartItems } from './explorer/charts.js';
 import { loadPatternItems } from './explorer/patterns.js';
 import { loadArchetypeItems } from './explorer/archetypes.js';
@@ -17,6 +18,7 @@ const { div, nav, span, button } = tags;
 // ─── Layer definitions ─────────────────────────────────────────
 export const LAYERS = [
   { id: 'components', label: 'Components' },
+  { id: 'icons', label: 'Icons' },
   { id: 'charts', label: 'Charts' },
   { id: 'patterns', label: 'Patterns' },
   { id: 'archetypes', label: 'Archetypes' },
@@ -39,6 +41,7 @@ export async function loadAllSidebarItems() {
     atoms: loadAtomItems,
     tokens: loadTokenItems,
     components: loadComponentItems,
+    icons: loadIconItems,
     charts: loadChartItems,
     patterns: loadPatternItems,
     archetypes: loadArchetypeItems,

@@ -11,6 +11,7 @@ import { SidebarNav, getSidebarItems, loadAllSidebarItems, searchIndex } from '.
 
 // Pages
 import { ComponentsIndex, ComponentGroupPage, ComponentDetailPage } from './pages/components.js';
+import { IconsIndex, IconGroupPage, IconDetailPage } from './pages/icons.js';
 import { ChartsIndex, ChartGroupPage, ChartDetailPage } from './pages/charts.js';
 import { PatternsIndex, PatternDetailPage } from './pages/patterns.js';
 import { ArchetypesIndex, ArchetypeDetailPage } from './pages/archetypes.js';
@@ -287,6 +288,9 @@ const router = createRouter({
       { path: 'components', component: ComponentsIndex },
       { path: 'components/:group', component: ComponentGroupPage },
       { path: 'components/:group/:name', component: ComponentDetailPage },
+      { path: 'icons', component: IconsIndex },
+      { path: 'icons/:group', component: IconGroupPage },
+      { path: 'icons/:group/:name', component: IconDetailPage },
       { path: 'charts', component: ChartsIndex },
       { path: 'charts/:group', component: ChartGroupPage },
       { path: 'charts/:group/:name', component: ChartDetailPage },
