@@ -12,6 +12,14 @@ export function minify(source) {
     return `\`__MTPL_${stash.length - 1}__\``;
   });
 
+  // Stash regex literals to protect them from comment stripping and whitespace collapsing.
+  // Heuristic: a `/` starts a regex when preceded by an operator, keyword, or punctuation —
+  // not an identifier char, closing paren/bracket, or number (which would mean division).
+  result = result.replace(/(^|[=(:,;!&|?{}[\]^~+\-*/<>%\n])\s*(\/(?![*\/])(?:[^\/\\\n]|\\.)*\/[gimsuy]*)/gm, (m, pre, regex) => {
+    stash.push(regex);
+    return `${pre}"__MREG_${stash.length - 1}__"`;
+  });
+
   // Remove JSDoc and multi-line comments
   result = result.replace(/\/\*\*[\s\S]*?\*\//g, '');
   result = result.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -89,7 +97,8 @@ export function minify(source) {
     output += line;
   }
 
-  // Restore stashed template literals
+  // Restore stashed regex literals and template literals
+  output = output.replace(/"__MREG_(\d+)__"/g, (_, i) => stash[i]);
   output = output.replace(/`__MTPL_(\d+)__`/g, (_, i) => stash[i]);
 
   return output;
