@@ -102,4 +102,59 @@ export const docsSiteCSS = [
   '@media(max-width:768px){.ds-settle-layer{margin-left:0!important}}',
   // ── Flow animation ──
   '.ds-flow-line{animation:ds-flow-down 2s ease-in-out infinite}',
+  // ── Responsive heading sizes ──
+  '.ds-heading-hero{font-size:clamp(3rem,7vw,5.5rem)}',
+  '.ds-heading-page{font-size:clamp(2.5rem,6vw,4.5rem)}',
+  '.ds-heading{font-size:clamp(2rem,5vw,3.5rem)}',
+  '.ds-heading-stage{font-size:clamp(1.75rem,4vw,2.75rem)}',
+  '.ds-heading-lg{font-size:clamp(1.5rem,4vw,2.5rem)}',
+  '.ds-heading-md{font-size:clamp(1.25rem,3vw,1.75rem)}',
+  '.ds-heading-sm{font-size:clamp(1.4rem,3vw,2rem)}',
+  '.ds-heading-quote{font-size:clamp(1.05rem,2.2vw,1.3rem)}',
+  // ── Accent backgrounds ──
+  '.ds-accent-bg{background:rgba(10,243,235,0.1)}',
+  '.ds-accent-pill{background:rgba(10,243,235,0.08);border:1px solid rgba(10,243,235,0.15)}',
+  // ── Orb color variants ──
+  '.ds-orb-purple-15{background:rgba(101,0,198,0.15)}',
+  '.ds-orb-purple-12{background:rgba(101,0,198,0.12)}',
+  '.ds-orb-purple-10{background:rgba(101,0,198,0.1)}',
+  '.ds-orb-purple-08{background:rgba(101,0,198,0.08)}',
+  '.ds-orb-purple-06{background:rgba(101,0,198,0.06)}',
+  '.ds-orb-cyan-08{background:rgba(10,243,235,0.08)}',
+  '.ds-orb-cyan-06{background:rgba(10,243,235,0.06)}',
+  '.ds-orb-cyan-04{background:rgba(10,243,235,0.04)}',
+  '.ds-orb-pink-06{background:rgba(254,68,116,0.06)}',
+  '.ds-orb-gold-06{background:rgba(253,163,3,0.06)}',
+  // ── Decorative gradients & dividers ──
+  '.ds-divider-v{background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.1),transparent);align-self:stretch}',
+  '.ds-brand-line{background:var(--d-gradient-brand)}',
+  '.ds-scroll-line{background:linear-gradient(to bottom,transparent,var(--d-muted));animation:ds-pulse 2s infinite}',
+  '.ds-flow-gradient{background:linear-gradient(to bottom,var(--d-primary),transparent)}',
+  '.ds-gradient-divider{background:linear-gradient(90deg,transparent,var(--d-primary),var(--d-accent),transparent)}',
+  // ── Transform utilities ──
+  '.ds-center-x{transform:translateX(-50%)}',
+  // ── Logo effects ──
+  '.ds-logo-glow{filter:drop-shadow(0 0 40px rgba(101,0,198,0.3))}',
+  '.ds-logo-glow-sm{filter:drop-shadow(0 0 20px rgba(101,0,198,0.4))}',
+  // ── Quote styling ──
+  '.ds-quote-mark{background:linear-gradient(135deg,var(--d-primary),var(--d-accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;pointer-events:none}',
+  '.ds-quote-text{color:rgba(255,255,255,0.92);background:linear-gradient(135deg,rgba(255,255,255,0.95) 60%,var(--d-accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
+  // ── Glow/blur backgrounds ──
+  '.ds-glow-purple{background:rgba(101,0,198,0.2);filter:blur(60px)}',
+  '.ds-glow-cyan{background:rgba(10,243,235,0.15);filter:blur(50px)}',
+  // ── AI widget ──
+  '.ds-ai-icon-bg{background:linear-gradient(135deg,rgba(254,68,116,0.15),rgba(10,243,235,0.15))}',
+  // ── Mock dashboard elements ──
+  '.ds-mock-sidebar{background:rgba(101,0,198,0.15);border-right:1px solid rgba(255,255,255,0.06)}',
+  '.ds-mock-bar{background:rgba(255,255,255,0.04)}',
+  '.ds-mock-kpi-1{background:rgba(254,68,116,0.12)}',
+  '.ds-mock-kpi-2{background:rgba(10,243,235,0.12)}',
+  '.ds-mock-kpi-3{background:rgba(101,0,198,0.15)}',
+  '.ds-mock-table{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)}',
+  // ── Extended animation delays ──
+  '.ds-delay-1500{animation-delay:1.5s}',
+  '.ds-delay-3000{animation-delay:3s}',
+  // ── Layout utilities ──
+  '.ds-logo-col{flex-basis:300px}',
+  '.ds-no-bullets{list-style:none}',
 ].join('');

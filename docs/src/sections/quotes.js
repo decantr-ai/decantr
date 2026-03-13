@@ -18,9 +18,9 @@ const quotes = [
 function QuoteCard({ text, delay }) {
   return blockquote({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _jcc _p8 _relative _ohidden _minh[140px]')}` },
     // Large decorative quote mark
-    span({ class: css('_absolute _top[-0.25rem] _left[1rem] _t[5rem] _lh[1] _fw[900] _op[0.3] _pointer'), style: 'background:linear-gradient(135deg,var(--d-primary),var(--d-accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;pointer-events:none' }, '\u201C'),
+    span({ class: `ds-quote-mark ${css('_absolute _top[-0.25rem] _left[1rem] _t[5rem] _lh[1] _fw[900] _op[0.3]')}` }, '\u201C'),
     // Quote text — bright white with subtle gradient hint
-    p({ class: css('_bold _lh[1.4] _ls[-0.01em] _relative _z1 _pt[1.5rem]'), style: 'font-size:clamp(1.05rem,2.2vw,1.3rem);color:rgba(255,255,255,0.92);background:linear-gradient(135deg,rgba(255,255,255,0.95) 60%,var(--d-accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text' },
+    p({ class: `ds-quote-text ds-heading-quote ${css('_bold _lh[1.4] _ls[-0.01em] _relative _z1 _pt[1.5rem]')}` },
       text,
     ),
   );
@@ -28,12 +28,12 @@ function QuoteCard({ text, delay }) {
 
 export function QuotesSection() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}` },
-    div({ class: 'ds-orb', style: 'width:400px;height:400px;background:rgba(253,163,3,0.06);top:30%;right:-10%' }),
+    div({ class: `ds-orb ds-orb-gold-06 ${css('_w[400px] _h[400px] _top[30%] _right[-10%]')}` }),
 
     div({ class: css('_flex _col _aic _gap12 _relative _z10 _maxw[1100px] _w100') },
       // Header
       div({ class: css('_flex _col _aic _gap4 _tc') },
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(2rem,5vw,3.5rem)' },
+        h2({ class: `ds-heading ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'We Couldn\'t Pick Just One',
         ),
         p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed _fgmutedfg _maxw[600px]')}` },

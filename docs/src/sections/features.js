@@ -7,7 +7,7 @@ const { section, div, h2, h3, p, span, code } = tags;
 function FeatureCard({ iconName, badge, title, description, highlights, delay }) {
   return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap4 _p8')}` },
     div({ class: css('_flex _row _aic _gap3') },
-      div({ class: css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)]'), style: 'background:rgba(10,243,235,0.1)' },
+      div({ class: `ds-accent-bg ${css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)]')}` },
         icon(iconName, { size: '24px' }),
       ),
       Chip({ label: badge, variant: 'outline', size: 'sm' }),
@@ -17,7 +17,7 @@ function FeatureCard({ iconName, badge, title, description, highlights, delay })
     // Highlight pills
     div({ class: css('_flex _row _wrap _gap2') },
       ...highlights.map(h =>
-        span({ class: css('_textsm _fgaccent _py[0.25rem] _px[0.75rem] _rfull'), style: 'background:rgba(10,243,235,0.08);border:1px solid rgba(10,243,235,0.15)' }, h)
+        span({ class: `ds-accent-pill ${css('_textsm _fgaccent _py[0.25rem] _px[0.75rem] _rfull')}` }, h)
       ),
     ),
   );
@@ -26,12 +26,12 @@ function FeatureCard({ iconName, badge, title, description, highlights, delay })
 export function FeaturesSection() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}` },
     // Decorative orb
-    div({ class: 'ds-orb', style: 'width:500px;height:500px;background:rgba(254,68,116,0.06);bottom:10%;left:-15%' }),
+    div({ class: `ds-orb ds-orb-pink-06 ${css('_w[500px] _h[500px] _bottom[10%] _left[-15%]')}` }),
 
     div({ class: css('_flex _col _aic _gap12 _relative _z10 _maxw[1100px] _w100') },
       // Header
       div({ class: css('_flex _col _aic _gap4 _tc') },
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(2rem,5vw,3.5rem)' },
+        h2({ class: `ds-heading ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'Built Different',
         ),
         p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed _fgmutedfg _maxw[650px]')}` },

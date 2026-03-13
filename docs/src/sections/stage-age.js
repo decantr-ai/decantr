@@ -24,7 +24,7 @@ const pillars = [
 
 export function StageAge() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}` },
-    div({ class: 'ds-orb', style: 'width:500px;height:500px;background:rgba(254,68,116,0.06);top:20%;left:-15%' }),
+    div({ class: `ds-orb ds-orb-pink-06 ${css('_w[500px] _h[500px] _top[20%] _left[-15%]')}` }),
 
     div({ class: css('_flex _col _aic _gap10 _relative _z10 _maxw[900px] _w100') },
       // Header
@@ -33,7 +33,7 @@ export function StageAge() {
           span({ class: `ds-stage-num ${css('_flex _aic _jcc')}` }, '6'),
           span({ class: css('_textsm _fwheading _fgmutedfg _uppercase _ls[0.1em]') }, 'Stage 6'),
         ),
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(1.75rem,4vw,2.75rem)' },
+        h2({ class: `ds-heading-stage ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'AGE \u2014 Identity Deepens',
         ),
         p({ class: `ds-animate ds-delay-1 ${css('_textbase _lhrelaxed _fgmutedfg _maxw[600px]')}` },
@@ -45,7 +45,7 @@ export function StageAge() {
       div({ class: css('_grid _gcaf250 _gap6 _w100') },
         ...pillars.map((pillar, i) =>
           div({ class: `ds-glass ds-animate ds-delay-${i + 2} ${css('_flex _col _gap4 _p8')}` },
-            div({ class: css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)] _aisstart'), style: 'background:rgba(10,243,235,0.1)' },
+            div({ class: `ds-accent-bg ${css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)] _aisstart')}` },
               icon(pillar.iconName, { size: '28px' }),
             ),
             h3({ class: css('_textlg _fwheading _fgfg') }, pillar.title),
@@ -56,7 +56,7 @@ export function StageAge() {
 
       // Quote
       div({ class: `ds-animate ds-delay-5 ${css('_tc _py4')}` },
-        p({ class: css('_fw[800] _ls[-0.02em] _italic') + ' ds-gradient-text', style: 'font-size:clamp(1.25rem,3vw,2rem)' },
+        p({ class: `ds-heading-md ds-gradient-text ${css('_fw[800] _ls[-0.02em] _italic')}` },
           '"Identity doesn\u2019t drift. It deepens."',
         ),
       ),

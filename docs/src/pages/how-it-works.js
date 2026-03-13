@@ -174,14 +174,14 @@ function buildPanel(stage, idx) {
     // Stage header
     div({ class: css('_flex _row _aic _gap3') },
       span({ class: `ds-stage-num ${css('_flex _aic _jcc')}` }, String(idx + 1)),
-      h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.15] _m0') + ' ds-gradient-text', style: 'font-size:clamp(1.4rem,3vw,2rem)' },
+      h2({ class: `ds-heading-sm ds-gradient-text ${css('_fw[800] _ls[-0.03em] _lh[1.15] _m0')}` },
         `${stage.name} \u2014 ${stage.title}`,
       ),
     ),
     // Two-column: copy left, visual right
     div({ class: css('_flex _row _wrap _gap6 _aisstart') },
       // Left: bullets
-      ul({ class: css('_flex _col _gap2 _flex1 _minw[240px] _m0 _pl4'), style: 'list-style:none' },
+      ul({ class: `ds-no-bullets ${css('_flex _col _gap2 _flex1 _minw[240px] _m0 _pl4')}` },
         ...stage.bullets.map(b =>
           li({ class: css('_flex _row _gap2 _fgmutedfg') },
             span({ class: css('_fgaccent _shrink0 _mt[0.4em] _t[0.45rem]') }, '\u25CF'),
@@ -197,10 +197,10 @@ function buildPanel(stage, idx) {
     // AI process widget
     div({ class: css('_flex _col _gap0') },
       // Gradient divider
-      div({ class: css('_h[1px] _mb4'), style: 'background:linear-gradient(90deg,transparent,var(--d-primary),var(--d-accent),transparent)' }),
+      div({ class: `ds-gradient-divider ${css('_h[1px] _mb4')}` }),
       div({ class: css('_flex _row _gap3 _aisstart _pl4') },
         // Icon accent
-        div({ class: css('_shrink0 _mt[2px] _w[20px] _h[20px] _radius _flex _aic _jcc'), style: 'background:linear-gradient(135deg,rgba(254,68,116,0.15),rgba(10,243,235,0.15))' },
+        div({ class: `ds-ai-icon-bg ${css('_shrink0 _mt[2px] _w[20px] _h[20px] _radius _flex _aic _jcc')}` },
           icon('cpu', { size: '12px', class: css('_fgaccent') }),
         ),
         div({ class: css('_flex _col _gap1') },
@@ -323,11 +323,11 @@ export function HowItWorksPage() {
   return div(
     // ── Compact Hero ──
     section({ class: `ds-mesh ${css('_flex _col _aic _relative _ohidden _p[calc(var(--d-sp-16)+60px)_var(--d-sp-8)_var(--d-sp-8)]')}` },
-      div({ class: 'ds-orb ds-pulse', style: 'width:400px;height:400px;background:rgba(101,0,198,0.1);top:-15%;left:-10%' }),
-      div({ class: 'ds-orb ds-pulse', style: 'width:300px;height:300px;background:rgba(10,243,235,0.06);bottom:-10%;right:-5%;animation-delay:1.5s' }),
+      div({ class: `ds-orb ds-pulse ds-orb-purple-10 ${css('_w[400px] _h[400px] _top[-15%] _left[-10%]')}` }),
+      div({ class: `ds-orb ds-pulse ds-orb-cyan-06 ds-delay-1500 ${css('_w[300px] _h[300px] _bottom[-10%] _right[-5%]')}` }),
 
       div({ class: css('_flex _col _aic _gap4 _relative _z10 _tc _maxw[700px]') },
-        h1({ class: css('_fw[900] _ls[-0.04em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(2rem,5vw,3.5rem)' },
+        h1({ class: `ds-heading ds-gradient-text ds-animate ${css('_fw[900] _ls[-0.04em] _lh[1.1]')}` },
           'The Decantation Process',
         ),
         p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed _fgmutedfg')}` },
@@ -338,8 +338,8 @@ export function HowItWorksPage() {
 
     // ── Phase Viewer ──
     section({ class: `ds-mesh ds-section ${css('_flex _col _aic _relative _ohidden')}` },
-      div({ class: 'ds-orb', style: 'width:500px;height:500px;background:rgba(101,0,198,0.06);top:10%;right:-15%' }),
-      div({ class: 'ds-orb', style: 'width:350px;height:350px;background:rgba(10,243,235,0.04);bottom:20%;left:-10%' }),
+      div({ class: `ds-orb ds-orb-purple-06 ${css('_w[500px] _h[500px] _top[10%] _right[-15%]')}` }),
+      div({ class: `ds-orb ds-orb-cyan-04 ${css('_w[350px] _h[350px] _bottom[20%] _left[-10%]')}` }),
 
       div({ class: css('_flex _col _gap12 _relative _z10 _maxw[1100px] _w100') },
         // Pipeline bar

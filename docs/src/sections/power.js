@@ -22,12 +22,12 @@ function ClaimCard({ title, description, delay }) {
 export function PowerSection() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}`, id: 'power' },
     // Decorative orb
-    div({ class: 'ds-orb', style: 'width:600px;height:600px;background:rgba(101,0,198,0.08);top:0;right:-20%' }),
+    div({ class: `ds-orb ds-orb-purple-08 ${css('_w[600px] _h[600px] _top[0] _right[-20%]')}` }),
 
     div({ class: css('_flex _col _aic _gap12 _relative _z10 _maxw[1100px] _w100') },
       // Header
       div({ class: css('_flex _col _aic _gap4 _tc') },
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(2rem,5vw,3.5rem)' },
+        h2({ class: `ds-heading ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'The Most Powerful UI Framework',
         ),
         p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed _fgmutedfg _maxw[700px]')}` },

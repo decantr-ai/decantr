@@ -42,7 +42,7 @@ function MetricRow({ stat, statColor, label, description, footnote, visual, reve
 
   const chartSide = div({ class: css('_flex _aic _jcc _flex1 _minw[280px]') }, visual);
 
-  const divider = div({ class: css('_w[1px] _shrink0 _m[0_0.5rem]'), style: 'background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.1),transparent);align-self:stretch' });
+  const divider = div({ class: `ds-divider-v ${css('_w[1px] _shrink0 _m[0_0.5rem]')}` });
 
   return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _row _wrap _gap6 _p8 _aic _w100')}` },
     ...(reverse ? [chartSide, divider, textSide] : [textSide, divider, chartSide]),
@@ -51,7 +51,7 @@ function MetricRow({ stat, statColor, label, description, footnote, visual, reve
 
 function PillarCard({ iconName, title, description, delay }) {
   return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap4 _p8')}` },
-    div({ class: css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)] _aisstart'), style: 'background:rgba(10,243,235,0.1)' },
+    div({ class: `ds-accent-bg ${css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)] _aisstart')}` },
       icon(iconName, { size: '28px' }),
     ),
     h3({ class: css('_textxl _fwheading _fgfg') }, title),
@@ -62,13 +62,13 @@ function PillarCard({ iconName, title, description, delay }) {
 export function PhilosophySection() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}` },
     // Decorative orbs
-    div({ class: 'ds-orb', style: 'width:500px;height:500px;background:rgba(10,243,235,0.06);top:20%;right:-15%' }),
-    div({ class: 'ds-orb', style: 'width:400px;height:400px;background:rgba(101,0,198,0.08);bottom:10%;left:-10%' }),
+    div({ class: `ds-orb ds-orb-cyan-06 ${css('_w[500px] _h[500px] _top[20%] _right[-15%]')}` }),
+    div({ class: `ds-orb ds-orb-purple-08 ${css('_w[400px] _h[400px] _bottom[10%] _left[-10%]')}` }),
 
     div({ class: css('_flex _col _aic _gap12 _relative _z10 _maxw[1100px] _w100') },
       // Header
       div({ class: css('_flex _col _aic _gap4 _tc') },
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(2rem,5vw,3.5rem)' },
+        h2({ class: `ds-heading ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'The Decantr Way',
         ),
         p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed _fgmutedfg _maxw[650px]')}` },
@@ -174,17 +174,17 @@ export function PhilosophySection() {
 
       // Manifesto quote
       div({ class: `ds-glass-strong ds-animate ds-delay-8 ${css('_flex _col _aic _tc _p10 _gap6 _w100')}` },
-        div({ class: css('_w[60px] _h[2px] _rfull'), style: 'background:var(--d-gradient-brand)' }),
-        blockquote({ class: css('_fw[600] _lh[1.4] _fgfg _maxw[800px] _italic'), style: 'font-size:clamp(1.25rem,3vw,1.75rem)' },
+        div({ class: `ds-brand-line ${css('_w[60px] _h[2px] _rfull')}` }),
+        blockquote({ class: `ds-heading-md ${css('_fw[600] _lh[1.4] _fgfg _maxw[800px] _italic')}` },
           '"The future of web development is AI-generated, human-curated, and zero-compromise. We didn\'t build another framework. We built the last one you\'ll ever need."',
         ),
-        div({ class: css('_w[60px] _h[2px] _rfull'), style: 'background:var(--d-gradient-brand)' }),
+        div({ class: `ds-brand-line ${css('_w[60px] _h[2px] _rfull')}` }),
       ),
 
       // Coming soon teaser
       div({ class: `ds-animate ds-delay-9 ${css('_flex _col _aic _tc _gap3')}` },
         p({ class: css('_textlg _fgmutedfg') }, 'Something massive is coming.'),
-        p({ class: css('_fw[800] _ls[-0.02em]') + ' ds-gradient-text', style: 'font-size:clamp(1.5rem,4vw,2.5rem)' },
+        p({ class: `ds-heading-lg ds-gradient-text ${css('_fw[800] _ls[-0.02em]')}` },
           'Stay tuned.',
         ),
       ),

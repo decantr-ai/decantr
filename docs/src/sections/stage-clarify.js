@@ -26,12 +26,12 @@ function jsonLine(indent, key, value, comma) {
 
 export function StageClarify() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}` },
-    div({ class: 'ds-orb', style: 'width:400px;height:400px;background:rgba(254,68,116,0.06);top:30%;right:-10%' }),
+    div({ class: `ds-orb ds-orb-pink-06 ${css('_w[400px] _h[400px] _top[30%] _right[-10%]')}` }),
 
     div({ class: css('_flex _row _wrap _gap12 _aic _relative _z10 _maxw[1100px] _w100') },
       // Left: Visual — Logo with crystalline glow
       div({ class: css('_flex _aic _jcc _relative _flex1 _minw[260px]') },
-        div({ class: css('_absolute _w[180px] _h[180px] _rfull'), style: 'background:rgba(10,243,235,0.15);filter:blur(50px)' }),
+        div({ class: `ds-glow-cyan ${css('_absolute _w[180px] _h[180px] _rfull')}` }),
         div({ class: `ds-glass ds-glow ${css('_flex _aic _jcc _p10 _r[var(--d-radius-xl)]')}` },
           div({ class: css('_flex _col _aic _gap2') },
             span({ class: css('_t[3rem]') }, '\uD83D\uDC8E'),
@@ -47,7 +47,7 @@ export function StageClarify() {
           span({ class: css('_textsm _fwheading _fgmutedfg _uppercase _ls[0.1em]') }, 'Stage 3'),
         ),
 
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(1.75rem,4vw,2.75rem)' },
+        h2({ class: `ds-heading-stage ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'CLARIFY \u2014 Your Project\u2019s DNA',
         ),
 

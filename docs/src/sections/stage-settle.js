@@ -41,7 +41,7 @@ function LayerCard({ iconName, name, description, example, index }) {
   return div({
     class: `ds-glass ds-settle-layer ds-animate ds-delay-${index + 2} ${css('_flex _row _aic _gap4 _p6')}`,
   },
-    div({ class: css('_fgaccent _inlineflex _shrink0 _p[0.75rem] _r[var(--d-radius-lg)]'), style: 'background:rgba(10,243,235,0.1)' },
+    div({ class: `ds-accent-bg ${css('_fgaccent _inlineflex _shrink0 _p[0.75rem] _r[var(--d-radius-lg)]')}` },
       icon(iconName, { size: '24px' }),
     ),
     div({ class: css('_flex _col _gap1') },
@@ -54,7 +54,7 @@ function LayerCard({ iconName, name, description, example, index }) {
 
 export function StageSettle() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}` },
-    div({ class: 'ds-orb', style: 'width:500px;height:500px;background:rgba(10,243,235,0.06);bottom:10%;left:-15%' }),
+    div({ class: `ds-orb ds-orb-cyan-06 ${css('_w[500px] _h[500px] _bottom[10%] _left[-15%]')}` }),
 
     div({ class: css('_flex _col _aic _gap10 _relative _z10 _maxw[900px] _w100') },
       // Header
@@ -63,7 +63,7 @@ export function StageSettle() {
           span({ class: `ds-stage-num ${css('_flex _aic _jcc')}` }, '2'),
           span({ class: css('_textsm _fwheading _fgmutedfg _uppercase _ls[0.1em]') }, 'Stage 2'),
         ),
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(1.75rem,4vw,2.75rem)' },
+        h2({ class: `ds-heading-stage ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'SETTLE \u2014 Five Layers Emerge',
         ),
         p({ class: `ds-animate ds-delay-1 ${css('_textbase _lhrelaxed _fgmutedfg _maxw[600px]')}` },

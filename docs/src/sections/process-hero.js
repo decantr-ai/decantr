@@ -29,19 +29,19 @@ function PipelineLine({ delay }) {
 export function ProcessHero() {
   return section({ class: `ds-mesh ds-section ${css('_flex _col _aic _jcc _minhscreen _relative _ohidden')}` },
     // Decorative orbs
-    div({ class: 'ds-orb ds-pulse', style: 'width:500px;height:500px;background:rgba(101,0,198,0.12);top:-10%;left:-10%' }),
-    div({ class: 'ds-orb ds-pulse', style: 'width:400px;height:400px;background:rgba(10,243,235,0.08);bottom:-5%;right:-5%;animation-delay:1.5s' }),
+    div({ class: `ds-orb ds-pulse ds-orb-purple-12 ${css('_w[500px] _h[500px] _top[-10%] _left[-10%]')}` }),
+    div({ class: `ds-orb ds-pulse ds-orb-cyan-08 ds-delay-1500 ${css('_w[400px] _h[400px] _bottom[-5%] _right[-5%]')}` }),
 
     div({ class: css('_flex _col _aic _gap12 _relative _z10 _maxw[1100px] _w100') },
       // Headline
       div({ class: css('_flex _col _aic _gap4 _tc') },
-        h1({ class: css('_fw[900] _ls[-0.04em] _lh[1.05]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(2.5rem,6vw,4.5rem)' },
+        h1({ class: `ds-heading-page ds-gradient-text ds-animate ${css('_fw[900] _ls[-0.04em] _lh[1.05]')}` },
           'The Decantation Process',
         ),
         p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed _fgmutedfg _maxw[650px]')}` },
           'From raw intent to production code \u2014 six stages, zero ambiguity.',
         ),
-       
+
       ),
 
       // Pipeline visualization
@@ -57,8 +57,8 @@ export function ProcessHero() {
     ),
 
     // Scroll indicator
-    div({ class: css('_absolute _bottom0 _flex _col _aic _pb6 _left[50%]'), style: 'transform:translateX(-50%)' },
-      div({ class: css('_w[1px] _h[40px]'), style: 'background:linear-gradient(to bottom,transparent,var(--d-muted));animation:ds-pulse 2s infinite' }),
+    div({ class: `ds-center-x ${css('_absolute _bottom0 _flex _col _aic _pb6 _left[50%]')}` },
+      div({ class: `ds-scroll-line ${css('_w[1px] _h[40px]')}` }),
     ),
   );
 }

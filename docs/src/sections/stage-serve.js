@@ -7,26 +7,26 @@ const { section, div, h2, p, span, pre } = tags;
 function MockDashboard() {
   return div({ class: `ds-glass-strong ${css('_flex _row _ohidden _h[280px] _w100')}` },
     // Sidebar
-    div({ class: css('_w[48px] _shrink0'), style: 'background:rgba(101,0,198,0.15);border-right:1px solid rgba(255,255,255,0.06)' }),
+    div({ class: `ds-mock-sidebar ${css('_w[48px] _shrink0')}` }),
     // Main area
     div({ class: css('_flex _col _gap3 _p4 _flex1') },
       // Header bar
-      div({ class: css('_h[24px] _radius _w100'), style: 'background:rgba(255,255,255,0.04)' }),
+      div({ class: `ds-mock-bar ${css('_h[24px] _radius _w100')}` }),
       // KPI row
       div({ class: css('_flex _row _gap2') },
-        div({ class: css('_flex1 _h[48px] _radius'), style: 'background:rgba(254,68,116,0.12)' }),
-        div({ class: css('_flex1 _h[48px] _radius'), style: 'background:rgba(10,243,235,0.12)' }),
-        div({ class: css('_flex1 _h[48px] _radius'), style: 'background:rgba(101,0,198,0.15)' }),
+        div({ class: `ds-mock-kpi-1 ${css('_flex1 _h[48px] _radius')}` }),
+        div({ class: `ds-mock-kpi-2 ${css('_flex1 _h[48px] _radius')}` }),
+        div({ class: `ds-mock-kpi-3 ${css('_flex1 _h[48px] _radius')}` }),
       ),
       // Table area
-      div({ class: css('_flex1 _radius'), style: 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)' }),
+      div({ class: `ds-mock-table ${css('_flex1 _radius')}` }),
     ),
   );
 }
 
 export function StageServe() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}` },
-    div({ class: 'ds-orb', style: 'width:400px;height:400px;background:rgba(10,243,235,0.06);bottom:20%;right:-10%' }),
+    div({ class: `ds-orb ds-orb-cyan-06 ${css('_w[400px] _h[400px] _bottom[20%] _right[-10%]')}` }),
 
     div({ class: css('_flex _row _wrap _gap8 _aic _relative _z10 _maxw[1100px] _w100') },
       // Left: Blend spec input
@@ -36,7 +36,7 @@ export function StageServe() {
           span({ class: css('_textsm _fwheading _fgmutedfg _uppercase _ls[0.1em]') }, 'Stage 5'),
         ),
 
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(1.75rem,4vw,2.75rem)' },
+        h2({ class: `ds-heading-stage ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'SERVE \u2014 Deterministic Generation',
         ),
 

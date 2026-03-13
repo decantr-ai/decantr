@@ -18,7 +18,7 @@ function BlendRow({ label, cols }) {
 
 export function StageDecant() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}` },
-    div({ class: 'ds-orb', style: 'width:500px;height:500px;background:rgba(101,0,198,0.08);top:10%;left:-15%' }),
+    div({ class: `ds-orb ds-orb-purple-08 ${css('_w[500px] _h[500px] _top[10%] _left[-15%]')}` }),
 
     div({ class: css('_flex _col _aic _gap10 _relative _z10 _maxw[900px] _w100') },
       // Header
@@ -27,7 +27,7 @@ export function StageDecant() {
           span({ class: `ds-stage-num ${css('_flex _aic _jcc')}` }, '4'),
           span({ class: css('_textsm _fwheading _fgmutedfg _uppercase _ls[0.1em]') }, 'Stage 4'),
         ),
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(1.75rem,4vw,2.75rem)' },
+        h2({ class: `ds-heading-stage ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'DECANT \u2014 Spatial Resolution',
         ),
         p({ class: `ds-animate ds-delay-1 ${css('_textbase _lhrelaxed _fgmutedfg _maxw[600px]')}` },

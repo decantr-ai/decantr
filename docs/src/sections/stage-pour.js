@@ -6,19 +6,19 @@ const { section, div, h2, p, span, img } = tags;
 
 export function StagePour() {
   return section({ class: `ds-section ds-reveal ${css('_flex _col _aic')}` },
-    div({ class: 'ds-orb', style: 'width:400px;height:400px;background:rgba(101,0,198,0.1);top:20%;right:-10%' }),
+    div({ class: `ds-orb ds-orb-purple-10 ${css('_w[400px] _h[400px] _top[20%] _right[-10%]')}` }),
 
     div({ class: css('_flex _row _wrap _gap12 _aic _relative _z10 _maxw[1100px] _w100') },
       // Left: Visual
       div({ class: css('_flex _aic _jcc _relative _flex1 _minw[280px]') },
         // Glow orb behind logo
-        div({ class: css('_absolute _w[200px] _h[200px] _rfull'), style: 'background:rgba(101,0,198,0.2);filter:blur(60px)' }),
+        div({ class: `ds-glow-purple ${css('_absolute _w[200px] _h[200px] _rfull')}` }),
         div({ class: css('_flex _col _aic _gap4 _relative') },
           div({ class: `ds-glass ${css('_flex _aic _jcc _p8 _rfull _w[140px] _h[140px]')}` },
-            img({ src: './images/logo.svg', alt: '', class: css('_w[80px]'), style: 'filter:drop-shadow(0 0 20px rgba(101,0,198,0.4))' }),
+            img({ src: './images/logo.svg', alt: '', class: `ds-logo-glow-sm ${css('_w[80px]')}` }),
           ),
           // Pouring line
-          div({ class: css('_w[2px] _h[60px]') + ' ds-flow-line', style: 'background:linear-gradient(to bottom,var(--d-primary),transparent)' }),
+          div({ class: `ds-flow-gradient ds-flow-line ${css('_w[2px] _h[60px]')}` }),
         ),
       ),
 
@@ -30,7 +30,7 @@ export function StagePour() {
           span({ class: css('_textsm _fwheading _fgmutedfg _uppercase _ls[0.1em]') }, 'Stage 1'),
         ),
 
-        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(1.75rem,4vw,2.75rem)' },
+        h2({ class: `ds-heading-stage ds-gradient-text ds-animate ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
           'POUR \u2014 Express Your Intent',
         ),
 
