@@ -19,7 +19,7 @@ const { div, button: buttonTag } = tags;
  * @param {boolean} [props.half=false] - Allow half-star ratings
  * @param {boolean|Function} [props.disabled=false]
  * @param {boolean} [props.readonly=false]
- * @param {string} [props.size] - sm|default|lg
+ * @param {string} [props.size] - sm|lg
  * @param {string} [props.character='★'] - Star character or custom text
  * @param {boolean|string|Function} [props.error]
  * @param {boolean|string|Function} [props.success]

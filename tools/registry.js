@@ -103,9 +103,9 @@ function parseJSDoc(jsdoc) {
 
     // Extract enum values from description: word|word|word
     if (desc) {
-      const enumMatch = desc.match(/^([a-z][\w'-]*(?:\|[a-z][\w'-]*)+)/);
+      const enumMatch = desc.match(/^('?[a-z][\w'-]*'?(?:\|'?[a-z][\w'-]*'?)+)/);
       if (enumMatch) {
-        param.enum = enumMatch[1].split('|');
+        param.enum = enumMatch[1].split('|').map(v => v.replace(/'/g, ''));
       }
       const defMatch = desc.match(/\(default:\s*([^)]+)\)/);
       if (defMatch) {
@@ -547,13 +547,17 @@ for (const [name, data] of Object.entries(modules)) {
     if (!generatedKeys.has(key)) output[key] = val;
   }
 
-  // For components: merge per-component showcase keys (manual data wins)
+  // For components: merge per-component showcase keys (manual data wins, but sections are unioned)
   if (exportKey === 'components' && existing.components) {
     for (const [compName, compData] of Object.entries(output.components)) {
       const oldComp = existing.components[compName];
       if (oldComp?.showcase) {
+        const autoSections = compData.showcase?.sections || [];
+        const oldSections = oldComp.showcase.sections || [];
         // Merge: old manually-curated fields override auto-populated ones
         compData.showcase = { ...(compData.showcase || {}), ...oldComp.showcase };
+        // Union sections so auto-populated entries (sizes, variants) are not lost
+        compData.showcase.sections = [...new Set([...oldSections, ...autoSections])];
       }
     }
   }

@@ -51,7 +51,7 @@ export function Transfer(props = {}) {
     });
 
     const header = h('div', { class: 'd-transfer-header' },
-      h('label', { style: { display: 'flex', alignItems: 'center', gap: 'var(--d-sp-2)', cursor: 'pointer' } },
+      h('label', null,
         selectAllWrap,
         h('span', null, `${checked.size}/${items.length}`)
       ),
@@ -66,8 +66,7 @@ export function Transfer(props = {}) {
         type: 'text',
         class: 'd-input',
         placeholder: 'Search...',
-        style: { fontSize: 'var(--d-text-sm)' }
-      });
+              });
       search.addEventListener('input', () => {
         searchFilter.value = search.value.toLowerCase();
         render();

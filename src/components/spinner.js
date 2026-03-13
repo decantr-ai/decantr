@@ -67,7 +67,7 @@ function createOrbit() {
  *
  * @param {Object} [props]
  * @param {'ring'|'dots'|'pulse'|'bars'|'orbit'} [props.variant='ring'] - Animation style
- * @param {string} [props.size] - xs|sm|default|lg|xl
+ * @param {string} [props.size] - xs|sm|lg|xl
  * @param {'primary'|'success'|'warning'|'destructive'|'info'|'muted'} [props.color] - Semantic color
  * @param {string} [props.icon] - Icon name for hybrid mode (ring spins around static center icon)
  * @param {string} [props.label] - Accessible label (default: 'Loading')
@@ -77,7 +77,7 @@ function createOrbit() {
 export function Spinner(props = {}) {
   injectBase();
 
-  const { variant = 'ring', size = 'default', color, icon: iconName, label = 'Loading', class: cls, ...rest } = props;
+  const { variant = 'ring', size, color, icon: iconName, label = 'Loading', class: cls, ...rest } = props;
 
   let inner;
   if (iconName) {

@@ -7,7 +7,7 @@ import { icon as iconHelper } from './icon.js';
  * @param {string|Node} [props.icon] - Leading icon (string = icon name, Node = element)
  * @param {string} props.label - Text content
  * @param {string} [props.variant] - default|outline|filled (default: 'default')
- * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.size] - xs|sm|lg
  * @param {boolean} [props.removable] - Show dismiss X button
  * @param {Function} [props.onRemove] - Dismiss callback
  * @param {Function} [props.onClick] - Click handler (makes chip interactive)

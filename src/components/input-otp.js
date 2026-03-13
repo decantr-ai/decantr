@@ -22,7 +22,7 @@ const { div, input: inputTag, span } = tags;
  * @param {boolean|Function} [props.disabled]
  * @param {boolean|string|Function} [props.error]
  * @param {boolean|string|Function} [props.success]
- * @param {string} [props.size] - 'sm'|'lg'
+ * @param {string} [props.size] - sm|lg
  * @param {string} [props.variant] - 'outlined'|'filled'|'ghost'
  * @param {string} [props.label]
  * @param {string} [props.help]

@@ -11,7 +11,7 @@ const { nav: navTag, ul, li, button: buttonTag, span } = tags;
  * @param {number|Function} [props.current=1]
  * @param {Function} [props.onchange]
  * @param {number} [props.siblings=1]
- * @param {string} [props.size] - 'sm'|'lg'
+ * @param {string} [props.size] - sm|lg
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */

@@ -15,7 +15,7 @@ const { label: labelTag, input: inputTag, span } = tags;
  * @param {boolean|Function} [props.disabled]
  * @param {string} [props.label]
  * @param {boolean|string|Function} [props.error]
- * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.size] - xs|sm|lg
  * @param {string} [props.name] - Form field name
  * @param {boolean} [props.required]
  * @param {Function} [props.onchange]

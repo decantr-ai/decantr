@@ -13,17 +13,17 @@ const SPINNER_SIZE = {
  * Shared variant resolver — reusable by any element needing button styles.
  * @param {Object} [props]
  * @param {string} [props.variant] - default|primary|secondary|tertiary|destructive|success|warning|outline|ghost|link
- * @param {string} [props.size] - default|xs|sm|lg|icon|icon-xs|icon-sm|icon-lg
+ * @param {string} [props.size] - xs|sm|lg|icon|icon-xs|icon-sm|icon-lg
  * @returns {string} CSS class string
  */
 export function buttonVariants({ variant = 'default', size = 'default' } = {}) {
-  return cx('d-btn', `d-btn-${variant}`, size !== 'default' && `d-btn-${size}`);
+  return cx('d-btn', `d-btn-${variant}`, size && size !== 'default' && `d-btn-${size}`);
 }
 
 /**
  * @param {Object} [props]
  * @param {string} [props.variant] - default|primary|secondary|tertiary|destructive|success|warning|outline|ghost|link
- * @param {string} [props.size] - default|xs|sm|lg|icon|icon-xs|icon-sm|icon-lg
+ * @param {string} [props.size] - xs|sm|lg|icon|icon-xs|icon-sm|icon-lg
  * @param {boolean|Function} [props.disabled]
  * @param {boolean|Function} [props.loading]
  * @param {string} [props.class]

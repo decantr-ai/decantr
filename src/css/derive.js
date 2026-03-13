@@ -554,6 +554,7 @@ const SPACING = {
   // Step icon
   '--d-step-icon-size': '2rem',
   // ColorPicker anatomy
+  '--d-timepicker-column-h': '200px', '--d-datepicker-day-lh': '2',
   '--d-colorpicker-swatch': '24px', '--d-colorpicker-thumb': '14px',
   '--d-colorpicker-preset': '20px', '--d-colorpicker-sat-h': '150px',
   '--d-colorpicker-bar-h': '12px',

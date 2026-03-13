@@ -22,7 +22,7 @@ let _tabId = 0;
  * @param {Function} [props.onchange]
  * @param {Function} [props.onclose] - Called with tab id when closable tab is closed
  * @param {'horizontal'|'vertical'} [props.orientation='horizontal']
- * @param {'sm'|'lg'} [props.size]
+ * @param {string} [props.size] - sm|lg
  * @param {boolean|Function} [props.disabled] - Group-level disabled
  * @param {boolean} [props.destroyInactive=true] - When false, all panels stay in DOM (hidden)
  * @param {string} [props.class]

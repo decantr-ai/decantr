@@ -36,7 +36,7 @@ const { div, input: inputTag, button: buttonTag, span } = tags;
  * @param {boolean|string|Function} [props.error]
  * @param {boolean|string|Function} [props.success]
  * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
- * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.size] - xs|sm|lg
  * @param {string} [props.label]
  * @param {string} [props.help]
  * @param {boolean} [props.required]

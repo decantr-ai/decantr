@@ -13,7 +13,7 @@ import { injectBase, cx } from './_base.js';
  * @param {'left'|'right'|'alternate'} [props.mode='left']
  * @param {boolean} [props.pending=false] - Show pending last item
  * @param {'default'|'branded'} [props.variant='default']
- * @param {'sm'|'md'|'lg'} [props.size]
+ * @param {string} [props.size] - sm|lg
  * @param {number|Function} [props.active] - Index of active item (reactive)
  * @param {boolean} [props.gradient=false] - Gradient connector line
  * @param {boolean} [props.glass=false] - Glass background on dots

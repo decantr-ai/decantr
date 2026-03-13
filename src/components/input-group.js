@@ -11,7 +11,7 @@ import { injectBase, cx, reactiveClass, reactiveAttr, resolve } from './_base.js
 /**
  * @param {Object} [props]
  * @param {boolean} [props.vertical=false] - Stack vertically (for textarea header/footer)
- * @param {'sm'|'default'|'lg'} [props.size] - Propagates addon sizing
+ * @param {string} [props.size] - xs|sm|lg - Propagates addon sizing
  * @param {boolean|Function} [props.error] - Error state on whole group
  * @param {boolean|Function} [props.disabled] - Disabled state on whole group
  * @param {string} [props.class]

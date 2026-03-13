@@ -19,7 +19,7 @@ const { div, button: buttonTag } = tags;
  * @param {Function} [props.onchange]
  * @param {boolean} [props.block=false]
  * @param {boolean|Function} [props.disabled]
- * @param {string} [props.size] - 'sm'|'lg'
+ * @param {string} [props.size] - sm|lg
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */

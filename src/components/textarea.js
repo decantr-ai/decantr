@@ -15,7 +15,7 @@ const { div, textarea: textareaTag } = tags;
  * @param {boolean|string|Function} [props.error]
  * @param {boolean|string|Function} [props.success]
  * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
- * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.size] - xs|sm|lg
  * @param {number} [props.rows=3]
  * @param {string} [props.resize='vertical'] - 'none'|'vertical'|'horizontal'|'both'
  * @param {string} [props.label]

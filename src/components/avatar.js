@@ -5,7 +5,7 @@ import { injectBase, cx } from './_base.js';
  * @param {Object} [props]
  * @param {string} [props.src] - Image URL
  * @param {string} [props.alt] - Alt text
- * @param {string} [props.size] - sm|lg (default: medium)
+ * @param {string} [props.size] - sm|lg|xl
  * @param {string} [props.fallback] - Fallback text (initials)
  * @param {string} [props.class]
  * @returns {HTMLElement}

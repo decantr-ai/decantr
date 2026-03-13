@@ -30,7 +30,9 @@
           "multiple": true
         },
         "sections": [
-          "examples"
+          "examples",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -109,7 +111,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -157,7 +160,8 @@
       "showcase": {
         "labelProp": "title",
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -214,7 +218,9 @@
         },
         "sections": [
           "variants",
-          "examples"
+          "examples",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "description": "This is an alert message."
@@ -274,7 +280,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -300,7 +307,12 @@
           "type": "number"
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "sm",
+            "lg",
+            "xl"
+          ]
         },
         "class": {
           "type": "string"
@@ -310,7 +322,9 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "examples": [
           {
@@ -336,9 +350,9 @@
           "type": "string",
           "enum": [
             "sm",
-            "lg"
-          ],
-          "default": "medium"
+            "lg",
+            "xl"
+          ]
         },
         "fallback": {
           "type": "string"
@@ -351,7 +365,8 @@
       "showcase": {
         "sections": [
           "sizes",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "name": "John Doe"
@@ -400,7 +415,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -451,7 +467,8 @@
         "sections": [
           "variants",
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -536,7 +553,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -575,7 +593,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -655,7 +674,6 @@
         "size": {
           "type": "string",
           "enum": [
-            "default",
             "xs",
             "sm",
             "lg",
@@ -671,7 +689,8 @@
         "sections": [
           "variants",
           "sizes",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -713,7 +732,6 @@
         "size": {
           "type": "string",
           "enum": [
-            "default",
             "xs",
             "sm",
             "lg",
@@ -761,7 +779,8 @@
           "sizes",
           "icons",
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -840,7 +859,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -885,7 +905,9 @@
         },
         "labelProp": "title",
         "sections": [
-          "examples"
+          "examples",
+          "states",
+          "interactive"
         ],
         "examples": [
           {
@@ -952,7 +974,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "slides": [
@@ -1026,10 +1049,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -1054,7 +1087,9 @@
         "labelProp": "label",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "options": [
@@ -1134,7 +1169,12 @@
           "type": "boolean"
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "onchange": {
           "type": "Function"
@@ -1152,7 +1192,9 @@
         "labelProp": "label",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "children": null,
         "examples": [
@@ -1217,7 +1259,12 @@
           "default": "'default'"
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "removable": {
           "type": "boolean"
@@ -1246,7 +1293,8 @@
           "variants",
           "sizes",
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -1326,7 +1374,9 @@
           "copyable=true": true
         },
         "sections": [
-          "examples"
+          "examples",
+          "states",
+          "interactive"
         ],
         "examples": [
           {
@@ -1368,7 +1418,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -1406,10 +1457,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -1432,7 +1493,9 @@
         "labelProp": "label",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "presets": [
@@ -1487,10 +1550,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -1518,7 +1591,10 @@
         },
         "labelProp": "placeholder",
         "sections": [
-          "examples"
+          "examples",
+          "sizes",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "options": [
@@ -1613,7 +1689,8 @@
       "returns": "HTMLDialogElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -1659,7 +1736,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -1760,7 +1838,9 @@
           "exportable=false": true
         },
         "sections": [
-          "examples"
+          "examples",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "columns": [
@@ -1848,10 +1928,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -1876,7 +1966,10 @@
         },
         "labelProp": "label",
         "sections": [
-          "examples"
+          "examples",
+          "sizes",
+          "states",
+          "interactive"
         ],
         "examples": [
           {
@@ -1928,10 +2021,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -1953,7 +2056,10 @@
         },
         "labelProp": "label",
         "sections": [
-          "examples"
+          "examples",
+          "sizes",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "value": [
@@ -2012,7 +2118,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -2063,7 +2170,8 @@
         "labelProp": "title",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -2172,7 +2280,8 @@
       "showcase": {
         "labelProp": "title",
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "children": null,
         "examples": [
@@ -2214,7 +2323,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -2319,7 +2429,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -2369,7 +2480,8 @@
       ],
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -2411,7 +2523,8 @@
       ],
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -2459,7 +2572,8 @@
         "labelProp": "label",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -2503,7 +2617,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -2543,7 +2658,9 @@
       ],
       "returns": "HTMLElement",
       "_type": "function",
-      "showcase": {}
+      "showcase": {
+        "sections": []
+      }
     },
     "Image": {
       "props": {
@@ -2586,7 +2703,8 @@
         "labelProp": "placeholder",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -2638,7 +2756,12 @@
           "type": "boolean"
         },
         "size": {
-          "type": "'sm'|'default'|'lg'"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "error": {
           "type": "boolean|Function",
@@ -2663,7 +2786,9 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "examples": [
           {
@@ -2693,7 +2818,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -2741,10 +2867,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -2770,7 +2906,9 @@
         "labelProp": "placeholder",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "examples": [
           {
@@ -2837,10 +2975,19 @@
           "reactive": true
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "sm",
+            "lg"
+          ]
         },
         "variant": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "label": {
           "type": "string"
@@ -2865,7 +3012,10 @@
         "labelProp": "label",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "variants",
+          "sizes",
+          "interactive"
         ],
         "examples": [
           {
@@ -2942,10 +3092,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -2977,7 +3137,9 @@
         "labelProp": "placeholder",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "placeholder": "Type here..."
@@ -3041,7 +3203,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "keys": [
@@ -3088,7 +3251,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -3148,7 +3312,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -3228,7 +3393,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -3281,10 +3447,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -3312,7 +3488,10 @@
         },
         "labelProp": "placeholder",
         "sections": [
-          "examples"
+          "examples",
+          "sizes",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "options": [
@@ -3371,7 +3550,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -3453,7 +3633,8 @@
       "returns": "{ close: Function }",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -3494,7 +3675,8 @@
     "resetMessages": {
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ]
       }
     },
@@ -3531,7 +3713,8 @@
       "showcase": {
         "labelProp": "title",
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -3558,7 +3741,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -3635,7 +3819,8 @@
       "showcase": {
         "labelProp": "title",
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -3671,7 +3856,8 @@
     "resetNotifications": {
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ]
       }
     },
@@ -3696,7 +3882,11 @@
           "type": "number"
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "sm",
+            "lg"
+          ]
         },
         "class": {
           "type": "string"
@@ -3705,7 +3895,9 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "total": 100,
@@ -3770,7 +3962,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -3803,7 +3996,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -3873,7 +4067,10 @@
         "labelProp": "label",
         "sections": [
           "variants",
-          "examples"
+          "examples",
+          "sizes",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "value": 65
@@ -3947,14 +4144,23 @@
           "reactive": true
         },
         "orientation='vertical'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "vertical",
+            "horizontal"
+          ]
         },
         "error": {
           "type": "boolean|string|Function",
           "reactive": true
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "onchange": {
           "type": "Function"
@@ -3967,7 +4173,9 @@
       "showcase": {
         "labelProp": "name",
         "sections": [
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "options": [
@@ -4078,7 +4286,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "value": [
@@ -4125,7 +4334,6 @@
           "type": "string",
           "enum": [
             "sm",
-            "default",
             "lg"
           ]
         },
@@ -4167,7 +4375,8 @@
         "sections": [
           "sizes",
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "value": 3
@@ -4257,7 +4466,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -4305,7 +4515,8 @@
       "showcase": {
         "labelProp": "title",
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -4366,7 +4577,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -4400,7 +4612,11 @@
           "reactive": true
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "sm",
+            "lg"
+          ]
         },
         "class": {
           "type": "string"
@@ -4413,7 +4629,9 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "options": [
@@ -4497,10 +4715,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -4527,7 +4755,9 @@
         "labelProp": "placeholder",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "options": [
@@ -4627,7 +4857,8 @@
         "labelProp": "label",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -4696,7 +4927,9 @@
         },
         "labelProp": "title",
         "sections": [
-          "examples"
+          "examples",
+          "states",
+          "interactive"
         ],
         "children": null,
         "examples": [
@@ -4738,7 +4971,9 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "variants",
+          "interactive"
         ],
         "examples": [
           {
@@ -4817,7 +5052,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "value": 50
@@ -4886,7 +5122,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -4941,7 +5178,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -4973,7 +5211,6 @@
           "enum": [
             "xs",
             "sm",
-            "default",
             "lg",
             "xl"
           ]
@@ -4998,7 +5235,8 @@
         "sections": [
           "variants",
           "sizes",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "children": null,
         "examples": [
@@ -5157,7 +5395,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "panels": [
@@ -5229,7 +5468,8 @@
         "labelProp": "label",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -5303,7 +5543,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -5402,7 +5643,12 @@
           "reactive": true
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "name": {
           "type": "string"
@@ -5429,7 +5675,8 @@
         "sections": [
           "sizes",
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "children": null,
         "examples": [
@@ -5491,7 +5738,9 @@
           "compact": true
         },
         "sections": [
-          "examples"
+          "examples",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "columns": [
@@ -5559,7 +5808,11 @@
           "type": "'horizontal'|'vertical'"
         },
         "size": {
-          "type": "'sm'|'lg'"
+          "type": "string",
+          "enum": [
+            "sm",
+            "lg"
+          ]
         },
         "disabled": {
           "type": "boolean|Function",
@@ -5578,7 +5831,10 @@
           "destroyInactive=true": true
         },
         "sections": [
-          "examples"
+          "examples",
+          "sizes",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "tabs": [
@@ -5725,7 +5981,8 @@
         "sections": [
           "variants",
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "labelProp": "label",
         "children": "Tag",
@@ -5795,16 +6052,32 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "rows=3": {
           "type": "number"
         },
         "resize='vertical'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "none",
+            "vertical",
+            "horizontal",
+            "both"
+          ]
         },
         "label": {
           "type": "string"
@@ -5834,7 +6107,9 @@
         "labelProp": "placeholder",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "placeholder": "Enter text..."
@@ -5905,10 +6180,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -5935,7 +6220,9 @@
         "labelProp": "label",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "examples": [
           {
@@ -5981,10 +6268,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -6006,7 +6303,10 @@
         },
         "labelProp": "label",
         "sections": [
-          "examples"
+          "examples",
+          "sizes",
+          "states",
+          "interactive"
         ],
         "defaults": {
           "value": [
@@ -6040,7 +6340,11 @@
           "type": "'default'|'branded'"
         },
         "size": {
-          "type": "'sm'|'md'|'lg'"
+          "type": "string",
+          "enum": [
+            "sm",
+            "lg"
+          ]
         },
         "active": {
           "type": "number|Function",
@@ -6065,7 +6369,9 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "items": [
@@ -6244,7 +6550,12 @@
           ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "disabled": {
           "type": "boolean|Function",
@@ -6262,7 +6573,9 @@
       "showcase": {
         "sections": [
           "variants",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "children": "Toggle",
         "examples": [
@@ -6302,7 +6615,11 @@
           "type": "string"
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "sm",
+            "lg"
+          ]
         },
         "block=false": {
           "type": "boolean"
@@ -6324,7 +6641,10 @@
           "multiple": true
         },
         "sections": [
-          "examples"
+          "examples",
+          "states",
+          "interactive",
+          "sizes"
         ],
         "defaults": {
           "items": [
@@ -6395,7 +6715,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "children": null,
         "examples": [
@@ -6456,7 +6777,8 @@
       "returns": "{ start: Function, next: Function, prev: Function, close: Function, goTo: Function }",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "steps": [
@@ -6518,7 +6840,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "dataSource": [
@@ -6631,10 +6954,20 @@
           "reactive": true
         },
         "variant='outlined'": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "outlined",
+            "filled",
+            "ghost"
+          ]
         },
         "size": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "xs",
+            "sm",
+            "lg"
+          ]
         },
         "label": {
           "type": "string"
@@ -6658,7 +6991,9 @@
         "labelProp": "label",
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "sizes",
+          "interactive"
         ],
         "defaults": {
           "options": [
@@ -6752,7 +7087,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "data": [
@@ -6850,7 +7186,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -6945,7 +7282,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -7035,7 +7373,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -7078,7 +7417,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -7109,7 +7449,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -7163,7 +7504,8 @@
         },
         "sections": [
           "states",
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -7194,7 +7536,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "examples": [
           {
@@ -7239,7 +7582,8 @@
       "returns": "HTMLElement",
       "showcase": {
         "sections": [
-          "examples"
+          "examples",
+          "interactive"
         ],
         "defaults": {
           "content": "Confidential"

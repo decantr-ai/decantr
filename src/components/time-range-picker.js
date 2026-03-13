@@ -22,7 +22,7 @@ const { div, button: buttonTag, span } = tags;
  * @param {boolean|string|Function} [props.error]
  * @param {boolean|string|Function} [props.success]
  * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
- * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.size] - xs|sm|lg
  * @param {string} [props.label]
  * @param {string} [props.help]
  * @param {boolean} [props.required]
@@ -91,13 +91,7 @@ export function TimeRangePicker(props = {}) {
 
   function renderValidation() {
     if (!errorEl) return;
-    if (!isValid()) {
-      errorEl.textContent = 'End time must be after start time';
-      errorEl.style.display = '';
-    } else {
-      errorEl.textContent = '';
-      errorEl.style.display = 'none';
-    }
+    errorEl.textContent = isValid() ? '' : 'End time must be after start time';
   }
 
   function renderPanel() {
@@ -134,7 +128,6 @@ export function TimeRangePicker(props = {}) {
     const endSection = div({ class: 'd-timerange-section' }, endLabel, endCols);
 
     errorEl = div({ class: 'd-timerange-error', role: 'alert' });
-    errorEl.style.display = 'none';
 
     const row = div({ class: 'd-timerange-row' }, startSection, divider, endSection);
     panel.appendChild(row);

@@ -13,7 +13,7 @@ const { div, label: labelTag, input: inputTag, span } = tags;
  * @param {boolean|Function} [props.disabled]
  * @param {string} [props.orientation='vertical'] - 'vertical'|'horizontal'
  * @param {boolean|string|Function} [props.error]
- * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.size] - xs|sm|lg
  * @param {Function} [props.onchange]
  * @param {string} [props['aria-label']]
  * @param {string} [props.class]

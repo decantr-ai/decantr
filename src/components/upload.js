@@ -101,7 +101,7 @@ export function Upload(props = {}, ...children) {
     container.appendChild(dragger);
   } else {
     const triggerBtn = children.length
-      ? h('div', { style: { cursor: 'pointer' } }, ...children)
+      ? h('div', { class: 'd-upload-trigger' }, ...children)
       : h('button', { type: 'button', class: 'd-btn d-btn-default' }, 'Upload');
 
     triggerBtn.addEventListener('click', () => {

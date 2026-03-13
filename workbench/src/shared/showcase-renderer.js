@@ -101,13 +101,16 @@ export function renderShowcase(componentName, registryEntry, navigateTo, gridCla
   const sizeEnum = props.size?.enum?.filter(s => !s.startsWith('icon'));
   if (showcase?.sections?.includes('sizes') && sizeEnum?.length > 0) {
     const children = getDefaultChildren(componentName, showcase);
+    const allSizes = [{ label: 'default', value: undefined }, ...sizeEnum.map(s => ({ label: s, value: s }))];
     sections.push(
       showcaseSection('Sizes',
         div({ class: gridClass },
-          ...sizeEnum.map(s => {
+          ...allSizes.map(({ label, value }) => {
             try {
-              return labeledItem(renderWithVariant(ComponentFn, componentName, { ...defaults, size: s }, children, labelProp), s);
-            } catch { return span({ class: css('_fgerror _caption') }, `Error: ${s}`); }
+              const sizeProps = { ...defaults };
+              if (value) sizeProps.size = value;
+              return labeledItem(renderWithVariant(ComponentFn, componentName, sizeProps, children, labelProp), label);
+            } catch { return span({ class: css('_fgerror _caption') }, `Error: ${label}`); }
           })
         )
       )

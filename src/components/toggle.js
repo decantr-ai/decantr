@@ -16,7 +16,7 @@ const { div, button: buttonTag } = tags;
  * @param {Object} [props]
  * @param {boolean|Function} [props.pressed=false] - Pressed state (static or signal getter)
  * @param {string} [props.variant] - default|outline
- * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.size] - xs|sm|lg
  * @param {boolean|Function} [props.disabled]
  * @param {Function} [props.onchange] - Called with new pressed state
  * @param {string} [props.class]
@@ -74,7 +74,7 @@ export function Toggle(props = {}, ...children) {
  * @param {'single'|'multiple'} [props.type='single']
  * @param {boolean} [props.multiple] - Alias for type='multiple'
  * @param {string} [props.variant]
- * @param {string} [props.size]
+ * @param {string} [props.size] - sm|lg
  * @param {boolean} [props.block=false] - Full-width layout
  * @param {boolean|Function} [props.disabled] - Group-level disabled
  * @param {Function} [props.onchange] - Called with new value(s)

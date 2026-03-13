@@ -10,7 +10,7 @@ import { injectBase, cx } from './_base.js';
 /**
  * @param {Object} [props]
  * @param {number} [props.max=5] - Max visible avatars
- * @param {string} [props.size] - Avatar size class suffix (sm, lg, xl)
+ * @param {string} [props.size] - sm|lg|xl
  * @param {string} [props.class]
  * @param {...Node} children - Avatar components
  * @returns {HTMLElement}
