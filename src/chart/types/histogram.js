@@ -59,7 +59,7 @@ export function layoutHistogram(spec, width, height) {
     const h = innerH - y;
     children.push(rect({
       x, y, w: Math.max(0, w), h: Math.max(0, h),
-      fill: chartColor(0), class: 'd-chart-bar',
+      rx: Math.min(4, w / 4), fill: chartColor(0), class: 'd-chart-bar',
       data: { label: bin.label, value: bin.count, series: field },
       key: `hist-${i}`
     }));

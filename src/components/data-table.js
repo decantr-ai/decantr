@@ -1,18 +1,20 @@
-import { h, text } from '../core/index.js';
+import { h, text, onDestroy } from '../core/index.js';
 import { createSignal, createEffect, batch } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret, createCheckControl } from './_behaviors.js';
+
+const { div, button: buttonTag, span, label: labelTag, select: selectTag, option: optionTag } = tags;
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════
 
 const resolve = (v) => typeof v === 'function' ? v() : v;
-const ROW_H = 40; // virtual scroll row height (px)
+const ROW_H = 40;
 const VIRT_THRESHOLD = 500;
 const MIN_COL_W = 50;
 
-/** Default comparator — handles string, number, date, null */
 function defaultCmp(a, b) {
   if (a == null && b == null) return 0;
   if (a == null) return -1;
@@ -21,7 +23,6 @@ function defaultCmp(a, b) {
   return String(a).localeCompare(String(b));
 }
 
-/** CSV-escape a cell value */
 function csvCell(v) {
   if (v == null) return '';
   const s = String(v);
@@ -82,32 +83,22 @@ export function DataTable(props = {}) {
   // STATE
   // ─────────────────────────────────────────────────────────────
 
-  // Sort: array of { key, direction:'asc'|'desc' }
   const [sortCols, setSortCols] = createSignal([]);
-  // Pagination
   const [page, setPage] = createSignal(1);
   const [pageSize, setPageSize] = createSignal(pgCfg ? pgCfg.pageSize || 10 : 10);
-  // Selection: Set of rowKey values
   const [selected, setSelected] = createSignal(new Set());
-  // Last clicked index (for shift+click range)
   let lastClickIdx = -1;
-  // Expanded: Set of rowKey values
   const [expanded, setExpanded] = createSignal(new Set());
-  // Column filters: { [key]: string }
   const [filters, setFilters] = createSignal({});
-  // Column widths overrides (from resize): { [key]: number (px) }
   const [colWidths, setColWidths] = createSignal({});
-  // Virtual scroll offset
   const [scrollTop, setScrollTop] = createSignal(0);
 
   // ─────────────────────────────────────────────────────────────
   // DERIVED DATA PIPELINE
   // ─────────────────────────────────────────────────────────────
 
-  /** Resolve raw data (may be signal getter) */
   const getData = () => resolve(rawData) || [];
 
-  /** Apply client-side filters */
   const getFiltered = () => {
     const d = getData();
     const f = filters();
@@ -121,7 +112,6 @@ export function DataTable(props = {}) {
     );
   };
 
-  /** Apply client-side sort */
   const getSorted = () => {
     const d = getFiltered();
     const sc = sortCols();
@@ -139,16 +129,13 @@ export function DataTable(props = {}) {
     return sorted;
   };
 
-  /** Total row count (for pagination) */
   const getTotal = () => {
     if (pgCfg && pgCfg.serverSide && pgCfg.total != null) return resolve(pgCfg.total);
     return getSorted().length;
   };
 
-  /** Page count */
   const getPageCount = () => Math.max(1, Math.ceil(getTotal() / pageSize()));
 
-  /** Paginated rows — client-side slicing unless serverSide or no pagination */
   const getPageData = () => {
     const sorted = getSorted();
     if (!pgCfg || pgCfg.serverSide) return sorted;
@@ -166,22 +153,18 @@ export function DataTable(props = {}) {
       const idx = prev.findIndex(s => s.key === key);
       let next;
       if (idx === -1) {
-        // Add new sort column
         const entry = { key, direction: 'asc' };
         next = multi ? [...prev, entry] : [entry];
       } else {
         const cur = prev[idx];
         if (cur.direction === 'asc') {
-          // Toggle to desc
           next = [...prev];
           next[idx] = { key, direction: 'desc' };
         } else {
-          // Remove sort
           next = prev.filter((_, i) => i !== idx);
         }
         if (!multi && next.length > 1) next = next.filter(s => s.key === key);
       }
-      // Fire server-side callback
       if (onSort && next.length) onSort(next[next.length - 1]);
       return next;
     });
@@ -210,9 +193,7 @@ export function DataTable(props = {}) {
         return next;
       });
     } else {
-      // multi
       if (shiftKey && lastClickIdx >= 0) {
-        // Range select
         const rows = getPageData();
         const lo = Math.min(lastClickIdx, idx);
         const hi = Math.max(lastClickIdx, idx);
@@ -240,17 +221,14 @@ export function DataTable(props = {}) {
     const allKeys = rows.map((r, i) => rowKey(r, i));
     const allSelected = allKeys.length > 0 && allKeys.every(k => sel.has(k));
     const next = new Set(sel);
-    if (allSelected) {
-      allKeys.forEach(k => next.delete(k));
-    } else {
-      allKeys.forEach(k => next.add(k));
-    }
+    if (allSelected) allKeys.forEach(k => next.delete(k));
+    else allKeys.forEach(k => next.add(k));
     setSelected(next);
     fireSelection(next);
   }
 
   // ─────────────────────────────────────────────────────────────
-  // EXPAND LOGIC
+  // EXPAND / FILTER / EXPORT
   // ─────────────────────────────────────────────────────────────
 
   function toggleExpand(row, idx) {
@@ -262,18 +240,10 @@ export function DataTable(props = {}) {
     });
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // FILTER LOGIC
-  // ─────────────────────────────────────────────────────────────
-
   function setFilter(key, value) {
     setFilters(prev => ({ ...prev, [key]: value }));
     setPage(1);
   }
-
-  // ─────────────────────────────────────────────────────────────
-  // EXPORT
-  // ─────────────────────────────────────────────────────────────
 
   function exportCSV() {
     const rows = getSorted();
@@ -332,6 +302,8 @@ export function DataTable(props = {}) {
   // COLUMN RESIZE
   // ─────────────────────────────────────────────────────────────
 
+  let _resizeCleanup = null;
+
   function initResize(e, col, thEl) {
     e.preventDefault();
     const startX = e.clientX;
@@ -347,50 +319,16 @@ export function DataTable(props = {}) {
     function onUp() {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      _resizeCleanup = null;
     }
 
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
+    _resizeCleanup = onUp;
   }
 
   // ─────────────────────────────────────────────────────────────
-  // PIN OFFSET CALCULATION
-  // ─────────────────────────────────────────────────────────────
-
-  /** Compute left/right sticky offsets for pinned columns */
-  function getPinOffsets() {
-    const widths = colWidths();
-    const leftPins = [];
-    const rightPins = [];
-    const allCols = getEffectiveCols();
-
-    // Gather pinned indices
-    allCols.forEach((c, i) => {
-      if (c.pinned === 'left') leftPins.push(i);
-      if (c.pinned === 'right') rightPins.push(i);
-    });
-
-    const offsets = {};
-    let leftAcc = 0;
-    for (const i of leftPins) {
-      offsets[i] = { left: leftAcc };
-      const w = widths[allCols[i].key] || parseInt(allCols[i].width) || 150;
-      leftAcc += w;
-    }
-
-    let rightAcc = 0;
-    for (let j = rightPins.length - 1; j >= 0; j--) {
-      const i = rightPins[j];
-      offsets[i] = { right: rightAcc };
-      const w = widths[allCols[i].key] || parseInt(allCols[i].width) || 150;
-      rightAcc += w;
-    }
-
-    return offsets;
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // EFFECTIVE COLUMNS (with selection/expand cols prepended)
+  // PIN OFFSETS
   // ─────────────────────────────────────────────────────────────
 
   function getEffectiveCols() { return rawCols; }
@@ -399,70 +337,57 @@ export function DataTable(props = {}) {
   // BUILD DOM
   // ─────────────────────────────────────────────────────────────
 
-  // Root wrapper
-  const root = h('div', {
+  const root = div({
     class: cx('d-datatable', cls),
     role: 'region',
     'aria-label': 'Data table'
   });
 
-  // ── Toolbar ──────────────────────────────────────────────────
-
+  // Toolbar
   if (exportable) {
-    const toolbar = h('div', { class: 'd-datatable-header' },
-      h('button', {
+    root.appendChild(div({ class: 'd-datatable-header' },
+      buttonTag({
         class: 'd-datatable-export-btn',
         type: 'button',
         onclick: exportCSV,
         'aria-label': 'Export as CSV'
       }, 'Export CSV')
-    );
-    root.appendChild(toolbar);
+    ));
   }
 
-  // ── Scroll container ────────────────────────────────────────
+  // Scroll container
+  const scrollWrap = div({ class: 'd-datatable-scroll' });
+  scrollWrap.style.overflow = 'auto';
+  scrollWrap.style.position = 'relative';
 
-  const scrollWrap = h('div', {
-    class: 'd-datatable-scroll',
-    style: { overflow: 'auto', position: 'relative' }
-  });
-
-  // ── Table element ───────────────────────────────────────────
-
+  // Table element
   const table = h('table', {
-    class: cx(
-      'd-datatable-table',
-      striped && 'd-datatable-striped',
-      hoverable && 'd-datatable-hoverable'
-    ),
+    class: cx('d-datatable-table', striped && 'd-datatable-striped', hoverable && 'd-datatable-hoverable'),
     role: 'grid'
   });
 
-  // ── Build thead ─────────────────────────────────────────────
-
+  // thead
   const thead = h('thead', { class: stickyHeader ? 'd-datatable-sticky' : null });
-  const headerRow = h('tr', null);
+  const headerRow = h('tr');
 
   // Expand spacer column
   if (expandable) {
     headerRow.appendChild(h('th', {
       class: 'd-datatable-th',
-      style: { width: '40px' },
       'aria-label': 'Expand'
     }));
+    headerRow.lastChild.style.width = '40px';
   }
 
   // Selection column
   if (selection === 'multi') {
-    const selAllTh = h('th', { class: 'd-datatable-th', style: { width: '40px' } });
-    const { wrap: selAllWrap, input: selAllCb } = createCheckControl({
-      'aria-label': 'Select all rows'
-    });
+    const selAllTh = h('th', { class: 'd-datatable-th' });
+    selAllTh.style.width = '40px';
+    const { wrap: selAllWrap, input: selAllCb } = createCheckControl({ 'aria-label': 'Select all rows' });
     selAllCb.addEventListener('change', toggleSelectAll);
     selAllTh.appendChild(selAllWrap);
     headerRow.appendChild(selAllTh);
 
-    // Sync select-all state
     createEffect(() => {
       const sel = selected();
       const rows = getPageData();
@@ -475,7 +400,7 @@ export function DataTable(props = {}) {
   }
 
   // Data columns
-  rawCols.forEach((col, ci) => {
+  rawCols.forEach((col) => {
     const th = h('th', {
       class: cx(
         'd-datatable-th',
@@ -483,27 +408,18 @@ export function DataTable(props = {}) {
         col.pinned === 'left' && 'd-datatable-pinned-left',
         col.pinned === 'right' && 'd-datatable-pinned-right'
       ),
-      style: {
-        width: col.width || 'auto',
-        textAlign: col.align || 'left',
-        ...(col.pinned ? { position: 'sticky', zIndex: 3 } : {})
-      },
       'aria-sort': 'none'
     });
+    th.style.width = col.width || 'auto';
+    th.style.textAlign = col.align || 'left';
+    if (col.pinned) { th.style.position = 'sticky'; th.style.zIndex = '3'; }
 
-    // Label
-    const labelSpan = h('span', null, col.label);
-    th.appendChild(labelSpan);
+    th.appendChild(span(col.label));
 
-    // Sort indicator
     if (col.sortable) {
-      const sortIndicator = h('span', {
-        class: 'd-datatable-sort-icon',
-        'aria-hidden': 'true'
-      });
+      const sortIndicator = span({ class: 'd-datatable-sort-icon', 'aria-hidden': 'true' });
       th.appendChild(sortIndicator);
 
-      // Sort effect
       createEffect(() => {
         const sc = sortCols();
         const entry = sc.find(s => s.key === col.key);
@@ -513,35 +429,34 @@ export function DataTable(props = {}) {
         th.classList.toggle('d-datatable-th-sorted-desc', !!(entry && entry.direction === 'desc'));
       });
 
-      th.addEventListener('click', (e) => {
-        handleSort(col.key, e.shiftKey);
-      });
+      th.addEventListener('click', (e) => handleSort(col.key, e.shiftKey));
       th.style.cursor = 'pointer';
       th.style.userSelect = 'none';
     }
 
-    // Filter icon + popup
     if (col.filterable) {
-      const filterWrap = h('span', { style: { position: 'relative', display: 'inline-block', marginLeft: '4px' } });
-      const filterBtn = h('button', {
+      const filterWrap = span({ class: 'd-datatable-filter-wrap' });
+      filterWrap.style.position = 'relative';
+      filterWrap.style.display = 'inline-block';
+
+      const filterBtn = buttonTag({
         class: 'd-datatable-filter-icon',
         type: 'button',
-        'aria-label': `Filter ${col.label}`,
-        onclick(e) {
-          e.stopPropagation();
-          const popup = filterWrap.querySelector('.d-datatable-filter-popup');
-          if (popup) {
-            popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
-            if (popup.style.display === 'block') popup.querySelector('input').focus();
-          }
-        }
+        'aria-label': `Filter ${col.label}`
       }, '\u25BD');
-
-      const filterPopup = h('div', {
-        class: 'd-datatable-filter-popup',
-        style: { display: 'none' },
-        onclick(e) { e.stopPropagation(); }
+      filterBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const popup = filterWrap.querySelector('.d-datatable-filter-popup');
+        if (popup) {
+          popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+          if (popup.style.display === 'block') popup.querySelector('input').focus();
+        }
       });
+
+      const filterPopup = div({ class: 'd-datatable-filter-popup' });
+      filterPopup.style.display = 'none';
+      filterPopup.addEventListener('click', (e) => e.stopPropagation());
+
       const filterInput = h('input', {
         type: 'text',
         placeholder: `Filter ${col.label}...`,
@@ -553,19 +468,14 @@ export function DataTable(props = {}) {
       filterWrap.appendChild(filterPopup);
       th.appendChild(filterWrap);
 
-      // Update filter icon active state
       createEffect(() => {
         const f = filters();
         filterBtn.classList.toggle('d-datatable-filter-active', !!f[col.key]);
       });
     }
 
-    // Resize handle
-    const handle = h('span', {
-      class: 'd-datatable-resize-handle',
-      onmousedown(e) { initResize(e, col, th); },
-      'aria-hidden': 'true'
-    });
+    const handle = span({ class: 'd-datatable-resize-handle', 'aria-hidden': 'true' });
+    handle.addEventListener('mousedown', (e) => initResize(e, col, th));
     th.appendChild(handle);
 
     headerRow.appendChild(th);
@@ -574,23 +484,23 @@ export function DataTable(props = {}) {
   thead.appendChild(headerRow);
   table.appendChild(thead);
 
-  // ── Build tbody (reactive) ──────────────────────────────────
-
-  const tbody = h('tbody', null);
+  // tbody (reactive)
+  const tbody = h('tbody');
   table.appendChild(tbody);
 
-  // Virtual scroll state
   let useVirtual = false;
-  let visibleStart = 0;
-  let visibleEnd = 0;
-  const spacerTop = h('tr', { style: { height: '0px' }, 'aria-hidden': 'true' },
-    h('td', { style: { padding: 0, border: 'none' } })
-  );
-  const spacerBottom = h('tr', { style: { height: '0px' }, 'aria-hidden': 'true' },
-    h('td', { style: { padding: 0, border: 'none' } })
-  );
+  const spacerTop = h('tr', { 'aria-hidden': 'true' });
+  spacerTop.style.height = '0px';
+  spacerTop.appendChild(h('td'));
+  spacerTop.firstChild.style.padding = '0';
+  spacerTop.firstChild.style.border = 'none';
 
-  /** Build a single row (tr + optional expand tr) */
+  const spacerBottom = h('tr', { 'aria-hidden': 'true' });
+  spacerBottom.style.height = '0px';
+  spacerBottom.appendChild(h('td'));
+  spacerBottom.firstChild.style.padding = '0';
+  spacerBottom.firstChild.style.border = 'none';
+
   function buildRow(row, idx) {
     const key = rowKey(row, idx);
     const sel = selected();
@@ -599,74 +509,53 @@ export function DataTable(props = {}) {
     const isExpanded = exp.has(key);
 
     const tr = h('tr', {
-      class: cx(
-        'd-datatable-row',
-        isSelected && 'd-datatable-row-selected',
-        isExpanded && 'd-datatable-row-expanded'
-      ),
-      onclick(e) { toggleSelect(row, idx, e.shiftKey); },
-      'data-row-key': key
+      class: cx('d-datatable-row', isSelected && 'd-datatable-row-selected', isExpanded && 'd-datatable-row-expanded'),
+      'data-row-key': key,
+      onclick(e) { toggleSelect(row, idx, e.shiftKey); }
     });
 
-    // Expand toggle cell
     if (expandable) {
-      const expandTd = h('td', { class: 'd-datatable-td', style: { width: '40px', textAlign: 'center' } });
-      const expandBtn = h('button', {
+      const expandTd = h('td', { class: 'd-datatable-td' });
+      expandTd.style.width = '40px';
+      expandTd.style.textAlign = 'center';
+      const expandBtn = buttonTag({
         type: 'button',
         class: 'd-datatable-expand-btn',
         'aria-label': isExpanded ? 'Collapse row' : 'Expand row',
-        'aria-expanded': isExpanded ? 'true' : 'false',
-        onclick(e) {
-          e.stopPropagation();
-          toggleExpand(row, idx);
-        }
+        'aria-expanded': isExpanded ? 'true' : 'false'
       }, isExpanded ? caret('down') : caret('right'));
+      expandBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleExpand(row, idx); });
       expandTd.appendChild(expandBtn);
       tr.appendChild(expandTd);
     }
 
-    // Selection checkbox cell
     if (selection === 'multi') {
-      const cbTd = h('td', { class: 'd-datatable-td', style: { width: '40px', textAlign: 'center' } });
-      const { wrap: cbWrap, input: rowCb } = createCheckControl({
-        'aria-label': `Select row ${idx + 1}`
-      });
+      const cbTd = h('td', { class: 'd-datatable-td' });
+      cbTd.style.width = '40px';
+      cbTd.style.textAlign = 'center';
+      const { wrap: cbWrap, input: rowCb } = createCheckControl({ 'aria-label': `Select row ${idx + 1}` });
       rowCb.checked = isSelected;
-      rowCb.addEventListener('click', (e) => { e.stopPropagation(); });
-      rowCb.addEventListener('change', () => { toggleSelect(row, idx, false); });
+      rowCb.addEventListener('click', (e) => e.stopPropagation());
+      rowCb.addEventListener('change', () => toggleSelect(row, idx, false));
       cbTd.appendChild(cbWrap);
       tr.appendChild(cbTd);
     }
 
-    // Data cells
     rawCols.forEach(col => {
       const val = row[col.key];
       const content = col.render ? col.render(val, row) : (val != null ? String(val) : '');
 
       const td = h('td', {
-        class: cx(
-          'd-datatable-td',
-          col.pinned === 'left' && 'd-datatable-pinned-left',
-          col.pinned === 'right' && 'd-datatable-pinned-right'
-        ),
-        style: {
-          textAlign: col.align || 'left',
-          ...(col.pinned ? { position: 'sticky', zIndex: 1 } : {})
-        }
+        class: cx('d-datatable-td', col.pinned === 'left' && 'd-datatable-pinned-left', col.pinned === 'right' && 'd-datatable-pinned-right')
       });
+      td.style.textAlign = col.align || 'left';
+      if (col.pinned) { td.style.position = 'sticky'; td.style.zIndex = '1'; }
 
-      if (typeof content === 'object' && content instanceof Node) {
-        td.appendChild(content);
-      } else {
-        td.textContent = content;
-      }
+      if (typeof content === 'object' && content instanceof Node) td.appendChild(content);
+      else td.textContent = content;
 
-      // Editable: double-click to edit
       if (col.editable) {
-        td.addEventListener('dblclick', (e) => {
-          e.stopPropagation();
-          startEdit(td, row, col);
-        });
+        td.addEventListener('dblclick', (e) => { e.stopPropagation(); startEdit(td, row, col); });
         td.style.cursor = 'text';
       }
 
@@ -675,7 +564,6 @@ export function DataTable(props = {}) {
 
     const frag = [tr];
 
-    // Expansion row
     if (expandable && isExpanded && expandRender) {
       const totalCols = rawCols.length + (selection === 'multi' ? 1 : 0) + 1;
       const expandTr = h('tr', { class: 'd-datatable-expand-row' });
@@ -690,83 +578,67 @@ export function DataTable(props = {}) {
     return frag;
   }
 
-  /** Full tbody rebuild (reactive) */
   createEffect(() => {
     const rows = getPageData();
-    const _sel = selected(); // track
-    const _exp = expanded(); // track
-    const _filters = filters(); // track
-    const _sort = sortCols(); // track
-    const _pg = page(); // track
-    const _ps = pageSize(); // track
+    selected(); expanded(); filters(); sortCols(); page(); pageSize();
 
-    // Clear tbody
     while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
 
     if (rows.length === 0) {
-      const totalCols = rawCols.length
-        + (selection === 'multi' ? 1 : 0)
-        + (expandable ? 1 : 0);
-      tbody.appendChild(
-        h('tr', { class: 'd-datatable-empty' },
-          h('td', { colspan: totalCols, class: 'd-datatable-td' }, emptyText)
-        )
-      );
+      const totalCols = rawCols.length + (selection === 'multi' ? 1 : 0) + (expandable ? 1 : 0);
+      tbody.appendChild(h('tr', { class: 'd-datatable-empty' },
+        h('td', { colspan: totalCols, class: 'd-datatable-td' }, emptyText)
+      ));
       return;
     }
 
-    // Virtual scrolling
     useVirtual = rows.length > VIRT_THRESHOLD;
 
     if (useVirtual) {
       const containerH = scrollWrap.clientHeight || 400;
       const st = scrollTop();
-      visibleStart = Math.max(0, Math.floor(st / ROW_H) - 5);
-      visibleEnd = Math.min(rows.length, Math.ceil((st + containerH) / ROW_H) + 5);
+      const visibleStart = Math.max(0, Math.floor(st / ROW_H) - 5);
+      const visibleEnd = Math.min(rows.length, Math.ceil((st + containerH) / ROW_H) + 5);
 
       spacerTop.style.height = (visibleStart * ROW_H) + 'px';
       spacerBottom.style.height = ((rows.length - visibleEnd) * ROW_H) + 'px';
 
       tbody.appendChild(spacerTop);
       for (let i = visibleStart; i < visibleEnd; i++) {
-        const trs = buildRow(rows[i], i);
-        trs.forEach(tr => tbody.appendChild(tr));
+        buildRow(rows[i], i).forEach(tr => tbody.appendChild(tr));
       }
       tbody.appendChild(spacerBottom);
     } else {
       const frag = document.createDocumentFragment();
       for (let i = 0; i < rows.length; i++) {
-        const trs = buildRow(rows[i], i);
-        trs.forEach(tr => frag.appendChild(tr));
+        buildRow(rows[i], i).forEach(tr => frag.appendChild(tr));
       }
       tbody.appendChild(frag);
     }
   });
 
-  // Virtual scroll listener
-  scrollWrap.addEventListener('scroll', () => {
+  const onScroll = () => {
     if (useVirtual) setScrollTop(scrollWrap.scrollTop);
+  };
+  scrollWrap.addEventListener('scroll', onScroll);
+
+  onDestroy(() => {
+    scrollWrap.removeEventListener('scroll', onScroll);
+    if (_resizeCleanup) _resizeCleanup();
   });
 
   scrollWrap.appendChild(table);
   root.appendChild(scrollWrap);
 
-  // ── Pagination ──────────────────────────────────────────────
-
+  // Pagination
   if (pgCfg) {
-    const pgBar = h('div', { class: 'd-datatable-pagination', role: 'navigation', 'aria-label': 'Table pagination' });
+    const pgBar = div({ class: 'd-datatable-pagination', role: 'navigation', 'aria-label': 'Table pagination' });
 
-    // Page size selector
-    const sizeLabel = h('label', { class: 'd-datatable-page-size' },
-      'Rows: '
-    );
+    const sizeLabel = labelTag({ class: 'd-datatable-page-size' }, 'Rows: ');
     const sizeSelect = h('select', {
       'aria-label': 'Rows per page',
       onchange(e) {
-        batch(() => {
-          setPageSize(Number(e.target.value));
-          setPage(1);
-        });
+        batch(() => { setPageSize(Number(e.target.value)); setPage(1); });
         if (pgCfg.onPageChange) pgCfg.onPageChange({ page: 1, pageSize: Number(e.target.value) });
       }
     });
@@ -778,41 +650,28 @@ export function DataTable(props = {}) {
     sizeLabel.appendChild(sizeSelect);
     pgBar.appendChild(sizeLabel);
 
-    // Info text
-    const pgInfo = h('span', { class: 'd-datatable-page-info' });
+    const pgInfo = span({ class: 'd-datatable-page-info' });
     pgBar.appendChild(pgInfo);
 
-    // Nav buttons
-    const prevBtn = h('button', {
-      type: 'button',
-      class: 'd-datatable-page-btn',
-      'aria-label': 'Previous page',
-      onclick() {
-        const p = page();
-        if (p > 1) {
-          setPage(p - 1);
-          if (pgCfg.onPageChange) pgCfg.onPageChange({ page: p - 1, pageSize: pageSize() });
-        }
-      }
+    const prevBtn = buttonTag({
+      type: 'button', class: 'd-datatable-page-btn', 'aria-label': 'Previous page'
     }, '\u2039 Prev');
+    prevBtn.addEventListener('click', () => {
+      const p = page();
+      if (p > 1) { setPage(p - 1); if (pgCfg.onPageChange) pgCfg.onPageChange({ page: p - 1, pageSize: pageSize() }); }
+    });
 
-    const nextBtn = h('button', {
-      type: 'button',
-      class: 'd-datatable-page-btn',
-      'aria-label': 'Next page',
-      onclick() {
-        const p = page();
-        if (p < getPageCount()) {
-          setPage(p + 1);
-          if (pgCfg.onPageChange) pgCfg.onPageChange({ page: p + 1, pageSize: pageSize() });
-        }
-      }
+    const nextBtn = buttonTag({
+      type: 'button', class: 'd-datatable-page-btn', 'aria-label': 'Next page'
     }, 'Next \u203A');
+    nextBtn.addEventListener('click', () => {
+      const p = page();
+      if (p < getPageCount()) { setPage(p + 1); if (pgCfg.onPageChange) pgCfg.onPageChange({ page: p + 1, pageSize: pageSize() }); }
+    });
 
     pgBar.appendChild(prevBtn);
     pgBar.appendChild(nextBtn);
 
-    // Update pagination state reactively
     createEffect(() => {
       const p = page();
       const pc = getPageCount();
@@ -828,35 +687,25 @@ export function DataTable(props = {}) {
     root.appendChild(pgBar);
   }
 
-  // ── Pin offsets (applied after mount via effect) ────────────
-
+  // Pin offsets
   createEffect(() => {
-    const _cw = colWidths(); // track
-    const offsets = getPinOffsets();
-    // Apply to TH and TD elements
+    colWidths();
     const allCols = getEffectiveCols();
     const ths = headerRow.querySelectorAll('.d-datatable-th');
-
-    // Calculate actual offsets from rendered widths
-    let leftAcc = 0;
     const extraCols = (expandable ? 1 : 0) + (selection === 'multi' ? 1 : 0);
 
+    let leftAcc = 0;
     allCols.forEach((col, ci) => {
-      if (!col.pinned) return;
+      if (col.pinned !== 'left') return;
       const thIdx = ci + extraCols;
       const th = ths[thIdx];
       if (!th) return;
-
-      if (col.pinned === 'left') {
-        th.style.left = leftAcc + 'px';
-        // Apply to all body cells in this column
-        const tds = tbody.querySelectorAll(`tr > .d-datatable-td:nth-child(${thIdx + 1})`);
-        tds.forEach(td => { td.style.left = leftAcc + 'px'; });
-        leftAcc += th.offsetWidth;
-      }
+      th.style.left = leftAcc + 'px';
+      const tds = tbody.querySelectorAll(`tr > .d-datatable-td:nth-child(${thIdx + 1})`);
+      tds.forEach(td => { td.style.left = leftAcc + 'px'; });
+      leftAcc += th.offsetWidth;
     });
 
-    // Right pins (reverse)
     let rightAcc = 0;
     for (let ci = allCols.length - 1; ci >= 0; ci--) {
       const col = allCols[ci];

@@ -5,7 +5,7 @@
  */
 
 import { scaleLinear, scaleBand, scaleTime, extent, unique, padExtent, isDateLike, toDate } from '../_shared.js';
-import { scene, group, line, text, rect, gridLines, axisTicks } from '../_scene.js';
+import { scene, group, line, text, rect, circle, gridLines, axisTicks } from '../_scene.js';
 
 // --- Constants ---
 
@@ -194,6 +194,67 @@ export function chartColorExtended(index) {
 /** Total base chart palette size */
 export const PALETTE_SIZE = 8;
 
+// --- Annotation builders ---
+
+/**
+ * Build annotation scene nodes from spec.annotations array.
+ * Supports 3 types: 'line' (horizontal/vertical reference line),
+ * 'band' (shaded range), 'point' (labeled marker).
+ * @param {Object[]} annotations — [{type, axis, value, from, to, x, y, label, color, dash}]
+ * @param {Function} xScale
+ * @param {Function} yScale
+ * @param {string} xType — 'band'|'linear'|'time'
+ * @param {number} innerW
+ * @param {number} innerH
+ * @returns {Object[]} scene graph nodes
+ */
+export function buildAnnotations(annotations, xScale, yScale, xType, innerW, innerH) {
+  if (!annotations || !annotations.length) return [];
+  const nodes = [];
+  for (const a of annotations) {
+    const color = a.color || 'var(--d-muted)';
+    if (a.type === 'line') {
+      if (a.axis === 'y') {
+        const y = yScale(a.value);
+        nodes.push(line({ x1: 0, y1: y, x2: innerW, y2: y, stroke: color, strokeDash: a.dash || '4,3', class: 'd-chart-annotation-line' }));
+        if (a.label) {
+          nodes.push(text({ x: innerW + 4, y: y + 4, content: a.label, anchor: 'start', class: 'd-chart-annotation-label', fill: color }));
+        }
+      } else {
+        const x = xType === 'band' ? xScale(a.value) + (xScale.bandwidth ? xScale.bandwidth() / 2 : 0) : xScale(a.value);
+        nodes.push(line({ x1: x, y1: 0, x2: x, y2: innerH, stroke: color, strokeDash: a.dash || '4,3', class: 'd-chart-annotation-line' }));
+        if (a.label) {
+          nodes.push(text({ x: x, y: -6, content: a.label, anchor: 'middle', class: 'd-chart-annotation-label', fill: color }));
+        }
+      }
+    } else if (a.type === 'band') {
+      if (a.axis === 'y') {
+        const y1 = yScale(a.to);
+        const y2 = yScale(a.from);
+        nodes.push(rect({ x: 0, y: y1, w: innerW, h: y2 - y1, fill: color, class: 'd-chart-annotation-band' }));
+        if (a.label) {
+          nodes.push(text({ x: innerW + 4, y: (y1 + y2) / 2 + 4, content: a.label, anchor: 'start', class: 'd-chart-annotation-label', fill: color }));
+        }
+      } else {
+        const x1 = xType === 'band' ? xScale(a.from) : xScale(a.from);
+        const x2 = xType === 'band' ? xScale(a.to) + (xScale.bandwidth ? xScale.bandwidth() : 0) : xScale(a.to);
+        nodes.push(rect({ x: x1, y: 0, w: x2 - x1, h: innerH, fill: color, class: 'd-chart-annotation-band' }));
+        if (a.label) {
+          nodes.push(text({ x: (x1 + x2) / 2, y: -6, content: a.label, anchor: 'middle', class: 'd-chart-annotation-label', fill: color }));
+        }
+      }
+    } else if (a.type === 'point') {
+      const px = xType === 'band' ? xScale(a.x) + (xScale.bandwidth ? xScale.bandwidth() / 2 : 0) : xScale(a.x);
+      const py = yScale(a.y);
+      nodes.push(circle({ cx: px, cy: py, r: 5, fill: 'none', stroke: color, strokeWidth: 2, class: 'd-chart-annotation-line' }));
+      if (a.label) {
+        nodes.push(text({ x: px, y: py - 10, content: a.label, anchor: 'middle', class: 'd-chart-annotation-label', fill: color }));
+      }
+    }
+  }
+  return nodes;
+}
+
 // --- Scene builders ---
 
 /**
@@ -207,9 +268,10 @@ export const PALETTE_SIZE = 8;
  * @returns {Object[]}
  */
 export function buildXAxisNodes(xScale, xType, innerH, innerW, spec, layout) {
-  const nodes = [
-    line({ x1: 0, y1: innerH, x2: innerW, y2: innerH, stroke: 'var(--d-border)', class: 'd-chart-axis' })
-  ];
+  const nodes = [];
+  if (spec.axisLine) {
+    nodes.push(line({ x1: 0, y1: innerH, x2: innerW, y2: innerH, stroke: 'var(--d-border)', class: 'd-chart-axis' }));
+  }
 
   if (xType === 'band' && layout && layout.categories) {
     const bandW = xScale.bandwidth();
@@ -238,9 +300,10 @@ export function buildXAxisNodes(xScale, xType, innerH, innerW, spec, layout) {
 export function buildYAxisNodes(yScale, innerH, spec) {
   const fmt = spec.yFormat || formatNumber;
   const ticks = yScale.ticks(5);
-  const nodes = [
-    line({ x1: 0, y1: 0, x2: 0, y2: innerH, stroke: 'var(--d-border)', class: 'd-chart-axis' })
-  ];
+  const nodes = [];
+  if (spec.axisLine) {
+    nodes.push(line({ x1: 0, y1: 0, x2: 0, y2: innerH, stroke: 'var(--d-border)', class: 'd-chart-axis' }));
+  }
 
   for (const t of ticks) {
     const y = yScale(t);

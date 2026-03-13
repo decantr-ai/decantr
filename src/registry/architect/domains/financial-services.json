@@ -1,0 +1,302 @@
+{
+  "$schema": "https://decantr.ai/schemas/architect-domain.v1.json",
+  "id": "financial-services",
+  "name": "Financial Services",
+  "triggers": {
+    "primary": ["lending", "loan", "credit-union", "mortgage", "banking", "financial-services", "fintech"],
+    "secondary": ["portfolio", "underwriting", "collections", "delinquency", "origination", "pipeline", "compliance", "cdfi", "interest-rate", "borrower"],
+    "negative": ["crypto-only", "personal-finance-only", "budgeting-app-only"]
+  },
+  "features": {
+    "portfolio-overview": {
+      "t": "core",
+      "w": 1.0,
+      "label": "Portfolio Overview",
+      "desc": "Executive dashboard with KPI cards, goal tracking, period comparisons, and trend charts",
+      "requires": [],
+      "implies": ["search", "navbar", "auth"],
+      "ux": ["KPI grid at top", "goal-tracker cards with variance and status", "comparison columns for period-over-period", "multi-chart grid for trends"],
+      "decantr": {
+        "components": ["Card", "Badge", "Progress", "Statistic", "Sparkline", "Chart", "Select", "Segmented"],
+        "atoms": "_flex _flexCol _gap6 _p6",
+        "state": ["portfolioMetrics:resource", "selectedPeriod:signal", "goalData:resource"],
+        "routes": ["/dashboard"]
+      }
+    },
+    "origination-tracking": {
+      "t": "core",
+      "w": 0.95,
+      "label": "Origination Tracking",
+      "desc": "Monitor loan production volume, velocity, and officer performance",
+      "requires": [],
+      "implies": ["portfolio-overview"],
+      "questions": [
+        { "id": "origination-group", "q": "Track originations by?", "opts": ["loan-officer", "branch", "product-type", "all"], "default": "all" }
+      ],
+      "ux": ["filter bar for date range and group-by", "KPI row for volume/count/avg-size", "chart grid for trends", "data table with drill-down"],
+      "decantr": {
+        "components": ["DataTable", "Chart", "Select", "DateRangePicker", "Badge", "Statistic", "Card"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["originations:resource", "originationFilters:store"],
+        "routes": ["/production"]
+      }
+    },
+    "pipeline-management": {
+      "t": "core",
+      "w": 0.92,
+      "label": "Pipeline Management",
+      "desc": "Stage-based loan pipeline with funnel visualization and drill-down",
+      "requires": [],
+      "implies": ["portfolio-overview"],
+      "questions": [
+        { "id": "pipeline-stages", "q": "Pipeline stages?", "opts": ["standard-5-stage", "custom"], "default": "standard-5-stage" }
+      ],
+      "ux": ["stage summary row with counts and values", "funnel or horizontal bar chart", "tabbed data table per stage", "conversion rate annotations between stages"],
+      "decantr": {
+        "components": ["DataTable", "Chart", "Tabs", "Badge", "Statistic", "Select", "Card"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["pipelineData:resource", "selectedStage:signal", "pipelineFilters:store"],
+        "routes": ["/pipeline"]
+      }
+    },
+    "search": {
+      "t": "core",
+      "w": 0.88,
+      "label": "Global Search",
+      "desc": "Search loans, borrowers, and accounts by keyword",
+      "requires": [],
+      "implies": [],
+      "ux": ["Cmd+K modal search", "debounced query", "grouped results by entity type"],
+      "decantr": {
+        "components": ["Input", "Combobox", "Modal", "Spinner", "Badge"],
+        "atoms": "_flex _gap2",
+        "state": ["searchQuery:signal", "searchResults:resource"],
+        "routes": []
+      }
+    },
+    "auth": {
+      "t": "core",
+      "w": 0.9,
+      "label": "Authentication",
+      "desc": "Login, session management, role-based access",
+      "requires": [],
+      "implies": [],
+      "questions": [
+        { "id": "auth-provider", "q": "Which auth provider?", "opts": ["supabase", "firebase", "custom-api", "none-yet"], "default": "none-yet" }
+      ],
+      "ux": ["centered card login form", "toast on auth errors", "redirect after login"],
+      "decantr": {
+        "components": ["Card", "Input", "Button", "Alert", "Separator"],
+        "atoms": "_flex _center _minhscreen",
+        "state": ["user:signal", "isAuthenticated:memo", "authLoading:signal"],
+        "routes": ["/login"]
+      }
+    },
+    "approval-analysis": {
+      "t": "core",
+      "w": 0.85,
+      "label": "Approval Analysis",
+      "desc": "Approval/denial rates, decisioning metrics, comparison to benchmarks",
+      "requires": [],
+      "implies": ["portfolio-overview"],
+      "ux": ["chart grid for approval rate trends", "comparison panel for benchmark vs actual", "data table with denial reasons", "filter bar for product/period"],
+      "decantr": {
+        "components": ["Chart", "DataTable", "Statistic", "Badge", "Select", "DateRangePicker", "Card"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["approvalData:resource", "approvalFilters:store"],
+        "routes": ["/approvals"]
+      }
+    },
+    "collections-monitoring": {
+      "t": "core",
+      "w": 0.85,
+      "label": "Collections Monitoring",
+      "desc": "Delinquency tracking, aging buckets, collection effectiveness",
+      "requires": [],
+      "implies": ["portfolio-overview"],
+      "questions": [
+        { "id": "delinquency-buckets", "q": "Delinquency buckets?", "opts": ["30-60-90", "30-60-90-120", "custom"], "default": "30-60-90" }
+      ],
+      "ux": ["KPI grid for delinquency rates per bucket", "goal tracker for collection targets", "trend charts", "data table with delinquent accounts"],
+      "decantr": {
+        "components": ["DataTable", "Chart", "Progress", "Badge", "Statistic", "Card", "Sparkline"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["collectionsData:resource", "agingBuckets:resource", "collectionGoals:resource"],
+        "routes": ["/collections"]
+      }
+    },
+    "rate-analysis": {
+      "t": "should",
+      "w": 0.75,
+      "label": "Rate Analysis",
+      "desc": "Interest rate trends, margin analysis, rate lock monitoring",
+      "requires": [],
+      "implies": [],
+      "ux": ["chart grid with rate trend lines and reference annotations", "comparison panel for rate vs benchmark"],
+      "decantr": {
+        "components": ["Chart", "Statistic", "Card", "Badge", "Select"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["rateData:resource", "rateFilters:store"],
+        "routes": ["/rates"]
+      }
+    },
+    "compliance-tracking": {
+      "t": "should",
+      "w": 0.7,
+      "label": "Compliance Tracking",
+      "desc": "Regulatory compliance metrics (HMDA, CRA, Fair Lending)",
+      "requires": [],
+      "implies": [],
+      "questions": [
+        { "id": "compliance-framework", "q": "Compliance framework?", "opts": ["hmda", "cra", "fair-lending", "custom"], "default": "hmda" }
+      ],
+      "ux": ["scorecard with compliance metrics grouped by regulation", "data table for audit items", "timeline for compliance events"],
+      "decantr": {
+        "components": ["DataTable", "Progress", "Badge", "Timeline", "Separator", "Card"],
+        "atoms": "_flex _flexCol _gap6 _p6",
+        "state": ["complianceData:resource", "complianceFilters:store"],
+        "routes": ["/compliance"]
+      }
+    },
+    "outreach-program": {
+      "t": "should",
+      "w": 0.65,
+      "label": "Outreach Program",
+      "desc": "Denied applicant outreach, underserved member programs, community engagement",
+      "requires": [],
+      "implies": [],
+      "questions": [
+        { "id": "outreach-scope", "q": "Outreach scope?", "opts": ["denied-applicants", "underserved-members", "both"], "default": "both" }
+      ],
+      "ux": ["scorecard for outreach metrics", "data table with contact lists", "activity feed for outreach log"],
+      "decantr": {
+        "components": ["DataTable", "Progress", "Badge", "Avatar", "Card", "Separator"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["outreachData:resource", "outreachFilters:store"],
+        "routes": ["/outreach"]
+      }
+    },
+    "vendor-management": {
+      "t": "should",
+      "w": 0.6,
+      "label": "Vendor Management",
+      "desc": "Manage third-party vendor relationships and contracts",
+      "requires": [],
+      "implies": [],
+      "ux": ["data table for vendor list", "detail panel for vendor info", "form sections for vendor editing"],
+      "decantr": {
+        "components": ["DataTable", "Card", "Button", "Input", "Select", "Tabs", "Badge"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["vendors:resource", "selectedVendor:signal"],
+        "routes": ["/vendors"]
+      }
+    },
+    "report-generation": {
+      "t": "should",
+      "w": 0.6,
+      "label": "Report Generation",
+      "desc": "Generate and export performance reports",
+      "requires": [],
+      "implies": [],
+      "ux": ["data table with report templates", "chart grid for report preview", "export button for PDF/CSV"],
+      "decantr": {
+        "components": ["DataTable", "Chart", "Button", "Select", "DateRangePicker", "Card"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["reportConfig:store", "reportData:resource"],
+        "routes": ["/reports"]
+      }
+    },
+    "user-management": {
+      "t": "should",
+      "w": 0.6,
+      "label": "User Management",
+      "desc": "Manage user accounts, roles, and permissions",
+      "requires": ["auth"],
+      "implies": [],
+      "ux": ["data table for user list", "form sections for user editing", "role badge indicators"],
+      "decantr": {
+        "components": ["DataTable", "Card", "Button", "Input", "Select", "Badge", "Avatar"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["users:resource", "selectedUser:signal"],
+        "routes": ["/settings/users"]
+      }
+    },
+    "product-configuration": {
+      "t": "should",
+      "w": 0.55,
+      "label": "Product Configuration",
+      "desc": "Configure loan products, rates, terms, and eligibility criteria",
+      "requires": [],
+      "implies": [],
+      "ux": ["data table for product list", "form sections for product editing", "detail panel for product specs"],
+      "decantr": {
+        "components": ["DataTable", "Card", "Button", "Input", "Select", "Tabs", "InputNumber"],
+        "atoms": "_flex _flexCol _gap4 _p6",
+        "state": ["loanProducts:resource", "selectedProduct:signal"],
+        "routes": ["/products"]
+      }
+    },
+    "scorecard-reviews": {
+      "t": "should",
+      "w": 0.5,
+      "label": "Scorecard Reviews",
+      "desc": "Periodic performance scorecards for teams and individuals",
+      "requires": [],
+      "implies": [],
+      "ux": ["scorecard pattern with grouped metrics", "goal tracker for target tracking", "timeline for review history"],
+      "decantr": {
+        "components": ["DataTable", "Progress", "Badge", "Timeline", "Avatar", "Card", "Separator"],
+        "atoms": "_flex _flexCol _gap6 _p6",
+        "state": ["scorecardData:resource", "reviewPeriod:signal"],
+        "routes": ["/scorecard"]
+      }
+    },
+    "settings": {
+      "t": "should",
+      "w": 0.5,
+      "label": "Settings",
+      "desc": "Application preferences, theme, notifications",
+      "requires": ["auth"],
+      "implies": [],
+      "ux": ["form sections for preferences", "Tabs for settings categories"],
+      "decantr": {
+        "components": ["Card", "Input", "Select", "Switch", "Button", "Tabs", "Separator"],
+        "atoms": "_flex _flexCol _gap4 _p6 _ctrsm",
+        "state": ["settingsForm:store"],
+        "routes": ["/settings"]
+      }
+    },
+    "notifications": {
+      "t": "nice",
+      "w": 0.4,
+      "label": "Notifications",
+      "desc": "In-app notification center for alerts and updates",
+      "requires": ["auth"],
+      "implies": [],
+      "ux": ["activity feed for notification list", "Badge count in nav", "mark-as-read action"],
+      "decantr": {
+        "components": ["Card", "Badge", "Button", "Dropdown", "Separator"],
+        "atoms": "_flex _flexCol _gap2",
+        "state": ["notifications:resource", "unreadCount:memo"],
+        "routes": ["/notifications"]
+      }
+    },
+    "navbar": {
+      "t": "core",
+      "w": 0.92,
+      "label": "Sidebar Navigation",
+      "desc": "Collapsible sidebar with section grouping and active indicators",
+      "requires": [],
+      "implies": [],
+      "ux": ["collapsible sidebar with icon + label", "grouped nav sections", "active route highlighting", "user menu at bottom"],
+      "decantr": {
+        "components": ["Button", "Badge", "Avatar", "Separator", "Tooltip"],
+        "atoms": "_flex _flexCol _h100 _bgmuted _p3",
+        "state": ["sidebarCollapsed:signal", "activeRoute:memo"],
+        "routes": []
+      }
+    }
+  },
+  "cross_cutting": ["responsive", "mobile-nav", "loading-states", "error-handling", "empty-states", "a11y", "persistence"],
+  "suggested_theme": ["dark", "auto"]
+}

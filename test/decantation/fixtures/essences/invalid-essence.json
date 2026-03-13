@@ -1,0 +1,10 @@
+{
+  "vintage": {
+    "style": "nonexistent-style",
+    "mode": "invalid-mode"
+  },
+  "vessel": {
+    "routing": "invalid-routing"
+  },
+  "cork": "not-an-object"
+}

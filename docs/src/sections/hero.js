@@ -12,50 +12,49 @@ export function HeroSection() {
     div({ class: 'ds-orb ds-pulse', style: 'width:300px;height:300px;background:rgba(254,68,116,0.06);top:60%;left:50%;animation-delay:3s' }),
 
     // Main content — split layout
-    div({ class: css('_flex _row _aic _gap12 _relative _z10 _wrap _jcc'), style: 'max-width:1100px;width:100%;padding:0 2rem' },
+    div({ class: css('_flex _row _aic _gap12 _relative _z10 _wrap _jcc _maxw[1100px] _w100 _px[2rem]') },
       // Left: Logo
       div({ class: `ds-float ${css('_flex _aic _jcc _shrink0')}`, style: 'flex-basis:300px' },
         img({
-          src: './images/logo.svg',
+          src: './images/logo-portrait.svg',
           alt: 'decantr logo',
-          style: 'width:280px;height:auto;filter:drop-shadow(0 0 40px rgba(101,0,198,0.3))',
+          class: css('_w[280px]'),
+          style: 'filter:drop-shadow(0 0 40px rgba(101,0,198,0.3))',
         }),
       ),
 
       // Right: Typography
       div({ class: css('_flex _col _gap6') },
         // Wordmark: decantr.ai
-        h1({ style: 'font-size:clamp(3rem,7vw,5.5rem);font-weight:900;letter-spacing:-0.04em;line-height:1' },
+        h1({ class: css('_fw[900] _ls[-0.04em] _lh[1]'), style: 'font-size:clamp(3rem,7vw,5.5rem)' },
           span('decantr'),
           span({ class: 'ds-pink' }, '.'),
           span('a'),
-          span({ class: 'ds-pink', style: 'position:relative' },
+          span({ class: css('_relative') + ' ds-pink' },
             'i',
             // Decorative dot on the i — we style the whole letter pink
           ),
         ),
 
         // Lead line
-        p({ class: css('_textxl _lhrelaxed'), style: 'color:var(--d-muted-fg);max-width:500px' },
+        p({ class: css('_textxl _lhrelaxed _fgmutedfg _maxw[500px]') },
           'The last UI framework you\'ll ever install. ',
-          span({ class: 'ds-gradient-text', style: 'font-weight:700' }, 'AI-first. Zero dependencies. No React. No Angular. No Vue. No Tailwind. No TypeScript. No third parties. Just pure, unadulterated power...'),
+          span({ class: css('_bold') + ' ds-gradient-text' }, 'AI-first. Zero dependencies. No React. No Angular. No Vue. No Tailwind. No TypeScript. No third parties. Just pure, unadulterated power...'),
         ),
 
         // CTA
         div({ class: css('_flex _row _gap4 _mt2') },
-          a({ href: '#power', style: 'text-decoration:none' },
+          a({ href: '#power', class: css('_nounder') },
             Button({ variant: 'primary', size: 'lg', class: 'ds-glow' }, 'Explore the Power'),
           ),
-          a({ href: 'https://github.com/decantr-ai/decantr', target: '_blank', rel: 'noopener', style: 'text-decoration:none' },
-            Button({ variant: 'outline', size: 'lg' }, 'GitHub'),
-          ),
+          Button({ variant: 'outline', size: 'lg', disabled: true }, 'Github - coming soon'),
         ),
       ),
     ),
 
     // Scroll indicator
-    div({ class: css('_absolute _bottom0 _flex _col _aic _pb6'), style: 'left:50%;transform:translateX(-50%)' },
-      div({ style: 'width:1px;height:40px;background:linear-gradient(to bottom,transparent,var(--d-muted));animation:ds-pulse 2s infinite' }),
+    div({ class: css('_absolute _bottom0 _flex _col _aic _pb6 _left[50%]'), style: 'transform:translateX(-50%)' },
+      div({ class: css('_w[1px] _h[40px]'), style: 'background:linear-gradient(to bottom,transparent,var(--d-muted));animation:ds-pulse 2s infinite' }),
     ),
   );
 }

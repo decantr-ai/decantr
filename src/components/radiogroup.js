@@ -1,15 +1,21 @@
-import { h } from '../core/index.js';
 import { createEffect } from '../state/index.js';
-import { injectBase, cx, reactiveAttr } from './_base.js';
+import { tags } from '../tags/index.js';
+import { injectBase, cx } from './_base.js';
+import { createRovingTabindex } from './_behaviors.js';
+
+const { div, label: labelTag, input: inputTag, span } = tags;
 
 /**
  * @param {Object} [props]
  * @param {{ value: string, label: string, disabled?: boolean }[]} props.options
- * @param {string|Function} [props.value] — Selected value
- * @param {string} [props.name] — Group name for native radios
- * @param {boolean|Function} [props.disabled] — Disable all options
- * @param {string} [props.orientation] — 'vertical'|'horizontal' (default: 'vertical')
- * @param {Function} [props.onchange] — Called with selected value
+ * @param {string|Function} [props.value]
+ * @param {string} [props.name]
+ * @param {boolean|Function} [props.disabled]
+ * @param {string} [props.orientation='vertical'] - 'vertical'|'horizontal'
+ * @param {boolean|string|Function} [props.error]
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {Function} [props.onchange]
+ * @param {string} [props['aria-label']]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
@@ -17,43 +23,38 @@ export function RadioGroup(props = {}) {
   injectBase();
 
   const {
-    options = [],
-    value,
-    name = `d-radio-${Date.now()}`,
-    disabled,
-    orientation = 'vertical',
-    onchange,
-    class: cls
+    options = [], value, name = `d-radio-${Date.now()}`,
+    disabled, orientation = 'vertical', error, size, onchange,
+    'aria-label': ariaLabel, class: cls
   } = props;
 
   let currentValue = typeof value === 'function' ? value() : (value || '');
 
-  const group = h('div', {
-    class: cx('d-radiogroup', orientation === 'horizontal' && 'd-radiogroup-horizontal', cls),
+  const groupProps = {
+    class: cx('d-radiogroup', orientation === 'horizontal' && 'd-radiogroup-horizontal', size && `d-radiogroup-${size}`, cls),
     role: 'radiogroup'
-  });
+  };
+  if (ariaLabel) groupProps['aria-label'] = ariaLabel;
 
+  const group = div(groupProps);
   const radios = [];
 
-  options.forEach((opt, i) => {
-    const native = h('input', {
+  options.forEach((opt) => {
+    const native = inputTag({
       type: 'radio',
       name,
       value: opt.value,
       class: 'd-radio-native',
-      tabindex: i === 0 ? '0' : '-1',
       'aria-label': opt.label
     });
 
     if (opt.value === currentValue) native.checked = true;
     if (opt.disabled) native.disabled = true;
 
-    const indicator = h('span', { class: 'd-radio-indicator' },
-      h('span', { class: 'd-radio-dot' })
-    );
-    const label = h('span', { class: 'd-radio-label' }, opt.label);
+    const indicator = span({ class: 'd-radio-indicator' }, span({ class: 'd-radio-dot' }));
+    const label = span({ class: 'd-radio-label' }, opt.label);
 
-    const wrapper = h('label', {
+    const wrapper = labelTag({
       class: cx('d-radio', opt.disabled && 'd-radio-disabled')
     }, native, indicator, label);
 
@@ -65,42 +66,25 @@ export function RadioGroup(props = {}) {
       }
     });
 
-    // Arrow key navigation
-    native.addEventListener('keydown', (e) => {
-      let next = -1;
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-        e.preventDefault();
-        next = findNext(i, 1);
-      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-        e.preventDefault();
-        next = findNext(i, -1);
-      }
-      if (next >= 0) {
-        radios[next].native.checked = true;
-        radios[next].native.focus();
-        radios[next].native.dispatchEvent(new Event('change'));
-      }
-    });
-
     radios.push({ native, wrapper, opt });
     group.appendChild(wrapper);
   });
 
-  function findNext(from, dir) {
-    let idx = from;
-    for (let j = 0; j < options.length; j++) {
-      idx = (idx + dir + options.length) % options.length;
-      if (!options[idx].disabled) return idx;
-    }
-    return -1;
-  }
-
   function updateChecked() {
     radios.forEach(({ native, opt }) => {
       native.checked = opt.value === currentValue;
-      native.tabIndex = native.checked ? 0 : -1;
     });
   }
+
+  // Use createRovingTabindex for keyboard navigation
+  createRovingTabindex(group, {
+    itemSelector: '.d-radio-native:not([disabled])',
+    orientation: orientation === 'horizontal' ? 'horizontal' : 'vertical',
+    onFocus: (el) => {
+      el.checked = true;
+      el.dispatchEvent(new Event('change'));
+    }
+  });
 
   // Reactive value
   if (typeof value === 'function') {
@@ -115,9 +99,21 @@ export function RadioGroup(props = {}) {
     createEffect(() => {
       const v = disabled();
       radios.forEach(({ native }) => { native.disabled = v; });
+      group.toggleAttribute('data-disabled', v);
     });
   } else if (disabled) {
     radios.forEach(({ native }) => { native.disabled = true; });
+    group.setAttribute('data-disabled', '');
+  }
+
+  // Reactive error
+  if (typeof error === 'function') {
+    createEffect(() => {
+      const v = error();
+      group.toggleAttribute('data-error', !!v);
+    });
+  } else if (error) {
+    group.setAttribute('data-error', '');
   }
 
   return group;

@@ -1,38 +1,50 @@
 /**
  * DatePicker — Calendar-based date selection with overlay panel.
- * Uses createOverlay behavior. Supports month/year views.
+ * Uses renderCalendar primitive, createFieldOverlay behavior.
  *
  * @module decantr/components/date-picker
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { createOverlay } from './_behaviors.js';
+import { createFormField } from './_behaviors.js';
 import { icon } from './icon.js';
+import { applyFieldState, createFieldOverlay, renderCalendar, MONTHS } from './_primitives.js';
 
-const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const { div, button: buttonTag, span } = tags;
 
 /**
  * @param {Object} [props]
- * @param {Date|string|Function} [props.value] - Selected date
+ * @param {Date|string|Function} [props.value]
  * @param {string} [props.placeholder='Select date']
- * @param {string} [props.format='yyyy-MM-dd'] - Display format
- * @param {Date} [props.min] - Minimum selectable date
- * @param {Date} [props.max] - Maximum selectable date
- * @param {Function} [props.disabledDate] - (date) => boolean
+ * @param {string} [props.format='yyyy-MM-dd']
+ * @param {Date} [props.min]
+ * @param {Date} [props.max]
+ * @param {Function} [props.disabledDate]
  * @param {boolean|Function} [props.disabled]
+ * @param {boolean|string|Function} [props.error]
+ * @param {boolean|string|Function} [props.success]
+ * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.label]
+ * @param {string} [props.help]
+ * @param {boolean} [props.required]
  * @param {Function} [props.onchange]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function DatePicker(props = {}) {
   injectBase();
-  const { value, placeholder = 'Select date', format = 'yyyy-MM-dd', min, max, disabledDate, disabled, onchange, class: cls } = props;
+  const {
+    value, placeholder = 'Select date', format = 'yyyy-MM-dd',
+    min, max, disabledDate, disabled, error, success,
+    variant, size, label, help, required, onchange, class: cls
+  } = props;
 
   let selected = parseDate(typeof value === 'function' ? value() : value);
   let viewDate = selected ? new Date(selected) : new Date();
-  let viewMode = 'day'; // day | month | year
+  let viewMode = 'day';
 
   function parseDate(v) {
     if (!v) return null;
@@ -56,22 +68,20 @@ export function DatePicker(props = {}) {
     return false;
   }
 
-  function sameDay(a, b) {
-    return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-  }
-
   // Display
-  const displayEl = h('span', { class: 'd-select-display' });
+  const displayEl = span({ class: 'd-select-display' });
   const arrow = icon('calendar', { size: '1em', class: 'd-select-arrow' });
-  const trigger = h('button', {
+  const trigger = buttonTag({
     type: 'button',
     class: 'd-select',
     'aria-haspopup': 'dialog',
     'aria-expanded': 'false'
   }, displayEl, arrow);
 
-  const panel = h('div', { class: 'd-datepicker-panel', style: { display: 'none' } });
-  const wrap = h('div', { class: cx('d-datepicker', cls) }, trigger, panel);
+  const panel = div({ class: 'd-datepicker-panel' });
+  const wrap = div({ class: cx('d-datepicker', cls) }, trigger, panel);
+
+  applyFieldState(wrap, { error, success, disabled, variant, size });
 
   function updateDisplay() {
     displayEl.textContent = selected ? formatDate(selected) : placeholder;
@@ -79,95 +89,51 @@ export function DatePicker(props = {}) {
     else displayEl.classList.remove('d-select-placeholder');
   }
 
+  function selectDate(d) {
+    selected = d;
+    viewDate = new Date(d);
+    updateDisplay();
+    overlay.close();
+    if (onchange) onchange(d);
+  }
+
   function renderDayView() {
     panel.replaceChildren();
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
-
-    // Header
-    const prevBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous month' }, '\u2039');
-    const nextBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next month' }, '\u203A');
-    const titleBtn = h('button', { type: 'button', class: 'd-datepicker-title' }, `${MONTHS[month]} ${year}`);
-
-    prevBtn.addEventListener('click', () => { viewDate.setMonth(month - 1); renderDayView(); });
-    nextBtn.addEventListener('click', () => { viewDate.setMonth(month + 1); renderDayView(); });
-    titleBtn.addEventListener('click', () => { viewMode = 'month'; renderMonthView(); });
-
-    const header = h('div', { class: 'd-datepicker-header' },
-      h('div', { class: 'd-datepicker-nav' }, prevBtn),
-      titleBtn,
-      h('div', { class: 'd-datepicker-nav' }, nextBtn)
-    );
-    panel.appendChild(header);
-
-    // Weekday headers
-    const grid = h('div', { class: 'd-datepicker-grid', role: 'grid' });
-    DAYS.forEach(d => grid.appendChild(h('div', { class: 'd-datepicker-weekday' }, d)));
-
-    // Days
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrev = new Date(year, month, 0).getDate();
-    const today = new Date();
-
-    // Previous month filler
-    for (let i = firstDay - 1; i >= 0; i--) {
-      const d = new Date(year, month - 1, daysInPrev - i);
-      const btn = h('button', { type: 'button', class: 'd-datepicker-day d-datepicker-day-outside', tabindex: '-1' }, String(daysInPrev - i));
-      btn.addEventListener('click', () => selectDate(d));
-      grid.appendChild(btn);
-    }
-
-    // Current month
-    for (let i = 1; i <= daysInMonth; i++) {
-      const d = new Date(year, month, i);
-      const dis = isDateDisabled(d);
-      const cls = cx(
-        'd-datepicker-day',
-        sameDay(d, today) && 'd-datepicker-day-today',
-        sameDay(d, selected) && 'd-datepicker-day-selected',
-        dis && 'd-datepicker-day-disabled'
-      );
-      const btn = h('button', { type: 'button', class: cls, tabindex: '-1', disabled: dis ? '' : undefined }, String(i));
-      if (!dis) btn.addEventListener('click', () => selectDate(d));
-      grid.appendChild(btn);
-    }
-
-    // Next month filler
-    const totalCells = firstDay + daysInMonth;
-    const remaining = (7 - (totalCells % 7)) % 7;
-    for (let i = 1; i <= remaining; i++) {
-      const d = new Date(year, month + 1, i);
-      const btn = h('button', { type: 'button', class: 'd-datepicker-day d-datepicker-day-outside', tabindex: '-1' }, String(i));
-      btn.addEventListener('click', () => selectDate(d));
-      grid.appendChild(btn);
-    }
-
-    panel.appendChild(grid);
+    panel.appendChild(renderCalendar({
+      viewDate,
+      selected,
+      isDisabled: isDateDisabled,
+      onSelect: selectDate,
+      onNav: (delta) => {
+        viewDate.setMonth(viewDate.getMonth() + delta);
+        renderDayView();
+      },
+      onTitleClick: () => { viewMode = 'month'; renderMonthView(); }
+    }));
   }
 
   function renderMonthView() {
     panel.replaceChildren();
     const year = viewDate.getFullYear();
 
-    const prevBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous year' }, '\u2039');
-    const nextBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next year' }, '\u203A');
-    const titleBtn = h('button', { type: 'button', class: 'd-datepicker-title' }, String(year));
+    const prevBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous year' }, '\u2039');
+    const nextBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next year' }, '\u203A');
+    const titleBtn = buttonTag({ type: 'button', class: 'd-datepicker-title' }, String(year));
 
     prevBtn.addEventListener('click', () => { viewDate.setFullYear(year - 1); renderMonthView(); });
     nextBtn.addEventListener('click', () => { viewDate.setFullYear(year + 1); renderMonthView(); });
     titleBtn.addEventListener('click', () => { viewMode = 'year'; renderYearView(); });
 
-    panel.appendChild(h('div', { class: 'd-datepicker-header' },
-      h('div', { class: 'd-datepicker-nav' }, prevBtn),
+    panel.appendChild(div({ class: 'd-datepicker-header' },
+      div({ class: 'd-datepicker-nav' }, prevBtn),
       titleBtn,
-      h('div', { class: 'd-datepicker-nav' }, nextBtn)
+      div({ class: 'd-datepicker-nav' }, nextBtn)
     ));
 
-    const grid = h('div', { class: 'd-datepicker-months' });
+    const grid = div({ class: 'd-datepicker-months' });
     MONTHS.forEach((m, i) => {
       const isSelected = selected && selected.getFullYear() === year && selected.getMonth() === i;
-      const btn = h('button', {
+      const btn = buttonTag({
         type: 'button',
         class: cx('d-datepicker-month', isSelected && 'd-datepicker-day-selected')
       }, m);
@@ -186,24 +152,24 @@ export function DatePicker(props = {}) {
     const year = viewDate.getFullYear();
     const startYear = Math.floor(year / 12) * 12;
 
-    const prevBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn' }, '\u2039');
-    const nextBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn' }, '\u203A');
-    const title = h('span', { class: 'd-datepicker-title' }, `${startYear} - ${startYear + 11}`);
+    const prevBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn' }, '\u2039');
+    const nextBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn' }, '\u203A');
+    const title = span({ class: 'd-datepicker-title' }, `${startYear} - ${startYear + 11}`);
 
     prevBtn.addEventListener('click', () => { viewDate.setFullYear(year - 12); renderYearView(); });
     nextBtn.addEventListener('click', () => { viewDate.setFullYear(year + 12); renderYearView(); });
 
-    panel.appendChild(h('div', { class: 'd-datepicker-header' },
-      h('div', { class: 'd-datepicker-nav' }, prevBtn),
+    panel.appendChild(div({ class: 'd-datepicker-header' },
+      div({ class: 'd-datepicker-nav' }, prevBtn),
       title,
-      h('div', { class: 'd-datepicker-nav' }, nextBtn)
+      div({ class: 'd-datepicker-nav' }, nextBtn)
     ));
 
-    const grid = h('div', { class: 'd-datepicker-years' });
+    const grid = div({ class: 'd-datepicker-years' });
     for (let i = 0; i < 12; i++) {
       const y = startYear + i;
       const isSelected = selected && selected.getFullYear() === y;
-      const btn = h('button', {
+      const btn = buttonTag({
         type: 'button',
         class: cx('d-datepicker-year', isSelected && 'd-datepicker-day-selected')
       }, String(y));
@@ -217,18 +183,9 @@ export function DatePicker(props = {}) {
     panel.appendChild(grid);
   }
 
-  function selectDate(d) {
-    selected = d;
-    viewDate = new Date(d);
-    updateDisplay();
-    overlay.close();
-    if (onchange) onchange(d);
-  }
-
-  const overlay = createOverlay(trigger, panel, {
+  const overlay = createFieldOverlay(trigger, panel, {
     trigger: 'click',
-    closeOnEscape: true,
-    closeOnOutside: true,
+    matchWidth: false,
     onOpen: () => { viewMode = 'day'; renderDayView(); }
   });
 
@@ -240,6 +197,20 @@ export function DatePicker(props = {}) {
       if (selected) viewDate = new Date(selected);
       updateDisplay();
     });
+  }
+
+  // Reactive disabled
+  if (typeof disabled === 'function') {
+    createEffect(() => { trigger.disabled = disabled(); });
+  } else if (disabled) {
+    trigger.disabled = true;
+  }
+
+  onDestroy(() => { overlay.destroy(); });
+
+  if (label || help) {
+    const { wrapper } = createFormField(wrap, { label, error, help, required, success, variant, size });
+    return wrapper;
   }
 
   return wrap;

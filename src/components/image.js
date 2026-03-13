@@ -3,7 +3,7 @@
  *
  * @module decantr/components/image
  */
-import { h } from '../core/index.js';
+import { h, onDestroy } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
 
 /**
@@ -48,15 +48,24 @@ export function Image(props = {}) {
   container.appendChild(img);
 
   if (preview) {
+    let activeOverlay = null;
+    let activeHandler = null;
+
+    function dismissOverlay() {
+      if (activeOverlay) { activeOverlay.remove(); activeOverlay = null; }
+      if (activeHandler) { document.removeEventListener('keydown', activeHandler); activeHandler = null; }
+    }
+
     container.addEventListener('click', () => {
       const overlay = h('div', { class: 'd-image-overlay', role: 'dialog', 'aria-label': 'Image preview' });
       const previewImg = h('img', { src, alt, style: { objectFit: 'contain' } });
       overlay.appendChild(previewImg);
 
-      overlay.addEventListener('click', () => overlay.remove());
-      document.addEventListener('keydown', function handler(e) {
-        if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', handler); }
-      });
+      activeOverlay = overlay;
+      activeHandler = (e) => { if (e.key === 'Escape') dismissOverlay(); };
+
+      overlay.addEventListener('click', dismissOverlay);
+      document.addEventListener('keydown', activeHandler);
 
       document.body.appendChild(overlay);
     });
@@ -67,6 +76,8 @@ export function Image(props = {}) {
     container.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); container.click(); }
     });
+
+    onDestroy(dismissOverlay);
   }
 
   return container;

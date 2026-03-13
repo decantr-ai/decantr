@@ -1,17 +1,20 @@
 /**
  * ContextMenu — Right-click menu overlay.
- * Shares item rendering with Dropdown/Menu.
- * Uses createListbox behavior for keyboard navigation.
+ * Uses renderMenuItems primitive + createListbox behavior.
  *
  * @module decantr/components/context-menu
  */
-import { h, onDestroy } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createListbox } from './_behaviors.js';
+import { renderMenuItems } from './_primitives.js';
+
+const { div } = tags;
 
 /**
  * @param {Object} [props]
- * @param {HTMLElement} props.target - Element to attach right-click handler to
+ * @param {HTMLElement} props.target
  * @param {{ label: string, value?: string, icon?: string|Node, shortcut?: string, disabled?: boolean, separator?: boolean, onclick?: Function }[]} [props.items]
  * @param {Function} [props.onSelect]
  * @param {string} [props.class]
@@ -23,47 +26,12 @@ export function ContextMenu(props = {}) {
 
   let _open = false;
 
-  const menu = h('div', {
+  const menu = div({
     class: cx('d-contextmenu', cls),
     role: 'menu',
     tabindex: '-1'
   });
-
-  function renderItems() {
-    menu.replaceChildren();
-    items.forEach(item => {
-      if (item.separator) {
-        menu.appendChild(h('div', { class: 'd-dropdown-separator', role: 'separator' }));
-        return;
-      }
-      const children = [];
-      if (item.icon) {
-        children.push(typeof item.icon === 'string'
-          ? h('span', { class: 'd-dropdown-item-icon', 'aria-hidden': 'true' }, item.icon)
-          : item.icon);
-      }
-      children.push(h('span', { class: 'd-dropdown-item-label' }, item.label));
-      if (item.shortcut) {
-        children.push(h('span', { class: 'd-dropdown-item-shortcut' }, item.shortcut));
-      }
-
-      const el = h('div', {
-        class: cx('d-dropdown-item', item.disabled && 'd-dropdown-item-disabled'),
-        role: 'menuitem',
-        tabindex: '-1'
-      }, ...children);
-
-      if (!item.disabled) {
-        el.addEventListener('click', (e) => {
-          e.stopPropagation();
-          closeMenu();
-          if (item.onclick) item.onclick(item.value || item.label);
-          if (onSelect) onSelect(item.value || item.label);
-        });
-      }
-      menu.appendChild(el);
-    });
-  }
+  menu.style.display = 'none';
 
   function closeMenu() {
     if (!_open) return;
@@ -71,7 +39,6 @@ export function ContextMenu(props = {}) {
     menu.style.display = 'none';
   }
 
-  // Keyboard nav
   const listbox = createListbox(menu, {
     itemSelector: '.d-dropdown-item:not(.d-dropdown-item-disabled)',
     activeClass: 'd-dropdown-item-highlight',
@@ -87,10 +54,11 @@ export function ContextMenu(props = {}) {
   if (target) {
     target.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      renderItems();
+      renderMenuItems(menu, items, { onSelect, onClose: closeMenu });
       listbox.reset();
       menu.style.left = `${e.clientX}px`;
       menu.style.top = `${e.clientY}px`;
+      menu.style.position = 'fixed';
       menu.style.display = '';
       _open = true;
       menu.focus();
@@ -103,10 +71,6 @@ export function ContextMenu(props = {}) {
   };
   if (typeof document !== 'undefined') {
     document.addEventListener('click', onDocClick);
-  }
-
-  // Append to body for proper z-index stacking
-  if (typeof document !== 'undefined') {
     document.body.appendChild(menu);
   }
 

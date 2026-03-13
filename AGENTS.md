@@ -21,7 +21,7 @@ This table resolves 80% of framework translation needs. Scan here first.
 | Conditional render | `{cond ? <A/> : <B/>}` | `v-if` / `v-else` | `{#if}` | `@if` | `cond(pred, trueFn, falseFn)` |
 | List render | `.map(item => <X key=.../>)` | `v-for` + `:key` | `{#each}` | `@for` | `list(items, keyFn, renderFn)` |
 | CSS / styling | Tailwind / CSS-in-JS | scoped `<style>` | scoped `<style>` | ViewEncapsulation | `css('_flex _gap4 _p6 _bg2')` |
-| Component library | ShadCN / MUI / Radix | Element Plus / PrimeVue | Skeleton / Melt | Angular Material | `decantr/components` (28 components) |
+| Component library | ShadCN / MUI / Radix | Element Plus / PrimeVue | Skeleton / Melt | Angular Material | `decantr/components` (100+ components) |
 | Build / deploy | Next.js / Vite | Nuxt / Vite | SvelteKit / Vite | Angular CLI | `decantr build` → `dist/` |
 | Testing | Jest / Vitest | Vitest | Vitest | Karma / Jest | `decantr/test` (node:test based) |
 
@@ -53,7 +53,7 @@ This table resolves 80% of framework translation needs. Scan here first.
 | `createPortal(child, container)` | `document.body.appendChild(el)` — real DOM, no portals needed |
 | `ReactDOM.createRoot(el).render(<App/>)` | `mount(document.getElementById('app'), () => App())` |
 | `className={clsx('a', cond && 'b')}` | `class: css('_a', cond && '_b')` |
-| `style={{ color: 'red' }}` | `style: 'color:red'` |
+| `style={{ color: 'red' }}` | `class: css('_fgerror')` (use semantic color atom). For runtime-computed values only: `style: () => \`color:${dynamicColor()}\`` |
 | `onClick={handler}` | `onclick: handler` (lowercase, native DOM) |
 | `onChange={handler}` | `oninput: handler` (for inputs — native DOM event) |
 | `<Link to="/about">` (React Router) | `link({ href: '/about' }, 'About')` |
@@ -230,9 +230,9 @@ Solid.js is architecturally closest to Decantr. Key differences:
 | `<Sonner>` / `toast()` | `toast({ message, variant, duration })` | |
 | `<Alert>` | `Alert({ variant, dismissible })` | |
 | `<Spinner>` | `Spinner({ size, label })` | |
-| `<Calendar>` | *Not yet available* | Build with `list()` + date logic |
-| `<DatePicker>` | *Not yet available* | Build with `Popover()` + calendar |
-| `<NavigationMenu>` | *Not yet available* | Build with `tags` + `link()` |
+| `<Calendar>` | `DatePicker({ value, onChange })` | Use DatePicker in calendar mode |
+| `<DatePicker>` | `DatePicker({ value, onChange, format })` | |
+| `<NavigationMenu>` | `NavigationMenu({ items })` | |
 | `<Menubar>` | *Not yet available* | Build with `Dropdown()` composition |
 
 ### MUI / Material UI
@@ -260,7 +260,7 @@ Solid.js is architecturally closest to Decantr. Key differences:
 | `<LinearProgress>` | `Progress({ value, variant })` |
 | `<CircularProgress>` | `Spinner({ size })` |
 | `<Skeleton>` | `Skeleton({ variant, width, height })` |
-| `<Table>` + `<DataGrid>` | `Table()` or kit `DataTable({ columns, data, searchable })` |
+| `<Table>` + `<DataGrid>` | `Table()` or `DataTable({ columns, data, searchable })` |
 | `<Divider>` | `Separator({ vertical, label })` |
 | `<Pagination>` | `Pagination({ total, perPage })` |
 | `<Menu>` | `Dropdown({ trigger, items })` |
@@ -296,7 +296,7 @@ Solid.js is architecturally closest to Decantr. Key differences:
 | `ElSelect` / `<p-dropdown>` | `Select()` |
 | `ElDialog` / `<p-dialog>` | `Modal()` |
 | `ElDrawer` / `<p-sidebar>` | `Drawer()` |
-| `ElTable` / `<p-datatable>` | `Table()` or kit `DataTable()` |
+| `ElTable` / `<p-datatable>` | `Table()` or `DataTable()` |
 | `ElTabs` / `<p-tabview>` | `Tabs()` |
 | `ElCollapse` / `<p-accordion>` | `Accordion()` |
 | `ElTooltip` / `<p-tooltip>` | `Tooltip()` |
@@ -339,7 +339,19 @@ Solid.js is architecturally closest to Decantr. Key differences:
 
 Decantr is framework-agnostic for data. Use any npm package that doesn't assume React/Vue/Angular. Below are canonical patterns for common integrations.
 
-### REST Data Fetching
+### REST Data Fetching (Preferred — createResource)
+
+```javascript
+import { createResource } from 'decantr/state';
+
+const [items] = createResource(() => fetch('/api/items').then(r => r.json()));
+// items.data() — the fetched data (or undefined while loading)
+// items.loading() — true while fetching
+// items.error() — error if fetch failed
+// items.refetch() — re-trigger the fetch
+```
+
+### REST Data Fetching (Manual — for complex flows)
 
 ```javascript
 import { createSignal } from 'decantr/state';
@@ -413,7 +425,10 @@ onMount(async () => {
 ```javascript
 import { createSignal, createEffect } from 'decantr/state';
 import { navigate } from 'decantr/router';
-import { LoginForm } from 'decantr/kit/auth';
+import { createForm, validators, useFormField } from 'decantr/form';
+import { Button, Input, Card } from 'decantr/components';
+import { tags } from 'decantr/tags';
+import { css } from 'decantr/css';
 
 const [user, setUser] = createSignal(null);
 const [loading, setLoading] = createSignal(true);
@@ -423,9 +438,12 @@ createEffect(() => {
   if (!loading() && !user()) navigate('/login');
 });
 
-// Login page using kit component
+// Login page using form system + components
 function LoginPage() {
-  return LoginForm({
+  const { div, h2 } = tags;
+  const form = createForm({
+    fields: { email: '', password: '' },
+    validators: { email: [validators.required, validators.email], password: [validators.required] },
     onSubmit: async ({ email, password }) => {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -435,6 +453,14 @@ function LoginPage() {
       if (res.ok) setUser(await res.json());
     }
   });
+  return Card(
+    Card.Header(h2({ class: css('_heading4') }, 'Login')),
+    Card.Body(
+      Input({ ...useFormField(form, 'email').props, type: 'email', placeholder: 'Email' }),
+      Input({ ...useFormField(form, 'password').props, type: 'password', placeholder: 'Password' }),
+      Button({ onclick: () => form.submit() }, 'Sign In')
+    )
+  );
 }
 ```
 
@@ -527,13 +553,14 @@ const [cart, setCart] = useLocalStorage('cart-items', []);
 ### Decantr Handles
 
 - UI rendering (real DOM, no virtual DOM)
-- Reactive state management (signals, effects, memos, stores)
-- Client-side routing (hash and history modes)
-- 28-component UI library (form, display, layout, overlay, feedback)
-- 3 domain kits (dashboard, auth, content)
+- Reactive state management (signals, effects, memos, stores, resources, contexts)
+- Client-side routing (hash and history modes, nested routes, guards, lazy loading)
+- 100+ component UI library (form, display, layout, overlay, feedback, chart, typography)
+- Form system (createForm, validators, field arrays)
+- 31 composable UI patterns + 4 domain archetypes + recipe overlays
 - Atomic CSS engine (1000+ utility atoms)
-- 5 built-in themes + custom theme registration
-- Build tooling (dev server, production bundler, CSS extraction)
+- 5 built-in styles + custom style registration
+- Build tooling (dev server, production bundler, CSS extraction, tree shaking, code splitting)
 - Testing framework (node:test based, DOM simulation)
 
 ### Decantr Does NOT Handle
@@ -541,7 +568,7 @@ const [cart, setCart] = useLocalStorage('cart-items', []);
 - Server-side rendering (SSR) or static site generation (SSG)
 - Backend API server
 - Database / ORM
-- Authentication backend (handles auth UI via kit/auth, not the backend)
+- Authentication backend (handles auth UI via components, not the backend)
 - File storage / CDN
 - Email sending
 - Payment processing backend
@@ -557,8 +584,9 @@ const [cart, setCart] = useLocalStorage('cart-items', []);
 
 ### Security
 
-- **XSS prevention**: Real DOM manipulation — no `innerHTML` or `dangerouslySetInnerHTML` by default
+- **XSS prevention**: Real DOM manipulation — no `innerHTML` or `dangerouslySetInnerHTML` by default. Use `sanitize()` from `decantr/css` for any user-provided HTML
 - **CSP-friendly**: No `eval()` or `Function()` — works with strict Content-Security-Policy
+- **URL validation**: Router rejects `javascript:`, `data:`, and absolute URLs to prevent open redirect attacks
 - **Input sanitization**: Always validate/sanitize user input at system boundaries (API responses, URL params, form inputs) before rendering
 - **HTTPS**: Always serve over HTTPS in production
 - **Dependencies**: Zero framework dependencies means zero supply chain attack surface from the framework itself
@@ -571,9 +599,11 @@ Before generating a multi-page application, consult the architect registry to pr
 
 **Registry location:** `node_modules/decantr/src/registry/architect/` (or `src/registry/architect/` in framework source)
 
+**Current status:** Only `ecommerce` has a full architect domain file (`architect/domains/ecommerce.json`). The other 3 domains (saas-dashboard, portfolio, content-site) have archetype blueprints in `src/registry/archetypes/` but no architect trigger/feature files yet. If no architect trigger file exists for the domain, use the archetype blueprint as the feature source. Still run SETTLE (5-layer decomposition), CLARIFY (write essence), and DECANT (resolve blends). The architect algorithm is an enhancement, not a prerequisite.
+
 ### When to Use
 
-Use the architect when the user requests a **multi-page application** or describes an **application domain** (e.g., "online store", "SaaS dashboard", "blog platform"). Do NOT use for single-component requests or small utilities.
+Use Architect when the user's request implies **2+ routes with distinct page layouts** OR references a **domain keyword** from any architect trigger file. Single-page requests (one component, one form, one widget) skip Architect but STILL follow POUR→SETTLE→CLARIFY for the page they're adding to.
 
 ### Step-by-Step Algorithm
 
@@ -672,6 +702,52 @@ Produce a structured blueprint JSON with these sections:
 - `cross_cutting` concerns → applied to every relevant page
 - Only reference components that exist in the Decantr component registry
 
+### Multi-Domain Resolution
+
+When the domain classification (Step 1) identifies multiple applicable domains, follow this extended algorithm:
+
+#### Trigger Conditions
+- Top-2 domain scores are within 30% of each other
+- User explicitly names multiple domains (e.g., "brand site with docs and explorer")
+- User describes pages that map to different archetypes
+
+#### Per-Section Processing
+1. **Classify sections**: Map each user-described section to its best-fit archetype
+2. **Independent SETTLE**: Run the 5-layer decomposition per section — each gets its own terroir, vintage, structure, and tannins
+3. **Shared tannin extraction**: Identify tannins that appear in 2+ sections (auth, analytics) → move to `shared_tannins`
+4. **Merge router tree**: Combine section routes under section path prefixes into a unified router config
+5. **Write sectioned essence**: Use the sectioned format with one entry per domain section
+
+#### General Fallback
+When no domain scores above 2.0 (no confident match):
+1. Ask the user to describe their main pages/sections
+2. Pattern-match each described section against archetype pages
+3. If a section matches an archetype's page set → assign that terroir
+4. If no match → treat as custom section with manual structure definition
+5. Still write a sectioned essence — even custom sections benefit from the Blend system
+
+#### Per-Section Style Switching
+For sectioned essences with different vintages per section, the generated `app.js` should include:
+
+```js
+// Generated during SERVE for sectioned essence
+router.beforeEach((to) => {
+  const section = sections.find(s => to.path.startsWith(s.path));
+  if (section?.vintage?.style) setStyle(section.vintage.style);
+  if (section?.vintage?.mode) setMode(section.vintage.mode);
+});
+```
+
+This is a **generated code pattern**, not framework code — the LLM produces it during SERVE.
+
+When the architect detects multiple plausible domains, use a sectioned essence:
+
+- **Top-2 scores within 30%**: Create a sectioned essence with one section per domain. Each section gets its own terroir, vintage, structure, and tannins. Shared tannins (auth, analytics) are extracted to `shared_tannins`.
+- **User explicitly names multiple domains**: Same approach — sectioned essence with one section per domain, regardless of scoring.
+- **Per-section SETTLE**: Run the 5-layer decomposition (Terroir, Vintage, Character, Structure, Tannins) independently for each section. Each section may have a different archetype, different style, and different page layouts.
+- **Merge into unified router**: Combine all section structures into a single router tree. Each section's pages are nested under that section's `path` prefix. Shared tannins are wired once at the app level, not per-section.
+- **"General" fallback**: When no domain scores above 2.0, do not guess. Ask the user to describe their pages in concrete terms — then pattern-match each page against archetypes individually. If pages map to multiple archetypes, use sectioned essence. If all pages fit one archetype, use simple essence.
+
 ### Example Trace
 
 User prompt: **"build me a shopping cart"**
@@ -681,3 +757,50 @@ User prompt: **"build me a shopping cart"**
 3. **Score**: core 100%, should ~60%, nice 0% → composite ≈ 0.78, grade **B**
 4. **Questions**: "Allow guest checkout or require account?" (from checkout), "Which payment provider?" (from payment-integration), "Would you like product reviews?" (nice gap), "Would you like wishlists?" (nice gap)
 5. **Blueprint**: 8 routes, 12 files, 15+ components, full cross-cutting coverage
+
+---
+
+## v0.5.0 Breaking Changes — Migration Guide
+
+### `createFormField()` wrapper class rename
+
+The `createFormField()` wrapper class changed from `d-field` → `d-form-field`. This was necessary because `.d-field` is now the visual styling class for field containers (border, background, focus ring).
+
+```javascript
+// Before (v0.4.x)
+document.querySelector('.d-field')       // could be either wrapper or visual
+document.querySelector('.d-field-label') // form label
+
+// After (v0.5.0)
+document.querySelector('.d-form-field')       // structural wrapper (label + control + help + error)
+document.querySelector('.d-form-field-label') // form label
+document.querySelector('.d-field')            // visual styling (border, bg, focus)
+```
+
+### `createFormField()` return value
+
+```javascript
+// Before: returns HTMLElement
+const wrapper = createFormField(input, { label: 'Name' });
+
+// After: returns { wrapper, setError, setSuccess, destroy }
+const { wrapper, setError, setSuccess } = createFormField(input, { label: 'Name' });
+```
+
+### New unified field component API
+
+All 14 field components now accept these additional props:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `variant` | `'outlined'\|'filled'\|'ghost'` | Visual variant (default: outlined) |
+| `success` | `boolean\|string\|Function` | Success state |
+| `loading` | `boolean\|Function` | Loading state |
+| `label` | `string` | Wraps component with `createFormField` |
+| `help` | `string` | Help text below field |
+| `required` | `boolean` | Required indicator in label |
+| `aria-label` | `string` | Accessible name when no label |
+
+### ColorPicker: HSV → OKLCH
+
+The color picker's saturation panel now uses OKLCH (perceptually uniform). The X axis maps to Chroma (0–0.4) and Y axis to Lightness (0–1). The API is unchanged: hex in, hex out. Colors may appear slightly different due to the perceptual uniformity of OKLCH.

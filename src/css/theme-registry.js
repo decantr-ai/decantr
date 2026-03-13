@@ -5,13 +5,14 @@
  *
  * @module theme-registry
  */
-import { createSignal } from '../state/index.js';
-import { derive, legacyColorMap, densityCSS, getShapeTokens } from './derive.js';
+import { createSignal, untrack } from '../state/index.js';
+import { derive, densityCSS, getShapeTokens } from './derive.js';
 import { componentCSS } from './components.js';
 import { clean } from './styles/clean.js';
 import { retro } from './styles/retro.js';
 import { glassmorphism } from './styles/glassmorphism.js';
 import { auradecantism } from './styles/auradecantism.js';
+import { commandCenter } from './styles/command-center.js';
 
 
 // ============================================================
@@ -26,6 +27,7 @@ const [_getMode, _setMode] = createSignal('dark');
 const [_getResolvedMode, _setResolvedMode] = createSignal('dark');
 const [_getAnimations, _setAnimations] = createSignal(true);
 const [_getShape, _setShape] = createSignal(null);
+const [_getColorblind, _setColorblind] = createSignal('off');
 
 const SHAPES = ['sharp', 'rounded', 'pill'];
 
@@ -45,7 +47,7 @@ const ANIM_OFF_CSS = '*{animation-duration:0.01ms !important;animation-iteration
 // Built-in Styles
 // ============================================================
 
-const builtins = [auradecantism, clean, retro, glassmorphism];
+const builtins = [auradecantism, clean, retro, glassmorphism, commandCenter];
 for (const s of builtins) styles.set(s.id, s);
 
 // ============================================================
@@ -102,45 +104,49 @@ function clearTokens(tokens) {
 // Core: Apply Style + Mode
 // ============================================================
 
-/** Derive and apply all tokens for the current style + mode */
+/** Derive and apply all tokens for the current style + mode.
+ *  Wrapped in untrack() so internal signal reads don't leak
+ *  subscriptions into any calling effect (prevents infinite loops
+ *  when setStyle/setMode/etc. are called from createEffect). */
 function applyCurrentState() {
-  const styleId = _getStyleId();
-  const style = styles.get(styleId);
-  if (!style) return;
+  untrack(() => {
+    const styleId = _getStyleId();
+    const style = styles.get(styleId);
+    if (!style) return;
 
-  const resolvedMode = _getResolvedMode();
+    const resolvedMode = _getResolvedMode();
 
-  // Derive full token set
-  const modeOverrides = style.overrides?.[resolvedMode] || {};
-  const tokens = derive(
-    style.seed,
-    style.personality,
-    resolvedMode,
-    style.typography,
-    modeOverrides,
-  );
+    // Derive full token set
+    const modeOverrides = style.overrides?.[resolvedMode] || {};
+    const cbMode = _getColorblind();
+    const tokens = derive(
+      style.seed,
+      style.personality,
+      resolvedMode,
+      style.typography,
+      modeOverrides,
+      cbMode !== 'off' ? { colorblind: cbMode } : undefined,
+    );
 
-  // Apply all tokens to :root
-  applyTokens(tokens);
+    // Apply all tokens to :root
+    applyTokens(tokens);
 
-  // Apply legacy --c0 through --c9 for backward compat
-  applyTokens(legacyColorMap(tokens));
+    // Inject density classes into d.base layer (once)
+    if (!densityEl && typeof document !== 'undefined') {
+      densityEl = document.createElement('style');
+      densityEl.setAttribute('data-decantr-density', '');
+      densityEl.textContent = `@layer d.base{${densityCSS()}}`;
+      document.head.appendChild(densityEl);
+    }
 
-  // Inject density classes into d.base layer (once)
-  if (!densityEl && typeof document !== 'undefined') {
-    densityEl = document.createElement('style');
-    densityEl.setAttribute('data-decantr-density', '');
-    densityEl.textContent = `@layer d.base{${densityCSS()}}`;
-    document.head.appendChild(densityEl);
-  }
+    // Apply shape override if set (re-apply after derive to win specificity)
+    applyShape();
 
-  // Apply shape override if set (re-apply after derive to win specificity)
-  applyShape();
-
-  // Inject shared + style-specific component CSS into d.theme layer
-  const styleCSS = style.components || '';
-  const el = getStyleElement();
-  if (el) el.textContent = `@layer d.theme{${componentCSS}${styleCSS}}`;
+    // Inject shared + style-specific component CSS into d.theme layer
+    const styleCSS = style.components || '';
+    const el = getStyleElement();
+    if (el) el.textContent = `@layer d.theme{${componentCSS}${styleCSS}}`;
+  });
 }
 
 // ============================================================
@@ -225,9 +231,9 @@ export function setMode(mode) {
   }
   _setMode(mode);
   const resolved = mode === 'auto' ? resolveAutoMode() : mode;
-  const prev = _getResolvedMode();
+  const prev = untrack(() => _getResolvedMode());
   _setResolvedMode(resolved);
-  updateMediaListener();
+  untrack(() => updateMediaListener());
   applyCurrentState();
   if (resolved !== prev) {
     for (const fn of modeListeners) fn(resolved);
@@ -375,6 +381,28 @@ function applyShape() {
 }
 
 // ============================================================
+// Public API: Colorblind Mode
+// ============================================================
+
+const CB_MODES = ['off', 'protanopia', 'deuteranopia', 'tritanopia'];
+
+/**
+ * Set colorblind mode. Transforms seed colors and chart palettes for CVD safety.
+ * Orthogonal to style × mode × shape — all four axes are independent.
+ * @param {'off'|'protanopia'|'deuteranopia'|'tritanopia'} type
+ */
+export function setColorblindMode(type) {
+  if (!CB_MODES.includes(type)) {
+    throw new Error(`[decantr] Invalid colorblind mode: "${type}". Use ${CB_MODES.map(m => `'${m}'`).join(', ')}.`);
+  }
+  _setColorblind(type);
+  applyCurrentState();
+}
+
+/** @returns {() => string} Signal getter for current colorblind mode */
+export function getColorblindMode() { return _getColorblind; }
+
+// ============================================================
 // Public API: CSS Extraction & Reset
 // ============================================================
 
@@ -402,4 +430,5 @@ export function resetStyles() {
   _setResolvedMode('dark');
   _setAnimations(true);
   _setShape(null);
+  _setColorblind('off');
 }

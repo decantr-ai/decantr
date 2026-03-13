@@ -1,4 +1,5 @@
 {
+  "$schema": "https://decantr.ai/schemas/module.v1.json",
   "module": "decantr/state",
   "description": "Reactive primitives — signals, effects, memos, stores, batch",
   "functions": {

@@ -1,42 +1,46 @@
 /**
  * Segmented — Segmented control (pill toggle group).
- * Uses roving tabindex for keyboard navigation.
+ * Uses createRovingTabindex for keyboard navigation.
  *
  * @module decantr/components/segmented
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createRovingTabindex } from './_behaviors.js';
+
+const { div, button: buttonTag } = tags;
 
 /**
  * @param {Object} [props]
  * @param {{ value: string, label?: string, icon?: string|Node, disabled?: boolean }[]} [props.options]
- * @param {string|Function} [props.value] - Selected value
- * @param {Function} [props.onchange] - Called with selected value
- * @param {boolean} [props.block=false] - Full width
- * @param {string} [props.size] - default|sm|lg
+ * @param {string|Function} [props.value]
+ * @param {Function} [props.onchange]
+ * @param {boolean} [props.block=false]
+ * @param {boolean|Function} [props.disabled]
+ * @param {string} [props.size] - 'sm'|'lg'
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function Segmented(props = {}) {
   injectBase();
-  const { options = [], value, onchange, block, size, class: cls } = props;
+  const { options = [], value, onchange, block, disabled, size, class: cls } = props;
 
   let current = typeof value === 'function' ? value() : (value || (options[0]?.value ?? ''));
 
-  const container = h('div', {
+  const container = div({
     class: cx('d-segmented', block && 'd-segmented-block', size && `d-segmented-${size}`, cls),
     role: 'radiogroup'
   });
 
   const items = options.map(opt => {
     const content = opt.icon
-      ? (typeof opt.icon === 'string' ? h('span', null, opt.icon) : opt.icon)
+      ? (typeof opt.icon === 'string' ? tags.span(opt.icon) : opt.icon)
       : null;
     const label = opt.label || opt.value;
 
-    const el = h('button', {
+    const el = buttonTag({
       type: 'button',
       class: 'd-segmented-item',
       role: 'radio',
@@ -65,19 +69,29 @@ export function Segmented(props = {}) {
     });
   }
 
-  // Keyboard navigation
-  createRovingTabindex(container, {
+  const roving = createRovingTabindex(container, {
     itemSelector: '.d-segmented-item:not([disabled])',
     orientation: 'horizontal',
     onFocus: (el) => el.click()
   });
 
   if (typeof value === 'function') {
-    createEffect(() => {
-      current = value();
-      updateAll();
-    });
+    createEffect(() => { current = value(); updateAll(); });
   }
+
+  // Reactive disabled
+  if (typeof disabled === 'function') {
+    createEffect(() => {
+      const v = disabled();
+      container.toggleAttribute('data-disabled', v);
+      items.forEach(({ el }) => { el.disabled = v; });
+    });
+  } else if (disabled) {
+    container.setAttribute('data-disabled', '');
+    items.forEach(({ el }) => { el.disabled = true; });
+  }
+
+  onDestroy(() => { roving.destroy(); });
 
   return container;
 }

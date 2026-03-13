@@ -221,7 +221,9 @@ export function createRouter(config) {
   const initialFull = strategy.current();
   const { pathname: initPath, query: initQuery } = parsePath(initialFull);
 
-  const [route, setRoute] = createSignal(matchRoute(initPath, initQuery));
+  // Start with empty components — handleNavigation (async) will resolve lazy components
+  // and set the real route. This prevents the outlet from rendering unresolved components.
+  const [route, setRoute] = createSignal({ path: initPath, params: {}, query: initQuery, component: null, components: [], matched: false });
 
   /**
    * Match a pathname against compiled routes.
@@ -341,21 +343,27 @@ export function createRouter(config) {
   function outlet(depth = 0) {
     const container = document.createElement('d-route');
     let currentNode = null;
+    let currentComp = null;
 
     createEffect(() => {
       const r = route();
       const components = r.components || [];
       const comp = components[depth];
+      const hasChild = depth + 1 < components.length;
+
+      // Layout components: if the same component is still at this depth,
+      // skip re-render — the child outlet handles its own updates
+      if (hasChild && comp === currentComp && currentNode) return;
 
       const swap = () => {
         if (currentNode) {
           container.removeChild(currentNode);
           currentNode = null;
         }
+        currentComp = comp;
         if (!comp) return;
 
         // If there's a deeper component, this is a layout — pass child outlet
-        const hasChild = depth + 1 < components.length;
         let node;
         if (hasChild) {
           node = comp({ ...r.params, outlet: () => outlet(depth + 1) });

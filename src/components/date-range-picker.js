@@ -1,37 +1,48 @@
 /**
  * DateRangePicker — Two calendar panels for selecting a date range.
- * Supports preset ranges and hover preview.
- * Uses createOverlay behavior.
+ * Uses renderCalendar primitive, createFieldOverlay behavior.
  *
  * @module decantr/components/date-range-picker
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { createOverlay } from './_behaviors.js';
+import { createFormField } from './_behaviors.js';
+import { icon as iconHelper } from './icon.js';
+import { applyFieldState, createFieldOverlay, renderCalendar } from './_primitives.js';
 
-const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const { div, button: buttonTag, span } = tags;
 
 /**
  * @param {Object} [props]
- * @param {Array<Date>|Function} [props.value] - [startDate, endDate]
+ * @param {Array<Date>|Function} [props.value]
  * @param {string} [props.placeholder='Select range']
  * @param {Date} [props.min]
  * @param {Date} [props.max]
- * @param {Function} [props.onchange] - ([start, end]) => void
+ * @param {Function} [props.onchange]
  * @param {boolean|Function} [props.disabled]
+ * @param {boolean|string|Function} [props.error]
+ * @param {boolean|string|Function} [props.success]
+ * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.label]
+ * @param {string} [props.help]
+ * @param {boolean} [props.required]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function DateRangePicker(props = {}) {
   injectBase();
-  const { value, placeholder = 'Select range', min, max, onchange, disabled, class: cls } = props;
+  const {
+    value, placeholder = 'Select range', min, max, onchange,
+    disabled, error, success, variant, size, label, help, required, class: cls
+  } = props;
 
   let rangeStart = null;
   let rangeEnd = null;
   let hoverDate = null;
-  let picking = false; // true after first click, waiting for second
+  let picking = false;
   let leftDate = new Date();
   let rightDate = new Date();
   rightDate.setMonth(rightDate.getMonth() + 1);
@@ -56,34 +67,26 @@ export function DateRangePicker(props = {}) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  function sameDay(a, b) {
-    return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-  }
-
   function isDisabled(d) {
     if (min && d < min) return true;
     if (max && d > max) return true;
     return false;
   }
 
-  function inRange(d, start, end) {
-    if (!start || !end) return false;
-    const t = d.getTime();
-    return t >= start.getTime() && t <= end.getTime();
-  }
-
   // Display
-  const displayEl = h('span', { class: 'd-select-display' });
-  const arrow = h('span', { class: 'd-select-arrow' }, '\uD83D\uDCC5');
-  const trigger = h('button', {
+  const displayEl = span({ class: 'd-select-display' });
+  const arrow = span({ class: 'd-select-arrow' }, iconHelper('calendar', { size: 14 }));
+  const trigger = buttonTag({
     type: 'button',
     class: 'd-select',
     'aria-haspopup': 'dialog',
     'aria-expanded': 'false'
   }, displayEl, arrow);
 
-  const panel = h('div', { class: 'd-daterange-panel', style: { display: 'none' } });
-  const wrap = h('div', { class: cx('d-daterange', cls) }, trigger, panel);
+  const panel = div({ class: 'd-daterange-panel' });
+  const wrap = div({ class: cx('d-daterange', cls) }, trigger, panel);
+
+  applyFieldState(wrap, { error, success, disabled, variant, size });
 
   function updateDisplay() {
     if (rangeStart && rangeEnd) {
@@ -146,128 +149,56 @@ export function DateRangePicker(props = {}) {
     ];
   }
 
-  function renderCalendar(container, viewDate) {
-    container.replaceChildren();
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
-
-    // Header
-    const prevBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous month' }, '\u2039');
-    const nextBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next month' }, '\u203A');
-    const title = h('span', { class: 'd-datepicker-title' }, `${MONTHS[month]} ${year}`);
-
-    prevBtn.addEventListener('click', () => {
-      leftDate.setMonth(leftDate.getMonth() - 1);
-      rightDate.setMonth(rightDate.getMonth() - 1);
-      renderPanel();
-    });
-    nextBtn.addEventListener('click', () => {
-      leftDate.setMonth(leftDate.getMonth() + 1);
-      rightDate.setMonth(rightDate.getMonth() + 1);
-      renderPanel();
-    });
-
-    container.appendChild(h('div', { class: 'd-datepicker-header' },
-      h('div', { class: 'd-datepicker-nav' }, prevBtn),
-      title,
-      h('div', { class: 'd-datepicker-nav' }, nextBtn)
-    ));
-
-    // Weekday headers
-    const grid = h('div', { class: 'd-datepicker-grid', role: 'grid' });
-    DAYS.forEach(d => grid.appendChild(h('div', { class: 'd-datepicker-weekday' }, d)));
-
-    // Days
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrev = new Date(year, month, 0).getDate();
-    const today = new Date();
-
-    // Determine effective range for highlighting
-    const effStart = rangeStart;
-    const effEnd = picking && hoverDate ? (hoverDate >= rangeStart ? hoverDate : rangeStart) : rangeEnd;
-    const effMin = effStart && effEnd && effEnd < effStart ? effEnd : effStart;
-    const effMax = effStart && effEnd && effEnd < effStart ? effStart : effEnd;
-
-    function dayClasses(d) {
-      const classes = ['d-datepicker-day'];
-      if (sameDay(d, today)) classes.push('d-datepicker-day-today');
-      if (isDisabled(d)) classes.push('d-datepicker-day-disabled');
-      if (effMin && effMax) {
-        if (sameDay(d, effMin)) classes.push('d-datepicker-day-selected', 'd-datepicker-day-range-start');
-        if (sameDay(d, effMax)) classes.push('d-datepicker-day-selected', 'd-datepicker-day-range-end');
-        if (inRange(d, effMin, effMax) && !sameDay(d, effMin) && !sameDay(d, effMax)) {
-          classes.push('d-datepicker-day-in-range');
-        }
-      } else if (effMin && sameDay(d, effMin)) {
-        classes.push('d-datepicker-day-selected');
-      }
-      return classes.join(' ');
-    }
-
-    // Previous month filler
-    for (let i = firstDay - 1; i >= 0; i--) {
-      grid.appendChild(h('div', { class: 'd-datepicker-day d-datepicker-day-outside' }, String(daysInPrev - i)));
-    }
-
-    // Current month
-    for (let i = 1; i <= daysInMonth; i++) {
-      const d = new Date(year, month, i);
-      const dis = isDisabled(d);
-      const btn = h('button', {
-        type: 'button',
-        class: dayClasses(d),
-        tabindex: '-1',
-        disabled: dis ? '' : undefined
-      }, String(i));
-      if (!dis) {
-        btn.addEventListener('click', () => selectDay(d));
-        btn.addEventListener('mouseenter', () => {
-          if (picking) {
-            hoverDate = d;
-            renderPanel();
-          }
-        });
-      }
-      grid.appendChild(btn);
-    }
-
-    // Next month filler
-    const totalCells = firstDay + daysInMonth;
-    const remaining = (7 - (totalCells % 7)) % 7;
-    for (let i = 1; i <= remaining; i++) {
-      grid.appendChild(h('div', { class: 'd-datepicker-day d-datepicker-day-outside' }, String(i)));
-    }
-
-    container.appendChild(grid);
-  }
-
   function renderPanel() {
     panel.replaceChildren();
 
     // Presets sidebar
-    const presets = h('div', { class: 'd-daterange-presets' });
+    const presets = div({ class: 'd-daterange-presets' });
     getPresets().forEach(p => {
-      const btn = h('button', { type: 'button', class: 'd-daterange-preset' }, p.label);
+      const btn = buttonTag({ type: 'button', class: 'd-daterange-preset' }, p.label);
       btn.addEventListener('click', () => applyPreset(p.start, p.end));
       presets.appendChild(btn);
     });
 
-    // Two calendars
-    const leftCal = h('div', { class: 'd-daterange-calendar' });
-    const rightCal = h('div', { class: 'd-daterange-calendar' });
-    renderCalendar(leftCal, leftDate);
-    renderCalendar(rightCal, rightDate);
+    // Two calendars using shared renderCalendar primitive
+    const leftCal = renderCalendar({
+      viewDate: leftDate,
+      rangeStart,
+      rangeEnd,
+      hoverDate: picking ? hoverDate : null,
+      isDisabled,
+      onSelect: selectDay,
+      onHover: picking ? (d) => { hoverDate = d; renderPanel(); } : undefined,
+      onNav: (delta) => {
+        leftDate.setMonth(leftDate.getMonth() + delta);
+        rightDate.setMonth(rightDate.getMonth() + delta);
+        renderPanel();
+      }
+    });
 
-    const calendars = h('div', { class: 'd-daterange-calendars' }, leftCal, rightCal);
+    const rightCal = renderCalendar({
+      viewDate: rightDate,
+      rangeStart,
+      rangeEnd,
+      hoverDate: picking ? hoverDate : null,
+      isDisabled,
+      onSelect: selectDay,
+      onHover: picking ? (d) => { hoverDate = d; renderPanel(); } : undefined,
+      onNav: (delta) => {
+        leftDate.setMonth(leftDate.getMonth() + delta);
+        rightDate.setMonth(rightDate.getMonth() + delta);
+        renderPanel();
+      }
+    });
+
+    const calendars = div({ class: 'd-daterange-calendars' }, leftCal, rightCal);
     panel.appendChild(presets);
     panel.appendChild(calendars);
   }
 
-  const overlay = createOverlay(trigger, panel, {
+  const overlay = createFieldOverlay(trigger, panel, {
     trigger: 'click',
-    closeOnEscape: true,
-    closeOnOutside: true,
+    matchWidth: false,
     onOpen: () => {
       picking = false;
       hoverDate = null;
@@ -297,12 +228,17 @@ export function DateRangePicker(props = {}) {
 
   // Reactive value
   if (typeof value === 'function') {
-    createEffect(() => {
-      parseRange(value());
-      updateDisplay();
-    });
+    createEffect(() => { parseRange(value()); updateDisplay(); });
   }
 
+  onDestroy(() => { overlay.destroy(); });
+
   updateDisplay();
+
+  if (label || help) {
+    const { wrapper } = createFormField(wrap, { label, error, help, required, success, variant, size });
+    return wrapper;
+  }
+
   return wrap;
 }

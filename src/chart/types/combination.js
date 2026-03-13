@@ -3,10 +3,10 @@
  * @module types/combination
  */
 
-import { scene, group, path, rect } from '../_scene.js';
-import { pointsToPathD, smoothPathD, areaPathD } from '../_scene.js';
+import { scene, group, path, rect, gradient } from '../_scene.js';
+import { pointsToPathD, smoothPathD, areaPathD, smoothAreaPathD } from '../_scene.js';
 import { cartesian } from '../layouts/cartesian.js';
-import { chartColor } from '../layouts/_layout-base.js';
+import { chartColor, buildAnnotations } from '../layouts/_layout-base.js';
 import { resolve, scaleBand } from '../_shared.js';
 
 export function layoutCombination(spec, width, height) {
@@ -48,7 +48,7 @@ export function layoutCombination(spec, width, height) {
         const x = xScale(d[spec.x]) + offset;
         children.push(rect({
           x, y: yScale(val), w: subBandW * 0.85, h: yScale(0) - yScale(val),
-          fill: color, rx: 2, class: 'd-chart-bar',
+          fill: color, rx: Math.min(4, subBandW * 0.85 / 4), class: 'd-chart-bar',
           data: { series: yField, value: val, label: String(d[spec.x]) },
           key: `combo-bar-${li}-${d[spec.x]}`
         }));
@@ -60,10 +60,24 @@ export function layoutCombination(spec, width, height) {
         const x = xScale(xVal) + (xType === 'band' ? bandW / 2 : 0);
         return { x, y0: yScale(+d[yField] || 0), y1: baseline };
       });
-      children.push(path({ d: areaPathD(points), fill: color, class: 'd-chart-area', key: `combo-area-${li}` }));
+      // Gradient fill
+      const gradId = `combo-area-grad-${li}`;
+      const yMin = Math.min(...points.map(p => p.y0));
+      const yMax = Math.max(...points.map(p => p.y1));
+      children.push(gradient({
+        id: gradId, x1: '0', y1: yMin, x2: '0', y2: yMax,
+        stops: [
+          { offset: '0%', color, opacity: 0.3 },
+          { offset: '100%', color, opacity: 0.02 }
+        ]
+      }));
+      const useSmooth = layer.smooth !== undefined ? layer.smooth : spec.smooth;
+      const areaD = useSmooth ? smoothAreaPathD(points) : areaPathD(points);
+      children.push(path({ d: areaD, fill: `url(#${gradId})`, key: `combo-area-${li}` }));
+      const linePts = points.map(p => ({ x: p.x, y: p.y0 }));
+      const lineD = useSmooth ? smoothPathD(linePts) : pointsToPathD(linePts);
       children.push(path({
-        d: pointsToPathD(points.map(p => ({ x: p.x, y: p.y0 }))),
-        stroke: color, strokeWidth: 2, class: 'd-chart-line', key: `combo-area-line-${li}`
+        d: lineD, stroke: color, strokeWidth: 2, class: 'd-chart-line', key: `combo-area-line-${li}`
       }));
     } else {
       // Line (default)
@@ -72,7 +86,8 @@ export function layoutCombination(spec, width, height) {
         const x = xScale(xVal) + (xType === 'band' ? bandW / 2 : 0);
         return { x, y: yScale(+d[yField] || 0) };
       });
-      const pathD = layer.smooth ? smoothPathD(points) : pointsToPathD(points);
+      const useSmooth = layer.smooth !== undefined ? layer.smooth : spec.smooth;
+      const pathD = useSmooth ? smoothPathD(points) : pointsToPathD(points);
       children.push(path({
         d: pathD, stroke: color, strokeWidth: 2,
         strokeLinecap: 'round', strokeLinejoin: 'round',
@@ -80,6 +95,11 @@ export function layoutCombination(spec, width, height) {
         data: { series: yField }, key: `combo-line-${li}`
       }));
     }
+  }
+
+  // Annotations
+  if (spec.annotations) {
+    children.push(...buildAnnotations(spec.annotations, xScale, yScale, xType, innerW, innerH));
   }
 
   return scene(width, height, [

@@ -52,23 +52,46 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
     onOpen,
     onClose,
     usePopover = false,
+    portal = false,
+    placement = 'bottom',
+    align = 'start',
+    offset = 2,
+    matchWidth = false,
   } = opts;
 
   let _open = false;
   let _hoverTimer = null;
   let _closeTimer = null;
   const _cleanups = [];
+  let _posHandle = null;
+
+  if (portal) {
+    _posHandle = positionPanel(triggerEl, contentEl, { placement, align, offset, matchWidth });
+  }
 
   function isOpen() { return _open; }
+
+  // Resolve portal target at open time — if the trigger lives inside a
+  // <dialog> shown via showModal() (top-layer), portal into that dialog
+  // so the dropdown isn't hidden behind the top-layer backdrop.
+  function portalTarget() {
+    const dlg = triggerEl.closest('dialog');
+    return dlg || document.body;
+  }
 
   function open() {
     if (_open) return;
     _open = true;
+    if (portal) {
+      const target = portalTarget();
+      if (contentEl.parentNode !== target) target.appendChild(contentEl);
+    }
     if (usePopover && contentEl.showPopover) {
       contentEl.showPopover();
     } else {
       contentEl.style.display = '';
     }
+    if (_posHandle) _posHandle.reposition();
     triggerEl.setAttribute('aria-expanded', 'true');
     if (onOpen) onOpen();
   }
@@ -143,9 +166,135 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
   // Initial state: hidden
   if (!usePopover) contentEl.style.display = 'none';
 
-  function destroy() { _cleanups.forEach(fn => fn()); }
+  function destroy() {
+    _cleanups.forEach(fn => fn());
+    if (_posHandle) _posHandle.destroy();
+    if (portal && contentEl.parentNode) {
+      contentEl.parentNode.removeChild(contentEl);
+    }
+  }
 
   return { open, close, toggle, isOpen, destroy };
+}
+
+
+// ─── PANEL POSITIONING ──────────────────────────────────────────
+// Used by: Select, Combobox, DatePicker, Cascader, TreeSelect,
+// Mentions — any dropdown that must escape overflow/stacking contexts
+
+/**
+ * Positions a panel element relative to a trigger using position:fixed
+ * + getBoundingClientRect(). Escapes all overflow containers and
+ * stacking contexts by computing coordinates in viewport space.
+ *
+ * @param {HTMLElement} triggerEl
+ * @param {HTMLElement} panelEl
+ * @param {Object} [opts]
+ * @param {'bottom'|'top'} [opts.placement='bottom']
+ * @param {'start'|'center'|'end'} [opts.align='start']
+ * @param {number} [opts.offset=2] - Gap in px between trigger and panel
+ * @param {boolean} [opts.matchWidth=false] - Set panel width to trigger width
+ * @param {boolean} [opts.flip=true] - Flip placement if panel overflows viewport
+ * @returns {{ reposition: Function, destroy: Function }}
+ */
+export function positionPanel(triggerEl, panelEl, opts = {}) {
+  const {
+    placement = 'bottom',
+    align = 'start',
+    offset = 2,
+    matchWidth = false,
+    flip = true,
+  } = opts;
+
+  let _rafId = null;
+  let _listening = false;
+  const EDGE_PAD = 8;
+
+  function reposition() {
+    if (!triggerEl.isConnected) {
+      panelEl.style.display = 'none';
+      return;
+    }
+
+    const tr = triggerEl.getBoundingClientRect();
+    const panelEl_display = panelEl.style.display;
+    // Ensure panel is measurable
+    if (panelEl.style.display === 'none') panelEl.style.display = '';
+    const pr = panelEl.getBoundingClientRect();
+    panelEl.style.display = panelEl_display === 'none' ? panelEl_display : '';
+
+    panelEl.style.position = 'fixed';
+    panelEl.style.right = 'auto';
+    panelEl.style.margin = '0';
+
+    if (matchWidth) panelEl.style.width = `${tr.width}px`;
+
+    // Determine vertical placement
+    let usePlacement = placement;
+    if (flip) {
+      const spaceBelow = window.innerHeight - tr.bottom - offset;
+      const spaceAbove = tr.top - offset;
+      if (usePlacement === 'bottom' && pr.height > spaceBelow && spaceAbove > spaceBelow) {
+        usePlacement = 'top';
+      } else if (usePlacement === 'top' && pr.height > spaceAbove && spaceBelow > spaceAbove) {
+        usePlacement = 'bottom';
+      }
+    }
+
+    let top;
+    if (usePlacement === 'bottom') {
+      top = tr.bottom + offset;
+    } else {
+      top = tr.top - pr.height - offset;
+    }
+
+    // Horizontal alignment
+    let left;
+    if (align === 'start') left = tr.left;
+    else if (align === 'end') left = tr.right - pr.width;
+    else left = tr.left + (tr.width - pr.width) / 2;
+
+    // Clamp to viewport edges
+    const pw = matchWidth ? tr.width : pr.width;
+    if (left + pw > window.innerWidth - EDGE_PAD) left = window.innerWidth - EDGE_PAD - pw;
+    if (left < EDGE_PAD) left = EDGE_PAD;
+    if (top + pr.height > window.innerHeight - EDGE_PAD) top = window.innerHeight - EDGE_PAD - pr.height;
+    if (top < EDGE_PAD) top = EDGE_PAD;
+
+    panelEl.style.top = `${top}px`;
+    panelEl.style.left = `${left}px`;
+  }
+
+  function onScrollOrResize() {
+    if (_rafId) return;
+    _rafId = requestAnimationFrame(() => {
+      _rafId = null;
+      reposition();
+    });
+  }
+
+  function startListening() {
+    if (_listening) return;
+    _listening = true;
+    window.addEventListener('scroll', onScrollOrResize, true);
+    window.addEventListener('resize', onScrollOrResize);
+  }
+
+  function stopListening() {
+    if (!_listening) return;
+    _listening = false;
+    window.removeEventListener('scroll', onScrollOrResize, true);
+    window.removeEventListener('resize', onScrollOrResize);
+    if (_rafId) { cancelAnimationFrame(_rafId); _rafId = null; }
+  }
+
+  startListening();
+
+  function destroy() {
+    stopListening();
+  }
+
+  return { reposition, destroy };
 }
 
 
@@ -488,18 +637,23 @@ export function createFocusTrap(containerEl) {
  * @returns {HTMLElement}
  */
 export function createFormField(controlEl, opts = {}) {
-  const { label, error, help, required, class: cls } = opts;
+  const { label, error, success, help, required, variant, size, class: cls } = opts;
 
-  const id = controlEl.id || `d-field-${_fieldId++}`;
+  const id = controlEl.id || `d-form-field-${_fieldId++}`;
   controlEl.id = id;
 
-  const wrapper = h('div', { class: cls ? `d-field ${cls}` : 'd-field' });
+  const wrapCls = ['d-form-field'];
+  if (variant) wrapCls.push(`d-form-field-${variant}`);
+  if (size) wrapCls.push(`d-form-field-${size}`);
+  if (cls) wrapCls.push(cls);
+
+  const wrapper = h('div', { class: wrapCls.join(' ') });
 
   if (label) {
-    const labelEl = h('label', { class: 'd-field-label', for: id });
+    const labelEl = h('label', { class: 'd-form-field-label', for: id });
     labelEl.textContent = label;
     if (required) {
-      labelEl.appendChild(h('span', { class: 'd-field-required', 'aria-hidden': 'true' }, ' *'));
+      labelEl.appendChild(h('span', { class: 'd-form-field-required', 'aria-hidden': 'true' }, ' *'));
     }
     wrapper.appendChild(labelEl);
   }
@@ -508,33 +662,64 @@ export function createFormField(controlEl, opts = {}) {
 
   if (help) {
     const helpId = `${id}-help`;
-    const helpEl = h('div', { class: 'd-field-help', id: helpId }, help);
+    const helpEl = h('div', { class: 'd-form-field-help', id: helpId }, help);
     controlEl.setAttribute('aria-describedby', helpId);
     wrapper.appendChild(helpEl);
   }
 
-  if (error) {
-    const errId = `${id}-error`;
-    const errEl = h('div', { class: 'd-field-error', id: errId, role: 'alert' });
-    wrapper.appendChild(errEl);
+  const errId = `${id}-error`;
+  const errEl = h('div', { class: 'd-form-field-error', id: errId, role: 'alert' });
+  wrapper.appendChild(errEl);
+  errEl.style.display = 'none';
 
+  if (error) {
     if (typeof error === 'function') {
       createEffect(() => {
         const msg = error();
         errEl.textContent = msg || '';
         errEl.style.display = msg ? '' : 'none';
         controlEl.setAttribute('aria-invalid', msg ? 'true' : 'false');
+        wrapper.toggleAttribute('data-error', !!msg);
         if (msg) controlEl.setAttribute('aria-errormessage', errId);
         else controlEl.removeAttribute('aria-errormessage');
       });
     } else {
-      errEl.textContent = error;
+      errEl.textContent = typeof error === 'string' ? error : '';
+      errEl.style.display = '';
       controlEl.setAttribute('aria-invalid', 'true');
       controlEl.setAttribute('aria-errormessage', errId);
+      wrapper.setAttribute('data-error', '');
     }
   }
 
-  return wrapper;
+  // Reactive success
+  if (success) {
+    if (typeof success === 'function') {
+      createEffect(() => {
+        const v = success();
+        wrapper.toggleAttribute('data-success', !!v);
+      });
+    } else {
+      wrapper.setAttribute('data-success', '');
+    }
+  }
+
+  function setError(msg) {
+    errEl.textContent = msg || '';
+    errEl.style.display = msg ? '' : 'none';
+    controlEl.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    wrapper.toggleAttribute('data-error', !!msg);
+    if (msg) controlEl.setAttribute('aria-errormessage', errId);
+    else controlEl.removeAttribute('aria-errormessage');
+  }
+
+  function setSuccess(v) {
+    wrapper.toggleAttribute('data-success', !!v);
+  }
+
+  function destroy() {}
+
+  return { wrapper, setError, setSuccess, destroy };
 }
 
 let _fieldId = 0;

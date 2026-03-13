@@ -1,32 +1,35 @@
 /**
- * TreeSelect — Dropdown overlay with hierarchical tree selection.
- * Supports single/multiple selection, checkboxes, and search filtering.
- * Uses createOverlay behavior.
+ * TreeSelect — Dropdown with hierarchical tree selection.
+ * Supports single/multiple selection, checkboxes, and search.
+ * Uses createFieldOverlay behavior.
  *
  * @module decantr/components/tree-select
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { createOverlay, caret, createCheckControl } from './_behaviors.js';
+import { caret, createCheckControl, createFormField } from './_behaviors.js';
+import { applyFieldState, createFieldOverlay } from './_primitives.js';
 
-/**
- * @typedef {Object} TreeSelectNode
- * @property {string} value
- * @property {string} label
- * @property {boolean} [disabled]
- * @property {TreeSelectNode[]} [children]
- */
+const { div, button: buttonTag, span, input: inputTag } = tags;
 
 /**
  * @param {Object} [props]
- * @param {TreeSelectNode[]} [props.options] - Tree data
+ * @param {{ value: string, label: string, disabled?: boolean, children?: Object[] }[]} [props.options]
  * @param {string|Array<string>|Function} [props.value]
  * @param {boolean} [props.multiple=false]
- * @param {boolean} [props.checkable=false] - Show checkboxes
- * @param {Function} [props.onchange] - Called with selected value(s)
+ * @param {boolean} [props.checkable=false]
+ * @param {Function} [props.onchange]
  * @param {string} [props.placeholder='Select']
  * @param {boolean|Function} [props.disabled]
+ * @param {boolean|string|Function} [props.error]
+ * @param {boolean|string|Function} [props.success]
+ * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.label]
+ * @param {string} [props.help]
+ * @param {boolean} [props.required]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
@@ -34,7 +37,8 @@ export function TreeSelect(props = {}) {
   injectBase();
   const {
     options = [], value, multiple = false, checkable = false,
-    onchange, placeholder = 'Select', disabled, class: cls
+    onchange, placeholder = 'Select', disabled, error, success,
+    variant, size, label, help, required, class: cls
   } = props;
 
   const selected = new Set();
@@ -61,27 +65,23 @@ export function TreeSelect(props = {}) {
 
   function getDisplayText() {
     if (!selected.size) return '';
-    const vals = [...selected];
-    return vals.map(v => findLabel(options, v) || v).join(', ');
+    return [...selected].map(v => findLabel(options, v) || v).join(', ');
   }
 
   // Trigger
-  const displayEl = h('span', { class: 'd-treeselect-display' });
+  const displayEl = span({ class: 'd-treeselect-display' });
   const arrowEl = caret('down', { class: 'd-treeselect-arrow' });
-  const trigger = h('button', {
+  const trigger = buttonTag({
     type: 'button',
     class: cx('d-treeselect-trigger', 'd-select'),
     'aria-haspopup': 'listbox',
     'aria-expanded': 'false'
   }, displayEl, arrowEl);
 
-  const panel = h('div', {
-    class: 'd-treeselect-panel',
-    style: { display: 'none' },
-    role: 'tree'
-  });
+  const panel = div({ class: 'd-treeselect-panel', role: 'tree' });
+  const wrap = div({ class: cx('d-treeselect', cls) }, trigger, panel);
 
-  const wrap = h('div', { class: cx('d-treeselect', cls) }, trigger, panel);
+  applyFieldState(wrap, { error, success, disabled, variant, size });
 
   function updateDisplay() {
     const text = getDisplayText();
@@ -132,21 +132,19 @@ export function TreeSelect(props = {}) {
     const isExpanded = expanded.has(node.value);
     const isSelected = selected.has(node.value);
 
-    const content = h('div', {
+    const content = div({
       class: cx('d-tree-node-content', isSelected && 'd-tree-node-selected'),
       role: 'treeitem',
       'aria-selected': String(isSelected),
       'aria-expanded': hasChildren ? String(isExpanded) : undefined
     });
 
-    // Indent
     for (let i = 0; i < depth; i++) {
-      content.appendChild(h('span', { class: 'd-tree-node-indent' }));
+      content.appendChild(span({ class: 'd-tree-node-indent' }));
     }
 
-    // Switcher
     if (hasChildren) {
-      const switcher = h('button', {
+      const switcher = buttonTag({
         type: 'button',
         class: cx('d-tree-node-switcher', isExpanded && 'd-tree-node-switcher-open'),
         'aria-label': isExpanded ? 'Collapse' : 'Expand',
@@ -155,10 +153,9 @@ export function TreeSelect(props = {}) {
       switcher.addEventListener('click', (e) => { e.stopPropagation(); toggleExpand(node); });
       content.appendChild(switcher);
     } else {
-      content.appendChild(h('span', { class: 'd-tree-node-indent' }));
+      content.appendChild(span({ class: 'd-tree-node-indent' }));
     }
 
-    // Checkbox
     if (checkable) {
       const { wrap: cbWrap, input: cb } = createCheckControl({
         tabindex: '-1',
@@ -169,19 +166,16 @@ export function TreeSelect(props = {}) {
       content.appendChild(cbWrap);
     }
 
-    // Label
-    const label = h('span', { class: 'd-tree-node-label' }, node.label);
-    content.appendChild(label);
+    content.appendChild(span({ class: 'd-tree-node-label' }, node.label));
 
     if (!checkable && !node.disabled) {
       content.addEventListener('click', () => selectNode(node));
     }
 
-    const wrapper = h('div', { class: 'd-tree-node' }, content);
+    const wrapper = div({ class: 'd-tree-node' }, content);
 
-    // Children
     if (hasChildren && isExpanded) {
-      const childContainer = h('div', { class: 'd-tree-children', role: 'group' });
+      const childContainer = div({ class: 'd-tree-children', role: 'group' });
       node.children.forEach(child => {
         const childEl = renderNode(child, depth + 1);
         if (childEl) childContainer.appendChild(childEl);
@@ -193,15 +187,13 @@ export function TreeSelect(props = {}) {
   }
 
   function renderTree() {
-    // Preserve search input at top
     const existingSearch = panel.querySelector('.d-treeselect-search');
     const hadFocus = existingSearch && document.activeElement === existingSearch;
     const cursorPos = existingSearch ? existingSearch.selectionStart : 0;
 
     panel.replaceChildren();
 
-    // Search input
-    const searchInput = h('input', {
+    const searchInput = inputTag({
       type: 'text',
       class: 'd-treeselect-search',
       placeholder: 'Search...',
@@ -214,8 +206,7 @@ export function TreeSelect(props = {}) {
     });
     panel.appendChild(searchInput);
 
-    // Tree
-    const treeWrap = h('div', { class: 'd-tree', role: 'tree' });
+    const treeWrap = div({ class: 'd-tree', role: 'tree' });
     options.forEach(node => {
       const el = renderNode(node, 0);
       if (el) treeWrap.appendChild(el);
@@ -230,10 +221,8 @@ export function TreeSelect(props = {}) {
     }
   }
 
-  const overlay = createOverlay(trigger, panel, {
-    trigger: 'click',
-    closeOnEscape: true,
-    closeOnOutside: true,
+  const overlay = createFieldOverlay(trigger, panel, {
+    matchWidth: false,
     onOpen: () => { searchText = ''; wrap.classList.add('d-treeselect-open'); renderTree(); },
     onClose: () => { searchText = ''; wrap.classList.remove('d-treeselect-open'); }
   });
@@ -255,6 +244,14 @@ export function TreeSelect(props = {}) {
     createEffect(() => { parseValue(value); updateDisplay(); });
   }
 
+  onDestroy(() => { overlay.destroy(); });
+
   updateDisplay();
+
+  if (label || help) {
+    const { wrapper } = createFormField(wrap, { label, error, help, required, success, variant, size });
+    return wrapper;
+  }
+
   return wrap;
 }

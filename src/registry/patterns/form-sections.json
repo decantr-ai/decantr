@@ -1,0 +1,23 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "form-sections",
+  "name": "Form Sections",
+  "description": "Grouped form fields organized into labeled sections with consistent spacing. Used for settings pages, profile editing, and multi-section data entry.",
+  "components": ["Input", "Select", "Switch", "Textarea", "Checkbox", "Button", "Separator"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _flexCol _gap8 _p6 _mxAuto",
+    "slots": {
+      "section": "Repeating group: section title (_heading5), description (_caption _muted), then field rows separated by Separator",
+      "field-row": "Label + control pair via _flex _flexCol _gap1 or _grid _gc2 for side-by-side",
+      "actions": "Bottom bar with save Button (primary) and cancel Button (ghost) via _flex _gap3 _justifyEnd"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-grid",
+      "notes": "Section headers use cc-label. Required field indicators use cc-glow. Action bar uses cc-bar. Background uses cc-grid."
+    }
+  }
+}

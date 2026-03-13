@@ -1,4 +1,5 @@
 {
+  "$schema": "https://decantr.ai/schemas/module.v1.json",
   "module": "decantr/router",
   "description": "Client-side routing — hash or history mode",
   "functions": {

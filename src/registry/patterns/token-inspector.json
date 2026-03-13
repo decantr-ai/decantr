@@ -1,0 +1,17 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "token-inspector",
+  "name": "Token Inspector",
+  "description": "Live design token visualization grouped by category — color swatches, typography samples, spacing bars, elevation boxes. Values update reactively when style or mode changes.",
+  "components": ["Card", "Separator"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap8",
+    "slots": {
+      "section-block": "Per-category section with title and rendered token visualizations",
+      "swatch-grid": "Grid of color swatches for palette/neutral/surface tokens",
+      "type-samples": "Stacked typography samples at each scale",
+      "spacing-bars": "Horizontal bars showing spacing token values"
+    }
+  }
+}

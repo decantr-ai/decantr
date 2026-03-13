@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { welcome, success, info, heading } from '../art.js';
 import {
-  packageJson, configJson, indexHtml, manifestJson,
+  packageJson, configJson, essenceJson, indexHtml, manifestJson,
   claudeMd, appJs, agentsMd
 } from '../../tools/init-templates.js';
 
@@ -14,7 +14,7 @@ export async function run() {
   const cwd = process.cwd();
   const name = process.argv[3] || basename(cwd);
 
-  console.log(welcome('0.3.0'));
+  console.log(welcome('0.4.0'));
   console.log(heading('Creating project skeleton...'));
 
   // Create directories
@@ -26,6 +26,7 @@ export async function run() {
   const files = [
     ['package.json', packageJson(name)],
     ['decantr.config.json', configJson(name)],
+    ['decantr.essence.json', essenceJson()],
     ['public/index.html', indexHtml(name)],
     ['.decantr/manifest.json', manifestJson(name)],
     ['CLAUDE.md', claudeMd(name)],

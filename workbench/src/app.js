@@ -1,864 +1,346 @@
-import { mount, h } from 'decantr/core';
-import { createSignal, createEffect } from 'decantr/state';
-import { css, setStyle, getStyleList, setMode, getMode, getResolvedMode, setShape } from 'decantr/css';
+import { mount, onDestroy } from 'decantr/core';
+import { createSignal, createEffect, untrack } from 'decantr/state';
+import { css, setStyle, getStyleList, setMode, setShape, setColorblindMode } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { Select, Badge, icon, createScrollSpy } from 'decantr/components';
-import { ActionSection } from './sections/action.js';
-import { InputSection } from './sections/form.js';
-import { FormAdvancedSection } from './sections/form-advanced.js';
-import { DisplaySection } from './sections/display.js';
-import { DataSection } from './sections/data.js';
-import { LayoutSection } from './sections/layout.js';
-import { NavigationSection } from './sections/navigation.js';
-import { FeedbackSection } from './sections/feedback.js';
-import { TypographySection } from './sections/typography.js';
-import { ChartSection } from './sections/charts.js';
-import { IconSection } from './sections/icons.js';
-import { BlocksSection } from './sections/blocks.js';
-import { KitsSection } from './sections/kits.js';
+import { Select, Drawer, icon } from 'decantr/components';
+import { createRouter, navigate } from 'decantr/router';
+import { createFocusTrap } from 'decantr/components/_behaviors.js';
+import { initUsageIndex } from './shared/usage-links.js';
 
-const { div, header, main, nav, section, h1, h2, h3, p, span, button, input, a, small, strong, code } = tags;
+import { SidebarNav, getSidebarItems, loadAllSidebarItems, searchIndex } from './sidebar.js';
 
-// ─── Categories ──────────────────────────────────────────────────
-const CATEGORIES = [
-  { id: 'action', label: 'Action', children: ['Button', 'Toggle', 'ToggleGroup', 'Dropdown', 'Spinner'], section: ActionSection },
-  { id: 'input', label: 'Form Basic', children: ['Input', 'InputNumber', 'InputOTP', 'Rate', 'Textarea', 'Checkbox', 'Switch', 'Select', 'Combobox', 'Mentions', 'Label', 'RadioGroup', 'Slider', 'RangeSlider', 'InputGroup', 'CompactGroup'], section: InputSection },
-  { id: 'form-advanced', label: 'Form Advanced', children: ['ColorPicker', 'DatePicker', 'DateRangePicker', 'TimePicker', 'TimeRangePicker', 'Upload', 'Transfer', 'Cascader', 'TreeSelect', 'Form/Field'], section: FormAdvancedSection },
-  { id: 'display', label: 'Display', children: ['Card', 'Badge', 'Tag', 'Table', 'DataTable', 'Descriptions', 'Statistic', 'Avatar', 'AvatarGroup', 'Progress', 'Skeleton', 'Chip', 'Empty'], section: DisplaySection },
-  { id: 'data', label: 'Data', children: ['List', 'Tree', 'Calendar', 'Carousel', 'Image', 'Timeline', 'HoverCard'], section: DataSection },
-  { id: 'layout', label: 'Layout', children: ['Tabs', 'Accordion', 'Collapsible', 'Space', 'AspectRatio', 'Resizable', 'Splitter', 'ScrollArea', 'Separator', 'Separator \u2014 Labeled', 'Separator \u2014 Decorative', 'Separator \u2014 Vertical', 'Separator \u2014 In Context', 'Pagination', 'Breadcrumb'], section: LayoutSection },
-  { id: 'navigation', label: 'Navigation', children: ['Menu', 'NavigationMenu', 'Steps', 'Segmented', 'ContextMenu', 'BackTop', 'Affix'], section: NavigationSection },
-  { id: 'feedback', label: 'Feedback', children: ['Modal', 'AlertDialog', 'Sheet', 'Drawer', 'Command', 'Popconfirm', 'Popover', 'Tooltip', 'Alert', 'Result', 'Toast', 'Notification', 'Message', 'FloatButton', 'Tour'], section: FeedbackSection },
-  { id: 'typography', label: 'Typography', children: ['Title', 'Text', 'Paragraph', 'Link', 'Blockquote', 'Kbd', 'Watermark', 'VisuallyHidden'], section: TypographySection },
-  { id: 'chart', label: 'Chart', children: ['Line', 'Bar', 'Area', 'Scatter', 'Bubble', 'Histogram', 'BoxPlot', 'Candlestick', 'Waterfall', 'RangeBar', 'RangeArea', 'Heatmap', 'Combination', 'Pie', 'Radar', 'Radial', 'Gauge', 'Funnel', 'Treemap', 'Sunburst', 'Sankey', 'Chord', 'Sparkline', 'Swimlane', 'OrgChart'], section: ChartSection },
-  { id: 'icons', label: 'Icons', children: ['Essential', 'Custom', 'Sizes'], section: IconSection },
-  { id: 'blocks', label: 'Blocks', children: ['Hero', 'Features', 'Pricing', 'Testimonials', 'CTA', 'Footer', 'Timeline', 'StatsRow', 'ProjectGrid'], section: BlocksSection },
-  { id: 'kits', label: 'Kits', children: ['Sidebar', 'DashboardHeader', 'StatsGrid', 'KPICard', 'ActivityFeed', 'ChartPlaceholder', 'LoginForm', 'RegisterForm', 'ForgotPasswordForm', 'AuthorCard', 'PostList', 'CategoryNav', 'TableOfContents'], section: KitsSection },
-];
+// Pages
+import { ComponentsIndex, ComponentGroupPage, ComponentDetailPage } from './pages/components.js';
+import { ChartsIndex, ChartGroupPage, ChartDetailPage } from './pages/charts.js';
+import { PatternsIndex, PatternDetailPage } from './pages/patterns.js';
+import { ArchetypesIndex, ArchetypeDetailPage } from './pages/archetypes.js';
+import { RecipesIndex, RecipeDetailPage } from './pages/recipes.js';
+import { FoundationsIndex, FoundationPage } from './pages/foundations.js';
+import { AtomsIndex, AtomPage } from './pages/atoms.js';
+import { TokensIndex, TokenPage } from './pages/tokens.js';
 
-const TOTAL_COMPONENTS = CATEGORIES.reduce((n, c) => n + c.children.length, 0);
+const { div, header, main, h1, span, button, input, img } = tags;
 
-// Build flat search index: { name, categoryId, categoryLabel }
-const SEARCH_INDEX = [];
-for (const cat of CATEGORIES) {
-  for (const child of cat.children) {
-    SEARCH_INDEX.push({ name: child, categoryId: cat.id, categoryLabel: cat.label });
-  }
-}
-
-// ─── Hash routing helpers ────────────────────────────────────────
-function getHash() {
-  const h = window.location.hash.slice(1) || '/';
-  return h.startsWith('/') ? h : '/' + h;
-}
-
-function setHash(path) {
-  window.location.hash = '#' + path;
-}
-
-function parseRoute(hash) {
-  if (hash === '/' || hash === '') return { page: 'home', category: null };
-  if (hash === '/tokens') return { page: 'tokens', category: null };
-  if (hash === '/recipes') return { page: 'recipes', category: null };
-  const m = hash.match(/^\/components\/([a-z-]+)$/);
-  if (m) return { page: 'category', category: m[1] };
-  return { page: 'home', category: null };
-}
-
-// ─── Viewport sizes ──────────────────────────────────────────────
+// ─── Viewports ──────────────────────────────────────────────────
 const VIEWPORTS = [
-  { id: 'mobile', label: 'Mobile', width: 360, icon: '\u{1F4F1}' },
-  { id: 'tablet', label: 'Tablet', width: 768, icon: '\u{1F4CB}' },
-  { id: 'desktop', label: 'Desktop', width: 1024, icon: '\u{1F5A5}' },
-  { id: 'full', label: 'Full', width: 0, icon: '\u{2B1C}' },
+  { id: 'desktop', label: 'Desktop', width: 0, cssVar: null },
+  { id: 'tablet', label: 'Tablet', width: 768, cssVar: 'var(--de-vp-tablet)' },
+  { id: 'mobile', label: 'Mobile', width: 375, cssVar: 'var(--de-vp-mobile)' },
 ];
 
-// ─── Token Inspector ─────────────────────────────────────────────
-function TokensPage() {
-  const style = getComputedStyle(document.documentElement);
-  const getToken = (name) => style.getPropertyValue(name).trim();
-
-  const roles = ['primary', 'accent', 'tertiary', 'success', 'warning', 'error', 'info'];
-  const roleSuffixes = ['', '-fg', '-hover', '-active', '-subtle', '-subtle-fg', '-border'];
-
-  function colorSwatch(token) {
-    const val = getToken(token);
-    return div({ class: 'wb-swatch' },
-      div({ class: 'wb-swatch-color', style: `background:${val || 'transparent'}` }),
-      div({ class: css('_flex _col') },
-        span({ class: 'wb-swatch-label' }, token.replace('--d-', '')),
-        span({ class: 'wb-swatch-value' }, val || 'unset')
-      )
-    );
-  }
-
-  // Color palette section
-  function colorSection() {
-    const swatches = [];
-    for (const role of roles) {
-      for (const suffix of roleSuffixes) {
-        swatches.push(colorSwatch(`--d-${role}${suffix}`));
-      }
-    }
-    return div({ class: 'wb-section-block' },
-      h3({ class: 'wb-section-title' }, 'Color Palette'),
-      p({ class: css('_textsm _fg4 _mb4') }, `${roles.length} roles \u00d7 ${roleSuffixes.length} variants = ${roles.length * roleSuffixes.length} tokens`),
-      div({ class: 'wb-token-grid' }, ...swatches)
-    );
-  }
-
-  // Neutral / surface tokens
-  function neutralSection() {
-    const neutralTokens = ['--d-bg', '--d-fg', '--d-muted', '--d-muted-fg', '--d-border', '--d-border-strong', '--d-ring', '--d-overlay'];
-    return div({ class: 'wb-section-block' },
-      h3({ class: 'wb-section-title' }, 'Neutral Tokens'),
-      div({ class: 'wb-token-grid' }, ...neutralTokens.map(t => colorSwatch(t)))
-    );
-  }
-
-  // Surfaces
-  function surfaceSection() {
-    const levels = [0, 1, 2, 3];
-    return div({ class: 'wb-section-block' },
-      h3({ class: 'wb-section-title' }, 'Surface Levels'),
-      div({ class: css('_grid _gc4 _gap3') },
-        ...levels.map(i => {
-          const bg = getToken(`--d-surface-${i}`);
-          const fg = getToken(`--d-surface-${i}-fg`);
-          const border = getToken(`--d-surface-${i}-border`);
-          return div({
-            class: 'wb-surface-card',
-            style: `background:${bg};color:${fg};border:1px solid ${border}`
-          },
-            strong({}, `Surface ${i}`),
-            small({}, `bg: ${bg}`),
-            small({}, `fg: ${fg}`)
-          );
-        })
-      )
-    );
-  }
-
-  // Typography scale
-  function typographySection() {
-    const sizes = [
-      ['--d-text-xs', 'xs'],
-      ['--d-text-sm', 'sm'],
-      ['--d-text-base', 'base'],
-      ['--d-text-md', 'md'],
-      ['--d-text-lg', 'lg'],
-      ['--d-text-xl', 'xl'],
-      ['--d-text-2xl', '2xl'],
-      ['--d-text-3xl', '3xl'],
-      ['--d-text-4xl', '4xl'],
-    ];
-    return div({ class: 'wb-section-block' },
-      h3({ class: 'wb-section-title' }, 'Typography Scale'),
-      div({ class: css('_flex _col _gap1') },
-        ...sizes.map(([token, label]) => {
-          const val = getToken(token);
-          return div({ class: 'wb-type-sample' },
-            span({ class: 'wb-type-label' }, `${token}`),
-            span({ style: `font-size:${val || '1rem'}` }, `The quick brown fox (${val})`)
-          );
-        })
-      )
-    );
-  }
-
-  // Spacing scale
-  function spacingSection() {
-    const spacings = [
-      ['--d-sp-1', '0.25rem'], ['--d-sp-1-5', '0.375rem'], ['--d-sp-2', '0.5rem'],
-      ['--d-sp-2-5', '0.625rem'], ['--d-sp-3', '0.75rem'], ['--d-sp-4', '1rem'],
-      ['--d-sp-5', '1.25rem'], ['--d-sp-6', '1.5rem'], ['--d-sp-8', '2rem'],
-      ['--d-sp-10', '2.5rem'], ['--d-sp-12', '3rem'], ['--d-sp-16', '4rem'],
-    ];
-    return div({ class: 'wb-section-block' },
-      h3({ class: 'wb-section-title' }, 'Spacing Scale'),
-      div({ class: css('_flex _col _gap1') },
-        ...spacings.map(([token, fallback]) => {
-          const val = getToken(token) || fallback;
-          return div({ class: 'wb-spacing-row' },
-            span({ class: 'wb-spacing-label' }, token.replace('--d-', '')),
-            div({ class: 'wb-spacing-bar', style: `width:${val}` }),
-            span({ class: 'wb-spacing-label' }, val)
-          );
-        })
-      )
-    );
-  }
-
-  // Elevation
-  function elevationSection() {
-    const levels = [0, 1, 2, 3];
-    return div({ class: 'wb-section-block' },
-      h3({ class: 'wb-section-title' }, 'Elevation'),
-      div({ class: css('_grid _gc4 _gap4') },
-        ...levels.map(i => {
-          const shadow = getToken(`--d-elevation-${i}`);
-          return div({ class: 'wb-elevation-box', style: `box-shadow:${shadow}` },
-            `elevation-${i}`
-          );
-        })
-      )
-    );
-  }
-
-  // Motion
-  function motionSection() {
-    const durations = ['--d-duration-instant', '--d-duration-fast', '--d-duration-normal', '--d-duration-slow'];
-    const easings = ['--d-easing-standard', '--d-easing-decelerate', '--d-easing-accelerate', '--d-easing-bounce'];
-    return div({ class: 'wb-section-block' },
-      h3({ class: 'wb-section-title' }, 'Motion'),
-      p({ class: css('_textsm _fg4 _mb3') }, 'Hover each box to see the transition in action.'),
-      div({ class: css('_flex _col _gap4') },
-        div({ class: css('_flex _col _gap2') },
-          small({ class: css('_fwtitle _fg4') }, 'Durations'),
-          div({ class: css('_flex _gap3 _wrap') },
-            ...durations.map(token => {
-              const val = getToken(token) || '0s';
-              const box = div({
-                class: 'wb-motion-box',
-                title: `${token}: ${val}`,
-                style: `transition: transform ${val} ease`
-              });
-              box.addEventListener('mouseenter', () => { box.style.transform = 'scale(1.3)'; });
-              box.addEventListener('mouseleave', () => { box.style.transform = 'scale(1)'; });
-              return div({ class: css('_flex _col _aic _gap1') },
-                box,
-                small({ class: css('_t10 _fg4'), style: 'font-family:monospace' }, token.replace('--d-duration-', '')),
-                small({ class: css('_t10 _fg4') }, val)
-              );
-            })
-          )
-        ),
-        div({ class: css('_flex _col _gap2') },
-          small({ class: css('_fwtitle _fg4') }, 'Easings'),
-          div({ class: css('_flex _gap3 _wrap') },
-            ...easings.map(token => {
-              const val = getToken(token) || 'ease';
-              const dur = getToken('--d-duration-normal') || '0.2s';
-              const box = div({
-                class: 'wb-motion-box',
-                title: `${token}: ${val}`,
-                style: `transition: transform ${dur} ${val}; background: var(--d-accent)`
-              });
-              box.addEventListener('mouseenter', () => { box.style.transform = 'translateY(-12px)'; });
-              box.addEventListener('mouseleave', () => { box.style.transform = 'translateY(0)'; });
-              return div({ class: css('_flex _col _aic _gap1') },
-                box,
-                small({ class: css('_t10 _fg4'), style: 'font-family:monospace' }, token.replace('--d-easing-', '')),
-                small({ class: css('_t10 _fg4') }, val)
-              );
-            })
-          )
-        )
-      )
-    );
-  }
-
-  // Chart tokens
-  function chartSection() {
-    const chartTokens = Array.from({ length: 8 }, (_, i) => `--d-chart-${i}`);
-    return div({ class: 'wb-section-block' },
-      h3({ class: 'wb-section-title' }, 'Chart Palette'),
-      div({ class: css('_flex _gap2 _wrap') },
-        ...chartTokens.map(token => {
-          const val = getToken(token);
-          return div({ class: css('_flex _col _aic _gap1') },
-            div({ style: `width:3rem;height:3rem;border-radius:var(--d-radius);background:${val};border:1px solid var(--d-border)` }),
-            small({ class: css('_t10 _fg4'), style: 'font-family:monospace' }, token.replace('--d-chart-', 'chart-')),
-            small({ class: css('_t10 _fg4') }, val)
-          );
-        })
-      )
-    );
-  }
-
-  return section({ class: css('_flex _col _gap8') },
-    div({ class: css('_flex _col _gap1') },
-      h2({ class: css('_text2xl _fwheading _lhtight _lsheading') }, 'Token Inspector'),
-      p({ class: css('_textsm _fg4') }, 'Live view of all active design tokens. Values update when you switch styles or modes.')
-    ),
-    colorSection(),
-    neutralSection(),
-    surfaceSection(),
-    typographySection(),
-    spacingSection(),
-    elevationSection(),
-    motionSection(),
-    chartSection()
-  );
-}
-
-// ─── Recipes placeholder ─────────────────────────────────────────
-function RecipesPage() {
-  return section({ class: css('_flex _col _gap6') },
-    div({ class: css('_flex _col _gap1') },
-      h2({ class: css('_text2xl _fwheading _lhtight _lsheading') }, 'Integration Recipes'),
-      p({ class: css('_textsm _fg4') }, 'Common component composition patterns.')
-    ),
-    div({ class: css('_p8 _tc'), style: 'border:1px dashed var(--d-border);border-radius:var(--d-radius)' },
-      p({ class: css('_textlg _fg4') }, 'Coming soon'),
-      p({ class: css('_textsm _fg4 _mt2') }, 'Recipes will show multi-component compositions: form layouts, dashboard panels, data tables with filters, etc.')
-    )
-  );
-}
-
-// ─── Home page ───────────────────────────────────────────────────
-function HomePage(navigateTo) {
-  return section({ class: css('_flex _col _gap6') },
-    div({ class: css('_flex _col _gap1') },
-      h2({ class: css('_text2xl _fwheading _lhtight _lsheading') }, 'Decantr Workbench'),
-      p({ class: css('_textsm _fg4') },
-        `${TOTAL_COMPONENTS} components across ${CATEGORIES.length} categories. Select a category to explore.`
-      )
-    ),
-    div({ class: 'wb-home-grid' },
-      ...CATEGORIES.map(cat =>
-        div({
-          class: 'wb-home-card',
-          onclick: () => navigateTo(`/components/${cat.id}`)
-        },
-          div({ class: css('_flex _jcsb _aic _mb2') },
-            h3({}, cat.label),
-            span({ class: 'wb-count' }, String(cat.children.length))
-          ),
-          p({}, cat.children.slice(0, 5).join(', ') + (cat.children.length > 5 ? `, +${cat.children.length - 5} more` : ''))
-        )
-      ),
-      div({
-        class: 'wb-home-card',
-        onclick: () => navigateTo('/tokens')
-      },
-        div({ class: css('_flex _jcsb _aic _mb2') },
-          h3({}, 'Token Inspector'),
-          span({ class: 'wb-count' }, '170+')
-        ),
-        p({}, 'Colors, typography, spacing, elevation, motion, and chart tokens')
-      ),
-      div({
-        class: 'wb-home-card',
-        onclick: () => navigateTo('/recipes')
-      },
-        div({ class: css('_flex _jcsb _aic _mb2') },
-          h3({}, 'Recipes'),
-          span({ class: 'wb-count' }, '\u2014')
-        ),
-        p({}, 'Multi-component composition patterns')
-      )
-    )
-  );
-}
-
-// ─── Search Modal ────────────────────────────────────────────────
-function SearchModal(visible, setVisible, navigateTo) {
+// ─── Search Modal ───────────────────────────────────────────────
+function SearchModal(visible, setVisible) {
   const [query, setQuery] = createSignal('');
   const [activeIdx, setActiveIdx] = createSignal(0);
 
   function getFiltered() {
     const q = query().toLowerCase();
-    if (!q) return SEARCH_INDEX.slice(0, 20);
-    return SEARCH_INDEX.filter(item =>
-      item.name.toLowerCase().includes(q) ||
-      item.categoryLabel.toLowerCase().includes(q)
-    );
+    if (!q) return searchIndex().slice(0, 20);
+    return searchIndex().filter(item =>
+      item.name.toLowerCase().includes(q) || item.label.toLowerCase().includes(q)
+    ).slice(0, 30);
   }
 
   function selectItem(item) {
     setVisible(false);
     setQuery('');
-    navigateTo(`/components/${item.categoryId}`);
+    if (item.group) {
+      const layerItems = getSidebarItems(item.layer);
+      const groupItem = layerItems.find(g => g.id === item.group);
+      if (groupItem?.children) {
+        navigate(`/${item.layer}/${item.group}/${item.name}`);
+      } else {
+        navigate(`/${item.layer}/${item.group}`);
+      }
+    } else {
+      navigate(`/${item.layer}`);
+    }
   }
 
   const inputEl = input({
-    class: 'wb-search-input',
-    placeholder: 'Search components...',
+    class: 'de-search-input',
+    placeholder: 'Search across all layers...',
     oninput: (e) => { setQuery(e.target.value); setActiveIdx(0); },
     onkeydown: (e) => {
       const filtered = getFiltered();
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setActiveIdx(Math.min(activeIdx() + 1, filtered.length - 1));
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setActiveIdx(Math.max(activeIdx() - 1, 0));
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (filtered[activeIdx()]) selectItem(filtered[activeIdx()]);
-      } else if (e.key === 'Escape') {
-        setVisible(false);
-        setQuery('');
-      }
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(Math.min(activeIdx() + 1, filtered.length - 1)); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx(Math.max(activeIdx() - 1, 0)); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (filtered[activeIdx()]) selectItem(filtered[activeIdx()]); }
+      else if (e.key === 'Escape') { setVisible(false); setQuery(''); }
     }
   });
 
-  const resultsList = div({ class: 'wb-search-results' });
-  const emptyMsg = div({ class: 'wb-search-empty' }, 'No matching components.');
+  const resultsList = div({ class: 'de-search-results' });
+  const emptyMsg = div({ class: 'de-search-empty' }, 'No results.');
 
+  const searchBox = div({ class: 'de-search-box' }, inputEl, resultsList, emptyMsg);
   const overlay = div({
-    class: 'wb-search-modal',
-    style: 'display:none',
-    onclick: (e) => {
-      if (e.target === overlay) { setVisible(false); setQuery(''); }
-    }
-  },
-    div({ class: 'wb-search-box' },
-      inputEl,
-      resultsList,
-      emptyMsg
-    )
-  );
+    class: 'de-search-modal de-hidden',
+    onclick: (e) => { if (e.target === overlay) { setVisible(false); setQuery(''); } }
+  }, searchBox);
 
-  // Render results reactively
+  // Focus trap for accessibility
+  const focusTrap = createFocusTrap(searchBox);
+  onDestroy(() => focusTrap.deactivate());
+  let previousFocus = null;
+
   createEffect(() => {
     const filtered = getFiltered();
     const idx = activeIdx();
-
-    while (resultsList.firstChild) resultsList.removeChild(resultsList.firstChild);
-
-    if (filtered.length === 0) {
-      emptyMsg.style.display = '';
-    } else {
-      emptyMsg.style.display = 'none';
+    resultsList.innerHTML = '';
+    if (filtered.length === 0) { emptyMsg.classList.remove('de-hidden'); }
+    else {
+      emptyMsg.classList.add('de-hidden');
       filtered.forEach((item, i) => {
-        const el = div({
-          class: 'wb-search-item' + (i === idx ? ' wb-active' : ''),
+        resultsList.appendChild(div({
+          class: 'de-search-item' + (i === idx ? ' de-active' : ''),
           onclick: () => selectItem(item)
         },
           span({}, item.name),
-          span({ class: 'wb-search-item-cat' }, item.categoryLabel)
-        );
-        resultsList.appendChild(el);
+          span({ class: 'de-search-item-layer' }, item.label)
+        ));
       });
     }
   });
 
-  // Show/hide reactively
   createEffect(() => {
     if (visible()) {
-      overlay.style.display = '';
-      inputEl.value = '';
-      setQuery('');
-      setActiveIdx(0);
-      requestAnimationFrame(() => inputEl.focus());
+      previousFocus = document.activeElement;
+      overlay.classList.remove('de-hidden');
+      overlay.classList.add('de-search-entering');
+      requestAnimationFrame(() => {
+        overlay.classList.remove('de-search-entering');
+        inputEl.value = '';
+        setQuery('');
+        setActiveIdx(0);
+        inputEl.focus();
+        focusTrap.activate();
+      });
     } else {
-      overlay.style.display = 'none';
+      focusTrap.deactivate();
+      overlay.classList.add('de-hidden');
+      if (previousFocus && typeof previousFocus.focus === 'function') {
+        previousFocus.focus();
+        previousFocus = null;
+      }
     }
   });
 
   return overlay;
 }
 
-// ─── App ─────────────────────────────────────────────────────────
-function App() {
+// ─── Root Layout (receives { outlet } from router) ─────────────
+function RootLayout({ outlet }) {
   const styles = getStyleList();
-  const [activeStyle, setActiveStyle] = createSignal('auradecantism');
-  const [activeMode, setActiveMode] = createSignal('dark');
-  const [activeShape, setActiveShape] = createSignal('');
-  const [route, setRoute] = createSignal(parseRoute(getHash()));
-  const [sidebarCompact, setSidebarCompact] = createSignal(false);
-  const [sidebarFilter, setSidebarFilter] = createSignal('');
-  const [viewport, setViewport] = createSignal('full');
+  const [activeStyle, setActiveStyle] = createSignal(localStorage.getItem('de-style') || 'auradecantism');
+  const [activeMode, setActiveMode] = createSignal(localStorage.getItem('de-mode') || 'dark');
+  const [activeShape, setActiveShape] = createSignal(localStorage.getItem('de-shape') || '');
+  const [activeCB, setActiveCB] = createSignal(localStorage.getItem('de-cb') || 'off');
+  const [viewport, setViewport] = createSignal('desktop');
   const [searchVisible, setSearchVisible] = createSignal(false);
-  const [collapsed, setCollapsed] = createSignal({});
-  const [activeDemo, setActiveDemo] = createSignal(null);
+  const [hudOpen, setHudOpen] = createSignal(false);
 
-  // Map from sidebar child name → array of DemoGroup IDs
-  let componentToIdMap = {};
-  // Current scrollspy instance (disconnect on route change)
-  let scrollSpy = null;
+  // Apply style/mode/shape + persist to localStorage
+  createEffect(() => { const s = activeStyle(); localStorage.setItem('de-style', s); untrack(() => setStyle(s)); });
+  createEffect(() => { const m = activeMode(); localStorage.setItem('de-mode', m); untrack(() => setMode(m)); });
+  createEffect(() => { const s = activeShape() || null; localStorage.setItem('de-shape', s || ''); untrack(() => setShape(s)); });
+  createEffect(() => { const c = activeCB(); localStorage.setItem('de-cb', c); untrack(() => setColorblindMode(c)); });
 
-  // Apply style, mode, and shape
-  createEffect(() => setStyle(activeStyle()));
-  createEffect(() => setMode(activeMode()));
-  createEffect(() => setShape(activeShape() || null));
+  // Cmd+K shortcut
+  const onKeyDown = (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setSearchVisible(!searchVisible()); }
+    if (e.key === 'Escape' && searchVisible()) setSearchVisible(false);
+  };
+  document.addEventListener('keydown', onKeyDown);
+  onDestroy(() => document.removeEventListener('keydown', onKeyDown));
 
-  // Hash change listener
-  function onHashChange() {
-    setRoute(parseRoute(getHash()));
-  }
-  window.addEventListener('hashchange', onHashChange);
-
-  function navigateTo(path) {
-    setHash(path);
-  }
-
-  // Keyboard shortcut: Cmd/Ctrl+K
-  document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      setSearchVisible(!searchVisible());
-    }
-    if (e.key === 'Escape' && searchVisible()) {
-      setSearchVisible(false);
-    }
-  });
-
+  // ─── Floating HUD ──────────────────────────────────────────
   const styleOptions = styles.map(s => ({ value: s.id, label: s.name }));
-  const modeOptions = [
-    { value: 'light', label: 'Light' },
-    { value: 'dark', label: 'Dark' },
-    { value: 'auto', label: 'Auto' },
-  ];
-  const shapeOptions = [
-    { value: '', label: 'Default' },
-    { value: 'sharp', label: 'Sharp' },
-    { value: 'rounded', label: 'Rounded' },
-    { value: 'pill', label: 'Pill' },
-  ];
+  const modeOptions = [{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }, { value: 'auto', label: 'Auto' }];
+  const shapeOptions = [{ value: '', label: 'Default' }, { value: 'sharp', label: 'Sharp' }, { value: 'rounded', label: 'Rounded' }, { value: 'pill', label: 'Pill' }];
+  const cbOptions = [{ value: 'off', label: 'Off' }, { value: 'protanopia', label: 'Protanopia' }, { value: 'deuteranopia', label: 'Deuteranopia' }, { value: 'tritanopia', label: 'Tritanopia' }];
 
-  // ─── Content area ────────────────────────────────────────────
-  const contentArea = div({ class: 'wb-content' });
-
-  function clearContent() {
-    while (contentArea.firstChild) contentArea.removeChild(contentArea.firstChild);
-  }
-
-  function renderContent() {
-    // Disconnect previous scrollspy
-    if (scrollSpy) { scrollSpy.disconnect(); scrollSpy = null; }
-    setActiveDemo(null);
-    componentToIdMap = {};
-
-    clearContent();
-    const r = route();
-    let el;
-    if (r.page === 'home') {
-      el = HomePage(navigateTo);
-    } else if (r.page === 'tokens') {
-      el = TokensPage();
-    } else if (r.page === 'recipes') {
-      el = RecipesPage();
-    } else if (r.page === 'category') {
-      const cat = CATEGORIES.find(c => c.id === r.category);
-      if (cat) {
-        // Breadcrumb
-        const breadcrumb = div({ class: 'wb-breadcrumb' },
-          a({ onclick: () => navigateTo('/') }, 'Home'),
-          span({ class: 'wb-sep' }, '/'),
-          span({}, cat.label)
-        );
-        const content = cat.section();
-        const wrapper = div({}, breadcrumb, content);
-        el = wrapper;
-      } else {
-        el = p({ class: css('_textsm _fg4') }, 'Category not found.');
-      }
-    }
-    if (el) contentArea.appendChild(el);
-
-    // Set up scrollspy for category pages
-    if (r.page === 'category') {
-      requestAnimationFrame(() => {
-        const sections = contentArea.querySelectorAll('[data-demo-label]');
-        if (sections.length === 0) return;
-
-        // Build componentToIdMap: "Button" → ["demo-button-variants", "demo-button-sizes"]
-        const map = {};
-        for (const sec of sections) {
-          const label = sec.getAttribute('data-demo-label');
-          const name = label.split(/\s*[\u2014\u2013\u2012—–-]\s*/)[0].trim();
-          if (!map[name]) map[name] = [];
-          map[name].push(sec.id);
-        }
-        componentToIdMap = map;
-
-        // Create scrollspy — root is mainArea (.wb-main), the scroll container
-        scrollSpy = createScrollSpy(mainArea, {
-          rootMargin: '-12px 0px -60% 0px',
-          onActiveChange: (el) => setActiveDemo(el.id)
-        });
-        for (const sec of sections) scrollSpy.observe(sec);
-      });
-    }
-  }
-
-  createEffect(renderContent);
-
-  // ─── Viewport wrapper ────────────────────────────────────────
-  const mainArea = main({ class: 'wb-main' });
-
-  function updateViewport() {
-    while (mainArea.firstChild) mainArea.removeChild(mainArea.firstChild);
-    const vp = viewport();
-    if (vp === 'full') {
-      mainArea.appendChild(contentArea);
-    } else {
-      const vpDef = VIEWPORTS.find(v => v.id === vp);
-      const w = vpDef ? vpDef.width : 0;
-      const frame = div({
-        class: 'wb-viewport-frame',
-        style: `width:${w}px;max-height:calc(100vh - 48px);overflow:auto;margin:1.5rem auto;position:relative`
-      },
-        div({ class: 'wb-viewport-label' }, `${vpDef.label} \u2014 ${w}px`),
-        contentArea
-      );
-      mainArea.appendChild(frame);
-    }
-  }
-
-  createEffect(updateViewport);
-
-  // ─── Sidebar ─────────────────────────────────────────────────
-  // Animated collapse: measure scrollHeight, transition to/from 0
-  function toggleCollapse(catId, itemsEl) {
-    const c = { ...collapsed() };
-    const willCollapse = !c[catId];
-    c[catId] = willCollapse;
-
-    if (itemsEl) {
-      if (willCollapse) {
-        // Collapse: set explicit height, then transition to 0
-        itemsEl.style.height = itemsEl.scrollHeight + 'px';
-        requestAnimationFrame(() => { itemsEl.style.height = '0'; });
-      } else {
-        // Expand: transition from 0 to scrollHeight, then clear height
-        itemsEl.style.height = '0';
-        requestAnimationFrame(() => {
-          itemsEl.style.height = itemsEl.scrollHeight + 'px';
-          const onEnd = () => {
-            itemsEl.style.height = '';
-            itemsEl.removeEventListener('transitionend', onEnd);
-          };
-          itemsEl.addEventListener('transitionend', onEnd);
-        });
-      }
-    }
-
-    setCollapsed(c);
-  }
-
-  function buildSidebar() {
-    const filter = sidebarFilter().toLowerCase();
-    const compact = sidebarCompact();
-    const r = route();
-    const activeCat = r.category;
-    const currentDemo = activeDemo();
-
-    const groups = CATEGORIES.map(cat => {
-      const matchingChildren = filter
-        ? cat.children.filter(c => c.toLowerCase().includes(filter) || cat.label.toLowerCase().includes(filter))
-        : cat.children;
-
-      if (filter && matchingChildren.length === 0) return null;
-
-      const isCollapsed = collapsed()[cat.id] && !filter;
-      const isActive = activeCat === cat.id;
-
-      if (compact) {
-        const btn = button({
-          class: css('_flex _center'),
-          style: `width:48px;height:36px;border:none;background:${isActive ? 'var(--d-primary-subtle)' : 'none'};cursor:pointer;color:${isActive ? 'var(--d-primary)' : 'var(--d-muted)'};font-size:0.75rem;font-weight:600;font-family:inherit`,
-          title: cat.label,
-          onclick: () => navigateTo(`/components/${cat.id}`)
-        }, cat.label.charAt(0).toUpperCase());
-        return btn;
-      }
-
-      // Chevron icon for collapse state
-      const chevron = icon('chevron-down', { size: '0.75em' });
-      chevron.classList.add('wb-nav-chevron');
-      if (isCollapsed) chevron.classList.add('wb-rotated');
-
-      const headerEl = button({
-        class: 'wb-nav-header',
-        onclick: () => {
-          // Find the sibling items container for animation
-          const group = headerEl.parentElement;
-          const itemsEl = group ? group.querySelector('.wb-nav-items') : null;
-          toggleCollapse(cat.id, itemsEl);
-        }
-      },
-        span({}, cat.label),
-        div({ class: css('_flex _aic _gap1') },
-          span({ class: 'wb-count' }, String(matchingChildren.length)),
-          chevron
-        )
-      );
-
-      const items = matchingChildren.map(child => {
-        // Per-item active state: check if this child's DemoGroup IDs include the current activeDemo
-        const childIds = componentToIdMap[child] || [];
-        const isItemActive = isActive && childIds.includes(currentDemo);
-
-        return button({
-          class: 'wb-nav-item' + (isItemActive ? ' wb-active' : ''),
-          onclick: () => {
-            // Navigate to category if not already there
-            if (r.category !== cat.id) {
-              navigateTo(`/components/${cat.id}`);
-              // Wait for content to render, then scroll
-              requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                  const ids = componentToIdMap[child] || [];
-                  const targetEl = ids[0] ? document.getElementById(ids[0]) : null;
-                  if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                });
-              });
-            } else {
-              // Already on this category — just scroll
-              const targetEl = childIds[0] ? document.getElementById(childIds[0]) : null;
-              if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          }
-        }, child);
-      });
-
-      const itemsContainer = div({
-        class: 'wb-nav-items',
-        style: isCollapsed ? 'height:0' : ''
-      }, ...items);
-
-      return div({ class: 'wb-nav-group' }, headerEl, itemsContainer);
-    }).filter(Boolean);
-
-    return groups;
-  }
-
-  const sidebarContent = div({ class: css('_flex _col _grow'), style: 'overflow-y:auto;padding-top:0.25rem' });
-
-  function refreshSidebar() {
-    while (sidebarContent.firstChild) sidebarContent.removeChild(sidebarContent.firstChild);
-    const groups = buildSidebar();
-    for (const g of groups) sidebarContent.appendChild(g);
-
-    // Auto-scroll sidebar to keep active item visible
-    const activeItem = sidebarContent.querySelector('.wb-nav-item.wb-active');
-    if (activeItem) activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }
-
-  // Refresh sidebar when route, filter, compact, collapsed, or activeDemo changes
-  createEffect(() => {
-    route(); sidebarFilter(); sidebarCompact(); collapsed(); activeDemo();
-    refreshSidebar();
-  });
-
-  const searchInput = input({
-    placeholder: 'Filter...',
-    oninput: (e) => setSidebarFilter(e.target.value)
-  });
-
-  const sidebarEl = nav({ class: 'wb-sidebar' },
-    // Home + Tokens links at top
-    div({ class: css('_flex _col'), style: 'border-bottom:1px solid var(--d-border)' },
-      button({
-        class: 'wb-nav-item',
-        style: 'padding-left:0.75rem;font-weight:500',
-        onclick: () => navigateTo('/')
-      }, 'Home'),
-      button({
-        class: 'wb-nav-item',
-        style: 'padding-left:0.75rem;font-weight:500',
-        onclick: () => navigateTo('/tokens')
-      }, 'Tokens'),
-      button({
-        class: 'wb-nav-item',
-        style: 'padding-left:0.75rem;font-weight:500',
-        onclick: () => navigateTo('/recipes')
-      }, 'Recipes')
+  const hudDrawer = Drawer({
+    visible: hudOpen,
+    onClose: () => setHudOpen(false),
+    side: 'right',
+    title: 'Controls',
+    width: 'var(--de-hud-w)'
+  },
+    div({ class: 'de-hud-row' },
+      span({ class: 'de-hud-label' }, 'Style'),
+      Select({ options: styleOptions, value: activeStyle, onchange: v => setActiveStyle(v), size: 'sm' })
     ),
-    div({ class: 'wb-sidebar-search' }, searchInput),
-    sidebarContent
-  );
-
-  // Track compact mode
-  createEffect(() => {
-    if (sidebarCompact()) {
-      sidebarEl.classList.add('wb-compact');
-      searchInput.parentElement.style.display = 'none';
-      // Hide the top nav links text area too
-      sidebarEl.firstChild.style.display = 'none';
-    } else {
-      sidebarEl.classList.remove('wb-compact');
-      searchInput.parentElement.style.display = '';
-      sidebarEl.firstChild.style.display = '';
-    }
-  });
-
-  // ─── Header ──────────────────────────────────────────────────
-  const isMac = navigator.platform.indexOf('Mac') >= 0;
-  const shortcutHint = isMac ? '\u2318K' : 'Ctrl+K';
-
-  const headerEl = header({ class: 'wb-header' },
-    div({ class: css('_flex _aic _gap3') },
-      button({
-        class: css('_flex _center'),
-        style: 'width:28px;height:28px;border:1px solid var(--d-border);border-radius:var(--d-radius);background:var(--d-surface-1);cursor:pointer;color:var(--d-fg);font-size:0.75rem',
-        title: 'Toggle compact sidebar',
-        'aria-label': 'Toggle compact sidebar',
-        onclick: () => setSidebarCompact(!sidebarCompact())
-      }, '\u2630'),
-      h1({ style: 'font-size:0.875rem;font-weight:700;letter-spacing:-0.025em;color:var(--d-fg)' }, 'decantr'),
-      span({ style: 'font-size:0.6875rem;color:var(--d-muted);padding:0.125rem 0.375rem;background:var(--d-surface-1);border-radius:9999px' },
-        `${TOTAL_COMPONENTS} components`
-      )
+    div({ class: 'de-hud-row' },
+      span({ class: 'de-hud-label' }, 'Mode'),
+      Select({ options: modeOptions, value: activeMode, onchange: v => setActiveMode(v), size: 'sm' })
     ),
-    div({ class: css('_flex _aic _gap2') },
-      // Viewport simulator
-      div({ class: css('_flex _aic _gap1') },
+    div({ class: 'de-hud-row' },
+      span({ class: 'de-hud-label' }, 'Shape'),
+      Select({ options: shapeOptions, value: activeShape, onchange: v => setActiveShape(v), size: 'sm' })
+    ),
+    div({ class: 'de-hud-row' },
+      span({ class: 'de-hud-label' }, 'CVD'),
+      Select({ options: cbOptions, value: activeCB, onchange: v => setActiveCB(v), size: 'sm' })
+    ),
+    div({ class: 'de-hud-row' },
+      span({ class: 'de-hud-label' }, 'View'),
+      div({ class: 'de-hud-viewports' },
         ...VIEWPORTS.map(vp =>
           button({
-            style: () => `border:1px solid ${viewport() === vp.id ? 'var(--d-primary)' : 'var(--d-border)'};border-radius:var(--d-radius);background:${viewport() === vp.id ? 'var(--d-primary-subtle)' : 'var(--d-surface-1)'};cursor:pointer;padding:0.25rem 0.5rem;font-size:0.6875rem;color:${viewport() === vp.id ? 'var(--d-primary)' : 'var(--d-muted)'};font-family:inherit`,
-            title: vp.label + (vp.width ? ` (${vp.width}px)` : ''),
-            'aria-label': `Viewport: ${vp.label}`,
-            onclick: () => setViewport(vp.id)
-          }, vp.width ? `${vp.width}` : 'Full')
+            class: () => 'de-hud-vp-btn' + (viewport() === vp.id ? ' de-active' : ''),
+            onclick: () => setViewport(vp.id),
+            'aria-label': vp.label
+          }, vp.label)
         )
-      ),
-      // Divider
-      span({ style: 'width:1px;height:1.25rem;background:var(--d-border)' }),
-      // Style selector
-      span({ style: 'font-size:0.6875rem;color:var(--d-muted)' }, 'Style'),
-      Select({
-        options: styleOptions,
-        value: activeStyle,
-        onchange: v => setActiveStyle(v),
-        size: 'sm'
-      }),
-      // Mode selector
-      span({ style: 'font-size:0.6875rem;color:var(--d-muted)' }, 'Mode'),
-      Select({
-        options: modeOptions,
-        value: activeMode,
-        onchange: v => setActiveMode(v),
-        size: 'sm'
-      }),
-      // Shape selector
-      span({ style: 'font-size:0.6875rem;color:var(--d-muted)' }, 'Shape'),
-      Select({
-        options: shapeOptions,
-        value: activeShape,
-        onchange: v => setActiveShape(v),
-        size: 'sm'
-      }),
-      // Divider
-      span({ style: 'width:1px;height:1.25rem;background:var(--d-border)' }),
-      // Search
-      button({
-        style: 'display:flex;align-items:center;gap:0.375rem;border:1px solid var(--d-border);border-radius:var(--d-radius);background:var(--d-surface-1);cursor:pointer;padding:0.25rem 0.625rem;font-size:0.6875rem;color:var(--d-muted);font-family:inherit',
-        'aria-label': 'Search components',
-        onclick: () => setSearchVisible(true)
-      },
-        span({}, 'Search'),
-        span({ style: 'font-size:0.625rem;padding:0.0625rem 0.375rem;background:var(--d-surface-2);border-radius:var(--d-radius);color:var(--d-muted)' }, shortcutHint)
       )
     )
   );
 
-  // ─── Search modal ────────────────────────────────────────────
-  const searchModal = SearchModal(searchVisible, setSearchVisible, navigateTo);
+  const hudToggle = button({
+    class: 'de-hud-toggle',
+    'aria-label': 'Toggle controls panel',
+    title: 'Controls',
+    onclick: () => setHudOpen(!hudOpen())
+  }, icon('settings', { size: '1rem' }));
 
-  // ─── Shell ───────────────────────────────────────────────────
-  return div({ class: 'wb-shell' },
+  // ─── Header ────────────────────────────────────────────────
+  const isMac = navigator.platform.indexOf('Mac') >= 0;
+  const shortcutHint = isMac ? '\u2318K' : 'Ctrl+K';
+
+  const headerEl = header({ class: 'de-header' },
+    div({ class: 'de-header-left' },
+      h1({
+        class: 'de-logo',
+        onclick: () => navigate('/components')
+      },
+        img({ src: './images/logo.svg', alt: 'decantr', class: css('_w[28px]') }),
+        span({ class: css('_bold _ls[-0.02em] _textlg _fgfg') },
+          'decantr', span({ class: 'de-pink' }, '.'), 'a', span({ class: 'de-pink' }, 'i')
+        )
+      )
+    ),
+    div({ class: 'de-header-right' },
+      button({
+        class: 'de-search-trigger',
+        'aria-label': 'Search',
+        onclick: () => setSearchVisible(true)
+      },
+        span({}, 'Search'),
+        span({ class: 'de-search-kbd' }, shortcutHint)
+      ),
+      hudToggle
+    )
+  );
+
+  // ─── Main content area with optional viewport frame ────────
+  const outletEl = outlet();
+  const mainArea = main({ class: 'de-main' });
+
+  function updateViewport() {
+    mainArea.replaceChildren();
+    const vp = viewport();
+    const contentWrap = div({ class: 'de-content' }, outletEl);
+    if (vp === 'desktop') {
+      mainArea.appendChild(contentWrap);
+    } else {
+      const vpDef = VIEWPORTS.find(v => v.id === vp);
+      mainArea.appendChild(div({
+        class: 'de-viewport-frame',
+        style: `width:${vpDef.cssVar}`
+      },
+        div({ class: 'de-viewport-label' }, `${vpDef.label} — ${vpDef.width}px`),
+        contentWrap
+      ));
+    }
+  }
+  createEffect(updateViewport);
+
+  // ─── Search modal ──────────────────────────────────────────
+  const searchModal = SearchModal(searchVisible, setSearchVisible);
+
+  // ─── Shell ─────────────────────────────────────────────────
+  return div({ class: 'de-shell' },
     headerEl,
-    div({ class: 'wb-body' },
-      sidebarEl,
+    div({ class: 'de-body d-mesh' },
+      SidebarNav(),
       mainArea
     ),
+    hudDrawer,
     searchModal
   );
 }
 
-mount(document.getElementById('app'), App);
+// ─── Redirect component ────────────────────────────────────────
+function RedirectToComponents() {
+  navigate('/components', { replace: true });
+  return div({});
+}
+
+// ─── Router setup ──────────────────────────────────────────────
+const router = createRouter({
+  mode: 'hash',
+  scrollBehavior: false,
+  routes: [
+    { path: '/', component: RootLayout, children: [
+      { path: '', component: RedirectToComponents },
+      { path: 'components', component: ComponentsIndex },
+      { path: 'components/:group', component: ComponentGroupPage },
+      { path: 'components/:group/:name', component: ComponentDetailPage },
+      { path: 'charts', component: ChartsIndex },
+      { path: 'charts/:group', component: ChartGroupPage },
+      { path: 'charts/:group/:name', component: ChartDetailPage },
+      { path: 'patterns', component: PatternsIndex },
+      { path: 'patterns/:id', component: PatternDetailPage },
+      { path: 'archetypes', component: ArchetypesIndex },
+      { path: 'archetypes/:id', component: ArchetypeDetailPage },
+      { path: 'recipes', component: RecipesIndex },
+      { path: 'recipes/:id', component: RecipeDetailPage },
+      { path: 'foundations', component: FoundationsIndex },
+      { path: 'foundations/:subsection', component: FoundationPage },
+      { path: 'atoms', component: AtomsIndex },
+      { path: 'atoms/:category', component: AtomPage },
+      { path: 'tokens', component: TokensIndex },
+      { path: 'tokens/:group', component: TokenPage },
+    ]}
+  ]
+});
+
+// ─── Mount ─────────────────────────────────────────────────────
+mount(document.getElementById('app'), () => router.outlet());
+
+// Load sidebar data
+loadAllSidebarItems();
+
+// Initialize usage links index from registry data
+(async function loadUsageIndex() {
+  try {
+    const [patternsResp, archResp] = await Promise.all([
+      fetch('/__decantr/registry/patterns/index.json'),
+      fetch('/__decantr/registry/archetypes/index.json')
+    ]);
+    if (!patternsResp.ok || !archResp.ok) return;
+    const patternsIndex = await patternsResp.json();
+    const archIndex = await archResp.json();
+
+    const patternEntries = patternsIndex.patterns || {};
+    const patternData = {};
+    await Promise.all(Object.entries(patternEntries).map(async ([id, meta]) => {
+      try {
+        const resp = await fetch(`/__decantr/registry/patterns/${meta.file}`);
+        if (resp.ok) patternData[id] = await resp.json();
+      } catch { /* skip */ }
+    }));
+
+    const archEntries = archIndex.archetypes || {};
+    const archData = {};
+    await Promise.all(Object.entries(archEntries).map(async ([id, meta]) => {
+      try {
+        const resp = await fetch(`/__decantr/registry/archetypes/${meta.file}`);
+        if (resp.ok) archData[id] = await resp.json();
+      } catch { /* skip */ }
+    }));
+
+    initUsageIndex(patternData, archData);
+  } catch { /* registry not available — usage links will show fallback */ }
+})();

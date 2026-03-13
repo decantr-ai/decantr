@@ -1,0 +1,30 @@
+{
+  "terroir": "docs-explorer",
+  "vintage": {
+    "style": "auradecantism",
+    "mode": "dark",
+    "recipe": null,
+    "shape": "rounded"
+  },
+  "character": ["technical", "data-dense", "systematic"],
+  "vessel": { "type": "spa", "routing": "hash" },
+  "structure": [
+    { "id": "components", "skeleton": "sidebar-main", "blend": ["component-showcase"] },
+    { "id": "patterns", "skeleton": "sidebar-main", "blend": ["detail-panel"] },
+    { "id": "archetypes", "skeleton": "sidebar-main", "blend": ["detail-panel"] },
+    { "id": "recipes", "skeleton": "sidebar-main", "blend": ["detail-panel"] },
+    { "id": "foundations", "skeleton": "sidebar-main", "blend": ["detail-panel"] },
+    { "id": "atoms", "skeleton": "sidebar-main", "blend": ["specimen-grid"] },
+    { "id": "tokens", "skeleton": "sidebar-main", "blend": ["token-inspector"] }
+  ],
+  "tannins": ["registry-data", "search", "theme-controls", "viewport-sim"],
+  "cork": {
+    "enforce_style": true,
+    "rules": [
+      "Sidebar content MUST come from registry JSON, not hardcoded lists",
+      "All CSS values MUST use var(--d-*) tokens or atoms — no raw values",
+      "All overlays MUST use createFocusTrap() from _behaviors.js",
+      "Routing follows /#/layer/group/item pattern"
+    ]
+  }
+}

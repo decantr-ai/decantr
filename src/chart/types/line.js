@@ -7,7 +7,7 @@
 import { scene, group, path, circle, text } from '../_scene.js';
 import { pointsToPathD, smoothPathD, stepPathD } from '../_scene.js';
 import { cartesian } from '../layouts/cartesian.js';
-import { chartColor } from '../layouts/_layout-base.js';
+import { chartColor, buildAnnotations } from '../layouts/_layout-base.js';
 import { resolve, groupBy, downsampleLTTB } from '../_shared.js';
 
 /**
@@ -67,6 +67,19 @@ export function layoutLine(spec, width, height) {
       data: { series: s.key }, key: `line-${s.key}`
     }));
 
+    // Data point dots (suppress when points > 50 for LTTB-downsampled datasets)
+    if (spec.dots !== false && s.points.length <= 50) {
+      for (const p of s.points) {
+        children.push(circle({
+          cx: p.x, cy: p.y, r: 3,
+          fill: s.color, stroke: 'var(--d-bg)', strokeWidth: 2,
+          class: 'd-chart-point',
+          data: { series: s.key, value: p.raw[Array.isArray(spec.y) ? s.key : spec.y], label: String(p.raw[spec.x]) },
+          key: `dot-${s.key}-${p.x}`
+        }));
+      }
+    }
+
     // Data point labels
     if (spec.labels) {
       for (const p of s.points) {
@@ -77,6 +90,11 @@ export function layoutLine(spec, width, height) {
         }));
       }
     }
+  }
+
+  // Annotations
+  if (spec.annotations) {
+    children.push(...buildAnnotations(spec.annotations, xScale, yScale, xType, innerW, innerH));
   }
 
   return scene(width, height, [

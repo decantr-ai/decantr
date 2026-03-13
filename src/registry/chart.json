@@ -1,4 +1,5 @@
 {
+  "$schema": "https://decantr.ai/schemas/module.v1.json",
   "module": "decantr/chart",
   "file": "src/chart/index.js",
   "exports": {
@@ -23,7 +24,9 @@
             "stacked": { "type": "boolean", "default": false },
             "horizontal": { "type": "boolean", "default": false, "description": "Swap axes for horizontal orientation" },
             "donut": { "type": "boolean", "default": true, "description": "Pie chart inner radius (false = full pie)" },
-            "smooth": { "type": "boolean", "default": false, "description": "Smooth curve interpolation (Catmull-Rom)" },
+            "smooth": { "type": "boolean", "default": true, "description": "Smooth curve interpolation (Catmull-Rom)" },
+            "dots": { "type": "boolean", "default": true, "description": "Show data point dots on line/area charts (suppressed when points > 50)" },
+            "axisLine": { "type": "boolean", "default": false, "description": "Show axis lines (hidden by default for minimal ShadCN aesthetic)" },
             "labels": { "type": "boolean", "default": false, "description": "Show data point labels" },
             "animate": { "type": "boolean", "default": true },
             "zoom": { "type": "boolean", "default": false, "description": "Enable zoom/pan" },
@@ -31,7 +34,7 @@
             "crosshair": { "type": "boolean", "default": false, "description": "Enable crosshair guides" },
             "live": { "type": "boolean", "default": false, "description": "Streaming mode optimizations" },
             "interactive": { "type": "boolean", "default": false, "description": "Enable drag/drop, expand/collapse" },
-            "annotations": { "type": "Object[]", "description": "Annotation overlays [{type,value,label,color}]" },
+            "annotations": { "type": "Object[]", "description": "Annotation overlays. Three sub-types: line ({type:'line', axis:'x'|'y', value, label?, color?, dash?}), band ({type:'band', axis:'x'|'y', from, to, label?, color?}), point ({type:'point', x, y, label?, color?}). Rendered after data elements. Uses CSS classes .d-chart-annotation-line, .d-chart-annotation-band, .d-chart-annotation-label." },
             "colorScale": { "type": "Function", "description": "Continuous color mapping for heatmap/treemap" },
             "renderer": { "type": "string", "enum": ["auto", "svg", "canvas", "webgpu"], "default": "auto" },
             "width": { "type": "string", "description": "Explicit chart width" },

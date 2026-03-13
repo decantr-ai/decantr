@@ -109,12 +109,14 @@ function ensureBpElements() {
 /**
  * @param {string} className
  * @param {string} declaration
+ * @param {string} [escapedName] — pre-escaped class name for special chars (/, [, ], etc.)
  */
-export function inject(className, declaration) {
+export function inject(className, declaration, escapedName) {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
-  atomBuffer.push(`@layer d.atoms{.${className}{${declaration}}}`);
+  const sel = escapedName || className;
+  atomBuffer.push(`@layer d.atoms{.${sel}{${declaration}}}`);
   scheduleFlush();
 }
 
@@ -156,6 +158,29 @@ export function injectContainer(className, declaration, width) {
   if (typeof document === 'undefined') return;
   const escaped = className.replace(/:/g, '\\:');
   cqBuffer.push(`@layer d.atoms{@container(min-width:${width}px){.${escaped}{${declaration}}}}`);
+  scheduleFlush();
+}
+
+/** State map for group/peer prefix → CSS pseudo selector */
+const GP_STATE = {
+  gh: ['group', 'hover'], gf: ['group', 'focus-within'], ga: ['group', 'active'],
+  ph: ['peer', 'hover'], pf: ['peer', 'focus'], pa: ['peer', 'active'],
+};
+
+/**
+ * Inject a group/peer state atom.
+ * @param {string} className — e.g. '_gh:fgprimary'
+ * @param {string} declaration — CSS declaration(s)
+ * @param {string} prefix — 'gh'|'gf'|'ga'|'ph'|'pf'|'pa'
+ */
+export function injectGroupPeer(className, declaration, prefix) {
+  if (injected.has(className)) return;
+  injected.add(className);
+  if (typeof document === 'undefined') return;
+  const escaped = className.replace(/:/g, '\\:').replace(/\//g, '\\/');
+  const [kind, state] = GP_STATE[prefix];
+  const combinator = kind === 'group' ? ' ' : ' ~ ';
+  atomBuffer.push(`@layer d.atoms{.d-${kind}:${state}${combinator}.${escaped}{${declaration}}}`);
   scheduleFlush();
 }
 

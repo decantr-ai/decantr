@@ -1,0 +1,20 @@
+{
+  "terroir": "ecommerce",
+  "vintage": {
+    "style": "auradecantism",
+    "mode": "dark"
+  },
+  "character": ["bold", "modern"],
+  "structure": [
+    { "id": "home", "skeleton": "top-nav-main", "blend": ["hero", "product-grid"] },
+    { "id": "catalog", "skeleton": "top-nav-main", "blend": ["product-grid"] }
+  ],
+  "tannins": ["auth", "cart-state"],
+  "vessel": { "type": "spa", "routing": "hash" },
+  "cork": {
+    "locked": ["terroir", "vessel"],
+    "terroir_locked": true,
+    "vintage_locked": true,
+    "structure_locked": true
+  }
+}

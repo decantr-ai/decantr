@@ -7,7 +7,7 @@ import { icon as iconHelper } from './icon.js';
  * @param {string|Node} [props.icon] - Leading icon (string = icon name, Node = element)
  * @param {string} props.label - Text content
  * @param {string} [props.variant] - default|outline|filled (default: 'default')
- * @param {string} [props.size] - sm|md (default: 'md')
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
  * @param {boolean} [props.removable] - Show dismiss X button
  * @param {Function} [props.onRemove] - Dismiss callback
  * @param {Function} [props.onClick] - Click handler (makes chip interactive)
@@ -27,7 +27,7 @@ export function Chip(props = {}) {
     'd-chip',
     variant === 'outline' && 'd-chip-outline',
     variant === 'filled' && 'd-chip-filled',
-    size === 'sm' && 'd-chip-sm',
+    size && `d-chip-${size}`,
     selected && 'd-chip-selected',
     (onClick || removable) && 'd-chip-interactive',
     cls

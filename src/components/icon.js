@@ -17,7 +17,11 @@ function ensureStyleEl() {
 }
 
 function buildDataUri(inner) {
-  return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>${inner}</svg>`)}")`;
+  const useFill = /fill=["'](?!none["'])/.test(inner);
+  const attrs = useFill
+    ? `fill='black' stroke='none'`
+    : `fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'`;
+  return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' ${attrs}>${inner}</svg>`)}")`;
 }
 
 function injectIconCSS(name, inner) {
@@ -39,13 +43,14 @@ function injectIconCSS(name, inner) {
  */
 export function icon(name, opts = {}) {
   const { size = '1.25em', class: cls, ...rest } = opts;
+  const cssSize = typeof size === 'number' ? `${size}px` : size;
 
   const className = cls ? `d-i d-i-${name} ${cls}` : `d-i d-i-${name}`;
   const el = h('span', {
     class: className,
     role: 'img',
     'aria-hidden': 'true',
-    style: { width: size, height: size },
+    style: { width: cssSize, height: cssSize },
     ...rest
   });
 

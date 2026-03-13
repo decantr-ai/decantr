@@ -1,0 +1,24 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "product-grid",
+  "name": "Product Grid",
+  "description": "Responsive grid of product cards with image, title, price, and CTA. Used in e-commerce catalogs, feature showcases, and card galleries.",
+  "components": ["Card", "Card.Header", "Card.Body", "Card.Footer", "Button", "Badge", "icon"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc3 _gap6 _p4",
+    "slots": {
+      "card-image": "Product image in Card.Header with aspect ratio container",
+      "card-body": "Card.Body with product title (_heading6), description (_caption), price (_heading5)",
+      "card-footer": "Card.Footer with primary Button CTA and optional secondary action",
+      "badge": "Optional Badge overlay for sale/new/featured status"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-grid",
+      "notes": "Each Card uses cc-frame-sm. Prices use cc-data with cc-glow. Badge uses cc-label. Grid background gets cc-grid."
+    }
+  }
+}

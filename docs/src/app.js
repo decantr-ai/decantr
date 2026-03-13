@@ -1,13 +1,11 @@
-import { setStyle, setMode, css } from 'decantr/css';
+import { setStyle, setMode } from 'decantr/css';
 import { mount } from 'decantr/core';
 import { tags } from 'decantr/tags';
+import { createRouter } from 'decantr/router';
 import { docsSiteCSS } from './style.js';
-import { HeroSection } from './sections/hero.js';
-import { PowerSection } from './sections/power.js';
-import { FeaturesSection } from './sections/features.js';
-import { QuotesSection } from './sections/quotes.js';
-import { PhilosophySection } from './sections/philosophy.js';
-import { SiteFooter } from './sections/footer.js';
+import { NavHeader } from './components/nav-header.js';
+import { HomePage } from './pages/home.js';
+import { HowItWorksPage } from './pages/how-it-works.js';
 
 setStyle('auradecantism');
 setMode('dark');
@@ -20,23 +18,9 @@ document.head.appendChild(docsStyle);
 
 const { div } = tags;
 
-function App() {
-  return div({ class: css('_flex _col') },
-    HeroSection(),
-    PowerSection(),
-    FeaturesSection(),
-    QuotesSection(),
-    PhilosophySection(),
-    SiteFooter(),
-  );
-}
-
-const root = document.getElementById('app');
-mount(root, App);
-root.classList.add('ds-ready');
-
 // Scroll-triggered reveal animations
-if (typeof IntersectionObserver !== 'undefined') {
+function setupScrollReveal() {
+  if (typeof IntersectionObserver === 'undefined') return;
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -46,5 +30,29 @@ if (typeof IntersectionObserver !== 'undefined') {
     });
   }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-  document.querySelectorAll('.ds-reveal').forEach((el) => observer.observe(el));
+  document.querySelectorAll('.ds-reveal:not(.ds-visible)').forEach((el) => observer.observe(el));
 }
+
+const router = createRouter({
+  mode: 'hash',
+  routes: [
+    { path: '/', component: HomePage },
+    { path: '/how-it-works', component: HowItWorksPage },
+  ],
+  scrollBehavior: 'top',
+  afterEach: () => requestAnimationFrame(setupScrollReveal),
+});
+
+function App() {
+  return div({ class: '_flex _col' },
+    NavHeader(),
+    router.outlet(),
+  );
+}
+
+const root = document.getElementById('app');
+mount(root, App);
+root.classList.add('ds-ready');
+
+// Initial scroll reveal setup
+requestAnimationFrame(setupScrollReveal);

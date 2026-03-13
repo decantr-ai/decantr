@@ -22,6 +22,10 @@ import { layoutSparkline } from '../src/chart/types/sparkline.js';
 // --- Type base ---
 import { chartColor, PALETTE_SIZE, MARGINS, innerDimensions } from '../src/chart/types/_type-base.js';
 
+// --- Annotations ---
+import { buildAnnotations } from '../src/chart/layouts/_layout-base.js';
+import { scaleLinear as _scaleLinear, scaleBand as _scaleBand } from '../src/chart/_shared.js';
+
 // --- Public API ---
 import { chartSpec, createStream, colorScale, resolvePalette } from '../src/chart/index.js';
 
@@ -430,22 +434,28 @@ describe('layoutSparkline()', () => {
 // ============================
 
 describe('chartSpec()', () => {
-  it('fills defaults', () => {
+  it('fills defaults including smooth, dots, axisLine', () => {
     const spec = chartSpec({ type: 'bar', data: SAMPLE_DATA, x: 'month', y: 'sales' });
     assert.equal(spec.type, 'bar');
     assert.equal(spec.tooltip, true);
     assert.equal(spec.legend, true);
     assert.equal(spec.grid, true);
+    assert.equal(spec.smooth, true);
+    assert.equal(spec.dots, true);
+    assert.equal(spec.axisLine, false);
     assert.equal(spec.renderer, 'auto');
     assert.equal(spec.height, '300px');
     assert.equal(spec.tableAlt, true);
   });
 
   it('overrides defaults with provided values', () => {
-    const spec = chartSpec({ type: 'pie', height: '500px', grid: false });
+    const spec = chartSpec({ type: 'pie', height: '500px', grid: false, smooth: false, dots: false, axisLine: true });
     assert.equal(spec.type, 'pie');
     assert.equal(spec.height, '500px');
     assert.equal(spec.grid, false);
+    assert.equal(spec.smooth, false);
+    assert.equal(spec.dots, false);
+    assert.equal(spec.axisLine, true);
   });
 
   it('provides empty data array if none given', () => {
@@ -623,5 +633,340 @@ describe('cartesian()', () => {
     const c = cartesian({ data: SAMPLE_DATA, x: 'month', y: 'sales' }, 600, 400, { bandX: true });
     assert.equal(c.xType, 'band');
     assert.ok(c.categories.length > 0);
+  });
+
+  it('omits axis lines when axisLine is false', () => {
+    const c = cartesian({ data: SAMPLE_DATA, x: 'month', y: 'sales', axisLine: false }, 600, 400);
+    // No line nodes with class d-chart-axis in axisNodes
+    const axisLines = c.axisNodes.filter(n => n.type === 'line' && n.class === 'd-chart-axis');
+    assert.equal(axisLines.length, 0);
+  });
+
+  it('includes axis lines when axisLine is true', () => {
+    const c = cartesian({ data: SAMPLE_DATA, x: 'month', y: 'sales', axisLine: true }, 600, 400);
+    const axisLines = c.axisNodes.filter(n => n.type === 'line' && n.class === 'd-chart-axis');
+    assert.ok(axisLines.length > 0);
+  });
+});
+
+// ============================
+// smoothAreaPathD
+// ============================
+
+import { smoothAreaPathD, gradient as gradientNode } from '../src/chart/_scene.js';
+
+describe('smoothAreaPathD()', () => {
+  it('produces smooth top edge with straight bottom', () => {
+    const points = [
+      { x: 0, y0: 10, y1: 100 },
+      { x: 50, y0: 30, y1: 100 },
+      { x: 100, y0: 20, y1: 100 }
+    ];
+    const d = smoothAreaPathD(points);
+    assert.ok(d.includes('C')); // Smooth top edge has cubic bezier
+    assert.ok(d.endsWith('Z')); // Closed path
+    assert.ok(d.includes('L')); // Straight bottom edge has L commands
+  });
+
+  it('returns empty string for no points', () => {
+    assert.equal(smoothAreaPathD([]), '');
+  });
+});
+
+// ============================
+// Gradient scene node
+// ============================
+
+describe('gradient scene node', () => {
+  it('creates gradient node with correct type', () => {
+    const g = gradientNode({ id: 'test-grad', x1: '0', y1: '0', x2: '0', y2: '100', stops: [{ offset: '0%', color: '#ff0000', opacity: 0.3 }] });
+    assert.equal(g.type, 'gradient');
+    assert.equal(g.id, 'test-grad');
+    assert.equal(g.stops.length, 1);
+  });
+});
+
+// ============================
+// SVG gradient rendering
+// ============================
+
+import { renderSVG } from '../src/chart/renderers/svg.js';
+
+describe('SVG gradient rendering', () => {
+  it('renders gradient nodes into <defs>', () => {
+    const sg = scene(200, 200, [
+      group({}, [
+        gradientNode({
+          id: 'test-grad', x1: '0', y1: '0', x2: '0', y2: '200',
+          stops: [
+            { offset: '0%', color: '#ff0000', opacity: 0.5 },
+            { offset: '100%', color: '#0000ff', opacity: 0 }
+          ]
+        }),
+        path({ d: 'M0,0L100,100', fill: 'url(#test-grad)', key: 'test-path' })
+      ])
+    ]);
+    const svg = renderSVG(sg);
+    const defs = svg.querySelector('defs');
+    assert.ok(defs, 'SVG should contain <defs>');
+    const grad = defs.querySelector('linearGradient');
+    assert.ok(grad, 'defs should contain <linearGradient>');
+    assert.equal(grad.getAttribute('id'), 'test-grad');
+    const stops = grad.querySelectorAll('stop');
+    assert.equal(stops.length, 2);
+  });
+});
+
+// ============================
+// Bar rx rounding
+// ============================
+
+describe('bar rx rounding', () => {
+  it('uses rx: 4 max for bars', () => {
+    const sg = layoutBar({ data: SAMPLE_DATA, x: 'month', y: 'sales' }, 600, 400);
+    const barGroup = sg.children[0];
+    const barRects = barGroup.children.filter(c => c.type === 'rect' && c.class === 'd-chart-bar');
+    assert.ok(barRects.length > 0);
+    for (const r of barRects) {
+      assert.ok(r.rx <= 4, `rx should be <= 4, got ${r.rx}`);
+      assert.ok(r.rx >= 0, `rx should be >= 0, got ${r.rx}`);
+    }
+  });
+
+  it('stacked bars: only topmost segment gets rx > 0', () => {
+    const sg = layoutBar({ data: SAMPLE_DATA, x: 'month', y: ['sales', 'profit'], stacked: true }, 600, 400);
+    const barGroup = sg.children[0];
+    const barRects = barGroup.children.filter(c => c.type === 'rect' && c.class === 'd-chart-bar');
+    // Each category has 2 segments — first (sales) should have rx:0, second (profit=topmost) should have rx>0
+    for (let i = 0; i < barRects.length; i += 2) {
+      assert.equal(barRects[i].rx, 0, 'bottom segment should have rx: 0');
+    }
+    for (let i = 1; i < barRects.length; i += 2) {
+      assert.ok(barRects[i].rx > 0, 'topmost segment should have rx > 0');
+    }
+  });
+});
+
+// ============================
+// Area chart gradient + smooth
+// ============================
+
+describe('area chart ShadCN visuals', () => {
+  it('emits gradient nodes', () => {
+    const sg = layoutArea({ data: SAMPLE_DATA, x: 'month', y: 'sales' }, 600, 400);
+    const areaGroup = sg.children[0];
+    const grads = areaGroup.children.filter(c => c.type === 'gradient');
+    assert.ok(grads.length > 0, 'area chart should produce gradient nodes');
+    assert.ok(grads[0].stops.length === 2);
+    assert.ok(grads[0].stops[0].opacity > grads[0].stops[1].opacity);
+  });
+
+  it('uses gradient fill instead of flat color', () => {
+    const sg = layoutArea({ data: SAMPLE_DATA, x: 'month', y: 'sales' }, 600, 400);
+    const areaGroup = sg.children[0];
+    const areaPaths = areaGroup.children.filter(c => c.type === 'path' && c.key && c.key.startsWith('area-') && !c.key.includes('line'));
+    for (const p of areaPaths) {
+      assert.ok(p.fill.startsWith('url(#'), `area fill should be gradient ref, got: ${p.fill}`);
+    }
+  });
+
+  it('includes data point dots', () => {
+    const sg = layoutArea({ data: SAMPLE_DATA, x: 'month', y: 'sales', dots: true }, 600, 400);
+    const areaGroup = sg.children[0];
+    const dots = areaGroup.children.filter(c => c.type === 'circle' && c.class === 'd-chart-point');
+    assert.equal(dots.length, 5);
+  });
+});
+
+// ============================
+// Line chart dots
+// ============================
+
+describe('line chart dots', () => {
+  it('includes data point dots by default', () => {
+    const sg = layoutLine({ data: SAMPLE_DATA, x: 'month', y: 'sales', dots: true }, 600, 400);
+    const lineGroup = sg.children[0];
+    const dots = lineGroup.children.filter(c => c.type === 'circle' && c.class === 'd-chart-point');
+    assert.equal(dots.length, 5);
+  });
+
+  it('suppresses dots when dots: false', () => {
+    const sg = layoutLine({ data: SAMPLE_DATA, x: 'month', y: 'sales', dots: false }, 600, 400);
+    const lineGroup = sg.children[0];
+    const dots = lineGroup.children.filter(c => c.type === 'circle' && c.class === 'd-chart-point');
+    assert.equal(dots.length, 0);
+  });
+
+  it('dots have stroke var(--d-bg) for ShadCN style', () => {
+    const sg = layoutLine({ data: SAMPLE_DATA, x: 'month', y: 'sales', dots: true }, 600, 400);
+    const lineGroup = sg.children[0];
+    const dots = lineGroup.children.filter(c => c.type === 'circle' && c.class === 'd-chart-point');
+    for (const d of dots) {
+      assert.equal(d.stroke, 'var(--d-bg)');
+      assert.equal(d.strokeWidth, 2);
+      assert.equal(d.r, 3);
+    }
+  });
+});
+
+// ============================
+// Animation engine integration
+// ============================
+
+import { animate, interpolateScene } from '../src/chart/_animate.js';
+
+describe('animation engine', () => {
+  it('interpolateScene interpolates numeric properties', () => {
+    const from = scene(200, 200, [rect({ x: 0, y: 100, w: 50, h: 0, key: 'r1' })]);
+    const to = scene(200, 200, [rect({ x: 0, y: 50, w: 50, h: 50, key: 'r1' })]);
+    const mid = interpolateScene(from, to, 0.5);
+    const r = mid.children[0];
+    assert.equal(r.y, 75);
+    assert.equal(r.h, 25);
+  });
+
+  it('returns target scene at t=1', () => {
+    const from = scene(200, 200, [rect({ x: 0, y: 100, w: 50, h: 0, key: 'r1' })]);
+    const to = scene(200, 200, [rect({ x: 0, y: 50, w: 50, h: 50, key: 'r1' })]);
+    const result = interpolateScene(from, to, 1);
+    const r = result.children[0];
+    assert.equal(r.y, 50);
+    assert.equal(r.h, 50);
+  });
+});
+
+// ============================
+// Annotations — buildAnnotations()
+// ============================
+
+describe('buildAnnotations()', () => {
+  const yScale = _scaleLinear([0, 100], [200, 0]);
+  const xScale = _scaleBand(['Jan', 'Feb', 'Mar', 'Apr', 'May'], [0, 500]);
+  const innerW = 500;
+  const innerH = 200;
+
+  it('returns empty array for no annotations', () => {
+    assert.deepEqual(buildAnnotations(null, xScale, yScale, 'band', innerW, innerH), []);
+    assert.deepEqual(buildAnnotations([], xScale, yScale, 'band', innerW, innerH), []);
+  });
+
+  it('builds horizontal reference line (axis: y)', () => {
+    const nodes = buildAnnotations(
+      [{ type: 'line', axis: 'y', value: 50, label: 'Target', color: 'var(--d-warning)' }],
+      xScale, yScale, 'band', innerW, innerH
+    );
+    const lines = nodes.filter(n => n.type === 'line');
+    assert.equal(lines.length, 1);
+    assert.equal(lines[0].x1, 0);
+    assert.equal(lines[0].x2, innerW);
+    assert.equal(lines[0].y1, yScale(50));
+    assert.equal(lines[0].stroke, 'var(--d-warning)');
+    assert.equal(lines[0].class, 'd-chart-annotation-line');
+    const labels = nodes.filter(n => n.type === 'text');
+    assert.equal(labels.length, 1);
+    assert.equal(labels[0].content, 'Target');
+  });
+
+  it('builds vertical reference line (axis: x)', () => {
+    const nodes = buildAnnotations(
+      [{ type: 'line', axis: 'x', value: 'Mar', label: 'Launch' }],
+      xScale, yScale, 'band', innerW, innerH
+    );
+    const lines = nodes.filter(n => n.type === 'line');
+    assert.equal(lines.length, 1);
+    assert.equal(lines[0].y1, 0);
+    assert.equal(lines[0].y2, innerH);
+    assert.equal(lines[0].class, 'd-chart-annotation-line');
+  });
+
+  it('builds band annotation (axis: y)', () => {
+    const nodes = buildAnnotations(
+      [{ type: 'band', axis: 'y', from: 30, to: 70, label: 'Range', color: 'var(--d-success)' }],
+      xScale, yScale, 'band', innerW, innerH
+    );
+    const rects = nodes.filter(n => n.type === 'rect');
+    assert.equal(rects.length, 1);
+    assert.equal(rects[0].x, 0);
+    assert.equal(rects[0].w, innerW);
+    assert.equal(rects[0].class, 'd-chart-annotation-band');
+    assert.equal(rects[0].fill, 'var(--d-success)');
+    // Band y should span from yScale(70) to yScale(30)
+    assert.equal(rects[0].y, yScale(70));
+    assert.equal(rects[0].h, yScale(30) - yScale(70));
+  });
+
+  it('builds point annotation', () => {
+    const nodes = buildAnnotations(
+      [{ type: 'point', x: 'Mar', y: 80, label: 'Peak', color: 'var(--d-primary)' }],
+      xScale, yScale, 'band', innerW, innerH
+    );
+    const circles = nodes.filter(n => n.type === 'circle');
+    assert.equal(circles.length, 1);
+    assert.equal(circles[0].r, 5);
+    assert.equal(circles[0].stroke, 'var(--d-primary)');
+    const labels = nodes.filter(n => n.type === 'text');
+    assert.equal(labels.length, 1);
+    assert.equal(labels[0].content, 'Peak');
+  });
+
+  it('handles multiple annotations', () => {
+    const nodes = buildAnnotations([
+      { type: 'line', axis: 'y', value: 50 },
+      { type: 'band', axis: 'y', from: 20, to: 40 },
+      { type: 'point', x: 'Jan', y: 60, label: 'Note' }
+    ], xScale, yScale, 'band', innerW, innerH);
+    assert.ok(nodes.length >= 3);
+  });
+
+  it('uses default color and dash when not specified', () => {
+    const nodes = buildAnnotations(
+      [{ type: 'line', axis: 'y', value: 25 }],
+      xScale, yScale, 'band', innerW, innerH
+    );
+    const ln = nodes.find(n => n.type === 'line');
+    assert.equal(ln.stroke, 'var(--d-muted)');
+    assert.equal(ln.strokeDash, '4,3');
+  });
+
+  it('custom dash pattern is applied', () => {
+    const nodes = buildAnnotations(
+      [{ type: 'line', axis: 'y', value: 25, dash: '8,4' }],
+      xScale, yScale, 'band', innerW, innerH
+    );
+    const ln = nodes.find(n => n.type === 'line');
+    assert.equal(ln.strokeDash, '8,4');
+  });
+});
+
+// ============================
+// Annotation integration with chart types
+// ============================
+
+describe('chart type annotation integration', () => {
+  const annotations = [
+    { type: 'line', axis: 'y', value: 200, label: 'Budget', color: 'var(--d-warning)' }
+  ];
+
+  it('layoutLine includes annotation nodes', () => {
+    const sg = layoutLine({ data: SAMPLE_DATA, x: 'month', y: 'sales', annotations }, 600, 400);
+    const grp = sg.children[0];
+    const annoLines = grp.children.filter(c => c.class === 'd-chart-annotation-line');
+    assert.ok(annoLines.length > 0, 'line chart should render annotation line');
+    const annoLabels = grp.children.filter(c => c.class === 'd-chart-annotation-label');
+    assert.ok(annoLabels.length > 0, 'line chart should render annotation label');
+  });
+
+  it('layoutBar includes annotation nodes', () => {
+    const sg = layoutBar({ data: SAMPLE_DATA, x: 'month', y: 'sales', annotations }, 600, 400);
+    const grp = sg.children[0];
+    const annoLines = grp.children.filter(c => c.class === 'd-chart-annotation-line');
+    assert.ok(annoLines.length > 0, 'bar chart should render annotation line');
+  });
+
+  it('layoutArea includes annotation nodes', () => {
+    const sg = layoutArea({ data: SAMPLE_DATA, x: 'month', y: 'sales', annotations }, 600, 400);
+    const grp = sg.children[0];
+    const annoLines = grp.children.filter(c => c.class === 'd-chart-annotation-line');
+    assert.ok(annoLines.length > 0, 'area chart should render annotation line');
   });
 });

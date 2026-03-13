@@ -1,4 +1,5 @@
 {
+  "$schema": "https://decantr.ai/schemas/module.v1.json",
   "module": "decantr/css",
   "description": "Atomic CSS engine + theme management",
   "functions": {
@@ -137,8 +138,114 @@
     "getShapeList": {
       "returns": "{ id: string, label: string }[]"
     },
+    "setColorblindMode": {
+      "params": [
+        {
+          "name": "type",
+          "type": "'off'|'protanopia'|'deuteranopia'|'tritanopia'"
+        }
+      ],
+      "description": "Set colorblind mode. Transforms seed colors and chart palettes for CVD safety. Orthogonal to style × mode × shape — all four axes are independent."
+    },
+    "getColorblindMode": {
+      "returns": "() => string"
+    },
     "getActiveCSS": {
       "returns": "string"
     }
+  },
+  "fieldTokens": {
+    "description": "Unified visual system for all form field containers (.d-field base class)",
+    "tokens": [
+      "--d-field-bg",
+      "--d-field-bg-hover",
+      "--d-field-bg-disabled",
+      "--d-field-bg-readonly",
+      "--d-field-border",
+      "--d-field-border-hover",
+      "--d-field-border-focus",
+      "--d-field-border-error",
+      "--d-field-border-success",
+      "--d-field-border-disabled",
+      "--d-field-border-width",
+      "--d-field-ring",
+      "--d-field-ring-error",
+      "--d-field-ring-success",
+      "--d-field-radius",
+      "--d-field-placeholder"
+    ],
+    "variants": [
+      "d-field-outlined",
+      "d-field-filled",
+      "d-field-ghost"
+    ],
+    "states": [
+      "hover",
+      "focus-within",
+      "data-error",
+      "data-success",
+      "aria-disabled",
+      "readonly"
+    ]
+  },
+  "interactiveStateTokens": {
+    "description": "Semantic tokens for item hover, selection, and disabled states",
+    "tokens": [
+      "--d-item-hover-bg",
+      "--d-item-active-bg",
+      "--d-selected-bg",
+      "--d-selected-fg",
+      "--d-selected-border",
+      "--d-disabled-opacity",
+      "--d-disabled-opacity-soft",
+      "--d-icon-muted",
+      "--d-icon-subtle"
+    ]
+  },
+  "overlayTokens": {
+    "description": "Three overlay intensity levels for modal backdrops and scrims",
+    "tokens": [
+      "--d-overlay",
+      "--d-overlay-light",
+      "--d-overlay-heavy"
+    ]
+  },
+  "tableTokens": {
+    "description": "Semantic tokens for table styling",
+    "tokens": [
+      "--d-table-stripe-bg",
+      "--d-table-header-bg",
+      "--d-table-hover-bg",
+      "--d-table-selected-bg"
+    ]
+  },
+  "scrollbarTokens": {
+    "description": "Custom scrollbar styling tokens",
+    "tokens": [
+      "--d-scrollbar-w",
+      "--d-scrollbar-track",
+      "--d-scrollbar-thumb",
+      "--d-scrollbar-thumb-hover"
+    ]
+  },
+  "skeletonTokens": {
+    "description": "Skeleton loading state tokens",
+    "tokens": [
+      "--d-skeleton-bg",
+      "--d-skeleton-shine"
+    ]
+  },
+  "layoutTokens": {
+    "description": "Layout dimension tokens for content areas, sidebars, drawers, and sheets",
+    "tokens": [
+      "--d-prose-width",
+      "--d-content-width-prose",
+      "--d-content-width-standard",
+      "--d-sidebar-width-sm",
+      "--d-sidebar-width",
+      "--d-sidebar-width-lg",
+      "--d-drawer-width",
+      "--d-sheet-max-h"
+    ]
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "decantr",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "AI-first web framework. Zero dependencies. Native JS/CSS/HTML.",
   "type": "module",
   "engines": {
@@ -42,25 +42,9 @@
       "types": "./types/tags.d.ts",
       "import": "./src/tags/index.js"
     },
-    "./blocks": {
-      "types": "./types/blocks.d.ts",
-      "import": "./src/blocks/index.js"
-    },
     "./form": {
       "types": "./types/form.d.ts",
       "import": "./src/form/index.js"
-    },
-    "./kit/dashboard": {
-      "types": "./types/kit-dashboard.d.ts",
-      "import": "./src/kit/dashboard/index.js"
-    },
-    "./kit/auth": {
-      "types": "./types/kit-auth.d.ts",
-      "import": "./src/kit/auth/index.js"
-    },
-    "./kit/content": {
-      "types": "./types/kit-content.d.ts",
-      "import": "./src/kit/content/index.js"
     },
     "./icons": {
       "types": "./types/icons.d.ts",
@@ -81,6 +65,9 @@
   ],
   "scripts": {
     "test": "node --test test/**/*.test.js",
+    "test:decantation": "node --test test/decantation/deterministic.test.js",
+    "test:decantation:llm": "DECANTR_TEST_LLM=1 node --test test/decantation/integration.test.js",
+    "test:decantation:report": "node test/decantation/report.js",
     "docs:dev": "cd docs && npx decantr dev",
     "docs:build": "cd docs && npx decantr build",
     "icons": "node tools/icons.js",

@@ -2,6 +2,7 @@ import { describe, it, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createDOM } from '../src/test/dom.js';
 import { css, define, extractCSS, reset } from '../src/css/index.js';
+import { derive, deriveMonochromeSeed, defaultSeed, defaultPersonality, hexToRgb, rgbToOklch, contrast } from '../src/css/derive.js';
 
 let cleanup;
 
@@ -97,10 +98,10 @@ describe('atom coverage', () => {
   });
 
   it('generates color atoms', () => {
-    css('_bg0', '_bg1', '_fg0', '_fg2');
+    css('_bgprimary', '_fgprimary', '_bgbg', '_fgfg');
     const output = extractCSS();
-    assert.ok(output.includes('._bg0{background:var(--c0)}'));
-    assert.ok(output.includes('._fg2{color:var(--c2)}'));
+    assert.ok(output.includes('._bgprimary{background:var(--d-primary)}'));
+    assert.ok(output.includes('._fgfg{color:var(--d-fg)}'));
   });
 
   it('generates typography atoms', () => {
@@ -599,9 +600,9 @@ describe('responsive breakpoints', () => {
   });
 
   it('works with color atoms', () => {
-    css('_bg0 _sm:bg1');
+    css('_bgprimary _sm:bgaccent');
     const output = extractCSS();
-    assert.ok(output.includes('@media(min-width:640px){._sm\\:bg1{background:var(--c1)}}'));
+    assert.ok(output.includes('@media(min-width:640px){._sm\\:bgaccent{background:var(--d-accent)}}'));
   });
 
   it('extractCSS includes responsive rules', () => {
@@ -698,5 +699,533 @@ describe('container query atoms', () => {
     reset();
     const output = extractCSS();
     assert.ok(!output.includes('@container'));
+  });
+});
+
+// ─── Composable Gradient Atoms ─────────────────────────────────
+
+describe('composable gradient atoms', () => {
+  it('generates direction atoms', () => {
+    css('_gradR');
+    const output = extractCSS();
+    assert.ok(output.includes('linear-gradient(to right'));
+    assert.ok(output.includes('--d-grad-stops'));
+  });
+
+  it('generates from atoms with CSS variable composition', () => {
+    css('_fromPrimary');
+    const output = extractCSS();
+    assert.ok(output.includes('--d-grad-from:var(--d-primary)'));
+    assert.ok(output.includes('--d-grad-stops'));
+  });
+
+  it('generates via atoms', () => {
+    css('_viaAccent');
+    const output = extractCSS();
+    assert.ok(output.includes('var(--d-accent)'));
+    assert.ok(output.includes('var(--d-grad-from'));
+    assert.ok(output.includes('var(--d-grad-to'));
+  });
+
+  it('generates to atoms', () => {
+    css('_toTertiary');
+    const output = extractCSS();
+    assert.ok(output.includes('--d-grad-to:var(--d-tertiary)'));
+  });
+
+  it('composes direction + from + to', () => {
+    const result = css('_gradBR _fromPrimary _toAccent');
+    assert.equal(result, '_gradBR _fromPrimary _toAccent');
+    const output = extractCSS();
+    assert.ok(output.includes('linear-gradient(to bottom right'));
+    assert.ok(output.includes('--d-grad-from:var(--d-primary)'));
+    assert.ok(output.includes('--d-grad-to:var(--d-accent)'));
+  });
+
+  it('supports transparent stops', () => {
+    css('_fromTransparent _toTransparent');
+    const output = extractCSS();
+    assert.ok(output.includes('--d-grad-from:transparent'));
+    assert.ok(output.includes('--d-grad-to:transparent'));
+  });
+
+  it('works with responsive prefixes', () => {
+    css('_sm:gradBR');
+    const output = extractCSS();
+    assert.ok(output.includes('@media(min-width:640px)'));
+    assert.ok(output.includes('linear-gradient(to bottom right'));
+  });
+});
+
+// ─── Backdrop Filter Atoms ─────────────────────────────────────
+
+describe('backdrop filter atoms', () => {
+  it('generates blur atoms with composable CSS vars', () => {
+    css('_bfblur12');
+    const output = extractCSS();
+    assert.ok(output.includes('--d-bf-blur:blur(12px)'));
+    assert.ok(output.includes('backdrop-filter:'));
+    assert.ok(output.includes('-webkit-backdrop-filter:'));
+  });
+
+  it('generates saturate atoms', () => {
+    css('_bfsat150');
+    const output = extractCSS();
+    assert.ok(output.includes('--d-bf-sat:saturate(1.5)'));
+    assert.ok(output.includes('backdrop-filter:'));
+  });
+
+  it('generates brightness atoms', () => {
+    css('_bfbright110');
+    const output = extractCSS();
+    assert.ok(output.includes('--d-bf-bright:brightness(1.1)'));
+  });
+
+  it('composes multiple backdrop filters', () => {
+    const result = css('_bfblur12 _bfsat150');
+    assert.equal(result, '_bfblur12 _bfsat150');
+    const output = extractCSS();
+    assert.ok(output.includes('--d-bf-blur:blur(12px)'));
+    assert.ok(output.includes('--d-bf-sat:saturate(1.5)'));
+  });
+
+  it('generates regular filter atoms', () => {
+    css('_fblur8');
+    const output = extractCSS();
+    assert.ok(output.includes('filter:blur(8px)'));
+  });
+
+  it('generates grayscale filter atom', () => {
+    css('_fgray');
+    const output = extractCSS();
+    assert.ok(output.includes('filter:grayscale(1)'));
+  });
+
+  it('works with responsive prefixes', () => {
+    css('_lg:bfblur16');
+    const output = extractCSS();
+    assert.ok(output.includes('@media(min-width:1024px)'));
+    assert.ok(output.includes('--d-bf-blur:blur(16px)'));
+  });
+});
+
+// ─── Opacity Modifiers ─────────────────────────────────────────
+
+describe('opacity modifiers', () => {
+  it('generates color-mix for background opacity', () => {
+    css('_bgprimary/50');
+    const output = extractCSS();
+    assert.ok(output.includes('color-mix(in srgb,var(--d-primary) 50%,transparent)'));
+    assert.ok(output.includes('background:'));
+  });
+
+  it('generates color-mix for color opacity', () => {
+    css('_fgaccent/30');
+    const output = extractCSS();
+    assert.ok(output.includes('color-mix(in srgb,var(--d-accent) 30%,transparent)'));
+    assert.ok(output.includes('color:'));
+  });
+
+  it('generates color-mix for border-color opacity', () => {
+    css('_bcborder/80');
+    const output = extractCSS();
+    assert.ok(output.includes('color-mix(in srgb,var(--d-border) 80%,transparent)'));
+    assert.ok(output.includes('border-color:'));
+  });
+
+  it('returns correct class names', () => {
+    const result = css('_bgprimary/50');
+    assert.equal(result, '_bgprimary/50');
+  });
+
+  it('escapes slashes in CSS selector', () => {
+    css('_bgprimary/50');
+    const output = extractCSS();
+    assert.ok(output.includes('_bgprimary\\/50'));
+  });
+
+  it('works with responsive prefixes', () => {
+    css('_sm:bgprimary/50');
+    const output = extractCSS();
+    assert.ok(output.includes('@media(min-width:640px)'));
+    assert.ok(output.includes('color-mix'));
+  });
+
+  it('works with container query prefixes', () => {
+    css('_cq640:bgprimary/50');
+    const output = extractCSS();
+    assert.ok(output.includes('@container(min-width:640px)'));
+    assert.ok(output.includes('color-mix'));
+  });
+
+  it('ignores non-color atoms with opacity', () => {
+    const result = css('_flex/50');
+    // _flex is display:flex, not a color — should pass through
+    assert.equal(result, '_flex/50');
+  });
+
+  it('supports neutral color atoms', () => {
+    css('_bgmuted/40');
+    const output = extractCSS();
+    assert.ok(output.includes('color-mix(in srgb,var(--d-muted) 40%,transparent)'));
+  });
+});
+
+// ─── Group/Peer State Modifiers ────────────────────────────────
+
+describe('group/peer state modifiers', () => {
+  it('maps _group to d-group class', () => {
+    const result = css('_group');
+    assert.equal(result, 'd-group');
+  });
+
+  it('maps _peer to d-peer class', () => {
+    const result = css('_peer');
+    assert.equal(result, 'd-peer');
+  });
+
+  it('generates group-hover compound selector', () => {
+    css('_gh:fgprimary');
+    const output = extractCSS();
+    assert.ok(output.includes('.d-group:hover'));
+    assert.ok(output.includes('color:var(--d-primary)'));
+  });
+
+  it('generates group-focus-within compound selector', () => {
+    css('_gf:bcprimary');
+    const output = extractCSS();
+    assert.ok(output.includes('.d-group:focus-within'));
+    assert.ok(output.includes('border-color:var(--d-primary)'));
+  });
+
+  it('generates group-active compound selector', () => {
+    css('_ga:bgprimary');
+    const output = extractCSS();
+    assert.ok(output.includes('.d-group:active'));
+    assert.ok(output.includes('background:var(--d-primary)'));
+  });
+
+  it('generates peer-hover sibling selector', () => {
+    css('_ph:op10');
+    const output = extractCSS();
+    assert.ok(output.includes('.d-peer:hover ~'));
+    assert.ok(output.includes('opacity:1'));
+  });
+
+  it('generates peer-focus sibling selector', () => {
+    css('_pf:fgaccent');
+    const output = extractCSS();
+    assert.ok(output.includes('.d-peer:focus ~'));
+    assert.ok(output.includes('color:var(--d-accent)'));
+  });
+
+  it('returns correct class names', () => {
+    const result = css('_gh:fgprimary');
+    assert.equal(result, '_gh:fgprimary');
+  });
+
+  it('composes with other atoms', () => {
+    const result = css('_group _flex _gap4');
+    assert.equal(result, 'd-group _flex _gap4');
+  });
+
+  it('works with elevation atoms', () => {
+    css('_gh:elev2');
+    const output = extractCSS();
+    assert.ok(output.includes('.d-group:hover'));
+    assert.ok(output.includes('box-shadow:var(--d-elevation-2)'));
+  });
+});
+
+// ─── Arbitrary Value Atoms ─────────────────────────────────────
+
+describe('arbitrary value atoms', () => {
+  it('generates width with arbitrary value', () => {
+    css('_w[512px]');
+    const output = extractCSS();
+    assert.ok(output.includes('width:512px'));
+  });
+
+  it('converts underscores to spaces in value', () => {
+    css('_shadow[0_4px_6px_rgba(0,0,0,0.1)]');
+    const output = extractCSS();
+    assert.ok(output.includes('box-shadow:0 4px 6px rgba(0,0,0,0.1)'));
+  });
+
+  it('supports background with hex color', () => {
+    css('_bg[#1a1d24]');
+    const output = extractCSS();
+    assert.ok(output.includes('background:#1a1d24'));
+  });
+
+  it('supports padding with clamp', () => {
+    css('_p[clamp(1rem,2vw,2rem)]');
+    const output = extractCSS();
+    assert.ok(output.includes('padding:clamp(1rem,2vw,2rem)'));
+  });
+
+  it('supports color property', () => {
+    css('_fg[#c5d3e8]');
+    const output = extractCSS();
+    assert.ok(output.includes('color:#c5d3e8'));
+  });
+
+  it('supports border-radius', () => {
+    css('_r[20px]');
+    const output = extractCSS();
+    assert.ok(output.includes('border-radius:20px'));
+  });
+
+  it('supports backdrop-filter', () => {
+    css('_bf[blur(20px)_saturate(1.5)]');
+    const output = extractCSS();
+    assert.ok(output.includes('backdrop-filter:blur(20px) saturate(1.5)'));
+  });
+
+  it('ignores unknown property prefixes', () => {
+    const result = css('_xyz[100px]');
+    assert.equal(result, '_xyz[100px]');
+  });
+
+  it('returns correct class names', () => {
+    const result = css('_w[512px]');
+    assert.equal(result, '_w[512px]');
+  });
+
+  it('works with responsive prefixes', () => {
+    css('_sm:w[512px]');
+    const output = extractCSS();
+    assert.ok(output.includes('@media(min-width:640px)'));
+    assert.ok(output.includes('width:512px'));
+  });
+
+  it('works with container query prefixes', () => {
+    css('_cq768:w[512px]');
+    const output = extractCSS();
+    assert.ok(output.includes('@container(min-width:768px)'));
+    assert.ok(output.includes('width:512px'));
+  });
+});
+
+describe('deriveMonochromeSeed()', () => {
+  it('produces 6 distinct color keys', () => {
+    const result = deriveMonochromeSeed('#00E5FF');
+    const keys = ['accent', 'tertiary', 'success', 'warning', 'error', 'info'];
+    for (const k of keys) {
+      assert.ok(result[k], `missing key: ${k}`);
+      assert.match(result[k], /^#[0-9a-fA-F]{6}$/, `${k} is not a valid hex color`);
+    }
+  });
+
+  it('keeps all derived colors within ±20° hue of primary (OKLCH)', () => {
+    const primaryHex = '#00E5FF';
+    const [, , primaryH] = rgbToOklch(...hexToRgb(primaryHex));
+    const result = deriveMonochromeSeed(primaryHex);
+    for (const [key, hex] of Object.entries(result)) {
+      const [, , h] = rgbToOklch(...hexToRgb(hex));
+      const diff = Math.min(Math.abs(h - primaryH), 360 - Math.abs(h - primaryH));
+      assert.ok(diff <= 21, `${key} hue ${h.toFixed(1)} is ${diff.toFixed(1)}° from primary ${primaryH.toFixed(1)}° (max 20°)`);
+    }
+  });
+
+  it('produces distinct colors (no duplicates)', () => {
+    const result = deriveMonochromeSeed('#00E5FF');
+    const values = Object.values(result);
+    const unique = new Set(values);
+    assert.equal(unique.size, values.length, 'monochrome seed produced duplicate colors');
+  });
+});
+
+describe('derive() with monochrome palette', () => {
+  it('produces a valid token map', () => {
+    const tokens = derive({
+      bg: '#060918',
+      fg: '#fafafa',
+      primary: '#00E5FF',
+    }, {
+      ...defaultPersonality,
+      palette: 'monochrome',
+    });
+    assert.ok(tokens['--d-primary'], 'missing --d-primary');
+    assert.ok(tokens['--d-success'], 'missing --d-success');
+    assert.ok(tokens['--d-error'], 'missing --d-error');
+    assert.ok(tokens['--d-warning'], 'missing --d-warning');
+    assert.ok(tokens['--d-info'], 'missing --d-info');
+    assert.ok(tokens['--d-accent'], 'missing --d-accent');
+  });
+
+  it('monochrome role colors are all within same hue family (OKLCH)', () => {
+    const tokens = derive({
+      bg: '#060918',
+      fg: '#fafafa',
+      primary: '#00E5FF',
+    }, {
+      ...defaultPersonality,
+      palette: 'monochrome',
+    });
+    const primaryRgb = hexToRgb(tokens['--d-primary']);
+    const [, , primaryH] = rgbToOklch(...primaryRgb);
+    const roles = ['--d-success', '--d-error', '--d-warning', '--d-info', '--d-accent'];
+    for (const role of roles) {
+      const rgb = hexToRgb(tokens[role]);
+      const [, , h] = rgbToOklch(...rgb);
+      const diff = Math.min(Math.abs(h - primaryH), 360 - Math.abs(h - primaryH));
+      assert.ok(diff <= 25, `${role} hue ${h.toFixed(1)} deviates ${diff.toFixed(1)}° from primary (max 25°)`);
+    }
+  });
+});
+
+describe('Command Center style', () => {
+  it('registers in the style list', async () => {
+    const { getStyleList, setStyle, getStyle } = await import('../src/css/index.js');
+    const styles = getStyleList();
+    const ids = styles.map(s => s.id);
+    assert.ok(ids.includes('command-center'), 'command-center not in style list');
+  });
+
+  it('activates via setStyle', async () => {
+    const { setStyle, getStyle } = await import('../src/css/index.js');
+    setStyle('command-center');
+    const style = getStyle();
+    const id = typeof style === 'function' ? style() : style;
+    assert.equal(id, 'command-center');
+  });
+
+  it('uses monochrome palette personality', async () => {
+    const { commandCenter } = await import('../src/css/styles/command-center.js');
+    assert.equal(commandCenter.personality.palette, 'monochrome');
+    assert.equal(commandCenter.personality.radius, 'sharp');
+    assert.equal(commandCenter.personality.borders, 'bold');
+    assert.equal(commandCenter.personality.density, 'compact');
+  });
+});
+
+describe('field tokens', () => {
+  it('derive() includes all field tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    const fieldKeys = [
+      '--d-field-bg', '--d-field-bg-hover', '--d-field-bg-disabled', '--d-field-bg-readonly', '--d-field-bg-error', '--d-field-bg-success',
+      '--d-field-border', '--d-field-border-hover', '--d-field-border-focus',
+      '--d-field-border-error', '--d-field-border-success', '--d-field-border-disabled',
+      '--d-field-border-width', '--d-field-ring', '--d-field-ring-error', '--d-field-ring-success',
+      '--d-field-radius', '--d-field-placeholder',
+    ];
+    for (const key of fieldKeys) {
+      assert.ok(tokens[key] !== undefined, `missing field token: ${key}`);
+    }
+  });
+
+  it('field-bg defaults to var(--d-bg)', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.equal(tokens['--d-field-bg'], 'var(--d-bg)');
+  });
+
+  it('field-bg-error is a semi-transparent error tint', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.ok(tokens['--d-field-bg-error'], 'missing --d-field-bg-error token');
+  });
+
+  it('field-bg-success is a semi-transparent success tint', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.ok(tokens['--d-field-bg-success'], 'missing --d-field-bg-success token');
+  });
+
+  it('field-border references --d-border', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.equal(tokens['--d-field-border'], 'var(--d-border)');
+  });
+});
+
+describe('interactive state tokens', () => {
+  it('derive() includes all interactive state tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    const keys = [
+      '--d-item-hover-bg', '--d-item-active-bg', '--d-selected-bg', '--d-selected-fg',
+      '--d-selected-border', '--d-disabled-opacity', '--d-disabled-opacity-soft',
+      '--d-icon-muted', '--d-icon-subtle',
+    ];
+    for (const key of keys) {
+      assert.ok(tokens[key] !== undefined, `missing interactive state token: ${key}`);
+    }
+  });
+
+  it('disabled-opacity is 0.5', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.equal(tokens['--d-disabled-opacity'], '0.5');
+  });
+});
+
+describe('overlay and table tokens', () => {
+  it('derive() includes overlay intensity levels', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.ok(tokens['--d-overlay-light']);
+    assert.ok(tokens['--d-overlay-heavy']);
+  });
+
+  it('derive() includes table tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.ok(tokens['--d-table-stripe-bg']);
+    assert.ok(tokens['--d-table-header-bg']);
+    assert.ok(tokens['--d-table-hover-bg']);
+    assert.ok(tokens['--d-table-selected-bg']);
+  });
+
+  it('derive() includes semantic motion tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.ok(tokens['--d-motion-enter']);
+    assert.ok(tokens['--d-motion-exit']);
+    assert.ok(tokens['--d-motion-state']);
+  });
+});
+
+describe('layout and typography tokens', () => {
+  it('derive() includes prose width and layout tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.equal(tokens['--d-prose-width'], '75ch');
+    assert.ok(tokens['--d-sidebar-width']);
+    assert.ok(tokens['--d-drawer-width']);
+    assert.equal(tokens['--d-sheet-max-h'], '85vh');
+  });
+
+  it('derive() includes typography semantic roles', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.equal(tokens['--d-text-helper'], 'var(--d-text-xs)');
+    assert.ok(tokens['--d-ls-tight']);
+    assert.ok(tokens['--d-ls-wide']);
+  });
+});
+
+describe('scrollbar and skeleton tokens', () => {
+  it('derive() includes scrollbar tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.ok(tokens['--d-scrollbar-w']);
+    assert.ok(tokens['--d-scrollbar-track']);
+    assert.ok(tokens['--d-scrollbar-thumb']);
+    assert.ok(tokens['--d-scrollbar-thumb-hover']);
+  });
+
+  it('derive() includes skeleton tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.ok(tokens['--d-skeleton-bg']);
+    assert.ok(tokens['--d-skeleton-shine']);
+  });
+});
+
+describe('chart UI tokens', () => {
+  it('derive() includes chart UI tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.ok(tokens['--d-chart-tooltip-shadow']);
+    assert.ok(tokens['--d-chart-axis-opacity']);
+    assert.ok(tokens['--d-chart-grid-opacity']);
+    assert.ok(tokens['--d-chart-legend-gap']);
+  });
+});
+
+describe('glass blur tokens', () => {
+  it('derive() includes glass blur tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    assert.equal(tokens['--d-glass-blur-sm'], 'blur(8px)');
+    assert.equal(tokens['--d-glass-blur'], 'blur(16px)');
+    assert.equal(tokens['--d-glass-blur-lg'], 'blur(24px)');
   });
 });

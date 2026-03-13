@@ -1,0 +1,23 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "timeline",
+  "name": "Timeline",
+  "description": "Vertical timeline of events with dates, descriptions, and status icons. Used for changelogs, order tracking, project milestones, and historical records.",
+  "components": ["Timeline", "Card", "Card.Body", "Badge", "Avatar", "icon", "Separator"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _flexCol _gap0 _p4 _relative",
+    "slots": {
+      "header": "Optional section title with _heading4 and date range filter",
+      "event": "Repeating item: icon dot on vertical line + Card with date (_caption cc-data), title (_heading6), description (_body), and optional Badge status",
+      "connector": "Vertical line connecting events via absolute-positioned border-left on the timeline track"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-scanline",
+      "notes": "Timeline connector line uses cc-glow subtle. Event dots use cc-glow for completed items. Dates use cc-data. Event titles use cc-label. Background uses cc-scanline."
+    }
+  }
+}

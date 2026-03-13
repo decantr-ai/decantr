@@ -18,6 +18,12 @@ switch (command) {
   case 'test':
     await import('./commands/test.js').then(m => m.run());
     break;
+  case 'validate':
+    await import('./commands/validate.js').then(m => m.run());
+    break;
+  case 'audit':
+    await import('./commands/audit.js').then(m => m.run());
+    break;
   default: {
     const { art } = await import('./art.js');
     console.log(art());
@@ -25,10 +31,12 @@ switch (command) {
   \x1b[1mdecantr\x1b[0m v0.2.0 \x1b[2m— AI-first web framework\x1b[0m
 
   \x1b[1mCommands:\x1b[0m
-    init     Create a new decantr project
-    dev      Start development server
-    build    Build for production
-    test     Run tests
+    init       Create a new decantr project
+    dev        Start development server
+    build      Build for production
+    test       Run tests
+    validate   Validate decantr.essence.json
+    audit      Audit project: framework coverage, quality, bundle size
 
   \x1b[1mUsage:\x1b[0m
     npx decantr init

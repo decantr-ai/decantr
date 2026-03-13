@@ -4,15 +4,19 @@
  *
  * @module decantr/components/toggle
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx, reactiveAttr } from './_base.js';
+import { createRovingTabindex } from './_behaviors.js';
+
+const { div, button: buttonTag } = tags;
 
 /**
  * @param {Object} [props]
  * @param {boolean|Function} [props.pressed=false] - Pressed state (static or signal getter)
  * @param {string} [props.variant] - default|outline
- * @param {string} [props.size] - default|sm|lg
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
  * @param {boolean|Function} [props.disabled]
  * @param {Function} [props.onchange] - Called with new pressed state
  * @param {string} [props.class]
@@ -33,7 +37,7 @@ export function Toggle(props = {}, ...children) {
 
   let _pressed = typeof pressed === 'function' ? pressed() : pressed;
 
-  const el = h('button', {
+  const el = buttonTag({
     type: 'button',
     class: className,
     role: 'button',
@@ -62,6 +66,7 @@ export function Toggle(props = {}, ...children) {
 /**
  * ToggleGroup — A group of toggles, single or multi-select.
  * Features a sliding indicator for single-select mode.
+ * Uses createRovingTabindex for keyboard navigation.
  *
  * @param {Object} [props]
  * @param {{ value: string, label?: string, icon?: string|Node, disabled?: boolean }[]} [props.items]
@@ -70,6 +75,8 @@ export function Toggle(props = {}, ...children) {
  * @param {boolean} [props.multiple] - Alias for type='multiple'
  * @param {string} [props.variant]
  * @param {string} [props.size]
+ * @param {boolean} [props.block=false] - Full-width layout
+ * @param {boolean|Function} [props.disabled] - Group-level disabled
  * @param {Function} [props.onchange] - Called with new value(s)
  * @param {string} [props.class]
  * @returns {HTMLElement}
@@ -77,33 +84,37 @@ export function Toggle(props = {}, ...children) {
 export function ToggleGroup(props = {}) {
   injectBase();
 
-  const { items = [], value, type, multiple, variant, size, onchange, class: cls } = props;
+  const { items = [], value, type, multiple, variant, size, block, disabled, onchange, class: cls } = props;
 
-  // Accept 'multiple' as alias for type='multiple'
-  const effectiveType = multiple ? 'multiple' : (type || 'single');
+  const isMulti = multiple || type === 'multiple';
+  const isSingle = !isMulti;
 
-  let current = typeof value === 'function' ? value() : (value || (effectiveType === 'multiple' ? [] : ''));
+  let current = typeof value === 'function' ? value() : (value || (isMulti ? [] : ''));
 
-  const group = h('div', {
-    class: cx('d-toggle-group', cls),
-    role: 'group'
+  // Single-select uses radiogroup/radio; multi-select uses group/button+aria-pressed
+  const group = div({
+    class: cx('d-toggle-group', size && `d-toggle-group-${size}`, block && 'd-toggle-group-block', cls),
+    role: isSingle ? 'radiogroup' : 'group'
   });
 
   // Sliding indicator for single-select
-  const indicator = effectiveType === 'single'
-    ? h('div', { class: 'd-toggle-indicator' })
-    : null;
-  if (indicator) {
-    indicator.style.opacity = '0'; // hidden until first position
+  let indicator = null;
+  if (isSingle) {
+    indicator = div({ class: 'd-toggle-indicator' });
+    indicator.style.opacity = '0';
     group.appendChild(indicator);
   }
 
+  let _rafId = null;
+  const rAF = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : (fn) => { fn(); return 0; };
+  const cAF = typeof cancelAnimationFrame === 'function' ? cancelAnimationFrame : () => {};
+
   function isSelected(val) {
-    return effectiveType === 'multiple' ? current.includes(val) : current === val;
+    return isMulti ? current.includes(val) : current === val;
   }
 
   function select(val) {
-    if (effectiveType === 'multiple') {
+    if (isMulti) {
       current = current.includes(val) ? current.filter(v => v !== val) : [...current, val];
     } else {
       current = current === val ? '' : val;
@@ -117,13 +128,16 @@ export function ToggleGroup(props = {}) {
       ? (typeof item.icon === 'string' ? item.icon : item.icon)
       : (item.label || item.value);
 
-    const btn = h('button', {
+    const ariaAttrs = isSingle
+      ? { role: 'radio', 'aria-checked': String(isSelected(item.value)) }
+      : { role: 'button', 'aria-pressed': String(isSelected(item.value)) };
+
+    const btn = buttonTag({
       type: 'button',
-      class: cx('d-toggle', variant && `d-toggle-${variant}`, size && `d-toggle-${size}`),
-      role: 'button',
-      'aria-pressed': String(isSelected(item.value)),
+      class: cx('d-toggle', variant && `d-toggle-${variant}`),
       'aria-label': item.label || item.value,
-      disabled: item.disabled ? '' : undefined
+      disabled: item.disabled ? '' : undefined,
+      ...ariaAttrs
     }, content);
 
     btn.addEventListener('click', () => {
@@ -139,7 +153,10 @@ export function ToggleGroup(props = {}) {
     const selected = buttons.find(b => isSelected(b.value));
     if (selected) {
       const btn = selected.btn;
-      indicator.style.transform = `translateX(${btn.offsetLeft - 2}px)`;
+      const pad = typeof getComputedStyle === 'function'
+        ? (parseFloat(getComputedStyle(group).paddingLeft) || 0)
+        : 0;
+      indicator.style.transform = `translateX(${btn.offsetLeft - pad}px)`;
       indicator.style.width = `${btn.offsetWidth}px`;
       indicator.style.opacity = '1';
     } else {
@@ -148,13 +165,22 @@ export function ToggleGroup(props = {}) {
   }
 
   function updateAll() {
+    const attr = isSingle ? 'aria-checked' : 'aria-pressed';
     buttons.forEach(({ btn, value: v }) => {
-      btn.setAttribute('aria-pressed', String(isSelected(v)));
+      btn.setAttribute(attr, String(isSelected(v)));
     });
-    // Defer indicator positioning to allow DOM layout
-    requestAnimationFrame(positionIndicator);
+    if (_rafId) cAF(_rafId);
+    _rafId = rAF(positionIndicator);
   }
 
+  // Roving tabindex — single mode auto-selects on focus; multi mode focus-only
+  const roving = createRovingTabindex(group, {
+    itemSelector: '.d-toggle:not([disabled])',
+    orientation: 'horizontal',
+    onFocus: isSingle ? (el) => el.click() : undefined
+  });
+
+  // Reactive value
   if (typeof value === 'function') {
     createEffect(() => {
       current = value();
@@ -162,8 +188,26 @@ export function ToggleGroup(props = {}) {
     });
   }
 
+  // Reactive group-level disabled
+  if (typeof disabled === 'function') {
+    createEffect(() => {
+      const v = disabled();
+      group.toggleAttribute('data-disabled', v);
+      buttons.forEach(({ btn }) => { btn.disabled = v; });
+    });
+  } else if (disabled) {
+    group.setAttribute('data-disabled', '');
+    buttons.forEach(({ btn }) => { btn.disabled = true; });
+  }
+
   // Initial indicator position after mount
-  requestAnimationFrame(positionIndicator);
+  _rafId = rAF(positionIndicator);
+
+  // Cleanup
+  onDestroy(() => {
+    roving.destroy();
+    if (_rafId) cAF(_rafId);
+  });
 
   return group;
 }

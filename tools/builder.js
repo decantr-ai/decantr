@@ -783,6 +783,33 @@ export async function build(projectRoot, options = {}) {
   const enablePurgeCSS = options.purgeCSS !== false;
   const enableTreeShake = options.treeShake !== false;
 
+  // Essence-config consistency check
+  try {
+    const [essenceRaw, configRaw] = await Promise.all([
+      readFile(join(projectRoot, 'decantr.essence.json'), 'utf-8').catch(() => null),
+      readFile(join(projectRoot, 'decantr.config.json'), 'utf-8').catch(() => null)
+    ]);
+
+    if (!essenceRaw) {
+      console.log('  ⚠ No decantr.essence.json found — building without essence validation');
+    } else {
+      try {
+        const essence = JSON.parse(essenceRaw);
+        if (configRaw) {
+          const config = JSON.parse(configRaw);
+          const eStyle = essence.vintage?.style;
+          const eMode = essence.vintage?.mode;
+          if (eStyle && config.style && eStyle !== config.style) {
+            console.log(`  ⚠ Style mismatch: essence="${eStyle}", config="${config.style}". Essence is authoritative.`);
+          }
+          if (eMode && config.mode && eMode !== config.mode) {
+            console.log(`  ⚠ Mode mismatch: essence="${eMode}", config="${config.mode}". Essence is authoritative.`);
+          }
+        }
+      } catch { /* essence parse error — not our problem at build time */ }
+    }
+  } catch { /* ignore */ }
+
   console.log('\n  decantr build\n');
 
   // Resolve modules

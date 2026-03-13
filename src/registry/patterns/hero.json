@@ -1,0 +1,24 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "hero",
+  "name": "Hero Section",
+  "description": "Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages and marketing sections.",
+  "components": ["Button", "icon"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _flexCol _itemsCenter _textCenter _gap6 _py16 _px6",
+    "slots": {
+      "headline": "Primary heading, typically h1 with _heading1",
+      "description": "Supporting paragraph with _body _muted",
+      "cta-group": "Horizontal Button group with _flex _gap3",
+      "media": "Optional image, illustration, or chart component"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-grid",
+      "notes": "Headline uses cc-label. CTA buttons get cc-glow on primary action. Background uses cc-grid overlay."
+    }
+  }
+}

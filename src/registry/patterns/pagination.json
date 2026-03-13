@@ -1,0 +1,15 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "pagination",
+  "name": "Pagination",
+  "description": "Page navigation controls with page numbers, prev/next, and optional page-size selector.",
+  "components": ["Pagination", "Select", "Button"],
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_flex _jcc _aic _gap2 _py4",
+    "slots": {
+      "page-controls": "Pagination component with prev/next and numbered pages",
+      "page-size-selector": "Optional Select for rows-per-page control"
+    }
+  }
+}

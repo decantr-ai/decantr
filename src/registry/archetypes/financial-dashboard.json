@@ -1,0 +1,91 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v1.json",
+  "id": "financial-dashboard",
+  "name": "Financial Dashboard",
+  "description": "Performance dashboard for financial services, lending, and banking. Portfolio overview with goal tracking, production monitoring, pipeline management, collections, and compliance.",
+  "pages": [
+    {
+      "id": "overview",
+      "skeleton": "sidebar-main",
+      "patterns": ["kpi-grid", "goal-tracker", "comparison-panel", "chart-grid"],
+      "default_blend": [
+        "kpi-grid",
+        { "cols": ["goal-tracker", "comparison-panel"], "at": "lg" },
+        "chart-grid"
+      ]
+    },
+    {
+      "id": "production",
+      "skeleton": "sidebar-main",
+      "patterns": ["kpi-grid", "chart-grid", "data-table", "filter-bar"],
+      "default_blend": ["filter-bar", "kpi-grid", "chart-grid", "data-table"]
+    },
+    {
+      "id": "pipeline",
+      "skeleton": "sidebar-main",
+      "patterns": ["pipeline-tracker", "filter-bar"],
+      "default_blend": ["filter-bar", "pipeline-tracker"]
+    },
+    {
+      "id": "approvals",
+      "skeleton": "sidebar-main",
+      "patterns": ["chart-grid", "comparison-panel", "data-table", "filter-bar"],
+      "default_blend": [
+        "filter-bar",
+        { "cols": ["chart-grid", "comparison-panel"], "at": "lg" },
+        "data-table"
+      ]
+    },
+    {
+      "id": "collections",
+      "skeleton": "sidebar-main",
+      "patterns": ["kpi-grid", "goal-tracker", "chart-grid", "data-table"],
+      "default_blend": ["kpi-grid", "goal-tracker", "chart-grid", "data-table"]
+    },
+    {
+      "id": "outreach",
+      "skeleton": "sidebar-main",
+      "patterns": ["scorecard", "data-table", "activity-feed"],
+      "default_blend": ["scorecard", { "cols": ["data-table", "activity-feed"], "at": "lg" }]
+    },
+    {
+      "id": "products",
+      "skeleton": "sidebar-main",
+      "patterns": ["data-table", "detail-panel"],
+      "default_blend": [{ "cols": ["data-table", "detail-panel"], "at": "md" }]
+    },
+    {
+      "id": "scorecard",
+      "skeleton": "sidebar-main",
+      "patterns": ["scorecard", "goal-tracker"],
+      "default_blend": ["scorecard", "goal-tracker"]
+    },
+    {
+      "id": "vendors",
+      "skeleton": "sidebar-main",
+      "patterns": ["data-table", "detail-panel", "form-sections"],
+      "default_blend": ["data-table", "detail-panel"]
+    },
+    {
+      "id": "settings",
+      "skeleton": "sidebar-main",
+      "patterns": ["form-sections"],
+      "default_blend": ["form-sections"]
+    },
+    {
+      "id": "login",
+      "skeleton": "centered",
+      "patterns": ["auth-form"],
+      "default_blend": ["auth-form"]
+    }
+  ],
+  "tannins": ["auth", "portfolio-state", "pipeline-state", "compliance-state", "search", "notifications", "report-export"],
+  "skeletons": {
+    "sidebar-main": "Collapsible sidebar navigation + header bar + scrollable main content",
+    "centered": "Centered card on background — for auth flows"
+  },
+  "suggested_vintage": {
+    "styles": ["auradecantism", "command-center", "clean"],
+    "modes": ["dark", "auto"]
+  }
+}

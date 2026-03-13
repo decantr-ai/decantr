@@ -1,7 +1,7 @@
 {
   "$schema": "https://decantr.ai/schemas/registry.v1.json",
-  "version": "0.3.0",
-  "generated": "2026-03-10",
+  "version": "0.4.0",
+  "generated": "2026-03-13",
   "modules": {
     "decantr/core": {
       "description": "DOM engine — hyperscript rendering, conditional, list, mount, lifecycle",
@@ -21,27 +21,12 @@
     "decantr/css": {
       "description": "Atomic CSS engine + theme management",
       "file": "css.json",
-      "exports": 20
+      "exports": 22
     },
     "decantr/components": {
       "description": "UI components — all return HTMLElement, all accept inline styles",
       "file": "components.json",
       "exports": 102
-    },
-    "decantr/kit/auth": {
-      "description": "auth domain kit",
-      "file": "kit-auth.json",
-      "exports": 4
-    },
-    "decantr/kit/content": {
-      "description": "content domain kit",
-      "file": "kit-content.json",
-      "exports": 5
-    },
-    "decantr/kit/dashboard": {
-      "description": "dashboard domain kit",
-      "file": "kit-dashboard.json",
-      "exports": 7
     },
     "decantr/tags": {
       "description": "Proxy-based tag functions for concise markup",
@@ -51,5 +36,62 @@
       "description": "First-party icon suite — undefined Lucide icons via CSS mask-image",
       "file": "icons.json"
     }
+  },
+  "archetypes": {
+    "description": "Domain archetypes for the Decantation Process — pre-mapped page patterns, organs, and layouts per domain",
+    "index": "archetypes/index.json",
+    "entries": {
+      "ecommerce": {
+        "file": "archetypes/ecommerce.json",
+        "description": "Online retail"
+      },
+      "saas-dashboard": {
+        "file": "archetypes/saas-dashboard.json",
+        "description": "Analytics/admin dashboard"
+      },
+      "portfolio": {
+        "file": "archetypes/portfolio.json",
+        "description": "Personal/agency showcase"
+      },
+      "content-site": {
+        "file": "archetypes/content-site.json",
+        "description": "Blog/magazine/documentation"
+      },
+      "docs-explorer": {
+        "file": "archetypes/docs-explorer.json",
+        "description": "Interactive documentation explorer"
+      },
+      "financial-dashboard": {
+        "file": "archetypes/financial-dashboard.json",
+        "description": "Financial services lending dashboard"
+      }
+    }
+  },
+  "patterns": {
+    "description": "Experience patterns — composable UI building blocks that archetypes reference",
+    "index": "patterns/index.json",
+    "count": 35
+  },
+  "recipes": {
+    "description": "Visual language recipes — composition rules for drastic visual transformations beyond token-level styling",
+    "entries": {
+      "command-center": {
+        "file": "recipe-command-center.json",
+        "style": "command-center",
+        "description": "HUD/radar visual language — monochromatic cyan, beveled frames, scanlines, status bars"
+      }
+    }
+  },
+  "atoms": {
+    "file": "atoms.json",
+    "description": "Atomic CSS utility classes — categorized prefix groups"
+  },
+  "tokens": {
+    "file": "tokens.json",
+    "description": "Design tokens derived from style seeds — 170+ CSS custom properties"
+  },
+  "foundations": {
+    "file": "foundations.json",
+    "description": "Foundation modules — core, state, router, form"
   }
 }

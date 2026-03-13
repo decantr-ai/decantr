@@ -1,0 +1,16 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "media-gallery",
+  "name": "Media Gallery",
+  "description": "Responsive image gallery with thumbnails, lightbox, and optional carousel.",
+  "components": ["Image", "Card", "Modal", "Button"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc3 _gap3",
+    "slots": {
+      "gallery-grid": "Grid of Image cards with click-to-expand",
+      "lightbox": "Modal overlay for full-size image viewing",
+      "thumbnails": "Optional thumbnail strip for navigation"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "filter-bar",
+  "name": "Filter Bar",
+  "description": "Horizontal filter controls with search, dropdowns, date pickers, and active filter chips.",
+  "components": ["Input", "Select", "Button", "DatePicker", "Chip"],
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_flex _gap3 _aic _wrap _py3",
+    "slots": {
+      "search": "Search Input for keyword filtering",
+      "filters": "Select dropdowns and DatePicker controls",
+      "active-filters": "Chip list showing currently applied filters",
+      "actions": "Clear-all or apply Button actions"
+    }
+  }
+}

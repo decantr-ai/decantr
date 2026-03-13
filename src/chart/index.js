@@ -5,10 +5,12 @@
  */
 
 import { createEffect, createSignal } from '../state/index.js';
+import { onDestroy } from '../core/index.js';
 import { getAnimations } from '../css/theme-registry.js';
 import { injectChartBase } from './_base.js';
 import { resolve } from './_shared.js';
 import { render } from './_renderer.js';
+import { animate } from './_animate.js';
 
 // --- Layout imports ---
 import { layoutLine } from './types/line.js';
@@ -80,6 +82,9 @@ const DEFAULTS = {
   legend: true,
   grid: true,
   stacked: false,
+  smooth: true,
+  dots: true,
+  axisLine: false,
   animate: true,
   renderer: 'auto',
   height: '300px',
@@ -110,7 +115,7 @@ export function Chart(specInput) {
   const spec = chartSpec(specInput);
 
   const container = document.createElement('div');
-  container.className = 'd-chart' + (spec.class ? ' ' + spec.class : '');
+  container.className = 'd-chart' + (spec.live ? ' d-chart-live' : '') + (spec.class ? ' ' + spec.class : '');
   container.setAttribute('role', 'img');
   if (spec['aria-label']) container.setAttribute('aria-label', spec['aria-label']);
   else if (spec.title) container.setAttribute('aria-label', spec.title);
@@ -139,20 +144,130 @@ export function Chart(specInput) {
   }
 
   let currentLegend = null;
+  let prevScene = null;
+  let firstRender = true;
+  let pendingRender = false;
 
   const isReactive = typeof specInput.data === 'function';
 
+  function renderFn(sceneGraph) {
+    return render(sceneGraph, spec);
+  }
+
   function renderChart() {
+    if (pendingRender) return;
+    pendingRender = true;
+    requestAnimationFrame(() => {
+      pendingRender = false;
+      doRender();
+    });
+  }
+
+  function doRender() {
     const width = inner.offsetWidth || 600;
     const height = heightPx;
     const resolvedSpec = { ...spec, data: resolve(spec.data) };
 
     const sceneGraph = layoutFn(resolvedSpec, width, height);
-    const svgEl = render(sceneGraph, spec);
 
-    inner.textContent = '';
-    inner.appendChild(svgEl);
+    if (spec.live && !firstRender) {
+      // Live mode: in-place SVG updates so CSS d transitions can morph paths smoothly
+      doLiveUpdate(sceneGraph);
+    } else if (firstRender && spec.animate !== false) {
+      firstRender = false;
+      const zeroScene = createZeroScene(sceneGraph);
+      animate(inner, zeroScene, sceneGraph, renderFn, { duration: 750, easing: 'decelerate' }).then(() => {
+        postRender(sceneGraph);
+        // Line draw animation for SVG paths
+        applyLineDrawAnimation(inner);
+      });
+    } else if (prevScene && spec.animate !== false) {
+      animate(inner, prevScene, sceneGraph, renderFn, { duration: 300, easing: 'decelerate' }).then(() => {
+        postRender(sceneGraph);
+      });
+    } else {
+      const svgEl = render(sceneGraph, spec);
+      inner.textContent = '';
+      inner.appendChild(svgEl);
+      postRender(sceneGraph);
+    }
 
+    prevScene = sceneGraph;
+  }
+
+  /**
+   * Live update: patch the existing SVG in place.
+   * Paths with matching data-key get their `d` attribute updated (CSS transition morphs them).
+   * Axes, grid, and labels are swapped via a lightweight group replacement.
+   */
+  function doLiveUpdate(sceneGraph) {
+    const existingSvg = inner.querySelector('.d-chart-svg');
+    const newSvg = render(sceneGraph, spec);
+
+    if (!existingSvg) {
+      inner.textContent = '';
+      inner.appendChild(newSvg);
+      postRender(sceneGraph);
+      return;
+    }
+
+    // Build map of existing keyed elements
+    const existingKeyed = new Map();
+    for (const el of existingSvg.querySelectorAll('[data-key]')) {
+      existingKeyed.set(el.getAttribute('data-key'), el);
+    }
+
+    // Build map of new keyed elements and collect their attributes
+    const newKeyed = new Map();
+    for (const el of newSvg.querySelectorAll('[data-key]')) {
+      newKeyed.set(el.getAttribute('data-key'), el);
+    }
+
+    // Update existing keyed elements in place (paths get CSS-transitioned `d`)
+    for (const [key, newEl] of newKeyed) {
+      const existing = existingKeyed.get(key);
+      if (existing && existing.tagName === newEl.tagName) {
+        for (const attr of newEl.attributes) {
+          if (attr.name !== 'data-key') {
+            existing.setAttribute(attr.name, attr.value);
+          }
+        }
+        existingKeyed.delete(key);
+      }
+    }
+
+    // Swap non-keyed content (axes, grid, labels) by replacing the inner group
+    const existingGroup = existingSvg.querySelector('g');
+    const newGroup = newSvg.querySelector('g');
+    if (existingGroup && newGroup) {
+      // Collect keyed elements we updated in place
+      const preservedEls = new Map();
+      for (const [key, el] of newKeyed) {
+        const existing = existingSvg.querySelector(`[data-key="${key}"]`);
+        if (existing) preservedEls.set(key, existing);
+      }
+
+      // Replace group children, reinserting preserved keyed elements
+      const newChildren = [...newGroup.childNodes];
+      existingGroup.textContent = '';
+      for (const child of newChildren) {
+        const key = child.getAttribute?.('data-key');
+        if (key && preservedEls.has(key)) {
+          existingGroup.appendChild(preservedEls.get(key));
+        } else {
+          existingGroup.appendChild(child);
+        }
+      }
+    }
+
+    // Update viewBox if dimensions changed
+    const vb = newSvg.getAttribute('viewBox');
+    if (vb) existingSvg.setAttribute('viewBox', vb);
+
+    postRender(sceneGraph);
+  }
+
+  function postRender(sceneGraph) {
     // Legend
     if (currentLegend) {
       currentLegend.remove();
@@ -165,14 +280,25 @@ export function Chart(specInput) {
     }
 
     // Tooltip
-    if (spec.tooltip) {
+    const svgEl = inner.querySelector('svg');
+    if (spec.tooltip && svgEl) {
       attachTooltip(inner, svgEl, meta, spec);
     }
 
     // Click handler
-    if (spec.onClick) {
+    if (spec.onClick && svgEl) {
       attachClickHandler(svgEl, meta, spec);
     }
+  }
+
+  // ResizeObserver for responsive re-render
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => renderChart());
+    ro.observe(inner);
+    onDestroy(() => ro.disconnect());
+  } else if (isReactive) {
+    // Fallback: double-rAF for initial sizing
+    requestAnimationFrame(() => requestAnimationFrame(doRender));
   }
 
   if (isReactive) {
@@ -181,7 +307,10 @@ export function Chart(specInput) {
       renderChart();
     });
   } else {
-    requestAnimationFrame(renderChart);
+    // Initial render triggered by ResizeObserver or fallback
+    if (typeof ResizeObserver === 'undefined') {
+      requestAnimationFrame(() => requestAnimationFrame(doRender));
+    }
   }
 
   // Accessible data table fallback
@@ -327,6 +456,73 @@ export function resolvePalette(count, el) {
 }
 
 const FALLBACK_COLORS = ['#1366D9', '#7c3aed', '#0891b2', '#22c55e', '#f59e0b', '#ef4444', '#3b82f6', '#71717a'];
+
+// --- Animation helpers ---
+
+/**
+ * Create a zero-state scene graph for entrance animation.
+ * Deep-clones the target scene with zeroed data values.
+ * @param {Object} targetScene
+ * @returns {Object}
+ */
+function createZeroScene(targetScene) {
+  if (!targetScene) return targetScene;
+  return {
+    ...targetScene,
+    children: targetScene.children ? targetScene.children.map(zeroNode) : []
+  };
+}
+
+function zeroNode(node) {
+  if (!node) return node;
+  const result = { ...node };
+
+  switch (node.type) {
+    case 'rect':
+      // Bars: collapse to baseline
+      if (result.h != null) {
+        const fullH = result.h;
+        result.y = (result.y || 0) + fullH;
+        result.h = 0;
+      }
+      break;
+    case 'circle':
+      // Dots: scale from zero
+      result.r = 0;
+      break;
+    case 'path':
+      // Lines/areas: fade in
+      result.opacity = 0;
+      break;
+    case 'arc':
+      // Pie slices: grow from zero
+      result.endAngle = result.startAngle;
+      break;
+    case 'group':
+      if (result.children) {
+        result.children = result.children.map(zeroNode);
+      }
+      break;
+  }
+
+  return result;
+}
+
+/**
+ * Apply CSS stroke-dashoffset draw animation to SVG line paths.
+ * @param {HTMLElement} inner
+ */
+function applyLineDrawAnimation(inner) {
+  if (typeof window === 'undefined') return;
+  const paths = inner.querySelectorAll('.d-chart-line');
+  for (const p of paths) {
+    if (typeof p.getTotalLength === 'function') {
+      const len = p.getTotalLength();
+      p.style.setProperty('--d-path-len', String(len));
+      p.setAttribute('data-animate', '');
+    }
+  }
+}
 
 // --- Internal helpers ---
 

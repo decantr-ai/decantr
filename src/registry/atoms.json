@@ -1,0 +1,16 @@
+{
+  "$schema": "https://decantr.ai/schemas/atoms.v1.json",
+  "description": "Atomic CSS utility classes",
+  "categories": {
+    "layout": { "label": "Layout", "prefixes": ["_flex", "_grid", "_block", "_inline", "_relative", "_absolute", "_fixed", "_sticky", "_none", "_invisible"] },
+    "spacing": { "label": "Spacing", "prefixes": ["_p", "_m", "_gap", "_sp"] },
+    "sizing": { "label": "Sizing", "prefixes": ["_w", "_h", "_min", "_max"] },
+    "typography": { "label": "Typography", "prefixes": ["_text", "_heading", "_body", "_caption", "_label", "_overline", "_fw", "_lh", "_ls", "_font"] },
+    "color": { "label": "Color", "prefixes": ["_fg", "_bg", "_bc"] },
+    "border": { "label": "Border", "prefixes": ["_border", "_b1", "_radius", "_r0", "_r1", "_r2", "_r3", "_r4", "_r5", "_r6", "_r7", "_r8", "_rfull", "_rounded"] },
+    "effects": { "label": "Effects", "prefixes": ["_shadow", "_opacity", "_blur", "_overflow"] },
+    "interaction": { "label": "Interaction", "prefixes": ["_pointer", "_select", "_cursor", "_transition"] },
+    "alignment": { "label": "Alignment", "prefixes": ["_aic", "_jcc", "_jcsb", "_jcsa", "_jcse", "_ais", "_aie", "_center", "_tc", "_tl", "_tr"] },
+    "responsive": { "label": "Responsive", "prefixes": ["_sm:", "_md:", "_lg:", "_xl:"] }
+  }
+}

@@ -1,77 +1,216 @@
-import { h } from '../core/index.js';
-import { createEffect, createSignal } from '../state/index.js';
+/**
+ * Tabs — Tabbed interface with roving tabindex keyboard navigation.
+ * Uses createRovingTabindex for arrow-key focus management.
+ *
+ * @module decantr/components/tabs
+ */
+import { onDestroy } from '../core/index.js';
+import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
+import { createRovingTabindex } from './_behaviors.js';
+import { icon } from './icon.js';
+
+const { div, button: buttonTag } = tags;
+
+let _tabId = 0;
 
 /**
  * @param {Object} [props]
- * @param {{ id: string, label: string, content: Function }[]} props.tabs
+ * @param {{ id: string, label: string, content?: Function, disabled?: boolean, closable?: boolean }[]} props.tabs
  * @param {string|Function} [props.active] - Active tab id
  * @param {Function} [props.onchange]
+ * @param {Function} [props.onclose] - Called with tab id when closable tab is closed
+ * @param {'horizontal'|'vertical'} [props.orientation='horizontal']
+ * @param {'sm'|'lg'} [props.size]
+ * @param {boolean|Function} [props.disabled] - Group-level disabled
+ * @param {boolean} [props.destroyInactive=true] - When false, all panels stay in DOM (hidden)
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function Tabs(props = {}) {
   injectBase();
 
-  const { tabs = [], active, onchange, class: cls } = props;
+  const {
+    tabs = [],
+    active,
+    onchange,
+    onclose,
+    orientation = 'horizontal',
+    size,
+    disabled,
+    destroyInactive = true,
+    class: cls
+  } = props;
 
-  const [getActive, setActive] = createSignal(
-    typeof active === 'function' ? active() : (active || (tabs[0] && tabs[0].id))
-  );
+  const prefix = `d-tabs-${_tabId++}`;
 
-  const tabList = h('div', { class: 'd-tabs-list', role: 'tablist' });
-  const panel = h('div', { class: 'd-tabs-panel', role: 'tabpanel' });
-  const container = h('div', { class: cx('d-tabs', cls) }, tabList, panel);
+  // Resolve initial active tab
+  let currentActive = typeof active === 'function'
+    ? active()
+    : (active || (tabs[0] && tabs[0].id));
 
+  const tabList = div({
+    class: 'd-tabs-list',
+    role: 'tablist',
+    'aria-orientation': orientation
+  });
+
+  const panelContainer = div({ class: 'd-tabs-panel-container' });
+
+  const container = div({
+    class: cx(
+      'd-tabs',
+      orientation === 'vertical' && 'd-tabs-vertical',
+      size && `d-tabs-${size}`,
+      cls
+    )
+  }, tabList, panelContainer);
+
+  // Track tab elements and panels for destroyInactive=false mode
   const tabEls = [];
+  const panelMap = new Map(); // id -> { el, rendered }
 
-  tabs.forEach((tab, i) => {
-    const tabEl = h('button', {
+  tabs.forEach(tab => {
+    const tabBtnId = `${prefix}-tab-${tab.id}`;
+    const panelId = `${prefix}-panel-${tab.id}`;
+
+    const tabEl = buttonTag({
       type: 'button',
-      class: 'd-tab',
+      class: cx('d-tab', tab.closable && 'd-tab-closable'),
       role: 'tab',
+      id: tabBtnId,
       'aria-selected': 'false',
+      'aria-controls': panelId,
       tabindex: '-1'
     }, tab.label);
 
+    if (tab.disabled) {
+      tabEl.disabled = true;
+    }
+
+    // Close button for closable tabs
+    if (tab.closable) {
+      const closeBtn = buttonTag({
+        class: 'd-tab-close',
+        'aria-label': `Close ${tab.label}`,
+        tabindex: '-1',
+        type: 'button'
+      }, icon('x', { size: '1em' }));
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (onclose) onclose(tab.id);
+      });
+      tabEl.appendChild(closeBtn);
+    }
+
     tabEl.addEventListener('click', () => {
-      setActive(tab.id);
+      if (tab.disabled) return;
+      currentActive = tab.id;
+      update();
       if (onchange) onchange(tab.id);
     });
 
-    tabEl.addEventListener('keydown', (e) => {
-      let newIndex = i;
-      if (e.key === 'ArrowRight') newIndex = (i + 1) % tabs.length;
-      else if (e.key === 'ArrowLeft') newIndex = (i - 1 + tabs.length) % tabs.length;
-      else if (e.key === 'Home') newIndex = 0;
-      else if (e.key === 'End') newIndex = tabs.length - 1;
-      else return;
-      e.preventDefault();
-      setActive(tabs[newIndex].id);
-      if (onchange) onchange(tabs[newIndex].id);
-      tabEls[newIndex].focus();
-    });
-
-    tabEls.push(tabEl);
+    tabEls.push({ el: tabEl, tab });
     tabList.appendChild(tabEl);
-  });
 
-  createEffect(() => {
-    const activeId = typeof active === 'function' ? active() : getActive();
-    tabEls.forEach((el, i) => {
-      const isActive = tabs[i].id === activeId;
-      el.classList.toggle('d-tab-active', isActive);
-      el.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      el.setAttribute('tabindex', isActive ? '0' : '-1');
-    });
-    const activeTab = tabs.find(t => t.id === activeId);
-    panel.replaceChildren();
-    if (activeTab && activeTab.content) {
-      const content = activeTab.content();
-      if (typeof content === 'string') panel.appendChild(document.createTextNode(content));
-      else if (content) panel.appendChild(content);
+    // Pre-create panels for destroyInactive=false
+    if (!destroyInactive) {
+      const panelEl = div({
+        class: 'd-tabs-panel',
+        role: 'tabpanel',
+        id: panelId,
+        'aria-labelledby': tabBtnId
+      });
+      panelEl.style.display = 'none';
+      panelMap.set(tab.id, { el: panelEl, rendered: false });
+      panelContainer.appendChild(panelEl);
     }
   });
+
+  // Single panel for destroyInactive=true (default)
+  let singlePanel = null;
+  if (destroyInactive) {
+    singlePanel = div({
+      class: 'd-tabs-panel',
+      role: 'tabpanel'
+    });
+    panelContainer.appendChild(singlePanel);
+  }
+
+  // Roving tabindex for keyboard navigation
+  const roving = createRovingTabindex(tabList, {
+    itemSelector: '.d-tab:not([disabled])',
+    orientation,
+    onFocus: (el) => el.click()
+  });
+
+  function update() {
+    const activeId = typeof active === 'function' ? active() : currentActive;
+
+    // Update tab button states
+    let activeIndex = 0;
+    tabEls.forEach(({ el, tab }, i) => {
+      const isActive = tab.id === activeId;
+      el.classList.toggle('d-tab-active', isActive);
+      el.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      if (isActive) activeIndex = i;
+    });
+
+    // Sync roving active to active tab (find non-disabled index)
+    const enabledItems = [...tabList.querySelectorAll('.d-tab:not([disabled])')];
+    const enabledIndex = enabledItems.indexOf(tabEls[activeIndex]?.el);
+    if (enabledIndex >= 0) roving.setActive(enabledIndex);
+
+    // Update panel content
+    if (destroyInactive) {
+      const activeTab = tabs.find(t => t.id === activeId);
+      singlePanel.id = `${prefix}-panel-${activeId}`;
+      singlePanel.setAttribute('aria-labelledby', `${prefix}-tab-${activeId}`);
+      singlePanel.replaceChildren();
+      if (activeTab && activeTab.content) {
+        const content = activeTab.content();
+        if (typeof content === 'string') singlePanel.appendChild(document.createTextNode(content));
+        else if (content) singlePanel.appendChild(content);
+      }
+    } else {
+      // Show/hide panels, lazy-render on first activation
+      panelMap.forEach((entry, id) => {
+        const isActive = id === activeId;
+        entry.el.style.display = isActive ? '' : 'none';
+        if (isActive && !entry.rendered) {
+          entry.rendered = true;
+          const tab = tabs.find(t => t.id === id);
+          if (tab && tab.content) {
+            const content = tab.content();
+            if (typeof content === 'string') entry.el.appendChild(document.createTextNode(content));
+            else if (content) entry.el.appendChild(content);
+          }
+        }
+      });
+    }
+  }
+
+  // Reactive effect for external active prop changes
+  if (typeof active === 'function') {
+    createEffect(() => { active(); update(); });
+  } else {
+    update();
+  }
+
+  // Reactive group disabled
+  if (typeof disabled === 'function') {
+    createEffect(() => {
+      const v = disabled();
+      container.toggleAttribute('data-disabled', v);
+      tabEls.forEach(({ el }) => { el.disabled = v; });
+    });
+  } else if (disabled) {
+    container.setAttribute('data-disabled', '');
+    tabEls.forEach(({ el }) => { el.disabled = true; });
+  }
+
+  onDestroy(() => { roving.destroy(); });
 
   return container;
 }

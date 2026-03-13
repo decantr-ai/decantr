@@ -1,0 +1,10 @@
+{
+  "$schema": "https://decantr.ai/schemas/foundations.v1.json",
+  "description": "Foundation modules — core framework capabilities",
+  "subsections": {
+    "core": { "label": "Core", "module": "decantr/core", "registry": "core.json" },
+    "state": { "label": "State", "module": "decantr/state", "registry": "state.json" },
+    "router": { "label": "Router", "module": "decantr/router", "registry": "router.json" },
+    "forms": { "label": "Forms", "module": "decantr/form" }
+  }
+}

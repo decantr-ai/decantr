@@ -83,4 +83,20 @@ describe('icon() component', () => {
     const el = container.querySelector('.d-i-test-icon');
     assert.ok(el, 'should render element with custom icon class');
   });
+
+  it('renders fill-based SVG icons correctly', () => {
+    createDOM();
+    registerIcon('fill-test', '<path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>');
+    const { container } = render(() => icon('fill-test'));
+    const el = container.querySelector('.d-i-fill-test');
+    assert.ok(el, 'should render fill-based icon');
+  });
+
+  it('renders stroke-based SVG icons with fill="none" correctly', () => {
+    createDOM();
+    registerIcon('stroke-test', '<path fill="none" d="M12 2L22 22H2z"/>');
+    const { container } = render(() => icon('stroke-test'));
+    const el = container.querySelector('.d-i-stroke-test');
+    assert.ok(el, 'should render stroke-based icon');
+  });
 });

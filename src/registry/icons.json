@@ -1,4 +1,5 @@
 {
+  "$schema": "https://decantr.ai/schemas/module.v1.json",
   "generated": "2026-03-09",
   "source": "decantr original icons",
   "essential": [
@@ -197,12 +198,22 @@
     "zap"
   ],
   "essentialCount": 193,
+  "structural": [
+    "chevron-down", "chevron-up", "chevron-left", "chevron-right",
+    "check", "x", "calendar", "clock", "search", "arrow-up",
+    "grip-vertical", "info", "check-circle", "alert-triangle", "x-circle"
+  ],
+  "structuralNote": "Framework components depend on these 15 icons. Always available via built-in essential set. Can be overridden via registerIcon() for visual consistency with third-party libraries.",
+  "fillDetection": "buildDataUri() auto-detects fill-based SVGs: if inner content contains fill= with a non-none value, uses fill='black' stroke='none' wrapper. Otherwise uses stroke-based wrapper (default). For SVGs relying on inherited fill (no explicit fill attr), add fill='currentColor' when registering.",
   "api": {
-    "icon(name, opts?)": "Render icon as <span> with CSS mask-image",
+    "icon(name, opts?)": "Render icon as <span> with CSS mask-image. Auto-detects fill vs stroke SVG format.",
     "registerIcon(name, svgInner)": "Add a single custom icon",
     "registerIcons(map)": "Bulk-register icons from { name: svgInner }",
     "hasIcon(name)": "Check if icon is available",
     "getIconNames()": "List all available icon names"
+  },
+  "config": {
+    "icons.library": "Optional string in decantr.config.json — signals to LLM which icon library the project uses (e.g. 'lucide', 'material', 'fontawesome'). Decantr does not act on this value."
   },
   "importGuide": "node tools/icons.js <svg-dir> [output.js] — import SVG directory as JS module"
 }

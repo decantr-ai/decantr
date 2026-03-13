@@ -40,6 +40,10 @@ export const auradecantism = {
       '--d-surface-1-filter': 'blur(16px) saturate(1.6)',
       '--d-surface-2-filter': 'blur(20px) saturate(1.8)',
       '--d-surface-3-filter': 'blur(24px) saturate(2)',
+      '--d-field-bg': 'rgba(255,255,255,0.5)',
+      '--d-field-border': 'rgba(0,0,0,0.08)',
+      '--d-field-border-hover': 'rgba(0,0,0,0.15)',
+      '--d-item-hover-bg': 'rgba(0,0,0,0.04)',
     },
     dark: {
       '--d-surface-1': 'rgba(12,15,40,0.55)',
@@ -50,6 +54,10 @@ export const auradecantism = {
       '--d-surface-3-filter': 'blur(24px) saturate(2)',
       '--d-border': 'rgba(255,255,255,0.08)',
       '--d-border-strong': 'rgba(255,255,255,0.15)',
+      '--d-field-bg': 'rgba(255,255,255,0.04)',
+      '--d-field-border': 'rgba(255,255,255,0.08)',
+      '--d-field-border-hover': 'rgba(255,255,255,0.15)',
+      '--d-item-hover-bg': 'rgba(255,255,255,0.06)',
       '--d-chart-0': '#FE4474',
       '--d-chart-1': '#0AF3EB',
       '--d-chart-2': '#6500C6',
@@ -67,11 +75,11 @@ export const auradecantism = {
     // Scrollbar
     '::-webkit-scrollbar{width:6px;height:6px}',
     '::-webkit-scrollbar-track{background:transparent}',
-    '::-webkit-scrollbar-thumb{background:rgba(254,68,116,0.3);border-radius:var(--d-radius-full)}',
-    '::-webkit-scrollbar-thumb:hover{background:rgba(254,68,116,0.5)}',
+    '::-webkit-scrollbar-thumb{background:var(--d-primary-border);border-radius:var(--d-radius-full)}',
+    '::-webkit-scrollbar-thumb:hover{background:var(--d-primary-hover)}',
     // Glass card enhancements
-    '.d-card{border:1px solid rgba(255,255,255,0.1);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
-    '.d-modal-content{border:1px solid rgba(255,255,255,0.12);box-shadow:var(--d-elevation-3),inset 0 1px 0 rgba(255,255,255,0.08)}',
+    '.d-card{border:var(--d-border-width) solid rgba(255,255,255,0.1);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
+    '.d-modal-content{border:var(--d-border-width) solid rgba(255,255,255,0.12);box-shadow:var(--d-elevation-3),inset 0 1px 0 rgba(255,255,255,0.08)}',
     // Button glow
     '.d-btn-primary{box-shadow:0 0 12px rgba(254,68,116,0.25)}',
     '.d-btn-primary:hover{box-shadow:0 0 20px rgba(254,68,116,0.4)}',
@@ -81,7 +89,10 @@ export const auradecantism = {
     '.d-gradient-text{background:linear-gradient(135deg,var(--d-primary),var(--d-accent),var(--d-tertiary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
     '.d-gradient-text-alt{background:linear-gradient(135deg,var(--d-accent),var(--d-primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
     // Glass panel utilities
-    '.d-glass{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:1px solid rgba(255,255,255,0.1);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
-    '.d-glass-strong{background:var(--d-surface-2);backdrop-filter:var(--d-surface-2-filter);-webkit-backdrop-filter:var(--d-surface-2-filter);border:1px solid rgba(255,255,255,0.12);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-2),inset 0 1px 0 rgba(255,255,255,0.08)}',
+    '.d-glass-subtle{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:var(--d-border-width) solid rgba(255,255,255,0.05);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-0)}',
+    '.d-glass{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:var(--d-border-width) solid rgba(255,255,255,0.1);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
+    '.d-glass-strong{background:var(--d-surface-2);backdrop-filter:var(--d-surface-2-filter);-webkit-backdrop-filter:var(--d-surface-2-filter);border:var(--d-border-width) solid rgba(255,255,255,0.12);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-2),inset 0 1px 0 rgba(255,255,255,0.08)}',
+    // Frosted-glass dialog backdrops
+    'dialog::backdrop{background:rgba(6,9,24,0.45);backdrop-filter:blur(16px) saturate(1.6);-webkit-backdrop-filter:blur(16px) saturate(1.6)}',
   ].join(''),
 };

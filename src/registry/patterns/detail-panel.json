@@ -1,0 +1,23 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "detail-panel",
+  "name": "Detail Panel",
+  "description": "Full detail view for a single entity with a header section and tabbed content areas. Used for user profiles, product details, and record views.",
+  "components": ["Tabs", "Card", "Card.Header", "Card.Body", "Avatar", "Badge", "Button", "Separator", "Tooltip"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _flexCol _gap4 _p4",
+    "slots": {
+      "header": "Entity header with Avatar, title (_heading3), subtitle (_caption), status Badge, and action Buttons via _flex _gap3 _itemsCenter. Wrapped in Card.Header",
+      "tabs": "Tabs component with content panels. Common tabs: Overview, Details, Activity, Settings",
+      "tab-content": "Each tab panel contains domain-specific content using Cards, form fields, or activity-feed pattern"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-bar",
+      "notes": "Header uses cc-bar with cc-label for entity name. Status Badge gets cc-glow for active states. Tab bar uses cc-bar styling. Content areas get cc-scanline."
+    }
+  }
+}

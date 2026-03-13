@@ -33,29 +33,29 @@ const scaffoldData = [
 ];
 
 function MetricRow({ stat, statColor, label, description, footnote, visual, reverse, delay }) {
-  const textSide = div({ class: css('_flex _col _gap4 _jcc'), style: 'flex:1;min-width:280px' },
+  const textSide = div({ class: css('_flex _col _gap4 _jcc _flex1 _minw[280px]') },
     span({ class: 'ds-stat', style: `color:${statColor || 'var(--d-accent)'}` }, stat),
-    h3({ class: css('_textxl _fwheading'), style: 'color:var(--d-fg)' }, label),
-    p({ class: css('_textbase _lhrelaxed'), style: 'color:var(--d-muted-fg)' }, description),
-    footnote ? small({ class: css('_textsm'), style: 'color:rgba(255,255,255,0.35);font-style:italic' }, footnote) : null,
+    h3({ class: css('_textxl _fwheading _fgfg') }, label),
+    p({ class: css('_textbase _lhrelaxed _fgmutedfg') }, description),
+    footnote ? small({ class: css('_textsm _italic _fg[rgba(255,255,255,0.35)]') }, footnote) : null,
   );
 
-  const chartSide = div({ class: css('_flex _aic _jcc'), style: 'flex:1;min-width:280px' }, visual);
+  const chartSide = div({ class: css('_flex _aic _jcc _flex1 _minw[280px]') }, visual);
 
-  const divider = div({ style: 'width:1px;background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.1),transparent);align-self:stretch;margin:0 0.5rem;flex-shrink:0' });
+  const divider = div({ class: css('_w[1px] _shrink0 _m[0_0.5rem]'), style: 'background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.1),transparent);align-self:stretch' });
 
-  return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _row _wrap _gap6 _p8 _aic')}`, style: 'width:100%' },
+  return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _row _wrap _gap6 _p8 _aic _w100')}` },
     ...(reverse ? [chartSide, divider, textSide] : [textSide, divider, chartSide]),
   );
 }
 
 function PillarCard({ iconName, title, description, delay }) {
   return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap4 _p8')}` },
-    div({ style: 'color:var(--d-accent);background:rgba(10,243,235,0.1);padding:0.75rem;border-radius:var(--d-radius-lg);display:inline-flex;align-self:flex-start' },
+    div({ class: css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)] _aisstart'), style: 'background:rgba(10,243,235,0.1)' },
       icon(iconName, { size: '28px' }),
     ),
-    h3({ class: css('_textxl _fwheading'), style: 'color:var(--d-fg)' }, title),
-    p({ class: css('_textbase _lhrelaxed'), style: 'color:var(--d-muted-fg)' }, description),
+    h3({ class: css('_textxl _fwheading _fgfg') }, title),
+    p({ class: css('_textbase _lhrelaxed _fgmutedfg') }, description),
   );
 }
 
@@ -65,15 +65,15 @@ export function PhilosophySection() {
     div({ class: 'ds-orb', style: 'width:500px;height:500px;background:rgba(10,243,235,0.06);top:20%;right:-15%' }),
     div({ class: 'ds-orb', style: 'width:400px;height:400px;background:rgba(101,0,198,0.08);bottom:10%;left:-10%' }),
 
-    div({ class: css('_flex _col _aic _gap12 _relative _z10'), style: 'max-width:1100px;width:100%' },
+    div({ class: css('_flex _col _aic _gap12 _relative _z10 _maxw[1100px] _w100') },
       // Header
       div({ class: css('_flex _col _aic _gap4 _tc') },
-        h2({ class: 'ds-gradient-text ds-animate', style: 'font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1' },
+        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(2rem,5vw,3.5rem)' },
           'The Decantr Way',
         ),
-        p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed')}`, style: 'color:var(--d-muted-fg);max-width:650px' },
+        p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed _fgmutedfg _maxw[650px]')}` },
           'Designed for AI. Built for developers. Engineered for ',
-          span({ style: 'color:var(--d-fg);font-weight:600' }, 'world domination.'),
+          span({ class: css('_fgfg _fw[600]') }, 'world domination.'),
         ),
       ),
 
@@ -151,7 +151,7 @@ export function PhilosophySection() {
       }),
 
       // ── Three pillars ──
-      div({ class: css('_grid _gcaf300 _gap6'), style: 'width:100%' },
+      div({ class: css('_grid _gcaf300 _gap6 _w100') },
         PillarCard({
           iconName: 'cpu',
           title: 'AI-First Architecture',
@@ -173,18 +173,18 @@ export function PhilosophySection() {
       ),
 
       // Manifesto quote
-      div({ class: `ds-glass-strong ds-animate ds-delay-8 ${css('_flex _col _aic _tc _p10 _gap6')}`, style: 'width:100%' },
-        div({ style: 'width:60px;height:2px;background:var(--d-gradient-brand);border-radius:var(--d-radius-full)' }),
-        blockquote({ style: 'font-size:clamp(1.25rem,3vw,1.75rem);font-weight:600;line-height:1.4;color:var(--d-fg);max-width:800px;font-style:italic' },
+      div({ class: `ds-glass-strong ds-animate ds-delay-8 ${css('_flex _col _aic _tc _p10 _gap6 _w100')}` },
+        div({ class: css('_w[60px] _h[2px] _rfull'), style: 'background:var(--d-gradient-brand)' }),
+        blockquote({ class: css('_fw[600] _lh[1.4] _fgfg _maxw[800px] _italic'), style: 'font-size:clamp(1.25rem,3vw,1.75rem)' },
           '"The future of web development is AI-generated, human-curated, and zero-compromise. We didn\'t build another framework. We built the last one you\'ll ever need."',
         ),
-        div({ style: 'width:60px;height:2px;background:var(--d-gradient-brand);border-radius:var(--d-radius-full)' }),
+        div({ class: css('_w[60px] _h[2px] _rfull'), style: 'background:var(--d-gradient-brand)' }),
       ),
 
       // Coming soon teaser
       div({ class: `ds-animate ds-delay-9 ${css('_flex _col _aic _tc _gap3')}` },
-        p({ class: css('_textlg'), style: 'color:var(--d-muted-fg)' }, 'Something massive is coming.'),
-        p({ class: 'ds-gradient-text', style: 'font-size:clamp(1.5rem,4vw,2.5rem);font-weight:800;letter-spacing:-0.02em' },
+        p({ class: css('_textlg _fgmutedfg') }, 'Something massive is coming.'),
+        p({ class: css('_fw[800] _ls[-0.02em]') + ' ds-gradient-text', style: 'font-size:clamp(1.5rem,4vw,2.5rem)' },
           'Stay tuned.',
         ),
       ),

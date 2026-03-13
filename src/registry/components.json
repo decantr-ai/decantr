@@ -1,4 +1,5 @@
 {
+  "$schema": "https://decantr.ai/schemas/module.v1.json",
   "module": "decantr/components",
   "description": "UI components — all return HTMLElement, all accept inline styles",
   "components": {
@@ -12,11 +13,82 @@
         "multiple": {
           "type": "boolean"
         },
+        "defaultOpen": {
+          "type": "string[]"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "multiple": true
+        },
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "title": "What is Decantr?",
+              "content": "A zero-dependency web framework."
+            },
+            {
+              "title": "How does it work?",
+              "content": "Signal-based reactivity with atomic CSS."
+            },
+            {
+              "title": "Is it production-ready?",
+              "content": "Used by hundreds of thousands of developers."
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Single expand",
+            "props": {
+              "items": [
+                {
+                  "title": "Section 1",
+                  "content": "Content for section 1"
+                },
+                {
+                  "title": "Section 2",
+                  "content": "Content for section 2"
+                },
+                {
+                  "title": "Section 3",
+                  "content": "Content for section 3"
+                }
+              ]
+            },
+            "description": "One section at a time."
+          },
+          {
+            "name": "Multiple expand",
+            "props": {
+              "items": [
+                {
+                  "title": "FAQ 1",
+                  "content": "Answer to FAQ 1"
+                },
+                {
+                  "title": "FAQ 2",
+                  "content": "Answer to FAQ 2"
+                }
+              ],
+              "multiple": true
+            },
+            "description": "Independent section toggling."
+          }
+        ],
+        "children": null
+      }
     },
     "Affix": {
       "props": {
@@ -34,7 +106,21 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Sticky top",
+            "props": {
+              "offsetTop": 80
+            },
+            "description": "Fixed after scrolling past offset."
+          }
+        ]
+      }
     },
     "AlertDialog": {
       "props": {
@@ -67,7 +153,33 @@
           "type": "string"
         }
       },
-      "returns": "HTMLDialogElement"
+      "returns": "HTMLDialogElement",
+      "showcase": {
+        "labelProp": "title",
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Destructive action",
+            "props": {
+              "title": "Delete item?",
+              "description": "This cannot be undone.",
+              "variant": "destructive"
+            },
+            "description": "Confirm before destructive action."
+          },
+          {
+            "name": "Neutral confirmation",
+            "props": {
+              "title": "Save changes?",
+              "description": "Unsaved changes will be lost.",
+              "variant": "default"
+            },
+            "description": "Standard confirmation dialog."
+          }
+        ]
+      }
     },
     "Alert": {
       "props": {
@@ -95,7 +207,59 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "dismissible": true
+        },
+        "sections": [
+          "variants",
+          "examples"
+        ],
+        "defaults": {
+          "description": "This is an alert message."
+        },
+        "labelProp": "title",
+        "examples": [
+          {
+            "name": "Info",
+            "props": {
+              "variant": "info"
+            },
+            "description": "Informational alert."
+          },
+          {
+            "name": "Success",
+            "props": {
+              "variant": "success"
+            },
+            "description": "Success alert."
+          },
+          {
+            "name": "Warning",
+            "props": {
+              "variant": "warning"
+            },
+            "description": "Warning alert."
+          },
+          {
+            "name": "Error",
+            "props": {
+              "variant": "error"
+            },
+            "description": "Error alert."
+          },
+          {
+            "name": "Dismissible",
+            "props": {
+              "variant": "info",
+              "dismissible": true
+            },
+            "description": "Alert with close button."
+          }
+        ],
+        "children": null
+      }
     },
     "AspectRatio": {
       "props": {
@@ -107,7 +271,28 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "16:9 widescreen",
+            "props": {
+              "ratio": "16/9"
+            },
+            "description": "Standard video aspect ratio."
+          },
+          {
+            "name": "4:3 classic",
+            "props": {
+              "ratio": "4/3"
+            },
+            "description": "Classic display ratio."
+          }
+        ]
+      }
     },
     "AvatarGroup": {
       "props": {
@@ -122,7 +307,22 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Stacked avatars",
+            "props": {
+              "max": 3,
+              "size": "default"
+            },
+            "description": "Shows overflow count."
+          }
+        ]
+      }
     },
     "Avatar": {
       "props": {
@@ -147,7 +347,41 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "sizes",
+          "examples"
+        ],
+        "defaults": {
+          "name": "John Doe"
+        },
+        "examples": [
+          {
+            "name": "With initials",
+            "props": {
+              "fallback": "JD"
+            },
+            "description": "Fallback to initials."
+          },
+          {
+            "name": "Small",
+            "props": {
+              "size": "sm",
+              "fallback": "SM"
+            },
+            "description": "Compact avatar."
+          },
+          {
+            "name": "Large",
+            "props": {
+              "size": "lg",
+              "fallback": "LG"
+            },
+            "description": "Large avatar."
+          }
+        ]
+      }
     },
     "BackTop": {
       "props": {
@@ -163,7 +397,21 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "visibilityHeight": 400
+            },
+            "description": "Scroll-to-top button."
+          }
+        ]
+      }
     },
     "Badge": {
       "props": {
@@ -194,7 +442,67 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "dot": true,
+          "count": 5
+        },
+        "sections": [
+          "variants",
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Dot indicator",
+            "props": {
+              "dot": true
+            },
+            "description": "Small dot badge."
+          },
+          {
+            "name": "Count badge",
+            "props": {
+              "count": 5
+            },
+            "description": "Numeric notification badge."
+          },
+          {
+            "name": "Status success",
+            "props": {
+              "dot": true,
+              "status": "success"
+            },
+            "description": "Online status indicator."
+          },
+          {
+            "name": "Status error",
+            "props": {
+              "dot": true,
+              "status": "error"
+            },
+            "description": "Error status indicator."
+          },
+          {
+            "name": "Status warning",
+            "props": {
+              "dot": true,
+              "status": "warning"
+            },
+            "description": "Warning status indicator."
+          },
+          {
+            "name": "Status processing",
+            "props": {
+              "dot": true,
+              "status": "processing"
+            },
+            "description": "Processing status indicator."
+          }
+        ],
+        "children": "Badge"
+      }
     },
     "Banner": {
       "props": {
@@ -221,7 +529,33 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "dismissible=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Info banner",
+            "props": {
+              "variant": "info"
+            },
+            "description": "Informational message bar."
+          },
+          {
+            "name": "Dismissible warning",
+            "props": {
+              "variant": "warning",
+              "dismissible": true
+            },
+            "description": "Closable warning banner."
+          }
+        ]
+      }
     },
     "Breadcrumb": {
       "props": {
@@ -238,7 +572,68 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "label": "Home",
+              "href": "#"
+            },
+            {
+              "label": "Products",
+              "href": "#"
+            },
+            {
+              "label": "Widget"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Navigation trail",
+            "props": {
+              "items": [
+                {
+                  "label": "Home",
+                  "href": "#"
+                },
+                {
+                  "label": "Products",
+                  "href": "#"
+                },
+                {
+                  "label": "Detail"
+                }
+              ]
+            },
+            "description": "Standard breadcrumb path."
+          },
+          {
+            "name": "Custom separator",
+            "props": {
+              "separator": ">",
+              "items": [
+                {
+                  "label": "Home",
+                  "href": "#"
+                },
+                {
+                  "label": "Docs",
+                  "href": "#"
+                },
+                {
+                  "label": "API"
+                }
+              ]
+            },
+            "description": "Arrow-separated breadcrumb."
+          }
+        ]
+      }
     },
     "buttonVariants": {
       "props": {
@@ -271,7 +666,32 @@
           ]
         }
       },
-      "returns": "string"
+      "returns": "string",
+      "showcase": {
+        "sections": [
+          "variants",
+          "sizes",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Primary variant",
+            "props": {
+              "variant": "primary",
+              "size": "default"
+            },
+            "description": "Primary button class string."
+          },
+          {
+            "name": "Small ghost",
+            "props": {
+              "variant": "ghost",
+              "size": "sm"
+            },
+            "description": "Compact ghost variant."
+          }
+        ]
+      }
     },
     "Button": {
       "props": {
@@ -328,7 +748,65 @@
       "returns": "HTMLElement",
       "subComponents": [
         "Group"
-      ]
+      ],
+      "showcase": {
+        "states": {
+          "disabled": true,
+          "loading": true,
+          "rounded": true,
+          "block": true
+        },
+        "sections": [
+          "variants",
+          "sizes",
+          "icons",
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Primary action",
+            "props": {
+              "variant": "primary"
+            },
+            "description": "Main call-to-action."
+          },
+          {
+            "name": "Destructive",
+            "props": {
+              "variant": "danger"
+            },
+            "description": "Irreversible or destructive action."
+          },
+          {
+            "name": "Loading state",
+            "props": {
+              "variant": "primary",
+              "loading": true
+            },
+            "description": "Async operation in progress."
+          },
+          {
+            "name": "Icon only",
+            "props": {
+              "variant": "ghost",
+              "size": "icon-md",
+              "aria-label": "Settings"
+            },
+            "description": "Compact action without text."
+          }
+        ],
+        "children": "Click me",
+        "icons": {
+          "samples": [
+            "plus",
+            "download",
+            "edit",
+            "settings",
+            "trash"
+          ]
+        }
+      }
     },
     "Calendar": {
       "props": {
@@ -355,7 +833,32 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "mini=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Month view",
+            "props": {
+              "mode": "month"
+            },
+            "description": "Full month calendar."
+          },
+          {
+            "name": "Mini calendar",
+            "props": {
+              "mini": true
+            },
+            "description": "Compact calendar widget."
+          }
+        ]
+      }
     },
     "Card": {
       "props": {
@@ -375,7 +878,42 @@
         "Header",
         "Body",
         "Footer"
-      ]
+      ],
+      "showcase": {
+        "states": {
+          "hoverable": true
+        },
+        "labelProp": "title",
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "With title",
+            "props": {
+              "title": "Card Title"
+            },
+            "description": "Card with title prop."
+          },
+          {
+            "name": "Hoverable",
+            "props": {
+              "title": "Hover Me",
+              "hoverable": true
+            },
+            "description": "Interactive hover effect."
+          },
+          {
+            "name": "Compact",
+            "props": {
+              "title": "Compact Card",
+              "size": "sm"
+            },
+            "description": "Smaller card variant."
+          }
+        ],
+        "children": null
+      }
     },
     "Carousel": {
       "props": {
@@ -404,7 +942,50 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "autoplay=false": true,
+          "arrows=true": true,
+          "dots=true": true,
+          "loop=true": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "slides": [
+            {
+              "content": "Slide 1"
+            },
+            {
+              "content": "Slide 2"
+            },
+            {
+              "content": "Slide 3"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Auto-play",
+            "props": {
+              "autoplay": true,
+              "interval": 3000
+            },
+            "description": "Rotating slides."
+          },
+          {
+            "name": "With arrows",
+            "props": {
+              "arrows": true,
+              "dots": true
+            },
+            "description": "Manual navigation carousel."
+          }
+        ]
+      }
     },
     "Cascader": {
       "props": {
@@ -421,7 +1002,8 @@
           "type": "string"
         },
         "disabled": {
-          "type": "boolean"
+          "type": "boolean|Function",
+          "reactive": true
         },
         "clearable=true": {
           "type": "boolean"
@@ -435,11 +1017,91 @@
         "searchable=false": {
           "type": "boolean"
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "disabled": true,
+          "clearable=true": true,
+          "searchable=false": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "options": [
+            {
+              "value": "us",
+              "label": "United States",
+              "children": [
+                {
+                  "value": "ca",
+                  "label": "California"
+                },
+                {
+                  "value": "ny",
+                  "label": "New York"
+                }
+              ]
+            },
+            {
+              "value": "uk",
+              "label": "United Kingdom",
+              "children": [
+                {
+                  "value": "london",
+                  "label": "London"
+                }
+              ]
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Hierarchical select",
+            "props": {
+              "placeholder": "Select category"
+            },
+            "description": "Multi-level dropdown."
+          },
+          {
+            "name": "Searchable",
+            "props": {
+              "searchable": true,
+              "placeholder": "Search..."
+            },
+            "description": "Filterable cascader."
+          }
+        ]
+      }
     },
     "Checkbox": {
       "props": {
@@ -457,6 +1119,23 @@
         "indeterminate": {
           "type": "boolean"
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "size": {
+          "type": "string"
+        },
         "onchange": {
           "type": "Function"
         },
@@ -464,7 +1143,60 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "disabled": true,
+          "error": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "children": null,
+        "examples": [
+          {
+            "name": "Unchecked",
+            "props": {
+              "label": "Unchecked"
+            },
+            "description": "Default unchecked state."
+          },
+          {
+            "name": "Checked",
+            "props": {
+              "checked": true,
+              "label": "Accept terms"
+            },
+            "description": "Pre-checked checkbox."
+          },
+          {
+            "name": "Indeterminate",
+            "props": {
+              "indeterminate": true,
+              "label": "Select all"
+            },
+            "description": "Partial selection state."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "disabled": true,
+              "label": "Locked option"
+            },
+            "description": "Non-interactive checkbox."
+          },
+          {
+            "name": "Error",
+            "props": {
+              "error": true,
+              "label": "Must accept"
+            },
+            "description": "Checkbox with error state."
+          }
+        ]
+      }
     },
     "Chip": {
       "props": {
@@ -485,12 +1217,7 @@
           "default": "'default'"
         },
         "size": {
-          "type": "string",
-          "enum": [
-            "sm",
-            "md"
-          ],
-          "default": "'md'"
+          "type": "string"
         },
         "removable": {
           "type": "boolean"
@@ -508,7 +1235,70 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "selected": true,
+          "removable": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "variants",
+          "sizes",
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "label": "Default"
+            },
+            "description": "Standard chip."
+          },
+          {
+            "name": "Filled",
+            "props": {
+              "label": "Filled",
+              "variant": "filled"
+            },
+            "description": "Solid background chip."
+          },
+          {
+            "name": "Outline",
+            "props": {
+              "label": "Outline",
+              "variant": "outline"
+            },
+            "description": "Bordered chip."
+          },
+          {
+            "name": "Selected",
+            "props": {
+              "label": "Selected",
+              "selected": true
+            },
+            "description": "Active/selected chip."
+          },
+          {
+            "name": "Closable",
+            "props": {
+              "label": "Removable",
+              "closable": true
+            },
+            "description": "Chip with close button."
+          },
+          {
+            "name": "Small",
+            "props": {
+              "label": "Small",
+              "size": "sm"
+            },
+            "description": "Compact chip."
+          }
+        ],
+        "children": "Chip"
+      }
     },
     "CodeBlock": {
       "props": {
@@ -529,7 +1319,33 @@
         }
       },
       "children": "...string",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "lineNumbers=false": true,
+          "copyable=true": true
+        },
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "JavaScript snippet",
+            "props": {
+              "language": "javascript"
+            },
+            "description": "Syntax-highlighted code."
+          },
+          {
+            "name": "With line numbers",
+            "props": {
+              "language": "javascript",
+              "lineNumbers": true
+            },
+            "description": "Numbered code block."
+          }
+        ]
+      }
     },
     "Collapsible": {
       "props": {
@@ -549,7 +1365,21 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "open": false
+            },
+            "description": "Expandable content section."
+          }
+        ]
+      }
     },
     "ColorPicker": {
       "props": {
@@ -567,6 +1397,26 @@
           "type": "boolean|Function",
           "reactive": true
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
         "onchange": {
           "type": "Function"
         },
@@ -574,7 +1424,43 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "alpha=false": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "presets": [
+            "#ef4444",
+            "#f59e0b",
+            "#22c55e",
+            "#3b82f6",
+            "#8b5cf6"
+          ]
+        },
+        "examples": [
+          {
+            "name": "Default color",
+            "props": {
+              "value": "#1366D9"
+            },
+            "description": "Standard color picker."
+          },
+          {
+            "name": "With alpha",
+            "props": {
+              "value": "#1366D9",
+              "alpha": true
+            },
+            "description": "Includes opacity slider."
+          }
+        ]
+      }
     },
     "Combobox": {
       "props": {
@@ -585,7 +1471,7 @@
           "type": "string|Function",
           "reactive": true
         },
-        "placeholder": {
+        "placeholder='Search...'": {
           "type": "string"
         },
         "disabled": {
@@ -593,8 +1479,27 @@
           "reactive": true
         },
         "error": {
-          "type": "boolean|Function",
+          "type": "boolean|string|Function",
           "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
         },
         "onchange": {
           "type": "Function"
@@ -606,7 +1511,78 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "required": true
+        },
+        "labelProp": "placeholder",
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "options": [
+            {
+              "value": "react",
+              "label": "React"
+            },
+            {
+              "value": "vue",
+              "label": "Vue"
+            },
+            {
+              "value": "angular",
+              "label": "Angular"
+            }
+          ],
+          "placeholder": "Search frameworks..."
+        },
+        "examples": [
+          {
+            "name": "Searchable",
+            "props": {
+              "placeholder": "Search fruits...",
+              "options": [
+                {
+                  "label": "Apple",
+                  "value": "apple"
+                },
+                {
+                  "label": "Banana",
+                  "value": "banana"
+                },
+                {
+                  "label": "Cherry",
+                  "value": "cherry"
+                },
+                {
+                  "label": "Grape",
+                  "value": "grape"
+                },
+                {
+                  "label": "Mango",
+                  "value": "mango"
+                }
+              ]
+            },
+            "description": "Filterable dropdown."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "placeholder": "Disabled",
+              "disabled": true,
+              "options": [
+                {
+                  "label": "Apple",
+                  "value": "apple"
+                }
+              ]
+            },
+            "description": "Non-interactive combobox."
+          }
+        ]
+      }
     },
     "Command": {
       "props": {
@@ -634,7 +1610,34 @@
           "type": "string"
         }
       },
-      "returns": "HTMLDialogElement"
+      "returns": "HTMLDialogElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "label": "Search files..."
+            },
+            {
+              "label": "Run command..."
+            },
+            {
+              "label": "Open settings..."
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Search palette",
+            "props": {
+              "placeholder": "Type a command..."
+            },
+            "description": "Command palette overlay."
+          }
+        ]
+      }
     },
     "ContextMenu": {
       "props": {
@@ -653,7 +1656,44 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "label": "Cut"
+            },
+            {
+              "label": "Copy"
+            },
+            {
+              "label": "Paste"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Right-click menu",
+            "props": {
+              "items": [
+                {
+                  "label": "Cut"
+                },
+                {
+                  "label": "Copy"
+                },
+                {
+                  "label": "Paste"
+                }
+              ]
+            },
+            "description": "Context action menu."
+          }
+        ]
+      }
     },
     "DataTable": {
       "props": {
@@ -710,7 +1750,69 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "striped=false": true,
+          "hoverable=true": true,
+          "stickyHeader=false": true,
+          "expandable=false": true,
+          "exportable=false": true
+        },
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "columns": [
+            {
+              "key": "name",
+              "label": "Name"
+            },
+            {
+              "key": "email",
+              "label": "Email"
+            },
+            {
+              "key": "role",
+              "label": "Role"
+            }
+          ],
+          "data": [
+            {
+              "name": "Alice",
+              "email": "alice@example.com",
+              "role": "Admin"
+            },
+            {
+              "name": "Bob",
+              "email": "bob@example.com",
+              "role": "Editor"
+            },
+            {
+              "name": "Carol",
+              "email": "carol@example.com",
+              "role": "Viewer"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Sortable",
+            "props": {
+              "sortable": true
+            },
+            "description": "Click column headers to sort."
+          },
+          {
+            "name": "With pagination",
+            "props": {
+              "pagination": true,
+              "pageSize": 2
+            },
+            "description": "Paginated data display."
+          }
+        ]
+      }
     },
     "DatePicker": {
       "props": {
@@ -737,6 +1839,29 @@
           "type": "boolean|Function",
           "reactive": true
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "onchange": {
           "type": "Function"
         },
@@ -744,7 +1869,33 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "required": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "placeholder": "Select date"
+            },
+            "description": "Standard date picker."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "placeholder": "Select date",
+              "disabled": true
+            },
+            "description": "Non-interactive date picker."
+          }
+        ]
+      }
     },
     "DateRangePicker": {
       "props": {
@@ -768,11 +1919,58 @@
           "type": "boolean|Function",
           "reactive": true
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "required": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "value": [
+            "2026-03-01",
+            "2026-03-15"
+          ]
+        },
+        "examples": [
+          {
+            "name": "Default range",
+            "props": {
+              "placeholder": "Select range"
+            },
+            "description": "Start and end date selector."
+          }
+        ]
+      }
     },
     "DateTimePicker": {
       "props": {
@@ -806,7 +2004,35 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "seconds=false": true,
+          "use12h=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "With seconds",
+            "props": {
+              "seconds": true,
+              "placeholder": "Select date and time"
+            },
+            "description": "Full datetime picker."
+          },
+          {
+            "name": "12-hour format",
+            "props": {
+              "use12h": true,
+              "placeholder": "Select date and time"
+            },
+            "description": "AM/PM datetime picker."
+          }
+        ]
+      }
     },
     "Descriptions": {
       "props": {
@@ -829,7 +2055,93 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "bordered=false": true
+        },
+        "labelProp": "title",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "label": "Name",
+              "content": "John Doe"
+            },
+            {
+              "label": "Email",
+              "content": "john@example.com"
+            },
+            {
+              "label": "Role",
+              "content": "Admin"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Horizontal",
+            "props": {
+              "title": "User Info",
+              "items": [
+                {
+                  "label": "Name",
+                  "value": "Jane Doe"
+                },
+                {
+                  "label": "Email",
+                  "value": "jane@example.com"
+                },
+                {
+                  "label": "Role",
+                  "value": "Admin"
+                }
+              ],
+              "layout": "horizontal"
+            },
+            "description": "Key-value list."
+          },
+          {
+            "name": "Vertical",
+            "props": {
+              "title": "Details",
+              "items": [
+                {
+                  "label": "Status",
+                  "value": "Active"
+                },
+                {
+                  "label": "Created",
+                  "value": "2026-01-15"
+                }
+              ],
+              "layout": "vertical"
+            },
+            "description": "Stacked labels."
+          },
+          {
+            "name": "Bordered",
+            "props": {
+              "title": "Order",
+              "items": [
+                {
+                  "label": "ID",
+                  "value": "#12345"
+                },
+                {
+                  "label": "Total",
+                  "value": "$99.00"
+                }
+              ],
+              "bordered": true
+            },
+            "description": "Table-style."
+          }
+        ]
+      }
     },
     "Drawer": {
       "props": {
@@ -856,7 +2168,32 @@
           "type": "string"
         }
       },
-      "returns": "HTMLDialogElement"
+      "returns": "HTMLDialogElement",
+      "showcase": {
+        "labelProp": "title",
+        "sections": [
+          "examples"
+        ],
+        "children": null,
+        "examples": [
+          {
+            "name": "Right drawer",
+            "props": {
+              "title": "Details",
+              "side": "right"
+            },
+            "description": "Side panel from right."
+          },
+          {
+            "name": "Bottom drawer",
+            "props": {
+              "title": "Options",
+              "side": "bottom"
+            },
+            "description": "Panel from bottom edge."
+          }
+        ]
+      }
     },
     "Dropdown": {
       "props": {
@@ -874,7 +2211,96 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "label": "Edit"
+            },
+            {
+              "label": "Duplicate"
+            },
+            {
+              "label": "Delete"
+            }
+          ]
+        },
+        "children": null,
+        "examples": [
+          {
+            "name": "Basic menu",
+            "props": {
+              "items": [
+                {
+                  "label": "Edit"
+                },
+                {
+                  "label": "Duplicate"
+                },
+                {
+                  "separator": true
+                },
+                {
+                  "label": "Delete"
+                }
+              ]
+            },
+            "description": "Menu with separator."
+          },
+          {
+            "name": "With shortcuts",
+            "props": {
+              "items": [
+                {
+                  "label": "Cut",
+                  "shortcut": "⌘X"
+                },
+                {
+                  "label": "Copy",
+                  "shortcut": "⌘C"
+                },
+                {
+                  "label": "Paste",
+                  "shortcut": "⌘V"
+                },
+                {
+                  "separator": true
+                },
+                {
+                  "label": "Disabled item",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Keyboard shortcut hints."
+          },
+          {
+            "name": "Right-aligned",
+            "props": {
+              "align": "right",
+              "items": [
+                {
+                  "label": "Profile"
+                },
+                {
+                  "label": "Settings"
+                },
+                {
+                  "separator": true
+                },
+                {
+                  "label": "Sign out"
+                }
+              ]
+            },
+            "description": "Menu aligned to right edge."
+          }
+        ]
+      }
     },
     "Empty": {
       "props": {
@@ -890,7 +2316,28 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "description": "No data available"
+            },
+            "description": "Empty state."
+          },
+          {
+            "name": "Custom description",
+            "props": {
+              "description": "No results found for your search"
+            },
+            "description": "Search empty state."
+          }
+        ]
+      }
     },
     "FloatButton": {
       "props": {
@@ -919,7 +2366,31 @@
       "returns": "HTMLElement",
       "subComponents": [
         "Group"
-      ]
+      ],
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default FAB",
+            "props": {
+              "icon": "+",
+              "tooltip": "Add item"
+            },
+            "description": "Floating action button."
+          },
+          {
+            "name": "Square shape",
+            "props": {
+              "icon": "?",
+              "shape": "square",
+              "tooltip": "Help"
+            },
+            "description": "Square floating button."
+          }
+        ]
+      }
     },
     "Form": {
       "props": {
@@ -937,7 +2408,28 @@
       "returns": "HTMLElement",
       "subComponents": [
         "Actions"
-      ]
+      ],
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Vertical layout",
+            "props": {
+              "layout": "vertical"
+            },
+            "description": "Standard form container."
+          },
+          {
+            "name": "Horizontal layout",
+            "props": {
+              "layout": "horizontal"
+            },
+            "description": "Inline label form."
+          }
+        ]
+      }
     },
     "Field": {
       "props": {
@@ -959,7 +2451,35 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "required": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Required field",
+            "props": {
+              "label": "Email",
+              "required": true
+            },
+            "description": "Field with required marker."
+          },
+          {
+            "name": "With error",
+            "props": {
+              "label": "Password",
+              "error": "Too short"
+            },
+            "description": "Field showing validation error."
+          }
+        ]
+      }
     },
     "HoverCard": {
       "props": {
@@ -980,7 +2500,21 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Info card",
+            "props": {
+              "position": "bottom"
+            },
+            "description": "Hover-triggered content card."
+          }
+        ]
+      }
     },
     "icon": {
       "params": [
@@ -1008,7 +2542,8 @@
         }
       ],
       "returns": "HTMLElement",
-      "_type": "function"
+      "_type": "function",
+      "showcase": {}
     },
     "Image": {
       "props": {
@@ -1043,7 +2578,59 @@
       "returns": "HTMLElement",
       "subComponents": [
         "Group"
-      ]
+      ],
+      "showcase": {
+        "states": {
+          "preview=false": true
+        },
+        "labelProp": "placeholder",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Cover fit",
+            "props": {
+              "src": "https://picsum.photos/200",
+              "alt": "Sample",
+              "fit": "cover",
+              "width": "200px",
+              "height": "150px"
+            },
+            "description": "Image with cover fit."
+          },
+          {
+            "name": "Contain fit",
+            "props": {
+              "src": "https://picsum.photos/200",
+              "alt": "Sample",
+              "fit": "contain",
+              "width": "200px",
+              "height": "150px"
+            },
+            "description": "Image with contain fit."
+          },
+          {
+            "name": "With fallback",
+            "props": {
+              "src": "invalid.jpg",
+              "alt": "Broken",
+              "fallback": "https://picsum.photos/200"
+            },
+            "description": "Fallback on error."
+          },
+          {
+            "name": "Preview enabled",
+            "props": {
+              "src": "https://picsum.photos/200",
+              "alt": "Click to preview",
+              "preview": true
+            },
+            "description": "Click to enlarge."
+          }
+        ]
+      }
     },
     "InputGroup": {
       "props": {
@@ -1069,7 +2656,32 @@
       "returns": "HTMLElement",
       "subComponents": [
         "Addon"
-      ]
+      ],
+      "showcase": {
+        "states": {
+          "vertical=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Grouped inputs",
+            "props": {
+              "vertical": false
+            },
+            "description": "Horizontal input group."
+          },
+          {
+            "name": "Disabled group",
+            "props": {
+              "disabled": true
+            },
+            "description": "Non-interactive input group."
+          }
+        ]
+      }
     },
     "CompactGroup": {
       "props": {
@@ -1078,7 +2690,19 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Compact controls",
+            "props": {},
+            "description": "Tightly packed input group."
+          }
+        ]
+      }
     },
     "InputNumber": {
       "props": {
@@ -1108,6 +2732,29 @@
         "placeholder": {
           "type": "string"
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "onchange": {
           "type": "Function"
         },
@@ -1115,7 +2762,46 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "controls=true": true
+        },
+        "labelProp": "placeholder",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Stepper",
+            "props": {
+              "value": 5,
+              "step": 1,
+              "min": 0,
+              "max": 100
+            },
+            "description": "Numeric input with controls."
+          },
+          {
+            "name": "Decimal precision",
+            "props": {
+              "value": 3.14,
+              "precision": 2,
+              "step": 0.01
+            },
+            "description": "Fixed decimal places."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "value": 42,
+              "disabled": true
+            },
+            "description": "Non-interactive number input."
+          }
+        ]
+      }
     },
     "InputOTP": {
       "props": {
@@ -1139,25 +2825,88 @@
           "type": "Function"
         },
         "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "size": {
+          "type": "string"
+        },
+        "variant": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
           "type": "boolean"
         },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "masked=false": true,
+          "error": true,
+          "disabled": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "6-digit code",
+            "props": {
+              "length": 6
+            },
+            "description": "One-time password input."
+          },
+          {
+            "name": "Masked input",
+            "props": {
+              "length": 4,
+              "masked": true
+            },
+            "description": "Hidden digit OTP."
+          },
+          {
+            "name": "Error state",
+            "props": {
+              "length": 6,
+              "error": true
+            },
+            "description": "Validation error on OTP input."
+          },
+          {
+            "name": "With label",
+            "props": {
+              "length": 6,
+              "label": "Verification code",
+              "required": true
+            },
+            "description": "Labeled OTP with required indicator."
+          }
+        ]
+      }
     },
     "Input": {
       "props": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "text",
-            "password",
-            "number",
-            "email",
-            "search"
-          ]
+        "type='text'": {
+          "type": "string"
         },
         "placeholder": {
           "type": "string"
@@ -1171,7 +2920,8 @@
           "reactive": true
         },
         "readonly": {
-          "type": "boolean"
+          "type": "boolean|Function",
+          "reactive": true
         },
         "prefix": {
           "type": "string|Node"
@@ -1180,10 +2930,36 @@
           "type": "string|Node"
         },
         "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "loading": {
           "type": "boolean|Function",
           "reactive": true
         },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "oninput": {
+          "type": "Function"
+        },
+        "onchange": {
           "type": "Function"
         },
         "ref": {
@@ -1193,7 +2969,61 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "disabled": true
+        },
+        "labelProp": "placeholder",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "placeholder": "Type here..."
+        },
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "placeholder": "Enter text..."
+            },
+            "description": "Standard text input."
+          },
+          {
+            "name": "With value",
+            "props": {
+              "value": "Prefilled content"
+            },
+            "description": "Input with initial value."
+          },
+          {
+            "name": "Password",
+            "props": {
+              "type": "password",
+              "placeholder": "Password"
+            },
+            "description": "Masked password field."
+          },
+          {
+            "name": "Error state",
+            "props": {
+              "placeholder": "Invalid",
+              "error": true
+            },
+            "description": "Input with error styling."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "placeholder": "Disabled",
+              "disabled": true
+            },
+            "description": "Non-interactive input."
+          }
+        ],
+        "children": null
+      }
     },
     "Kbd": {
       "props": {
@@ -1208,7 +3038,35 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "keys": [
+            "Ctrl",
+            "S"
+          ]
+        },
+        "examples": [
+          {
+            "name": "Single key",
+            "props": {},
+            "description": "Keyboard key indicator."
+          },
+          {
+            "name": "Key combo",
+            "props": {
+              "keys": [
+                "Ctrl",
+                "S"
+              ]
+            },
+            "description": "Shortcut key combination."
+          }
+        ]
+      }
     },
     "Label": {
       "props": {
@@ -1223,7 +3081,30 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "required": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default label",
+            "props": {},
+            "description": "Form field label."
+          },
+          {
+            "name": "Required label",
+            "props": {
+              "required": true
+            },
+            "description": "Label with required indicator."
+          }
+        ]
+      }
     },
     "List": {
       "props": {
@@ -1259,7 +3140,53 @@
       "returns": "HTMLElement",
       "subComponents": [
         "Item"
-      ]
+      ],
+      "showcase": {
+        "states": {
+          "bordered=false": true,
+          "loading=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "content": "First item"
+            },
+            {
+              "content": "Second item"
+            },
+            {
+              "content": "Third item"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Basic",
+            "props": {
+              "bordered": false
+            },
+            "description": "Simple item list."
+          },
+          {
+            "name": "Bordered",
+            "props": {
+              "bordered": true
+            },
+            "description": "List with border."
+          },
+          {
+            "name": "Loading",
+            "props": {
+              "loading": true
+            },
+            "description": "List in loading state."
+          }
+        ]
+      }
     },
     "MaskedInput": {
       "props": {
@@ -1294,7 +3221,34 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "readonly": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Phone mask",
+            "props": {
+              "mask": "(###) ###-####",
+              "placeholder": "_"
+            },
+            "description": "Formatted phone input."
+          },
+          {
+            "name": "Date mask",
+            "props": {
+              "mask": "##/##/####",
+              "placeholder": "_"
+            },
+            "description": "Formatted date input."
+          }
+        ]
+      }
     },
     "Mentions": {
       "props": {
@@ -1318,6 +3272,29 @@
           "type": "boolean|Function",
           "reactive": true
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "onchange": {
           "type": "Function"
         },
@@ -1328,7 +3305,42 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "required": true
+        },
+        "labelProp": "placeholder",
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "options": [
+            {
+              "value": "alice",
+              "label": "Alice"
+            },
+            {
+              "value": "bob",
+              "label": "Bob"
+            },
+            {
+              "value": "carol",
+              "label": "Carol"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Username mention",
+            "props": {
+              "prefix": "@",
+              "placeholder": "Type @ to mention..."
+            },
+            "description": "User mention autocomplete."
+          }
+        ]
+      }
     },
     "Menu": {
       "props": {
@@ -1352,7 +3364,69 @@
       "returns": "HTMLElement",
       "subComponents": [
         "Bar"
-      ]
+      ],
+      "showcase": {
+        "states": {
+          "collapsed=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "label": "Profile"
+            },
+            {
+              "label": "Settings"
+            },
+            {
+              "label": "Log out"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Vertical",
+            "props": {
+              "collapsed": false,
+              "items": [
+                {
+                  "label": "Dashboard",
+                  "icon": "home"
+                },
+                {
+                  "label": "Settings",
+                  "icon": "settings"
+                },
+                {
+                  "label": "Users",
+                  "icon": "users"
+                }
+              ]
+            },
+            "description": "Sidebar menu."
+          },
+          {
+            "name": "Collapsed",
+            "props": {
+              "collapsed": true,
+              "items": [
+                {
+                  "label": "Dashboard",
+                  "icon": "home"
+                },
+                {
+                  "label": "Settings",
+                  "icon": "settings"
+                }
+              ]
+            },
+            "description": "Icon-only sidebar."
+          }
+        ]
+      }
     },
     "message": {
       "props": {
@@ -1376,9 +3450,54 @@
           "type": "string"
         }
       },
-      "returns": "{ close: Function }"
+      "returns": "{ close: Function }",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Info",
+            "props": {
+              "content": "Operation completed",
+              "type": "info"
+            },
+            "description": "Info message."
+          },
+          {
+            "name": "Success",
+            "props": {
+              "content": "Saved successfully",
+              "type": "success"
+            },
+            "description": "Success message."
+          },
+          {
+            "name": "Warning",
+            "props": {
+              "content": "Check your input",
+              "type": "warning"
+            },
+            "description": "Warning message."
+          },
+          {
+            "name": "Error",
+            "props": {
+              "content": "Something went wrong",
+              "type": "error"
+            },
+            "description": "Error message."
+          }
+        ]
+      }
     },
-    "resetMessages": {},
+    "resetMessages": {
+      "showcase": {
+        "sections": [
+          "examples"
+        ]
+      }
+    },
     "Modal": {
       "props": {
         "title": {
@@ -1408,7 +3527,24 @@
         "Header",
         "Body",
         "Footer"
-      ]
+      ],
+      "showcase": {
+        "labelProp": "title",
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Basic dialog",
+            "props": {
+              "open": true,
+              "title": "Confirm"
+            },
+            "description": "Standard confirmation dialog."
+          }
+        ],
+        "children": null
+      }
     },
     "NavigationMenu": {
       "props": {
@@ -1419,7 +3555,51 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "label": "Home",
+              "href": "#"
+            },
+            {
+              "label": "Products",
+              "href": "#"
+            },
+            {
+              "label": "About",
+              "href": "#"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Multi-level nav",
+            "props": {
+              "items": [
+                {
+                  "label": "Home",
+                  "href": "#"
+                },
+                {
+                  "label": "Products",
+                  "children": [
+                    {
+                      "label": "New",
+                      "href": "#"
+                    }
+                  ]
+                }
+              ]
+            },
+            "description": "Hierarchical navigation."
+          }
+        ]
+      }
     },
     "notification": {
       "props": {
@@ -1451,9 +3631,50 @@
           "type": "string"
         }
       },
-      "returns": "{ close: Function }"
+      "returns": "{ close: Function }",
+      "showcase": {
+        "labelProp": "title",
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Info",
+            "props": {
+              "title": "Update available",
+              "description": "A new version is ready.",
+              "type": "info"
+            },
+            "description": "Info notification."
+          },
+          {
+            "name": "Success",
+            "props": {
+              "title": "Saved",
+              "description": "Changes saved.",
+              "type": "success"
+            },
+            "description": "Success notification."
+          },
+          {
+            "name": "Error",
+            "props": {
+              "title": "Failed",
+              "description": "Could not save.",
+              "type": "error"
+            },
+            "description": "Error notification."
+          }
+        ]
+      }
     },
-    "resetNotifications": {},
+    "resetNotifications": {
+      "showcase": {
+        "sections": [
+          "examples"
+        ]
+      }
+    },
     "Pagination": {
       "props": {
         "total": {
@@ -1461,24 +3682,56 @@
           "reactive": true,
           "required": true
         },
-        "perPage": {
+        "perPage=10": {
           "type": "number"
         },
-        "current": {
+        "current=1": {
           "type": "number|Function",
           "reactive": true
         },
         "onchange": {
           "type": "Function"
         },
-        "siblings": {
+        "siblings=1": {
           "type": "number"
+        },
+        "size": {
+          "type": "string"
         },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "total": 100,
+          "current": 1
+        },
+        "examples": [
+          {
+            "name": "Default pagination",
+            "props": {
+              "total": 100,
+              "perPage": 10,
+              "current": 1
+            },
+            "description": "Standard page navigation."
+          },
+          {
+            "name": "Small pagination",
+            "props": {
+              "total": 50,
+              "perPage": 10,
+              "size": "sm"
+            },
+            "description": "Compact page controls."
+          }
+        ]
+      }
     },
     "Popconfirm": {
       "props": {
@@ -1514,7 +3767,23 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Delete confirmation",
+            "props": {
+              "title": "Delete this item?",
+              "confirmText": "Yes",
+              "cancelText": "No"
+            },
+            "description": "Confirm before deleting."
+          }
+        ]
+      }
     },
     "Popover": {
       "props": {
@@ -1531,7 +3800,28 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Bottom popover",
+            "props": {
+              "position": "bottom"
+            },
+            "description": "Content below trigger."
+          },
+          {
+            "name": "Top popover",
+            "props": {
+              "position": "top"
+            },
+            "description": "Content above trigger."
+          }
+        ]
+      }
     },
     "Progress": {
       "props": {
@@ -1574,7 +3864,70 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "striped": true,
+          "animated": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "variants",
+          "examples"
+        ],
+        "defaults": {
+          "value": 65
+        },
+        "examples": [
+          {
+            "name": "Partial",
+            "props": {
+              "value": 45
+            },
+            "description": "45% complete."
+          },
+          {
+            "name": "Complete",
+            "props": {
+              "value": 100
+            },
+            "description": "Fully complete."
+          },
+          {
+            "name": "Success variant",
+            "props": {
+              "value": 60,
+              "variant": "success"
+            },
+            "description": "Green progress bar."
+          },
+          {
+            "name": "Warning variant",
+            "props": {
+              "value": 40,
+              "variant": "warning"
+            },
+            "description": "Yellow progress bar."
+          },
+          {
+            "name": "Error variant",
+            "props": {
+              "value": 80,
+              "variant": "error"
+            },
+            "description": "Red progress bar."
+          },
+          {
+            "name": "Striped",
+            "props": {
+              "value": 70,
+              "striped": true
+            },
+            "description": "Animated stripe pattern."
+          }
+        ],
+        "children": null
+      }
     },
     "RadioGroup": {
       "props": {
@@ -1593,7 +3946,14 @@
           "type": "boolean|Function",
           "reactive": true
         },
-        "orientation": {
+        "orientation='vertical'": {
+          "type": "string"
+        },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "size": {
           "type": "string"
         },
         "onchange": {
@@ -1603,7 +3963,91 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "labelProp": "name",
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "options": [
+            {
+              "value": "sm",
+              "label": "Small"
+            },
+            {
+              "value": "md",
+              "label": "Medium"
+            },
+            {
+              "value": "lg",
+              "label": "Large"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Default selection",
+            "props": {
+              "options": [
+                {
+                  "label": "Option A",
+                  "value": "a"
+                },
+                {
+                  "label": "Option B",
+                  "value": "b"
+                },
+                {
+                  "label": "Option C",
+                  "value": "c"
+                }
+              ],
+              "value": "a"
+            },
+            "description": "Vertical radio group."
+          },
+          {
+            "name": "Horizontal",
+            "props": {
+              "orientation": "horizontal",
+              "options": [
+                {
+                  "label": "S",
+                  "value": "sm"
+                },
+                {
+                  "label": "M",
+                  "value": "md"
+                },
+                {
+                  "label": "L",
+                  "value": "lg"
+                }
+              ],
+              "value": "md"
+            },
+            "description": "Inline radio buttons."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "options": [
+                {
+                  "label": "Yes",
+                  "value": "y"
+                },
+                {
+                  "label": "No",
+                  "value": "n"
+                }
+              ],
+              "disabled": true
+            },
+            "description": "Non-interactive radio group."
+          }
+        ]
+      }
     },
     "RangeSlider": {
       "props": {
@@ -1631,7 +4075,32 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "value": [
+            25,
+            75
+          ]
+        },
+        "examples": [
+          {
+            "name": "Default range",
+            "props": {
+              "value": [
+                20,
+                80
+              ],
+              "min": 0,
+              "max": 100
+            },
+            "description": "Dual-handle range slider."
+          }
+        ]
+      }
     },
     "Rate": {
       "props": {
@@ -1663,6 +4132,23 @@
         "character='★'": {
           "type": "string"
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "onchange": {
           "type": "Function"
         },
@@ -1670,7 +4156,81 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "half=false": true,
+          "readonly=false": true,
+          "disabled=false": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "sizes",
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "value": 3
+        },
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "value": 3,
+              "count": 5
+            },
+            "description": "Star rating."
+          },
+          {
+            "name": "Half stars",
+            "props": {
+              "value": 3.5,
+              "half": true
+            },
+            "description": "Half-star precision."
+          },
+          {
+            "name": "Read-only",
+            "props": {
+              "value": 4,
+              "readonly": true
+            },
+            "description": "Non-interactive rating."
+          },
+          {
+            "name": "Small",
+            "props": {
+              "value": 2,
+              "size": "sm"
+            },
+            "description": "Compact stars."
+          },
+          {
+            "name": "Large",
+            "props": {
+              "value": 5,
+              "size": "lg"
+            },
+            "description": "Large stars."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "value": 3,
+              "disabled": true
+            },
+            "description": "Non-interactive rating."
+          },
+          {
+            "name": "Error",
+            "props": {
+              "value": 1,
+              "error": true
+            },
+            "description": "Rating with error state."
+          }
+        ]
+      }
     },
     "Resizable": {
       "props": {
@@ -1694,7 +4254,30 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Horizontal resize",
+            "props": {
+              "direction": "horizontal",
+              "defaultSize": 50
+            },
+            "description": "Horizontally resizable panel."
+          },
+          {
+            "name": "Vertical resize",
+            "props": {
+              "direction": "vertical",
+              "defaultSize": 50
+            },
+            "description": "Vertically resizable panel."
+          }
+        ]
+      }
     },
     "Result": {
       "props": {
@@ -1718,7 +4301,51 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "labelProp": "title",
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Success",
+            "props": {
+              "status": "success",
+              "title": "Operation Complete",
+              "subTitle": "Your changes have been saved."
+            },
+            "description": "Success outcome."
+          },
+          {
+            "name": "404",
+            "props": {
+              "status": "404",
+              "title": "Page Not Found",
+              "subTitle": "The page does not exist."
+            },
+            "description": "Not found error."
+          },
+          {
+            "name": "403",
+            "props": {
+              "status": "403",
+              "title": "Forbidden",
+              "subTitle": "You do not have access."
+            },
+            "description": "Access denied error."
+          },
+          {
+            "name": "500",
+            "props": {
+              "status": "500",
+              "title": "Server Error",
+              "subTitle": "Something went wrong."
+            },
+            "description": "Internal server error."
+          }
+        ]
+      }
     },
     "ScrollArea": {
       "props": {
@@ -1736,7 +4363,22 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Vertical scroll",
+            "props": {
+              "height": "200px",
+              "direction": "vertical"
+            },
+            "description": "Scrollable content area."
+          }
+        ]
+      }
     },
     "Segmented": {
       "props": {
@@ -1753,19 +4395,82 @@
         "block=false": {
           "type": "boolean"
         },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
         "size": {
-          "type": "string",
-          "enum": [
-            "default",
-            "sm",
-            "lg"
-          ]
+          "type": "string"
         },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "block=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "options": [
+            {
+              "value": "daily",
+              "label": "Daily"
+            },
+            {
+              "value": "weekly",
+              "label": "Weekly"
+            },
+            {
+              "value": "monthly",
+              "label": "Monthly"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "options": [
+                "Daily",
+                "Weekly",
+                "Monthly"
+              ],
+              "value": "Weekly"
+            },
+            "description": "Segmented toggle."
+          },
+          {
+            "name": "Block mode",
+            "props": {
+              "options": [
+                "List",
+                "Grid",
+                "Board"
+              ],
+              "block": true
+            },
+            "description": "Full-width segments."
+          },
+          {
+            "name": "Small",
+            "props": {
+              "options": [
+                "S",
+                "M",
+                "L"
+              ],
+              "size": "sm",
+              "value": "M"
+            },
+            "description": "Compact segments."
+          }
+        ]
+      }
     },
     "Select": {
       "props": {
@@ -1784,11 +4489,27 @@
           "reactive": true
         },
         "error": {
-          "type": "boolean|Function",
+          "type": "boolean|string|Function",
           "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
         },
         "size": {
           "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
         },
         "onchange": {
           "type": "Function"
@@ -1797,7 +4518,94 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "disabled": true,
+          "error": true
+        },
+        "labelProp": "placeholder",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "options": [
+            {
+              "value": "apple",
+              "label": "Apple"
+            },
+            {
+              "value": "banana",
+              "label": "Banana"
+            },
+            {
+              "value": "cherry",
+              "label": "Cherry"
+            }
+          ],
+          "placeholder": "Select a fruit..."
+        },
+        "examples": [
+          {
+            "name": "With placeholder",
+            "props": {
+              "placeholder": "Choose...",
+              "options": [
+                {
+                  "label": "Apple",
+                  "value": "apple"
+                },
+                {
+                  "label": "Banana",
+                  "value": "banana"
+                },
+                {
+                  "label": "Cherry",
+                  "value": "cherry"
+                }
+              ]
+            },
+            "description": "Dropdown select."
+          },
+          {
+            "name": "Pre-selected",
+            "props": {
+              "value": "banana",
+              "options": [
+                {
+                  "label": "Apple",
+                  "value": "apple"
+                },
+                {
+                  "label": "Banana",
+                  "value": "banana"
+                },
+                {
+                  "label": "Cherry",
+                  "value": "cherry"
+                }
+              ]
+            },
+            "description": "Select with initial value."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "placeholder": "Disabled",
+              "disabled": true,
+              "options": [
+                {
+                  "label": "Apple",
+                  "value": "apple"
+                }
+              ]
+            },
+            "description": "Non-interactive select."
+          }
+        ],
+        "children": null
+      }
     },
     "Separator": {
       "props": {
@@ -1811,7 +4619,40 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "vertical": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Horizontal rule",
+            "props": {
+              "vertical": false
+            },
+            "description": "Horizontal divider line."
+          },
+          {
+            "name": "Vertical divider",
+            "props": {
+              "vertical": true
+            },
+            "description": "Vertical separator."
+          },
+          {
+            "name": "With label",
+            "props": {
+              "label": "OR"
+            },
+            "description": "Labeled divider."
+          }
+        ]
+      }
     },
     "Sheet": {
       "props": {
@@ -1848,7 +4689,27 @@
         "Header",
         "Body",
         "Footer"
-      ]
+      ],
+      "showcase": {
+        "states": {
+          "closeOnOutside=true": true
+        },
+        "labelProp": "title",
+        "sections": [
+          "examples"
+        ],
+        "children": null,
+        "examples": [
+          {
+            "name": "Right panel",
+            "props": {
+              "title": "Settings",
+              "side": "right"
+            },
+            "description": "Slide-out right panel."
+          }
+        ]
+      }
     },
     "Skeleton": {
       "props": {
@@ -1874,21 +4735,62 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Text lines",
+            "props": {
+              "variant": "text",
+              "lines": 3
+            },
+            "description": "Paragraph placeholder."
+          },
+          {
+            "name": "Circle",
+            "props": {
+              "variant": "circle",
+              "width": "48px",
+              "height": "48px"
+            },
+            "description": "Avatar placeholder."
+          },
+          {
+            "name": "Rectangle",
+            "props": {
+              "variant": "rect",
+              "height": "120px"
+            },
+            "description": "Image/card placeholder."
+          },
+          {
+            "name": "Card skeleton",
+            "props": {
+              "variant": "card",
+              "width": "300px",
+              "height": "200px"
+            },
+            "description": "Full card placeholder."
+          }
+        ]
+      }
     },
     "Slider": {
       "props": {
-        "value": {
+        "value=0": {
           "type": "number|Function",
           "reactive": true
         },
-        "min": {
+        "min=0": {
           "type": "number"
         },
-        "max": {
+        "max=100": {
           "type": "number"
         },
-        "step": {
+        "step=1": {
           "type": "number"
         },
         "disabled": {
@@ -1901,14 +4803,55 @@
         "oninput": {
           "type": "Function"
         },
-        "showValue": {
+        "showValue=false": {
           "type": "boolean"
         },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "showValue": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "value": 50
+        },
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "value": 50,
+              "min": 0,
+              "max": 100
+            },
+            "description": "Standard range slider."
+          },
+          {
+            "name": "With labels",
+            "props": {
+              "value": 75,
+              "min": 0,
+              "max": 100,
+              "showValue": true
+            },
+            "description": "Slider showing current value."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "value": 30,
+              "disabled": true
+            },
+            "description": "Non-interactive slider."
+          }
+        ]
+      }
     },
     "SortableList": {
       "props": {
@@ -1936,7 +4879,41 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "disabled=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "id": "1",
+              "content": "First item"
+            },
+            {
+              "id": "2",
+              "content": "Second item"
+            },
+            {
+              "id": "3",
+              "content": "Third item"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Vertical drag list",
+            "props": {
+              "direction": "vertical"
+            },
+            "description": "Drag-to-reorder list."
+          }
+        ]
+      }
     },
     "Space": {
       "props": {
@@ -1957,7 +4934,34 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "wrap=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Horizontal spacing",
+            "props": {
+              "direction": "horizontal",
+              "gap": "md"
+            },
+            "description": "Horizontal element spacing."
+          },
+          {
+            "name": "Vertical spacing",
+            "props": {
+              "direction": "vertical",
+              "gap": "sm"
+            },
+            "description": "Vertical element spacing."
+          }
+        ]
+      }
     },
     "Spinner": {
       "props": {
@@ -1974,6 +4978,9 @@
             "xl"
           ]
         },
+        "color": {
+          "type": "'primary'|'success'|'warning'|'destructive'|'info'|'muted'"
+        },
         "icon": {
           "type": "string"
         },
@@ -1985,7 +4992,155 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "labelProp": "label",
+        "sections": [
+          "variants",
+          "sizes",
+          "examples"
+        ],
+        "children": null,
+        "examples": [
+          {
+            "name": "Ring (default)",
+            "props": {
+              "variant": "ring"
+            },
+            "description": "Circular arc spinner."
+          },
+          {
+            "name": "Dots",
+            "props": {
+              "variant": "dots"
+            },
+            "description": "Three bouncing dots."
+          },
+          {
+            "name": "Pulse",
+            "props": {
+              "variant": "pulse"
+            },
+            "description": "Pulsing circle."
+          },
+          {
+            "name": "Bars",
+            "props": {
+              "variant": "bars"
+            },
+            "description": "Vertical bar animation."
+          },
+          {
+            "name": "Orbit",
+            "props": {
+              "variant": "orbit"
+            },
+            "description": "Dual orbiting dots."
+          },
+          {
+            "name": "Primary",
+            "props": {
+              "color": "primary"
+            },
+            "description": "Primary accent color."
+          },
+          {
+            "name": "Success",
+            "props": {
+              "color": "success"
+            },
+            "description": "Success green."
+          },
+          {
+            "name": "Warning",
+            "props": {
+              "color": "warning"
+            },
+            "description": "Warning yellow."
+          },
+          {
+            "name": "Destructive",
+            "props": {
+              "color": "destructive"
+            },
+            "description": "Error red."
+          },
+          {
+            "name": "Info",
+            "props": {
+              "color": "info"
+            },
+            "description": "Info blue."
+          },
+          {
+            "name": "Muted",
+            "props": {
+              "color": "muted"
+            },
+            "description": "Subdued color."
+          },
+          {
+            "name": "Primary dots",
+            "props": {
+              "variant": "dots",
+              "color": "primary",
+              "size": "lg"
+            },
+            "description": "Large colored dots."
+          },
+          {
+            "name": "Success pulse",
+            "props": {
+              "variant": "pulse",
+              "color": "success",
+              "size": "lg"
+            },
+            "description": "Green pulsing circle."
+          },
+          {
+            "name": "Warning bars",
+            "props": {
+              "variant": "bars",
+              "color": "warning"
+            },
+            "description": "Yellow bar animation."
+          },
+          {
+            "name": "With icon (settings)",
+            "props": {
+              "icon": "settings",
+              "size": "lg"
+            },
+            "description": "Ring around center icon."
+          },
+          {
+            "name": "With icon + color",
+            "props": {
+              "icon": "loader",
+              "size": "xl",
+              "color": "primary"
+            },
+            "description": "Colored hybrid spinner."
+          },
+          {
+            "name": "Extra small",
+            "props": {
+              "variant": "ring",
+              "size": "xs"
+            },
+            "description": "Inline loading indicator."
+          },
+          {
+            "name": "Extra large orbit",
+            "props": {
+              "variant": "orbit",
+              "size": "xl",
+              "color": "destructive"
+            },
+            "description": "Large red orbit."
+          }
+        ]
+      }
     },
     "Splitter": {
       "props": {
@@ -1999,7 +5154,38 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "panels": [
+            {
+              "content": "Left panel"
+            },
+            {
+              "content": "Right panel"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Horizontal split",
+            "props": {
+              "direction": "horizontal"
+            },
+            "description": "Side-by-side resizable panels."
+          },
+          {
+            "name": "Vertical split",
+            "props": {
+              "direction": "vertical"
+            },
+            "description": "Stacked resizable panels."
+          }
+        ]
+      }
     },
     "Statistic": {
       "props": {
@@ -2035,7 +5221,58 @@
       "returns": "HTMLElement",
       "subComponents": [
         "Countdown"
-      ]
+      ],
+      "showcase": {
+        "states": {
+          "groupSeparator=true": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Count",
+            "props": {
+              "label": "Total Users",
+              "value": 12480
+            },
+            "description": "Numeric statistic."
+          },
+          {
+            "name": "With prefix",
+            "props": {
+              "label": "Revenue",
+              "value": 8250,
+              "prefix": "$"
+            },
+            "description": "Currency statistic."
+          },
+          {
+            "name": "Trend up",
+            "props": {
+              "label": "Growth",
+              "value": 12.5,
+              "suffix": "%",
+              "trend": "up",
+              "trendValue": "4.2%"
+            },
+            "description": "Upward trend."
+          },
+          {
+            "name": "Trend down",
+            "props": {
+              "label": "Bounce Rate",
+              "value": 32,
+              "suffix": "%",
+              "trend": "down",
+              "trendValue": "2.1%"
+            },
+            "description": "Downward trend."
+          }
+        ]
+      }
     },
     "Steps": {
       "props": {
@@ -2059,7 +5296,93 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "clickable=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "title": "Account"
+            },
+            {
+              "title": "Details"
+            },
+            {
+              "title": "Confirm"
+            }
+          ],
+          "current": 1
+        },
+        "examples": [
+          {
+            "name": "Linear",
+            "props": {
+              "items": [
+                {
+                  "title": "Cart"
+                },
+                {
+                  "title": "Payment"
+                },
+                {
+                  "title": "Done"
+                }
+              ],
+              "current": 1
+            },
+            "description": "Sequential steps."
+          },
+          {
+            "name": "With status",
+            "props": {
+              "items": [
+                {
+                  "title": "Start",
+                  "status": "finish"
+                },
+                {
+                  "title": "Review",
+                  "status": "process"
+                },
+                {
+                  "title": "Complete",
+                  "status": "wait"
+                }
+              ],
+              "current": 1
+            },
+            "description": "Status-decorated steps."
+          },
+          {
+            "name": "Vertical",
+            "props": {
+              "items": [
+                {
+                  "title": "Step 1",
+                  "description": "Description"
+                },
+                {
+                  "title": "Step 2",
+                  "description": "Description"
+                },
+                {
+                  "title": "Step 3",
+                  "description": "Description"
+                }
+              ],
+              "direction": "vertical",
+              "current": 0
+            },
+            "description": "Vertical step layout."
+          }
+        ]
+      }
     },
     "Switch": {
       "props": {
@@ -2074,14 +5397,67 @@
         "label": {
           "type": "string"
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "size": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "onchange": {
+          "type": "Function"
+        },
+        "ref": {
           "type": "Function"
         },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "disabled": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "sizes",
+          "states",
+          "examples"
+        ],
+        "children": null,
+        "examples": [
+          {
+            "name": "Off state",
+            "props": {
+              "label": "Off"
+            },
+            "description": "Default unchecked switch."
+          },
+          {
+            "name": "On state",
+            "props": {
+              "checked": true,
+              "label": "Enabled"
+            },
+            "description": "Active toggle switch."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "disabled": true,
+              "label": "Locked"
+            },
+            "description": "Non-interactive switch."
+          }
+        ]
+      }
     },
     "Table": {
       "props": {
@@ -2107,12 +5483,65 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "striped": true,
+          "hoverable": true,
+          "compact": true
+        },
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "columns": [
+            {
+              "key": "name",
+              "label": "Name"
+            },
+            {
+              "key": "status",
+              "label": "Status"
+            },
+            {
+              "key": "date",
+              "label": "Date"
+            }
+          ],
+          "data": [
+            {
+              "name": "Project Alpha",
+              "status": "Active",
+              "date": "2026-03-01"
+            },
+            {
+              "name": "Project Beta",
+              "status": "Pending",
+              "date": "2026-03-05"
+            },
+            {
+              "name": "Project Gamma",
+              "status": "Complete",
+              "date": "2026-02-28"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Striped",
+            "props": {
+              "striped": true
+            },
+            "description": "Alternating row backgrounds."
+          }
+        ],
+        "children": null
+      }
     },
     "Tabs": {
       "props": {
         "tabs": {
-          "type": "{ id: string, label: string, content: Function }[]",
+          "type": "{ id: string, label: string, content?: Function, disabled?: boolean, closable?: boolean }[]",
           "reactive": true,
           "required": true
         },
@@ -2123,11 +5552,143 @@
         "onchange": {
           "type": "Function"
         },
+        "onclose": {
+          "type": "Function"
+        },
+        "orientation='horizontal'": {
+          "type": "'horizontal'|'vertical'"
+        },
+        "size": {
+          "type": "'sm'|'lg'"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "destroyInactive=true": {
+          "type": "boolean"
+        },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "destroyInactive=true": true
+        },
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "tabs": [
+            {
+              "id": "overview",
+              "label": "Overview"
+            },
+            {
+              "id": "settings",
+              "label": "Settings"
+            },
+            {
+              "id": "activity",
+              "label": "Activity"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Default tabs",
+            "props": {
+              "tabs": [
+                {
+                  "id": "tab1",
+                  "label": "Overview"
+                },
+                {
+                  "id": "tab2",
+                  "label": "Details"
+                },
+                {
+                  "id": "tab3",
+                  "label": "Settings"
+                }
+              ]
+            },
+            "description": "Standard tab navigation."
+          },
+          {
+            "name": "Vertical",
+            "props": {
+              "orientation": "vertical",
+              "tabs": [
+                {
+                  "id": "tab1",
+                  "label": "General"
+                },
+                {
+                  "id": "tab2",
+                  "label": "Security"
+                }
+              ]
+            },
+            "description": "Vertical tab orientation."
+          },
+          {
+            "name": "Disabled tab",
+            "props": {
+              "tabs": [
+                {
+                  "id": "tab1",
+                  "label": "Active"
+                },
+                {
+                  "id": "tab2",
+                  "label": "Disabled",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Individual tab disabled."
+          },
+          {
+            "name": "Closable",
+            "props": {
+              "tabs": [
+                {
+                  "id": "tab1",
+                  "label": "File 1",
+                  "closable": true
+                },
+                {
+                  "id": "tab2",
+                  "label": "File 2",
+                  "closable": true
+                }
+              ]
+            },
+            "description": "Tabs with close buttons."
+          },
+          {
+            "name": "Small",
+            "props": {
+              "size": "sm",
+              "tabs": [
+                {
+                  "id": "tab1",
+                  "label": "Overview"
+                },
+                {
+                  "id": "tab2",
+                  "label": "Details"
+                }
+              ]
+            },
+            "description": "Small size variant."
+          }
+        ],
+        "children": null
+      }
     },
     "Tag": {
       "props": {
@@ -2155,7 +5716,58 @@
       "returns": "HTMLElement",
       "subComponents": [
         "CheckableGroup"
-      ]
+      ],
+      "showcase": {
+        "states": {
+          "closable": true,
+          "checkable": true
+        },
+        "sections": [
+          "variants",
+          "states",
+          "examples"
+        ],
+        "labelProp": "label",
+        "children": "Tag",
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "color": "default"
+            },
+            "description": "Standard label tag."
+          },
+          {
+            "name": "Primary color",
+            "props": {
+              "color": "primary"
+            },
+            "description": "Accent-colored tag."
+          },
+          {
+            "name": "Success color",
+            "props": {
+              "color": "success"
+            },
+            "description": "Green status tag."
+          },
+          {
+            "name": "Closable",
+            "props": {
+              "closable": true,
+              "color": "primary"
+            },
+            "description": "Removable tag."
+          },
+          {
+            "name": "Checkable",
+            "props": {
+              "checked": true
+            },
+            "description": "Toggleable tag."
+          }
+        ]
+      }
     },
     "Textarea": {
       "props": {
@@ -2170,23 +5782,38 @@
           "type": "boolean|Function",
           "reactive": true
         },
-        "error": {
+        "readonly": {
           "type": "boolean|Function",
           "reactive": true
         },
-        "rows": {
-          "type": "number",
-          "default": "3"
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
         },
-        "resize": {
-          "type": "string",
-          "enum": [
-            "none",
-            "vertical",
-            "horizontal",
-            "both"
-          ],
-          "default": "vertical"
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "rows=3": {
+          "type": "number"
+        },
+        "resize='vertical'": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
         },
         "oninput": {
           "type": "Function"
@@ -2198,7 +5825,48 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "disabled": true,
+          "error": true
+        },
+        "labelProp": "placeholder",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "placeholder": "Enter text..."
+        },
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "placeholder": "Enter text...",
+              "rows": 4
+            },
+            "description": "Multi-line text input."
+          },
+          {
+            "name": "Error state",
+            "props": {
+              "placeholder": "Invalid content",
+              "error": true,
+              "rows": 3
+            },
+            "description": "Textarea with error styling."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "placeholder": "Read only",
+              "disabled": true
+            },
+            "description": "Non-interactive textarea."
+          }
+        ]
+      }
     },
     "TimePicker": {
       "props": {
@@ -2228,6 +5896,29 @@
           "type": "boolean|Function",
           "reactive": true
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "onchange": {
           "type": "Function"
         },
@@ -2235,7 +5926,35 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "seconds=false": true,
+          "use12h=false": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "24-hour",
+            "props": {
+              "placeholder": "Select time"
+            },
+            "description": "Standard time selector."
+          },
+          {
+            "name": "12-hour format",
+            "props": {
+              "use12h": true,
+              "placeholder": "Select time"
+            },
+            "description": "AM/PM time selector."
+          }
+        ]
+      }
     },
     "TimeRangePicker": {
       "props": {
@@ -2253,16 +5972,63 @@
           "type": "boolean|Function",
           "reactive": true
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "required": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "value": [
+            "09:00",
+            "17:00"
+          ]
+        },
+        "examples": [
+          {
+            "name": "Default range",
+            "props": {
+              "placeholder": "Select time range"
+            },
+            "description": "Start and end time selector."
+          }
+        ]
+      }
     },
     "Timeline": {
       "props": {
         "items": {
-          "type": "{ label?: string, content: string|Node, color?: string, icon?: string|Node, time?: string }[]"
+          "type": "{ label?: string, content: string|Node, color?: string, icon?: string|Node, time?: string, status?: 'default'|'success'|'warning'|'error'|'info', tag?: string }[]"
         },
         "mode='left'": {
           "type": "'left'|'right'|'alternate'"
@@ -2270,11 +6036,112 @@
         "pending=false": {
           "type": "boolean"
         },
+        "variant='default'": {
+          "type": "'default'|'branded'"
+        },
+        "size": {
+          "type": "'sm'|'md'|'lg'"
+        },
+        "active": {
+          "type": "number|Function",
+          "reactive": true
+        },
+        "gradient=false": {
+          "type": "boolean"
+        },
+        "glass=false": {
+          "type": "boolean"
+        },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "pending=false": true,
+          "gradient=false": true,
+          "glass=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "content": "Project started"
+            },
+            {
+              "content": "First release"
+            },
+            {
+              "content": "Major update"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Default",
+            "props": {
+              "items": [
+                {
+                  "label": "Created",
+                  "description": "Item was created"
+                },
+                {
+                  "label": "Updated",
+                  "description": "Item was modified"
+                },
+                {
+                  "label": "Completed",
+                  "description": "Item finished"
+                }
+              ]
+            },
+            "description": "Chronological events."
+          },
+          {
+            "name": "Alternate mode",
+            "props": {
+              "mode": "alternate",
+              "items": [
+                {
+                  "label": "Step 1",
+                  "description": "First step"
+                },
+                {
+                  "label": "Step 2",
+                  "description": "Second step"
+                },
+                {
+                  "label": "Step 3",
+                  "description": "Third step"
+                }
+              ]
+            },
+            "description": "Alternating sides."
+          },
+          {
+            "name": "Gradient",
+            "props": {
+              "gradient": true,
+              "items": [
+                {
+                  "label": "Start"
+                },
+                {
+                  "label": "Middle"
+                },
+                {
+                  "label": "End"
+                }
+              ]
+            },
+            "description": "Gradient connector line."
+          }
+        ]
+      }
     },
     "toast": {
       "params": [
@@ -2322,7 +6189,46 @@
       ],
       "returns": "{ dismiss: Function }",
       "description": "Show a toast notification.",
-      "_type": "function"
+      "_type": "function",
+      "showcase": {
+        "examples": [
+          {
+            "name": "Info",
+            "props": {
+              "message": "Info notification",
+              "variant": "info"
+            },
+            "description": "Informational toast."
+          },
+          {
+            "name": "Success",
+            "props": {
+              "message": "Saved successfully!",
+              "variant": "success"
+            },
+            "description": "Success toast."
+          },
+          {
+            "name": "Warning",
+            "props": {
+              "message": "Check your input",
+              "variant": "warning"
+            },
+            "description": "Warning toast."
+          },
+          {
+            "name": "Error",
+            "props": {
+              "message": "Delete failed",
+              "variant": "error"
+            },
+            "description": "Error toast."
+          }
+        ],
+        "sections": [
+          "examples"
+        ]
+      }
     },
     "Toggle": {
       "props": {
@@ -2338,12 +6244,7 @@
           ]
         },
         "size": {
-          "type": "string",
-          "enum": [
-            "default",
-            "sm",
-            "lg"
-          ]
+          "type": "string"
         },
         "disabled": {
           "type": "boolean|Function",
@@ -2357,7 +6258,30 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "variants",
+          "examples"
+        ],
+        "children": "Toggle",
+        "examples": [
+          {
+            "name": "Pressed state",
+            "props": {
+              "pressed": true
+            },
+            "description": "Active toggle button."
+          },
+          {
+            "name": "Outline variant",
+            "props": {
+              "variant": "outline"
+            },
+            "description": "Outlined toggle style."
+          }
+        ]
+      }
     },
     "ToggleGroup": {
       "props": {
@@ -2380,6 +6304,13 @@
         "size": {
           "type": "string"
         },
+        "block=false": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
         "onchange": {
           "type": "Function"
         },
@@ -2387,7 +6318,54 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "multiple": true
+        },
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "items": [
+            {
+              "value": "bold",
+              "label": "Bold"
+            },
+            {
+              "value": "italic",
+              "label": "Italic"
+            },
+            {
+              "value": "underline",
+              "label": "Underline"
+            }
+          ],
+          "value": "bold"
+        },
+        "examples": [
+          {
+            "name": "Single selection",
+            "props": {
+              "type": "single",
+              "value": "bold"
+            },
+            "description": "Only one item active at a time."
+          },
+          {
+            "name": "Multiple selection",
+            "props": {
+              "type": "multiple",
+              "value": [
+                "bold",
+                "italic"
+              ]
+            },
+            "description": "Multiple items toggled independently."
+          }
+        ],
+        "children": null
+      }
     },
     "Tooltip": {
       "props": {
@@ -2414,7 +6392,47 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "children": null,
+        "examples": [
+          {
+            "name": "Top",
+            "props": {
+              "content": "Tooltip on top",
+              "position": "top"
+            },
+            "description": "Tooltip above element."
+          },
+          {
+            "name": "Bottom",
+            "props": {
+              "content": "Tooltip on bottom",
+              "position": "bottom"
+            },
+            "description": "Tooltip below element."
+          },
+          {
+            "name": "Left",
+            "props": {
+              "content": "Tooltip on left",
+              "position": "left"
+            },
+            "description": "Tooltip to the left."
+          },
+          {
+            "name": "Right",
+            "props": {
+              "content": "Tooltip on right",
+              "position": "right"
+            },
+            "description": "Tooltip to the right."
+          }
+        ]
+      }
     },
     "Tour": {
       "props": {
@@ -2435,7 +6453,42 @@
           "type": "string"
         }
       },
-      "returns": "{ start: Function, next: Function, prev: Function, close: Function, goTo: Function }"
+      "returns": "{ start: Function, next: Function, prev: Function, close: Function, goTo: Function }",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "steps": [
+            {
+              "title": "Welcome",
+              "content": "This is a tour."
+            },
+            {
+              "title": "Features",
+              "content": "Explore the features."
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Onboarding steps",
+            "props": {
+              "steps": [
+                {
+                  "title": "Welcome",
+                  "description": "Get started here"
+                },
+                {
+                  "title": "Settings",
+                  "description": "Configure options"
+                }
+              ]
+            },
+            "description": "Guided walkthrough."
+          }
+        ]
+      }
     },
     "Transfer": {
       "props": {
@@ -2458,12 +6511,96 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "searchable=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "dataSource": [
+            {
+              "key": "1",
+              "title": "Item 1"
+            },
+            {
+              "key": "2",
+              "title": "Item 2"
+            },
+            {
+              "key": "3",
+              "title": "Item 3"
+            },
+            {
+              "key": "4",
+              "title": "Item 4"
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Basic transfer",
+            "props": {
+              "titles": [
+                "Source",
+                "Target"
+              ],
+              "dataSource": [
+                {
+                  "key": "1",
+                  "title": "Item 1"
+                },
+                {
+                  "key": "2",
+                  "title": "Item 2"
+                },
+                {
+                  "key": "3",
+                  "title": "Item 3"
+                },
+                {
+                  "key": "4",
+                  "title": "Item 4"
+                }
+              ]
+            },
+            "description": "Dual-list selector."
+          },
+          {
+            "name": "Searchable",
+            "props": {
+              "searchable": true,
+              "titles": [
+                "Available",
+                "Selected"
+              ],
+              "dataSource": [
+                {
+                  "key": "1",
+                  "title": "Apple"
+                },
+                {
+                  "key": "2",
+                  "title": "Banana"
+                },
+                {
+                  "key": "3",
+                  "title": "Cherry"
+                }
+              ]
+            },
+            "description": "Filterable transfer."
+          }
+        ]
+      }
     },
     "TreeSelect": {
       "props": {
         "options": {
-          "type": "TreeSelectNode[]"
+          "type": "{ value: string, label: string, disabled?: boolean, children?: Object[] }[]"
         },
         "value": {
           "type": "string|Array<string>|Function",
@@ -2485,11 +6622,90 @@
           "type": "boolean|Function",
           "reactive": true
         },
+        "error": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "success": {
+          "type": "boolean|string|Function",
+          "reactive": true
+        },
+        "variant='outlined'": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "help": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
         "class": {
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "multiple=false": true,
+          "checkable=false": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "options": [
+            {
+              "value": "frontend",
+              "label": "Frontend",
+              "children": [
+                {
+                  "value": "react",
+                  "label": "React"
+                },
+                {
+                  "value": "vue",
+                  "label": "Vue"
+                }
+              ]
+            },
+            {
+              "value": "backend",
+              "label": "Backend",
+              "children": [
+                {
+                  "value": "node",
+                  "label": "Node.js"
+                }
+              ]
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Single select",
+            "props": {
+              "placeholder": "Select node"
+            },
+            "description": "Tree-based dropdown select."
+          },
+          {
+            "name": "Multiple select",
+            "props": {
+              "multiple": true,
+              "placeholder": "Select nodes"
+            },
+            "description": "Multi-select tree dropdown."
+          }
+        ]
+      }
     },
     "Tree": {
       "props": {
@@ -2527,7 +6743,71 @@
           "type": "string"
         }
       },
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "checkable=false": true,
+          "selectable=true": true,
+          "defaultExpandAll=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "defaults": {
+          "data": [
+            {
+              "id": "1",
+              "label": "Documents",
+              "children": [
+                {
+                  "id": "1-1",
+                  "label": "Report.pdf"
+                },
+                {
+                  "id": "1-2",
+                  "label": "Notes.md"
+                }
+              ]
+            },
+            {
+              "id": "2",
+              "label": "Images",
+              "children": [
+                {
+                  "id": "2-1",
+                  "label": "Photo.png"
+                }
+              ]
+            }
+          ]
+        },
+        "examples": [
+          {
+            "name": "Default tree",
+            "props": {
+              "defaultExpandAll": true
+            },
+            "description": "Expanded tree view."
+          },
+          {
+            "name": "Checkable",
+            "props": {
+              "checkable": true,
+              "defaultExpandAll": true
+            },
+            "description": "Tree with checkboxes."
+          },
+          {
+            "name": "Selectable",
+            "props": {
+              "selectable": true,
+              "defaultExpandAll": true
+            },
+            "description": "Clickable tree nodes."
+          }
+        ]
+      }
     },
     "Title": {
       "props": {
@@ -2560,7 +6840,56 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "mark": true,
+          "underline": true,
+          "strikethrough": true,
+          "disabled": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Level 1",
+            "props": {
+              "level": 1
+            },
+            "description": "H1 heading."
+          },
+          {
+            "name": "Level 2",
+            "props": {
+              "level": 2
+            },
+            "description": "H2 heading."
+          },
+          {
+            "name": "Level 3",
+            "props": {
+              "level": 3
+            },
+            "description": "H3 heading."
+          },
+          {
+            "name": "Level 4",
+            "props": {
+              "level": 4
+            },
+            "description": "H4 heading."
+          },
+          {
+            "name": "Level 5",
+            "props": {
+              "level": 5
+            },
+            "description": "H5 heading."
+          }
+        ]
+      }
     },
     "Text": {
       "props": {
@@ -2602,7 +6931,79 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "strong": true,
+          "italic": true,
+          "underline": true,
+          "strikethrough": true,
+          "code": true,
+          "keyboard": true,
+          "mark": true,
+          "disabled": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default",
+            "props": {},
+            "description": "Standard text."
+          },
+          {
+            "name": "Secondary",
+            "props": {
+              "type": "secondary"
+            },
+            "description": "Muted text."
+          },
+          {
+            "name": "Success",
+            "props": {
+              "type": "success"
+            },
+            "description": "Green text."
+          },
+          {
+            "name": "Warning",
+            "props": {
+              "type": "warning"
+            },
+            "description": "Yellow text."
+          },
+          {
+            "name": "Danger",
+            "props": {
+              "type": "danger"
+            },
+            "description": "Red text."
+          },
+          {
+            "name": "Bold",
+            "props": {
+              "strong": true
+            },
+            "description": "Bold weight."
+          },
+          {
+            "name": "Italic",
+            "props": {
+              "italic": true
+            },
+            "description": "Italic style."
+          },
+          {
+            "name": "Code",
+            "props": {
+              "code": true
+            },
+            "description": "Inline code style."
+          }
+        ]
+      }
     },
     "Paragraph": {
       "props": {
@@ -2626,7 +7027,24 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "strong": true,
+          "italic": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default paragraph",
+            "props": {},
+            "description": "Block text element."
+          }
+        ]
+      }
     },
     "Link": {
       "props": {
@@ -2653,7 +7071,33 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "disabled": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default link",
+            "props": {
+              "href": "#"
+            },
+            "description": "Standard hyperlink."
+          },
+          {
+            "name": "Disabled link",
+            "props": {
+              "href": "#",
+              "disabled": true
+            },
+            "description": "Non-interactive link."
+          }
+        ]
+      }
     },
     "Blockquote": {
       "props": {
@@ -2662,7 +7106,19 @@
         }
       },
       "children": "...(string|Node)",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Default quote",
+            "props": {},
+            "description": "Block quotation element."
+          }
+        ]
+      }
     },
     "Upload": {
       "props": {
@@ -2699,7 +7155,34 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "multiple=false": true,
+          "drag=false": true
+        },
+        "sections": [
+          "states",
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "File upload",
+            "props": {
+              "multiple": false
+            },
+            "description": "Single file upload."
+          },
+          {
+            "name": "Drag upload",
+            "props": {
+              "drag": true,
+              "multiple": true
+            },
+            "description": "Drag-and-drop file zone."
+          }
+        ]
+      }
     },
     "VisuallyHidden": {
       "props": {
@@ -2708,7 +7191,19 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "examples": [
+          {
+            "name": "Screen reader text",
+            "props": {},
+            "description": "Visually hidden accessible text."
+          }
+        ]
+      }
     },
     "Watermark": {
       "props": {
@@ -2741,7 +7236,161 @@
         }
       },
       "children": "...Node",
-      "returns": "HTMLElement"
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples"
+        ],
+        "defaults": {
+          "content": "Confidential"
+        },
+        "examples": [
+          {
+            "name": "Text watermark",
+            "props": {
+              "content": "Confidential",
+              "rotate": -22
+            },
+            "description": "Background text overlay."
+          }
+        ]
+      }
+    }
+  },
+  "groups": {
+    "action": {
+      "label": "Action",
+      "items": [
+        "Button",
+        "Toggle",
+        "ToggleGroup",
+        "Dropdown",
+        "Spinner"
+      ]
+    },
+    "form-basic": {
+      "label": "Form Basic",
+      "items": [
+        "Input",
+        "InputNumber",
+        "InputOTP",
+        "Rate",
+        "Textarea",
+        "Checkbox",
+        "Switch",
+        "Select",
+        "Combobox",
+        "Mentions",
+        "Label",
+        "RadioGroup",
+        "Slider",
+        "RangeSlider"
+      ]
+    },
+    "form-advanced": {
+      "label": "Form Advanced",
+      "items": [
+        "ColorPicker",
+        "DatePicker",
+        "DateRangePicker",
+        "TimePicker",
+        "TimeRangePicker",
+        "Upload",
+        "Transfer",
+        "Cascader",
+        "TreeSelect"
+      ]
+    },
+    "display": {
+      "label": "Display",
+      "items": [
+        "Card",
+        "Badge",
+        "Tag",
+        "Table",
+        "DataTable",
+        "Descriptions",
+        "Statistic",
+        "Avatar",
+        "AvatarGroup",
+        "Progress",
+        "Skeleton",
+        "Chip",
+        "Empty"
+      ]
+    },
+    "data": {
+      "label": "Data",
+      "items": [
+        "List",
+        "Tree",
+        "Calendar",
+        "Carousel",
+        "Image",
+        "Timeline",
+        "HoverCard"
+      ]
+    },
+    "layout": {
+      "label": "Layout",
+      "items": [
+        "Tabs",
+        "Accordion",
+        "Collapsible",
+        "Space",
+        "AspectRatio",
+        "Resizable",
+        "Splitter",
+        "ScrollArea",
+        "Separator",
+        "Pagination",
+        "Breadcrumb"
+      ]
+    },
+    "navigation": {
+      "label": "Navigation",
+      "items": [
+        "Menu",
+        "NavigationMenu",
+        "Steps",
+        "Segmented",
+        "ContextMenu",
+        "BackTop",
+        "Affix"
+      ]
+    },
+    "feedback": {
+      "label": "Feedback",
+      "items": [
+        "Modal",
+        "AlertDialog",
+        "Sheet",
+        "Drawer",
+        "Command",
+        "Popconfirm",
+        "Popover",
+        "Tooltip",
+        "Alert",
+        "Result",
+        "Toast",
+        "Notification",
+        "Message",
+        "FloatButton",
+        "Tour"
+      ]
+    },
+    "typography": {
+      "label": "Typography",
+      "items": [
+        "Title",
+        "Text",
+        "Paragraph",
+        "Link",
+        "Blockquote",
+        "Kbd",
+        "Watermark",
+        "VisuallyHidden"
+      ]
     }
   }
 }

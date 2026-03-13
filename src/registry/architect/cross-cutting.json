@@ -1,4 +1,5 @@
 {
+  "$schema": "https://decantr.ai/schemas/architect-cross-cutting.v1.json",
   "loading-states": {
     "w": 0.85,
     "components": ["Skeleton", "Spinner", "Progress"],

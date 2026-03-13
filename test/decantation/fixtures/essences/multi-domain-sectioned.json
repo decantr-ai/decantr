@@ -1,0 +1,33 @@
+{
+  "sections": [
+    {
+      "id": "store",
+      "path": "/store",
+      "terroir": "ecommerce",
+      "vintage": { "style": "clean", "mode": "light" },
+      "structure": [
+        { "id": "home", "skeleton": "top-nav-main", "blend": ["hero", "product-grid"] },
+        { "id": "catalog", "skeleton": "top-nav-main", "blend": ["product-grid", "pagination"] },
+        { "id": "cart", "skeleton": "top-nav-main", "blend": ["data-table"] },
+        { "id": "checkout", "skeleton": "minimal-header", "blend": ["wizard"] }
+      ],
+      "tannins": ["cart-state", "payments"]
+    },
+    {
+      "id": "blog",
+      "path": "/blog",
+      "terroir": "content-site",
+      "vintage": { "style": "clean", "mode": "light" },
+      "structure": [
+        { "id": "home", "skeleton": "top-nav-main", "blend": ["post-list", "category-nav"] },
+        { "id": "article", "skeleton": "top-nav-main", "blend": ["article-content", "author-card"] }
+      ],
+      "tannins": ["content-state", "categories"]
+    }
+  ],
+  "shared_tannins": ["auth", "search", "analytics"],
+  "vessel": {
+    "type": "spa",
+    "routing": "hash"
+  }
+}

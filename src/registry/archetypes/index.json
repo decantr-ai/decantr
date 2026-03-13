@@ -1,0 +1,36 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetypes.v1.json",
+  "description": "Domain archetypes for the Decantation Process. Each archetype pre-maps page patterns, tannins, skeleton layouts, and suggested visual identity for a domain.",
+  "archetypes": {
+    "ecommerce": {
+      "name": "E-Commerce",
+      "description": "Online retail — product catalog, cart, checkout, account management",
+      "file": "ecommerce.json"
+    },
+    "saas-dashboard": {
+      "name": "SaaS Dashboard",
+      "description": "Analytics/admin dashboard — KPIs, data tables, charts, settings",
+      "file": "saas-dashboard.json"
+    },
+    "portfolio": {
+      "name": "Portfolio",
+      "description": "Personal or agency showcase — projects, about, contact, blog",
+      "file": "portfolio.json"
+    },
+    "content-site": {
+      "name": "Content Site",
+      "description": "Blog, magazine, or documentation — articles, categories, search",
+      "file": "content-site.json"
+    },
+    "docs-explorer": {
+      "name": "Docs Explorer",
+      "description": "Interactive API and design-system documentation — layered navigation, registry-driven content, search, live theming",
+      "file": "docs-explorer.json"
+    },
+    "financial-dashboard": {
+      "name": "Financial Dashboard",
+      "description": "Performance dashboard for financial services, lending, and banking — portfolio overview, pipeline, collections, compliance",
+      "file": "financial-dashboard.json"
+    }
+  }
+}

@@ -50,10 +50,6 @@ const IMPORT_MAP_ENTRIES = {
   'decantr/test': '/__decantr/test/index.js',
   'decantr/themes': '/__decantr/css/theme-registry.js',
   'decantr/styles': '/__decantr/css/theme-registry.js',
-  'decantr/kit/dashboard': '/__decantr/kit/dashboard/index.js',
-  'decantr/kit/auth': '/__decantr/kit/auth/index.js',
-  'decantr/kit/content': '/__decantr/kit/content/index.js',
-  'decantr/blocks': '/__decantr/blocks/index.js',
   'decantr/chart': '/__decantr/chart/index.js'
 };
 
@@ -78,8 +74,7 @@ function rewriteImports(source) {
       const mod = subpath || 'core';
       const mapped = SPECIFIER_MAP[mod];
       if (mapped) return `from '/__decantr/${mapped}'`;
-      // Kit imports: decantr/kit/dashboard → /__decantr/kit/dashboard/index.js
-      if (mod.startsWith('kit/')) return `from '/__decantr/${mod}/index.js'`;
+      if (mod.endsWith('.js')) return `from '/__decantr/${mod}'`;
       return `from '/__decantr/${mod}/index.js'`;
     }
   );
@@ -109,6 +104,19 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
       sseClients.add(res);
       req.on('close', () => sseClients.delete(res));
       return;
+    }
+
+    // Serve project essence file
+    if (pathname === '/__decantr/essence') {
+      const essencePath = join(projectRoot, 'decantr.essence.json');
+      return serveFile(essencePath, res, false);
+    }
+
+    // Serve registry JSON files (no import rewriting — data, not modules)
+    if (pathname.startsWith('/__decantr/registry/')) {
+      const registryPath = pathname.slice('/__decantr/registry/'.length);
+      const filePath = join(frameworkSrc, 'registry', registryPath);
+      return serveFile(filePath, res, false);
     }
 
     // Serve framework source files (kit, components, etc.)
@@ -167,7 +175,7 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
 
       if (injectHmr) {
         // Inject import map before first <script> tag, and HMR client before </body>
-        content = content.replace('<head>', `<head>\n${generateImportMapTag()}`);
+        content = content.replace('<head>', `<head>\n<script>globalThis.__DECANTR_DEV__=true</script>\n${generateImportMapTag()}`);
         content = content.replace('</body>', `${HMR_CLIENT}\n</body>`);
       }
 
@@ -205,6 +213,16 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
     }
   }
 
+  // Watch essence file
+  try {
+    watch(join(projectRoot, 'decantr.essence.json'), (eventType) => {
+      console.log(`  [hmr] ${eventType}: decantr.essence.json`);
+      for (const client of sseClients) {
+        client.write('data: {"type":"reload"}\n\n');
+      }
+    });
+  } catch {}
+
   // Log config info at startup
   readFile(join(projectRoot, 'decantr.config.json'), 'utf-8').then(raw => {
     try {
@@ -213,6 +231,21 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
     } catch { console.log('  [warn] decantr.config.json found but could not be parsed'); }
   }).catch(() => {
     console.log(`  Config: no decantr.config.json found, using defaults (port: ${port})`);
+  });
+
+  // Check essence file
+  readFile(join(projectRoot, 'decantr.essence.json'), 'utf-8').then(raw => {
+    try {
+      const essence = JSON.parse(raw);
+      if (!essence.terroir && !essence.sections) {
+        console.log('  ⚠ Essence exists but terroir is unset. Complete the CLARIFY stage.');
+      } else {
+        const mode = essence.sections ? `sectioned (${essence.sections.length} sections)` : essence.terroir;
+        console.log(`  Essence: ${mode}`);
+      }
+    } catch { console.log('  [warn] decantr.essence.json found but could not be parsed'); }
+  }).catch(() => {
+    console.log('  ⚠ No decantr.essence.json found. Run the CLARIFY stage to create your project essence.');
   });
 
   server.listen(port, () => {

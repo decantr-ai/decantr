@@ -1,0 +1,15 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "specimen-grid",
+  "name": "Specimen Grid",
+  "description": "Auto-fill grid of design specimens — atom previews, icon tiles, color swatches. Each cell shows a labeled visual sample.",
+  "components": ["Card", "Badge", "Chip"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gcaf180 _gap3",
+    "slots": {
+      "specimen-card": "Individual specimen cell with preview area + name label + optional value",
+      "filter-bar": "Optional filter Input at top to narrow visible specimens"
+    }
+  }
+}

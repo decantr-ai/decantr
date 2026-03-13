@@ -4,10 +4,10 @@
  * @module types/area
  */
 
-import { scene, group, path } from '../_scene.js';
-import { areaPathD, pointsToPathD, smoothPathD } from '../_scene.js';
+import { scene, group, path, circle, gradient } from '../_scene.js';
+import { areaPathD, smoothAreaPathD, pointsToPathD, smoothPathD } from '../_scene.js';
 import { cartesian } from '../layouts/cartesian.js';
-import { chartColor } from '../layouts/_layout-base.js';
+import { chartColor, buildAnnotations } from '../layouts/_layout-base.js';
 import { resolve, groupBy, downsampleLTTB } from '../_shared.js';
 
 /**
@@ -70,13 +70,29 @@ export function layoutArea(spec, width, height) {
   if (spec.grid !== false) children.push(...gridNodes);
   children.push(...axisNodes);
 
-  for (const s of series) {
+  // Collect gradient defs
+  const gradients = [];
+
+  for (let si = 0; si < series.length; si++) {
+    const s = series[si];
     if (s.points.length < 2) continue;
 
-    // Fill area
-    const areaD = areaPathD(s.points);
+    // Gradient fill
+    const gradId = `area-grad-${si}`;
+    const yMin = Math.min(...s.points.map(p => p.y0));
+    const yMax = Math.max(...s.points.map(p => p.y1));
+    gradients.push(gradient({
+      id: gradId, x1: '0', y1: yMin, x2: '0', y2: yMax,
+      stops: [
+        { offset: '0%', color: s.color, opacity: 0.3 },
+        { offset: '100%', color: s.color, opacity: 0.02 }
+      ]
+    }));
+
+    // Fill area — smooth top edge when spec.smooth
+    const areaD = spec.smooth ? smoothAreaPathD(s.points) : areaPathD(s.points);
     children.push(path({
-      d: areaD, fill: s.color, class: 'd-chart-area',
+      d: areaD, fill: `url(#${gradId})`,
       data: { series: s.key }, key: `area-${s.key}`
     }));
 
@@ -89,6 +105,27 @@ export function layoutArea(spec, width, height) {
       class: 'd-chart-line',
       data: { series: s.key }, key: `area-line-${s.key}`
     }));
+
+    // Data point dots (suppress when points > 50)
+    if (spec.dots !== false && s.points.length <= 50) {
+      for (const p of s.points) {
+        children.push(circle({
+          cx: p.x, cy: p.y0, r: 3,
+          fill: s.color, stroke: 'var(--d-bg)', strokeWidth: 2,
+          class: 'd-chart-point',
+          data: { series: s.key, value: p.raw[Array.isArray(spec.y) ? s.key : spec.y[0] || spec.y], label: String(p.raw[spec.x]) },
+          key: `area-dot-${s.key}-${p.x}`
+        }));
+      }
+    }
+  }
+
+  // Prepend gradients to children so SVG renderer can collect them
+  children.unshift(...gradients);
+
+  // Annotations
+  if (spec.annotations) {
+    children.push(...buildAnnotations(spec.annotations, xScale, yScale, xType, innerW, innerH));
   }
 
   return scene(width, height, [

@@ -5,6 +5,8 @@ All atoms are prefixed with `_` (underscore) for namespace safety — zero confl
 All atoms are available via `css()`. Example: `css('_grid _gc3 _gap4 _p6 _ctr')`.
 
 ## Spacing (_p, _m, _gap — scale 0-12 + 14,16,20,24,32,40,48,56,64)
+
+> For decision logic on which spacing atoms to use, see `reference/spatial-guidelines.md` §2 Spatial Taxonomy and §18 Quick Reference Decision Table.
 | Prefix | Property | Example |
 |--------|----------|---------|
 | `_p` | padding | `_p4` -> `1rem` |
@@ -77,6 +79,9 @@ All atoms are available via `css()`. Example: `css('_grid _gc3 _gap4 _p6 _ctr')`
 | `_pcc/_pcse/_pcsb` | place-content | center/space-evenly/space-between |
 
 ## Grid System
+
+> For column count by content type and container width guidance, see `reference/spatial-guidelines.md` §14 Grid & Column System.
+
 | Atom | Output |
 |------|--------|
 | `_gc1`-`_gc12` | grid-template-columns: repeat(N,minmax(0,1fr)) |
@@ -120,6 +125,8 @@ All atoms are available via `css()`. Example: `css('_grid _gc3 _gap4 _p6 _ctr')`
 `_t10`-`_t48` (font-size, fixed rem), `_bold/_medium/_normal/_light` (weight), `_italic`, `_underline/_strike/_nounder`, `_upper/_lower/_cap`, `_tl/_tc/_tr`
 
 ## Token-Backed Typography (theme-customizable)
+
+> For typographic spatial rules (heading asymmetry, vertical rhythm), see `reference/spatial-guidelines.md` §8 Typographic Spatial System.
 | Atom | CSS Output |
 |------|-----------|
 | `_textxs`-`_text4xl` | `font-size:var(--d-text-{size},{fallback})` — xs/sm/base/md/lg/xl/2xl/3xl/4xl |
@@ -132,7 +139,7 @@ All atoms are available via `css()`. Example: `css('_grid _gc3 _gap4 _p6 _ctr')`
 | `_fwtitle` | `font-weight:var(--d-fw-title,600)` |
 | `_lsheading` | `letter-spacing:var(--d-ls-heading,-0.025em)` |
 
-Use `_text*`/`_lh*`/`_fw*` atoms in components/kits/blocks for theme-customizable typography. Use `_t10`-`_t48` for fixed sizes that should not change per theme.
+Use `_text*`/`_lh*`/`_fw*` atoms in components for theme-customizable typography. Use `_t10`-`_t48` for fixed sizes that should not change per theme.
 
 ## Typography Presets (compound atoms)
 
@@ -154,8 +161,67 @@ Bundles of size+weight+lineHeight+letterSpacing for common text roles. All token
 
 Usage: `h1({ class: css('_heading1') }, 'Page Title')` — one atom replaces 3-4 individual atoms.
 
-## Colors
-`_bg0`-`_bg9`, `_fg0`-`_fg9`, `_bc0`-`_bc9` (use theme CSS variables --c0 through --c9)
+## Colors (Semantic)
+**Palette roles**: `_bg{role}`, `_fg{role}`, `_bc{role}` — where role = `primary`, `accent`, `tertiary`, `success`, `warning`, `error`, `info`
+**Subtle variants**: `_bg{role}sub`, `_fg{role}sub` (subtle bg/fg), `_bc{role}bdr` (role border)
+**Foreground-on-base**: `_fg{role}on` (contrasting text on role background)
+**Neutrals**: `_bgbg`, `_fgfg`, `_bgmuted`, `_fgmuted`, `_fgmutedfg`, `_bcborder`, `_bcstrong`
+**Surfaces**: `_surface0`-`_surface3`, `_fgsurface0`-`_fgsurface3`, `_bcsurface0`-`_bcsurface3`
+**Opacity**: `_bg{role}/N` (e.g. `_bgprimary/50`) — color-mix with transparency (0-100)
+
+### Color Decision Flow
+
+| Intent | Atom | Token |
+|--------|------|-------|
+| Primary text | `_fgfg` | `--d-fg` |
+| Muted/secondary text | `_fgmutedfg` | `--d-muted-fg` |
+| Even more muted text | `_fgmuted` | `--d-muted` |
+| Accent/brand text | `_fgprimary` | `--d-primary` |
+| Page background | `_bgbg` | `--d-bg` |
+| Muted background | `_bgmuted` | `--d-muted` |
+| Primary action bg | `_bgprimary` | `--d-primary` |
+| Surface card bg | `_surface0`–`_surface3` | `--d-surface-{0-3}` |
+| Border default | `_bcborder` | `--d-border` |
+| Border emphasis | `_bcstrong` | `--d-border-strong` |
+| Error state | `_fgerror` / `_bgerror` | `--d-error` |
+| Success state | `_fgsuccess` / `_bgsuccess` | `--d-success` |
+
+## Field Atoms
+
+Unified field container atoms. Pair with field tokens for consistent form styling.
+
+| Atom | Output |
+|------|--------|
+| `_field` | Field visual base — applies `--d-field-bg`, `--d-field-border`, `--d-field-radius`, border-width |
+| `_fieldOutlined` | Outlined variant (alias for `_field`) — transparent bg, visible border |
+| `_fieldFilled` | Filled variant — surface bg, transparent border |
+| `_fieldGhost` | Ghost variant — transparent bg + border, shows border on focus |
+
+## Interactive State Atoms
+
+Semantic background/foreground atoms for item selection and hover states.
+
+| Atom | Output |
+|------|--------|
+| `_hoverBg` | `background:var(--d-item-hover-bg)` — hover background for list items, options, rows |
+| `_activeBg` | `background:var(--d-item-active-bg)` — active/pressed item background |
+| `_selectedBg` | `background:var(--d-selected-bg)` — selected item background |
+| `_selectedFg` | `color:var(--d-selected-fg)` — selected item foreground |
+
+## Semantic Opacity Atoms
+
+| Atom | Output |
+|------|--------|
+| `_disabled` | `opacity:var(--d-disabled-opacity);cursor:not-allowed;pointer-events:none` — disabled state |
+
+## Layout Atoms
+
+| Atom | Output |
+|------|--------|
+| `_proseWidth` | `max-width:var(--d-prose-width,75ch)` — optimal reading line length |
+
+## Aliases
+Long-form names resolve to canonical terse atoms: `_gridCols4` → `_gc4`, `_noDecoration` → `_nounder`, `_border` → `_b1`, `_borderColor` → `_bcborder`, `_radiusFull` → `_rfull`, `_radius0`-`_radius8` → `_r0`-`_r8`
 
 ## Position
 `_relative/_absolute/_fixed/_sticky` (or `_rel/_abs`), `_top0/_right0/_bottom0/_left0/_inset0`
@@ -163,6 +229,187 @@ Usage: `h1({ class: css('_heading1') }, 'Page Title')` — one atom replaces 3-4
 ## Borders
 `_b0/_b1/_b2`, `_r0`-`_r8` (border-radius), `_rfull` (9999px), `_rcircle` (50%)
 
+### Radius Decision Flow
+
+| Element | Atom | Rationale |
+|---------|------|-----------|
+| Buttons, inputs | `_r2`–`_r3` | Standard interactive controls |
+| Cards, panels | `_r3`–`_r4` | Content containers |
+| Avatars, tags | `_rfull` | Circular/pill shapes |
+| Table cells | `_r2` | Subtle rounding |
+| Modals, dialogs | `_r4` | Prominent containers |
+| Sharp/no radius | `_r0` | Data-dense, technical UIs |
+
 ## Opacity, Transitions, Z-index, Shadow, Cursor
 `_op0`-`_op10`, `_trans/_transfast/_transslow/_transnone`, `_z0/_z10/_z20/_z30/_z40/_z50`
 `_shadow/_shadowmd/_shadowlg/_shadowno`, `_pointer/_grab`
+
+---
+
+## Composable Gradient System
+
+Build gradients by combining direction + from + via + to atoms. Uses CSS variable composition.
+
+```js
+css('_gradBR _fromPrimary _toAccent')           // bottom-right, primary → accent
+css('_gradR _fromPrimary _viaSuccess _toTransparent')  // right, with via stop
+```
+
+**Direction atoms:** `_gradR`, `_gradL`, `_gradT`, `_gradB`, `_gradBR`, `_gradBL`, `_gradTR`, `_gradTL`
+
+**From atoms** (set start color): `_fromPrimary`, `_fromAccent`, `_fromTertiary`, `_fromSuccess`, `_fromWarning`, `_fromError`, `_fromInfo`, `_fromBg`, `_fromSurface1`, `_fromTransparent`
+
+**Via atoms** (set middle color): `_viaPrimary`, `_viaAccent`, `_viaTertiary`, `_viaSuccess`, `_viaWarning`, `_viaError`, `_viaInfo`, `_viaBg`, `_viaSurface1`, `_viaTransparent`
+
+**To atoms** (set end color): `_toPrimary`, `_toAccent`, `_toTertiary`, `_toSuccess`, `_toWarning`, `_toError`, `_toInfo`, `_toBg`, `_toSurface1`, `_toTransparent`
+
+Works with responsive: `css('_sm:gradBR')`. Works with container queries: `css('_cq640:gradR')`.
+
+## Opacity Modifiers
+
+Append `/N` to any color atom for alpha transparency. Uses `color-mix()` (96%+ browser support).
+
+```js
+css('_bgprimary/50')    // background at 50% opacity
+css('_fgaccent/30')     // text at 30% opacity
+css('_bcborder/80')     // border at 80% opacity
+css('_sm:bgprimary/20') // responsive: 20% at sm+
+```
+
+Valid opacities: 5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95.
+
+Works with all color atoms (`_bg*`, `_fg*`, `_bc*`), responsive prefixes, and container queries.
+
+## Group/Peer State Modifiers
+
+Style children based on parent state, or siblings based on peer state.
+
+```js
+// Group: parent hover affects children
+div({ class: css('_group') },
+  span({ class: css('_fgmuted _gh:fgprimary _trans') }, 'Turns primary on parent hover')
+)
+
+// Peer: sibling state affects next sibling
+input({ class: css('_peer'), type: 'checkbox' }),
+label({ class: css('_fgmuted _pf:fgprimary') }, 'Turns primary when input focused')
+```
+
+**Markers:** `_group` → outputs `d-group`, `_peer` → outputs `d-peer`
+
+| Prefix | State | Selector Pattern |
+|--------|-------|-----------------|
+| `_gh:` | group-hover | `.d-group:hover .cls` |
+| `_gf:` | group-focus-within | `.d-group:focus-within .cls` |
+| `_ga:` | group-active | `.d-group:active .cls` |
+| `_ph:` | peer-hover | `.d-peer:hover ~ .cls` |
+| `_pf:` | peer-focus | `.d-peer:focus ~ .cls` |
+| `_pa:` | peer-active | `.d-peer:active ~ .cls` |
+
+Works with any atom: `_gh:elev2`, `_gh:bgprimary/50`, `_gf:bcprimary`.
+
+## Responsive Prefixes (Mobile-First)
+
+All atoms support responsive prefixes. Syntax: `_bp:atom`. Below the breakpoint, the base atom applies; at and above it, the prefixed atom takes over.
+
+| Prefix | Min-Width | Example |
+|--------|-----------|---------|
+| `_sm:` | 640px | `css('_gc1 _sm:gc2')` — 1 col, 2 at sm+ |
+| `_md:` | 768px | `css('_p4 _md:p8')` — p4 default, p8 at md+ |
+| `_lg:` | 1024px | `css('_col _lg:row')` — column default, row at lg+ |
+| `_xl:` | 1280px | `css('_ctr _xl:ctrxl')` — 960px default, 1280px at xl+ |
+
+Works with all atoms including arbitrary values: `css('_sm:w[512px]')`, color opacity: `css('_sm:bgprimary/20')`, gradients: `css('_sm:gradBR')`.
+
+## Container Query Prefixes
+
+Style children based on container width, not viewport. Syntax: `_cqN:atom` where N is the min-width in pixels.
+
+| Prefix | Min-Width | Example |
+|--------|-----------|---------|
+| `_cq320:` | 320px | `css('_cq320:gc2')` |
+| `_cq480:` | 480px | `css('_cq480:gc3')` |
+| `_cq640:` | 640px | `css('_cq640:gc4')` |
+| `_cq768:` | 768px | `css('_cq768:row')` |
+| `_cq1024:` | 1024px | `css('_cq1024:gc6')` |
+
+Only these 5 widths are valid. Parent must have `container-type: inline-size` (use `_ctype[inline-size]` or set via CSS).
+
+## Arbitrary Values
+
+Escape hatch for one-off values without leaving utility-first flow.
+
+```js
+css('_w[512px]')                          // width:512px
+css('_bg[#1a1d24]')                       // background:#1a1d24
+css('_shadow[0_4px_6px_rgba(0,0,0,0.1)]') // box-shadow (underscores → spaces)
+css('_p[clamp(1rem,2vw,2rem)]')           // padding with clamp()
+css('_sm:w[512px]')                       // responsive arbitrary value
+```
+
+Syntax: `_prop[value]`. Underscores in value are converted to spaces.
+
+| Prefix | Property | Prefix | Property |
+|--------|----------|--------|----------|
+| `w` | width | `h` | height |
+| `mw` | max-width | `mh` | max-height |
+| `minw` | min-width | `minh` | min-height |
+| `p/pt/pr/pb/pl` | padding | `px/py` | padding-inline/block |
+| `m/mt/mr/mb/ml` | margin | `mx/my` | margin-inline/block |
+| `gap/gx/gy` | gap | `t` | font-size |
+| `lh` | line-height | `fw` | font-weight |
+| `ls` | letter-spacing | `r` | border-radius |
+| `bg` | background | `fg` | color |
+| `bc` | border-color | `z` | z-index |
+| `op` | opacity | `shadow` | box-shadow |
+| `top/right/bottom/left` | position | `inset` | inset |
+| `bf` | backdrop-filter | | |
+
+## Backdrop Filter Atoms (Composable)
+
+Composable backdrop-filter via CSS variable composition. Combine blur + saturate + brightness.
+
+```js
+css('_bfblur12 _bfsat150')             // blur(12px) + saturate(1.5)
+css('_bfblur8 _bfsat180 _bfbright110') // blur + saturate + brightness
+css('_lg:bfblur16')                    // responsive backdrop blur
+```
+
+**Blur:** `_bfblur0`, `_bfblur4`, `_bfblur8`, `_bfblur12`, `_bfblur16`, `_bfblur20`, `_bfblur24`
+
+**Saturate:** `_bfsat100`, `_bfsat125`, `_bfsat150`, `_bfsat180`, `_bfsat200`
+
+**Brightness:** `_bfbright90`, `_bfbright100`, `_bfbright110`, `_bfbright120`
+
+**Regular filter atoms:** `_fblur4`, `_fblur8`, `_fblur16`, `_fgray`, `_fgray50`, `_finvert`, `_fbright50`, `_fbright75`, `_fbright110`
+
+## Custom Atoms via `define()`
+
+When neither standard atoms nor `ARB_PROPS` bracket notation cover a CSS property, use `define()` to create a reusable atom instead of falling back to inline `style:`.
+
+```js
+import { define, css } from 'decantr/css';
+
+define('_selectNone', 'user-select:none');
+define('_peNone', 'pointer-events:none');
+define('_rotated45', 'transform:rotate(45deg)');
+define('_curNotAllowed', 'cursor:not-allowed');
+
+// Use like any atom:
+div({ class: css('_selectNone _peNone _rotated45') });
+```
+
+**When to use `define()`:**
+- The CSS property has no `ARB_PROPS` prefix (e.g., `transform`, `user-select`, `pointer-events`, `clip-path`)
+- You need the same static value in multiple places
+- You want to avoid inline `style:` for a value known at author time
+
+**When NOT to use `define()`:**
+- The value is computed at runtime (use `style:` with signals/DOM measurements)
+- A standard atom or bracket notation already covers it (check this file first)
+
+**Escalation path:** (1) Standard atom → (2) Bracket notation `_w[32px]` → (3) `define()` → (4) Propose adding to `src/css/atoms.js` if broadly useful. Inline `style:` for static values is ALWAYS a bug.
+
+---
+
+**See also:** `reference/spatial-guidelines.md`, `reference/tokens.md`, `reference/compound-spacing.md`

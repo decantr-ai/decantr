@@ -1,0 +1,16 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "pricing-table",
+  "name": "Pricing Table",
+  "description": "Comparison pricing cards with features list, pricing tiers, and CTA buttons.",
+  "components": ["Card", "Button", "Badge", "Separator", "List"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc3 _gap6 _aic",
+    "slots": {
+      "pricing-card": "Card per tier with price, name, and highlighted Badge",
+      "features-list": "Checklist of included features separated by Separator",
+      "cta": "Primary action Button per pricing tier"
+    }
+  }
+}

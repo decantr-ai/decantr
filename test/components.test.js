@@ -25,6 +25,7 @@ import { Tooltip } from '../src/components/tooltip.js';
 import { Alert } from '../src/components/alert.js';
 import { toast, resetToasts } from '../src/components/toast.js';
 import { Dropdown } from '../src/components/dropdown.js';
+import { Spinner } from '../src/components/spinner.js';
 import { Drawer } from '../src/components/drawer.js';
 import { Pagination } from '../src/components/pagination.js';
 import { RadioGroup } from '../src/components/radiogroup.js';
@@ -430,24 +431,109 @@ describe('Checkbox', () => {
 });
 
 describe('Switch', () => {
-  it('creates a switch with track and thumb', () => {
+  it('renders track, thumb, and role="switch"', () => {
     const el = Switch({});
     assert.ok(el.className.includes('d-switch'));
     assert.ok(el.querySelector('.d-switch-track'));
     assert.ok(el.querySelector('.d-switch-thumb'));
+    const input = el.querySelector('input');
+    assert.equal(input.getAttribute('role'), 'switch');
+  });
+
+  it('sets aria-checked="false" by default', () => {
+    const el = Switch({});
+    assert.equal(el.querySelector('input').getAttribute('aria-checked'), 'false');
+  });
+
+  it('sets aria-checked="true" when checked', () => {
+    const el = Switch({ checked: true });
+    const input = el.querySelector('input');
+    assert.ok(input.checked);
+    assert.equal(input.getAttribute('aria-checked'), 'true');
   });
 
   it('handles reactive checked', () => {
     const [checked, setChecked] = createSignal(false);
     const el = Switch({ checked });
-    assert.ok(!el.querySelector('input').checked);
+    const input = el.querySelector('input');
+    assert.ok(!input.checked);
+    assert.equal(input.getAttribute('aria-checked'), 'false');
     setChecked(true);
-    assert.ok(el.querySelector('input').checked);
+    assert.ok(input.checked);
+    assert.equal(input.getAttribute('aria-checked'), 'true');
   });
 
   it('renders label', () => {
     const el = Switch({ label: 'Dark mode' });
     assert.ok(el.textContent.includes('Dark mode'));
+    assert.ok(el.querySelector('.d-switch-label'));
+  });
+
+  it('applies size classes', () => {
+    const xs = Switch({ size: 'xs' });
+    assert.ok(xs.className.includes('d-switch-xs'));
+    const sm = Switch({ size: 'sm' });
+    assert.ok(sm.className.includes('d-switch-sm'));
+    const lg = Switch({ size: 'lg' });
+    assert.ok(lg.className.includes('d-switch-lg'));
+  });
+
+  it('handles static disabled', () => {
+    const el = Switch({ disabled: true });
+    assert.ok(el.querySelector('input').disabled);
+    assert.ok(el.hasAttribute('data-disabled'));
+  });
+
+  it('handles reactive disabled', () => {
+    const [disabled, setDisabled] = createSignal(false);
+    const el = Switch({ disabled });
+    assert.ok(!el.querySelector('input').disabled);
+    setDisabled(true);
+    assert.ok(el.querySelector('input').disabled);
+    assert.ok(el.hasAttribute('data-disabled'));
+  });
+
+  it('handles static error', () => {
+    const el = Switch({ error: true });
+    assert.ok(el.hasAttribute('data-error'));
+    assert.equal(el.querySelector('input').getAttribute('aria-invalid'), 'true');
+  });
+
+  it('handles reactive error', () => {
+    const [error, setError] = createSignal(false);
+    const el = Switch({ error });
+    assert.ok(!el.hasAttribute('data-error'));
+    setError(true);
+    assert.ok(el.hasAttribute('data-error'));
+    assert.equal(el.querySelector('input').getAttribute('aria-invalid'), 'true');
+  });
+
+  it('fires onchange with checked state', () => {
+    let changed = null;
+    const el = Switch({ onchange: (v) => { changed = v; } });
+    const input = el.querySelector('input');
+    input.checked = true;
+    input.dispatchEvent(new Event('change'));
+    assert.equal(changed, true);
+  });
+
+  it('forwards aria-label to input', () => {
+    const el = Switch({ 'aria-label': 'Toggle notifications' });
+    assert.equal(el.querySelector('input').getAttribute('aria-label'), 'Toggle notifications');
+  });
+
+  it('forwards ref to input element', () => {
+    let refEl = null;
+    Switch({ ref: (el) => { refEl = el; } });
+    assert.ok(refEl);
+    assert.equal(refEl.tagName, 'INPUT');
+  });
+
+  it('sets name and required on input', () => {
+    const el = Switch({ name: 'notifications', required: true });
+    const input = el.querySelector('input');
+    assert.equal(input.getAttribute('name'), 'notifications');
+    assert.ok(input.hasAttribute('required'));
   });
 });
 
@@ -479,26 +565,111 @@ describe('Select', () => {
 describe('Tabs', () => {
   const tabConfig = [
     { id: 'one', label: 'Tab 1', content: () => document.createTextNode('Content 1') },
-    { id: 'two', label: 'Tab 2', content: () => document.createTextNode('Content 2') }
+    { id: 'two', label: 'Tab 2', content: () => document.createTextNode('Content 2') },
+    { id: 'three', label: 'Tab 3', content: () => document.createTextNode('Content 3') }
   ];
 
-  it('renders tab list and panel', () => {
+  it('renders tablist/tab/tabpanel roles with correct count', () => {
     const el = Tabs({ tabs: tabConfig });
     assert.ok(el.className.includes('d-tabs'));
-    const tabs = el.querySelectorAll('.d-tab');
-    assert.equal(tabs.length, 2);
-    assert.ok(el.querySelector('.d-tabs-panel'));
+    assert.ok(el.querySelector('[role="tablist"]'));
+    const tabs = el.querySelectorAll('[role="tab"]');
+    assert.equal(tabs.length, 3);
+    assert.ok(el.querySelector('[role="tabpanel"]'));
+  });
+
+  it('has aria-controls and aria-labelledby cross-references', () => {
+    const el = Tabs({ tabs: tabConfig });
+    const tab = el.querySelector('[role="tab"]');
+    const panelId = tab.getAttribute('aria-controls');
+    assert.ok(panelId);
+    const panel = el.querySelector('[role="tabpanel"]');
+    assert.equal(panel.id, panelId);
+    assert.equal(panel.getAttribute('aria-labelledby'), tab.id);
+  });
+
+  it('sets aria-orientation on tablist', () => {
+    const el = Tabs({ tabs: tabConfig });
+    assert.equal(el.querySelector('[role="tablist"]').getAttribute('aria-orientation'), 'horizontal');
   });
 
   it('shows first tab content by default', () => {
     const el = Tabs({ tabs: tabConfig });
-    assert.ok(el.querySelector('.d-tabs-panel').textContent.includes('Content 1'));
+    assert.ok(el.querySelector('[role="tabpanel"]').textContent.includes('Content 1'));
   });
 
-  it('marks active tab', () => {
+  it('respects active prop', () => {
     const el = Tabs({ tabs: tabConfig, active: 'two' });
-    const tabs = el.querySelectorAll('.d-tab');
+    const tabs = el.querySelectorAll('[role="tab"]');
+    assert.equal(tabs[1].getAttribute('aria-selected'), 'true');
     assert.ok(tabs[1].className.includes('d-tab-active'));
+    assert.ok(el.querySelector('[role="tabpanel"]').textContent.includes('Content 2'));
+  });
+
+  it('switches tab on click and fires onchange', () => {
+    let changed = null;
+    const el = Tabs({ tabs: tabConfig, onchange: (id) => { changed = id; } });
+    const tabs = el.querySelectorAll('[role="tab"]');
+    tabs[1].click();
+    assert.equal(changed, 'two');
+    assert.equal(tabs[1].getAttribute('aria-selected'), 'true');
+  });
+
+  it('applies d-tabs-vertical and vertical aria-orientation', () => {
+    const el = Tabs({ tabs: tabConfig, orientation: 'vertical' });
+    assert.ok(el.className.includes('d-tabs-vertical'));
+    assert.equal(el.querySelector('[role="tablist"]').getAttribute('aria-orientation'), 'vertical');
+  });
+
+  it('applies size classes', () => {
+    const sm = Tabs({ tabs: tabConfig, size: 'sm' });
+    assert.ok(sm.className.includes('d-tabs-sm'));
+    const lg = Tabs({ tabs: tabConfig, size: 'lg' });
+    assert.ok(lg.className.includes('d-tabs-lg'));
+  });
+
+  it('disables individual tabs', () => {
+    const config = [
+      { id: 'one', label: 'Tab 1', content: () => document.createTextNode('C1') },
+      { id: 'two', label: 'Tab 2', content: () => document.createTextNode('C2'), disabled: true }
+    ];
+    let changed = null;
+    const el = Tabs({ tabs: config, onchange: (id) => { changed = id; } });
+    const tabs = el.querySelectorAll('[role="tab"]');
+    assert.ok(tabs[1].disabled);
+    tabs[1].click();
+    assert.equal(changed, null); // click blocked
+  });
+
+  it('applies group disabled', () => {
+    const el = Tabs({ tabs: tabConfig, disabled: true });
+    assert.ok(el.hasAttribute('data-disabled'));
+    const tabs = el.querySelectorAll('[role="tab"]');
+    tabs.forEach(t => assert.ok(t.disabled));
+  });
+
+  it('renders closable tabs with close button and fires onclose', () => {
+    const config = [
+      { id: 'one', label: 'Tab 1', content: () => document.createTextNode('C1'), closable: true },
+      { id: 'two', label: 'Tab 2', content: () => document.createTextNode('C2') }
+    ];
+    let closed = null;
+    const el = Tabs({ tabs: config, onclose: (id) => { closed = id; } });
+    const tab = el.querySelector('.d-tab-closable');
+    assert.ok(tab);
+    const closeBtn = tab.querySelector('.d-tab-close');
+    assert.ok(closeBtn);
+    closeBtn.click();
+    assert.equal(closed, 'one');
+  });
+
+  it('destroyInactive=false keeps all panels in DOM', () => {
+    const el = Tabs({ tabs: tabConfig, destroyInactive: false });
+    const panels = el.querySelectorAll('[role="tabpanel"]');
+    assert.equal(panels.length, 3);
+    // First panel visible, others hidden
+    assert.notEqual(panels[0].style.display, 'none');
+    assert.equal(panels[1].style.display, 'none');
   });
 });
 
@@ -738,16 +909,17 @@ describe('toast', () => {
 });
 
 describe('Dropdown', () => {
-  it('creates a dropdown with trigger', () => {
+  it('renders .d-dropdown with trigger having aria-haspopup="menu"', () => {
     const el = Dropdown({
       trigger: () => document.createElement('button'),
       items: [{ label: 'Edit' }, { label: 'Delete' }]
     });
     assert.ok(el.className.includes('d-dropdown'));
-    assert.ok(el.querySelector('[aria-haspopup="menu"]'));
+    const trig = el.querySelector('[aria-haspopup="menu"]');
+    assert.ok(trig);
   });
 
-  it('renders menu items on click', () => {
+  it('renders menu items on trigger click, including separators', () => {
     const btn = document.createElement('button');
     btn.textContent = 'Menu';
     const el = Dropdown({
@@ -758,12 +930,11 @@ describe('Dropdown', () => {
     btn.click();
     const items = el.querySelectorAll('.d-dropdown-item');
     assert.equal(items.length, 2);
-    const sep = el.querySelector('.d-dropdown-separator');
-    assert.ok(sep);
+    assert.ok(el.querySelector('.d-dropdown-separator'));
     document.body.removeChild(el);
   });
 
-  it('calls onclick on item selection', () => {
+  it('calls onclick with value and closes menu after item click', () => {
     let clicked = null;
     const btn = document.createElement('button');
     const el = Dropdown({
@@ -772,8 +943,92 @@ describe('Dropdown', () => {
     });
     document.body.appendChild(el);
     btn.click();
+    assert.ok(el.classList.contains('d-dropdown-open'));
     el.querySelector('.d-dropdown-item').click();
     assert.equal(clicked, 'save');
+    // Menu should close after selection
+    assert.ok(!el.classList.contains('d-dropdown-open'));
+    document.body.removeChild(el);
+  });
+
+  it('applies disabled class and blocks click on disabled items', () => {
+    let clicked = false;
+    const btn = document.createElement('button');
+    const el = Dropdown({
+      trigger: () => btn,
+      items: [{ label: 'Locked', disabled: true, onclick: () => { clicked = true; } }]
+    });
+    document.body.appendChild(el);
+    btn.click();
+    const item = el.querySelector('.d-dropdown-item');
+    assert.ok(item.className.includes('d-dropdown-item-disabled'));
+    item.click();
+    assert.equal(clicked, false);
+    document.body.removeChild(el);
+  });
+
+  it('sets aria-expanded on trigger when opened/closed', () => {
+    const btn = document.createElement('button');
+    const el = Dropdown({
+      trigger: () => btn,
+      items: [{ label: 'A' }]
+    });
+    document.body.appendChild(el);
+    assert.equal(btn.getAttribute('aria-expanded'), 'false');
+    btn.click();
+    assert.equal(btn.getAttribute('aria-expanded'), 'true');
+    btn.click();
+    assert.equal(btn.getAttribute('aria-expanded'), 'false');
+    document.body.removeChild(el);
+  });
+
+  it('opens on ArrowDown keydown on trigger', () => {
+    const btn = document.createElement('button');
+    const el = Dropdown({
+      trigger: () => btn,
+      items: [{ label: 'First' }, { label: 'Second' }]
+    });
+    document.body.appendChild(el);
+    const ev = new Event('keydown', { bubbles: true });
+    ev.key = 'ArrowDown';
+    btn.dispatchEvent(ev);
+    assert.equal(btn.getAttribute('aria-expanded'), 'true');
+    assert.ok(el.classList.contains('d-dropdown-open'));
+    document.body.removeChild(el);
+  });
+
+  it('menu has role="menu" and items have role="menuitem"', () => {
+    const btn = document.createElement('button');
+    const el = Dropdown({
+      trigger: () => btn,
+      items: [{ label: 'A' }, { label: 'B' }]
+    });
+    document.body.appendChild(el);
+    btn.click();
+    const menu = el.querySelector('[role="menu"]');
+    assert.ok(menu);
+    const menuItems = el.querySelectorAll('[role="menuitem"]');
+    assert.equal(menuItems.length, 2);
+    document.body.removeChild(el);
+  });
+
+  it('closes on outside click', () => {
+    const btn = document.createElement('button');
+    const el = Dropdown({
+      trigger: () => btn,
+      items: [{ label: 'A' }]
+    });
+    document.body.appendChild(el);
+    btn.click();
+    assert.ok(el.classList.contains('d-dropdown-open'));
+    // createOverlay closes on mousedown outside trigger+menu
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    const ev = new Event('mousedown', { bubbles: true });
+    Object.defineProperty(ev, 'target', { value: outside });
+    document.dispatchEvent(ev);
+    assert.ok(!el.classList.contains('d-dropdown-open'));
+    document.body.removeChild(outside);
     document.body.removeChild(el);
   });
 });
@@ -1043,5 +1298,68 @@ describe('CompactGroup', () => {
     const el = CompactGroup({ class: 'my-group' });
     assert.ok(el.className.includes('d-compact-group'));
     assert.ok(el.className.includes('my-group'));
+  });
+});
+
+describe('Spinner', () => {
+  it('renders .d-spinner-wrap with role="status"', () => {
+    const el = Spinner();
+    assert.ok(el.className.includes('d-spinner-wrap'));
+    assert.equal(el.getAttribute('role'), 'status');
+  });
+
+  it('default variant renders SVG ring with .d-spinner-arc', () => {
+    const el = Spinner();
+    const arc = el.querySelector('.d-spinner-arc');
+    assert.ok(arc);
+  });
+
+  it('dots variant renders .d-spinner-dots', () => {
+    const el = Spinner({ variant: 'dots' });
+    assert.ok(el.querySelector('.d-spinner-dots'));
+  });
+
+  it('pulse variant renders .d-spinner-pulse', () => {
+    const el = Spinner({ variant: 'pulse' });
+    assert.ok(el.querySelector('.d-spinner-pulse'));
+  });
+
+  it('bars variant renders .d-spinner-bars', () => {
+    const el = Spinner({ variant: 'bars' });
+    assert.ok(el.querySelector('.d-spinner-bars'));
+  });
+
+  it('orbit variant renders .d-spinner-orbit', () => {
+    const el = Spinner({ variant: 'orbit' });
+    assert.ok(el.querySelector('.d-spinner-orbit'));
+  });
+
+  it('applies size class to wrapper', () => {
+    const el = Spinner({ size: 'lg' });
+    assert.ok(el.className.includes('d-spinner-lg'));
+  });
+
+  it('applies color class to wrapper', () => {
+    const el = Spinner({ color: 'primary' });
+    assert.ok(el.className.includes('d-spinner-primary'));
+  });
+
+  it('uses custom aria-label', () => {
+    const el = Spinner({ label: 'Processing' });
+    assert.equal(el.getAttribute('aria-label'), 'Processing');
+  });
+
+  it('includes screen reader text', () => {
+    const el = Spinner({ label: 'Saving' });
+    const sr = el.querySelector('.d-sr-only');
+    assert.ok(sr);
+    assert.equal(sr.textContent, 'Saving');
+  });
+
+  it('SVG does not have duplicate role="status"', () => {
+    const el = Spinner();
+    const svg = el.querySelector('svg');
+    assert.ok(svg);
+    assert.notEqual(svg.getAttribute('role'), 'status');
   });
 });

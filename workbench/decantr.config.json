@@ -1,5 +1,16 @@
 {
   "name": "decantr-workbench",
-  "theme": "light",
-  "dev": { "port": 4300 }
+  "style": "auradecantism",
+  "mode": "dark",
+  "router": "hash",
+  "dev": { "port": 4300 },
+  "build": {
+    "outDir": "dist",
+    "sourcemap": true,
+    "treeShake": true,
+    "codeSplit": true,
+    "purgeCSS": true,
+    "incremental": true,
+    "analyze": true
+  }
 }

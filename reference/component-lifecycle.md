@@ -104,15 +104,34 @@ observer.observe(el.parentNode, { childList: true });
 
 ## Known Components Needing Cleanup Audit
 
-Components with document-level listeners that should migrate to `_behaviors.js` or add explicit cleanup:
+**Completed** (have `onDestroy` wired — verified March 2026):
+- `modal.js` — uses `createFocusTrap`, cleanup via `onDestroy`
+- `select.js` — `onDestroy` added
+- `combobox.js` — `onDestroy` added
+- `context-menu.js` — `onDestroy` added
+- `tooltip.js` — `onDestroy` added
+- `slider.js` — `onDestroy` added
+- `image.js` — `onDestroy` added
+- `data-table.js` — `onDestroy` added
+- `dropdown.js` — `onDestroy` added
 
-- `select.js` — click-outside, escape (should use `createOverlay`)
-- `dropdown.js` — click-outside, escape (should use `createOverlay`)
-- `combobox.js` — click-outside, escape (should use `createOverlay`)
-- `context-menu.js` — click-outside, escape (should use `createOverlay`)
-- `slider.js` — document pointermove/pointerup (should use `createDrag`)
-- `image.js` — document keydown for lightbox
-- `tour.js` — document keydown, window resize
-- `data-table.js` — document pointermove/pointerup for column resize (should use `createDrag`)
-- `tooltip.js` — pending setTimeout on detached DOM
-- `modal.js` — should use `createFocusTrap` (exists in `_behaviors.js` but unused)
+**Remaining** — components that may still benefit from migrating to `_behaviors.js` primitives:
+- `slider.js` — document pointermove/pointerup (candidate for `createDrag`)
+- `data-table.js` — document pointermove/pointerup for column resize (candidate for `createDrag`)
+- `tour.js` — document keydown, window resize (has manual cleanup, could use `createHotkey`)
+
+## Workbench & Tooling Lifecycle
+
+The cleanup contract applies to **ALL code**, not just `src/components/`. Workbench explorer modules, docs site scripts, CLI preview tools — any code that adds event listeners, timers, or observers MUST wire `onDestroy` cleanup.
+
+**Common violations in tooling code:**
+
+- **Motion/animation demos** that add `mouseenter`/`mouseleave` listeners directly via `addEventListener` instead of element props (props are cleaned up with the element)
+- **Search modals** that add `keydown` document listeners without cleanup
+- **Live previews** that create `ResizeObserver` or `MutationObserver` without disconnecting
+
+**Rule:** If a workbench explorer section adds listeners, it follows the same contract as a framework component. Use element event props (e.g. `onmouseenter`) for element-scoped events, and `onDestroy` + `_behaviors.js` for document-level listeners.
+
+---
+
+**See also:** `reference/behaviors.md`, `reference/compound-spacing.md`

@@ -1,0 +1,288 @@
+{
+  "generated": "2026-03-12T02:53:45.685Z",
+  "corpus": {
+    "total": 103,
+    "categories": {
+      "single-domain": 54,
+      "multi-domain": 15,
+      "ambiguous": 12,
+      "edge-case": 12,
+      "adversarial": 10
+    }
+  },
+  "failures": [],
+  "deterministic": {
+    "classification_accuracy": 0.92,
+    "activation_accuracy": 0.59,
+    "completeness_accuracy": 0.89,
+    "blend_accuracy": 0.89
+  },
+  "process_analysis": {
+    "automation_ratio": 0.65,
+    "decision_counts": {
+      "automated": 455,
+      "llm-required": 148,
+      "ambiguous": 18,
+      "fallback": 74
+    },
+    "llm_intervention_points": [
+      {
+        "stage": "SETTLE",
+        "step": "character-inference",
+        "frequency": "72%",
+        "count": 74
+      },
+      {
+        "stage": "SETTLE",
+        "step": "vintage-selection",
+        "frequency": "72%",
+        "count": 74
+      }
+    ],
+    "category_breakdowns": {
+      "single-domain": {
+        "total": 54,
+        "classification_ok": 48,
+        "failures": [
+          {
+            "id": "saas-002",
+            "expected": {
+              "domain": "saas-dashboard",
+              "confidence": "confident",
+              "scores": {
+                "saas-dashboard": {
+                  "min": 2
+                }
+              }
+            },
+            "actual": {
+              "domain": null,
+              "confidence": "none",
+              "scores": {
+                "ecommerce": 0,
+                "saas-dashboard": 1.6,
+                "portfolio": 0,
+                "content-site": 0,
+                "docs-explorer": 0.4
+              }
+            }
+          },
+          {
+            "id": "content-001",
+            "expected": {
+              "domain": "content-site",
+              "confidence": "confident",
+              "scores": {
+                "content-site": {
+                  "min": 2
+                }
+              }
+            },
+            "actual": {
+              "domain": null,
+              "confidence": "none",
+              "scores": {
+                "ecommerce": 0,
+                "saas-dashboard": 0,
+                "portfolio": 0.4,
+                "content-site": 1.6,
+                "docs-explorer": 0
+              }
+            }
+          },
+          {
+            "id": "content-005",
+            "expected": {
+              "domain": "content-site",
+              "confidence": "confident",
+              "scores": {
+                "content-site": {
+                  "min": 2
+                }
+              }
+            },
+            "actual": {
+              "domain": null,
+              "confidence": "none",
+              "scores": {
+                "ecommerce": 0,
+                "saas-dashboard": 0,
+                "portfolio": 0,
+                "content-site": 1.6,
+                "docs-explorer": 0
+              }
+            }
+          },
+          {
+            "id": "content-006",
+            "expected": {
+              "domain": "content-site",
+              "confidence": "confident",
+              "scores": {
+                "content-site": {
+                  "min": 2
+                }
+              }
+            },
+            "actual": {
+              "domain": null,
+              "confidence": "none",
+              "scores": {
+                "ecommerce": 0,
+                "saas-dashboard": 0,
+                "portfolio": 0.8,
+                "content-site": 1.2000000000000002,
+                "docs-explorer": 0
+              }
+            }
+          },
+          {
+            "id": "content-007",
+            "expected": {
+              "domain": "content-site",
+              "confidence": "confident",
+              "scores": {
+                "content-site": {
+                  "min": 2
+                }
+              }
+            },
+            "actual": {
+              "domain": null,
+              "confidence": "none",
+              "scores": {
+                "ecommerce": 0,
+                "saas-dashboard": 0,
+                "portfolio": 0.8,
+                "content-site": 1.2000000000000002,
+                "docs-explorer": 0
+              }
+            }
+          },
+          {
+            "id": "content-010",
+            "expected": {
+              "domain": "content-site",
+              "scores": {
+                "content-site": {
+                  "min": 1.5
+                }
+              }
+            },
+            "actual": {
+              "domain": null,
+              "confidence": "none",
+              "scores": {
+                "ecommerce": 0,
+                "saas-dashboard": 0,
+                "portfolio": 0.4,
+                "content-site": 0.8,
+                "docs-explorer": 0
+              }
+            }
+          }
+        ]
+      },
+      "multi-domain": {
+        "total": 15,
+        "classification_ok": 14,
+        "failures": [
+          {
+            "id": "multi-008",
+            "expected": {
+              "scores": {
+                "ecommerce": {
+                  "min": 1
+                }
+              }
+            },
+            "actual": {
+              "domain": null,
+              "confidence": "none",
+              "scores": {
+                "ecommerce": 0.4,
+                "saas-dashboard": 0,
+                "portfolio": 0.4,
+                "content-site": 0.4,
+                "docs-explorer": 0
+              }
+            }
+          }
+        ]
+      },
+      "ambiguous": {
+        "total": 12,
+        "classification_ok": 12,
+        "failures": []
+      },
+      "edge-case": {
+        "total": 12,
+        "classification_ok": 11,
+        "failures": [
+          {
+            "id": "edge-003",
+            "expected": {
+              "domain": "ecommerce",
+              "confidence": "confident",
+              "scores": {
+                "ecommerce": {
+                  "min": 4
+                }
+              }
+            },
+            "actual": {
+              "domain": "ecommerce",
+              "confidence": "confident",
+              "scores": {
+                "ecommerce": 3,
+                "saas-dashboard": 0,
+                "portfolio": 0,
+                "content-site": 0,
+                "docs-explorer": 0
+              }
+            }
+          }
+        ]
+      },
+      "adversarial": {
+        "total": 10,
+        "classification_ok": 10,
+        "failures": []
+      }
+    },
+    "fallback_reasons": {
+      "No feature DAG for saas-dashboard, using archetype pages": 16,
+      "unknown": 29,
+      "No feature DAG for portfolio, using archetype pages": 15,
+      "No feature DAG for content-site, using archetype pages": 6,
+      "No feature DAG for docs-explorer, using archetype pages": 8
+    },
+    "framework_gaps": [
+      {
+        "gap": "No feature DAG for saas-dashboard",
+        "impact": "Cannot score completeness accurately",
+        "fix": "Create domains/saas-dashboard.json"
+      },
+      {
+        "gap": "No feature DAG for portfolio",
+        "impact": "Cannot score completeness accurately",
+        "fix": "Create domains/portfolio.json"
+      },
+      {
+        "gap": "No feature DAG for content-site",
+        "impact": "Cannot score completeness accurately",
+        "fix": "Create domains/content-site.json"
+      },
+      {
+        "gap": "No feature DAG for docs-explorer",
+        "impact": "Cannot score completeness accurately",
+        "fix": "Create domains/docs-explorer.json"
+      },
+      {
+        "gap": "Synthetic triggers 71% vs hand-authored 86%",
+        "impact": "Lower classification accuracy for non-ecommerce domains",
+        "fix": "Author trigger files for all domains"
+      }
+    ]
+  }
+}

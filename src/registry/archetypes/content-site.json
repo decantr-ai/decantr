@@ -1,0 +1,71 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v1.json",
+  "id": "content-site",
+  "name": "Content Site",
+  "description": "Blog, magazine, documentation, or knowledge base with articles, categories, and search.",
+  "pages": [
+    {
+      "id": "home",
+      "skeleton": "top-nav-main",
+      "patterns": ["hero", "post-list", "category-nav", "cta-section"],
+      "default_blend": [
+        "hero",
+        "category-nav",
+        "post-list",
+        "cta-section"
+      ]
+    },
+    {
+      "id": "category",
+      "skeleton": "top-nav-main",
+      "patterns": ["category-nav", "post-list", "pagination"],
+      "default_blend": [
+        "category-nav",
+        "post-list",
+        "pagination"
+      ]
+    },
+    {
+      "id": "article",
+      "skeleton": "top-nav-main",
+      "patterns": ["article-content", "table-of-contents", "author-card", "post-list"],
+      "default_blend": [
+        { "cols": ["article-content", "table-of-contents"], "span": { "article-content": 3 }, "at": "lg" },
+        "author-card",
+        "post-list"
+      ]
+    },
+    {
+      "id": "search",
+      "skeleton": "top-nav-main",
+      "patterns": ["search-bar", "post-list", "pagination"],
+      "default_blend": [
+        "search-bar",
+        "post-list",
+        "pagination"
+      ]
+    },
+    {
+      "id": "about",
+      "skeleton": "top-nav-main",
+      "patterns": ["detail-header"],
+      "default_blend": [
+        "detail-header"
+      ]
+    },
+    {
+      "id": "contact",
+      "skeleton": "top-nav-main",
+      "patterns": ["contact-form"],
+      "default_blend": ["contact-form"]
+    }
+  ],
+  "tannins": ["search", "content-state", "categories", "analytics"],
+  "skeletons": {
+    "top-nav-main": "Horizontal navigation bar + full-width main content area"
+  },
+  "suggested_vintage": {
+    "styles": ["clean", "glassmorphism"],
+    "modes": ["light", "auto"]
+  }
+}

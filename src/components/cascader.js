@@ -1,14 +1,18 @@
 /**
  * Cascader — Multi-level selection dropdown.
  * Each column shows children of the selected parent.
- * Uses createOverlay for dropdown, keyboard navigation per column.
+ * Uses createFieldOverlay + createListbox.
  *
  * @module decantr/components/cascader
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createSignal, createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { createOverlay, caret } from './_behaviors.js';
+import { caret, createFormField } from './_behaviors.js';
+import { applyFieldState, createFieldOverlay } from './_primitives.js';
+
+const { div, input: inputTag, button: buttonTag, span } = tags;
 
 /**
  * @typedef {Object} CascaderOption
@@ -21,14 +25,21 @@ import { createOverlay, caret } from './_behaviors.js';
 /**
  * @param {Object} [props]
  * @param {CascaderOption[]} [props.options]
- * @param {string[]} [props.value] - Array of selected values (path)
- * @param {Function} [props.onChange] - Called with (selectedValues[], selectedOptions[])
+ * @param {string[]} [props.value]
+ * @param {Function} [props.onChange]
  * @param {string} [props.placeholder='Select']
- * @param {boolean} [props.disabled]
+ * @param {boolean|Function} [props.disabled]
  * @param {boolean} [props.clearable=true]
  * @param {string} [props.separator=' / ']
  * @param {'click'|'hover'} [props.expandTrigger='click']
  * @param {boolean} [props.searchable=false]
+ * @param {boolean|string|Function} [props.error]
+ * @param {boolean|string|Function} [props.success]
+ * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.label]
+ * @param {string} [props.help]
+ * @param {boolean} [props.required]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
@@ -37,38 +48,36 @@ export function Cascader(props = {}) {
   const {
     options = [], value, onChange, placeholder = 'Select', disabled = false,
     clearable = true, separator = ' / ', expandTrigger = 'click',
-    searchable = false, class: cls
+    searchable = false, error, success, variant, size,
+    label, help, required, class: cls
   } = props;
 
   const [selectedPath, setSelectedPath] = createSignal(value || []);
   const [columns, setColumns] = createSignal([options]);
 
-  const displayInput = h('input', {
+  const displayInput = inputTag({
     type: 'text',
     class: 'd-cascader-input',
     placeholder,
-    readonly: !searchable,
-    disabled: disabled || undefined
+    readonly: !searchable
   });
 
-  const clearBtn = h('button', { type: 'button', class: 'd-cascader-clear', 'aria-label': 'Clear', style: { display: 'none' } }, '\u00d7');
+  const clearBtn = buttonTag({ type: 'button', class: 'd-cascader-clear', 'aria-label': 'Clear' }, '\u00d7');
+  clearBtn.style.display = 'none';
 
-  const trigger = h('div', {
-    class: cx('d-cascader-trigger', disabled && 'd-cascader-disabled', cls),
+  const trigger = div({
+    class: cx('d-cascader-trigger'),
     tabindex: disabled ? undefined : '0'
   }, displayInput, clearBtn);
 
-  const dropdown = h('div', {
-    class: 'd-cascader-dropdown',
-    style: { display: 'none' }
-  });
+  const dropdown = div({ class: 'd-cascader-dropdown' });
 
-  const wrap = h('div', { class: 'd-cascader' }, trigger, dropdown);
+  const wrap = div({ class: cx('d-cascader', cls) }, trigger, dropdown);
 
-  const overlay = createOverlay(trigger, dropdown, {
+  applyFieldState(wrap, { error, success, disabled, variant, size });
+
+  const overlay = createFieldOverlay(trigger, dropdown, {
     trigger: disabled ? 'manual' : 'click',
-    closeOnEscape: true,
-    closeOnOutside: true,
     onOpen: () => { wrap.classList.add('d-cascader-open'); },
     onClose: () => { wrap.classList.remove('d-cascader-open'); if (searchable) displayInput.value = getDisplayText(); }
   });
@@ -92,19 +101,19 @@ export function Cascader(props = {}) {
     dropdown.replaceChildren();
 
     cols.forEach((colOptions, colIdx) => {
-      const colEl = h('div', { class: 'd-cascader-column', role: 'listbox' });
+      const colEl = div({ class: 'd-cascader-column', role: 'listbox' });
 
       colOptions.forEach(opt => {
         const isSelected = selectedPath()[colIdx] === opt.value;
         const hasChildren = opt.children && opt.children.length > 0;
 
-        const itemEl = h('div', {
+        const itemEl = div({
           class: cx('d-cascader-option', isSelected && 'd-cascader-option-active', opt.disabled && 'd-cascader-option-disabled'),
           role: 'option',
           'aria-selected': isSelected ? 'true' : 'false',
           tabindex: '-1'
         },
-          h('span', { class: 'd-cascader-option-label' }, opt.label),
+          span({ class: 'd-cascader-option-label' }, opt.label),
           hasChildren ? caret('right', { class: 'd-cascader-option-arrow' }) : null
         );
 
@@ -119,7 +128,6 @@ export function Cascader(props = {}) {
               setColumns(newCols);
               setSelectedPath(newPath);
             } else {
-              // Leaf: finalize selection
               setSelectedPath(newPath);
               setColumns([options]);
               displayInput.value = getDisplayText();
@@ -169,7 +177,6 @@ export function Cascader(props = {}) {
       const q = displayInput.value.toLowerCase();
       if (!q) { setColumns([options]); renderColumns(); return; }
 
-      // Flatten and filter
       const flat = [];
       function walk(opts, path, labels) {
         opts.forEach(o => {
@@ -198,10 +205,25 @@ export function Cascader(props = {}) {
     clearBtn.style.display = (clearable && path.length) ? '' : 'none';
   });
 
-  // Render on open
-  createEffect(() => {
-    renderColumns();
-  });
+  createEffect(() => { renderColumns(); });
+
+  onDestroy(() => { overlay.destroy(); });
+
+  // Reactive disabled
+  if (typeof disabled === 'function') {
+    createEffect(() => {
+      const v = disabled();
+      displayInput.disabled = v;
+      trigger.setAttribute('tabindex', v ? '' : '0');
+    });
+  } else if (disabled) {
+    displayInput.disabled = true;
+  }
+
+  if (label || help) {
+    const { wrapper } = createFormField(wrap, { label, error, help, required, success, variant, size });
+    return wrapper;
+  }
 
   return wrap;
 }

@@ -69,7 +69,7 @@ export function layoutHeatmap(spec, width, height) {
 
       children.push(rect({
         x: x + 1, y: y + 1, w: cellW - 2, h: cellH - 2,
-        rx: 2, fill: cellColor(val),
+        rx: Math.min(2, (cellW - 2) / 4), fill: cellColor(val),
         class: 'd-chart-bar',
         data: { label: `${xCats[i]}, ${yCats[j]}`, value: val, series: 'heatmap' },
         key: `heat-${i}-${j}`

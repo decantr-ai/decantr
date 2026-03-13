@@ -1,0 +1,78 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v1.json",
+  "id": "command-center",
+  "name": "Command Center",
+  "style": "command-center",
+  "mode": "dark",
+  "description": "HUD/radar visual language. Monochromatic cyan, beveled frames, scanlines, status bars. All standard Decantr components work — this recipe describes how to COMPOSE them differently for the Command Center aesthetic.",
+  "setup": "import { setStyle, setMode } from 'decantr/css';\nsetStyle('command-center');\nsetMode('dark');",
+  "decorators": {
+    "cc-frame": "Beveled octagonal border frame. Apply to containers, panels, and section wrappers.",
+    "cc-frame-sm": "Smaller bevel variant for Cards and compact panels.",
+    "cc-corner": "Corner bracket decorations (top-left + bottom-right). Apply to section containers.",
+    "cc-scanline": "Subtle horizontal scanline overlay. Apply to data-heavy areas and backgrounds.",
+    "cc-grid": "Faint grid-line pattern background. Apply to page backgrounds and large containers.",
+    "cc-bar": "Status bar row — flex, uppercase, tracked, border-bottom. Use as panel headers.",
+    "cc-bar-bottom": "Status bar variant with border-top instead. Use as panel footers.",
+    "cc-blink": "Slow 2s pulse animation for status indicators and dots.",
+    "cc-glow": "Cyan glow shadow effect. Apply to important/active elements.",
+    "cc-glow-strong": "Stronger glow variant for hero KPIs and primary actions.",
+    "cc-glow-pulse": "Animated glow pulse (3s loop). Use sparingly for critical status.",
+    "cc-divider": "HUD-style dashed horizontal rule.",
+    "cc-label": "Uppercase micro label with wide letter-spacing.",
+    "cc-data": "Monospace tabular-nums readout styling for data values.",
+    "cc-indicator": "Square status dot (uses currentColor).",
+    "cc-indicator-ok": "Green status indicator.",
+    "cc-indicator-warn": "Warning status indicator.",
+    "cc-indicator-error": "Error status indicator.",
+    "cc-mesh": "Subtle radial gradient background for page-level containers."
+  },
+  "compositions": {
+    "panel": {
+      "description": "Standard HUD panel. Beveled frame with status bar header.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('cc-frame') },\n  div({ class: css('cc-bar') },\n    span('SYSTEM STATUS'),\n    span({ class: css('cc-indicator cc-indicator-ok cc-blink') })\n  ),\n  div({ class: css('_p4') },\n    // content here\n  )\n)"
+    },
+    "card": {
+      "wraps": "Card",
+      "description": "Command Center card. Standard Card wrapped in cc-frame with status bar header.",
+      "example": "const { div, span, h3 } = tags;\ndiv({ class: css('cc-frame-sm') },\n  Card({},\n    Card.Header({},\n      div({ class: css('cc-bar') },\n        span({ class: css('cc-label') }, 'THREAT LEVEL'),\n        span({ class: css('cc-indicator cc-indicator-warn cc-blink') })\n      )\n    ),\n    Card.Body({},\n      span({ class: css('cc-data _heading2') }, '42')\n    ),\n    Card.Footer({ class: css('cc-bar-bottom') },\n      span({ class: css('cc-label') }, 'UPDATED 14:32:07')\n    )\n  )\n)"
+    },
+    "kpi": {
+      "wraps": "Statistic",
+      "description": "KPI metric display with HUD frame and glow.",
+      "example": "const { div } = tags;\ndiv({ class: css('cc-frame-sm cc-glow') },\n  Statistic({\n    title: 'ACTIVE THREATS',\n    value: () => count(),\n    icon: 'alert-triangle',\n    class: css('_bg[transparent]')\n  })\n)"
+    },
+    "table": {
+      "wraps": "DataTable",
+      "description": "Data table in HUD frame with scanline overlay and live status bar.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('cc-frame cc-scanline') },\n  div({ class: css('cc-bar') },\n    span({ class: css('cc-label') }, 'SIGNAL LOG'),\n    span({ class: css('cc-label cc-blink') }, 'LIVE')\n  ),\n  DataTable({ columns, data })\n)"
+    },
+    "form": {
+      "description": "Form inputs in Command Center style. Standard components with cc-frame wrapper.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('cc-frame') },\n  div({ class: css('cc-bar') },\n    span({ class: css('cc-label') }, 'AUTHENTICATION')\n  ),\n  div({ class: css('_p4 _flex _col _gap3') },\n    Input({ label: 'CALLSIGN' }),\n    Input({ label: 'ACCESS CODE', type: 'password' }),\n    Button({ variant: 'primary' }, 'AUTHORIZE')\n  )\n)"
+    },
+    "sidebar": {
+      "description": "Navigation sidebar with HUD frame and grid background.",
+      "example": "const { div, nav, span, a } = tags;\ndiv({ class: css('cc-frame cc-grid _h[100vh]') },\n  div({ class: css('cc-bar') },\n    span({ class: css('cc-label') }, 'NAV SYSTEM')\n  ),\n  nav({ class: css('_flex _col _gap1 _p3') },\n    a({ href: '#overview', class: css('_p2 _px3 cc-label') }, 'OVERVIEW'),\n    a({ href: '#fleet', class: css('_p2 _px3 cc-label') }, 'FLEET MAP'),\n    a({ href: '#alerts', class: css('_p2 _px3 cc-label') }, 'ALERTS')\n  )\n)"
+    },
+    "layout": {
+      "description": "Full page Command Center layout. CSS grid with sidebar + main content area.",
+      "example": "const { div, main, header, span } = tags;\ndiv({ class: css('_grid _h[100vh] cc-mesh'), style: 'grid-template-columns:240px 1fr' },\n  // sidebar (cc-frame + cc-grid)\n  // ...,\n  div({ class: css('_flex _col _overflow[hidden]') },\n    header({ class: css('cc-bar') },\n      span({ class: css('cc-label') }, 'COMMAND CENTER'),\n      span({ class: css('cc-data') }, new Date().toISOString())\n    ),\n    main({ class: css('_flex _col _gap4 _p4 _overflow[auto]') },\n      // page content — panels, kpis, tables\n    )\n  )\n)"
+    },
+    "alert": {
+      "wraps": "Alert",
+      "description": "Alert/notification in Command Center style.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('cc-frame-sm') },\n  Alert({ variant: 'warning' },\n    span({ class: css('cc-label') }, 'WARNING: PERIMETER BREACH DETECTED')\n  )\n)"
+    },
+    "modal": {
+      "wraps": "Modal",
+      "description": "Modal dialog with HUD frame. Apply cc-frame to content panel via class.",
+      "example": "const { div, span } = tags;\nModal({\n  visible: showModal,\n  onClose: () => setShowModal(false),\n  class: css('cc-frame')\n},\n  div({ class: css('cc-bar') },\n    span({ class: css('cc-label') }, 'CONFIRM ACTION')\n  ),\n  div({ class: css('_p4') },\n    // modal content\n  )\n)"
+    },
+    "chart": {
+      "wraps": "Line",
+      "description": "Chart area with HUD frame and scanline overlay.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('cc-frame cc-scanline') },\n  div({ class: css('cc-bar') },\n    span({ class: css('cc-label') }, 'FUEL CONSUMPTION'),\n    span({ class: css('cc-data cc-blink') }, 'STREAMING')\n  ),\n  Line({ data: fuelData, height: 300 })\n)"
+    }
+  }
+}

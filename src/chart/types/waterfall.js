@@ -69,7 +69,7 @@ export function layoutWaterfall(spec, width, height) {
     else color = 'var(--d-error)';
 
     children.push(rect({
-      x, y: top, w: bandW, h, fill: color, class: 'd-chart-bar',
+      x, y: top, w: bandW, h, rx: Math.min(4, bandW / 4), fill: color, class: 'd-chart-bar',
       data: { label: it.label, value: it.value, series: 'waterfall' },
       key: `wf-${i}`
     }));

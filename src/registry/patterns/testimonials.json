@@ -1,0 +1,17 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "testimonials",
+  "name": "Testimonials",
+  "description": "Customer testimonial cards in a responsive grid with avatar, quote, and attribution.",
+  "components": ["Card", "Avatar", "Badge", "Text"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc3 _gap6 _py8",
+    "slots": {
+      "testimonial-card": "Card container for each testimonial entry",
+      "avatar": "Avatar image of the testimonial author",
+      "quote": "Quoted text content of the testimonial",
+      "attribution": "Author name, role, and optional company badge"
+    }
+  }
+}

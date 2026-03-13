@@ -47,6 +47,14 @@ export function renderSVG(sceneNode) {
     width, height
   });
 
+  // Collect gradient nodes from scene graph and render <defs>
+  const gradients = collectGradients(children);
+  if (gradients.length) {
+    const defs = svgEl('defs', null);
+    for (const g of gradients) defs.appendChild(renderGradient(g));
+    root.appendChild(defs);
+  }
+
   for (const child of children) {
     const el = renderNode(child);
     if (el) root.appendChild(el);
@@ -73,6 +81,7 @@ function renderNode(node) {
     case 'arc': return renderArc(node);
     case 'polygon': return renderPolygon(node);
     case 'image': return renderImage(node);
+    case 'gradient': return null; // handled in <defs>
     default: return null;
   }
 }
@@ -202,6 +211,37 @@ function renderImage(node) {
   };
   if (node.class) attrs.class = node.class;
   return svgEl('image', attrs);
+}
+
+// --- Gradient helpers ---
+
+function collectGradients(children) {
+  const result = [];
+  for (const child of children) {
+    if (child && child.type === 'gradient') result.push(child);
+    if (child && child.children) result.push(...collectGradients(child.children));
+  }
+  return result;
+}
+
+function renderGradient(node) {
+  const attrs = { id: node.id };
+  if (node.x1 != null) attrs.x1 = node.x1;
+  if (node.y1 != null) attrs.y1 = node.y1;
+  if (node.x2 != null) attrs.x2 = node.x2;
+  if (node.y2 != null) attrs.y2 = node.y2;
+  attrs.gradientUnits = 'userSpaceOnUse';
+
+  const grad = svgEl('linearGradient', attrs);
+  if (node.stops) {
+    for (const s of node.stops) {
+      const stopAttrs = { offset: s.offset };
+      if (s.color) stopAttrs['stop-color'] = s.color;
+      if (s.opacity != null) stopAttrs['stop-opacity'] = s.opacity;
+      grad.appendChild(svgEl('stop', stopAttrs));
+    }
+  }
+  return grad;
 }
 
 // --- Helpers ---

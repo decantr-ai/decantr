@@ -1,0 +1,16 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "author-card",
+  "name": "Author Card",
+  "description": "Author attribution card with avatar, name, bio, and social links.",
+  "components": ["Card", "Avatar", "Badge", "Text", "Button"],
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_flex _gap4 _aic _p4",
+    "slots": {
+      "avatar": "Author Avatar image",
+      "author-info": "Name, bio text, and optional role Badge",
+      "social-links": "Row of social link Buttons or icon links"
+    }
+  }
+}

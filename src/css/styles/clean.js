@@ -28,9 +28,20 @@ export const clean = {
     density: 'comfortable',
     gradient: 'none',
   },
+  typography: {
+    '--d-fw-heading': '700',
+    '--d-fw-title': '600',
+    '--d-ls-heading': '-0.025em',
+  },
   overrides: {
-    light: {},
-    dark: {},
+    light: {
+      '--d-border': 'rgba(0,0,0,0.12)',
+      '--d-border-strong': 'rgba(0,0,0,0.22)',
+    },
+    dark: {
+      '--d-border': 'rgba(255,255,255,0.12)',
+      '--d-border-strong': 'rgba(255,255,255,0.22)',
+    },
   },
   /** Component CSS (injected into d.theme layer). Minimal — most styling comes from tokens. */
   components: [

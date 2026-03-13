@@ -1,0 +1,16 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "order-history",
+  "name": "Order History",
+  "description": "Order listing table with status badges, date columns, and action links.",
+  "components": ["DataTable", "Badge", "Button"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "filters": "Optional filter controls for date range and status",
+      "order-table": "DataTable with order ID, date, status Badge, and total columns",
+      "pagination": "Bottom pagination row for navigating order pages"
+    }
+  }
+}

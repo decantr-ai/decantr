@@ -1,0 +1,16 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "search-bar",
+  "name": "Search Bar",
+  "description": "Search input with optional filters and real-time suggestions.",
+  "components": ["Input", "Button", "Dropdown"],
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_flex _gap2 _aic",
+    "slots": {
+      "search-input": "Primary search Input with icon and placeholder",
+      "filter-controls": "Optional filter Buttons or Dropdown toggles",
+      "suggestions": "Real-time suggestion list below the input"
+    }
+  }
+}

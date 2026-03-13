@@ -1,0 +1,88 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v1.json",
+  "id": "ecommerce",
+  "name": "E-Commerce",
+  "description": "Online retail with product catalog, cart, checkout, and account management.",
+  "pages": [
+    {
+      "id": "home",
+      "skeleton": "top-nav-main",
+      "patterns": ["hero", "product-grid", "category-nav", "testimonials", "cta-section"],
+      "default_blend": [
+        "hero",
+        "category-nav",
+        "product-grid",
+        "testimonials",
+        "cta-section"
+      ]
+    },
+    {
+      "id": "catalog",
+      "skeleton": "top-nav-main",
+      "patterns": ["filter-sidebar", "product-grid", "filter-bar", "pagination"],
+      "default_blend": [
+        "filter-bar",
+        { "cols": ["filter-sidebar", "product-grid"], "span": { "product-grid": 3 }, "at": "md" },
+        "pagination"
+      ]
+    },
+    {
+      "id": "product",
+      "skeleton": "top-nav-main",
+      "patterns": ["media-gallery", "detail-panel", "testimonials", "product-grid"],
+      "default_blend": [
+        { "cols": ["media-gallery", "detail-panel"], "at": "md" },
+        "testimonials",
+        "product-grid"
+      ]
+    },
+    {
+      "id": "cart",
+      "skeleton": "top-nav-main",
+      "patterns": ["data-table", "pricing-table"],
+      "default_blend": [
+        { "cols": ["data-table", "pricing-table"], "span": { "data-table": 2 }, "at": "md" }
+      ]
+    },
+    {
+      "id": "checkout",
+      "skeleton": "minimal-header",
+      "patterns": ["wizard"],
+      "default_blend": [
+        "wizard"
+      ]
+    },
+    {
+      "id": "account",
+      "skeleton": "sidebar-main",
+      "patterns": ["form-sections", "order-history"],
+      "default_blend": [
+        "form-sections",
+        "order-history"
+      ]
+    },
+    {
+      "id": "login",
+      "skeleton": "centered",
+      "patterns": ["auth-form"],
+      "default_blend": ["auth-form"]
+    },
+    {
+      "id": "register",
+      "skeleton": "centered",
+      "patterns": ["auth-form"],
+      "default_blend": ["auth-form"]
+    }
+  ],
+  "tannins": ["auth", "cart-state", "search", "payments", "inventory", "wishlist"],
+  "skeletons": {
+    "top-nav-main": "Horizontal navigation bar + full-width main content area",
+    "sidebar-main": "Vertical sidebar navigation + main content area",
+    "minimal-header": "Slim header (logo + progress) + centered content",
+    "centered": "Centered card on background — for auth flows"
+  },
+  "suggested_vintage": {
+    "styles": ["clean", "glassmorphism", "auradecantism"],
+    "modes": ["light", "auto"]
+  }
+}

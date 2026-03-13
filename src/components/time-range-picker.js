@@ -1,26 +1,40 @@
 /**
  * TimeRangePicker — Two time selectors for start/end time range.
- * Uses createOverlay behavior and scrollable hour/minute columns.
+ * Uses renderTimeColumns primitive, createFieldOverlay behavior.
  *
  * @module decantr/components/time-range-picker
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { createOverlay } from './_behaviors.js';
+import { createFormField } from './_behaviors.js';
+import { applyFieldState, createFieldOverlay, renderTimeColumns } from './_primitives.js';
+
+const { div, button: buttonTag, span } = tags;
 
 /**
  * @param {Object} [props]
  * @param {Array<string>|Function} [props.value] - ['09:00', '17:00']
  * @param {string} [props.placeholder='Select time range']
- * @param {Function} [props.onchange] - ([startTime, endTime]) => void
+ * @param {Function} [props.onchange]
  * @param {boolean|Function} [props.disabled]
+ * @param {boolean|string|Function} [props.error]
+ * @param {boolean|string|Function} [props.success]
+ * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.label]
+ * @param {string} [props.help]
+ * @param {boolean} [props.required]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function TimeRangePicker(props = {}) {
   injectBase();
-  const { value, placeholder = 'Select time range', onchange, disabled, class: cls } = props;
+  const {
+    value, placeholder = 'Select time range', onchange,
+    disabled, error, success, variant, size, label, help, required, class: cls
+  } = props;
 
   let _sh = 9, _sm = 0, _eh = 17, _em = 0;
   let _hasValue = false;
@@ -41,22 +55,21 @@ export function TimeRangePicker(props = {}) {
   }
 
   function toMinutes(hh, mm) { return hh * 60 + mm; }
-
-  function isValid() {
-    return toMinutes(_eh, _em) > toMinutes(_sh, _sm);
-  }
+  function isValid() { return toMinutes(_eh, _em) > toMinutes(_sh, _sm); }
 
   // Display
-  const displayEl = h('span', { class: 'd-select-display' });
-  const trigger = h('button', {
+  const displayEl = span({ class: 'd-select-display' });
+  const trigger = buttonTag({
     type: 'button',
     class: 'd-select',
     'aria-haspopup': 'dialog',
     'aria-expanded': 'false'
-  }, displayEl, h('span', { class: 'd-select-arrow' }, '\u23F0'));
+  }, displayEl, span({ class: 'd-select-arrow' }, '\u23F0'));
 
-  const panel = h('div', { class: 'd-timerange-panel', style: { display: 'none' } });
-  const wrap = h('div', { class: cx('d-timerange', cls) }, trigger, panel);
+  const panel = div({ class: 'd-timerange-panel' });
+  const wrap = div({ class: cx('d-timerange', cls) }, trigger, panel);
+
+  applyFieldState(wrap, { error, success, disabled, variant, size });
 
   function updateDisplay() {
     if (_hasValue) {
@@ -72,30 +85,6 @@ export function TimeRangePicker(props = {}) {
     _hasValue = true;
     updateDisplay();
     if (onchange) onchange([formatTime(_sh, _sm), formatTime(_eh, _em)]);
-  }
-
-  function createColumn(count, step, selected, onSelect) {
-    const col = h('div', { class: 'd-timepicker-column' });
-    for (let i = 0; i < count; i += step) {
-      const cell = h('button', {
-        type: 'button',
-        class: cx('d-timepicker-cell', i === selected && 'd-timepicker-cell-selected'),
-        tabindex: '-1'
-      }, String(i).padStart(2, '0'));
-      cell.addEventListener('click', () => {
-        onSelect(i);
-        col.querySelectorAll('.d-timepicker-cell').forEach(c => c.classList.remove('d-timepicker-cell-selected'));
-        cell.classList.add('d-timepicker-cell-selected');
-        renderValidation();
-        emitChange();
-      });
-      col.appendChild(cell);
-    }
-    requestAnimationFrame(() => {
-      const sel = col.querySelector('.d-timepicker-cell-selected');
-      if (sel) sel.scrollIntoView({ block: 'center' });
-    });
-    return col;
   }
 
   let errorEl = null;
@@ -114,38 +103,48 @@ export function TimeRangePicker(props = {}) {
   function renderPanel() {
     panel.replaceChildren();
 
-    // Start section
-    const startLabel = h('div', { class: 'd-timerange-label' }, 'Start');
-    const startCols = h('div', { class: 'd-timerange-columns' },
-      createColumn(24, 1, _sh, (v) => { _sh = v; }),
-      createColumn(60, 1, _sm, (v) => { _sm = v; })
-    );
-    const startSection = h('div', { class: 'd-timerange-section' }, startLabel, startCols);
+    // Start time columns
+    const startLabel = div({ class: 'd-timerange-label' }, 'Start');
+    const startCols = renderTimeColumns({
+      hours: _sh,
+      minutes: _sm,
+      onChange: (vals) => {
+        _sh = vals.hours;
+        _sm = vals.minutes;
+        renderValidation();
+        emitChange();
+      }
+    });
+    const startSection = div({ class: 'd-timerange-section' }, startLabel, startCols);
 
-    // Divider
-    const divider = h('div', { class: 'd-timerange-divider' }, '\u2014');
+    const divider = div({ class: 'd-timerange-divider' }, '\u2014');
 
-    // End section
-    const endLabel = h('div', { class: 'd-timerange-label' }, 'End');
-    const endCols = h('div', { class: 'd-timerange-columns' },
-      createColumn(24, 1, _eh, (v) => { _eh = v; }),
-      createColumn(60, 1, _em, (v) => { _em = v; })
-    );
-    const endSection = h('div', { class: 'd-timerange-section' }, endLabel, endCols);
+    // End time columns
+    const endLabel = div({ class: 'd-timerange-label' }, 'End');
+    const endCols = renderTimeColumns({
+      hours: _eh,
+      minutes: _em,
+      onChange: (vals) => {
+        _eh = vals.hours;
+        _em = vals.minutes;
+        renderValidation();
+        emitChange();
+      }
+    });
+    const endSection = div({ class: 'd-timerange-section' }, endLabel, endCols);
 
-    // Error message
-    errorEl = h('div', { class: 'd-timerange-error', role: 'alert', style: { display: 'none' } });
+    errorEl = div({ class: 'd-timerange-error', role: 'alert' });
+    errorEl.style.display = 'none';
 
-    const row = h('div', { style: { display: 'flex' } }, startSection, divider, endSection);
+    const row = div({ class: 'd-timerange-row' }, startSection, divider, endSection);
     panel.appendChild(row);
     panel.appendChild(errorEl);
     renderValidation();
   }
 
-  createOverlay(trigger, panel, {
+  const overlay = createFieldOverlay(trigger, panel, {
     trigger: 'click',
-    closeOnEscape: true,
-    closeOnOutside: true,
+    matchWidth: false,
     onOpen: renderPanel
   });
 
@@ -165,6 +164,14 @@ export function TimeRangePicker(props = {}) {
     createEffect(() => { parseValue(value()); updateDisplay(); });
   }
 
+  onDestroy(() => { overlay.destroy(); });
+
   updateDisplay();
+
+  if (label || help) {
+    const { wrapper } = createFormField(wrap, { label, error, help, required, success, variant, size });
+    return wrapper;
+  }
+
   return wrap;
 }

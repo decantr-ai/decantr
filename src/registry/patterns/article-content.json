@@ -1,0 +1,23 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "article-content",
+  "name": "Article Content",
+  "description": "Long-form article layout with sticky table-of-contents sidebar. Used for documentation, blog posts, and content-heavy pages.",
+  "components": ["Card", "Avatar", "Badge", "Text", "Separator"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc12 _gap8 _p6",
+    "slots": {
+      "toc-sidebar": "Sticky nav list in a 3-column sidebar with _colSpan3, built from heading anchors",
+      "article": "Main content area with _colSpan9, containing prose Text and Card sections",
+      "author": "Card at article end with Avatar, bio Text, and links, preceded by Separator"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-scanline",
+      "notes": "ToC headings use cc-label. Active ToC item gets cc-glow. Article headings use cc-label. Code blocks use cc-scanline with cc-data for line numbers."
+    }
+  }
+}

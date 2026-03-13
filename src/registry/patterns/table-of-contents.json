@@ -1,0 +1,15 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "table-of-contents",
+  "name": "Table of Contents",
+  "description": "Hierarchical content navigation with active state tracking and scroll spy.",
+  "components": ["List", "Link"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap1 _sticky _top4",
+    "slots": {
+      "toc-list": "Nested list of section headings with indentation levels",
+      "toc-item": "Individual heading link with active state highlight"
+    }
+  }
+}

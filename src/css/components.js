@@ -55,12 +55,12 @@ export const componentCSS = [
   '.d-toggle-outline:hover{background:var(--d-surface-1)}',
   '.d-toggle-outline[aria-pressed="true"]{background:var(--d-primary-subtle);color:var(--d-primary);border-color:var(--d-primary-border)}',
   // ── Toggle Group (segmented pill container) ──
-  '.d-toggle-group{background:var(--d-surface-1);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius)}',
+  '.d-toggle-group{background:var(--d-surface-1);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel)}',
   '.d-toggle-group>.d-toggle{background:transparent;border:none;border-radius:var(--d-radius-inner);color:var(--d-muted)}',
   '.d-toggle-group>.d-toggle:hover{background:var(--d-surface-0);color:var(--d-fg);transform:none;box-shadow:none}',
   '.d-toggle-group>.d-toggle:active{transform:none}',
-  '.d-toggle-group>.d-toggle[aria-pressed="true"]{background:transparent;box-shadow:none;color:var(--d-fg)}',
-  '.d-toggle-indicator{background:var(--d-bg);box-shadow:var(--d-elevation-1)}',
+  '.d-toggle-group>.d-toggle[aria-pressed="true"],.d-toggle-group>.d-toggle[aria-checked="true"]{background:transparent;box-shadow:none;color:var(--d-selection-fg)}',
+  '.d-toggle-indicator{background:var(--d-selection-bg);box-shadow:var(--d-selection-shadow)}',
 
   // ═══════════════════════════════════════════════════════════════
   // SPINNER
@@ -79,12 +79,9 @@ export const componentCSS = [
   // ═══════════════════════════════════════════════════════════════
   // INPUT
   // ═══════════════════════════════════════════════════════════════
-  '.d-input-wrap{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-group-radius, var(--d-radius));border-width:var(--d-group-border, var(--d-border-width));transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-  '.d-input-wrap:focus-within{border-color:var(--d-ring);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-primary-subtle))}',
+  // .d-input-wrap visual (bg, border, focus) now handled by .d-field in d.base layer
   '.d-input{color:var(--d-fg)}',
   '.d-input::placeholder{color:var(--d-muted)}',
-  '.d-input-error{border-color:var(--d-error)}',
-  '.d-input-error:focus-within{border-color:var(--d-error);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-error-subtle))}',
 
   // ── INPUT GROUP / COMPACT GROUP — visual ──
   // Group draws the outer border. Children are borderless. Separators between children.
@@ -95,6 +92,8 @@ export const componentCSS = [
   // Horizontal separators
   '.d-input-group>:not(:first-child){border-left:var(--d-border-width) var(--d-border-style) var(--d-border)}',
   '.d-input-group-error>:not(:first-child){border-left-color:var(--d-error)}',
+  // Vertical — panel-level radius, container clips children
+  '.d-input-group-vertical{border-radius:var(--d-radius-panel)}',
   // Vertical separators (override horizontal)
   '.d-input-group-vertical>:not(:first-child){border-left-width:0;border-top:var(--d-border-width) var(--d-border-style) var(--d-border)}',
   '.d-input-group-error.d-input-group-vertical>:not(:first-child){border-top-color:var(--d-error)}',
@@ -111,8 +110,7 @@ export const componentCSS = [
   // ═══════════════════════════════════════════════════════════════
   // INPUT NUMBER
   // ═══════════════════════════════════════════════════════════════
-  '.d-inputnumber{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-group-radius, var(--d-radius));border-width:var(--d-group-border, var(--d-border-width));color:var(--d-fg);transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-  '.d-inputnumber:focus-within{border-color:var(--d-ring);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-primary-subtle))}',
+  // .d-inputnumber visual (bg, border, focus) now handled by .d-field in d.base layer
   '.d-inputnumber-step{color:var(--d-muted);transition:all var(--d-duration-fast) var(--d-easing-standard)}',
   '.d-inputnumber-step:hover{color:var(--d-fg);background:var(--d-surface-1)}',
   '.d-inputnumber-step:active{background:var(--d-surface-0)}',
@@ -120,19 +118,15 @@ export const componentCSS = [
   // ═══════════════════════════════════════════════════════════════
   // INPUT OTP
   // ═══════════════════════════════════════════════════════════════
-  '.d-otp-slot{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius);color:var(--d-fg)}',
-  '.d-otp-slot:focus-visible{border-color:var(--d-ring)}',
+  // .d-otp-slot visual (bg, border) now handled by .d-field in d.base layer
   '.d-otp-separator{color:var(--d-muted)}',
 
   // ═══════════════════════════════════════════════════════════════
   // TEXTAREA
   // ═══════════════════════════════════════════════════════════════
-  '.d-textarea-wrap{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-group-radius, var(--d-radius-panel));border-width:var(--d-group-border, var(--d-border-width));transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-  '.d-textarea-wrap:focus-within{border-color:var(--d-ring);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-primary-subtle))}',
+  // .d-textarea-wrap visual (bg, border, focus) now handled by .d-field in d.base layer
   '.d-textarea{color:var(--d-fg);resize:vertical}',
   '.d-textarea::placeholder{color:var(--d-muted)}',
-  '.d-textarea-error{border-color:var(--d-error)}',
-  '.d-textarea-error:focus-within{border-color:var(--d-error);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-error-subtle))}',
 
   // ═══════════════════════════════════════════════════════════════
   // BADGE
@@ -166,6 +160,8 @@ export const componentCSS = [
   '.d-checkbox-check{border-radius:var(--d-checkbox-radius,4px);border:var(--d-border-width) var(--d-border-style) var(--d-border);background:var(--d-bg);transition:all var(--d-duration-fast) var(--d-easing-standard)}',
   '.d-checkbox:has(:checked) .d-checkbox-check,.d-checkbox-inline:has(:checked) .d-checkbox-check{background:var(--d-primary);border-color:var(--d-primary);color:var(--d-primary-fg)}',
   '.d-checkbox:has(:indeterminate) .d-checkbox-check,.d-checkbox-inline:has(:indeterminate) .d-checkbox-check{background:var(--d-primary);border-color:var(--d-primary);color:var(--d-primary-fg)}',
+  '.d-checkbox[data-error] .d-checkbox-check{border-color:var(--d-error)}',
+  '.d-checkbox[data-success] .d-checkbox-check{border-color:var(--d-success)}',
 
   // ═══════════════════════════════════════════════════════════════
   // SWITCH
@@ -185,25 +181,21 @@ export const componentCSS = [
   // ═══════════════════════════════════════════════════════════════
   // SELECT
   // ═══════════════════════════════════════════════════════════════
-  '.d-select-wrap{transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-  '.d-select{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-group-radius, var(--d-radius));border-width:var(--d-group-border, var(--d-border-width));color:var(--d-fg);transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-  '.d-select:focus-visible{border-color:var(--d-ring);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-primary-subtle));outline:none}',
-  '.d-select-open .d-select{border-color:var(--d-ring);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-primary-subtle))}',
+  // .d-select-wrap/.d-select visual (bg, border, focus) now handled by .d-field in d.base layer
+  '.d-select-open .d-field{border-color:var(--d-field-border-focus);box-shadow:var(--d-group-shadow,var(--d-field-ring))}',
   '.d-select-dropdown{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2)}',
   '.d-select-option{color:var(--d-fg);transition:background var(--d-duration-fast) var(--d-easing-standard)}',
   // Unified listitem state contract — hover/highlight/active for all dropdown types
   '.d-select-option:hover,.d-select-option-highlight,.d-combobox-option:hover,.d-combobox-option-highlight,.d-dropdown-item:hover,.d-dropdown-item-highlight,.d-cascader-option:hover,.d-cascader-option-highlight{background:var(--d-surface-1);color:var(--d-fg)}',
   '.d-select-option-active,.d-combobox-option-active{background:var(--d-primary);color:var(--d-primary-fg)}',
   '.d-select-option-active:hover,.d-combobox-option-active:hover{background:var(--d-primary-hover);color:var(--d-primary-fg)}',
-  '.d-select-error{border-color:var(--d-error)}',
-  '.d-select-error:focus-within{border-color:var(--d-error);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-error-subtle))}',
+  // .d-select-error removed — error state now via .d-field[data-error] in d.base
   '.d-select-multi-tag{background:var(--d-surface-1);border:var(--d-border-width) var(--d-border-style) var(--d-border)}',
 
   // ═══════════════════════════════════════════════════════════════
   // COMBOBOX
   // ═══════════════════════════════════════════════════════════════
-  '.d-combobox-input-wrap{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-group-radius, var(--d-radius));border-width:var(--d-group-border, var(--d-border-width));transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-  '.d-combobox-input-wrap:focus-within{border-color:var(--d-ring);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-primary-subtle))}',
+  // .d-combobox-input-wrap visual (bg, border, focus) now handled by .d-field in d.base layer
   '.d-combobox-input{color:var(--d-fg)}',
   '.d-combobox-input::placeholder{color:var(--d-muted)}',
   '.d-combobox-arrow{color:var(--d-muted)}',
@@ -211,7 +203,7 @@ export const componentCSS = [
   '.d-combobox-option{color:var(--d-fg);transition:background var(--d-duration-fast) var(--d-easing-standard)}',
   // Combobox hover/highlight/active handled by unified listitem contract above
   '.d-combobox-empty{color:var(--d-muted)}',
-  '.d-combobox-error .d-combobox-input-wrap{border-color:var(--d-error)}',
+  // .d-combobox-error removed — error state now via .d-field[data-error] in d.base
 
   // ═══════════════════════════════════════════════════════════════
   // SLIDER
@@ -235,8 +227,7 @@ export const componentCSS = [
   // ═══════════════════════════════════════════════════════════════
   // COLOR PICKER
   // ═══════════════════════════════════════════════════════════════
-  '.d-colorpicker-trigger{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-group-radius, var(--d-radius));border-width:var(--d-group-border, var(--d-border-width));color:var(--d-fg);transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-  '.d-colorpicker-trigger:focus-within,.d-colorpicker-trigger:focus-visible{border-color:var(--d-ring);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-primary-subtle))}',
+  // .d-colorpicker-trigger visual (bg, border, focus) now handled by .d-field in d.base layer
   '.d-colorpicker-panel{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2)}',
 
   // ═══════════════════════════════════════════════════════════════
@@ -279,8 +270,7 @@ export const componentCSS = [
   // ═══════════════════════════════════════════════════════════════
   // CASCADER
   // ═══════════════════════════════════════════════════════════════
-  '.d-cascader-trigger{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-group-radius, var(--d-radius));border-width:var(--d-group-border, var(--d-border-width));color:var(--d-fg);transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-  '.d-cascader-trigger:focus-within{border-color:var(--d-ring);box-shadow:var(--d-group-shadow, 0 0 0 var(--d-focus-ring-width) var(--d-primary-subtle))}',
+  // .d-cascader-trigger visual (bg, border, focus) now handled by .d-field in d.base layer
   '.d-cascader-input::placeholder{color:var(--d-muted)}',
   '.d-cascader-dropdown{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2)}',
   '.d-cascader-column{border-right:var(--d-border-width) var(--d-border-style) var(--d-border)}',
@@ -374,9 +364,13 @@ export const componentCSS = [
   // TABS
   // ═══════════════════════════════════════════════════════════════
   '.d-tabs-list{border-bottom:var(--d-border-width) var(--d-border-style) var(--d-border)}',
-  '.d-tab{color:var(--d-muted);border-bottom:2px solid transparent;transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-  '.d-tab:hover{color:var(--d-fg)}',
+  '.d-tab{color:var(--d-muted);border-bottom:var(--d-border-width-strong) solid transparent;transition:all var(--d-duration-fast) var(--d-easing-standard)}',
+  '.d-tab:hover:not([disabled]){color:var(--d-fg)}',
   '.d-tab-active{color:var(--d-primary);border-bottom-color:var(--d-primary)}',
+  '.d-tab[disabled]{color:var(--d-muted)}',
+  '.d-tabs-vertical .d-tabs-list{border-bottom:none;border-right:var(--d-border-width) var(--d-border-style) var(--d-border)}',
+  '.d-tabs-vertical .d-tab{border-bottom:none;border-left:var(--d-border-width-strong) solid transparent}',
+  '.d-tabs-vertical .d-tab-active{border-left-color:var(--d-primary);border-bottom-color:transparent}',
 
   // ═══════════════════════════════════════════════════════════════
   // ACCORDION / COLLAPSIBLE
@@ -502,7 +496,7 @@ export const componentCSS = [
   '.d-segmented{background:var(--d-surface-1);border:var(--d-border-width) var(--d-border-style) var(--d-border)}',
   '.d-segmented-item{color:var(--d-muted)}',
   '.d-segmented-item:hover{color:var(--d-fg)}',
-  '.d-segmented-item[aria-checked="true"]{background:var(--d-bg);color:var(--d-fg);box-shadow:var(--d-elevation-1)}',
+  '.d-segmented-item[aria-checked="true"]{background:var(--d-selection-bg);color:var(--d-selection-fg);box-shadow:var(--d-selection-shadow)}',
 
   // ═══════════════════════════════════════════════════════════════
   // STEPS
@@ -522,7 +516,7 @@ export const componentCSS = [
   '.d-menu-item-active{background:var(--d-primary-subtle);color:var(--d-primary)}',
   '.d-menu-separator{background:var(--d-border)}',
   '.d-menu-sub{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2)}',
-  '.d-menubar{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius)}',
+  '.d-menubar{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel)}',
   '.d-menubar-item{color:var(--d-fg)}',
   '.d-menubar-item:hover,.d-menubar-item-active{background:var(--d-surface-1)}',
   '.d-navmenu-item{color:var(--d-fg)}',

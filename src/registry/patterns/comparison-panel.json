@@ -1,0 +1,23 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "comparison-panel",
+  "name": "Comparison Panel",
+  "description": "Side-by-side metric comparison across two or more periods, segments, or benchmarks. Each column shows labeled value, trend indicator, mini chart, and delta from baseline.",
+  "components": ["Statistic", "Sparkline", "Badge", "Chart", "Separator"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc3 _gap4 _p4",
+    "slots": {
+      "header": "Comparison title with _heading4 and metric/period selector",
+      "columns": "Grid of comparison columns. Each: label (Text), value (Statistic), delta Badge, trend Sparkline, optional mini Chart with reference line annotation",
+      "summary": "Optional bottom row with overall comparison verdict"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-grid",
+      "notes": "Values use cc-data. Positive deltas get cc-glow. Negative deltas get warning. Mini charts inherit cc-grid. Header uses cc-bar."
+    }
+  }
+}

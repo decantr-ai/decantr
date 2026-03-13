@@ -1,0 +1,22 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "chart-grid",
+  "name": "Chart Grid",
+  "description": "Responsive grid of chart containers for data visualization dashboards. Charts use their own title prop — no Card wrapping.",
+  "components": ["Line", "Bar", "Pie", "Area", "Select"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc2 _gap4 _p4",
+    "slots": {
+      "header": "Dashboard section title with _heading4 and time-range Select",
+      "charts": "Array of chart components (Line, Bar, Pie, Area) using the title prop directly"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-grid",
+      "notes": "Chart titles use cc-label. Axis labels use cc-data. Background gets cc-grid. Header uses cc-bar."
+    }
+  }
+}

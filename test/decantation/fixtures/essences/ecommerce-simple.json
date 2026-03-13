@@ -1,0 +1,23 @@
+{
+  "terroir": "ecommerce",
+  "vintage": {
+    "style": "clean",
+    "mode": "light"
+  },
+  "character": ["functional", "clean", "trustworthy"],
+  "structure": [
+    { "id": "home", "skeleton": "top-nav-main", "blend": ["hero", "category-nav", "product-grid", "testimonials", "cta-section"] },
+    { "id": "catalog", "skeleton": "top-nav-main", "blend": ["filter-bar", "product-grid", "pagination"] },
+    { "id": "product", "skeleton": "top-nav-main", "blend": ["media-gallery", "detail-panel", "testimonials"] },
+    { "id": "cart", "skeleton": "top-nav-main", "blend": ["data-table", "pricing-table"] },
+    { "id": "checkout", "skeleton": "minimal-header", "blend": ["wizard"] },
+    { "id": "account", "skeleton": "sidebar-main", "blend": ["form-sections", "order-history"] },
+    { "id": "login", "skeleton": "centered", "blend": ["auth-form"] },
+    { "id": "register", "skeleton": "centered", "blend": ["auth-form"] }
+  ],
+  "tannins": ["auth", "cart-state", "search", "payments", "inventory"],
+  "vessel": {
+    "type": "spa",
+    "routing": "hash"
+  }
+}

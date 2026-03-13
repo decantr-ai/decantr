@@ -221,6 +221,33 @@ export function areaPathD(points) {
 }
 
 /**
+ * Convert area points to smooth closed polygon path.
+ * Top edge uses Catmull-Rom spline, bottom edge stays straight.
+ * @param {{x:number, y0:number, y1:number}[]} points — y0=top, y1=bottom
+ * @param {number} [tension=0.5]
+ * @returns {string}
+ */
+export function smoothAreaPathD(points, tension = 0.5) {
+  if (!points.length) return '';
+  // Top edge — smooth Catmull-Rom
+  const topPts = points.map(p => ({ x: p.x, y: p.y0 }));
+  let d = smoothPathD(topPts, tension);
+  // Bottom edge — straight, reversed
+  for (let i = points.length - 1; i >= 0; i--) d += `L${points[i].x},${points[i].y1}`;
+  d += 'Z';
+  return d;
+}
+
+/**
+ * Gradient scene node — for SVG <linearGradient> definitions.
+ * @param {Object} attrs — { id, x1, y1, x2, y2, stops: [{ offset, color, opacity }] }
+ * @returns {Object}
+ */
+export function gradient(attrs) {
+  return { type: 'gradient', ...attrs };
+}
+
+/**
  * Step path (horizontal-first, for step line charts).
  * @param {{x:number, y:number}[]} points
  * @returns {string}

@@ -6,7 +6,7 @@
 
 import { scene, group, rect, text } from '../_scene.js';
 import { cartesian } from '../layouts/cartesian.js';
-import { chartColor, buildYScale, MARGINS, innerDimensions } from '../layouts/_layout-base.js';
+import { chartColor, buildYScale, MARGINS, innerDimensions, buildAnnotations } from '../layouts/_layout-base.js';
 import { resolve, unique, scaleBand } from '../_shared.js';
 
 /**
@@ -41,11 +41,16 @@ export function layoutBar(spec, width, height) {
   children.push(...coords.axisNodes);
 
   // Render bars as rects
+  const isStacked = spec.stacked && yFields.length > 1;
   for (const bar of bars) {
-    for (const seg of bar.segments) {
+    const segCount = bar.segments.length;
+    for (let si = 0; si < segCount; si++) {
+      const seg = bar.segments[si];
+      // Stacked: only topmost segment gets rounded corners, middle segments are flat
+      const rx = isStacked && si < segCount - 1 ? 0 : Math.min(4, seg.width / 4);
       children.push(rect({
         x: seg.x, y: seg.y, w: Math.max(0, seg.width), h: Math.max(0, seg.height),
-        rx: Math.min(2, seg.width / 4), fill: seg.color,
+        rx, fill: seg.color,
         class: 'd-chart-bar',
         data: { series: seg.field, value: seg.value, label: bar.category },
         key: `bar-${bar.category}-${seg.field}`
@@ -60,6 +65,11 @@ export function layoutBar(spec, width, height) {
         }));
       }
     }
+  }
+
+  // Annotations
+  if (spec.annotations) {
+    children.push(...buildAnnotations(spec.annotations, xScale, yScale, 'band', innerW, innerH));
   }
 
   const series = yFields.map((f, i) => ({ key: f, color: chartColor(i) }));
@@ -96,7 +106,7 @@ function layoutHorizontalBar(spec, data, yFields, width, height) {
     for (const seg of segments) {
       children.push(rect({
         x: seg.x, y: seg.y, w: Math.max(0, seg.width), h: Math.max(0, seg.height),
-        rx: Math.min(2, seg.height / 4), fill: seg.color,
+        rx: Math.min(4, seg.height / 4), fill: seg.color,
         class: 'd-chart-bar',
         data: { series: seg.field, value: seg.value, label: cat },
         key: `bar-h-${cat}-${seg.field}`

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v1.json",
+  "id": "saas-dashboard",
+  "name": "SaaS Dashboard",
+  "description": "Analytics and admin dashboard with KPIs, data tables, charts, user management, and settings.",
+  "pages": [
+    {
+      "id": "overview",
+      "skeleton": "sidebar-main",
+      "patterns": ["kpi-grid", "chart-grid", "activity-feed"],
+      "default_blend": [
+        "kpi-grid",
+        { "cols": ["chart-grid", "activity-feed"], "at": "lg" }
+      ]
+    },
+    {
+      "id": "analytics",
+      "skeleton": "sidebar-main",
+      "patterns": ["chart-grid", "data-table", "filter-bar"],
+      "default_blend": [
+        "filter-bar",
+        "chart-grid",
+        "data-table"
+      ]
+    },
+    {
+      "id": "users",
+      "skeleton": "sidebar-main",
+      "patterns": ["data-table", "filter-bar"],
+      "default_blend": [
+        "filter-bar",
+        "data-table"
+      ]
+    },
+    {
+      "id": "user-detail",
+      "skeleton": "sidebar-main",
+      "patterns": ["detail-header", "timeline"],
+      "default_blend": [
+        "detail-header",
+        "timeline"
+      ]
+    },
+    {
+      "id": "settings",
+      "skeleton": "sidebar-main",
+      "patterns": ["form-sections"],
+      "default_blend": [
+        "form-sections"
+      ]
+    },
+    {
+      "id": "billing",
+      "skeleton": "sidebar-main",
+      "patterns": ["kpi-grid", "pricing-table", "order-history"],
+      "default_blend": [
+        "kpi-grid",
+        "pricing-table",
+        "order-history"
+      ]
+    },
+    {
+      "id": "notifications",
+      "skeleton": "sidebar-main",
+      "patterns": ["activity-feed"],
+      "default_blend": [
+        "activity-feed"
+      ]
+    },
+    {
+      "id": "login",
+      "skeleton": "centered",
+      "patterns": ["auth-form"],
+      "default_blend": ["auth-form"]
+    }
+  ],
+  "tannins": ["auth", "analytics-state", "search", "notifications", "user-management", "billing"],
+  "skeletons": {
+    "sidebar-main": "Collapsible sidebar navigation + header bar + scrollable main content",
+    "centered": "Centered card on background — for auth flows"
+  },
+  "suggested_vintage": {
+    "styles": ["auradecantism", "clean", "command-center"],
+    "modes": ["dark", "auto"]
+  }
+}

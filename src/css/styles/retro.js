@@ -36,9 +36,12 @@ export const retro = {
     '--d-ls-heading': '0.05em',
   },
   overrides: {
-    light: {},
+    light: {
+      '--d-field-border-width': 'var(--d-border-width-strong)',
+    },
     dark: {
       '--d-bg': '#1a1a1a',
+      '--d-field-border-width': 'var(--d-border-width-strong)',
     },
   },
   /** Component CSS — only for effects that tokens alone can't express */

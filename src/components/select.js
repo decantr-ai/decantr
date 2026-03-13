@@ -1,7 +1,11 @@
-import { h, onDestroy } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
-import { injectBase, cx, reactiveAttr, reactiveClass } from './_base.js';
-import { caret } from './_behaviors.js';
+import { tags } from '../tags/index.js';
+import { injectBase, cx } from './_base.js';
+import { caret, createListbox, createFormField } from './_behaviors.js';
+import { applyFieldState, createFieldOverlay } from './_primitives.js';
+
+const { div, button: buttonTag, span } = tags;
 
 /**
  * @param {Object} [props]
@@ -9,36 +13,70 @@ import { caret } from './_behaviors.js';
  * @param {string|Function} [props.value]
  * @param {string} [props.placeholder]
  * @param {boolean|Function} [props.disabled]
- * @param {boolean|Function} [props.error]
- * @param {string} [props.size] - 'sm'|'default'|'lg'
+ * @param {boolean|string|Function} [props.error]
+ * @param {boolean|string|Function} [props.success]
+ * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.label]
+ * @param {string} [props.help]
+ * @param {boolean} [props.required]
  * @param {Function} [props.onchange]
+ * @param {string} [props['aria-label']]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function Select(props = {}) {
   injectBase();
 
-  const { options = [], value, placeholder, disabled, error, size, onchange, class: cls } = props;
+  const {
+    options = [], value, placeholder, disabled, error, success,
+    variant, size, label, help, required, onchange,
+    'aria-label': ariaLabel, class: cls
+  } = props;
 
-  let open = false;
-  let activeIndex = -1;
-  let currentValue = typeof value === 'function' ? value() : (value || '');
+  let currentValue = typeof value === 'function' ? '' : (value || '');
 
-  const wrapClass = cx('d-select-wrap', size && `d-select-${size}`, cls);
-  const display = h('span', { class: 'd-select-display' });
+  const display = span({ class: 'd-select-display' });
   const arrow = caret('down', { class: 'd-select-arrow' });
-  const trigger = h('button', {
+  const triggerProps = {
     type: 'button',
     class: 'd-select',
     role: 'combobox',
     'aria-expanded': 'false',
     'aria-haspopup': 'listbox'
-  }, display, arrow);
+  };
+  if (ariaLabel) triggerProps['aria-label'] = ariaLabel;
 
-  const dropdown = h('div', { class: 'd-select-dropdown', role: 'listbox' });
-  dropdown.style.display = 'none';
+  const trigger = buttonTag(triggerProps, display, arrow);
+  const dropdown = div({ class: 'd-select-dropdown', role: 'listbox' });
+  const wrap = div({ class: cx('d-select-wrap', cls) }, trigger, dropdown);
 
-  const wrap = h('div', { class: wrapClass }, trigger, dropdown);
+  // Apply .d-field state on wrap
+  applyFieldState(wrap, { error, success, disabled, variant, size });
+
+  const overlay = createFieldOverlay(trigger, dropdown, {
+    onOpen: () => {
+      activeIndex = options.findIndex(o => o.value === currentValue);
+      renderOptions();
+      wrap.classList.add('d-select-open');
+    },
+    onClose: () => {
+      wrap.classList.remove('d-select-open');
+    }
+  });
+
+  // Listbox keyboard nav
+  const listbox = createListbox(dropdown, {
+    itemSelector: '.d-select-option:not(.d-select-option-disabled)',
+    activeClass: 'd-select-option-highlight',
+    orientation: 'vertical',
+    onSelect: (el, idx) => {
+      const selectableOpts = options.filter(o => !o.disabled);
+      if (selectableOpts[idx]) selectOption(selectableOpts[idx].value);
+    }
+  });
+
+  let activeIndex = -1;
 
   function updateDisplay() {
     const opt = options.find(o => o.value === currentValue);
@@ -49,8 +87,8 @@ export function Select(props = {}) {
 
   function renderOptions() {
     dropdown.replaceChildren();
-    options.forEach((opt, i) => {
-      const el = h('div', {
+    options.forEach((opt) => {
+      const el = div({
         class: cx('d-select-option', opt.value === currentValue && 'd-select-option-active', opt.disabled && 'd-select-option-disabled'),
         role: 'option',
         'aria-selected': opt.value === currentValue ? 'true' : 'false'
@@ -64,81 +102,41 @@ export function Select(props = {}) {
       }
       dropdown.appendChild(el);
     });
+    listbox.reset();
   }
 
   function selectOption(val) {
     currentValue = val;
     updateDisplay();
-    closeDropdown();
+    overlay.close();
     if (onchange) onchange(val);
-  }
-
-  function openDropdown() {
-    if (open) return;
-    open = true;
-    activeIndex = options.findIndex(o => o.value === currentValue);
-    renderOptions();
-    dropdown.style.display = '';
-    trigger.setAttribute('aria-expanded', 'true');
-    wrap.classList.add('d-select-open');
-  }
-
-  function closeDropdown() {
-    if (!open) return;
-    open = false;
-    dropdown.style.display = 'none';
-    trigger.setAttribute('aria-expanded', 'false');
-    wrap.classList.remove('d-select-open');
   }
 
   trigger.addEventListener('mousedown', (e) => {
     e.preventDefault();
-    if (open) closeDropdown();
-    else openDropdown();
+    overlay.toggle();
   });
 
   trigger.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown') {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
-      if (!open) openDropdown();
-      activeIndex = Math.min(activeIndex + 1, options.length - 1);
-      highlightOption();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (!open) openDropdown();
-      activeIndex = Math.max(activeIndex - 1, 0);
-      highlightOption();
+      if (!overlay.isOpen()) overlay.open();
+      listbox.handleKeydown(e);
     } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      if (open && activeIndex >= 0 && !options[activeIndex].disabled) {
-        selectOption(options[activeIndex].value);
-      } else if (!open) {
-        openDropdown();
+      if (overlay.isOpen()) {
+        listbox.selectCurrent();
+      } else {
+        overlay.open();
       }
     } else if (e.key === 'Escape') {
-      closeDropdown();
+      overlay.close();
     }
   });
 
-  function highlightOption() {
-    const items = dropdown.children;
-    for (let i = 0; i < items.length; i++) {
-      items[i].classList.toggle('d-select-option-highlight', i === activeIndex);
-    }
-  }
-
-  // Click outside to close
-  const onDocMousedown = (e) => {
-    if (open && !wrap.contains(e.target)) closeDropdown();
-  };
-  if (typeof document !== 'undefined') {
-    document.addEventListener('mousedown', onDocMousedown);
-  }
-
   onDestroy(() => {
-    if (typeof document !== 'undefined') {
-      document.removeEventListener('mousedown', onDocMousedown);
-    }
+    overlay.destroy();
+    listbox.destroy();
   });
 
   updateDisplay();
@@ -147,12 +145,21 @@ export function Select(props = {}) {
     createEffect(() => {
       currentValue = value();
       updateDisplay();
-      if (open) renderOptions();
+      if (overlay.isOpen()) renderOptions();
     });
   }
 
-  reactiveAttr(trigger, disabled, 'disabled');
-  reactiveClass(wrap, error, wrapClass, 'd-select-error');
+  // Reactive disabled on trigger
+  if (typeof disabled === 'function') {
+    createEffect(() => { trigger.disabled = disabled(); });
+  } else if (disabled) {
+    trigger.disabled = true;
+  }
+
+  if (label || help) {
+    const { wrapper } = createFormField(wrap, { label, error, help, required, success, variant, size });
+    return wrapper;
+  }
 
   return wrap;
 }

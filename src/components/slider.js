@@ -1,17 +1,22 @@
-import { h, onDestroy } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
+import { createDrag } from './_behaviors.js';
+
+const { div, span } = tags;
 
 /**
  * @param {Object} [props]
- * @param {number|Function} [props.value] — Current value (default: 0)
- * @param {number} [props.min] — Minimum (default: 0)
- * @param {number} [props.max] — Maximum (default: 100)
- * @param {number} [props.step] — Step increment (default: 1)
+ * @param {number|Function} [props.value=0]
+ * @param {number} [props.min=0]
+ * @param {number} [props.max=100]
+ * @param {number} [props.step=1]
  * @param {boolean|Function} [props.disabled]
- * @param {Function} [props.onchange] — Called with new value
- * @param {Function} [props.oninput] — Called during drag with current value
- * @param {boolean} [props.showValue] — Show value label (default: false)
+ * @param {Function} [props.onchange]
+ * @param {Function} [props.oninput]
+ * @param {boolean} [props.showValue=false]
+ * @param {string} [props['aria-label']]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
@@ -19,37 +24,30 @@ export function Slider(props = {}) {
   injectBase();
 
   const {
-    value = 0,
-    min = 0,
-    max = 100,
-    step = 1,
-    disabled,
-    onchange,
-    oninput,
-    showValue = false,
-    class: cls
+    value = 0, min = 0, max = 100, step = 1,
+    disabled, onchange, oninput, showValue = false,
+    'aria-label': ariaLabel, class: cls
   } = props;
 
   let currentValue = typeof value === 'function' ? value() : value;
 
-  const track = h('div', { class: 'd-slider-track' });
-  const fill = h('div', { class: 'd-slider-fill' });
-  const thumb = h('div', {
+  const track = div({ class: 'd-slider-track' });
+  const fill = div({ class: 'd-slider-fill' });
+  const thumb = div({
     class: 'd-slider-thumb',
     role: 'slider',
     tabindex: '0',
     'aria-valuemin': String(min),
     'aria-valuemax': String(max),
     'aria-valuenow': String(currentValue),
-    'aria-label': 'Slider'
+    'aria-label': ariaLabel || 'Slider'
   });
 
   track.appendChild(fill);
   track.appendChild(thumb);
 
-  const valueLabel = showValue ? h('span', { class: 'd-slider-value' }, String(currentValue)) : null;
-
-  const wrap = h('div', { class: cx('d-slider', cls) }, track);
+  const valueLabel = showValue ? span({ class: 'd-slider-value' }, String(currentValue)) : null;
+  const wrap = div({ class: cx('d-slider', cls) }, track);
   if (valueLabel) wrap.appendChild(valueLabel);
 
   function clamp(val) {
@@ -81,60 +79,42 @@ export function Slider(props = {}) {
     if (onchange) onchange(currentValue);
   }
 
-  // Mouse drag
-  let dragging = false;
+  // Use createDrag from _behaviors.js
+  const trackDrag = createDrag(track, {
+    onStart() {
+      if (typeof disabled === 'function' ? disabled() : disabled) return;
+      wrap.classList.add('d-slider-active');
+    },
+    onMove(x) {
+      if (typeof disabled === 'function' ? disabled() : disabled) return;
+      const rect = track.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+      setValue(min + pct * (max - min));
+    },
+    onEnd() {
+      wrap.classList.remove('d-slider-active');
+      commitValue();
+    }
+  });
 
-  function onPointerDown(e) {
+  // Click on track to jump
+  track.addEventListener('click', (e) => {
     if (typeof disabled === 'function' ? disabled() : disabled) return;
-    e.preventDefault();
-    dragging = true;
-    wrap.classList.add('d-slider-active');
-    updateFromEvent(e);
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp);
-  }
-
-  function onPointerMove(e) {
-    if (!dragging) return;
-    updateFromEvent(e);
-  }
-
-  function onPointerUp() {
-    dragging = false;
-    wrap.classList.remove('d-slider-active');
-    commitValue();
-    document.removeEventListener('pointermove', onPointerMove);
-    document.removeEventListener('pointerup', onPointerUp);
-  }
-
-  function updateFromEvent(e) {
     const rect = track.getBoundingClientRect();
     const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     setValue(min + pct * (max - min));
-  }
-
-  track.addEventListener('pointerdown', onPointerDown);
-  thumb.addEventListener('pointerdown', onPointerDown);
+    commitValue();
+  });
 
   // Keyboard
   thumb.addEventListener('keydown', (e) => {
     if (typeof disabled === 'function' ? disabled() : disabled) return;
     let newVal = currentValue;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      newVal = currentValue + step;
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      newVal = currentValue - step;
-    } else if (e.key === 'Home') {
-      e.preventDefault();
-      newVal = min;
-    } else if (e.key === 'End') {
-      e.preventDefault();
-      newVal = max;
-    } else {
-      return;
-    }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); newVal = currentValue + step; }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); newVal = currentValue - step; }
+    else if (e.key === 'Home') { e.preventDefault(); newVal = min; }
+    else if (e.key === 'End') { e.preventDefault(); newVal = max; }
+    else return;
     setValue(newVal);
     commitValue();
   });
@@ -142,24 +122,17 @@ export function Slider(props = {}) {
   updateUI();
 
   onDestroy(() => {
-    // Clean up any in-progress drag listeners
-    document.removeEventListener('pointermove', onPointerMove);
-    document.removeEventListener('pointerup', onPointerUp);
+    trackDrag.destroy();
   });
 
   // Reactive value
   if (typeof value === 'function') {
-    createEffect(() => {
-      currentValue = value();
-      updateUI();
-    });
+    createEffect(() => { currentValue = value(); updateUI(); });
   }
 
   // Reactive disabled
   if (typeof disabled === 'function') {
-    createEffect(() => {
-      wrap.classList.toggle('d-slider-disabled', disabled());
-    });
+    createEffect(() => { wrap.classList.toggle('d-slider-disabled', disabled()); });
   } else if (disabled) {
     wrap.classList.add('d-slider-disabled');
   }

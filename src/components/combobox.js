@@ -1,17 +1,28 @@
-import { h, onDestroy } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { caret } from './_behaviors.js';
+import { caret, createListbox, createFormField } from './_behaviors.js';
+import { applyFieldState, createFieldOverlay } from './_primitives.js';
+
+const { div, input: inputTag } = tags;
 
 /**
  * @param {Object} [props]
  * @param {{ value: string, label: string, disabled?: boolean }[]} [props.options]
- * @param {string|Function} [props.value] — Selected value
- * @param {string} [props.placeholder]
+ * @param {string|Function} [props.value]
+ * @param {string} [props.placeholder='Search...']
  * @param {boolean|Function} [props.disabled]
- * @param {boolean|Function} [props.error]
- * @param {Function} [props.onchange] — Called with selected value
- * @param {Function} [props.onfilter] — Custom filter function(query, options) → options[]
+ * @param {boolean|string|Function} [props.error]
+ * @param {boolean|string|Function} [props.success]
+ * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.label]
+ * @param {string} [props.help]
+ * @param {boolean} [props.required]
+ * @param {Function} [props.onchange]
+ * @param {Function} [props.onfilter]
+ * @param {string} [props['aria-label']]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
@@ -19,22 +30,15 @@ export function Combobox(props = {}) {
   injectBase();
 
   const {
-    options = [],
-    value,
-    placeholder = 'Search...',
-    disabled,
-    error,
-    onchange,
-    onfilter,
-    class: cls
+    options = [], value, placeholder = 'Search...', disabled, error, success,
+    variant, size, label, help, required, onchange, onfilter,
+    'aria-label': ariaLabel, class: cls
   } = props;
 
-  let open = false;
-  let activeIndex = -1;
   let currentValue = typeof value === 'function' ? value() : (value || '');
   let filtered = [...options];
 
-  const input = h('input', {
+  const input = inputTag({
     type: 'text',
     class: 'd-combobox-input',
     placeholder,
@@ -42,16 +46,40 @@ export function Combobox(props = {}) {
     autocomplete: 'off',
     'aria-expanded': 'false',
     'aria-haspopup': 'listbox',
-    'aria-autocomplete': 'list'
+    'aria-autocomplete': 'list',
+    'aria-label': ariaLabel
   });
 
   const arrow = caret('down', { class: 'd-combobox-arrow' });
-  const inputWrap = h('div', { class: 'd-combobox-input-wrap' }, input, arrow);
+  const inputWrap = div({ class: 'd-combobox-input-wrap' }, input, arrow);
+  const listboxEl = div({ class: 'd-combobox-listbox', role: 'listbox' });
 
-  const listbox = h('div', { class: 'd-combobox-listbox', role: 'listbox' });
-  listbox.style.display = 'none';
+  const wrap = div({ class: cx('d-combobox', cls) }, inputWrap, listboxEl);
 
-  const wrap = h('div', { class: cx('d-combobox', cls) }, inputWrap, listbox);
+  applyFieldState(wrap, { error, success, disabled, variant, size });
+
+  const overlay = createFieldOverlay(inputWrap, listboxEl, {
+    onOpen: () => {
+      filterOptions(input.value);
+      renderList();
+      wrap.classList.add('d-combobox-open');
+      input.setAttribute('aria-expanded', 'true');
+    },
+    onClose: () => {
+      wrap.classList.remove('d-combobox-open');
+      input.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  const listbox = createListbox(listboxEl, {
+    itemSelector: '.d-combobox-option:not(.d-combobox-option-disabled)',
+    activeClass: 'd-combobox-option-highlight',
+    orientation: 'vertical',
+    onSelect: (el, idx) => {
+      const selectableFiltered = filtered.filter(o => !o.disabled);
+      if (selectableFiltered[idx]) selectOption(selectableFiltered[idx].value);
+    }
+  });
 
   function updateDisplay() {
     const opt = options.find(o => o.value === currentValue);
@@ -68,13 +96,13 @@ export function Combobox(props = {}) {
   }
 
   function renderList() {
-    listbox.replaceChildren();
+    listboxEl.replaceChildren();
     if (filtered.length === 0) {
-      listbox.appendChild(h('div', { class: 'd-combobox-empty' }, 'No results'));
+      listboxEl.appendChild(div({ class: 'd-combobox-empty' }, 'No results'));
       return;
     }
-    filtered.forEach((opt, i) => {
-      const el = h('div', {
+    filtered.forEach((opt) => {
+      const el = div({
         class: cx('d-combobox-option', opt.value === currentValue && 'd-combobox-option-active', opt.disabled && 'd-combobox-option-disabled'),
         role: 'option',
         'aria-selected': opt.value === currentValue ? 'true' : 'false'
@@ -85,120 +113,68 @@ export function Combobox(props = {}) {
           selectOption(opt.value);
         });
       }
-      listbox.appendChild(el);
+      listboxEl.appendChild(el);
     });
+    listbox.reset();
   }
 
   function selectOption(val) {
     currentValue = val;
     updateDisplay();
-    closeList();
+    overlay.close();
     if (onchange) onchange(val);
   }
 
-  function openList() {
-    if (open) return;
-    open = true;
-    filterOptions(input.value);
-    renderList();
-    listbox.style.display = '';
-    input.setAttribute('aria-expanded', 'true');
-    wrap.classList.add('d-combobox-open');
-  }
+  input.addEventListener('focus', () => {
+    if (!overlay.isOpen()) overlay.open();
+  });
 
-  function closeList() {
-    if (!open) return;
-    open = false;
-    activeIndex = -1;
-    listbox.style.display = 'none';
-    input.setAttribute('aria-expanded', 'false');
-    wrap.classList.remove('d-combobox-open');
-  }
-
-  function highlightOption(idx) {
-    const items = listbox.querySelectorAll('.d-combobox-option:not(.d-combobox-option-disabled)');
-    items.forEach((el, i) => el.classList.toggle('d-combobox-option-highlight', i === idx));
-    activeIndex = idx;
-  }
-
-  input.addEventListener('focus', openList);
   input.addEventListener('input', () => {
-    if (!open) openList();
+    if (!overlay.isOpen()) overlay.open();
     filterOptions(input.value);
     renderList();
-    activeIndex = -1;
   });
 
   arrow.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (open) closeList();
-    else { input.focus(); openList(); }
+    if (overlay.isOpen()) overlay.close();
+    else { input.focus(); overlay.open(); }
   });
 
   input.addEventListener('keydown', (e) => {
-    const items = listbox.querySelectorAll('.d-combobox-option:not(.d-combobox-option-disabled)');
-    const len = items.length;
-    if (e.key === 'ArrowDown') {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
-      if (!open) openList();
-      highlightOption(activeIndex < len - 1 ? activeIndex + 1 : 0);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (!open) openList();
-      highlightOption(activeIndex > 0 ? activeIndex - 1 : len - 1);
+      if (!overlay.isOpen()) overlay.open();
+      listbox.handleKeydown(e);
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (open && activeIndex >= 0 && activeIndex < len) {
-        const val = filtered.filter(o => !o.disabled)[activeIndex];
-        if (val) selectOption(val.value);
-      }
+      if (overlay.isOpen()) listbox.selectCurrent();
     } else if (e.key === 'Escape') {
-      closeList();
+      overlay.close();
       updateDisplay();
     }
   });
 
-  // Click outside
-  const onDocClick = (e) => {
-    if (open && !wrap.contains(e.target)) {
-      closeList();
-      updateDisplay();
-    }
-  };
-  if (typeof document !== 'undefined') {
-    document.addEventListener('click', onDocClick);
-  }
-
   onDestroy(() => {
-    if (typeof document !== 'undefined') {
-      document.removeEventListener('click', onDocClick);
-    }
+    overlay.destroy();
+    listbox.destroy();
   });
 
   updateDisplay();
 
-  // Reactive value
   if (typeof value === 'function') {
-    createEffect(() => {
-      currentValue = value();
-      updateDisplay();
-    });
+    createEffect(() => { currentValue = value(); updateDisplay(); });
   }
 
-  // Reactive disabled
   if (typeof disabled === 'function') {
     createEffect(() => { input.disabled = disabled(); });
   } else if (disabled) {
     input.disabled = true;
   }
 
-  // Reactive error
-  if (typeof error === 'function') {
-    createEffect(() => {
-      wrap.className = cx('d-combobox', error() && 'd-combobox-error', cls);
-    });
-  } else if (error) {
-    wrap.classList.add('d-combobox-error');
+  if (label || help) {
+    const { wrapper } = createFormField(wrap, { label, error, help, required, success, variant, size });
+    return wrapper;
   }
 
   return wrap;

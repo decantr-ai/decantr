@@ -1,0 +1,18 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "explorer-shell",
+  "name": "Explorer Shell",
+  "description": "Application shell for documentation explorers: persistent header with search, collapsible sidebar with layered navigation, scrollable main content, and floating control panel.",
+  "components": ["Input", "Select", "Button"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_flex _col _h[100vh]",
+    "slots": {
+      "header": "Fixed header bar with logo, search trigger (Cmd+K hint), and controls toggle",
+      "sidebar": "Collapsible nav sidebar with filter input and expandable layer groups",
+      "main": "Scrollable content area with max-width constraint",
+      "search-modal": "Full-screen search overlay with focus trap",
+      "hud-panel": "Floating control panel for style/mode/shape switching"
+    }
+  }
+}

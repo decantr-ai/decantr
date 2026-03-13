@@ -1,0 +1,20 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "component-showcase",
+  "name": "Component Showcase",
+  "description": "Auto-generated component demo from registry spec. Renders variant grid, size grid, state demos, and interactive sandbox. Used by workbench, docs site, and CLI preview.",
+  "components": ["*"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap10",
+    "slots": {
+      "variant-grid": "Labeled flex grid of all variant enum values, merged with showcase.defaults",
+      "size-grid": "Labeled flex grid of all size enum values, merged with showcase.defaults",
+      "state-grid": "Labeled flex grid of boolean states toggled on, merged with showcase.defaults",
+      "examples": "Curated preset cards (.de-example-card): live demo + name + description from showcase.examples",
+      "interactive-sandbox": "Unified card (.de-sandbox): demo area left (.de-sandbox-demo) + flush props sidebar right (.de-sandbox-props). PropsPanel pre-populated with showcase.defaults.",
+      "code-example": "CodeBlock with generated import and usage, uses showcase.labelProp for API shape"
+    }
+  },
+  "recipe_overrides": {}
+}

@@ -11,6 +11,23 @@ declare module 'decantr/components' {
     [key: string]: any;
   }
 
+  // ── Field Props (v0.5.0 unified field API) ──
+  interface FieldProps extends BaseProps {
+    variant?: 'outlined' | 'filled' | 'ghost';
+    size?: 'xs' | 'sm' | 'md' | 'lg';
+    disabled?: boolean | (() => boolean);
+    readonly?: boolean | (() => boolean);
+    error?: boolean | string | (() => boolean | string);
+    success?: boolean | string | (() => boolean | string);
+    loading?: boolean | (() => boolean);
+    label?: string;
+    help?: string;
+    required?: boolean;
+    ref?: (el: HTMLElement) => void;
+    value?: any | (() => any);
+    onchange?: (value: any) => void;
+  }
+
   /**
    * Button component.
    */
@@ -22,29 +39,29 @@ declare module 'decantr/components' {
   export function Spinner(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
-   * Input component.
+   * Input component. Supports variant/size/error/success/label/help.
    */
-  export function Input(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+  export function Input(props?: FieldProps & { type?: string; placeholder?: string; prefix?: string | Node; suffix?: string | Node; oninput?: (e: Event) => void }): HTMLElement;
 
   /**
-   * Textarea component.
+   * Textarea component. Supports variant/size/error/success/label/help.
    */
-  export function Textarea(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+  export function Textarea(props?: FieldProps & { placeholder?: string; rows?: number; resize?: 'none' | 'vertical' | 'horizontal' | 'both'; oninput?: (e: Event) => void }): HTMLElement;
 
   /**
-   * Checkbox component.
+   * Checkbox component. Supports error/aria-label.
    */
-  export function Checkbox(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+  export function Checkbox(props?: BaseProps & { checked?: boolean | (() => boolean); disabled?: boolean | (() => boolean); label?: string; indeterminate?: boolean; error?: boolean | string | (() => boolean | string); onchange?: (checked: boolean) => void }): HTMLElement;
 
   /**
-   * Switch component.
+   * Switch component. Supports error/aria-label.
    */
-  export function Switch(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+  export function Switch(props?: BaseProps & { checked?: boolean | (() => boolean); disabled?: boolean | (() => boolean); label?: string; error?: boolean | string | (() => boolean | string); onchange?: (checked: boolean) => void }): HTMLElement;
 
   /**
-   * Select component.
+   * Select component. Supports variant/size/error/success/label/help.
    */
-  export function Select(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+  export function Select(props?: FieldProps & { options?: { value: string; label: string; disabled?: boolean }[]; placeholder?: string }): HTMLElement;
 
   /**
    * Card component.

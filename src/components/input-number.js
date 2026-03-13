@@ -3,9 +3,14 @@
  *
  * @module decantr/components/input-number
  */
-import { h } from '../core/index.js';
 import { createEffect } from '../state/index.js';
-import { injectBase, cx, reactiveAttr } from './_base.js';
+import { onDestroy } from '../core/index.js';
+import { tags } from '../tags/index.js';
+import { injectBase, cx } from './_base.js';
+import { createFormField } from './_behaviors.js';
+import { applyFieldState } from './_primitives.js';
+
+const { div, input: inputTag, button: buttonTag } = tags;
 
 /**
  * @param {Object} [props]
@@ -13,21 +18,35 @@ import { injectBase, cx, reactiveAttr } from './_base.js';
  * @param {number} [props.min=-Infinity]
  * @param {number} [props.max=Infinity]
  * @param {number} [props.step=1]
- * @param {number} [props.precision] - Decimal places
+ * @param {number} [props.precision]
  * @param {boolean|Function} [props.disabled]
- * @param {boolean} [props.controls=true] - Show +/- buttons
+ * @param {boolean} [props.controls=true]
  * @param {string} [props.placeholder]
+ * @param {boolean|string|Function} [props.error]
+ * @param {boolean|string|Function} [props.success]
+ * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
+ * @param {string} [props.size] - 'xs'|'sm'|'lg'
+ * @param {string} [props.label]
+ * @param {string} [props.help]
+ * @param {boolean} [props.required]
  * @param {Function} [props.onchange]
+ * @param {string} [props['aria-label']]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function InputNumber(props = {}) {
   injectBase();
-  const { value, min = -Infinity, max = Infinity, step = 1, precision, disabled, controls = true, placeholder, onchange, class: cls, ...rest } = props;
+  const {
+    value, min = -Infinity, max = Infinity, step = 1, precision,
+    disabled, controls = true, placeholder, error, success,
+    variant, size, label, help, required, onchange,
+    'aria-label': ariaLabel, class: cls
+  } = props;
 
   let current = typeof value === 'function' ? value() : (value ?? 0);
+  let _disabled = typeof disabled === 'function' ? disabled() : !!disabled;
 
-  const input = h('input', {
+  const input = inputTag({
     type: 'text',
     inputmode: 'decimal',
     class: 'd-inputnumber-input',
@@ -36,7 +55,7 @@ export function InputNumber(props = {}) {
     'aria-valuemin': min === -Infinity ? undefined : String(min),
     'aria-valuemax': max === Infinity ? undefined : String(max),
     'aria-valuenow': String(current),
-    ...rest
+    'aria-label': ariaLabel
   });
 
   function format(n) {
@@ -47,6 +66,8 @@ export function InputNumber(props = {}) {
     return Math.max(min, Math.min(max, n));
   }
 
+  let decBtn = null, incBtn = null;
+
   function setValue(n) {
     current = clamp(n);
     input.value = format(current);
@@ -56,31 +77,36 @@ export function InputNumber(props = {}) {
   }
 
   function updateStepState() {
-    if (decBtn) { current <= min ? decBtn.setAttribute('disabled', '') : decBtn.removeAttribute('disabled'); }
-    if (incBtn) { current >= max ? incBtn.setAttribute('disabled', '') : incBtn.removeAttribute('disabled'); }
+    if (decBtn) { (_disabled || current <= min) ? decBtn.setAttribute('disabled', '') : decBtn.removeAttribute('disabled'); }
+    if (incBtn) { (_disabled || current >= max) ? incBtn.setAttribute('disabled', '') : incBtn.removeAttribute('disabled'); }
   }
 
   input.value = format(current);
 
-  input.addEventListener('change', () => {
+  function handleChange() {
     const parsed = parseFloat(input.value);
     if (!isNaN(parsed)) setValue(parsed);
     else input.value = format(current);
-  });
+  }
 
-  input.addEventListener('keydown', (e) => {
+  function handleKeydown(e) {
     if (e.key === 'ArrowUp') { e.preventDefault(); setValue(current + step); }
     else if (e.key === 'ArrowDown') { e.preventDefault(); setValue(current - step); }
-  });
+  }
 
-  let decBtn = null, incBtn = null;
-  const wrap = h('div', { class: cx('d-inputnumber', cls) });
+  function handleDec() { setValue(current - step); }
+  function handleInc() { setValue(current + step); }
+
+  input.addEventListener('change', handleChange);
+  input.addEventListener('keydown', handleKeydown);
+
+  const wrap = div({ class: cx('d-inputnumber', cls) });
 
   if (controls) {
-    decBtn = h('button', { type: 'button', class: 'd-inputnumber-step', 'aria-label': 'Decrease' }, '\u2212');
-    incBtn = h('button', { type: 'button', class: 'd-inputnumber-step', 'aria-label': 'Increase' }, '+');
-    decBtn.addEventListener('click', () => setValue(current - step));
-    incBtn.addEventListener('click', () => setValue(current + step));
+    decBtn = buttonTag({ type: 'button', class: 'd-inputnumber-step', 'aria-label': 'Decrease' }, '\u2212');
+    incBtn = buttonTag({ type: 'button', class: 'd-inputnumber-step', 'aria-label': 'Increase' }, '+');
+    decBtn.addEventListener('click', handleDec);
+    incBtn.addEventListener('click', handleInc);
     wrap.appendChild(decBtn);
     wrap.appendChild(input);
     wrap.appendChild(incBtn);
@@ -89,8 +115,18 @@ export function InputNumber(props = {}) {
     wrap.appendChild(input);
   }
 
-  reactiveAttr(input, disabled, 'disabled');
+  // Reactive disabled
+  if (typeof disabled === 'function') {
+    createEffect(() => {
+      _disabled = disabled();
+      input.disabled = _disabled;
+      updateStepState();
+    });
+  } else if (disabled) {
+    input.disabled = true;
+  }
 
+  // Reactive value
   if (typeof value === 'function') {
     createEffect(() => {
       current = value();
@@ -98,6 +134,20 @@ export function InputNumber(props = {}) {
       input.setAttribute('aria-valuenow', String(current));
       updateStepState();
     });
+  }
+
+  onDestroy(() => {
+    input.removeEventListener('change', handleChange);
+    input.removeEventListener('keydown', handleKeydown);
+    if (decBtn) decBtn.removeEventListener('click', handleDec);
+    if (incBtn) incBtn.removeEventListener('click', handleInc);
+  });
+
+  applyFieldState(wrap, { error, success, disabled, variant, size });
+
+  if (label || help) {
+    const { wrapper } = createFormField(wrap, { label, error, help, required, success, variant, size });
+    return wrapper;
   }
 
   return wrap;

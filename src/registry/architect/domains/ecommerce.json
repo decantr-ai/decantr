@@ -1,4 +1,5 @@
 {
+  "$schema": "https://decantr.ai/schemas/architect-domain.v1.json",
   "id": "ecommerce",
   "name": "eCommerce",
   "triggers": {
@@ -267,7 +268,7 @@
       "ux": ["sticky top nav", "cart Badge with count", "Drawer for mobile", "Dropdown for user menu"],
       "decantr": {
         "components": ["Button", "Badge", "Drawer", "Dropdown", "Avatar"],
-        "atoms": "_flex _aic _jcsb _px6 _py3 _bg0 _sticky _top0 _z30",
+        "atoms": "_flex _aic _jcsb _px6 _py3 _bgbg _sticky _top0 _z30",
         "state": ["mobileNavOpen:signal"],
         "routes": []
       }
@@ -282,7 +283,7 @@
       "ux": ["multi-column grid layout", "Separator above footer", "muted text links"],
       "decantr": {
         "components": ["Separator"],
-        "atoms": "_grid _gc4 _gap8 _p8 _bg2 _fg4",
+        "atoms": "_grid _gc4 _gap8 _p8 _bgmuted _fgmutedfg",
         "state": [],
         "routes": []
       }

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "contact-form",
+  "name": "Contact Form",
+  "description": "Multi-field contact form with name, email, message, and optional subject/category.",
+  "components": ["Input", "Textarea", "Button", "Select"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _maxw2xl _mx-auto",
+    "slots": {
+      "form-fields": "Stacked input fields for name, email, subject, and message",
+      "submit-row": "Submit button with optional cancel or reset action"
+    }
+  }
+}

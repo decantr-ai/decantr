@@ -1,0 +1,16 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "detail-header",
+  "name": "Detail Header",
+  "description": "Page header with breadcrumb, title, status badge, and action buttons.",
+  "components": ["Breadcrumb", "Title", "Badge", "Button"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap3 _pb4 _borderb",
+    "slots": {
+      "breadcrumb": "Breadcrumb navigation trail for page hierarchy",
+      "title-row": "Title with inline status Badge",
+      "actions": "Action Buttons for edit, delete, or export"
+    }
+  }
+}

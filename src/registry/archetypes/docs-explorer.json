@@ -1,0 +1,23 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v1.json",
+  "id": "docs-explorer",
+  "name": "Docs Explorer",
+  "description": "Interactive design-system and API documentation. 7-layer navigation (Foundations, Atoms, Tokens, Components, Patterns, Archetypes, Recipes) with registry-driven content, global search, live theming controls, and viewport simulation.",
+  "pages": [
+    { "id": "components", "skeleton": "sidebar-main", "patterns": ["component-showcase"], "default_blend": ["component-showcase"] },
+    { "id": "patterns", "skeleton": "sidebar-main", "patterns": ["detail-panel"], "default_blend": ["detail-panel"] },
+    { "id": "archetypes", "skeleton": "sidebar-main", "patterns": ["detail-panel"], "default_blend": ["detail-panel"] },
+    { "id": "recipes", "skeleton": "sidebar-main", "patterns": ["detail-panel"], "default_blend": ["detail-panel"] },
+    { "id": "foundations", "skeleton": "sidebar-main", "patterns": ["detail-panel"], "default_blend": ["detail-panel"] },
+    { "id": "atoms", "skeleton": "sidebar-main", "patterns": ["specimen-grid"], "default_blend": ["specimen-grid"] },
+    { "id": "tokens", "skeleton": "sidebar-main", "patterns": ["token-inspector"], "default_blend": ["token-inspector"] }
+  ],
+  "tannins": ["registry-data", "search", "theme-controls", "viewport-sim"],
+  "skeletons": {
+    "sidebar-main": "Explorer shell — persistent header with search trigger (Cmd+K), collapsible multi-layer sidebar with filter, scrollable main content, floating HUD for style/mode/shape/viewport switching"
+  },
+  "suggested_vintage": {
+    "styles": ["auradecantism", "clean", "command-center"],
+    "modes": ["dark", "auto"]
+  }
+}

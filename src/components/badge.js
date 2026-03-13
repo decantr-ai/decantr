@@ -22,6 +22,9 @@ export function Badge(props = {}, ...children) {
     : resolvedStatus === 'error' ? 'var(--d-error)'
     : resolvedStatus === 'warning' ? 'var(--d-warning)'
     : resolvedStatus === 'processing' ? 'var(--d-primary)'
+    : resolvedStatus === 'primary' ? 'var(--d-primary)'
+    : resolvedStatus === 'accent' ? 'var(--d-accent)'
+    : resolvedStatus === 'info' ? 'var(--d-info)'
     : null;
 
   const bgColor = color || statusColor;
@@ -52,6 +55,15 @@ export function Badge(props = {}, ...children) {
   }
 
   if (children.length) {
+    // Label mode: string children are the badge's own text (e.g. Badge({variant:'primary'}, 'New'))
+    // Wrapper mode: DOM element children get the badge as a superscript overlay
+    const isLabel = children.every(c => typeof c === 'string' || typeof c === 'number');
+    if (isLabel) {
+      for (const child of children) {
+        badgeEl.appendChild(document.createTextNode(String(child)));
+      }
+      return badgeEl;
+    }
     return h('span', { class: 'd-badge-wrapper' },
       ...children,
       h('span', { class: 'd-badge-sup' }, badgeEl)

@@ -269,6 +269,11 @@ atomMap.set('_bold', 'font-weight:700');
 atomMap.set('_medium', 'font-weight:500');
 atomMap.set('_normal', 'font-weight:400');
 atomMap.set('_light', 'font-weight:300');
+atomMap.set('_fw700', 'font-weight:700');
+atomMap.set('_fw600', 'font-weight:600');
+atomMap.set('_fw500', 'font-weight:500');
+atomMap.set('_fw400', 'font-weight:400');
+atomMap.set('_fw300', 'font-weight:300');
 atomMap.set('_italic', 'font-style:italic');
 atomMap.set('_underline', 'text-decoration:underline');
 atomMap.set('_strike', 'text-decoration:line-through');
@@ -316,13 +321,7 @@ atomMap.set('_bodylg', 'font-size:var(--d-text-md,1rem);line-height:var(--d-lh-r
 atomMap.set('_caption', 'font-size:var(--d-text-sm,0.75rem);line-height:var(--d-lh-normal,1.5);color:var(--d-muted-fg)');
 atomMap.set('_label', 'font-size:var(--d-text-sm,0.75rem);font-weight:var(--d-fw-medium,500);line-height:var(--d-lh-none,1)');
 atomMap.set('_overline', 'font-size:var(--d-text-xs,0.625rem);font-weight:var(--d-fw-medium,500);line-height:var(--d-lh-none,1);text-transform:uppercase;letter-spacing:0.08em');
-
-// Legacy colors (CSS custom properties --c0 through --c9) — deprecated, use semantic atoms
-for (let i = 0; i <= 9; i++) {
-  atomMap.set(`_bg${i}`, `background:var(--c${i})`);
-  atomMap.set(`_fg${i}`, `color:var(--c${i})`);
-  atomMap.set(`_bc${i}`, `border-color:var(--c${i})`);
-}
+atomMap.set('_fontmono', 'font-family:var(--d-font-mono)');
 
 // Semantic color atoms — palette roles
 for (const role of ['primary', 'accent', 'tertiary', 'success', 'warning', 'error', 'info']) {
@@ -474,3 +473,192 @@ atomMap.set('_wi', 'inline-size:100%'); atomMap.set('_wb', 'block-size:100%');
 atomMap.set('_cqinl', 'container-type:inline-size');
 atomMap.set('_cqsz', 'container-type:size');
 atomMap.set('_cqnorm', 'container-type:normal');
+
+// ─── Composable Gradient System ────────────────────────────────
+// Uses CSS variable composition: direction atoms set background-image
+// referencing --d-grad-stops; from/via/to atoms set the stop variables.
+// Usage: css('_gradBR _fromPrimary _toAccent')
+
+// Direction atoms
+for (const [name, dir] of [
+  ['gradR', 'to right'], ['gradL', 'to left'], ['gradT', 'to top'], ['gradB', 'to bottom'],
+  ['gradBR', 'to bottom right'], ['gradBL', 'to bottom left'],
+  ['gradTR', 'to top right'], ['gradTL', 'to top left']
+]) {
+  atomMap.set(`_${name}`, `background-image:linear-gradient(${dir},var(--d-grad-stops,transparent,transparent))`);
+}
+
+// From atoms — set --d-grad-from + compose --d-grad-stops
+for (const [suffix, value] of [
+  ['Primary', 'var(--d-primary)'], ['Accent', 'var(--d-accent)'], ['Tertiary', 'var(--d-tertiary)'],
+  ['Success', 'var(--d-success)'], ['Warning', 'var(--d-warning)'], ['Error', 'var(--d-error)'],
+  ['Info', 'var(--d-info)'], ['Bg', 'var(--d-bg)'], ['Surface1', 'var(--d-surface-1)'],
+  ['Transparent', 'transparent']
+]) {
+  atomMap.set(`_from${suffix}`, `--d-grad-from:${value};--d-grad-stops:var(--d-grad-from),var(--d-grad-to,transparent)`);
+}
+
+// Via atoms — insert middle stop into --d-grad-stops
+for (const [suffix, value] of [
+  ['Primary', 'var(--d-primary)'], ['Accent', 'var(--d-accent)'], ['Tertiary', 'var(--d-tertiary)'],
+  ['Success', 'var(--d-success)'], ['Warning', 'var(--d-warning)'], ['Error', 'var(--d-error)'],
+  ['Info', 'var(--d-info)'], ['Bg', 'var(--d-bg)'], ['Surface1', 'var(--d-surface-1)'],
+  ['Transparent', 'transparent']
+]) {
+  atomMap.set(`_via${suffix}`, `--d-grad-stops:var(--d-grad-from,transparent),${value},var(--d-grad-to,transparent)`);
+}
+
+// To atoms — set --d-grad-to
+for (const [suffix, value] of [
+  ['Primary', 'var(--d-primary)'], ['Accent', 'var(--d-accent)'], ['Tertiary', 'var(--d-tertiary)'],
+  ['Success', 'var(--d-success)'], ['Warning', 'var(--d-warning)'], ['Error', 'var(--d-error)'],
+  ['Info', 'var(--d-info)'], ['Bg', 'var(--d-bg)'], ['Surface1', 'var(--d-surface-1)'],
+  ['Transparent', 'transparent']
+]) {
+  atomMap.set(`_to${suffix}`, `--d-grad-to:${value}`);
+}
+
+// ─── Backdrop Filter System (Composable) ───────────────────────
+// Each atom sets its CSS variable AND reapplies the composed filter.
+// Empty fallbacks (', ') let unused variables collapse gracefully.
+// Usage: css('_bfblur12 _bfsat150')
+
+const BF = 'backdrop-filter:var(--d-bf-blur, ) var(--d-bf-sat, ) var(--d-bf-bright, );-webkit-backdrop-filter:var(--d-bf-blur, ) var(--d-bf-sat, ) var(--d-bf-bright, )';
+
+// Backdrop blur
+for (const [n, v] of [[0, ''], [4, 'blur(4px)'], [8, 'blur(8px)'], [12, 'blur(12px)'], [16, 'blur(16px)'], [20, 'blur(20px)'], [24, 'blur(24px)']]) {
+  atomMap.set(`_bfblur${n}`, `--d-bf-blur:${v};${BF}`);
+}
+
+// Backdrop saturate
+for (const [n, v] of [[100, 'saturate(1)'], [125, 'saturate(1.25)'], [150, 'saturate(1.5)'], [180, 'saturate(1.8)'], [200, 'saturate(2)']]) {
+  atomMap.set(`_bfsat${n}`, `--d-bf-sat:${v};${BF}`);
+}
+
+// Backdrop brightness
+for (const [n, v] of [[90, 'brightness(0.9)'], [100, 'brightness(1)'], [110, 'brightness(1.1)'], [120, 'brightness(1.2)']]) {
+  atomMap.set(`_bfbright${n}`, `--d-bf-bright:${v};${BF}`);
+}
+
+// Regular filter atoms (non-backdrop)
+atomMap.set('_fblur4', 'filter:blur(4px)');
+atomMap.set('_fblur8', 'filter:blur(8px)');
+atomMap.set('_fblur16', 'filter:blur(16px)');
+atomMap.set('_fgray', 'filter:grayscale(1)');
+atomMap.set('_fgray50', 'filter:grayscale(0.5)');
+atomMap.set('_finvert', 'filter:invert(1)');
+atomMap.set('_fbright50', 'filter:brightness(0.5)');
+atomMap.set('_fbright75', 'filter:brightness(0.75)');
+atomMap.set('_fbright110', 'filter:brightness(1.1)');
+
+// ─── Additional convenience atoms ───────────────────────────────
+// Surface background aliases (avoids confusion — _bgSurface1 is intuitive)
+for (let i = 0; i <= 3; i++) {
+  atomMap.set(`_bgSurface${i}`, atomMap.get(`_surface${i}`));
+}
+// Overlay background
+atomMap.set('_bgOverlay', 'background:var(--d-overlay)');
+// Field visual atoms
+atomMap.set('_field', 'background:var(--d-field-bg);border:var(--d-field-border-width) var(--d-border-style) var(--d-field-border);border-radius:var(--d-field-radius)');
+atomMap.set('_fieldFilled', '--d-field-bg:var(--d-surface-1);--d-field-border:transparent');
+atomMap.set('_fieldGhost', '--d-field-bg:transparent;--d-field-border:transparent');
+// Interactive state atoms
+atomMap.set('_hoverBg', 'background:var(--d-item-hover-bg)');
+atomMap.set('_activeBg', 'background:var(--d-item-active-bg)');
+atomMap.set('_selectedBg', 'background:var(--d-selected-bg)');
+atomMap.set('_selectedFg', 'color:var(--d-selected-fg)');
+// Typography
+atomMap.set('_proseWidth', 'max-width:var(--d-prose-width)');
+// Opacity (semantic)
+atomMap.set('_disabled', 'opacity:var(--d-disabled-opacity);cursor:not-allowed;pointer-events:none');
+// Border-side atoms
+atomMap.set('_borderB', 'border-bottom:1px solid var(--d-border)');
+atomMap.set('_borderT', 'border-top:1px solid var(--d-border)');
+atomMap.set('_borderR', 'border-right:1px solid var(--d-border)');
+atomMap.set('_borderL', 'border-left:1px solid var(--d-border)');
+// Border-color shorthand
+atomMap.set('_borderBorder', 'border-color:var(--d-border)');
+// Token-backed rounded
+atomMap.set('_rounded', 'border-radius:var(--d-radius)');
+// Transparent bg
+atomMap.set('_bgTransparent', 'background:transparent');
+// Outline none
+atomMap.set('_outlineNone', 'outline:none');
+// Screen-reader only
+atomMap.set('_srOnly', 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0');
+// Case-fix aliases for Error (palette atom is _bgerror but LLMs write _bgError)
+atomMap.set('_bgError', atomMap.get('_bgerror'));
+atomMap.set('_fgError', atomMap.get('_fgerror'));
+// Overflow-x without suffix (bare _overflowX maps to overflow-x:auto)
+atomMap.set('_overflowX', 'overflow-x:auto');
+
+// ─── Aliases (long-form → short-form) ──────────────────────────
+// LLMs and humans often reach for intuitive long names. These aliases
+// map them to the canonical terse atoms so both forms produce CSS.
+const aliases = {
+  // Grid columns: _gridCols3 → _gc3
+  ...Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`_gridCols${i + 1}`, `_gc${i + 1}`])),
+  '_gridColsNone': '_gcnone',
+  // Grid rows: _gridRows2 → _gr2
+  ...Object.fromEntries(Array.from({ length: 6 }, (_, i) => [`_gridRows${i + 1}`, `_gr${i + 1}`])),
+  // Text decoration
+  '_noDecoration': '_nounder',
+  // Border shortcuts
+  '_border': '_b1',
+  '_borderColor': '_bcborder',
+  // Border radius
+  '_radius': '_r1',
+  '_radiusFull': '_rfull',
+  '_radiusCircle': '_rcircle',
+  ...Object.fromEntries(Array.from({ length: 9 }, (_, i) => [`_radius${i}`, `_r${i}`])),
+
+  // ─── LLM-friendly aliases (descriptive → terse) ──────────────
+  // Layout/Flexbox
+  '_flexCol': '_col', '_flexRow': '_row',
+  '_flexWrap': '_wrap', '_flexNowrap': '_nowrap',
+  '_flexGrow': '_grow', '_flexShrink': '_shrink',
+  '_flexNone': '_flexnone', '_flexAuto': '_flexauto',
+  // Alignment
+  '_itemsCenter': '_aic', '_itemsStart': '_aifs', '_itemsEnd': '_aife',
+  '_itemsStretch': '_ais', '_itemsBaseline': '_aibs',
+  '_justifyCenter': '_jcc', '_justifyBetween': '_jcsb',
+  '_justifyAround': '_jcsa', '_justifyEvenly': '_jcse',
+  '_justifyStart': '_jcfs', '_justifyEnd': '_jcfe',
+  '_selfCenter': '_asc', '_selfStart': '_asfs', '_selfEnd': '_asfe',
+  // Sizing (case-sensitivity fix)
+  '_wFull': '_wfull', '_hFull': '_hfull',
+  '_wScreen': '_wscreen', '_hScreen': '_hscreen',
+  '_wAuto': '_wauto', '_hAuto': '_hauto',
+  '_wFit': '_wfit', '_hFit': '_hfit',
+  '_minWFull': '_minwfull', '_maxWFull': '_mwfull',
+  // Text/typography
+  '_textCenter': '_tc', '_textRight': '_tr', '_textLeft': '_tl',
+  '_uppercase': '_upper', '_lowercase': '_lower', '_capitalize': '_cap',
+  '_fontBold': '_bold', '_fontMedium': '_medium', '_fontMono': '_fontmono',
+  // Overflow
+  '_overflowHidden': '_ohidden', '_overflowAuto': '_oauto',
+  '_overflowScroll': '_oscroll', '_overflowVisible': '_ovisible',
+  '_overflowXHidden': '_oxhidden', '_overflowXAuto': '_oxauto',
+  '_overflowYHidden': '_oyhidden', '_overflowYAuto': '_oyauto',
+  '_overflowYScroll': '_oyscroll',
+  // Cursor/interaction
+  '_cursor': '_pointer', '_cursorPointer': '_pointer', '_cursorGrab': '_grab',
+  // Transition
+  '_transAll': '_trans',
+  // Visibility
+  '_hidden': '_none',
+  // Auto-margin
+  '_mlAuto': '_mla', '_mrAuto': '_mra', '_mxAuto': '_mxa',
+  // Field/state aliases
+  '_fieldOutlined': '_field',
+};
+for (const [alias, target] of Object.entries(aliases)) {
+  const val = atomMap.get(target);
+  if (val) atomMap.set(alias, val);
+}
+
+// ─── Group/Peer Markers ────────────────────────────────────────
+// Marker classes for group/peer state modifiers.
+// css('_group') returns 'd-group'; css('_peer') returns 'd-peer'.
+// These are handled specially in css() — they output their d- class, not underscore.
+// The actual state atoms (_gh:, _gf:, _ga:, _ph:, _pf:, _pa:) are parsed in css().

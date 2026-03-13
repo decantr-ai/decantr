@@ -7,17 +7,17 @@ const { section, div, h2, h3, p, span, code } = tags;
 function FeatureCard({ iconName, badge, title, description, highlights, delay }) {
   return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap4 _p8')}` },
     div({ class: css('_flex _row _aic _gap3') },
-      div({ style: 'color:var(--d-accent);background:rgba(10,243,235,0.1);padding:0.75rem;border-radius:var(--d-radius-lg);display:inline-flex' },
+      div({ class: css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)]'), style: 'background:rgba(10,243,235,0.1)' },
         icon(iconName, { size: '24px' }),
       ),
       Chip({ label: badge, variant: 'outline', size: 'sm' }),
     ),
-    h3({ class: css('_textxl _fwheading'), style: 'color:var(--d-fg)' }, title),
-    p({ class: css('_textbase _lhrelaxed'), style: 'color:var(--d-muted-fg)' }, description),
+    h3({ class: css('_textxl _fwheading _fgfg') }, title),
+    p({ class: css('_textbase _lhrelaxed _fgmutedfg') }, description),
     // Highlight pills
     div({ class: css('_flex _row _wrap _gap2') },
       ...highlights.map(h =>
-        span({ class: css('_textsm'), style: 'color:var(--d-accent);background:rgba(10,243,235,0.08);padding:0.25rem 0.75rem;border-radius:var(--d-radius-full);border:1px solid rgba(10,243,235,0.15)' }, h)
+        span({ class: css('_textsm _fgaccent _py[0.25rem] _px[0.75rem] _rfull'), style: 'background:rgba(10,243,235,0.08);border:1px solid rgba(10,243,235,0.15)' }, h)
       ),
     ),
   );
@@ -28,20 +28,20 @@ export function FeaturesSection() {
     // Decorative orb
     div({ class: 'ds-orb', style: 'width:500px;height:500px;background:rgba(254,68,116,0.06);bottom:10%;left:-15%' }),
 
-    div({ class: css('_flex _col _aic _gap12 _relative _z10'), style: 'max-width:1100px;width:100%' },
+    div({ class: css('_flex _col _aic _gap12 _relative _z10 _maxw[1100px] _w100') },
       // Header
       div({ class: css('_flex _col _aic _gap4 _tc') },
-        h2({ class: 'ds-gradient-text ds-animate', style: 'font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1' },
+        h2({ class: css('_fw[800] _ls[-0.03em] _lh[1.1]') + ' ds-gradient-text ds-animate', style: 'font-size:clamp(2rem,5vw,3.5rem)' },
           'Built Different',
         ),
-        p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed')}`, style: 'color:var(--d-muted-fg);max-width:650px' },
+        p({ class: `ds-animate ds-delay-1 ${css('_textlg _lhrelaxed _fgmutedfg _maxw[650px]')}` },
           'Every piece of decantr was designed from scratch. No borrowed ideas. No inherited baggage. Just ',
-          span({ style: 'color:var(--d-fg);font-weight:600' }, 'solutions that didn\'t exist before.'),
+          span({ class: css('_fgfg _fw[600]') }, 'solutions that didn\'t exist before.'),
         ),
       ),
 
       // Feature grid — 2×2
-      div({ class: css('_grid _gcaf320 _gap6'), style: 'width:100%' },
+      div({ class: css('_grid _gcaf320 _gap6 _w100') },
         FeatureCard({
           iconName: 'pie-chart',
           badge: 'Visualization',
@@ -77,14 +77,14 @@ export function FeaturesSection() {
       ),
 
       // Enterprise callout
-      div({ class: `ds-glass-strong ds-animate ds-delay-6 ${css('_flex _col _aic _tc _gap4 _p8')}`, style: 'width:100%' },
+      div({ class: `ds-glass-strong ds-animate ds-delay-6 ${css('_flex _col _aic _tc _gap4 _p8 _w100')}` },
         div({ class: css('_flex _row _gap4 _aic') },
-          icon('shield', { size: '24px', style: 'color:var(--d-success)' }),
-          h3({ class: css('_textlg _fwheading'), style: 'color:var(--d-fg)' }, 'Enterprise-Grade. Day One.'),
+          icon('shield', { size: '24px', class: css('_fg[var(--d-success)]') }),
+          h3({ class: css('_textlg _fwheading _fgfg') }, 'Enterprise-Grade. Day One.'),
         ),
-        p({ class: css('_textbase _lhrelaxed'), style: 'color:var(--d-muted-fg);max-width:700px' },
+        p({ class: css('_textbase _lhrelaxed _fgmutedfg _maxw[700px]') },
           'Form validation. Data tables with virtual scroll. Route guards. Error boundaries. Suspense. Context injection. TypeScript declarations. ',
-          span({ style: 'color:var(--d-fg);font-weight:600' }, 'Everything you need to ship production apps, without reaching for a single third-party package.'),
+          span({ class: css('_fgfg _fw[600]') }, 'Everything you need to ship production apps, without reaching for a single third-party package.'),
         ),
       ),
     ),

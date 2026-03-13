@@ -1,0 +1,16 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "cta-section",
+  "name": "CTA Section",
+  "description": "Call-to-action section with headline, supporting text, and action buttons.",
+  "components": ["Button", "Title", "Text"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _aic _tc _gap4 _py12 _px6",
+    "slots": {
+      "headline": "Primary heading to drive user action",
+      "description": "Supporting text that reinforces the CTA message",
+      "cta-group": "One or more action buttons, typically primary + secondary"
+    }
+  }
+}
