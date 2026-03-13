@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Decantr Decantation Explorer — interactive workbench for testing all framework layers: Foundations, Atoms, Tokens, Components, Patterns, Archetypes, Recipes.">
+  <meta name="description" content="Decantr Decantation Explorer — interactive workbench for testing all framework layers: Foundations, Atoms, Tokens, Components, Icons, Charts, Patterns, Archetypes, Recipes.">
   <title>decantr explorer</title>
   <style>
     @layer d.base, d.theme, d.atoms, d.user;
@@ -184,6 +184,18 @@
       .de-atom-hint { display: block; font-size: var(--d-text-xs); color: var(--d-muted-fg); font-family: var(--d-font-mono); margin-bottom: var(--d-sp-2); opacity: 0.7; }
       .de-atom-card:hover { border-color: var(--d-primary); transform: translateY(-1px); }
       .de-atom-preview { border-radius: var(--d-radius-inner); overflow: hidden; }
+
+      /* ── Icon explorer ──────────────────────────────────────── */
+      .de-icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--de-icon-grid-min), 1fr)); gap: var(--d-sp-2); }
+      .de-icon-cell { display: flex; flex-direction: column; align-items: center; gap: var(--d-sp-1-5); padding: var(--d-sp-3); border: 1px solid var(--d-border); border-radius: var(--d-radius-panel); background: var(--d-surface-0); cursor: pointer; transition: border-color var(--d-duration-fast) ease, transform var(--d-duration-fast) ease; }
+      .de-icon-cell:hover { border-color: var(--d-primary); transform: translateY(-1px); }
+      .de-icon-cell .d-i { color: var(--d-fg); }
+      .de-icon-cell-name { font-size: var(--d-text-xs); color: var(--d-muted); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+      .de-icon-cell.de-structural { border-color: var(--d-primary-border); }
+      .de-icon-preview-sizes { display: flex; align-items: flex-end; gap: var(--d-sp-6); }
+      .de-icon-preview-size { display: flex; flex-direction: column; align-items: center; gap: var(--d-sp-2); }
+      .de-icon-preview-label { font-size: var(--d-text-xs); color: var(--d-muted); font-family: var(--d-font-mono); }
+      .de-icon-code { padding: var(--d-sp-3); background: var(--d-surface-1); border: 1px solid var(--d-border); border-radius: var(--d-radius-panel); font-family: var(--d-font-mono); font-size: var(--d-text-sm); color: var(--d-fg); overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
 
       /* ── Chart showcase ─────────────────────────────────────── */
       .de-chart-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--de-chart-grid-min), 1fr)); gap: var(--d-sp-4); }
