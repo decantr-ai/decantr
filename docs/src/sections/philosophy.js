@@ -32,9 +32,9 @@ const scaffoldData = [
   { framework: 'Angular', files: 28, deps: 18, configs: 7 },
 ];
 
-function MetricRow({ stat, statColor, label, description, footnote, visual, reverse, delay }) {
+function MetricRow({ stat, statClass, label, description, footnote, visual, reverse, delay }) {
   const textSide = div({ class: css('_flex _col _gap4 _jcc _flex1 _minw[280px]') },
-    span({ class: 'ds-stat', style: `color:${statColor || 'var(--d-accent)'}` }, stat),
+    span({ class: `ds-stat ${css(statClass || '_fgaccent')}` }, stat),
     h3({ class: css('_textxl _fwheading _fgfg') }, label),
     p({ class: css('_textbase _lhrelaxed _fgmutedfg') }, description),
     footnote ? small({ class: css('_textsm _italic _fg[rgba(255,255,255,0.35)]') }, footnote) : null,
@@ -82,7 +82,7 @@ export function PhilosophySection() {
       // Row 1: Zero dependencies — text left, chart right
       MetricRow({
         stat: '0',
-        statColor: 'var(--d-success)',
+        statClass: '_fgsuccess',
         label: 'npm Dependencies',
         description: 'Decantr\'s package.json has zero entries in dependencies. No transitive deps, no supply chain risk, no version conflicts. Every byte is ours. The chart shows framework runtime overhead (min+gzip) — before you write a single line of code.',
         footnote: 'Runtime sizes from bundlephobia.com (min+gzip)',
@@ -107,7 +107,7 @@ export function PhilosophySection() {
       // Row 2: Token efficiency — chart left, text right
       MetricRow({
         stat: '57%',
-        statColor: 'var(--d-accent)',
+        statClass: '_fgaccent',
         label: 'Fewer Tokens (Full App)',
         description: 'We measured token counts for equivalent code: a full app with router, dashboard, KPI cards, data table, chart, and contact form. Decantr: 611 tokens. React + ecosystem: 1,415 tokens. The savings come from built-in kit components — Sidebar, DataTable, Chart — that React apps must build or import from third parties.',
         footnote: 'Measured: equivalent features, idiomatic code, ~4 chars/token',
@@ -130,7 +130,7 @@ export function PhilosophySection() {
       // Row 3: Scaffold simplicity — text left, chart right
       MetricRow({
         stat: '1',
-        statColor: 'var(--d-tertiary)',
+        statClass: '_fgtertiary',
         label: 'Dependency to Install',
         description: 'decantr init generates 6 files with 1 config. React+Vite scaffolds 17 files with 4 configs and 10 dependencies. Angular: 28 files, 7 configs, 18 dependencies. One npm install. One framework. Everything included.',
         footnote: 'Counted from each framework\'s official init/create CLI',

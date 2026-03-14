@@ -1,0 +1,21 @@
+{
+  "terroir": "portfolio",
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
+  "character": ["bold", "technical", "dramatic"],
+  "vessel": { "type": "spa", "routing": "hash" },
+  "structure": [
+    {
+      "id": "home",
+      "skeleton": "full-bleed",
+      "blend": [
+        "hero",
+        "kpi-grid",
+        "component-showcase",
+        "testimonials",
+        "cta-section"
+      ]
+    }
+  ],
+  "tannins": [],
+  "cork": { "enforce_style": true, "enforce_recipe": true }
+}

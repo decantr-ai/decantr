@@ -8,7 +8,7 @@ const quotes = [
   'What happens when you strip a framework down to pure intent? You get this.',
   'Built from scratch. Built for AI. Built to make you wonder why you ever needed anything else.',
   'The enterprise UI framework that ships with everything and depends on nothing.',
-  '97 components. 170 design tokens. 25 chart types. Zero dependencies. One framework to end the debate.',
+  '102 components. 170 design tokens. 25 chart types. Zero dependencies. One framework to end the debate.',
   'Engineered for the AI era. No compromises. No dependencies. No competition.',
   'One framework. Zero dependencies. Infinite possibilities.',
   'The framework that ships everything and imports nothing.',

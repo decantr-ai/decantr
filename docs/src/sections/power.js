@@ -38,7 +38,7 @@ export function PowerSection() {
 
       // Stats grid
       div({ class: css('_grid _gcaf220 _gap4 _w100') },
-        StatCard({ value: '97+', label: 'Components', iconName: 'layers', delay: 2 }),
+        StatCard({ value: '102+', label: 'Components', iconName: 'layers', delay: 2 }),
         StatCard({ value: '170+', label: 'Design Tokens', iconName: 'tool', delay: 3 }),
         StatCard({ value: '25+', label: 'Chart Types', iconName: 'bar-chart', delay: 4 }),
         StatCard({ value: '0', label: 'Dependencies', iconName: 'package', delay: 5 }),

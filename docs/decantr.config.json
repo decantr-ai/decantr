@@ -2,7 +2,9 @@
   "$schema": "https://decantr.ai/schemas/config.v2.json",
   "name": "decantr-site",
   "projectType": "app",
-  "theme": "dark",
+  "style": "auradecantism",
+  "mode": "dark",
+  "router": "hash",
   "dev": { "port": 3001 },
   "build": { "outDir": "dist" }
 }
