@@ -974,33 +974,67 @@ function purgeCSS(cssOutput, bundledJS) {
   }
 
   // Parse CSS rules and keep only referenced ones
-  // Format: @layer d.atoms{.class{...}.class{...}}
-  const layerMatch = cssOutput.match(/^(@layer\s+d\.atoms\s*\{)([\s\S]*?)(\})$/);
-  if (!layerMatch) return { css: cssOutput, purged: 0 };
+  // Output may contain multiple @layer d.atoms{...} blocks, some wrapping @media queries
+  const blocks = cssOutput.split(/(?=@layer\s+d\.atoms\s*\{)/);
+  const keptBlocks = [];
+  let totalPurged = 0;
 
-  const prefix = layerMatch[1];
-  const body = layerMatch[2];
-  const suffix = layerMatch[3];
+  for (const block of blocks) {
+    if (!block.trim()) continue;
 
-  // Split into individual rules
+    // Check for @media wrapper inside the block
+    const mediaMatch = block.match(
+      /^(@layer\s+d\.atoms\s*\{)\s*(@media\s*\([^)]+\)\s*\{)([\s\S]*?)\}\s*\}$/
+    );
+
+    if (mediaMatch) {
+      // Responsive block: @layer d.atoms{@media(...){...rules...}}
+      const [, layerOpen, mediaOpen, body] = mediaMatch;
+      const { kept, purged } = purgeRules(body, referencedClasses);
+      totalPurged += purged;
+      if (kept.length > 0) {
+        keptBlocks.push(`${layerOpen}${mediaOpen}${kept.join('')}}}`);
+      }
+    } else {
+      // Plain block: @layer d.atoms{...rules...}
+      const plainMatch = block.match(/^(@layer\s+d\.atoms\s*\{)([\s\S]*?)\}$/);
+      if (plainMatch) {
+        const [, layerOpen, body] = plainMatch;
+        const { kept, purged } = purgeRules(body, referencedClasses);
+        totalPurged += purged;
+        if (kept.length > 0) {
+          keptBlocks.push(`${layerOpen}${kept.join('')}}`);
+        }
+      } else {
+        keptBlocks.push(block); // Unknown format, keep as-is
+      }
+    }
+  }
+
+  return { css: keptBlocks.join(''), purged: totalPurged };
+}
+
+/**
+ * Extract and purge individual CSS rules from a block body.
+ * @param {string} body - CSS rules string
+ * @param {Set<string>} referencedClasses - set of referenced class names
+ * @returns {{ kept: string[], purged: number }}
+ */
+function purgeRules(body, referencedClasses) {
   const ruleRe = /\.([^\s{]+)\{[^}]*\}/g;
   const kept = [];
   let purged = 0;
-  let ruleMatch;
-  while ((ruleMatch = ruleRe.exec(body)) !== null) {
-    const className = ruleMatch[1];
+  let match;
+  while ((match = ruleRe.exec(body)) !== null) {
+    const className = match[1];
     const unescaped = className.replace(/\\/g, '');
     if (referencedClasses.has(className) || referencedClasses.has(unescaped)) {
-      kept.push(ruleMatch[0]);
+      kept.push(match[0]);
     } else {
       purged++;
     }
   }
-
-  return {
-    css: kept.length > 0 ? `${prefix}${kept.join('')}${suffix}` : '',
-    purged
-  };
+  return { kept, purged };
 }
 
 // ─── Main Build Function ─────────────────────────────────────────
