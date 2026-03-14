@@ -12,5 +12,9 @@
       "description": "Supporting text that reinforces the CTA message",
       "cta-group": "One or more action buttons, typically primary + secondary"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button } from 'decantr/components';",
+    "example": "function CtaSection() {\n  const { div, h2, p } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap4 _py12 _px6 _bgmuted _r4') },\n    h2({ class: css('_heading2') }, 'Ready to get started?'),\n    p({ class: css('_body _fgmuted _mw[480px]') }, 'Join thousands of teams building better products with our platform.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg' }, 'Start Free Trial'),\n      Button({ variant: 'outline', size: 'lg' }, 'Talk to Sales')\n    )\n  );\n}"
   }
 }

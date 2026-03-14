@@ -14,5 +14,9 @@
       "search-modal": "Full-screen search overlay with focus trap",
       "hud-panel": "Floating control panel for style/mode/shape switching"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Input, Button, icon } from 'decantr/components';\nimport { link } from 'decantr/router';",
+    "example": "function ExplorerShell() {\n  const { div, aside, main, header, span, nav } = tags;\n  const [searchOpen, setSearchOpen] = createSignal(false);\n  const sections = [\n    { href: '#/foundations', icon: 'layers', label: 'Foundations' },\n    { href: '#/components', icon: 'box', label: 'Components' },\n    { href: '#/patterns', icon: 'layout', label: 'Patterns' },\n    { href: '#/tokens', icon: 'palette', label: 'Tokens' }\n  ];\n\n  return div({ class: css('_grid _h[100vh]'), style: 'grid-template-columns:260px 1fr;grid-template-rows:auto 1fr' },\n    aside({ class: css('_flex _col _gap1 _p3 _bgmuted _overflow[auto] _borderR'), style: 'grid-row:1/3' },\n      Input({ placeholder: 'Search... (Cmd+K)', class: css('_mb3'), onfocus: () => setSearchOpen(true) }),\n      nav({ class: css('_flex _col _gap1') },\n        ...sections.map(s =>\n          link({ href: s.href, class: css('_flex _aic _gap2 _p2 _px3 _r2 _textsm _fgfg _trans') },\n            icon(s.icon), s.label\n          )\n        )\n      )\n    ),\n    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB') },\n      span({ class: css('_heading4') }, 'Explorer'),\n      div({ class: css('_flex _gap2') },\n        Button({ variant: 'ghost', size: 'sm', onclick: () => setSearchOpen(true) }, icon('search'))\n      )\n    ),\n    main({ class: css('_flex _col _gap4 _p6 _overflow[auto]') },\n      div({ class: css('_p4 _fgmuted') }, 'Select a section from the sidebar to begin exploring.')\n    )\n  );\n}"
   }
 }

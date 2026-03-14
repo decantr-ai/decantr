@@ -18,6 +18,20 @@
       "wrapper": "cc-frame",
       "atoms": "cc-scanline",
       "notes": "Toolbar gets cc-bar. Numeric cells use cc-data. Row hover uses cc-glow subtle. Table area wrapped in cc-scanline for data-heavy visual."
+    },
+    "auradecantism": {
+      "wrapper": "d-glass",
+      "atoms": "_r4 _overflow[hidden]",
+      "notes": "Table wrapped in d-glass with rounded overflow. Toolbar header with d-gradient-text title."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_b1 _r4 _overflow[hidden]",
+      "notes": "Table in bordered container. Clean toolbar with border-bottom divider."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { DataTable, Input, Select, Button, Badge } from 'decantr/components';",
+    "example": "function DataTablePattern() {\n  const { div } = tags;\n  const [search, setSearch] = createSignal('');\n  const [status, setStatus] = createSignal('all');\n  const columns = [\n    { key: 'name', label: 'Name', sortable: true },\n    { key: 'email', label: 'Email', sortable: true },\n    { key: 'role', label: 'Role' },\n    { key: 'status', label: 'Status' }\n  ];\n  const data = [\n    { name: 'Alice Chen', email: 'alice@example.com', role: 'Admin', status: 'active' },\n    { name: 'Bob Patel', email: 'bob@example.com', role: 'Editor', status: 'active' },\n    { name: 'Carol Liu', email: 'carol@example.com', role: 'Viewer', status: 'inactive' },\n    { name: 'Dan Kim', email: 'dan@example.com', role: 'Editor', status: 'active' }\n  ];\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _gap3 _aic _jcsb') },\n      Input({ placeholder: 'Search...', value: search, onchange: e => setSearch(e.target.value) }),\n      div({ class: css('_flex _gap2') },\n        Select({ value: status, onchange: v => setStatus(v), options: [\n          { label: 'All', value: 'all' },\n          { label: 'Active', value: 'active' },\n          { label: 'Inactive', value: 'inactive' }\n        ] }),\n        Button({ variant: 'outline' }, 'Export')\n      )\n    ),\n    DataTable({ columns, data, sortable: true, paginate: true, pageSize: 10 })\n  );\n}"
   }
 }

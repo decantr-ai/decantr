@@ -1184,7 +1184,7 @@ describe('layout and typography tokens', () => {
     assert.equal(tokens['--d-prose-width'], '75ch');
     assert.ok(tokens['--d-sidebar-width']);
     assert.ok(tokens['--d-drawer-width']);
-    assert.equal(tokens['--d-sheet-max-h'], '85vh');
+    assert.equal(tokens['--d-drawer-bottom-max-h'], '85vh');
   });
 
   it('derive() includes typography semantic roles', () => {
@@ -1221,6 +1221,30 @@ describe('chart UI tokens', () => {
   });
 });
 
+describe('timeline tokens', () => {
+  it('derive() includes all timeline geometry tokens', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    const keys = [
+      '--d-timeline-dot', '--d-timeline-dot-lg',
+      '--d-timeline-sm-dot', '--d-timeline-sm-dot-lg',
+      '--d-timeline-lg-dot', '--d-timeline-lg-dot-lg',
+      '--d-timeline-line-w',
+    ];
+    for (const key of keys) {
+      assert.ok(tokens[key] !== undefined, `missing timeline token: ${key}`);
+    }
+  });
+
+  it('timeline size tokens follow ascending scale', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'dark');
+    const sm = parseInt(tokens['--d-timeline-sm-dot']);
+    const md = parseInt(tokens['--d-timeline-dot']);
+    const lg = parseInt(tokens['--d-timeline-lg-dot']);
+    assert.ok(sm < md, `sm (${sm}) should be < md (${md})`);
+    assert.ok(md < lg, `md (${md}) should be < lg (${lg})`);
+  });
+});
+
 describe('glass blur tokens', () => {
   it('derive() includes glass blur tokens', () => {
     const tokens = derive(defaultSeed, defaultPersonality, 'dark');
@@ -1228,4 +1252,207 @@ describe('glass blur tokens', () => {
     assert.equal(tokens['--d-glass-blur'], 'blur(16px)');
     assert.equal(tokens['--d-glass-blur-lg'], 'blur(24px)');
   });
+});
+
+describe('glassmorphism differentiation', () => {
+  it('uses rounded radius instead of pill', async () => {
+    const { glassmorphism } = await import('../src/css/styles/glassmorphism.js');
+    assert.equal(glassmorphism.personality.radius, 'rounded');
+  });
+
+  it('uses smooth motion instead of bouncy', async () => {
+    const { glassmorphism } = await import('../src/css/styles/glassmorphism.js');
+    assert.equal(glassmorphism.personality.motion, 'smooth');
+  });
+
+  it('still uses glass elevation', async () => {
+    const { glassmorphism } = await import('../src/css/styles/glassmorphism.js');
+    assert.equal(glassmorphism.personality.elevation, 'glass');
+  });
+});
+
+describe('clay elevation type', () => {
+  it('derive() produces valid tokens with clay elevation', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'clay' }, 'dark');
+    assert.ok(tokens['--d-elevation-0'] === 'none', 'clay elevation-0 should be none');
+    assert.ok(tokens['--d-elevation-1'].includes('inset'), 'clay elevation-1 should have inset shadow');
+  });
+
+  it('clay light mode has inset shadows', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'clay' }, 'light');
+    assert.ok(tokens['--d-elevation-2'].includes('inset'), 'clay elevation-2 light should have inset shadow');
+  });
+});
+
+describe('glow elevation type', () => {
+  it('derive() produces valid tokens with glow elevation', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'glow' }, 'dark');
+    assert.ok(tokens['--d-elevation-0'] === 'none', 'glow elevation-0 should be none');
+    assert.ok(tokens['--d-elevation-1'].includes('0 0 8px'), 'glow elevation-1 should have spread glow');
+  });
+
+  it('glow dark mode uses colored shadows', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'glow' }, 'dark');
+    assert.ok(tokens['--d-elevation-2'].includes('0,255,213'), 'glow dark elevation-2 should use cyan color');
+  });
+
+  it('glow light mode uses neutral shadows', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'glow' }, 'light');
+    assert.ok(tokens['--d-elevation-1'].includes('0,0,0'), 'glow light elevation-1 should use neutral black');
+  });
+});
+
+describe('new styles registration', () => {
+  it('all 11 styles are registered', async () => {
+    const { getStyleList } = await import('../src/css/index.js');
+    const styles = getStyleList();
+    const ids = styles.map(s => s.id);
+    const expected = [
+      'auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center',
+      'clay', 'liquid-glass', 'dopamine', 'prismatic', 'bioluminescent', 'editorial',
+    ];
+    for (const id of expected) {
+      assert.ok(ids.includes(id), `${id} not in style list`);
+    }
+    assert.equal(styles.length, 11, `expected 11 styles, got ${styles.length}`);
+  });
+});
+
+describe('clay style', () => {
+  it('derive() produces valid tokens', async () => {
+    const { clay } = await import('../src/css/styles/clay.js');
+    const tokens = derive(clay.seed, clay.personality, 'dark');
+    assert.ok(tokens['--d-primary'], 'missing --d-primary');
+    assert.ok(tokens['--d-bg'], 'missing --d-bg');
+    assert.ok(tokens['--d-elevation-1'].includes('inset'), 'clay should use inset shadows');
+  });
+
+  it('has correct personality', async () => {
+    const { clay } = await import('../src/css/styles/clay.js');
+    assert.equal(clay.personality.elevation, 'clay');
+    assert.equal(clay.personality.borders, 'none');
+    assert.equal(clay.personality.density, 'spacious');
+  });
+
+  it('activates via setStyle', async () => {
+    const { setStyle, getStyle } = await import('../src/css/index.js');
+    setStyle('clay');
+    const id = typeof getStyle() === 'function' ? getStyle()() : getStyle();
+    assert.equal(id, 'clay');
+  });
+});
+
+describe('liquid-glass style', () => {
+  it('derive() produces valid tokens', async () => {
+    const { liquidGlass } = await import('../src/css/styles/liquid-glass.js');
+    const tokens = derive(liquidGlass.seed, liquidGlass.personality, 'dark');
+    assert.ok(tokens['--d-primary'], 'missing --d-primary');
+    assert.ok(tokens['--d-bg'], 'missing --d-bg');
+  });
+
+  it('has correct personality', async () => {
+    const { liquidGlass } = await import('../src/css/styles/liquid-glass.js');
+    assert.equal(liquidGlass.personality.radius, 'pill');
+    assert.equal(liquidGlass.personality.elevation, 'glass');
+    assert.equal(liquidGlass.personality.motion, 'smooth');
+  });
+});
+
+describe('dopamine style', () => {
+  it('derive() produces valid tokens', async () => {
+    const { dopamine } = await import('../src/css/styles/dopamine.js');
+    const tokens = derive(dopamine.seed, dopamine.personality, 'dark');
+    assert.ok(tokens['--d-primary'], 'missing --d-primary');
+    assert.ok(tokens['--d-bg'], 'missing --d-bg');
+  });
+
+  it('has correct personality', async () => {
+    const { dopamine } = await import('../src/css/styles/dopamine.js');
+    assert.equal(dopamine.personality.radius, 'pill');
+    assert.equal(dopamine.personality.elevation, 'raised');
+    assert.equal(dopamine.personality.motion, 'bouncy');
+  });
+});
+
+describe('prismatic style', () => {
+  it('derive() produces valid tokens', async () => {
+    const { prismatic } = await import('../src/css/styles/prismatic.js');
+    const tokens = derive(prismatic.seed, prismatic.personality, 'dark');
+    assert.ok(tokens['--d-primary'], 'missing --d-primary');
+    assert.ok(tokens['--d-bg'], 'missing --d-bg');
+  });
+
+  it('has hue-shifted surface overrides', async () => {
+    const { prismatic } = await import('../src/css/styles/prismatic.js');
+    assert.ok(prismatic.overrides.dark['--d-surface-1'], 'missing dark surface-1 override');
+    assert.ok(prismatic.overrides.dark['--d-surface-2'], 'missing dark surface-2 override');
+    assert.ok(prismatic.overrides.dark['--d-surface-3'], 'missing dark surface-3 override');
+  });
+});
+
+describe('bioluminescent style', () => {
+  it('derive() produces valid tokens', async () => {
+    const { bioluminescent } = await import('../src/css/styles/bioluminescent.js');
+    const tokens = derive(bioluminescent.seed, bioluminescent.personality, 'dark');
+    assert.ok(tokens['--d-primary'], 'missing --d-primary');
+    assert.ok(tokens['--d-bg'], 'missing --d-bg');
+    assert.ok(tokens['--d-elevation-1'].includes('0 0 8px'), 'bioluminescent should use glow elevation');
+  });
+
+  it('has correct personality', async () => {
+    const { bioluminescent } = await import('../src/css/styles/bioluminescent.js');
+    assert.equal(bioluminescent.personality.elevation, 'glow');
+    assert.equal(bioluminescent.personality.borders, 'none');
+  });
+});
+
+describe('editorial style', () => {
+  it('derive() produces valid tokens', async () => {
+    const { editorial } = await import('../src/css/styles/editorial.js');
+    const tokens = derive(editorial.seed, editorial.personality, 'dark');
+    assert.ok(tokens['--d-primary'], 'missing --d-primary');
+    assert.ok(tokens['--d-bg'], 'missing --d-bg');
+  });
+
+  it('has correct personality', async () => {
+    const { editorial } = await import('../src/css/styles/editorial.js');
+    assert.equal(editorial.personality.radius, 'sharp');
+    assert.equal(editorial.personality.elevation, 'flat');
+    assert.equal(editorial.personality.motion, 'instant');
+    assert.equal(editorial.personality.borders, 'none');
+    assert.equal(editorial.personality.density, 'spacious');
+  });
+});
+
+describe('new style contrast validation', () => {
+  const styleDefs = [
+    ['clay', '../src/css/styles/clay.js', 'clay'],
+    ['liquid-glass', '../src/css/styles/liquid-glass.js', 'liquidGlass'],
+    ['dopamine', '../src/css/styles/dopamine.js', 'dopamine'],
+    ['prismatic', '../src/css/styles/prismatic.js', 'prismatic'],
+    ['bioluminescent', '../src/css/styles/bioluminescent.js', 'bioluminescent'],
+    ['editorial', '../src/css/styles/editorial.js', 'editorial'],
+  ];
+
+  for (const [name, path, exportName] of styleDefs) {
+    it(`${name} light mode has valid contrast`, async () => {
+      const mod = await import(path);
+      const style = mod[exportName];
+      const tokens = derive(style.seed, style.personality, 'light');
+      const fgRgb = hexToRgb(tokens['--d-fg']);
+      const bgRgb = hexToRgb(tokens['--d-bg']);
+      const ratio = contrast(fgRgb, bgRgb);
+      assert.ok(ratio >= 4.5, `${name} light fg/bg contrast ${ratio.toFixed(2)} < 4.5`);
+    });
+
+    it(`${name} dark mode has valid contrast`, async () => {
+      const mod = await import(path);
+      const style = mod[exportName];
+      const tokens = derive(style.seed, style.personality, 'dark');
+      const fgRgb = hexToRgb(tokens['--d-fg']);
+      const bgRgb = hexToRgb(tokens['--d-bg']);
+      const ratio = contrast(fgRgb, bgRgb);
+      assert.ok(ratio >= 4.5, `${name} dark fg/bg contrast ${ratio.toFixed(2)} < 4.5`);
+    });
+  }
 });

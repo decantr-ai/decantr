@@ -1,7 +1,6 @@
-import { onDestroy } from '../core/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { caret, createDisclosure } from './_behaviors.js';
+import { caret } from './_behaviors.js';
 
 const { div, button: buttonTag } = tags;
 
@@ -51,47 +50,92 @@ function animateClose(region) {
   setTimeout(finish, ANIM_MS + 50);
 }
 
+let uid = 0;
+
 /**
  * @param {Object} [props]
- * @param {{ id: string, title: string, content: Function }[]} props.items
+ * @param {{ id: string, title: string, content: Function|string, disabled?: boolean }[]} props.items
  * @param {boolean} [props.multiple]
+ * @param {boolean} [props.collapsible]
  * @param {string[]} [props.defaultOpen]
  * @param {boolean|Function} [props.disabled]
+ * @param {Function} [props.onValueChange]
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function Accordion(props = {}) {
   injectBase();
 
-  const { items = [], multiple = false, defaultOpen = [], disabled, class: cls } = props;
+  const {
+    items = [],
+    multiple = false,
+    collapsible = true,
+    defaultOpen = [],
+    disabled,
+    onValueChange,
+    class: cls
+  } = props;
 
+  const instanceId = ++uid;
   const openSet = new Set();
-  const container = div({ class: cx('d-accordion', cls) });
+  const rootCls = cx('d-accordion', cls);
+  const container = div({ class: rootCls });
   const regions = [];
   const sections = [];
   const triggers = [];
 
-  items.forEach((item) => {
-    const content = div({ class: 'd-accordion-content', role: 'region' });
+  function isItemDisabled(item) {
+    if (item.disabled) return true;
+    if (typeof disabled === 'function') return disabled(item);
+    return !!disabled;
+  }
+
+  function notifyChange() {
+    if (onValueChange) onValueChange(Array.from(openSet));
+  }
+
+  function findNextEnabled(fromIdx, direction) {
+    const len = triggers.length;
+    let idx = fromIdx;
+    for (let i = 0; i < len; i++) {
+      idx = (idx + direction + len) % len;
+      if (!triggers[idx].hasAttribute('data-disabled')) return idx;
+    }
+    return fromIdx;
+  }
+
+  items.forEach((item, index) => {
+    const triggerId = `d-acc-t-${instanceId}-${index}`;
+    const regionId = `d-acc-r-${instanceId}-${index}`;
+
+    const content = div({ class: 'd-accordion-content', role: 'region', id: regionId, 'aria-labelledby': triggerId });
     const region = div({ class: 'd-accordion-region' });
     region.appendChild(content);
     region.style.height = '0px';
     region.style.overflow = 'hidden';
     regions.push(region);
 
-    const trigger = buttonTag({
+    const triggerAttrs = {
       type: 'button',
       class: 'd-accordion-trigger',
-      'aria-expanded': 'false'
-    }, item.title, caret('down', { class: 'd-accordion-icon' }));
+      id: triggerId,
+      'aria-expanded': 'false',
+      'aria-controls': regionId
+    };
+    if (isItemDisabled(item)) triggerAttrs['data-disabled'] = '';
+
+    const trigger = buttonTag(triggerAttrs, item.title, caret('down', { class: 'd-accordion-icon' }));
 
     const section = div({ class: 'd-accordion-item' }, trigger, region);
     sections.push(section);
     triggers.push(trigger);
 
     trigger.addEventListener('click', () => {
+      if (isItemDisabled(item)) return;
+
       const isOpen = openSet.has(item.id);
       if (isOpen) {
+        if (!multiple && !collapsible) return;
         openSet.delete(item.id);
         animateClose(region);
         section.classList.remove('d-accordion-open');
@@ -109,39 +153,38 @@ export function Accordion(props = {}) {
         }
         openSet.add(item.id);
         content.replaceChildren();
-        const rendered = item.content();
+        const rendered = typeof item.content === 'function' ? item.content() : item.content;
         if (typeof rendered === 'string') content.appendChild(document.createTextNode(rendered));
         else if (rendered) content.appendChild(rendered);
         animateOpen(region);
         section.classList.add('d-accordion-open');
         trigger.setAttribute('aria-expanded', 'true');
       }
+      notifyChange();
     });
 
-    // Keyboard navigation between items
     trigger.addEventListener('keydown', (e) => {
       const idx = triggers.indexOf(trigger);
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        const next = (idx + 1) % triggers.length;
-        triggers[next].focus();
+        triggers[findNextEnabled(idx, 1)].focus();
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        const prev = (idx - 1 + triggers.length) % triggers.length;
-        triggers[prev].focus();
+        triggers[findNextEnabled(idx, -1)].focus();
       } else if (e.key === 'Home') {
         e.preventDefault();
-        triggers[0].focus();
+        const first = findNextEnabled(triggers.length - 1, 1);
+        triggers[first].focus();
       } else if (e.key === 'End') {
         e.preventDefault();
-        triggers[triggers.length - 1].focus();
+        const last = findNextEnabled(0, -1);
+        triggers[last].focus();
       }
     });
 
     container.appendChild(section);
   });
 
-  // Open items specified by defaultOpen
   if (defaultOpen.length) {
     items.forEach((item, i) => {
       if (!defaultOpen.includes(item.id)) return;
@@ -149,7 +192,7 @@ export function Accordion(props = {}) {
       const content = regions[i].querySelector('.d-accordion-content');
       if (content) {
         content.replaceChildren();
-        const rendered = item.content();
+        const rendered = typeof item.content === 'function' ? item.content() : item.content;
         if (typeof rendered === 'string') content.appendChild(document.createTextNode(rendered));
         else if (rendered) content.appendChild(rendered);
       }

@@ -20,10 +20,38 @@ This table resolves 80% of framework translation needs. Scan here first.
 | Routing | react-router | vue-router | SvelteKit | @angular/router | `createRouter({ routes })` |
 | Conditional render | `{cond ? <A/> : <B/>}` | `v-if` / `v-else` | `{#if}` | `@if` | `cond(pred, trueFn, falseFn)` |
 | List render | `.map(item => <X key=.../>)` | `v-for` + `:key` | `{#each}` | `@for` | `list(items, keyFn, renderFn)` |
-| CSS / styling | Tailwind / CSS-in-JS | scoped `<style>` | scoped `<style>` | ViewEncapsulation | `css('_flex _gap4 _p6 _bg2')` |
+| CSS / styling | Tailwind / CSS-in-JS | scoped `<style>` | scoped `<style>` | ViewEncapsulation | `css('_flex _gap4 _p6 _bgmuted')` |
 | Component library | ShadCN / MUI / Radix | Element Plus / PrimeVue | Skeleton / Melt | Angular Material | `decantr/components` (100+ components) |
 | Build / deploy | Next.js / Vite | Nuxt / Vite | SvelteKit / Vite | Angular CLI | `decantr build` → `dist/` |
 | Testing | Jest / Vitest | Vitest | Vitest | Karma / Jest | `decantr/test` (node:test based) |
+
+---
+
+## Common Pitfalls
+
+### Conditional rendering — use `cond()`, not ternaries
+
+```js
+// WRONG — inline ternary as child produces "[object HTMLSpanElement]" when wrapped in a reactive function
+div({}, () => show() ? span({}, 'text') : null)
+
+// CORRECT — use cond() for conditional DOM elements
+div({}, cond(() => show(), () => span({}, 'text')))
+```
+
+Function children are for **reactive text only** (`String(fn())`). For conditional DOM elements, always use `cond(predicate, trueFn, falseFn)`.
+
+### Mount + Router — argument order matters
+
+```js
+// WRONG — reversed arguments
+mount(() => router.outlet(), document.getElementById('app'))
+
+// CORRECT — target first, render function second
+mount(document.getElementById('app'), () => router.outlet())
+```
+
+`createRouter()` returns a plain object. Call `router.outlet()` to get the DOM element — do not pass the router object directly to `mount()`.
 
 ---
 
@@ -52,6 +80,7 @@ This table resolves 80% of framework translation needs. Scan here first.
 | `Suspense` | `cond(() => isLoading(), fallback, content)` |
 | `createPortal(child, container)` | `document.body.appendChild(el)` — real DOM, no portals needed |
 | `ReactDOM.createRoot(el).render(<App/>)` | `mount(document.getElementById('app'), () => App())` |
+| `<BrowserRouter>` + `<Routes>` | `createRouter({ routes }); mount(el, () => router.outlet())` |
 | `className={clsx('a', cond && 'b')}` | `class: css('_a', cond && '_b')` |
 | `style={{ color: 'red' }}` | `class: css('_fgerror')` (use semantic color atom). For runtime-computed values only: `style: () => \`color:${dynamicColor()}\`` |
 | `onClick={handler}` | `onclick: handler` (lowercase, native DOM) |
@@ -204,7 +233,7 @@ Solid.js is architecturally closest to Decantr. Key differences:
 | `<Button>` | `Button({ variant, size })` | Variants: default, outline, ghost, destructive, link |
 | `<Card>` + `<CardHeader>` etc. | `Card(props, ...children)` | Compound: `Card.Header`, `Card.Body`, `Card.Footer` |
 | `<Dialog>` | `Modal({ title, visible, onClose })` | Role dialog + aria-modal built-in |
-| `<Sheet>` | `Drawer({ visible, side, title })` | Side: left, right, top, bottom |
+| `<Sheet>` / `<Drawer>` | `Drawer({ visible, side, title, size, footer, closeOnOutside })` | Compound: `Drawer.Header`, `Drawer.Body`, `Drawer.Footer` |
 | `<AlertDialog>` | `Modal()` + `Alert()` | Compose Modal with Alert content |
 | `<DropdownMenu>` | `Dropdown({ trigger, items })` | |
 | `<Select>` | `Select({ options, value })` | |
@@ -456,8 +485,8 @@ function LoginPage() {
   return Card(
     Card.Header(h2({ class: css('_heading4') }, 'Login')),
     Card.Body(
-      Input({ ...useFormField(form, 'email').props, type: 'email', placeholder: 'Email' }),
-      Input({ ...useFormField(form, 'password').props, type: 'password', placeholder: 'Password' }),
+      Input({ ...useFormField(form, 'email').bind(), type: 'email', placeholder: 'Email' }),
+      Input({ ...useFormField(form, 'password').bind(), type: 'password', placeholder: 'Password' }),
       Button({ onclick: () => form.submit() }, 'Sign In')
     )
   );
@@ -599,7 +628,29 @@ Before generating a multi-page application, consult the architect registry to pr
 
 **Registry location:** `node_modules/decantr/src/registry/architect/` (or `src/registry/architect/` in framework source)
 
-**Current status:** Only `ecommerce` has a full architect domain file (`architect/domains/ecommerce.json`). The other 3 domains (saas-dashboard, portfolio, content-site) have archetype blueprints in `src/registry/archetypes/` but no architect trigger/feature files yet. If no architect trigger file exists for the domain, use the archetype blueprint as the feature source. Still run SETTLE (5-layer decomposition), CLARIFY (write essence), and DECANT (resolve blends). The architect algorithm is an enhancement, not a prerequisite.
+### Trait-Based Composition (Primary Approach)
+
+Instead of matching the user's request to a hardcoded domain, use the **trait graph** at `src/registry/architect/traits.json` to dynamically compose the right set of patterns and skeletons for any domain.
+
+**How it works:**
+
+1. **Match keywords → traits**: Scan the user prompt against each trait's `triggers` array. Activate matching traits.
+2. **Follow co-occurrence edges**: For each activated trait, activate co-occurring traits whose weight exceeds 0.6. This fills in complementary UI elements the user didn't explicitly mention.
+3. **Map traits → patterns + skeletons**: Each trait maps to specific patterns (e.g., `widget-grid` → `kpi-grid`) and optionally a skeleton (e.g., `sidebar-nav` → `sidebar-main`).
+4. **Check composites**: If the activated trait set closely matches a pre-built composite (dashboard, landing, ecommerce, etc.), use it as a starting point. Composites also suggest a vintage (style + mode).
+5. **Compose essence**: Build the essence's `structure` array from the resolved patterns and skeletons.
+
+**Example:** User says "build me a mortgage pipeline dashboard"
+- Keyword matches: "pipeline" → `pipeline-view`, "dashboard" → `widget-grid`, `sidebar-nav`
+- Co-occurrence: `widget-grid` → `chart-area` (0.85), `data-table-view` (0.75); `pipeline-view` → `data-table-view` (0.7)
+- Composite match: closest is `financial` composite
+- Result: sidebar-main skeleton with pages containing kpi-grid, chart-grid, pipeline-tracker, data-table, filter-bar
+
+**Pre-built archetypes become examples, not constraints.** The trait graph is the reasoning scaffold; archetypes and composites are common trait combinations pre-packaged for convenience. Use them as shortcuts when the match is confident, but always prefer composing from traits when the user's request doesn't fit a clean archetype match.
+
+### Legacy Domain Classification (Fallback)
+
+**Current status:** Only `ecommerce` has a full architect domain file (`architect/domains/ecommerce.json`). The other 5 domains (saas-dashboard, portfolio, content-site, docs-explorer, financial-dashboard) have archetype blueprints in `src/registry/archetypes/` but no architect trigger/feature files yet. If no architect trigger file exists for the domain, use the archetype blueprint as the feature source. Still run SETTLE (5-layer decomposition), CLARIFY (write essence), and DECANT (resolve blends). The architect algorithm is an enhancement, not a prerequisite.
 
 ### When to Use
 
@@ -804,3 +855,4 @@ All 14 field components now accept these additional props:
 ### ColorPicker: HSV → OKLCH
 
 The color picker's saturation panel now uses OKLCH (perceptually uniform). The X axis maps to Chroma (0–0.4) and Y axis to Lightness (0–1). The API is unchanged: hex in, hex out. Colors may appear slightly different due to the perceptual uniformity of OKLCH.
+

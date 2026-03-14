@@ -18,6 +18,20 @@
       "wrapper": "cc-frame-sm",
       "atoms": "cc-scanline",
       "notes": "Header uses cc-bar with cc-label. Timestamps use cc-data. Feed area gets cc-scanline. New/unread items get cc-glow pulse."
+    },
+    "auradecantism": {
+      "wrapper": "d-glass",
+      "atoms": "_r4",
+      "notes": "Feed in d-glass panel. New items highlighted with subtle glow. Timestamps in muted text."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_b1 _r4",
+      "notes": "Feed in bordered container. Simple list items with bottom borders."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge, Button } from 'decantr/components';",
+    "example": "function ActivityFeed() {\n  const { div, span, h3 } = tags;\n  const items = [\n    { avatar: '', user: 'Alice Chen', action: 'deployed v2.4.1 to production', time: '2 min ago', type: 'success' },\n    { avatar: '', user: 'Bob Patel', action: 'opened pull request #142', time: '15 min ago', type: 'default' },\n    { avatar: '', user: 'Carol Liu', action: 'commented on issue #89', time: '1 hour ago', type: 'default' },\n    { avatar: '', user: 'Dan Kim', action: 'merged branch feature/auth', time: '3 hours ago', type: 'success' }\n  ];\n\n  return div({ class: css('_flex _col _gap2 _p4') },\n    h3({ class: css('_heading5') }, 'Recent Activity'),\n    ...items.map(item =>\n      div({ class: css('_flex _gap3 _aic _py2 _borderB') },\n        Avatar({ src: item.avatar, name: item.user, size: 'sm' }),\n        div({ class: css('_flex _col _flex1') },\n          span({ class: css('_textsm') }, span({ class: css('_bold') }, item.user), ` ${item.action}`),\n          span({ class: css('_textxs _fgmuted') }, item.time)\n        ),\n        Badge({ variant: item.type === 'success' ? 'success' : 'default' }, item.type)\n      )\n    ),\n    Button({ variant: 'ghost', class: css('_wfull _mt2') }, 'Load More')\n  );\n}"
   }
 }

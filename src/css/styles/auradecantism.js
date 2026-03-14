@@ -79,7 +79,7 @@ export const auradecantism = {
     '::-webkit-scrollbar-thumb:hover{background:var(--d-primary-hover)}',
     // Glass card enhancements
     '.d-card{border:var(--d-border-width) solid rgba(255,255,255,0.1);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
-    '.d-modal-content{border:var(--d-border-width) solid rgba(255,255,255,0.12);box-shadow:var(--d-elevation-3),inset 0 1px 0 rgba(255,255,255,0.08)}',
+    '.d-modal-panel{border:var(--d-border-width) solid rgba(255,255,255,0.12);box-shadow:var(--d-elevation-3),inset 0 1px 0 rgba(255,255,255,0.08)}',
     // Button glow
     '.d-btn-primary{box-shadow:0 0 12px rgba(254,68,116,0.25)}',
     '.d-btn-primary:hover{box-shadow:0 0 20px rgba(254,68,116,0.4)}',

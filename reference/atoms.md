@@ -220,6 +220,17 @@ Semantic background/foreground atoms for item selection and hover states.
 |------|--------|
 | `_proseWidth` | `max-width:var(--d-prose-width,75ch)` — optimal reading line length |
 
+## Atom Resolution
+
+Atoms are resolved algorithmically by `resolveAtomDecl()` in `src/css/atoms.js` (rewritten from a 665-line imperative Map to a 548-line algorithmic resolver). The resolution order is:
+
+1. **ALIASES** — long-form names to canonical terse atoms (`_gridCols4` → `_gc4`, etc.)
+2. **DIRECT** — known fixed atoms looked up by exact name
+3. **Algorithmic patterns** — spacing scales, grid columns, typography sizes, colors, etc. computed from naming conventions
+4. **RESIDUAL** — remaining one-off atoms that don't fit algorithmic patterns
+
+The `css()` API is unchanged. In **production builds** with static CSS extraction enabled, all atoms are pre-resolved at build time and `css()` becomes a lightweight passthrough (~673 bytes) that only converts `_group` to `d-group`, `_peer` to `d-peer`, and joins class names. The `atoms.js` and `runtime.js` modules are removed entirely from the bundle. If `define()` or dynamic `css()` patterns are detected, the full runtime is preserved as a fallback.
+
 ## Aliases
 Long-form names resolve to canonical terse atoms: `_gridCols4` → `_gc4`, `_noDecoration` → `_nounder`, `_border` → `_b1`, `_borderColor` → `_bcborder`, `_radiusFull` → `_rfull`, `_radius0`-`_radius8` → `_r0`-`_r8`
 

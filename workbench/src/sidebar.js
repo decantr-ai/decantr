@@ -12,6 +12,7 @@ import { loadChartItems } from './explorer/charts.js';
 import { loadPatternItems } from './explorer/patterns.js';
 import { loadArchetypeItems } from './explorer/archetypes.js';
 import { loadRecipeItems } from './explorer/recipes.js';
+import { loadToolItems } from './explorer/tools.js';
 
 const { div, nav, span, button } = tags;
 
@@ -26,6 +27,7 @@ export const LAYERS = [
   { id: 'foundations', label: 'Foundations' },
   { id: 'atoms', label: 'Atoms' },
   { id: 'tokens', label: 'Tokens' },
+  { id: 'tools', label: 'Tools' },
 ];
 
 // ─── Sidebar data loading ──────────────────────────────────────
@@ -46,6 +48,7 @@ export async function loadAllSidebarItems() {
     patterns: loadPatternItems,
     archetypes: loadArchetypeItems,
     recipes: loadRecipeItems,
+    tools: loadToolItems,
   };
   const entries = await Promise.all(
     Object.entries(loaders).map(async ([k, fn]) => [k, await fn()])

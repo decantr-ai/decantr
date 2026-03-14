@@ -3,9 +3,7 @@ import { mount } from 'decantr/core';
 import { tags } from 'decantr/tags';
 import { createRouter } from 'decantr/router';
 import { docsSiteCSS } from './style.js';
-import { NavHeader } from './components/nav-header.js';
 import { HomePage } from './pages/home.js';
-import { HowItWorksPage } from './pages/how-it-works.js';
 
 setStyle('auradecantism');
 setMode('dark');
@@ -37,7 +35,6 @@ const router = createRouter({
   mode: 'hash',
   routes: [
     { path: '/', component: HomePage },
-    { path: '/how-it-works', component: HowItWorksPage },
   ],
   scrollBehavior: 'top',
   afterEach: () => requestAnimationFrame(setupScrollReveal),
@@ -45,7 +42,6 @@ const router = createRouter({
 
 function App() {
   return div({ class: '_flex _col' },
-    NavHeader(),
     router.outlet(),
   );
 }

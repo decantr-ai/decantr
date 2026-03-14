@@ -3,14 +3,14 @@
   "id": "pipeline-tracker",
   "name": "Pipeline Tracker",
   "description": "Stage-based progression visualization with summary metrics per stage, funnel or horizontal bar visualization, and drill-down data table for items in each stage.",
-  "components": ["Funnel", "Badge", "DataTable", "Tabs", "Statistic", "Select"],
+  "components": ["Chart", "Badge", "DataTable", "Tabs", "Statistic", "Select"],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap4 _p4",
     "slots": {
       "header": "Section title with _heading4, stage filter Select, period selector",
       "summary": "Horizontal row of stage cards (_flex _gap3): stage name, item count (Badge), total value (Statistic)",
-      "visualization": "Funnel or horizontal Bar chart showing stage volumes with conversion rate annotations between stages",
+      "visualization": "Chart({ type: 'funnel' }) or Chart({ type: 'bar' }) showing stage volumes with conversion rate annotations between stages",
       "detail": "Tabbed DataTable showing items in selected stage with drill-down"
     }
   },
@@ -18,7 +18,11 @@
     "command-center": {
       "wrapper": "cc-frame",
       "atoms": "cc-scanline cc-grid",
-      "notes": "Stage cards use cc-bar. Funnel segments get cc-glow on hover. DataTable gets cc-scanline. Stage counts use cc-data."
+      "notes": "Stage cards use cc-bar. Chart segments get cc-glow on hover. DataTable gets cc-scanline. Stage counts use cc-data."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Badge, DataTable, Tabs, Statistic, Select } from 'decantr/components';\nimport { Chart } from 'decantr/chart';",
+    "example": "function PipelineTracker() {\n  const { div, h3, span } = tags;\n  const stages = [\n    { id: 'prospect', name: 'Prospect', value: 240000, count: 42 },\n    { id: 'qualified', name: 'Qualified', value: 180000, count: 28 },\n    { id: 'proposal', name: 'Proposal', value: 95000, count: 12 },\n    { id: 'negotiation', name: 'Negotiation', value: 62000, count: 6 },\n    { id: 'closed', name: 'Closed Won', value: 48000, count: 4 }\n  ];\n  const items = [\n    { name: 'Acme Corp', value: 45000, stage: 'proposal', owner: 'Alice' },\n    { name: 'Globex Inc', value: 32000, stage: 'qualified', owner: 'Bob' },\n    { name: 'Initech', value: 28000, stage: 'negotiation', owner: 'Carol' },\n    { name: 'Umbrella Co', value: 18000, stage: 'prospect', owner: 'Dan' }\n  ];\n  const [activeStage, setActiveStage] = createSignal('all');\n\n  return div({ class: css('_flex _col _gap4 _p4') },\n    h3({ class: css('_heading4') }, 'Pipeline'),\n    div({ class: css('_flex _gap3 _overflow[auto]') },\n      ...stages.map(s =>\n        div({ class: css('_flex _col _gap1 _p3 _b1 _r4 _minw[140px] _tc _pointer'),\n              onclick: () => setActiveStage(s.id) },\n          span({ class: css('_textsm _fgmuted') }, s.name),\n          Statistic({ value: s.value, prefix: '$' }),\n          Badge({ variant: 'default' }, `${s.count} deals`)\n        )\n      )\n    ),\n    Chart({ type: 'funnel', data: stages, x: 'name', y: 'value', title: 'Conversion Funnel', height: 260 }),\n    DataTable({\n      columns: [\n        { key: 'name', label: 'Deal', sortable: true },\n        { key: 'value', label: 'Value', sortable: true },\n        { key: 'stage', label: 'Stage' },\n        { key: 'owner', label: 'Owner' }\n      ],\n      data: () => activeStage() === 'all' ? items : items.filter(i => i.stage === activeStage()),\n      sortable: true, paginate: true\n    })\n  );\n}"
   }
 }

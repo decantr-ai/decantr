@@ -55,20 +55,45 @@ export function Cascader(props = {}) {
   const [selectedPath, setSelectedPath] = createSignal(value || []);
   const [columns, setColumns] = createSignal([options]);
 
-  const displayInput = inputTag({
-    type: 'text',
-    class: 'd-cascader-input',
-    placeholder,
-    readonly: !searchable
-  });
-
-  const clearBtn = buttonTag({ type: 'button', class: 'd-cascader-clear', 'aria-label': 'Clear' }, '\u00d7');
+  const clearBtn = span({ class: 'd-cascader-clear', role: 'button', 'aria-label': 'Clear', tabindex: '-1' }, '\u00d7');
   clearBtn.style.display = 'none';
 
-  const trigger = div({
-    class: cx('d-cascader-trigger'),
-    tabindex: disabled ? undefined : '0'
-  }, displayInput, clearBtn);
+  // Both modes use a div trigger with role=combobox + tabindex.
+  // Non-searchable: display span + caret (select-like affordance, no fake <input readonly>).
+  // Searchable: real <input> for typing.
+  let trigger, displayEl, setDisplayText;
+
+  if (searchable) {
+    displayEl = inputTag({
+      type: 'text',
+      class: 'd-cascader-input',
+      placeholder
+    });
+    setDisplayText = (t) => { displayEl.value = t; };
+    trigger = div({
+      class: 'd-cascader-trigger',
+      role: 'combobox',
+      'aria-expanded': 'false',
+      'aria-haspopup': 'listbox',
+      tabindex: disabled ? undefined : '0'
+    }, displayEl, clearBtn);
+  } else {
+    const displaySpan = span({ class: 'd-cascader-display' });
+    const placeholderSpan = span({ class: 'd-cascader-placeholder' }, placeholder);
+    displayEl = displaySpan;
+    setDisplayText = (t) => {
+      displaySpan.textContent = t;
+      placeholderSpan.style.display = t ? 'none' : '';
+      displaySpan.style.display = t ? '' : 'none';
+    };
+    trigger = div({
+      class: 'd-cascader-trigger',
+      role: 'combobox',
+      'aria-expanded': 'false',
+      'aria-haspopup': 'listbox',
+      tabindex: disabled ? undefined : '0'
+    }, placeholderSpan, displaySpan, clearBtn, caret('down'));
+  }
 
   const dropdown = div({ class: 'd-cascader-dropdown' });
 
@@ -78,8 +103,16 @@ export function Cascader(props = {}) {
 
   const overlay = createFieldOverlay(trigger, dropdown, {
     trigger: disabled ? 'manual' : 'click',
-    onOpen: () => { wrap.classList.add('d-cascader-open'); },
-    onClose: () => { wrap.classList.remove('d-cascader-open'); if (searchable) displayInput.value = getDisplayText(); }
+    matchWidth: false,
+    onOpen: () => {
+      wrap.classList.add('d-cascader-open');
+      trigger.setAttribute('aria-expanded', 'true');
+    },
+    onClose: () => {
+      wrap.classList.remove('d-cascader-open');
+      trigger.setAttribute('aria-expanded', 'false');
+      if (searchable) setDisplayText(getDisplayText());
+    }
   });
 
   function getDisplayText() {
@@ -130,7 +163,7 @@ export function Cascader(props = {}) {
             } else {
               setSelectedPath(newPath);
               setColumns([options]);
-              displayInput.value = getDisplayText();
+              setDisplayText(getDisplayText());
               overlay.close();
               if (onChange) {
                 const selectedOpts = [];
@@ -164,17 +197,16 @@ export function Cascader(props = {}) {
       e.stopPropagation();
       setSelectedPath([]);
       setColumns([options]);
-      displayInput.value = '';
+      setDisplayText('');
       clearBtn.style.display = 'none';
       if (onChange) onChange([], []);
     });
   }
 
-  // Search filtering
+  // Search filtering (only available in searchable mode with input trigger)
   if (searchable) {
-    displayInput.removeAttribute('readonly');
-    displayInput.addEventListener('input', () => {
-      const q = displayInput.value.toLowerCase();
+    displayEl.addEventListener('input', () => {
+      const q = displayEl.value.toLowerCase();
       if (!q) { setColumns([options]); renderColumns(); return; }
 
       const flat = [];
@@ -201,7 +233,7 @@ export function Cascader(props = {}) {
   // Sync display
   createEffect(() => {
     const path = selectedPath();
-    displayInput.value = getDisplayText();
+    setDisplayText(getDisplayText());
     clearBtn.style.display = (clearable && path.length) ? '' : 'none';
   });
 
@@ -213,11 +245,11 @@ export function Cascader(props = {}) {
   if (typeof disabled === 'function') {
     createEffect(() => {
       const v = disabled();
-      displayInput.disabled = v;
       trigger.setAttribute('tabindex', v ? '' : '0');
+      if (searchable) displayEl.disabled = v;
     });
-  } else if (disabled) {
-    displayInput.disabled = true;
+  } else if (disabled && searchable) {
+    displayEl.disabled = true;
   }
 
   if (label || help) {

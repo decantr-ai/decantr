@@ -12,5 +12,9 @@
       "order-table": "DataTable with order ID, date, status Badge, and total columns",
       "pagination": "Bottom pagination row for navigating order pages"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { DataTable, Badge, Button } from 'decantr/components';",
+    "example": "function OrderHistory() {\n  const { div, h3 } = tags;\n  const orders = [\n    { id: 'ORD-1042', date: '2026-03-10', items: 3, total: 129.99, status: 'delivered' },\n    { id: 'ORD-1041', date: '2026-03-08', items: 1, total: 49.00, status: 'shipped' },\n    { id: 'ORD-1040', date: '2026-03-05', items: 2, total: 84.50, status: 'processing' },\n    { id: 'ORD-1039', date: '2026-03-01', items: 5, total: 212.75, status: 'delivered' }\n  ];\n  const columns = [\n    { key: 'id', label: 'Order #', sortable: true },\n    { key: 'date', label: 'Date', sortable: true },\n    { key: 'items', label: 'Items' },\n    { key: 'total', label: 'Total', sortable: true, render: row => `$${row.total.toFixed(2)}` },\n    { key: 'status', label: 'Status', render: row =>\n      Badge({ variant: row.status === 'delivered' ? 'success' : row.status === 'shipped' ? 'primary' : 'default' }, row.status)\n    },\n    { key: 'actions', label: '', render: row =>\n      Button({ variant: 'ghost', size: 'sm' }, 'View')\n    }\n  ];\n\n  return div({ class: css('_flex _col _gap4 _p4') },\n    h3({ class: css('_heading4') }, 'Order History'),\n    DataTable({ columns, data: orders, sortable: true, paginate: true, pageSize: 10 })\n  );\n}"
   }
 }

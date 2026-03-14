@@ -11,5 +11,9 @@
       "page-controls": "Pagination component with prev/next and numbered pages",
       "page-size-selector": "Optional Select for rows-per-page control"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Pagination } from 'decantr/components';",
+    "example": "function PaginationPattern() {\n  const { div, span } = tags;\n  const total = 243;\n  const pageSize = 10;\n  const [page, setPage] = createSignal(1);\n  const totalPages = Math.ceil(total / pageSize);\n\n  return div({ class: css('_flex _aic _jcsb _py3') },\n    span({ class: css('_textsm _fgmuted') },\n      `Showing ${(page() - 1) * pageSize + 1}-${Math.min(page() * pageSize, total)} of ${total}`\n    ),\n    Pagination({ current: page, total: totalPages, onChange: setPage })\n  );\n}"
   }
 }

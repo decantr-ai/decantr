@@ -4,12 +4,16 @@
  *
  * @module decantr/components/float-button
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
+import { createOverlay } from './_behaviors.js';
+
+const { div, span, button: buttonTag } = tags;
 
 /**
  * @param {Object} [props]
- * @param {string|Node} [props.icon='+'']
+ * @param {string|Node} [props.icon='+']
  * @param {string} [props.tooltip]
  * @param {'circle'|'square'} [props.shape='circle']
  * @param {'default'|'primary'} [props.type='default']
@@ -22,9 +26,9 @@ export function FloatButton(props = {}) {
   injectBase();
   const { icon = '+', tooltip, shape = 'circle', type = 'default', onClick, position = 'right-bottom', class: cls } = props;
 
-  const iconEl = typeof icon === 'string' ? h('span', { class: 'd-float-btn-icon' }, icon) : icon;
+  const iconEl = typeof icon === 'string' ? span({ class: 'd-float-btn-icon' }, icon) : icon;
 
-  const btn = h('button', {
+  const btn = buttonTag({
     type: 'button',
     class: cx('d-float-btn', `d-float-btn-${shape}`, `d-float-btn-${type}`, cls),
     'aria-label': tooltip || 'Action'
@@ -36,7 +40,7 @@ export function FloatButton(props = {}) {
 
   if (onClick) btn.addEventListener('click', onClick);
 
-  const wrap = h('div', { class: cx('d-float-btn-wrap', `d-float-btn-${position}`) }, btn);
+  const wrap = div({ class: cx('d-float-btn-wrap', `d-float-btn-${position}`) }, btn);
 
   return wrap;
 }
@@ -56,27 +60,31 @@ FloatButton.Group = function FloatButtonGroup(props = {}, ...children) {
   injectBase();
   const { icon = '+', shape = 'circle', direction = 'top', position = 'right-bottom', class: cls } = props;
 
-  const iconEl = typeof icon === 'string' ? h('span', { class: 'd-float-btn-icon' }, icon) : icon;
+  const iconEl = typeof icon === 'string' ? span({ class: 'd-float-btn-icon' }, icon) : icon;
 
-  const trigger = h('button', {
+  const trigger = buttonTag({
     type: 'button',
     class: cx('d-float-btn', `d-float-btn-${shape}`, 'd-float-btn-primary'),
     'aria-label': 'Actions',
     'aria-expanded': 'false'
   }, iconEl);
 
-  const menu = h('div', { class: cx('d-float-btn-group-menu', `d-float-btn-group-${direction}`), style: { display: 'none' } });
+  const menu = div({ class: cx('d-float-btn-group-menu', `d-float-btn-group-${direction}`) });
   children.forEach(c => { if (c && c.nodeType) menu.appendChild(c); });
 
-  let open = false;
-  trigger.addEventListener('click', () => {
-    open = !open;
-    menu.style.display = open ? '' : 'none';
-    trigger.setAttribute('aria-expanded', String(open));
-    trigger.classList.toggle('d-float-btn-active', open);
+  const overlay = createOverlay(trigger, menu, {
+    trigger: 'click',
+    closeOnEscape: true,
+    closeOnOutside: true,
+    onOpen: () => trigger.classList.add('d-float-btn-active'),
+    onClose: () => trigger.classList.remove('d-float-btn-active')
   });
 
-  const wrap = h('div', { class: cx('d-float-btn-wrap', `d-float-btn-${position}`, cls) }, menu, trigger);
+  const wrap = div({ class: cx('d-float-btn-wrap', `d-float-btn-${position}`, cls) }, menu, trigger);
+
+  onDestroy(() => {
+    overlay.destroy();
+  });
 
   return wrap;
 };

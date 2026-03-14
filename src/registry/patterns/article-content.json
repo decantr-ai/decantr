@@ -19,5 +19,9 @@
       "atoms": "cc-scanline",
       "notes": "ToC headings use cc-label. Active ToC item gets cc-glow. Article headings use cc-label. Code blocks use cc-scanline with cc-data for line numbers."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Separator, Avatar } from 'decantr/components';",
+    "example": "function ArticleContent() {\n  const { div, h1, p, span, time, article: articleEl } = tags;\n  const article = {\n    title: 'Building Scalable Design Systems',\n    author: { avatar: '', name: 'Jane Doe' },\n    date: 'Mar 12, 2026',\n    readTime: '8 min read',\n    html: '<p>Design systems provide a shared language between design and engineering. By establishing reusable components and tokens, teams ship faster while maintaining consistency.</p>'\n  };\n\n  return articleEl({ class: css('_flex _col _gap6 _mw[720px] _mxa _py8') },\n    div({ class: css('_flex _col _gap3') },\n      h1({ class: css('_heading1') }, article.title),\n      div({ class: css('_flex _aic _gap3') },\n        Avatar({ src: article.author.avatar, name: article.author.name, size: 'sm' }),\n        span({ class: css('_textsm') }, article.author.name),\n        time({ class: css('_textsm _fgmuted') }, article.date),\n        span({ class: css('_textsm _fgmuted') }, article.readTime)\n      )\n    ),\n    Separator(),\n    div({ class: css('_body _lhrelaxed'), innerHTML: article.html })\n  );\n}"
   }
 }

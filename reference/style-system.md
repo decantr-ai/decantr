@@ -92,6 +92,12 @@ The `palette: 'monochrome'` personality trait (used by command-center) derives a
 
 `setTheme()`, `getTheme()`, `registerTheme()` are backward-compatible wrappers around the Style+Mode API. Legacy `--c0`–`--c9` color variables and `_fg0`–`_fg9` atoms have been removed — use semantic atoms (`_fgfg`, `_fgmutedfg`, `_fgprimary`, etc.) instead.
 
+## Build-Time Style Elimination
+
+At build time, unused style modules are automatically detected and removed from the bundle. The build pipeline scans user code for `setStyle()` and `setTheme()` calls, and checks `decantr.essence.json` and `decantr.config.json` for style references. Only the default style (auradecantism) and explicitly referenced styles are shipped. For a default app using only auradecantism, this eliminates 4 unused styles and saves ~17 KB raw.
+
+See `reference/build-tooling.md` for full details on the detection and elimination pipeline.
+
 ## Key Files
 
 - `src/css/derive.js` — Color math, personality presets, main `derive()` function

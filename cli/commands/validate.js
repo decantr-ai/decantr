@@ -1,10 +1,14 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile, readdir } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export async function run() {
   const cwd = process.cwd();
   const essencePath = join(cwd, 'decantr.essence.json');
   const configPath = join(cwd, 'decantr.config.json');
+  const registryRoot = join(__dirname, '..', '..', 'src', 'registry');
 
   // Read essence
   let essence;
@@ -138,6 +142,72 @@ export async function run() {
     }
   } catch {
     // No config file — that's fine
+  }
+
+  // ─── Generate prerequisites ───────────────────────────────────
+
+  // Collect all structures for validation
+  const allStructures = isSectioned
+    ? essence.sections.flatMap(s => s.structure || [])
+    : (essence.structure || []);
+
+  // Warn on empty structure
+  if (allStructures.length === 0) {
+    warnings.push('No pages in structure — `decantr generate` will have nothing to produce');
+  }
+
+  // Check patterns in blend arrays exist in registry
+  try {
+    const patternFiles = await readdir(join(registryRoot, 'patterns'));
+    const knownPatterns = new Set(patternFiles.filter(f => f.endsWith('.json') && f !== 'index.json').map(f => f.replace('.json', '')));
+
+    for (const page of allStructures) {
+      const blend = page.blend || page.patterns || [];
+      for (const item of blend) {
+        const ids = typeof item === 'string' ? [item] : (item.cols || []);
+        for (const id of ids) {
+          if (!knownPatterns.has(id)) {
+            warnings.push(`Page "${page.id}": pattern "${id}" in blend not found in registry`);
+          }
+        }
+      }
+    }
+  } catch {
+    // Registry not accessible — skip pattern validation
+  }
+
+  // Check skeletons referenced exist
+  try {
+    const skeletonsData = JSON.parse(await readFile(join(registryRoot, 'skeletons.json'), 'utf-8'));
+    const knownSkeletons = new Set(Object.keys(skeletonsData.skeletons || {}));
+
+    for (const page of allStructures) {
+      if (page.skeleton && !knownSkeletons.has(page.skeleton)) {
+        warnings.push(`Page "${page.id}": skeleton "${page.skeleton}" not found in skeletons.json`);
+      }
+    }
+  } catch {
+    // skeletons.json not accessible — skip
+  }
+
+  // Check recipe referenced in vintage exists
+  const allVintages = isSectioned
+    ? essence.sections.map(s => s.vintage).filter(Boolean)
+    : (essence.vintage ? [essence.vintage] : []);
+
+  try {
+    const registryFiles = await readdir(registryRoot);
+    const knownRecipes = new Set(
+      registryFiles.filter(f => f.startsWith('recipe-') && f.endsWith('.json')).map(f => f.replace('recipe-', '').replace('.json', ''))
+    );
+
+    for (const vintage of allVintages) {
+      if (vintage.recipe && !knownRecipes.has(vintage.recipe)) {
+        warnings.push(`Recipe "${vintage.recipe}" referenced in vintage not found in registry. Known: ${[...knownRecipes].join(', ')}`);
+      }
+    }
+  } catch {
+    // Registry not accessible — skip
   }
 
   // Report

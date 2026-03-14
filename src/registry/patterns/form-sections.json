@@ -19,5 +19,9 @@
       "atoms": "cc-grid",
       "notes": "Section headers use cc-label. Required field indicators use cc-glow. Action bar uses cc-bar. Background uses cc-grid."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Input, Select, Textarea, Button, Separator } from 'decantr/components';",
+    "example": "function FormSections() {\n  const { div, h3, p } = tags;\n\n  const section = (title, desc, ...fields) =>\n    div({ class: css('_flex _col _gap4') },\n      div({}, h3({ class: css('_heading5') }, title), p({ class: css('_fgmuted _textsm') }, desc)),\n      ...fields\n    );\n\n  return div({ class: css('_flex _col _gap8 _p6 _mw[720px]') },\n    section('Personal Info', 'Basic contact details',\n      div({ class: css('_grid _gc2 _gap4') },\n        Input({ label: 'First Name' }),\n        Input({ label: 'Last Name' })\n      ),\n      Input({ label: 'Email', type: 'email' })\n    ),\n    Separator(),\n    section('Company', 'Organization details',\n      Input({ label: 'Company Name' }),\n      Select({ label: 'Industry', options: [{ label: 'Technology', value: 'tech' }, { label: 'Finance', value: 'finance' }] })\n    ),\n    Separator(),\n    section('Notes', 'Additional information',\n      Textarea({ label: 'Notes', rows: 4 })\n    ),\n    div({ class: css('_flex _jcfe _gap3') },\n      Button({ variant: 'outline' }, 'Cancel'),\n      Button({ variant: 'primary' }, 'Save')\n    )\n  );\n}"
   }
 }

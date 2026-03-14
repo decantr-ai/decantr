@@ -2,13 +2,18 @@
  * Menu — Vertical navigation menu with items, groups, submenus, and separators.
  * Shares item structure with Dropdown and ContextMenu.
  * Uses createListbox behavior for keyboard navigation.
+ * Uses createOverlay for submenu show/hide.
  *
  * @module decantr/components/menu
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { createListbox, caret } from './_behaviors.js';
+import { createListbox, createOverlay, caret } from './_behaviors.js';
+import { icon as iconFn } from './icon.js';
+
+const { div, span, button: buttonTag, nav } = tags;
 
 /**
  * @typedef {Object} MenuItem
@@ -35,38 +40,38 @@ export function Menu(props = {}) {
   injectBase();
   const { items = [], selected, onSelect, collapsed = false, class: cls } = props;
 
-  const menu = h('nav', {
+  const menu = nav({
     class: cx('d-menu', cls),
     role: 'menu'
   });
 
   let currentSelected = typeof selected === 'function' ? selected() : selected;
+  const _cleanups = [];
 
   function renderItem(item) {
     if (item.separator) {
-      return h('div', { class: 'd-menu-separator', role: 'separator' });
+      return div({ class: 'd-menu-separator', role: 'separator' });
     }
     if (item.group) {
-      const groupEl = h('div', { class: 'd-menu-group-label' }, item.group);
-      return groupEl;
+      return div({ class: 'd-menu-group-label' }, item.group);
     }
 
     const children = [];
     if (item.icon) {
       const iconEl = typeof item.icon === 'string'
-        ? h('span', { class: 'd-menu-item-icon', 'aria-hidden': 'true' }, item.icon)
+        ? iconFn(item.icon, { size: '1em', class: 'd-menu-item-icon' })
         : item.icon;
       children.push(iconEl);
     }
     if (!collapsed) {
-      children.push(h('span', { class: 'd-menu-item-label' }, item.label));
+      children.push(span({ class: 'd-menu-item-label' }, item.label));
     }
     if (item.children && item.children.length && !collapsed) {
       children.push(caret('right', { class: 'd-menu-item-arrow' }));
     }
 
     const isSelected = item.value === currentSelected;
-    const el = h('button', {
+    const el = buttonTag({
       type: 'button',
       class: cx('d-menu-item', item.disabled && 'd-menu-item-disabled', isSelected && 'd-menu-item-active'),
       role: 'menuitem',
@@ -83,19 +88,40 @@ export function Menu(props = {}) {
       });
     }
 
-    // Submenu handling
+    // Submenu handling via createOverlay
     if (item.children && item.children.length) {
-      const subWrap = h('div', { style: { position: 'relative' } });
+      const subWrap = div({ class: 'd-menu-sub-wrap' });
       subWrap.appendChild(el);
-      const submenu = h('div', { class: 'd-menu-sub', role: 'menu', style: { display: 'none' } });
+      const submenu = div({ class: 'd-menu-sub', role: 'menu' });
       item.children.forEach(child => submenu.appendChild(renderItem(child)));
       subWrap.appendChild(submenu);
 
-      el.addEventListener('mouseenter', () => { submenu.style.display = ''; });
-      subWrap.addEventListener('mouseleave', () => { submenu.style.display = 'none'; });
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowRight') { e.preventDefault(); submenu.style.display = ''; const first = submenu.querySelector('.d-menu-item'); if (first) first.focus(); }
+      const ov = createOverlay(el, submenu, {
+        trigger: 'hover',
+        hoverDelay: 50,
+        hoverCloseDelay: 150,
+        closeOnEscape: true,
+        closeOnOutside: false
       });
+      _cleanups.push(() => ov.destroy());
+
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          ov.open();
+          const first = submenu.querySelector('.d-menu-item');
+          if (first) first.focus();
+        }
+      });
+
+      submenu.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          ov.close();
+          el.focus();
+        }
+      });
+
       return subWrap;
     }
 
@@ -103,16 +129,21 @@ export function Menu(props = {}) {
   }
 
   function render() {
+    // Destroy previous behavior instances
+    _cleanups.forEach(fn => fn());
+    _cleanups.length = 0;
+
     menu.replaceChildren();
     items.forEach(item => menu.appendChild(renderItem(item)));
 
     // Wire up keyboard nav
-    createListbox(menu, {
+    const lb = createListbox(menu, {
       itemSelector: '.d-menu-item:not(.d-menu-item-disabled)',
       activeClass: 'd-menu-item-highlight',
       orientation: 'vertical',
       onSelect: (el) => el.click()
     });
+    _cleanups.push(() => lb.destroy());
   }
 
   render();
@@ -124,11 +155,16 @@ export function Menu(props = {}) {
     });
   }
 
+  onDestroy(() => {
+    _cleanups.forEach(fn => fn());
+  });
+
   return menu;
 }
 
 /**
  * Menubar — Horizontal menu bar.
+ * Uses createOverlay for dropdown show/hide and renderMenuItems for content.
  * @param {Object} [props]
  * @param {{ label: string, items: MenuItem[] }[]} [props.menus]
  * @param {string} [props.class]
@@ -138,58 +174,85 @@ Menu.Bar = function Menubar(props = {}) {
   injectBase();
   const { menus = [], class: cls } = props;
 
-  const bar = h('div', { class: cx('d-menubar', cls), role: 'menubar' });
+  const bar = div({ class: cx('d-menubar', cls), role: 'menubar' });
+  const _cleanups = [];
 
   menus.forEach(menuDef => {
-    const trigger = h('button', {
+    const trigger = buttonTag({
       type: 'button',
       class: 'd-menubar-item',
       'aria-haspopup': 'menu',
       'aria-expanded': 'false'
     }, menuDef.label);
 
-    const dropdown = h('div', {
+    const dropdown = div({
       class: 'd-dropdown-menu',
       role: 'menu',
-      popover: 'auto',
-      style: { position: 'absolute', top: '100%', left: '0' }
+      tabindex: '-1'
     });
 
+    // Render items using same pattern as Dropdown
     menuDef.items.forEach(item => {
       if (item.separator) {
-        dropdown.appendChild(h('div', { class: 'd-dropdown-separator', role: 'separator' }));
+        dropdown.appendChild(div({ class: 'd-dropdown-separator', role: 'separator' }));
         return;
       }
-      const el = h('button', {
+      const el = buttonTag({
         type: 'button',
         class: cx('d-dropdown-item', item.disabled && 'd-dropdown-item-disabled'),
         role: 'menuitem',
         tabindex: '-1'
-      }, h('span', { class: 'd-dropdown-item-label' }, item.label));
+      }, span({ class: 'd-dropdown-item-label' }, item.label));
 
       if (!item.disabled) {
         el.addEventListener('click', () => {
-          dropdown.hidePopover();
+          overlay.close();
           if (item.onclick) item.onclick(item.value || item.label);
         });
       }
       dropdown.appendChild(el);
     });
 
-    const wrap = h('div', { style: { position: 'relative', display: 'inline-flex' } });
+    const wrap = div({ class: 'd-menubar-wrap' });
     wrap.appendChild(trigger);
     wrap.appendChild(dropdown);
 
-    trigger.addEventListener('click', () => {
-      if (dropdown.matches(':popover-open')) dropdown.hidePopover();
-      else dropdown.showPopover();
+    const overlay = createOverlay(trigger, dropdown, {
+      trigger: 'click',
+      closeOnEscape: true,
+      closeOnOutside: true,
+      onOpen: () => {
+        wrap.classList.add('d-dropdown-open');
+        lb.reset();
+        if (typeof dropdown.focus === 'function') dropdown.focus();
+      },
+      onClose: () => {
+        wrap.classList.remove('d-dropdown-open');
+      }
     });
 
-    dropdown.addEventListener('toggle', (e) => {
-      trigger.setAttribute('aria-expanded', e.newState === 'open' ? 'true' : 'false');
+    const lb = createListbox(dropdown, {
+      itemSelector: '.d-dropdown-item:not(.d-dropdown-item-disabled)',
+      activeClass: 'd-dropdown-item-highlight',
+      orientation: 'vertical',
+      onSelect: (el) => el.click()
     });
+
+    trigger.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (!overlay.isOpen()) overlay.open();
+        lb.highlight(0);
+      }
+    });
+
+    _cleanups.push(() => { overlay.destroy(); lb.destroy(); });
 
     bar.appendChild(wrap);
+  });
+
+  onDestroy(() => {
+    _cleanups.forEach(fn => fn());
   });
 
   return bar;

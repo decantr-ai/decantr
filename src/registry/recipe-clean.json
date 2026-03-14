@@ -1,0 +1,65 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v1.json",
+  "id": "clean",
+  "name": "Clean",
+  "style": "clean",
+  "mode": "light",
+  "description": "Professional, understated visual language. Subtle shadows, rounded corners, thin borders, smooth motion. No gradients, no glass, no glow. Closest to the shadcn/Tailwind aesthetic — universally appropriate.",
+  "setup": "import { setStyle, setMode } from 'decantr/css';\nsetStyle('clean');\nsetMode('light');",
+  "decorators": {
+    "cl-card": "Clean card with subtle shadow and rounded corners. Standard elevated container.",
+    "cl-divider": "Thin border divider with muted color. Use between sections.",
+    "cl-section": "Padded section wrapper with optional muted background.",
+    "cl-muted-bg": "Soft muted background for contrast sections. Apply to alternating page sections.",
+    "cl-badge-dot": "Small status dot before badge text. Minimal status indicator.",
+    "cl-subtle-hover": "Smooth hover background transition. For list items and nav links."
+  },
+  "compositions": {
+    "panel": {
+      "description": "Clean panel with shadow and rounded corners.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('_b1 _r4 _shadow _bgbg') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_textsm _bold') }, 'Panel Title')\n  ),\n  div({ class: css('_p4') },\n    // content here\n  )\n)"
+    },
+    "card": {
+      "wraps": "Card",
+      "description": "Standard card with subtle shadow. No extra decoration needed — clean style tokens handle the look.",
+      "example": "Card({},\n  Card.Header({},\n    span({ class: css('_heading5') }, 'Feature')\n  ),\n  Card.Body({},\n    p({ class: css('_fgmuted _textsm') }, 'Description text here')\n  )\n)"
+    },
+    "kpi": {
+      "wraps": "Statistic",
+      "description": "KPI metric in a simple bordered card.",
+      "example": "const { div } = tags;\ndiv({ class: css('_b1 _r4 _p4') },\n  Statistic({\n    label: 'Total Revenue',\n    value: 2450000,\n    prefix: '$',\n    trend: 'up',\n    trendValue: '+18.2%'\n  })\n)"
+    },
+    "table": {
+      "wraps": "DataTable",
+      "description": "DataTable in a bordered container with clean header.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('_b1 _r4 _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_heading5') }, 'Users'),\n    span({ class: css('_textsm _fgmuted') }, '1,248 total')\n  ),\n  DataTable({ columns, data, sortable: true, paginate: true })\n)"
+    },
+    "form": {
+      "description": "Form in a card with clean layout.",
+      "example": "const { div, h2 } = tags;\nCard({ class: css('_mw[480px]') },\n  Card.Header({},\n    h2({ class: css('_heading4') }, 'Sign In')\n  ),\n  Card.Body({ class: css('_flex _col _gap3') },\n    Input({ label: 'Email', type: 'email' }),\n    Input({ label: 'Password', type: 'password' }),\n    Button({ variant: 'primary', class: css('_wfull') }, 'Continue')\n  )\n)"
+    },
+    "sidebar": {
+      "description": "Clean sidebar with muted background and simple nav items.",
+      "example": "const { aside, nav, span } = tags;\naside({ class: css('_flex _col _h[100vh] _w[240px] _borderR _bgmuted _p3') },\n  span({ class: css('_heading5 _mb6 _px3') }, 'App Name'),\n  nav({ class: css('_flex _col _gap1') },\n    // nav items: _flex _aic _gap2 _p2 _px3 _r2 _trans\n  )\n)"
+    },
+    "layout": {
+      "description": "Full page layout with sidebar and content area. Light background, no visual effects.",
+      "example": "const { div, main, header, span } = tags;\ndiv({ class: css('_grid _h[100vh] _bgbg'), style: 'grid-template-columns:240px 1fr' },\n  // sidebar with _bgmuted _borderR\n  // ...,\n  div({ class: css('_flex _col _overflow[hidden]') },\n    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB') },\n      span({ class: css('_heading4') }, 'Dashboard')\n    ),\n    main({ class: css('_flex _col _gap4 _p6 _overflow[auto]') },\n      // page content\n    )\n  )\n)"
+    },
+    "alert": {
+      "wraps": "Alert",
+      "description": "Standard Alert — clean tokens handle the styling.",
+      "example": "Alert({ variant: 'info' },\n  'Your subscription renews in 3 days.'\n)"
+    },
+    "modal": {
+      "wraps": "Modal",
+      "description": "Standard Modal with clean styling — no extra decoration needed.",
+      "example": "const { div, h2 } = tags;\nModal({\n  visible: showModal,\n  onClose: () => setShowModal(false)\n},\n  h2({ class: css('_heading4 _mb4') }, 'Confirm Action'),\n  div({ class: css('_flex _col _gap4') },\n    // modal content\n  )\n)"
+    },
+    "chart": {
+      "wraps": "Chart",
+      "description": "Chart in bordered container with clean header.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('_b1 _r4 _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_bold') }, 'Revenue Trend'),\n    span({ class: css('_textxs _fgmuted') }, 'Last 30 days')\n  ),\n  Chart({ type: 'area', data: revenueData, x: 'date', y: 'amount', height: 300 })\n)"
+    }
+  }
+}

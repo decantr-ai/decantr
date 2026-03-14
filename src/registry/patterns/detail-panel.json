@@ -19,5 +19,9 @@
       "atoms": "cc-bar",
       "notes": "Header uses cc-bar with cc-label for entity name. Status Badge gets cc-glow for active states. Tab bar uses cc-bar styling. Content areas get cc-scanline."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Tabs, Badge, Separator, Descriptions, Button } from 'decantr/components';",
+    "example": "function DetailPanel() {\n  const { div, h2, span } = tags;\n  const entity = {\n    name: 'Acme Corporation',\n    active: true,\n    status: 'Active',\n    fields: [\n      { label: 'Industry', value: 'Technology' },\n      { label: 'Size', value: '500-1000 employees' },\n      { label: 'Location', value: 'San Francisco, CA' },\n      { label: 'Founded', value: '2018' }\n    ]\n  };\n\n  return div({ class: css('_flex _col _gap4 _p4') },\n    div({ class: css('_flex _aic _jcsb') },\n      div({ class: css('_flex _aic _gap3') },\n        h2({ class: css('_heading3') }, entity.name),\n        Badge({ variant: entity.active ? 'success' : 'default' }, entity.status)\n      ),\n      div({ class: css('_flex _gap2') },\n        Button({ variant: 'outline', size: 'sm' }, 'Edit'),\n        Button({ variant: 'destructive', size: 'sm' }, 'Delete')\n      )\n    ),\n    Separator(),\n    Tabs({ items: [\n      { label: 'Overview', content: () => Descriptions({ items: entity.fields }) },\n      { label: 'Activity', content: () => div({ class: css('_p4 _fgmuted') }, 'Activity timeline...') },\n      { label: 'Settings', content: () => div({ class: css('_p4 _fgmuted') }, 'Settings panel...') }\n    ] })\n  );\n}"
   }
 }

@@ -6,11 +6,14 @@
     "Accordion": {
       "props": {
         "items": {
-          "type": "{ id: string, title: string, content: Function }[]",
+          "type": "{ id: string, title: string, content: Function|string, disabled?: boolean }[]",
           "reactive": true,
           "required": true
         },
         "multiple": {
+          "type": "boolean"
+        },
+        "collapsible": {
           "type": "boolean"
         },
         "defaultOpen": {
@@ -19,6 +22,9 @@
         "disabled": {
           "type": "boolean|Function",
           "reactive": true
+        },
+        "onValueChange": {
+          "type": "Function"
         },
         "class": {
           "type": "string"
@@ -37,14 +43,17 @@
         "defaults": {
           "items": [
             {
+              "id": "what",
               "title": "What is Decantr?",
               "content": "A zero-dependency web framework."
             },
             {
+              "id": "how",
               "title": "How does it work?",
               "content": "Signal-based reactivity with atomic CSS."
             },
             {
+              "id": "ready",
               "title": "Is it production-ready?",
               "content": "Used by hundreds of thousands of developers."
             }
@@ -52,34 +61,42 @@
         },
         "examples": [
           {
-            "name": "Single expand",
+            "name": "Basic",
             "props": {
               "items": [
                 {
+                  "id": "s1",
                   "title": "Section 1",
                   "content": "Content for section 1"
                 },
                 {
+                  "id": "s2",
                   "title": "Section 2",
                   "content": "Content for section 2"
                 },
                 {
+                  "id": "s3",
                   "title": "Section 3",
                   "content": "Content for section 3"
                 }
+              ],
+              "defaultOpen": [
+                "s1"
               ]
             },
-            "description": "One section at a time."
+            "description": "Single expand with first item open."
           },
           {
-            "name": "Multiple expand",
+            "name": "Multiple",
             "props": {
               "items": [
                 {
+                  "id": "faq1",
                   "title": "FAQ 1",
                   "content": "Answer to FAQ 1"
                 },
                 {
+                  "id": "faq2",
                   "title": "FAQ 2",
                   "content": "Answer to FAQ 2"
                 }
@@ -87,6 +104,30 @@
               "multiple": true
             },
             "description": "Independent section toggling."
+          },
+          {
+            "name": "Disabled",
+            "props": {
+              "items": [
+                {
+                  "id": "enabled",
+                  "title": "Enabled item",
+                  "content": "This item can be toggled."
+                },
+                {
+                  "id": "disabled",
+                  "title": "Disabled item",
+                  "content": "This item cannot be toggled.",
+                  "disabled": true
+                },
+                {
+                  "id": "another",
+                  "title": "Another enabled",
+                  "content": "This one works too."
+                }
+              ]
+            },
+            "description": "Per-item disabled state."
           }
         ],
         "children": null
@@ -578,13 +619,19 @@
     "Breadcrumb": {
       "props": {
         "items": {
-          "type": "{ label: string, href?: string, onclick?: Function }[]",
+          "type": "{ label: string, href?: string, onclick?: Function, icon?: string, disabled?: boolean }[]",
           "reactive": true,
           "required": true
         },
         "separator": {
-          "type": "string",
-          "default": "'/'"
+          "type": "'chevron'|'slash'|'dot'|string|HTMLElement",
+          "default": "'chevron'"
+        },
+        "size": {
+          "type": "'sm'|'lg'"
+        },
+        "maxItems": {
+          "type": "number"
         },
         "class": {
           "type": "string"
@@ -613,7 +660,7 @@
         },
         "examples": [
           {
-            "name": "Navigation trail",
+            "name": "Default (chevron separator)",
             "props": {
               "items": [
                 {
@@ -629,12 +676,12 @@
                 }
               ]
             },
-            "description": "Standard breadcrumb path."
+            "description": "Default breadcrumb with chevron icon separators."
           },
           {
-            "name": "Custom separator",
+            "name": "Slash separator",
             "props": {
-              "separator": ">",
+              "separator": "slash",
               "items": [
                 {
                   "label": "Home",
@@ -649,7 +696,116 @@
                 }
               ]
             },
-            "description": "Arrow-separated breadcrumb."
+            "description": "Classic slash-separated breadcrumb."
+          },
+          {
+            "name": "Dot separator",
+            "props": {
+              "separator": "dot",
+              "items": [
+                {
+                  "label": "Home",
+                  "href": "#"
+                },
+                {
+                  "label": "Settings",
+                  "href": "#"
+                },
+                {
+                  "label": "Profile"
+                }
+              ]
+            },
+            "description": "Dot-separated breadcrumb."
+          },
+          {
+            "name": "With item icons",
+            "props": {
+              "items": [
+                {
+                  "label": "Home",
+                  "href": "#",
+                  "icon": "home"
+                },
+                {
+                  "label": "Users",
+                  "href": "#",
+                  "icon": "users"
+                },
+                {
+                  "label": "Profile"
+                }
+              ]
+            },
+            "description": "Breadcrumb items with leading icons."
+          },
+          {
+            "name": "Sizes",
+            "description": "Small, default, and large size variants.",
+            "props": {
+              "size": "sm",
+              "items": [
+                {
+                  "label": "Home",
+                  "href": "#"
+                },
+                {
+                  "label": "Products",
+                  "href": "#"
+                },
+                {
+                  "label": "Detail"
+                }
+              ]
+            }
+          },
+          {
+            "name": "Collapsed with maxItems",
+            "props": {
+              "maxItems": 3,
+              "items": [
+                {
+                  "label": "Home",
+                  "href": "#"
+                },
+                {
+                  "label": "Category",
+                  "href": "#"
+                },
+                {
+                  "label": "Subcategory",
+                  "href": "#"
+                },
+                {
+                  "label": "Products",
+                  "href": "#"
+                },
+                {
+                  "label": "Detail"
+                }
+              ]
+            },
+            "description": "Deep hierarchy collapsed with ellipsis dropdown."
+          },
+          {
+            "name": "With disabled items",
+            "props": {
+              "items": [
+                {
+                  "label": "Home",
+                  "href": "#"
+                },
+                {
+                  "label": "Archived",
+                  "href": "#",
+                  "disabled": true
+                },
+                {
+                  "label": "Document"
+                }
+              ]
+            },
+            "description": "Breadcrumb with a disabled middle item."
           }
         ]
       }
@@ -1428,6 +1584,97 @@
               "open": false
             },
             "description": "Expandable content section."
+          }
+        ]
+      }
+    },
+    "ColorPalette": {
+      "props": {
+        "colors": {
+          "type": "string[]|Function",
+          "reactive": true
+        },
+        "harmony='complementary'": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "count=5": {
+          "type": "number|Function",
+          "reactive": true
+        },
+        "locked": {
+          "type": "number[]|Function",
+          "reactive": true
+        },
+        "shades=true": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "onchange": {
+          "type": "Function"
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "sm",
+            "md",
+            "lg"
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples",
+          "interactive",
+          "sizes"
+        ],
+        "defaults": {
+          "harmony": "complementary",
+          "count": 5
+        },
+        "examples": [
+          {
+            "name": "Complementary",
+            "props": {
+              "harmony": "complementary",
+              "count": 5
+            },
+            "description": "Complementary harmony with 5 colors."
+          },
+          {
+            "name": "Triadic",
+            "props": {
+              "harmony": "triadic",
+              "count": 6
+            },
+            "description": "Triadic harmony with 6 colors."
+          },
+          {
+            "name": "Analogous with shades",
+            "props": {
+              "harmony": "analogous",
+              "count": 4,
+              "shades": true
+            },
+            "description": "Analogous harmony with shade strips."
+          },
+          {
+            "name": "Custom palette",
+            "props": {
+              "harmony": "custom",
+              "colors": [
+                "#ef4444",
+                "#f59e0b",
+                "#22c55e",
+                "#3b82f6",
+                "#8b5cf6"
+              ]
+            },
+            "description": "Custom color set."
           }
         ]
       }
@@ -2260,11 +2507,20 @@
         "onClose": {
           "type": "Function"
         },
-        "side": {
-          "type": "string"
+        "side='right'": {
+          "type": "'left'|'right'|'top'|'bottom'"
         },
         "title": {
           "type": "string"
+        },
+        "footer": {
+          "type": "Node|Node[]"
+        },
+        "size": {
+          "type": "string"
+        },
+        "closeOnOutside=true": {
+          "type": "boolean"
         },
         "width": {
           "type": "string"
@@ -2276,11 +2532,21 @@
           "type": "string"
         }
       },
+      "children": "...Node",
       "returns": "HTMLDialogElement",
+      "subComponents": [
+        "Header",
+        "Body",
+        "Footer"
+      ],
       "showcase": {
+        "states": {
+          "closeOnOutside=true": true
+        },
         "labelProp": "title",
         "sections": [
           "examples",
+          "states",
           "interactive"
         ],
         "children": null,
@@ -2291,15 +2557,47 @@
               "title": "Details",
               "side": "right"
             },
-            "description": "Side panel from right."
+            "description": "Default side panel from right."
           },
           {
-            "name": "Bottom drawer",
+            "name": "Left drawer (navigation)",
+            "props": {
+              "title": "Navigation",
+              "side": "left"
+            },
+            "description": "Navigation panel from left edge."
+          },
+          {
+            "name": "Bottom drawer (mobile)",
             "props": {
               "title": "Options",
               "side": "bottom"
             },
-            "description": "Panel from bottom edge."
+            "description": "Bottom panel with rounded top corners."
+          },
+          {
+            "name": "Top drawer (banner)",
+            "props": {
+              "title": "Announcements",
+              "side": "top"
+            },
+            "description": "Panel sliding from top edge."
+          },
+          {
+            "name": "With footer",
+            "props": {
+              "title": "Edit Profile",
+              "footer": true
+            },
+            "description": "Drawer with action buttons in footer."
+          },
+          {
+            "name": "Persistent (no outside close)",
+            "props": {
+              "title": "Required Action",
+              "closeOnOutside": false
+            },
+            "description": "Drawer that stays open on backdrop click."
           }
         ]
       }
@@ -2452,7 +2750,7 @@
     },
     "FloatButton": {
       "props": {
-        "icon='+''": {
+        "icon='+'": {
           "type": "string|Node"
         },
         "tooltip": {
@@ -2649,6 +2947,20 @@
           "optional": true,
           "default": "1.25em",
           "description": "CSS size (default: 1.25em)"
+        },
+        {
+          "name": "opts.weight",
+          "type": "string|number",
+          "optional": true,
+          "default": "2",
+          "description": "Stroke weight: 'thin'|'light'|'regular'|'medium'|'bold' or number 0.5-4 (default: 2)"
+        },
+        {
+          "name": "opts.filled",
+          "type": "boolean",
+          "optional": true,
+          "default": "false",
+          "description": "Fill closed shapes (default: false)"
         },
         {
           "name": "opts.class",
@@ -4881,65 +5193,6 @@
               "label": "OR"
             },
             "description": "Labeled divider."
-          }
-        ]
-      }
-    },
-    "Sheet": {
-      "props": {
-        "title": {
-          "type": "string"
-        },
-        "footer": {
-          "type": "Node|Node[]"
-        },
-        "visible": {
-          "type": "Function",
-          "required": true
-        },
-        "onClose": {
-          "type": "Function"
-        },
-        "side='right'": {
-          "type": "'left'|'right'|'top'|'bottom'"
-        },
-        "size": {
-          "type": "string",
-          "default": "320px"
-        },
-        "closeOnOutside=true": {
-          "type": "boolean"
-        },
-        "class": {
-          "type": "string"
-        }
-      },
-      "children": "...Node",
-      "returns": "HTMLDialogElement",
-      "subComponents": [
-        "Header",
-        "Body",
-        "Footer"
-      ],
-      "showcase": {
-        "states": {
-          "closeOnOutside=true": true
-        },
-        "labelProp": "title",
-        "sections": [
-          "examples",
-          "states",
-          "interactive"
-        ],
-        "children": null,
-        "examples": [
-          {
-            "name": "Right panel",
-            "props": {
-              "title": "Settings",
-              "side": "right"
-            },
-            "description": "Slide-out right panel."
           }
         ]
       }
@@ -7635,6 +7888,7 @@
       "label": "Form Advanced",
       "items": [
         "ColorPicker",
+        "ColorPalette",
         "DatePicker",
         "DateRangePicker",
         "TimePicker",
@@ -7708,7 +7962,6 @@
       "items": [
         "Modal",
         "AlertDialog",
-        "Sheet",
         "Drawer",
         "Command",
         "Popconfirm",

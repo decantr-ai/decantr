@@ -1,6 +1,15 @@
-import { h } from '../core/index.js';
+/**
+ * Popover — Floating content panel attached to a trigger element.
+ * Uses createOverlay behavior for show/hide, click-outside, escape.
+ *
+ * @module decantr/components/popover
+ */
+import { onDestroy } from '../core/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createOverlay } from './_behaviors.js';
+
+const { div } = tags;
 
 /**
  * @param {Object} [props]
@@ -20,26 +29,29 @@ export function Popover(props = {}, ...children) {
     class: cls
   } = props;
 
-  const content = h('div', {
+  const content = div({
     class: cx('d-popover-content', `d-popover-${position}`, align !== 'center' && `d-popover-align-${align}`, cls),
-    role: 'dialog',
-    style: { display: 'none' }
+    role: 'dialog'
   }, ...children);
 
-  const wrap = h('div', { class: 'd-popover' });
+  const wrap = div({ class: 'd-popover' });
 
-  const triggerEl = typeof trigger === 'function' ? trigger() : h('button', { type: 'button' }, 'Open');
+  const triggerEl = typeof trigger === 'function' ? trigger() : tags.button({ type: 'button' }, 'Open');
   triggerEl.setAttribute('aria-haspopup', 'dialog');
   triggerEl.setAttribute('aria-expanded', 'false');
   wrap.appendChild(triggerEl);
   wrap.appendChild(content);
 
-  createOverlay(triggerEl, content, {
+  const overlay = createOverlay(triggerEl, content, {
     trigger: 'click',
     closeOnEscape: true,
     closeOnOutside: true,
     onOpen: () => wrap.classList.add('d-popover-open'),
     onClose: () => wrap.classList.remove('d-popover-open')
+  });
+
+  onDestroy(() => {
+    overlay.destroy();
   });
 
   return wrap;

@@ -12,5 +12,9 @@
       "filter-controls": "Optional filter Buttons or Dropdown toggles",
       "suggestions": "Real-time suggestion list below the input"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Input, Button, icon } from 'decantr/components';",
+    "example": "function SearchBar() {\n  const { div } = tags;\n  const [query, setQuery] = createSignal('');\n\n  return div({ class: css('_flex _gap2 _aic') },\n    Input({\n      placeholder: 'Search...',\n      value: query,\n      onchange: e => setQuery(e.target.value),\n      class: css('_flex1')\n    }),\n    Button({ variant: 'primary' }, icon('search'), 'Search')\n  );\n}"
   }
 }

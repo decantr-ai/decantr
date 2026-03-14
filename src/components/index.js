@@ -59,6 +59,7 @@ export { InputNumber } from './input-number.js';
 export { InputOTP } from './input-otp.js';
 export { Rate } from './rate.js';
 export { ColorPicker } from './color-picker.js';
+export { ColorPalette } from './color-palette.js';
 export { DatePicker } from './date-picker.js';
 export { TimePicker } from './time-picker.js';
 export { Upload } from './upload.js';
@@ -89,7 +90,6 @@ export { HoverCard } from './hover-card.js';
 
 // ─── Feedback ────────────────────────────────────────────────────
 export { AlertDialog } from './alert-dialog.js';
-export { Sheet } from './sheet.js';
 export { notification, resetNotifications } from './notification.js';
 export { message, resetMessages } from './message.js';
 export { Result } from './result.js';

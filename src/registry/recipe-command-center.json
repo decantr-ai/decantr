@@ -70,9 +70,9 @@
       "example": "const { div, span } = tags;\nModal({\n  visible: showModal,\n  onClose: () => setShowModal(false),\n  class: css('cc-frame')\n},\n  div({ class: css('cc-bar') },\n    span({ class: css('cc-label') }, 'CONFIRM ACTION')\n  ),\n  div({ class: css('_p4') },\n    // modal content\n  )\n)"
     },
     "chart": {
-      "wraps": "Line",
+      "wraps": "Chart",
       "description": "Chart area with HUD frame and scanline overlay.",
-      "example": "const { div, span } = tags;\ndiv({ class: css('cc-frame cc-scanline') },\n  div({ class: css('cc-bar') },\n    span({ class: css('cc-label') }, 'FUEL CONSUMPTION'),\n    span({ class: css('cc-data cc-blink') }, 'STREAMING')\n  ),\n  Line({ data: fuelData, height: 300 })\n)"
+      "example": "const { div, span } = tags;\ndiv({ class: css('cc-frame cc-scanline') },\n  div({ class: css('cc-bar') },\n    span({ class: css('cc-label') }, 'FUEL CONSUMPTION'),\n    span({ class: css('cc-data cc-blink') }, 'STREAMING')\n  ),\n  Chart({ type: 'line', data: fuelData, x: 'date', y: 'litres', height: 300 })\n)"
     }
   }
 }

@@ -12,5 +12,9 @@
       "title-row": "Title with inline status Badge",
       "actions": "Action Buttons for edit, delete, or export"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Breadcrumb, Badge, Button, icon } from 'decantr/components';",
+    "example": "function DetailHeader() {\n  const { div, h1 } = tags;\n  const title = 'Project Alpha';\n  const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Projects', href: '/projects' }, { label: 'Project Alpha' }];\n  const status = 'active';\n\n  return div({ class: css('_flex _col _gap3 _pb4 _borderB') },\n    Breadcrumb({ items: breadcrumbs }),\n    div({ class: css('_flex _aic _jcsb') },\n      div({ class: css('_flex _aic _gap3') },\n        h1({ class: css('_heading3') }, title),\n        status ? Badge({ variant: status === 'active' ? 'success' : 'default' }, status) : null\n      ),\n      div({ class: css('_flex _gap2') },\n        Button({ variant: 'outline', size: 'sm' }, icon('edit'), 'Edit'),\n        Button({ variant: 'outline', size: 'sm' }, icon('share'), 'Share')\n      )\n    )\n  );\n}"
   }
 }

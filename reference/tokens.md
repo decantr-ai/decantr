@@ -1,6 +1,6 @@
 # Design Token Reference
 
-Components use a two-layer CSS system: base CSS (`_base.js`) for structure, style CSS (`styles/*.js` + `derive.js`) for visual identity. All spacing and typography references design tokens via `var()` with fallbacks.
+Components use a two-layer CSS system: base CSS (`_base.js`) for structure, style CSS (`styles/*.js` + `derive.js`) for visual identity. Component CSS is organized as a keyed object (`componentCSSMap` in `src/css/components.js`) with 78 sections, enabling build-time pruning of unused component styles. The backward-compatible `componentCSS` export (joined string) is maintained for runtime use. All spacing and typography references design tokens via `var()` with fallbacks.
 
 ## Typography Tokens
 
@@ -137,9 +137,12 @@ Fixed dimensions for component internals. These centralize magic numbers and all
 | `--d-colorpicker-bar-h` | 12px | Hue/alpha bar height |
 | `--d-timeline-dot` | 10px | Timeline dot diameter |
 | `--d-timeline-dot-lg` | 24px | Timeline large dot |
+| `--d-timeline-sm-dot` | 8px | Timeline small-size dot |
+| `--d-timeline-sm-dot-lg` | 20px | Timeline small-size large dot |
+| `--d-timeline-lg-dot` | 32px | Timeline large-size dot |
+| `--d-timeline-lg-dot-lg` | 40px | Timeline large-size large dot |
+| `--d-timeline-line-w` | 2px | Timeline connector line width |
 | `--d-rangeslider-thumb` | 16px | Range slider thumb diameter |
-| `--d-sheet-handle-w` | 40px | Sheet drag handle width |
-| `--d-sheet-handle-h` | 4px | Sheet drag handle height |
 | `--d-slide-distance` | 8px | Slide-in/out animation distance |
 
 ## Semantic Color Tokens
@@ -170,7 +173,7 @@ Fixed dimensions for component internals. These centralize magic numbers and all
 |-------|-------|-------|
 | `--d-z-dropdown` | 1000 | Select, combobox, datepicker, cascader, dropdown, menu |
 | `--d-z-sticky` | 1100 | Affix, float button |
-| `--d-z-modal` | 1200 | Modal, drawer, sheet, image overlay, tour |
+| `--d-z-modal` | 1200 | Modal, drawer, image overlay, tour |
 | `--d-z-popover` | 1300 | Popover, popconfirm, context menu, hovercard |
 | `--d-z-toast` | 1400 | Toast, notification, message containers |
 | `--d-z-tooltip` | 1500 | Tooltip |
@@ -402,7 +405,7 @@ Three overlay intensity levels for modal backdrops and scrims.
 | `--d-sidebar-width` | `260px` | Default sidebar width |
 | `--d-sidebar-width-lg` | `320px` | Large sidebar width |
 | `--d-drawer-width` | `360px` | Drawer panel width |
-| `--d-sheet-max-h` | `85vh` | Sheet max-height |
+| `--d-drawer-bottom-max-h` | `85vh` | Bottom drawer max-height |
 
 ## Chart UI Tokens
 

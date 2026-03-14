@@ -4,11 +4,14 @@
  *
  * @module decantr/components/datetime-picker
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createOverlay } from './_behaviors.js';
 import { icon } from './icon.js';
+
+const { div, span, button: buttonTag, input } = tags;
 
 const DAYS_HDR = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -68,17 +71,17 @@ export function DateTimePicker(props = {}) {
   }
 
   // Display
-  const displayEl = h('span', { class: 'd-select-display' });
+  const displayEl = span({ class: 'd-select-display' });
   const arrow = icon('calendar', { size: '1em', class: 'd-select-arrow' });
-  const trigger = h('button', {
+  const trigger = buttonTag({
     type: 'button',
     class: 'd-select',
     'aria-haspopup': 'dialog',
     'aria-expanded': 'false'
   }, displayEl, arrow);
 
-  const panel = h('div', { class: 'd-datetimepicker-panel', style: { display: 'none' } });
-  const wrap = h('div', { class: cx('d-datetimepicker', cls) }, trigger, panel);
+  const panel = div({ class: 'd-datetimepicker-panel' });
+  const wrap = div({ class: cx('d-datetimepicker', cls) }, trigger, panel);
 
   function updateDisplay() {
     displayEl.textContent = selected ? formatDisplay(selected) : placeholder;
@@ -93,22 +96,22 @@ export function DateTimePicker(props = {}) {
     const month = viewDate.getMonth();
 
     // Calendar section
-    const calSection = h('div', { class: 'd-datetimepicker-date' });
+    const calSection = div({ class: 'd-datetimepicker-date' });
 
     // Nav header
-    const prevBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous month' }, '\u2039');
-    const nextBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next month' }, '\u203A');
-    const title = h('span', { class: 'd-datepicker-title' }, `${MONTHS[month]} ${year}`);
+    const prevBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous month' }, '\u2039');
+    const nextBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next month' }, '\u203A');
+    const titleEl = span({ class: 'd-datepicker-title' }, `${MONTHS[month]} ${year}`);
 
     prevBtn.addEventListener('click', () => { viewDate.setMonth(month - 1); renderPanel(); });
     nextBtn.addEventListener('click', () => { viewDate.setMonth(month + 1); renderPanel(); });
 
-    calSection.appendChild(h('div', { class: 'd-datepicker-header' },
-      h('div', { class: 'd-datepicker-nav' }, prevBtn), title, h('div', { class: 'd-datepicker-nav' }, nextBtn)));
+    calSection.appendChild(div({ class: 'd-datepicker-header' },
+      div({ class: 'd-datepicker-nav' }, prevBtn), titleEl, div({ class: 'd-datepicker-nav' }, nextBtn)));
 
     // Weekday headers
-    const grid = h('div', { class: 'd-datepicker-grid', role: 'grid' });
-    DAYS_HDR.forEach(d => grid.appendChild(h('div', { class: 'd-datepicker-weekday' }, d)));
+    const grid = div({ class: 'd-datepicker-grid', role: 'grid' });
+    DAYS_HDR.forEach(d => grid.appendChild(div({ class: 'd-datepicker-weekday' }, d)));
 
     // Days
     const firstDay = new Date(year, month, 1).getDay();
@@ -121,7 +124,7 @@ export function DateTimePicker(props = {}) {
     }
 
     for (let i = firstDay - 1; i >= 0; i--) {
-      grid.appendChild(h('button', { type: 'button', class: 'd-datepicker-day d-datepicker-day-outside', tabindex: '-1' }, String(daysInPrev - i)));
+      grid.appendChild(buttonTag({ type: 'button', class: 'd-datepicker-day d-datepicker-day-outside', tabindex: '-1' }, String(daysInPrev - i)));
     }
 
     for (let i = 1; i <= daysInMonth; i++) {
@@ -131,12 +134,12 @@ export function DateTimePicker(props = {}) {
         sameDay(d, today) && 'd-datepicker-day-today',
         sameDay(d, selected) && 'd-datepicker-day-selected',
       );
-      const btn = h('button', { type: 'button', class: dayClass, tabindex: '-1' }, String(i));
+      const btn = buttonTag({ type: 'button', class: dayClass, tabindex: '-1' }, String(i));
       btn.addEventListener('click', () => {
         viewDate = new Date(d);
         selected = buildDateTime(d, _h, _m, _s);
         updateDisplay();
-        renderPanel(); // re-render to show selected state
+        renderPanel();
         if (onchange) onchange(new Date(selected));
       });
       grid.appendChild(btn);
@@ -145,35 +148,35 @@ export function DateTimePicker(props = {}) {
     const totalCells = firstDay + daysInMonth;
     const remaining = (7 - (totalCells % 7)) % 7;
     for (let i = 1; i <= remaining; i++) {
-      grid.appendChild(h('button', { type: 'button', class: 'd-datepicker-day d-datepicker-day-outside', tabindex: '-1' }, String(i)));
+      grid.appendChild(buttonTag({ type: 'button', class: 'd-datepicker-day d-datepicker-day-outside', tabindex: '-1' }, String(i)));
     }
 
     calSection.appendChild(grid);
     panel.appendChild(calSection);
 
     // ─── Time section ─────────────────────────────────
-    const timeSection = h('div', { class: 'd-datetimepicker-time' });
-    const timeLabel = h('div', { class: 'd-datetimepicker-time-label' }, 'Time');
+    const timeSection = div({ class: 'd-datetimepicker-time' });
+    const timeLabel = div({ class: 'd-datetimepicker-time-label' }, 'Time');
     timeSection.appendChild(timeLabel);
 
-    const timeRow = h('div', { class: 'd-datetimepicker-time-row' });
+    const timeRow = div({ class: 'd-datetimepicker-time-row' });
 
     function createSpinner(val, minV, maxV, onChange) {
-      const input = h('input', {
+      const inp = input({
         type: 'number',
         class: 'd-datetimepicker-spinner',
         min: String(minV),
         max: String(maxV),
         value: String(val).padStart(2, '0'),
       });
-      input.addEventListener('change', () => {
-        let v = parseInt(input.value, 10);
+      inp.addEventListener('change', () => {
+        let v = parseInt(inp.value, 10);
         if (isNaN(v)) v = minV;
         v = Math.max(minV, Math.min(maxV, v));
-        input.value = String(v).padStart(2, '0');
+        inp.value = String(v).padStart(2, '0');
         onChange(v);
       });
-      return input;
+      return inp;
     }
 
     const hInput = createSpinner(use12h ? (_h % 12 || 12) : _h, use12h ? 1 : 0, use12h ? 12 : 23, (v) => {
@@ -182,7 +185,7 @@ export function DateTimePicker(props = {}) {
     });
 
     timeRow.appendChild(hInput);
-    timeRow.appendChild(h('span', { class: 'd-datetimepicker-sep' }, ':'));
+    timeRow.appendChild(span({ class: 'd-datetimepicker-sep' }, ':'));
 
     const mInput = createSpinner(_m, 0, 59, (v) => {
       _m = v;
@@ -191,7 +194,7 @@ export function DateTimePicker(props = {}) {
     timeRow.appendChild(mInput);
 
     if (seconds) {
-      timeRow.appendChild(h('span', { class: 'd-datetimepicker-sep' }, ':'));
+      timeRow.appendChild(span({ class: 'd-datetimepicker-sep' }, ':'));
       const sInput = createSpinner(_s, 0, 59, (v) => {
         _s = v;
         if (selected) { selected = buildDateTime(selected, _h, _m, _s); updateDisplay(); if (onchange) onchange(new Date(selected)); }
@@ -200,7 +203,7 @@ export function DateTimePicker(props = {}) {
     }
 
     if (use12h) {
-      const ampm = h('button', { type: 'button', class: 'd-datetimepicker-ampm' }, _h >= 12 ? 'PM' : 'AM');
+      const ampm = buttonTag({ type: 'button', class: 'd-datetimepicker-ampm' }, _h >= 12 ? 'PM' : 'AM');
       ampm.addEventListener('click', () => {
         _h = _h >= 12 ? _h - 12 : _h + 12;
         ampm.textContent = _h >= 12 ? 'PM' : 'AM';
@@ -212,7 +215,7 @@ export function DateTimePicker(props = {}) {
     timeSection.appendChild(timeRow);
 
     // Now button
-    const nowBtn = h('button', { type: 'button', class: 'd-datetimepicker-now' }, 'Now');
+    const nowBtn = buttonTag({ type: 'button', class: 'd-datetimepicker-now' }, 'Now');
     nowBtn.addEventListener('click', () => {
       const now = new Date();
       selected = now;
@@ -227,8 +230,8 @@ export function DateTimePicker(props = {}) {
     panel.appendChild(timeSection);
 
     // OK / Close button
-    const footer = h('div', { class: 'd-datetimepicker-footer' });
-    const okBtn = h('button', { type: 'button', class: 'd-btn d-btn-sm' }, 'OK');
+    const footer = div({ class: 'd-datetimepicker-footer' });
+    const okBtn = buttonTag({ type: 'button', class: 'd-btn d-btn-sm' }, 'OK');
     okBtn.addEventListener('click', () => overlay.close());
     footer.appendChild(okBtn);
     panel.appendChild(footer);
@@ -259,6 +262,10 @@ export function DateTimePicker(props = {}) {
   } else if (disabled) {
     trigger.disabled = true;
   }
+
+  onDestroy(() => {
+    overlay.destroy();
+  });
 
   return wrap;
 }

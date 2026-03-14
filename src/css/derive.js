@@ -318,6 +318,34 @@ const ELEVATION = {
     light: ['none', '2px 2px 0 var(--d-fg)', '4px 4px 0 var(--d-fg)', '6px 6px 0 var(--d-fg)'],
     dark:  ['none', '2px 2px 0 var(--d-fg)', '4px 4px 0 var(--d-fg)', '6px 6px 0 var(--d-fg)'],
   },
+  clay: {
+    light: [
+      'none',
+      'inset 0 -4px 6px rgba(0,0,0,0.06), 0 4px 8px rgba(0,0,0,0.08)',
+      'inset 0 -6px 10px rgba(0,0,0,0.08), 0 8px 16px rgba(0,0,0,0.1)',
+      'inset 0 -8px 14px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.12)',
+    ],
+    dark: [
+      'none',
+      'inset 0 -4px 6px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.25)',
+      'inset 0 -6px 10px rgba(0,0,0,0.25), 0 8px 16px rgba(0,0,0,0.3)',
+      'inset 0 -8px 14px rgba(0,0,0,0.3), 0 12px 24px rgba(0,0,0,0.35)',
+    ],
+  },
+  glow: {
+    light: [
+      'none',
+      '0 0 8px rgba(0,0,0,0.08), 0 0 2px rgba(0,0,0,0.04)',
+      '0 0 16px rgba(0,0,0,0.1), 0 0 4px rgba(0,0,0,0.06)',
+      '0 0 32px rgba(0,0,0,0.12), 0 0 8px rgba(0,0,0,0.08)',
+    ],
+    dark: [
+      'none',
+      '0 0 8px rgba(0,255,213,0.12), 0 0 2px rgba(0,255,213,0.08)',
+      '0 0 16px rgba(0,255,213,0.18), 0 0 4px rgba(0,255,213,0.12)',
+      '0 0 32px rgba(0,255,213,0.22), 0 0 8px rgba(0,255,213,0.15)',
+    ],
+  },
 };
 
 const SURFACE_BLUR = {
@@ -326,6 +354,8 @@ const SURFACE_BLUR = {
   raised:    ['none', 'none', 'none'],
   glass:     ['blur(8px)', 'blur(12px)', 'blur(16px)'],
   brutalist: ['none', 'none', 'none'],
+  clay:      ['none', 'none', 'none'],
+  glow:      ['none', 'none', 'none'],
 };
 
 const MOTION = {
@@ -367,10 +397,18 @@ const INTERACTION = {
     hoverTranslate: '-2px, -2px', hoverBrightness: '1',
     activeScale: '1', activeTranslate: '2px, 2px',
   },
+  clay: {
+    hoverTranslate: '0, -2px', hoverBrightness: '1.03',
+    activeScale: '0.96', activeTranslate: '0, 2px',
+  },
+  glow: {
+    hoverTranslate: '0, -1px', hoverBrightness: '1.05',
+    activeScale: '0.98', activeTranslate: '0, 0',
+  },
 };
 
 const ELEVATION_TO_INTERACTION = {
-  flat: 'flat', subtle: 'subtle', raised: 'raised', glass: 'subtle', brutalist: 'brutalist',
+  flat: 'flat', subtle: 'subtle', raised: 'raised', glass: 'subtle', brutalist: 'brutalist', clay: 'clay', glow: 'glow',
 };
 
 const BORDER = {
@@ -386,6 +424,8 @@ const PALETTE_TUNING = {
   raised:    { hoverShift: 8,  activeShift: 15, subtleAlphaLight: 0.10, subtleAlphaDark: 0.15, borderAlphaLight: 0.30, borderAlphaDark: 0.40 },
   glass:     { hoverShift: 5,  activeShift: 10, subtleAlphaLight: 0.20, subtleAlphaDark: 0.25, borderAlphaLight: 0.20, borderAlphaDark: 0.30 },
   brutalist: { hoverShift: 12, activeShift: 20, subtleAlphaLight: 0.15, subtleAlphaDark: 0.20, borderAlphaLight: 0.80, borderAlphaDark: 0.80 },
+  clay:      { hoverShift: 6,  activeShift: 12, subtleAlphaLight: 0.12, subtleAlphaDark: 0.18, borderAlphaLight: 0.15, borderAlphaDark: 0.20 },
+  glow:      { hoverShift: 8,  activeShift: 15, subtleAlphaLight: 0.10, subtleAlphaDark: 0.15, borderAlphaLight: 0.25, borderAlphaDark: 0.35 },
 };
 
 const DENSITY = {
@@ -476,7 +516,7 @@ const SPACING = {
   '--d-sp-5': '1.25rem', '--d-sp-6': '1.5rem', '--d-sp-8': '2rem',
   '--d-sp-10': '2.5rem', '--d-sp-12': '3rem', '--d-sp-16': '4rem',
   '--d-pad': '1.25rem',
-  // Compound component spacing contract (Card, Modal, AlertDialog, Drawer, Sheet)
+  // Compound component spacing contract (Card, Modal, AlertDialog, Drawer)
   '--d-compound-gap': 'var(--d-sp-3)',
   '--d-compound-pad': 'var(--d-pad)',
   // Popup offset tokens — distance between trigger and floating layer
@@ -484,6 +524,7 @@ const SPACING = {
   '--d-offset-menu': '4px',
   '--d-offset-tooltip': '6px',
   '--d-offset-popover': '8px',
+  '--d-offset-tour': '12px',
   // Dropdown panel max-height — unified for all select-like components
   '--d-panel-max-h': '240px',
   // Tree indentation per level
@@ -556,14 +597,20 @@ const SPACING = {
   // ColorPicker anatomy
   '--d-timepicker-column-h': '200px', '--d-datepicker-day-lh': '2',
   '--d-colorpicker-swatch': '24px', '--d-colorpicker-thumb': '14px',
-  '--d-colorpicker-preset': '20px', '--d-colorpicker-sat-h': '150px',
+  '--d-colorpicker-preset': '24px', '--d-colorpicker-sat-h': '150px',
   '--d-colorpicker-bar-h': '12px',
+  // ColorPalette anatomy
+  '--d-colorpalette-swatch-w': '140px', '--d-colorpalette-swatch-h': '100px',
+  '--d-colorpalette-swatch-w-sm': '90px', '--d-colorpalette-swatch-h-sm': '64px',
+  '--d-colorpalette-swatch-w-lg': '180px', '--d-colorpalette-swatch-h-lg': '120px',
+  '--d-colorpalette-shade-h': '20px',
   // Timeline geometry
   '--d-timeline-dot': '10px', '--d-timeline-dot-lg': '24px',
+  '--d-timeline-sm-dot': '8px', '--d-timeline-sm-dot-lg': '20px',
+  '--d-timeline-lg-dot': '32px', '--d-timeline-lg-dot-lg': '40px',
+  '--d-timeline-line-w': '2px',
   // RangeSlider thumb
   '--d-rangeslider-thumb': '16px',
-  // Sheet handle
-  '--d-sheet-handle-w': '40px', '--d-sheet-handle-h': '4px',
   // Animation slide distance
   '--d-slide-distance': '8px',
 };
@@ -1005,7 +1052,7 @@ export function derive(seed, personality, mode, typography, overrides, options) 
     '--d-sidebar-width':          '260px',
     '--d-sidebar-width-lg':       '320px',
     '--d-drawer-width':           '360px',
-    '--d-sheet-max-h':            '85vh',
+    '--d-drawer-bottom-max-h':    '85vh',
   };
 
   // --- Chart UI tokens (4 tokens) ---

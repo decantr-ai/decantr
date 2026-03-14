@@ -199,15 +199,21 @@ describe('derive()', () => {
 // ============================================================
 
 describe('getStyleList()', () => {
-  it('returns 5 built-in styles', () => {
+  it('returns 11 built-in styles', () => {
     const list = getStyleList();
-    assert.equal(list.length, 5);
+    assert.equal(list.length, 11);
     const ids = list.map(s => s.id);
     assert.ok(ids.includes('clean'));
     assert.ok(ids.includes('retro'));
     assert.ok(ids.includes('glassmorphism'));
     assert.ok(ids.includes('auradecantism'));
     assert.ok(ids.includes('command-center'));
+    assert.ok(ids.includes('clay'));
+    assert.ok(ids.includes('liquid-glass'));
+    assert.ok(ids.includes('dopamine'));
+    assert.ok(ids.includes('prismatic'));
+    assert.ok(ids.includes('bioluminescent'));
+    assert.ok(ids.includes('editorial'));
   });
 
   it('each style has id and name', () => {

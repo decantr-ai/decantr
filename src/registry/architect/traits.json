@@ -1,0 +1,379 @@
+{
+  "$schema": "https://decantr.ai/schemas/traits.v1.json",
+  "description": "Compositional trait graph for dynamic archetype generation. Each trait maps to patterns, skeletons, and co-occurring traits with affinity weights. The LLM uses this to reason about any domain dynamically, composing custom archetypes from traits instead of relying on pre-built templates.",
+  "usage": "1. User describes intent → match keywords to trait triggers. 2. Activate matching traits. 3. Follow co-occurs edges (weighted) to pull in related traits. 4. Map activated traits to patterns and skeletons. 5. Compose essence structure from resolved patterns.",
+  "traits": {
+    "sidebar-nav": {
+      "description": "Persistent sidebar navigation with collapsible toggle. Primary navigation pattern for multi-page apps.",
+      "triggers": ["dashboard", "admin", "portal", "workspace", "management", "settings", "console"],
+      "skeleton": "sidebar-main",
+      "patterns": [],
+      "co-occurs": {
+        "header-bar": 0.95,
+        "content-area": 0.9,
+        "search-global": 0.7
+      }
+    },
+    "top-nav": {
+      "description": "Horizontal navigation bar. Primary pattern for public-facing sites.",
+      "triggers": ["website", "landing", "storefront", "blog", "marketing", "portfolio", "docs"],
+      "skeleton": "top-nav-main",
+      "patterns": [],
+      "co-occurs": {
+        "header-bar": 0.9,
+        "content-area": 0.85,
+        "footer-section": 0.8
+      }
+    },
+    "header-bar": {
+      "description": "Page-level header with title, breadcrumbs, and action buttons.",
+      "triggers": ["detail", "page", "view"],
+      "skeleton": null,
+      "patterns": ["detail-header"],
+      "co-occurs": {
+        "sidebar-nav": 0.85,
+        "top-nav": 0.8
+      }
+    },
+    "content-area": {
+      "description": "Scrollable main content region.",
+      "triggers": [],
+      "skeleton": null,
+      "patterns": [],
+      "co-occurs": {}
+    },
+    "widget-grid": {
+      "description": "Dashboard grid with KPI cards and summary metrics.",
+      "triggers": ["dashboard", "overview", "metrics", "kpi", "summary", "analytics", "monitor"],
+      "skeleton": null,
+      "patterns": ["kpi-grid"],
+      "co-occurs": {
+        "chart-area": 0.85,
+        "data-table-view": 0.75,
+        "sidebar-nav": 0.8,
+        "activity-stream": 0.65
+      }
+    },
+    "chart-area": {
+      "description": "Data visualization with charts (line, bar, pie, area, etc.).",
+      "triggers": ["chart", "graph", "visualization", "analytics", "trends", "report", "metrics"],
+      "skeleton": null,
+      "patterns": ["chart-grid"],
+      "co-occurs": {
+        "widget-grid": 0.85,
+        "filter-controls": 0.75,
+        "data-table-view": 0.7
+      }
+    },
+    "data-table-view": {
+      "description": "Sortable, filterable data table with toolbar.",
+      "triggers": ["table", "list", "records", "data", "logs", "inventory", "orders", "users", "transactions"],
+      "skeleton": null,
+      "patterns": ["data-table"],
+      "co-occurs": {
+        "filter-controls": 0.85,
+        "pagination-controls": 0.8,
+        "header-bar": 0.7,
+        "detail-view": 0.65
+      }
+    },
+    "filter-controls": {
+      "description": "Filter bar or sidebar for narrowing data views.",
+      "triggers": ["filter", "search", "refine", "sort", "category"],
+      "skeleton": null,
+      "patterns": ["filter-bar", "filter-sidebar", "search-bar"],
+      "co-occurs": {
+        "data-table-view": 0.85,
+        "product-catalog": 0.8,
+        "chart-area": 0.65
+      }
+    },
+    "pagination-controls": {
+      "description": "Page navigation for paginated content.",
+      "triggers": [],
+      "skeleton": null,
+      "patterns": ["pagination"],
+      "co-occurs": {
+        "data-table-view": 0.9,
+        "product-catalog": 0.8,
+        "blog-list": 0.75
+      }
+    },
+    "detail-view": {
+      "description": "Entity detail panel with tabs, descriptions, and actions.",
+      "triggers": ["detail", "profile", "view", "record", "info"],
+      "skeleton": null,
+      "patterns": ["detail-panel", "detail-header"],
+      "co-occurs": {
+        "data-table-view": 0.7,
+        "header-bar": 0.85,
+        "activity-stream": 0.6
+      }
+    },
+    "hero-section": {
+      "description": "Full-width hero with headline, subtext, and CTAs.",
+      "triggers": ["landing", "hero", "homepage", "marketing", "launch", "product"],
+      "skeleton": null,
+      "patterns": ["hero"],
+      "co-occurs": {
+        "cta-block": 0.8,
+        "testimonial-block": 0.7,
+        "top-nav": 0.85,
+        "pricing-block": 0.6
+      }
+    },
+    "cta-block": {
+      "description": "Call-to-action section with headline and buttons.",
+      "triggers": ["cta", "conversion", "signup", "trial"],
+      "skeleton": null,
+      "patterns": ["cta-section"],
+      "co-occurs": {
+        "hero-section": 0.8,
+        "pricing-block": 0.65,
+        "testimonial-block": 0.6
+      }
+    },
+    "testimonial-block": {
+      "description": "Customer testimonials or social proof grid.",
+      "triggers": ["testimonial", "review", "social proof", "customer", "quote"],
+      "skeleton": null,
+      "patterns": ["testimonials", "author-card"],
+      "co-occurs": {
+        "hero-section": 0.7,
+        "cta-block": 0.65,
+        "pricing-block": 0.55
+      }
+    },
+    "pricing-block": {
+      "description": "Pricing tier comparison table.",
+      "triggers": ["pricing", "plans", "tier", "subscription", "billing"],
+      "skeleton": null,
+      "patterns": ["pricing-table"],
+      "co-occurs": {
+        "cta-block": 0.75,
+        "hero-section": 0.6,
+        "auth-flow": 0.5
+      }
+    },
+    "auth-flow": {
+      "description": "Authentication forms: login, register, forgot password.",
+      "triggers": ["login", "signin", "signup", "register", "auth", "password"],
+      "skeleton": "centered",
+      "patterns": ["auth-form"],
+      "co-occurs": {
+        "sidebar-nav": 0.3,
+        "top-nav": 0.3
+      }
+    },
+    "product-catalog": {
+      "description": "Product grid with cards, images, prices, and add-to-cart.",
+      "triggers": ["product", "catalog", "shop", "store", "ecommerce", "marketplace", "merchandise"],
+      "skeleton": null,
+      "patterns": ["product-grid", "category-nav"],
+      "co-occurs": {
+        "filter-controls": 0.85,
+        "pagination-controls": 0.8,
+        "detail-view": 0.7,
+        "cart-checkout": 0.65
+      }
+    },
+    "cart-checkout": {
+      "description": "Shopping cart and checkout wizard flow.",
+      "triggers": ["cart", "checkout", "payment", "order", "purchase"],
+      "skeleton": "minimal-header",
+      "patterns": ["wizard", "order-history"],
+      "co-occurs": {
+        "product-catalog": 0.7,
+        "form-wizard": 0.8
+      }
+    },
+    "form-wizard": {
+      "description": "Multi-step form with progress indicator.",
+      "triggers": ["wizard", "onboarding", "multi-step", "setup", "registration"],
+      "skeleton": null,
+      "patterns": ["wizard", "form-sections"],
+      "co-occurs": {
+        "progress-indicator": 0.9,
+        "auth-flow": 0.5
+      }
+    },
+    "progress-indicator": {
+      "description": "Step progress or timeline visualization.",
+      "triggers": ["progress", "steps", "timeline", "milestone"],
+      "skeleton": null,
+      "patterns": ["timeline"],
+      "co-occurs": {
+        "form-wizard": 0.85,
+        "pipeline-view": 0.7
+      }
+    },
+    "activity-stream": {
+      "description": "Chronological activity feed with avatars and timestamps.",
+      "triggers": ["activity", "feed", "log", "history", "timeline", "notifications"],
+      "skeleton": null,
+      "patterns": ["activity-feed"],
+      "co-occurs": {
+        "widget-grid": 0.65,
+        "sidebar-nav": 0.6,
+        "detail-view": 0.55
+      }
+    },
+    "blog-list": {
+      "description": "Blog post list with excerpts, categories, and authors.",
+      "triggers": ["blog", "posts", "articles", "content", "news", "journal"],
+      "skeleton": null,
+      "patterns": ["post-list", "category-nav"],
+      "co-occurs": {
+        "article-view": 0.85,
+        "pagination-controls": 0.8,
+        "top-nav": 0.75
+      }
+    },
+    "article-view": {
+      "description": "Long-form article with typography, author card, and table of contents.",
+      "triggers": ["article", "post", "read", "content", "documentation"],
+      "skeleton": null,
+      "patterns": ["article-content", "author-card", "table-of-contents"],
+      "co-occurs": {
+        "blog-list": 0.8,
+        "top-nav": 0.7
+      }
+    },
+    "gallery-grid": {
+      "description": "Image/media gallery with lightbox.",
+      "triggers": ["gallery", "photos", "images", "media", "portfolio", "showcase"],
+      "skeleton": null,
+      "patterns": ["media-gallery"],
+      "co-occurs": {
+        "filter-controls": 0.65,
+        "hero-section": 0.5,
+        "top-nav": 0.7
+      }
+    },
+    "pipeline-view": {
+      "description": "Stage-based pipeline or funnel tracker.",
+      "triggers": ["pipeline", "funnel", "stages", "deals", "crm", "sales", "kanban"],
+      "skeleton": null,
+      "patterns": ["pipeline-tracker"],
+      "co-occurs": {
+        "widget-grid": 0.75,
+        "data-table-view": 0.7,
+        "chart-area": 0.65
+      }
+    },
+    "goal-tracking": {
+      "description": "Goal/OKR progress cards with targets and status.",
+      "triggers": ["goal", "okr", "target", "kpi", "scorecard", "performance"],
+      "skeleton": null,
+      "patterns": ["goal-tracker", "scorecard"],
+      "co-occurs": {
+        "widget-grid": 0.8,
+        "chart-area": 0.7,
+        "sidebar-nav": 0.65
+      }
+    },
+    "comparison-view": {
+      "description": "Side-by-side metric comparison panel.",
+      "triggers": ["compare", "comparison", "benchmark", "versus", "period"],
+      "skeleton": null,
+      "patterns": ["comparison-panel"],
+      "co-occurs": {
+        "widget-grid": 0.75,
+        "chart-area": 0.7
+      }
+    },
+    "contact-page": {
+      "description": "Contact form with fields and submission.",
+      "triggers": ["contact", "support", "inquiry", "feedback", "message"],
+      "skeleton": null,
+      "patterns": ["contact-form"],
+      "co-occurs": {
+        "top-nav": 0.7,
+        "hero-section": 0.4
+      }
+    },
+    "search-global": {
+      "description": "Global search with command palette (Cmd+K) style.",
+      "triggers": ["search", "find", "command palette", "global search"],
+      "skeleton": null,
+      "patterns": ["search-bar"],
+      "co-occurs": {
+        "sidebar-nav": 0.75,
+        "top-nav": 0.7
+      }
+    },
+    "footer-section": {
+      "description": "Page footer with links, branding, and legal.",
+      "triggers": [],
+      "skeleton": null,
+      "patterns": [],
+      "co-occurs": {
+        "top-nav": 0.85,
+        "hero-section": 0.6
+      }
+    },
+    "full-bleed-hero": {
+      "description": "Full-viewport hero-first layout with floating nav. Portfolio/creative style.",
+      "triggers": ["portfolio", "creative", "agency", "artist", "photographer"],
+      "skeleton": "full-bleed",
+      "patterns": ["hero", "media-gallery"],
+      "co-occurs": {
+        "gallery-grid": 0.8,
+        "testimonial-block": 0.6,
+        "cta-block": 0.65
+      }
+    }
+  },
+  "composites": {
+    "dashboard": {
+      "description": "Data dashboard with navigation, KPIs, charts, and tables.",
+      "traits": ["sidebar-nav", "header-bar", "widget-grid", "chart-area", "data-table-view", "activity-stream"],
+      "suggested_vintage": { "style": "auradecantism", "mode": "dark" }
+    },
+    "landing": {
+      "description": "Marketing landing page with hero, features, and CTAs.",
+      "traits": ["top-nav", "hero-section", "cta-block", "testimonial-block", "pricing-block", "footer-section"],
+      "suggested_vintage": { "style": "clean", "mode": "light" }
+    },
+    "ecommerce": {
+      "description": "Online store with catalog, cart, and checkout.",
+      "traits": ["top-nav", "product-catalog", "filter-controls", "cart-checkout", "auth-flow", "detail-view"],
+      "suggested_vintage": { "style": "clean", "mode": "light" }
+    },
+    "portfolio": {
+      "description": "Creative portfolio with hero, gallery, and about.",
+      "traits": ["full-bleed-hero", "gallery-grid", "testimonial-block", "contact-page"],
+      "suggested_vintage": { "style": "auradecantism", "mode": "dark" }
+    },
+    "admin": {
+      "description": "Admin panel with tables, forms, and settings.",
+      "traits": ["sidebar-nav", "header-bar", "data-table-view", "filter-controls", "form-wizard", "detail-view"],
+      "suggested_vintage": { "style": "clean", "mode": "light" }
+    },
+    "crm": {
+      "description": "CRM with pipeline, contacts, and deal tracking.",
+      "traits": ["sidebar-nav", "header-bar", "pipeline-view", "widget-grid", "data-table-view", "detail-view", "activity-stream"],
+      "suggested_vintage": { "style": "auradecantism", "mode": "dark" }
+    },
+    "blog": {
+      "description": "Blog or content site with articles and categories.",
+      "traits": ["top-nav", "blog-list", "article-view", "search-global", "footer-section"],
+      "suggested_vintage": { "style": "clean", "mode": "light" }
+    },
+    "saas": {
+      "description": "SaaS product with dashboard, settings, and billing.",
+      "traits": ["sidebar-nav", "header-bar", "widget-grid", "chart-area", "data-table-view", "form-wizard", "auth-flow", "goal-tracking"],
+      "suggested_vintage": { "style": "auradecantism", "mode": "dark" }
+    },
+    "financial": {
+      "description": "Financial dashboard with scorecards, pipelines, and comparisons.",
+      "traits": ["sidebar-nav", "header-bar", "widget-grid", "chart-area", "goal-tracking", "comparison-view", "pipeline-view", "data-table-view"],
+      "suggested_vintage": { "style": "command-center", "mode": "dark" }
+    },
+    "docs": {
+      "description": "Documentation site with sidebar, search, and article content.",
+      "traits": ["sidebar-nav", "search-global", "article-view"],
+      "suggested_vintage": { "style": "clean", "mode": "auto" }
+    }
+  }
+}

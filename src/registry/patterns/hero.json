@@ -19,6 +19,20 @@
       "wrapper": "cc-frame",
       "atoms": "cc-grid",
       "notes": "Headline uses cc-label. CTA buttons get cc-glow on primary action. Background uses cc-grid overlay."
+    },
+    "auradecantism": {
+      "wrapper": "d-mesh",
+      "atoms": "",
+      "notes": "Hero section on d-mesh background. Headline uses d-gradient-text. CTA button gets aura-glow."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_bgmuted _r4",
+      "notes": "Hero on subtle muted background. No gradients or glass. Standard button styling."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+    "example": "function Hero() {\n  const { div, h1, p } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap6 _py16 _px6') },\n    h1({ class: css('_heading1') }, 'Build Faster, Ship Smarter'),\n    p({ class: css('_body _fgmuted _mw[640px]') }, 'The AI-first framework that turns your ideas into production-ready applications in minutes, not months.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg' }, 'Get Started'),\n      Button({ variant: 'outline', size: 'lg' }, icon('github'), 'View Source')\n    )\n  );\n}"
   }
 }

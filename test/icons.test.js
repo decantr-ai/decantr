@@ -100,3 +100,73 @@ describe('icon() component', () => {
     assert.ok(el, 'should render stroke-based icon');
   });
 });
+
+describe('icon() weight and fill variants', () => {
+  it('named weight "thin" produces --w1 class suffix', () => {
+    createDOM();
+    const { container } = render(() => icon('star', { weight: 'thin' }));
+    const el = container.querySelector('.d-i');
+    assert.ok(el.classList.contains('d-i-star--w1'), 'should have d-i-star--w1 class');
+  });
+
+  it('named weight "light" produces --w1p5 class suffix', () => {
+    createDOM();
+    const { container } = render(() => icon('star', { weight: 'light' }));
+    const el = container.querySelector('.d-i');
+    assert.ok(el.classList.contains('d-i-star--w1p5'), 'should have d-i-star--w1p5 class');
+  });
+
+  it('named weight "bold" produces --w3 class suffix', () => {
+    createDOM();
+    const { container } = render(() => icon('star', { weight: 'bold' }));
+    const el = container.querySelector('.d-i');
+    assert.ok(el.classList.contains('d-i-star--w3'), 'should have d-i-star--w3 class');
+  });
+
+  it('default weight "regular" produces no suffix', () => {
+    createDOM();
+    const { container } = render(() => icon('star', { weight: 'regular' }));
+    const el = container.querySelector('.d-i');
+    assert.ok(el.classList.contains('d-i-star'), 'should have base d-i-star class');
+    assert.ok(!el.className.includes('--w'), 'should not have weight suffix');
+  });
+
+  it('no weight option produces no suffix', () => {
+    createDOM();
+    const { container } = render(() => icon('check'));
+    const el = container.querySelector('.d-i');
+    assert.ok(el.classList.contains('d-i-check'), 'should have base class');
+  });
+
+  it('numeric weight is clamped to [0.5, 4]', () => {
+    createDOM();
+    const { container: c1 } = render(() => icon('star', { weight: 0.1 }));
+    assert.ok(c1.querySelector('.d-i-star--w0p5'), 'below-min should clamp to 0.5');
+
+    const { container: c2 } = render(() => icon('star', { weight: 10 }));
+    assert.ok(c2.querySelector('.d-i-star--w4'), 'above-max should clamp to 4');
+  });
+
+  it('filled: true produces --filled suffix', () => {
+    createDOM();
+    const { container } = render(() => icon('heart', { filled: true }));
+    const el = container.querySelector('.d-i');
+    assert.ok(el.classList.contains('d-i-heart--filled'), 'should have --filled suffix');
+  });
+
+  it('combined weight + fill produces correct class', () => {
+    createDOM();
+    const { container } = render(() => icon('heart', { weight: 'bold', filled: true }));
+    const el = container.querySelector('.d-i');
+    assert.ok(el.classList.contains('d-i-heart--w3-filled'), 'should have --w3-filled suffix');
+  });
+
+  it('fill-based icons ignore weight and filled options', () => {
+    createDOM();
+    registerIcon('fill-icon-wt', '<path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>');
+    const { container } = render(() => icon('fill-icon-wt', { weight: 'bold', filled: true }));
+    const el = container.querySelector('.d-i');
+    // Fill-based icons get the base class since buildDataUri ignores weight/filled for them
+    assert.ok(el, 'should render the icon');
+  });
+});

@@ -204,6 +204,40 @@
       .de-chart-demo { padding: var(--d-sp-4); min-height: var(--de-chart-card-min-h); }
       .de-chart-meta { padding: var(--d-sp-3) var(--d-sp-4); border-top: 1px solid var(--d-border); }
 
+      /* ── Theme Studio / Tools ────────────────────────────────── */
+      :root {
+        --de-ts-seed-grid-min: 150px;
+        --de-ts-contrast-grid-min: 280px;
+        --de-ts-preview-grid-min: 200px;
+        --de-ts-label-w: 6rem;
+        --de-ts-token-name-w: 10rem;
+        --de-ts-export-max-h: 24rem;
+        --de-ts-section-max-h: 32rem;
+      }
+      .de-ts-toolbar { display: flex; flex-wrap: wrap; gap: var(--d-sp-3); align-items: center; padding-bottom: var(--d-sp-4); border-bottom: var(--d-border-width) var(--d-border-style) var(--d-border); margin-bottom: var(--d-sp-4); }
+      .de-ts-seed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--de-ts-seed-grid-min), 1fr)); gap: var(--d-sp-3); }
+      .de-ts-seed-well { display: flex; flex-direction: column; gap: var(--d-sp-2); }
+      .de-ts-seed-swatch { width: 100%; aspect-ratio: 1; border-radius: var(--d-radius-panel); border: var(--d-border-width) var(--d-border-style) var(--d-border); }
+      .de-ts-seed-label { font-size: var(--d-text-xs); font-weight: var(--d-fw-title); color: var(--d-muted-fg); text-transform: capitalize; }
+      .de-ts-seed-hex { font-size: var(--d-text-xs); font-family: var(--d-font-mono); color: var(--d-muted); }
+      .de-ts-personality-row { display: flex; align-items: center; gap: var(--d-sp-4); padding: var(--d-sp-3) 0; border-bottom: var(--d-border-width) var(--d-border-style) var(--d-border); }
+      .de-ts-personality-label { min-width: var(--de-ts-label-w); font-weight: var(--d-fw-title); font-size: var(--d-text-sm); color: var(--d-fg); }
+      .de-ts-contrast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--de-ts-contrast-grid-min), 1fr)); gap: var(--d-sp-3); }
+      .de-ts-contrast-card { display: flex; align-items: center; gap: var(--d-sp-3); padding: var(--d-sp-3); background: var(--d-surface-0); border: var(--d-border-width) var(--d-border-style) var(--d-border); border-radius: var(--d-radius-panel); }
+      .de-ts-contrast-swatch { width: var(--d-sp-6); height: var(--d-sp-6); border-radius: var(--d-radius-sm); border: var(--d-border-width) var(--d-border-style) var(--d-border); flex-shrink: 0; }
+      .de-ts-contrast-info { display: flex; flex-direction: column; gap: var(--d-sp-0-5); font-size: var(--d-text-xs); }
+      .de-ts-contrast-label { font-family: var(--d-font-mono); color: var(--d-muted-fg); }
+      .de-ts-contrast-ratio { font-weight: var(--d-fw-title); }
+      .de-ts-preview-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--de-ts-preview-grid-min), 1fr)); gap: var(--d-sp-4); }
+      .de-ts-preview-cell { display: flex; flex-direction: column; gap: var(--d-sp-3); padding: var(--d-sp-4); background: var(--d-surface-0); border: var(--d-border-width) var(--d-border-style) var(--d-border); border-radius: var(--d-radius-panel); }
+      .de-ts-preview-label { font-size: var(--d-text-xs); color: var(--d-muted); font-weight: var(--d-fw-title); }
+      .de-ts-token-section { display: flex; flex-direction: column; gap: var(--d-sp-2); }
+      .de-ts-token-row { display: flex; align-items: center; gap: var(--d-sp-2); font-size: var(--d-text-xs); font-family: var(--d-font-mono); }
+      .de-ts-token-swatch { width: var(--d-sp-5); height: var(--d-sp-5); border-radius: var(--d-radius-sm); border: var(--d-border-width) var(--d-border-style) var(--d-border); flex-shrink: 0; }
+      .de-ts-token-name { color: var(--d-muted-fg); min-width: var(--de-ts-token-name-w); }
+      .de-ts-token-value { color: var(--d-fg); }
+      .de-ts-export-code { padding: var(--d-sp-4); background: var(--d-surface-1); border: var(--d-border-width) var(--d-border-style) var(--d-border); border-radius: var(--d-radius-panel); font-family: var(--d-font-mono); font-size: var(--d-text-sm); color: var(--d-fg); overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: var(--de-ts-export-max-h); overflow-y: auto; }
+
       /* ── Reduced motion ──────────────────────────────────────── */
       @media (prefers-reduced-motion: reduce) {
         .de-content-enter, .de-search-entering { opacity: 1 !important; transform: none !important; }

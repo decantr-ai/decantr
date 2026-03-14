@@ -5,9 +5,12 @@
  *
  * @module decantr/components/navigation-menu
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { createOverlay, createRovingTabindex, caret } from './_behaviors.js';
+import { createOverlay, createRovingTabindex, createListbox, caret } from './_behaviors.js';
+
+const { div, nav: navTag, ul, li, a, button: buttonTag } = tags;
 
 /**
  * @typedef {Object} NavMenuItem
@@ -26,16 +29,17 @@ export function NavigationMenu(props = {}) {
   injectBase();
   const { items = [], class: cls } = props;
 
-  const nav = h('nav', { class: cx('d-navmenu', cls), 'aria-label': 'Navigation' });
-  const list = h('ul', { class: 'd-navmenu-list', role: 'menubar' });
+  const navEl = navTag({ class: cx('d-navmenu', cls), 'aria-label': 'Navigation' });
+  const list = ul({ class: 'd-navmenu-list', role: 'menubar' });
   const overlays = [];
+  const _cleanups = [];
 
   items.forEach((item, idx) => {
     const hasChildren = item.children && item.children.length;
-    const li = h('li', { class: 'd-navmenu-trigger', role: 'none' });
+    const liEl = li({ class: 'd-navmenu-trigger', role: 'none' });
 
     if (hasChildren) {
-      const btn = h('button', {
+      const btn = buttonTag({
         type: 'button',
         class: 'd-navmenu-item',
         role: 'menuitem',
@@ -44,29 +48,27 @@ export function NavigationMenu(props = {}) {
         tabindex: idx === 0 ? '0' : '-1'
       }, item.label, caret('down'));
 
-      const content = h('div', {
+      const content = div({
         class: 'd-navmenu-content',
-        role: 'menu',
-        style: { display: 'none' }
+        role: 'menu'
       });
 
       // Grid of links
       const useGrid = item.children.length > 1;
-      const grid = h('div', { class: useGrid ? 'd-navmenu-grid' : '' });
+      const grid = div({ class: useGrid ? 'd-navmenu-grid' : '' });
 
       item.children.forEach(child => {
-        const link = h('a', {
+        const link = a({
           class: 'd-navmenu-link',
           href: child.href || '#',
           role: 'menuitem',
           tabindex: '-1'
         });
 
-        const labelEl = h('div', null, child.label);
-        link.appendChild(labelEl);
+        link.appendChild(div(null, child.label));
 
         if (child.description) {
-          link.appendChild(h('div', { class: 'd-navmenu-link-desc' }, child.description));
+          link.appendChild(div({ class: 'd-navmenu-link-desc' }, child.description));
         }
 
         link.addEventListener('keydown', (e) => {
@@ -96,6 +98,7 @@ export function NavigationMenu(props = {}) {
         }
       });
       overlays.push(ov);
+      _cleanups.push(() => ov.destroy());
 
       // Keyboard: open on Enter/Space/ArrowDown
       btn.addEventListener('keydown', (e) => {
@@ -109,49 +112,55 @@ export function NavigationMenu(props = {}) {
         }
       });
 
-      // Arrow key nav within dropdown
+      // Arrow key nav within dropdown via createListbox
+      const lb = createListbox(content, {
+        itemSelector: '.d-navmenu-link',
+        activeClass: 'd-navmenu-link-highlight',
+        orientation: 'vertical',
+        loop: true,
+        onHighlight: (el) => { if (el) el.focus(); }
+      });
+      _cleanups.push(() => lb.destroy());
+
+      // Escape still needs custom handling to close overlay and return focus
       content.addEventListener('keydown', (e) => {
-        const links = [...content.querySelectorAll('.d-navmenu-link')];
-        const cur = links.indexOf(document.activeElement);
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          const next = cur < links.length - 1 ? cur + 1 : 0;
-          links[next]?.focus();
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          const prev = cur > 0 ? cur - 1 : links.length - 1;
-          links[prev]?.focus();
-        } else if (e.key === 'Escape') {
+        if (e.key === 'Escape') {
           e.preventDefault();
           ov.close();
           btn.focus();
         }
       });
 
-      li.appendChild(btn);
-      li.appendChild(content);
+      liEl.appendChild(btn);
+      liEl.appendChild(content);
     } else {
       // Simple link item
-      const link = h('a', {
+      const link = a({
         class: 'd-navmenu-item',
         href: item.href || '#',
         role: 'menuitem',
         tabindex: idx === 0 ? '0' : '-1'
       }, item.label);
-      li.appendChild(link);
+      liEl.appendChild(link);
       overlays.push(null);
     }
 
-    list.appendChild(li);
+    list.appendChild(liEl);
   });
 
   // Roving tabindex for top-level items
-  createRovingTabindex(list, {
+  const roving = createRovingTabindex(list, {
     itemSelector: '[role="menuitem"]',
     orientation: 'horizontal',
     loop: true
   });
+  _cleanups.push(() => roving.destroy());
 
-  nav.appendChild(list);
-  return nav;
+  navEl.appendChild(list);
+
+  onDestroy(() => {
+    _cleanups.forEach(fn => fn());
+  });
+
+  return navEl;
 }

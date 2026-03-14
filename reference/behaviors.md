@@ -137,7 +137,7 @@ const disc = createDisclosure(header, body, { defaultOpen: true });
 
 Traps Tab/Shift+Tab cycling within focusable elements. Focuses first focusable on activate.
 
-**Used by:** Modal, Drawer, Sheet, AlertDialog, Command
+**Used by:** Modal, Drawer, AlertDialog, Command
 
 | Param | Type | Description |
 |-------|------|-------------|

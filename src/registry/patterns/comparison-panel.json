@@ -19,5 +19,9 @@
       "atoms": "cc-grid",
       "notes": "Values use cc-data. Positive deltas get cc-glow. Negative deltas get warning. Mini charts inherit cc-grid. Header uses cc-bar."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Statistic, Badge, Separator } from 'decantr/components';\nimport { Sparkline } from 'decantr/chart';",
+    "example": "function ComparisonPanel() {\n  const { div, h3, span } = tags;\n  const periods = [\n    { label: 'This Quarter', revenue: 142000, delta: 12.5, trend: [40, 52, 48, 61, 58, 72] },\n    { label: 'Last Quarter', revenue: 126200, delta: -3.1, trend: [38, 42, 40, 44, 41, 43] },\n    { label: 'Year Ago', revenue: 98400, delta: 0, trend: [30, 32, 28, 35, 33, 34] }\n  ];\n\n  return div({ class: css('_flex _col _gap4 _p4') },\n    h3({ class: css('_heading4') }, 'Period Comparison'),\n    div({ class: css('_grid _gc3 _gap4') },\n      ...periods.map(period =>\n        div({ class: css('_flex _col _gap3 _p4 _b1 _r4') },\n          span({ class: css('_textsm _fgmuted _bold') }, period.label),\n          Statistic({ label: 'Revenue', value: period.revenue, prefix: '$' }),\n          div({ class: css('_flex _aic _gap2') },\n            Badge({ variant: period.delta > 0 ? 'success' : 'error' }, `${period.delta > 0 ? '+' : ''}${period.delta}%`),\n            span({ class: css('_textxs _fgmuted') }, 'vs baseline')\n          ),\n          Sparkline({ data: period.trend, height: 40 })\n        )\n      )\n    )\n  );\n}"
   }
 }

@@ -19,5 +19,9 @@
       "atoms": "cc-scanline",
       "notes": "Timeline connector line uses cc-glow subtle. Event dots use cc-glow for completed items. Dates use cc-data. Event titles use cc-label. Background uses cc-scanline."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge } from 'decantr/components';",
+    "example": "function TimelinePattern() {\n  const { div, span, h4, p, time } = tags;\n  const events = [\n    { title: 'Project launched', status: 'completed', description: 'Initial release deployed to production.', date: 'Mar 1, 2026' },\n    { title: 'Beta testing', status: 'completed', description: 'Invited 500 users for beta feedback.', date: 'Feb 15, 2026' },\n    { title: 'Design review', status: 'completed', description: 'Final design review with stakeholders.', date: 'Feb 1, 2026' },\n    { title: 'Development started', status: null, description: 'Sprint 1 kicked off with core features.', date: 'Jan 15, 2026' }\n  ];\n\n  return div({ class: css('_flex _col _gap0 _p4 _borderL _ml4') },\n    ...events.map(e =>\n      div({ class: css('_flex _gap4 _pb6 _relative') },\n        div({ class: css('_absolute _left[-9px] _w[16px] _h[16px] _r[9999px] _bgprimary _b2 _bcborder') }),\n        div({ class: css('_flex _col _gap1 _pl4') },\n          div({ class: css('_flex _aic _gap2') },\n            h4({ class: css('_textsm _bold') }, e.title),\n            e.status ? Badge({ variant: e.status === 'completed' ? 'success' : 'default', size: 'sm' }, e.status) : null\n          ),\n          p({ class: css('_textsm _fgmuted') }, e.description),\n          time({ class: css('_textxs _fgmuted') }, e.date)\n        )\n      )\n    )\n  );\n}"
   }
 }

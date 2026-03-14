@@ -12,5 +12,21 @@
       "features-list": "Checklist of included features separated by Separator",
       "cta": "Primary action Button per pricing tier"
     }
+  },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Featured plan card uses d-glass-strong. Plan name uses d-gradient-text. CTA button on featured plan gets aura-glow."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Standard card layout. Featured plan has primary border. No extra decoration."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Button, Badge, Separator, icon } from 'decantr/components';",
+    "example": "function PricingTable() {\n  const { div, span, h3, ul, li } = tags;\n  const plans = [\n    { name: 'Starter', price: 9, featured: false, features: ['5 projects', '1 GB storage', 'Email support'] },\n    { name: 'Pro', price: 29, featured: true, features: ['Unlimited projects', '10 GB storage', 'Priority support', 'API access', 'Custom domain'] },\n    { name: 'Enterprise', price: 99, featured: false, features: ['Everything in Pro', '100 GB storage', 'Dedicated support', 'SSO', 'Audit logs', 'SLA'] }\n  ];\n\n  return div({ class: css('_grid _gc3 _gap6 _p4 _aic') },\n    ...plans.map(plan =>\n      Card({ class: css(plan.featured ? '_b2 _bcprimary' : '') },\n        Card.Header({ class: css('_tc') },\n          plan.featured ? Badge({ variant: 'primary', class: css('_mb2') }, 'Popular') : null,\n          h3({ class: css('_heading4') }, plan.name),\n          div({ class: css('_mt2') },\n            span({ class: css('_heading1') }, `$${plan.price}`),\n            span({ class: css('_fgmuted') }, '/month')\n          )\n        ),\n        Separator(),\n        Card.Body({},\n          ul({ class: css('_flex _col _gap2') },\n            ...plan.features.map(f =>\n              li({ class: css('_flex _aic _gap2 _textsm') }, icon('check', { class: css('_fgsuccess') }), f)\n            )\n          )\n        ),\n        Card.Footer({},\n          Button({ variant: plan.featured ? 'primary' : 'outline', class: css('_wfull') }, 'Get Started')\n        )\n      )\n    )\n  );\n}"
   }
 }

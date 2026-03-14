@@ -12,5 +12,9 @@
       "author-info": "Name, bio text, and optional role Badge",
       "social-links": "Row of social link Buttons or icon links"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Avatar, Button, icon } from 'decantr/components';",
+    "example": "function AuthorCard() {\n  const { div, h3, p } = tags;\n  const author = {\n    avatar: '', name: 'Jane Doe',\n    bio: 'Senior Design Engineer focusing on design systems and component architecture.',\n    socials: [{ icon: 'github' }, { icon: 'twitter' }, { icon: 'linkedin' }]\n  };\n\n  return div({ class: css('_flex _gap4 _p4 _b1 _r4') },\n    Avatar({ src: author.avatar, name: author.name, size: 'lg' }),\n    div({ class: css('_flex _col _gap2 _flex1') },\n      h3({ class: css('_heading5') }, author.name),\n      p({ class: css('_textsm _fgmuted') }, author.bio),\n      div({ class: css('_flex _gap2 _mt1') },\n        ...author.socials.map(s =>\n          Button({ variant: 'ghost', size: 'sm' }, icon(s.icon))\n        )\n      )\n    )\n  );\n}"
   }
 }

@@ -7,23 +7,23 @@ const { section, div, img, h1, p, span, a } = tags;
 export function HeroSection() {
   return section({ class: `ds-mesh ${css('_flex _col _aic _jcc _minhscreen _relative _ohidden')}`, id: 'hero' },
     // Decorative orbs
-    div({ class: `ds-orb ds-pulse ds-orb-purple-12 ${css('_w[500px] _h[500px] _top[-10%] _left[-10%]')}` }),
-    div({ class: `ds-orb ds-pulse ds-orb-cyan-08 ds-delay-1500 ${css('_w[400px] _h[400px] _bottom[-5%] _right[-5%]')}` }),
-    div({ class: `ds-orb ds-pulse ds-orb-pink-06 ds-delay-3000 ${css('_w[300px] _h[300px] _top[60%] _left[50%]')}` }),
+    div({ class: `ds-orb ds-drift-1 ds-orb-purple-35 ${css('_w[600px] _h[600px] _top[-15%] _left[-10%]')}` }),
+    div({ class: `ds-orb ds-drift-2 ds-orb-cyan-25 ${css('_w[500px] _h[500px] _bottom[-10%] _right[-5%]')}` }),
+    div({ class: `ds-orb ds-drift-3 ds-orb-pink-20 ${css('_w[400px] _h[400px] _top[55%] _left[45%]')}` }),
 
     // Main content — split layout
-    div({ class: css('_flex _row _aic _gap12 _relative _z10 _wrap _jcc _maxw[1100px] _w100 _px[2rem]') },
+    div({ class: css('_flex _col _aic _gap8 _relative _z10 _jcc _mw[900px] _w100 _mx[auto] _px6 _md:row _md:gap10 _md:px8') },
       // Left: Logo
-      div({ class: `ds-float ds-logo-col ${css('_flex _aic _jcc _shrink0')}` },
+      div({ class: `ds-float ds-logo-col ${css('_flex _aic _jcc')}` },
         img({
           src: './images/logo-portrait.svg',
           alt: 'decantr logo',
-          class: `ds-logo-glow ${css('_w[280px]')}`,
+          class: `ds-logo-glow ${css('_w[220px]')}`,
         }),
       ),
 
       // Right: Typography
-      div({ class: css('_flex _col _gap6') },
+      div({ class: css('_flex _col _gap6 _flex1 _minw0 _aic _tc _md:aifs _md:tl') },
         // Wordmark: decantr.ai
         h1({ class: `ds-heading-hero ${css('_fw[900] _ls[-0.04em] _lh[1]')}` },
           span('decantr'),
@@ -49,11 +49,6 @@ export function HeroSection() {
           Button({ variant: 'outline', size: 'lg', disabled: true }, 'Github - coming soon'),
         ),
       ),
-    ),
-
-    // Scroll indicator
-    div({ class: `ds-center-x ${css('_absolute _bottom0 _flex _col _aic _pb6 _left[50%]')}` },
-      div({ class: `ds-scroll-line ${css('_w[1px] _h[40px]')}` }),
     ),
   );
 }

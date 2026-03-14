@@ -1,20 +1,20 @@
 # Icon System Reference
 
-Decantr's icon system renders 193 essential stroke-based SVG icons as CSS-masked `<span>` elements. Icons inherit `currentColor`, inject CSS once per name, and tree-shake unused paths at build time.
+Decantr's icon system renders 375 essential stroke-based SVG icons as CSS-masked `<span>` elements. Icons inherit `currentColor`, inject CSS once per name, and tree-shake unused paths at build time.
 
 ## Rendering Pipeline
 
 ```
 essential.js → getIconPath(name) → icon(name, opts)
                                        ↓
-                                  buildDataUri(inner)
+                                  buildDataUri(inner, weight, filled)
                                        ↓
-                                  injectIconCSS(name, inner)
+                                  injectIconCSS(name, inner, weight, filled)
                                        ↓
-                                  <span class="d-i d-i-{name}">
+                                  <span class="d-i d-i-{variantKey}">
 ```
 
-All icons use a 24×24 viewBox, `stroke-width="2"`, `stroke-linecap="round"`, `stroke-linejoin="round"`, `fill="none"`. The `<span>` uses `mask-image` with a data URI — color comes from `currentColor` via the parent's `color` property. Each icon name is injected into a shared `<style data-decantr-icons>` element exactly once.
+All icons use a 24×24 viewBox, `stroke-linecap="round"`, `stroke-linejoin="round"`. Default: `stroke-width="2"`, `fill="none"`. Weight and fill options parameterize the SVG wrapper. The `<span>` uses `mask-image` with a data URI — color comes from `currentColor` via the parent's `color` property. Each icon variant is injected into a shared `<style data-decantr-icons>` element exactly once (keyed by name + weight + filled).
 
 ---
 
@@ -28,6 +28,8 @@ Render an icon as a `<span>` element.
 |-------|------|---------|-------------|
 | `name` | `string` | — | Icon name in kebab-case (e.g. `'check'`, `'chevron-down'`) |
 | `opts.size` | `string\|number` | `'1.25em'` | CSS width and height |
+| `opts.weight` | `string\|number` | `'regular'` | Stroke weight (see Weight table below) |
+| `opts.filled` | `boolean` | `false` | Fill closed shapes |
 | `opts.class` | `string` | — | Additional CSS classes |
 | `...rest` | — | — | Spread to the `<span>` element |
 
@@ -36,11 +38,46 @@ Render an icon as a `<span>` element.
 ```javascript
 import { icon } from 'decantr/components';
 
-icon('check');                          // default 1.25em
-icon('star', { size: '1em' });          // inline with text
-icon('home', { size: '2rem' });         // large feature icon
-icon('edit', { class: css('_fgprimary') }); // colored
+icon('check');                                          // default 1.25em, regular weight
+icon('star', { size: '1em' });                          // inline with text
+icon('home', { size: '2rem' });                         // large feature icon
+icon('edit', { class: css('_fgprimary') });             // colored
+icon('heart', { filled: true });                        // solid heart
+icon('star', { weight: 'bold', filled: true });         // bold + filled
+icon('chevron-down', { weight: 'thin' });               // thin stroke
+icon('circle', { weight: 1.5 });                        // numeric weight
 ```
+
+#### Weight
+
+Named or numeric, controls `stroke-width`. Numeric values clamped to `[0.5, 4]`.
+
+| Name | stroke-width |
+|------|-------------|
+| `thin` | 1 |
+| `light` | 1.5 |
+| `regular` | 2 (default) |
+| `medium` | 2.5 |
+| `bold` | 3 |
+
+Fill-based icons (auto-detected via `fill=` attribute) ignore weight.
+
+#### Filled
+
+Boolean, default `false`. Adds `fill='black'` alongside stroke attributes in the SVG wrapper. Closed shapes (paths, polygons, circles, rects) fill in; open elements (lines, polylines) remain unchanged. Fill-based icons ignore this option (already filled).
+
+#### CSS Class Naming
+
+Variants produce CSS class suffixes on `d-i-{name}`:
+
+| Variant | CSS class example |
+|---------|------------------|
+| Default (regular, no fill) | `d-i-heart` |
+| Weight only | `d-i-heart--w1` (thin), `d-i-heart--w1p5` (light) |
+| Fill only | `d-i-heart--filled` |
+| Weight + fill | `d-i-heart--w3-filled` (bold + filled) |
+
+Decimals use `p` in class names: `1.5` → `w1p5`, `2.5` → `w2p5`.
 
 ### Registry Functions — `decantr/icons`
 
@@ -125,10 +162,10 @@ Components that accept or render icons. Sizes listed are what the component rend
 
 ## Essential Icon Catalog
 
-193 icons organized by semantic category. Canonical machine-readable source: `src/registry/icons.json`.
+375 icons organized by semantic category. Canonical machine-readable source: `src/registry/icons.json`.
 
-### Navigation (14)
-`check`, `x`, `plus`, `minus`, `chevron-down`, `chevron-up`, `chevron-left`, `chevron-right`, `chevrons-left`, `chevrons-right`, `arrow-left`, `arrow-right`, `arrow-up`, `arrow-down`
+### Navigation (15)
+`check`, `x`, `plus`, `minus`, `chevron-down`, `chevron-up`, `chevron-left`, `chevron-right`, `chevrons-left`, `chevrons-right`, `arrow-left`, `arrow-right`, `arrow-up`, `arrow-down`, `navigation`
 
 Directional control, confirmation/dismissal, expand/collapse. The backbone of interactive UI.
 
@@ -137,43 +174,43 @@ Directional control, confirmation/dismissal, expand/collapse. The backbone of in
 
 General-purpose actions and indicators used across all domain archetypes.
 
-### Feedback (5)
-`info`, `alert-triangle`, `alert-circle`, `check-circle`, `x-circle`
+### Feedback (9)
+`info`, `alert-triangle`, `alert-circle`, `check-circle`, `x-circle`, `circle-dot`, `flag`, `ban`, `alarm`
 
 Status communication. Map directly to Alert/Notification severity variants: `info` → info, `alert-triangle` → warning, `alert-circle` → error, `check-circle` → success, `x-circle` → error/destructive.
 
+### Time & Scheduling (11)
+`clock`, `timer`, `hourglass`, `alarm-clock`, `watch`, `watch-smart`, `history`, `calendar`, `calendar-check`, `calendar-plus`, `calendar-x`
+
+All scheduling, reminders, deadlines, and time-tracking contexts.
+
 ### Layout / Data (9)
-`layout-dashboard`, `calendar`, `clock`, `mail`, `image`, `file`, `folder`, `grip-vertical`, `move`
+`layout-dashboard`, `mail`, `image`, `file`, `folder`, `grip-vertical`, `move`, `blocks`
 
 Content type indicators and drag handles. Dashboard and file management contexts.
 
-### Users & Permissions (7)
-`users`, `user-plus`, `user-minus`, `shield`, `lock`, `unlock`, `key`
+### People & Security (19)
+`user`, `users`, `user-plus`, `user-minus`, `user-check`, `user-x`, `users-round`, `shield`, `shield-check`, `shield-x`, `shield-alert`, `lock`, `lock-keyhole`, `unlock`, `key`, `fingerprint`, `eye-scan`, `id-card`, `passport`
 
-Authentication, authorization, and team management flows.
+Authentication, authorization, team management, and identity verification.
 
-### Documents & Data (10)
-`file-text`, `save`, `printer`, `bookmark`, `archive`, `clipboard`, `paperclip`, `link`, `hash`, `tag`
+### Documents & Data (29)
+`file-text`, `file-plus`, `file-minus`, `file-check`, `file-x`, `file-search`, `file-code`, `file-spreadsheet`, `file-image`, `file-audio`, `file-video`, `files`, `folder-open`, `folder-plus`, `folder-check`, `save`, `printer`, `bookmark`, `bookmark-plus`, `archive`, `clipboard`, `paperclip`, `link`, `unlink`, `hash`, `tag`, `notebook`, `contract`, `invoice`
 
-Document actions and metadata. Content management and file operations.
+Document actions, file types, and metadata. Content management and file operations.
 
-### Communication (6)
-`phone`, `video`, `send`, `at-sign`, `message-square`, `reply`
+### Communication (29)
+`phone`, `video`, `send`, `at-sign`, `at`, `message-square`, `message-circle`, `reply`, `rss`, `podcast`, `microphone`, `microphone-off`, `headphones`, `megaphone`, `newspaper`, `radio`, `tv`, `cast`, `heart`, `heart-crack`, `thumbs-up`, `thumbs-down`, `smile`, `frown`, `meh`, `laugh`, `angry`, `award`
 
-Messaging, contact, and communication channels.
+Messaging, social engagement, media, and broadcasting.
 
 ### Charts & Analytics (6)
 `bar-chart`, `pie-chart`, `trending-up`, `trending-down`, `activity`, `percent`
 
 Data visualization indicators. Use `trending-up`/`trending-down` for KPI trend arrows.
 
-### Status & Social (6)
-`circle-dot`, `flag`, `heart`, `thumbs-up`, `thumbs-down`, `ban`
-
-Engagement actions, moderation, and status indicators.
-
-### Organization (7)
-`grip-vertical`, `list`, `list-ordered`, `grid-3x3`, `inbox`, `layers`, `kanban`
+### Organization (8)
+`list`, `list-ordered`, `grid-3x3`, `inbox`, `layers`, `kanban`, `columns`, `rows`
 
 View modes, sorting, and organizational structures.
 
@@ -182,18 +219,68 @@ View modes, sorting, and organizational structures.
 
 Window and panel management. Dashboard and editor layouts.
 
-### Dev & Infrastructure (11)
-`code`, `terminal`, `server`, `database`, `moon`, `sun`, `cloud`, `cloud-upload`, `cloud-download`, `wifi`, `wifi-off`
+### Dev & Infrastructure (13)
+`code`, `terminal`, `server`, `database`, `moon`, `sun`, `cloud`, `cloud-upload`, `cloud-download`, `cloud-cog`, `wifi`, `wifi-off`, `bug`
 
 Developer tools, infrastructure status, and mode toggles. `moon`/`sun` are the canonical dark/light mode toggle icons.
 
-### Commerce (5)
-`credit-card`, `shopping-cart`, `dollar-sign`, `receipt`, `package`
+### Business & Finance (14)
+`calculator`, `bank`, `coins`, `piggy-bank`, `invoice`, `contract`, `signature`, `stamp`, `briefcase`, `handshake`, `scale`, `target`, `crown`, `lighthouse`
 
-Core payment and order management.
+Banking, contracts, professional tools, and financial contexts.
 
-### Actions (7)
-`undo`, `redo`, `share`, `rotate-cw`, `rotate-ccw`, `scissors`, `zap`
+### Commerce (22)
+`credit-card`, `shopping-cart`, `shopping-bag`, `store`, `wallet`, `dollar-sign`, `receipt`, `gift`, `coupon`, `barcode`, `qr-code`, `price-tag`, `percent-circle`, `shipping`, `returns`, `truck`, `package`, `box`, `boxes`, `container`, `pallet`, `forklift`
+
+Shopping, payments, and logistics.
+
+### Media & Creative (16)
+`camera`, `camera-off`, `film`, `palette`, `brush`, `pen-tool`, `eyedropper`, `crop`, `type`, `align-left`, `align-center`, `align-right`, `align-justify`, `sparkles`, `wand`, `eraser`
+
+Photography, design tools, and text formatting.
+
+### Devices & Technology (13)
+`smartphone`, `tablet`, `laptop`, `monitor`, `bluetooth`, `usb`, `battery`, `battery-charging`, `battery-low`, `signal`, `satellite`, `robot`, `chip`
+
+Hardware, connectivity, and device types.
+
+### Workflow & Development (12)
+`git-branch`, `git-merge`, `git-pull-request`, `git-commit`, `milestone`, `workflow`, `variable`, `regex`, `binary`, `webhook`, `api`, `container-ship`
+
+Version control, CI/CD, and project management tools.
+
+### Healthcare & Wellness (12)
+`stethoscope`, `pill`, `syringe`, `heart-pulse`, `bandage`, `thermometer`, `brain`, `dna`, `accessibility`, `baby`, `apple`, `dumbbell`
+
+Medical, wellness, fitness, and accessibility contexts.
+
+### Education & Learning (10)
+`book`, `book-open`, `graduation-cap`, `notebook`, `presentation`, `trophy`, `medal`, `school`, `lightbulb`, `puzzle`
+
+Learning, achievements, and educational institutions.
+
+### Transportation & Travel (11)
+`car`, `bus`, `train`, `bicycle`, `ship`, `rocket`, `helicopter`, `taxi`, `parking`, `fuel`, `map-compass`
+
+Vehicles, travel, and logistics.
+
+### Food & Hospitality (8)
+`utensils`, `coffee`, `wine`, `pizza`, `cake`, `chef-hat`, `grape`, `wheat`
+
+Dining, beverages, and culinary contexts.
+
+### Home & Real Estate (10)
+`house`, `apartment`, `sofa`, `lamp`, `bed`, `bath`, `garden`, `door-closed`, `window`, `air-conditioning`
+
+Furniture, property, and living spaces.
+
+### Weather & Environment (9)
+`umbrella`, `wind`, `droplet`, `snowflake`, `sunrise`, `sunset`, `leaf`, `tree`, `mountain`
+
+Climate, nature, and environmental contexts.
+
+### Actions (11)
+`undo`, `redo`, `share`, `share-2`, `rotate-cw`, `rotate-ccw`, `scissors`, `zap`, `scan`, `pencil`, `pen`
 
 Editing operations and quick actions.
 
@@ -202,35 +289,25 @@ Editing operations and quick actions.
 
 Geographic and internationalization contexts.
 
-### Social & Reactions (11)
-`smile`, `frown`, `meh`, `laugh`, `angry`, `heart-crack`, `message-circle`, `share-2`, `bookmark-plus`, `bell-ring`, `award`
+### Places (17)
+`building`, `building-2`, `hospital`, `factory`, `warehouse`, `landmark`, `door-open`, `garage`, `fence`, `construction`, `anchor`, `plane`, `map`, `compass`, `route`, `cctv`
 
-User reactions, notifications, and social engagement.
-
-### Ecommerce (12)
-`store`, `shopping-bag`, `wallet`, `truck`, `gift`, `coupon`, `barcode`, `qr-code`, `price-tag`, `percent-circle`, `shipping`, `returns`
-
-Extended commerce for the ecommerce archetype.
+Physical locations and facility management.
 
 ### Tools & Config (14)
 `wrench`, `tool`, `hammer`, `screwdriver`, `nut`, `plug`, `cog`, `sliders-horizontal`, `gauge`, `toggle-left`, `toggle-right`, `power`, `cpu`, `hard-drive`
 
 Settings, configuration, and system administration.
 
-### Buildings & Facilities (10)
-`building`, `building-2`, `hospital`, `factory`, `warehouse`, `landmark`, `door-open`, `garage`, `fence`, `construction`
-
-Physical locations and facility management. Logistics and property domains.
-
-### Shipping & Logistics (10)
-`box`, `boxes`, `container`, `pallet`, `forklift`, `plane`, `anchor`, `map`, `compass`, `route`
-
-Supply chain, shipping, and transportation.
-
 ### Tables & Data Grids (15)
-`table`, `table-rows`, `table-columns`, `table-cells`, `columns`, `rows`, `layout-grid`, `sort-asc`, `sort-desc`, `arrow-up-down`, `filter-x`, `group`, `ungroup`, `spreadsheet`, `pivot-table`
+`table`, `table-rows`, `table-columns`, `table-cells`, `layout-grid`, `sort-asc`, `sort-desc`, `arrow-up-down`, `filter-x`, `group`, `ungroup`, `spreadsheet`, `pivot-table`
 
 DataTable controls and view configuration. Sort/filter/group affordances.
+
+### Shapes & Symbols (9)
+`circle`, `square`, `triangle`, `diamond`, `hexagon`, `infinity`, `asterisk`, `hash-tag`, `parentheses`
+
+Geometric shapes and common symbols for UI decoration, status, and categorization.
 
 ---
 

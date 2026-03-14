@@ -18,5 +18,9 @@
       "atoms": "cc-bar",
       "notes": "Entire nav uses cc-bar. Active category gets cc-glow. Count badges use cc-data. Category labels use cc-label."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Chip } from 'decantr/components';",
+    "example": "function CategoryNav() {\n  const { div } = tags;\n  const categories = [\n    { id: 'design', name: 'Design' },\n    { id: 'engineering', name: 'Engineering' },\n    { id: 'product', name: 'Product' },\n    { id: 'marketing', name: 'Marketing' }\n  ];\n  const [active, setActive] = createSignal('all');\n\n  return div({ class: css('_flex _gap2 _wrap _py3 _overflow[auto]') },\n    Chip({\n      label: 'All',\n      variant: active() === 'all' ? 'primary' : 'outline',\n      onclick: () => setActive('all')\n    }),\n    ...categories.map(cat =>\n      Chip({\n        label: cat.name,\n        variant: active() === cat.id ? 'primary' : 'outline',\n        onclick: () => setActive(cat.id)\n      })\n    )\n  );\n}"
   }
 }

@@ -18,6 +18,20 @@
       "wrapper": "cc-frame-sm",
       "atoms": "cc-grid",
       "notes": "Card uses cc-frame-sm. Branding uses cc-label with cc-glow. Submit button gets cc-glow. Background uses cc-grid."
+    },
+    "auradecantism": {
+      "wrapper": "d-mesh",
+      "atoms": "",
+      "notes": "Auth page on d-mesh background. Card uses d-glass. Brand text uses d-gradient-text. Submit button prominent."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_bgmuted",
+      "notes": "Simple centered card on muted background. Standard form styling."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Input, Button, Card, Separator } from 'decantr/components';\nimport { link } from 'decantr/router';",
+    "example": "function AuthForm() {\n  const { div, h2, p, span } = tags;\n  const [email, setEmail] = createSignal('');\n  const [password, setPassword] = createSignal('');\n\n  return div({ class: css('_flex _col _aic _jcc _minhscreen _p6') },\n    Card({ class: css('_w[400px] _mw[100%]') },\n      Card.Header({},\n        h2({ class: css('_heading4 _tc') }, 'Sign In'),\n        p({ class: css('_fgmuted _tc _mt1') }, 'Enter your credentials to continue')\n      ),\n      Card.Body({ class: css('_flex _col _gap3') },\n        Input({ label: 'Email', type: 'email', placeholder: 'you@example.com', value: email, onchange: e => setEmail(e.target.value) }),\n        Input({ label: 'Password', type: 'password', placeholder: '••••••••', value: password, onchange: e => setPassword(e.target.value) }),\n        Button({ variant: 'primary', class: css('_wfull _mt2') }, 'Sign In')\n      ),\n      Card.Footer({ class: css('_flex _col _gap3 _aic') },\n        Separator(),\n        span({ class: css('_fgmuted _textsm') }, 'Don\\'t have an account? ', link({ href: '/register' }, 'Sign Up'))\n      )\n    )\n  );\n}"
   }
 }

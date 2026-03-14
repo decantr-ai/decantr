@@ -26,7 +26,6 @@ export function NavHeader() {
       // Right: Nav links
       div({ class: css('_flex _row _aic _gap6') },
         link({ href: '/', exact: true, activeClass: 'ds-nav-active', class: 'ds-nav-link' }, 'Home'),
-        link({ href: '/how-it-works', activeClass: 'ds-nav-active', class: 'ds-nav-link' }, 'How it Works'),
       ),
     ),
   );

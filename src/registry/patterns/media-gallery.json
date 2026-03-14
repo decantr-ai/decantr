@@ -12,5 +12,9 @@
       "lightbox": "Modal overlay for full-size image viewing",
       "thumbnails": "Optional thumbnail strip for navigation"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Image, Modal, Button, icon } from 'decantr/components';",
+    "example": "function MediaGallery() {\n  const { div } = tags;\n  const images = [\n    { thumb: '/images/photo-1.jpg', full: '/images/photo-1-full.jpg', alt: 'Mountain landscape' },\n    { thumb: '/images/photo-2.jpg', full: '/images/photo-2-full.jpg', alt: 'Ocean sunset' },\n    { thumb: '/images/photo-3.jpg', full: '/images/photo-3-full.jpg', alt: 'Forest trail' },\n    { thumb: '/images/photo-4.jpg', full: '/images/photo-4-full.jpg', alt: 'City skyline' },\n    { thumb: '/images/photo-5.jpg', full: '/images/photo-5-full.jpg', alt: 'Desert dunes' },\n    { thumb: '/images/photo-6.jpg', full: '/images/photo-6-full.jpg', alt: 'Snowy peaks' }\n  ];\n  const [selected, setSelected] = createSignal(null);\n\n  return div({},\n    div({ class: css('_grid _gcaf250 _gap3 _p4') },\n      ...images.map((img, i) =>\n        div({ class: css('_overflow[hidden] _r4 _pointer _trans'), onclick: () => setSelected(i) },\n          Image({ src: img.thumb, alt: img.alt, class: css('_wfull _h[200px] _object[cover]') })\n        )\n      )\n    ),\n    Modal({ visible: () => selected() !== null, onClose: () => setSelected(null) },\n      selected() !== null ? Image({ src: images[selected()].full, alt: images[selected()].alt, class: css('_mw[90vw] _mh[80vh] _object[contain]') }) : null\n    )\n  );\n}"
   }
 }

@@ -17,7 +17,7 @@ const CHART_SAMPLE_DATA = [
 ];
 
 /** Components that require a `visible` signal getter to show/hide. */
-const VISIBLE_SIGNAL = new Set(['Modal', 'Drawer', 'Sheet', 'AlertDialog', 'Command']);
+const VISIBLE_SIGNAL = new Set(['Modal', 'Drawer', 'AlertDialog', 'Command']);
 
 /** Components that require a `trigger` prop (function returning element). */
 const TRIGGER_PROP = new Set(['Popover', 'Popconfirm', 'Dropdown', 'HoverCard']);
@@ -258,7 +258,7 @@ function renderExample(ComponentFn, componentName, mergedProps, children, labelP
     ? Button({ variant: 'outline', size: 'sm' }, label)
     : btn({ class: css('_body _p3 _r2 _b1 _bcborder _bgmuted _fgfg _pointer') }, label);
 
-  // ── Visible-signal overlays (Modal, Drawer, Sheet, AlertDialog, Command) ──
+  // ── Visible-signal overlays (Modal, Drawer, AlertDialog, Command) ──
   if (VISIBLE_SIGNAL.has(componentName)) {
     const [visible, setVisible] = createSignal(false);
     const label = mergedProps.title || componentName;

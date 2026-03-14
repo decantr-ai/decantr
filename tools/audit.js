@@ -372,8 +372,8 @@ async function checkQuality(projectRoot) {
     // Track whether file has createFocusTrap
     const hasFocusTrap = /\bcreateFocusTrap\b/.test(source);
 
-    // Track whether file creates overlays (Modal, Sheet, Drawer, Popover)
-    const isOverlay = /\b(Modal|Sheet|Drawer|Popover)\s*\(/.test(source) ||
+    // Track whether file creates overlays (Modal, Drawer, Popover)
+    const isOverlay = /\b(Modal|Drawer|Popover)\s*\(/.test(source) ||
       /role:\s*['"]dialog['"]/.test(source);
 
     for (let i = 0; i < lines.length; i++) {

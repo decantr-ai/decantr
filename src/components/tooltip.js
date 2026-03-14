@@ -1,5 +1,15 @@
-import { h, onDestroy } from '../core/index.js';
+/**
+ * Tooltip — Informational popup that appears on hover or focus.
+ * Uses createOverlay behavior with hover trigger.
+ *
+ * @module decantr/components/tooltip
+ */
+import { onDestroy } from '../core/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
+import { createOverlay } from './_behaviors.js';
+
+const { div } = tags;
 
 /**
  * @param {Object} [props]
@@ -15,33 +25,33 @@ export function Tooltip(props = {}, ...children) {
 
   const { content, position = 'top', delay = 200, class: cls } = props;
 
-  const tooltipEl = h('div', {
+  const tooltipId = `d-tooltip-${_tooltipId++}`;
+
+  const tooltipEl = div({
     class: cx('d-tooltip', `d-tooltip-${position}`, cls),
     role: 'tooltip',
-    style: { display: 'none' }
+    id: tooltipId
   }, content);
 
-  const wrapper = h('div', { class: 'd-tooltip-wrap' }, ...children, tooltipEl);
+  const wrapper = div({ class: 'd-tooltip-wrap', 'aria-describedby': tooltipId }, ...children, tooltipEl);
 
-  let showTimer = null;
+  const overlay = createOverlay(wrapper, tooltipEl, {
+    trigger: 'hover',
+    hoverDelay: delay,
+    hoverCloseDelay: 0,
+    closeOnEscape: true,
+    closeOnOutside: false
+  });
 
-  function show() {
-    showTimer = setTimeout(() => { tooltipEl.style.display = ''; }, delay);
-  }
-
-  function hide() {
-    clearTimeout(showTimer);
-    tooltipEl.style.display = 'none';
-  }
-
-  wrapper.addEventListener('mouseenter', show);
-  wrapper.addEventListener('mouseleave', hide);
-  wrapper.addEventListener('focusin', show);
-  wrapper.addEventListener('focusout', hide);
+  // Keyboard a11y: show on focusin, hide on focusout
+  wrapper.addEventListener('focusin', () => overlay.open());
+  wrapper.addEventListener('focusout', () => overlay.close());
 
   onDestroy(() => {
-    clearTimeout(showTimer);
+    overlay.destroy();
   });
 
   return wrapper;
 }
+
+let _tooltipId = 0;

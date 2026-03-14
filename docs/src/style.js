@@ -8,6 +8,9 @@ export const docsSiteCSS = [
   '@keyframes ds-fade-up{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}',
   '@keyframes ds-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}',
   '@keyframes ds-pulse{0%,100%{opacity:0.3}50%{opacity:0.7}}',
+  '@keyframes ds-drift-1{0%{transform:translate(0,0) scale(1);opacity:0.35}25%{transform:translate(120px,80px) scale(1.15);opacity:0.6}50%{transform:translate(-60px,150px) scale(0.9);opacity:0.4}75%{transform:translate(80px,-40px) scale(1.1);opacity:0.55}100%{transform:translate(0,0) scale(1);opacity:0.35}}',
+  '@keyframes ds-drift-2{0%{transform:translate(0,0) scale(1);opacity:0.3}33%{transform:translate(-100px,-80px) scale(1.12);opacity:0.5}66%{transform:translate(80px,120px) scale(0.88);opacity:0.35}100%{transform:translate(0,0) scale(1);opacity:0.3}}',
+  '@keyframes ds-drift-3{0%{transform:translate(0,0) scale(1);opacity:0.25}20%{transform:translate(60px,-100px) scale(1.18);opacity:0.45}50%{transform:translate(-120px,60px) scale(0.85);opacity:0.3}80%{transform:translate(40px,100px) scale(1.1);opacity:0.5}100%{transform:translate(0,0) scale(1);opacity:0.25}}',
   '@keyframes ds-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}',
   '@keyframes ds-glow{0%,100%{box-shadow:0 0 12px rgba(101,0,198,0.2),0 0 30px rgba(101,0,198,0.06)}50%{box-shadow:0 0 20px rgba(10,243,235,0.25),0 0 40px rgba(10,243,235,0.08)}}',
   '@keyframes ds-rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
@@ -29,6 +32,9 @@ export const docsSiteCSS = [
   '.ds-float{animation:ds-float 4s var(--d-easing-standard) infinite}',
   '.ds-glow{animation:ds-glow 3s var(--d-easing-standard) infinite}',
   '.ds-pulse{animation:ds-pulse 3s var(--d-easing-standard) infinite}',
+  '.ds-drift-1{animation:ds-drift-1 4s ease-in-out infinite}',
+  '.ds-drift-2{animation:ds-drift-2 6s ease-in-out infinite}',
+  '.ds-drift-3{animation:ds-drift-3 8s ease-in-out infinite}',
   // ── Docs-specific gradient text (ds- prefixed, uses same tokens as d-gradient-text) ──
   '.ds-gradient-text{background:linear-gradient(135deg,var(--d-primary),var(--d-accent),var(--d-tertiary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
   '.ds-gradient-text-alt{background:linear-gradient(135deg,var(--d-accent),var(--d-primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
@@ -124,6 +130,9 @@ export const docsSiteCSS = [
   '.ds-orb-cyan-06{background:rgba(10,243,235,0.06)}',
   '.ds-orb-cyan-04{background:rgba(10,243,235,0.04)}',
   '.ds-orb-pink-06{background:rgba(254,68,116,0.06)}',
+  '.ds-orb-purple-35{background:rgba(101,0,198,0.35)}',
+  '.ds-orb-cyan-25{background:rgba(10,243,235,0.25)}',
+  '.ds-orb-pink-20{background:rgba(254,68,116,0.2)}',
   '.ds-orb-gold-06{background:rgba(253,163,3,0.06)}',
   // ── Decorative gradients & dividers ──
   '.ds-divider-v{background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.1),transparent);align-self:stretch}',
@@ -155,6 +164,6 @@ export const docsSiteCSS = [
   '.ds-delay-1500{animation-delay:1.5s}',
   '.ds-delay-3000{animation-delay:3s}',
   // ── Layout utilities ──
-  '.ds-logo-col{flex-basis:300px}',
+  '.ds-logo-col{flex-basis:240px}',
   '.ds-no-bullets{list-style:none}',
 ].join('');

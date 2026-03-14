@@ -1,0 +1,19 @@
+{
+  "$schema": "https://decantr.ai/schemas/config.v2.json",
+  "name": "/tmp/decantr-baseline-test",
+  "style": "auradecantism",
+  "mode": "dark",
+  "router": "hash",
+  "dev": {
+    "port": 4200
+  },
+  "build": {
+    "outDir": "dist",
+    "sourcemap": true,
+    "treeShake": true,
+    "codeSplit": true,
+    "purgeCSS": true,
+    "incremental": true,
+    "analyze": true
+  }
+}

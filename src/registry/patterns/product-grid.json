@@ -19,6 +19,20 @@
       "wrapper": "cc-frame",
       "atoms": "cc-grid",
       "notes": "Each Card uses cc-frame-sm. Prices use cc-data with cc-glow. Badge uses cc-label. Grid background gets cc-grid."
+    },
+    "auradecantism": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Product cards use d-glass. Price highlighted. Add to cart button with aura-glow."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Standard product cards with shadow. Clean image + text layout. No extra decoration."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, Button, Image } from 'decantr/components';",
+    "example": "function ProductGrid() {\n  const { div, span, h3 } = tags;\n  const products = [\n    { image: '/images/product-1.jpg', name: 'Wireless Headphones', badge: 'New', description: 'Premium noise-cancelling headphones.', price: 199.99 },\n    { image: '/images/product-2.jpg', name: 'Mechanical Keyboard', badge: null, description: 'RGB backlit mechanical keyboard.', price: 149.99 },\n    { image: '/images/product-3.jpg', name: 'USB-C Hub', badge: 'Sale', description: '7-in-1 USB-C hub with HDMI output.', price: 49.99 },\n    { image: '/images/product-4.jpg', name: 'Monitor Stand', badge: null, description: 'Adjustable aluminum monitor stand.', price: 79.99 }\n  ];\n\n  return div({ class: css('_grid _gcaf280 _gap4 _p4') },\n    ...products.map(p =>\n      Card({},\n        Image({ src: p.image, alt: p.name, class: css('_wfull _h[200px] _object[cover]') }),\n        Card.Body({ class: css('_flex _col _gap2') },\n          div({ class: css('_flex _aic _jcsb') },\n            h3({ class: css('_heading5') }, p.name),\n            p.badge ? Badge({ variant: 'accent' }, p.badge) : null\n          ),\n          span({ class: css('_fgmuted _textsm') }, p.description),\n          div({ class: css('_flex _aic _jcsb _mt2') },\n            span({ class: css('_heading4') }, `$${p.price}`),\n            Button({ variant: 'primary', size: 'sm' }, 'Add to Cart')\n          )\n        )\n      )\n    )\n  );\n}"
   }
 }

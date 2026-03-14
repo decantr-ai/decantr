@@ -375,15 +375,17 @@ export function createFieldOverlay(triggerEl, panelEl, opts = {}) {
 
 /**
  * Convert hex color to OKLCH components.
- * @param {string} hex
- * @returns {{ l: number, c: number, h: number }} l: 0-1, c: 0-0.4, h: 0-360
+ * @param {string} hex - 3, 4, 6, or 8 digit hex color
+ * @returns {{ l: number, c: number, h: number, a: number }} l: 0-1, c: 0-0.4, h: 0-360, a: 0-1
  */
 export function hexToOklch(hex) {
   hex = hex.replace('#', '');
   if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  if (hex.length === 4) hex = hex.split('').map(c => c + c).join('');
   const r = parseInt(hex.substr(0, 2), 16) / 255;
   const g = parseInt(hex.substr(2, 2), 16) / 255;
   const b = parseInt(hex.substr(4, 2), 16) / 255;
+  const alpha = hex.length === 8 ? parseInt(hex.substr(6, 2), 16) / 255 : 1;
 
   // sRGB → linear RGB
   const toLinear = (c) => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -404,7 +406,7 @@ export function hexToOklch(hex) {
   let H = Math.atan2(bk, a) * (180 / Math.PI);
   if (H < 0) H += 360;
 
-  return { l: L, c: C, h: H };
+  return { l: L, c: C, h: H, a: alpha };
 }
 
 /**
@@ -412,9 +414,10 @@ export function hexToOklch(hex) {
  * @param {number} L - Lightness 0-1
  * @param {number} C - Chroma 0-0.4
  * @param {number} H - Hue 0-360
- * @returns {string} hex color
+ * @param {number} [A=1] - Alpha 0-1
+ * @returns {string} hex color (6-digit or 8-digit when A < 1)
  */
-export function oklchToHex(L, C, H) {
+export function oklchToHex(L, C, H, A = 1) {
   const hRad = H * (Math.PI / 180);
   const a = C * Math.cos(hRad);
   const b = C * Math.sin(hRad);
@@ -439,5 +442,93 @@ export function oklchToHex(L, C, H) {
   const toSrgb = (c) => c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
   const toHex = (c) => Math.round(Math.max(0, Math.min(255, toSrgb(c) * 255))).toString(16).padStart(2, '0');
 
-  return `#${toHex(lr)}${toHex(lg)}${toHex(lb)}`;
+  const rgb = `#${toHex(lr)}${toHex(lg)}${toHex(lb)}`;
+  if (A < 1) {
+    const aHex = Math.round(Math.max(0, Math.min(255, A * 255))).toString(16).padStart(2, '0');
+    return `${rgb}${aHex}`;
+  }
+  return rgb;
+}
+
+
+// ─── COLOR HARMONY GENERATION ───────────────────────────────
+// Used by: ColorPalette, Theme Studio
+
+/**
+ * Generate harmonious colors from a base hex using OKLCH color math.
+ * @param {string} baseHex - Base color as hex string
+ * @param {string} type - Harmony type
+ * @param {number} count - Desired number of colors (2-12)
+ * @returns {string[]} Array of hex colors
+ */
+export function generateHarmony(baseHex, type, count) {
+  if (type === 'custom' || !baseHex) return [];
+  const base = hexToOklch(baseHex);
+  const H = base.h, L = base.l, C = base.c;
+
+  // Anchor hues per harmony type
+  const anchors = {
+    monochromatic: [0],
+    analogous: [0, 30, -30],
+    complementary: [0, 180],
+    'split-complementary': [0, 150, 210],
+    triadic: [0, 120, 240],
+    tetradic: [0, 90, 180, 270],
+    square: [0, 90, 180, 270],
+  };
+
+  const hueOffsets = anchors[type] || anchors.complementary;
+
+  // Distribute count across anchor hues with L/C variation
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    const anchorIdx = i % hueOffsets.length;
+    const hue = (H + hueOffsets[anchorIdx] + 360) % 360;
+    // Vary lightness and chroma for visual interest
+    const variation = Math.floor(i / hueOffsets.length);
+    let lShift, cScale;
+    if (type === 'monochromatic') {
+      // Spread L from 0.2 to 0.85 evenly
+      const t = count > 1 ? i / (count - 1) : 0.5;
+      lShift = 0.2 + t * 0.65 - L;
+      cScale = 0.7 + 0.6 * Math.sin(t * Math.PI); // bell curve chroma
+    } else {
+      lShift = variation * 0.12 * (variation % 2 === 0 ? 1 : -1);
+      cScale = 1 - variation * 0.15;
+    }
+    const newL = Math.max(0.15, Math.min(0.85, L + lShift));
+    const newC = Math.max(0.01, Math.min(0.37, C * Math.max(0.3, cScale)));
+    colors.push(oklchToHex(newL, newC, hue));
+  }
+  return colors;
+}
+
+/**
+ * Generate shade strip for a color.
+ * @param {string} hex - Base hex color
+ * @param {number} [steps=5] - Number of shades
+ * @returns {string[]} Array of hex shade strings
+ */
+export function generateShades(hex, steps = 5) {
+  const base = hexToOklch(hex);
+  const shades = [];
+  for (let i = 0; i < steps; i++) {
+    const t = steps > 1 ? i / (steps - 1) : 0.5;
+    const L = 0.15 + t * 0.70;
+    // Bell curve chroma modulation — max chroma at midpoint
+    const cMod = 0.5 + 0.5 * Math.sin(t * Math.PI);
+    const C = Math.max(0.01, base.c * cMod);
+    shades.push(oklchToHex(L, C, base.h));
+  }
+  return shades;
+}
+
+/**
+ * Pick accessible foreground color for a swatch.
+ * @param {string} hex - Background hex color
+ * @returns {string} Black or white hex
+ */
+export function pickSwatchForeground(hex) {
+  const { l } = hexToOklch(hex);
+  return l > 0.6 ? '#09090b' : '#ffffff';
 }

@@ -11,7 +11,7 @@ const frameworkRoot = resolve(__dirname, '..');
 
 /** Minimal CSS custom properties for initial page render (before JS hydrates the full token set) */
 export const THEME_CSS = {
-  'dark': ':root{--d-bg:#060918;--d-fg:#fafafa;--d-primary:#6500C6;--d-primary-hover:#7a1ad4;--d-muted:#8892a4;--d-border:rgba(255,255,255,0.08);--d-surface-1:rgba(12,15,40,0.55);--d-error:#D80F4A;--d-success:#00C388;--d-warning:#FDA303;--d-overlay:rgba(0,0,0,0.6);--d-radius:12px;--d-radius-lg:16px;--d-font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--c0:#060918;--c1:#6500C6;--c2:rgba(12,15,40,0.55);--c3:#fafafa;--c4:#8892a4;--c5:rgba(255,255,255,0.08);--c6:#7a1ad4;--c7:#00C388;--c8:#FDA303;--c9:#D80F4A}',
+  'dark': ':root{--d-bg:#060918;--d-fg:#fafafa;--d-primary:#6500C6;--d-primary-hover:#7a1ad4;--d-muted:#8892a4;--d-border:rgba(255,255,255,0.08);--d-surface-1:rgba(12,15,40,0.55);--d-error:#D80F4A;--d-success:#00C388;--d-warning:#FDA303;--d-overlay:rgba(0,0,0,0.6);--d-radius:12px;--d-radius-lg:16px;--d-font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}',
 };
 
 export function packageJson(name) {
@@ -81,6 +81,10 @@ export function claudeMd(name) {
   return `# ${name}
 
 Built with [decantr](https://decantr.ai) v0.4.0 — AI-first web framework.
+
+## Quick Start
+
+**Read this first:** \`node_modules/decantr/reference/llm-primer.md\` — single-file guide with all imports, top atoms with Tailwind equivalences, component signatures, Chart API, skeleton code, and pattern examples. This covers 80% of code generation needs.
 
 ## Project Structure
 
@@ -203,15 +207,17 @@ Shapes: \`sharp\`, \`rounded\`, \`pill\`
 - \`npx decantr build\` — Production build to \`dist/\`
 - \`npx decantr test\` — Run tests
 - \`npx decantr validate\` — Validate \`decantr.essence.json\`
+- \`npx decantr generate\` — Generate code from \`decantr.essence.json\`
 `;
 }
 
 export function appJs() {
   return `import { mount } from 'decantr/core';
 import { tags } from 'decantr/tags';
-import { css, setStyle, setMode } from 'decantr/css';
+import { css, define, setStyle, setMode } from 'decantr/css';
+import { Image, CodeBlock } from 'decantr/components';
 
-const { div, h1, p } = tags;
+const { div, span, p, h1 } = tags;
 
 // Style and mode are set here for initial render.
 // After CLARIFY, these should match your essence vintage.
@@ -219,12 +225,25 @@ const { div, h1, p } = tags;
 setStyle('auradecantism');
 setMode('dark');
 
-const app = div({ class: css('_flex _col _center _minhscreen _bgbg') },
-  h1({ class: css('_t24 _bold _fgfg') }, 'Welcome to My App'),
-  p({ class: css('_t14 _fgmuted _mt2') }, 'Start building by prompting your AI.')
-);
+define('_pink', 'color:#FE4474');
 
-mount(document.getElementById('app'), () => app);
+function App() {
+  return div({ class: 'd-mesh ' + css('_flex _col _aic _jcc _minhscreen _gap6 _p6') },
+    Image({ src: '/images/logo-portrait.svg', alt: 'decantr', width: '120px', height: '120px', fit: 'contain', class: css('_mb2') }),
+    h1({ class: css('_fw[900] _ls[-0.04em] _lh[1] _t48 _fgfg') },
+      span('decantr'),
+      span({ class: css('_pink') }, '.'),
+      span('a'),
+      span({ class: css('_pink') }, 'i')
+    ),
+    p({ class: css('_t16 _fgmuted _tac') }, "You're all set up. Prompt your AI to start building."),
+    CodeBlock({ language: 'bash', copyable: false, class: css('_w[480px] _mw[100%]') },
+      '$ npx decantr dev\\n\\nThen tell your AI what to build:\\n\\n"Build me a SaaS dashboard with KPIs,\\n charts, and user management"'
+    )
+  );
+}
+
+mount(document.getElementById('app'), App);
 `;
 }
 

@@ -1,4 +1,4 @@
-import { atomMap } from './atoms.js';
+import { resolveAtomDecl } from './atoms.js';
 import { inject, injectResponsive, injectContainer, injectGroupPeer, BREAKPOINTS, CQ_WIDTHS } from './runtime.js';
 export { extractCSS, reset, BREAKPOINTS, CQ_WIDTHS } from './runtime.js';
 export {
@@ -49,7 +49,7 @@ const ARB_PROPS = {
   z: 'z-index', op: 'opacity',
   top: 'top', right: 'right', bottom: 'bottom', left: 'left', inset: 'inset',
   shadow: 'box-shadow', bf: 'backdrop-filter',
-  outline: 'outline', trans: 'transition',
+  outline: 'outline', trans: 'transition', object: 'object-fit',
 };
 
 /**
@@ -59,15 +59,19 @@ const ARB_PROPS = {
  * @returns {{ className: string, decl: string }|null}
  */
 function resolveAtom(atomPart) {
-  // 1. Direct lookup (most common path)
-  const direct = atomMap.get(atomPart) || customAtoms.get(atomPart);
-  if (direct) return { className: atomPart, decl: direct };
+  // 1. Custom atoms first (user-defined via define())
+  const custom = customAtoms.get(atomPart);
+  if (custom) return { className: atomPart, decl: custom };
 
-  // 2. Opacity modifier: _bgprimary/50
+  // 2. Algorithmic resolution (handles aliases, direct, patterns, residual)
+  const decl = resolveAtomDecl(atomPart);
+  if (decl) return { className: atomPart, decl };
+
+  // 3. Opacity modifier: _bgprimary/50
   const alphaMatch = atomPart.match(ALPHA_RE);
   if (alphaMatch) {
     const [, base, alphaStr] = alphaMatch;
-    const baseDecl = atomMap.get(base) || customAtoms.get(base);
+    const baseDecl = customAtoms.get(base) || resolveAtomDecl(base);
     if (baseDecl) {
       const alpha = Number(alphaStr);
       if (alpha >= 0 && alpha <= 100) {

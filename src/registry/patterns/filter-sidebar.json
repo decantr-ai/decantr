@@ -19,5 +19,9 @@
       "atoms": "cc-scanline",
       "notes": "Section headers use cc-label. Active filter counts use cc-data. Apply button gets cc-glow. Panel background uses cc-scanline."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Checkbox, RadioGroup, Button, Accordion, Badge } from 'decantr/components';",
+    "example": "function FilterSidebar() {\n  const { div, h3 } = tags;\n  const categories = [\n    { id: 'electronics', name: 'Electronics' },\n    { id: 'clothing', name: 'Clothing' },\n    { id: 'books', name: 'Books' },\n    { id: 'home', name: 'Home & Garden' }\n  ];\n  const priceRanges = [\n    { id: 'under25', label: 'Under $25' },\n    { id: '25to50', label: '$25 - $50' },\n    { id: '50to100', label: '$50 - $100' },\n    { id: 'over100', label: 'Over $100' }\n  ];\n  const [selected, setSelected] = createSignal([]);\n\n  return div({ class: css('_flex _col _gap4 _p4 _w[260px] _borderR _overflow[auto]') },\n    h3({ class: css('_heading5') }, 'Filters'),\n    Accordion({ items: [\n      { title: 'Category', content: () =>\n        div({ class: css('_flex _col _gap2') },\n          ...categories.map(cat =>\n            Checkbox({ label: cat.name, checked: selected().includes(cat.id),\n              onchange: v => setSelected(v ? [...selected(), cat.id] : selected().filter(x => x !== cat.id))\n            })\n          )\n        )\n      },\n      { title: 'Price Range', content: () =>\n        RadioGroup({ options: priceRanges.map(r => ({ label: r.label, value: r.id })) })\n      }\n    ] }),\n    Button({ variant: 'primary', class: css('_wfull') }, 'Apply Filters')\n  );\n}"
   }
 }

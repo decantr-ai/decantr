@@ -4,7 +4,7 @@
 
 ## Compound Spacing Contract
 
-All compound components (Card, Modal, AlertDialog, Drawer, Sheet) follow a unified spacing contract via `--d-compound-pad` and `--d-compound-gap`. This ensures consistent header/body/footer spacing across all overlay and container components.
+All compound components (Card, Modal, AlertDialog, Drawer) follow a unified spacing contract via `--d-compound-pad` and `--d-compound-gap`. This ensures consistent header/body/footer spacing across all overlay and container components.
 
 | Section | Padding Rule |
 |---------|-------------|
@@ -75,7 +75,7 @@ Usage: `div({ class: 'd-prose' }, h1('Title'), p('Body text...'), ul(li('Item'))
 
 ## Spacing Utilities
 
-Child-spacing utilities use the `d-` prefix (not `_` atom prefix) because they require child combinators (`> * + *`) which cannot be expressed in the flat atomMap.
+Child-spacing utilities use the `d-` prefix (not `_` atom prefix) because they require child combinators (`> * + *`) which cannot be expressed in the atom resolver.
 
 | Class | Effect |
 |-------|--------|

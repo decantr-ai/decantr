@@ -3,13 +3,13 @@
   "id": "chart-grid",
   "name": "Chart Grid",
   "description": "Responsive grid of chart containers for data visualization dashboards. Charts use their own title prop — no Card wrapping.",
-  "components": ["Line", "Bar", "Pie", "Area", "Select"],
+  "components": ["Chart", "Select"],
   "default_blend": {
     "layout": "grid",
     "atoms": "_grid _gc2 _gap4 _p4",
     "slots": {
       "header": "Dashboard section title with _heading4 and time-range Select",
-      "charts": "Array of chart components (Line, Bar, Pie, Area) using the title prop directly"
+      "charts": "Array of Chart({ type }) instances (line, bar, pie, area) using the title prop directly"
     }
   },
   "recipe_overrides": {
@@ -17,6 +17,20 @@
       "wrapper": "cc-frame",
       "atoms": "cc-grid",
       "notes": "Chart titles use cc-label. Axis labels use cc-data. Background gets cc-grid. Header uses cc-bar."
+    },
+    "auradecantism": {
+      "wrapper": "d-glass",
+      "atoms": "_r4",
+      "notes": "Each chart in d-glass panel. Chart title uses d-gradient-text. Section background can use d-mesh."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_b1 _r4",
+      "notes": "Charts in simple bordered containers. Clean header with border-bottom divider."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Select } from 'decantr/components';\nimport { Chart } from 'decantr/chart';",
+    "example": "function ChartGrid() {\n  const { div, h2 } = tags;\n  const data = {\n    revenue: [{ date: 'Jan', value: 4200 }, { date: 'Feb', value: 5100 }, { date: 'Mar', value: 4800 }, { date: 'Apr', value: 6200 }],\n    orders: [{ month: 'Jan', count: 120 }, { month: 'Feb', count: 145 }, { month: 'Mar', count: 132 }, { month: 'Apr', count: 168 }],\n    categories: [{ name: 'Electronics', value: 42 }, { name: 'Clothing', value: 28 }, { name: 'Books', value: 18 }, { name: 'Home', value: 12 }],\n    traffic: [{ date: 'Jan', visits: 8400 }, { date: 'Feb', visits: 9200 }, { date: 'Mar', visits: 8800 }, { date: 'Apr', visits: 11500 }]\n  };\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'Analytics'),\n      Select({ value: '7d', options: [\n        { label: 'Last 7 days', value: '7d' },\n        { label: 'Last 30 days', value: '30d' },\n        { label: 'Last 90 days', value: '90d' }\n      ] })\n    ),\n    div({ class: css('_grid _gc2 _gap4') },\n      Chart({ type: 'line', data: data.revenue, x: 'date', y: 'value', title: 'Revenue', height: 280 }),\n      Chart({ type: 'bar', data: data.orders, x: 'month', y: 'count', title: 'Orders', height: 280 }),\n      Chart({ type: 'pie', data: data.categories, x: 'name', y: 'value', title: 'Categories', height: 280 }),\n      Chart({ type: 'area', data: data.traffic, x: 'date', y: 'visits', title: 'Traffic', height: 280 })\n    )\n  );\n}"
   }
 }

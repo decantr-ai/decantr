@@ -13,5 +13,21 @@
       "active-filters": "Chip list showing currently applied filters",
       "actions": "Clear-all or apply Button actions"
     }
+  },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "",
+      "atoms": "d-glass _r4 _px4 _py2",
+      "notes": "Filter bar in glass strip. Active filter chips use primary color."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_borderB _pb3",
+      "notes": "Filter bar with bottom border. Simple, no background."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Input, Select, Button, DatePicker, Chip } from 'decantr/components';",
+    "example": "function FilterBar() {\n  const { div } = tags;\n  const [search, setSearch] = createSignal('');\n  const [category, setCategory] = createSignal('all');\n  const [filters, setFilters] = createSignal([]);\n\n  return div({ class: css('_flex _gap3 _aic _wrap _py3') },\n    Input({ placeholder: 'Search...', value: search, onchange: e => setSearch(e.target.value), class: css('_w[240px]') }),\n    Select({ value: category, onchange: v => { setCategory(v); if (v !== 'all') setFilters([...filters(), v]); },\n      options: [\n        { label: 'All Categories', value: 'all' },\n        { label: 'Sales', value: 'sales' },\n        { label: 'Marketing', value: 'marketing' }\n      ] }),\n    DatePicker({ placeholder: 'Date range' }),\n    ...filters().map(f => Chip({ label: f, onClose: () => setFilters(filters().filter(x => x !== f)) })),\n    filters().length > 0 ? Button({ variant: 'ghost', size: 'sm', onclick: () => setFilters([]) }, 'Clear All') : null\n  );\n}"
   }
 }

@@ -11,5 +11,21 @@
       "form-fields": "Stacked input fields for name, email, subject, and message",
       "submit-row": "Submit button with optional cancel or reset action"
     }
+  },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "d-glass",
+      "atoms": "_r4",
+      "notes": "Form in d-glass card. Submit button prominent. Heading uses d-gradient-text."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Standard card form. No extra decoration needed."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Input, Textarea, Button, Select, Card } from 'decantr/components';",
+    "example": "function ContactForm() {\n  const { div, h2, p } = tags;\n\n  return Card({ class: css('_mw[600px] _mxa') },\n    Card.Header({},\n      h2({ class: css('_heading4') }, 'Get in Touch'),\n      p({ class: css('_fgmuted _mt1') }, 'We\\'ll get back to you within 24 hours.')\n    ),\n    Card.Body({ class: css('_flex _col _gap4') },\n      div({ class: css('_grid _gc2 _gap4') },\n        Input({ label: 'First Name', placeholder: 'John' }),\n        Input({ label: 'Last Name', placeholder: 'Doe' })\n      ),\n      Input({ label: 'Email', type: 'email', placeholder: 'john@example.com' }),\n      Select({ label: 'Subject', options: [\n        { label: 'General Inquiry', value: 'general' },\n        { label: 'Sales', value: 'sales' },\n        { label: 'Support', value: 'support' }\n      ] }),\n      Textarea({ label: 'Message', placeholder: 'Tell us about your project...', rows: 4 }),\n      Button({ variant: 'primary', class: css('_wfull') }, 'Send Message')\n    )\n  );\n}"
   }
 }

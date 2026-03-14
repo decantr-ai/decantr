@@ -12,14 +12,65 @@ Production build pipeline. Entry: `decantr build` or `node cli/commands/build.js
 | 4. Bundle | Topological sort modules, rewrite imports/exports into IIFE with module variables (`_m0`, `_m1`, ...) | `tools/builder.js` `bundle()` |
 | 5. Tree shake | Remove unused exports per-module via usage graph analysis | `tools/builder.js` `treeShakeModule()` |
 | 6. Icon tree shake | Scan for `icon('name')` calls, prune unreferenced entries from `ESSENTIAL`/`EXTENDED` objects | `tools/builder.js` `treeShakeIcons()` |
-| 7. Code split | Detect `import()` calls, resolve each as separate chunk, inject runtime loader | `tools/builder.js` `resolveChunks()` |
-| 8. CSS extract | Scan all source for `css('...')` and `class: '...'` patterns, generate `@layer d.atoms{...}` | `tools/css-extract.js` |
-| 9. CSS purge | Scan bundled JS for referenced atom class names, strip unreferenced rules | `tools/builder.js` `purgeCSS()` |
-| 10. Minify | Strip comments, collapse whitespace, remove unnecessary semicolons | `tools/minify.js` |
-| 11. Write | Content-hashed filenames (`app.{hash}.js`, `app.{hash}.css`), rewrite HTML script/link tags | `tools/builder.js` |
-| 12. Copy public | Copy `public/` to `dist/`, transform all `.html` files with asset references | `tools/builder.js` |
-| 13. Report | Print per-asset sizes (raw, gzip, brotli), compression ratios, module breakdown (top 15) | `tools/builder.js` |
-| 14. Cache save | Write MD5 hashes to `node_modules/.decantr-cache/build-cache.json` | `tools/builder.js` |
+| 7. Style elimination | Detect used styles via `setStyle()`/`setTheme()` + Essence, remove unused style modules | `tools/builder.js` `detectUsedStyles()` + `eliminateUnusedStyles()` |
+| 8. Component CSS pruning | Map dependency graph to CSS sections, remove unused `componentCSSMap` entries | `tools/builder.js` `detectUsedComponents()` + `pruneComponentCSS()` |
+| 9. Code split | Detect `import()` calls, resolve each as separate chunk, inject runtime loader | `tools/builder.js` `resolveChunks()` |
+| 10. CSS extract | Scan all source for `css('...')` and `class: '...'` patterns, generate `@layer d.atoms{...}` | `tools/css-extract.js` |
+| 11. Static CSS extraction | If safe (`canStaticExtract()`), replace `css/index.js` with passthrough, remove `atoms.js` + `runtime.js` | `tools/builder.js` `staticExtractTransform()` |
+| 12. CSS purge | Scan bundled JS for referenced atom class names, strip unreferenced rules | `tools/builder.js` `purgeCSS()` |
+| 13. Minify | Strip comments, collapse whitespace, remove unnecessary semicolons | `tools/minify.js` |
+| 14. Write | Content-hashed filenames (`app.{hash}.js`, `app.{hash}.css`), rewrite HTML script/link tags | `tools/builder.js` |
+| 15. Copy public | Copy `public/` to `dist/`, transform all `.html` files with asset references | `tools/builder.js` |
+| 16. Report | Print per-asset sizes (raw, gzip, brotli), compression ratios, module breakdown (top 15) | `tools/builder.js` |
+| 17. Cache save | Write MD5 hashes to `node_modules/.decantr-cache/build-cache.json` | `tools/builder.js` |
+
+## Build-Time Style Elimination
+
+Unused style modules (clean, retro, glassmorphism, command-center) are detected and removed at build time, saving ~17 KB raw for a default app using only auradecantism.
+
+**Detection** (`detectUsedStyles()`):
+1. Scans all user source files for `setStyle('...')` and `setTheme('...')` calls
+2. Checks `decantr.essence.json` for `vintage.style` declarations (including sectioned essences)
+3. Checks `decantr.config.json` for style references
+4. Collects the set of actually-used style IDs
+
+**Elimination** (`eliminateUnusedStyles()`):
+- Removes `import` lines for unused style modules from `theme-registry.js` in the module map
+- Removes unused entries from the `builtins` array in `theme-registry.js`
+- Removes unused style module files from the module map entirely
+
+The default style (auradecantism) is always kept. Only styles explicitly referenced via `setStyle()`, `setTheme()`, or the Essence are shipped.
+
+## Component CSS Pruning
+
+Component CSS (`src/css/components.js`) is structured as a keyed object (`componentCSSMap`) with 78 sections. At build time, unused sections are pruned based on which components appear in the dependency graph.
+
+**Detection** (`detectUsedComponents()`):
+- Maps component source files found in the dependency graph to their corresponding CSS section keys via `COMPONENT_CSS_MAP`
+- The `global` section is always retained
+
+**Pruning** (`pruneComponentCSS()`):
+- Removes unused sections from `componentCSSMap` in the bundled output
+- A baseline app using no components prunes 77/78 sections (everything except `global`), saving ~65 KB raw
+
+## Static CSS Extraction
+
+When safe, the entire atom resolution runtime (`atoms.js` + `runtime.js`) is eliminated and replaced with a pre-generated static CSS file.
+
+**Safety valve** (`canStaticExtract()`):
+- Checks for `define()` calls in user code (custom atoms require runtime)
+- Checks for dynamic `css()` patterns (template literals, variable concatenation)
+- If either is detected, falls back to full runtime — no static extraction
+
+**Transform** (`staticExtractTransform()`):
+- Replaces `css/index.js` with a ~673 byte passthrough that converts `_group` to `d-group`, `_peer` to `d-peer`, and joins class names
+- Removes `atoms.js` and `runtime.js` from the module map entirely
+- All atom CSS rules are pre-generated into the static CSS file by `tools/css-extract.js`
+- Saves ~31 KB raw (atoms.js + runtime.js eliminated)
+
+**CSS generation** (`tools/css-extract.js` `generateCSS()`):
+- Handles all atom types: standard, responsive (`_sm:gc3`), container queries (`_cq640:gc3`), group/peer (`_gh:fgprimary`), opacity modifiers (`_bgprimary/50`), and arbitrary values (`_w[512px]`)
+- Output is a `@layer d.atoms{...}` block with all referenced atoms pre-resolved
 
 ## Tree Shaking
 
@@ -200,9 +251,25 @@ dist/
 |------|------|
 | `cli/commands/build.js` | CLI entry — config loading, flag parsing, invokes `build()` |
 | `tools/builder.js` | Core build pipeline — resolve, bundle, tree shake, code split, purge, report |
-| `tools/css-extract.js` | `extractClassNames()` + `generateCSS()` — scan source for atoms, emit `@layer d.atoms` |
+| `tools/css-extract.js` | `extractClassNames()` + `generateCSS()` — scan source for atoms (including responsive, container query, group/peer, opacity, arbitrary), emit `@layer d.atoms` |
 | `tools/minify.js` | `minify()` — structural JS minification |
 | `tools/analyzer.js` | `analyzeBundle()` — standalone or embeddable bundle size analysis |
+
+## Bundle Optimization Results (Baseline App)
+
+| Metric | Before | After | Reduction |
+|--------|--------|-------|-----------|
+| Raw JS | 133.8 KB | 52.6 KB | 60.7% |
+| Gzip JS | 29.3 KB | 14.6 KB | 50.2% |
+| Brotli JS | 24.8 KB | 12.9 KB | 48.0% |
+
+Breakdown by optimization phase:
+
+| Phase | Savings (raw) | What is eliminated |
+|-------|---------------|-------------------|
+| Style elimination | ~17 KB | 4 unused style modules (clean, retro, glassmorphism, command-center) |
+| Component CSS pruning | ~65 KB | 77/78 unused `componentCSSMap` sections |
+| Static CSS extraction | ~31 KB | `atoms.js` + `runtime.js` (css() becomes passthrough) |
 
 ---
 

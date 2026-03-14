@@ -20,9 +20,9 @@ export const glassmorphism = {
     bgDark: '#0a0c10',
   },
   personality: {
-    radius: 'pill',
+    radius: 'rounded',
     elevation: 'glass',
-    motion: 'bouncy',
+    motion: 'smooth',
     borders: 'thin',
     density: 'comfortable',
     gradient: 'vivid',

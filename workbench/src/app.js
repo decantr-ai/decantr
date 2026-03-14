@@ -19,6 +19,7 @@ import { RecipesIndex, RecipeDetailPage } from './pages/recipes.js';
 import { FoundationsIndex, FoundationPage } from './pages/foundations.js';
 import { AtomsIndex, AtomPage } from './pages/atoms.js';
 import { TokensIndex, TokenPage } from './pages/tokens.js';
+import { ToolsIndex, ToolDetailPage } from './pages/tools.js';
 
 const { div, header, main, h1, span, button, input, img } = tags;
 
@@ -166,7 +167,7 @@ function RootLayout({ outlet }) {
     onClose: () => setHudOpen(false),
     side: 'right',
     title: 'Controls',
-    width: 'var(--de-hud-w)'
+    size: 'var(--de-hud-w)'
   },
     div({ class: 'de-hud-row' },
       span({ class: 'de-hud-label' }, 'Style'),
@@ -306,6 +307,8 @@ const router = createRouter({
       { path: 'atoms/:category', component: AtomPage },
       { path: 'tokens', component: TokensIndex },
       { path: 'tokens/:group', component: TokenPage },
+      { path: 'tools', component: ToolsIndex },
+      { path: 'tools/:tool', component: ToolDetailPage },
     ]}
   ]
 });

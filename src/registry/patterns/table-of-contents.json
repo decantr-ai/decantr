@@ -11,5 +11,9 @@
       "toc-list": "Nested list of section headings with indentation levels",
       "toc-item": "Individual heading link with active state highlight"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';",
+    "example": "function TableOfContents() {\n  const { nav, ul, li, a } = tags;\n  const headings = [\n    { id: 'introduction', text: 'Introduction' },\n    { id: 'getting-started', text: 'Getting Started' },\n    { id: 'configuration', text: 'Configuration' },\n    { id: 'api-reference', text: 'API Reference' },\n    { id: 'examples', text: 'Examples' }\n  ];\n  const [activeId] = createSignal('introduction');\n\n  return nav({ class: css('_flex _col _gap1 _p4 _sticky _top0') },\n    ul({ class: css('_flex _col _gap1 _borderL') },\n      ...headings.map(h =>\n        li({},\n          a({\n            href: `#${h.id}`,\n            class: css(`_flex _py1 _pl4 _textsm _nounder _trans ${activeId() === h.id ? '_fgprimary _bold _borderL _bcprimary' : '_fgmuted'}`)\n          }, h.text)\n        )\n      )\n    )\n  );\n}"
   }
 }

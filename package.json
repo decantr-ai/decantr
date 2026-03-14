@@ -1,99 +1,49 @@
 {
   "name": "decantr",
   "version": "0.4.0",
-  "description": "AI-first web framework. Zero dependencies. Native JS/CSS/HTML.",
   "type": "module",
-  "engines": {
-    "node": ">=22.0.0"
-  },
-  "bin": {
-    "decantr": "./cli/index.js"
-  },
-  "exports": {
-    ".": {
-      "types": "./types/core.d.ts",
-      "import": "./src/core/index.js"
-    },
-    "./core": {
-      "types": "./types/core.d.ts",
-      "import": "./src/core/index.js"
-    },
-    "./state": {
-      "types": "./types/state.d.ts",
-      "import": "./src/state/index.js"
-    },
-    "./router": {
-      "types": "./types/router.d.ts",
-      "import": "./src/router/index.js"
-    },
-    "./css": {
-      "types": "./types/css.d.ts",
-      "import": "./src/css/index.js"
-    },
-    "./test": {
-      "types": "./types/test.d.ts",
-      "import": "./src/test/index.js"
-    },
-    "./components": {
-      "types": "./types/components.d.ts",
-      "import": "./src/components/index.js"
-    },
-    "./tags": {
-      "types": "./types/tags.d.ts",
-      "import": "./src/tags/index.js"
-    },
-    "./form": {
-      "types": "./types/form.d.ts",
-      "import": "./src/form/index.js"
-    },
-    "./icons": {
-      "types": "./types/icons.d.ts",
-      "import": "./src/icons/index.js"
-    },
-    "./chart": {
-      "types": "./types/chart.d.ts",
-      "import": "./src/chart/index.js"
-    }
-  },
-  "types": "types/index.d.ts",
-  "files": [
-    "src/",
-    "cli/",
-    "tools/",
-    "types/",
-    "AGENTS.md"
-  ],
-  "scripts": {
-    "test": "node --test test/**/*.test.js",
-    "test:decantation": "node --test test/decantation/deterministic.test.js",
-    "test:decantation:llm": "DECANTR_TEST_LLM=1 node --test test/decantation/integration.test.js",
-    "test:decantation:report": "node test/decantation/report.js",
-    "docs:dev": "cd docs && npx decantr dev",
-    "docs:build": "cd docs && npx decantr build",
-    "icons": "node tools/icons.js",
-    "registry": "node tools/registry.js",
-    "reset": "node tools/reset-playground.js",
-    "analyze": "node tools/analyzer.js",
-    "types": "node tools/dts-gen.js",
-    "workbench:dev": "node workbench/scripts/dev.js",
-    "prepare": "sh tools/install-hooks.sh"
-  },
-  "keywords": [
-    "framework",
-    "ai",
-    "llm",
-    "web",
-    "signals",
-    "zero-dependency",
-    "components",
-    "design-system",
-    "themes"
-  ],
-  "license": "MIT",
-  "author": "David Aimi",
+  "description": "AI-first web framework with signal-based reactivity, atomic CSS, and a structured registry of 100+ components.",
+  "homepage": "https://decantr.ai",
   "repository": {
     "type": "git",
     "url": "https://github.com/decantr-ai/decantr"
   },
-  "homepage": "https://decantr.ai"
+  "author": "David Aimi",
+  "license": "MIT",
+  "keywords": [
+    "web-framework",
+    "ai-first",
+    "mcp",
+    "mcp-server",
+    "components",
+    "design-system",
+    "atomic-css"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "mcpName": "decantr.ai/decantr",
+  "bin": {
+    "decantr": "./cli/index.js"
+  },
+  "scripts": {
+    "dev": "decantr dev",
+    "build": "decantr build",
+    "test": "decantr test"
+  },
+  "exports": {
+    "./core": "./src/core/index.js",
+    "./tags": "./src/tags/index.js",
+    "./css": "./src/css/index.js",
+    "./state": "./src/state/index.js",
+    "./router": "./src/router/index.js",
+    "./components": "./src/components/index.js",
+    "./form": "./src/form/index.js",
+    "./chart": "./src/chart/index.js"
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "decantr": "^0.4.0"
+  }
 }

@@ -236,7 +236,7 @@
     ]
   },
   "layoutTokens": {
-    "description": "Layout dimension tokens for content areas, sidebars, drawers, and sheets",
+    "description": "Layout dimension tokens for content areas, sidebars, and drawers",
     "tokens": [
       "--d-prose-width",
       "--d-content-width-prose",
@@ -245,7 +245,7 @@
       "--d-sidebar-width",
       "--d-sidebar-width-lg",
       "--d-drawer-width",
-      "--d-sheet-max-h"
+      "--d-drawer-bottom-max-h"
     ]
   }
 }

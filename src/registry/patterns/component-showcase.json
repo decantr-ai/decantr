@@ -16,5 +16,9 @@
       "code-example": "CodeBlock with generated import and usage, uses showcase.labelProp for API shape"
     }
   },
-  "recipe_overrides": {}
+  "recipe_overrides": {},
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Card, Tabs, Badge, Button } from 'decantr/components';",
+    "example": "function ComponentShowcase() {\n  const { div, h2, p, pre, code: codeEl } = tags;\n  const name = 'Button';\n  const description = 'Interactive button component with multiple variants and sizes.';\n  const variants = [\n    Button({ variant: 'primary' }, 'Primary'),\n    Button({ variant: 'secondary' }, 'Secondary'),\n    Button({ variant: 'outline' }, 'Outline'),\n    Button({ variant: 'ghost' }, 'Ghost')\n  ];\n  const code = \"Button({ variant: 'primary' }, 'Click me')\";\n\n  return Card({ class: css('_flex _col _gap4') },\n    Card.Header({},\n      div({ class: css('_flex _aic _gap3') },\n        h2({ class: css('_heading4') }, name),\n        Badge({}, 'Component')\n      ),\n      p({ class: css('_fgmuted _textsm _mt1') }, description)\n    ),\n    Card.Body({},\n      Tabs({ items: [\n        { label: 'Preview', content: () =>\n          div({ class: css('_flex _wrap _gap4 _p4 _bgmuted _r4') }, ...variants)\n        },\n        { label: 'Code', content: () =>\n          pre({ class: css('_p4 _bgmuted _r4 _overflow[auto]') }, codeEl({}, code))\n        }\n      ] })\n    )\n  );\n}"
+  }
 }

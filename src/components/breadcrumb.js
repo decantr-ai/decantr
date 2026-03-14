@@ -1,38 +1,162 @@
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
+import { icon } from './icon.js';
+import { createOverlay, createListbox } from './_behaviors.js';
+
+const { nav: navTag, ol, li, span, button: buttonTag, a } = tags;
 
 /**
  * @param {Object} [props]
- * @param {{ label: string, href?: string, onclick?: Function }[]} props.items
- * @param {string} [props.separator] - Separator character (default: '/')
+ * @param {{ label: string, href?: string, onclick?: Function, icon?: string, disabled?: boolean }[]} props.items
+ * @param {'chevron'|'slash'|'dot'|string|HTMLElement} [props.separator] - Separator type (default: 'chevron')
+ * @param {'sm'|'lg'} [props.size] - Size variant
+ * @param {number} [props.maxItems] - Collapse middle items into ellipsis dropdown
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function Breadcrumb(props = {}) {
   injectBase();
 
-  const { items = [], separator = '/', class: cls } = props;
+  const { items = [], separator = 'chevron', size, maxItems, class: cls } = props;
 
-  const nav = h('nav', { class: cx('d-breadcrumb', cls), 'aria-label': 'Breadcrumb' });
-  const ol = h('ol', { class: 'd-breadcrumb-list' });
+  const nav = navTag({
+    class: cx('d-breadcrumb', size && `d-breadcrumb-${size}`, cls),
+    'aria-label': 'Breadcrumb'
+  });
+  const list = ol({ class: 'd-breadcrumb-list' });
 
-  items.forEach((item, i) => {
-    const isLast = i === items.length - 1;
-    const li = h('li', { class: 'd-breadcrumb-item' });
+  function renderSeparator() {
+    const sep = span({ class: 'd-breadcrumb-separator', 'aria-hidden': 'true' });
+    if (separator === 'chevron') {
+      sep.appendChild(icon('chevron-right', { size: '1em' }));
+    } else if (separator === 'slash') {
+      sep.textContent = '/';
+    } else if (separator === 'dot') {
+      sep.textContent = '\u00B7';
+    } else if (typeof separator === 'object' && separator.nodeType === 1) {
+      sep.appendChild(separator.cloneNode(true));
+    } else {
+      sep.textContent = separator;
+    }
+    return sep;
+  }
+
+  function renderIcon(name) {
+    return icon(name, { size: '1em', class: 'd-breadcrumb-icon' });
+  }
+
+  function renderItem(item, isLast) {
+    const el = li({ class: 'd-breadcrumb-item' });
 
     if (isLast) {
-      li.appendChild(h('span', { class: 'd-breadcrumb-current', 'aria-current': 'page' }, item.label));
+      const cur = span({ class: 'd-breadcrumb-current', 'aria-current': 'page' });
+      if (item.icon) cur.appendChild(renderIcon(item.icon));
+      cur.appendChild(document.createTextNode(item.label));
+      el.appendChild(cur);
+    } else if (item.disabled) {
+      const s = span({ class: 'd-breadcrumb-link d-breadcrumb-link-disabled', 'aria-disabled': 'true' });
+      if (item.icon) s.appendChild(renderIcon(item.icon));
+      s.appendChild(document.createTextNode(item.label));
+      el.appendChild(s);
+      el.appendChild(renderSeparator());
+    } else if (item.href) {
+      const link = a({ class: 'd-breadcrumb-link', href: item.href });
+      if (item.icon) link.appendChild(renderIcon(item.icon));
+      link.appendChild(document.createTextNode(item.label));
+      el.appendChild(link);
+      el.appendChild(renderSeparator());
     } else {
       const linkProps = { class: 'd-breadcrumb-link' };
-      if (item.href) linkProps.href = item.href;
       if (item.onclick) linkProps.onclick = item.onclick;
-      li.appendChild(h(item.href ? 'a' : 'button', linkProps, item.label));
-      li.appendChild(h('span', { class: 'd-breadcrumb-separator', 'aria-hidden': 'true' }, separator));
+      const btn = buttonTag(linkProps);
+      if (item.icon) btn.appendChild(renderIcon(item.icon));
+      btn.appendChild(document.createTextNode(item.label));
+      el.appendChild(btn);
+      el.appendChild(renderSeparator());
     }
 
-    ol.appendChild(li);
-  });
+    return el;
+  }
 
-  nav.appendChild(ol);
+  // Determine visible items and whether to collapse
+  const shouldCollapse = maxItems && maxItems > 1 && items.length > maxItems;
+
+  if (shouldCollapse) {
+    const firstItems = items.slice(0, 1);
+    const hiddenItems = items.slice(1, items.length - (maxItems - 1));
+    const lastItems = items.slice(items.length - (maxItems - 1));
+
+    // Render first item
+    firstItems.forEach(item => list.appendChild(renderItem(item, false)));
+
+    // Render ellipsis collapse
+    const collapseWrap = li({ class: 'd-breadcrumb-item' });
+    const collapseInner = span({ class: 'd-breadcrumb-collapse' });
+
+    const ellipsisBtn = buttonTag({
+      class: 'd-breadcrumb-ellipsis',
+      'aria-haspopup': 'menu',
+      'aria-label': 'Show more breadcrumbs'
+    });
+    ellipsisBtn.appendChild(icon('more-horizontal', { size: '1em' }));
+
+    const menu = span({
+      class: 'd-breadcrumb-menu',
+      role: 'menu'
+    });
+    menu.style.display = 'none';
+
+    hiddenItems.forEach(item => {
+      const menuItem = item.href
+        ? a({ class: 'd-dropdown-item', href: item.href, role: 'menuitem' })
+        : buttonTag({ class: 'd-dropdown-item', role: 'menuitem' });
+      if (item.onclick) menuItem.onclick = item.onclick;
+      if (item.disabled) {
+        menuItem.classList.add('d-dropdown-item-disabled');
+        menuItem.setAttribute('aria-disabled', 'true');
+      }
+      if (item.icon) menuItem.appendChild(renderIcon(item.icon));
+      menuItem.appendChild(document.createTextNode(item.label));
+      menu.appendChild(menuItem);
+    });
+
+    collapseInner.appendChild(ellipsisBtn);
+    collapseInner.appendChild(menu);
+    collapseWrap.appendChild(collapseInner);
+    collapseWrap.appendChild(renderSeparator());
+    list.appendChild(collapseWrap);
+
+    // Wire overlay + listbox behaviors
+    const overlay = createOverlay(ellipsisBtn, menu, {
+      trigger: 'click',
+      closeOnEscape: true,
+      closeOnOutside: true
+    });
+
+    const listbox = createListbox(menu, {
+      itemSelector: '.d-dropdown-item:not(.d-dropdown-item-disabled)',
+      activeClass: 'd-dropdown-item-highlight',
+      orientation: 'vertical',
+      onSelect: (el) => el.click()
+    });
+
+    onDestroy(() => {
+      overlay.destroy();
+      listbox.destroy();
+    });
+
+    // Render last items
+    lastItems.forEach((item, i) => {
+      const isLast = i === lastItems.length - 1;
+      list.appendChild(renderItem(item, isLast));
+    });
+  } else {
+    items.forEach((item, i) => {
+      list.appendChild(renderItem(item, i === items.length - 1));
+    });
+  }
+
+  nav.appendChild(list);
   return nav;
 }

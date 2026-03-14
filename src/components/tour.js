@@ -4,8 +4,11 @@
  *
  * @module decantr/components/tour
  */
-import { h } from '../core/index.js';
+import { onDestroy } from '../core/index.js';
+import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
+
+const { div, span, button: buttonTag } = tags;
 
 /**
  * @param {Object} [props]
@@ -21,8 +24,8 @@ export function Tour(props = {}) {
   const { steps = [], onFinish, onChange, onClose, class: cls } = props;
 
   let current = 0;
-  let overlay = null;
-  let popover = null;
+  let overlayEl = null;
+  let popoverEl = null;
 
   function resolveTarget(target) {
     if (typeof target === 'string') return document.querySelector(target);
@@ -30,31 +33,39 @@ export function Tour(props = {}) {
   }
 
   function createOverlayEl() {
-    return h('div', { class: cx('d-tour-overlay', cls) });
+    return div({ class: cx('d-tour-overlay', cls) });
+  }
+
+  // Read the offset token at runtime
+  function getOffset() {
+    if (typeof document === 'undefined') return 12;
+    const val = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--d-offset-tour'), 10);
+    return isNaN(val) ? 12 : val;
   }
 
   function positionPopover(targetEl, placement = 'bottom') {
-    if (!targetEl || !popover) return;
+    if (!targetEl || !popoverEl) return;
     const rect = targetEl.getBoundingClientRect();
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
+    const offset = getOffset();
 
     // Spotlight cutout
-    overlay.style.setProperty('--tour-x', `${rect.left + scrollX}px`);
-    overlay.style.setProperty('--tour-y', `${rect.top + scrollY}px`);
-    overlay.style.setProperty('--tour-w', `${rect.width}px`);
-    overlay.style.setProperty('--tour-h', `${rect.height}px`);
+    overlayEl.style.setProperty('--tour-x', `${rect.left + scrollX}px`);
+    overlayEl.style.setProperty('--tour-y', `${rect.top + scrollY}px`);
+    overlayEl.style.setProperty('--tour-w', `${rect.width}px`);
+    overlayEl.style.setProperty('--tour-h', `${rect.height}px`);
 
-    // Position popover
+    // Position popover — all runtime values from DOM measurement
     let top, left;
-    if (placement === 'bottom') { top = rect.bottom + scrollY + 12; left = rect.left + scrollX; }
-    else if (placement === 'top') { top = rect.top + scrollY - 12; left = rect.left + scrollX; popover.style.transform = 'translateY(-100%)'; }
-    else if (placement === 'left') { top = rect.top + scrollY; left = rect.left + scrollX - 12; popover.style.transform = 'translateX(-100%)'; }
-    else { top = rect.top + scrollY; left = rect.right + scrollX + 12; }
+    if (placement === 'bottom') { top = rect.bottom + scrollY + offset; left = rect.left + scrollX; }
+    else if (placement === 'top') { top = rect.top + scrollY - offset; left = rect.left + scrollX; popoverEl.style.transform = 'translateY(-100%)'; }
+    else if (placement === 'left') { top = rect.top + scrollY; left = rect.left + scrollX - offset; popoverEl.style.transform = 'translateX(-100%)'; }
+    else { top = rect.top + scrollY; left = rect.right + scrollX + offset; }
 
-    popover.style.position = 'absolute';
-    popover.style.top = `${top}px`;
-    popover.style.left = `${left}px`;
+    popoverEl.style.position = 'absolute';
+    popoverEl.style.top = `${top}px`;
+    popoverEl.style.left = `${left}px`;
   }
 
   function renderStep() {
@@ -62,24 +73,24 @@ export function Tour(props = {}) {
     if (!step) return;
     const targetEl = resolveTarget(step.target);
 
-    if (popover) popover.remove();
+    if (popoverEl) popoverEl.remove();
 
-    const prevBtn = h('button', { type: 'button', class: 'd-btn d-btn-sm d-btn-outline', disabled: current === 0 }, 'Prev');
-    const nextBtn = h('button', { type: 'button', class: 'd-btn d-btn-sm d-btn-primary' },
+    const prevBtn = buttonTag({ type: 'button', class: 'd-btn d-btn-sm d-btn-outline', disabled: current === 0 }, 'Prev');
+    const nextBtn = buttonTag({ type: 'button', class: 'd-btn d-btn-sm d-btn-primary' },
       current === steps.length - 1 ? 'Finish' : 'Next');
-    const closeBtn = h('button', { type: 'button', class: 'd-tour-close', 'aria-label': 'Close tour' }, '\u00d7');
+    const closeBtn = buttonTag({ type: 'button', class: 'd-tour-close', 'aria-label': 'Close tour' }, '\u00d7');
 
-    const body = h('div', { class: 'd-tour-body' });
-    if (step.title) body.appendChild(h('div', { class: 'd-tour-title' }, step.title));
-    if (step.description) body.appendChild(h('div', { class: 'd-tour-desc' }, step.description));
+    const body = div({ class: 'd-tour-body' });
+    if (step.title) body.appendChild(div({ class: 'd-tour-title' }, step.title));
+    if (step.description) body.appendChild(div({ class: 'd-tour-desc' }, step.description));
 
-    const footer = h('div', { class: 'd-tour-footer' },
-      h('span', { class: 'd-tour-steps' }, `${current + 1} / ${steps.length}`),
-      h('div', { class: 'd-tour-actions' }, prevBtn, nextBtn)
+    const footer = div({ class: 'd-tour-footer' },
+      span({ class: 'd-tour-steps' }, `${current + 1} / ${steps.length}`),
+      div({ class: 'd-tour-actions' }, prevBtn, nextBtn)
     );
 
-    popover = h('div', { class: cx('d-tour-popover', cls) }, closeBtn, body, footer);
-    document.body.appendChild(popover);
+    popoverEl = div({ class: cx('d-tour-popover', cls) }, closeBtn, body, footer);
+    document.body.appendChild(popoverEl);
 
     prevBtn.addEventListener('click', prev);
     nextBtn.addEventListener('click', () => {
@@ -97,8 +108,8 @@ export function Tour(props = {}) {
   function start(stepIndex = 0) {
     if (typeof document === 'undefined') return;
     current = stepIndex;
-    overlay = createOverlayEl();
-    document.body.appendChild(overlay);
+    overlayEl = createOverlayEl();
+    document.body.appendChild(overlayEl);
     renderStep();
 
     // Close on Escape
@@ -134,11 +145,15 @@ export function Tour(props = {}) {
   }
 
   function close() {
-    if (overlay) { overlay.remove(); overlay = null; }
-    if (popover) { popover.remove(); popover = null; }
+    if (overlayEl) { overlayEl.remove(); overlayEl = null; }
+    if (popoverEl) { popoverEl.remove(); popoverEl = null; }
     document.removeEventListener('keydown', _onKey);
     if (onClose) onClose();
   }
+
+  onDestroy(() => {
+    close();
+  });
 
   return { start, next, prev, close, goTo };
 }

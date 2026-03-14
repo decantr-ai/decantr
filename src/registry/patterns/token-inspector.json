@@ -13,5 +13,9 @@
       "type-samples": "Stacked typography samples at each scale",
       "spacing-bars": "Horizontal bars showing spacing token values"
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card } from 'decantr/components';",
+    "example": "function TokenInspector() {\n  const { div, span, code } = tags;\n  const tokens = {\n    'Colors': [\n      { variable: '--d-primary', computed: '#6366f1' },\n      { variable: '--d-secondary', computed: '#8b5cf6' },\n      { variable: '--d-bg', computed: '#09090b' },\n      { variable: '--d-fg', computed: '#fafafa' }\n    ],\n    'Surfaces': [\n      { variable: '--d-surface-0', computed: '#18181b' },\n      { variable: '--d-surface-1', computed: '#27272a' },\n      { variable: '--d-surface-2', computed: '#3f3f46' }\n    ]\n  };\n\n  return div({ class: css('_flex _col _gap4 _p4') },\n    ...Object.entries(tokens).map(([category, items]) =>\n      div({ class: css('_flex _col _gap2') },\n        span({ class: css('_heading5') }, category),\n        div({ class: css('_grid _gc3 _gap3') },\n          ...items.map(t =>\n            Card({ class: css('_flex _aic _gap3 _p3') },\n              div({ class: css('_w[40px] _h[40px] _r4 _b1'), style: `background:var(${t.variable})` }),\n              div({ class: css('_flex _col') },\n                code({ class: css('_textsm _fontmono') }, t.variable),\n                span({ class: css('_textxs _fgmuted') }, t.computed)\n              )\n            )\n          )\n        )\n      )\n    )\n  );\n}"
   }
 }

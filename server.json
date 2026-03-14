@@ -1,0 +1,19 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "decantr.ai/decantr",
+  "description": "Query decantr's component registry, resolve atomic CSS classes, validate project essence files, and search across 100+ components, 35 patterns, 6 archetypes, and 375 icons.",
+  "repository": {
+    "url": "https://github.com/decantr-ai/decantr",
+    "source": "github"
+  },
+  "version": "0.4.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "decantr",
+      "version": "0.4.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": []
+    }
+  ]
+}

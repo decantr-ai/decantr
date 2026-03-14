@@ -71,9 +71,122 @@ decantr test              # Run tests
 decantr test --watch      # Watch mode
 ```
 
+## MCP Server
+
+Decantr ships a built-in [Model Context Protocol](https://modelcontextprotocol.io) server that exposes 9 read-only tools for querying the component registry, resolving atomic CSS classes, validating project essence files, and searching across the full design system. The server runs locally via stdio — no data is collected, transmitted, or stored externally.
+
+### Start the server
+
+```bash
+npx decantr mcp
+```
+
+### Integration
+
+**Claude Code** (`~/.claude.json`):
+```json
+{
+  "mcpServers": {
+    "decantr": {
+      "command": "npx",
+      "args": ["decantr", "mcp"]
+    }
+  }
+}
+```
+
+**Cursor** (`.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "decantr": {
+      "command": "npx",
+      "args": ["decantr", "mcp"]
+    }
+  }
+}
+```
+
+**Generic MCP client** (stdio transport):
+```json
+{
+  "command": "npx",
+  "args": ["decantr", "mcp"],
+  "transport": "stdio"
+}
+```
+
+### Examples
+
+**1. Look up a component**
+
+Prompt: *"What props does the Button component accept?"*
+
+Tool call: `lookup_component` with `{ "name": "Button" }`
+
+Response:
+```json
+{
+  "found": true,
+  "name": "Button",
+  "props": {
+    "variant": { "type": "string", "values": ["solid", "outline", "ghost", "link", "destructive"], "default": "solid" },
+    "size": { "type": "string", "values": ["xs", "sm", "md", "lg"], "default": "md" },
+    "disabled": { "type": "boolean", "default": false },
+    "loading": { "type": "boolean", "default": false }
+  }
+}
+```
+
+**2. Resolve atoms**
+
+Prompt: *"What CSS does `_flex _col _gap4 _p4` produce?"*
+
+Tool call: `resolve_atoms` with `{ "atoms": "_flex _col _gap4 _p4" }`
+
+Response:
+```json
+{
+  "total": 4,
+  "valid": 4,
+  "invalid": 0,
+  "atoms": [
+    { "atom": "_flex", "css": "display:flex", "valid": true },
+    { "atom": "_col", "css": "flex-direction:column", "valid": true },
+    { "atom": "_gap4", "css": "gap:var(--d-space-4)", "valid": true },
+    { "atom": "_p4", "css": "padding:var(--d-space-4)", "valid": true }
+  ]
+}
+```
+
+**3. Search the registry**
+
+Prompt: *"Find everything related to tables"*
+
+Tool call: `search_registry` with `{ "query": "table" }`
+
+Response:
+```json
+{
+  "query": "table",
+  "total": 5,
+  "results": [
+    { "type": "component", "name": "DataTable", "score": 80 },
+    { "type": "pattern", "id": "data-table", "name": "Data Table", "score": 90 },
+    { "type": "pattern", "id": "pricing-table", "name": "Pricing Table", "score": 80 },
+    { "type": "component", "name": "Table", "score": 80 },
+    { "type": "pattern", "id": "table-of-contents", "name": "Table of Contents", "score": 80 }
+  ]
+}
+```
+
+### Privacy
+
+The MCP server runs locally via stdio. It reads only local registry JSON files shipped with the package. No data is collected, transmitted, or stored externally.
+
 ## Requirements
 
-- Node.js >= 22.0.0
+- Node.js >= 20.0.0
 
 ## License
 

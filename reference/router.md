@@ -204,7 +204,7 @@ const router = createRouter({
 });
 
 // Mount outlet
-mount(() => router.outlet(), document.getElementById('app'));
+mount(document.getElementById('app'), () => router.outlet());
 
 // Programmatic navigation
 navigate('/dashboard');

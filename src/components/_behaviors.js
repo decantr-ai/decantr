@@ -574,7 +574,7 @@ export function createRovingTabindex(containerEl, opts = {}) {
 
 
 // ─── FOCUS TRAP ──────────────────────────────────────────────────
-// Used by: Modal, Drawer, Sheet, AlertDialog, Command
+// Used by: Modal, Drawer, AlertDialog, Command
 
 /**
  * Traps focus within a container. Tab/Shift+Tab cycle within focusable elements.

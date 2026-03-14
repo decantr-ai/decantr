@@ -13,6 +13,13 @@ import { retro } from './styles/retro.js';
 import { glassmorphism } from './styles/glassmorphism.js';
 import { auradecantism } from './styles/auradecantism.js';
 import { commandCenter } from './styles/command-center.js';
+import { clay } from './styles/clay.js';
+import { liquidGlass } from './styles/liquid-glass.js';
+import { dopamine } from './styles/dopamine.js';
+import { prismatic } from './styles/prismatic.js';
+import { bioluminescent } from './styles/bioluminescent.js';
+import { editorial } from './styles/editorial.js';
+
 
 
 // ============================================================
@@ -47,7 +54,7 @@ const ANIM_OFF_CSS = '*{animation-duration:0.01ms !important;animation-iteration
 // Built-in Styles
 // ============================================================
 
-const builtins = [auradecantism, clean, retro, glassmorphism, commandCenter];
+const builtins = [auradecantism, clean, retro, glassmorphism, commandCenter, clay, liquidGlass, dopamine, prismatic, bioluminescent, editorial];
 for (const s of builtins) styles.set(s.id, s);
 
 // ============================================================

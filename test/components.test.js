@@ -33,6 +33,9 @@ import { Popover } from '../src/components/popover.js';
 import { Combobox } from '../src/components/combobox.js';
 import { Slider } from '../src/components/slider.js';
 import { InputGroup, CompactGroup } from '../src/components/input-group.js';
+import { ColorPicker } from '../src/components/color-picker.js';
+import { ColorPalette } from '../src/components/color-palette.js';
+import { generateHarmony, generateShades, pickSwatchForeground } from '../src/components/_primitives.js';
 
 let cleanup;
 
@@ -676,13 +679,14 @@ describe('Tabs', () => {
 describe('Accordion', () => {
   const items = [
     { id: 'a', title: 'Section A', content: () => document.createTextNode('Body A') },
-    { id: 'b', title: 'Section B', content: () => document.createTextNode('Body B') }
+    { id: 'b', title: 'Section B', content: () => document.createTextNode('Body B') },
+    { id: 'c', title: 'Section C', content: () => document.createTextNode('Body C') }
   ];
 
   it('renders accordion items', () => {
     const el = Accordion({ items });
     assert.ok(el.className.includes('d-accordion'));
-    assert.equal(el.querySelectorAll('.d-accordion-item').length, 2);
+    assert.equal(el.querySelectorAll('.d-accordion-item').length, 3);
   });
 
   it('opens item on trigger click', () => {
@@ -691,6 +695,80 @@ describe('Accordion', () => {
     trigger.click();
     const item = el.querySelector('.d-accordion-item');
     assert.ok(item.className.includes('d-accordion-open'));
+  });
+
+  it('multiple mode keeps multiple items open', () => {
+    const el = Accordion({ items, multiple: true });
+    const triggers = el.querySelectorAll('.d-accordion-trigger');
+    triggers[0].click();
+    triggers[1].click();
+    const openItems = el.querySelectorAll('.d-accordion-open');
+    assert.equal(openItems.length, 2);
+  });
+
+  it('defaultOpen opens specified items on render', () => {
+    const el = Accordion({ items, defaultOpen: ['b'] });
+    const allItems = el.querySelectorAll('.d-accordion-item');
+    assert.ok(allItems[1].className.includes('d-accordion-open'));
+    assert.ok(!allItems[0].className.includes('d-accordion-open'));
+  });
+
+  it('collapsible false prevents closing the open item in single mode', () => {
+    const el = Accordion({ items, collapsible: false, defaultOpen: ['a'] });
+    const trigger = el.querySelector('.d-accordion-trigger');
+    trigger.click();
+    const item = el.querySelector('.d-accordion-item');
+    assert.ok(item.className.includes('d-accordion-open'));
+  });
+
+  it('per-item disabled prevents toggling', () => {
+    const disabledItems = [
+      { id: 'a', title: 'Enabled', content: () => document.createTextNode('A') },
+      { id: 'b', title: 'Disabled', content: () => document.createTextNode('B'), disabled: true }
+    ];
+    const el = Accordion({ items: disabledItems });
+    const triggers = el.querySelectorAll('.d-accordion-trigger');
+    assert.ok(triggers[1].hasAttribute('data-disabled'));
+    triggers[1].click();
+    const allItems = el.querySelectorAll('.d-accordion-item');
+    assert.ok(!allItems[1].className.includes('d-accordion-open'));
+  });
+
+  it('keyboard ArrowDown calls focus on next trigger', () => {
+    const el = Accordion({ items });
+    const triggers = el.querySelectorAll('.d-accordion-trigger');
+    let focused = null;
+    triggers[1].focus = () => { focused = triggers[1]; };
+    const event = { type: 'keydown', key: 'ArrowDown', bubbles: true, preventDefault() {} };
+    triggers[0].dispatchEvent(event);
+    assert.equal(focused, triggers[1]);
+  });
+
+  it('ARIA linking between trigger and region', () => {
+    const el = Accordion({ items });
+    const trigger = el.querySelector('.d-accordion-trigger');
+    const region = el.querySelector('[role="region"]');
+    assert.equal(trigger.getAttribute('aria-controls'), region.id);
+    assert.equal(region.getAttribute('aria-labelledby'), trigger.id);
+  });
+
+  it('handles string content in items', () => {
+    const stringItems = [
+      { id: 'x', title: 'String', content: 'plain text' }
+    ];
+    const el = Accordion({ items: stringItems });
+    const trigger = el.querySelector('.d-accordion-trigger');
+    trigger.click();
+    const content = el.querySelector('.d-accordion-content');
+    assert.equal(content.textContent, 'plain text');
+  });
+
+  it('onValueChange fires with open IDs', () => {
+    let result = null;
+    const el = Accordion({ items, onValueChange: (ids) => { result = ids; } });
+    const trigger = el.querySelector('.d-accordion-trigger');
+    trigger.click();
+    assert.deepEqual(result, ['a']);
   });
 });
 
@@ -720,13 +798,13 @@ describe('Breadcrumb', () => {
     { label: 'Widget' }
   ];
 
-  it('renders breadcrumb navigation', () => {
+  it('renders nav with aria-label', () => {
     const el = Breadcrumb({ items });
     assert.equal(el.tagName, 'NAV');
-    assert.ok(el.getAttribute('aria-label') === 'Breadcrumb');
+    assert.equal(el.getAttribute('aria-label'), 'Breadcrumb');
   });
 
-  it('marks last item as current', () => {
+  it('marks last item as current with aria-current', () => {
     const el = Breadcrumb({ items });
     const current = el.querySelector('.d-breadcrumb-current');
     assert.ok(current);
@@ -734,10 +812,111 @@ describe('Breadcrumb', () => {
     assert.equal(current.getAttribute('aria-current'), 'page');
   });
 
-  it('renders separators', () => {
+  it('renders chevron icon separator by default', () => {
     const el = Breadcrumb({ items });
     const seps = el.querySelectorAll('.d-breadcrumb-separator');
     assert.equal(seps.length, 2);
+    // Chevron separator renders an icon span (d-i class)
+    assert.ok(seps[0].querySelector('.d-i'));
+  });
+
+  it('renders slash text separator', () => {
+    const el = Breadcrumb({ items, separator: 'slash' });
+    const seps = el.querySelectorAll('.d-breadcrumb-separator');
+    assert.equal(seps[0].textContent, '/');
+  });
+
+  it('renders dot text separator', () => {
+    const el = Breadcrumb({ items, separator: 'dot' });
+    const seps = el.querySelectorAll('.d-breadcrumb-separator');
+    assert.equal(seps[0].textContent, '\u00B7');
+  });
+
+  it('renders custom string separator', () => {
+    const el = Breadcrumb({ items, separator: '>' });
+    const seps = el.querySelectorAll('.d-breadcrumb-separator');
+    assert.equal(seps[0].textContent, '>');
+  });
+
+  it('renders items with leading icons', () => {
+    const iconItems = [
+      { label: 'Home', href: '/', icon: 'home' },
+      { label: 'Users', href: '/users', icon: 'users' },
+      { label: 'Profile' }
+    ];
+    const el = Breadcrumb({ items: iconItems });
+    const icons = el.querySelectorAll('.d-breadcrumb-icon');
+    assert.equal(icons.length, 2);
+  });
+
+  it('applies size classes', () => {
+    const sm = Breadcrumb({ items, size: 'sm' });
+    assert.ok(sm.className.includes('d-breadcrumb-sm'));
+    const lg = Breadcrumb({ items, size: 'lg' });
+    assert.ok(lg.className.includes('d-breadcrumb-lg'));
+  });
+
+  it('disabled items render as span with disabled class', () => {
+    const disItems = [
+      { label: 'Home', href: '/' },
+      { label: 'Archived', href: '/archived', disabled: true },
+      { label: 'Doc' }
+    ];
+    const el = Breadcrumb({ items: disItems });
+    const disabled = el.querySelector('.d-breadcrumb-link-disabled');
+    assert.ok(disabled);
+    assert.equal(disabled.tagName, 'SPAN');
+    assert.equal(disabled.getAttribute('aria-disabled'), 'true');
+  });
+
+  it('maxItems collapse shows ellipsis button', () => {
+    const longItems = [
+      { label: 'Home', href: '/' },
+      { label: 'Cat', href: '/cat' },
+      { label: 'Sub', href: '/sub' },
+      { label: 'Products', href: '/products' },
+      { label: 'Detail' }
+    ];
+    const el = Breadcrumb({ items: longItems, maxItems: 3 });
+    const ellipsis = el.querySelector('.d-breadcrumb-ellipsis');
+    assert.ok(ellipsis);
+    assert.equal(ellipsis.getAttribute('aria-haspopup'), 'menu');
+    assert.equal(ellipsis.getAttribute('aria-label'), 'Show more breadcrumbs');
+    // Should have first item + ellipsis + last 2 items = visible items
+    const allItems = el.querySelectorAll('.d-breadcrumb-item');
+    assert.equal(allItems.length, 4); // Home, ellipsis, Products, Detail
+  });
+
+  it('applies custom class to root nav', () => {
+    const el = Breadcrumb({ items, class: 'my-nav' });
+    assert.ok(el.className.includes('my-nav'));
+  });
+
+  it('href items render as anchor tags', () => {
+    const el = Breadcrumb({ items });
+    const links = el.querySelectorAll('.d-breadcrumb-link');
+    const anchors = [...links].filter(l => l.tagName === 'A');
+    assert.equal(anchors.length, 2);
+    assert.equal(anchors[0].getAttribute('href'), '/');
+  });
+
+  it('onclick items render as button tags', () => {
+    const clickItems = [
+      { label: 'Home', onclick: () => {} },
+      { label: 'Current' }
+    ];
+    const el = Breadcrumb({ items: clickItems });
+    const links = el.querySelectorAll('.d-breadcrumb-link');
+    const btns = [...links].filter(l => l.tagName === 'BUTTON');
+    assert.equal(btns.length, 1);
+  });
+
+  it('separators have aria-hidden', () => {
+    const el = Breadcrumb({ items });
+    const seps = el.querySelectorAll('.d-breadcrumb-separator');
+    seps.forEach(sep => {
+      assert.equal(sep.getAttribute('aria-hidden'), 'true');
+    });
   });
 });
 
@@ -1056,6 +1235,48 @@ describe('Drawer', () => {
     setVisible(true);
     assert.equal(el.open, true);
   });
+
+  it('passes through compound sub-components', () => {
+    const [visible] = createSignal(false);
+    const el = Drawer({ visible },
+      Drawer.Header({}, 'My Header'),
+      Drawer.Body({}, 'Body content'),
+      Drawer.Footer({}, 'Footer content')
+    );
+    const panel = el.querySelector('.d-drawer-panel');
+    // Section children passed through directly (no auto-wrap)
+    assert.ok(panel.querySelector('.d-drawer-header'));
+    assert.ok(panel.querySelector('.d-drawer-body'));
+    assert.ok(panel.querySelector('.d-drawer-footer'));
+    assert.equal(panel.querySelector('.d-drawer-header').textContent, 'My Header');
+    assert.equal(panel.querySelector('.d-drawer-body').textContent, 'Body content');
+    assert.equal(panel.querySelector('.d-drawer-footer').textContent, 'Footer content');
+  });
+
+  it('creates footer from footer prop', () => {
+    const [visible] = createSignal(false);
+    const el = Drawer({ visible, title: 'Edit', footer: document.createTextNode('Save') },
+      document.createTextNode('Form')
+    );
+    const footer = el.querySelector('.d-drawer-footer');
+    assert.ok(footer);
+    assert.equal(footer.textContent, 'Save');
+  });
+
+  it('uses size prop for panel dimensions', () => {
+    const [visible] = createSignal(false);
+    const right = Drawer({ visible, side: 'right', size: '400px' });
+    assert.equal(right.querySelector('.d-drawer-panel').style.width, '400px');
+
+    const bottom = Drawer({ visible, side: 'bottom', size: '250px' });
+    assert.equal(bottom.querySelector('.d-drawer-panel').style.height, '250px');
+  });
+
+  it('applies bottom drawer class', () => {
+    const [visible] = createSignal(false);
+    const el = Drawer({ visible, side: 'bottom' });
+    assert.ok(el.querySelector('.d-drawer-bottom'));
+  });
 });
 
 describe('Pagination', () => {
@@ -1362,4 +1583,227 @@ describe('Spinner', () => {
     assert.ok(svg);
     assert.notEqual(svg.getAttribute('role'), 'status');
   });
+});
+
+describe('ColorPicker', () => {
+  it('renders with d-colorpicker class', () => {
+    const el = ColorPicker();
+    assert.ok(el.className.includes('d-colorpicker'));
+  });
+
+  it('panel has role="dialog" and aria-label', () => {
+    const el = ColorPicker();
+    const panel = el.querySelector('.d-colorpicker-panel');
+    assert.equal(panel.getAttribute('role'), 'dialog');
+    assert.equal(panel.getAttribute('aria-label'), 'Color picker');
+  });
+
+  it('saturation panel has role="slider" and aria-label', () => {
+    const el = ColorPicker();
+    const sat = el.querySelector('.d-colorpicker-saturation');
+    assert.equal(sat.getAttribute('role'), 'slider');
+    assert.equal(sat.getAttribute('aria-label'), 'Color saturation and lightness');
+    assert.equal(sat.getAttribute('tabindex'), '0');
+  });
+
+  it('hue bar has role="slider" and aria-label', () => {
+    const el = ColorPicker();
+    const hue = el.querySelector('.d-colorpicker-hue');
+    assert.equal(hue.getAttribute('role'), 'slider');
+    assert.equal(hue.getAttribute('aria-label'), 'Hue');
+    assert.equal(hue.getAttribute('tabindex'), '0');
+  });
+
+  it('renders hex input that reflects current value', () => {
+    const el = ColorPicker({ value: '#ff0000' });
+    const inputRow = el.querySelector('.d-colorpicker-input');
+    assert.ok(inputRow);
+    const inp = inputRow.querySelector('input');
+    assert.ok(inp);
+    assert.ok(inp.value.length > 0);
+  });
+
+  it('renders alpha slider only when alpha is true', () => {
+    const noAlpha = ColorPicker();
+    assert.equal(noAlpha.querySelector('.d-colorpicker-alpha'), null);
+
+    const withAlpha = ColorPicker({ alpha: true });
+    const alphaBar = withAlpha.querySelector('.d-colorpicker-alpha');
+    assert.ok(alphaBar);
+    assert.equal(alphaBar.getAttribute('role'), 'slider');
+    assert.equal(alphaBar.getAttribute('aria-label'), 'Opacity');
+  });
+
+  it('renders alpha percentage input when alpha is true', () => {
+    const el = ColorPicker({ alpha: true });
+    const inputRow = el.querySelector('.d-colorpicker-input');
+    const inputs = inputRow.querySelectorAll('input');
+    assert.equal(inputs.length, 2);
+  });
+
+  it('renders presets label when presets provided', () => {
+    const el = ColorPicker({ presets: ['#ff0000', '#00ff00'] });
+    const label = el.querySelector('.d-colorpicker-presets-label');
+    assert.ok(label);
+    assert.equal(label.textContent, 'Presets');
+  });
+
+  it('renders preset buttons with d-colorpicker-preset class', () => {
+    const el = ColorPicker({ presets: ['#ff0000', '#00ff00', '#0000ff'] });
+    const btns = el.querySelectorAll('.d-colorpicker-preset');
+    assert.equal(btns.length, 3);
+  });
+
+  it('does not render presets label when no presets', () => {
+    const el = ColorPicker();
+    assert.equal(el.querySelector('.d-colorpicker-presets-label'), null);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────
+// Color Harmony Utilities (from _primitives.js)
+// ──────────────────────────────────────────────────────────────────
+describe('generateHarmony', () => {
+  it('returns correct number of colors', () => {
+    const colors = generateHarmony('#1366D9', 'complementary', 5);
+    assert.equal(colors.length, 5);
+  });
+
+  it('returns empty array for custom type', () => {
+    assert.deepEqual(generateHarmony('#1366D9', 'custom', 5), []);
+  });
+
+  it('all outputs are valid hex strings', () => {
+    const types = ['monochromatic', 'analogous', 'complementary', 'triadic', 'tetradic', 'square', 'split-complementary'];
+    for (const type of types) {
+      const colors = generateHarmony('#ff0000', type, 4);
+      for (const c of colors) {
+        assert.match(c, /^#[0-9a-f]{6}$/i, `${type} produced invalid hex: ${c}`);
+      }
+    }
+  });
+
+  it('respects count for all harmony types', () => {
+    const types = ['monochromatic', 'analogous', 'complementary', 'triadic'];
+    for (const type of types) {
+      assert.equal(generateHarmony('#3b82f6', type, 3).length, 3);
+      assert.equal(generateHarmony('#3b82f6', type, 8).length, 8);
+    }
+  });
+});
+
+describe('generateShades', () => {
+  it('returns correct number of shades', () => {
+    assert.equal(generateShades('#ff0000', 5).length, 5);
+    assert.equal(generateShades('#ff0000', 3).length, 3);
+  });
+
+  it('all outputs are valid hex strings', () => {
+    const shades = generateShades('#1366D9');
+    for (const s of shades) {
+      assert.match(s, /^#[0-9a-f]{6}$/i);
+    }
+  });
+});
+
+describe('pickSwatchForeground', () => {
+  it('returns dark for light colors', () => {
+    assert.equal(pickSwatchForeground('#ffffff'), '#09090b');
+  });
+
+  it('returns white for dark colors', () => {
+    assert.equal(pickSwatchForeground('#000000'), '#ffffff');
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────
+// ColorPalette
+// ──────────────────────────────────────────────────────────────────
+describe('ColorPalette', () => {
+  it('renders with d-colorpalette class', () => {
+    const el = ColorPalette();
+    assert.ok(el.className.includes('d-colorpalette'));
+  });
+
+  it('renders correct number of swatches', () => {
+    const el = ColorPalette({ count: 4 });
+    const swatches = el.querySelectorAll('.d-colorpalette-swatch');
+    assert.equal(swatches.length, 4);
+  });
+
+  it('has listbox role on swatches container', () => {
+    const el = ColorPalette();
+    const container = el.querySelector('.d-colorpalette-swatches');
+    assert.equal(container.getAttribute('role'), 'listbox');
+  });
+
+  it('swatches have option role and tabindex', () => {
+    const el = ColorPalette({ count: 3 });
+    const swatches = el.querySelectorAll('.d-colorpalette-swatch');
+    for (const s of swatches) {
+      assert.equal(s.getAttribute('role'), 'option');
+      assert.equal(s.getAttribute('tabindex'), '0');
+    }
+  });
+
+  it('lock buttons have aria-pressed', () => {
+    const el = ColorPalette({ count: 3 });
+    const locks = el.querySelectorAll('.d-colorpalette-lock');
+    assert.ok(locks.length > 0);
+    for (const l of locks) {
+      assert.ok(l.hasAttribute('aria-pressed'));
+    }
+  });
+
+  it('shows shade strips by default', () => {
+    const el = ColorPalette({ count: 3 });
+    const shades = el.querySelectorAll('.d-colorpalette-shades');
+    assert.equal(shades.length, 3);
+  });
+
+  it('hides shade strips when shades=false', () => {
+    const el = ColorPalette({ count: 3, shades: false });
+    const shades = el.querySelectorAll('.d-colorpalette-shades');
+    assert.equal(shades.length, 0);
+  });
+
+  it('applies size variant class', () => {
+    const sm = ColorPalette({ size: 'sm' });
+    assert.ok(sm.className.includes('d-colorpalette-sm'));
+    const lg = ColorPalette({ size: 'lg' });
+    assert.ok(lg.className.includes('d-colorpalette-lg'));
+  });
+
+  it('contrast badges present on each swatch', () => {
+    const el = ColorPalette({ count: 3 });
+    const badges = el.querySelectorAll('.d-colorpalette-contrast');
+    assert.equal(badges.length, 3);
+    for (const b of badges) {
+      assert.ok(['AA', 'AAA', 'Fail'].includes(b.textContent));
+    }
+  });
+
+  it('fires onchange callback', () => {
+    let fired = false;
+    const el = ColorPalette({ count: 3, onchange: () => { fired = true; } });
+    // Trigger a shuffle via the refresh button
+    const shuffleBtn = el.querySelector('[aria-label="Shuffle colors"]');
+    if (shuffleBtn) shuffleBtn.click();
+    assert.ok(fired);
+  });
+
+  it('renders custom colors', () => {
+    const custom = ['#ff0000', '#00ff00', '#0000ff'];
+    const el = ColorPalette({ colors: custom, harmony: 'custom' });
+    const swatches = el.querySelectorAll('.d-colorpalette-swatch');
+    assert.equal(swatches.length, 3);
+  });
+
+  it('has add button', () => {
+    const el = ColorPalette({ count: 3 });
+    const addBtn = el.querySelector('.d-colorpalette-add');
+    assert.ok(addBtn);
+    assert.equal(addBtn.getAttribute('aria-label'), 'Add color');
+  });
+
 });

@@ -19,5 +19,9 @@
       "atoms": "cc-grid",
       "notes": "Step indicator uses cc-bar with cc-data for step numbers. Active step gets cc-glow. Navigation bar uses cc-bar. Background uses cc-grid."
     }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Steps, Button, Card } from 'decantr/components';",
+    "example": "function Wizard() {\n  const { div, p } = tags;\n  const steps = [\n    { title: 'Account', content: () => div({ class: css('_flex _col _gap3 _p4') }, p({}, 'Enter your account details.')) },\n    { title: 'Profile', content: () => div({ class: css('_flex _col _gap3 _p4') }, p({}, 'Complete your profile information.')) },\n    { title: 'Confirm', content: () => div({ class: css('_flex _col _gap3 _p4') }, p({}, 'Review and confirm your details.')) }\n  ];\n  const [current, setCurrent] = createSignal(0);\n\n  return Card({ class: css('_flex _col _gap6 _p6') },\n    Steps({ current: current, items: steps.map(s => ({ title: s.title })) }),\n    div({ class: css('_flex _col _gap4 _py4') },\n      steps[current()]?.content()\n    ),\n    div({ class: css('_flex _jcsb') },\n      current() > 0\n        ? Button({ variant: 'outline', onclick: () => setCurrent(current() - 1) }, 'Back')\n        : div(),\n      current() < steps.length - 1\n        ? Button({ variant: 'primary', onclick: () => setCurrent(current() + 1) }, 'Next')\n        : Button({ variant: 'primary', onclick: () => {} }, 'Submit')\n    )\n  );\n}"
   }
 }

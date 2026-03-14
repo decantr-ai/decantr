@@ -345,7 +345,7 @@ Elevation determines how far floating elements sit from their triggers. Higher e
 
 ### Header / Body / Footer (compound components)
 
-All compound components (Card, Modal, Drawer, Sheet) follow the compound spacing contract:
+All compound components (Card, Modal, Drawer) follow the compound spacing contract:
 
 | Section | Padding Rule | Border |
 |---------|-------------|--------|

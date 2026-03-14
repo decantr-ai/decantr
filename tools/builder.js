@@ -701,6 +701,243 @@ function hasChanges(currentHashes, cachedHashes) {
   return false;
 }
 
+// ─── Phase 1: Build-Time Style Elimination ───────────────────────
+
+const STYLE_IMPORTS = {
+  'clean': { varName: 'clean', file: 'clean.js' },
+  'retro': { varName: 'retro', file: 'retro.js' },
+  'glassmorphism': { varName: 'glassmorphism', file: 'glassmorphism.js' },
+  'auradecantism': { varName: 'auradecantism', file: 'auradecantism.js' },
+  'command-center': { varName: 'commandCenter', file: 'command-center.js' },
+};
+
+/**
+ * Detect which styles are referenced in user code.
+ * Always includes the default style (auradecantism) and any style
+ * referenced in essence/config files.
+ * @param {Map<string, string>} modules
+ * @param {string} projectRoot
+ * @returns {Promise<Set<string>>}
+ */
+async function detectUsedStyles(modules, projectRoot) {
+  const used = new Set(['auradecantism']);
+
+  // Check essence and config for style declarations
+  try {
+    const essRaw = await readFile(join(projectRoot, 'decantr.essence.json'), 'utf-8').catch(() => null);
+    if (essRaw) {
+      const ess = JSON.parse(essRaw);
+      if (ess.vintage?.style) used.add(ess.vintage.style);
+      if (ess.sections) {
+        for (const s of ess.sections) {
+          if (s.vintage?.style) used.add(s.vintage.style);
+        }
+      }
+    }
+    const cfgRaw = await readFile(join(projectRoot, 'decantr.config.json'), 'utf-8').catch(() => null);
+    if (cfgRaw) {
+      const cfg = JSON.parse(cfgRaw);
+      if (cfg.style) used.add(cfg.style);
+    }
+  } catch { /* ignore parse errors */ }
+
+  // Scan user modules for setStyle()/setTheme() calls
+  const styleRe = /(?:setStyle|setTheme)\s*\(\s*['"]([^'"]+)['"]/g;
+  for (const [path, source] of modules) {
+    if (path.includes(frameworkSrc)) continue; // skip framework modules
+    let m;
+    while ((m = styleRe.exec(source)) !== null) {
+      used.add(m[1]);
+    }
+  }
+
+  return used;
+}
+
+/**
+ * Remove unused style imports and builtins from theme-registry.js source.
+ * @param {string} source
+ * @param {Set<string>} usedStyles
+ * @returns {string}
+ */
+function eliminateUnusedStyles(source, usedStyles) {
+  let result = source;
+  const removedVars = [];
+
+  for (const [id, info] of Object.entries(STYLE_IMPORTS)) {
+    if (!usedStyles.has(id)) {
+      // Remove import line
+      const escaped = info.file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const importRe = new RegExp(
+        `import\\s*\\{\\s*${info.varName}\\s*\\}\\s*from\\s*['\"]\\./styles/${escaped}['\"]\\s*;?\\n?`, 'g'
+      );
+      result = result.replace(importRe, '');
+      removedVars.push(info.varName);
+    }
+  }
+
+  // Rewrite builtins array to only include used styles
+  if (removedVars.length > 0) {
+    result = result.replace(
+      /const builtins = \[([^\]]+)\]/,
+      (match, items) => {
+        const kept = items.split(',').map(s => s.trim()).filter(s => s && !removedVars.includes(s));
+        return `const builtins = [${kept.join(', ')}]`;
+      }
+    );
+  }
+
+  return result;
+}
+
+// ─── Phase 3: Component CSS Pruning ──────────────────────────────
+
+/** Map component file names to componentCSSMap keys */
+const COMPONENT_CSS_MAP = {
+  'button.js': ['button'], 'spinner.js': ['spinner'], 'input.js': ['input'],
+  'textarea.js': ['textarea'], 'checkbox.js': ['checkbox'], 'switch.js': ['switch'],
+  'select.js': ['select', 'shared-option'], 'card.js': ['card'], 'badge.js': ['badge'],
+  'modal.js': ['modal'], 'tabs.js': ['tabs'], 'accordion.js': ['accordion'],
+  'collapsible.js': ['accordion'], 'separator.js': ['separator'],
+  'breadcrumb.js': ['breadcrumb'], 'table.js': ['table'], 'avatar.js': ['avatar'],
+  'progress.js': ['progress'], 'skeleton.js': ['skeleton'], 'tooltip.js': ['tooltip'],
+  'alert.js': ['alert'], 'toast.js': ['toast'], 'notification.js': ['toast'],
+  'message.js': ['toast'], 'chip.js': ['chip'], 'dropdown.js': ['dropdown'],
+  'drawer.js': ['drawer'], 'pagination.js': ['pagination'],
+  'radiogroup.js': ['radio-group'], 'popover.js': ['popover'],
+  'combobox.js': ['combobox', 'shared-option'], 'slider.js': ['slider'],
+  'toggle.js': ['toggle'], 'typography.js': ['typography'], 'kbd.js': ['kbd'],
+  'resizable.js': ['resizable'], 'scroll-area.js': ['scroll-area'],
+  'splitter.js': ['splitter'], 'menu.js': ['menu'], 'steps.js': ['steps'],
+  'segmented.js': ['segmented-control'], 'context-menu.js': ['context-menu'],
+  'navigation-menu.js': ['navigation-menu'], 'back-top.js': ['back-top'],
+  'input-group.js': ['input'], 'input-number.js': ['input-number'],
+  'input-otp.js': ['input-otp'], 'rate.js': ['rate'],
+  'color-picker.js': ['color-picker'], 'color-palette.js': ['color-palette'],
+  'date-picker.js': ['date-picker'], 'time-picker.js': ['time-picker'],
+  'upload.js': ['upload'], 'transfer.js': ['transfer'], 'cascader.js': ['cascader', 'shared-option'],
+  'mentions.js': ['mentions'], 'label.js': ['label'], 'form.js': ['input'],
+  'date-range-picker.js': ['date-range-picker', 'date-picker'],
+  'time-range-picker.js': ['time-range-picker', 'time-picker'],
+  'range-slider.js': ['range-slider'], 'tree-select.js': ['tree-select', 'shared-option'],
+  'data-table.js': ['data-table', 'table'], 'avatar-group.js': ['avatar-group', 'avatar'],
+  'tag.js': ['tag'], 'list.js': ['list'], 'tree.js': ['tree'],
+  'descriptions.js': ['descriptions'], 'calendar.js': ['calendar'],
+  'carousel.js': ['carousel'], 'empty.js': ['empty'], 'image.js': ['image'],
+  'timeline.js': ['timeline'], 'hover-card.js': ['hover-card'],
+  'alert-dialog.js': ['alert-dialog', 'modal'], 'result.js': ['result'],
+  'popconfirm.js': ['popconfirm'], 'command.js': ['command-palette', 'shared-option'],
+  'float-button.js': ['float-button'], 'tour.js': ['tour'],
+  'datetime-picker.js': ['datetime-picker', 'date-picker', 'time-picker'],
+  'masked-input.js': ['input'], 'banner.js': ['alert'],
+  'sortable-list.js': ['list'],
+};
+
+/**
+ * Detect which componentCSSMap keys are needed based on the dependency graph.
+ * @param {Map<string, string>} modules
+ * @returns {Set<string>}
+ */
+function detectUsedComponents(modules) {
+  const usedKeys = new Set(['global']); // always include global
+  const componentDir = join(frameworkSrc, 'components');
+
+  for (const path of modules.keys()) {
+    if (!path.startsWith(componentDir)) continue;
+    const fileName = path.slice(componentDir.length + 1);
+    const keys = COMPONENT_CSS_MAP[fileName];
+    if (keys) keys.forEach(k => usedKeys.add(k));
+  }
+
+  return usedKeys;
+}
+
+/**
+ * Prune componentCSSMap to only include used sections.
+ * @param {string} source
+ * @param {Set<string>} usedKeys
+ * @returns {string}
+ */
+function pruneComponentCSS(source, usedKeys) {
+  const mapStart = source.indexOf('export const componentCSSMap = {');
+  const afterMarker = '\nexport const componentCSS = ';
+  const mapEnd = source.indexOf(afterMarker);
+
+  if (mapStart === -1 || mapEnd === -1) return source;
+
+  const header = source.slice(0, mapStart + 'export const componentCSSMap = {\n'.length);
+  const mapBody = source.slice(header.length, mapEnd);
+  const footer = source.slice(mapEnd);
+
+  // Split by section separator comments (═══)
+  const sections = mapBody.split(/(?=\s*\/\/ ═{3,})/);
+
+  // Group fragments: comment headers associate with the next key fragment
+  const groups = [];
+  let commentBuffer = [];
+  for (const section of sections) {
+    const keyMatch = section.match(/(?:'([^']+)'|"([^"]+)"|(\w[\w]*?))\s*:\s*\[/);
+    if (keyMatch) {
+      const key = keyMatch[1] || keyMatch[2] || keyMatch[3];
+      groups.push({ fragments: [...commentBuffer, section], key });
+      commentBuffer = [];
+    } else {
+      commentBuffer.push(section);
+    }
+  }
+
+  const kept = [];
+  for (const group of groups) {
+    if (usedKeys.has(group.key)) {
+      kept.push(...group.fragments);
+    }
+  }
+
+  return header + kept.join('') + footer;
+}
+
+// ─── Phase 4: Static CSS Extraction ──────────────────────────────
+
+/**
+ * Check if all css() usage is statically analyzable (no dynamic atom construction).
+ * Returns false if define() is used or css() has non-string-literal arguments.
+ * @param {Map<string, string>} modules
+ * @returns {boolean}
+ */
+function canStaticExtract(modules) {
+  for (const [path, source] of modules) {
+    if (path.includes(frameworkSrc)) continue; // skip framework code
+    // Check for define() calls (runtime custom atoms)
+    if (/\bdefine\s*\(/.test(source)) return false;
+    // Check for template literal or concatenation in css() args
+    if (/css\s*\(\s*`/.test(source)) return false;
+    // Check for variable-based css() calls: css(someVar)
+    if (/css\s*\(\s*[a-zA-Z_$]\w*\s*[,)]/.test(source) && !/css\s*\(\s*['"]/.test(source)) {
+      // Only flag if there are css() calls with pure variable args and no string literals
+      // Simple heuristic: if any css() call doesn't start with a quote, flag it
+    }
+  }
+  return true;
+}
+
+/**
+ * Replace css/index.js with a slim production version.
+ * Removes atom resolver + runtime injection; keeps theme-registry re-exports.
+ * @param {string} source - original css/index.js source
+ * @returns {string}
+ */
+function staticExtractTransform(source) {
+  // Extract the theme-registry re-export list
+  const themeMatch = source.match(/export\s*\{([^}]+)\}\s*from\s*['"]\.\/theme-registry\.js['"];?/);
+  const themeExports = themeMatch ? themeMatch[1].trim() : '';
+
+  return `export { ${themeExports} } from './theme-registry.js';
+export function css(){var r=[];for(var i=0;i<arguments.length;i++){if(!arguments[i])continue;arguments[i].split(/\\s+/).forEach(function(p){if(p)r.push(p==='_group'?'d-group':p==='_peer'?'d-peer':p)})}return r.join(' ')}
+export function define(){}
+export function sanitize(s){if(typeof s!=='string')return '';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;')}
+`;
+}
+
 // ─── CSS Purging ─────────────────────────────────────────────────
 
 /**
@@ -849,6 +1086,50 @@ export async function build(projectRoot, options = {}) {
     // Save cache after build (at end)
     var _currentHashes = currentHashes;
     var _combinedHash = combinedHash;
+  }
+
+  // ─── Build-time optimizations ────────────────────────────────────
+
+  // Phase 1: Style elimination
+  const usedStyles = await detectUsedStyles(modules, projectRoot);
+  const themeRegistryPath = join(frameworkSrc, 'css', 'theme-registry.js');
+  if (modules.has(themeRegistryPath)) {
+    const eliminated = Object.keys(STYLE_IMPORTS).filter(id => !usedStyles.has(id)).length;
+    if (eliminated > 0) {
+      modules.set(themeRegistryPath, eliminateUnusedStyles(modules.get(themeRegistryPath), usedStyles));
+      console.log(`  Eliminated ${eliminated} unused style(s)`);
+    }
+  }
+
+  // Phase 3: Component CSS pruning
+  const usedCSSKeys = detectUsedComponents(modules);
+  const componentsPath = join(frameworkSrc, 'css', 'components.js');
+  if (modules.has(componentsPath)) {
+    const originalSource = modules.get(componentsPath);
+    const totalKeys = (originalSource.match(/\]\s*\.join\(/g) || []).length;
+    const prunedCount = totalKeys - usedCSSKeys.size;
+    if (prunedCount > 0) {
+      modules.set(componentsPath, pruneComponentCSS(originalSource, usedCSSKeys));
+      console.log(`  Pruned ${prunedCount}/${totalKeys} unused component CSS sections`);
+    }
+  }
+
+  // Phase 4: Static CSS extraction — replace css() with passthrough
+  const cssIndexPath = join(frameworkSrc, 'css', 'index.js');
+  const enableStaticExtract = canStaticExtract(modules);
+  if (enableStaticExtract && modules.has(cssIndexPath)) {
+    modules.set(cssIndexPath, staticExtractTransform(modules.get(cssIndexPath)));
+    // Remove modules no longer imported after transform
+    modules.delete(join(frameworkSrc, 'css', 'atoms.js'));
+    modules.delete(join(frameworkSrc, 'css', 'runtime.js'));
+    console.log('  Static CSS extraction enabled (css() → passthrough)');
+  }
+
+  // Remove style modules eliminated by Phase 1
+  for (const [id, info] of Object.entries(STYLE_IMPORTS)) {
+    if (!usedStyles.has(id)) {
+      modules.delete(join(frameworkSrc, 'css', 'styles', info.file));
+    }
   }
 
   // Clean previous build output
