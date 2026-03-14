@@ -1,29 +1,29 @@
 # decantr
 
-AI-first web framework. Zero dependencies. Native JS/CSS/HTML. v0.4.0
+AI-first web framework. Zero dependencies. Native JS/CSS/HTML. v0.4.2
 
 Decantr is designed for LLMs to generate, read, and maintain — not for human readability. Every API is optimized for token efficiency: terse atomic CSS atoms, proxy-based tag functions, and a machine-readable registry so agents can look up props and exports without parsing source files.
 
 ## Quick Start
 
 ```bash
-npx decantr init my-app
+npx @decantr/decantr init my-app
 cd my-app
 npm install
-npx decantr dev
+npx @decantr/decantr dev
 ```
 
 ## Architecture
 
 ```
-decantr/core        — h(), text(), cond(), list(), mount(), onMount, onDestroy, ErrorBoundary, Portal, Suspense, Transition
-decantr/state       — createSignal, createEffect, createMemo, createStore, batch, createResource, createContext, createHistory
-decantr/router      — createRouter, link, navigate, useRoute, useSearchParams (hash + history modes, nested routes, guards)
-decantr/form        — createForm, validators, useFormField, fieldArray
-decantr/css         — css(), define(), setStyle(), setMode(), setShape(), 1000+ atomic CSS utilities
-decantr/tags        — Proxy-based tag functions (div, p, span...) — ~25% fewer tokens than h()
-decantr/components  — 100+ UI components (form, display, layout, overlay, feedback, chart, typography)
-decantr/test        — render, fire, flush + node:test re-exports
+@decantr/decantr/core        — h(), text(), cond(), list(), mount(), onMount, onDestroy, ErrorBoundary, Portal, Suspense, Transition
+@decantr/decantr/state       — createSignal, createEffect, createMemo, createStore, batch, createResource, createContext, createHistory
+@decantr/decantr/router      — createRouter, link, navigate, useRoute, useSearchParams (hash + history modes, nested routes, guards)
+@decantr/decantr/form        — createForm, validators, useFormField, fieldArray
+@decantr/decantr/css         — css(), define(), setStyle(), setMode(), setShape(), 1000+ atomic CSS utilities
+@decantr/decantr/tags        — Proxy-based tag functions (div, p, span...) — ~25% fewer tokens than h()
+@decantr/decantr/components  — 100+ UI components (form, display, layout, overlay, feedback, chart, typography)
+@decantr/decantr/test        — render, fire, flush + node:test re-exports
 ```
 
 ## Features
@@ -44,10 +44,10 @@ decantr/test        — render, fire, flush + node:test re-exports
 Every component is a function that returns an HTMLElement:
 
 ```javascript
-import { tags } from 'decantr/tags';
-import { text } from 'decantr/core';
-import { createSignal } from 'decantr/state';
-import { css } from 'decantr/css';
+import { tags } from '@decantr/decantr/tags';
+import { text } from '@decantr/decantr/core';
+import { createSignal } from '@decantr/decantr/state';
+import { css } from '@decantr/decantr/css';
 
 const { div, button, span } = tags;
 
@@ -78,7 +78,7 @@ Decantr ships a built-in [Model Context Protocol](https://modelcontextprotocol.i
 ### Start the server
 
 ```bash
-npx decantr mcp
+npx @decantr/decantr mcp
 ```
 
 ### Integration
@@ -89,7 +89,7 @@ npx decantr mcp
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["decantr", "mcp"]
+      "args": ["@decantr/decantr", "mcp"]
     }
   }
 }
@@ -101,7 +101,7 @@ npx decantr mcp
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["decantr", "mcp"]
+      "args": ["@decantr/decantr", "mcp"]
     }
   }
 }
@@ -111,7 +111,7 @@ npx decantr mcp
 ```json
 {
   "command": "npx",
-  "args": ["decantr", "mcp"],
+  "args": ["@decantr/decantr", "mcp"],
   "transport": "stdio"
 }
 ```

@@ -1,6 +1,6 @@
 # State Module Reference
 
-`import { createSignal, createEffect, createMemo, createStore, batch, createResource, createContext, createSelector, createDeferred, createHistory, useLocalStorage, untrack, peek } from 'decantr/state';`
+`import { createSignal, createEffect, createMemo, createStore, batch, createResource, createContext, createSelector, createDeferred, createHistory, useLocalStorage, untrack, peek } from '@decantr/decantr/state';`
 
 ## createSignal(initial)
 

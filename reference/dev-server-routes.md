@@ -45,12 +45,12 @@ The server rewrites bare module specifiers in JS files to browser-compatible pat
 
 | Source Import | Rewritten To |
 |--------------|-------------|
-| `from 'decantr/core'` | `from '/__decantr/core/index.js'` |
-| `from 'decantr/state'` | `from '/__decantr/state/index.js'` |
-| `from 'decantr/css'` | `from '/__decantr/css/index.js'` |
-| `from 'decantr/components'` | `from '/__decantr/components/index.js'` |
-| `from 'decantr/tags'` | `from '/__decantr/tags/index.js'` |
-| `from 'decantr/router'` | `from '/__decantr/router/index.js'` |
+| `from '@decantr/decantr/core'` | `from '/__decantr/core/index.js'` |
+| `from '@decantr/decantr/state'` | `from '/__decantr/state/index.js'` |
+| `from '@decantr/decantr/css'` | `from '/__decantr/css/index.js'` |
+| `from '@decantr/decantr/components'` | `from '/__decantr/components/index.js'` |
+| `from '@decantr/decantr/tags'` | `from '/__decantr/tags/index.js'` |
+| `from '@decantr/decantr/router'` | `from '/__decantr/router/index.js'` |
 
 Relative imports (`./`, `../`) are passed through unchanged.
 

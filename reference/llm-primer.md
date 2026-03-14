@@ -7,13 +7,13 @@ Single-file reference for code generation. Covers the 20% that handles 80% of sc
 ## 1. All Imports
 
 ```js
-import { tags } from 'decantr/tags';                              // HTML elements
-import { h, text, cond, list, mount, onMount, onDestroy } from 'decantr/core';
-import { createSignal, createEffect, createMemo, createStore, batch } from 'decantr/state';
-import { createRouter, link, navigate, useRoute } from 'decantr/router';
-import { css, setStyle, setMode } from 'decantr/css';
-import { Button, Input, Card, Modal, Tabs, Select, ... } from 'decantr/components';
-import { Chart, Sparkline, chartSpec, createStream } from 'decantr/chart';
+import { tags } from '@decantr/decantr/tags';                              // HTML elements
+import { h, text, cond, list, mount, onMount, onDestroy } from '@decantr/decantr/core';
+import { createSignal, createEffect, createMemo, createStore, batch } from '@decantr/decantr/state';
+import { createRouter, link, navigate, useRoute } from '@decantr/decantr/router';
+import { css, setStyle, setMode } from '@decantr/decantr/css';
+import { Button, Input, Card, Modal, Tabs, Select, ... } from '@decantr/decantr/components';
+import { Chart, Sparkline, chartSpec, createStream } from '@decantr/decantr/chart';
 ```
 
 **Usage pattern:**
@@ -85,6 +85,8 @@ Both naming styles work. Decantr terse names are canonical.
 
 ### Spacing Scale
 `0`=0, `1`=0.25rem, `2`=0.5rem, `3`=0.75rem, `4`=1rem, `5`=1.25rem, `6`=1.5rem, `8`=2rem, `10`=2.5rem, `12`=3rem, `16`=4rem, `20`=5rem, `24`=6rem
+
+> For spacing decision rules beyond defaults, see `reference/spatial-guidelines.md`.
 
 ### Custom values
 Use bracket syntax: `_w[300px]`, `_h[100vh]`, `_p[2px]`, `_bg[#ff0000]`, `_grid-template-columns[240px_1fr]`
@@ -172,7 +174,7 @@ icon('icon-name')  // Returns SVG icon element
 ## 4. Chart API
 
 ```js
-import { Chart, Sparkline } from 'decantr/chart';
+import { Chart, Sparkline } from '@decantr/decantr/chart';
 
 // Full chart
 Chart({
@@ -343,6 +345,9 @@ function MinimalHeader({ brand, children }) {
 ---
 
 ## 6. Top 10 Pattern Code Snippets
+
+> **Spacing note:** Snippets below use comfortable-density defaults (`_gap4`, `_p4`).
+> Actual spacing must match the project's Clarity profile — see `reference/spatial-guidelines.md` §17.
 
 ### kpi-grid
 ```js
@@ -580,7 +585,7 @@ div({ class: css('_b1 _r4 _p4') },  // simple border + radius (tokens handle the
 ## 8. Styles & Modes
 
 ```js
-import { setStyle, setMode } from 'decantr/css';
+import { setStyle, setMode } from '@decantr/decantr/css';
 
 // Available styles
 setStyle('auradecantism');  // Default: glass, gradients, vibrant (dark)
@@ -652,8 +657,8 @@ link({ href: '/products', class: css('_fgprimary') }, 'Products')
 ### Complete SPA Entry Point
 
 ```js
-import { mount } from 'decantr/core';
-import { createRouter } from 'decantr/router';
+import { mount } from '@decantr/decantr/core';
+import { createRouter } from '@decantr/decantr/router';
 
 const router = createRouter({
   mode: 'hash',

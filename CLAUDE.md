@@ -1,6 +1,6 @@
 # /tmp/decantr-baseline-test
 
-Built with [decantr](https://decantr.ai) v0.4.0 — AI-first web framework.
+Built with [decantr](https://decantr.ai) v0.4.2 — AI-first web framework.
 
 ## Project Structure
 
@@ -11,6 +11,9 @@ Built with [decantr](https://decantr.ai) v0.4.0 — AI-first web framework.
 - `decantr.config.json` — Project configuration
 - `decantr.essence.json` — Project DNA (generated during Decantation Process)
 - `AGENTS.md` — Framework translation layer (read this for API equivalences)
+- `reference/llm-primer.md` — Imports, atoms, components, pattern snippets
+- `reference/spatial-guidelines.md` — Spacing rules, density zones, Clarity profiles
+- `reference/atoms.md` — Valid atom class names (always check before using `_` atoms)
 
 ## The Decantation Process
 
@@ -18,14 +21,15 @@ Follow this process for ALL new projects and major feature additions:
 
 ### Stage 1: POUR — User expresses intent in natural language
 ### Stage 2: SETTLE — Decompose into five layers:
-- **Terroir**: Domain archetype → read `node_modules/decantr/src/registry/archetypes/`
-- **Vintage**: Style + mode + recipe → read `node_modules/decantr/src/registry/recipe-*.json`
+- **Terroir**: Domain archetype → read `node_modules/@decantr/decantr/src/registry/archetypes/`
+- **Vintage**: Style + mode + recipe → read `node_modules/@decantr/decantr/src/registry/recipe-*.json`
 - **Character**: Brand personality traits (e.g. "tactical", "minimal", "playful")
 - **Structure**: Page/view map with skeleton assignments
 - **Tannins**: Functional systems (auth, search, payments, etc.)
 ### Stage 3: CLARIFY — Write `decantr.essence.json` and confirm with user
 ### Stage 4: DECANT — Resolve each page's Blend (spatial arrangement)
 Read the archetype's `default_blend` for each page. Copy into the Essence's `blend` array, then customize.
+Derive Clarity profile from Character traits → `reference/spatial-guidelines.md` §17. Apply density-appropriate gaps to each page's `surface` atoms.
 
 **Blend format**: Each `blend` is an ordered array of rows:
 - `"pattern-id"` — full-width pattern row
@@ -50,7 +54,7 @@ Before writing ANY code, read `decantr.essence.json`. Verify:
 2. Page exists in the Structure. If new, add it to the Essence first.
 3. Layout follows the page's Blend. Do not freestyle spatial arrangement.
 4. Composition follows the active Recipe. Do not freestyle decoration.
-5. Density and tone match the Character.
+5. Spacing follows the Clarity profile derived from Character → `reference/spatial-guidelines.md` §17. Do not default to `_gap4`/`_p4` everywhere.
 If a request conflicts with the Essence, flag the conflict and ask for confirmation.
 
 ## Essence Schema
@@ -95,12 +99,12 @@ You MUST create `decantr.essence.json` during CLARIFY. Do NOT proceed to DECANT 
 ## Framework Imports
 
 ```js
-import { tags } from 'decantr/tags';
-import { h, text, cond, list, mount, onMount, onDestroy } from 'decantr/core';
-import { createSignal, createEffect, createMemo, createStore, batch } from 'decantr/state';
-import { createRouter, link, navigate, useRoute } from 'decantr/router';
-import { css, setStyle, setMode } from 'decantr/css';
-import { Button, Input, Card, Modal, Tabs, ... } from 'decantr/components';
+import { tags } from '@decantr/decantr/tags';
+import { h, text, cond, list, mount, onMount, onDestroy } from '@decantr/decantr/core';
+import { createSignal, createEffect, createMemo, createStore, batch } from '@decantr/decantr/state';
+import { createRouter, link, navigate, useRoute } from '@decantr/decantr/router';
+import { css, setStyle, setMode } from '@decantr/decantr/css';
+import { Button, Input, Card, Modal, Tabs, ... } from '@decantr/decantr/components';
 ```
 
 ## Styles
@@ -111,16 +115,16 @@ Shapes: `sharp`, `rounded`, `pill`
 
 ## Registry
 
-- `node_modules/decantr/src/registry/index.json` — Full API catalog
-- `node_modules/decantr/src/registry/components.json` — Component props/types
-- `node_modules/decantr/src/registry/archetypes/` — Domain archetypes
-- `node_modules/decantr/src/registry/patterns/` — Experience patterns
-- `node_modules/decantr/src/registry/recipe-*.json` — Visual language recipes
+- `node_modules/@decantr/decantr/src/registry/index.json` — Full API catalog
+- `node_modules/@decantr/decantr/src/registry/components.json` — Component props/types
+- `node_modules/@decantr/decantr/src/registry/archetypes/` — Domain archetypes
+- `node_modules/@decantr/decantr/src/registry/patterns/` — Experience patterns
+- `node_modules/@decantr/decantr/src/registry/recipe-*.json` — Visual language recipes
 
 ## Commands
 
-- `npx decantr dev` — Dev server with hot reload
-- `npx decantr build` — Production build to `dist/`
-- `npx decantr test` — Run tests
-- `npx decantr validate` — Validate `decantr.essence.json`
+- `npx @decantr/decantr dev` — Dev server with hot reload
+- `npx @decantr/decantr build` — Production build to `dist/`
+- `npx @decantr/decantr test` — Run tests
+- `npx @decantr/decantr validate` — Validate `decantr.essence.json`
 

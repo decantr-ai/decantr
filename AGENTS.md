@@ -21,9 +21,9 @@ This table resolves 80% of framework translation needs. Scan here first.
 | Conditional render | `{cond ? <A/> : <B/>}` | `v-if` / `v-else` | `{#if}` | `@if` | `cond(pred, trueFn, falseFn)` |
 | List render | `.map(item => <X key=.../>)` | `v-for` + `:key` | `{#each}` | `@for` | `list(items, keyFn, renderFn)` |
 | CSS / styling | Tailwind / CSS-in-JS | scoped `<style>` | scoped `<style>` | ViewEncapsulation | `css('_flex _gap4 _p6 _bgmuted')` |
-| Component library | ShadCN / MUI / Radix | Element Plus / PrimeVue | Skeleton / Melt | Angular Material | `decantr/components` (100+ components) |
+| Component library | ShadCN / MUI / Radix | Element Plus / PrimeVue | Skeleton / Melt | Angular Material | `@decantr/decantr/components` (100+ components) |
 | Build / deploy | Next.js / Vite | Nuxt / Vite | SvelteKit / Vite | Angular CLI | `decantr build` → `dist/` |
-| Testing | Jest / Vitest | Vitest | Vitest | Karma / Jest | `decantr/test` (node:test based) |
+| Testing | Jest / Vitest | Vitest | Vitest | Karma / Jest | `@decantr/decantr/test` (node:test based) |
 
 ---
 
@@ -371,7 +371,7 @@ Decantr is framework-agnostic for data. Use any npm package that doesn't assume 
 ### REST Data Fetching (Preferred — createResource)
 
 ```javascript
-import { createResource } from 'decantr/state';
+import { createResource } from '@decantr/decantr/state';
 
 const [items] = createResource(() => fetch('/api/items').then(r => r.json()));
 // items.data() — the fetched data (or undefined while loading)
@@ -383,8 +383,8 @@ const [items] = createResource(() => fetch('/api/items').then(r => r.json()));
 ### REST Data Fetching (Manual — for complex flows)
 
 ```javascript
-import { createSignal } from 'decantr/state';
-import { onMount } from 'decantr/core';
+import { createSignal } from '@decantr/decantr/state';
+import { onMount } from '@decantr/decantr/core';
 
 const [data, setData] = createSignal(null);
 const [loading, setLoading] = createSignal(true);
@@ -419,8 +419,8 @@ onMount(async () => {
 
 ```javascript
 import { createClient } from '@supabase/supabase-js';
-import { createSignal } from 'decantr/state';
-import { onMount } from 'decantr/core';
+import { createSignal } from '@decantr/decantr/state';
+import { onMount } from '@decantr/decantr/core';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const [posts, setPosts] = createSignal([]);
@@ -436,8 +436,8 @@ onMount(async () => {
 ```javascript
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { createSignal } from 'decantr/state';
-import { onMount } from 'decantr/core';
+import { createSignal } from '@decantr/decantr/state';
+import { onMount } from '@decantr/decantr/core';
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -452,12 +452,12 @@ onMount(async () => {
 ### Authentication Flow
 
 ```javascript
-import { createSignal, createEffect } from 'decantr/state';
-import { navigate } from 'decantr/router';
-import { createForm, validators, useFormField } from 'decantr/form';
-import { Button, Input, Card } from 'decantr/components';
-import { tags } from 'decantr/tags';
-import { css } from 'decantr/css';
+import { createSignal, createEffect } from '@decantr/decantr/state';
+import { navigate } from '@decantr/decantr/router';
+import { createForm, validators, useFormField } from '@decantr/decantr/form';
+import { Button, Input, Card } from '@decantr/decantr/components';
+import { tags } from '@decantr/decantr/tags';
+import { css } from '@decantr/decantr/css';
 
 const [user, setUser] = createSignal(null);
 const [loading, setLoading] = createSignal(true);
@@ -496,8 +496,8 @@ function LoginPage() {
 ### Real-Time / WebSocket
 
 ```javascript
-import { createSignal } from 'decantr/state';
-import { onMount, onDestroy } from 'decantr/core';
+import { createSignal } from '@decantr/decantr/state';
+import { onMount, onDestroy } from '@decantr/decantr/core';
 
 const [messages, setMessages] = createSignal([]);
 let ws;
@@ -515,8 +515,8 @@ onDestroy(() => ws?.close());
 ### Stripe Payments
 
 ```javascript
-import { onMount } from 'decantr/core';
-import { tags } from 'decantr/tags';
+import { onMount } from '@decantr/decantr/core';
+import { tags } from '@decantr/decantr/tags';
 
 const { div } = tags;
 const container = div({ id: 'card-element' });
@@ -531,8 +531,8 @@ onMount(async () => {
 ### Form Validation
 
 ```javascript
-import { createSignal, createMemo } from 'decantr/state';
-import { Input, Button } from 'decantr/components';
+import { createSignal, createMemo } from '@decantr/decantr/state';
+import { Input, Button } from '@decantr/decantr/components';
 
 const [email, setEmail] = createSignal('');
 const [submitted, setSubmitted] = createSignal(false);
@@ -551,7 +551,7 @@ Button({ onclick: () => setSubmitted(true) }, 'Submit');
 ### File Upload
 
 ```javascript
-import { createSignal } from 'decantr/state';
+import { createSignal } from '@decantr/decantr/state';
 
 const [progress, setProgress] = createSignal(0);
 
@@ -568,7 +568,7 @@ async function upload(file) {
 ### Local Storage Persistence
 
 ```javascript
-import { useLocalStorage } from 'decantr/state';
+import { useLocalStorage } from '@decantr/decantr/state';
 
 // Automatically persists to localStorage and syncs across tabs
 const [theme, setTheme] = useLocalStorage('app-theme', 'light');
@@ -613,7 +613,7 @@ const [cart, setCart] = useLocalStorage('cart-items', []);
 
 ### Security
 
-- **XSS prevention**: Real DOM manipulation — no `innerHTML` or `dangerouslySetInnerHTML` by default. Use `sanitize()` from `decantr/css` for any user-provided HTML
+- **XSS prevention**: Real DOM manipulation — no `innerHTML` or `dangerouslySetInnerHTML` by default. Use `sanitize()` from `@decantr/decantr/css` for any user-provided HTML
 - **CSP-friendly**: No `eval()` or `Function()` — works with strict Content-Security-Policy
 - **URL validation**: Router rejects `javascript:`, `data:`, and absolute URLs to prevent open redirect attacks
 - **Input sanitization**: Always validate/sanitize user input at system boundaries (API responses, URL params, form inputs) before rendering
@@ -626,7 +626,7 @@ const [cart, setCart] = useLocalStorage('cart-items', []);
 
 Before generating a multi-page application, consult the architect registry to produce a comprehensive blueprint. This turns a naive user prompt ("build me a shopping cart") into a complete application spec with all the features, routes, state, and components a real app needs.
 
-**Registry location:** `node_modules/decantr/src/registry/architect/` (or `src/registry/architect/` in framework source)
+**Registry location:** `node_modules/@decantr/decantr/src/registry/architect/` (or `src/registry/architect/` in framework source)
 
 ### Trait-Based Composition (Primary Approach)
 

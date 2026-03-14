@@ -20,7 +20,7 @@ All icons use a 24×24 viewBox, `stroke-linecap="round"`, `stroke-linejoin="roun
 
 ## Core API
 
-### `icon(name, opts?)` — `decantr/components`
+### `icon(name, opts?)` — `@decantr/decantr/components`
 
 Render an icon as a `<span>` element.
 
@@ -36,7 +36,7 @@ Render an icon as a `<span>` element.
 **Returns:** `HTMLElement` with `class="d-i d-i-{name}"`, `role="img"`, `aria-hidden="true"`
 
 ```javascript
-import { icon } from 'decantr/components';
+import { icon } from '@decantr/decantr/components';
 
 icon('check');                                          // default 1.25em, regular weight
 icon('star', { size: '1em' });                          // inline with text
@@ -79,7 +79,7 @@ Variants produce CSS class suffixes on `d-i-{name}`:
 
 Decimals use `p` in class names: `1.5` → `w1p5`, `2.5` → `w2p5`.
 
-### Registry Functions — `decantr/icons`
+### Registry Functions — `@decantr/decantr/icons`
 
 | Function | Signature | Description |
 |----------|-----------|-------------|
@@ -89,7 +89,7 @@ Decimals use `p` in class names: `1.5` → `w1p5`, `2.5` → `w2p5`.
 | `hasIcon` | `(name) → boolean` | Check if icon is available |
 | `getIconNames` | `() → string[]` | List all available icon names |
 
-### `caret(direction?, opts?)` — `decantr/components` (via `_behaviors.js`)
+### `caret(direction?, opts?)` — `@decantr/decantr/components` (via `_behaviors.js`)
 
 Convenience wrapper for chevron icons used as dropdown/expand indicators.
 
@@ -394,7 +394,7 @@ export const ICONS = {
 **Registration in app code:**
 ```javascript
 import { ICONS } from './icons/custom.js';
-import { registerIcons } from 'decantr/icons';
+import { registerIcons } from '@decantr/decantr/icons';
 registerIcons(ICONS);
 ```
 
@@ -403,7 +403,7 @@ registerIcons(ICONS);
 For icons loaded dynamically (e.g., from an API):
 
 ```javascript
-import { registerIcon, hasIcon } from 'decantr/icons';
+import { registerIcon, hasIcon } from '@decantr/decantr/icons';
 
 if (!hasIcon('my-dynamic-icon')) {
   registerIcon('my-dynamic-icon', '<path d="M12 2L22 22H2z"/>');
@@ -439,7 +439,7 @@ These ship SVG data and work directly with `registerIcons()`.
 **Stroke-based (Lucide, Feather, Heroicons Outline):**
 
 ```javascript
-import { registerIcons } from 'decantr/icons';
+import { registerIcons } from '@decantr/decantr/icons';
 import lucideIcons from './icons/lucide-data.js';  // generated via tools/icons.js
 registerIcons(lucideIcons);
 
@@ -503,7 +503,7 @@ Framework components (Select, Accordion, DataTable, Alert, etc.) use ~15 structu
 For visual consistency with an external SVG library, override the structural icons at app startup:
 
 ```javascript
-import { registerIcon } from 'decantr/icons';
+import { registerIcon } from '@decantr/decantr/icons';
 
 // Override structural icons with Material Design SVGs
 registerIcon('chevron-down', '<path fill="currentColor" d="M7 10l5 5 5-5z"/>');

@@ -1,6 +1,6 @@
 # Form System Reference
 
-`import { createForm, validators, useFormField } from 'decantr/form';`
+`import { createForm, validators, useFormField } from '@decantr/decantr/form';`
 
 ## createForm(config)
 
@@ -144,11 +144,11 @@ Returned by `form.fieldArray(name)`. Initial value from `config.fields[name].val
 ## Integration Example
 
 ```javascript
-import { tags } from 'decantr/tags';
-import { css } from 'decantr/css';
-import { createForm, validators } from 'decantr/form';
-import { Input, Button, Text } from 'decantr/components';
-import { cond, text } from 'decantr/core';
+import { tags } from '@decantr/decantr/tags';
+import { css } from '@decantr/decantr/css';
+import { createForm, validators } from '@decantr/decantr/form';
+import { Input, Button, Text } from '@decantr/decantr/components';
+import { cond, text } from '@decantr/decantr/core';
 
 const { form: formEl, div } = tags;
 

@@ -399,7 +399,7 @@ css('_lg:bfblur16')                    // responsive backdrop blur
 When neither standard atoms nor `ARB_PROPS` bracket notation cover a CSS property, use `define()` to create a reusable atom instead of falling back to inline `style:`.
 
 ```js
-import { define, css } from 'decantr/css';
+import { define, css } from '@decantr/decantr/css';
 
 define('_selectNone', 'user-select:none');
 define('_peNone', 'pointer-events:none');
