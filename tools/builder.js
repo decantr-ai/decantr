@@ -989,7 +989,8 @@ function purgeCSS(cssOutput, bundledJS) {
   let ruleMatch;
   while ((ruleMatch = ruleRe.exec(body)) !== null) {
     const className = ruleMatch[1];
-    if (referencedClasses.has(className)) {
+    const unescaped = className.replace(/\\/g, '');
+    if (referencedClasses.has(className) || referencedClasses.has(unescaped)) {
       kept.push(ruleMatch[0]);
     } else {
       purged++;
