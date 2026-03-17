@@ -1,6 +1,6 @@
 {
   "name": "decantr",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "type": "module",
   "description": "AI-first web framework with signal-based reactivity, atomic CSS, and a structured registry of 100+ components.",
   "homepage": "https://decantr.ai",
