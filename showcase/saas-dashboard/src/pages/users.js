@@ -1,5 +1,6 @@
 import { tags } from 'decantr/tags';
 import { createSignal } from 'decantr/state';
+import { onMount } from 'decantr/core';
 import { css } from 'decantr/css';
 import { Badge, Button, Card, DataTable, Drawer, Input, Select, Statistic, icon } from 'decantr/components';
 
@@ -21,11 +22,10 @@ function UserStats() {
   const active = usersData.filter(u => u.status === 'active').length;
   const inactive = total - active;
 
-  // Standalone Statistics — CC recipe styles them directly
   return div({ class: css('_grid _gc1 _sm:gc3 _gap3 d-stagger-scale') },
-    Statistic({ label: 'TOTAL PERSONNEL', value: total, precision: 0, animate: true, class: css('cc-glow') }),
-    Statistic({ label: 'ACTIVE', value: active, trend: 'up', trendValue: `${Math.round(active / total * 100)}%`, precision: 0, animate: true }),
-    Statistic({ label: 'INACTIVE', value: inactive, trend: 'down', trendValue: `${Math.round(inactive / total * 100)}%`, precision: 0, animate: true }),
+    Statistic({ label: 'TOTAL PERSONNEL', value: total, animate: true, class: css('cc-glow') }),
+    Statistic({ label: 'ACTIVE', value: active, trend: 'up', trendValue: `${Math.round(active / total * 100)}%`, animate: true }),
+    Statistic({ label: 'INACTIVE', value: inactive, trend: 'down', trendValue: `${Math.round(inactive / total * 100)}%`, animate: true }),
   );
 }
 
@@ -82,6 +82,10 @@ function UsersTable() {
 }
 
 export default function UsersPage() {
+  onMount(() => {
+    document.title = 'Users — Command Center';
+  });
+
   return div({ class: css('d-page-enter _flex _col _gap3') },
     UserStats(),
     UsersTable()

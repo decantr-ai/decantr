@@ -171,9 +171,9 @@ describe('Badge', () => {
     assert.equal(b.children.length, 2); // child + sup wrapper
   });
 
-  it('applies status color', () => {
+  it('applies status color via CSS class', () => {
     const b = Badge({ status: 'error', count: 1 });
-    assert.ok(b.style.background === 'var(--d-error)');
+    assert.ok(b.className.includes('d-badge-error'));
   });
 
   it('adds processing animation class', () => {

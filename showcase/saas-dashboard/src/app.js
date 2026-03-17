@@ -69,7 +69,7 @@ function App() {
         ...nav.map(item =>
           link({
             href: item.href,
-            class: () => css(`d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans ${route().path === item.href ? 'd-shell-nav-item-active _bgprimary/10 _fgprimary' : '_fgmutedfg'}`)
+            class: () => css(`d-shell-nav-item _flex _aic _gap2 _p2 _px3 _trans ${route().path === item.href ? 'd-shell-nav-item-active' : ''}`)
           },
             icon(item.ic, { size: '1em' }),
             cond(() => navState() !== 'rail', () => text(() => item.label))
@@ -114,13 +114,12 @@ function App() {
       )
     ),
 
-    // Command palette — pass icon() elements, not strings (workaround for framework bug)
     Command({
       visible: cmdOpen,
       onClose: () => setCmdOpen(false),
       items: nav.map(n => ({
         label: n.label,
-        icon: icon(n.ic, { size: '1em' }),
+        icon: n.ic,
         onSelect: () => { navigate(n.href); setCmdOpen(false); }
       }))
     }),

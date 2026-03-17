@@ -221,11 +221,13 @@ export function Tabs(props = {}) {
   }
 
   // Defer initial indicator measurement to after layout
-  requestAnimationFrame(() => {
-    const activeId = typeof active === 'function' ? active() : currentActive;
-    const idx = tabEls.findIndex(({ tab }) => tab.id === activeId);
-    if (idx >= 0) updateIndicator(tabEls[idx].el);
-  });
+  if (typeof requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame(() => {
+      const activeId = typeof active === 'function' ? active() : currentActive;
+      const idx = tabEls.findIndex(({ tab }) => tab.id === activeId);
+      if (idx >= 0) updateIndicator(tabEls[idx].el);
+    });
+  }
 
   // Reactive group disabled
   if (typeof disabled === 'function') {

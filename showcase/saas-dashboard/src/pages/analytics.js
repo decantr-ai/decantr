@@ -1,5 +1,6 @@
 import { tags } from 'decantr/tags';
 import { createSignal } from 'decantr/state';
+import { onMount } from 'decantr/core';
 import { css } from 'decantr/css';
 import { Button, Card, Chip, DataTable, DatePicker, Input, Select, Statistic, icon } from 'decantr/components';
 import { Chart } from 'decantr/chart';
@@ -43,12 +44,11 @@ function FilterBar() {
   );
 }
 
-// KPI summary — standalone Statistics (no Card wrapper) for CC recipe
 function SummaryBar() {
   return div({ class: css('_grid _gc1 _sm:gc3 _gap3 d-stagger-scale') },
-    Statistic({ label: 'AVG ORDER', value: 287, prefix: '$', trend: 'up', trendValue: '+3.2%', precision: 0, animate: 800, class: css('cc-glow') }),
-    Statistic({ label: 'BOUNCE RATE', value: 34.2, suffix: '%', trend: 'down', trendValue: '-1.8%', precision: 1, animate: 800, class: css('cc-glow') }),
-    Statistic({ label: 'SESSION TIME', value: 4.7, suffix: ' min', trend: 'up', trendValue: '+0.4', precision: 1, animate: 800, class: css('cc-glow') }),
+    Statistic({ label: 'AVG ORDER', value: 287, prefix: '$', trend: 'up', trendValue: '+3.2%', animate: 800, class: css('cc-glow') }),
+    Statistic({ label: 'BOUNCE RATE', value: 34.2, suffix: '%', trend: 'down', trendValue: '-1.8%', animate: 800, class: css('cc-glow') }),
+    Statistic({ label: 'SESSION TIME', value: 4.7, suffix: ' min', trend: 'up', trendValue: '+0.4', animate: 800, class: css('cc-glow') }),
   );
 }
 
@@ -113,6 +113,10 @@ function AnalyticsTable() {
 }
 
 export default function AnalyticsPage() {
+  onMount(() => {
+    document.title = 'Analytics — Command Center';
+  });
+
   return div({ class: css('d-page-enter _flex _col _gap3') },
     FilterBar(),
     SummaryBar(),

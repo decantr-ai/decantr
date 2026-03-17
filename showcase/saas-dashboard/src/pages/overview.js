@@ -1,7 +1,8 @@
 import { tags } from 'decantr/tags';
 import { createSignal } from 'decantr/state';
+import { onMount } from 'decantr/core';
 import { css } from 'decantr/css';
-import { Avatar, Badge, Button, Card, Skeleton, Select, Statistic, icon } from 'decantr/components';
+import { Badge, Button, Card, Chip, Select, Statistic, icon } from 'decantr/components';
 import { Chart } from 'decantr/chart';
 
 const { div, span, h2 } = tags;
@@ -33,7 +34,6 @@ const activities = [
 ];
 
 // ─── KPI Grid ───────────────────────────────────────────────────
-// CC recipe styles .d-statistic directly — no Card wrapper needed
 function KpiGrid() {
   return div({ class: css('_flex _col _gap3') },
     div({ class: css('_flex _aic _jcsb') },
@@ -52,7 +52,6 @@ function KpiGrid() {
           suffix: kpi.suffix,
           trend: kpi.trend,
           trendValue: kpi.trendValue,
-          precision: kpi.suffix === '%' ? 2 : 0,
           animate: 1200,
           class: css('cc-glow'),
         })
@@ -116,10 +115,11 @@ function ActivityFeed() {
               ),
               span({ class: css('cc-data _textxs _fgmuted') }, item.time)
             ),
-            Badge({
-              variant: item.variant === 'success' ? 'success' : item.variant === 'error' ? 'error' : 'default',
-              size: 'sm'
-            }, item.variant === 'success' ? 'OK' : item.variant === 'error' ? 'ALERT' : 'INFO')
+            Chip({
+              label: item.variant === 'success' ? 'OK' : item.variant === 'error' ? 'ALERT' : 'INFO',
+              variant: item.variant === 'success' ? 'success' : item.variant === 'error' ? 'error' : 'info',
+              size: 'xs'
+            })
           )
         )
       )
@@ -133,7 +133,10 @@ function ActivityFeed() {
 
 // ─── Page ───────────────────────────────────────────────────────
 export default function OverviewPage() {
-  // NOTE: Not using onMount — it doesn't fire in lazy-loaded routes (framework bug #1)
+  onMount(() => {
+    document.title = 'Overview — Command Center';
+  });
+
   return div({ class: css('d-page-enter _flex _col _gap3') },
     KpiGrid(),
     div({ class: css('_grid _gc1 _lg:gc3 _gap3') },
