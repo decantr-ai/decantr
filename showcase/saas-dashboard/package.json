@@ -1,0 +1,13 @@
+{
+  "name": "saas-dashboard",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "decantr dev",
+    "build": "decantr build",
+    "test": "decantr test"
+  },
+  "dependencies": {
+    "decantr": "^0.4.0"
+  }
+}

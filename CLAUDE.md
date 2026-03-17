@@ -49,11 +49,20 @@ Optional `surface` on each structure entry sets page container atoms (default: `
 
 ### Stage 5: SERVE — Generate code from Blend specs
 For each page, read its `blend` array and apply:
-1. Create page container with `surface` atoms
+1. Create page container with `surface` atoms + `d-page-enter` class for entrance animation
 2. String rows → full-width pattern (use pattern's `default_blend.atoms`)
-3. `{ cols }` rows → `_grid _gc{N} _gap4` wrapper, collapse below `at` breakpoint
-4. `{ cols, span }` rows → `_gc{total}` grid, each pattern gets `_span{weight}`
-5. Apply recipe wrappers per `recipe_overrides`
+3. `{ cols, at }` rows → `_grid _gc1 _{at}:gc{N} _gap{clarity}` wrapper with responsive collapse
+4. `{ cols, span, at }` rows → responsive `_gc{total}` grid, each pattern gets `_span{weight}`
+5. Wrap contained patterns in `Card(Card.Header, Card.Body)` — standalone patterns (layout `hero`/`row` or `contained: false`) skip wrapping
+6. Apply recipe `pattern_overrides` (background effects) from recipe JSON as Card class attrs
+7. Apply Clarity-derived gap to pattern code internals (`_gap4` → clarity gap)
+
+**App shell (sidebar-main)** uses `Shell` component with:
+- `Shell.Nav` with `d-shell-nav-item` / `d-shell-nav-item-active` classes
+- `Shell.Header` with `Breadcrumb`, `Command` (Cmd+K), `Popover` (bell), `Dropdown` (user)
+- `Shell.Body` with `d-page-enter` fade-in
+- Keyboard shortcut: `Ctrl+\` toggles sidebar
+- Recipe decoration via `getRecipeDecoration()` → injects cc-mesh, d-glass, etc.
 
 ### Ongoing: AGE — Read Essence before every change. Guard against drift.
 
@@ -129,7 +138,10 @@ import { renderToString, renderToStream, hydrate } from 'decantr/ssr';
 **Core** (ships with framework, no extra import): `auradecantism` (default)
 
 **Add-on styles** (import individually via `import { clean } from 'decantr/styles/clean'` then `registerStyle(clean)`):
-`clean`, `retro`, `glassmorphism`, `command-center`, `bioluminescent`, `clay`, `dopamine`, `editorial`, `liquid-glass`, `prismatic`
+`clean`, `glassmorphism`, `command-center`
+
+**Community styles** (import via `import { retro } from 'decantr/styles/community/retro'`):
+`retro`, `bioluminescent`, `clay`, `dopamine`, `editorial`, `liquid-glass`, `prismatic`
 
 Modes: `light`, `dark`, `auto`
 Shapes: `sharp`, `rounded`, `pill`

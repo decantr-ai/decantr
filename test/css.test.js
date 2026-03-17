@@ -418,6 +418,12 @@ describe('grid system', () => {
     assert.ok(output.includes('._gcaf{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}'));
   });
 
+  it('generates _gcaf240 auto-fit grid atom', () => {
+    css('_gcaf240');
+    const output = extractCSS();
+    assert.ok(output.includes('._gcaf240{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}'));
+  });
+
   it('generates auto-fill grid atom', () => {
     css('_gcafl');
     const output = extractCSS();
@@ -982,6 +988,18 @@ describe('arbitrary value atoms', () => {
     assert.ok(output.includes('backdrop-filter:blur(20px) saturate(1.5)'));
   });
 
+  it('supports grid-template-columns with bracket notation', () => {
+    css('_gc[1fr_300px]');
+    const output = extractCSS();
+    assert.ok(output.includes('grid-template-columns:1fr 300px'));
+  });
+
+  it('supports grid-template-rows with bracket notation', () => {
+    css('_gr[auto_1fr_auto]');
+    const output = extractCSS();
+    assert.ok(output.includes('grid-template-rows:auto 1fr auto'));
+  });
+
   it('ignores unknown property prefixes', () => {
     const result = css('_xyz[100px]');
     assert.equal(result, '_xyz[100px]');
@@ -1054,7 +1072,7 @@ describe('derive() with monochrome palette', () => {
     assert.ok(tokens['--d-accent'], 'missing --d-accent');
   });
 
-  it('monochrome role colors are all within same hue family (OKLCH)', () => {
+  it('monochrome constrains decorative roles but preserves semantic hues', () => {
     const tokens = derive({
       bg: '#060918',
       fg: '#fafafa',
@@ -1065,13 +1083,18 @@ describe('derive() with monochrome palette', () => {
     });
     const primaryRgb = hexToRgb(tokens['--d-primary']);
     const [, , primaryH] = rgbToOklch(...primaryRgb);
-    const roles = ['--d-success', '--d-error', '--d-warning', '--d-info', '--d-accent'];
-    for (const role of roles) {
+    // Decorative roles (accent, tertiary, info) stay within primary hue family
+    for (const role of ['--d-accent', '--d-tertiary', '--d-info']) {
       const rgb = hexToRgb(tokens[role]);
       const [, , h] = rgbToOklch(...rgb);
       const diff = Math.min(Math.abs(h - primaryH), 360 - Math.abs(h - primaryH));
       assert.ok(diff <= 25, `${role} hue ${h.toFixed(1)} deviates ${diff.toFixed(1)}° from primary (max 25°)`);
     }
+    // Semantic roles (success, error, warning) keep their standard hues
+    const [sR, sG] = hexToRgb(tokens['--d-success']);
+    assert.ok(sG > sR, 'success should be greenish');
+    const [eR, eG, eB] = hexToRgb(tokens['--d-error']);
+    assert.ok(eR > eG && eR > eB, 'error should be reddish');
   });
 });
 
@@ -1321,15 +1344,15 @@ describe('new styles registration', () => {
   it('addon styles register via registerStyle', async () => {
     const { getStyleList, registerStyle } = await import('../src/css/index.js');
     const { clean } = await import('../src/css/styles/addons/clean.js');
-    const { retro } = await import('../src/css/styles/addons/retro.js');
+    const { retro } = await import('../src/css/styles/community/retro.js');
     const { glassmorphism } = await import('../src/css/styles/addons/glassmorphism.js');
     const { commandCenter } = await import('../src/css/styles/addons/command-center.js');
-    const { clay } = await import('../src/css/styles/addons/clay.js');
-    const { liquidGlass } = await import('../src/css/styles/addons/liquid-glass.js');
-    const { dopamine } = await import('../src/css/styles/addons/dopamine.js');
-    const { prismatic } = await import('../src/css/styles/addons/prismatic.js');
-    const { bioluminescent } = await import('../src/css/styles/addons/bioluminescent.js');
-    const { editorial } = await import('../src/css/styles/addons/editorial.js');
+    const { clay } = await import('../src/css/styles/community/clay.js');
+    const { liquidGlass } = await import('../src/css/styles/community/liquid-glass.js');
+    const { dopamine } = await import('../src/css/styles/community/dopamine.js');
+    const { prismatic } = await import('../src/css/styles/community/prismatic.js');
+    const { bioluminescent } = await import('../src/css/styles/community/bioluminescent.js');
+    const { editorial } = await import('../src/css/styles/community/editorial.js');
     for (const s of [clean, retro, glassmorphism, commandCenter, clay, liquidGlass, dopamine, prismatic, bioluminescent, editorial]) {
       registerStyle(s);
     }
@@ -1348,7 +1371,7 @@ describe('new styles registration', () => {
 
 describe('clay style', () => {
   it('derive() produces valid tokens', async () => {
-    const { clay } = await import('../src/css/styles/addons/clay.js');
+    const { clay } = await import('../src/css/styles/community/clay.js');
     const tokens = derive(clay.seed, clay.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
@@ -1356,7 +1379,7 @@ describe('clay style', () => {
   });
 
   it('has correct personality', async () => {
-    const { clay } = await import('../src/css/styles/addons/clay.js');
+    const { clay } = await import('../src/css/styles/community/clay.js');
     assert.equal(clay.personality.elevation, 'clay');
     assert.equal(clay.personality.borders, 'none');
     assert.equal(clay.personality.density, 'spacious');
@@ -1364,7 +1387,7 @@ describe('clay style', () => {
 
   it('activates via setStyle after registration', async () => {
     const { setStyle, getStyle, registerStyle } = await import('../src/css/index.js');
-    const { clay } = await import('../src/css/styles/addons/clay.js');
+    const { clay } = await import('../src/css/styles/community/clay.js');
     registerStyle(clay);
     setStyle('clay');
     const id = typeof getStyle() === 'function' ? getStyle()() : getStyle();
@@ -1374,14 +1397,14 @@ describe('clay style', () => {
 
 describe('liquid-glass style', () => {
   it('derive() produces valid tokens', async () => {
-    const { liquidGlass } = await import('../src/css/styles/addons/liquid-glass.js');
+    const { liquidGlass } = await import('../src/css/styles/community/liquid-glass.js');
     const tokens = derive(liquidGlass.seed, liquidGlass.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
   });
 
   it('has correct personality', async () => {
-    const { liquidGlass } = await import('../src/css/styles/addons/liquid-glass.js');
+    const { liquidGlass } = await import('../src/css/styles/community/liquid-glass.js');
     assert.equal(liquidGlass.personality.radius, 'pill');
     assert.equal(liquidGlass.personality.elevation, 'glass');
     assert.equal(liquidGlass.personality.motion, 'smooth');
@@ -1390,14 +1413,14 @@ describe('liquid-glass style', () => {
 
 describe('dopamine style', () => {
   it('derive() produces valid tokens', async () => {
-    const { dopamine } = await import('../src/css/styles/addons/dopamine.js');
+    const { dopamine } = await import('../src/css/styles/community/dopamine.js');
     const tokens = derive(dopamine.seed, dopamine.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
   });
 
   it('has correct personality', async () => {
-    const { dopamine } = await import('../src/css/styles/addons/dopamine.js');
+    const { dopamine } = await import('../src/css/styles/community/dopamine.js');
     assert.equal(dopamine.personality.radius, 'pill');
     assert.equal(dopamine.personality.elevation, 'raised');
     assert.equal(dopamine.personality.motion, 'bouncy');
@@ -1406,14 +1429,14 @@ describe('dopamine style', () => {
 
 describe('prismatic style', () => {
   it('derive() produces valid tokens', async () => {
-    const { prismatic } = await import('../src/css/styles/addons/prismatic.js');
+    const { prismatic } = await import('../src/css/styles/community/prismatic.js');
     const tokens = derive(prismatic.seed, prismatic.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
   });
 
   it('has hue-shifted surface overrides', async () => {
-    const { prismatic } = await import('../src/css/styles/addons/prismatic.js');
+    const { prismatic } = await import('../src/css/styles/community/prismatic.js');
     assert.ok(prismatic.overrides.dark['--d-surface-1'], 'missing dark surface-1 override');
     assert.ok(prismatic.overrides.dark['--d-surface-2'], 'missing dark surface-2 override');
     assert.ok(prismatic.overrides.dark['--d-surface-3'], 'missing dark surface-3 override');
@@ -1422,7 +1445,7 @@ describe('prismatic style', () => {
 
 describe('bioluminescent style', () => {
   it('derive() produces valid tokens', async () => {
-    const { bioluminescent } = await import('../src/css/styles/addons/bioluminescent.js');
+    const { bioluminescent } = await import('../src/css/styles/community/bioluminescent.js');
     const tokens = derive(bioluminescent.seed, bioluminescent.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
@@ -1430,7 +1453,7 @@ describe('bioluminescent style', () => {
   });
 
   it('has correct personality', async () => {
-    const { bioluminescent } = await import('../src/css/styles/addons/bioluminescent.js');
+    const { bioluminescent } = await import('../src/css/styles/community/bioluminescent.js');
     assert.equal(bioluminescent.personality.elevation, 'glow');
     assert.equal(bioluminescent.personality.borders, 'none');
   });
@@ -1438,14 +1461,14 @@ describe('bioluminescent style', () => {
 
 describe('editorial style', () => {
   it('derive() produces valid tokens', async () => {
-    const { editorial } = await import('../src/css/styles/addons/editorial.js');
+    const { editorial } = await import('../src/css/styles/community/editorial.js');
     const tokens = derive(editorial.seed, editorial.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
   });
 
   it('has correct personality', async () => {
-    const { editorial } = await import('../src/css/styles/addons/editorial.js');
+    const { editorial } = await import('../src/css/styles/community/editorial.js');
     assert.equal(editorial.personality.radius, 'sharp');
     assert.equal(editorial.personality.elevation, 'flat');
     assert.equal(editorial.personality.motion, 'instant');
@@ -1456,12 +1479,12 @@ describe('editorial style', () => {
 
 describe('new style contrast validation', () => {
   const styleDefs = [
-    ['clay', '../src/css/styles/addons/clay.js', 'clay'],
-    ['liquid-glass', '../src/css/styles/addons/liquid-glass.js', 'liquidGlass'],
-    ['dopamine', '../src/css/styles/addons/dopamine.js', 'dopamine'],
-    ['prismatic', '../src/css/styles/addons/prismatic.js', 'prismatic'],
-    ['bioluminescent', '../src/css/styles/addons/bioluminescent.js', 'bioluminescent'],
-    ['editorial', '../src/css/styles/addons/editorial.js', 'editorial'],
+    ['clay', '../src/css/styles/community/clay.js', 'clay'],
+    ['liquid-glass', '../src/css/styles/community/liquid-glass.js', 'liquidGlass'],
+    ['dopamine', '../src/css/styles/community/dopamine.js', 'dopamine'],
+    ['prismatic', '../src/css/styles/community/prismatic.js', 'prismatic'],
+    ['bioluminescent', '../src/css/styles/community/bioluminescent.js', 'bioluminescent'],
+    ['editorial', '../src/css/styles/community/editorial.js', 'editorial'],
   ];
 
   for (const [name, path, exportName] of styleDefs) {

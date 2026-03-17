@@ -91,19 +91,25 @@ export function layoutArea(spec, width, height) {
 
     // Fill area — smooth top edge when spec.smooth
     const areaD = spec.smooth ? smoothAreaPathD(s.points) : areaPathD(s.points);
+    const zeroAreaPts = s.points.map(p => ({ ...p, y0: baseline, y1: baseline }));
+    const zeroAreaD = spec.smooth ? smoothAreaPathD(zeroAreaPts) : areaPathD(zeroAreaPts);
     children.push(path({
       d: areaD, fill: `url(#${gradId})`,
-      data: { series: s.key }, key: `area-${s.key}`
+      data: { series: s.key }, key: `area-${s.key}`,
+      _zeroD: zeroAreaD
     }));
 
     // Stroke line on top
     const linePts = s.points.map(p => ({ x: p.x, y: p.y0 }));
     const lineD = spec.smooth ? smoothPathD(linePts) : pointsToPathD(linePts);
+    const zeroLinePts = s.points.map(p => ({ x: p.x, y: baseline }));
+    const zeroLineD = spec.smooth ? smoothPathD(zeroLinePts) : pointsToPathD(zeroLinePts);
     children.push(path({
       d: lineD, stroke: s.color, strokeWidth: 2,
       strokeLinecap: 'round', strokeLinejoin: 'round',
       class: 'd-chart-line',
-      data: { series: s.key }, key: `area-line-${s.key}`
+      data: { series: s.key }, key: `area-line-${s.key}`,
+      _zeroD: zeroLineD
     }));
 
     // Data point dots (suppress when points > 50)

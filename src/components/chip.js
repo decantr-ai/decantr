@@ -19,14 +19,19 @@ export function Chip(props = {}) {
   injectBase();
 
   const {
-    icon, label, variant, size, removable, onRemove, onClick,
+    icon, label, variant, color, size, removable, onRemove, onClick,
     selected, class: cls
   } = props;
+
+  // Semantic color variants (success, error, warning, info)
+  const semanticColors = ['success', 'error', 'warning', 'info'];
+  const resolvedColor = color || (semanticColors.includes(variant) ? variant : null);
 
   const className = cx(
     'd-chip',
     variant === 'outline' && 'd-chip-outline',
     variant === 'filled' && 'd-chip-filled',
+    resolvedColor && `d-chip-${resolvedColor}`,
     size && `d-chip-${size}`,
     selected && 'd-chip-selected',
     (onClick || removable) && 'd-chip-interactive',

@@ -1,6 +1,7 @@
 import { createSignal, createEffect } from '../state/index.js';
 import { getAnimations } from '../css/theme-registry.js';
 import { h } from '../core/index.js';
+import { drainMountQueue, runDestroyFns } from '../core/lifecycle.js';
 import { hashStrategy } from './hash.js';
 import { historyStrategy } from './history.js';
 
@@ -377,6 +378,7 @@ export function createRouter(config) {
     const container = document.createElement('d-route');
     let currentNode = null;
     let currentComp = null;
+    let currentDestroyFns = [];
 
     createEffect(() => {
       const r = route();
@@ -390,6 +392,9 @@ export function createRouter(config) {
 
       const swap = () => {
         if (currentNode) {
+          // Run cleanup from previous component's onMount returns
+          runDestroyFns(currentDestroyFns);
+          currentDestroyFns = [];
           container.removeChild(currentNode);
           currentNode = null;
         }
@@ -406,6 +411,12 @@ export function createRouter(config) {
         if (node) {
           currentNode = node;
           container.appendChild(currentNode);
+          // Drain mount queue for lazy-loaded components (bypasses mount())
+          const mountFns = drainMountQueue();
+          for (const fn of mountFns) {
+            const cleanup = fn();
+            if (typeof cleanup === 'function') currentDestroyFns.push(cleanup);
+          }
         }
       };
 

@@ -8,8 +8,8 @@ const { div, img, span } = tags;
 
 const NAV_ITEMS = [
   { label: 'Docs', href: '#/docs' },
-  { label: 'Components', href: '#/docs/components' },
-
+  { label: 'Explorer', href: '#/explorer' },
+  { label: 'Gallery', href: '#/gallery' },
   { label: 'GitHub', href: 'https://github.com/nicholasgriffintn/decantr' },
 ];
 
@@ -67,7 +67,7 @@ export function SiteShell(...content) {
   );
 }
 
-// ── DocsShell — docs pages (header + 220px sidebar + body) ─────────
+// ── DocsShell — docs pages (header + 240px sidebar + body) ─────────
 
 const DOCS_CONFIG = {
   regions: ['header', 'nav', 'body'],

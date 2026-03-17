@@ -27,6 +27,17 @@
     "cc-indicator-error": "Error status indicator.",
     "cc-mesh": "Subtle radial gradient background for page-level containers."
   },
+  "pattern_overrides": {
+    "kpi-grid": { "background": "cc-grid" },
+    "chart-grid": { "background": "cc-grid" },
+    "data-table": { "background": "cc-scanline" },
+    "activity-feed": { "background": "cc-scanline" },
+    "scorecard": { "background": "cc-scanline" },
+    "pipeline-tracker": { "background": "cc-scanline cc-grid" },
+    "timeline": { "background": "cc-scanline" },
+    "goal-tracker": { "background": "cc-grid" },
+    "comparison-panel": { "background": "cc-grid" }
+  },
   "compositions": {
     "panel": {
       "description": "Standard HUD panel. Beveled frame with status bar header.",

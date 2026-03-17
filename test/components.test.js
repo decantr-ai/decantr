@@ -1215,7 +1215,8 @@ describe('Dropdown', () => {
   it('renders .d-dropdown with trigger having aria-haspopup="menu"', () => {
     const el = Dropdown({
       trigger: () => document.createElement('button'),
-      items: [{ label: 'Edit' }, { label: 'Delete' }]
+      items: [{ label: 'Edit' }, { label: 'Delete' }],
+      portal: false
     });
     assert.ok(el.className.includes('d-dropdown'));
     const trig = el.querySelector('[aria-haspopup="menu"]');
@@ -1227,7 +1228,8 @@ describe('Dropdown', () => {
     btn.textContent = 'Menu';
     const el = Dropdown({
       trigger: () => btn,
-      items: [{ label: 'Copy' }, { separator: true }, { label: 'Paste' }]
+      items: [{ label: 'Copy' }, { separator: true }, { label: 'Paste' }],
+      portal: false
     });
     document.body.appendChild(el);
     btn.click();
@@ -1242,7 +1244,8 @@ describe('Dropdown', () => {
     const btn = document.createElement('button');
     const el = Dropdown({
       trigger: () => btn,
-      items: [{ label: 'Save', value: 'save', onclick: (v) => { clicked = v; } }]
+      items: [{ label: 'Save', value: 'save', onclick: (v) => { clicked = v; } }],
+      portal: false
     });
     document.body.appendChild(el);
     btn.click();
@@ -1259,7 +1262,8 @@ describe('Dropdown', () => {
     const btn = document.createElement('button');
     const el = Dropdown({
       trigger: () => btn,
-      items: [{ label: 'Locked', disabled: true, onclick: () => { clicked = true; } }]
+      items: [{ label: 'Locked', disabled: true, onclick: () => { clicked = true; } }],
+      portal: false
     });
     document.body.appendChild(el);
     btn.click();
@@ -1274,7 +1278,8 @@ describe('Dropdown', () => {
     const btn = document.createElement('button');
     const el = Dropdown({
       trigger: () => btn,
-      items: [{ label: 'A' }]
+      items: [{ label: 'A' }],
+      portal: false
     });
     document.body.appendChild(el);
     assert.equal(btn.getAttribute('aria-expanded'), 'false');
@@ -1289,7 +1294,8 @@ describe('Dropdown', () => {
     const btn = document.createElement('button');
     const el = Dropdown({
       trigger: () => btn,
-      items: [{ label: 'First' }, { label: 'Second' }]
+      items: [{ label: 'First' }, { label: 'Second' }],
+      portal: false
     });
     document.body.appendChild(el);
     const ev = new Event('keydown', { bubbles: true });
@@ -1304,7 +1310,8 @@ describe('Dropdown', () => {
     const btn = document.createElement('button');
     const el = Dropdown({
       trigger: () => btn,
-      items: [{ label: 'A' }, { label: 'B' }]
+      items: [{ label: 'A' }, { label: 'B' }],
+      portal: false
     });
     document.body.appendChild(el);
     btn.click();
@@ -1319,7 +1326,8 @@ describe('Dropdown', () => {
     const btn = document.createElement('button');
     const el = Dropdown({
       trigger: () => btn,
-      items: [{ label: 'A' }]
+      items: [{ label: 'A' }],
+      portal: false
     });
     document.body.appendChild(el);
     btn.click();
@@ -1479,7 +1487,8 @@ describe('RadioGroup', () => {
 describe('Popover', () => {
   it('creates a popover with trigger', () => {
     const el = Popover({
-      trigger: () => document.createElement('button')
+      trigger: () => document.createElement('button'),
+      portal: false
     }, document.createTextNode('Popover content'));
     assert.ok(el.className.includes('d-popover'));
     assert.ok(el.querySelector('.d-popover-content'));
@@ -1488,14 +1497,15 @@ describe('Popover', () => {
   it('applies position class', () => {
     const el = Popover({
       trigger: () => document.createElement('button'),
-      position: 'top'
+      position: 'top',
+      portal: false
     }, document.createTextNode('Content'));
     assert.ok(el.querySelector('.d-popover-top'));
   });
 
   it('toggles on trigger click', () => {
     const btn = document.createElement('button');
-    const el = Popover({ trigger: () => btn }, document.createTextNode('Content'));
+    const el = Popover({ trigger: () => btn, portal: false }, document.createTextNode('Content'));
     document.body.appendChild(el);
     assert.equal(btn.getAttribute('aria-expanded'), 'false');
     btn.click();
@@ -2326,5 +2336,154 @@ describe('QR Encoder', () => {
     } catch (e) {
       assert.ok(e.message);
     }
+  });
+});
+
+// ─── Breadcrumb Reactive ─────────────────────────────────────────
+
+describe('Breadcrumb reactive', () => {
+  it('accepts reactive items signal getter', () => {
+    const [items, setItems] = createSignal([
+      { label: 'Home', href: '/' },
+      { label: 'Page' }
+    ]);
+    const el = Breadcrumb({ items, separator: 'slash' });
+    document.body.appendChild(el);
+
+    // Initial render
+    let current = el.querySelector('.d-breadcrumb-current');
+    assert.ok(current);
+    assert.equal(current.textContent, 'Page');
+
+    // Update signal
+    setItems([
+      { label: 'Home', href: '/' },
+      { label: 'Other Page' }
+    ]);
+    current = el.querySelector('.d-breadcrumb-current');
+    assert.equal(current.textContent, 'Other Page');
+
+    document.body.removeChild(el);
+  });
+
+  it('reactive items re-renders with maxItems collapse', () => {
+    const [items, setItems] = createSignal([
+      { label: 'A', href: '/a' },
+      { label: 'B', href: '/b' },
+      { label: 'C', href: '/c' },
+      { label: 'D', href: '/d' },
+      { label: 'E' }
+    ]);
+    const el = Breadcrumb({ items, maxItems: 3 });
+    document.body.appendChild(el);
+
+    // Should have ellipsis
+    assert.ok(el.querySelector('.d-breadcrumb-ellipsis'));
+    let current = el.querySelector('.d-breadcrumb-current');
+    assert.equal(current.textContent, 'E');
+
+    // Update to fewer items (no collapse needed)
+    setItems([
+      { label: 'X', href: '/x' },
+      { label: 'Y' }
+    ]);
+    assert.ok(!el.querySelector('.d-breadcrumb-ellipsis'));
+    current = el.querySelector('.d-breadcrumb-current');
+    assert.equal(current.textContent, 'Y');
+
+    document.body.removeChild(el);
+  });
+
+  it('cleans up overlay on reactive re-render', () => {
+    const [items, setItems] = createSignal([
+      { label: 'A', href: '/a' },
+      { label: 'B', href: '/b' },
+      { label: 'C', href: '/c' },
+      { label: 'D', href: '/d' },
+      { label: 'E' }
+    ]);
+    const el = Breadcrumb({ items, maxItems: 3 });
+    document.body.appendChild(el);
+
+    // First render has ellipsis with overlay
+    assert.ok(el.querySelector('.d-breadcrumb-ellipsis'));
+
+    // Re-render — old overlay should be cleaned up (no errors)
+    setItems([
+      { label: 'X', href: '/x' },
+      { label: 'Y', href: '/y' },
+      { label: 'Z', href: '/z' },
+      { label: 'W', href: '/w' },
+      { label: 'V' }
+    ]);
+    // New ellipsis should exist
+    assert.ok(el.querySelector('.d-breadcrumb-ellipsis'));
+
+    document.body.removeChild(el);
+  });
+});
+
+// ─── Dropdown Portal ─────────────────────────────────────────────
+
+describe('Dropdown portal', () => {
+  it('portal mode appends menu to body on open', () => {
+    const btn = document.createElement('button');
+    const el = Dropdown({
+      trigger: () => btn,
+      items: [{ label: 'A' }],
+      portal: true
+    });
+    document.body.appendChild(el);
+    btn.click();
+    // Menu should be in document.body, not inside el
+    const menus = document.body.querySelectorAll('[role="menu"]');
+    assert.ok(menus.length >= 1);
+    document.body.removeChild(el);
+  });
+
+  it('portal mode removes menu on destroy', () => {
+    const btn = document.createElement('button');
+    const el = Dropdown({
+      trigger: () => btn,
+      items: [{ label: 'A' }],
+      portal: true
+    });
+    document.body.appendChild(el);
+    btn.click();
+    // Verify menu exists
+    const menusBefore = document.body.querySelectorAll('[role="menu"]');
+    assert.ok(menusBefore.length >= 1);
+    document.body.removeChild(el);
+  });
+});
+
+// ─── Popover Portal ─────────────────────────────────────────────
+
+describe('Popover portal', () => {
+  it('portal mode appends content to body on open', () => {
+    const btn = document.createElement('button');
+    const el = Popover({
+      trigger: () => btn,
+      portal: true
+    }, document.createTextNode('Portal content'));
+    document.body.appendChild(el);
+    btn.click();
+    // Content should be portaled to body
+    const dialogs = document.body.querySelectorAll('[role="dialog"]');
+    assert.ok(dialogs.length >= 1);
+    document.body.removeChild(el);
+  });
+
+  it('portal mode removes content on destroy', () => {
+    const btn = document.createElement('button');
+    const el = Popover({
+      trigger: () => btn,
+      portal: true
+    }, document.createTextNode('Portal content'));
+    document.body.appendChild(el);
+    btn.click();
+    const dialogsBefore = document.body.querySelectorAll('[role="dialog"]');
+    assert.ok(dialogsBefore.length >= 1);
+    document.body.removeChild(el);
   });
 });

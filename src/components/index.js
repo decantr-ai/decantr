@@ -114,4 +114,4 @@ export { DateTimePicker } from './datetime-picker.js';
 export { VisuallyHidden } from './visually-hidden.js';
 
 // ─── Behaviors ──────────────────────────────────────────────────
-export { createScrollSpy } from './_behaviors.js';
+export { createScrollSpy, createScrollReveal } from './_behaviors.js';

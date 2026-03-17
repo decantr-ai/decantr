@@ -10,7 +10,7 @@ Decantr uses an orthogonal **style x mode** architecture. Visual personality (st
 | clean | Modern minimal — rounded corners, subtle shadows, smooth motion | radius:rounded, elevation:subtle, motion:smooth, borders:thin, density:comfortable, gradient:none |
 | retro | Neobrutalism — sharp corners, offset shadows, bold borders | radius:sharp, elevation:brutalist, motion:snappy, borders:bold, density:comfortable, gradient:none |
 | glassmorphism | Frosted glass — translucent surfaces, vivid gradients, bouncy motion | radius:pill, elevation:glass, motion:bouncy, borders:thin, density:comfortable, gradient:vivid |
-| command-center | HUD/radar monochromatic — dark operational panels, beveled frames, scanlines, monospace typography | radius:sharp, elevation:flat, motion:snappy, borders:bold, density:compact, gradient:none, palette:monochrome |
+| command-center | HUD/radar monochromatic — dark operational panels, beveled frames, scanlines, scoped monospace on data elements | radius:sharp, elevation:flat, motion:snappy, borders:bold, density:compact, gradient:none, palette:monochrome |
 
 ## Modes
 
@@ -37,7 +37,11 @@ registerStyle({
   personality: { radius: 'pill', elevation: 'glass', motion: 'bouncy', borders: 'none' },
   typography: { '--d-fw-heading': '800' },  // optional overrides
   overrides: { light: {}, dark: {} },       // optional per-mode token overrides
-  components: '',                            // optional component CSS
+  components: '',                            // optional component CSS (array of CSS rule strings or joined string)
+  // Component CSS overrides let styles transform standard components:
+  // e.g., command-center overrides .d-card → cc-frame aesthetic,
+  //        .d-statistic → cc-glow + cc-data, .d-table-wrap → cc-scanline
+  // This is the primary mechanism for recipe visual transforms.
 });
 ```
 
@@ -86,7 +90,39 @@ Internal exports for testing/advanced use: `rgbToOklch(r,g,b)`, `oklchToRgb(L,C,
 
 ## Monochrome Palette
 
-The `palette: 'monochrome'` personality trait (used by command-center) derives all 7 role colors from a single primary hue. All shifts stay within ±20° of base hue; distinguishability comes via lightness/saturation. WCAG AA validated via `validateContrast()`.
+The `palette: 'monochrome'` personality trait (used by command-center) constrains **decorative** role colors (accent, tertiary, info) within ±20° of the primary hue. **Semantic** roles (success, warning, error) retain their standard hues (green, amber, red) so that trend indicators, status badges, and alerts have correct color meaning even in monochrome mode. WCAG AA validated via `validateContrast()`.
+
+## Animation System
+
+Decantr provides built-in animations for all overlay/dialog lifecycle transitions:
+
+**Entry animations** (CSS keyframes, automatic):
+- Modal panel: `d-scalein` (scale 0.95→1 + fade)
+- Drawer panel: `d-slidein-l/r/t/b` (directional slide + fade)
+- Popover, Dropdown, Select, Combobox, ContextMenu: `d-scalein` (scale + fade)
+- Tooltip: `d-fadein` (fade only)
+- Tab panel: `d-fadein` on switch
+- Toast: `d-slidein-t` (slide down)
+
+**Exit animations** (automatic on close):
+- Modal: `d-scaleout` (reverse scale + fade) before `dialog.close()`
+- Drawer: `d-slideout-l/r/t/b` (reverse directional slide) before `dialog.close()`
+- Overlay types (Dropdown, Select, etc.): `d-overlay-exit` class applied during close timeout
+
+**Stagger animations** (opt-in via CSS classes):
+- `d-stagger` — children fade in sequentially (50ms delay per child)
+- `d-stagger-up` — children slide up sequentially
+- `d-stagger-scale` — children scale in sequentially
+
+**Statistic count-up** (opt-in via `animate` prop):
+- `Statistic({ value: 12480, animate: true })` — counts from 0 with easeOutExpo
+- `Statistic({ value: 12480, animate: 2000 })` — custom duration in ms
+
+**Toast progress bar** — visual countdown automatically added when `duration > 0`.
+
+**Tab indicator** — sliding underline animates between tabs via CSS transitions.
+
+All animations respect `prefers-reduced-motion: reduce` media query.
 
 ## Backward Compatibility
 

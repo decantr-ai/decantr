@@ -23,7 +23,7 @@ const { div, button: buttonTag } = tags;
 export function Dropdown(props = {}) {
   injectBase();
 
-  const { trigger, items = [], align = 'left', class: cls } = props;
+  const { trigger, items = [], align = 'left', portal: usePortal = true, class: cls } = props;
 
   const menu = div({
     class: cx('d-dropdown-menu', align === 'right' && 'd-dropdown-right'),
@@ -44,6 +44,9 @@ export function Dropdown(props = {}) {
     trigger: 'click',
     closeOnEscape: true,
     closeOnOutside: true,
+    portal: usePortal,
+    placement: 'bottom',
+    align: align === 'right' ? 'end' : 'start',
     onOpen() {
       renderMenuItems(menu, items, { onClose: closeMenu });
       listbox.reset();

@@ -45,6 +45,13 @@ export function toast(props = {}) {
     }, '\u00d7')
   );
 
+  // Progress bar for timed toasts
+  if (duration > 0) {
+    const progressBar = h('div', { class: 'd-toast-progress' });
+    progressBar.style.animationDuration = `${duration}ms`;
+    el.appendChild(progressBar);
+  }
+
   const dismiss = () => {
     el.classList.add('d-toast-exit');
     setTimeout(() => {

@@ -306,3 +306,56 @@ describe('Shell.PRESETS', () => {
     }
   });
 });
+
+// ─── Shell ARIA ──────────────────────────────────────────────────
+
+describe('Shell ARIA', () => {
+  it('Shell.Header has role="banner"', () => {
+    const el = Shell.Header({}, 'Content');
+    assert.equal(el.getAttribute('role'), 'banner');
+  });
+
+  it('Shell.Nav has role="navigation" and aria-label="Main"', () => {
+    const el = Shell.Nav({}, 'Nav');
+    assert.equal(el.getAttribute('role'), 'navigation');
+    assert.equal(el.getAttribute('aria-label'), 'Main');
+  });
+
+  it('Shell.Nav allows custom aria-label override', () => {
+    const el = Shell.Nav({ 'aria-label': 'Secondary' }, 'Nav');
+    assert.equal(el.getAttribute('role'), 'navigation');
+    assert.equal(el.getAttribute('aria-label'), 'Secondary');
+  });
+
+  it('Shell.Body has role="main"', () => {
+    const el = Shell.Body({}, 'Main');
+    assert.equal(el.getAttribute('role'), 'main');
+  });
+
+  it('Shell.Footer has role="contentinfo"', () => {
+    const el = Shell.Footer({}, 'Footer');
+    assert.equal(el.getAttribute('role'), 'contentinfo');
+  });
+
+  it('Shell.Aside has role="complementary"', () => {
+    const el = Shell.Aside({}, 'Aside');
+    assert.equal(el.getAttribute('role'), 'complementary');
+  });
+
+  it('Shell.Nav receives aria-expanded from parent Shell', () => {
+    const [navState, setNavState] = createSignal('expanded');
+    const el = Shell({ config: 'sidebar-main', navState, onNavStateChange: setNavState },
+      Shell.Header({}, 'H'),
+      Shell.Nav({}, 'N'),
+      Shell.Body({}, 'B')
+    );
+    const nav = el.querySelector('.d-shell-nav');
+    assert.equal(nav.getAttribute('aria-expanded'), 'true');
+
+    setNavState('rail');
+    assert.equal(nav.getAttribute('aria-expanded'), 'false');
+
+    setNavState('expanded');
+    assert.equal(nav.getAttribute('aria-expanded'), 'true');
+  });
+});

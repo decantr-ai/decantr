@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "terroir": "saas-dashboard",
+  "vintage": {
+    "style": "command-center",
+    "mode": "dark",
+    "recipe": "command-center",
+    "shape": "sharp"
+  },
+  "character": ["tactical", "data-dense", "professional"],
+  "vessel": {
+    "type": "spa",
+    "routing": "hash"
+  },
+  "structure": [
+    {
+      "id": "overview",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        { "cols": ["chart-grid", "activity-feed"], "span": { "chart-grid": 2 }, "at": "lg" }
+      ],
+      "surface": "_flex _col _gap3 _p4 _overflow[auto] _flex1"
+    },
+    {
+      "id": "analytics",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "filter-bar",
+        "kpi-grid",
+        "chart-grid",
+        "data-table"
+      ],
+      "surface": "_flex _col _gap3 _p4 _overflow[auto] _flex1"
+    },
+    {
+      "id": "users",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        "data-table"
+      ],
+      "surface": "_flex _col _gap3 _p4 _overflow[auto] _flex1"
+    },
+    {
+      "id": "settings",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "form-sections", "preset": "settings", "as": "settings-form" }
+      ],
+      "surface": "_flex _col _gap3 _p4 _overflow[auto] _flex1"
+    },
+    {
+      "id": "not-found",
+      "skeleton": "full-bleed",
+      "blend": [],
+      "surface": "_flex _col _center _hfull"
+    }
+  ],
+  "tannins": [],
+  "cork": {
+    "enforce_style": true,
+    "enforce_recipe": true
+  }
+}

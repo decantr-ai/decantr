@@ -28,13 +28,7 @@ Decantr's registry (patterns, recipes, archetypes, traits) is community-extensib
       "slot-name": "Description of what goes in this slot"
     }
   },
-  "recipe_overrides": {
-    "recipe-id": {
-      "wrapper": "css-class-name",
-      "atoms": "additional-atoms",
-      "notes": "How to adapt this pattern for the recipe"
-    }
-  },
+  "contained": true,
   "code": {
     "imports": "import { tags } from 'decantr/tags';...",
     "example": "function MyPattern() { ... }"
@@ -53,9 +47,11 @@ Decantr's registry (patterns, recipes, archetypes, traits) is community-extensib
   - `slots` — Named semantic regions with descriptions
 
 ### Optional Fields
-- `recipe_overrides` — Per-recipe visual customizations
+- `contained` — Boolean (default `true`). Set to `false` to prevent the generate engine from wrapping this pattern in a Card. Patterns with `layout: "hero"` or `layout: "row"` are automatically uncontained.
 - `code.imports` — Import statements for the example
 - `code.example` — Complete working code example (highest-leverage field for LLM code generation)
+
+> **Note:** `recipe_overrides` was removed from patterns. Recipe-specific overrides now live in the recipe JSON's `pattern_overrides` section. Patterns should be recipe-agnostic.
 
 ---
 
@@ -74,6 +70,9 @@ Decantr's registry (patterns, recipes, archetypes, traits) is community-extensib
   "setup": "import { setStyle, setMode } from 'decantr/css';\nsetStyle('my-style');\nsetMode('dark');",
   "decorators": {
     "class-name": "What this decorator does and where to apply it"
+  },
+  "pattern_overrides": {
+    "pattern-id": { "background": "decorative-class-names" }
   },
   "compositions": {
     "panel": {
@@ -103,6 +102,7 @@ Every recipe should include these 10 compositions for consistency:
 ### Optional Fields
 - `setup` — Code to initialize the style/mode
 - `decorators` — Custom CSS classes provided by the recipe's style
+- `pattern_overrides` — Per-pattern decorative classes applied as Card wrapper attributes during code generation. The recipe's style handles structural transforms (Card → cc-frame) via component CSS overrides.
 - `compositions.*.wraps` — Which standard component this composition wraps
 
 ---

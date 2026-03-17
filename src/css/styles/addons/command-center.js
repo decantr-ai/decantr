@@ -28,7 +28,6 @@ export const commandCenter = {
     palette: 'monochrome',
   },
   typography: {
-    '--d-font': 'ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace',
     '--d-fw-heading': '700',
     '--d-fw-title': '600',
     '--d-fw-medium': '500',
@@ -91,9 +90,29 @@ export const commandCenter = {
     '::-webkit-scrollbar-track{background:transparent}',
     '::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.2);border-radius:0}',
     '::-webkit-scrollbar-thumb:hover{background:rgba(0,229,255,0.4)}',
-    // ── Component overrides ──
-    '.d-card{border-color:rgba(0,229,255,0.15)}',
+    // ── Component overrides: Card → cc-frame aesthetic ──
+    '.d-card{position:relative;clip-path:polygon(var(--d-sp-2) 0,calc(100% - var(--d-sp-2)) 0,100% var(--d-sp-2),100% calc(100% - var(--d-sp-2)),calc(100% - var(--d-sp-2)) 100%,var(--d-sp-2) 100%,0 calc(100% - var(--d-sp-2)),0 var(--d-sp-2));background:var(--d-surface-1);border:var(--d-border-width-strong) var(--d-border-style) rgba(0,229,255,0.2);border-radius:0}',
     '.d-card-inner{border-color:rgba(0,229,255,0.08)}',
+    '.d-card-header{display:flex;align-items:center;justify-content:space-between;padding:var(--d-sp-1-5) var(--d-sp-3);border-bottom:var(--d-border-width) solid rgba(0,229,255,0.15);text-transform:uppercase;letter-spacing:0.1em;font-size:var(--d-text-xs);color:var(--d-muted-fg)}',
+    '.d-card-footer{border-top:var(--d-border-width) solid rgba(0,229,255,0.15);text-transform:uppercase;letter-spacing:0.1em;font-size:var(--d-text-xs);color:var(--d-muted-fg)}',
+    // ── Component overrides: Statistic → cc-glow + cc-data ──
+    '.d-statistic{padding:var(--d-sp-3);background:var(--d-surface-1);border:var(--d-border-width) var(--d-border-style) rgba(0,229,255,0.12);box-shadow:0 0 12px rgba(0,229,255,0.15),inset 0 0 12px rgba(0,229,255,0.05)}',
+    '.d-statistic-value{font-family:var(--d-font-mono);font-variant-numeric:tabular-nums;letter-spacing:0.02em}',
+    '.d-statistic-label{text-transform:uppercase;letter-spacing:0.1em;font-size:var(--d-text-xs)}',
+    // Strip inner frame when Statistic is inside a Card (avoids double-frame)
+    '.d-card .d-statistic{background:transparent;border:none;box-shadow:none;padding:0}',
+    // ── Component overrides: DataTable → cc-scanline ──
+    '.d-table-wrap{position:relative;overflow:hidden}',
+    '.d-table-wrap::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,0.03) 2px,rgba(0,229,255,0.03) 4px);pointer-events:none;z-index:1}',
+    '.d-table th{text-transform:uppercase;letter-spacing:0.08em;font-size:var(--d-text-xs);color:var(--d-muted-fg)}',
+    '.d-table td{font-family:var(--d-font-mono);font-variant-numeric:tabular-nums}',
+    // ── Component overrides: Chart → cc-label titles, cc-data axes ──
+    '.d-chart-title{text-transform:uppercase;letter-spacing:0.1em;font-size:var(--d-text-sm);font-weight:var(--d-fw-medium);color:var(--d-muted-fg)}',
+    '.d-chart-axis text,text.d-chart-axis{font-family:var(--d-font-mono);font-variant-numeric:tabular-nums;letter-spacing:0.02em}',
+    '.d-chart-legend{font-size:var(--d-text-xs);text-transform:uppercase;letter-spacing:0.08em}',
+    // ── Component overrides: Alert → cc-frame-sm ──
+    '.d-alert{clip-path:polygon(var(--d-sp-1) 0,calc(100% - var(--d-sp-1)) 0,100% var(--d-sp-1),100% calc(100% - var(--d-sp-1)),calc(100% - var(--d-sp-1)) 100%,var(--d-sp-1) 100%,0 calc(100% - var(--d-sp-1)),0 var(--d-sp-1));border-radius:0}',
+    // ── Component overrides: Buttons, Modal, Inputs ──
     '.d-btn{text-transform:uppercase;letter-spacing:0.05em}',
     '.d-btn-primary{box-shadow:0 0 12px rgba(0,229,255,0.15)}',
     '.d-btn-primary:hover{box-shadow:0 0 20px rgba(0,229,255,0.3)}',
@@ -139,5 +158,7 @@ export const commandCenter = {
     '.cc-indicator-error{color:var(--d-error)}',
     // ── cc-mesh: command center background ──
     '.cc-mesh{background:radial-gradient(ellipse at 20% 30%,rgba(0,229,255,0.06) 0%,transparent 50%),radial-gradient(ellipse at 80% 70%,rgba(0,229,255,0.04) 0%,transparent 50%),var(--d-bg)}',
+    // CC sidebar: edge-to-edge nav items with minimal vertical padding
+    '.d-shell-nav{padding:var(--d-sp-2) 0}',
   ].join(''),
 };

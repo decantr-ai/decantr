@@ -69,9 +69,32 @@ export function Modal(props = {}, ...children) {
     class: 'd-modal-content'
   }, panel);
 
+  let _closing = false;
+  const EXIT_DURATION = 150;
+  const _canAnimate = typeof document !== 'undefined' && typeof document.getAnimations === 'function';
+
+  function animateClose(callback) {
+    if (_closing) return;
+    if (!_canAnimate) {
+      if (dialog.open) dialog.close();
+      if (callback) callback();
+      return;
+    }
+    _closing = true;
+    panel.style.animation = `d-scaleout ${EXIT_DURATION}ms var(--d-easing-accelerate, ease-in) both`;
+    dialog.style.animation = `d-fadeout ${EXIT_DURATION}ms var(--d-easing-accelerate, ease-in) both`;
+    setTimeout(() => {
+      _closing = false;
+      panel.style.animation = '';
+      dialog.style.animation = '';
+      if (dialog.open) dialog.close();
+      if (callback) callback();
+    }, EXIT_DURATION);
+  }
+
   function close() {
-    if (dialog.open) dialog.close();
-    if (onClose) onClose();
+    if (!dialog.open) return;
+    animateClose(() => { if (onClose) onClose(); });
   }
 
   closeBtn.addEventListener('click', close);
@@ -85,9 +108,10 @@ export function Modal(props = {}, ...children) {
     }
   });
 
-  // Native dialog fires 'close' on Escape — sync with onClose
-  dialog.addEventListener('close', () => {
-    if (onClose) onClose();
+  // Intercept Escape — animate before native close
+  dialog.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    close();
   });
 
   // Focus trap for accessibility (WCAG AA)
@@ -100,7 +124,7 @@ export function Modal(props = {}, ...children) {
         focusTrap.activate();
       } else {
         focusTrap.deactivate();
-        if (dialog.open) dialog.close();
+        if (dialog.open) animateClose();
       }
     });
   }

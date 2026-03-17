@@ -19,12 +19,13 @@ import { icon } from './icon.js';
  * @param {'up'|'down'} [props.trend] - Trend direction
  * @param {string} [props.trendValue] - Trend text (e.g. "12%")
  * @param {boolean} [props.groupSeparator=true] - Thousands separator
+ * @param {boolean|number} [props.animate=false] - Animate count-up on mount. true = 1000ms, number = custom duration in ms
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
 export function Statistic(props = {}) {
   injectBase();
-  const { label, value, precision, prefix, suffix, trend, trendValue, groupSeparator = true, class: cls } = props;
+  const { label, value, precision, prefix, suffix, trend, trendValue, groupSeparator = true, animate = false, class: cls } = props;
 
   const container = h('div', { class: cx('d-statistic', cls) });
 
@@ -67,12 +68,60 @@ export function Statistic(props = {}) {
     return num;
   }
 
+  /**
+   * Animate count-up from 0 to target using rAF with easeOutExpo.
+   */
+  function animateCountUp(target) {
+    const duration = typeof animate === 'number' ? animate : 1000;
+    const startTime = performance.now();
+    const from = 0;
+    const to = typeof target === 'number' ? target : parseFloat(target);
+    if (isNaN(to)) { valueSpan.textContent = formatValue(target); return; }
+
+    // Infer precision from target to avoid decimal explosion during animation
+    const targetStr = String(target);
+    const dotIdx = targetStr.indexOf('.');
+    const inferredPrecision = dotIdx === -1 ? 0 : targetStr.length - dotIdx - 1;
+
+    function easeOutExpo(t) {
+      return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    }
+
+    function formatAnimFrame(num) {
+      if (precision !== undefined) return formatValue(num);
+      // Use inferred precision during animation frames
+      let v = inferredPrecision === 0 ? Math.round(num) : parseFloat(num.toFixed(inferredPrecision));
+      let s = inferredPrecision === 0 ? String(v) : v.toFixed(inferredPrecision);
+      if (groupSeparator) {
+        const parts = s.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        s = parts.join('.');
+      }
+      return s;
+    }
+
+    function tick(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const current = from + (to - from) * easeOutExpo(progress);
+      valueSpan.textContent = progress >= 1 ? formatValue(to) : formatAnimFrame(current);
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+  }
+
   function update() {
     const v = typeof value === 'function' ? value() : value;
     valueSpan.textContent = formatValue(v);
   }
 
-  update();
+  if (animate && typeof requestAnimationFrame !== 'undefined') {
+    const v = typeof value === 'function' ? value() : value;
+    animateCountUp(v);
+  } else {
+    update();
+  }
 
   if (typeof value === 'function') {
     createEffect(update);

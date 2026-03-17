@@ -176,10 +176,8 @@ export function Chart(specInput) {
     } else if (firstRender && spec.animate !== false) {
       firstRender = false;
       const zeroScene = createZeroScene(sceneGraph);
-      animate(inner, zeroScene, sceneGraph, renderFn, { duration: 750, easing: 'decelerate' }).then(() => {
+      animate(inner, zeroScene, sceneGraph, renderFn, { duration: 1200, easing: 'standard' }).then(() => {
         postRender(sceneGraph);
-        // Line draw animation for SVG paths
-        applyLineDrawAnimation(inner);
       });
     } else if (prevScene && spec.animate !== false) {
       animate(inner, prevScene, sceneGraph, renderFn, { duration: 300, easing: 'decelerate' }).then(() => {
@@ -491,8 +489,12 @@ function zeroNode(node) {
       result.r = 0;
       break;
     case 'path':
-      // Lines/areas: fade in
-      result.opacity = 0;
+      // Lines/areas: morph from flat baseline
+      if (result._zeroD) {
+        result.d = result._zeroD;
+      } else {
+        result.opacity = 0;
+      }
       break;
     case 'arc':
       // Pie slices: grow from zero

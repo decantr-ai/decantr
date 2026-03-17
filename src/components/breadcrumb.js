@@ -1,4 +1,5 @@
 import { onDestroy } from '../core/index.js';
+import { createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon } from './icon.js';
@@ -8,7 +9,7 @@ const { nav: navTag, ol, li, span, button: buttonTag, a } = tags;
 
 /**
  * @param {Object} [props]
- * @param {{ label: string, href?: string, onclick?: Function, icon?: string, disabled?: boolean }[]} props.items
+ * @param {{ label: string, href?: string, onclick?: Function, icon?: string, disabled?: boolean }[]|Function} props.items - Static array or signal getter
  * @param {'chevron'|'slash'|'dot'|string|HTMLElement} [props.separator] - Separator type (default: 'chevron')
  * @param {'sm'|'lg'} [props.size] - Size variant
  * @param {number} [props.maxItems] - Collapse middle items into ellipsis dropdown
@@ -18,7 +19,8 @@ const { nav: navTag, ol, li, span, button: buttonTag, a } = tags;
 export function Breadcrumb(props = {}) {
   injectBase();
 
-  const { items = [], separator = 'chevron', size, maxItems, class: cls } = props;
+  const { items: itemsProp = [], separator = 'chevron', size, maxItems, class: cls } = props;
+  const isReactive = typeof itemsProp === 'function';
 
   const nav = navTag({
     class: cx('d-breadcrumb', size && `d-breadcrumb-${size}`, cls),
@@ -79,83 +81,101 @@ export function Breadcrumb(props = {}) {
     return el;
   }
 
-  // Determine visible items and whether to collapse
-  const shouldCollapse = maxItems && maxItems > 1 && items.length > maxItems;
+  /**
+   * Render items into the list, handling collapse logic.
+   * Returns a cleanup function for any overlay/listbox created.
+   */
+  function renderItems(items) {
+    list.replaceChildren();
 
-  if (shouldCollapse) {
-    const firstItems = items.slice(0, 1);
-    const hiddenItems = items.slice(1, items.length - (maxItems - 1));
-    const lastItems = items.slice(items.length - (maxItems - 1));
+    const shouldCollapse = maxItems && maxItems > 1 && items.length > maxItems;
 
-    // Render first item
-    firstItems.forEach(item => list.appendChild(renderItem(item, false)));
+    if (shouldCollapse) {
+      const firstItems = items.slice(0, 1);
+      const hiddenItems = items.slice(1, items.length - (maxItems - 1));
+      const lastItems = items.slice(items.length - (maxItems - 1));
 
-    // Render ellipsis collapse
-    const collapseWrap = li({ class: 'd-breadcrumb-item' });
-    const collapseInner = span({ class: 'd-breadcrumb-collapse' });
+      // Render first item
+      firstItems.forEach(item => list.appendChild(renderItem(item, false)));
 
-    const ellipsisBtn = buttonTag({
-      class: 'd-breadcrumb-ellipsis',
-      'aria-haspopup': 'menu',
-      'aria-label': 'Show more breadcrumbs'
-    });
-    ellipsisBtn.appendChild(icon('more-horizontal', { size: '1em' }));
+      // Render ellipsis collapse
+      const collapseWrap = li({ class: 'd-breadcrumb-item' });
+      const collapseInner = span({ class: 'd-breadcrumb-collapse' });
 
-    const menu = span({
-      class: 'd-breadcrumb-menu',
-      role: 'menu'
-    });
-    menu.style.display = 'none';
+      const ellipsisBtn = buttonTag({
+        class: 'd-breadcrumb-ellipsis',
+        'aria-haspopup': 'menu',
+        'aria-label': 'Show more breadcrumbs'
+      });
+      ellipsisBtn.appendChild(icon('more-horizontal', { size: '1em' }));
 
-    hiddenItems.forEach(item => {
-      const menuItem = item.href
-        ? a({ class: 'd-dropdown-item', href: item.href, role: 'menuitem' })
-        : buttonTag({ class: 'd-dropdown-item', role: 'menuitem' });
-      if (item.onclick) menuItem.onclick = item.onclick;
-      if (item.disabled) {
-        menuItem.classList.add('d-dropdown-item-disabled');
-        menuItem.setAttribute('aria-disabled', 'true');
-      }
-      if (item.icon) menuItem.appendChild(renderIcon(item.icon));
-      menuItem.appendChild(document.createTextNode(item.label));
-      menu.appendChild(menuItem);
-    });
+      const menu = span({
+        class: 'd-breadcrumb-menu',
+        role: 'menu'
+      });
+      menu.style.display = 'none';
 
-    collapseInner.appendChild(ellipsisBtn);
-    collapseInner.appendChild(menu);
-    collapseWrap.appendChild(collapseInner);
-    collapseWrap.appendChild(renderSeparator());
-    list.appendChild(collapseWrap);
+      hiddenItems.forEach(item => {
+        const menuItem = item.href
+          ? a({ class: 'd-dropdown-item', href: item.href, role: 'menuitem' })
+          : buttonTag({ class: 'd-dropdown-item', role: 'menuitem' });
+        if (item.onclick) menuItem.onclick = item.onclick;
+        if (item.disabled) {
+          menuItem.classList.add('d-dropdown-item-disabled');
+          menuItem.setAttribute('aria-disabled', 'true');
+        }
+        if (item.icon) menuItem.appendChild(renderIcon(item.icon));
+        menuItem.appendChild(document.createTextNode(item.label));
+        menu.appendChild(menuItem);
+      });
 
-    // Wire overlay + listbox behaviors
-    const overlay = createOverlay(ellipsisBtn, menu, {
-      trigger: 'click',
-      closeOnEscape: true,
-      closeOnOutside: true
-    });
+      collapseInner.appendChild(ellipsisBtn);
+      collapseInner.appendChild(menu);
+      collapseWrap.appendChild(collapseInner);
+      collapseWrap.appendChild(renderSeparator());
+      list.appendChild(collapseWrap);
 
-    const listbox = createListbox(menu, {
-      itemSelector: '.d-dropdown-item:not(.d-dropdown-item-disabled)',
-      activeClass: 'd-dropdown-item-highlight',
-      orientation: 'vertical',
-      onSelect: (el) => el.click()
-    });
+      // Wire overlay + listbox behaviors
+      const overlay = createOverlay(ellipsisBtn, menu, {
+        trigger: 'click',
+        closeOnEscape: true,
+        closeOnOutside: true
+      });
 
-    onDestroy(() => {
-      overlay.destroy();
-      listbox.destroy();
-    });
+      const listbox = createListbox(menu, {
+        itemSelector: '.d-dropdown-item:not(.d-dropdown-item-disabled)',
+        activeClass: 'd-dropdown-item-highlight',
+        orientation: 'vertical',
+        onSelect: (el) => el.click()
+      });
 
-    // Render last items
-    lastItems.forEach((item, i) => {
-      const isLast = i === lastItems.length - 1;
-      list.appendChild(renderItem(item, isLast));
+      // Render last items
+      lastItems.forEach((item, i) => {
+        const isLast = i === lastItems.length - 1;
+        list.appendChild(renderItem(item, isLast));
+      });
+
+      return () => { overlay.destroy(); listbox.destroy(); };
+    } else {
+      items.forEach((item, i) => {
+        list.appendChild(renderItem(item, i === items.length - 1));
+      });
+      return null;
+    }
+  }
+
+  let _cleanup = null;
+
+  if (isReactive) {
+    createEffect(() => {
+      if (_cleanup) { _cleanup(); _cleanup = null; }
+      _cleanup = renderItems(itemsProp());
     });
   } else {
-    items.forEach((item, i) => {
-      list.appendChild(renderItem(item, i === items.length - 1));
-    });
+    _cleanup = renderItems(itemsProp);
   }
+
+  onDestroy(() => { if (_cleanup) _cleanup(); });
 
   nav.appendChild(list);
   return nav;

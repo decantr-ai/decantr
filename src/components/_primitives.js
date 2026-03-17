@@ -8,6 +8,7 @@ import { createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { cx } from './_base.js';
 import { caret, createOverlay, positionPanel } from './_behaviors.js';
+import { icon as renderIcon } from './icon.js';
 
 const { div, button, span } = tags;
 
@@ -244,7 +245,7 @@ export function renderMenuItems(container, items, opts = {}) {
     const children = [];
     if (item.icon) {
       children.push(typeof item.icon === 'string'
-        ? span({ class: 'd-dropdown-item-icon', 'aria-hidden': 'true' }, item.icon)
+        ? renderIcon(item.icon, { size: '1em', class: 'd-dropdown-item-icon' })
         : item.icon);
     }
     children.push(span({ class: 'd-dropdown-item-label' }, item.label));

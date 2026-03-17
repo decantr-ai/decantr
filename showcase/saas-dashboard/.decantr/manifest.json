@@ -1,0 +1,8 @@
+{
+  "$schema": "https://decantr.ai/schemas/manifest.v2.json",
+  "version": "0.4.0",
+  "name": "saas-dashboard",
+  "entrypoint": "src/app.js",
+  "shell": "public/index.html",
+  "mountTarget": "#app"
+}

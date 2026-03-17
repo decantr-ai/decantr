@@ -214,7 +214,7 @@ const BF_SAT = { 100: 'saturate(1)', 125: 'saturate(1.25)', 150: 'saturate(1.5)'
 const BF_BRIGHT = { 90: 'brightness(0.9)', 100: 'brightness(1)', 110: 'brightness(1.1)', 120: 'brightness(1.2)' };
 const BF = 'backdrop-filter:var(--d-bf-blur, ) var(--d-bf-sat, ) var(--d-bf-bright, );-webkit-backdrop-filter:var(--d-bf-blur, ) var(--d-bf-sat, ) var(--d-bf-bright, )';
 
-const GCAF_SIZES = new Set([160, 200, 220, 250, 280, 300, 320]);
+const GCAF_SIZES = new Set([160, 200, 220, 240, 250, 280, 300, 320]);
 
 const SEMANTIC_ROLES = new Set(['primary', 'accent', 'tertiary', 'success', 'warning', 'error', 'info']);
 const Z_VALUES = new Set([0, 10, 20, 30, 40, 50]);

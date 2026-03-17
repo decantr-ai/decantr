@@ -9,7 +9,8 @@
  *       - String → load pattern, use its code.example
  *       - { cols } → grid wrapper with patterns inside
  *       - { cols, span } → weighted grid with patterns
- *    c. Apply recipe_overrides if vintage has a recipe
+ *    c. Wrap contained patterns in Card components (recipe styles override Card appearance)
+ *    c2. Apply recipe pattern_overrides (background effects) from recipe JSON
  *    d. Deduplicate imports
  *    e. Generate page function
  * 3. Generate src/app.js with router, style/mode init, skeleton layout
@@ -133,23 +134,44 @@ function resolveBlendId(item) {
   return null;
 }
 
-function blendItemToCode(item, nameMap, indent = '    ') {
+function blendItemToCode(item, nameMap, indent = '    ', patterns = null, recipePatternOverrides = null, clarity = null) {
+  const gap = clarity?.contentGap || '_gap4';
+
+  // Wrap pattern in Card component (skip for standalone patterns like heroes and filter rows)
+  function wrapPattern(patternId, call, localIndent) {
+    const pattern = patterns?.get(patternId);
+    const layout = pattern?.default_blend?.layout;
+    // Standalone patterns: heroes, horizontal control rows, explicitly uncontained
+    if (layout === 'hero' || layout === 'row' || pattern?.contained === false) return call;
+
+    const i = localIndent || indent;
+    const headerName = pattern?.name || toDisplayName(patternId);
+    const extra = recipePatternOverrides?.get(patternId);
+    const cardAttrs = extra?.background ? `{ class: css('${extra.background}') }` : '{}';
+    return `Card(${cardAttrs},\n${i}  Card.Header({}, '${headerName}'),\n${i}  Card.Body({},\n${i}    ${call}\n${i}  )\n${i})`;
+  }
+
   if (typeof item === 'string') {
     // Full-width pattern
     const fn = nameMap.get(item) || toPascalCase(item);
-    return `${indent}// @pattern: ${item}\n${indent}${fn}()`;
+    const call = `${fn}()`;
+    return `${indent}// @pattern: ${item}\n${indent}${wrapPattern(item, call)}`;
   }
 
   // v2 preset reference at top level: { pattern, preset, as }
   if (item.pattern && !item.cols) {
     const alias = item.as || item.pattern;
     const fn = nameMap.get(alias) || toPascalCase(alias);
-    return `${indent}// @pattern: ${alias} (${item.pattern}:${item.preset || 'default'})\n${indent}${fn}()`;
+    const call = `${fn}()`;
+    return `${indent}// @pattern: ${alias} (${item.pattern}:${item.preset || 'default'})\n${indent}${wrapPattern(alias, call)}`;
   }
 
   if (item.cols) {
     const colCount = item.cols.length;
     const hasSpan = item.span && Object.keys(item.span).length > 0;
+
+    // Responsive breakpoint: collapse to 1 column below `at`
+    const bpPrefix = item.at ? `_gc1 _${item.at}:` : '';
 
     if (hasSpan) {
       // Weighted grid
@@ -158,17 +180,21 @@ function blendItemToCode(item, nameMap, indent = '    ') {
         const id = resolveBlendId(c) || c;
         const span = item.span?.[id] || 1;
         const fn = nameMap.get(id) || toPascalCase(id);
-        return `${indent}  div({ class: css('_span${span}') },\n${indent}    // @pattern: ${id}\n${indent}    ${fn}()\n${indent}  )`;
+        const call = `${fn}()`;
+        return `${indent}  div({ class: css('_span${span}') },\n${indent}    // @pattern: ${id}\n${indent}    ${wrapPattern(id, call, indent + '    ')}\n${indent}  )`;
       }).join(',\n');
-      return `${indent}div({ class: css('_grid _gc${totalSpan} _gap4') },\n${children}\n${indent})`;
+      const gridAtoms = bpPrefix ? `_grid ${bpPrefix}gc${totalSpan} ${gap}` : `_grid _gc${totalSpan} ${gap}`;
+      return `${indent}div({ class: css('${gridAtoms}') },\n${children}\n${indent})`;
     } else {
       // Equal-width grid
       const children = item.cols.map(c => {
         const id = resolveBlendId(c) || c;
         const fn = nameMap.get(id) || toPascalCase(id);
-        return `${indent}  // @pattern: ${id}\n${indent}  ${fn}()`;
+        const call = `${fn}()`;
+        return `${indent}  // @pattern: ${id}\n${indent}  ${wrapPattern(id, call, indent + '  ')}`;
       }).join(',\n');
-      return `${indent}div({ class: css('_grid _gc${colCount} _gap4') },\n${children}\n${indent})`;
+      const gridAtoms = bpPrefix ? `_grid ${bpPrefix}gc${colCount} ${gap}` : `_grid _gc${colCount} ${gap}`;
+      return `${indent}div({ class: css('${gridAtoms}') },\n${children}\n${indent})`;
     }
   }
 
@@ -186,9 +212,39 @@ function toPascalCase(kebab) {
   return camel.charAt(0).toUpperCase() + camel.slice(1);
 }
 
+function toDisplayName(kebab) {
+  return kebab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+// ─── Clarity profile (character → spacing) ──────────────────────
+// Source of truth: reference/spatial-guidelines.md §17
+
+function deriveClarityProfile(character) {
+  const traits = (character || []).map(t => t.toLowerCase());
+
+  // editorial/luxurious → spacious
+  if (traits.some(t => ['editorial', 'luxurious'].includes(t))) {
+    return { contentGap: '_gap8', chromeGap: '_gap2', sectionPad: '_py24' };
+  }
+  // minimal/clean → spacious (less extreme)
+  if (traits.some(t => ['minimal', 'clean'].includes(t))) {
+    return { contentGap: '_gap6', chromeGap: '_gap2', sectionPad: '_py16' };
+  }
+  // tactical/dense/technical/utilitarian → compact
+  if (traits.some(t => ['tactical', 'dense', 'data-dense', 'technical', 'utilitarian'].includes(t))) {
+    return { contentGap: '_gap3', chromeGap: '_gap1', sectionPad: '_py8' };
+  }
+  // professional/balanced (default) → comfortable
+  return { contentGap: '_gap4', chromeGap: '_gap2', sectionPad: '_py12' };
+}
+
+// ─── Recipe pattern overrides resolver ───────────────────────────
+// Overrides now live in recipe JSON (pattern_overrides section),
+// not in individual pattern files. Patterns stay recipe-agnostic.
+
 // ─── Page generator ─────────────────────────────────────────────
 
-async function generatePage(page, vintage, recipe) {
+async function generatePage(page, vintage, recipe, clarity = null) {
   const blendRefs = extractBlendRefs(page.blend || []);
   const patterns = new Map();
   let pageImports = parseImports("import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';");
@@ -220,12 +276,31 @@ async function generatePage(page, vintage, recipe) {
     nameMap.set(id, toPascalCase(id));
   }
 
+  // Load recipe pattern overrides from recipe JSON (not from individual patterns)
+  const recipePatternOverrides = recipe?.pattern_overrides
+    ? new Map(Object.entries(recipe.pattern_overrides))
+    : null;
+
+  // Check if Card wrapping will be needed (any non-standalone pattern)
+  const needsCardWrap = [...patterns.values()].some(p => {
+    const layout = p.default_blend?.layout;
+    return layout !== 'hero' && layout !== 'row' && p.contained !== false;
+  });
+  if (needsCardWrap) {
+    pageImports = mergeImports(pageImports, parseImports("import { Card } from 'decantr/components';"));
+  }
+
   // Generate pattern functions
   const patternFunctions = [];
   for (const [id, pattern] of patterns) {
     const fnName = nameMap.get(id) || toPascalCase(id);
     if (pattern.code?.example) {
-      patternFunctions.push(`// @pattern: ${id}\n${pattern.code.example}`);
+      let code = pattern.code.example;
+      // Apply clarity-derived gap to pattern internals
+      if (clarity && clarity.contentGap !== '_gap4') {
+        code = code.replace(/\b_gap4\b/g, clarity.contentGap);
+      }
+      patternFunctions.push(`// @pattern: ${id}\n${code}`);
     } else {
       // Fallback placeholder
       const atoms = pattern.default_blend?.atoms || '_flex _col _gap4 _p4';
@@ -237,10 +312,11 @@ async function generatePage(page, vintage, recipe) {
 
   // Generate page function body from blend
   const blendCode = (page.blend || []).map(item =>
-    blendItemToCode(item, nameMap)
+    blendItemToCode(item, nameMap, '    ', patterns, recipePatternOverrides, clarity)
   ).join(',\n');
 
-  const surface = page.surface || '_flex _col _gap4 _p4 _overflow[auto] _flex1';
+  const defaultGap = clarity?.contentGap || '_gap4';
+  const surface = page.surface || `_flex _col ${defaultGap} _p4 _overflow[auto] _flex1`;
   const pageName = toPascalCase(page.id) + 'Page';
 
   const pageFunction = `export default function ${pageName}() {
@@ -308,7 +384,7 @@ const NAV_ICONS = {
 
 // ─── App.js generator ───────────────────────────────────────────
 
-function generateAppJs(essence, pages, skeletonCode) {
+function generateAppJs(essence, pages, skeletonCode, recipe = null, clarity = null) {
   const style = essence.vintage?.style || 'auradecantism';
   const mode = essence.vintage?.mode || 'dark';
   const routing = essence.vessel?.routing || 'hash';
@@ -331,23 +407,29 @@ function generateAppJs(essence, pages, skeletonCode) {
   // Build nav array — exclude centered-skeleton pages (auth flows)
   const nav = structures
     .filter(p => p.skeleton !== 'centered')
-    .map(p => ({ href: routePath(p.id), icon: NAV_ICONS[p.id] || 'file', label: toPascalCase(p.id) }));
+    .map(p => ({ href: routePath(p.id), icon: NAV_ICONS[p.id] || 'file', label: toDisplayName(p.id) }));
 
   // Build skeleton-specific App function and extra imports
-  const { appFunction, extraImports } = buildSkeletonApp(skeletonId, nav);
+  const terroir = essence.terroir || 'App';
+  let { appFunction, extraImports } = buildSkeletonApp(skeletonId, nav, clarity, terroir);
+
+  // Apply recipe-specific decoration to the skeleton
+  if (recipe) {
+    appFunction = applyRecipeToSkeleton(appFunction, essence.vintage?.recipe, clarity);
+  }
 
   // Addon style import/registration (non-core styles need explicit import)
   const ADDON_STYLE_MAP = {
     'clean': { varName: 'clean', pkg: 'clean' },
-    'retro': { varName: 'retro', pkg: 'retro' },
     'glassmorphism': { varName: 'glassmorphism', pkg: 'glassmorphism' },
     'command-center': { varName: 'commandCenter', pkg: 'command-center' },
-    'clay': { varName: 'clay', pkg: 'clay' },
-    'liquid-glass': { varName: 'liquidGlass', pkg: 'liquid-glass' },
-    'dopamine': { varName: 'dopamine', pkg: 'dopamine' },
-    'prismatic': { varName: 'prismatic', pkg: 'prismatic' },
-    'bioluminescent': { varName: 'bioluminescent', pkg: 'bioluminescent' },
-    'editorial': { varName: 'editorial', pkg: 'editorial' },
+    'retro': { varName: 'retro', pkg: 'community/retro' },
+    'clay': { varName: 'clay', pkg: 'community/clay' },
+    'liquid-glass': { varName: 'liquidGlass', pkg: 'community/liquid-glass' },
+    'dopamine': { varName: 'dopamine', pkg: 'community/dopamine' },
+    'prismatic': { varName: 'prismatic', pkg: 'community/prismatic' },
+    'bioluminescent': { varName: 'bioluminescent', pkg: 'community/bioluminescent' },
+    'editorial': { varName: 'editorial', pkg: 'community/editorial' },
   };
   const addonInfo = ADDON_STYLE_MAP[style];
   const cssImportNames = addonInfo
@@ -396,20 +478,25 @@ mount(document.getElementById('app'), App);
 `;
 }
 
-function buildSkeletonApp(skeletonId, nav) {
+function buildSkeletonApp(skeletonId, nav, clarity = null, terroir = 'App') {
   const navLiteral = `[\n${nav.map(n => `    { href: '${n.href}', icon: '${n.icon}', label: '${n.label}' }`).join(',\n')}\n  ]`;
+  const contentGap = clarity?.contentGap || '_gap4';
+  const chromeGap = clarity?.chromeGap || '_gap1';
+  const brandLabel = toDisplayName(terroir);
 
   switch (skeletonId) {
     case 'sidebar-main': return {
       extraImports: [
-        "import { text, cond } from 'decantr/core';",
+        "import { text, cond, onMount, onDestroy } from 'decantr/core';",
         "import { createSignal } from 'decantr/state';",
-        "import { link, useRoute } from 'decantr/router';",
-        "import { Button, icon } from 'decantr/components';",
+        "import { link, useRoute, navigate } from 'decantr/router';",
+        "import { Shell, Breadcrumb, Button, Command, Dropdown, Popover, icon } from 'decantr/components';",
       ].join('\n'),
+      // ── sidebar-main skeleton ── matched by applyRecipeToSkeleton
       appFunction: `function App() {
-  const { div, aside, main, header, span } = tags;
-  const [collapsed, setCollapsed] = createSignal(false);
+  const { div, span } = tags;
+  const [navState, setNavState] = createSignal('expanded');
+  const [cmdOpen, setCmdOpen] = createSignal(false);
   const route = useRoute();
 
   const nav = ${navLiteral};
@@ -417,32 +504,66 @@ function buildSkeletonApp(skeletonId, nav) {
   const pageTitle = () => {
     const path = route().path;
     const item = nav.find(n => n.href === path);
-    return item ? item.label : 'App';
+    return item ? item.label : '${brandLabel}';
   };
 
-  return div({ class: css('_grid _h[100vh]'), style: () => \`grid-template-columns:\${collapsed() ? '64px' : '240px'} 1fr;grid-template-rows:auto 1fr\` },
-    // Sidebar
-    aside({ class: css('_flex _col _gap1 _p3 _bgmuted _overflow[auto] _borderR'), style: 'grid-row:1/3' },
-      div({ class: css('_flex _aic _jcsb _mb4') },
-        cond(() => !collapsed(), () => span({ class: css('_heading5') }, 'App')),
-        Button({ variant: 'ghost', size: 'sm', onclick: () => setCollapsed(!collapsed()) },
+  // Keyboard shortcut: Ctrl+\\ to toggle sidebar
+  const handleKey = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === '\\\\') {
+      e.preventDefault();
+      setNavState(navState() === 'expanded' ? 'rail' : 'expanded');
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      setCmdOpen(!cmdOpen());
+    }
+  };
+  onMount(() => document.addEventListener('keydown', handleKey));
+  onDestroy(() => document.removeEventListener('keydown', handleKey));
+
+  return Shell({ config: 'sidebar-main', navState, onNavStateChange: setNavState, class: css('_h[100vh]') },
+    // Sidebar — recipe: sidebar chrome
+    Shell.Nav({ class: css('_flex _col ${chromeGap} _bgmuted') },
+      div({ class: css('_flex _aic _jcsb _mb4 _px3 _pt3') },
+        cond(() => navState() !== 'rail', () => span({ class: css('_heading5') }, '${brandLabel}')),
+        Button({ variant: 'ghost', size: 'sm', onclick: () => setNavState(navState() === 'expanded' ? 'rail' : 'expanded') },
           icon('panel-left')
         )
       ),
       ...nav.map(item =>
-        link({ href: item.href, class: css('_flex _aic _gap2 _p2 _px3 _r2 _trans _fgfg') },
+        link({ href: item.href, class: () => css(\`d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans \${route().path === item.href ? 'd-shell-nav-item-active _bgprimary/10 _fgprimary' : '_fgfg'}\`) },
           icon(item.icon),
-          cond(() => !collapsed(), () => text(item.label))
+          cond(() => navState() !== 'rail', () => text(() => item.label))
         )
       )
     ),
-    // Header
-    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB') },
-      span({ class: css('_heading4') }, pageTitle),
-      div({ class: css('_flex _aic _gap2') })
+    // Header — recipe: header chrome
+    Shell.Header({ class: css('_flex _aic _jcsb _px6 _borderB') },
+      Breadcrumb({ items: () => [
+            { label: '${brandLabel}', href: '/' },
+            { label: pageTitle() }
+          ], separator: 'slash' }),
+      div({ class: css('_flex _aic _gap2') },
+        Button({ variant: 'ghost', size: 'sm', onclick: () => setCmdOpen(true) }, icon('search')),
+        Popover({ trigger: () => Button({ variant: 'ghost', size: 'sm' }, icon('bell')), align: 'end' },
+          div({ class: css('_p4 _fgmuted _body') }, 'No new notifications')
+        ),
+        Dropdown({ trigger: () => Button({ variant: 'ghost', size: 'sm' }, icon('user')), align: 'right',
+          items: [
+            { label: 'Profile', icon: 'user' },
+            { label: 'Settings', icon: 'settings' },
+            { separator: true },
+            { label: 'Sign out', icon: 'log-out' }
+          ]
+        })
+      )
     ),
+    // Command palette
+    Command({ visible: cmdOpen, onClose: () => setCmdOpen(false),
+      items: nav.map(n => ({ label: n.label, icon: n.icon, onSelect: () => { navigate(n.href); setCmdOpen(false); } }))
+    }),
     // Main content
-    main({ class: css('_flex _col _gap4 _p6 _overflow[auto] _flex1') },
+    Shell.Body({ class: css('d-page-enter _flex _col ${contentGap} _p6 _overflow[auto] _flex1') },
       router.outlet()
     )
   );
@@ -463,7 +584,7 @@ function buildSkeletonApp(skeletonId, nav) {
   return div({ class: css('_flex _col _h[100vh]') },
     // Top navigation bar
     header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB _bgbg') },
-      link({ href: '/', class: css('_heading5 _nounder _fgfg') }, 'App'),
+      link({ href: '/', class: css('_heading5 _nounder _fgfg') }, '${brandLabel}'),
       navEl({ class: css('_flex _aic _gap6') },
         ...nav.map(item =>
           link({ href: item.href, class: css('_fgmuted _nounder _trans') }, item.label)
@@ -475,7 +596,7 @@ function buildSkeletonApp(skeletonId, nav) {
       )
     ),
     // Main content
-    main({ class: css('_flex _col _gap4 _p6 _overflow[auto] _flex1') },
+    main({ class: css('_flex _col ${contentGap} _p6 _overflow[auto] _flex1') },
       router.outlet()
     )
   );
@@ -550,6 +671,68 @@ function buildSkeletonApp(skeletonId, nav) {
 }`
     };
   }
+}
+
+// ─── Recipe skeleton decoration ─────────────────────────────────
+// Applies recipe-specific CSS classes to skeleton template strings.
+// Each replacement targets comments/class strings produced by buildSkeletonApp().
+
+/** Get recipe-specific decoration classes for Shell skeleton regions */
+function getRecipeDecoration(recipeId) {
+  switch (recipeId) {
+    case 'command-center': return { root: 'cc-mesh', nav: 'cc-frame cc-grid', header: 'cc-bar', navLabel: 'cc-label', brand: 'cc-label' };
+    case 'auradecantism': return { root: 'd-mesh', nav: 'd-glass', header: '', navLabel: '', brand: 'd-gradient-text' };
+    case 'clean': return { root: '', nav: '_bgbg _shadow[0_1px_3px_rgba(0,0,0,0.08)]', header: '', navLabel: '', brand: '' };
+    default: return { root: '', nav: '', header: '', navLabel: '', brand: '' };
+  }
+}
+
+function applyRecipeToSkeleton(appFunction, recipeId, clarity) {
+  if (!recipeId) return appFunction;
+  const d = getRecipeDecoration(recipeId);
+  let result = appFunction;
+
+  // Root Shell: inject recipe root class
+  if (d.root) {
+    result = result.replace(
+      /Shell\(\{ config: 'sidebar-main', (.+?), class: css\('_h\[100vh\]'\)/,
+      `Shell({ config: 'sidebar-main', $1, class: css('_h[100vh] ${d.root}')`
+    );
+  }
+
+  // Nav: replace _bgmuted with recipe nav decoration
+  if (d.nav) {
+    result = result.replace(
+      /Shell\.Nav\(\{ class: css\('_flex _col (?:_gap\d+) _bgmuted'\)/,
+      `Shell.Nav({ class: css('_flex _col ${clarity?.chromeGap || '_gap1'} ${d.nav}')`
+    );
+  }
+
+  // Brand label: add recipe brand class
+  if (d.brand) {
+    result = result.replace(
+      /span\(\{ class: css\('_heading5'\) \}/,
+      `span({ class: css('_heading5 ${d.brand}') }`
+    );
+  }
+
+  // Nav links: add recipe navLabel class
+  if (d.navLabel) {
+    result = result.replace(
+      /d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans /g,
+      `d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans ${d.navLabel} `
+    );
+  }
+
+  // Header: add recipe header class
+  if (d.header) {
+    result = result.replace(
+      /Shell\.Header\(\{ class: css\('_flex _aic _jcsb _px6 _borderB'\)/,
+      `Shell.Header({ class: css('_flex _aic _jcsb _px6 _borderB ${d.header}')`
+    );
+  }
+
+  return result;
 }
 
 // ─── Store generator ────────────────────────────────────────────
@@ -649,6 +832,12 @@ export async function generate(options = {}) {
     }
   }
 
+  // 3b. Derive clarity profile from character traits
+  const character = isSectioned
+    ? (essence.character || essence.sections?.[0]?.character || [])
+    : (essence.character || []);
+  const clarity = deriveClarityProfile(character);
+
   // 4. Generate pages
   const pagesToGenerate = pageFilter
     ? structures.filter(p => p.id === pageFilter)
@@ -663,7 +852,7 @@ export async function generate(options = {}) {
 
   for (const page of pagesToGenerate) {
     const vintage = page._section?.vintage || essence.vintage;
-    const result = await generatePage(page, vintage, recipe);
+    const result = await generatePage(page, vintage, recipe, clarity);
     generatedPages.push(result);
     files.push({
       path: join('src', 'pages', `${page.id}.js`),
@@ -675,7 +864,7 @@ export async function generate(options = {}) {
   if (!pageFilter) {
     files.push({
       path: join('src', 'app.js'),
-      content: generateAppJs(essence, pagesToGenerate, skeletons)
+      content: generateAppJs(essence, pagesToGenerate, skeletons, recipe, clarity)
     });
 
     // 6. Generate store

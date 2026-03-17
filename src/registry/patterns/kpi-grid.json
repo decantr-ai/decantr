@@ -6,7 +6,7 @@
   "components": ["Statistic", "icon"],
   "default_blend": {
     "layout": "grid",
-    "atoms": "_grid _gc4 _gap4 _p4",
+    "atoms": "_grid _gc1 _sm:gc2 _lg:gc4 _gap4 _p4",
     "slots": {
       "cards": "Array of Statistic instances with label, value, trend props",
       "header": "Optional section title with _heading4 and filter controls"
@@ -31,6 +31,6 @@
   },
   "code": {
     "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Statistic, icon } from 'decantr/components';",
-    "example": "function KpiGrid() {\n  const { div, h2 } = tags;\n  return div({ class: css('_flex _col _gap4') },\n    h2({ class: css('_heading4') }, 'Key Metrics'),\n    div({ class: css('_grid _gc4 _gap4') },\n      Statistic({ label: 'Revenue', value: 1248500, prefix: '$', trend: 'up', trendValue: '+12.5%' }),\n      Statistic({ label: 'Users', value: 84230, trend: 'up', trendValue: '+8.1%' }),\n      Statistic({ label: 'Orders', value: 6420, trend: 'down', trendValue: '-2.3%' }),\n      Statistic({ label: 'Conversion', value: 3.24, suffix: '%', trend: 'up', trendValue: '+0.5%' })\n    )\n  );\n}"
+    "example": "function KpiGrid() {\n  const { div, h2 } = tags;\n  return div({ class: css('_flex _col _gap4') },\n    h2({ class: css('_heading4') }, 'Key Metrics'),\n    div({ class: css('_grid _gc1 _sm:gc2 _lg:gc4 _gap4') },\n      Statistic({ label: 'Revenue', value: 1248500, prefix: '$', trend: 'up', trendValue: '+12.5%' }),\n      Statistic({ label: 'Users', value: 84230, trend: 'up', trendValue: '+8.1%' }),\n      Statistic({ label: 'Orders', value: 6420, trend: 'down', trendValue: '-2.3%' }),\n      Statistic({ label: 'Conversion', value: 3.24, suffix: '%', trend: 'up', trendValue: '+0.5%' })\n    )\n  );\n}"
   }
 }

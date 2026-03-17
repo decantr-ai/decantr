@@ -1,156 +1,126 @@
+/**
+ * Showcase Gallery — displays pre-built applications generated from essence files.
+ * Each showcase proves the Decantation Process works end-to-end.
+ */
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { createSignal, createEffect, createMemo } from 'decantr/state';
-import { useRoute } from 'decantr/router';
-import { Input, Chip } from 'decantr/components';
-import { DocsLayout } from '../layouts/docs-layout.js';
-import { ComponentDetail as ExplorerComponentDetail, loadComponentItems } from 'decantr/explorer/components.js';
+import { Card, Badge, Button, icon } from 'decantr/components';
+import { SiteShell } from '../layouts/site-shell.js';
 
-const { div, h1, p, span } = tags;
+const { div, h1, h2, h3, p, span, section, a } = tags;
 
-// ── Category definitions ──────────────────────────────────────────
-const CATEGORIES = [
-  { id: 'all', label: 'All' },
-  { id: 'form', label: 'Form' },
-  { id: 'layout', label: 'Layout' },
-  { id: 'data', label: 'Data' },
-  { id: 'feedback', label: 'Feedback' },
-  { id: 'navigation', label: 'Navigation' },
-  { id: 'overlay', label: 'Overlay' },
-  { id: 'typography', label: 'Typography' },
-  { id: 'chart', label: 'Chart' },
+const SHOWCASES = [
+  {
+    id: 'saas-dashboard',
+    title: 'SaaS Dashboard',
+    description: 'Analytics dashboard with KPI cards, data tables, charts, and real-time data. Built from the saas-dashboard archetype.',
+    archetype: 'saas-dashboard',
+    vintageStyle: 'command-center',
+    vintageMode: 'dark',
+    tags: ['KPIs', 'Charts', 'Data Table', 'Sidebar'],
+    status: 'live',
+  },
+  {
+    id: 'photography-portfolio',
+    title: 'Photography Portfolio',
+    description: 'Visual-first portfolio with hero gallery, project showcases, and contact form. Built from the portfolio archetype.',
+    archetype: 'portfolio',
+    vintageStyle: 'glassmorphism',
+    vintageMode: 'dark',
+    tags: ['Gallery', 'Hero', 'Contact', 'Full-Bleed'],
+    status: 'coming-soon',
+  },
+  {
+    id: 'ecommerce-store',
+    title: 'E-commerce Store',
+    description: 'Product catalog with filtering, cart, checkout flow, and account management. Built from the ecommerce archetype.',
+    archetype: 'ecommerce',
+    vintageStyle: 'clean',
+    vintageMode: 'light',
+    tags: ['Products', 'Cart', 'Checkout', 'Filters'],
+    status: 'coming-soon',
+  },
+  {
+    id: 'developer-blog',
+    title: 'Developer Blog',
+    description: 'Content-focused blog with syntax highlighting, table of contents, and reading progress. Built from the content-site archetype.',
+    archetype: 'content-site',
+    vintageStyle: 'auradecantism',
+    vintageMode: 'dark',
+    tags: ['Articles', 'Code Blocks', 'TOC', 'Search'],
+    status: 'coming-soon',
+  },
+  {
+    id: 'financial-dashboard',
+    title: 'Financial Dashboard',
+    description: 'Performance tracking with scorecards, pipeline visualization, and compliance reporting. Built from the financial-dashboard archetype.',
+    archetype: 'financial-dashboard',
+    vintageStyle: 'command-center',
+    vintageMode: 'dark',
+    tags: ['Scorecard', 'Pipeline', 'KPIs', 'Export'],
+    status: 'coming-soon',
+  },
 ];
 
-// ── Registry loading ──────────────────────────────────────────────
-let registry = null;
-let componentList = [];
+function ShowcaseCard({ showcase }) {
+  const isLive = showcase.status === 'live';
 
-async function ensureRegistry() {
-  if (registry) return;
-  try {
-    const resp = await fetch('/__decantr/registry/components.json');
-    registry = await resp.json();
-    componentList = Object.entries(registry.components || {}).map(([name, meta]) => ({
-      name,
-      group: meta.group || 'other',
-      description: meta.description || '',
-    }));
-    componentList.sort((a, b) => a.name.localeCompare(b.name));
-  } catch {
-    registry = { components: {} };
-    componentList = [];
-  }
-}
-
-function docsNavigate(path) {
-  window.location.hash = '#/docs' + path;
-}
-
-// ── Component Card ────────────────────────────────────────────────
-function ComponentCard(comp, navigateTo) {
-  return div({
-    class: `ds-glass ${css('_flex _col _gap2 _p4 _cursor[pointer]')}`,
-    onclick: () => navigateTo(comp.name),
+  return Card({
+    hoverable: true,
+    class: `ds-glass ${css('_flex _col _gap4 _p6 _ohidden')}`,
   },
     div({ class: css('_flex _aic _jcsb') },
-      span({ class: css('_label _bold _fgfg') }, comp.name),
-      Chip({ label: comp.group, variant: 'outline', size: 'sm' }),
+      Badge({
+        variant: isLive ? 'success' : 'default',
+      }, isLive ? 'Live' : 'Coming Soon'),
+      div({ class: css('_flex _gap2') },
+        Badge({ variant: 'outline' }, showcase.vintageStyle),
+        Badge({ variant: 'outline' }, showcase.vintageMode),
+      ),
     ),
-    p({ class: css('_caption _fgmutedfg _clamp2') }, comp.description),
+    h3({ class: css('_heading5 _fgfg') }, showcase.title),
+    p({ class: css('_body _fgmutedfg _lhrelaxed') }, showcase.description),
+    div({ class: css('_flex _wrap _gap2') },
+      ...showcase.tags.map(tag =>
+        span({ class: css('_textsm _fgmutedfg _bgmuted _px2 _py1 _r1') }, tag)
+      ),
+    ),
+    div({ class: css('_flex _aic _gap2 _mt2 _pt3 _borderT _bcborder') },
+      icon('layers', { size: '14px', class: css('_fgmutedfg') }),
+      span({ class: css('_textsm _fgmutedfg') }, `Archetype: ${showcase.archetype}`),
+    ),
   );
 }
 
-// ── Gallery List ──────────────────────────────────────────────────
-function GalleryList(navigateTo) {
-  const [search, setSearch] = createSignal('');
-  const [category, setCategory] = createSignal('all');
-
-  const filtered = createMemo(() => {
-    const s = search().toLowerCase();
-    const cat = category();
-    return componentList.filter(c => {
-      if (cat !== 'all' && c.group !== cat) return false;
-      if (s && !c.name.toLowerCase().includes(s)) return false;
-      return true;
-    });
-  });
-
-  // Category filter chips
-  const chips = div({ class: css('_flex _row _gap2 _wrap') },
-    ...CATEGORIES.map(cat => {
-      const chip = Chip({
-        label: cat.label,
-        variant: 'outline',
-        size: 'sm',
-        selected: category() === cat.id,
-        onClick: () => setCategory(cat.id),
-      });
-
-      createEffect(() => {
-        const isActive = category() === cat.id;
-        if (isActive) {
-          chip.classList.add('d-chip-selected');
-        } else {
-          chip.classList.remove('d-chip-selected');
-        }
-      });
-
-      return chip;
-    }),
-  );
-
-  // Grid
-  const grid = div({ class: css('_grid _gc3 _gap4 _lg:gc2 _sm:gc1') });
-
-  createEffect(() => {
-    const items = filtered();
-    grid.innerHTML = '';
-    for (const comp of items) {
-      grid.appendChild(ComponentCard(comp, navigateTo));
-    }
-  });
-
-  // Count
-  const countEl = span({ class: css('_caption _fgmutedfg') });
-  createEffect(() => {
-    countEl.textContent = `${filtered().length} component${filtered().length !== 1 ? 's' : ''}`;
-  });
-
-  return div({ class: css('_flex _col _gap6') },
-    div({ class: css('_flex _col _gap2') },
-      h1({ class: css('_heading3') }, 'Components'),
-      p({ class: css('_body _fgmutedfg') }, 'Browse all 100+ built-in UI components. Click any component for props, usage, and examples.'),
-    ),
-    div({ class: css('_flex _col _gap3') },
-      Input({
-        placeholder: 'Search components...',
-        oninput: (e) => setSearch(e.target.value),
-      }),
-      chips,
-      countEl,
-    ),
-    grid,
-  );
-}
-
-// ── Page Entry Point ──────────────────────────────────────────────
 export function GalleryPage() {
-  const route = useRoute();
-  const content = div({});
-  content.textContent = 'Loading components...';
-
-  ensureRegistry().then(() => {
-    content.textContent = '';
-    const id = route().params.id;
-    if (id) {
-      // Delegate to explorer module for full live showcases, props table, and usage links
-      content.appendChild(ExplorerComponentDetail(id, docsNavigate));
-    } else {
-      content.appendChild(GalleryList((name) => {
-        window.location.hash = `#/docs/components/${name}`;
-      }));
-    }
-  });
-
-  return DocsLayout(content);
+  return SiteShell(
+    section({ class: `ds-section ${css('_flex _col _aic _gap12')}` },
+      div({ class: css('_flex _col _aic _gap4 _tc _maxw[700px]') },
+        span({ class: css('_caption _uppercase _ls[0.1em] _fgprimary _bold') }, 'Showcase Gallery'),
+        h1({ class: `ds-heading ds-gradient-text ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
+          'Built with Decantr',
+        ),
+        p({ class: css('_textlg _lhrelaxed _fgmutedfg') },
+          'Real applications generated from essence files using the Decantation Process. Each showcase proves the system works end-to-end.',
+        ),
+      ),
+      div({ class: css('_grid _gcaf320 _gap6 _w100 _maxw[1100px]') },
+        ...SHOWCASES.map(s => ShowcaseCard({ showcase: s })),
+      ),
+      div({ class: `ds-glass-strong ${css('_flex _col _aic _tc _gap4 _p8 _w100 _maxw[700px]')}` },
+        h2({ class: css('_heading5 _fgfg') }, 'Want to see your app here?'),
+        p({ class: css('_body _fgmutedfg') },
+          'Every showcase starts with a single essence.json file. Describe your domain, pick a style, and let the Decantation Process do the rest.',
+        ),
+        div({ class: css('_flex _gap4') },
+          a({ href: '#/docs', class: css('_nounder') },
+            Button({ variant: 'primary' }, 'Read the Docs'),
+          ),
+          a({ href: '#/explorer', class: css('_nounder') },
+            Button({ variant: 'outline' }, 'Explore Components'),
+          ),
+        ),
+      ),
+    ),
+  );
 }

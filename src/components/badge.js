@@ -18,20 +18,22 @@ export function Badge(props = {}, ...children) {
   const { count, color, dot, status, variant, class: cls } = props;
   const resolvedStatus = status || variant;
 
-  const statusColor = resolvedStatus === 'success' ? 'var(--d-success)'
-    : resolvedStatus === 'error' ? 'var(--d-error)'
-    : resolvedStatus === 'warning' ? 'var(--d-warning)'
-    : resolvedStatus === 'processing' ? 'var(--d-primary)'
-    : resolvedStatus === 'primary' ? 'var(--d-primary)'
+  // Known statuses that have CSS variant classes
+  const cssVariants = ['success', 'error', 'warning', 'info', 'processing'];
+  const hasCssVariant = cssVariants.includes(resolvedStatus);
+
+  // Fallback inline color for non-CSS variants (primary, accent, custom)
+  const statusColor = !hasCssVariant ? (
+    resolvedStatus === 'primary' ? 'var(--d-primary)'
     : resolvedStatus === 'accent' ? 'var(--d-accent)'
-    : resolvedStatus === 'info' ? 'var(--d-info)'
-    : null;
+    : null
+  ) : null;
 
   const bgColor = color || statusColor;
 
   if (dot) {
     const dotEl = h('span', {
-      class: cx('d-badge-dot', resolvedStatus === 'processing' && 'd-badge-processing', cls)
+      class: cx('d-badge-dot', hasCssVariant && `d-badge-${resolvedStatus}`, cls)
     });
     if (bgColor) dotEl.style.background = bgColor;
 
@@ -44,7 +46,7 @@ export function Badge(props = {}, ...children) {
     return dotEl;
   }
 
-  const badgeClass = cx('d-badge', resolvedStatus === 'processing' && 'd-badge-processing', cls);
+  const badgeClass = cx('d-badge', hasCssVariant && `d-badge-${resolvedStatus}`, cls);
   const badgeEl = h('span', { class: badgeClass });
   if (bgColor) badgeEl.style.background = bgColor;
 

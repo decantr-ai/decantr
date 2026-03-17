@@ -498,9 +498,9 @@ const BORDER = {
 
 /** Palette derivation tuning per elevation type — controls hover/active shifts and alpha values */
 const PALETTE_TUNING = {
-  flat:      { hoverShift: 8,  activeShift: 15, subtleAlphaLight: 0.10, subtleAlphaDark: 0.15, borderAlphaLight: 0.30, borderAlphaDark: 0.40 },
-  subtle:    { hoverShift: 8,  activeShift: 15, subtleAlphaLight: 0.10, subtleAlphaDark: 0.15, borderAlphaLight: 0.30, borderAlphaDark: 0.40 },
-  raised:    { hoverShift: 8,  activeShift: 15, subtleAlphaLight: 0.10, subtleAlphaDark: 0.15, borderAlphaLight: 0.30, borderAlphaDark: 0.40 },
+  flat:      { hoverShift: 8,  activeShift: 15, subtleAlphaLight: 0.12, subtleAlphaDark: 0.15, borderAlphaLight: 0.30, borderAlphaDark: 0.40 },
+  subtle:    { hoverShift: 8,  activeShift: 15, subtleAlphaLight: 0.12, subtleAlphaDark: 0.15, borderAlphaLight: 0.30, borderAlphaDark: 0.40 },
+  raised:    { hoverShift: 8,  activeShift: 15, subtleAlphaLight: 0.12, subtleAlphaDark: 0.15, borderAlphaLight: 0.30, borderAlphaDark: 0.40 },
   glass:     { hoverShift: 5,  activeShift: 10, subtleAlphaLight: 0.20, subtleAlphaDark: 0.25, borderAlphaLight: 0.20, borderAlphaDark: 0.30 },
   brutalist: { hoverShift: 12, activeShift: 20, subtleAlphaLight: 0.15, subtleAlphaDark: 0.20, borderAlphaLight: 0.80, borderAlphaDark: 0.80 },
   clay:      { hoverShift: 6,  activeShift: 12, subtleAlphaLight: 0.12, subtleAlphaDark: 0.18, borderAlphaLight: 0.15, borderAlphaDark: 0.20 },
@@ -829,7 +829,7 @@ function deriveNeutral(neutralHex, bgHex, mode) {
     fg: isDark ? '#fafafa' : '#09090b',
     muted: isDark ? lighten(neutralHex, 10) : neutralHex,
     mutedFg: isDark ? lighten(neutralHex, 25) : darken(neutralHex, 15),
-    border: isDark ? lighten(bgHex, 12) : darken(bgHex, 22),
+    border: isDark ? lighten(bgHex, 12) : darken(bgHex, 26),
     borderStrong: isDark ? lighten(bgHex, 25) : darken(bgHex, 40),
     overlay: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
   };
@@ -848,11 +848,11 @@ function deriveSurfaces(neutralHex, bgHex, fgHex, mode, elevationType) {
     : (isDark ? lighten(bgHex, 4) : '#ffffff');
   const s2 = isGlass
     ? (isDark ? alpha(lighten(bgHex, 10), 0.8) : alpha('#ffffff', 0.7))
-    : (isDark ? lighten(bgHex, 7) : mixColors(bgHex, neutralHex, 0.08));
+    : (isDark ? lighten(bgHex, 7) : mixColors(bgHex, neutralHex, 0.12));
   // Dark non-glass S3: monotonic (+10L > S2's +7L). Glass S3: opacity-based depth.
   const s3 = isGlass
     ? (isDark ? alpha(lighten(bgHex, 6), 0.85) : alpha(bgHex, 0.92))
-    : (isDark ? lighten(bgHex, 10) : mixColors(bgHex, neutralHex, 0.15));
+    : (isDark ? lighten(bgHex, 10) : mixColors(bgHex, neutralHex, 0.20));
 
   const blur = SURFACE_BLUR[elevationType] || SURFACE_BLUR.subtle;
 
@@ -928,7 +928,7 @@ export function derive(seed, personality, mode, typography, overrides, options) 
   // Monochrome palette: derive all role colors from primary hue
   if (p.palette === 'monochrome') {
     const mono = deriveMonochromeSeed(s.primary);
-    for (const k of ['accent', 'tertiary', 'success', 'warning', 'error', 'info']) s[k] = mono[k];
+    for (const k of ['accent', 'tertiary', 'info']) s[k] = mono[k];
   }
 
   // Resolve bg per mode

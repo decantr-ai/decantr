@@ -26,6 +26,7 @@ export function Popover(props = {}, ...children) {
     trigger,
     position = 'bottom',
     align = 'center',
+    portal: usePortal = true,
     class: cls
   } = props;
 
@@ -46,6 +47,9 @@ export function Popover(props = {}, ...children) {
     trigger: 'click',
     closeOnEscape: true,
     closeOnOutside: true,
+    portal: usePortal,
+    placement: position,
+    align: align === 'center' ? 'center' : align === 'end' ? 'end' : 'start',
     onOpen: () => wrap.classList.add('d-popover-open'),
     onClose: () => wrap.classList.remove('d-popover-open')
   });

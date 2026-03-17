@@ -13,6 +13,8 @@ export const componentCSSMap = {
   // ═══════════════════════════════════════════════════════════════
   global: [
     '.d-input-wrap .d-input:focus-visible,.d-textarea-wrap .d-textarea:focus-visible,.d-combobox-input-wrap .d-combobox-input:focus-visible,.d-inputnumber .d-inputnumber-input:focus-visible,.d-inputnumber .d-inputnumber-step:focus-visible,.d-select .d-select:focus-visible,.d-cascader-trigger .d-cascader-input:focus-visible,.d-command-input-wrap .d-command-input:focus-visible,.d-colorpicker-trigger:focus-visible{outline:none}',
+    // Overlay exit animation — applied by createOverlay() during close
+    '.d-overlay-exit{animation:d-scaleout var(--d-duration-fast) var(--d-easing-accelerate) both !important}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
@@ -82,7 +84,7 @@ export const componentCSSMap = {
   // ═══════════════════════════════════════════════════════════════
   card: [
     '.d-card{background:var(--d-surface-1);border:var(--d-border-width) var(--d-border-style) var(--d-surface-1-border);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-1);color:var(--d-fg);backdrop-filter:var(--d-surface-1-filter);transition:all var(--d-duration-fast) var(--d-easing-standard)}',
-    '.d-card-hover:hover{box-shadow:var(--d-elevation-2);transform:translate(var(--d-hover-translate))}',
+    '.d-card-hover:hover{box-shadow:var(--d-elevation-2);transform:translate(var(--d-hover-translate));border-color:var(--d-primary-border)}',
     '.d-card-footer{border-top:var(--d-border-width) var(--d-border-style) var(--d-border)}',
     '.d-card-inner{background:var(--d-surface-0);box-shadow:none;border:var(--d-border-width) var(--d-border-style) var(--d-border)}',
     '.d-card-borderless{border-color:transparent}',
@@ -159,6 +161,11 @@ export const componentCSSMap = {
     '.d-badge{background:var(--d-primary);color:var(--d-primary-fg);border-radius:var(--d-radius-full)}',
     '.d-badge-dot{background:var(--d-primary)}',
     '.d-badge-dot.d-badge-processing{animation:d-pulse 2s ease-in-out infinite}',
+    '.d-badge-success{background:var(--d-success);color:var(--d-success-fg)}',
+    '.d-badge-error{background:var(--d-error);color:var(--d-error-fg)}',
+    '.d-badge-warning{background:var(--d-warning);color:var(--d-warning-fg)}',
+    '.d-badge-info{background:var(--d-info);color:var(--d-info-fg)}',
+    '.d-badge-processing{background:var(--d-primary);color:var(--d-primary-fg)}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
@@ -181,6 +188,10 @@ export const componentCSSMap = {
     '.d-chip-interactive:hover{background:var(--d-border);transform:translate(var(--d-hover-translate))}',
     '.d-chip-remove{color:var(--d-muted)}',
     '.d-chip-remove:hover{color:var(--d-error)}',
+    '.d-chip-success{background:var(--d-success-subtle);color:var(--d-success-on-subtle);border-color:var(--d-success-border)}',
+    '.d-chip-error{background:var(--d-error-subtle);color:var(--d-error-on-subtle);border-color:var(--d-error-border)}',
+    '.d-chip-warning{background:var(--d-warning-subtle);color:var(--d-warning-on-subtle);border-color:var(--d-warning-border)}',
+    '.d-chip-info{background:var(--d-info-subtle);color:var(--d-info-on-subtle);border-color:var(--d-info-border)}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
@@ -220,7 +231,7 @@ export const componentCSSMap = {
   select: [
     // .d-select-wrap/.d-select visual (bg, border, focus) now handled by .d-field in d.base layer
     '.d-select-open .d-field{border-color:var(--d-field-border-focus);box-shadow:var(--d-group-shadow,var(--d-field-ring))}',
-    '.d-select-dropdown{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2)}',
+    '.d-select-dropdown{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2);animation:d-scalein var(--d-duration-fast) var(--d-easing-decelerate)}',
     '.d-select-option{color:var(--d-fg);transition:background var(--d-duration-fast) var(--d-easing-standard)}',
     // Unified listitem state contract — hover/highlight/active for all dropdown types
     '.d-select-option:hover,.d-select-option-highlight,.d-combobox-option:hover,.d-combobox-option-highlight,.d-dropdown-item:hover,.d-dropdown-item-highlight,.d-cascader-option:hover,.d-cascader-option-highlight,.d-menu-item:hover,.d-menu-item-highlight{background:var(--d-surface-1);color:var(--d-fg)}',
@@ -238,7 +249,7 @@ export const componentCSSMap = {
     '.d-combobox-input{color:var(--d-fg)}',
     '.d-combobox-input::placeholder{color:var(--d-muted)}',
     '.d-combobox-arrow{color:var(--d-muted)}',
-    '.d-combobox-listbox{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2)}',
+    '.d-combobox-listbox{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2);animation:d-scalein var(--d-duration-fast) var(--d-easing-decelerate)}',
     '.d-combobox-option{color:var(--d-fg);transition:background var(--d-duration-fast) var(--d-easing-standard)}',
     // Combobox hover/highlight/active handled by unified listitem contract above
     '.d-combobox-empty{color:var(--d-muted)}',
@@ -401,7 +412,7 @@ export const componentCSSMap = {
   // TOOLTIP
   // ═══════════════════════════════════════════════════════════════
   tooltip: [
-    '.d-tooltip{background:var(--d-fg);color:var(--d-bg);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2)}',
+    '.d-tooltip{background:var(--d-fg);color:var(--d-bg);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2);animation:d-fadein var(--d-duration-fast) var(--d-easing-decelerate)}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
@@ -415,14 +426,14 @@ export const componentCSSMap = {
   // HOVER CARD
   // ═══════════════════════════════════════════════════════════════
   'hover-card': [
-    '.d-hovercard-content{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2);color:var(--d-fg)}',
+    '.d-hovercard-content{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2);color:var(--d-fg);animation:d-scalein var(--d-duration-fast) var(--d-easing-decelerate)}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
   // DROPDOWN
   // ═══════════════════════════════════════════════════════════════
   dropdown: [
-    '.d-dropdown-menu{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2)}',
+    '.d-dropdown-menu{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2);animation:d-scalein var(--d-duration-fast) var(--d-easing-decelerate)}',
     '.d-dropdown-item{color:var(--d-fg);transition:background var(--d-duration-fast) var(--d-easing-standard)}',
     // Dropdown item hover/highlight handled by unified listitem contract in SELECT section
     '.d-dropdown-separator{background:var(--d-border)}',
@@ -432,7 +443,7 @@ export const componentCSSMap = {
   // CONTEXT MENU
   // ═══════════════════════════════════════════════════════════════
   'context-menu': [
-    '.d-contextmenu{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2)}',
+    '.d-contextmenu{background:var(--d-bg);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2);animation:d-scalein var(--d-duration-fast) var(--d-easing-decelerate)}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
@@ -440,7 +451,9 @@ export const componentCSSMap = {
   // ═══════════════════════════════════════════════════════════════
   'command-palette': [
     '.d-command-panel{background:var(--d-surface-2);backdrop-filter:var(--d-surface-2-filter);border:var(--d-border-width) var(--d-border-style) var(--d-surface-2-border);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-3);color:var(--d-fg)}',
-    '.d-command-input-wrap{border-bottom:var(--d-border-width) var(--d-border-style) var(--d-border)}',
+    '.d-command-input-wrap,.d-command-search{border-bottom:var(--d-border-width) var(--d-border-style) var(--d-border)}',
+    '.d-command-search:focus-within{border-bottom-color:var(--d-primary)}',
+    '.d-command-search-icon{color:var(--d-muted);flex-shrink:0}',
     '.d-command-item:hover,.d-command-item-highlight{background:var(--d-item-hover-bg)}',
   ].join(''),
 
@@ -455,14 +468,16 @@ export const componentCSSMap = {
   // TABS
   // ═══════════════════════════════════════════════════════════════
   tabs: [
-    '.d-tabs-list{border-bottom:var(--d-border-width) var(--d-border-style) var(--d-border)}',
+    '.d-tabs-list{border-bottom:var(--d-border-width) var(--d-border-style) var(--d-border);position:relative}',
     '.d-tab{color:var(--d-muted);border-bottom:var(--d-border-width-strong) solid transparent;transition:all var(--d-duration-fast) var(--d-easing-standard)}',
     '.d-tab:hover:not([disabled]){color:var(--d-fg)}',
-    '.d-tab-active{color:var(--d-primary);border-bottom-color:var(--d-primary)}',
+    '.d-tab-active{color:var(--d-primary);border-bottom-color:transparent}',
+    '.d-tabs-indicator{position:absolute;bottom:0;left:0;background:var(--d-primary);border-radius:var(--d-radius-full);transition:transform var(--d-duration-fast) var(--d-easing-standard),width var(--d-duration-fast) var(--d-easing-standard),height var(--d-duration-fast) var(--d-easing-standard);pointer-events:none;z-index:1}',
     '.d-tab[disabled]{color:var(--d-muted)}',
     '.d-tabs-vertical .d-tabs-list{border-bottom:none;border-right:var(--d-border-width) var(--d-border-style) var(--d-border)}',
     '.d-tabs-vertical .d-tab{border-bottom:none;border-left:var(--d-border-width-strong) solid transparent}',
-    '.d-tabs-vertical .d-tab-active{border-left-color:var(--d-primary);border-bottom-color:transparent}',
+    '.d-tabs-vertical .d-tab-active{border-left-color:transparent;border-bottom-color:transparent}',
+    '.d-tabs-vertical .d-tabs-indicator{bottom:auto;left:0;top:0}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
@@ -902,6 +917,9 @@ export const componentCSSMap = {
     '.d-shell-body{background:var(--d-bg)}',
     '.d-shell-footer{background:var(--d-surface-0);border-top:var(--d-border-width) var(--d-border-style) var(--d-border)}',
     '.d-shell-aside{background:var(--d-surface-0);border-left:var(--d-border-width) var(--d-border-style) var(--d-border)}',
+    '.d-shell-nav-item:hover{background:var(--d-item-hover-bg);color:var(--d-fg)}',
+    '.d-shell-nav-item:focus-visible{outline:var(--d-focus-ring-width) var(--d-focus-ring-style,solid) var(--d-focus-ring-color,var(--d-ring));outline-offset:var(--d-focus-ring-offset-inset)}',
+    '.d-shell-nav-item-active{background:var(--d-primary-subtle);color:var(--d-primary-on-subtle)}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════

@@ -301,6 +301,9 @@ export function Shell(props = {}, ...children) {
     el.classList.toggle('d-shell-nav-expanded', state === 'expanded');
     el.classList.toggle('d-shell-nav-rail', state === 'rail');
     el.classList.toggle('d-shell-nav-hidden', state === 'hidden');
+    if (sections.nav) {
+      sections.nav.setAttribute('aria-expanded', String(state === 'expanded'));
+    }
   });
 
   // Responsive collapse via matchMedia
@@ -352,19 +355,20 @@ export function Shell(props = {}, ...children) {
  */
 Shell.Header = function ShellHeader(props = {}, ...children) {
   const { class: cls } = props;
-  return div({ class: cx('d-shell-header', cls) }, ...children);
+  return div({ class: cx('d-shell-header', cls), role: 'banner' }, ...children);
 };
 
 /**
  * Shell.Nav — sidebar navigation region
  * @param {Object} [props]
  * @param {string} [props.class]
+ * @param {string} [props['aria-label']] - Navigation label (default: 'Main')
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
 Shell.Nav = function ShellNav(props = {}, ...children) {
-  const { class: cls } = props;
-  return div({ class: cx('d-shell-nav', cls) }, ...children);
+  const { class: cls, 'aria-label': ariaLabel = 'Main' } = props;
+  return div({ class: cx('d-shell-nav', cls), role: 'navigation', 'aria-label': ariaLabel }, ...children);
 };
 
 /**
@@ -376,7 +380,7 @@ Shell.Nav = function ShellNav(props = {}, ...children) {
  */
 Shell.Body = function ShellBody(props = {}, ...children) {
   const { class: cls } = props;
-  return div({ class: cx('d-shell-body', cls) }, ...children);
+  return div({ class: cx('d-shell-body', cls), role: 'main' }, ...children);
 };
 
 /**
@@ -388,7 +392,7 @@ Shell.Body = function ShellBody(props = {}, ...children) {
  */
 Shell.Footer = function ShellFooter(props = {}, ...children) {
   const { class: cls } = props;
-  return div({ class: cx('d-shell-footer', cls) }, ...children);
+  return div({ class: cx('d-shell-footer', cls), role: 'contentinfo' }, ...children);
 };
 
 /**
@@ -400,7 +404,7 @@ Shell.Footer = function ShellFooter(props = {}, ...children) {
  */
 Shell.Aside = function ShellAside(props = {}, ...children) {
   const { class: cls } = props;
-  return div({ class: cx('d-shell-aside', cls) }, ...children);
+  return div({ class: cx('d-shell-aside', cls), role: 'complementary' }, ...children);
 };
 
 // Export presets for external use (workbench, code generation)

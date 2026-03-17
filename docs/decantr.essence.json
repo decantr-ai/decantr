@@ -8,7 +8,8 @@
     {
       "id": "home",
       "skeleton": "full-bleed",
-      "blend": ["hero"]
+      "blend": ["hero", "gallery", "cta-section"],
+      "surface": "_flex _col _overflow[auto] _flex1"
     },
     {
       "id": "docs-home",
@@ -28,77 +29,17 @@
       "blend": ["detail-header"]
     },
     {
-      "id": "gallery",
-      "path": "/docs/components",
-      "skeleton": "sidebar-main",
-      "blend": [{ "pattern": "card-grid", "preset": "content", "as": "component-gallery" }]
-    },
-    {
-      "id": "explorer",
-      "path": "/docs/:section",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "explorer-patterns",
-      "path": "/docs/patterns",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "explorer-icons",
-      "path": "/docs/icons",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "explorer-tokens",
-      "path": "/docs/tokens",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "explorer-foundations",
-      "path": "/docs/foundations",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "explorer-archetypes",
-      "path": "/docs/archetypes",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "explorer-charts",
-      "path": "/docs/charts",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "explorer-shells",
-      "path": "/docs/shells",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "explorer-recipes",
-      "path": "/docs/recipes",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "explorer-tools",
-      "path": "/docs/tools",
-      "skeleton": "sidebar-main",
-      "blend": ["card-grid"]
-    },
-    {
-      "id": "workbench",
-      "path": "/workbench",
+      "id": "explorer-page",
+      "path": "/explorer",
       "skeleton": "sidebar-main",
       "blend": ["component-showcase"],
       "surface": "_flex _col _overflow[auto] _flex1"
+    },
+    {
+      "id": "gallery",
+      "path": "/gallery",
+      "skeleton": "full-bleed",
+      "blend": [{ "pattern": "card-grid", "preset": "content", "as": "showcase-gallery" }]
     }
   ],
   "tannins": [],

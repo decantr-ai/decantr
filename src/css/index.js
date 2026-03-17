@@ -56,6 +56,7 @@ const ARB_PROPS = {
   top: 'top', right: 'right', bottom: 'bottom', left: 'left', inset: 'inset',
   shadow: 'box-shadow', bf: 'backdrop-filter',
   outline: 'outline', trans: 'transition', object: 'object-fit',
+  gc: 'grid-template-columns', gr: 'grid-template-rows',
 };
 
 /**

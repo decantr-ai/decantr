@@ -100,18 +100,45 @@ export function Drawer(props = {}, ...children) {
   }, panel);
 
   const trap = createFocusTrap(dialog);
+  let _closing = false;
+  const EXIT_DURATION = 200;
+  const _canAnimate = typeof document !== 'undefined' && typeof document.getAnimations === 'function';
 
-  function close() {
-    if (dialog.open) dialog.close();
+  // Reverse slide-out direction based on side
+  const exitAnim = {
+    left: 'd-slideout-l', right: 'd-slideout-r',
+    top: 'd-slideout-t', bottom: 'd-slideout-b'
+  }[side] || 'd-slideout-r';
+
+  function animateClose(callback) {
+    if (_closing) return;
+    if (!_canAnimate) {
+      if (dialog.open) dialog.close();
+      if (callback) callback();
+      return;
+    }
+    _closing = true;
+    panel.style.animation = `${exitAnim} ${EXIT_DURATION}ms var(--d-easing-accelerate, ease-in) both`;
+    dialog.style.animation = `d-fadeout ${EXIT_DURATION}ms var(--d-easing-accelerate, ease-in) both`;
+    setTimeout(() => {
+      _closing = false;
+      panel.style.animation = '';
+      dialog.style.animation = '';
+      if (dialog.open) dialog.close();
+      if (callback) callback();
+    }, EXIT_DURATION);
   }
 
-  // Close button calls close() only — onClose fires from dialog 'close' event
-  closeBtn.addEventListener('click', close);
+  function close() {
+    if (!dialog.open) return;
+    animateClose(() => {
+      trap.deactivate();
+      if (onClose) onClose();
+    });
+  }
 
-  dialog.addEventListener('close', () => {
-    trap.deactivate();
-    if (onClose) onClose();
-  });
+  // Close button calls close() with animation
+  closeBtn.addEventListener('click', close);
 
   // Click on backdrop (outside panel rect) closes
   if (closeOnOutside) {
@@ -124,8 +151,10 @@ export function Drawer(props = {}, ...children) {
     });
   }
 
-  dialog.addEventListener('cancel', () => {
-    if (onClose) onClose();
+  // Intercept Escape — animate before native close
+  dialog.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    close();
   });
 
   if (typeof visible === 'function') {
@@ -133,7 +162,7 @@ export function Drawer(props = {}, ...children) {
       if (visible()) {
         if (!dialog.open) { dialog.showModal(); trap.activate(); }
       } else {
-        close();
+        if (dialog.open) animateClose(() => { trap.deactivate(); });
       }
     });
   }

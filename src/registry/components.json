@@ -635,7 +635,7 @@
     "Breadcrumb": {
       "props": {
         "items": {
-          "type": "{ label: string, href?: string, onclick?: Function, icon?: string, disabled?: boolean }[]",
+          "type": "{ label: string, href?: string, onclick?: Function, icon?: string, disabled?: boolean }[]|Function",
           "reactive": true,
           "required": true
         },
@@ -6203,6 +6203,9 @@
         },
         "groupSeparator=true": {
           "type": "boolean"
+        },
+        "animate=false": {
+          "type": "boolean|number"
         },
         "class": {
           "type": "string"

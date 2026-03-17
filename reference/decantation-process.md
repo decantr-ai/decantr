@@ -244,7 +244,7 @@ Location: `src/registry/patterns/`
 Composable building blocks that archetypes reference. Each pattern describes:
 - **Components**: Which Decantr components are used
 - **Default Blend**: Layout, atoms, and slot descriptions
-- **Recipe Overrides**: Per-recipe composition differences (e.g., Command Center wraps in `cc-frame`)
+- **Recipe-Agnostic**: Patterns contain no recipe knowledge. Visual transforms happen via style CSS overrides on standard components (Card, Statistic, DataTable). Extra decorative classes (backgrounds) come from the recipe JSON's `pattern_overrides` section.
 
 Patterns resolve to concrete component compositions during the DECANT stage.
 
@@ -411,18 +411,21 @@ How the LLM reads and applies a Blend during code generation:
 1. Read the structure entry's `blend` array
 2. Create page container with `surface` atoms (or default `_flex _col _gap4 _p4 _overflow[auto] _flex1`)
 3. For each row:
-   - **String**: render the pattern full-width. Use the pattern's `default_blend.atoms` for internal layout. Apply recipe overrides.
+   - **String**: render the pattern full-width. Use the pattern's `default_blend.atoms` for internal layout.
    - **`{ cols }`**: create a grid wrapper with `_grid _gc{N} _gap4` where N = number of columns. Add responsive collapse: below `at` breakpoint, use single column. Render each pattern inside.
    - **`{ cols, span }`**: compute total = sum of all span values (default 1 per unspecified). Grid gets `_gc{total}`. Each pattern gets `_span{weight}`.
-4. Apply recipe wrappers to each pattern per `recipe_overrides`
-5. Fill pattern slots with domain content
+4. Wrap contained patterns in `Card(Card.Header, Card.Body)` — standalone patterns (layout `hero`/`row`) skip wrapping. Recipe styles override Card appearance via component CSS (e.g., command-center transforms `.d-card` into cc-frame aesthetic).
+5. Apply recipe `pattern_overrides` from recipe JSON (background effects like `cc-grid`, `cc-scanline`) as Card class attributes
+6. Apply Clarity-derived gap to pattern code internals (`_gap4` → clarity gap)
+7. Add entrance animations: `d-page-enter` on page container, `d-stagger` / `d-stagger-up` on grid wrappers containing cards/KPIs, `animate: true` on Statistic components
+8. Fill pattern slots with domain content
 
 ### Separation of Concerns
 
 | Blend controls (spatial) | NOT Blend's concern |
 |--------------------------|---------------------|
 | Row ordering | Internal pattern layout (pattern's `default_blend`) |
-| Column splits + weights | Recipe decoration (cc-frame, cc-bar, etc.) |
+| Column splits + weights | Recipe decoration (handled by style CSS on Card/Statistic/DataTable) |
 | Responsive collapse breakpoints | Content decisions (labels, data, icons) |
 | Page container atoms | Skeleton structure (sidebar, nav) |
 

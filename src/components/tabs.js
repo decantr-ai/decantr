@@ -56,6 +56,10 @@ export function Tabs(props = {}) {
     'aria-orientation': orientation
   });
 
+  // Sliding indicator element
+  const indicator = div({ class: 'd-tabs-indicator' });
+  tabList.appendChild(indicator);
+
   const panelContainer = div({ class: 'd-tabs-panel-container' });
 
   const container = div({
@@ -145,6 +149,21 @@ export function Tabs(props = {}) {
     onFocus: (el) => el.click()
   });
 
+  function updateIndicator(tabEl) {
+    if (!tabEl || !tabList.isConnected) return;
+    const listRect = tabList.getBoundingClientRect();
+    const tabRect = tabEl.getBoundingClientRect();
+    if (orientation === 'vertical') {
+      indicator.style.width = '3px';
+      indicator.style.height = `${tabRect.height}px`;
+      indicator.style.transform = `translateY(${tabRect.top - listRect.top + tabList.scrollTop}px)`;
+    } else {
+      indicator.style.height = '2px';
+      indicator.style.width = `${tabRect.width}px`;
+      indicator.style.transform = `translateX(${tabRect.left - listRect.left + tabList.scrollLeft}px)`;
+    }
+  }
+
   function update() {
     const activeId = typeof active === 'function' ? active() : currentActive;
 
@@ -156,6 +175,9 @@ export function Tabs(props = {}) {
       el.setAttribute('aria-selected', isActive ? 'true' : 'false');
       if (isActive) activeIndex = i;
     });
+
+    // Position sliding indicator
+    updateIndicator(tabEls[activeIndex]?.el);
 
     // Sync roving active to active tab (find non-disabled index)
     const enabledItems = [...tabList.querySelectorAll('.d-tab:not([disabled])')];
@@ -197,6 +219,13 @@ export function Tabs(props = {}) {
   } else {
     update();
   }
+
+  // Defer initial indicator measurement to after layout
+  requestAnimationFrame(() => {
+    const activeId = typeof active === 'function' ? active() : currentActive;
+    const idx = tabEls.findIndex(({ tab }) => tab.id === activeId);
+    if (idx >= 0) updateIndicator(tabEls[idx].el);
+  });
 
   // Reactive group disabled
   if (typeof disabled === 'function') {

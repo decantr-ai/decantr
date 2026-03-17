@@ -703,19 +703,19 @@ function hasChanges(currentHashes, cachedHashes) {
 
 // ─── Phase 1: Build-Time Style Elimination ───────────────────────
 
-// Addon styles live in src/css/styles/addons/ and are imported explicitly by user code.
+// Core addon styles live in src/css/styles/addons/, community styles in community/.
 // Only auradecantism remains a built-in in theme-registry.js.
 const STYLE_IMPORTS = {
-  'clean': { varName: 'clean', file: 'clean.js', addon: true },
-  'retro': { varName: 'retro', file: 'retro.js', addon: true },
-  'glassmorphism': { varName: 'glassmorphism', file: 'glassmorphism.js', addon: true },
-  'command-center': { varName: 'commandCenter', file: 'command-center.js', addon: true },
-  'clay': { varName: 'clay', file: 'clay.js', addon: true },
-  'liquid-glass': { varName: 'liquidGlass', file: 'liquid-glass.js', addon: true },
-  'dopamine': { varName: 'dopamine', file: 'dopamine.js', addon: true },
-  'prismatic': { varName: 'prismatic', file: 'prismatic.js', addon: true },
-  'bioluminescent': { varName: 'bioluminescent', file: 'bioluminescent.js', addon: true },
-  'editorial': { varName: 'editorial', file: 'editorial.js', addon: true },
+  'clean': { varName: 'clean', file: 'clean.js', dir: 'addons', addon: true },
+  'glassmorphism': { varName: 'glassmorphism', file: 'glassmorphism.js', dir: 'addons', addon: true },
+  'command-center': { varName: 'commandCenter', file: 'command-center.js', dir: 'addons', addon: true },
+  'retro': { varName: 'retro', file: 'retro.js', dir: 'community', addon: true },
+  'clay': { varName: 'clay', file: 'clay.js', dir: 'community', addon: true },
+  'liquid-glass': { varName: 'liquidGlass', file: 'liquid-glass.js', dir: 'community', addon: true },
+  'dopamine': { varName: 'dopamine', file: 'dopamine.js', dir: 'community', addon: true },
+  'prismatic': { varName: 'prismatic', file: 'prismatic.js', dir: 'community', addon: true },
+  'bioluminescent': { varName: 'bioluminescent', file: 'bioluminescent.js', dir: 'community', addon: true },
+  'editorial': { varName: 'editorial', file: 'editorial.js', dir: 'community', addon: true },
 };
 
 /**
@@ -776,7 +776,7 @@ function eliminateUnusedAddonStyles(modules, usedStyles, frameworkSrcDir) {
   for (const [id, info] of Object.entries(STYLE_IMPORTS)) {
     if (!info.addon) continue;
     if (!usedStyles.has(id)) {
-      const addonPath = join(frameworkSrcDir, 'css', 'styles', 'addons', info.file);
+      const addonPath = join(frameworkSrcDir, 'css', 'styles', info.dir || 'addons', info.file);
       if (modules.delete(addonPath)) eliminated++;
     }
   }

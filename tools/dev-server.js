@@ -96,7 +96,13 @@ function rewriteImports(source) {
       let resolved;
       if (mapped) resolved = `/__decantr/${mapped}`;
       else if (mod.endsWith('.js')) resolved = `/__decantr/${mod}`;
-      else resolved = `/__decantr/${mod}/index.js`;
+      else {
+        // Check the import map entries built from package.json exports
+        const specifier = `decantr/${mod}`;
+        const fromMap = IMPORT_MAP_ENTRIES[specifier];
+        if (fromMap) resolved = fromMap;
+        else resolved = `/__decantr/${mod}/index.js`;
+      }
       return `${prefix}${quote}${resolved}${suffix}`;
     }
   );

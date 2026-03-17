@@ -92,7 +92,7 @@ export function Command(props = {}) {
       const children = [];
       if (item.icon) {
         children.push(typeof item.icon === 'string'
-          ? h('span', { class: 'd-command-item-icon', 'aria-hidden': 'true' }, item.icon)
+          ? h('span', { class: 'd-command-item-icon', 'aria-hidden': 'true' }, icon(item.icon, { size: '1em' }))
           : item.icon);
       }
       children.push(h('span', { class: 'd-command-item-label' }, item.label));

@@ -1,9 +1,9 @@
 /**
- * Workbench page — embeds the full Decantation Explorer workbench
- * inside the docs site at /workbench/* routes.
+ * Unified Explorer page — single implementation of the component/pattern/archetype
+ * explorer with sidebar, HUD controls, global search, and viewport simulator.
  *
- * Reuses all workbench page components and sidebar, with paths
- * prefixed under /workbench to avoid colliding with /docs routes.
+ * Replaces the old /workbench route and the duplicated code between
+ * docs/pages/workbench.js and workbench/src/app.js.
  */
 import { onDestroy } from 'decantr/core';
 import { createSignal, createEffect, createMemo, untrack } from 'decantr/state';
@@ -13,6 +13,7 @@ import { Select, Drawer, icon, Input } from 'decantr/components';
 import { link, navigate, useRoute } from 'decantr/router';
 import { createFocusTrap } from 'decantr/components/_behaviors.js';
 import { initUsageIndex } from 'decantr/explorer/shared/usage-links.js';
+import { injectExplorerCSS } from 'decantr/explorer/styles.js';
 
 // Explorer data loaders for sidebar
 import { loadFoundationItems } from 'decantr/explorer/foundations.js';
@@ -27,26 +28,24 @@ import { loadRecipeItems } from 'decantr/explorer/recipes.js';
 import { loadToolItems } from 'decantr/explorer/tools.js';
 import { loadShellItems } from 'decantr/explorer/shells.js';
 
-// Configure path prefix BEFORE importing page components (they read it at module load)
-import { setPathPrefix } from '../wb-path-prefix.js';
-setPathPrefix('/workbench');
+// Page facades (local copies, /explorer prefix)
+import { ComponentsIndex, ComponentGroupPage, ComponentDetailPage } from '../explorer/components.js';
+import { IconsIndex, IconGroupPage, IconDetailPage } from '../explorer/icons.js';
+import { ChartsIndex, ChartGroupPage, ChartDetailPage } from '../explorer/charts.js';
+import { PatternsIndex, PatternDetailPage } from '../explorer/patterns.js';
+import { ShellsIndex, ShellDetailPage } from '../explorer/shells.js';
+import { ArchetypesIndex, ArchetypeDetailPage } from '../explorer/archetypes.js';
+import { RecipesIndex, RecipeDetailPage } from '../explorer/recipes.js';
+import { FoundationsIndex, FoundationPage } from '../explorer/foundations.js';
+import { AtomsIndex, AtomPage } from '../explorer/atoms.js';
+import { TokensIndex, TokenPage } from '../explorer/tokens.js';
+import { ToolsIndex, ToolDetailPage } from '../explorer/tools.js';
 
-// Workbench page components (via symlink docs/src/wb-pages -> workbench/src/pages)
-import { ComponentsIndex, ComponentGroupPage, ComponentDetailPage } from '../wb-pages/components.js';
-import { IconsIndex, IconGroupPage, IconDetailPage } from '../wb-pages/icons.js';
-import { ChartsIndex, ChartGroupPage, ChartDetailPage } from '../wb-pages/charts.js';
-import { PatternsIndex, PatternDetailPage } from '../wb-pages/patterns.js';
-import { ShellsIndex, ShellDetailPage } from '../wb-pages/shells.js';
-import { ArchetypesIndex, ArchetypeDetailPage } from '../wb-pages/archetypes.js';
-import { RecipesIndex, RecipeDetailPage } from '../wb-pages/recipes.js';
-import { FoundationsIndex, FoundationPage } from '../wb-pages/foundations.js';
-import { AtomsIndex, AtomPage } from '../wb-pages/atoms.js';
-import { TokensIndex, TokenPage } from '../wb-pages/tokens.js';
-import { ToolsIndex, ToolDetailPage } from '../wb-pages/tools.js';
+injectExplorerCSS();
 
 const { div, header, main, nav, h1, span, button, input, img } = tags;
 
-const PREFIX = '/workbench';
+const PREFIX = '/explorer';
 
 // ─── Layer definitions ─────────────────────────────────────────
 const LAYERS = [
@@ -219,17 +218,16 @@ function SearchModal(visible, setVisible) {
   return overlay;
 }
 
-// ─── Sidebar Nav (prefixed paths) ──────────────────────────────
+// ─── Sidebar Nav ───────────────────────────────────────────────
 const expandedGroups = new Set();
 
-function WorkbenchSidebar() {
+function ExplorerSidebar() {
   const route = useRoute();
   const [filter, setFilter] = createSignal('');
 
   const activeLayer = createMemo(() => {
     const path = route().path || '';
-    // Strip /workbench/ prefix to get layer
-    const stripped = path.replace(/^\/workbench\/?/, '');
+    const stripped = path.replace(/^\/explorer\/?/, '');
     return stripped.split('/').filter(Boolean)[0] || 'components';
   });
 
@@ -332,12 +330,10 @@ function WorkbenchSidebar() {
 // ─── Route content resolver ────────────────────────────────────
 function resolveContent(route) {
   const path = route.path || '';
-  const stripped = path.replace(/^\/workbench\/?/, '');
+  const stripped = path.replace(/^\/explorer\/?/, '');
   const segments = stripped.split('/').filter(Boolean);
   const section = segments[0] || 'components';
   const params = route.params || {};
-
-  // Use params from the router when available, fall back to segments
   const p1 = params.group || params.section || segments[1];
   const p2 = params.item || segments[2];
 
@@ -383,8 +379,8 @@ function resolveContent(route) {
   }
 }
 
-// ─── WorkbenchPage component ───────────────────────────────────
-export function WorkbenchPage() {
+// ─── ExplorerPage component ────────────────────────────────────
+export function ExplorerPage() {
   const route = useRoute();
   const styles = getStyleList();
 
@@ -473,7 +469,7 @@ export function WorkbenchPage() {
         span({ class: css('_bold _ls[-0.02em] _textlg') },
           'decantr', span({ class: 'de-pink' }, '.'), 'a', span({ class: 'de-pink' }, 'i')
         ),
-        span({ class: css('_fgmutedfg _textsm _ml2') }, 'workbench')
+        span({ class: css('_fgmutedfg _textsm _ml2') }, 'explorer')
       )
     ),
     div({ class: 'de-header-right' },
@@ -488,9 +484,9 @@ export function WorkbenchPage() {
       hudToggle,
       button({
         class: 'de-hud-toggle',
-        'aria-label': 'Back to docs',
-        title: 'Back to docs',
-        onclick: () => navigate('/docs')
+        'aria-label': 'Back to home',
+        title: 'Back to home',
+        onclick: () => navigate('/')
       }, icon('arrow-left', { size: '1rem' }))
     )
   );
@@ -498,7 +494,6 @@ export function WorkbenchPage() {
   // Main content area
   const mainArea = main({ class: 'de-main' });
 
-  // Resolve and display content based on current route
   function updateContent() {
     mainArea.replaceChildren();
     const r = route();
@@ -564,7 +559,7 @@ export function WorkbenchPage() {
   return div({ class: 'de-shell' },
     headerEl,
     div({ class: 'de-body d-mesh' },
-      WorkbenchSidebar(),
+      ExplorerSidebar(),
       mainArea
     ),
     hudDrawer,

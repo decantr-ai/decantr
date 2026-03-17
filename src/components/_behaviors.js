@@ -57,9 +57,12 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
     align = 'start',
     offset = 2,
     matchWidth = false,
+    exitAnimation = typeof document !== 'undefined' && typeof document.getAnimations === 'function',
+    exitDuration = 150,
   } = opts;
 
   let _open = false;
+  let _closing = false;
   let _hoverTimer = null;
   let _closeTimer = null;
   const _cleanups = [];
@@ -81,6 +84,7 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
 
   function open() {
     if (_open) return;
+    if (_closing) { _closing = false; }
     _open = true;
     if (portal) {
       const target = portalTarget();
@@ -91,6 +95,7 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
     } else {
       contentEl.style.display = '';
     }
+    contentEl.classList.remove('d-overlay-exit');
     if (_posHandle) _posHandle.reposition();
     triggerEl.setAttribute('aria-expanded', 'true');
     if (onOpen) onOpen();
@@ -99,6 +104,21 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
   function close() {
     if (!_open) return;
     _open = false;
+
+    if (exitAnimation && !usePopover) {
+      _closing = true;
+      contentEl.classList.add('d-overlay-exit');
+      setTimeout(() => {
+        if (!_closing) return;
+        _closing = false;
+        contentEl.classList.remove('d-overlay-exit');
+        contentEl.style.display = 'none';
+        triggerEl.setAttribute('aria-expanded', 'false');
+        if (onClose) onClose();
+      }, exitDuration);
+      return;
+    }
+
     if (usePopover && contentEl.hidePopover) {
       try { contentEl.hidePopover(); } catch (_) {}
     } else {
@@ -190,7 +210,7 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
  * @param {HTMLElement} triggerEl
  * @param {HTMLElement} panelEl
  * @param {Object} [opts]
- * @param {'bottom'|'top'} [opts.placement='bottom']
+ * @param {'bottom'|'top'|'left'|'right'} [opts.placement='bottom']
  * @param {'start'|'center'|'end'} [opts.align='start']
  * @param {number} [opts.offset=2] - Gap in px between trigger and panel
  * @param {boolean} [opts.matchWidth=false] - Set panel width to trigger width
@@ -229,30 +249,48 @@ export function positionPanel(triggerEl, panelEl, opts = {}) {
 
     if (matchWidth) panelEl.style.width = `${tr.width}px`;
 
-    // Determine vertical placement
+    const isHorizontal = placement === 'left' || placement === 'right';
     let usePlacement = placement;
+
     if (flip) {
-      const spaceBelow = window.innerHeight - tr.bottom - offset;
-      const spaceAbove = tr.top - offset;
-      if (usePlacement === 'bottom' && pr.height > spaceBelow && spaceAbove > spaceBelow) {
-        usePlacement = 'top';
-      } else if (usePlacement === 'top' && pr.height > spaceAbove && spaceBelow > spaceAbove) {
-        usePlacement = 'bottom';
+      if (isHorizontal) {
+        const spaceRight = window.innerWidth - tr.right - offset;
+        const spaceLeft = tr.left - offset;
+        if (usePlacement === 'right' && pr.width > spaceRight && spaceLeft > spaceRight) {
+          usePlacement = 'left';
+        } else if (usePlacement === 'left' && pr.width > spaceLeft && spaceRight > spaceLeft) {
+          usePlacement = 'right';
+        }
+      } else {
+        const spaceBelow = window.innerHeight - tr.bottom - offset;
+        const spaceAbove = tr.top - offset;
+        if (usePlacement === 'bottom' && pr.height > spaceBelow && spaceAbove > spaceBelow) {
+          usePlacement = 'top';
+        } else if (usePlacement === 'top' && pr.height > spaceAbove && spaceBelow > spaceAbove) {
+          usePlacement = 'bottom';
+        }
       }
     }
 
-    let top;
-    if (usePlacement === 'bottom') {
-      top = tr.bottom + offset;
-    } else {
-      top = tr.top - pr.height - offset;
-    }
+    let top, left;
 
-    // Horizontal alignment
-    let left;
-    if (align === 'start') left = tr.left;
-    else if (align === 'end') left = tr.right - pr.width;
-    else left = tr.left + (tr.width - pr.width) / 2;
+    if (usePlacement === 'left' || usePlacement === 'right') {
+      // Horizontal placement
+      left = usePlacement === 'right' ? tr.right + offset : tr.left - pr.width - offset;
+
+      // Vertical alignment
+      if (align === 'start') top = tr.top;
+      else if (align === 'end') top = tr.bottom - pr.height;
+      else top = tr.top + (tr.height - pr.height) / 2;
+    } else {
+      // Vertical placement (top/bottom)
+      top = usePlacement === 'bottom' ? tr.bottom + offset : tr.top - pr.height - offset;
+
+      // Horizontal alignment
+      if (align === 'start') left = tr.left;
+      else if (align === 'end') left = tr.right - pr.width;
+      else left = tr.left + (tr.width - pr.width) / 2;
+    }
 
     // Clamp to viewport edges
     const pw = matchWidth ? tr.width : pr.width;

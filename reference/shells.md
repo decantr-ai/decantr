@@ -114,3 +114,45 @@ top-nav-sidebar:
 │ NAV │     BODY       │
 └─────┴────────────────┘
 ```
+
+## ARIA Attributes
+
+Shell sub-components include semantic ARIA roles for assistive technology:
+
+| Sub-Component | Role | Notes |
+|---|---|---|
+| `Shell.Header` | `role="banner"` | Page-level banner landmark |
+| `Shell.Nav` | `role="navigation"` | Navigation landmark; `aria-label` defaults to `"Main"`, override via prop |
+| `Shell.Body` | `role="main"` | Main content landmark |
+| `Shell.Footer` | `role="contentinfo"` | Footer landmark |
+| `Shell.Aside` | `role="complementary"` | Complementary content landmark |
+
+Additionally, `Shell.Nav` receives `aria-expanded` reactively from the parent Shell — set to `"true"` when the nav state is `expanded`, `"false"` otherwise (rail/hidden).
+
+```js
+// Custom aria-label on nav
+Shell.Nav({ 'aria-label': 'Admin navigation' }, ...children)
+```
+
+## Shell in Generate Engine
+
+The `tools/generate.js` `buildSkeletonApp()` function emits Shell-based layouts for the `sidebar-main` skeleton. The generated code includes:
+
+- **Shell component** with `navState` signal for animated collapse/expand
+- **Shell.Nav** with `d-shell-nav-item` / `d-shell-nav-item-active` classes for animated indicator
+- **Shell.Header** with `Breadcrumb`, search (Command palette via Cmd+K), notification `Popover`, and user `Dropdown`
+- **Shell.Body** with `d-page-enter` fade-in animation
+- **Keyboard shortcut**: `Ctrl+\` toggles sidebar between expanded/rail states
+- **Recipe decoration**: `applyRecipeToSkeleton()` injects recipe-specific classes (e.g. `cc-mesh`, `cc-frame`, `d-glass`) into Shell regions via `getRecipeDecoration()`
+
+### Nav Item Classes
+
+Use `d-shell-nav-item` on all sidebar nav links. Add `d-shell-nav-item-active` on the current route to get an animated left-edge indicator pill:
+
+```js
+link({ href: item.href, class: () =>
+  css(`d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans ${
+    isActive ? 'd-shell-nav-item-active _bgprimary/10 _fgprimary' : '_fgfg'
+  }`)
+})
+```

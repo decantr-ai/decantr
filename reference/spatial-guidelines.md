@@ -184,6 +184,16 @@ Different UI regions serve different purposes and demand different spacing:
 | **List-Detail** | One pane at a time | One pane at a time | Both side-by-side | `{ "cols": ["list", "detail"], "at": "lg" }` |
 | **Supporting Panel** | Stacked or bottom sheet | 50/50 split | 70/30 split | `{ "cols": ["main", "support"], "span": {"main": 7, "support": 3}, "at": "md" }` |
 | **Feed** | Single column | Auto-fit grid | Auto-fit grid | `_gcaf220` or `_gcaf280` |
+| **KPI Grid** | 1 column | 2 columns | 4 columns | `_gc1 _sm:gc2 _lg:gc4 _gap3` |
+| **Chart Grid** | 1 column | 2 columns | 2 columns | `_gc1 _md:gc2 _gap3` |
+
+### Responsive atoms in generated code
+
+When a blend item has `{ cols, at }`, the generate engine emits responsive grid atoms:
+- `{ "cols": ["a", "b"], "at": "lg" }` → `_grid _gc1 _lg:gc2 _gap3`
+- `{ "cols": ["a", "b", "c"], "span": { "a": 2 }, "at": "md" }` → `_grid _gc1 _md:gc3 _gap3`
+
+Pattern code examples also use responsive atoms directly (see `kpi-grid.json`, `chart-grid.json`).
 
 ---
 
@@ -486,13 +496,13 @@ Decantr's three density classes cascade all spacing tokens to children:
 
 The **Clarity** layer in the Decantation vocabulary governs whitespace. During SETTLE, the LLM determines Character traits which imply a Clarity profile:
 
-| Character Trait | Density | Section Padding | Content Gap | Chrome Gap | Zone Emphasis |
-|----------------|---------|-----------------|-------------|------------|--------------|
-| "minimal", "clean" | Spacious | Landmark (`_py16`) | `_gap6` | `_gap2` | Showcase + Content |
-| "professional", "balanced" | Comfortable | Sectional (`_py12`) | `_gap4` | `_gap2` | Content + Controls |
-| "tactical", "dense" | Compact | Grouped (`_py8`) | `_gap3` | `_gap1` | Data-dense + Chrome |
-| "editorial", "luxurious" | Spacious | Landmark (`_py24`) | `_gap8` | `_gap2` | Showcase |
-| "technical", "utilitarian" | Compact | Sectional (`_py8`) | `_gap3` | `_gap1` | Controls + Data-dense |
+| Character Trait | Density | Section Padding | Content Gap | Chrome Gap | Zone Emphasis | Animation |
+|----------------|---------|-----------------|-------------|------------|--------------|-----------|
+| "minimal", "clean" | Spacious | Landmark (`_py16`) | `_gap6` | `_gap2` | Showcase + Content | Subtle fades (`d-stagger`) |
+| "professional", "balanced" | Comfortable | Sectional (`_py12`) | `_gap4` | `_gap2` | Content + Controls | Standard (`d-stagger-up`) |
+| "tactical", "dense" | Compact | Grouped (`_py8`) | `_gap3` | `_gap1` | Data-dense + Chrome | Snappy (`d-stagger-scale`) |
+| "editorial", "luxurious" | Spacious | Landmark (`_py24`) | `_gap8` | `_gap2` | Showcase | Graceful (`d-stagger`) |
+| "technical", "utilitarian" | Compact | Sectional (`_py8`) | `_gap3` | `_gap1` | Controls + Data-dense | Minimal (`d-stagger-scale`) |
 
 During DECANT, each page's blend spec inherits the Clarity profile. The `surface` atoms on each page should reflect the zone and the Character-derived density.
 
@@ -523,6 +533,8 @@ When you need to decide spacing, use this lookup:
 | A floating dropdown from trigger | Z-axis | 2px offset | — | §11 Elevation |
 | A tooltip from trigger | Z-axis | 6px offset | — | §11 Elevation |
 | Page layout margins | Grid | — | `_px4` (mobile) → `_px8` (desktop) | §6 Responsive |
+| Sequential card/KPI entrance | — | — | `d-stagger` / `d-stagger-up` on parent | §17 Clarity |
+| Statistic count-up on mount | — | — | `Statistic({ animate: true })` | §17 Clarity |
 
 ---
 

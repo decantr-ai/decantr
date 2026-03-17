@@ -11,15 +11,15 @@ import {
 import { derive, defaultSeed, defaultPersonality, hexToRgb, rgbToOklch, oklchToRgb, gamutMap, contrast, parseRgba, compositeOnBg, transformSeedsForCVD, deriveChrome } from '../src/css/derive.js';
 import { auradecantism } from '../src/css/styles/auradecantism.js';
 import { clean } from '../src/css/styles/addons/clean.js';
-import { retro } from '../src/css/styles/addons/retro.js';
 import { glassmorphism } from '../src/css/styles/addons/glassmorphism.js';
 import { commandCenter } from '../src/css/styles/addons/command-center.js';
-import { clay } from '../src/css/styles/addons/clay.js';
-import { liquidGlass } from '../src/css/styles/addons/liquid-glass.js';
-import { dopamine } from '../src/css/styles/addons/dopamine.js';
-import { prismatic } from '../src/css/styles/addons/prismatic.js';
-import { bioluminescent } from '../src/css/styles/addons/bioluminescent.js';
-import { editorial } from '../src/css/styles/addons/editorial.js';
+import { retro } from '../src/css/styles/community/retro.js';
+import { clay } from '../src/css/styles/community/clay.js';
+import { liquidGlass } from '../src/css/styles/community/liquid-glass.js';
+import { dopamine } from '../src/css/styles/community/dopamine.js';
+import { prismatic } from '../src/css/styles/community/prismatic.js';
+import { bioluminescent } from '../src/css/styles/community/bioluminescent.js';
+import { editorial } from '../src/css/styles/community/editorial.js';
 
 const allStyleDefs = [clean, retro, glassmorphism, auradecantism, commandCenter, clay, liquidGlass, dopamine, prismatic, bioluminescent, editorial];
 
@@ -863,6 +863,25 @@ describe('token stability', () => {
       assert.ok(tokens[`--d-${role}`], `missing --d-${role}`);
       assert.ok(tokens[`--d-${role}-fg`], `missing --d-${role}-fg`);
     }
+  });
+
+  it('monochrome palette preserves semantic hues for success/warning/error', () => {
+    const tokens = derive(
+      { primary: '#00e5ff', neutral: '#1a2a3a', bg: '#c8d6e0', bgDark: '#050a10' },
+      { ...defaultPersonality, palette: 'monochrome' },
+      'dark'
+    );
+    // Success should be green-ish (hue 100-160), not cyan like primary
+    const [sR, sG] = hexToRgb(tokens['--d-success']);
+    assert.ok(sG > sR, `success should be greener than red: got r=${sR} g=${sG}`);
+    // Error should be red-ish (hue 0-30 or 330-360)
+    const [eR, eG, eB] = hexToRgb(tokens['--d-error']);
+    assert.ok(eR > eG && eR > eB, `error should be reddish: got r=${eR} g=${eG} b=${eB}`);
+    // Primary hue check — success hue should NOT be within 20° of primary hue
+    const [, , pH] = rgbToOklch(...hexToRgb(tokens['--d-primary']));
+    const [, , sH] = rgbToOklch(sR, sG, hexToRgb(tokens['--d-success'])[2]);
+    const hueDiff = Math.abs(((pH - sH + 180) % 360) - 180);
+    assert.ok(hueDiff > 20, `success hue should differ from primary by >20°, got ${hueDiff.toFixed(1)}°`);
   });
 
   it('colorblind mode produces same token key set as normal mode', () => {

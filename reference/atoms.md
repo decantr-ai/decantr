@@ -512,6 +512,22 @@ Uses `var(--d-border)` for color. Applied via child selector `> :not(:first-chil
 |------|--------|
 | `_scrollSmooth` | `scroll-behavior: smooth` |
 
+## Component Utility Classes
+
+These are non-atomic CSS classes injected by `_base.js` for use in generated code and component composition:
+
+| Class | Effect |
+|-------|--------|
+| `d-page-enter` | Fade-in entrance animation using `--d-duration-normal` + `--d-easing-decelerate` |
+| `d-stagger` | Children fade in sequentially (50ms delay per child, up to 8 children + cap) |
+| `d-stagger-up` | Children slide up sequentially (same timing as `d-stagger`) |
+| `d-stagger-scale` | Children scale in sequentially (same timing as `d-stagger`) |
+| `d-card-hover` | Card lift on hover — elevation + translateY + border-color transition |
+| `d-shell-nav-item` | Nav item base — adds color/background transitions |
+| `d-shell-nav-item-active` | Active nav item — animated left-edge indicator pill via `::before` pseudo |
+| `d-statistic-trend-up` | Trend up color — `var(--d-success)` (green) |
+| `d-statistic-trend-down` | Trend down color — `var(--d-error)` (red) |
+
 ---
 
 **See also:** `reference/spatial-guidelines.md`, `reference/tokens.md`, `reference/compound-spacing.md`

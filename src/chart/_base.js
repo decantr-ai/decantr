@@ -8,7 +8,7 @@ let injected = false;
 
 const BASE_CSS = [
   // Chart container
-  '.d-chart{position:relative;width:100%;min-width:0;overflow:visible}',
+  '.d-chart{position:relative;width:100%;min-width:0;overflow:visible;padding:var(--d-compound-pad);background:var(--d-surface-1);border:var(--d-border-width) var(--d-border-style) var(--d-surface-1-border);border-radius:var(--d-radius-lg);backdrop-filter:var(--d-surface-1-filter)}',
   '.d-chart-inner{position:relative}',
 
   // SVG container

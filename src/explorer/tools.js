@@ -15,7 +15,7 @@ import {
 import { derive, defaultSeed, defaultPersonality, deriveMonochromeSeed, hexToRgb, contrast } from 'decantr/css/derive.js';
 import { auradecantism } from 'decantr/css/styles/auradecantism.js';
 import { clean } from 'decantr/css/styles/addons/clean.js';
-import { retro } from 'decantr/css/styles/addons/retro.js';
+import { retro } from 'decantr/css/styles/community/retro.js';
 import { glassmorphism } from 'decantr/css/styles/addons/glassmorphism.js';
 import { commandCenter } from 'decantr/css/styles/addons/command-center.js';
 

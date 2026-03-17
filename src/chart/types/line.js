@@ -53,6 +53,7 @@ export function layoutLine(spec, width, height) {
   children.push(...axisNodes);
 
   // Lines
+  const zeroY = innerH;
   for (const s of series) {
     if (s.points.length < 2) continue;
     let d;
@@ -60,11 +61,15 @@ export function layoutLine(spec, width, height) {
     else if (spec.smooth) d = smoothPathD(s.points);
     else d = pointsToPathD(s.points);
 
+    const zeroLinePts = s.points.map(p => ({ x: p.x, y: zeroY }));
+    const zeroLineD = spec.step ? stepPathD(zeroLinePts)
+      : spec.smooth ? smoothPathD(zeroLinePts) : pointsToPathD(zeroLinePts);
     children.push(path({
       d, stroke: s.color, strokeWidth: 2,
       strokeLinecap: 'round', strokeLinejoin: 'round',
       class: 'd-chart-line',
-      data: { series: s.key }, key: `line-${s.key}`
+      data: { series: s.key }, key: `line-${s.key}`,
+      _zeroD: zeroLineD
     }));
 
     // Data point dots (suppress when points > 50 for LTTB-downsampled datasets)
