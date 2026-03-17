@@ -13,6 +13,7 @@ import { injectBase, cx } from './_base.js';
  * @param {boolean} [props.lineNumbers=false] - Show line numbers
  * @param {boolean} [props.copyable=true] - Show copy button
  * @param {number} [props.maxHeight] - Max height in px (scroll if exceeded)
+ * @param {Function} [props.highlight] - Optional highlighter function (code, lang) => HTML string
  * @param {string} [props.class]
  * @param {...string} children - Code string(s)
  * @returns {HTMLElement}
@@ -20,7 +21,7 @@ import { injectBase, cx } from './_base.js';
 export function CodeBlock(props = {}, ...children) {
   injectBase();
 
-  const { language, lineNumbers = false, copyable = true, maxHeight, class: cls } = props;
+  const { language, lineNumbers = false, copyable = true, maxHeight, highlight, class: cls } = props;
   const code = children.join('');
   const lines = code.split('\n');
 
@@ -74,7 +75,11 @@ export function CodeBlock(props = {}, ...children) {
   const codeEl = h('code', {
     class: cx('d-codeblock-code', language && `language-${language}`)
   });
-  codeEl.textContent = code;
+  if (highlight && language) {
+    codeEl.innerHTML = highlight(code, language);
+  } else {
+    codeEl.textContent = code;
+  }
   pre.appendChild(codeEl);
 
   wrap.appendChild(pre);

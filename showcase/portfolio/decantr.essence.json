@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "terroir": "portfolio",
+  "vintage": {
+    "style": "auradecantism",
+    "mode": "dark",
+    "recipe": "auradecantism",
+    "shape": "pill"
+  },
+  "character": ["bold", "dramatic", "editorial"],
+  "vessel": {
+    "type": "spa",
+    "routing": "hash"
+  },
+  "structure": [
+    {
+      "id": "home",
+      "skeleton": "full-bleed",
+      "blend": [
+        "announcement-bar",
+        { "pattern": "hero", "preset": "brand", "as": "brand-hero" },
+        { "pattern": "logo-strip", "preset": "marquee", "as": "partner-logos" },
+        { "pattern": "card-grid", "preset": "icon", "as": "feature-grid" },
+        { "pattern": "code-preview", "preset": "split", "as": "quickstart" },
+        { "pattern": "stats-section", "preset": "hero", "as": "metrics" },
+        { "pattern": "testimonials", "preset": "wall", "as": "social-proof" },
+        "showcase-gallery",
+        { "pattern": "cta-section", "preset": "brand", "as": "final-cta" },
+        "footer-columns"
+      ],
+      "surface": "_flex _col _gap0 _overflow[auto] _flex1"
+    }
+  ],
+  "tannins": ["analytics"],
+  "cork": {
+    "enforce_style": true,
+    "enforce_recipe": true
+  }
+}

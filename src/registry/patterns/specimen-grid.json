@@ -1,19 +1,43 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "specimen-grid",
   "name": "Specimen Grid",
-  "description": "Auto-fill grid of design specimens — atom previews, icon tiles, color swatches. Each cell shows a labeled visual sample.",
+  "description": "Auto-fill grid of design specimens — atom previews, icon tiles, color swatches. Each cell shows a labeled visual sample. Supports presets for different layouts.",
   "components": ["Card", "Badge", "Chip"],
-  "default_blend": {
-    "layout": "grid",
-    "atoms": "_grid _gcaf180 _gap3",
-    "slots": {
-      "specimen-card": "Individual specimen cell with preview area + name label + optional value",
-      "filter-bar": "Optional filter Input at top to narrow visible specimens"
+  "presets": {
+    "swatch": {
+      "name": "Swatch",
+      "description": "Default auto-fill grid of equal-sized specimen cells. Ideal for token/icon/color grids.",
+      "default": true,
+      "default_blend": {
+        "layout": "grid",
+        "atoms": "_grid _gcaf180 _gap3",
+        "slots": {
+          "specimen-card": "Individual specimen cell with preview area + name label + optional value",
+          "filter-bar": "Optional filter Input at top to narrow visible specimens"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card } from 'decantr/components';",
+        "example": "function SpecimenGrid() {\n  const { div, span, code } = tags;\n  const specimens = [\n    { name: 'Primary', value: '--d-primary', style: 'background:var(--d-primary)', preview: null },\n    { name: 'Secondary', value: '--d-secondary', style: 'background:var(--d-secondary)', preview: null },\n    { name: 'Accent', value: '--d-accent', style: 'background:var(--d-accent)', preview: null },\n    { name: 'Muted', value: '--d-muted', style: 'background:var(--d-muted)', preview: null },\n    { name: 'Background', value: '--d-bg', style: 'background:var(--d-bg)', preview: null },\n    { name: 'Surface', value: '--d-surface-0', style: 'background:var(--d-surface-0)', preview: null }\n  ];\n\n  return div({ class: css('_grid _gcaf200 _gap4 _p4') },\n    ...specimens.map(s =>\n      Card({ class: css('_flex _col') },\n        div({ class: css('_flex _center _p6 _bgmuted _r4'), style: s.style },\n          s.preview\n        ),\n        Card.Body({ class: css('_flex _col _gap1') },\n          span({ class: css('_textsm _bold') }, s.name),\n          code({ class: css('_textxs _fgmuted _fontmono') }, s.value)\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "preview": {
+      "name": "Preview",
+      "description": "Full-width rows with larger specimens and hover expand. Designed for creative tool previews — palette strips, gradient rows, etc.",
+      "default_blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "specimen-row": "Full-width row showing a connected strip of specimen cells (e.g. 5-color palette)",
+          "specimen-cell": "Individual specimen within a row, with pillow shadow and hover expand",
+          "filter-bar": "Optional filter/input bar above the grid"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card } from 'decantr/components';",
+        "example": "function PreviewGrid({ palettes }) {\n  const { div, span, code } = tags;\n\n  return div({ class: css('_flex _col _gap4') },\n    ...palettes.map(palette =>\n      Card({ class: css('_flex _col _gap0') },\n        div({ class: css('_flex _r4 _overflow[hidden]') },\n          ...palette.colors.map(c =>\n            div({ class: css('_flex1 _h20 _trans[flex_0.3s_ease] _h:flex[2]'), style: `background:${c.hex}` },\n              div({ class: css('_flex _col _aic _jcc _hfull _opacity0 _h:opacity100 _trans[opacity_0.2s_ease]') },\n                span({ class: css('_textsm _bold'), style: `color:${c.contrast}` }, c.hex)\n              )\n            )\n          )\n        ),\n        Card.Body({ class: css('_flex _aic _jcsb') },\n          span({ class: css('_textsm _bold') }, palette.name),\n          span({ class: css('_textxs _fgmuted _fontmono') }, `${palette.colors.length} colors`)\n        )\n      )\n    )\n  );\n}"
+      }
     }
-  },
-  "code": {
-    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card } from 'decantr/components';",
-    "example": "function SpecimenGrid() {\n  const { div, span, code } = tags;\n  const specimens = [\n    { name: 'Primary', value: '--d-primary', style: 'background:var(--d-primary)', preview: null },\n    { name: 'Secondary', value: '--d-secondary', style: 'background:var(--d-secondary)', preview: null },\n    { name: 'Accent', value: '--d-accent', style: 'background:var(--d-accent)', preview: null },\n    { name: 'Muted', value: '--d-muted', style: 'background:var(--d-muted)', preview: null },\n    { name: 'Background', value: '--d-bg', style: 'background:var(--d-bg)', preview: null },\n    { name: 'Surface', value: '--d-surface-0', style: 'background:var(--d-surface-0)', preview: null }\n  ];\n\n  return div({ class: css('_grid _gcaf200 _gap4 _p4') },\n    ...specimens.map(s =>\n      Card({ class: css('_flex _col') },\n        div({ class: css('_flex _center _p6 _bgmuted _r4'), style: s.style },\n          s.preview\n        ),\n        Card.Body({ class: css('_flex _col _gap1') },\n          span({ class: css('_textsm _bold') }, s.name),\n          code({ class: css('_textxs _fgmuted _fontmono') }, s.value)\n        )\n      )\n    )\n  );\n}"
   }
 }

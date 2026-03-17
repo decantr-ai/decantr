@@ -1,12 +1,69 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "testimonials",
   "name": "Testimonials",
-  "description": "Customer testimonial cards in a responsive grid with avatar, quote, and attribution.",
-  "components": ["Card", "Avatar", "Badge", "Text"],
+  "description": "Customer testimonial cards with avatar, quote, and attribution. Supports grid, masonry wall, and scrolling marquee layouts.",
+  "components": ["Card", "Avatar", "Badge", "Text", "Marquee"],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Responsive 3-column grid of testimonial cards.",
+      "components": ["Card", "Avatar"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py8",
+        "slots": {
+          "testimonial-card": "Card container for each testimonial entry",
+          "avatar": "Avatar image of the testimonial author",
+          "quote": "Quoted text content of the testimonial",
+          "attribution": "Author name, role, and optional company badge"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Avatar } from 'decantr/components';",
+        "example": "function Testimonials() {\n  const { div, p, span } = tags;\n  const items = [\n    { quote: 'This product transformed our workflow completely.', avatar: '', name: 'Sarah Johnson', role: 'CTO at TechCorp' },\n    { quote: 'The best investment we made this year.', avatar: '', name: 'Mike Chen', role: 'Product Lead at Acme' },\n    { quote: 'Incredible support team and amazing features.', avatar: '', name: 'Lisa Park', role: 'Engineering Manager at Globex' }\n  ];\n\n  return div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py8') },\n    ...items.map(t =>\n      Card({ class: css('_flex _col _gap4') },\n        Card.Body({},\n          p({ class: css('_italic _fgmuted') }, `\"${t.quote}\"`),\n          div({ class: css('_flex _aic _gap3 _mt3') },\n            Avatar({ src: t.avatar, name: t.name }),\n            div({},\n              span({ class: css('_textsm _bold') }, t.name),\n              span({ class: css('_textxs _fgmuted _block') }, t.role)\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "wall": {
+      "description": "Large masonry-style social proof wall with 6-12 testimonial cards and staggered scroll reveal.",
+      "components": ["Card", "Avatar"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap4 _py12",
+        "slots": {
+          "testimonial-card": "Glass-style card for each testimonial",
+          "avatar": "Avatar image of the author",
+          "quote": "Testimonial text",
+          "attribution": "Author name and role"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Avatar, createScrollReveal } from 'decantr/components';\nimport { onMount, onDestroy } from 'decantr/core';",
+        "example": "function TestimonialWall({ items }) {\n  const { div, p, span, h2 } = tags;\n\n  const section = div({ class: css('_flex _col _gap8 _py12') },\n    h2({ class: css('_heading2 _tc') }, 'Loved by developers'),\n    div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap4') },\n      ...items.map((t, i) => {\n        const card = Card({ class: css('d-reveal _flex _col _gap4') },\n          Card.Body({},\n            p({ class: css('_italic _fgmuted') }, `\"${t.quote}\"`),\n            div({ class: css('_flex _aic _gap3 _mt3') },\n              Avatar({ src: t.avatar, name: t.name, size: 'sm' }),\n              div({},\n                span({ class: css('_textsm _bold') }, t.name),\n                span({ class: css('_textxs _fgmuted _block') }, t.role)\n              )\n            )\n          )\n        );\n        card.style.setProperty('--d-i', String(i));\n        return card;\n      })\n    )\n  );\n  return section;\n}"
+      }
+    },
+    "marquee": {
+      "description": "Horizontal scrolling testimonial strip using Marquee component.",
+      "components": ["Card", "Avatar", "Marquee"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_py8",
+        "slots": {
+          "testimonial-card": "Fixed-width card for each testimonial in the marquee",
+          "avatar": "Avatar image",
+          "quote": "Testimonial text",
+          "attribution": "Author name and role"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Avatar, Marquee } from 'decantr/components';",
+        "example": "function TestimonialMarquee({ items }) {\n  const { div, p, span } = tags;\n\n  return Marquee({ speed: 40, gap: 4 },\n    ...items.map(t =>\n      Card({ class: css('_w[320px] _shrink0 _flex _col _gap3') },\n        Card.Body({},\n          p({ class: css('_italic _fgmuted _textsm') }, `\"${t.quote}\"`),\n          div({ class: css('_flex _aic _gap2 _mt2') },\n            Avatar({ src: t.avatar, name: t.name, size: 'sm' }),\n            div({},\n              span({ class: css('_textsm _bold') }, t.name),\n              span({ class: css('_textxs _fgmuted _block') }, t.role)\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "grid",
-    "atoms": "_grid _gc3 _gap6 _py8",
+    "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py8",
     "slots": {
       "testimonial-card": "Card container for each testimonial entry",
       "avatar": "Avatar image of the testimonial author",
@@ -14,8 +71,34 @@
       "attribution": "Author name, role, and optional company badge"
     }
   },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Cards use d-glass. Quote text uses _fgmuted. Author name uses _fgfg.",
+      "preset_notes": {
+        "wall": "Cards use d-glass with staggered d-reveal. Section heading uses d-gradient-text.",
+        "marquee": "Cards use d-glass. Track scrolls horizontally."
+      }
+    },
+    "command-center": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Cards use cc-frame. Quote text uses cc-label.",
+      "preset_notes": {
+        "wall": "Cards use cc-frame. Section heading uses cc-data.",
+        "marquee": "Cards use cc-frame."
+      }
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Standard card styling. No glass or gradient effects.",
+      "preset_notes": {}
+    }
+  },
   "code": {
     "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Avatar } from 'decantr/components';",
-    "example": "function Testimonials() {\n  const { div, p, span } = tags;\n  const items = [\n    { quote: 'This product transformed our workflow completely.', avatar: '', name: 'Sarah Johnson', role: 'CTO at TechCorp' },\n    { quote: 'The best investment we made this year.', avatar: '', name: 'Mike Chen', role: 'Product Lead at Acme' },\n    { quote: 'Incredible support team and amazing features.', avatar: '', name: 'Lisa Park', role: 'Engineering Manager at Globex' }\n  ];\n\n  return div({ class: css('_grid _gc3 _gap4 _p4') },\n    ...items.map(t =>\n      Card({ class: css('_flex _col _gap4') },\n        Card.Body({},\n          p({ class: css('_italic _fgmuted') }, `\\\"${t.quote}\\\"`),\n          div({ class: css('_flex _aic _gap3 _mt3') },\n            Avatar({ src: t.avatar, name: t.name }),\n            div({},\n              span({ class: css('_textsm _bold') }, t.name),\n              span({ class: css('_textxs _fgmuted _block') }, t.role)\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+    "example": "function Testimonials() {\n  const { div, p, span } = tags;\n  const items = [\n    { quote: 'This product transformed our workflow completely.', avatar: '', name: 'Sarah Johnson', role: 'CTO at TechCorp' },\n    { quote: 'The best investment we made this year.', avatar: '', name: 'Mike Chen', role: 'Product Lead at Acme' },\n    { quote: 'Incredible support team and amazing features.', avatar: '', name: 'Lisa Park', role: 'Engineering Manager at Globex' }\n  ];\n\n  return div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py8') },\n    ...items.map(t =>\n      Card({ class: css('_flex _col _gap4') },\n        Card.Body({},\n          p({ class: css('_italic _fgmuted') }, `\"${t.quote}\"`),\n          div({ class: css('_flex _aic _gap3 _mt3') },\n            Avatar({ src: t.avatar, name: t.name }),\n            div({},\n              span({ class: css('_textsm _bold') }, t.name),\n              span({ class: css('_textxs _fgmuted _block') }, t.role)\n            )\n          )\n        )\n      )\n    )\n  );\n}"
   }
 }

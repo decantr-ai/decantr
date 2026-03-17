@@ -1,5 +1,6 @@
 import { h, text } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
+import { icon as iconHelper } from './icon.js';
 
 /**
  * @param {Object} [props]
@@ -8,6 +9,7 @@ import { injectBase, cx } from './_base.js';
  * @param {boolean} [props.dot] - Show as dot instead of pill
  * @param {string} [props.status] - success|error|warning|processing
  * @param {string} [props.variant] - Alias for status
+ * @param {string|Node} [props.icon] - Leading icon (string = icon name, Node = element)
  * @param {string} [props.class]
  * @param {...Node} children - If provided, badge wraps as superscript
  * @returns {HTMLElement}
@@ -15,7 +17,7 @@ import { injectBase, cx } from './_base.js';
 export function Badge(props = {}, ...children) {
   injectBase();
 
-  const { count, color, dot, status, variant, class: cls } = props;
+  const { count, color, dot, status, variant, icon, class: cls } = props;
   const resolvedStatus = status || variant;
 
   // Known statuses that have CSS variant classes
@@ -54,6 +56,18 @@ export function Badge(props = {}, ...children) {
     badgeEl.appendChild(text(() => String(count())));
   } else if (count !== undefined) {
     badgeEl.appendChild(document.createTextNode(String(count)));
+  }
+
+  // Resolve icon prop into a DOM element
+  if (icon) {
+    const iconEl = typeof icon === 'string'
+      ? iconHelper(icon, { size: '1em', class: 'd-badge-icon' })
+      : icon;
+    if (iconEl && !iconEl.classList.contains('d-badge-icon')) {
+      iconEl.classList.add('d-badge-icon');
+    }
+    iconEl.setAttribute('aria-hidden', 'true');
+    badgeEl.appendChild(iconEl);
   }
 
   if (children.length) {

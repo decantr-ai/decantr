@@ -1,5 +1,6 @@
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
+import { icon } from './icon.js';
 
 /**
  * @param {Object} [props]
@@ -30,7 +31,12 @@ export function Avatar(props = {}) {
   }
 
   function createFallback() {
-    const text = fallback || alt.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
+    const text = fallback || alt.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    if (!text) {
+      const el = h('span', { class: 'd-avatar-fallback', 'aria-hidden': 'true' });
+      el.appendChild(icon('user', { size: '1em' }));
+      return el;
+    }
     return h('span', { class: 'd-avatar-fallback', 'aria-hidden': 'true' }, text);
   }
 

@@ -144,6 +144,7 @@ export function deriveSyntheticTriggers(archetype) {
     'login', 'register', 'contact', 'about', 'search', 'navigation', 'content',
     'main', 'area', 'management', 'online', 'interactive', 'design', 'system',
     'information', 'that', 'this', 'from', 'into', 'have', 'been', 'will', 'make',
+    'platform', 'app', 'application', 'tool', 'service',
   ]);
 
   // Primary: full hyphenated id (always included even if parts are stop words)
@@ -164,7 +165,7 @@ export function deriveSyntheticTriggers(archetype) {
   ])];
 
   // Negative: other archetype ids
-  const otherIds = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community']
+  const otherIds = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community', 'gaming-platform']
     .filter(a => a !== id);
   const negative = otherIds.map(a => `${a}-only`);
 

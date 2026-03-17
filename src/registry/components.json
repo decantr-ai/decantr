@@ -494,6 +494,9 @@
         "variant": {
           "type": "string"
         },
+        "icon": {
+          "type": "string|Node"
+        },
         "class": {
           "type": "string"
         }
@@ -822,6 +825,30 @@
               ]
             },
             "description": "Breadcrumb with a disabled middle item."
+          }
+        ]
+      }
+    },
+    "BrowserFrame": {
+      "props": {
+        "url": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(HTMLElement|string)",
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "examples",
+          "interactive"
+        ],
+        "examples": [
+          {
+            "title": "Browser Frame",
+            "description": "Decorative browser chrome with macOS-style title bar."
           }
         ]
       }
@@ -1627,6 +1654,9 @@
         "maxHeight": {
           "type": "number"
         },
+        "highlight": {
+          "type": "Function"
+        },
         "class": {
           "type": "string"
         }
@@ -1659,6 +1689,14 @@
             },
             "description": "Numbered code block."
           }
+        ]
+      }
+    },
+    "createHighlighter": {
+      "returns": "string",
+      "showcase": {
+        "sections": [
+          "interactive"
         ]
       }
     },
@@ -3869,6 +3907,46 @@
               "loading": true
             },
             "description": "List in loading state."
+          }
+        ]
+      }
+    },
+    "Marquee": {
+      "props": {
+        "speed=30": {
+          "type": "number"
+        },
+        "direction='left'": {
+          "type": "'left'|'right'"
+        },
+        "pauseOnHover=true": {
+          "type": "boolean"
+        },
+        "gap=8": {
+          "type": "number"
+        },
+        "repeat=4": {
+          "type": "number"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...(HTMLElement|string)",
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "pauseOnHover=true": true
+        },
+        "sections": [
+          "examples",
+          "states",
+          "interactive"
+        ],
+        "examples": [
+          {
+            "title": "Default Marquee",
+            "description": "Continuously scrolling content strip."
           }
         ]
       }
@@ -8552,7 +8630,9 @@
         "Timeline",
         "Comment",
         "QRCode",
-        "HoverCard"
+        "HoverCard",
+        "Marquee",
+        "BrowserFrame"
       ]
     },
     "layout": {

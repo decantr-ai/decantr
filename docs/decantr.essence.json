@@ -1,15 +1,26 @@
 {
   "version": "1.0.0",
   "terroir": "portfolio",
-  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "pill" },
   "character": ["bold", "technical", "dramatic"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [
     {
       "id": "home",
       "skeleton": "full-bleed",
-      "blend": ["hero", "gallery", "cta-section"],
-      "surface": "_flex _col _overflow[auto] _flex1"
+      "blend": [
+        "announcement-bar",
+        { "pattern": "hero", "preset": "split", "as": "brand-hero" },
+        { "pattern": "logo-strip", "preset": "marquee", "as": "partner-logos" },
+        { "pattern": "card-grid", "preset": "icon", "as": "feature-grid" },
+        { "pattern": "code-preview", "preset": "split", "as": "quickstart" },
+        { "pattern": "stats-section", "preset": "hero", "as": "metrics" },
+        { "pattern": "testimonials", "preset": "wall", "as": "social-proof" },
+        "showcase-gallery",
+        { "pattern": "cta-section", "preset": "brand", "as": "final-cta" },
+        "footer-columns"
+      ],
+      "surface": "_flex _col _gap0 _overflow[auto] _flex1"
     },
     {
       "id": "docs-home",

@@ -1,82 +1,44 @@
 {
-  "$schema": "https://decantr.ai/schemas/archetype.v1.json",
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
   "id": "portfolio",
   "name": "Portfolio",
-  "description": "Personal or agency portfolio showcasing work, skills, and contact information.",
+  "description": "Single-page brand landing site with stunning hero, feature showcase, social proof, and conversion-focused layout.",
   "pages": [
     {
       "id": "home",
       "skeleton": "full-bleed",
-      "patterns": ["hero", "component-showcase", "testimonials", "cta-section"],
-      "default_blend": [
+      "patterns": [
+        "announcement-bar",
         "hero",
-        "component-showcase",
+        "logo-strip",
+        "card-grid",
+        "code-preview",
+        "stats-section",
         "testimonials",
-        "cta-section"
-      ]
-    },
-    {
-      "id": "about",
-      "skeleton": "top-nav-main",
-      "patterns": ["detail-header", "timeline"],
+        "showcase-gallery",
+        "cta-section",
+        "footer-columns"
+      ],
       "default_blend": [
-        "detail-header",
-        "timeline"
-      ]
-    },
-    {
-      "id": "projects",
-      "skeleton": "top-nav-main",
-      "patterns": ["filter-bar", "media-gallery"],
-      "default_blend": [
-        "filter-bar",
-        "media-gallery"
-      ]
-    },
-    {
-      "id": "project-detail",
-      "skeleton": "top-nav-main",
-      "patterns": ["media-gallery", "detail-panel"],
-      "default_blend": [
-        "media-gallery",
-        "detail-panel"
-      ]
-    },
-    {
-      "id": "blog",
-      "skeleton": "top-nav-main",
-      "patterns": ["post-list", "category-nav", "pagination"],
-      "default_blend": [
-        "category-nav",
-        "post-list",
-        "pagination"
-      ]
-    },
-    {
-      "id": "blog-post",
-      "skeleton": "top-nav-main",
-      "patterns": ["article-content", "author-card", "table-of-contents"],
-      "default_blend": [
-        { "cols": ["article-content", "table-of-contents"], "span": { "article-content": 3 }, "at": "lg" },
-        "author-card"
-      ]
-    },
-    {
-      "id": "contact",
-      "skeleton": "top-nav-main",
-      "patterns": ["contact-form"],
-      "default_blend": [
-        "contact-form"
+        "announcement-bar",
+        { "pattern": "hero", "preset": "brand", "as": "brand-hero" },
+        { "pattern": "logo-strip", "preset": "marquee", "as": "partner-logos" },
+        { "pattern": "card-grid", "preset": "icon", "as": "feature-grid" },
+        { "pattern": "code-preview", "preset": "split", "as": "quickstart" },
+        { "pattern": "stats-section", "preset": "hero", "as": "metrics" },
+        { "pattern": "testimonials", "preset": "wall", "as": "social-proof" },
+        "showcase-gallery",
+        { "pattern": "cta-section", "preset": "brand", "as": "final-cta" },
+        "footer-columns"
       ]
     }
   ],
-  "tannins": ["contact-form", "blog-state", "analytics"],
+  "tannins": ["analytics"],
   "skeletons": {
-    "full-bleed": "No persistent navigation — hero-first, scroll-driven sections",
-    "top-nav-main": "Horizontal navigation bar + full-width main content area"
+    "full-bleed": "Floating nav over scroll-driven sections — hero-first, maximum visual impact"
   },
   "suggested_vintage": {
-    "styles": ["auradecantism", "glassmorphism", "retro"],
-    "modes": ["dark", "auto"]
+    "styles": ["auradecantism", "glassmorphism", "command-center"],
+    "modes": ["dark"]
   }
 }

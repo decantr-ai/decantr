@@ -2,7 +2,7 @@
   "$schema": "https://decantr.ai/schemas/patterns.v2.json",
   "description": "Experience patterns — composable building blocks that archetypes reference. Each pattern maps to a Blend (concrete component composition) and can be overridden per recipe. v2 patterns support presets: named variants within a single pattern file.",
   "patterns": {
-    "hero": { "name": "Hero", "file": "hero.json", "presets": ["landing", "image-overlay", "image-overlay-compact"] },
+    "hero": { "name": "Hero", "file": "hero.json", "presets": ["landing", "brand", "split", "image-overlay", "image-overlay-compact"] },
     "kpi-grid": { "name": "KPI Grid", "file": "kpi-grid.json" },
     "data-table": { "name": "Data Table", "file": "data-table.json" },
     "activity-feed": { "name": "Activity Feed", "file": "activity-feed.json" },
@@ -19,8 +19,8 @@
     "timeline": { "name": "Timeline", "file": "timeline.json" },
     "component-showcase": { "name": "Component Showcase", "file": "component-showcase.json" },
     "pagination": { "name": "Pagination", "file": "pagination.json" },
-    "testimonials": { "name": "Testimonials", "file": "testimonials.json" },
-    "cta-section": { "name": "CTA Section", "file": "cta-section.json" },
+    "testimonials": { "name": "Testimonials", "file": "testimonials.json", "presets": ["grid", "wall", "marquee"] },
+    "cta-section": { "name": "CTA Section", "file": "cta-section.json", "presets": ["standard", "brand"] },
     "contact-form": { "name": "Contact Form", "file": "contact-form.json" },
     "search-bar": { "name": "Search Bar", "file": "search-bar.json" },
     "author-card": { "name": "Author Card", "file": "author-card.json" },
@@ -30,7 +30,7 @@
     "media-gallery": { "name": "Media Gallery", "file": "media-gallery.json" },
     "pricing-table": { "name": "Pricing Table", "file": "pricing-table.json" },
     "order-history": { "name": "Order History", "file": "order-history.json" },
-    "specimen-grid": { "name": "Specimen Grid", "file": "specimen-grid.json" },
+    "specimen-grid": { "name": "Specimen Grid", "file": "specimen-grid.json", "presets": ["swatch", "preview"] },
     "token-inspector": { "name": "Token Inspector", "file": "token-inspector.json" },
     "explorer-shell": { "name": "Explorer Shell", "file": "explorer-shell.json" },
     "goal-tracker": { "name": "Goal Tracker", "file": "goal-tracker.json" },
@@ -42,6 +42,13 @@
     "steps-card": { "name": "Steps Card", "file": "steps-card.json" },
     "stat-card": { "name": "Stat Card", "file": "stat-card.json" },
     "photo-to-recipe": { "name": "Photo to Recipe", "file": "photo-to-recipe.json" },
-    "chat-interface": { "name": "Chat Interface", "file": "chat-interface.json" }
+    "chat-interface": { "name": "Chat Interface", "file": "chat-interface.json" },
+    "leaderboard": { "name": "Leaderboard", "file": "leaderboard.json", "presets": ["ranked", "grid", "spotlight"] },
+    "announcement-bar": { "name": "Announcement Bar", "file": "announcement-bar.json" },
+    "logo-strip": { "name": "Logo Strip", "file": "logo-strip.json", "presets": ["static", "marquee"] },
+    "code-preview": { "name": "Code Preview", "file": "code-preview.json", "presets": ["terminal", "split"] },
+    "stats-section": { "name": "Stats Section", "file": "stats-section.json", "presets": ["hero", "inline"] },
+    "showcase-gallery": { "name": "Showcase Gallery", "file": "showcase-gallery.json", "presets": ["screenshots", "cards"] },
+    "footer-columns": { "name": "Footer Columns", "file": "footer-columns.json", "presets": ["standard", "minimal"] }
   }
 }

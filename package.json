@@ -75,6 +75,7 @@
     "./styles/community/prismatic": "./src/css/styles/community/prismatic.js",
     "./styles/community/bioluminescent": "./src/css/styles/community/bioluminescent.js",
     "./styles/community/editorial": "./src/css/styles/community/editorial.js",
+    "./styles/community/gaming-guild": "./src/css/styles/community/gaming-guild.js",
     "./explorer/patterns.js": "./src/explorer/patterns.js",
     "./explorer/icons.js": "./src/explorer/icons.js",
     "./explorer/tokens.js": "./src/explorer/tokens.js",

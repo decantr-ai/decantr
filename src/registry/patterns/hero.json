@@ -43,6 +43,46 @@
         "example": "function ImageOverlayHero({ item }) {\n  const { div, h1, p, img } = tags;\n\n  return div({ class: css('_relative _wfull _h[400px] _overflow[hidden] _r4') },\n    img({ src: item.image, alt: item.title, class: css('_absolute _inset0 _wfull _hfull _object[cover]') }),\n    div({ class: css('_absolute _inset0 _bg[linear-gradient(transparent_50%,rgba(0,0,0,0.8))]') }),\n    div({ class: css('_absolute _top0 _left0 _right0 _flex _jcsb _p4') },\n      Button({ variant: 'ghost', size: 'sm', onclick: () => navigate(-1) }, icon('arrow-left'), 'Back'),\n      Button({ variant: 'ghost', size: 'sm' }, icon('edit'), 'Edit')\n    ),\n    div({ class: css('_absolute _bottom0 _left0 _right0 _p6 _flex _col _gap2') },\n      div({ class: css('_flex _gap2') },\n        ...(item.tags || []).map(t => Chip({ size: 'sm', variant: 'outline' }, t))\n      ),\n      h1({ class: css('_heading2 _fgfg') }, item.title),\n      p({ class: css('_body _fgmuted') }, item.description)\n    )\n  );\n}"
       }
     },
+    "brand": {
+      "description": "Full-viewport centered hero with massive headline, animated decorations, and dual CTAs. Entry point for brand landing pages.",
+      "components": ["Button", "Badge", "Chip", "icon", "Image"],
+      "blend": {
+        "layout": "hero",
+        "atoms": "_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative",
+        "slots": {
+          "badge": "Optional announcement pill (Badge) above headline",
+          "media": "Optional logo or illustration with d-float + aura-glow-strong animation",
+          "headline": "Display-size heading with d-heading-display + d-gradient-text",
+          "description": "Supporting paragraph with _body _fgmuted _mw[640px]",
+          "cta-group": "Horizontal Button group with _flex _gap3, primary gets aura-glow",
+          "decoration": "Absolute-positioned aura-orb elements for ambient background effect"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Badge, icon } from 'decantr/components';",
+        "example": "function BrandHero() {\n  const { div, h1, p, span } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative d-mesh') },\n    // Decorative orbs\n    span({ class: css('aura-orb _w[400px] _h[400px] _top[-10%] _left[-5%] _bg[rgba(254,68,116,0.15)]') }),\n    span({ class: css('aura-orb _w[300px] _h[300px] _bottom[10%] _right[-5%] _bg[rgba(10,243,235,0.1)]') }),\n    // Content\n    Badge({ variant: 'outline', icon: 'sparkles', class: css('aura-shimmer') }, 'Now in Beta'),\n    h1({ class: css('d-heading-display d-gradient-text') }, 'Build stunning apps in minutes'),\n    p({ class: css('_body _fgmuted _mw[640px] _textlg') }, 'The AI-first web framework that transforms your ideas into production-ready applications.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg', class: css('aura-glow') }, 'Get Started'),\n      Button({ variant: 'outline', size: 'lg' }, icon('github'), 'View Source')\n    )\n  );\n}"
+      }
+    },
+    "split": {
+      "description": "Two-column hero: media/logo on one side, headline + description + CTAs on the other. Stacks vertically on mobile.",
+      "components": ["Button", "Badge", "icon", "Image"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_grid _gc1 _lg:gc2 _gap8 _py24 _px6 _minh[100vh] _aic _relative",
+        "slots": {
+          "media": "Logo, illustration, or image — centered in its grid cell",
+          "badge": "Optional announcement pill (Badge) above headline",
+          "headline": "Display-size heading, left-aligned on desktop",
+          "description": "Supporting paragraph with _body _fgmuted",
+          "cta-group": "Horizontal Button group, left-aligned on desktop",
+          "decoration": "Optional absolute-positioned decorative elements"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Badge, icon } from 'decantr/components';",
+        "example": "function SplitHero() {\n  const { div, section, h1, p, img } = tags;\n\n  return section({ class: css('_minh[100vh] _relative _flex _aic _jcc _px6 _py24') },\n    div({ class: css('_grid _gc1 _lg:gc2 _gap8 _mw[1100px] _wfull _aic') },\n      div({ class: css('_flex _aic _jcc') },\n        img({ src: './images/logo.svg', alt: 'Logo', class: css('_w[280px]') })\n      ),\n      div({ class: css('_flex _col _gap6 _tc _lg:tl') },\n        h1({ class: css('_heading1') }, 'Your headline here'),\n        p({ class: css('_body _fgmuted _mw[540px]') }, 'Supporting description text for the hero section.'),\n        div({ class: css('_flex _gap3 _jcc _lg:jcfs') },\n          Button({ variant: 'primary', size: 'lg' }, 'Get Started'),\n          Button({ variant: 'outline', size: 'lg' }, icon('github'), 'View Source')\n        )\n      )\n    )\n  );\n}"
+      }
+    },
     "image-overlay-compact": {
       "description": "Compact full-bleed image with overlay for collection headers. Shorter height, fewer slots.",
       "components": ["Button", "Badge", "Avatar", "icon"],
@@ -86,6 +126,8 @@
       "atoms": "",
       "notes": "Hero section on d-mesh background. Headline uses d-gradient-text. CTA button gets aura-glow.",
       "preset_notes": {
+        "brand": "Full d-mesh bg with aura-orbs. Headline uses d-heading-display + d-gradient-text. Primary CTA gets aura-glow. Badge uses aura-shimmer.",
+        "split": "Full d-mesh bg with aura-orbs. Media slot uses ds-float + ds-logo-glow animation. Headline uses d-heading-display + d-gradient-text. Primary CTA gets aura-glow.",
         "image-overlay": "Gradient overlay uses d-mesh tones. Title uses d-gradient-text. Subtle aura-glow on action buttons.",
         "image-overlay-compact": "Gradient overlay blends into d-mesh tones. Title uses d-gradient-text."
       }

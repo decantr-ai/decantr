@@ -1,0 +1,75 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "stats-section",
+  "name": "Stats Section",
+  "description": "Bold metric numbers display for landing pages — performance stats, counts, achievements.",
+  "components": ["Statistic"],
+  "default_preset": "hero",
+  "presets": {
+    "hero": {
+      "description": "Large animated stats in a full-width dramatic section.",
+      "components": ["Statistic"],
+      "blend": {
+        "layout": "hero",
+        "atoms": "_py16 _px6 _grid _gc1 _md:gc3 _gap8 _tc",
+        "slots": {
+          "stats": "3-4 Statistic components with animate: true, large display values"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Statistic } from 'decantr/components';",
+        "example": "function StatsHero() {\n  const { div } = tags;\n\n  return div({ class: css('_py16 _px6 _grid _gc1 _md:gc3 _gap8 _tc d-mesh') },\n    Statistic({ label: 'Components', value: 100, suffix: '+', animate: true, class: css('d-gradient-text') }),\n    Statistic({ label: 'Bundle Size', value: 12.9, suffix: 'KB', animate: true, class: css('d-gradient-text') }),\n    Statistic({ label: 'GitHub Stars', value: 4200, suffix: '+', animate: true, class: css('d-gradient-text') })\n  );\n}"
+      }
+    },
+    "inline": {
+      "description": "Compact horizontal stats bar.",
+      "components": ["Statistic"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcc _gap8 _py4 _wrap",
+        "slots": {
+          "stats": "Compact inline Statistic components"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Statistic } from 'decantr/components';",
+        "example": "function StatsInline() {\n  const { div } = tags;\n\n  return div({ class: css('_flex _aic _jcc _gap8 _py4 _wrap') },\n    Statistic({ label: 'Downloads', value: '50K+' }),\n    Statistic({ label: 'Contributors', value: 120 }),\n    Statistic({ label: 'Uptime', value: '99.9%' })\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "hero",
+    "atoms": "_py16 _px6 _grid _gc1 _md:gc3 _gap8 _tc",
+    "slots": {
+      "stats": "Statistic components with animated values"
+    }
+  },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "d-mesh",
+      "atoms": "",
+      "notes": "d-mesh background. Statistic values use d-gradient-text.",
+      "preset_notes": {
+        "hero": "Full d-mesh bg. Values use d-gradient-text with large display.",
+        "inline": "No mesh bg. Compact layout with standard text."
+      }
+    },
+    "command-center": {
+      "wrapper": "cc-grid",
+      "atoms": "",
+      "notes": "cc-grid background. Values use cc-data.",
+      "preset_notes": {
+        "hero": "Full cc-grid bg. Values use cc-data."
+      }
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_bgmuted _r4",
+      "notes": "Subtle muted background. Standard Statistic styling."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Statistic } from 'decantr/components';",
+    "example": "function StatsSection() {\n  const { div } = tags;\n\n  return div({ class: css('_py16 _px6 _grid _gc1 _md:gc3 _gap8 _tc') },\n    Statistic({ label: 'Components', value: 100, suffix: '+', animate: true }),\n    Statistic({ label: 'Bundle Size', value: 12.9, suffix: 'KB', animate: true }),\n    Statistic({ label: 'GitHub Stars', value: 4200, suffix: '+', animate: true })\n  );\n}"
+  }
+}

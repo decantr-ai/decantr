@@ -69,6 +69,9 @@ export function icon(name, opts = {}) {
   const weight = resolveWeight(rawWeight);
 
   const inner = getIconPath(name);
+  if (!inner && typeof globalThis !== 'undefined' && globalThis.__DECANTR_DEV__) {
+    console.warn(`[decantr] Unknown icon: "${name}"`);
+  }
   let vk = name;
   if (inner) {
     vk = injectIconCSS(name, inner, weight, filled);

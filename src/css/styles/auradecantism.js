@@ -92,5 +92,21 @@ export const auradecantism = {
     '.d-glass-strong{background:var(--d-surface-2);backdrop-filter:var(--d-surface-2-filter);-webkit-backdrop-filter:var(--d-surface-2-filter);border:var(--d-border-width) solid rgba(255,255,255,0.12);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-2),inset 0 1px 0 rgba(255,255,255,0.08)}',
     // Frosted-glass dialog backdrops
     'dialog::backdrop{background:rgba(6,9,24,0.45);backdrop-filter:blur(16px) saturate(1.6);-webkit-backdrop-filter:blur(16px) saturate(1.6)}',
+    // Aura glow utilities
+    '.aura-glow{box-shadow:0 0 15px rgba(254,68,116,0.2),0 0 30px rgba(254,68,116,0.1);transition:box-shadow var(--d-duration-normal) var(--d-easing-standard)}',
+    '.aura-glow:hover{box-shadow:0 0 20px rgba(254,68,116,0.35),0 0 40px rgba(254,68,116,0.15)}',
+    '.aura-glow-strong{box-shadow:0 0 30px rgba(254,68,116,0.3),0 0 60px rgba(254,68,116,0.15),0 0 90px rgba(10,243,235,0.08)}',
+    '.aura-glow-strong:hover{box-shadow:0 0 40px rgba(254,68,116,0.4),0 0 80px rgba(254,68,116,0.2),0 0 120px rgba(10,243,235,0.12)}',
+    // Aura ring — animated pulsing ring on hover/focus
+    '@keyframes aura-ring-pulse{0%,100%{box-shadow:0 0 0 0 rgba(254,68,116,0.4)}50%{box-shadow:0 0 0 6px rgba(254,68,116,0)}}',
+    '.aura-ring{animation:aura-ring-pulse 2s var(--d-easing-standard) infinite}',
+    // Aura orb — floating decorative gradient sphere
+    '@keyframes aura-orb-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-20px) scale(1.05)}}',
+    '.aura-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.5;pointer-events:none;animation:aura-orb-float 8s var(--d-easing-standard) infinite}',
+    // Aura shimmer — sweep effect across surfaces
+    '@keyframes aura-shimmer-sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}',
+    '.aura-shimmer{position:relative;overflow:hidden}',
+    '.aura-shimmer::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);animation:aura-shimmer-sweep 3s var(--d-easing-standard) infinite}',
+    '@media(prefers-reduced-motion:reduce){.aura-ring,.aura-orb,.aura-shimmer::after{animation:none}}',
   ].join(''),
 };

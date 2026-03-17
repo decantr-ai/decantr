@@ -1,0 +1,104 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "gaming-platform",
+  "name": "Gaming Platform",
+  "description": "Guild-based gaming community with leaderboards, game catalog, news feed, member profiles, achievements, and recruitment. Designed for competitive and social gaming communities.",
+  "pages": [
+    {
+      "id": "main",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        { "pattern": "hero", "preset": "landing", "as": "guild-hero" },
+        "kpi-grid",
+        "activity-feed",
+        { "pattern": "leaderboard", "preset": "spotlight", "as": "top-players" }
+      ],
+      "default_blend": [
+        { "pattern": "hero", "preset": "landing", "as": "guild-hero" },
+        "kpi-grid",
+        { "cols": ["activity-feed", "top-players"], "at": "lg" }
+      ]
+    },
+    {
+      "id": "news",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "filter-bar",
+        "post-list"
+      ],
+      "default_blend": [
+        "filter-bar",
+        "post-list"
+      ]
+    },
+    {
+      "id": "games",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "search-bar",
+        "filter-bar",
+        { "pattern": "card-grid", "preset": "collection", "as": "game-catalog" }
+      ],
+      "default_blend": [
+        "search-bar",
+        "filter-bar",
+        { "pattern": "card-grid", "preset": "collection", "as": "game-catalog" }
+      ]
+    },
+    {
+      "id": "hall-of-fame",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "stats-bar",
+        { "pattern": "leaderboard", "preset": "ranked", "as": "guild-leaderboard" },
+        "timeline"
+      ],
+      "default_blend": [
+        "stats-bar",
+        { "pattern": "leaderboard", "preset": "ranked", "as": "guild-leaderboard" },
+        "timeline"
+      ]
+    },
+    {
+      "id": "join-guild",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        { "pattern": "hero", "preset": "landing", "as": "join-hero" },
+        { "pattern": "card-grid", "preset": "icon", "as": "perks-grid" },
+        "testimonials",
+        "cta-section"
+      ],
+      "default_blend": [
+        { "pattern": "hero", "preset": "landing", "as": "join-hero" },
+        { "pattern": "card-grid", "preset": "icon", "as": "perks-grid" },
+        "testimonials",
+        "cta-section"
+      ]
+    },
+    {
+      "id": "member-profile",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        { "pattern": "detail-header", "preset": "profile", "as": "player-header" },
+        "kpi-grid",
+        { "pattern": "leaderboard", "preset": "grid", "as": "achievements" },
+        "activity-feed",
+        "timeline"
+      ],
+      "default_blend": [
+        { "pattern": "detail-header", "preset": "profile", "as": "player-header" },
+        "kpi-grid",
+        { "cols": ["achievements", "activity-feed"], "span": { "achievements": 2 }, "at": "lg" },
+        "timeline"
+      ]
+    }
+  ],
+  "tannins": ["auth", "guild-state", "achievements", "search", "realtime-data", "notifications"],
+  "skeletons": {
+    "sidebar-main": "Left sidebar with grouped nav (INFO + SPOTLIGHT sections) + main content area"
+  },
+  "suggested_vintage": {
+    "styles": ["gaming-guild"],
+    "modes": ["dark"]
+  }
+}

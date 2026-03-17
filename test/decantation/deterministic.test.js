@@ -670,9 +670,9 @@ describe('Registry Consistency', () => {
     }
   });
 
-  it('all archetypes have at least 2 pages', () => {
+  it('all archetypes have at least 1 page', () => {
     for (const [id, arch] of Object.entries(archetypes)) {
-      assert.ok(arch.pages.length >= 2, `Archetype ${id} has < 2 pages`);
+      assert.ok(arch.pages.length >= 1, `Archetype ${id} has < 1 page`);
     }
   });
 

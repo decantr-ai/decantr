@@ -1,0 +1,75 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "logo-strip",
+  "name": "Logo Strip",
+  "description": "Horizontal display of logos or icons for partners, sponsors, integrations, or tech stack. Supports static flex row and scrolling marquee.",
+  "components": ["Marquee", "icon"],
+  "default_preset": "static",
+  "presets": {
+    "static": {
+      "description": "Flex row of logos with opacity hover effect.",
+      "components": ["icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcc _gap8 _wrap _py8",
+        "slots": {
+          "label": "Optional section label above the logos",
+          "logos": "Horizontal row of logo images or icons"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function LogoStrip({ logos }) {\n  const { div, span, img } = tags;\n\n  return div({ class: css('_flex _col _aic _gap4 _py8') },\n    span({ class: css('_textxs _fgmuted _uppercase _tracking[0.1em]') }, 'Trusted by teams at'),\n    div({ class: css('_flex _aic _jcc _gap8 _wrap') },\n      ...logos.map(l =>\n        img({ src: l.src, alt: l.name, class: css('_h[24px] _fgmuted _opacity[0.5] _h:opacity[1] _trans[opacity_0.2s_ease]') })\n      )\n    )\n  );\n}"
+      }
+    },
+    "marquee": {
+      "description": "Continuously scrolling logo rows using Marquee component. Two rows with opposite directions.",
+      "components": ["Marquee", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _col _gap4 _py8",
+        "slots": {
+          "label": "Optional section label above the marquee rows",
+          "row-1": "First Marquee row scrolling left",
+          "row-2": "Second Marquee row scrolling right (reverse)"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Marquee } from 'decantr/components';",
+        "example": "function LogoMarquee({ logos }) {\n  const { div, span, img } = tags;\n  const half = Math.ceil(logos.length / 2);\n  const row1 = logos.slice(0, half);\n  const row2 = logos.slice(half);\n\n  return div({ class: css('_flex _col _aic _gap4 _py8') },\n    span({ class: css('_textxs _fgmuted _uppercase _tracking[0.1em]') }, 'Trusted by teams worldwide'),\n    Marquee({ speed: 35, gap: 8 },\n      ...row1.map(l => img({ src: l.src, alt: l.name, class: css('_h[24px] _fgmuted _opacity[0.5]') }))\n    ),\n    Marquee({ speed: 35, direction: 'right', gap: 8 },\n      ...row2.map(l => img({ src: l.src, alt: l.name, class: css('_h[24px] _fgmuted _opacity[0.5]') }))\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_flex _aic _jcc _gap8 _wrap _py8",
+    "slots": {
+      "label": "Optional section label",
+      "logos": "Horizontal row of logo images or icons"
+    }
+  },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Section label uses d-gradient-text-alt. Logos use _fgmuted with _h:fgfg transition.",
+      "preset_notes": {
+        "marquee": "Two Marquee rows with opposite directions. Logos use _fgmuted opacity treatment."
+      }
+    },
+    "command-center": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Section label uses cc-label. Logos use standard muted treatment."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Simple flex row. Label uses standard muted text."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+    "example": "function LogoStrip({ logos }) {\n  const { div, span, img } = tags;\n\n  return div({ class: css('_flex _col _aic _gap4 _py8') },\n    span({ class: css('_textxs _fgmuted _uppercase _tracking[0.1em]') }, 'Trusted by teams at'),\n    div({ class: css('_flex _aic _jcc _gap8 _wrap') },\n      ...logos.map(l =>\n        img({ src: l.src, alt: l.name, class: css('_h[24px] _fgmuted _opacity[0.5] _h:opacity[1] _trans[opacity_0.2s_ease]') })\n      )\n    )\n  );\n}"
+  }
+}

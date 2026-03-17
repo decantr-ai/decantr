@@ -1,0 +1,15 @@
+{
+  "$schema": "https://decantr.ai/schemas/config.v2.json",
+  "name": "Gaming Platform Showcase",
+  "style": "gaming-guild",
+  "mode": "dark",
+  "router": "hash",
+  "dev": { "port": 4201 },
+  "build": {
+    "outDir": "dist",
+    "sourcemap": true,
+    "treeShake": true,
+    "codeSplit": true,
+    "purgeCSS": true
+  }
+}

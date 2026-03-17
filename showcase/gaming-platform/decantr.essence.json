@@ -1,0 +1,89 @@
+{
+  "version": "1.0.0",
+  "terroir": "gaming-platform",
+  "vintage": {
+    "style": "gaming-guild",
+    "mode": "dark",
+    "recipe": "gaming-guild",
+    "shape": "rounded"
+  },
+  "character": ["immersive", "social", "competitive"],
+  "vessel": {
+    "type": "spa",
+    "routing": "hash"
+  },
+  "structure": [
+    {
+      "id": "main",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "hero", "preset": "landing", "as": "guild-hero" },
+        "kpi-grid",
+        { "cols": ["activity-feed", "leaderboard"], "at": "lg" }
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "news",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "filter-bar",
+        "post-list"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "games",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "search-bar",
+        "filter-bar",
+        { "pattern": "card-grid", "preset": "collection", "as": "game-catalog" }
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "hall-of-fame",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "stats-bar",
+        { "pattern": "leaderboard", "preset": "ranked", "as": "guild-leaderboard" },
+        "timeline"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "join-guild",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "hero", "preset": "landing", "as": "join-hero" },
+        { "pattern": "card-grid", "preset": "icon", "as": "perks-grid" },
+        "testimonials",
+        "cta-section"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "member-profile",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "detail-header", "preset": "profile", "as": "player-header" },
+        "kpi-grid",
+        { "cols": ["leaderboard", "activity-feed"], "span": { "leaderboard": 2 }, "at": "lg" },
+        "timeline"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "not-found",
+      "skeleton": "full-bleed",
+      "blend": [],
+      "surface": "_flex _col _center _hfull"
+    }
+  ],
+  "tannins": [],
+  "cork": {
+    "enforce_style": true,
+    "enforce_recipe": true
+  }
+}

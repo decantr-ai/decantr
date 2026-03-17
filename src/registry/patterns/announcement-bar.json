@@ -1,0 +1,38 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "announcement-bar",
+  "name": "Announcement Bar",
+  "description": "Dismissible top banner for announcements, news, and promotions. Standalone row layout, no Card wrap.",
+  "components": ["Badge", "Button", "icon"],
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_flex _aic _jcc _gap3 _py2 _px4 _textsm",
+    "slots": {
+      "badge": "Optional pill Badge for category or label",
+      "message": "Announcement text content",
+      "action": "Optional link or button for CTA",
+      "dismiss": "Close button to dismiss the bar"
+    }
+  },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "d-glass-subtle",
+      "atoms": "",
+      "notes": "Glass-subtle background. Badge uses outline variant. Dismiss button is ghost."
+    },
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "",
+      "notes": "cc-frame border. Badge uses cc-label."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_bgmuted _bcborder _borderB",
+      "notes": "Subtle muted background with bottom border."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Button, icon } from 'decantr/components';\nimport { createSignal } from 'decantr/state';",
+    "example": "function AnnouncementBar() {\n  const { div, span } = tags;\n  const [visible, setVisible] = createSignal(true);\n\n  return () => visible()\n    ? div({ class: css('_flex _aic _jcc _gap3 _py2 _px4 _textsm d-glass-subtle') },\n        Badge({ variant: 'outline', size: 'sm' }, 'New'),\n        span({}, 'Introducing v2.0 — now with full dark mode support'),\n        Button({ variant: 'link', size: 'sm' }, 'Learn more', icon('arrow-right')),\n        Button({ variant: 'ghost', size: 'xs', onclick: () => setVisible(false), 'aria-label': 'Dismiss' }, icon('x'))\n      )\n    : null;\n}"
+  }
+}

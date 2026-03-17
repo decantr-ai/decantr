@@ -1,9 +1,47 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "cta-section",
   "name": "CTA Section",
-  "description": "Call-to-action section with headline, supporting text, and action buttons.",
+  "description": "Call-to-action section with headline, supporting text, and action buttons. Supports standard and dramatic brand variants.",
   "components": ["Button", "Title", "Text"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Centered CTA with headline, description, and action buttons.",
+      "components": ["Button"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _tc _gap4 _py12 _px6",
+        "slots": {
+          "headline": "Primary heading to drive user action",
+          "description": "Supporting text that reinforces the CTA message",
+          "cta-group": "One or more action buttons, typically primary + secondary"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button } from 'decantr/components';",
+        "example": "function CtaSection() {\n  const { div, h2, p } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap4 _py12 _px6 _bgmuted _r4') },\n    h2({ class: css('_heading2') }, 'Ready to get started?'),\n    p({ class: css('_body _fgmuted _mw[480px]') }, 'Join thousands of teams building better products with our platform.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg' }, 'Start Free Trial'),\n      Button({ variant: 'outline', size: 'lg' }, 'Talk to Sales')\n    )\n  );\n}"
+      }
+    },
+    "brand": {
+      "description": "Full-width dramatic CTA with mesh background, large gradient heading, and landmark spacing.",
+      "components": ["Button", "icon"],
+      "blend": {
+        "layout": "hero",
+        "atoms": "_flex _col _aic _tc _gap8 _py24 _px6 _relative",
+        "slots": {
+          "headline": "Large d-heading-display + d-gradient-text heading",
+          "description": "Supporting text with _textlg for drama",
+          "cta-group": "Dual CTA buttons, primary with aura-glow",
+          "decoration": "Optional aura-orb background elements"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function BrandCta() {\n  const { div, h2, p, span } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap8 _py24 _px6 _relative d-mesh') },\n    span({ class: css('aura-orb _w[300px] _h[300px] _top[10%] _right[-5%] _bg[rgba(254,68,116,0.12)]') }),\n    h2({ class: css('d-heading-display d-gradient-text') }, 'Start building today'),\n    p({ class: css('_body _fgmuted _mw[540px] _textlg') }, 'Join thousands of developers shipping faster with the AI-first web framework.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg', class: css('aura-glow') }, 'Get Started Free'),\n      Button({ variant: 'outline', size: 'lg' }, icon('arrow-right'), 'Read the Docs')\n    )\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _col _aic _tc _gap4 _py12 _px6",
@@ -11,6 +49,32 @@
       "headline": "Primary heading to drive user action",
       "description": "Supporting text that reinforces the CTA message",
       "cta-group": "One or more action buttons, typically primary + secondary"
+    }
+  },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "d-mesh",
+      "atoms": "",
+      "notes": "CTA on d-mesh background. Headline uses d-gradient-text. Primary button gets aura-glow.",
+      "preset_notes": {
+        "brand": "Full d-mesh bg with aura-orbs. Headline uses d-heading-display + d-gradient-text. Primary CTA gets aura-glow."
+      }
+    },
+    "command-center": {
+      "wrapper": "cc-grid",
+      "atoms": "",
+      "notes": "CTA with cc-grid bg. Headline uses cc-data. Primary button gets cc-glow.",
+      "preset_notes": {
+        "brand": "Full cc-grid bg. Headline uses cc-data large. Primary CTA gets cc-glow."
+      }
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_bgmuted _r4",
+      "notes": "CTA on subtle muted background. No gradients or glass.",
+      "preset_notes": {
+        "brand": "Large _bgmuted section with larger heading. No special effects."
+      }
     }
   },
   "code": {

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "leaderboard",
+  "name": "Leaderboard",
+  "description": "Ranked list with podium display, achievement grids, and compact spotlight widgets. Domain-agnostic ranking pattern for competitions, achievements, and top-performer displays.",
+  "components": ["Card", "Avatar", "Badge", "Statistic", "Progress", "icon"],
+  "default_preset": "ranked",
+  "presets": {
+    "ranked": {
+      "description": "Full leaderboard with podium top 3 and scrollable ranked list below. Podium uses 3-column grid with center (#1) visually emphasized.",
+      "components": ["Card", "Avatar", "Badge", "Statistic", "Progress", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Section header with title and period selector",
+          "podium": "3-column grid (_gc3) for top 3 entries. Center (#1) is visually larger.",
+          "ranked-list": "Scrollable list of remaining entries with position, avatar, name, stat columns, and rank badge"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge, Card, icon } from 'decantr/components';",
+        "example": "function Leaderboard({ entries }) {\n  const { div, span, h3 } = tags;\n  const top3 = entries.slice(0, 3);\n  const rest = entries.slice(3);\n  const medals = ['trophy', 'medal', 'award'];\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h3({ class: css('_heading4') }, 'Leaderboard'),\n      Badge({ variant: 'outline' }, 'This Season')\n    ),\n    div({ class: css('_grid _gc3 _gap3 _aic') },\n      ...([top3[1], top3[0], top3[2]].filter(Boolean).map((entry, i) => {\n        const isFirst = i === 1;\n        return Card({ class: css(`_tc ${isFirst ? '_py6' : '_py4'}`) },\n          Card.Body({ class: css('_flex _col _aic _gap2') },\n            Avatar({ src: entry.avatar, size: isFirst ? 'lg' : 'md' }),\n            span({ class: css('_medium _textsm') }, entry.name),\n            span({ class: css('_textxs _fgmuted') }, entry.stat),\n            Badge({ variant: isFirst ? 'primary' : 'outline' },\n              icon(medals[isFirst ? 0 : i === 0 ? 1 : 2], { size: '0.75rem' }),\n              ` #${isFirst ? 1 : i === 0 ? 2 : 3}`\n            )\n          )\n        );\n      }))\n    ),\n    div({ class: css('_flex _col _gap1') },\n      ...rest.map((entry, i) =>\n        div({ class: css('_flex _aic _gap3 _py2 _px3 _borderB') },\n          span({ class: css('_w6 _tc _textxs _fgmuted') }, `${i + 4}`),\n          Avatar({ src: entry.avatar, size: 'sm' }),\n          span({ class: css('_flex1 _textsm _medium') }, entry.name),\n          span({ class: css('_textsm _fgmuted') }, entry.stat),\n          Badge({ variant: 'outline', size: 'sm' }, entry.rank)\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "grid": {
+      "description": "Achievement/badge grid with responsive columns. Each card shows icon, title, description, and earned status.",
+      "components": ["Card", "Badge", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _md:gc3 _lg:gc4 _gap3",
+        "slots": {
+          "header": "Section title with count badge",
+          "achievement-cards": "Grid of achievement cards with icon, title, description, earned date or locked overlay"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+        "example": "function AchievementGrid({ achievements }) {\n  const { div, span, h3 } = tags;\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _gap2') },\n      h3({ class: css('_heading4') }, 'Achievements'),\n      Badge({ variant: 'outline' }, `${achievements.filter(a => a.earned).length}/${achievements.length}`)\n    ),\n    div({ class: css('_grid _gc2 _md:gc3 _lg:gc4 _gap3') },\n      ...achievements.map(a =>\n        Card({ class: css(`_tc ${a.earned ? '' : '_opacity50'}`) },\n          Card.Body({ class: css('_flex _col _aic _gap2 _py4') },\n            div({ class: css('_flex _center _w12 _h12 _r3 _bgprimary/10') },\n              icon(a.icon, { size: '1.5rem', class: css(a.earned ? '_fgprimary' : '_fgmuted') })\n            ),\n            span({ class: css('_textsm _medium') }, a.title),\n            span({ class: css('_textxs _fgmuted _tc') }, a.description),\n            a.earned\n              ? Badge({ variant: 'success', size: 'sm' }, a.date)\n              : Badge({ variant: 'outline', size: 'sm' }, 'Locked')\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "spotlight": {
+      "description": "Compact top-3 horizontal widget for sidebar or dashboard embedding. Shows rank indicator, avatar, name, and key stat.",
+      "components": ["Avatar", "Badge"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "header": "Label header with period badge",
+          "entries": "3 compact rows: rank dot + avatar + name + stat"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge } from 'decantr/components';",
+        "example": "function SpotlightLeaderboard({ entries }) {\n  const { div, span, h4 } = tags;\n  const top3 = entries.slice(0, 3);\n  const rankColors = ['_fgprimary', '_fgaccent', '_fgwarning'];\n\n  return div({ class: css('_flex _col _gap2') },\n    div({ class: css('_flex _aic _jcsb') },\n      h4({ class: css('_textsm _medium') }, 'Top Players'),\n      Badge({ variant: 'outline', size: 'sm' }, 'This Week')\n    ),\n    ...top3.map((entry, i) =>\n      div({ class: css('_flex _aic _gap2 _py1') },\n        span({ class: css(`_w4 _tc _textxs _medium ${rankColors[i]}`) }, `#${i + 1}`),\n        Avatar({ src: entry.avatar, size: 'xs' }),\n        span({ class: css('_flex1 _textsm') }, entry.name),\n        span({ class: css('_textsm _fgmuted') }, entry.stat)\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "header": "Section header with title and period selector",
+      "podium": "Top 3 entries in visual podium layout",
+      "ranked-list": "Remaining entries in scrollable list"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge, Card, icon } from 'decantr/components';",
+    "example": "function Leaderboard({ entries }) {\n  const { div, span, h3 } = tags;\n\n  return div({ class: css('_flex _col _gap4') },\n    h3({ class: css('_heading4') }, 'Leaderboard'),\n    div({ class: css('_grid _gc3 _gap3') },\n      // Top 3 podium entries\n    ),\n    div({ class: css('_flex _col _gap1') },\n      // Ranked list entries\n    )\n  );\n}"
+  }
+}

@@ -110,6 +110,11 @@ export { CodeBlock } from './code-block.js';
 export { SortableList } from './sortable-list.js';
 export { DateTimePicker } from './datetime-picker.js';
 
+// ─── Media ──────────────────────────────────────────────────────
+export { Marquee } from './marquee.js';
+export { BrowserFrame } from './browser-frame.js';
+export { createHighlighter } from './code-highlight.js';
+
 // ─── Utility ────────────────────────────────────────────────────
 export { VisuallyHidden } from './visually-hidden.js';
 

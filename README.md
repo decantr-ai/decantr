@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/decantr)](https://www.npmjs.com/package/decantr)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-AI-first web framework. Zero dependencies. Native JS/CSS/HTML. v0.4.2
+AI-first web framework. Zero dependencies. Native JS/CSS/HTML. v0.9.2
 
 Decantr is designed for LLMs to generate, read, and maintain — not for human readability. Every API is optimized for token efficiency: terse atomic CSS atoms, proxy-based tag functions, and a machine-readable registry so agents can look up props and exports without parsing source files.
 
@@ -21,13 +21,17 @@ npx decantr dev
 
 ```
 decantr/core        — h(), text(), cond(), list(), mount(), onMount, onDestroy, ErrorBoundary, Portal, Suspense, Transition
-decantr/state       — createSignal, createEffect, createMemo, createStore, batch, createContext, createHistory, createRoot, on
-decantr/data        — createQuery, createMutation, createEntityStore, createURLSignal, createWebSocket, createPersisted
+decantr/state       — createSignal, createEffect, createMemo, createStore, batch, createContext, createSelector, createDeferred, createHistory, createRoot, on
+decantr/data        — createQuery, createInfiniteQuery, createMutation, queryClient, createEntityStore, createURLSignal, createWebSocket, createEventSource, createPersisted, createOfflineQueue
 decantr/router      — createRouter, link, navigate, useRoute, useSearchParams (hash + history modes, nested routes, guards)
 decantr/form        — createForm, validators, useFormField, fieldArray
 decantr/css         — css(), define(), setStyle(), setMode(), setShape(), 1000+ atomic CSS utilities
 decantr/tags        — Proxy-based tag functions (div, p, span...) — ~25% fewer tokens than h()
-decantr/components  — 100+ UI components (form, display, layout, overlay, feedback, chart, typography)
+decantr/components  — 110+ UI components (form, display, layout, overlay, feedback, chart, typography)
+decantr/chart       — Chart components (bar, line, area, pie, donut, sparkline)
+decantr/plugins     — loadPlugins(), runHook() — build/dev/generate lifecycle hooks
+decantr/i18n        — createI18n, locale management, RTL support
+decantr/ssr         — renderToString, renderToStream, hydrate
 decantr/test        — render, fire, flush + node:test re-exports
 ```
 
@@ -36,13 +40,15 @@ decantr/test        — render, fire, flush + node:test re-exports
 - **Zero dependencies** — Pure JavaScript, CSS, HTML
 - **Signal-based reactivity** — Fine-grained DOM updates, no virtual DOM
 - **Direct DOM rendering** — `h()` / `tags` create real elements, no diffing
-- **100+ components** — Form, display, layout, overlay, feedback, chart, typography
+- **110+ components** — Form, display, layout, overlay, feedback, chart, typography
 - **Atomic CSS engine** — 1000+ `_`-prefixed utility atoms via `css()`
-- **Style + Mode system** — 5 visual styles x light/dark/auto modes, 170+ design tokens
-- **Machine-readable registry** — JSON specs for 100+ components, 49 patterns, 7 archetypes, recipes
+- **Style + Mode system** — 12 visual styles (1 core + 3 add-on + 8 community) x light/dark/auto modes, 170+ design tokens
+- **Machine-readable registry** — JSON specs for 110+ components, 48 patterns, 9 archetypes, recipes
 - **Router** — Hash or History API, nested routes, guards, lazy loading
 - **Form system** — Reactive forms with 10 built-in validators and field arrays
 - **Build tooling** — Tree shaking, code splitting, source maps, CSS purging, incremental builds
+- **Plugin system** — Build/dev/generate lifecycle hooks via `loadPlugins()` and `runHook()`
+- **i18n + SSR** — Internationalization with RTL support, server-side rendering with streaming
 
 ## Component Pattern
 
@@ -80,6 +86,10 @@ decantr a11y              # Accessibility audit
 decantr doctor            # Check project health
 decantr generate          # Generate code from essence
 decantr migrate           # Migrate essence between versions
+decantr audit             # Run ecosystem audit
+decantr mcp               # Start MCP server
+decantr figma-tokens      # Import Figma design tokens
+decantr figma-sync        # Sync with Figma
 ```
 
 ## MCP Server
@@ -203,7 +213,7 @@ A step-by-step guide from zero to deployed app:
 
 1. [Install & Setup](docs/tutorial/01-install.md) — Prerequisites, scaffolding, project structure
 2. [Your First Page](docs/tutorial/02-first-page.md) — Tag functions, atomic CSS, page pattern
-3. [Components](docs/tutorial/03-components.md) — Button, Card, DataTable, and 100+ built-in components
+3. [Components](docs/tutorial/03-components.md) — Button, Card, DataTable, and 110+ built-in components
 4. [Styling](docs/tutorial/04-styling.md) — Atoms, styles, modes, design tokens, responsive prefixes
 5. [State](docs/tutorial/05-state.md) — Signals, effects, memos, stores, conditional and list rendering
 6. [Routing](docs/tutorial/06-routing.md) — Routes, guards, nested routes, lazy loading, navigation

@@ -57,7 +57,7 @@ export function indexHtml(name) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${name}</title>
-  <style>${THEME_CSS.dark}*{margin:0;box-sizing:border-box}body{font-family:var(--d-font);color:var(--d-fg);background:var(--d-bg);min-height:100vh}a{color:var(--d-primary);text-decoration:none}a:hover{color:var(--d-primary-hover)}</style>
+  <style>@layer d.base,d.theme,d.atoms,d.user;@layer d.base{${THEME_CSS.dark}*,*::before,*::after{margin:0;box-sizing:border-box}body{font-family:var(--d-font);color:var(--d-fg);background:var(--d-bg);min-height:100vh}a{color:var(--d-primary);text-decoration:none}a:hover{color:var(--d-primary-hover)}}</style>
 </head>
 <body>
   <div id="app"></div>

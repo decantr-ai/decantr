@@ -1,0 +1,80 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "footer-columns",
+  "name": "Footer Columns",
+  "description": "Multi-column site footer with branding, link groups, social icons, and legal text.",
+  "components": ["Separator", "icon"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Logo/brand column + 3 link columns + bottom copyright row.",
+      "components": ["Separator", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_grid _gc1 _md:gc4 _gap8 _py12 _px6",
+        "slots": {
+          "brand": "Logo, tagline, and optional social icons",
+          "link-group-1": "First column of footer links with heading",
+          "link-group-2": "Second column of footer links with heading",
+          "link-group-3": "Third column of footer links with heading",
+          "copyright": "Bottom row spanning full width with copyright text"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Separator, icon } from 'decantr/components';\nimport { link } from 'decantr/router';",
+        "example": "function Footer() {\n  const { footer, div, h3, span, a, p } = tags;\n\n  const linkGroup = (title, links) =>\n    div({ class: css('_flex _col _gap3') },\n      h3({ class: css('_textsm _bold _fgfg') }, title),\n      ...links.map(l => a({ href: l.href, class: css('_textsm _fgmuted _h:fgfg _nounder _trans[color_0.2s_ease]') }, l.label))\n    );\n\n  return footer({ class: css('_bcborder _borderT _mt[auto]') },\n    div({ class: css('_grid _gc1 _md:gc4 _gap8 _py12 _px6 _mw[1200px] _mx[auto]') },\n      div({ class: css('_flex _col _gap3') },\n        span({ class: css('_textlg _bold d-gradient-text') }, 'Decantr'),\n        p({ class: css('_textsm _fgmuted _mw[240px]') }, 'The AI-first web framework for building stunning applications.'),\n        div({ class: css('_flex _gap3 _mt2') },\n          a({ href: '#', 'aria-label': 'GitHub', class: css('_fgmuted _h:fgfg') }, icon('github')),\n          a({ href: '#', 'aria-label': 'Twitter', class: css('_fgmuted _h:fgfg') }, icon('twitter'))\n        )\n      ),\n      linkGroup('Product', [\n        { label: 'Features', href: '#features' },\n        { label: 'Pricing', href: '#pricing' },\n        { label: 'Changelog', href: '#changelog' }\n      ]),\n      linkGroup('Resources', [\n        { label: 'Documentation', href: '#docs' },\n        { label: 'Examples', href: '#examples' },\n        { label: 'Blog', href: '#blog' }\n      ]),\n      linkGroup('Company', [\n        { label: 'About', href: '#about' },\n        { label: 'Contact', href: '#contact' },\n        { label: 'Privacy', href: '#privacy' }\n      ])\n    ),\n    Separator({}),\n    div({ class: css('_flex _aic _jcc _py4 _px6') },\n      p({ class: css('_textxs _fgmuted') }, `\\u00A9 ${new Date().getFullYear()} Decantr. All rights reserved.`)\n    )\n  );\n}"
+      }
+    },
+    "minimal": {
+      "description": "Single row with logo + links + social icons.",
+      "components": ["icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcsb _py6 _px6 _wrap _gap4",
+        "slots": {
+          "brand": "Logo or brand name",
+          "links": "Horizontal row of footer links",
+          "social": "Social media icon links"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function FooterMinimal() {\n  const { footer, div, span, a } = tags;\n\n  return footer({ class: css('_flex _aic _jcsb _py6 _px6 _wrap _gap4 _bcborder _borderT') },\n    span({ class: css('_textsm _bold') }, 'Decantr'),\n    div({ class: css('_flex _gap4') },\n      a({ href: '#', class: css('_textsm _fgmuted _h:fgfg _nounder') }, 'Docs'),\n      a({ href: '#', class: css('_textsm _fgmuted _h:fgfg _nounder') }, 'Blog'),\n      a({ href: '#', class: css('_textsm _fgmuted _h:fgfg _nounder') }, 'Privacy')\n    ),\n    div({ class: css('_flex _gap3') },\n      a({ href: '#', 'aria-label': 'GitHub', class: css('_fgmuted _h:fgfg') }, icon('github')),\n      a({ href: '#', 'aria-label': 'Twitter', class: css('_fgmuted _h:fgfg') }, icon('twitter'))\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_grid _gc1 _md:gc4 _gap8 _py12 _px6",
+    "slots": {
+      "brand": "Logo and tagline",
+      "link-groups": "Columns of footer links",
+      "copyright": "Copyright text"
+    }
+  },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Brand name uses d-gradient-text. Links use _fgmuted with _h:fgfg transition. Border uses rgba(255,255,255,0.08).",
+      "preset_notes": {
+        "standard": "4-column grid. Brand column has d-gradient-text logo. Social icons use _fgmuted.",
+        "minimal": "Single-row flex. Brand name with d-gradient-text."
+      }
+    },
+    "command-center": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Standard footer styling with cc-label headings."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Clean, minimal footer. Standard link styling."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Separator, icon } from 'decantr/components';",
+    "example": "function Footer() {\n  const { footer, div, h3, span, a, p } = tags;\n\n  return footer({ class: css('_bcborder _borderT _mt[auto]') },\n    div({ class: css('_grid _gc1 _md:gc4 _gap8 _py12 _px6') },\n      div({ class: css('_flex _col _gap3') },\n        span({ class: css('_textlg _bold') }, 'Brand'),\n        p({ class: css('_textsm _fgmuted') }, 'Your tagline here.')\n      )\n    ),\n    Separator({}),\n    div({ class: css('_flex _aic _jcc _py4') },\n      p({ class: css('_textxs _fgmuted') }, `\\u00A9 ${new Date().getFullYear()} Brand. All rights reserved.`)\n    )\n  );\n}"
+  }
+}

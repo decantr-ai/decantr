@@ -1,0 +1,81 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v1.json",
+  "id": "gaming-guild",
+  "name": "Gaming Guild",
+  "style": "gaming-guild",
+  "mode": "dark",
+  "description": "Guild hall visual language. Electric indigo + neon emerald palette with glow elevation, deep indigo surfaces, and RPG-inspired data readouts. All standard Decantr components work — this recipe describes how to COMPOSE them for the gaming guild aesthetic.",
+  "setup": "import { registerStyle, setStyle, setMode } from 'decantr/css';\nimport { gamingGuild } from 'decantr/styles/community/gaming-guild';\nregisterStyle(gamingGuild);\nsetStyle('gaming-guild');\nsetMode('dark');",
+  "decorators": {
+    "gg-glow": "Indigo glow box-shadow. Apply to cards, panels, and highlighted elements.",
+    "gg-glow-accent": "Emerald glow variant. Apply to success states and accent elements.",
+    "gg-glow-strong": "Stronger indigo glow for hero elements and podium highlights.",
+    "gg-glow-pulse": "Animated glow pulse (3s loop). Use for live indicators and active states.",
+    "gg-shimmer": "Gradient shimmer sweep animation. Apply to #1 rank and featured items.",
+    "gg-rank-up": "Scale bounce animation for rank-up moments and level progression.",
+    "gg-float": "Subtle vertical floating bob (4s). Apply to emblems and decorative elements.",
+    "gg-xp-bar": "XP progress bar with gradient fill. Set --gg-xp for fill percentage.",
+    "gg-badge-pop": "Achievement pop-in animation with overshoot. Apply to earned badges.",
+    "gg-mesh": "Radial gradient page background with indigo/emerald/violet layers.",
+    "gg-panel": "Surface-1 panel with indigo border and rounded corners.",
+    "gg-label": "Uppercase micro label with wide letter-spacing.",
+    "gg-data": "Monospace tabular-nums readout styling for stats and ranks.",
+    "gg-live": "Green pulsing dot indicator for online/live status."
+  },
+  "pattern_overrides": {
+    "hero": { "background": "gg-mesh" },
+    "card-grid": { "background": "gg-panel" },
+    "leaderboard": { "background": "gg-panel gg-glow" },
+    "kpi-grid": { "background": "gg-panel" },
+    "post-list": { "background": "gg-panel" },
+    "activity-feed": { "background": "gg-panel" },
+    "detail-header": { "background": "gg-mesh" },
+    "stats-bar": { "background": "gg-panel" },
+    "timeline": { "background": "gg-panel" },
+    "cta-section": { "background": "gg-mesh" },
+    "form-sections": { "background": "gg-panel" },
+    "auth-form": { "background": "gg-mesh" },
+    "testimonials": { "background": "gg-panel" }
+  },
+  "compositions": {
+    "panel": {
+      "description": "Standard guild panel. Surface-1 with indigo border and label header.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('gg-panel') },\n  div({ class: css('_flex _aic _jcsb _mb3') },\n    span({ class: css('gg-label _fgmutedfg') }, 'GUILD STATUS'),\n    span({ class: css('gg-live') })\n  ),\n  div({ class: css('_flex _col _gap3') },\n    // content here\n  )\n)"
+    },
+    "card": {
+      "wraps": "Card",
+      "description": "Gaming guild card. Standard Card with glow hover and panel styling.",
+      "example": "const { div, span } = tags;\nCard({ hover: true, class: css('gg-glow') },\n  Card.Header({},\n    span({ class: css('gg-label') }, 'RAID EVENT')\n  ),\n  Card.Body({},\n    span({ class: css('gg-data _heading3') }, 'Dragon\\'s Lair')\n  ),\n  Card.Footer({},\n    Badge({ variant: 'success' }, 'ACTIVE')\n  )\n)"
+    },
+    "kpi": {
+      "wraps": "Statistic",
+      "description": "Guild KPI metric with glow and monospace data readout.",
+      "example": "Statistic({\n  label: 'GUILD MEMBERS',\n  value: 4500,\n  icon: 'users',\n  trend: 'up',\n  trendValue: '+120',\n  animate: 1200,\n  class: css('gg-glow-strong')\n})"
+    },
+    "table": {
+      "wraps": "DataTable",
+      "description": "Data table in guild panel with label column headers.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('gg-panel') },\n  div({ class: css('_flex _aic _jcsb _mb3') },\n    span({ class: css('gg-label _fgmutedfg') }, 'MATCH HISTORY'),\n    span({ class: css('gg-data _textxs _fgmuted') }, 'LAST 30 DAYS')\n  ),\n  DataTable({ columns, data })\n)"
+    },
+    "leaderboard": {
+      "description": "Ranked leaderboard with podium top 3 and scrollable list.",
+      "example": "const { div, span, h3 } = tags;\ndiv({ class: css('gg-panel gg-glow') },\n  div({ class: css('_flex _aic _jcsb _mb4') },\n    h3({ class: css('gg-label _fgmutedfg') }, 'TOP PLAYERS'),\n    span({ class: css('gg-data _textxs _fgmuted') }, 'THIS SEASON')\n  ),\n  // Podium top 3\n  div({ class: css('_grid _gc3 _gap3 _mb4') },\n    // #2, #1 (center, larger, gg-glow-strong), #3\n  ),\n  // Ranked list\n  div({ class: css('_flex _col _gap1') },\n    // rank rows with Avatar, name, stat, Badge\n  )\n)"
+    },
+    "profile-card": {
+      "description": "Player profile card with avatar, rank badge, XP bar, and achievements.",
+      "example": "const { div, span, h3 } = tags;\nCard({},\n  Card.Body({ class: css('_flex _col _aic _gap3') },\n    Avatar({ src: player.avatar, size: 'xl', class: css('gg-glow') }),\n    h3({ class: css('d-gradient-text _heading3') }, player.name),\n    Badge({ variant: 'primary' }, player.rank),\n    div({ class: css('_wfull') },\n      div({ class: css('_flex _jcsb _mb1') },\n        span({ class: css('gg-label _textxs') }, 'XP'),\n        span({ class: css('gg-data _textxs') }, `${player.xp} / ${player.nextLevel}`)\n      ),\n      div({ class: css('gg-xp-bar'), style: `--gg-xp:${player.xpPercent}%` })\n    )\n  )\n)"
+    },
+    "sidebar": {
+      "description": "Guild navigation sidebar with grouped sections and live indicator.",
+      "example": "Shell.Nav({ class: css('_flex _col _gap1') },\n  div({ class: css('_p4 _mb2') },\n    // Guild logo + name\n  ),\n  span({ class: css('gg-label _fgmuted _px4 _mb1') }, 'INFO'),\n  // nav items: Main, News, Games\n  span({ class: css('gg-label _fgmuted _px4 _mb1 _mt3') }, 'SPOTLIGHT'),\n  // nav items: Hall of Fame, Join Guild, Profile\n  div({ class: css('_flex1') }),\n  div({ class: css('_flex _aic _gap2 _p4') },\n    span({ class: css('gg-live') }),\n    span({ class: css('gg-data _textxs _fgmuted') }, 'ONLINE')\n  )\n)"
+    },
+    "auth-modal": {
+      "description": "Auth modal with guild mesh background and form.",
+      "example": "Modal({\n  visible: showAuth,\n  onClose: () => setShowAuth(false),\n  class: css('gg-mesh')\n},\n  div({ class: css('_flex _col _aic _gap4 _p6') },\n    span({ class: css('d-gradient-text _heading3') }, 'JOIN THE GUILD'),\n    Input({ label: 'Gamertag', placeholder: 'Enter your gamertag' }),\n    Input({ label: 'Access Code', type: 'password' }),\n    Button({ variant: 'primary', class: css('_wfull gg-glow') }, 'SIGN IN')\n  )\n)"
+    },
+    "achievement": {
+      "description": "Achievement badge card with pop-in animation.",
+      "example": "Card({ class: css('gg-badge-pop _tc') },\n  Card.Body({ class: css('_flex _col _aic _gap2') },\n    div({ class: css('_flex _center _w12 _h12 _r3 _bgprimary/10') },\n      icon('trophy', { size: '1.5rem', class: css('_fgprimary') })\n    ),\n    span({ class: css('_textsm _medium') }, 'Dragon Slayer'),\n    span({ class: css('_textxs _fgmuted') }, 'Defeated 100 dragons')\n  )\n)"
+    }
+  }
+}

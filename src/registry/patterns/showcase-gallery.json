@@ -1,0 +1,75 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "showcase-gallery",
+  "name": "Showcase Gallery",
+  "description": "Grid of screenshots or previews with hover effects for project portfolios, case studies, and 'built with X' showcases.",
+  "components": ["Card", "Image", "BrowserFrame"],
+  "default_preset": "screenshots",
+  "presets": {
+    "screenshots": {
+      "description": "Grid of BrowserFrame-wrapped screenshots with hover scale effect.",
+      "components": ["BrowserFrame", "Image"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
+        "slots": {
+          "heading": "Section heading and optional description",
+          "gallery": "Grid of BrowserFrame components wrapping screenshot images"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { BrowserFrame, Image } from 'decantr/components';",
+        "example": "function ShowcaseGallery({ items }) {\n  const { div, h2, p } = tags;\n\n  return div({ class: css('_flex _col _gap8 _py12 _px6') },\n    div({ class: css('_tc') },\n      h2({ class: css('_heading2') }, 'Built with our framework'),\n      p({ class: css('_body _fgmuted') }, 'See what developers are creating')\n    ),\n    div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6') },\n      ...items.map(item =>\n        div({ class: css('_trans[transform_0.3s_ease] _h:scale[1.02]') },\n          BrowserFrame({ url: item.url },\n            Image({ src: item.screenshot, alt: item.title, class: css('_wfull') })\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "cards": {
+      "description": "Grid of styled content cards with title and description overlay.",
+      "components": ["Card", "Image"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
+        "slots": {
+          "heading": "Section heading and optional description",
+          "gallery": "Grid of Card components with image, title, and description"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Image } from 'decantr/components';",
+        "example": "function ShowcaseCards({ items }) {\n  const { div, h2, h3, p } = tags;\n\n  return div({ class: css('_flex _col _gap8 _py12 _px6') },\n    div({ class: css('_tc') },\n      h2({ class: css('_heading2') }, 'Featured Projects'),\n      p({ class: css('_body _fgmuted') }, 'Explore what our community has built')\n    ),\n    div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6') },\n      ...items.map(item =>\n        Card({ class: css('_overflow[hidden] _trans[transform_0.3s_ease] _h:scale[1.02]') },\n          Image({ src: item.screenshot, alt: item.title, class: css('_wfull _h[200px] _object[cover]') }),\n          Card.Body({},\n            h3({ class: css('_heading4') }, item.title),\n            p({ class: css('_textsm _fgmuted') }, item.description)\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
+    "slots": {
+      "heading": "Section heading",
+      "gallery": "Grid of showcase items"
+    }
+  },
+  "recipe_overrides": {
+    "auradecantism": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Cards use d-glass. Hover effect includes scale + aura-glow. Section heading uses d-gradient-text.",
+      "preset_notes": {
+        "screenshots": "BrowserFrame cards with d-glass border. Hover scale + subtle glow.",
+        "cards": "Cards use d-glass with hover scale effect."
+      }
+    },
+    "command-center": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Cards use cc-frame. Section heading uses cc-data."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Standard card styling. Simple hover shadow effect."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { BrowserFrame, Image } from 'decantr/components';",
+    "example": "function ShowcaseGallery({ items }) {\n  const { div, h2, p } = tags;\n\n  return div({ class: css('_flex _col _gap8 _py12 _px6') },\n    div({ class: css('_tc') },\n      h2({ class: css('_heading2') }, 'Built with our framework'),\n      p({ class: css('_body _fgmuted') }, 'See what developers are creating')\n    ),\n    div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6') },\n      ...items.map(item =>\n        BrowserFrame({ url: item.url },\n          Image({ src: item.screenshot, alt: item.title, class: css('_wfull') })\n        )\n      )\n    )\n  );\n}"
+  }
+}

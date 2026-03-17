@@ -26,7 +26,7 @@
     "decantr/components": {
       "description": "UI components — all return HTMLElement, all accept inline styles",
       "file": "components.json",
-      "exports": 108
+      "exports": 111
     },
     "decantr/tags": {
       "description": "Proxy-based tag functions for concise markup",

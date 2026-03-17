@@ -36,6 +36,16 @@
       "name": "Recipe Community",
       "description": "AI-powered recipe sharing platform — recipes, cookbooks, photo-to-recipe AI, chef chat, community feed",
       "file": "recipe-community.json"
+    },
+    "gaming-platform": {
+      "name": "Gaming Platform",
+      "description": "Guild-based gaming community — leaderboards, game catalog, news, member profiles, achievements",
+      "file": "gaming-platform.json"
+    },
+    "creative-tool": {
+      "name": "Creative Tool",
+      "description": "Interactive creative tool — input-driven generators, specimen grids, gallery browsing, detail inspection",
+      "file": "creative-tool.json"
     }
   }
 }
