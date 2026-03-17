@@ -1,0 +1,159 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "recipe-community",
+  "name": "Recipe Community",
+  "description": "AI-powered recipe sharing platform with community feed, photo-to-recipe AI generation, chef chat, cookbook collections, and social cooking features.",
+  "pages": [
+    {
+      "id": "home",
+      "skeleton": "top-nav-footer",
+      "patterns": [
+        "hero",
+        "search-bar",
+        { "pattern": "card-grid", "preset": "icon", "as": "feature-grid" },
+        "cta-section"
+      ],
+      "default_blend": [
+        "hero",
+        { "pattern": "card-grid", "preset": "icon", "as": "feature-grid" },
+        "cta-section"
+      ]
+    },
+    {
+      "id": "feed",
+      "skeleton": "top-nav-main",
+      "patterns": [
+        "detail-header",
+        { "pattern": "card-grid", "preset": "content", "as": "recipe-card-grid" }
+      ],
+      "default_blend": [
+        "detail-header",
+        { "pattern": "card-grid", "preset": "content", "as": "recipe-card-grid" }
+      ]
+    },
+    {
+      "id": "recipe-detail",
+      "skeleton": "top-nav-main",
+      "patterns": [
+        { "pattern": "hero", "preset": "image-overlay", "as": "recipe-hero" },
+        "stats-bar",
+        "checklist-card",
+        "steps-card",
+        "author-card",
+        "table-of-contents",
+        "stat-card"
+      ],
+      "default_blend": [
+        { "pattern": "hero", "preset": "image-overlay", "as": "recipe-hero" },
+        "stats-bar",
+        { "cols": ["checklist-card", "author-card"], "span": { "checklist-card": 3 }, "at": "lg" },
+        { "cols": ["steps-card", "table-of-contents"], "span": { "steps-card": 3 }, "at": "lg" },
+        { "cols": ["stat-card"], "at": "lg" }
+      ]
+    },
+    {
+      "id": "recipe-create",
+      "skeleton": "top-nav-main",
+      "patterns": [
+        "detail-header",
+        { "pattern": "form-sections", "preset": "creation", "as": "recipe-form-simple" },
+        { "pattern": "form-sections", "preset": "structured", "as": "recipe-form-chef" }
+      ],
+      "default_blend": [
+        "detail-header",
+        { "pattern": "form-sections", "preset": "creation", "as": "recipe-form-simple" }
+      ]
+    },
+    {
+      "id": "recipe-edit",
+      "skeleton": "top-nav-main",
+      "patterns": [
+        "detail-header",
+        { "pattern": "form-sections", "preset": "creation", "as": "recipe-form-simple" }
+      ],
+      "default_blend": [
+        "detail-header",
+        { "pattern": "form-sections", "preset": "creation", "as": "recipe-form-simple" }
+      ]
+    },
+    {
+      "id": "generate",
+      "skeleton": "top-nav-main",
+      "patterns": ["detail-header", "photo-to-recipe"],
+      "default_blend": [
+        "detail-header",
+        "photo-to-recipe"
+      ]
+    },
+    {
+      "id": "chat",
+      "skeleton": "top-nav-main",
+      "patterns": ["detail-header", "chat-interface"],
+      "default_blend": [
+        "detail-header",
+        "chat-interface"
+      ]
+    },
+    {
+      "id": "cookbooks",
+      "skeleton": "top-nav-main",
+      "patterns": [
+        "detail-header",
+        { "pattern": "card-grid", "preset": "collection", "as": "cookbook-grid" }
+      ],
+      "default_blend": [
+        "detail-header",
+        { "pattern": "card-grid", "preset": "collection", "as": "cookbook-grid" }
+      ]
+    },
+    {
+      "id": "cookbook-detail",
+      "skeleton": "top-nav-main",
+      "patterns": [
+        { "pattern": "hero", "preset": "image-overlay-compact", "as": "cookbook-hero" },
+        { "pattern": "card-grid", "preset": "content", "as": "recipe-card-grid" }
+      ],
+      "default_blend": [
+        { "pattern": "hero", "preset": "image-overlay-compact", "as": "cookbook-hero" },
+        { "pattern": "card-grid", "preset": "content", "as": "recipe-card-grid" }
+      ]
+    },
+    {
+      "id": "profile",
+      "skeleton": "top-nav-main",
+      "patterns": [
+        { "pattern": "detail-header", "preset": "profile", "as": "profile-header" },
+        "kpi-grid",
+        { "pattern": "card-grid", "preset": "content", "as": "recipe-card-grid" },
+        { "pattern": "card-grid", "preset": "collection", "as": "cookbook-grid" }
+      ],
+      "default_blend": [
+        { "pattern": "detail-header", "preset": "profile", "as": "profile-header" },
+        "kpi-grid",
+        { "pattern": "card-grid", "preset": "content", "as": "recipe-card-grid" }
+      ]
+    },
+    {
+      "id": "login",
+      "skeleton": "centered",
+      "patterns": ["auth-form"],
+      "default_blend": ["auth-form"]
+    },
+    {
+      "id": "register",
+      "skeleton": "centered",
+      "patterns": ["auth-form"],
+      "default_blend": ["auth-form"]
+    }
+  ],
+  "tannins": ["auth", "recipe-state", "cookbook-state", "ai-chat", "ai-generate", "social-feed", "search", "image-upload"],
+  "skeletons": {
+    "top-nav-footer": "Horizontal navigation bar + main content + footer — for landing pages",
+    "top-nav-main": "Horizontal navigation bar + full-width main content area",
+    "centered": "Centered card on background — for auth flows"
+  },
+  "suggested_vintage": {
+    "styles": ["clean", "auradecantism", "glassmorphism"],
+    "modes": ["light", "auto"]
+  }
+}

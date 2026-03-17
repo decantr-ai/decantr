@@ -138,6 +138,27 @@ function alpha(hex, opacity) {
   return `rgba(${r},${g},${b},${opacity})`;
 }
 
+/** Parse `rgba(R,G,B,A)` → [r,g,b,a] or null if not rgba */
+function parseRgba(str) {
+  if (!str || !str.startsWith('rgba(')) return null;
+  const m = str.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+  return m ? [+m[1], +m[2], +m[3], +m[4]] : null;
+}
+
+/** Composite an rgba color onto an opaque hex background (Porter-Duff source-over). Returns opaque hex. */
+function compositeOnBg(value, bgHex) {
+  if (!value) return value;
+  if (value.startsWith('#')) return value;
+  const parsed = parseRgba(value);
+  if (!parsed) return value;
+  const [sr, sg, sb, sa] = parsed;
+  const [br, bg, bb] = hexToRgb(bgHex);
+  const r = Math.round(sr * sa + br * (1 - sa));
+  const g = Math.round(sg * sa + bg * (1 - sa));
+  const b = Math.round(sb * sa + bb * (1 - sa));
+  return rgbToHex(r, g, b);
+}
+
 /** Mix two colors in OKLCH space (perceptually uniform interpolation) */
 function mixColors(hex1, hex2, weight) {
   const [L1, C1, H1] = rgbToOklch(...hexToRgb(hex1));
@@ -172,7 +193,7 @@ function rotateHue(hex, degrees) {
 }
 
 // Export color utils for testing and style overrides
-export { hexToRgb, rgbToHex, rgbToOklch, oklchToRgb, gamutMap, darken, lighten, alpha, mixColors, pickForeground, rotateHue, contrast, validateContrast, adjustForContrast, transformSeedsForCVD };
+export { hexToRgb, rgbToHex, rgbToOklch, oklchToRgb, gamutMap, darken, lighten, alpha, parseRgba, compositeOnBg, mixColors, pickForeground, rotateHue, contrast, validateContrast, adjustForContrast, transformSeedsForCVD, deriveChrome };
 
 // ============================================================
 // Contrast Validation (WCAG AA)
@@ -209,28 +230,86 @@ function validateContrast(tokens) {
     ['--d-success-subtle-fg', '--d-success-subtle', 4.5],
     ['--d-warning-subtle-fg', '--d-warning-subtle', 4.5],
     ['--d-info-subtle-fg', '--d-info-subtle', 4.5],
+    // --- on-subtle text contrast (4.5:1) — role color on subtle bg ---
+    ['--d-primary-on-subtle', '--d-primary-subtle', 4.5],
+    ['--d-accent-on-subtle', '--d-accent-subtle', 4.5],
+    ['--d-tertiary-on-subtle', '--d-tertiary-subtle', 4.5],
+    ['--d-success-on-subtle', '--d-success-subtle', 4.5],
+    ['--d-warning-on-subtle', '--d-warning-subtle', 4.5],
+    ['--d-error-on-subtle', '--d-error-subtle', 4.5],
+    ['--d-info-on-subtle', '--d-info-subtle', 4.5],
+    // --- Body text on subtle backgrounds (alerts, tables) ---
+    ['--d-fg', '--d-primary-subtle', 4.5],
+    ['--d-fg', '--d-accent-subtle', 4.5],
+    ['--d-fg', '--d-tertiary-subtle', 4.5],
+    ['--d-fg', '--d-success-subtle', 4.5],
+    ['--d-fg', '--d-warning-subtle', 4.5],
+    ['--d-fg', '--d-error-subtle', 4.5],
+    ['--d-fg', '--d-info-subtle', 4.5],
     // --- Non-text contrast (3:1, WCAG 1.4.11) ---
-    ['--d-border', '--d-bg', 3],
-    ['--d-surface-1-border', '--d-surface-1', 3],
-    ['--d-surface-2-border', '--d-surface-2', 3],
-    ['--d-surface-3-border', '--d-surface-3', 3],
+    // NOTE: --d-border and --d-surface-N-border are decorative (card edges,
+    // dividers, separators) — not "UI component boundaries required for
+    // identification" per WCAG 1.4.11.  Enforcing 3:1 here overrides the
+    // intentionally-subtle rgba values set by glass styles (auradecantism,
+    // glassmorphism) making all borders far too bright.  Field borders
+    // (--d-field-border) handle accessible form controls separately.
+    // --- Role border visibility against page (3:1) ---
+    ['--d-primary-border', '--d-bg', 3],
+    ['--d-accent-border', '--d-bg', 3],
+    ['--d-tertiary-border', '--d-bg', 3],
+    ['--d-success-border', '--d-bg', 3],
+    ['--d-warning-border', '--d-bg', 3],
+    ['--d-error-border', '--d-bg', 3],
+    ['--d-info-border', '--d-bg', 3],
+    // --- Chrome contrast ---
+    ['--d-chrome-fg', '--d-chrome-bg', 4.5],
     // --- Field & selection contrast ---
     ['--d-field-placeholder', '--d-field-bg', 3],
     ['--d-selected-fg', '--d-selected-bg', 4.5],
   ];
 
+  const pageBg = tokens['--d-bg'] || '#ffffff';
   for (const [fgKey, bgKey, minRatio] of PAIRS) {
     const fg = tokens[fgKey];
     const bg = tokens[bgKey];
-    // Skip missing, non-hex, or rgba values (glass surfaces, alpha borders)
-    if (!fg || !bg || !fg.startsWith('#') || !bg.startsWith('#')) continue;
+    if (!fg || !bg) continue;
 
-    const fgRgb = hexToRgb(fg);
-    const bgRgb = hexToRgb(bg);
-    const ratio = contrast(fgRgb, bgRgb);
+    // Resolve rgba values by compositing onto page background
+    const effectiveFg = compositeOnBg(fg, pageBg);
+    const effectiveBg = compositeOnBg(bg, pageBg);
+
+    // Skip if either value can't be resolved to hex (e.g. var() references)
+    if (!effectiveFg || !effectiveFg.startsWith('#') || !effectiveBg || !effectiveBg.startsWith('#')) continue;
+
+    const ratio = contrast(hexToRgb(effectiveFg), hexToRgb(effectiveBg));
 
     if (ratio < minRatio) {
-      tokens[fgKey] = adjustForContrast(fg, bg, minRatio);
+      if (fg.startsWith('#')) {
+        // Hex fg — adjust lightness against effective bg
+        tokens[fgKey] = adjustForContrast(fg, effectiveBg, minRatio);
+      } else {
+        // Rgba fg (border tokens) — bump alpha until contrast passes
+        const parsed = parseRgba(fg);
+        if (parsed) {
+          let [r, g, b, a] = parsed;
+          let found = false;
+          for (let i = 0; i < 20 && a < 1; i++) {
+            a = Math.min(1, a + 0.05);
+            const newVal = `rgba(${r},${g},${b},${parseFloat(a.toFixed(2))})`;
+            const newFg = compositeOnBg(newVal, pageBg);
+            if (newFg.startsWith('#') && contrast(hexToRgb(newFg), hexToRgb(effectiveBg)) >= minRatio) {
+              tokens[fgKey] = newVal;
+              found = true;
+              break;
+            }
+          }
+          // If alpha=1 still fails (bright colors on white), darken the color
+          if (!found) {
+            const opaqueHex = rgbToHex(r, g, b);
+            tokens[fgKey] = adjustForContrast(opaqueHex, effectiveBg, minRatio);
+          }
+        }
+      }
     }
   }
 
@@ -275,9 +354,9 @@ const ELEVATION = {
   subtle: {
     light: [
       'none',
-      '0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04)',
-      '0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04)',
-      '0 12px 32px rgba(0,0,0,0.12),0 4px 8px rgba(0,0,0,0.06)',
+      '0 1px 3px rgba(0,0,0,0.12),0 1px 2px rgba(0,0,0,0.06)',
+      '0 4px 12px rgba(0,0,0,0.12),0 2px 4px rgba(0,0,0,0.06)',
+      '0 12px 32px rgba(0,0,0,0.18),0 4px 8px rgba(0,0,0,0.09)',
     ],
     dark: [
       'none',
@@ -289,9 +368,9 @@ const ELEVATION = {
   raised: {
     light: [
       'none',
-      '0 2px 6px rgba(0,0,0,0.1),0 1px 3px rgba(0,0,0,0.06)',
-      '0 8px 24px rgba(0,0,0,0.12),0 4px 8px rgba(0,0,0,0.06)',
-      '0 20px 48px rgba(0,0,0,0.16),0 8px 16px rgba(0,0,0,0.08)',
+      '0 2px 6px rgba(0,0,0,0.15),0 1px 3px rgba(0,0,0,0.09)',
+      '0 8px 24px rgba(0,0,0,0.18),0 4px 8px rgba(0,0,0,0.09)',
+      '0 20px 48px rgba(0,0,0,0.24),0 8px 16px rgba(0,0,0,0.12)',
     ],
     dark: [
       'none',
@@ -303,9 +382,9 @@ const ELEVATION = {
   glass: {
     light: [
       'none',
-      '0 1px 3px rgba(0,0,0,0.06)',
-      '0 4px 16px rgba(0,0,0,0.08)',
-      '0 12px 40px rgba(0,0,0,0.1)',
+      '0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)',
+      '0 4px 16px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.06)',
+      '0 12px 40px rgba(0,0,0,0.16), 0 4px 8px rgba(0,0,0,0.08)',
     ],
     dark: [
       'none',
@@ -582,6 +661,7 @@ const SPACING = {
   '--d-avatar-size-lg': '48px', '--d-avatar-size-xl': '64px',
   // Spinner sizes
   '--d-spinner-size-xs': '12px', '--d-spinner-size-sm': '16px',
+  '--d-spinner-size': '20px',
   '--d-spinner-size-lg': '28px', '--d-spinner-size-xl': '36px',
   // Progress bar heights
   '--d-progress-h': '8px', '--d-progress-h-sm': '4px',
@@ -609,6 +689,7 @@ const SPACING = {
   '--d-timeline-sm-dot': '8px', '--d-timeline-sm-dot-lg': '20px',
   '--d-timeline-lg-dot': '32px', '--d-timeline-lg-dot-lg': '40px',
   '--d-timeline-line-w': '2px',
+  '--d-timeline-h-min-w': '120px',
   // RangeSlider thumb
   '--d-rangeslider-thumb': '16px',
   // Animation slide distance
@@ -713,19 +794,30 @@ function transformSeedsForCVD(seed, type) {
 // Sub-Derivation Functions
 // ============================================================
 
-/** Derive 7 tokens for a single palette color role */
+/** Derive 8 tokens for a single palette color role */
 function derivePaletteColor(hex, mode, bgHex, personality) {
   const isDark = mode === 'dark';
   const elev = (personality && personality.elevation) || 'subtle';
   const t = PALETTE_TUNING[elev] || PALETTE_TUNING.subtle;
+  const subtleValue = alpha(hex, isDark ? t.subtleAlphaDark : t.subtleAlphaLight);
+  // Compute contrast-safe text color for use on subtle backgrounds
+  const effectiveSubtleBg = compositeOnBg(subtleValue, bgHex);
+  let onSubtle = hex;
+  if (effectiveSubtleBg.startsWith('#')) {
+    const ratio = contrast(hexToRgb(hex), hexToRgb(effectiveSubtleBg));
+    if (ratio < 4.5) {
+      onSubtle = adjustForContrast(hex, effectiveSubtleBg, 4.5);
+    }
+  }
   return {
     base: hex,
     fg: pickForeground(hex),
     hover: isDark ? lighten(hex, t.hoverShift) : darken(hex, t.hoverShift),
     active: isDark ? lighten(hex, Math.round(t.hoverShift / 2)) : darken(hex, t.activeShift),
-    subtle: alpha(hex, isDark ? t.subtleAlphaDark : t.subtleAlphaLight),
+    subtle: subtleValue,
     subtleFg: isDark ? lighten(hex, 15) : darken(hex, 10),
     border: alpha(hex, isDark ? t.borderAlphaDark : t.borderAlphaLight),
+    onSubtle,
   };
 }
 
@@ -736,9 +828,9 @@ function deriveNeutral(neutralHex, bgHex, mode) {
     bg: bgHex,
     fg: isDark ? '#fafafa' : '#09090b',
     muted: isDark ? lighten(neutralHex, 10) : neutralHex,
-    mutedFg: isDark ? lighten(neutralHex, 25) : darken(neutralHex, 10),
-    border: isDark ? lighten(bgHex, 12) : darken(bgHex, 12),
-    borderStrong: isDark ? lighten(bgHex, 25) : darken(bgHex, 30),
+    mutedFg: isDark ? lighten(neutralHex, 25) : darken(neutralHex, 15),
+    border: isDark ? lighten(bgHex, 12) : darken(bgHex, 22),
+    borderStrong: isDark ? lighten(bgHex, 25) : darken(bgHex, 40),
     overlay: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
   };
 }
@@ -749,27 +841,57 @@ function deriveSurfaces(neutralHex, bgHex, fgHex, mode, elevationType) {
   const isGlass = elevationType === 'glass';
 
   const s0 = bgHex;
+  // Light non-glass: canvas → cutout model (S1 = white card, S2/S3 progressively tinted)
+  // Light glass: same inversion with alpha (S1 = opaque white, S2 = translucent white, S3 = tinted)
   const s1 = isGlass
-    ? (isDark ? alpha(lighten(bgHex, 8), 0.7) : alpha(bgHex, 0.7))
-    : (isDark ? lighten(bgHex, 4) : mixColors(bgHex, neutralHex, 0.04));
+    ? (isDark ? alpha(lighten(bgHex, 8), 0.7) : alpha('#ffffff', 0.85))
+    : (isDark ? lighten(bgHex, 4) : '#ffffff');
   const s2 = isGlass
-    ? (isDark ? alpha(lighten(bgHex, 10), 0.8) : alpha(bgHex, 0.8))
-    : (isDark ? lighten(bgHex, 7) : mixColors(bgHex, neutralHex, 0.07));
+    ? (isDark ? alpha(lighten(bgHex, 10), 0.8) : alpha('#ffffff', 0.7))
+    : (isDark ? lighten(bgHex, 7) : mixColors(bgHex, neutralHex, 0.08));
   // Dark non-glass S3: monotonic (+10L > S2's +7L). Glass S3: opacity-based depth.
   const s3 = isGlass
-    ? (isDark ? alpha(lighten(bgHex, 6), 0.85) : alpha(bgHex, 0.85))
-    : (isDark ? lighten(bgHex, 10) : mixColors(bgHex, neutralHex, 0.10));
+    ? (isDark ? alpha(lighten(bgHex, 6), 0.85) : alpha(bgHex, 0.92))
+    : (isDark ? lighten(bgHex, 10) : mixColors(bgHex, neutralHex, 0.15));
 
   const blur = SURFACE_BLUR[elevationType] || SURFACE_BLUR.subtle;
 
   return {
-    '--d-surface-0': s0, '--d-surface-0-fg': fgHex, '--d-surface-0-border': isDark ? lighten(bgHex, 12) : darken(bgHex, 12),
-    '--d-surface-1': s1, '--d-surface-1-fg': fgHex, '--d-surface-1-border': isDark ? lighten(bgHex, 15) : darken(bgHex, 10),
-    '--d-surface-2': s2, '--d-surface-2-fg': fgHex, '--d-surface-2-border': isDark ? lighten(bgHex, 18) : darken(bgHex, 12),
-    '--d-surface-3': s3, '--d-surface-3-fg': fgHex, '--d-surface-3-border': isDark ? lighten(bgHex, 21) : darken(bgHex, 14),
+    '--d-surface-0': s0, '--d-surface-0-fg': fgHex, '--d-surface-0-border': isDark ? lighten(bgHex, 12) : darken(bgHex, 18),
+    '--d-surface-1': s1, '--d-surface-1-fg': fgHex, '--d-surface-1-border': isDark ? lighten(bgHex, 15) : darken(bgHex, 15),
+    '--d-surface-2': s2, '--d-surface-2-fg': fgHex, '--d-surface-2-border': isDark ? lighten(bgHex, 18) : darken(bgHex, 20),
+    '--d-surface-3': s3, '--d-surface-3-fg': fgHex, '--d-surface-3-border': isDark ? lighten(bgHex, 21) : darken(bgHex, 25),
     '--d-surface-1-filter': blur[0],
     '--d-surface-2-filter': blur[1],
     '--d-surface-3-filter': blur[2],
+  };
+}
+
+/** Derive chrome tokens for header/sidebar (inverted in light mode) */
+function deriveChrome(primaryHex, bgHex, bgDarkHex, neutralHex, mode, elevationType) {
+  const isDark = mode === 'dark';
+  if (isDark) {
+    // Chrome blends with surface hierarchy
+    const chromeBg = lighten(bgHex, 4);
+    return {
+      '--d-chrome-bg': chromeBg,
+      '--d-chrome-fg': '#fafafa',
+      '--d-chrome-border': lighten(bgHex, 12),
+      '--d-chrome-muted': lighten(neutralHex, 15),
+      '--d-chrome-hover': lighten(chromeBg, 6),
+      '--d-chrome-active': lighten(chromeBg, 10),
+    };
+  }
+  // Light mode: chrome inverts to dark, tinted 12% toward primary for brand identity
+  const chromeBg = mixColors(bgDarkHex, primaryHex, 0.12);
+  const chromeFg = pickForeground(chromeBg);
+  return {
+    '--d-chrome-bg': chromeBg,
+    '--d-chrome-fg': chromeFg,
+    '--d-chrome-border': lighten(chromeBg, 10),
+    '--d-chrome-muted': lighten(chromeBg, 30),
+    '--d-chrome-hover': lighten(chromeBg, 6),
+    '--d-chrome-active': lighten(chromeBg, 12),
   };
 }
 
@@ -825,6 +947,7 @@ export function derive(seed, personality, mode, typography, overrides, options) 
     palette[`--d-${role}-subtle`] = d.subtle;
     palette[`--d-${role}-subtle-fg`] = d.subtleFg;
     palette[`--d-${role}-border`] = d.border;
+    palette[`--d-${role}-on-subtle`] = d.onSubtle;
   }
 
   // --- Neutral (8 tokens) ---
@@ -842,6 +965,10 @@ export function derive(seed, personality, mode, typography, overrides, options) 
 
   // --- Surfaces (15 tokens) ---
   const surfaces = deriveSurfaces(s.neutral, bgHex, fgHex, mode, p.elevation);
+
+  // --- Chrome (6 tokens) ---
+  const bgDarkHex = s.bgDark || '#0a0a0a';
+  const chrome = deriveChrome(s.primary, bgHex, bgDarkHex, s.neutral, mode, p.elevation);
 
   // --- Elevation (4 tokens) ---
   const elev = (ELEVATION[p.elevation] || ELEVATION.subtle)[mode] || ELEVATION.subtle.light;
@@ -1096,6 +1223,7 @@ export function derive(seed, personality, mode, typography, overrides, options) 
     ...palette,
     ...neutralTokens,
     ...surfaces,
+    ...chrome,
     ...elevation,
     ...interaction,
     ...fieldTokens,

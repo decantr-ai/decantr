@@ -1,10 +1,10 @@
 import { resolveAtomDecl } from './atoms.js';
-import { inject, injectResponsive, injectContainer, injectGroupPeer, BREAKPOINTS, CQ_WIDTHS } from './runtime.js';
+import { inject, injectResponsive, injectResponsivePseudo, injectContainer, injectGroupPeer, injectPseudo, BREAKPOINTS, CQ_WIDTHS } from './runtime.js';
 export { extractCSS, reset, BREAKPOINTS, CQ_WIDTHS } from './runtime.js';
 export {
   setTheme, getTheme, getThemeMeta, registerTheme, getThemeList,
   getActiveCSS, resetStyles, setAnimations, getAnimations,
-  setStyle, getStyle, getStyleList, registerStyle,
+  setStyle, getStyle, getStyleList, registerStyle, mergePluginStyles,
   setMode, getMode, getResolvedMode, onModeChange,
   setShape, getShape, getShapeList,
   setColorblindMode, getColorblindMode
@@ -21,6 +21,12 @@ const CQ_RE = /^_cq(\d+):(.+)$/;
 
 /** Regex to detect group/peer state prefix: _gh:, _gf:, _ga:, _ph:, _pf:, _pa: */
 const GP_RE = /^_(gh|gf|ga|ph|pf|pa):(.+)$/;
+
+/** Regex to detect pseudo-class prefix: _h:, _f:, _fv:, _a:, _fw: */
+const PSEUDO_RE = /^_(h|f|fv|a|fw):(.+)$/;
+
+/** Valid pseudo-class prefixes */
+const PSEUDO_SET = new Set(['h', 'f', 'fv', 'a', 'fw']);
 
 /** Regex to detect opacity modifier: _bgprimary/50, _fgaccent/30 */
 const ALPHA_RE = /^(_[a-zA-Z0-9]+)\/(\d+)$/;
@@ -136,6 +142,10 @@ export function css(...classes) {
       // Special handling: _group → d-group, _peer → d-peer
       if (part === '_group') { result.push('d-group'); continue; }
       if (part === '_peer') { result.push('d-peer'); continue; }
+      // Component-class atoms: _prose → d-prose, _divideY → d-divide-y, _divideX → d-divide-x
+      if (part === '_prose') { result.push('d-prose'); continue; }
+      if (part === '_divideY') { result.push('d-divide-y'); continue; }
+      if (part === '_divideX') { result.push('d-divide-x'); continue; }
 
       // Check for responsive prefix: _sm:gc3 → atom _gc3 at breakpoint sm
       const bpMatch = part.match(BP_RE);
@@ -146,6 +156,20 @@ export function css(...classes) {
         if (gpInner) {
           // Responsive + group/peer: not supported (too complex), pass through
           result.push(part);
+          continue;
+        }
+        // Check for responsive + pseudo: _sm:h:bgmuted
+        const pseudoInner = innerAtom.match(/^(h|f|fv|a|fw):(.+)$/);
+        if (pseudoInner) {
+          const [, pseudoPrefix, atomName] = pseudoInner;
+          const resolved = resolveAtom(`_${atomName}`);
+          if (resolved) {
+            const PSEUDO_NAMES = { h: 'hover', f: 'focus', fv: 'focus-visible', a: 'active', fw: 'focus-within' };
+            injectResponsivePseudo(part, resolved.decl, bp, PSEUDO_NAMES[pseudoPrefix]);
+            result.push(part);
+          } else {
+            result.push(part);
+          }
           continue;
         }
         const resolved = resolveAtom(`_${innerAtom}`);
@@ -184,6 +208,20 @@ export function css(...classes) {
         const resolved = resolveAtom(`_${atomName}`);
         if (resolved) {
           injectGroupPeer(part, resolved.decl, prefix);
+          result.push(part);
+        } else {
+          result.push(part);
+        }
+        continue;
+      }
+
+      // Check for pseudo-class prefix: _h:bgprimary, _fv:ring2, _a:scale95
+      const pseudoMatch = part.match(PSEUDO_RE);
+      if (pseudoMatch) {
+        const [, prefix, innerAtom] = pseudoMatch;
+        const resolved = resolveAtom(`_${innerAtom}`);
+        if (resolved) {
+          injectPseudo(part, resolved.decl, prefix);
           result.push(part);
         } else {
           result.push(part);

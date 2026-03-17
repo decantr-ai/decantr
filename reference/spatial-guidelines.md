@@ -352,7 +352,9 @@ All compound components (Card, Modal, Drawer) follow the compound spacing contra
 | **Header** | `var(--d-compound-pad) var(--d-compound-pad) 0` | No bottom border (unless body scrolls beneath) |
 | **Body** | `var(--d-compound-gap) var(--d-compound-pad)` | None |
 | **Body:last-child** | Adds `padding-bottom: var(--d-compound-pad)` | None |
-| **Footer** | `var(--d-compound-gap) var(--d-compound-pad) var(--d-compound-pad)` | Top separation via compound-gap (not a visible border) |
+| **Footer** | `var(--d-compound-gap) var(--d-compound-pad) var(--d-compound-pad)` | Top separation via compound-gap (not a visible border) — see bordered exception below |
+
+**Bordered footer exception:** When a compound footer has a visible `border-top` (e.g. Card), the border already provides inter-section separation. In this case, the footer uses symmetric padding — `var(--d-compound-pad)` on all sides — so content is vertically centered within the bordered zone. The asymmetric `compound-gap` top padding exists only for borderless footers (Modal, Drawer), where the gap itself acts as the separator and the asymmetry is invisible.
 
 ### Divider placement
 

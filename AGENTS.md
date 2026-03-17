@@ -21,9 +21,11 @@ This table resolves 80% of framework translation needs. Scan here first.
 | Conditional render | `{cond ? <A/> : <B/>}` | `v-if` / `v-else` | `{#if}` | `@if` | `cond(pred, trueFn, falseFn)` |
 | List render | `.map(item => <X key=.../>)` | `v-for` + `:key` | `{#each}` | `@for` | `list(items, keyFn, renderFn)` |
 | CSS / styling | Tailwind / CSS-in-JS | scoped `<style>` | scoped `<style>` | ViewEncapsulation | `css('_flex _gap4 _p6 _bgmuted')` |
-| Component library | ShadCN / MUI / Radix | Element Plus / PrimeVue | Skeleton / Melt | Angular Material | `@decantr/decantr/components` (100+ components) |
+| Component library | ShadCN / MUI / Radix | Element Plus / PrimeVue | Skeleton / Melt | Angular Material | `decantr/components` (100+ components) |
 | Build / deploy | Next.js / Vite | Nuxt / Vite | SvelteKit / Vite | Angular CLI | `decantr build` → `dist/` |
-| Testing | Jest / Vitest | Vitest | Vitest | Karma / Jest | `@decantr/decantr/test` (node:test based) |
+| Testing | Jest / Vitest | Vitest | Vitest | Karma / Jest | `decantr/test` (node:test based) |
+| i18n | react-intl / i18next | vue-i18n | svelte-i18n | @ngx-translate | `createI18n({ locale, messages })` |
+| Auth | NextAuth.js | @nuxtjs/auth | SvelteKit auth | @angular/fire/auth | `createAuth(config)` + `requireAuth(router)` |
 
 ---
 
@@ -87,7 +89,12 @@ mount(document.getElementById('app'), () => router.outlet())
 | `onChange={handler}` | `oninput: handler` (for inputs — native DOM event) |
 | `<Link to="/about">` (React Router) | `link({ href: '/about' }, 'About')` |
 | `useNavigate()` then `nav('/path')` | `navigate('/path')` |
-| `useLocation()` / `useParams()` | `useRoute()` → signal with `path`, `params`, `query` |
+| `navigate(-1)` / `navigate(1)` (React Router) | `back()` / `forward()` |
+| `useNavigation().state` (React Router) | `isNavigating()` — reactive boolean for loading bars |
+| `route.meta` (Vue Router) | `to.meta` — merged parent→child, set via `meta: {}` on route config |
+| `basename` (React Router) / `base` (Vue Router) | `createRouter({ base: '/app' })` |
+| `useLocation()` / `useParams()` | `useRoute()` → signal with `path`, `params`, `query`, `meta` |
+| `useEffect` + `useLocation()` for analytics | `onNavigate((to, from) => { ... })` |
 | `<Routes><Route path="/" element={...}/></Routes>` | `createRouter({ routes: [{ path: '/', component: Home }] })` |
 
 ### Vue 3
@@ -178,11 +185,11 @@ mount(document.getElementById('app'), () => router.outlet())
 
 | Next.js / Nuxt Concept | Decantr Approach |
 |------------------------|-----------------|
-| Server Components (RSC) | Not applicable — Decantr is client-side SPA. All rendering happens in the browser |
-| SSR / SSG / ISR | `decantr build` produces static SPA. For SSR, pair with a separate server |
+| Server Components (RSC) | Not applicable — Decantr uses SSR + hydration, not partial server components |
+| SSR / SSG / ISR | `renderToString(component)` / `renderToStream(component)` from `decantr/ssr` + `hydrate(root, component)` on client |
 | API Routes / Server Routes | Use a separate backend (Express, Hono, Fastify) or BaaS (Supabase, Firebase) |
-| `getServerSideProps` / `useFetch` | `onMount` + `fetch()` with signals for loading/data/error |
-| Middleware | Router guards via `createEffect` watching `useRoute()` |
+| `getServerSideProps` / `useFetch` | Signals evaluated during SSR + `onMount` + `fetch()` for client-side data |
+| Middleware | `onNavigate(fn)` for navigation hooks; `createEffect` watching `useRoute()` for reactive guards |
 | `<Image>` optimization | Standard `<img>` with lazy loading: `img({ loading: 'lazy', src })` |
 | File-based routing | Explicit route config: `createRouter({ routes: [...] })` |
 | `next/head` / `useHead` | Direct DOM: `document.title = 'Page'` |
@@ -368,14 +375,16 @@ Solid.js is architecturally closest to Decantr. Key differences:
 
 Decantr is framework-agnostic for data. Use any npm package that doesn't assume React/Vue/Angular. Below are canonical patterns for common integrations.
 
-### REST Data Fetching (Preferred — createResource)
+### REST Data Fetching (Preferred — createQuery)
 
 ```javascript
-import { createResource } from '@decantr/decantr/state';
+import { createQuery } from 'decantr/data';
 
-const [items] = createResource(() => fetch('/api/items').then(r => r.json()));
+const items = createQuery('items', ({ signal }) =>
+  fetch('/api/items', { signal }).then(r => r.json())
+);
 // items.data() — the fetched data (or undefined while loading)
-// items.loading() — true while fetching
+// items.isLoading() — true while fetching
 // items.error() — error if fetch failed
 // items.refetch() — re-trigger the fetch
 ```
@@ -383,8 +392,8 @@ const [items] = createResource(() => fetch('/api/items').then(r => r.json()));
 ### REST Data Fetching (Manual — for complex flows)
 
 ```javascript
-import { createSignal } from '@decantr/decantr/state';
-import { onMount } from '@decantr/decantr/core';
+import { createSignal } from 'decantr/state';
+import { onMount } from 'decantr/core';
 
 const [data, setData] = createSignal(null);
 const [loading, setLoading] = createSignal(true);
@@ -419,8 +428,8 @@ onMount(async () => {
 
 ```javascript
 import { createClient } from '@supabase/supabase-js';
-import { createSignal } from '@decantr/decantr/state';
-import { onMount } from '@decantr/decantr/core';
+import { createSignal } from 'decantr/state';
+import { onMount } from 'decantr/core';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const [posts, setPosts] = createSignal([]);
@@ -436,8 +445,8 @@ onMount(async () => {
 ```javascript
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
-import { createSignal } from '@decantr/decantr/state';
-import { onMount } from '@decantr/decantr/core';
+import { createSignal } from 'decantr/state';
+import { onMount } from 'decantr/core';
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -452,12 +461,12 @@ onMount(async () => {
 ### Authentication Flow
 
 ```javascript
-import { createSignal, createEffect } from '@decantr/decantr/state';
-import { navigate } from '@decantr/decantr/router';
-import { createForm, validators, useFormField } from '@decantr/decantr/form';
-import { Button, Input, Card } from '@decantr/decantr/components';
-import { tags } from '@decantr/decantr/tags';
-import { css } from '@decantr/decantr/css';
+import { createSignal, createEffect } from 'decantr/state';
+import { navigate } from 'decantr/router';
+import { createForm, validators, useFormField } from 'decantr/form';
+import { Button, Input, Card } from 'decantr/components';
+import { tags } from 'decantr/tags';
+import { css } from 'decantr/css';
 
 const [user, setUser] = createSignal(null);
 const [loading, setLoading] = createSignal(true);
@@ -496,8 +505,8 @@ function LoginPage() {
 ### Real-Time / WebSocket
 
 ```javascript
-import { createSignal } from '@decantr/decantr/state';
-import { onMount, onDestroy } from '@decantr/decantr/core';
+import { createSignal } from 'decantr/state';
+import { onMount, onDestroy } from 'decantr/core';
 
 const [messages, setMessages] = createSignal([]);
 let ws;
@@ -515,8 +524,8 @@ onDestroy(() => ws?.close());
 ### Stripe Payments
 
 ```javascript
-import { onMount } from '@decantr/decantr/core';
-import { tags } from '@decantr/decantr/tags';
+import { onMount } from 'decantr/core';
+import { tags } from 'decantr/tags';
 
 const { div } = tags;
 const container = div({ id: 'card-element' });
@@ -531,8 +540,8 @@ onMount(async () => {
 ### Form Validation
 
 ```javascript
-import { createSignal, createMemo } from '@decantr/decantr/state';
-import { Input, Button } from '@decantr/decantr/components';
+import { createSignal, createMemo } from 'decantr/state';
+import { Input, Button } from 'decantr/components';
 
 const [email, setEmail] = createSignal('');
 const [submitted, setSubmitted] = createSignal(false);
@@ -551,7 +560,7 @@ Button({ onclick: () => setSubmitted(true) }, 'Submit');
 ### File Upload
 
 ```javascript
-import { createSignal } from '@decantr/decantr/state';
+import { createSignal } from 'decantr/state';
 
 const [progress, setProgress] = createSignal(0);
 
@@ -568,7 +577,7 @@ async function upload(file) {
 ### Local Storage Persistence
 
 ```javascript
-import { useLocalStorage } from '@decantr/decantr/state';
+import { useLocalStorage } from 'decantr/state';
 
 // Automatically persists to localStorage and syncs across tabs
 const [theme, setTheme] = useLocalStorage('app-theme', 'light');
@@ -586,15 +595,16 @@ const [cart, setCart] = useLocalStorage('cart-items', []);
 - Client-side routing (hash and history modes, nested routes, guards, lazy loading)
 - 100+ component UI library (form, display, layout, overlay, feedback, chart, typography)
 - Form system (createForm, validators, field arrays)
-- 31 composable UI patterns + 4 domain archetypes + recipe overlays
+- 49 composable UI patterns + 7 domain archetypes + recipe overlays
 - Atomic CSS engine (1000+ utility atoms)
 - 5 built-in styles + custom style registration
+- Server-side rendering (renderToString, renderToStream, hydrate)
 - Build tooling (dev server, production bundler, CSS extraction, tree shaking, code splitting)
 - Testing framework (node:test based, DOM simulation)
 
 ### Decantr Does NOT Handle
 
-- Server-side rendering (SSR) or static site generation (SSG)
+- Static site generation (SSG) — SSR is supported, but not pre-built static pages
 - Backend API server
 - Database / ORM
 - Authentication backend (handles auth UI via components, not the backend)
@@ -613,7 +623,7 @@ const [cart, setCart] = useLocalStorage('cart-items', []);
 
 ### Security
 
-- **XSS prevention**: Real DOM manipulation — no `innerHTML` or `dangerouslySetInnerHTML` by default. Use `sanitize()` from `@decantr/decantr/css` for any user-provided HTML
+- **XSS prevention**: Real DOM manipulation — no `innerHTML` or `dangerouslySetInnerHTML` by default. Use `sanitize()` from `decantr/css` for any user-provided HTML
 - **CSP-friendly**: No `eval()` or `Function()` — works with strict Content-Security-Policy
 - **URL validation**: Router rejects `javascript:`, `data:`, and absolute URLs to prevent open redirect attacks
 - **Input sanitization**: Always validate/sanitize user input at system boundaries (API responses, URL params, form inputs) before rendering
@@ -626,7 +636,7 @@ const [cart, setCart] = useLocalStorage('cart-items', []);
 
 Before generating a multi-page application, consult the architect registry to produce a comprehensive blueprint. This turns a naive user prompt ("build me a shopping cart") into a complete application spec with all the features, routes, state, and components a real app needs.
 
-**Registry location:** `node_modules/@decantr/decantr/src/registry/architect/` (or `src/registry/architect/` in framework source)
+**Registry location:** `node_modules/decantr/src/registry/architect/` (or `src/registry/architect/` in framework source)
 
 ### Trait-Based Composition (Primary Approach)
 
@@ -650,7 +660,7 @@ Instead of matching the user's request to a hardcoded domain, use the **trait gr
 
 ### Legacy Domain Classification (Fallback)
 
-**Current status:** Only `ecommerce` has a full architect domain file (`architect/domains/ecommerce.json`). The other 5 domains (saas-dashboard, portfolio, content-site, docs-explorer, financial-dashboard) have archetype blueprints in `src/registry/archetypes/` but no architect trigger/feature files yet. If no architect trigger file exists for the domain, use the archetype blueprint as the feature source. Still run SETTLE (5-layer decomposition), CLARIFY (write essence), and DECANT (resolve blends). The architect algorithm is an enhancement, not a prerequisite.
+**Current status:** Only `ecommerce` has a full architect domain file (`architect/domains/ecommerce.json`). The other 6 domains (saas-dashboard, portfolio, content-site, docs-explorer, financial-dashboard, recipe-community) have archetype blueprints in `src/registry/archetypes/` but no architect trigger/feature files yet. If no architect trigger file exists for the domain, use the archetype blueprint as the feature source. Still run SETTLE (5-layer decomposition), CLARIFY (write essence), and DECANT (resolve blends). The architect algorithm is an enhancement, not a prerequisite.
 
 ### When to Use
 

@@ -1076,15 +1076,19 @@ describe('derive() with monochrome palette', () => {
 });
 
 describe('Command Center style', () => {
-  it('registers in the style list', async () => {
-    const { getStyleList, setStyle, getStyle } = await import('../src/css/index.js');
+  it('registers via registerStyle and appears in style list', async () => {
+    const { getStyleList, registerStyle } = await import('../src/css/index.js');
+    const { commandCenter } = await import('../src/css/styles/addons/command-center.js');
+    registerStyle(commandCenter);
     const styles = getStyleList();
     const ids = styles.map(s => s.id);
     assert.ok(ids.includes('command-center'), 'command-center not in style list');
   });
 
-  it('activates via setStyle', async () => {
-    const { setStyle, getStyle } = await import('../src/css/index.js');
+  it('activates via setStyle after registration', async () => {
+    const { setStyle, getStyle, registerStyle } = await import('../src/css/index.js');
+    const { commandCenter } = await import('../src/css/styles/addons/command-center.js');
+    registerStyle(commandCenter);
     setStyle('command-center');
     const style = getStyle();
     const id = typeof style === 'function' ? style() : style;
@@ -1092,7 +1096,7 @@ describe('Command Center style', () => {
   });
 
   it('uses monochrome palette personality', async () => {
-    const { commandCenter } = await import('../src/css/styles/command-center.js');
+    const { commandCenter } = await import('../src/css/styles/addons/command-center.js');
     assert.equal(commandCenter.personality.palette, 'monochrome');
     assert.equal(commandCenter.personality.radius, 'sharp');
     assert.equal(commandCenter.personality.borders, 'bold');
@@ -1256,17 +1260,17 @@ describe('glass blur tokens', () => {
 
 describe('glassmorphism differentiation', () => {
   it('uses rounded radius instead of pill', async () => {
-    const { glassmorphism } = await import('../src/css/styles/glassmorphism.js');
+    const { glassmorphism } = await import('../src/css/styles/addons/glassmorphism.js');
     assert.equal(glassmorphism.personality.radius, 'rounded');
   });
 
   it('uses smooth motion instead of bouncy', async () => {
-    const { glassmorphism } = await import('../src/css/styles/glassmorphism.js');
+    const { glassmorphism } = await import('../src/css/styles/addons/glassmorphism.js');
     assert.equal(glassmorphism.personality.motion, 'smooth');
   });
 
   it('still uses glass elevation', async () => {
-    const { glassmorphism } = await import('../src/css/styles/glassmorphism.js');
+    const { glassmorphism } = await import('../src/css/styles/addons/glassmorphism.js');
     assert.equal(glassmorphism.personality.elevation, 'glass');
   });
 });
@@ -1303,8 +1307,32 @@ describe('glow elevation type', () => {
 });
 
 describe('new styles registration', () => {
-  it('all 11 styles are registered', async () => {
-    const { getStyleList } = await import('../src/css/index.js');
+  it('auradecantism is always available as a builtin style', async () => {
+    const { getStyleList, setStyle, getStyle } = await import('../src/css/index.js');
+    const styles = getStyleList();
+    const ids = styles.map(s => s.id);
+    assert.ok(ids.includes('auradecantism'), 'auradecantism must be in style list');
+    // Verify auradecantism can be activated without explicit registration
+    setStyle('auradecantism');
+    const id = typeof getStyle() === 'function' ? getStyle()() : getStyle();
+    assert.equal(id, 'auradecantism');
+  });
+
+  it('addon styles register via registerStyle', async () => {
+    const { getStyleList, registerStyle } = await import('../src/css/index.js');
+    const { clean } = await import('../src/css/styles/addons/clean.js');
+    const { retro } = await import('../src/css/styles/addons/retro.js');
+    const { glassmorphism } = await import('../src/css/styles/addons/glassmorphism.js');
+    const { commandCenter } = await import('../src/css/styles/addons/command-center.js');
+    const { clay } = await import('../src/css/styles/addons/clay.js');
+    const { liquidGlass } = await import('../src/css/styles/addons/liquid-glass.js');
+    const { dopamine } = await import('../src/css/styles/addons/dopamine.js');
+    const { prismatic } = await import('../src/css/styles/addons/prismatic.js');
+    const { bioluminescent } = await import('../src/css/styles/addons/bioluminescent.js');
+    const { editorial } = await import('../src/css/styles/addons/editorial.js');
+    for (const s of [clean, retro, glassmorphism, commandCenter, clay, liquidGlass, dopamine, prismatic, bioluminescent, editorial]) {
+      registerStyle(s);
+    }
     const styles = getStyleList();
     const ids = styles.map(s => s.id);
     const expected = [
@@ -1314,13 +1342,13 @@ describe('new styles registration', () => {
     for (const id of expected) {
       assert.ok(ids.includes(id), `${id} not in style list`);
     }
-    assert.equal(styles.length, 11, `expected 11 styles, got ${styles.length}`);
+    assert.equal(styles.length, 11, `expected 11 styles after registration, got ${styles.length}`);
   });
 });
 
 describe('clay style', () => {
   it('derive() produces valid tokens', async () => {
-    const { clay } = await import('../src/css/styles/clay.js');
+    const { clay } = await import('../src/css/styles/addons/clay.js');
     const tokens = derive(clay.seed, clay.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
@@ -1328,14 +1356,16 @@ describe('clay style', () => {
   });
 
   it('has correct personality', async () => {
-    const { clay } = await import('../src/css/styles/clay.js');
+    const { clay } = await import('../src/css/styles/addons/clay.js');
     assert.equal(clay.personality.elevation, 'clay');
     assert.equal(clay.personality.borders, 'none');
     assert.equal(clay.personality.density, 'spacious');
   });
 
-  it('activates via setStyle', async () => {
-    const { setStyle, getStyle } = await import('../src/css/index.js');
+  it('activates via setStyle after registration', async () => {
+    const { setStyle, getStyle, registerStyle } = await import('../src/css/index.js');
+    const { clay } = await import('../src/css/styles/addons/clay.js');
+    registerStyle(clay);
     setStyle('clay');
     const id = typeof getStyle() === 'function' ? getStyle()() : getStyle();
     assert.equal(id, 'clay');
@@ -1344,14 +1374,14 @@ describe('clay style', () => {
 
 describe('liquid-glass style', () => {
   it('derive() produces valid tokens', async () => {
-    const { liquidGlass } = await import('../src/css/styles/liquid-glass.js');
+    const { liquidGlass } = await import('../src/css/styles/addons/liquid-glass.js');
     const tokens = derive(liquidGlass.seed, liquidGlass.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
   });
 
   it('has correct personality', async () => {
-    const { liquidGlass } = await import('../src/css/styles/liquid-glass.js');
+    const { liquidGlass } = await import('../src/css/styles/addons/liquid-glass.js');
     assert.equal(liquidGlass.personality.radius, 'pill');
     assert.equal(liquidGlass.personality.elevation, 'glass');
     assert.equal(liquidGlass.personality.motion, 'smooth');
@@ -1360,14 +1390,14 @@ describe('liquid-glass style', () => {
 
 describe('dopamine style', () => {
   it('derive() produces valid tokens', async () => {
-    const { dopamine } = await import('../src/css/styles/dopamine.js');
+    const { dopamine } = await import('../src/css/styles/addons/dopamine.js');
     const tokens = derive(dopamine.seed, dopamine.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
   });
 
   it('has correct personality', async () => {
-    const { dopamine } = await import('../src/css/styles/dopamine.js');
+    const { dopamine } = await import('../src/css/styles/addons/dopamine.js');
     assert.equal(dopamine.personality.radius, 'pill');
     assert.equal(dopamine.personality.elevation, 'raised');
     assert.equal(dopamine.personality.motion, 'bouncy');
@@ -1376,14 +1406,14 @@ describe('dopamine style', () => {
 
 describe('prismatic style', () => {
   it('derive() produces valid tokens', async () => {
-    const { prismatic } = await import('../src/css/styles/prismatic.js');
+    const { prismatic } = await import('../src/css/styles/addons/prismatic.js');
     const tokens = derive(prismatic.seed, prismatic.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
   });
 
   it('has hue-shifted surface overrides', async () => {
-    const { prismatic } = await import('../src/css/styles/prismatic.js');
+    const { prismatic } = await import('../src/css/styles/addons/prismatic.js');
     assert.ok(prismatic.overrides.dark['--d-surface-1'], 'missing dark surface-1 override');
     assert.ok(prismatic.overrides.dark['--d-surface-2'], 'missing dark surface-2 override');
     assert.ok(prismatic.overrides.dark['--d-surface-3'], 'missing dark surface-3 override');
@@ -1392,7 +1422,7 @@ describe('prismatic style', () => {
 
 describe('bioluminescent style', () => {
   it('derive() produces valid tokens', async () => {
-    const { bioluminescent } = await import('../src/css/styles/bioluminescent.js');
+    const { bioluminescent } = await import('../src/css/styles/addons/bioluminescent.js');
     const tokens = derive(bioluminescent.seed, bioluminescent.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
@@ -1400,7 +1430,7 @@ describe('bioluminescent style', () => {
   });
 
   it('has correct personality', async () => {
-    const { bioluminescent } = await import('../src/css/styles/bioluminescent.js');
+    const { bioluminescent } = await import('../src/css/styles/addons/bioluminescent.js');
     assert.equal(bioluminescent.personality.elevation, 'glow');
     assert.equal(bioluminescent.personality.borders, 'none');
   });
@@ -1408,14 +1438,14 @@ describe('bioluminescent style', () => {
 
 describe('editorial style', () => {
   it('derive() produces valid tokens', async () => {
-    const { editorial } = await import('../src/css/styles/editorial.js');
+    const { editorial } = await import('../src/css/styles/addons/editorial.js');
     const tokens = derive(editorial.seed, editorial.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
   });
 
   it('has correct personality', async () => {
-    const { editorial } = await import('../src/css/styles/editorial.js');
+    const { editorial } = await import('../src/css/styles/addons/editorial.js');
     assert.equal(editorial.personality.radius, 'sharp');
     assert.equal(editorial.personality.elevation, 'flat');
     assert.equal(editorial.personality.motion, 'instant');
@@ -1426,12 +1456,12 @@ describe('editorial style', () => {
 
 describe('new style contrast validation', () => {
   const styleDefs = [
-    ['clay', '../src/css/styles/clay.js', 'clay'],
-    ['liquid-glass', '../src/css/styles/liquid-glass.js', 'liquidGlass'],
-    ['dopamine', '../src/css/styles/dopamine.js', 'dopamine'],
-    ['prismatic', '../src/css/styles/prismatic.js', 'prismatic'],
-    ['bioluminescent', '../src/css/styles/bioluminescent.js', 'bioluminescent'],
-    ['editorial', '../src/css/styles/editorial.js', 'editorial'],
+    ['clay', '../src/css/styles/addons/clay.js', 'clay'],
+    ['liquid-glass', '../src/css/styles/addons/liquid-glass.js', 'liquidGlass'],
+    ['dopamine', '../src/css/styles/addons/dopamine.js', 'dopamine'],
+    ['prismatic', '../src/css/styles/addons/prismatic.js', 'prismatic'],
+    ['bioluminescent', '../src/css/styles/addons/bioluminescent.js', 'bioluminescent'],
+    ['editorial', '../src/css/styles/addons/editorial.js', 'editorial'],
   ];
 
   for (const [name, path, exportName] of styleDefs) {

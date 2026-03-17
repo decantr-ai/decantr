@@ -12,7 +12,7 @@ Production build pipeline. Entry: `decantr build` or `node cli/commands/build.js
 | 4. Bundle | Topological sort modules, rewrite imports/exports into IIFE with module variables (`_m0`, `_m1`, ...) | `tools/builder.js` `bundle()` |
 | 5. Tree shake | Remove unused exports per-module via usage graph analysis | `tools/builder.js` `treeShakeModule()` |
 | 6. Icon tree shake | Scan for `icon('name')` calls, prune unreferenced entries from `ESSENTIAL`/`EXTENDED` objects | `tools/builder.js` `treeShakeIcons()` |
-| 7. Style elimination | Detect used styles via `setStyle()`/`setTheme()` + Essence, remove unused style modules | `tools/builder.js` `detectUsedStyles()` + `eliminateUnusedStyles()` |
+| 7. Style elimination | Detect used addon styles via `setStyle()`/`setTheme()` + Essence, remove unused addon modules | `tools/builder.js` `detectUsedStyles()` + `eliminateUnusedAddonStyles()` |
 | 8. Component CSS pruning | Map dependency graph to CSS sections, remove unused `componentCSSMap` entries | `tools/builder.js` `detectUsedComponents()` + `pruneComponentCSS()` |
 | 9. Code split | Detect `import()` calls, resolve each as separate chunk, inject runtime loader | `tools/builder.js` `resolveChunks()` |
 | 10. CSS extract | Scan all source for `css('...')` and `class: '...'` patterns, generate `@layer d.atoms{...}` | `tools/css-extract.js` |
@@ -26,7 +26,7 @@ Production build pipeline. Entry: `decantr build` or `node cli/commands/build.js
 
 ## Build-Time Style Elimination
 
-Unused style modules (clean, retro, glassmorphism, command-center) are detected and removed at build time, saving ~17 KB raw for a default app using only auradecantism.
+Non-core styles live in `src/css/styles/addons/` and are imported explicitly by user code (e.g., `import { clean } from 'decantr/styles/clean'`). Only `auradecantism` is a built-in. Unused addon style modules are detected and removed at build time.
 
 **Detection** (`detectUsedStyles()`):
 1. Scans all user source files for `setStyle('...')` and `setTheme('...')` calls
@@ -34,12 +34,11 @@ Unused style modules (clean, retro, glassmorphism, command-center) are detected 
 3. Checks `decantr.config.json` for style references
 4. Collects the set of actually-used style IDs
 
-**Elimination** (`eliminateUnusedStyles()`):
-- Removes `import` lines for unused style modules from `theme-registry.js` in the module map
-- Removes unused entries from the `builtins` array in `theme-registry.js`
-- Removes unused style module files from the module map entirely
+**Elimination** (`eliminateUnusedAddonStyles()`):
+- Removes unused addon style module files (`src/css/styles/addons/*.js`) from the module map
+- Since addon styles are no longer imported by `theme-registry.js`, there are no import lines to remove from the registry
 
-The default style (auradecantism) is always kept. Only styles explicitly referenced via `setStyle()`, `setTheme()`, or the Essence are shipped.
+The default style (auradecantism) is always kept as a built-in. Only addon styles explicitly referenced via `setStyle()`, `setTheme()`, or the Essence are shipped.
 
 ## Component CSS Pruning
 

@@ -1,6 +1,7 @@
 import { createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
+import { caret } from './_behaviors.js';
 
 const { nav: navTag, ul, li, button: buttonTag, span } = tags;
 
@@ -62,7 +63,7 @@ export function Pagination(props = {}) {
       'aria-label': 'Previous page',
       disabled: cur <= 1 ? '' : undefined,
       'data-page': String(cur - 1)
-    }, '\u2039');
+    }, caret('left'));
     list.appendChild(li(prevBtn));
 
     // Page buttons
@@ -89,7 +90,7 @@ export function Pagination(props = {}) {
       'aria-label': 'Next page',
       disabled: cur >= pageCount ? '' : undefined,
       'data-page': String(cur + 1)
-    }, '\u203A');
+    }, caret('right'));
     list.appendChild(li(nextBtn));
   }
 

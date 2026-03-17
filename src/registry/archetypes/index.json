@@ -1,6 +1,6 @@
 {
   "$schema": "https://decantr.ai/schemas/archetypes.v1.json",
-  "description": "Domain archetypes for the Decantation Process. Each archetype pre-maps page patterns, tannins, skeleton layouts, and suggested visual identity for a domain.",
+  "description": "Domain archetypes for the Decantation Process. Each archetype pre-maps page patterns, tannins, skeleton layouts, and suggested visual identity for a domain. Archetypes may use \"extends\" to inherit pages, tannins, and skeletons from a parent archetype. Child pages override parent pages by id; tannins are concatenated and deduped; skeletons are shallow-merged. Circular inheritance and depth > 5 are rejected.",
   "archetypes": {
     "ecommerce": {
       "name": "E-Commerce",
@@ -31,6 +31,11 @@
       "name": "Financial Dashboard",
       "description": "Performance dashboard for financial services, lending, and banking — portfolio overview, pipeline, collections, compliance",
       "file": "financial-dashboard.json"
+    },
+    "recipe-community": {
+      "name": "Recipe Community",
+      "description": "AI-powered recipe sharing platform — recipes, cookbooks, photo-to-recipe AI, chef chat, community feed",
+      "file": "recipe-community.json"
     }
   }
 }

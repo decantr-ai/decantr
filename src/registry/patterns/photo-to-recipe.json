@@ -1,0 +1,36 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "photo-to-recipe",
+  "name": "Photo to Recipe",
+  "description": "Two-column AI generation layout: left column has a photo upload dropzone, right column displays AI-generated recipe output with title, ingredients, and instructions. Used for AI-powered recipe extraction from food photos.",
+  "components": ["Card", "Card.Header", "Card.Body", "Upload", "Button", "Spinner", "Separator", "icon"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc2 _gap6 _p4 _aic",
+    "slots": {
+      "upload": "Left column: Upload dropzone with image preview, analyze Button",
+      "output": "Right column: Card showing AI-generated recipe with title, ingredients list, instructions, and 'Save Recipe' action"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-grid",
+      "notes": "Upload zone uses cc-frame-sm. AI output card uses cc-frame-sm with cc-data for generated text. Analyze button uses cc-glow."
+    },
+    "auradecantism": {
+      "wrapper": "d-mesh",
+      "atoms": "",
+      "notes": "Upload dropzone on d-glass. Output card on d-glass. AI badge uses d-gradient-text."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Standard two-column layout with bordered cards. Clean upload dropzone."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Card, Upload, Button, Spinner, Separator, icon } from 'decantr/components';",
+    "example": "function PhotoToRecipe() {\n  const { div, h3, p, span, ul, li } = tags;\n  const [analyzing, setAnalyzing] = createSignal(false);\n  const [result, setResult] = createSignal(null);\n\n  return div({ class: css('_grid _gc2 _gap6 _p4') },\n    Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, icon('camera'), ' Upload Photo')),\n      Card.Body({ class: css('_flex _col _gap4 _aic') },\n        Upload({ accept: 'image/*', variant: 'dragger', class: css('_wfull') }, 'Drop a food photo here'),\n        Button({ variant: 'primary', class: css('_wfull'), onclick: () => setAnalyzing(true) },\n          analyzing() ? Spinner({ size: 'sm' }) : icon('sparkles'),\n          analyzing() ? ' Analyzing...' : ' Generate Recipe'\n        )\n      )\n    ),\n    Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, icon('sparkles'), ' AI Generated Recipe')),\n      Card.Body({ class: css('_flex _col _gap3') },\n        result()\n          ? div({},\n              h3({ class: css('_heading4') }, result().title),\n              Separator(),\n              h3({ class: css('_heading6 _mt3') }, 'Ingredients'),\n              ul({}, ...result().ingredients.map(i => li({}, i))),\n              h3({ class: css('_heading6 _mt3') }, 'Instructions'),\n              ul({}, ...result().steps.map((s, i) => li({}, `${i + 1}. ${s}`))),\n              Button({ variant: 'primary', class: css('_mt4') }, 'Save Recipe')\n            )\n          : p({ class: css('_fgmuted _tc') }, 'Upload a photo to generate a recipe')\n      )\n    )\n  );\n}"
+  }
+}

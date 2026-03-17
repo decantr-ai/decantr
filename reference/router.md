@@ -2,7 +2,7 @@
 
 Client-side router with hash and history strategies, nested routes, guards, lazy loading, named routes, scroll restoration, and URL validation.
 
-Import: `import { createRouter, navigate, link, useRoute, useSearchParams } from '@decantr/decantr/router';`
+Import: `import { createRouter, navigate, link, useRoute, useSearchParams } from 'decantr/router';`
 
 ## `createRouter(config)` — Config Shape
 
@@ -171,8 +171,8 @@ When `transitions: true` and `document.startViewTransition` is available (and an
 ## Example — Nested Routes with Guards
 
 ```javascript
-import { createRouter, link, useRoute, navigate } from '@decantr/decantr/router';
-import { tags } from '@decantr/decantr/tags';
+import { createRouter, link, useRoute, navigate } from 'decantr/router';
+import { tags } from 'decantr/tags';
 
 const isLoggedIn = () => /* auth check */;
 

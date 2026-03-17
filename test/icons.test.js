@@ -1,4 +1,4 @@
-import { describe, it, assert, createDOM, render } from 'decantr/test';
+import { describe, it, assert, createDOM, render } from '../src/test/index.js';
 import { icon } from '../src/components/icon.js';
 import { getIconPath, hasIcon, registerIcon, registerIcons, getIconNames } from '../src/icons/index.js';
 

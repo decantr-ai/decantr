@@ -11,23 +11,6 @@ declare module 'decantr/components' {
     [key: string]: any;
   }
 
-  // ── Field Props (v0.5.0 unified field API) ──
-  interface FieldProps extends BaseProps {
-    variant?: 'outlined' | 'filled' | 'ghost';
-    size?: 'xs' | 'sm' | 'md' | 'lg';
-    disabled?: boolean | (() => boolean);
-    readonly?: boolean | (() => boolean);
-    error?: boolean | string | (() => boolean | string);
-    success?: boolean | string | (() => boolean | string);
-    loading?: boolean | (() => boolean);
-    label?: string;
-    help?: string;
-    required?: boolean;
-    ref?: (el: HTMLElement) => void;
-    value?: any | (() => any);
-    onchange?: (value: any) => void;
-  }
-
   /**
    * Button component.
    */
@@ -39,29 +22,29 @@ declare module 'decantr/components' {
   export function Spinner(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
-   * Input component. Supports variant/size/error/success/label/help.
+   * Input component.
    */
-  export function Input(props?: FieldProps & { type?: string; placeholder?: string; prefix?: string | Node; suffix?: string | Node; oninput?: (e: Event) => void }): HTMLElement;
+  export function Input(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
-   * Textarea component. Supports variant/size/error/success/label/help.
+   * Textarea component.
    */
-  export function Textarea(props?: FieldProps & { placeholder?: string; rows?: number; resize?: 'none' | 'vertical' | 'horizontal' | 'both'; oninput?: (e: Event) => void }): HTMLElement;
+  export function Textarea(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
-   * Checkbox component. Supports error/aria-label.
+   * Checkbox component.
    */
-  export function Checkbox(props?: BaseProps & { checked?: boolean | (() => boolean); disabled?: boolean | (() => boolean); label?: string; indeterminate?: boolean; error?: boolean | string | (() => boolean | string); onchange?: (checked: boolean) => void }): HTMLElement;
+  export function Checkbox(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
-   * Switch component. Supports error/aria-label.
+   * Switch component.
    */
-  export function Switch(props?: BaseProps & { checked?: boolean | (() => boolean); disabled?: boolean | (() => boolean); label?: string; error?: boolean | string | (() => boolean | string); onchange?: (checked: boolean) => void }): HTMLElement;
+  export function Switch(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
-   * Select component. Supports variant/size/error/success/label/help.
+   * Select component.
    */
-  export function Select(props?: FieldProps & { options?: { value: string; label: string; disabled?: boolean }[]; placeholder?: string }): HTMLElement;
+  export function Select(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
    * Card component.
@@ -209,6 +192,11 @@ declare module 'decantr/components' {
   export function Kbd(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
+   * Shell component.
+   */
+  export function Shell(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
    * Space component.
    */
   export function Space(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
@@ -302,6 +290,11 @@ declare module 'decantr/components' {
    * ColorPicker component.
    */
   export function ColorPicker(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
+   * ColorPalette component.
+   */
+  export function ColorPalette(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
    * DatePicker component.
@@ -419,6 +412,11 @@ declare module 'decantr/components' {
   export function Empty(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
+   * Placeholder component.
+   */
+  export function Placeholder(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
    * Image component.
    */
   export function Image(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
@@ -429,6 +427,16 @@ declare module 'decantr/components' {
   export function Timeline(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
+   * Comment component.
+   */
+  export function Comment(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
+   * QRCode component.
+   */
+  export function QRCode(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
    * HoverCard component.
    */
   export function HoverCard(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
@@ -437,11 +445,6 @@ declare module 'decantr/components' {
    * AlertDialog component.
    */
   export function AlertDialog(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
-
-  /**
-   * Sheet component.
-   */
-  export function Sheet(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
    * Result component.
@@ -474,9 +477,39 @@ declare module 'decantr/components' {
   export function Watermark(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
+   * MaskedInput component.
+   */
+  export function MaskedInput(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
+   * Banner component.
+   */
+  export function Banner(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
+   * CodeBlock component.
+   */
+  export function CodeBlock(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
+   * SortableList component.
+   */
+  export function SortableList(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
+   * DateTimePicker component.
+   */
+  export function DateTimePicker(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
    * VisuallyHidden component.
    */
   export function VisuallyHidden(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
+
+  /**
+   * createScrollSpy component.
+   */
+  export function createScrollSpy(props?: BaseProps & Record<string, any>, ...children: any[]): HTMLElement;
 
   /**
    * Button variant class generator.

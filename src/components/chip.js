@@ -73,7 +73,7 @@ export function Chip(props = {}) {
         e.stopPropagation();
         if (onRemove) onRemove(e);
       }
-    }, '\u00D7');
+    }, iconHelper('x', { size: '1em' }));
     el.appendChild(removeBtn);
   }
 

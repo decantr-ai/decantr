@@ -466,6 +466,28 @@ const RESIDUAL = {
   fblur4: 'filter:blur(4px)', fblur8: 'filter:blur(8px)', fblur16: 'filter:blur(16px)',
   fgray: 'filter:grayscale(1)', fgray50: 'filter:grayscale(0.5)', finvert: 'filter:invert(1)',
   fbright50: 'filter:brightness(0.5)', fbright75: 'filter:brightness(0.75)', fbright110: 'filter:brightness(1.1)',
+  // Ring utilities (focus indicators, decorative outlines)
+  ring1: 'box-shadow:0 0 0 1px var(--d-ring)',
+  ring2: 'box-shadow:0 0 0 2px var(--d-ring)',
+  ring4: 'box-shadow:0 0 0 4px var(--d-ring)',
+  ring0: 'box-shadow:none',
+  ringPrimary: '--d-ring:var(--d-primary)',
+  ringAccent: '--d-ring:var(--d-accent)',
+  ringBorder: '--d-ring:var(--d-border)',
+  // Transition-property shortcuts
+  transColors: 'transition:color 0.2s ease,background-color 0.2s ease,border-color 0.2s ease,fill 0.2s ease,stroke 0.2s ease',
+  transOpacity: 'transition:opacity 0.2s ease',
+  transTransform: 'transition:transform 0.2s ease',
+  transShadow: 'transition:box-shadow 0.2s ease',
+  // Text wrapping
+  textBalance: 'text-wrap:balance',
+  textPretty: 'text-wrap:pretty',
+  // Scroll behavior
+  scrollSmooth: 'scroll-behavior:smooth',
+  // Component-class atoms (resolved as class passthrough, CSS comes from components.js)
+  // _prose → adds 'd-prose' class
+  // _divideY → adds 'd-divide-y' class
+  // _divideX → adds 'd-divide-x' class
 };
 
 // ─── ALIASES — long-form → canonical (both with leading _) ──────

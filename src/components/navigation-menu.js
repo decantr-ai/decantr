@@ -91,7 +91,7 @@ export function NavigationMenu(props = {}) {
         hoverCloseDelay: 200,
         onOpen: () => {
           // Close other overlays
-          overlays.forEach((o, i) => { if (i !== idx) o.close(); });
+          overlays.forEach((o, i) => { if (i !== idx && o) o.close(); });
           // Focus first link
           const firstLink = content.querySelector('.d-navmenu-link');
           if (firstLink) firstLink.setAttribute('tabindex', '0');

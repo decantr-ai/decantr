@@ -2,11 +2,12 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { ComponentDetail, ComponentGroupView, loadComponentItems } from '../explorer/components.js';
+import { ComponentDetail, ComponentGroupView, loadComponentItems } from 'decantr/explorer/components.js';
+import { wbPath } from '../path-prefix.js';
 
 const { div, h2, h3, p } = tags;
 
-const nav = (path) => navigate(path);
+const nav = (path) => navigate(wbPath(path));
 
 export function ComponentsIndex() {
   const container = div({ class: css('_flex _col _gap6') },
@@ -17,11 +18,11 @@ export function ComponentsIndex() {
   );
 
   loadComponentItems().then(groups => {
-    container.appendChild(div({ class: 'de-card-grid' },
+    container.appendChild(div({ class: '_grid _gcaf280 _gap4' },
       ...groups.map(group =>
         div({
-          class: 'de-card-item',
-          onclick: () => navigate(`/components/${group.id}`)
+          class: '_surface1 _r2 _p4 _b1 _bcborder _flex _col _gap2',
+          onclick: () => navigate(wbPath(`/components/${group.id}`))
         },
           h3({ class: css('_heading6') }, group.label),
           p({ class: css('_caption _fgmutedfg') }, `${group.children.length} components`)
@@ -36,7 +37,7 @@ export function ComponentsIndex() {
 export function ComponentGroupPage({ group }) {
   return div({ class: css('_flex _col _gap4') },
     Breadcrumb({ items: [
-      { label: 'Components', onclick: () => navigate('/components') },
+      { label: 'Components', onclick: () => navigate(wbPath('/components')) },
       { label: group }
     ]}),
     ComponentGroupView(group, nav)
@@ -46,8 +47,8 @@ export function ComponentGroupPage({ group }) {
 export function ComponentDetailPage({ group, name }) {
   return div({ class: css('_flex _col _gap4') },
     Breadcrumb({ items: [
-      { label: 'Components', onclick: () => navigate('/components') },
-      { label: group, onclick: () => navigate(`/components/${group}`) },
+      { label: 'Components', onclick: () => navigate(wbPath('/components')) },
+      { label: group, onclick: () => navigate(wbPath(`/components/${group}`)) },
       { label: name }
     ]}),
     ComponentDetail(name, nav, group)

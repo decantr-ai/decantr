@@ -557,6 +557,22 @@
               "status": "processing"
             },
             "description": "Processing status indicator."
+          },
+          {
+            "name": "Label badge",
+            "props": {
+              "variant": "primary"
+            },
+            "children": "New",
+            "description": "Primary label badge."
+          },
+          {
+            "name": "Accent label",
+            "props": {
+              "variant": "accent"
+            },
+            "children": "Hot",
+            "description": "Accent label badge."
           }
         ],
         "children": "Badge"
@@ -1039,10 +1055,33 @@
     "Card": {
       "props": {
         "title": {
-          "type": "string"
+          "type": "string|Node"
+        },
+        "extra": {
+          "type": "Node|Function",
+          "reactive": true
         },
         "hoverable": {
           "type": "boolean"
+        },
+        "bordered": {
+          "type": "boolean"
+        },
+        "loading": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "size": {
+          "type": "'default'|'sm'"
+        },
+        "type": {
+          "type": "'inner'"
+        },
+        "cover": {
+          "type": "Node"
+        },
+        "actions": {
+          "type": "Node[]"
         },
         "class": {
           "type": "string"
@@ -1053,25 +1092,89 @@
       "subComponents": [
         "Header",
         "Body",
-        "Footer"
+        "Footer",
+        "Cover",
+        "Meta",
+        "Grid",
+        "Actions"
       ],
       "showcase": {
         "states": {
-          "hoverable": true
+          "hoverable": true,
+          "loading": true
         },
-        "labelProp": "title",
         "sections": [
           "examples",
           "states",
           "interactive"
         ],
+        "labelProp": "title",
         "examples": [
           {
-            "name": "With title",
+            "name": "Basic Card",
             "props": {
               "title": "Card Title"
             },
-            "description": "Card with title prop."
+            "description": "Simple card with title and body text."
+          },
+          {
+            "name": "With Extra",
+            "props": {
+              "title": "Card Title",
+              "extra": true
+            },
+            "description": "Card with extra content in header."
+          },
+          {
+            "name": "Cover + Meta",
+            "props": {
+              "cover": true
+            },
+            "description": "Cover image with avatar meta section."
+          },
+          {
+            "name": "Loading",
+            "props": {
+              "loading": true
+            },
+            "description": "Skeleton loading state."
+          },
+          {
+            "name": "Inner Card",
+            "props": {
+              "title": "Outer Card",
+              "type": "inner"
+            },
+            "description": "Nested inner card variant."
+          },
+          {
+            "name": "No Border",
+            "props": {
+              "title": "Borderless",
+              "bordered": false
+            },
+            "description": "Card without visible border."
+          },
+          {
+            "name": "Small Size",
+            "props": {
+              "title": "Compact",
+              "size": "sm"
+            },
+            "description": "Smaller card variant."
+          },
+          {
+            "name": "With Actions",
+            "props": {
+              "title": "Actions Card",
+              "actions": true
+            },
+            "description": "Card with bottom action bar."
+          },
+          {
+            "name": "Grid Card",
+            "props": {},
+            "description": "Card.Grid sub-layout."
           },
           {
             "name": "Hoverable",
@@ -1079,15 +1182,21 @@
               "title": "Hover Me",
               "hoverable": true
             },
-            "description": "Interactive hover effect."
+            "description": "Interactive hover elevation."
           },
           {
-            "name": "Compact",
+            "name": "Profile Card",
             "props": {
-              "title": "Compact Card",
-              "size": "sm"
+              "cover": true
             },
-            "description": "Smaller card variant."
+            "description": "Full composition: cover, avatar meta, bio, footer."
+          },
+          {
+            "name": "Product Card",
+            "props": {
+              "cover": true
+            },
+            "description": "Cover image, title + price, CTA button."
           }
         ],
         "children": null
@@ -1959,6 +2068,105 @@
               "placeholder": "Type a command..."
             },
             "description": "Command palette overlay."
+          }
+        ]
+      }
+    },
+    "Comment": {
+      "props": {
+        "author": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string|Node"
+        },
+        "content": {
+          "type": "string|Node"
+        },
+        "datetime": {
+          "type": "string"
+        },
+        "actions": {
+          "type": "{ label: string, icon?: string, onclick?: Function, count?: number|Function, active?: boolean|Function }[]",
+          "reactive": true
+        },
+        "onReply": {
+          "type": "Function"
+        },
+        "variant='default'": {
+          "type": "'default'|'minimal'|'bordered'"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "variants",
+          "examples",
+          "interactive"
+        ],
+        "defaults": {
+          "author": "Jane Doe",
+          "avatar": "JD",
+          "content": "This is a comment.",
+          "datetime": "2 hours ago"
+        },
+        "examples": [
+          {
+            "name": "Basic",
+            "props": {
+              "author": "Jane Doe",
+              "avatar": "JD",
+              "content": "This is a great feature! Really love the design.",
+              "datetime": "2 hours ago"
+            },
+            "description": "Single comment with avatar, author, content, datetime."
+          },
+          {
+            "name": "With actions",
+            "props": {
+              "author": "Alice Chen",
+              "avatar": "AC",
+              "content": "The new dashboard looks amazing.",
+              "datetime": "5 min ago",
+              "actions": [
+                {
+                  "label": "Like",
+                  "icon": "thumbs-up",
+                  "count": 3
+                },
+                {
+                  "label": "Dislike",
+                  "icon": "thumbs-down",
+                  "count": 0
+                }
+              ]
+            },
+            "description": "Comment with like/dislike action buttons."
+          },
+          {
+            "name": "Bordered variant",
+            "props": {
+              "author": "Bob Smith",
+              "avatar": "BS",
+              "content": "Card-style container with border and surface background.",
+              "datetime": "1 day ago",
+              "variant": "bordered"
+            },
+            "description": "Card-style bordered container."
+          },
+          {
+            "name": "Minimal variant",
+            "props": {
+              "author": "Eve Wilson",
+              "avatar": "EW",
+              "content": "Tighter spacing for compact layouts.",
+              "datetime": "3 hours ago",
+              "variant": "minimal"
+            },
+            "description": "Compact variant with reduced spacing."
           }
         ]
       }
@@ -4237,6 +4445,91 @@
         ]
       }
     },
+    "Placeholder": {
+      "props": {
+        "variant='image'": {
+          "type": "'image'|'avatar'|'icon'"
+        },
+        "aspectRatio": {
+          "type": "string"
+        },
+        "width": {
+          "type": "string"
+        },
+        "height": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "Node"
+        },
+        "animate=false": {
+          "type": "boolean"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "animate=false": true
+        },
+        "labelProp": "label",
+        "sections": [
+          "examples",
+          "interactive",
+          "states"
+        ],
+        "examples": [
+          {
+            "name": "Default (16:9)",
+            "props": {},
+            "description": "Image placeholder with brand watermark."
+          },
+          {
+            "name": "Avatar",
+            "props": {
+              "variant": "avatar",
+              "width": "64px"
+            },
+            "description": "Circular avatar placeholder."
+          },
+          {
+            "name": "Icon",
+            "props": {
+              "variant": "icon",
+              "width": "48px"
+            },
+            "description": "Square icon placeholder."
+          },
+          {
+            "name": "With Label",
+            "props": {
+              "label": "Cover Image"
+            },
+            "description": "Labeled placeholder."
+          },
+          {
+            "name": "Custom Aspect Ratio",
+            "props": {
+              "aspectRatio": "4/3"
+            },
+            "description": "4:3 aspect ratio."
+          },
+          {
+            "name": "Animated",
+            "props": {
+              "animate": true
+            },
+            "description": "Shimmer animation."
+          }
+        ]
+      }
+    },
     "Popconfirm": {
       "props": {
         "title='Are": {
@@ -4436,6 +4729,114 @@
           }
         ],
         "children": null
+      }
+    },
+    "QRCode": {
+      "props": {
+        "value=''": {
+          "type": "string|Function",
+          "reactive": true
+        },
+        "size=160": {
+          "type": "number"
+        },
+        "color": {
+          "type": "string",
+          "default": "resolved --d-fg"
+        },
+        "bgColor": {
+          "type": "string",
+          "default": "resolved --d-bg"
+        },
+        "type='canvas'": {
+          "type": "'canvas'|'svg'"
+        },
+        "level='M'": {
+          "type": "'L'|'M'|'Q'|'H'"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "iconSize=40": {
+          "type": "number"
+        },
+        "bordered=true": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string|Function",
+          "enum": [
+            "active",
+            "loading",
+            "expired",
+            "scanned"
+          ],
+          "reactive": true
+        },
+        "onRefresh": {
+          "type": "Function"
+        },
+        "padding=12": {
+          "type": "number"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement",
+      "showcase": {
+        "states": {
+          "bordered=true": true
+        },
+        "sections": [
+          "examples",
+          "states",
+          "interactive"
+        ],
+        "defaults": {
+          "value": "https://decantr.ai"
+        },
+        "examples": [
+          {
+            "name": "Basic",
+            "props": {
+              "value": "https://decantr.ai"
+            },
+            "description": "Encode a URL into a QR code."
+          },
+          {
+            "name": "Custom size",
+            "props": {
+              "value": "https://decantr.ai",
+              "size": 240
+            },
+            "description": "Larger 240px QR code."
+          },
+          {
+            "name": "SVG mode",
+            "props": {
+              "value": "https://decantr.ai",
+              "type": "svg"
+            },
+            "description": "Scalable vector output."
+          },
+          {
+            "name": "High error correction",
+            "props": {
+              "value": "https://decantr.ai",
+              "level": "H"
+            },
+            "description": "Level H (30%) error correction."
+          },
+          {
+            "name": "No border",
+            "props": {
+              "value": "https://decantr.ai",
+              "bordered": false
+            },
+            "description": "Borderless QR code."
+          }
+        ]
       }
     },
     "RadioGroup": {
@@ -4966,11 +5367,20 @@
             "name": "Default",
             "props": {
               "options": [
-                "Daily",
-                "Weekly",
-                "Monthly"
+                {
+                  "value": "daily",
+                  "label": "Daily"
+                },
+                {
+                  "value": "weekly",
+                  "label": "Weekly"
+                },
+                {
+                  "value": "monthly",
+                  "label": "Monthly"
+                }
               ],
-              "value": "Weekly"
+              "value": "weekly"
             },
             "description": "Segmented toggle."
           },
@@ -4978,9 +5388,18 @@
             "name": "Block mode",
             "props": {
               "options": [
-                "List",
-                "Grid",
-                "Board"
+                {
+                  "value": "list",
+                  "label": "List"
+                },
+                {
+                  "value": "grid",
+                  "label": "Grid"
+                },
+                {
+                  "value": "board",
+                  "label": "Board"
+                }
               ],
               "block": true
             },
@@ -4990,12 +5409,21 @@
             "name": "Small",
             "props": {
               "options": [
-                "S",
-                "M",
-                "L"
+                {
+                  "value": "s",
+                  "label": "S"
+                },
+                {
+                  "value": "m",
+                  "label": "M"
+                },
+                {
+                  "value": "l",
+                  "label": "L"
+                }
               ],
               "size": "sm",
-              "value": "M"
+              "value": "m"
             },
             "description": "Compact segments."
           }
@@ -5193,6 +5621,76 @@
               "label": "OR"
             },
             "description": "Labeled divider."
+          }
+        ]
+      }
+    },
+    "resolveShellConfig": {
+      "returns": "Object",
+      "showcase": {
+        "sections": [
+          "interactive"
+        ]
+      }
+    },
+    "buildGridTemplate": {
+      "returns": "{ areas: string, columns: string, rows: string }",
+      "showcase": {
+        "sections": [
+          "interactive"
+        ]
+      }
+    },
+    "Shell": {
+      "props": {
+        "config='sidebar": {
+          "type": "string|Object"
+        },
+        "navState": {
+          "type": "Function"
+        },
+        "onNavStateChange": {
+          "type": "Function"
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "children": "...Node",
+      "returns": "HTMLElement",
+      "subComponents": [
+        "Header",
+        "Nav",
+        "Body",
+        "Footer",
+        "Aside"
+      ],
+      "showcase": {
+        "sections": [
+          "examples",
+          "interactive"
+        ],
+        "examples": [
+          {
+            "name": "Sidebar + Main",
+            "description": "Default sidebar layout with collapsible nav.",
+            "props": {
+              "config": "sidebar-main"
+            }
+          },
+          {
+            "name": "Top Nav",
+            "description": "Horizontal navigation with full-width body.",
+            "props": {
+              "config": "top-nav-main"
+            }
+          },
+          {
+            "name": "Sidebar + Aside",
+            "description": "Three-column layout with nav and inspector panel.",
+            "props": {
+              "config": "sidebar-aside"
+            }
           }
         ]
       }
@@ -6581,13 +7079,17 @@
     "Timeline": {
       "props": {
         "items": {
-          "type": "{ label?: string, content: string|Node, color?: string, icon?: string|Node, time?: string, status?: 'default'|'success'|'warning'|'error'|'info', tag?: string }[]"
+          "type": "{ label?: string, content: string|Node, color?: string, icon?: string|Node, time?: string, status?: 'default'|'success'|'warning'|'error'|'info', tag?: string, position?: 'left'|'right', collapsible?: boolean, defaultOpen?: boolean, onclick?: Function, disabled?: boolean }[]",
+          "reactive": true
         },
         "mode='left'": {
-          "type": "'left'|'right'|'alternate'"
+          "type": "'left'|'right'|'alternate'|'custom'"
         },
         "pending=false": {
-          "type": "boolean"
+          "type": "boolean|string"
+        },
+        "pendingDot": {
+          "type": "string|Node"
         },
         "variant='default'": {
           "type": "'default'|'branded'"
@@ -6609,6 +7111,22 @@
         "glass=false": {
           "type": "boolean"
         },
+        "reverse=false": {
+          "type": "boolean"
+        },
+        "direction='vertical'": {
+          "type": "'vertical'|'horizontal'"
+        },
+        "loading=false": {
+          "type": "boolean|Function",
+          "reactive": true
+        },
+        "loadingCount=3": {
+          "type": "number"
+        },
+        "onClick": {
+          "type": "Function"
+        },
         "class": {
           "type": "string"
         }
@@ -6616,7 +7134,7 @@
       "returns": "HTMLElement",
       "showcase": {
         "states": {
-          "pending=false": true,
+          "pending": true,
           "gradient=false": true,
           "glass=false": true
         },
@@ -6629,75 +7147,177 @@
         "defaults": {
           "items": [
             {
-              "content": "Project started"
+              "content": "Project started",
+              "time": "2024-01-01"
             },
             {
-              "content": "First release"
+              "content": "First release",
+              "time": "2024-03-15"
             },
             {
-              "content": "Major update"
+              "content": "Major update",
+              "time": "2024-06-01"
             }
           ]
         },
         "examples": [
           {
-            "name": "Default",
+            "name": "Basic",
             "props": {
               "items": [
                 {
-                  "label": "Created",
-                  "description": "Item was created"
+                  "content": "Created project",
+                  "time": "Jan 1"
                 },
                 {
-                  "label": "Updated",
-                  "description": "Item was modified"
+                  "content": "First release",
+                  "time": "Mar 15"
                 },
                 {
-                  "label": "Completed",
-                  "description": "Item finished"
+                  "content": "Reached 1k users",
+                  "time": "Jun 1"
+                },
+                {
+                  "content": "v2.0 launched",
+                  "time": "Sep 20"
                 }
               ]
             },
-            "description": "Chronological events."
+            "description": "Simple left-aligned timeline."
           },
           {
-            "name": "Alternate mode",
+            "name": "Status colors",
+            "props": {
+              "items": [
+                {
+                  "content": "Build succeeded",
+                  "status": "success",
+                  "time": "10:00"
+                },
+                {
+                  "content": "Tests passed",
+                  "status": "info",
+                  "time": "10:05"
+                },
+                {
+                  "content": "Deployment warning",
+                  "status": "warning",
+                  "time": "10:10"
+                },
+                {
+                  "content": "Rollback triggered",
+                  "status": "error",
+                  "time": "10:15"
+                }
+              ]
+            },
+            "description": "Status-colored dots for success, info, warning, error."
+          },
+          {
+            "name": "Alternate with labels",
             "props": {
               "mode": "alternate",
               "items": [
                 {
-                  "label": "Step 1",
-                  "description": "First step"
+                  "content": "Research phase",
+                  "label": "Q1 2024"
                 },
                 {
-                  "label": "Step 2",
-                  "description": "Second step"
+                  "content": "Design phase",
+                  "label": "Q2 2024"
                 },
                 {
-                  "label": "Step 3",
-                  "description": "Third step"
+                  "content": "Development",
+                  "label": "Q3 2024"
+                },
+                {
+                  "content": "Launch",
+                  "label": "Q4 2024"
                 }
               ]
             },
-            "description": "Alternating sides."
+            "description": "Alternating sides with opposite labels."
           },
           {
-            "name": "Gradient",
+            "name": "Right-aligned",
             "props": {
-              "gradient": true,
+              "mode": "right",
               "items": [
                 {
-                  "label": "Start"
+                  "content": "Step one",
+                  "time": "9:00 AM"
                 },
                 {
-                  "label": "Middle"
+                  "content": "Step two",
+                  "time": "10:00 AM"
                 },
                 {
-                  "label": "End"
+                  "content": "Step three",
+                  "time": "11:00 AM"
                 }
               ]
             },
-            "description": "Gradient connector line."
+            "description": "Content on the right side."
+          },
+          {
+            "name": "Branded (gradient + glass)",
+            "props": {
+              "variant": "branded",
+              "items": [
+                {
+                  "content": "Premium feature A"
+                },
+                {
+                  "content": "Premium feature B"
+                },
+                {
+                  "content": "Premium feature C"
+                }
+              ]
+            },
+            "description": "Gradient connector line with glass dots."
+          },
+          {
+            "name": "Pending state",
+            "props": {
+              "pending": "Processing...",
+              "items": [
+                {
+                  "content": "Order placed",
+                  "status": "success"
+                },
+                {
+                  "content": "Payment confirmed",
+                  "status": "success"
+                },
+                {
+                  "content": "Shipping",
+                  "status": "info"
+                }
+              ]
+            },
+            "description": "Pulsing pending dot at the tail."
+          },
+          {
+            "name": "Horizontal",
+            "props": {
+              "direction": "horizontal",
+              "items": [
+                {
+                  "content": "Step 1"
+                },
+                {
+                  "content": "Step 2"
+                },
+                {
+                  "content": "Step 3"
+                },
+                {
+                  "content": "Step 4"
+                }
+              ]
+            },
+            "description": "Horizontal process flow."
           }
         ]
       }
@@ -7914,7 +8534,8 @@
         "Progress",
         "Skeleton",
         "Chip",
-        "Empty"
+        "Empty",
+        "Placeholder"
       ]
     },
     "data": {
@@ -7926,6 +8547,8 @@
         "Carousel",
         "Image",
         "Timeline",
+        "Comment",
+        "QRCode",
         "HoverCard"
       ]
     },

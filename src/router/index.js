@@ -54,14 +54,15 @@ function compilePath(path) {
 
 /**
  * Flatten nested route tree into a list of compiled entries.
- * Each entry has: fullPath, regex, keys, components[], name?
+ * Each entry has: fullPath, regex, keys, components[], name?, meta
  * components[] is the chain from root layout to leaf component.
  * @param {Array} routes
  * @param {string} parentPath
  * @param {Array} parentComponents
- * @returns {Array<{ fullPath: string, regex: RegExp, keys: string[], components: Function[], name?: string }>}
+ * @param {Object} parentMeta
+ * @returns {Array<{ fullPath: string, regex: RegExp, keys: string[], components: Function[], name?: string, meta: Object }>}
  */
-function flattenRoutes(routes, parentPath = '', parentComponents = []) {
+function flattenRoutes(routes, parentPath = '', parentComponents = [], parentMeta = {}) {
   /** @type {Array} */
   const result = [];
   for (const r of routes) {
@@ -70,12 +71,13 @@ function flattenRoutes(routes, parentPath = '', parentComponents = []) {
       parentPath + (seg.startsWith('/') ? seg : (seg ? '/' + seg : ''));
     const normalized = full.replace(/\/+/g, '/') || '/';
     const chain = r.component ? [...parentComponents, r.component] : [...parentComponents];
+    const mergedMeta = { ...parentMeta, ...(r.meta || {}) };
 
     if (r.children && r.children.length) {
-      result.push(...flattenRoutes(r.children, normalized, chain));
+      result.push(...flattenRoutes(r.children, normalized, chain, mergedMeta));
     } else {
       const { regex, keys } = compilePath(normalized);
-      result.push({ fullPath: normalized, regex, keys, components: chain, name: r.name });
+      result.push({ fullPath: normalized, regex, keys, components: chain, name: r.name, meta: mergedMeta });
     }
   }
   return result;
@@ -184,7 +186,8 @@ function isLazyComponent(fn) {
 /**
  * @typedef {{
  *   mode?: 'hash'|'history',
- *   routes: Array<{path: string, component?: Function, children?: Array, name?: string}>,
+ *   base?: string,
+ *   routes: Array<{path: string, component?: Function, children?: Array, name?: string, meta?: Object}>,
  *   transitions?: boolean,
  *   scrollBehavior?: 'top'|'restore'|false,
  *   beforeEach?: (to: Object, from: Object) => undefined|false|string,
@@ -195,14 +198,18 @@ function isLazyComponent(fn) {
 /**
  * Create a router instance.
  * @param {RouterConfig} config
- * @returns {{ navigate: Function, outlet: Function, current: Function, path: Function, destroy: Function }}
+ * @returns {{ navigate: Function, outlet: Function, current: Function, path: Function, destroy: Function, onNavigate: Function }}
  */
 export function createRouter(config) {
   const strategy = config.mode === 'history' ? historyStrategy : hashStrategy;
+  const base = (config.base || '').replace(/\/+$/, '');
   const useTransitions = !!config.transitions;
   const scrollBehavior = config.scrollBehavior !== undefined ? config.scrollBehavior : 'top';
   const beforeEach = config.beforeEach || null;
   const afterEach = config.afterEach || null;
+
+  /** @type {Array<(to: Object, from: Object) => void>} */
+  const listeners = [];
 
   // Compile routes
   const compiled = flattenRoutes(config.routes);
@@ -215,15 +222,28 @@ export function createRouter(config) {
     }
   }
 
+  /**
+   * Strip base path prefix from a full path.
+   * @param {string} path
+   * @returns {string}
+   */
+  function stripBase(path) {
+    if (!base) return path;
+    if (path.startsWith(base)) return path.slice(base.length) || '/';
+    return path;
+  }
+
+  const [navigating, setNavigating] = createSignal(false);
+
   /** @type {Map<string, number>} scroll position cache */
   const scrollPositions = new Map();
 
-  const initialFull = strategy.current();
+  const initialFull = stripBase(strategy.current());
   const { pathname: initPath, query: initQuery } = parsePath(initialFull);
 
   // Start with empty components — handleNavigation (async) will resolve lazy components
   // and set the real route. This prevents the outlet from rendering unresolved components.
-  const [route, setRoute] = createSignal({ path: initPath, params: {}, query: initQuery, component: null, components: [], matched: false });
+  const [route, setRoute] = createSignal({ path: initPath, params: {}, query: initQuery, component: null, components: [], matched: false, meta: {} });
 
   /**
    * Match a pathname against compiled routes.
@@ -241,11 +261,11 @@ export function createRouter(config) {
         const component = entry.components[entry.components.length - 1] || null;
         return {
           path: pathname, params, query, component,
-          components: entry.components, matched: true, name: entry.name
+          components: entry.components, matched: true, name: entry.name, meta: entry.meta || {}
         };
       }
     }
-    return { path: pathname, params: {}, query, component: null, components: [], matched: false };
+    return { path: pathname, params: {}, query, component: null, components: [], matched: false, meta: {} };
   }
 
   /**
@@ -265,10 +285,11 @@ export function createRouter(config) {
       if (typeof result === 'string') {
         // Redirect — validate and navigate
         validatePath(result);
+        const redirectPath = base + result;
         if (opts.replace) {
-          strategy.replace(result);
+          strategy.replace(redirectPath);
         } else {
-          strategy.push(result);
+          strategy.push(redirectPath);
         }
         return;
       }
@@ -280,22 +301,30 @@ export function createRouter(config) {
     }
 
     // Resolve lazy components
-    const resolvedComponents = [];
-    for (const comp of to.components) {
-      const resolved = resolveComponent(comp);
-      if (resolved && typeof resolved.then === 'function') {
-        resolvedComponents.push(await resolved);
-      } else {
-        resolvedComponents.push(resolved);
+    setNavigating(true);
+    try {
+      const resolvedComponents = [];
+      for (const comp of to.components) {
+        const resolved = resolveComponent(comp);
+        if (resolved && typeof resolved.then === 'function') {
+          resolvedComponents.push(await resolved);
+        } else {
+          resolvedComponents.push(resolved);
+        }
       }
+      to.components = resolvedComponents;
+      to.component = resolvedComponents[resolvedComponents.length - 1] || null;
+    } finally {
+      setNavigating(false);
     }
-    to.components = resolvedComponents;
-    to.component = resolvedComponents[resolvedComponents.length - 1] || null;
 
     setRoute(to);
 
     // After guard
     if (afterEach) afterEach(to, from);
+
+    // Fire navigation listeners
+    for (let i = 0; i < listeners.length; i++) listeners[i](to, from);
 
     // Scroll handling
     if (scrollBehavior === 'top') {
@@ -310,7 +339,7 @@ export function createRouter(config) {
 
   // Listen to strategy events (back/forward buttons)
   const unlisten = strategy.listen(fullPath => {
-    handleNavigation(fullPath, { skipGuards: false });
+    handleNavigation(stripBase(fullPath), { skipGuards: false });
   });
 
   /**
@@ -326,13 +355,17 @@ export function createRouter(config) {
       path = /** @type {string} */ (to);
     }
     validatePath(path);
+    const fullPath = base + path;
     if (opts.replace) {
-      strategy.replace(path);
+      strategy.replace(fullPath);
     } else {
-      strategy.push(path);
+      strategy.push(fullPath);
     }
     // Strategy listener triggers handleNavigation
   }
+
+  function back() { window.history.back(); }
+  function forward() { window.history.forward(); }
 
   /**
    * Create an outlet that renders the matched route's component chain.
@@ -387,12 +420,26 @@ export function createRouter(config) {
     return container;
   }
 
+  /**
+   * Subscribe to navigation events. Returns an unsubscribe function.
+   * Fires after route change and afterEach guard.
+   * @param {(to: Object, from: Object) => void} callback
+   * @returns {() => void}
+   */
+  function onNavigate(callback) {
+    listeners.push(callback);
+    return () => {
+      const idx = listeners.indexOf(callback);
+      if (idx !== -1) listeners.splice(idx, 1);
+    };
+  }
+
   function destroy() {
     unlisten();
     if (activeRouter === router) activeRouter = null;
   }
 
-  const router = { navigate: nav, outlet, current: route, path: () => route().path, destroy, nameMap };
+  const router = { navigate: nav, outlet, current: route, path: () => route().path, destroy, onNavigate, nameMap, back, forward, isNavigating: navigating, _base: base };
   activeRouter = router;
 
   // Run initial navigation to apply guards on first load
@@ -423,9 +470,10 @@ export function link(props, ...children) {
 
   const cls = activeClass || 'd-link-active';
 
+  const basePrefix = activeRouter ? activeRouter._base : '';
   const el = h('a', {
     ...rest,
-    href,
+    href: basePrefix + href,
     onclick(e) {
       e.preventDefault();
       navigate(href);
@@ -454,7 +502,10 @@ export function link(props, ...children) {
 
 /**
  * Get current route signal.
- * @returns {() => { path: string, params: Object, query: Object, component: Function|null, components: Function[], matched: boolean, name?: string }}
+ * The returned signal includes a `meta` field — an object merged from parent
+ * routes down to the matched leaf. Parent meta is applied first, child meta
+ * overrides. Example: `{ path: '/admin', meta: { requiresAuth: true, breadcrumb: 'Admin' }, component: AdminPage }`
+ * @returns {() => { path: string, params: Object, query: Object, component: Function|null, components: Function[], matched: boolean, name?: string, meta: Object }}
  */
 export function useRoute() {
   if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
@@ -493,7 +544,8 @@ export function useSearchParams() {
     }
     const qs = sp.toString();
     const r = activeRouter.current();
-    const newPath = r.path + (qs ? '?' + qs : '');
+    const basePath = activeRouter._base || '';
+    const newPath = basePath + r.path + (qs ? '?' + qs : '');
 
     // Replace (not push) — query changes shouldn't create history entries
     if (window.location.hash) {
@@ -508,4 +560,39 @@ export function useSearchParams() {
   }
 
   return [params, setter];
+}
+
+/**
+ * Subscribe to navigation events on the active router. Returns an unsubscribe function.
+ * @param {(to: Object, from: Object) => void} callback
+ * @returns {() => void}
+ */
+export function onNavigate(callback) {
+  if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
+  return activeRouter.onNavigate(callback);
+}
+
+/**
+ * Navigate back in history. Delegates to active router.
+ */
+export function back() {
+  if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
+  activeRouter.back();
+}
+
+/**
+ * Navigate forward in history. Delegates to active router.
+ */
+export function forward() {
+  if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
+  activeRouter.forward();
+}
+
+/**
+ * Reactive boolean signal — true while lazy routes are resolving.
+ * @returns {boolean}
+ */
+export function isNavigating() {
+  if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
+  return activeRouter.isNavigating();
 }

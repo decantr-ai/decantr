@@ -49,6 +49,25 @@
       "returns": "T",
       "description": "Read a signal getter without subscribing. Alias for untrack(). Aligns with TC39 Signals proposal terminology."
     },
+    "on": {
+      "params": [
+        {
+          "name": "deps",
+          "type": "Array<() => T>|(() => T)"
+        },
+        {
+          "name": "fn",
+          "type": "(value: T|T[], prev: T|T[]) => U"
+        },
+        {
+          "name": "options",
+          "type": "{ defer?: boolean }",
+          "optional": true
+        }
+      ],
+      "returns": "Function",
+      "description": "Explicit dependency tracking."
+    },
     "useLocalStorage": {
       "params": [
         {
@@ -63,20 +82,6 @@
         }
       ],
       "returns": "[() => T, (v: T | ((prev: T) => T)) => void]"
-    },
-    "createResource": {
-      "params": [
-        {
-          "name": "fetcher",
-          "type": "() => Promise<T>"
-        },
-        {
-          "name": "options",
-          "type": "{ initialValue?: T, lazy?: boolean }",
-          "optional": true
-        }
-      ],
-      "returns": "{ data: () => T|undefined, loading: () => boolean, error: () => Error|null, refetch: () => Promise<void>, mutate: (v: T) => void }"
     },
     "createContext": {
       "params": [

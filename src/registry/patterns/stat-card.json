@@ -1,0 +1,55 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "stat-card",
+  "name": "Stat Card",
+  "description": "Compact grid of key statistics displayed in a Card. Used for nutrition facts, project metrics, and summary data blocks.",
+  "components": ["Card", "Card.Header", "Card.Body", "Statistic", "icon"],
+  "default_preset": "compact-grid",
+  "presets": {
+    "compact-grid": {
+      "description": "2x2 grid of Statistic items inside a Card. For nutrition facts, key metrics summaries.",
+      "components": ["Card", "Card.Header", "Card.Body", "Statistic", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _gap3",
+        "slots": {
+          "header": "Card.Header with title",
+          "stats": "2x2 grid of Statistic components with icon, value, and unit"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Statistic, icon } from 'decantr/components';",
+        "example": "function StatCard({ title, stats }) {\n  const { div, h3 } = tags;\n\n  return Card({},\n    Card.Header({},\n      h3({ class: css('_heading5') }, icon('heart-pulse'), ` ${title}`)\n    ),\n    Card.Body({ class: css('_grid _gc2 _gap3') },\n      ...stats.map(s =>\n        Statistic({ label: s.label, value: s.value, suffix: s.unit })\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc2 _gap3",
+    "slots": {
+      "header": "Card.Header with title",
+      "stats": "Grid of Statistic components"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame-sm",
+      "atoms": "",
+      "notes": "Card uses cc-frame-sm. Values use cc-data with cc-glow on high values."
+    },
+    "auradecantism": {
+      "wrapper": "d-glass",
+      "atoms": "_r4",
+      "notes": "Card on glass background. Values use d-gradient-text."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_b1 _r4",
+      "notes": "Simple bordered card with clean stat display."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Statistic, icon } from 'decantr/components';",
+    "example": "function StatCard({ title, stats }) {\n  const { div, h3 } = tags;\n\n  return Card({},\n    Card.Header({},\n      h3({ class: css('_heading5') }, icon('heart-pulse'), ` ${title}`)\n    ),\n    Card.Body({ class: css('_grid _gc2 _gap3') },\n      Statistic({ label: 'Calories', value: 450, suffix: ' kcal' }),\n      Statistic({ label: 'Protein', value: 32, suffix: 'g' }),\n      Statistic({ label: 'Carbs', value: 48, suffix: 'g' }),\n      Statistic({ label: 'Fat', value: 18, suffix: 'g' })\n    )\n  );\n}"
+  }
+}

@@ -2,18 +2,21 @@ import { mount, onDestroy } from 'decantr/core';
 import { createSignal, createEffect, untrack } from 'decantr/state';
 import { css, setStyle, getStyleList, setMode, setShape, setColorblindMode } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { Select, Drawer, icon } from 'decantr/components';
+import { Select, Drawer, icon, Shell } from 'decantr/components';
 import { createRouter, navigate } from 'decantr/router';
 import { createFocusTrap } from 'decantr/components/_behaviors.js';
-import { initUsageIndex } from './shared/usage-links.js';
+import { initUsageIndex } from 'decantr/explorer/shared/usage-links.js';
+import { wbPath } from './path-prefix.js';
 
 import { SidebarNav, getSidebarItems, loadAllSidebarItems, searchIndex } from './sidebar.js';
+import { activeShellConfig } from 'decantr/explorer/shell-config.js';
 
 // Pages
 import { ComponentsIndex, ComponentGroupPage, ComponentDetailPage } from './pages/components.js';
 import { IconsIndex, IconGroupPage, IconDetailPage } from './pages/icons.js';
 import { ChartsIndex, ChartGroupPage, ChartDetailPage } from './pages/charts.js';
 import { PatternsIndex, PatternDetailPage } from './pages/patterns.js';
+import { ShellsIndex, ShellDetailPage } from './pages/shells.js';
 import { ArchetypesIndex, ArchetypeDetailPage } from './pages/archetypes.js';
 import { RecipesIndex, RecipeDetailPage } from './pages/recipes.js';
 import { FoundationsIndex, FoundationPage } from './pages/foundations.js';
@@ -50,12 +53,12 @@ function SearchModal(visible, setVisible) {
       const layerItems = getSidebarItems(item.layer);
       const groupItem = layerItems.find(g => g.id === item.group);
       if (groupItem?.children) {
-        navigate(`/${item.layer}/${item.group}/${item.name}`);
+        navigate(wbPath(`/${item.layer}/${item.group}/${item.name}`));
       } else {
-        navigate(`/${item.layer}/${item.group}`);
+        navigate(wbPath(`/${item.layer}/${item.group}`));
       }
     } else {
-      navigate(`/${item.layer}`);
+      navigate(wbPath(`/${item.layer}`));
     }
   }
 
@@ -214,10 +217,10 @@ function RootLayout({ outlet }) {
     div({ class: 'de-header-left' },
       h1({
         class: 'de-logo',
-        onclick: () => navigate('/components')
+        onclick: () => navigate(wbPath('/components'))
       },
         img({ src: './images/logo.svg', alt: 'decantr', class: css('_w[28px]') }),
-        span({ class: css('_bold _ls[-0.02em] _textlg _fgfg') },
+        span({ class: css('_bold _ls[-0.02em] _textlg') },
           'decantr', span({ class: 'de-pink' }, '.'), 'a', span({ class: 'de-pink' }, 'i')
         )
       )
@@ -249,7 +252,7 @@ function RootLayout({ outlet }) {
       const vpDef = VIEWPORTS.find(v => v.id === vp);
       mainArea.appendChild(div({
         class: 'de-viewport-frame',
-        style: `width:${vpDef.cssVar}`
+        style: () => `width:${vpDef.cssVar}`
       },
         div({ class: 'de-viewport-label' }, `${vpDef.label} — ${vpDef.width}px`),
         contentWrap
@@ -262,6 +265,51 @@ function RootLayout({ outlet }) {
   const searchModal = SearchModal(searchVisible, setSearchVisible);
 
   // ─── Shell ─────────────────────────────────────────────────
+  // Persist shell config to localStorage (for "Apply to Workbench")
+  createEffect(() => {
+    const cfg = activeShellConfig();
+    if (cfg) {
+      localStorage.setItem('de-shell-config', JSON.stringify(cfg));
+    } else {
+      localStorage.removeItem('de-shell-config');
+    }
+  });
+
+  // Check if a shell config was persisted from a previous session
+  const shellCfg = activeShellConfig();
+
+  if (shellCfg) {
+    // Shell-powered layout — applied at construction time from persisted config
+    const [navState, setNavState] = createSignal(shellCfg.navMode === 'rail' ? 'rail' : 'expanded');
+    return div({},
+      Shell(
+        { config: shellCfg.presetId || 'sidebar-main', navState, onNavStateChange: setNavState, class: 'de-shell' },
+        Shell.Header({ class: 'de-header' },
+          headerEl.childNodes.length ? div({ class: 'de-header-left' },
+            h1({ class: 'de-logo', onclick: () => navigate(wbPath('/components')) },
+              img({ src: './images/logo.svg', alt: 'decantr', class: css('_w[28px]') }),
+              span({ class: css('_bold _ls[-0.02em] _textlg') },
+                'decantr', span({ class: 'de-pink' }, '.'), 'a', span({ class: 'de-pink' }, 'i')
+              )
+            )
+          ) : null,
+          div({ class: 'de-header-right' },
+            button({
+              class: 'de-search-trigger', 'aria-label': 'Search',
+              onclick: () => setSearchVisible(true)
+            }, span({}, 'Search'), span({ class: 'de-search-kbd' }, shortcutHint)),
+            hudToggle
+          )
+        ),
+        Shell.Nav({ class: 'de-sidebar' }, SidebarNav()),
+        Shell.Body({ class: 'de-main d-mesh' }, mainArea)
+      ),
+      hudDrawer,
+      searchModal
+    );
+  }
+
+  // Default workbench layout
   return div({ class: 'de-shell' },
     headerEl,
     div({ class: 'de-body d-mesh' },
@@ -275,7 +323,7 @@ function RootLayout({ outlet }) {
 
 // ─── Redirect component ────────────────────────────────────────
 function RedirectToComponents() {
-  navigate('/components', { replace: true });
+  navigate(wbPath('/components'), { replace: true });
   return div({});
 }
 
@@ -296,7 +344,10 @@ const router = createRouter({
       { path: 'charts/:group', component: ChartGroupPage },
       { path: 'charts/:group/:name', component: ChartDetailPage },
       { path: 'patterns', component: PatternsIndex },
+      { path: 'patterns/:group/:id', component: PatternDetailPage },
       { path: 'patterns/:id', component: PatternDetailPage },
+      { path: 'shells', component: ShellsIndex },
+      { path: 'shells/:id', component: ShellDetailPage },
       { path: 'archetypes', component: ArchetypesIndex },
       { path: 'archetypes/:id', component: ArchetypeDetailPage },
       { path: 'recipes', component: RecipesIndex },

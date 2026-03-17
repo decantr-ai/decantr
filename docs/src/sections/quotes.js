@@ -20,7 +20,7 @@ function QuoteCard({ text, delay }) {
     // Large decorative quote mark
     span({ class: `ds-quote-mark ${css('_absolute _top[-0.25rem] _left[1rem] _t[5rem] _lh[1] _fw[900] _op[0.3]')}` }, '\u201C'),
     // Quote text — bright white with subtle gradient hint
-    p({ class: `ds-quote-text ds-heading-quote ${css('_bold _lh[1.4] _ls[-0.01em] _relative _z1 _pt[1.5rem]')}` },
+    p({ class: `ds-quote-text ds-heading-quote ${css('_bold _lh[1.4] _ls[-0.01em] _relative _z[1] _pt[1.5rem]')}` },
       text,
     ),
   );

@@ -8,6 +8,7 @@ import { onDestroy } from '../core/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFormField } from './_behaviors.js';
+import { icon } from './icon.js';
 import { applyFieldState } from './_primitives.js';
 
 const { div, input: inputTag, button: buttonTag } = tags;
@@ -103,8 +104,8 @@ export function InputNumber(props = {}) {
   const wrap = div({ class: cx('d-inputnumber', cls) });
 
   if (controls) {
-    decBtn = buttonTag({ type: 'button', class: 'd-inputnumber-step', 'aria-label': 'Decrease' }, '\u2212');
-    incBtn = buttonTag({ type: 'button', class: 'd-inputnumber-step', 'aria-label': 'Increase' }, '+');
+    decBtn = buttonTag({ type: 'button', class: 'd-inputnumber-step', 'aria-label': 'Decrease' }, icon('minus', { size: '1em' }));
+    incBtn = buttonTag({ type: 'button', class: 'd-inputnumber-step', 'aria-label': 'Increase' }, icon('plus', { size: '1em' }));
     decBtn.addEventListener('click', handleDec);
     incBtn.addEventListener('click', handleInc);
     wrap.appendChild(decBtn);

@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
-import { watch } from 'node:fs';
+import { readFileSync, watch } from 'node:fs';
 import { join, extname, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,31 +27,49 @@ const HMR_CLIENT = `<script>
   const es = new EventSource('/__decantr_hmr');
   es.onmessage = function(e) {
     const d = JSON.parse(e.data);
-    if (d.type === 'reload') location.reload();
+    if (d.type === 'reload') { location.reload(); return; }
+    if (d.type === 'hmr') {
+      import(d.module + '?t=' + Date.now()).then(function(mod) {
+        if (window.__d_hmr_remount) {
+          window.__d_hmr_remount(d.module, mod);
+        } else {
+          location.reload();
+        }
+      }).catch(function() { location.reload(); });
+    }
   };
-  es.onerror = function() { setTimeout(() => location.reload(), 1000); };
+  es.onerror = function() { setTimeout(function() { location.reload(); }, 1000); };
 })();
 </script>`;
 
-const SPECIFIER_MAP = {
+/** Legacy aliases not in package.json exports */
+const LEGACY_ALIASES = {
   'themes': 'css/theme-registry.js',
   'styles': 'css/theme-registry.js'
 };
 
-/** Standard module specifiers for the import map */
-const IMPORT_MAP_ENTRIES = {
-  'decantr': '/__decantr/core/index.js',
-  'decantr/core': '/__decantr/core/index.js',
-  'decantr/state': '/__decantr/state/index.js',
-  'decantr/css': '/__decantr/css/index.js',
-  'decantr/tags': '/__decantr/tags/index.js',
-  'decantr/router': '/__decantr/router/index.js',
-  'decantr/components': '/__decantr/components/index.js',
-  'decantr/test': '/__decantr/test/index.js',
-  'decantr/themes': '/__decantr/css/theme-registry.js',
-  'decantr/styles': '/__decantr/css/theme-registry.js',
-  'decantr/chart': '/__decantr/chart/index.js'
-};
+/**
+ * Build the browser import map dynamically from package.json exports.
+ * Runs once at startup — uses sync read intentionally.
+ */
+function buildImportMap(packageJsonPath) {
+  const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+  const entries = {};
+  for (const [key, value] of Object.entries(pkg.exports || {})) {
+    const specifier = key === '.' ? 'decantr' : `decantr/${key.slice(2)}`;
+    const resolved = value.replace(/^\.\/src\//, '/__decantr/');
+    entries[specifier] = resolved;
+  }
+  // Legacy convenience aliases
+  for (const [alias, target] of Object.entries(LEGACY_ALIASES)) {
+    entries[`decantr/${alias}`] = `/__decantr/${target}`;
+  }
+  // Catch-all prefix for sub-paths not in exports (explorer/*, etc.)
+  entries['decantr/'] = '/__decantr/';
+  return entries;
+}
+
+const IMPORT_MAP_ENTRIES = buildImportMap(resolve(__dirname, '..', 'package.json'));
 
 /**
  * Generate a browser-native import map script tag.
@@ -69,13 +87,17 @@ function generateImportMapTag() {
  */
 function rewriteImports(source) {
   return source.replace(
-    /from\s+['"]decantr(?:\/([^'"]*))?\s*['"]/g,
-    (match, subpath) => {
+    /(from\s+|import\s*\()['"]decantr(?:\/([^'"]*))?\s*['"]/g,
+    (match, prefix, subpath) => {
       const mod = subpath || 'core';
-      const mapped = SPECIFIER_MAP[mod];
-      if (mapped) return `from '/__decantr/${mapped}'`;
-      if (mod.endsWith('.js')) return `from '/__decantr/${mod}'`;
-      return `from '/__decantr/${mod}/index.js'`;
+      const mapped = LEGACY_ALIASES[mod];
+      const quote = prefix.startsWith('import') ? "'" : "'";
+      const suffix = prefix.startsWith('import') ? "'" : "'";
+      let resolved;
+      if (mapped) resolved = `/__decantr/${mapped}`;
+      else if (mod.endsWith('.js')) resolved = `/__decantr/${mod}`;
+      else resolved = `/__decantr/${mod}/index.js`;
+      return `${prefix}${quote}${resolved}${suffix}`;
     }
   );
 }
@@ -122,7 +144,11 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
     // Serve framework source files (kit, components, etc.)
     if (pathname.startsWith('/__decantr/')) {
       const modPath = pathname.slice('/__decantr/'.length);
-      const filePath = join(frameworkSrc, modPath);
+      let filePath = join(frameworkSrc, modPath);
+      try {
+        const s = await stat(filePath);
+        if (s.isDirectory()) filePath = join(filePath, 'index.js');
+      } catch {}
       return serveFile(filePath, res, true);
     }
 
@@ -198,14 +224,47 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
     }
   }
 
+  /**
+   * Classify a file change into an HMR message.
+   * Page/component modules get component-level HMR; everything else triggers full reload.
+   * @param {string} filename — relative path within watched directory (e.g. "pages/home.js")
+   * @param {string} watchBase — "src" or other base prefix for the module path
+   * @returns {{ type: string, module?: string }}
+   */
+  function classifyChange(filename, watchBase) {
+    if (!filename) return { type: 'reload' };
+    const normalized = filename.replace(/\\/g, '/');
+
+    // Full reload triggers: state, css, router, app entry, essence
+    if (
+      normalized.startsWith('state/') ||
+      normalized.startsWith('css/') ||
+      normalized.startsWith('router/') ||
+      normalized === 'app.js'
+    ) {
+      return { type: 'reload' };
+    }
+
+    // Component-level HMR for pages and project components
+    if (normalized.startsWith('pages/') || normalized.startsWith('components/')) {
+      return { type: 'hmr', module: `/${watchBase}/${normalized}` };
+    }
+
+    // Safe default: full reload
+    return { type: 'reload' };
+  }
+
   // Watch src/ and any extra watchDirs for changes
   const watchDirs = [join(projectRoot, 'src'), ...(options.watchDirs || [])];
   for (const dir of watchDirs) {
     try {
+      const watchBase = dir === join(projectRoot, 'src') ? 'src' : dir.slice(projectRoot.length + 1);
       watch(dir, { recursive: true }, (eventType, filename) => {
-        console.log(`  [hmr] ${eventType}: ${filename}`);
+        const msg = classifyChange(filename, watchBase);
+        console.log(`  [hmr] ${eventType}: ${filename} → ${msg.type}`);
+        const payload = JSON.stringify(msg);
         for (const client of sseClients) {
-          client.write('data: {"type":"reload"}\n\n');
+          client.write(`data: ${payload}\n\n`);
         }
       });
     } catch (e) {

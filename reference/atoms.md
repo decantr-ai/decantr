@@ -255,6 +255,18 @@ Long-form names resolve to canonical terse atoms: `_gridCols4` → `_gc4`, `_noD
 `_op0`-`_op10`, `_trans/_transfast/_transslow/_transnone`, `_z0/_z10/_z20/_z30/_z40/_z50`
 `_shadow/_shadowmd/_shadowlg/_shadowno`, `_pointer/_grab`
 
+### Arbitrary Transition Syntax
+
+Use bracket notation `_trans[...]` for custom transitions. Underscores in the value are converted to spaces:
+
+```js
+css('_trans[color_0.15s_ease]')             // transition: color 0.15s ease
+css('_trans[opacity_0.2s_ease-in-out]')     // transition: opacity 0.2s ease-in-out
+css('_trans[transform_0.3s_cubic-bezier(0.4,0,0.2,1)]')  // custom easing
+```
+
+This uses the `trans` arbitrary value prefix (mapped to `transition` in `ARB_PROPS`). Prefer `_trans` (all 0.2s ease) for standard transitions and `_trans[...]` only when you need to target specific properties or non-standard durations.
+
 ---
 
 ## Composable Gradient System
@@ -399,7 +411,7 @@ css('_lg:bfblur16')                    // responsive backdrop blur
 When neither standard atoms nor `ARB_PROPS` bracket notation cover a CSS property, use `define()` to create a reusable atom instead of falling back to inline `style:`.
 
 ```js
-import { define, css } from '@decantr/decantr/css';
+import { define, css } from 'decantr/css';
 
 define('_selectNone', 'user-select:none');
 define('_peNone', 'pointer-events:none');
@@ -420,6 +432,85 @@ div({ class: css('_selectNone _peNone _rotated45') });
 - A standard atom or bracket notation already covers it (check this file first)
 
 **Escalation path:** (1) Standard atom → (2) Bracket notation `_w[32px]` → (3) `define()` → (4) Propose adding to `src/css/atoms.js` if broadly useful. Inline `style:` for static values is ALWAYS a bug.
+
+---
+
+## Pseudo-Class Prefixes
+
+Compose ANY atom with interactive state pseudo-classes:
+
+| Prefix | Pseudo-class | Example |
+|--------|-------------|---------|
+| `_h:` | `:hover` | `_h:bgprimary` — primary bg on hover |
+| `_f:` | `:focus` | `_f:bcprimary` — primary border on focus |
+| `_fv:` | `:focus-visible` | `_fv:ring2` — ring on keyboard focus |
+| `_a:` | `:active` | `_a:bgmuted` — muted bg on press |
+| `_fw:` | `:focus-within` | `_fw:bcprimary` — border when child focused |
+
+**Combinations:**
+- Responsive + pseudo: `_sm:h:bgmuted` — hover bg at sm+ breakpoint
+- Pseudo + opacity: `_h:bgprimary/50` — 50% opacity primary bg on hover
+- Pseudo + arbitrary: `_h:bg[rgba(255,255,255,0.1)]` — arbitrary bg on hover
+
+## Ring Utilities
+
+Focus indicators and decorative outlines using `--d-ring` token:
+
+| Atom | Output |
+|------|--------|
+| `_ring1` | `box-shadow: 0 0 0 1px var(--d-ring)` |
+| `_ring2` | `box-shadow: 0 0 0 2px var(--d-ring)` |
+| `_ring4` | `box-shadow: 0 0 0 4px var(--d-ring)` |
+| `_ring0` | `box-shadow: none` (remove ring) |
+| `_ringPrimary` | `--d-ring: var(--d-primary)` |
+| `_ringAccent` | `--d-ring: var(--d-accent)` |
+| `_ringBorder` | `--d-ring: var(--d-border)` |
+
+Common pattern: `css('_fv:ring2 _ringPrimary')` — 2px primary ring on keyboard focus.
+
+## Transition Shortcuts
+
+| Atom | Properties |
+|------|-----------|
+| `_transColors` | color, background-color, border-color, fill, stroke (0.2s ease) |
+| `_transOpacity` | opacity (0.2s ease) |
+| `_transTransform` | transform (0.2s ease) |
+| `_transShadow` | box-shadow (0.2s ease) |
+| `_trans[color_0.15s_ease]` | Arbitrary transition (underscores → spaces) |
+
+## Prose Typography
+
+`_prose` adds the `d-prose` class, which applies typographic styles to nested HTML content (h1-h4, p, blockquote, code, pre, ul, ol, hr, a, img, table).
+
+```js
+div({ class: css('_prose') },
+  h('h2', 'Title'),
+  h('p', 'Body text with ', h('code', 'inline code'), '.'),
+  h('blockquote', 'A highlighted quote.')
+);
+```
+
+## Divide Utilities
+
+| Atom | Output |
+|------|--------|
+| `_divideY` | Horizontal border between stacked children |
+| `_divideX` | Vertical border between inline children |
+
+Uses `var(--d-border)` for color. Applied via child selector `> :not(:first-child)`.
+
+## Text Wrapping
+
+| Atom | Output |
+|------|--------|
+| `_textBalance` | `text-wrap: balance` — balanced line lengths |
+| `_textPretty` | `text-wrap: pretty` — optimized line breaks |
+
+## Scroll Behavior
+
+| Atom | Output |
+|------|--------|
+| `_scrollSmooth` | `scroll-behavior: smooth` |
 
 ---
 

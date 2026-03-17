@@ -1,13 +1,13 @@
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { icon, Chip } from 'decantr/components';
+import { icon, Chip, Card } from 'decantr/components';
 
 const { section, div, h2, h3, p, span, code } = tags;
 
 function FeatureCard({ iconName, badge, title, description, highlights, delay }) {
-  return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap4 _p8')}` },
+  return Card({ bordered: false, class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap4 _p8')}` },
     div({ class: css('_flex _row _aic _gap3') },
-      div({ class: `ds-accent-bg ${css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)]')}` },
+      div({ class: `ds-accent-bg ${css('_fgaccent _iflex _p[0.75rem] _r[var(--d-radius-lg)]')}` },
         icon(iconName, { size: '24px' }),
       ),
       Chip({ label: badge, variant: 'outline', size: 'sm' }),
@@ -17,7 +17,7 @@ function FeatureCard({ iconName, badge, title, description, highlights, delay })
     // Highlight pills
     div({ class: css('_flex _row _wrap _gap2') },
       ...highlights.map(h =>
-        span({ class: `ds-accent-pill ${css('_textsm _fgaccent _py[0.25rem] _px[0.75rem] _rfull')}` }, h)
+        Chip({ label: h, variant: 'outline', size: 'xs', class: 'ds-accent-pill' })
       ),
     ),
   );

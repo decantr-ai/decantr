@@ -227,6 +227,23 @@ export function TreeSelect(props = {}) {
     onClose: () => { searchText = ''; wrap.classList.remove('d-treeselect-open'); }
   });
 
+  trigger.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    overlay.toggle();
+  });
+
+  trigger.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      overlay.isOpen() ? overlay.close() : overlay.open();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!overlay.isOpen()) overlay.open();
+    } else if (e.key === 'Escape') {
+      overlay.close();
+    }
+  });
+
   // Reactive disabled
   if (typeof disabled === 'function') {
     createEffect(() => {

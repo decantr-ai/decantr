@@ -5,6 +5,7 @@
  */
 import { h } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
+import { caret } from './_behaviors.js';
 
 /**
  * @param {Object} [props]
@@ -48,8 +49,8 @@ export function Carousel(props = {}) {
 
   // Arrows
   if (arrows && slides.length > 1) {
-    const prevBtn = h('button', { type: 'button', class: 'd-carousel-nav d-carousel-prev', 'aria-label': 'Previous slide' }, '\u2039');
-    const nextBtn = h('button', { type: 'button', class: 'd-carousel-nav d-carousel-next', 'aria-label': 'Next slide' }, '\u203A');
+    const prevBtn = h('button', { type: 'button', class: 'd-carousel-nav d-carousel-prev', 'aria-label': 'Previous slide' }, caret('left'));
+    const nextBtn = h('button', { type: 'button', class: 'd-carousel-nav d-carousel-next', 'aria-label': 'Next slide' }, caret('right'));
     prevBtn.addEventListener('click', prev);
     nextBtn.addEventListener('click', next);
     container.appendChild(prevBtn);

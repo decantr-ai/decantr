@@ -1,11 +1,11 @@
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { icon } from 'decantr/components';
+import { icon, Card } from 'decantr/components';
 
 const { section, div, h2, h3, p, span } = tags;
 
 function StatCard({ value, label, iconName, delay }) {
-  return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _aic _p6 _gap3')}` },
+  return Card({ bordered: false, class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _aic _p6 _gap3')}` },
     div({ class: css('_fgaccent') }, icon(iconName, { size: '28px' })),
     span({ class: 'ds-stat ds-gradient-text' }, value),
     p({ class: css('_textsm _fgmutedfg _fw[500]') }, label),
@@ -13,7 +13,7 @@ function StatCard({ value, label, iconName, delay }) {
 }
 
 function ClaimCard({ title, description, delay }) {
-  return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap3 _p6')}` },
+  return Card({ bordered: false, class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap3 _p6')}` },
     h3({ class: css('_textlg _fwheading _fgfg') }, title),
     p({ class: css('_textbase _lhrelaxed _fgmutedfg') }, description),
   );

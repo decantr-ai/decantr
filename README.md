@@ -1,5 +1,9 @@
 # decantr
 
+[![CI](https://github.com/decantr-ai/decantr/actions/workflows/ci.yml/badge.svg)](https://github.com/decantr-ai/decantr/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/decantr)](https://www.npmjs.com/package/decantr)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 AI-first web framework. Zero dependencies. Native JS/CSS/HTML. v0.4.2
 
 Decantr is designed for LLMs to generate, read, and maintain — not for human readability. Every API is optimized for token efficiency: terse atomic CSS atoms, proxy-based tag functions, and a machine-readable registry so agents can look up props and exports without parsing source files.
@@ -7,23 +11,24 @@ Decantr is designed for LLMs to generate, read, and maintain — not for human r
 ## Quick Start
 
 ```bash
-npx @decantr/decantr init my-app
+npx decantr init my-app
 cd my-app
 npm install
-npx @decantr/decantr dev
+npx decantr dev
 ```
 
 ## Architecture
 
 ```
-@decantr/decantr/core        — h(), text(), cond(), list(), mount(), onMount, onDestroy, ErrorBoundary, Portal, Suspense, Transition
-@decantr/decantr/state       — createSignal, createEffect, createMemo, createStore, batch, createResource, createContext, createHistory
-@decantr/decantr/router      — createRouter, link, navigate, useRoute, useSearchParams (hash + history modes, nested routes, guards)
-@decantr/decantr/form        — createForm, validators, useFormField, fieldArray
-@decantr/decantr/css         — css(), define(), setStyle(), setMode(), setShape(), 1000+ atomic CSS utilities
-@decantr/decantr/tags        — Proxy-based tag functions (div, p, span...) — ~25% fewer tokens than h()
-@decantr/decantr/components  — 100+ UI components (form, display, layout, overlay, feedback, chart, typography)
-@decantr/decantr/test        — render, fire, flush + node:test re-exports
+decantr/core        — h(), text(), cond(), list(), mount(), onMount, onDestroy, ErrorBoundary, Portal, Suspense, Transition
+decantr/state       — createSignal, createEffect, createMemo, createStore, batch, createContext, createHistory, createRoot, on
+decantr/data        — createQuery, createMutation, createEntityStore, createURLSignal, createWebSocket, createPersisted
+decantr/router      — createRouter, link, navigate, useRoute, useSearchParams (hash + history modes, nested routes, guards)
+decantr/form        — createForm, validators, useFormField, fieldArray
+decantr/css         — css(), define(), setStyle(), setMode(), setShape(), 1000+ atomic CSS utilities
+decantr/tags        — Proxy-based tag functions (div, p, span...) — ~25% fewer tokens than h()
+decantr/components  — 100+ UI components (form, display, layout, overlay, feedback, chart, typography)
+decantr/test        — render, fire, flush + node:test re-exports
 ```
 
 ## Features
@@ -34,7 +39,7 @@ npx @decantr/decantr dev
 - **100+ components** — Form, display, layout, overlay, feedback, chart, typography
 - **Atomic CSS engine** — 1000+ `_`-prefixed utility atoms via `css()`
 - **Style + Mode system** — 5 visual styles x light/dark/auto modes, 170+ design tokens
-- **Machine-readable registry** — JSON specs for components, patterns, archetypes, recipes
+- **Machine-readable registry** — JSON specs for 100+ components, 49 patterns, 7 archetypes, recipes
 - **Router** — Hash or History API, nested routes, guards, lazy loading
 - **Form system** — Reactive forms with 10 built-in validators and field arrays
 - **Build tooling** — Tree shaking, code splitting, source maps, CSS purging, incremental builds
@@ -44,10 +49,10 @@ npx @decantr/decantr dev
 Every component is a function that returns an HTMLElement:
 
 ```javascript
-import { tags } from '@decantr/decantr/tags';
-import { text } from '@decantr/decantr/core';
-import { createSignal } from '@decantr/decantr/state';
-import { css } from '@decantr/decantr/css';
+import { tags } from 'decantr/tags';
+import { text } from 'decantr/core';
+import { createSignal } from 'decantr/state';
+import { css } from 'decantr/css';
 
 const { div, button, span } = tags;
 
@@ -69,6 +74,12 @@ decantr dev               # Start dev server with hot reload
 decantr build             # Production build
 decantr test              # Run tests
 decantr test --watch      # Watch mode
+decantr validate          # Validate decantr.essence.json
+decantr lint              # Code quality gates
+decantr a11y              # Accessibility audit
+decantr doctor            # Check project health
+decantr generate          # Generate code from essence
+decantr migrate           # Migrate essence between versions
 ```
 
 ## MCP Server
@@ -78,7 +89,7 @@ Decantr ships a built-in [Model Context Protocol](https://modelcontextprotocol.i
 ### Start the server
 
 ```bash
-npx @decantr/decantr mcp
+npx decantr mcp
 ```
 
 ### Integration
@@ -89,7 +100,7 @@ npx @decantr/decantr mcp
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/decantr", "mcp"]
+      "args": ["decantr", "mcp"]
     }
   }
 }
@@ -101,7 +112,7 @@ npx @decantr/decantr mcp
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/decantr", "mcp"]
+      "args": ["decantr", "mcp"]
     }
   }
 }
@@ -111,7 +122,7 @@ npx @decantr/decantr mcp
 ```json
 {
   "command": "npx",
-  "args": ["@decantr/decantr", "mcp"],
+  "args": ["decantr", "mcp"],
   "transport": "stdio"
 }
 ```
@@ -183,6 +194,31 @@ Response:
 ### Privacy
 
 The MCP server runs locally via stdio. It reads only local registry JSON files shipped with the package. No data is collected, transmitted, or stored externally.
+
+## Documentation
+
+### Tutorial
+
+A step-by-step guide from zero to deployed app:
+
+1. [Install & Setup](docs/tutorial/01-install.md) — Prerequisites, scaffolding, project structure
+2. [Your First Page](docs/tutorial/02-first-page.md) — Tag functions, atomic CSS, page pattern
+3. [Components](docs/tutorial/03-components.md) — Button, Card, DataTable, and 100+ built-in components
+4. [Styling](docs/tutorial/04-styling.md) — Atoms, styles, modes, design tokens, responsive prefixes
+5. [State](docs/tutorial/05-state.md) — Signals, effects, memos, stores, conditional and list rendering
+6. [Routing](docs/tutorial/06-routing.md) — Routes, guards, nested routes, lazy loading, navigation
+7. [Data Fetching](docs/tutorial/07-data.md) — Queries, mutations, caching, WebSocket, URL-driven state
+8. [Build & Deploy](docs/tutorial/08-deploy.md) — Production builds, static hosting, SPA routing config
+
+### Cookbook
+
+Standalone recipes for common features:
+
+- [SaaS Dashboard](docs/cookbook/dashboard.md) — Sidebar layout, KPI cards, charts, data tables, real-time updates
+- [Authentication](docs/cookbook/auth.md) — Login, registration, protected routes, token management
+- [Internationalization](docs/cookbook/i18n.md) — Multi-language support, locale switcher, RTL layouts
+- [Data Fetching Patterns](docs/cookbook/data-fetching.md) — Caching, optimistic updates, infinite scroll, offline support
+- [Forms](docs/cookbook/forms.md) — Validation, field arrays, multi-step forms, transforms
 
 ## Requirements
 

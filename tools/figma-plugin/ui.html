@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    color: var(--figma-color-text, #333);
+    background: var(--figma-color-bg, #fff);
+    padding: 16px;
+  }
+
+  h2 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  h3 { font-size: 12px; font-weight: 600; margin: 16px 0 8px; }
+
+  label { display: block; font-weight: 500; margin-bottom: 4px; }
+  select, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--figma-color-border, #ddd);
+    border-radius: 6px;
+    font-size: 12px;
+    background: var(--figma-color-bg, #fff);
+    color: var(--figma-color-text, #333);
+  }
+  textarea { height: 120px; resize: vertical; font-family: monospace; font-size: 11px; }
+
+  .row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .row > * { flex: 1; }
+
+  button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-primary {
+    background: #FE4474;
+    color: #fff;
+  }
+  .btn-secondary {
+    background: var(--figma-color-bg-secondary, #f0f0f0);
+    color: var(--figma-color-text, #333);
+  }
+
+  .progress {
+    margin-top: 16px;
+    display: none;
+  }
+  .progress.active { display: block; }
+  .progress-bar {
+    height: 4px;
+    background: var(--figma-color-bg-secondary, #eee);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #FE4474;
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 2px;
+  }
+  .progress-label {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--figma-color-text-secondary, #888);
+  }
+
+  .error {
+    margin-top: 12px;
+    padding: 8px 10px;
+    background: #fff0f0;
+    border: 1px solid #fcc;
+    border-radius: 6px;
+    color: #c00;
+    font-size: 11px;
+    display: none;
+  }
+  .error.active { display: block; }
+
+  .divider {
+    border-top: 1px solid var(--figma-color-border, #eee);
+    margin: 16px 0;
+  }
+
+  .tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 1px solid var(--figma-color-border, #ddd); }
+  .tab {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--figma-color-text-secondary, #888);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab.active {
+    color: #FE4474;
+    border-bottom-color: #FE4474;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<h2>Decantr Design System</h2>
+
+<div class="tabs">
+  <button class="tab active" data-tab="library" onclick="switchTab('library')">Full Library</button>
+  <button class="tab" data-tab="essence" onclick="switchTab('essence')">From Essence</button>
+</div>
+
+<!-- Tab 1: Full Library -->
+<div id="tab-library" class="tab-content active">
+  <div class="row">
+    <div>
+      <label for="style">Style</label>
+      <select id="style">
+        <option value="auradecantism" selected>Auradecantism</option>
+        <option value="clean">Clean</option>
+        <option value="retro">Retro</option>
+        <option value="glassmorphism">Glassmorphism</option>
+        <option value="command-center">Command Center</option>
+      </select>
+    </div>
+    <div>
+      <label for="mode">Mode</label>
+      <select id="mode">
+        <option value="dark" selected>Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label for="shape">Shape</label>
+      <select id="shape">
+        <option value="pill">Pill</option>
+        <option value="rounded" selected>Rounded</option>
+        <option value="sharp">Sharp</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="btn-generate" onclick="generateLibrary()">
+    Generate Design System
+  </button>
+</div>
+
+<!-- Tab 2: From Essence -->
+<div id="tab-essence" class="tab-content">
+  <label for="essence-input">Paste decantr.essence.json</label>
+  <textarea id="essence-input" placeholder='{ "terroir": "saas-dashboard", "vintage": { ... } }'></textarea>
+
+  <div style="height: 12px"></div>
+
+  <button class="btn-primary" id="btn-essence" onclick="generateFromEssence()">
+    Generate from Essence
+  </button>
+</div>
+
+<!-- Shared -->
+<div class="progress" id="progress">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="progress-label" id="progress-label">Preparing...</div>
+</div>
+
+<div class="error" id="error"></div>
+
+<div class="divider"></div>
+
+<button class="btn-secondary" onclick="parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')">
+  Close
+</button>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.toggle('active', t.id === `tab-${name}`));
+}
+
+function generateLibrary() {
+  const style = document.getElementById('style').value;
+  const mode = document.getElementById('mode').value;
+  const shape = document.getElementById('shape').value;
+
+  setLoading(true);
+  parent.postMessage({
+    pluginMessage: { type: 'generate', options: { style, mode, shape } }
+  }, '*');
+}
+
+function generateFromEssence() {
+  const essence = document.getElementById('essence-input').value;
+  if (!essence.trim()) {
+    showError('Please paste a decantr.essence.json');
+    return;
+  }
+
+  try { JSON.parse(essence); } catch {
+    showError('Invalid JSON — check your essence file');
+    return;
+  }
+
+  const style = document.getElementById('style').value;
+  const mode = document.getElementById('mode').value;
+
+  setLoading(true);
+  parent.postMessage({
+    pluginMessage: { type: 'generate-from-essence', essence, options: { style, mode } }
+  }, '*');
+}
+
+function setLoading(active) {
+  document.getElementById('btn-generate').disabled = active;
+  document.getElementById('btn-essence').disabled = active;
+  document.getElementById('progress').classList.toggle('active', active);
+  document.getElementById('error').classList.remove('active');
+}
+
+function showError(msg) {
+  const el = document.getElementById('error');
+  el.textContent = msg;
+  el.classList.add('active');
+  setLoading(false);
+}
+
+const STEP_LABELS = {
+  tokens: 'Creating variables...',
+  components: 'Building component sets...',
+  patterns: 'Composing patterns...',
+  pages: 'Generating pages...',
+  done: 'Complete!',
+};
+
+onmessage = (event) => {
+  const msg = event.data.pluginMessage;
+  if (!msg) return;
+
+  if (msg.type === 'progress') {
+    document.getElementById('progress-fill').style.width = msg.percent + '%';
+    document.getElementById('progress-label').textContent = STEP_LABELS[msg.step] || msg.step;
+    if (msg.step === 'done') {
+      setTimeout(() => setLoading(false), 1000);
+    }
+  }
+
+  if (msg.type === 'error') {
+    showError(msg.message);
+  }
+};
+</script>
+
+</body>
+</html>

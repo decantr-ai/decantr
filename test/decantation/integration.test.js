@@ -12,7 +12,7 @@
 
 import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { runPipeline } from './engine.js';
+import { runPipeline, resolveArchetype, loadArchetypes, clearCaches } from './engine.js';
 import { DecisionLog } from './decision-log.js';
 import { corpus } from './corpus.js';
 
@@ -59,7 +59,7 @@ const SETTLE_TOOL = {
     properties: {
       domain: {
         type: 'string',
-        enum: ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'general'],
+        enum: ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'recipe-community', 'general'],
         description: 'The best-fit domain archetype',
       },
       confidence: {
@@ -99,7 +99,7 @@ const SETTLE_TOOL = {
 const SETTLE_SYSTEM = `You are the SETTLE stage of the Decantr decantation process.
 Given a user's project description, classify it into a domain archetype and identify features.
 
-Available domains: ecommerce, saas-dashboard, portfolio, content-site, docs-explorer.
+Available domains: ecommerce, saas-dashboard, portfolio, content-site, docs-explorer, recipe-community.
 Use "general" if no domain fits.
 
 For ecommerce, features include: product-catalog, product-detail, cart, checkout, auth, search, filtering, categories, navbar, footer, wishlist, reviews, coupons, payment-integration, order-confirmation, order-history, user-profile, cart-persistence.
@@ -146,7 +146,7 @@ describe('LLM Integration', { skip: !LLM_ENABLED }, () => {
 
       // LLM should at minimum produce a valid domain
       assert.ok(
-        ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'general'].includes(llmResult.domain),
+        ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'recipe-community', 'general'].includes(llmResult.domain),
         `Invalid domain from LLM: ${llmResult.domain}`
       );
 
@@ -175,4 +175,198 @@ describe('LLM Integration', { skip: !LLM_ENABLED }, () => {
       console.log(`  ${entry.id}: domain=${llmResult.domain}, confidence=${llmResult.confidence}, ambiguous=${isAmbiguous}`);
     });
   }
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// ARCHETYPE INHERITANCE
+// ══════════════════════════════════════════════════════════════════════════
+
+describe('Archetype Inheritance', () => {
+  let archetypes;
+
+  before(async () => {
+    clearCaches();
+    archetypes = await loadArchetypes();
+  });
+
+  it('resolves archetype without extends as-is', async () => {
+    const resolved = await resolveArchetype('ecommerce');
+    assert.ok(resolved);
+    assert.equal(resolved.id, 'ecommerce');
+    assert.ok(Array.isArray(resolved.pages));
+    assert.ok(resolved.pages.length > 0);
+    assert.ok(!resolved.extends, 'Resolved archetype should not have extends field');
+  });
+
+  it('basic extends resolves pages from parent', async () => {
+    const resolved = await resolveArchetype('financial-dashboard');
+    assert.ok(resolved);
+    // financial-dashboard extends saas-dashboard, so it should have parent pages
+    // that were not overridden (e.g. analytics, users, user-detail from saas-dashboard)
+    const pageIds = resolved.pages.map(p => p.id);
+    assert.ok(pageIds.includes('analytics'), 'Should inherit analytics page from saas-dashboard');
+    assert.ok(pageIds.includes('users'), 'Should inherit users page from saas-dashboard');
+    assert.ok(pageIds.includes('user-detail'), 'Should inherit user-detail page from saas-dashboard');
+  });
+
+  it('child pages override parent pages by id', async () => {
+    const resolved = await resolveArchetype('financial-dashboard');
+    const overviewPage = resolved.pages.find(p => p.id === 'overview');
+    assert.ok(overviewPage, 'Should have overview page');
+    // The child's overview has goal-tracker pattern, parent does not
+    assert.ok(overviewPage.patterns.includes('goal-tracker'),
+      'overview should be the child version with goal-tracker');
+  });
+
+  it('child adds new pages not in parent', async () => {
+    const resolved = await resolveArchetype('financial-dashboard');
+    const pageIds = resolved.pages.map(p => p.id);
+    assert.ok(pageIds.includes('pipeline'), 'Should have child-only pipeline page');
+    assert.ok(pageIds.includes('approvals'), 'Should have child-only approvals page');
+    assert.ok(pageIds.includes('collections'), 'Should have child-only collections page');
+    assert.ok(pageIds.includes('outreach'), 'Should have child-only outreach page');
+    assert.ok(pageIds.includes('scorecard'), 'Should have child-only scorecard page');
+    assert.ok(pageIds.includes('vendors'), 'Should have child-only vendors page');
+  });
+
+  it('tannins are concatenated and deduped', async () => {
+    const resolved = await resolveArchetype('financial-dashboard');
+    const parentArchetype = archetypes['saas-dashboard'];
+
+    // Should include parent tannins
+    for (const t of parentArchetype.tannins) {
+      assert.ok(resolved.tannins.includes(t), `Should inherit parent tannin "${t}"`);
+    }
+
+    // Should include child tannins
+    assert.ok(resolved.tannins.includes('portfolio-state'), 'Should have child tannin portfolio-state');
+    assert.ok(resolved.tannins.includes('pipeline-state'), 'Should have child tannin pipeline-state');
+    assert.ok(resolved.tannins.includes('compliance-state'), 'Should have child tannin compliance-state');
+
+    // Should be deduped (auth appears in both parent and child via parent inheritance)
+    const authCount = resolved.tannins.filter(t => t === 'auth').length;
+    assert.equal(authCount, 1, 'auth should appear exactly once (deduped)');
+  });
+
+  it('skeletons are merged with child overriding', async () => {
+    const resolved = await resolveArchetype('financial-dashboard');
+    // Parent (saas-dashboard) has sidebar-main and centered
+    assert.ok(resolved.skeletons['sidebar-main'], 'Should inherit sidebar-main skeleton from parent');
+    assert.ok(resolved.skeletons['centered'], 'Should inherit centered skeleton from parent');
+  });
+
+  it('suggested_vintage child overrides parent', async () => {
+    const resolved = await resolveArchetype('financial-dashboard');
+    // Child financial-dashboard has its own suggested_vintage
+    assert.ok(resolved.suggested_vintage);
+    assert.ok(resolved.suggested_vintage.styles.includes('command-center'),
+      'Should have child suggested_vintage styles');
+  });
+
+  it('circular dependency detection throws', async () => {
+    // Temporarily inject a circular reference
+    const original = archetypes['saas-dashboard'];
+    archetypes['saas-dashboard'] = { ...original, extends: 'financial-dashboard' };
+
+    try {
+      await assert.rejects(
+        () => resolveArchetype('financial-dashboard'),
+        (err) => {
+          assert.ok(err.message.includes('Circular archetype inheritance'),
+            `Expected circular error, got: ${err.message}`);
+          return true;
+        }
+      );
+    } finally {
+      // Restore original
+      archetypes['saas-dashboard'] = original;
+    }
+  });
+
+  it('depth limit (>5) throws', async () => {
+    // Create a deep chain by temporarily modifying cache
+    // Save originals
+    const originals = {};
+    const ids = ['saas-dashboard', 'ecommerce', 'portfolio', 'content-site', 'docs-explorer'];
+
+    for (const id of ids) {
+      originals[id] = archetypes[id];
+    }
+
+    // Build chain: financial-dashboard -> saas-dashboard -> ecommerce -> portfolio -> content-site -> docs-explorer -> recipe-community
+    // That's depth 6 which exceeds the limit of 5
+    archetypes['saas-dashboard'] = { ...originals['saas-dashboard'], extends: 'ecommerce' };
+    archetypes['ecommerce'] = { ...originals['ecommerce'], extends: 'portfolio' };
+    archetypes['portfolio'] = { ...originals['portfolio'], extends: 'content-site' };
+    archetypes['content-site'] = { ...originals['content-site'], extends: 'docs-explorer' };
+    archetypes['docs-explorer'] = { ...originals['docs-explorer'], extends: 'recipe-community' };
+
+    try {
+      await assert.rejects(
+        () => resolveArchetype('financial-dashboard'),
+        (err) => {
+          assert.ok(err.message.includes('depth exceeds limit'),
+            `Expected depth limit error, got: ${err.message}`);
+          return true;
+        }
+      );
+    } finally {
+      // Restore all originals
+      for (const id of ids) {
+        archetypes[id] = originals[id];
+      }
+    }
+  });
+
+  it('unknown archetype throws', async () => {
+    await assert.rejects(
+      () => resolveArchetype('nonexistent-archetype'),
+      (err) => {
+        assert.ok(err.message.includes('Unknown archetype'),
+          `Expected unknown archetype error, got: ${err.message}`);
+        return true;
+      }
+    );
+  });
+
+  it('multi-level inheritance (A extends B extends C) works', async () => {
+    // Temporarily make a 3-level chain:
+    // financial-dashboard (already extends saas-dashboard)
+    // Make saas-dashboard extend portfolio temporarily
+    const originalSaas = archetypes['saas-dashboard'];
+    archetypes['saas-dashboard'] = { ...originalSaas, extends: 'portfolio' };
+
+    try {
+      const resolved = await resolveArchetype('financial-dashboard');
+      const pageIds = resolved.pages.map(p => p.id);
+
+      // Should have pages from portfolio (grandparent)
+      assert.ok(pageIds.includes('projects') || pageIds.includes('home'),
+        'Should inherit pages from grandparent (portfolio)');
+
+      // Should have pages from saas-dashboard (parent)
+      assert.ok(pageIds.includes('analytics'),
+        'Should inherit pages from parent (saas-dashboard)');
+
+      // Should have child-specific pages
+      assert.ok(pageIds.includes('pipeline'),
+        'Should have child-specific pages (financial-dashboard)');
+
+      // Tannins should merge across all 3 levels
+      const portfolioArchetype = archetypes['portfolio'];
+      if (portfolioArchetype.tannins) {
+        for (const t of portfolioArchetype.tannins) {
+          assert.ok(resolved.tannins.includes(t),
+            `Should inherit grandparent tannin "${t}"`);
+        }
+      }
+    } finally {
+      archetypes['saas-dashboard'] = originalSaas;
+    }
+  });
+
+  it('resolved archetype has no extends field', async () => {
+    const resolved = await resolveArchetype('financial-dashboard');
+    assert.equal(resolved.extends, undefined, 'extends field should be removed after resolution');
+  });
 });

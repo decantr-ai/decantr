@@ -655,7 +655,7 @@ export function DataTable(props = {}) {
 
     const prevBtn = buttonTag({
       type: 'button', class: 'd-datatable-page-btn', 'aria-label': 'Previous page'
-    }, '\u2039 Prev');
+    }, caret('left'), ' Prev');
     prevBtn.addEventListener('click', () => {
       const p = page();
       if (p > 1) { setPage(p - 1); if (pgCfg.onPageChange) pgCfg.onPageChange({ page: p - 1, pageSize: pageSize() }); }
@@ -663,7 +663,7 @@ export function DataTable(props = {}) {
 
     const nextBtn = buttonTag({
       type: 'button', class: 'd-datatable-page-btn', 'aria-label': 'Next page'
-    }, 'Next \u203A');
+    }, 'Next ', caret('right'));
     nextBtn.addEventListener('click', () => {
       const p = page();
       if (p < getPageCount()) { setPage(p + 1); if (pgCfg.onPageChange) pgCfg.onPageChange({ page: p + 1, pageSize: pageSize() }); }

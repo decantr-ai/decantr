@@ -60,6 +60,16 @@
       ],
       "description": "Register a custom style."
     },
+    "mergePluginStyles": {
+      "params": [
+        {
+          "name": "pluginStyles",
+          "type": "Map<string, Object>",
+          "description": "Map of style id -> style definition"
+        }
+      ],
+      "description": "Merge a Map of plugin-provided styles into the registry. Used by the plugin system to wire addon styles without individual registerStyle calls."
+    },
     "setMode": {
       "params": [
         {
@@ -202,6 +212,17 @@
       "--d-icon-subtle"
     ]
   },
+  "chromeTokens": {
+    "description": "Inverted chrome tokens for header/sidebar navigation. Dark in light mode, blended in dark mode.",
+    "tokens": [
+      "--d-chrome-bg",
+      "--d-chrome-fg",
+      "--d-chrome-border",
+      "--d-chrome-muted",
+      "--d-chrome-hover",
+      "--d-chrome-active"
+    ]
+  },
   "overlayTokens": {
     "description": "Three overlay intensity levels for modal backdrops and scrims",
     "tokens": [
@@ -247,5 +268,52 @@
       "--d-drawer-width",
       "--d-drawer-bottom-max-h"
     ]
+  },
+  "pseudoClassPrefixes": {
+    "description": "Pseudo-class prefixes that compose with any atom",
+    "prefixes": {
+      "_h:": "hover",
+      "_f:": "focus",
+      "_fv:": "focus-visible",
+      "_a:": "active",
+      "_fw:": "focus-within"
+    },
+    "examples": [
+      "_h:bgprimary",
+      "_f:bcprimary",
+      "_fv:ring2",
+      "_a:bgmuted",
+      "_fw:bcprimary",
+      "_sm:h:bgmuted"
+    ]
+  },
+  "ringAtoms": {
+    "description": "Focus indicator ring utilities using --d-ring token",
+    "atoms": [
+      "_ring0",
+      "_ring1",
+      "_ring2",
+      "_ring4",
+      "_ringPrimary",
+      "_ringAccent",
+      "_ringBorder"
+    ]
+  },
+  "transitionAtoms": {
+    "description": "Transition-property shortcut atoms",
+    "atoms": [
+      "_transColors",
+      "_transOpacity",
+      "_transTransform",
+      "_transShadow"
+    ]
+  },
+  "componentClassAtoms": {
+    "description": "Atoms that map to component CSS classes",
+    "atoms": {
+      "_prose": "d-prose",
+      "_divideY": "d-divide-y",
+      "_divideX": "d-divide-x"
+    }
   }
 }

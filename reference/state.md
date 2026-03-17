@@ -1,6 +1,18 @@
 # State Module Reference
 
-`import { createSignal, createEffect, createMemo, createStore, batch, createResource, createContext, createSelector, createDeferred, createHistory, useLocalStorage, untrack, peek } from '@decantr/decantr/state';`
+`import { createSignal, createEffect, createMemo, createStore, batch, createContext, createSelector, createDeferred, createHistory, useLocalStorage, untrack, peek, createRoot, getOwner, runWithOwner, onError, on } from 'decantr/state';`
+
+## What's New (v0.5.0)
+
+| Feature | Description | Cross-ref |
+|---------|-------------|-----------|
+| `createRoot` | Independent reactive scope with disposal | §createRoot |
+| `getOwner` / `runWithOwner` | Ownership tree introspection and transfer | §Ownership |
+| `onError` | Error boundaries in the reactive graph | §Error Boundaries |
+| `on()` | Explicit dependency tracking | §on |
+| Dependency cleanup | Effects auto-remove from old signal subscriber sets on re-run | Automatic |
+| Topological flush | Diamond-problem fix — effects sorted by level before flush | Automatic |
+| `createResource` **removed** | Replaced by `createQuery` in `decantr/data` | `reference/state-data.md` |
 
 ## createSignal(initial)
 
@@ -20,9 +32,11 @@ Runs `fn` immediately, auto-tracks all signal reads inside. Re-runs when any tra
 | Detail | Behavior |
 |--------|----------|
 | Auto-tracking | Reads during `fn` execution subscribe the effect |
+| Dependency cleanup | On re-run, effect removes itself from old signal subscriber sets before re-tracking |
 | Cleanup | If `fn` returns a function, it runs before next execution and on dispose |
 | Dispose | `const dispose = createEffect(fn); dispose();` stops all future runs |
-| Batching | During `batch()`, effects are deferred to microtask flush |
+| Batching | During `batch()`, effects are deferred to topological flush |
+| Error handling | Errors propagate up the ownership tree to nearest `onError` handler |
 
 ## createMemo(fn)
 
@@ -40,13 +54,13 @@ Proxy-wrapped object with per-property reactive tracking. Reading a property ins
 
 | Detail | Behavior |
 |--------|----------|
-| Tracking granularity | Per top-level property (not deep) |
+| Tracking granularity | Per top-level property (not deep — see `decantr/state/store` for deep stores) |
 | Identity check | Skips notification on `Object.is` equality |
 | Return value | The proxy itself (mutate in place) |
 
 ## batch(fn)
 
-Defers all effect runs until `fn` completes. Supports nesting — flush happens when outermost `batch` exits. Flush is synchronous (not microtask-deferred).
+Defers all effect runs until `fn` completes. Supports nesting — flush happens when outermost `batch` exits. Flush uses topological ordering.
 
 ```js
 batch(() => {
@@ -55,34 +69,65 @@ batch(() => {
 });
 ```
 
-## createResource(fetcher, options?)
+## createRoot(fn)
 
-Async data fetching primitive. Integrates with `Suspense`.
-
-**Options**
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `initialValue` | `T` | `undefined` | Value before fetch completes |
-| `lazy` | `boolean` | `false` | If `true`, does not fetch on creation — call `refetch()` |
-
-**Return value**
-
-| Key | Type | Description |
-|-----|------|-------------|
-| `data` | `() => T \| undefined` | Signal getter — resolved value |
-| `loading` | `() => boolean` | Signal getter — fetch in progress |
-| `error` | `() => Error \| null` | Signal getter — fetch error |
-| `refetch` | `() => Promise<void>` | Re-execute fetcher |
-| `mutate` | `(v: T) => void` | Overwrite data without fetching |
+Create an independent reactive scope. `fn` receives a `dispose` function. All effects/memos created inside are owned by this root and disposed when `dispose()` is called.
 
 ```js
-const users = createResource(() => fetch('/api/users').then(r => r.json()));
-// users.data(), users.loading(), users.error()
-// users.refetch() to reload, users.mutate([]) to set directly
+const result = createRoot(dispose => {
+  const [count, setCount] = createSignal(0);
+  createEffect(() => console.log(count()));
+  // dispose() cleans up effect and all children
+  return { count, setCount, dispose };
+});
 ```
 
-Pending fetches are tracked in `_pendingResources` for `Suspense` integration.
+## getOwner() / runWithOwner(owner, fn)
+
+Introspect and transfer ownership context. Useful for effects created outside the normal component tree (e.g., in setTimeout, event handlers).
+
+```js
+const owner = getOwner(); // capture in sync context
+setTimeout(() => {
+  runWithOwner(owner, () => {
+    createEffect(() => { /* properly owned */ });
+  });
+}, 1000);
+```
+
+## onError(handler)
+
+Register an error handler on the current owner. When an effect throws, the error walks up the ownership tree to find the nearest handler.
+
+```js
+createRoot(() => {
+  onError(err => console.error('Caught:', err));
+  createEffect(() => { throw new Error('boom'); }); // caught by handler
+});
+```
+
+## on(deps, fn, options?)
+
+Explicit dependency tracking. Reads `deps` inside tracking context, calls `fn` inside `untrack()`. Useful when you need to read a signal inside an effect without subscribing to it.
+
+| Option | Description |
+|--------|-------------|
+| `defer` | If `true`, skip initial run (default: `false`) |
+
+```js
+const [count, setCount] = createSignal(0);
+const [name] = createSignal('World');
+
+// Only re-runs when count changes, not when name changes
+on(count, (value, prev) => {
+  console.log(`count: ${prev} → ${value}, name: ${name()}`);
+});
+```
+
+Supports array of dependencies:
+```js
+on([a, b], ([aVal, bVal], [prevA, prevB]) => { ... });
+```
 
 ## createContext(defaultValue?)
 
@@ -100,17 +145,9 @@ ThemeCtx.consume(); // 'dark'
 restore(); // restores previous value
 ```
 
-Nesting: each `Provider` call captures and restores the previous value via the returned cleanup function. Call restore in reverse order for proper nesting.
-
 ## createSelector(source)
 
 Per-key memoization for efficient list highlighting. Returns `isSelected(key)` — a reactive check that only notifies when a specific key's match status changes.
-
-| Detail | Behavior |
-|--------|----------|
-| `source` | Signal getter returning the currently selected key |
-| Return | `(key: U) => boolean` — reactive per-key check |
-| Efficiency | Only the previous and next matching key's subscribers fire on change |
 
 ```js
 const [selected, setSelected] = createSignal('a');
@@ -126,14 +163,10 @@ Like `createMemo` but lazy-initialized — does not compute until the returned g
 
 Undo/redo history tracking for a signal.
 
-**Arguments**
-
 | Param | Type | Description |
 |-------|------|-------------|
 | `signal` | `[getter, setter]` | Signal tuple from `createSignal` |
 | `options.maxLength` | `number` | Max undo depth (default: `100`) |
-
-**Return value**
 
 | Key | Type | Description |
 |-----|------|-------------|
@@ -143,25 +176,9 @@ Undo/redo history tracking for a signal.
 | `redo` | `() => void` | Re-apply undone value |
 | `clear` | `() => void` | Reset history to current value |
 
-```js
-const [count, setCount] = createSignal(0);
-const history = createHistory([count, setCount], { maxLength: 50 });
-setCount(1); setCount(2);
-history.undo(); // count() === 1
-history.redo(); // count() === 2
-history.clear(); // history reset, current value preserved
-```
-
 ## useLocalStorage(key, initial)
 
 Signal backed by `localStorage` with JSON serialization. Returns `[getter, setter]` — same API as `createSignal`.
-
-| Detail | Behavior |
-|--------|----------|
-| Initialization | Reads `localStorage.getItem(key)`, parses JSON. Falls back to `initial` if absent |
-| Persistence | Every `setter` call writes `JSON.stringify(value)` to `localStorage` |
-| SSR safe | Guards `localStorage` access with `typeof` check |
-| Setter | Accepts value or updater function `(prev) => next` |
 
 ## untrack(fn) / peek(getter)
 
@@ -169,11 +186,9 @@ Read signals without subscribing the current effect.
 
 | Function | Use case |
 |----------|----------|
-| `untrack(fn)` | Run `fn` with tracking disabled — reads inside do not create subscriptions |
-| `peek(getter)` | Alias for `untrack(getter)` — read a single signal without tracking |
-
-Use when an effect needs to read a signal for a one-time check without re-running when that signal changes.
+| `untrack(fn)` | Run `fn` with tracking disabled |
+| `peek(getter)` | Alias for `untrack(getter)` |
 
 ---
 
-**See also:** `reference/component-lifecycle.md`, `reference/router.md`
+**See also:** `reference/state-data.md`, `reference/component-lifecycle.md`, `reference/router.md`

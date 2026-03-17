@@ -36,6 +36,9 @@ import { InputGroup, CompactGroup } from '../src/components/input-group.js';
 import { ColorPicker } from '../src/components/color-picker.js';
 import { ColorPalette } from '../src/components/color-palette.js';
 import { generateHarmony, generateShades, pickSwatchForeground } from '../src/components/_primitives.js';
+import { Timeline } from '../src/components/timeline.js';
+import { Comment } from '../src/components/comment.js';
+import { encodeQR } from '../src/components/_qr-encoder.js';
 
 let cleanup;
 
@@ -217,15 +220,15 @@ describe('Input', () => {
 
   it('shows error state', () => {
     const inp = Input({ error: true });
-    assert.ok(inp.className.includes('d-input-error'));
+    assert.ok(inp.hasAttribute('data-error'));
   });
 
   it('handles reactive error', () => {
     const [err, setErr] = createSignal(false);
     const inp = Input({ error: err });
-    assert.ok(!inp.className.includes('d-input-error'));
+    assert.ok(!inp.hasAttribute('data-error'));
     setErr(true);
-    assert.ok(inp.className.includes('d-input-error'));
+    assert.ok(inp.hasAttribute('data-error'));
   });
 
   it('renders prefix and suffix', () => {
@@ -278,6 +281,127 @@ describe('Card', () => {
   it('adds hoverable class', () => {
     const c = Card({ hoverable: true }, 'H');
     assert.ok(c.className.includes('d-card-hover'));
+  });
+
+  it('bordered=false adds d-card-borderless class', () => {
+    const c = Card({ bordered: false }, 'X');
+    assert.ok(c.className.includes('d-card-borderless'));
+  });
+
+  it('bordered=true (default) does not add borderless class', () => {
+    const c = Card({}, 'X');
+    assert.ok(!c.className.includes('d-card-borderless'));
+  });
+
+  it('size=sm adds d-card-sm class', () => {
+    const c = Card({ size: 'sm' }, 'X');
+    assert.ok(c.className.includes('d-card-sm'));
+  });
+
+  it('type=inner adds d-card-inner class', () => {
+    const c = Card({ type: 'inner' }, 'X');
+    assert.ok(c.className.includes('d-card-inner'));
+  });
+
+  it('loading=true renders skeleton', () => {
+    const c = Card({ loading: true });
+    assert.ok(c.querySelector('.d-card-loading'));
+    assert.ok(c.querySelector('.d-skeleton'));
+  });
+
+  it('reactive loading signal shows/hides skeleton', () => {
+    const [loading, setLoading] = createSignal(true);
+    const c = Card({ loading }, 'Content');
+    assert.ok(c.querySelector('.d-card-loading'));
+    setLoading(false);
+    assert.ok(!c.querySelector('.d-card-loading'));
+    assert.ok(c.querySelector('.d-card-body'));
+  });
+
+  it('cover prop creates d-card-cover', () => {
+    const img = document.createElement('img');
+    const c = Card({ cover: img, title: 'Test' });
+    const cover = c.querySelector('.d-card-cover');
+    assert.ok(cover);
+    assert.ok(cover.contains(img));
+  });
+
+  it('actions prop creates d-card-actions', () => {
+    const a = document.createElement('span');
+    const b = document.createElement('span');
+    const c = Card({ title: 'Test', actions: [a, b] }, 'Body');
+    const actions = c.querySelector('.d-card-actions');
+    assert.ok(actions);
+    assert.equal(actions.children.length, 2);
+  });
+
+  it('Card.Cover creates cover element', () => {
+    const cover = Card.Cover({}, document.createElement('img'));
+    assert.ok(cover.className.includes('d-card-cover'));
+  });
+
+  it('Card.Meta renders avatar + title + description', () => {
+    const avatar = document.createElement('div');
+    const meta = Card.Meta({ avatar, title: 'Name', description: 'Bio' });
+    assert.ok(meta.className.includes('d-card-meta'));
+    assert.ok(meta.querySelector('.d-card-meta-title'));
+    assert.ok(meta.querySelector('.d-card-meta-description'));
+    assert.ok(meta.contains(avatar));
+  });
+
+  it('Card.Meta without avatar only has detail', () => {
+    const meta = Card.Meta({ title: 'Name' });
+    assert.ok(meta.querySelector('.d-card-meta-title'));
+    assert.equal(meta.children.length, 1); // only detail div
+  });
+
+  it('Card.Grid creates grid container', () => {
+    const grid = Card.Grid({}, document.createElement('div'));
+    assert.ok(grid.className.includes('d-card-grid'));
+  });
+
+  it('Card.Grid with hoverable adds hover class', () => {
+    const grid = Card.Grid({ hoverable: true });
+    assert.ok(grid.className.includes('d-card-grid-hover'));
+  });
+
+  it('Card.Actions creates action bar', () => {
+    const actions = Card.Actions({}, document.createElement('span'));
+    assert.ok(actions.className.includes('d-card-actions'));
+  });
+
+  it('Card.Header with extra renders extra element', () => {
+    const extra = document.createElement('a');
+    const header = Card.Header({ extra }, 'Title');
+    assert.ok(header.className.includes('d-card-header-extra'));
+    assert.ok(header.querySelector('.d-card-extra'));
+    assert.ok(header.querySelector('.d-card-header-content'));
+  });
+
+  it('Card.Header without extra renders children directly', () => {
+    const header = Card.Header({}, 'Title');
+    assert.ok(header.className.includes('d-card-header'));
+    assert.ok(!header.querySelector('.d-card-extra'));
+  });
+
+  it('title + extra auto-creates header with extra', () => {
+    const extra = document.createElement('a');
+    const c = Card({ title: 'Hello', extra }, 'Body');
+    const header = c.querySelector('.d-card-header-extra');
+    assert.ok(header);
+    assert.ok(header.querySelector('.d-card-extra'));
+  });
+
+  it('new sub-components detected in section detection', () => {
+    const c = Card({},
+      Card.Cover({}, document.createElement('img')),
+      Card.Meta({ title: 'Name' }),
+      Card.Body({}, 'Content'),
+      Card.Actions({}, document.createElement('span'))
+    );
+    // Should not wrap in auto-body since sections are detected
+    const bodies = c.querySelectorAll('.d-card-body');
+    assert.equal(bodies.length, 1); // only the explicit Card.Body
   });
 });
 
@@ -391,7 +515,7 @@ describe('Textarea', () => {
 
   it('shows error state', () => {
     const el = Textarea({ error: true });
-    assert.ok(el.className.includes('d-textarea-error'));
+    assert.ok(el.hasAttribute('data-error'));
   });
 
   it('calls ref with textarea element', () => {
@@ -561,7 +685,7 @@ describe('Select', () => {
 
   it('handles error state', () => {
     const el = Select({ options: opts, error: true });
-    assert.ok(el.className.includes('d-select-error'));
+    assert.ok(el.hasAttribute('data-error'));
   });
 });
 
@@ -1406,7 +1530,7 @@ describe('Combobox', () => {
 
   it('applies error state', () => {
     const el = Combobox({ options: opts, error: true });
-    assert.ok(el.className.includes('d-combobox-error'));
+    assert.ok(el.hasAttribute('data-error'));
   });
 });
 
@@ -1806,4 +1930,401 @@ describe('ColorPalette', () => {
     assert.equal(addBtn.getAttribute('aria-label'), 'Add color');
   });
 
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Placeholder
+// ═══════════════════════════════════════════════════════════════
+import { Placeholder } from '../src/components/placeholder.js';
+
+describe('Placeholder', () => {
+  before(() => { createDOM(); resetBase(); });
+
+  it('renders default image variant', () => {
+    const el = Placeholder();
+    assert.ok(el.classList.contains('d-placeholder'));
+    assert.equal(el.getAttribute('role'), 'img');
+    assert.equal(el.getAttribute('aria-label'), 'image placeholder');
+  });
+
+  it('renders avatar variant', () => {
+    const el = Placeholder({ variant: 'avatar' });
+    assert.ok(el.classList.contains('d-placeholder'));
+    assert.ok(el.classList.contains('d-placeholder-avatar'));
+    assert.equal(el.getAttribute('aria-label'), 'avatar placeholder');
+  });
+
+  it('renders icon variant', () => {
+    const el = Placeholder({ variant: 'icon' });
+    assert.ok(el.classList.contains('d-placeholder-icon'));
+  });
+
+  it('displays label text and sets aria-label', () => {
+    const el = Placeholder({ label: 'Cover Image' });
+    const labelEl = el.querySelector('.d-placeholder-label');
+    assert.ok(labelEl);
+    assert.equal(labelEl.textContent, 'Cover Image');
+    assert.equal(el.getAttribute('aria-label'), 'Cover Image');
+  });
+
+  it('adds animate class when animate=true', () => {
+    const el = Placeholder({ animate: true });
+    assert.ok(el.classList.contains('d-placeholder-animate'));
+  });
+
+  it('does not add animate class by default', () => {
+    const el = Placeholder();
+    assert.ok(!el.classList.contains('d-placeholder-animate'));
+  });
+
+  it('contains watermark SVG', () => {
+    const el = Placeholder();
+    const wm = el.querySelector('.d-placeholder-watermark');
+    assert.ok(wm);
+    const svg = wm.querySelector('svg');
+    assert.ok(svg);
+  });
+
+  it('uses custom icon when provided', () => {
+    const customIcon = document.createElement('span');
+    customIcon.textContent = '★';
+    const el = Placeholder({ icon: customIcon });
+    const wm = el.querySelector('.d-placeholder-watermark');
+    assert.ok(wm.contains(customIcon));
+    assert.ok(!wm.querySelector('svg'));
+  });
+
+  it('passes through children', () => {
+    const child = document.createElement('span');
+    child.textContent = 'hello';
+    const el = Placeholder({}, child);
+    const content = el.querySelector('.d-placeholder-content');
+    assert.ok(content);
+    assert.ok(content.contains(child));
+  });
+
+  it('applies custom class', () => {
+    const el = Placeholder({ class: 'my-custom' });
+    assert.ok(el.classList.contains('d-placeholder'));
+    assert.ok(el.classList.contains('my-custom'));
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// TIMELINE (re-architected)
+// ═══════════════════════════════════════════════════════════════
+describe('Timeline', () => {
+  it('renders basic timeline', () => {
+    const el = Timeline({
+      items: [
+        { content: 'First' },
+        { content: 'Second' },
+        { content: 'Third' }
+      ]
+    });
+    assert.ok(el.classList.contains('d-timeline'));
+    assert.equal(el.querySelectorAll('.d-timeline-item').length, 3);
+  });
+
+  it('renders dots and lines', () => {
+    const el = Timeline({
+      items: [{ content: 'A' }, { content: 'B' }]
+    });
+    assert.equal(el.querySelectorAll('.d-timeline-dot').length, 2);
+    assert.equal(el.querySelectorAll('.d-timeline-line').length, 1);
+  });
+
+  it('applies alternate mode class', () => {
+    const el = Timeline({ mode: 'alternate', items: [{ content: 'A' }] });
+    assert.ok(el.classList.contains('d-timeline-alternate'));
+  });
+
+  it('applies right mode class', () => {
+    const el = Timeline({ mode: 'right', items: [{ content: 'A' }] });
+    assert.ok(el.classList.contains('d-timeline-right'));
+  });
+
+  it('applies custom mode class', () => {
+    const el = Timeline({
+      mode: 'custom',
+      items: [
+        { content: 'Left item', position: 'left' },
+        { content: 'Right item', position: 'right' }
+      ]
+    });
+    assert.ok(el.classList.contains('d-timeline-custom'));
+    const items = el.querySelectorAll('.d-timeline-item');
+    assert.ok(items[0].classList.contains('d-timeline-item-left'));
+    assert.ok(items[1].classList.contains('d-timeline-item-right'));
+  });
+
+  it('applies horizontal direction', () => {
+    const el = Timeline({
+      direction: 'horizontal',
+      items: [{ content: 'A' }, { content: 'B' }]
+    });
+    assert.ok(el.classList.contains('d-timeline-horizontal'));
+  });
+
+  it('renders pending item with pulsing dot', () => {
+    const el = Timeline({
+      pending: 'Loading...',
+      items: [{ content: 'Done' }]
+    });
+    const items = el.querySelectorAll('.d-timeline-item');
+    assert.equal(items.length, 2);
+    const pendingDot = items[1].querySelector('.d-timeline-dot-pending');
+    assert.ok(pendingDot);
+  });
+
+  it('applies status data attribute', () => {
+    const el = Timeline({
+      items: [{ content: 'OK', status: 'success' }]
+    });
+    const dot = el.querySelector('.d-timeline-dot');
+    assert.equal(dot.dataset.status, 'success');
+  });
+
+  it('applies size class', () => {
+    const sm = Timeline({ size: 'sm', items: [{ content: 'A' }] });
+    assert.ok(sm.classList.contains('d-timeline-sm'));
+    const lg = Timeline({ size: 'lg', items: [{ content: 'A' }] });
+    assert.ok(lg.classList.contains('d-timeline-lg'));
+  });
+
+  it('applies gradient and glass', () => {
+    const el = Timeline({ gradient: true, glass: true, items: [{ content: 'A' }] });
+    assert.ok(el.classList.contains('d-timeline-gradient'));
+    assert.ok(el.classList.contains('d-timeline-glass'));
+  });
+
+  it('applies branded variant', () => {
+    const el = Timeline({ variant: 'branded', items: [{ content: 'A' }] });
+    assert.ok(el.classList.contains('d-timeline-lg'));
+    assert.ok(el.classList.contains('d-timeline-gradient'));
+    assert.ok(el.classList.contains('d-timeline-glass'));
+  });
+
+  it('renders skeleton loading state', () => {
+    const el = Timeline({ loading: true, loadingCount: 4 });
+    assert.ok(el.classList.contains('d-timeline-skeleton'));
+    assert.equal(el.querySelectorAll('.d-timeline-item').length, 4);
+    assert.ok(el.querySelector('.d-timeline-skel-bar'));
+  });
+
+  it('marks clickable items', () => {
+    let clicked = null;
+    const el = Timeline({
+      items: [{ content: 'Click me', onclick: (item) => { clicked = item; } }]
+    });
+    const item = el.querySelector('.d-timeline-item');
+    assert.ok(item.classList.contains('d-timeline-item-clickable'));
+    item.dispatchEvent(new window.Event('click'));
+    assert.ok(clicked);
+  });
+
+  it('marks disabled items', () => {
+    const el = Timeline({
+      items: [{ content: 'Disabled', disabled: true }]
+    });
+    const item = el.querySelector('.d-timeline-item');
+    assert.ok(item.classList.contains('d-timeline-item-disabled'));
+  });
+
+  it('renders collapsible content', () => {
+    const el = Timeline({
+      items: [{ content: 'Long content here', collapsible: true, defaultOpen: true }]
+    });
+    assert.ok(el.querySelector('.d-timeline-collapse-trigger'));
+    assert.ok(el.querySelector('.d-timeline-collapse-region'));
+  });
+
+  it('reverses item order', () => {
+    const el = Timeline({
+      reverse: true,
+      items: [{ content: 'First' }, { content: 'Last' }]
+    });
+    const items = el.querySelectorAll('.d-timeline-content');
+    assert.ok(items[0].textContent.includes('Last'));
+    assert.ok(items[1].textContent.includes('First'));
+  });
+
+  it('reactive active index', () => {
+    const [active, setActive] = createSignal(0);
+    const el = Timeline({
+      active,
+      items: [{ content: 'A' }, { content: 'B' }]
+    });
+    const dots = el.querySelectorAll('.d-timeline-dot');
+    assert.ok(dots[0].classList.contains('d-timeline-dot-active'));
+    assert.ok(!dots[1].classList.contains('d-timeline-dot-active'));
+    setActive(1);
+    assert.ok(!dots[0].classList.contains('d-timeline-dot-active'));
+    assert.ok(dots[1].classList.contains('d-timeline-dot-active'));
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// COMMENT
+// ═══════════════════════════════════════════════════════════════
+describe('Comment', () => {
+  it('renders basic comment', () => {
+    const el = Comment({
+      author: 'Jane',
+      content: 'Hello world',
+      datetime: '2 hours ago'
+    });
+    assert.ok(el.classList.contains('d-comment'));
+    assert.ok(el.querySelector('.d-comment-author').textContent.includes('Jane'));
+    assert.ok(el.querySelector('.d-comment-content').textContent.includes('Hello world'));
+    assert.ok(el.querySelector('.d-comment-time').textContent.includes('2 hours ago'));
+  });
+
+  it('renders avatar from initials', () => {
+    const el = Comment({ author: 'Jane', avatar: 'JD', content: 'Test' });
+    assert.ok(el.querySelector('.d-comment-avatar'));
+    assert.ok(el.querySelector('.d-avatar'));
+  });
+
+  it('applies bordered variant', () => {
+    const el = Comment({ variant: 'bordered', content: 'Test' });
+    assert.ok(el.classList.contains('d-comment-bordered'));
+  });
+
+  it('applies minimal variant', () => {
+    const el = Comment({ variant: 'minimal', content: 'Test' });
+    assert.ok(el.classList.contains('d-comment-minimal'));
+  });
+
+  it('renders action buttons', () => {
+    const el = Comment({
+      content: 'Test',
+      actions: [
+        { label: 'Like', count: 5 },
+        { label: 'Dislike', count: 0 }
+      ]
+    });
+    const actions = el.querySelectorAll('.d-comment-action');
+    assert.equal(actions.length, 2);
+  });
+
+  it('handles action click', () => {
+    let clicked = false;
+    const el = Comment({
+      content: 'Test',
+      actions: [{ label: 'Like', onclick: () => { clicked = true; } }]
+    });
+    el.querySelector('.d-comment-action').dispatchEvent(new window.Event('click'));
+    assert.ok(clicked);
+  });
+
+  it('renders nested children', () => {
+    const child = Comment({ author: 'Reply', content: 'Nested reply' });
+    const el = Comment({ author: 'Parent', content: 'Parent comment' }, child);
+    const nested = el.querySelector('.d-comment-nested');
+    assert.ok(nested);
+    assert.ok(nested.contains(child));
+  });
+
+  it('renders reply editor when onReply provided', () => {
+    const el = Comment({
+      content: 'Test',
+      onReply: () => {}
+    });
+    assert.ok(el.querySelector('.d-comment-editor'));
+    const replyBtn = Array.from(el.querySelectorAll('.d-comment-action'))
+      .find(a => a.textContent.includes('Reply'));
+    assert.ok(replyBtn);
+  });
+
+  it('applies custom class', () => {
+    const el = Comment({ content: 'Test', class: 'my-class' });
+    assert.ok(el.classList.contains('d-comment'));
+    assert.ok(el.classList.contains('my-class'));
+  });
+
+  it('reactive action count', () => {
+    const [count, setCount] = createSignal(0);
+    const el = Comment({
+      content: 'Test',
+      actions: [{ label: 'Like', count }]
+    });
+    const actionBtn = el.querySelector('.d-comment-action');
+    setCount(5);
+    assert.ok(actionBtn.textContent.includes('5'));
+  });
+
+  it('reactive action active state', () => {
+    const [active, setActive] = createSignal(false);
+    const el = Comment({
+      content: 'Test',
+      actions: [{ label: 'Like', active }]
+    });
+    const actionBtn = el.querySelector('.d-comment-action');
+    assert.ok(!actionBtn.classList.contains('d-comment-action-active'));
+    setActive(true);
+    assert.ok(actionBtn.classList.contains('d-comment-action-active'));
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// QR ENCODER
+// ═══════════════════════════════════════════════════════════════
+describe('QR Encoder', () => {
+  it('encodes simple string', () => {
+    const result = encodeQR('Hello');
+    assert.ok(result);
+    assert.ok(result.modules);
+    assert.ok(result.size > 0);
+    assert.equal(result.modules.length, result.size);
+    assert.equal(result.modules[0].length, result.size);
+  });
+
+  it('all modules are boolean', () => {
+    const result = encodeQR('Test');
+    for (let r = 0; r < result.size; r++) {
+      for (let c = 0; c < result.size; c++) {
+        assert.equal(typeof result.modules[r][c], 'boolean');
+      }
+    }
+  });
+
+  it('has finder patterns in corners', () => {
+    const result = encodeQR('QR');
+    // Top-left 7x7 should have finder pattern border
+    for (let i = 0; i < 7; i++) {
+      assert.equal(result.modules[0][i], true, `top-left finder row 0, col ${i}`);
+      assert.equal(result.modules[6][i], true, `top-left finder row 6, col ${i}`);
+      assert.equal(result.modules[i][0], true, `top-left finder col 0, row ${i}`);
+      assert.equal(result.modules[i][6], true, `top-left finder col 6, row ${i}`);
+    }
+  });
+
+  it('supports all EC levels', () => {
+    for (const level of ['L', 'M', 'Q', 'H']) {
+      const result = encodeQR('Test', level);
+      assert.ok(result.size >= 21, `EC level ${level} produces valid size`);
+    }
+  });
+
+  it('size grows with data length', () => {
+    const small = encodeQR('Hi');
+    const large = encodeQR('This is a much longer string that should require a larger QR code version');
+    assert.ok(large.size >= small.size);
+  });
+
+  it('encodes URL', () => {
+    const result = encodeQR('https://decantr.ai');
+    assert.ok(result.size >= 21);
+  });
+
+  it('encodes empty string without crashing', () => {
+    // Empty string should either encode as version 1 or throw gracefully
+    try {
+      const result = encodeQR('');
+      assert.ok(result.size >= 21);
+    } catch (e) {
+      assert.ok(e.message);
+    }
+  });
 });

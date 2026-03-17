@@ -1,0 +1,55 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "checklist-card",
+  "name": "Checklist Card",
+  "description": "Item list in a Card with optional checkboxes for completion tracking. Used for ingredient lists, task lists, and checklists.",
+  "components": ["Card", "Card.Header", "Card.Body", "Checkbox", "icon"],
+  "default_preset": "default",
+  "presets": {
+    "default": {
+      "description": "Vertical list of items with Checkbox for completion tracking inside a Card.",
+      "components": ["Card", "Card.Header", "Card.Body", "Checkbox", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0",
+        "slots": {
+          "header": "Card.Header with title and optional count/adjuster",
+          "list": "Vertical list of items with Checkbox for completion tracking"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Checkbox, icon } from 'decantr/components';",
+        "example": "function ChecklistCard({ title, items }) {\n  const { div, h3, span } = tags;\n\n  return Card({},\n    Card.Header({},\n      div({ class: css('_flex _aic _jcsb') },\n        h3({ class: css('_heading5') }, icon('list'), ` ${title}`),\n        span({ class: css('_textsm _fgmuted') }, `${items.length} items`)\n      )\n    ),\n    Card.Body({ class: css('_flex _col _gap2') },\n      ...items.map(item =>\n        Checkbox({ label: typeof item === 'string' ? item : `${item.quantity} ${item.unit} ${item.name}${item.preparation ? ' — ' + item.preparation : ''}` })\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap0",
+    "slots": {
+      "header": "Card.Header with title and optional count",
+      "list": "Vertical list of items with Checkbox"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame-sm",
+      "atoms": "",
+      "notes": "Card uses cc-frame-sm. Quantities use cc-data. Checked items dimmed."
+    },
+    "auradecantism": {
+      "wrapper": "d-glass",
+      "atoms": "_r4",
+      "notes": "Card on glass background. Section title uses d-gradient-text."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_b1 _r4",
+      "notes": "Simple bordered card. Clean checkbox list."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Checkbox, icon } from 'decantr/components';",
+    "example": "function ChecklistCard({ title, items }) {\n  const { div, h3, span } = tags;\n\n  return Card({},\n    Card.Header({},\n      div({ class: css('_flex _aic _jcsb') },\n        h3({ class: css('_heading5') }, icon('list'), ` ${title}`),\n        span({ class: css('_textsm _fgmuted') }, `${items.length} items`)\n      )\n    ),\n    Card.Body({ class: css('_flex _col _gap2') },\n      ...items.map(item =>\n        Checkbox({ label: typeof item === 'string' ? item : item.text })\n      )\n    )\n  );\n}"
+  }
+}

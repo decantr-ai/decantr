@@ -1,4 +1,5 @@
 {
+  "version": "1.0.0",
   "terroir": "docs-explorer",
   "vintage": {
     "style": "auradecantism",
@@ -15,7 +16,11 @@
     { "id": "recipes", "skeleton": "sidebar-main", "blend": ["detail-panel"] },
     { "id": "foundations", "skeleton": "sidebar-main", "blend": ["detail-panel"] },
     { "id": "atoms", "skeleton": "sidebar-main", "blend": ["specimen-grid"] },
-    { "id": "tokens", "skeleton": "sidebar-main", "blend": ["token-inspector"] }
+    { "id": "tokens", "skeleton": "sidebar-main", "blend": ["token-inspector"] },
+    { "id": "shells", "skeleton": "sidebar-main", "blend": ["shell-configurator"] },
+    { "id": "charts", "skeleton": "sidebar-main", "blend": ["component-showcase"] },
+    { "id": "icons", "skeleton": "sidebar-main", "blend": ["specimen-grid"] },
+    { "id": "tools", "skeleton": "sidebar-main", "blend": ["detail-panel"] }
   ],
   "tannins": ["registry-data", "search", "theme-controls", "viewport-sim"],
   "cork": {

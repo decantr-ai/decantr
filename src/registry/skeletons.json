@@ -6,9 +6,108 @@
       "description": "Collapsible sidebar with header bar and scrollable main content area. Used by saas-dashboard, financial-dashboard, docs-explorer, ecommerce (account pages).",
       "layout": "grid",
       "atoms": "_grid _h[100vh]",
+      "config": {
+        "regions": ["header", "nav", "body"],
+        "grid": { "areas": [["nav", "header"], ["nav", "body"]] },
+        "nav": { "position": "left", "width": "240px", "collapseTo": "64px", "collapseBelow": "md" },
+        "header": { "height": "52px", "sticky": true },
+        "body": { "scroll": true }
+      },
+      "configurable": {
+        "nav": { "positions": ["left", "right", "top"], "modes": ["full", "rail", "hidden"] },
+        "header": { "toggleable": true, "positions": ["viewport", "body"] },
+        "footer": { "toggleable": true },
+        "aside": { "toggleable": true },
+        "sizing": {
+          "sidebarWidth": { "min": 48, "max": 400, "default": 240 },
+          "headerHeight": { "min": 36, "max": 80, "default": 52 },
+          "asideWidth": { "min": 200, "max": 480, "default": 280 }
+        }
+      },
       "code": {
         "imports": "import { tags } from 'decantr/tags';\nimport { h, text, onMount, onDestroy } from 'decantr/core';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { link, useRoute } from 'decantr/router';\nimport { Button, icon } from 'decantr/components';",
         "example": "function SidebarMain({ nav, children }) {\n  const { div, aside, main, header, span } = tags;\n  const [collapsed, setCollapsed] = createSignal(false);\n\n  return div({ class: css('_grid _h[100vh]'), style: () => `grid-template-columns:${collapsed() ? '64px' : '240px'} 1fr;grid-template-rows:auto 1fr` },\n    // Sidebar\n    aside({ class: css('_flex _col _gap1 _p3 _bgmuted _overflow[auto] _borderR'), style: 'grid-row:1/3' },\n      div({ class: css('_flex _aic _jcsb _mb4') },\n        !collapsed() ? span({ class: css('_heading5') }, 'App') : null,\n        Button({ variant: 'ghost', size: 'sm', onclick: () => setCollapsed(!collapsed()) },\n          icon('panel-left')\n        )\n      ),\n      ...nav.map(item =>\n        link({ href: item.href, class: css('_flex _aic _gap2 _p2 _px3 _r2 _trans _fgfg') },\n          icon(item.icon),\n          !collapsed() ? text(item.label) : null\n        )\n      )\n    ),\n    // Header\n    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB') },\n      span({ class: css('_heading4') }, 'Page Title'),\n      div({ class: css('_flex _aic _gap2') })\n    ),\n    // Main content\n    main({ class: css('_flex _col _gap4 _p6 _overflow[auto] _flex1') },\n      ...children\n    )\n  );\n}"
+      }
+    },
+    "sidebar-right": {
+      "name": "Right Sidebar",
+      "description": "Main content with a right-side navigation panel. Useful for settings, documentation sidebars, or inspector layouts.",
+      "layout": "grid",
+      "atoms": "_grid _h[100vh]",
+      "config": {
+        "regions": ["header", "nav", "body"],
+        "grid": { "areas": [["header", "nav"], ["body", "nav"]] },
+        "nav": { "position": "right", "width": "240px", "collapseTo": "64px", "collapseBelow": "md" },
+        "header": { "height": "52px", "sticky": true },
+        "body": { "scroll": true }
+      },
+      "configurable": {
+        "nav": { "positions": ["left", "right", "top"], "modes": ["full", "rail", "hidden"] },
+        "header": { "toggleable": true },
+        "footer": { "toggleable": true },
+        "sizing": {
+          "sidebarWidth": { "min": 48, "max": 400, "default": 240 },
+          "headerHeight": { "min": 36, "max": 80, "default": 52 }
+        }
+      },
+      "code": {
+        "imports": "import { Shell } from 'decantr/components';",
+        "example": "Shell({ config: 'sidebar-right' },\n  Shell.Header({}, headerContent),\n  Shell.Nav({}, navContent),\n  Shell.Body({}, mainContent)\n)"
+      }
+    },
+    "sidebar-main-footer": {
+      "name": "Sidebar + Main + Footer",
+      "description": "Sidebar layout with a persistent footer bar. Used for apps needing status bars or action footers.",
+      "layout": "grid",
+      "atoms": "_grid _h[100vh]",
+      "config": {
+        "regions": ["header", "nav", "body", "footer"],
+        "grid": { "areas": [["nav", "header"], ["nav", "body"], ["nav", "footer"]] },
+        "nav": { "position": "left", "width": "240px", "collapseTo": "64px", "collapseBelow": "md" },
+        "header": { "height": "52px", "sticky": true },
+        "body": { "scroll": true },
+        "footer": { "height": "auto", "sticky": false }
+      },
+      "configurable": {
+        "nav": { "positions": ["left", "right", "top"], "modes": ["full", "rail", "hidden"] },
+        "header": { "toggleable": true },
+        "footer": { "toggleable": true },
+        "sizing": {
+          "sidebarWidth": { "min": 48, "max": 400, "default": 240 },
+          "headerHeight": { "min": 36, "max": 80, "default": 52 }
+        }
+      },
+      "code": {
+        "imports": "import { Shell } from 'decantr/components';",
+        "example": "Shell({ config: 'sidebar-main-footer' },\n  Shell.Header({}, headerContent),\n  Shell.Nav({}, navContent),\n  Shell.Body({}, mainContent),\n  Shell.Footer({}, footerContent)\n)"
+      }
+    },
+    "sidebar-aside": {
+      "name": "Sidebar + Aside",
+      "description": "Three-column layout with left navigation and right inspector/detail panel. Used for admin dashboards, email clients, IDE-style apps.",
+      "layout": "grid",
+      "atoms": "_grid _h[100vh]",
+      "config": {
+        "regions": ["header", "nav", "body", "aside"],
+        "grid": { "areas": [["nav", "header", "aside"], ["nav", "body", "aside"]] },
+        "nav": { "position": "left", "width": "240px", "collapseTo": "64px", "collapseBelow": "md" },
+        "header": { "height": "52px", "sticky": true },
+        "body": { "scroll": true },
+        "aside": { "width": "280px", "collapsible": true }
+      },
+      "configurable": {
+        "nav": { "positions": ["left", "right"], "modes": ["full", "rail", "hidden"] },
+        "header": { "toggleable": true },
+        "aside": { "toggleable": true },
+        "sizing": {
+          "sidebarWidth": { "min": 48, "max": 400, "default": 240 },
+          "headerHeight": { "min": 36, "max": 80, "default": 52 },
+          "asideWidth": { "min": 200, "max": 480, "default": 280 }
+        }
+      },
+      "code": {
+        "imports": "import { Shell } from 'decantr/components';",
+        "example": "Shell({ config: 'sidebar-aside' },\n  Shell.Header({}, headerContent),\n  Shell.Nav({}, navContent),\n  Shell.Body({}, mainContent),\n  Shell.Aside({}, asideContent)\n)"
       }
     },
     "top-nav-main": {
@@ -16,9 +115,50 @@
       "description": "Horizontal navigation bar with full-width main content below. Used by ecommerce (storefront), portfolio, content-site.",
       "layout": "stack",
       "atoms": "_flex _col _h[100vh]",
+      "config": {
+        "regions": ["header", "body"],
+        "grid": { "areas": [["header"], ["body"]] },
+        "nav": { "position": "top" },
+        "header": { "height": "52px", "sticky": true },
+        "body": { "scroll": true }
+      },
+      "configurable": {
+        "nav": { "positions": ["top", "left"], "modes": ["full"] },
+        "header": { "toggleable": true },
+        "footer": { "toggleable": true },
+        "sizing": {
+          "headerHeight": { "min": 36, "max": 80, "default": 52 }
+        }
+      },
       "code": {
         "imports": "import { tags } from 'decantr/tags';\nimport { text } from 'decantr/core';\nimport { css } from 'decantr/css';\nimport { link } from 'decantr/router';\nimport { Button, icon } from 'decantr/components';",
         "example": "function TopNavMain({ brand, nav, children }) {\n  const { div, header, main, nav: navEl } = tags;\n\n  return div({ class: css('_flex _col _h[100vh]') },\n    // Top navigation bar\n    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB _bgbg') },\n      link({ href: '/', class: css('_heading5 _nounder _fgfg') }, brand),\n      navEl({ class: css('_flex _aic _gap6') },\n        ...nav.map(item =>\n          link({ href: item.href, class: css('_fgmuted _nounder _trans') }, item.label)\n        )\n      ),\n      div({ class: css('_flex _aic _gap2') },\n        Button({ variant: 'ghost', size: 'sm' }, icon('search')),\n        Button({ variant: 'ghost', size: 'sm' }, icon('user'))\n      )\n    ),\n    // Main content\n    main({ class: css('_flex _col _gap4 _p6 _overflow[auto] _flex1') },\n      ...children\n    )\n  );\n}"
+      }
+    },
+    "top-nav-footer": {
+      "name": "Top Nav + Footer",
+      "description": "Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer.",
+      "layout": "stack",
+      "atoms": "_flex _col _h[100vh]",
+      "config": {
+        "regions": ["header", "body", "footer"],
+        "grid": { "areas": [["header"], ["body"], ["footer"]] },
+        "nav": { "position": "top" },
+        "header": { "height": "52px", "sticky": true },
+        "body": { "scroll": true },
+        "footer": { "height": "auto", "sticky": false }
+      },
+      "configurable": {
+        "nav": { "positions": ["top", "left"], "modes": ["full"] },
+        "header": { "toggleable": true },
+        "footer": { "toggleable": true },
+        "sizing": {
+          "headerHeight": { "min": 36, "max": 80, "default": 52 }
+        }
+      },
+      "code": {
+        "imports": "import { Shell } from 'decantr/components';",
+        "example": "Shell({ config: 'top-nav-footer' },\n  Shell.Header({}, headerContent),\n  Shell.Nav({}, navItems),\n  Shell.Body({}, mainContent),\n  Shell.Footer({}, footerContent)\n)"
       }
     },
     "centered": {
@@ -26,6 +166,16 @@
       "description": "Centered card on a background. Used for auth flows (login, register, forgot password) across all archetypes.",
       "layout": "center",
       "atoms": "_flex _center _h[100vh] _bgmuted",
+      "config": {
+        "regions": ["body"],
+        "grid": { "areas": [["body"]] },
+        "nav": { "position": "left", "defaultState": "hidden" },
+        "body": { "scroll": false }
+      },
+      "configurable": {
+        "nav": { "positions": [], "modes": [] },
+        "sizing": {}
+      },
       "code": {
         "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card } from 'decantr/components';",
         "example": "function Centered({ children, width = '400px' }) {\n  const { div } = tags;\n\n  return div({ class: css('_flex _center _h[100vh] _bgmuted _p4') },\n    Card({ class: css(`_w[${width}] _mw[100%]`) },\n      ...children\n    )\n  );\n}"
@@ -36,6 +186,20 @@
       "description": "No persistent navigation. Scroll-driven hero-first layout. Used by portfolio landing pages.",
       "layout": "stack",
       "atoms": "_flex _col",
+      "config": {
+        "regions": ["header", "body"],
+        "grid": { "areas": [["header"], ["body"]] },
+        "nav": { "position": "top", "defaultState": "hidden" },
+        "header": { "height": "52px", "sticky": true },
+        "body": { "scroll": true }
+      },
+      "configurable": {
+        "nav": { "positions": ["top"], "modes": ["full", "hidden"] },
+        "header": { "toggleable": true },
+        "sizing": {
+          "headerHeight": { "min": 36, "max": 80, "default": 52 }
+        }
+      },
       "code": {
         "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { link } from 'decantr/router';",
         "example": "function FullBleed({ children }) {\n  const { div, header, main, nav: navEl } = tags;\n\n  return div({ class: css('_flex _col') },\n    // Floating nav (absolute positioned over hero)\n    header({ class: css('_fixed _top0 _left0 _wfull _flex _aic _jcsb _px8 _py4 _z[40]') },\n      link({ href: '/', class: css('_heading5 _nounder _fgfg') }, 'Brand'),\n      navEl({ class: css('_flex _aic _gap6') })\n    ),\n    // Content sections — each section is full viewport height or auto\n    main({ class: css('_flex _col') },\n      ...children\n    )\n  );\n}"
@@ -46,9 +210,49 @@
       "description": "Slim header with centered content below. Used for checkout flows, focused task pages.",
       "layout": "stack",
       "atoms": "_flex _col _h[100vh]",
+      "config": {
+        "regions": ["header", "body"],
+        "grid": { "areas": [["header"], ["body"]] },
+        "nav": { "position": "top", "defaultState": "hidden" },
+        "header": { "height": "44px", "sticky": true },
+        "body": { "scroll": true }
+      },
+      "configurable": {
+        "nav": { "positions": ["top"], "modes": ["hidden"] },
+        "header": { "toggleable": true },
+        "sizing": {
+          "headerHeight": { "min": 36, "max": 80, "default": 44 }
+        }
+      },
       "code": {
         "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { link } from 'decantr/router';\nimport { icon } from 'decantr/components';",
         "example": "function MinimalHeader({ brand, children }) {\n  const { div, header, main } = tags;\n\n  return div({ class: css('_flex _col _h[100vh]') },\n    // Slim header\n    header({ class: css('_flex _aic _jcc _py3 _borderB') },\n      link({ href: '/', class: css('_flex _aic _gap2 _nounder _fgfg') },\n        icon('arrow-left'),\n        brand\n      )\n    ),\n    // Centered main content\n    main({ class: css('_flex _col _aic _overflow[auto] _flex1 _py8') },\n      div({ class: css('_w[720px] _mw[100%] _px4 _flex _col _gap6') },\n        ...children\n      )\n    )\n  );\n}"
+      }
+    },
+    "top-nav-sidebar": {
+      "name": "Top Nav + Sidebar",
+      "description": "Full-width header spanning both columns, with left sidebar navigation below. Combines top branding with sidebar navigation depth.",
+      "layout": "grid",
+      "atoms": "_grid _h[100vh]",
+      "config": {
+        "regions": ["header", "nav", "body"],
+        "grid": { "areas": [["header", "header"], ["nav", "body"]] },
+        "nav": { "position": "left", "width": "240px", "collapseTo": "64px", "collapseBelow": "md" },
+        "header": { "height": "52px", "sticky": true },
+        "body": { "scroll": true }
+      },
+      "configurable": {
+        "nav": { "positions": ["left", "right"], "modes": ["full", "rail", "hidden"] },
+        "header": { "toggleable": true },
+        "footer": { "toggleable": true },
+        "sizing": {
+          "sidebarWidth": { "min": 48, "max": 400, "default": 240 },
+          "headerHeight": { "min": 36, "max": 80, "default": 52 }
+        }
+      },
+      "code": {
+        "imports": "import { Shell } from 'decantr/components';",
+        "example": "Shell({ config: 'top-nav-sidebar' },\n  Shell.Header({}, headerContent),\n  Shell.Nav({}, sidebarContent),\n  Shell.Body({}, mainContent)\n)"
       }
     }
   }

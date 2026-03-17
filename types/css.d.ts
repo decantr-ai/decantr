@@ -57,6 +57,12 @@ declare module 'decantr/css' {
    */
   export function registerStyle(style: StyleDefinition): void;
 
+  /**
+   * Merge a Map of plugin-provided styles into the registry.
+   * Used by the plugin system to wire addon styles without individual registerStyle calls.
+   */
+  export function mergePluginStyles(pluginStyles: Map<string, StyleDefinition>): void;
+
   // ── Mode API (light/dark) ──
 
   /**
@@ -131,4 +137,13 @@ declare module 'decantr/css' {
 
   /** Container query widths. */
   export const CQ_WIDTHS: number[];
+
+  // ── Atom type hints ──
+  // Pseudo-class prefixes: _h: (hover), _f: (focus), _fv: (focus-visible), _a: (active), _fw: (focus-within)
+  // Ring utilities: _ring0, _ring1, _ring2, _ring4, _ringPrimary, _ringAccent, _ringBorder
+  // Transition shortcuts: _transColors, _transOpacity, _transTransform, _transShadow
+  // Text wrapping: _textBalance, _textPretty
+  // Prose: _prose (maps to d-prose class for nested typography)
+  // Divide: _divideY, _divideX (maps to d-divide-y, d-divide-x classes)
+  // Scroll: _scrollSmooth
 }

@@ -54,6 +54,7 @@ Components use a two-layer CSS system: base CSS (`_base.js`) for structure, styl
 | `--d-offset-menu` | `4px` | Trigger->panel offset for dropdown/context menus |
 | `--d-offset-tooltip` | `6px` | Trigger->panel offset for tooltips |
 | `--d-offset-popover` | `8px` | Trigger->panel offset for popovers/hovercards |
+| `--d-offset-tour` | `12px` | Trigger->panel offset for tour/walkthrough steps |
 
 ## Field Sizing Tokens
 
@@ -92,9 +93,9 @@ Height-first, 4-tier sizing system for form components. `md` = density comfortab
 
 | Tier | Width | Height | Font |
 |------|-------|--------|------|
-| sm | `--d-otp-w-sm` (2rem) | `--d-otp-h-sm` (2.25rem) | `--d-otp-text-sm` (text-base) |
-| md | `--d-otp-w` (2.5rem) | `--d-otp-h` (2.75rem) | `--d-otp-text` (text-lg) |
-| lg | `--d-otp-w-lg` (3rem) | `--d-otp-h-lg` (3.25rem) | `--d-otp-text-lg` (text-xl) |
+| sm | `--d-otp-w-sm` (2rem) | `--d-otp-h-sm` (2rem) | `--d-otp-text-sm` (text-base) |
+| md | `--d-otp-w` (2.5rem) | `--d-otp-h` (2.5rem) | `--d-otp-text` (text-lg) |
+| lg | `--d-otp-w-lg` (3rem) | `--d-otp-h-lg` (3rem) | `--d-otp-text-lg` (text-xl) |
 
 **Style-specific token overrides (retro):**
 
@@ -155,6 +156,7 @@ Fixed dimensions for component internals. These centralize magic numbers and all
 | `--d-{role}-active` | 7 | Active/pressed state |
 | `--d-{role}-subtle` | 7 | Low-opacity tint background |
 | `--d-{role}-subtle-fg` | 7 | Text on subtle background |
+| `--d-{role}-on-subtle` | 7 | Contrast-safe role color for interactive elements on subtle bg (buttons, chips, toggles) |
 | `--d-{role}-border` | 7 | Semi-transparent border |
 | `--d-bg`, `--d-fg` | 2 | Page background / foreground |
 | `--d-muted`, `--d-muted-fg` | 2 | Muted text (labels, descriptions) |
@@ -166,6 +168,21 @@ Fixed dimensions for component internals. These centralize magic numbers and all
 | `--d-surface-{0-3}-border` | 4 | Surface borders |
 | `--d-surface-{1-3}-filter` | 3 | Backdrop-filter for glass styles |
 | `--d-elevation-{0-3}` | 4 | Box-shadow by level |
+
+## Chrome Tokens
+
+Inverted chrome for header/sidebar navigation. In light mode, chrome is dark (tinted toward primary) for anchoring; in dark mode, chrome blends with the surface hierarchy.
+
+| Token | Light Mode | Dark Mode | Description |
+|-------|-----------|-----------|-------------|
+| `--d-chrome-bg` | Dark (bgDark + 12% primary) | lighten(bg, 4) | Chrome background |
+| `--d-chrome-fg` | Auto (white on dark) | `#fafafa` | Chrome foreground |
+| `--d-chrome-border` | lighten(chromeBg, 10) | lighten(bg, 12) | Chrome border |
+| `--d-chrome-muted` | lighten(chromeBg, 30) | lighten(neutral, 15) | Muted text in chrome |
+| `--d-chrome-hover` | lighten(chromeBg, 6) | lighten(chromeBg, 6) | Chrome hover state |
+| `--d-chrome-active` | lighten(chromeBg, 12) | lighten(chromeBg, 10) | Chrome active state |
+
+**Usage:** Apply `--d-chrome-bg` + `--d-chrome-fg` to sidebar/header containers. Use `--d-chrome-hover`/`--d-chrome-active` for nav item states.
 
 ## Z-Index Tokens
 
@@ -242,7 +259,7 @@ New components MUST use the appropriate semantic radius token. Never use `--d-ra
 - **External layout** — Use atomic CSS (`_gap4`, `_grid _gc3`, `_p6`) for spacing between components
 - **Internal spacing** — Components handle their own padding via `--d-pad` token; don't add padding inside Card/Modal wrappers
 - **Theme overrides** — Only add padding in theme CSS when it intentionally differs from base (e.g. retro's accordion/tabs)
-- **Token-backed atoms** — Use `_textbase`, `_fwheading`, `_lhnormal` etc. in kit/block code for theme-customizable typography (see `reference/atoms.md`)
+- **Token-backed atoms** — Use `_textbase`, `_fwheading`, `_lhnormal` etc. in component and pattern code for theme-customizable typography (see `reference/atoms.md`)
 
 ## Token Compliance
 
@@ -294,7 +311,7 @@ Unified visual system for all form field containers. Applied via `.d-field` base
 
 | Token | Default | Description |
 |-------|---------|-------------|
-| `--d-field-bg` | `transparent` | Field background (outlined default) |
+| `--d-field-bg` | `var(--d-bg)` | Field background (outlined default) |
 | `--d-field-bg-hover` | Surface shift | Background on hover |
 | `--d-field-bg-disabled` | alpha(fg, 0.05) | Disabled field background |
 | `--d-field-bg-readonly` | alpha(fg, 0.03) | Read-only field background |
@@ -304,6 +321,8 @@ Unified visual system for all form field containers. Applied via `.d-field` base
 | `--d-field-border-error` | `var(--d-error)` | Border for error state |
 | `--d-field-border-success` | `var(--d-success)` | Border for success state |
 | `--d-field-border-disabled` | alpha(border, 0.5) | Disabled border |
+| `--d-field-bg-error` | alpha(error, 0.06) | Error state background tint |
+| `--d-field-bg-success` | alpha(success, 0.06) | Success state background tint |
 | `--d-field-border-width` | `var(--d-border-width)` | Field border width |
 | `--d-field-ring` | Focus shadow | Focus ring (box-shadow) |
 | `--d-field-ring-error` | Error focus shadow | Error focus ring |
@@ -326,9 +345,9 @@ Unified visual system for all form field containers. Applied via `.d-field` base
 | Default | `--d-field-bg` | `--d-field-border` | none |
 | Hover | `--d-field-bg-hover` | `--d-field-border-hover` | none |
 | Focus | `--d-field-bg` | `--d-field-border-focus` | `--d-field-ring` |
-| Error | `--d-field-bg` | `--d-field-border-error` | none |
-| Error+Focus | `--d-field-bg` | `--d-field-border-error` | `--d-field-ring-error` |
-| Success | `--d-field-bg` | `--d-field-border-success` | none |
+| Error | `--d-field-bg-error` | `--d-field-border-error` | none |
+| Error+Focus | `--d-field-bg-error` | `--d-field-border-error` | `--d-field-ring-error` |
+| Success | `--d-field-bg-success` | `--d-field-border-success` | none |
 | Disabled | `--d-field-bg-disabled` | `--d-field-border-disabled` | none |
 | Readonly | `--d-field-bg-readonly` | `--d-field-border` | none |
 

@@ -1,18 +1,42 @@
 #!/usr/bin/env node
 
 import { parseArgs } from 'node:util';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { loadPlugins, runHook } from '../src/plugins/index.js';
 
 const { positionals } = parseArgs({ allowPositionals: true, strict: false });
 const command = positionals[0];
+
+// Load project config and plugins for commands that benefit from them
+const cwd = process.cwd();
+let _config = null;
+
+async function getConfig() {
+  if (_config) return _config;
+  try {
+    const raw = await readFile(join(cwd, 'decantr.config.json'), 'utf-8');
+    _config = JSON.parse(raw);
+  } catch {
+    _config = {};
+  }
+  // Load plugins from config
+  await loadPlugins(_config, { cwd });
+  return _config;
+}
 
 switch (command) {
   case 'init':
     await import('./commands/init.js').then(m => m.run());
     break;
   case 'dev':
+    await getConfig();
+    await runHook('onDev', { cwd, command });
     await import('./commands/dev.js').then(m => m.run());
     break;
   case 'build':
+    await getConfig();
+    await runHook('onBuild', { cwd, command });
     await import('./commands/build.js').then(m => m.run());
     break;
   case 'test':
@@ -21,20 +45,44 @@ switch (command) {
   case 'validate':
     await import('./commands/validate.js').then(m => m.run());
     break;
+  case 'lint':
+    await import('./commands/lint.js').then(m => m.run());
+    break;
+  case 'a11y':
+    await import('./commands/a11y.js').then(m => m.run());
+    break;
   case 'audit':
-    await import('./commands/audit.js').then(m => m.run());
+    if (process.argv.includes('--a11y')) {
+      await import('./commands/a11y.js').then(m => m.run());
+    } else {
+      await import('./commands/audit.js').then(m => m.run());
+    }
     break;
   case 'generate':
+    await getConfig();
+    await runHook('onGenerate', { cwd, command });
     await import('./commands/generate.js').then(m => m.run());
     break;
   case 'mcp':
     await import('./commands/mcp.js').then(m => m.run());
     break;
+  case 'figma:tokens':
+    await import('./commands/figma-tokens.js').then(m => m.run());
+    break;
+  case 'figma:sync':
+    await import('./commands/figma-sync.js').then(m => m.run());
+    break;
+  case 'migrate':
+    await import('./commands/migrate.js').then(m => m.run());
+    break;
+  case 'doctor':
+    await import('./commands/doctor.js').then(m => m.run());
+    break;
   default: {
     const { art } = await import('./art.js');
     console.log(art());
     console.log(`
-  \x1b[1mdecantr\x1b[0m v0.4.0 \x1b[2m— AI-first web framework\x1b[0m
+  \x1b[1mdecantr\x1b[0m v0.9.0 \x1b[2m— AI-first web framework\x1b[0m
 
   \x1b[1mCommands:\x1b[0m
     init       Create a new decantr project
@@ -42,9 +90,15 @@ switch (command) {
     build      Build for production
     test       Run tests
     validate   Validate decantr.essence.json
+    lint       Code quality gates (atoms, essence drift, inline styles)
     generate   Generate code from decantr.essence.json
+    a11y       Accessibility audit (8 WCAG rules, static analysis)
     audit      Audit project: framework coverage, quality, bundle size
     mcp        Start MCP server (stdio transport) for AI tool integration
+    migrate    Migrate decantr.essence.json between versions
+    figma:tokens  Export design tokens in W3C DTCG / Figma format
+    doctor     Check project health and environment
+    figma:sync    Push tokens to Figma file via REST API
 
   \x1b[1mUsage:\x1b[0m
     npx decantr init
@@ -52,6 +106,7 @@ switch (command) {
     npx decantr build
     npx decantr test [--watch]
     npx decantr generate [--force] [--dry-run] [--page <id>]
+    npx decantr migrate [--dry-run] [--target=<version>]
 `);
     break;
   }

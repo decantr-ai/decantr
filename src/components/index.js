@@ -37,6 +37,7 @@ export { Title, Text, Paragraph, Link, Blockquote } from './typography.js';
 export { Kbd } from './kbd.js';
 
 // ─── Layout ──────────────────────────────────────────────────────
+export { Shell } from './shell.js';
 export { Space } from './space.js';
 export { AspectRatio } from './aspect-ratio.js';
 export { Resizable } from './resizable.js';
@@ -84,8 +85,11 @@ export { Statistic } from './statistic.js';
 export { Calendar } from './calendar.js';
 export { Carousel } from './carousel.js';
 export { Empty } from './empty.js';
+export { Placeholder } from './placeholder.js';
 export { Image } from './image.js';
 export { Timeline } from './timeline.js';
+export { Comment } from './comment.js';
+export { QRCode } from './qrcode.js';
 export { HoverCard } from './hover-card.js';
 
 // ─── Feedback ────────────────────────────────────────────────────

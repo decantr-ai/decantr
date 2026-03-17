@@ -25,6 +25,22 @@ The LLM decomposes intent into five named layers:
 ### CLARIFY (Essence Crystallization)
 The LLM writes `decantr.essence.json` — the project's persistent DNA. User confirms. From this point, every decision references the Essence.
 
+### Pattern Design Review Gate
+
+**Mandatory checkpoint between CLARIFY and DECANT.** Before resolving any Blend specs, review every pattern referenced in the Essence's `blend` arrays against this checklist:
+
+1. **Can this be a preset on an existing pattern?** Check the pattern registry (`src/registry/patterns/`) for structurally similar patterns that already support presets. If the desired variation differs only in content slots, label placement, or density — add a preset instead of a new pattern file.
+2. **Does a structurally similar pattern already exist?** If two patterns share the same grid layout, component set, and slot structure but differ in domain-specific naming, merge the new one as a preset on the existing pattern. Example: `recipe-stats-bar` and `product-stats-bar` are the same structure — one pattern with domain presets.
+3. **Is the new pattern reusable across 2+ domains?** A pattern must be justified by cross-domain utility. If a pattern is only useful within a single archetype, it should be a preset on a more general pattern. Exception: if the archetype is new and the pattern is fundamental to its identity.
+4. **Does the domain-specific name justify a standalone file?** Only create a new pattern file when the structure (grid layout, component composition, slot arrangement) is fundamentally different from all existing patterns. A different name alone does not justify a new file.
+
+**If any check fails**, refactor the blend to reference an existing pattern with a preset:
+```json
+{ "pattern": "stats-bar", "preset": "recipe", "as": "recipe-stats-bar" }
+```
+
+**Proceeding to DECANT without completing this review is a Cork violation.**
+
 ### DECANT (Spec Resolution)
 Each Structure page resolves to a **Blend** — a row-based layout tree that specifies spatial arrangement of patterns. The archetype provides `default_blend` per page; the LLM copies it into the Essence's `blend` and customizes.
 
@@ -89,6 +105,7 @@ Location: `decantr.essence.json` (project root, generated during CLARIFY stage).
 ```json
 {
   "$schema": "https://decantr.ai/schemas/essence.v1.json",
+  "version": "1.0.0",
   "terroir": "saas-dashboard",
   "vintage": {
     "style": "command-center",
@@ -130,6 +147,16 @@ Location: `decantr.essence.json` (project root, generated during CLARIFY stage).
   }
 }
 ```
+
+### Essence Version Field
+
+The `version` field (string, semver format e.g. `"1.0.0"`) tracks the evolution of the Essence. It is optional but strongly recommended:
+
+- **Bump the patch** (`1.0.0` -> `1.0.1`) when adding pages, tannins, or adjusting blend details
+- **Bump the minor** (`1.0.0` -> `1.1.0`) when changing structure layout, adding sections, or swapping recipes
+- **Bump the major** (`1.0.0` -> `2.0.0`) when changing terroir, vintage style, or fundamentally altering the project identity
+
+The `validate` command will warn if no `version` field is present to encourage adoption.
 
 ### Sectioned Essence (Multi-Domain)
 
@@ -204,7 +231,7 @@ Each archetype pre-maps domain knowledge for a type of application:
 - **Skeletons**: Layout descriptions per page type
 - **Suggested Vintage**: Recommended styles and modes for the domain
 
-Available archetypes: `ecommerce`, `saas-dashboard`, `portfolio`, `content-site`, `docs-explorer`
+Available archetypes: `ecommerce`, `saas-dashboard`, `portfolio`, `content-site`, `docs-explorer`, `financial-dashboard`, `recipe-community`
 
 The LLM reads the archetype, gets 80% of the Structure for free, then customizes based on user requirements.
 
@@ -220,6 +247,22 @@ Composable building blocks that archetypes reference. Each pattern describes:
 - **Recipe Overrides**: Per-recipe composition differences (e.g., Command Center wraps in `cc-frame`)
 
 Patterns resolve to concrete component compositions during the DECANT stage.
+
+### Pattern Preset Checklist
+
+Before creating a new pattern file, check if it can be a preset on an existing pattern:
+
+| Pattern | Available Presets |
+|---------|------------------|
+| `hero` | `landing`, `image-overlay`, `image-overlay-compact` |
+| `card-grid` | `product`, `content`, `collection`, `icon` |
+| `form-sections` | `settings`, `creation`, `structured` |
+| `detail-header` | `standard`, `profile` |
+
+If the desired variation shares the same grid layout, component set, and slot structure as an existing pattern but differs only in content slots, label placement, or density, add a preset instead of a new pattern file. Reference presets in blend specs:
+```json
+{ "pattern": "card-grid", "preset": "product", "as": "product-grid" }
+```
 
 ---
 

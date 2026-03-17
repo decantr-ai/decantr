@@ -1,0 +1,14 @@
+{
+  "name": "Decantr Design System",
+  "id": "decantr-design-system",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": ["https://unpkg.com", "https://cdn.jsdelivr.net"],
+    "reasoning": "Fetches published Decantr token and component manifests from CDN"
+  },
+  "capabilities": [],
+  "permissions": ["currentuser"]
+}

@@ -1,0 +1,73 @@
+name: Figma Design System Sync
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+  workflow_dispatch:
+    inputs:
+      style:
+        description: 'Style to sync (or "all")'
+        required: false
+        default: 'all'
+      dry_run:
+        description: 'Dry run (no upload)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tokens:
+    name: Generate & Sync Tokens
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate DTCG tokens
+        run: npx decantr figma:tokens --format=dtcg --style=${{ inputs.style || 'all' }}
+
+      - name: Generate Figma REST payloads
+        run: npx decantr figma:tokens --format=figma --style=${{ inputs.style || 'all' }}
+
+      - name: Upload token artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: figma-tokens
+          path: dist/figma/tokens/
+          retention-days: 30
+
+      - name: Sync to Figma
+        if: ${{ !inputs.dry_run }}
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        run: |
+          npx decantr figma:sync \
+            --token="$FIGMA_TOKEN" \
+            --file="${{ secrets.FIGMA_FILE_KEY }}" \
+            --style=${{ inputs.style || 'all' }}
+
+      - name: Post version note
+        if: ${{ !inputs.dry_run && startsWith(github.ref, 'refs/tags/v') }}
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          curl -s -X POST \
+            -H "X-Figma-Token: $FIGMA_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"message\": \"Auto-synced from $VERSION\"}" \
+            "https://api.figma.com/v1/files/${{ secrets.FIGMA_FILE_KEY }}/comments" || true

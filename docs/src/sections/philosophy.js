@@ -1,6 +1,6 @@
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
-import { icon } from 'decantr/components';
+import { icon, Card } from 'decantr/components';
 import { Chart } from 'decantr/chart';
 
 const { section, div, h2, h3, p, span, blockquote, small } = tags;
@@ -50,8 +50,8 @@ function MetricRow({ stat, statClass, label, description, footnote, visual, reve
 }
 
 function PillarCard({ iconName, title, description, delay }) {
-  return div({ class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap4 _p8')}` },
-    div({ class: `ds-accent-bg ${css('_fgaccent _inlineflex _p[0.75rem] _r[var(--d-radius-lg)] _aisstart')}` },
+  return Card({ bordered: false, class: `ds-glass ds-animate ds-delay-${delay} ${css('_flex _col _gap4 _p8')}` },
+    div({ class: `ds-accent-bg ${css('_fgaccent _iflex _p[0.75rem] _r[var(--d-radius-lg)] _aifs')}` },
       icon(iconName, { size: '28px' }),
     ),
     h3({ class: css('_textxl _fwheading _fgfg') }, title),

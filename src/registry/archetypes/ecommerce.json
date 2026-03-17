@@ -1,5 +1,5 @@
 {
-  "$schema": "https://decantr.ai/schemas/archetype.v1.json",
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
   "id": "ecommerce",
   "name": "E-Commerce",
   "description": "Online retail with product catalog, cart, checkout, and account management.",
@@ -7,11 +7,17 @@
     {
       "id": "home",
       "skeleton": "top-nav-main",
-      "patterns": ["hero", "product-grid", "category-nav", "testimonials", "cta-section"],
+      "patterns": [
+        "hero",
+        { "pattern": "card-grid", "preset": "product", "as": "product-grid" },
+        "category-nav",
+        "testimonials",
+        "cta-section"
+      ],
       "default_blend": [
         "hero",
         "category-nav",
-        "product-grid",
+        { "pattern": "card-grid", "preset": "product", "as": "product-grid" },
         "testimonials",
         "cta-section"
       ]
@@ -19,7 +25,12 @@
     {
       "id": "catalog",
       "skeleton": "top-nav-main",
-      "patterns": ["filter-sidebar", "product-grid", "filter-bar", "pagination"],
+      "patterns": [
+        "filter-sidebar",
+        { "pattern": "card-grid", "preset": "product", "as": "product-grid" },
+        "filter-bar",
+        "pagination"
+      ],
       "default_blend": [
         "filter-bar",
         { "cols": ["filter-sidebar", "product-grid"], "span": { "product-grid": 3 }, "at": "md" },
@@ -29,11 +40,16 @@
     {
       "id": "product",
       "skeleton": "top-nav-main",
-      "patterns": ["media-gallery", "detail-panel", "testimonials", "product-grid"],
+      "patterns": [
+        "media-gallery",
+        "detail-panel",
+        "testimonials",
+        { "pattern": "card-grid", "preset": "product", "as": "product-grid" }
+      ],
       "default_blend": [
         { "cols": ["media-gallery", "detail-panel"], "at": "md" },
         "testimonials",
-        "product-grid"
+        { "pattern": "card-grid", "preset": "product", "as": "product-grid" }
       ]
     },
     {

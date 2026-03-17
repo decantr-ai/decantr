@@ -1,5 +1,158 @@
 # Changelog
 
+## 0.9.1 — Production Cleanup
+
+### Style System
+- **Addon architecture**: Only `auradecantism` ships as core builtin. 10 styles moved to `src/css/styles/addons/` — import individually via `decantr/styles/clean` + `registerStyle()`
+- **Plugin style wiring**: `mergePluginStyles()` added to theme-registry for plugin-contributed styles
+
+### New Atom Features
+- **Pseudo-class prefixes**: `_h:` (hover), `_f:` (focus), `_fv:` (focus-visible), `_a:` (active), `_fw:` (focus-within) — compose with ANY existing atom
+- **Responsive + pseudo**: `_sm:h:bgmuted` — breakpoint-wrapped pseudo-class atoms
+- **Ring utilities**: `_ring1`, `_ring2`, `_ring4`, `_ring0`, `_ringPrimary`, `_ringAccent`, `_ringBorder`
+- **Transition shortcuts**: `_transColors`, `_transOpacity`, `_transTransform`, `_transShadow`
+- **Prose atom**: `_prose` maps to `d-prose` class for nested rich-text typography (h1-h4, p, code, blockquote, etc.)
+- **Divide utilities**: `_divideY`, `_divideX` — child separator borders
+- **Text wrapping**: `_textBalance`, `_textPretty`
+- **Scroll behavior**: `_scrollSmooth`
+
+### Behaviors
+- **createScrollReveal()**: IntersectionObserver wrapper that adds `d-visible` class on viewport entry. Returns cleanup function for `onDestroy`.
+
+### Documentation Fixes
+- CLAUDE.md: Updated style list to 11 (1 core + 10 addons), documented opacity modifiers and arbitrary transitions
+- Docs essence synced to match actual 14 routes (was claiming 5-pattern homepage with only 1 implemented)
+- Workbench essence: added version field, verified sidebar data-driven from registry
+- Fixed markdown path resolution (relative → absolute) in tutorial and cookbook pages
+- Added explorer module exports to package.json
+- Reference docs: atoms.md documents all new atoms, llm-primer.md updated
+
+### Consolidation
+- Workbench integrated into docs site as `/workbench` route section
+- `de-card-grid`/`de-card-item` custom CSS replaced with framework atoms
+- docs/src/style.js: hardcoded pixel values replaced with design tokens
+
+## 0.9.0 — Release Candidate
+
+### Docs Site
+- Full documentation site at decantr.ai with nested routing (17 routes)
+- Markdown renderer (260 LOC) for tutorial and cookbook content
+- ShadCN-style component gallery with search, category filters, and detail views
+- Live component showcase carousel on landing page
+- Framework comparison table (decantr vs React vs Angular)
+- Sidebar layout with mobile hamburger, active link tracking
+- JSON-LD structured data, enhanced OpenGraph/Twitter meta tags
+- Explorer modules (icons, charts, tokens, atoms, patterns, archetypes, recipes, shells, tools) integrated into docs
+
+### Registry Enrichment
+- Icon groups (24) moved from workbench JS → `icons.json` registry
+- Chart groups (5) + type metadata (25) in new `chart-showcase.json`
+- Data subsection added to `foundations.json`
+- Component group categorization in `components.json` (form, layout, data, feedback, navigation, overlay, typography, chart)
+
+### CLI
+- `decantr doctor` — 8 health checks with colored pass/warn/fail output
+- Doctor accepts both `decantr` and `decantr` package names
+
+### Infrastructure
+- CI/CD: `ci.yml` (Node 20.x/22.x matrix), `docs-deploy.yml` (GitHub Pages), `release.yml` (tag → npm publish)
+- `tools/verify-pack.js` — npm package verification (expected files, sensitive leak detection, size reporting)
+- MIT LICENSE file
+- README: CI/npm/license badges, expanded CLI commands list
+
+### Playground
+- Ellafi Lending Dashboard validated end-to-end (validate, doctor, lint, a11y, build)
+- Playground README documenting validation checklist
+
+## Unreleased
+
+### Added
+- **SSR + Hydration** (`decantr/ssr`) — server-side rendering for SEO-dependent apps. Zero DOM dependencies at module level.
+  - `renderToString(component)` — renders component tree to HTML string in pure Node.js
+  - `renderToStream(component)` — streaming render via Web Streams API (Node 18+)
+  - `hydrate(root, component)` — walks existing SSR DOM, attaches signal bindings + event listeners without re-creating elements
+  - SSR context: `h()`, `text()`, `cond()`, `list()`, `css()` all work transparently in server environment
+- **Accessibility testing** (`decantr a11y`) — static analysis for 8 WCAG rules: button-label, input-label, img-alt, focus-visible, keyboard-handler, role-valid, heading-order, contrast-ratio. Zero dependencies. Also available via `decantr audit --a11y`.
+- **`decantr migrate` command** — automated migration for `decantr.essence.json` between versions. Supports `--dry-run` for preview, `--target` for specific version. Migrations: 0.5.0 (organs→tannins, anatomy→structure) and 0.6.0 (pattern consolidation to preset format).
+- **Starter templates** — `decantr init --template=<name>` with 5 templates: `saas-dashboard`, `ecommerce`, `portfolio`, `content-site`, `landing-page`. Each provides pre-filled essence, router setup, and page stubs.
+- **Archetype inheritance** — Archetypes now support `extends` field for inheriting pages, tannins, and skeletons from parent archetypes. Circular dependency detection and max depth (5) enforced. `financial-dashboard` updated to extend `saas-dashboard` as a reference example.
+- **Component-level HMR** — Dev server now sends targeted `hmr` messages for `src/pages/` and `src/components/` file changes instead of full-page reloads. Module-level state (signals, stores) is preserved across updates. Infrastructure files (`state/`, `css/`, `router/`, `app.js`, essence) still trigger full reload. HMR remount hook in `src/core/index.js` is gated behind `globalThis.__DECANTR_DEV__` for zero production cost.
+- **Auth reference tannin** (`decantr/tannins/auth`) — token-based authentication with reactive signals, persistent cross-tab token storage, auto-refresh on 401, and route guard helper.
+  - `createAuth(config)` — creates an auth instance with `user()`, `token()`, `isAuthenticated()`, `login()`, `logout()`, `refresh()`, `destroy()`
+  - `requireAuth(router, options)` — installs route guard that redirects unauthenticated users to login page
+  - Fetch middleware: auto-injects Bearer token, intercepts 401 → refresh → retry
+  - Token persistence via `createPersisted()` with cross-tab sync
+
+## v0.7.0 — Internationalization (2026-03-16)
+
+### Added
+- **i18n module** (`decantr/i18n`) — reactive internationalization built on Decantr signals and `Intl.PluralRules`. Zero external dependencies.
+  - `createI18n({ locale, messages, fallbackLocale })` — creates a reactive i18n instance
+  - `t(key, params?)` — translate with dot notation, `{param}` interpolation, and automatic pluralization via `_one`/`_other` suffixes
+  - `locale()` — signal getter for the current locale
+  - `setLocale(loc)` — reactively switch locales (all `t()` consumers auto-update)
+  - `setDirection('rtl' | 'ltr')` — set `dir` attribute on `<html>` for RTL languages
+  - `addMessages(locale, messages)` — deep-merge translations at runtime for lazy loading
+  - Fallback chain: current locale -> fallback locale -> raw key
+- **TypeScript declarations** for i18n (`types/i18n.d.ts`)
+- **Reference docs** (`reference/i18n.md`) — API, interpolation, pluralization rules, RTL setup, lazy loading patterns
+- **Test suite** (`test/i18n.test.js`) — comprehensive tests covering translation, dot notation, interpolation, pluralization, locale switching, fallback chain, direction setting, addMessages, edge cases, and reactivity
+
+### Changed
+- `package.json` — added `./i18n` export
+- `tools/dev-server.js` — added `decantr/i18n` import map entry
+- `tools/dts-gen.js` — added i18n declaration generator
+- `src/registry/index.json` — added `decantr/i18n` module entry
+- `CLAUDE.md` — added i18n import to Framework Imports section
+- `AGENTS.md` — added react-intl/vue-i18n/svelte-i18n equivalence row for `createI18n`
+
+## v0.6.0 — Architectural Audit & Pattern v2 (2026-03-16)
+
+### Breaking Changes
+- **Pattern v2 schema** — Patterns now support `presets` (named variants within a single file) and `default_preset`. Archetypes reference patterns as `{ "pattern": "hero", "preset": "image-overlay", "as": "recipe-hero" }` instead of separate files.
+- **13 domain-specific patterns removed** and consolidated into presets on generic patterns:
+  - `recipe-hero`, `cookbook-hero` → `hero` (presets: `image-overlay`, `image-overlay-compact`)
+  - `product-grid`, `recipe-card-grid`, `cookbook-grid`, `feature-grid` → `card-grid` (presets: `product`, `content`, `collection`, `icon`)
+  - `recipe-stats-bar` → `stats-bar`
+  - `recipe-ingredients` → `checklist-card`
+  - `recipe-instructions` → `steps-card`
+  - `nutrition-card` → `stat-card`
+  - `recipe-form-simple`, `recipe-form-chef` → `form-sections` (presets: `creation`, `structured`)
+  - `profile-header` → `detail-header` (preset: `profile`)
+- Pattern count: 49 → 41 (4 new generics + presets replace 13 domain-specific files)
+
+### Added
+- **Three-tier pattern architecture** — Tier 1 (structural patterns), Tier 2 (presets within patterns), Tier 3 (domain compositions in archetypes)
+- **Pattern Design Review Gate** — mandatory checkpoint between CLARIFY and DECANT stages to prevent pattern proliferation
+- **Plugin system** (`src/plugins/index.js`) — extend Decantr without forking via `plugins` config in `decantr.config.json`. Hooks: `onBuild`, `onDev`, `onGenerate`, `registerStyle`, `registerPattern`, `registerRecipe`
+- **`decantr lint` command** — code quality gates: atom validation, essence drift detection, inline style detection
+- **Error telemetry hooks** — `setErrorHandler(fn)` for ErrorBoundary integration with external error services
+- **Request middleware** — `queryClient.use(middleware)` chain for auth headers, logging, retry logic
+- **Cache invalidation API** — `queryClient.invalidateQueries('user.*')` glob-based query invalidation
+- **Route metadata** — `meta` field on route definitions, merged parent→child, accessible via `useRoute().meta`
+- **Bundle size budgets** — `build.sizeBudget` config with warnings for JS, CSS, total, and chunk size limits
+- **Essence versioning** — `version` field (semver) for tracking essence evolution
+- **Blend validation depth** — validates `at` breakpoints, `span` values, and span/cols consistency
+- **Package distribution** — `files` field and `publishConfig` in package.json for clean npm publishing
+
+### Changed
+- Archetype schemas updated to v2 (`ecommerce.json`, `recipe-community.json`) with preset references
+- Pattern index updated to v2 format with `presets` arrays per pattern
+- `tools/generate.js` — `resolvePatternRef()` handles both v1 strings and v2 `{pattern, preset, as}` objects
+- `test/decantation/engine.js` — `resolveBlend()` and `validateBlend()` handle v2 format
+- `cli/commands/validate.js` — validates preset existence against pattern index
+- `tools/figma-patterns.js` — preset-aware `patternToFigmaFrame()` and archetype composition
+- `workbench/src/explorer/patterns.js` — displays presets as expandable sub-items within pattern detail
+- All reference docs updated for v2 pattern architecture
+
+## v0.5.1 — Recipe Community Archetype (2026-03-16)
+
+### Added
+- **New archetype: `recipe-community`** — AI-powered recipe sharing platform with 12 pages (home, feed, recipe detail, create/edit, AI generate, chef chat, cookbooks, profile, auth), 8 tannins, and 3 skeletons
+- **14 new patterns** (now consolidated into presets in v0.6.0)
+- **New pattern category: Social** — groups community and social cooking patterns in the workbench explorer
+- Registry: 35 → 49 patterns, 6 → 7 archetypes
+
 ## v0.5.0 — Greenfield Component Rebuild (2026-03-13)
 
 ### Breaking Changes
@@ -81,7 +234,7 @@
 ### Added
 
 - **Core:** ErrorBoundary, Portal, Suspense, Transition, forwardRef; `mount()` returns unmount function
-- **State:** createResource, createContext/provide/inject, createSelector, createDeferred, createHistory, useLocalStorage
+- **State:** createContext/provide/inject, createSelector, createDeferred, createHistory, useLocalStorage
 - **Router:** Nested routes, route guards (beforeEach/afterEach), lazy loading, query params, active links, scroll restoration, named routes, URL validation
 - **Form system:** `decantr/form` module — createForm, validators, fieldArray, useFormField
 - **DataTable:** Sort, paginate, select, pin, resize, virtual scroll, edit, expand, filter, export
@@ -91,7 +244,7 @@
 - **Security:** Router URL validation (rejects javascript:, data:, absolute URLs), `sanitize()` utility
 - **Build tooling:** Tree shaking, code splitting, source maps, incremental builds, CSS purging, Brotli reporting, bundle analyzer
 - **TypeScript declarations:** `tools/dts-gen.js` generates `.d.ts` for all 15 modules
-- **Registry:** 31 patterns, 5 archetypes, recipe system, architect domain files
+- **Registry:** 49 patterns, 7 archetypes, recipe system, architect domain files
 - **Workbench:** Complete rewrite as "Decantation Explorer" — 7-layer navigation, token inspector, global search
 - **Decantation Process:** Full POUR→SETTLE→CLARIFY→DECANT→SERVE→AGE methodology with essence files
 - **Reference docs:** 14 deep-dive reference documents for all subsystems

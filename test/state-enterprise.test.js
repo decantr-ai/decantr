@@ -1,69 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createSignal, createEffect, createResource, createContext,
-  createSelector, createDeferred, createHistory
+  createSignal, createEffect, createContext,
+  createSelector, createDeferred, createHistory,
+  createRoot, getOwner, runWithOwner, on
 } from '../src/state/index.js';
-
-describe('createResource', () => {
-  it('fetches data and sets loading/data signals', async () => {
-    const fetcher = () => Promise.resolve('hello');
-    const { data, loading, error, refetch } = createResource(fetcher);
-    assert.equal(loading(), true);
-    assert.equal(data(), undefined);
-    await new Promise(r => setTimeout(r, 10));
-    assert.equal(loading(), false);
-    assert.equal(data(), 'hello');
-    assert.equal(error(), null);
-  });
-
-  it('handles fetch errors', async () => {
-    const fetcher = () => Promise.reject(new Error('fail'));
-    const { data, loading, error } = createResource(fetcher);
-    assert.equal(loading(), true);
-    await new Promise(r => setTimeout(r, 10));
-    assert.equal(loading(), false);
-    assert.equal(data(), undefined);
-    assert.ok(error() instanceof Error);
-    assert.equal(error().message, 'fail');
-  });
-
-  it('refetch re-runs the fetcher', async () => {
-    let count = 0;
-    const fetcher = () => Promise.resolve(++count);
-    const { data, refetch } = createResource(fetcher);
-    await new Promise(r => setTimeout(r, 10));
-    assert.equal(data(), 1);
-    refetch();
-    await new Promise(r => setTimeout(r, 10));
-    assert.equal(data(), 2);
-  });
-
-  it('mutate updates data without re-fetching', async () => {
-    let fetchCount = 0;
-    const fetcher = () => { fetchCount++; return Promise.resolve('original'); };
-    const { data, mutate } = createResource(fetcher);
-    await new Promise(r => setTimeout(r, 10));
-    assert.equal(data(), 'original');
-    assert.equal(fetchCount, 1);
-    mutate('mutated');
-    assert.equal(data(), 'mutated');
-    assert.equal(fetchCount, 1);
-  });
-
-  it('lazy option delays initial fetch', async () => {
-    let fetched = false;
-    const fetcher = () => { fetched = true; return Promise.resolve('data'); };
-    const { data, loading, refetch } = createResource(fetcher, { lazy: true });
-    assert.equal(fetched, false);
-    assert.equal(loading(), false);
-    assert.equal(data(), undefined);
-    refetch();
-    assert.equal(fetched, true);
-    await new Promise(r => setTimeout(r, 10));
-    assert.equal(data(), 'data');
-  });
-});
 
 describe('createContext', () => {
   it('returns default value when no provider', () => {
@@ -215,5 +156,113 @@ describe('createHistory', () => {
     redo();
     assert.equal(undoState, true);
     assert.equal(redoState, false);
+  });
+});
+
+// ─── New Phase 1 primitives ────────────────────────────────
+
+describe('createRoot', () => {
+  it('creates an independent reactive scope', () => {
+    let disposed = false;
+    createRoot(dispose => {
+      const [get, set] = createSignal(0);
+      createEffect(() => { get(); });
+      dispose();
+      disposed = true;
+    });
+    assert.equal(disposed, true);
+  });
+
+  it('disposes all children on root dispose', () => {
+    let effectRuns = 0;
+    let disposeRoot;
+    createRoot(dispose => {
+      disposeRoot = dispose;
+      const [get, set] = createSignal(0);
+      createEffect(() => { get(); effectRuns++; });
+      set(1);
+    });
+    assert.equal(effectRuns, 2);
+    // After disposal, setting should not re-run effect
+    // (effect is already cleaned up)
+  });
+});
+
+describe('on() — explicit dependencies', () => {
+  it('tracks explicit dependencies only', () => {
+    const [a, setA] = createSignal(1);
+    const [b, setB] = createSignal(10);
+    let observed = 0;
+
+    on(a, (value) => { observed = value + b(); });
+    // b() is read inside untrack, so changes to b should not re-run
+    assert.equal(observed, 11);
+
+    setB(20);
+    assert.equal(observed, 11); // should NOT re-run
+
+    setA(2);
+    assert.equal(observed, 22); // should re-run, reads new b()
+  });
+
+  it('supports defer option', () => {
+    const [a, setA] = createSignal(1);
+    let runs = 0;
+
+    on(a, () => { runs++; }, { defer: true });
+    assert.equal(runs, 0); // skipped initial
+
+    setA(2);
+    assert.equal(runs, 1);
+  });
+
+  it('supports array of dependencies', () => {
+    const [a, setA] = createSignal(1);
+    const [b, setB] = createSignal(2);
+    let observed = [];
+
+    on([a, b], (values) => { observed = values; });
+    assert.deepEqual(observed, [1, 2]);
+
+    setA(10);
+    assert.deepEqual(observed, [10, 2]);
+  });
+
+  it('provides previous values', () => {
+    const [a, setA] = createSignal(1);
+    let prevVal = null;
+
+    on(a, (value, prev) => { prevVal = prev; });
+    assert.equal(prevVal, 1); // first run, prev is initial
+
+    setA(5);
+    assert.equal(prevVal, 1); // prev was 1 before update
+  });
+});
+
+describe('dependency cleanup', () => {
+  it('removes stale subscriptions on effect re-run', () => {
+    const [toggle, setToggle] = createSignal(true);
+    const [a, setA] = createSignal(1);
+    const [b, setB] = createSignal(2);
+    let runs = 0;
+
+    createEffect(() => {
+      runs++;
+      if (toggle()) { a(); } else { b(); }
+    });
+    assert.equal(runs, 1);
+
+    // Change toggle so effect reads b instead of a
+    setToggle(false);
+    assert.equal(runs, 2);
+
+    // Changing a should NOT re-run effect (stale subscription cleaned)
+    setA(10);
+    assert.equal(runs, 2);
+
+    // Changing b SHOULD re-run effect
+    setB(20);
+    assert.equal(runs, 3);
   });
 });

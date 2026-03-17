@@ -1,12 +1,12 @@
 {
   "$schema": "https://decantr.ai/schemas/registry.v1.json",
   "version": "0.4.0",
-  "generated": "2026-03-14",
+  "generated": "2026-03-17",
   "modules": {
     "decantr/core": {
       "description": "DOM engine — hyperscript rendering, conditional, list, mount, lifecycle",
       "file": "core.json",
-      "exports": 14
+      "exports": 16
     },
     "decantr/state": {
       "description": "Reactive primitives — signals, effects, memos, stores, batch",
@@ -16,17 +16,17 @@
     "decantr/router": {
       "description": "Client-side routing — hash or history mode",
       "file": "router.json",
-      "exports": 5
+      "exports": 9
     },
     "decantr/css": {
       "description": "Atomic CSS engine + theme management",
       "file": "css.json",
-      "exports": 22
+      "exports": 23
     },
     "decantr/components": {
       "description": "UI components — all return HTMLElement, all accept inline styles",
       "file": "components.json",
-      "exports": 102
+      "exports": 108
     },
     "decantr/tags": {
       "description": "Proxy-based tag functions for concise markup",
@@ -64,13 +64,17 @@
       "financial-dashboard": {
         "file": "archetypes/financial-dashboard.json",
         "description": "Financial services lending dashboard"
+      },
+      "recipe-community": {
+        "file": "archetypes/recipe-community.json",
+        "description": "AI-powered recipe sharing platform"
       }
     }
   },
   "patterns": {
     "description": "Experience patterns — composable UI building blocks that archetypes reference",
     "index": "patterns/index.json",
-    "count": 35
+    "count": 49
   },
   "recipes": {
     "description": "Visual language recipes — composition rules for drastic visual transformations beyond token-level styling",

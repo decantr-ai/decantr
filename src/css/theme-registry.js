@@ -8,19 +8,7 @@
 import { createSignal, untrack } from '../state/index.js';
 import { derive, densityCSS, getShapeTokens } from './derive.js';
 import { componentCSS } from './components.js';
-import { clean } from './styles/clean.js';
-import { retro } from './styles/retro.js';
-import { glassmorphism } from './styles/glassmorphism.js';
 import { auradecantism } from './styles/auradecantism.js';
-import { commandCenter } from './styles/command-center.js';
-import { clay } from './styles/clay.js';
-import { liquidGlass } from './styles/liquid-glass.js';
-import { dopamine } from './styles/dopamine.js';
-import { prismatic } from './styles/prismatic.js';
-import { bioluminescent } from './styles/bioluminescent.js';
-import { editorial } from './styles/editorial.js';
-
-
 
 // ============================================================
 // State
@@ -54,7 +42,7 @@ const ANIM_OFF_CSS = '*{animation-duration:0.01ms !important;animation-iteration
 // Built-in Styles
 // ============================================================
 
-const builtins = [auradecantism, clean, retro, glassmorphism, commandCenter, clay, liquidGlass, dopamine, prismatic, bioluminescent, editorial];
+const builtins = [auradecantism];
 for (const s of builtins) styles.set(s.id, s);
 
 // ============================================================
@@ -222,6 +210,21 @@ export function registerStyle(style) {
   if (!style.personality) style.personality = {};
   if (!style.overrides) style.overrides = {};
   styles.set(style.id, style);
+}
+
+/**
+ * Merge a Map of plugin-provided styles into the registry.
+ * Used by the plugin system to wire addon styles without individual registerStyle calls.
+ * @param {Map<string, Object>} pluginStyles - Map of style id -> style definition
+ */
+export function mergePluginStyles(pluginStyles) {
+  for (const [id, style] of pluginStyles) {
+    if (!style.id || !style.name) throw new Error(`[decantr] Plugin style must have id and name (got id="${id}")`);
+    if (!style.seed) throw new Error(`[decantr] Plugin style "${id}" must have seed colors`);
+    if (!style.personality) style.personality = {};
+    if (!style.overrides) style.overrides = {};
+    styles.set(id, style);
+  }
 }
 
 // ============================================================

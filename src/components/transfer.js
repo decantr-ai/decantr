@@ -6,7 +6,7 @@
 import { h } from '../core/index.js';
 import { createEffect, createSignal } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
-import { createCheckControl } from './_behaviors.js';
+import { caret, createCheckControl } from './_behaviors.js';
 
 /**
  * @param {Object} [props]
@@ -127,13 +127,13 @@ export function Transfer(props = {}) {
       class: 'd-btn d-btn-sm',
       disabled: leftChecked.size === 0 ? '' : undefined,
       'aria-label': 'Move to target'
-    }, '\u203A');
+    }, caret('right'));
     const moveLeft = h('button', {
       type: 'button',
       class: 'd-btn d-btn-sm',
       disabled: rightChecked.size === 0 ? '' : undefined,
       'aria-label': 'Move to source'
-    }, '\u2039');
+    }, caret('left'));
 
     moveRight.addEventListener('click', () => {
       const moved = [...leftChecked];

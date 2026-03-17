@@ -2,6 +2,7 @@ export { describe, it, test, before, after, beforeEach, afterEach, mock } from '
 import assert from 'node:assert/strict';
 export { assert };
 export { createDOM } from './dom.js';
+export { flushEffects, withScope, mockSignal, expectEffect, expectSignal, createTestStore, settled } from './state.js';
 import { createDOM } from './dom.js';
 import { flush as flushScheduler } from '../state/scheduler.js';
 

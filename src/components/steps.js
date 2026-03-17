@@ -73,19 +73,19 @@ export function Steps(props = {}) {
       }, iconEl, content);
 
       if (clickable && onChange) {
-        step.style.cursor = 'pointer';
+        step.classList.add('d-step-clickable');
         step.addEventListener('click', () => onChange(i));
       }
 
-      container.appendChild(step);
-
-      // Connector between steps
+      // Connector between steps (child of step, not sibling)
       if (i < items.length - 1) {
         const connector = h('div', {
-          class: cx('d-step-connector', i < cur && 'd-step-connector-done')
+          class: cx('d-step-connector', status === 'finish' && 'd-step-connector-done')
         });
-        container.appendChild(connector);
+        step.appendChild(connector);
       }
+
+      container.appendChild(step);
     });
   }
 

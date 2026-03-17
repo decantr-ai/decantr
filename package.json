@@ -1,6 +1,6 @@
 {
-  "name": "@decantr/decantr",
-  "version": "0.4.2",
+  "name": "decantr",
+  "version": "0.9.0",
   "type": "module",
   "description": "AI-first web framework with signal-based reactivity, atomic CSS, and a structured registry of 100+ components.",
   "homepage": "https://decantr.ai",
@@ -22,6 +22,21 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "files": [
+    "src/",
+    "cli/",
+    "tools/",
+    "types/",
+    "reference/",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "mcpName": "decantr.ai/decantr",
   "bin": {
     "decantr": "./cli/index.js"
@@ -36,10 +51,42 @@
     "./tags": "./src/tags/index.js",
     "./css": "./src/css/index.js",
     "./state": "./src/state/index.js",
+    "./state/store": "./src/state/store.js",
+    "./state/arrays": "./src/state/arrays.js",
+    "./state/devtools": "./src/state/devtools.js",
+    "./state/middleware": "./src/state/middleware.js",
+    "./data": "./src/data/index.js",
     "./router": "./src/router/index.js",
     "./components": "./src/components/index.js",
     "./form": "./src/form/index.js",
-    "./chart": "./src/chart/index.js"
+    "./chart": "./src/chart/index.js",
+    "./test": "./src/test/index.js",
+    "./plugins": "./src/plugins/index.js",
+    "./i18n": "./src/i18n/index.js",
+    "./ssr": "./src/ssr/index.js",
+    "./tannins/auth": "./src/tannins/auth.js",
+    "./styles/clean": "./src/css/styles/addons/clean.js",
+    "./styles/retro": "./src/css/styles/addons/retro.js",
+    "./styles/glassmorphism": "./src/css/styles/addons/glassmorphism.js",
+    "./styles/command-center": "./src/css/styles/addons/command-center.js",
+    "./styles/clay": "./src/css/styles/addons/clay.js",
+    "./styles/liquid-glass": "./src/css/styles/addons/liquid-glass.js",
+    "./styles/dopamine": "./src/css/styles/addons/dopamine.js",
+    "./styles/prismatic": "./src/css/styles/addons/prismatic.js",
+    "./styles/bioluminescent": "./src/css/styles/addons/bioluminescent.js",
+    "./styles/editorial": "./src/css/styles/addons/editorial.js",
+    "./explorer/patterns.js": "./src/explorer/patterns.js",
+    "./explorer/icons.js": "./src/explorer/icons.js",
+    "./explorer/tokens.js": "./src/explorer/tokens.js",
+    "./explorer/foundations.js": "./src/explorer/foundations.js",
+    "./explorer/archetypes.js": "./src/explorer/archetypes.js",
+    "./explorer/charts.js": "./src/explorer/charts.js",
+    "./explorer/shells.js": "./src/explorer/shells.js",
+    "./explorer/recipes.js": "./src/explorer/recipes.js",
+    "./explorer/tools.js": "./src/explorer/tools.js",
+    "./explorer/components.js": "./src/explorer/components.js",
+    "./explorer/atoms.js": "./src/explorer/atoms.js",
+    "./explorer/styles.js": "./src/explorer/styles.js"
   },
   "sideEffects": false,
   "dependencies": {

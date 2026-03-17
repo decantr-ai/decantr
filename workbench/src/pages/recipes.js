@@ -2,11 +2,12 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { RecipeDetail, RecipeListView } from '../explorer/recipes.js';
+import { RecipeDetail, RecipeListView } from 'decantr/explorer/recipes.js';
+import { wbPath } from '../path-prefix.js';
 
 const { div, h2, p } = tags;
 
-const nav = (path) => navigate(path);
+const nav = (path) => navigate(wbPath(path));
 
 export function RecipesIndex() {
   return div({ class: css('_flex _col _gap4') },
@@ -21,7 +22,7 @@ export function RecipesIndex() {
 export function RecipeDetailPage({ id }) {
   return div({ class: css('_flex _col _gap4') },
     Breadcrumb({ items: [
-      { label: 'Recipes', onclick: () => navigate('/recipes') },
+      { label: 'Recipes', onclick: () => navigate(wbPath('/recipes')) },
       { label: id }
     ]}),
     RecipeDetail(id, nav)

@@ -4,6 +4,7 @@
   "subsections": {
     "core": { "label": "Core", "module": "decantr/core", "registry": "core.json" },
     "state": { "label": "State", "module": "decantr/state", "registry": "state.json" },
+    "data": { "label": "Data", "module": "decantr/data", "registry": "data.json" },
     "router": { "label": "Router", "module": "decantr/router", "registry": "router.json" },
     "forms": { "label": "Forms", "module": "decantr/form" }
   }

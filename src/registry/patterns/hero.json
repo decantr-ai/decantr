@@ -1,9 +1,66 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "hero",
   "name": "Hero Section",
-  "description": "Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages and marketing sections.",
+  "description": "Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages, recipe detail headers, and marketing sections.",
   "components": ["Button", "icon"],
+  "default_preset": "landing",
+  "presets": {
+    "landing": {
+      "description": "Centered headline + CTA + optional media",
+      "components": ["Button", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _flexCol _itemsCenter _textCenter _gap6 _py16 _px6",
+        "slots": {
+          "headline": "Primary heading, typically h1 with _heading1",
+          "description": "Supporting paragraph with _body _muted",
+          "cta-group": "Horizontal Button group with _flex _gap3",
+          "media": "Optional image, illustration, or chart component"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function Hero() {\n  const { div, h1, p } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap6 _py16 _px6') },\n    h1({ class: css('_heading1') }, 'Build Faster, Ship Smarter'),\n    p({ class: css('_body _fgmuted _mw[640px]') }, 'The AI-first framework that turns your ideas into production-ready applications in minutes, not months.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg' }, 'Get Started'),\n      Button({ variant: 'outline', size: 'lg' }, icon('github'), 'View Source')\n    )\n  );\n}"
+      }
+    },
+    "image-overlay": {
+      "description": "Full-bleed image with gradient overlay, content at bottom. Used for recipe/cookbook detail headers.",
+      "components": ["Button", "Chip", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_relative _wfull _h[400px] _overflow[hidden] _r4",
+        "slots": {
+          "image": "Full-bleed background cover image with gradient overlay",
+          "top-bar": "Absolute top row: back button (left) + action buttons (right)",
+          "tags": "Optional horizontal Chip row for tags overlaid on image",
+          "title": "Title (_heading2) overlaid at bottom of image",
+          "description": "Short description overlaid below title"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Chip, icon } from 'decantr/components';\nimport { navigate } from 'decantr/router';",
+        "example": "function ImageOverlayHero({ item }) {\n  const { div, h1, p, img } = tags;\n\n  return div({ class: css('_relative _wfull _h[400px] _overflow[hidden] _r4') },\n    img({ src: item.image, alt: item.title, class: css('_absolute _inset0 _wfull _hfull _object[cover]') }),\n    div({ class: css('_absolute _inset0 _bg[linear-gradient(transparent_50%,rgba(0,0,0,0.8))]') }),\n    div({ class: css('_absolute _top0 _left0 _right0 _flex _jcsb _p4') },\n      Button({ variant: 'ghost', size: 'sm', onclick: () => navigate(-1) }, icon('arrow-left'), 'Back'),\n      Button({ variant: 'ghost', size: 'sm' }, icon('edit'), 'Edit')\n    ),\n    div({ class: css('_absolute _bottom0 _left0 _right0 _p6 _flex _col _gap2') },\n      div({ class: css('_flex _gap2') },\n        ...(item.tags || []).map(t => Chip({ size: 'sm', variant: 'outline' }, t))\n      ),\n      h1({ class: css('_heading2 _fgfg') }, item.title),\n      p({ class: css('_body _fgmuted') }, item.description)\n    )\n  );\n}"
+      }
+    },
+    "image-overlay-compact": {
+      "description": "Compact full-bleed image with overlay for collection headers. Shorter height, fewer slots.",
+      "components": ["Button", "Badge", "Avatar", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_relative _wfull _h[300px] _overflow[hidden] _r4",
+        "slots": {
+          "image": "Full-bleed background cover image with gradient overlay",
+          "top-actions": "Absolute top-right: edit and delete action Buttons",
+          "content": "Absolute bottom: title (_heading2), count Badge, author Avatar + name"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Badge, Avatar, icon } from 'decantr/components';",
+        "example": "function CompactOverlayHero({ item }) {\n  const { div, h1, span, img } = tags;\n\n  return div({ class: css('_relative _wfull _h[300px] _overflow[hidden] _r4') },\n    img({ src: item.cover, alt: item.title, class: css('_absolute _inset0 _wfull _hfull _object[cover]') }),\n    div({ class: css('_absolute _inset0 _bg[linear-gradient(transparent_50%,rgba(0,0,0,0.8))]') }),\n    div({ class: css('_absolute _top0 _right0 _p4 _flex _gap2') },\n      Button({ variant: 'ghost', size: 'sm' }, icon('edit'), 'Edit'),\n      Button({ variant: 'ghost', size: 'sm' }, icon('trash'), 'Delete')\n    ),\n    div({ class: css('_absolute _bottom0 _left0 _right0 _p6 _flex _col _gap2') },\n      h1({ class: css('_heading2 _fgfg') }, item.title),\n      div({ class: css('_flex _aic _gap3') },\n        Badge({ variant: 'outline' }, `${item.count} items`),\n        div({ class: css('_flex _aic _gap2') },\n          Avatar({ src: item.author?.avatar, size: 'xs' }),\n          span({ class: css('_textsm') }, item.author?.name)\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _itemsCenter _textCenter _gap6 _py16 _px6",
@@ -18,17 +75,29 @@
     "command-center": {
       "wrapper": "cc-frame",
       "atoms": "cc-grid",
-      "notes": "Headline uses cc-label. CTA buttons get cc-glow on primary action. Background uses cc-grid overlay."
+      "notes": "Headline uses cc-label. CTA buttons get cc-glow on primary action. Background uses cc-grid overlay.",
+      "preset_notes": {
+        "image-overlay": "Hero image framed with cc-frame border. Tags use cc-label. Title uses cc-data.",
+        "image-overlay-compact": "Hero framed with cc-frame border. Title uses cc-data. Count badge uses cc-label."
+      }
     },
     "auradecantism": {
       "wrapper": "d-mesh",
       "atoms": "",
-      "notes": "Hero section on d-mesh background. Headline uses d-gradient-text. CTA button gets aura-glow."
+      "notes": "Hero section on d-mesh background. Headline uses d-gradient-text. CTA button gets aura-glow.",
+      "preset_notes": {
+        "image-overlay": "Gradient overlay uses d-mesh tones. Title uses d-gradient-text. Subtle aura-glow on action buttons.",
+        "image-overlay-compact": "Gradient overlay blends into d-mesh tones. Title uses d-gradient-text."
+      }
     },
     "clean": {
       "wrapper": "",
       "atoms": "_bgmuted _r4",
-      "notes": "Hero on subtle muted background. No gradients or glass. Standard button styling."
+      "notes": "Hero on subtle muted background. No gradients or glass. Standard button styling.",
+      "preset_notes": {
+        "image-overlay": "Simple image with dark gradient overlay for text legibility. No extra effects.",
+        "image-overlay-compact": "Simple image with dark gradient overlay for text legibility."
+      }
     }
   },
   "code": {

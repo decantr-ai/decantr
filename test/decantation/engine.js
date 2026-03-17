@@ -60,6 +60,72 @@ export function clearCaches() {
   _patternIndexCache = null;
 }
 
+// ── Archetype Inheritance ─────────────────────────────────────────────────
+
+/**
+ * Resolve an archetype with inheritance support.
+ * If the archetype has an `extends` field, recursively load and merge with parent.
+ *
+ * @param {string} id - Archetype ID
+ * @param {Set} [visited] - Visited set for circular dependency detection
+ * @param {number} [depth] - Current depth (max 5)
+ * @returns {Promise<Object>} Fully resolved archetype
+ */
+export async function resolveArchetype(id, visited = new Set(), depth = 0) {
+  if (depth > 5) throw new Error(`Archetype inheritance depth exceeds limit (5): ${id}`);
+  if (visited.has(id)) throw new Error(`Circular archetype inheritance: ${[...visited, id].join(' → ')}`);
+
+  const archetypes = await loadArchetypes();
+  const archetype = archetypes[id];
+  if (!archetype) throw new Error(`Unknown archetype: ${id}`);
+
+  if (!archetype.extends) return { ...archetype };
+
+  visited.add(id);
+  const parent = await resolveArchetype(archetype.extends, visited, depth + 1);
+
+  return mergeArchetypes(parent, archetype);
+}
+
+/**
+ * Deep-merge a parent archetype with a child archetype.
+ * - Pages: child adds/overrides by id
+ * - Tannins: concat + dedup
+ * - Skeletons: child overrides individual keys
+ * - All other fields: child overrides parent (shallow)
+ *
+ * @param {Object} parent - Resolved parent archetype
+ * @param {Object} child - Child archetype (may still have `extends`)
+ * @returns {Object} Merged archetype
+ */
+function mergeArchetypes(parent, child) {
+  const result = { ...parent, ...child };
+  delete result.extends;
+
+  // Pages: child adds/overrides by id
+  const parentPages = parent.pages || [];
+  const childPages = child.pages || [];
+  const pageMap = new Map(parentPages.map(p => [p.id, p]));
+  for (const page of childPages) {
+    pageMap.set(page.id, page);
+  }
+  result.pages = [...pageMap.values()];
+
+  // Tannins: concat + dedup
+  const parentTannins = parent.tannins || [];
+  const childTannins = child.tannins || [];
+  result.tannins = [...new Set([...parentTannins, ...childTannins])];
+
+  // Skeletons: child overrides individual keys
+  if (parent.skeletons || child.skeletons) {
+    result.skeletons = { ...(parent.skeletons || {}), ...(child.skeletons || {}) };
+  }
+
+  // suggested_vintage: child overrides entirely (already handled by spread)
+
+  return result;
+}
+
 // ── Synthetic Trigger Generation ──────────────────────────────────────────
 
 /**
@@ -98,7 +164,7 @@ export function deriveSyntheticTriggers(archetype) {
   ])];
 
   // Negative: other archetype ids
-  const otherIds = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer']
+  const otherIds = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community']
     .filter(a => a !== id);
   const negative = otherIds.map(a => `${a}-only`);
 
@@ -556,18 +622,28 @@ export function resolveBlend(archetype, activatedFeatures, log) {
 
   // Check for unresolved patterns (patterns referenced but not in pattern index)
   // This is a static check — we just flag them
+  // Supports v2 preset references: { pattern, preset, as } and plain strings
   const allPatterns = new Set();
+  function collectPatternRef(ref) {
+    if (typeof ref === 'string') {
+      allPatterns.add(ref);
+    } else if (ref && ref.pattern) {
+      allPatterns.add(ref.pattern); // track the base pattern, not the alias
+    }
+  }
   for (const page of pages) {
     for (const p of page.patterns) {
-      allPatterns.add(p);
+      collectPatternRef(p);
     }
     // Also check blend entries
     for (const entry of page.blend) {
       if (typeof entry === 'string') {
         allPatterns.add(entry);
+      } else if (entry && entry.pattern && !entry.cols) {
+        allPatterns.add(entry.pattern);
       } else if (entry && entry.cols) {
         for (const col of entry.cols) {
-          allPatterns.add(col);
+          collectPatternRef(col);
         }
       }
     }
@@ -596,9 +672,18 @@ export function validateBlend(blend, patternIndex) {
   const missing = [];
   const knownPatterns = new Set(Object.keys(patternIndex.patterns || patternIndex));
 
+  function checkRef(ref) {
+    if (typeof ref === 'string') {
+      if (!knownPatterns.has(ref)) missing.push(ref);
+    } else if (ref && ref.pattern) {
+      // v2 preset reference — validate the base pattern exists
+      if (!knownPatterns.has(ref.pattern)) missing.push(ref.pattern);
+    }
+  }
+
   for (const page of blend.pages) {
     for (const p of page.patterns) {
-      if (!knownPatterns.has(p)) missing.push(p);
+      checkRef(p);
     }
   }
 
@@ -607,7 +692,7 @@ export function validateBlend(blend, patternIndex) {
 
 // ── Essence Validation ────────────────────────────────────────────────────
 
-const KNOWN_ARCHETYPES = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer'];
+const KNOWN_ARCHETYPES = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community'];
 const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center'];
 
 /**

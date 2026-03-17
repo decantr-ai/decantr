@@ -46,8 +46,8 @@ export function renderCalendar(opts) {
   const month = viewDate.getMonth();
 
   // Header
-  const prevBtn = button({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous month' }, '\u2039');
-  const nextBtn = button({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next month' }, '\u203A');
+  const prevBtn = button({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous month' }, caret('left'));
+  const nextBtn = button({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next month' }, caret('right'));
   const titleBtn = onTitleClick
     ? button({ type: 'button', class: 'd-datepicker-title' }, `${MONTHS[month]} ${year}`)
     : span({ class: 'd-datepicker-title' }, `${MONTHS[month]} ${year}`);

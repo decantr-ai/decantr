@@ -1,4 +1,4 @@
-import { createEffect, _pendingResources } from '../state/index.js';
+import { createEffect } from '../state/index.js';
 export { onMount, onDestroy } from './lifecycle.js';
 import { drainMountQueue, drainDestroyQueue, pushScope, popScope, runDestroyFns } from './lifecycle.js';
 
@@ -167,6 +167,57 @@ export function unmount(root) {
   while (root.firstChild) root.removeChild(root.firstChild);
 }
 
+// ─── Dev-mode HMR remount hook ──────────────────────────────────
+// Zero cost in production — entire block gated behind __DECANTR_DEV__
+
+if (typeof globalThis !== 'undefined' && globalThis.__DECANTR_DEV__) {
+  // Map to track mounted roots by module path
+  const _hmrRoots = new Map();
+
+  globalThis.__d_hmr_remount = function(modulePath, newModule) {
+    // Find the mount root for this module
+    const root = _hmrRoots.get(modulePath);
+    if (root && newModule.default) {
+      unmount(root);
+      mount(root, newModule.default);
+      console.log('[decantr hmr] Updated:', modulePath);
+    } else if (newModule.default) {
+      // Try the main app root as fallback
+      const appRoot = document.getElementById('app');
+      if (appRoot) {
+        unmount(appRoot);
+        mount(appRoot, newModule.default);
+        console.log('[decantr hmr] Remounted app for:', modulePath);
+      }
+    }
+  };
+
+  // Allow pages/components to register their mount root
+  globalThis.__d_hmr_register = function(modulePath, root) {
+    _hmrRoots.set(modulePath, root);
+  };
+}
+
+// ─── Error Telemetry ────────────────────────────────────────────
+
+/** @type {Function|null} */
+let _errorHandler = null;
+
+/**
+ * Set a global error telemetry handler.
+ * Called whenever an ErrorBoundary catches an error.
+ * @param {(info: { error: Error, component: string|null, stack: string|null, context: Object }) => void} fn
+ */
+export function setErrorHandler(fn) {
+  _errorHandler = typeof fn === 'function' ? fn : null;
+}
+
+/**
+ * Get the current error telemetry handler (for testing/internal use).
+ * @returns {Function|null}
+ */
+export function _getErrorHandler() { return _errorHandler; }
+
 // ─── ErrorBoundary ──────────────────────────────────────────────
 
 /** @type {Function|null} */
@@ -196,6 +247,19 @@ export function ErrorBoundary(props, ...children) {
 
   function showFallback(err) {
     caught = err;
+    // Notify the global error telemetry handler
+    if (_errorHandler) {
+      try {
+        _errorHandler({
+          error: err instanceof Error ? err : new Error(String(err)),
+          component: props.name || null,
+          stack: err instanceof Error ? err.stack || null : null,
+          context: props.context || {}
+        });
+      } catch (_) {
+        // Telemetry handler must never break the boundary
+      }
+    }
     clear();
     const fb = props.fallback(err, retry);
     if (fb) container.appendChild(fb);
@@ -303,8 +367,11 @@ function resolveTarget(target) {
 
 // ─── Suspense ───────────────────────────────────────────────────
 
+/** @type {Set<Promise>} */
+export const _pendingQueries = new Set();
+
 /**
- * Async boundary. Shows fallback while any createResource() in children is loading.
+ * Async boundary. Shows fallback while any createQuery() in children is loading.
  * @param {Object} props
  * @param {Function} props.fallback — () => Node (loading state)
  * @param {...Node} children
@@ -341,13 +408,13 @@ export function Suspense(props, ...children) {
     if (fallbackNode) container.appendChild(fallbackNode);
   }
 
-  // Check pending resources and react
+  // Check pending queries and react
   createEffect(() => {
-    if (_pendingResources.size > 0) {
+    if (_pendingQueries.size > 0) {
       showFallback();
-      // Poll until resolved — resources are promise-based, so we check periodically
+      // Poll until resolved — queries are promise-based, so we check periodically
       const iv = setInterval(() => {
-        if (_pendingResources.size === 0) {
+        if (_pendingQueries.size === 0) {
           clearInterval(iv);
           showChildren();
         }
@@ -358,7 +425,7 @@ export function Suspense(props, ...children) {
   });
 
   // Initial render: if nothing pending, show children right away
-  if (_pendingResources.size === 0) {
+  if (_pendingQueries.size === 0) {
     for (let i = 0; i < childNodes.length; i++) container.appendChild(childNodes[i]);
     showing = 'children';
   }

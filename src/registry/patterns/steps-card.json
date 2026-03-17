@@ -1,0 +1,55 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "steps-card",
+  "name": "Steps Card",
+  "description": "Numbered step-by-step instructions displayed in a Card. Each step has a circle number badge, text content, and optional timer/metadata.",
+  "components": ["Card", "Card.Header", "Card.Body", "Badge", "icon"],
+  "default_preset": "default",
+  "presets": {
+    "default": {
+      "description": "Ordered list of steps, each with circle Badge number, text, and optional timer.",
+      "components": ["Card", "Card.Header", "Card.Body", "Badge", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0",
+        "slots": {
+          "header": "Card.Header with title and step count",
+          "steps": "Ordered list of steps, each with circle Badge number, text, and optional timer icon"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+        "example": "function StepsCard({ title, steps }) {\n  const { div, h3, p, span } = tags;\n\n  return Card({},\n    Card.Header({},\n      div({ class: css('_flex _aic _jcsb') },\n        h3({ class: css('_heading5') }, icon('chef-hat'), ` ${title}`),\n        span({ class: css('_textsm _fgmuted') }, `${steps.length} steps`)\n      )\n    ),\n    Card.Body({ class: css('_flex _col _gap4') },\n      ...steps.map((step, i) =>\n        div({ class: css('_flex _gap3') },\n          Badge({ variant: 'outline', class: css('_rfull _w[32px] _h[32px] _flex _aic _jcc _shrink0') }, `${i + 1}`),\n          div({ class: css('_flex _col _gap1 _flex1') },\n            p({}, step.text),\n            step.time ? span({ class: css('_textsm _fgmuted') }, icon('timer'), ` ${step.time} min`) : null\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap0",
+    "slots": {
+      "header": "Card.Header with title and step count",
+      "steps": "Ordered list of steps with numbered badges"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame-sm",
+      "atoms": "",
+      "notes": "Card uses cc-frame-sm. Step badges use cc-glow. Timer indicators use cc-data."
+    },
+    "auradecantism": {
+      "wrapper": "d-glass",
+      "atoms": "_r4",
+      "notes": "Card on glass background. Step numbers use d-gradient-text. Active step highlighted."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_b1 _r4",
+      "notes": "Simple bordered card. Circle number badges with muted background."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+    "example": "function StepsCard({ title, steps }) {\n  const { div, h3, p, span } = tags;\n\n  return Card({},\n    Card.Header({},\n      div({ class: css('_flex _aic _jcsb') },\n        h3({ class: css('_heading5') }, icon('chef-hat'), ` ${title}`),\n        span({ class: css('_textsm _fgmuted') }, `${steps.length} steps`)\n      )\n    ),\n    Card.Body({ class: css('_flex _col _gap4') },\n      ...steps.map((step, i) =>\n        div({ class: css('_flex _gap3') },\n          Badge({ variant: 'outline', class: css('_rfull _w[32px] _h[32px] _flex _aic _jcc _shrink0') }, `${i + 1}`),\n          div({ class: css('_flex _col _gap1 _flex1') },\n            p({}, step.text),\n            step.time ? span({ class: css('_textsm _fgmuted') }, icon('timer'), ` ${step.time} min`) : null\n          )\n        )\n      )\n    )\n  );\n}"
+  }
+}

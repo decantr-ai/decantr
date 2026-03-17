@@ -1112,3 +1112,29 @@ export function createCheckControl(opts = {}) {
   const wrap = h('span', { class: 'd-checkbox-inline' }, input, check);
   return { wrap, input };
 }
+
+/**
+ * Scroll-reveal — adds 'd-visible' class when element enters viewport.
+ * @param {HTMLElement} el - Element to observe
+ * @param {Object} [options]
+ * @param {number} [options.threshold=0.1] - Intersection threshold (0-1)
+ * @param {string} [options.rootMargin='0px 0px -50px 0px'] - Observer root margin
+ * @param {boolean} [options.once=true] - Unobserve after first intersection
+ * @returns {Function} Cleanup function for onDestroy
+ */
+export function createScrollReveal(el, options = {}) {
+  const { threshold = 0.1, rootMargin = '0px 0px -50px 0px', once = true } = options;
+  if (typeof IntersectionObserver === 'undefined') return () => {};
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('d-visible');
+        if (once) observer.unobserve(entry.target);
+      } else if (!once) {
+        entry.target.classList.remove('d-visible');
+      }
+    }
+  }, { threshold, rootMargin });
+  observer.observe(el);
+  return () => observer.disconnect();
+}

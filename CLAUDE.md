@@ -14,6 +14,7 @@ Built with [decantr](https://decantr.ai) v0.4.2 — AI-first web framework.
 - `reference/llm-primer.md` — Imports, atoms, components, pattern snippets
 - `reference/spatial-guidelines.md` — Spacing rules, density zones, Clarity profiles
 - `reference/atoms.md` — Valid atom class names (always check before using `_` atoms)
+- `reference/shells.md` — Shell layout presets, config schema, nav states, grid area diagrams
 
 ## The Decantation Process
 
@@ -21,8 +22,8 @@ Follow this process for ALL new projects and major feature additions:
 
 ### Stage 1: POUR — User expresses intent in natural language
 ### Stage 2: SETTLE — Decompose into five layers:
-- **Terroir**: Domain archetype → read `node_modules/@decantr/decantr/src/registry/archetypes/`
-- **Vintage**: Style + mode + recipe → read `node_modules/@decantr/decantr/src/registry/recipe-*.json`
+- **Terroir**: Domain archetype → read `node_modules/decantr/src/registry/archetypes/`
+- **Vintage**: Style + mode + recipe → read `node_modules/decantr/src/registry/recipe-*.json`
 - **Character**: Brand personality traits (e.g. "tactical", "minimal", "playful")
 - **Structure**: Page/view map with skeleton assignments
 - **Tannins**: Functional systems (auth, search, payments, etc.)
@@ -32,9 +33,17 @@ Read the archetype's `default_blend` for each page. Copy into the Essence's `ble
 Derive Clarity profile from Character traits → `reference/spatial-guidelines.md` §17. Apply density-appropriate gaps to each page's `surface` atoms.
 
 **Blend format**: Each `blend` is an ordered array of rows:
-- `"pattern-id"` — full-width pattern row
+- `"pattern-id"` — full-width pattern row (default preset)
+- `{ "pattern": "hero", "preset": "image-overlay", "as": "recipe-hero" }` — pattern with preset + local alias
 - `{ "cols": ["a", "b"], "at": "lg" }` — equal-width side-by-side, collapse below `lg`
 - `{ "cols": ["a", "b"], "span": { "a": 3 }, "at": "md" }` — weighted columns (a=3fr, b=1fr)
+
+**Pattern Presets (v2)**: Patterns support named presets — structural variants within a single file.
+- `hero` has presets: `landing`, `image-overlay`, `image-overlay-compact`
+- `card-grid` has presets: `product`, `content`, `collection`, `icon`
+- `form-sections` has presets: `settings`, `creation`, `structured`
+- `detail-header` has presets: `standard`, `profile`
+Before creating a new pattern file, check if it can be a preset on an existing pattern.
 
 Optional `surface` on each structure entry sets page container atoms (default: `_flex _col _gap4 _p4 _overflow[auto] _flex1`).
 
@@ -64,12 +73,16 @@ You MUST create `decantr.essence.json` during CLARIFY. Do NOT proceed to DECANT 
 **Simple (single domain):**
 ```json
 {
+  "version": "1.0.0",
   "terroir": "saas-dashboard",
   "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
   "character": ["tactical", "data-dense"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [
-    { "id": "overview", "skeleton": "sidebar-main", "blend": ["kpi-grid", "data-table"] }
+    { "id": "overview", "skeleton": "sidebar-main", "blend": ["kpi-grid", "data-table"] },
+    { "id": "catalog", "skeleton": "top-nav-main", "blend": [
+      { "pattern": "card-grid", "preset": "product", "as": "product-grid" }
+    ]}
   ],
   "tannins": ["auth", "realtime-data"],
   "cork": { "enforce_style": true, "enforce_recipe": true }
@@ -99,32 +112,67 @@ You MUST create `decantr.essence.json` during CLARIFY. Do NOT proceed to DECANT 
 ## Framework Imports
 
 ```js
-import { tags } from '@decantr/decantr/tags';
-import { h, text, cond, list, mount, onMount, onDestroy } from '@decantr/decantr/core';
-import { createSignal, createEffect, createMemo, createStore, batch } from '@decantr/decantr/state';
-import { createRouter, link, navigate, useRoute } from '@decantr/decantr/router';
-import { css, setStyle, setMode } from '@decantr/decantr/css';
-import { Button, Input, Card, Modal, Tabs, ... } from '@decantr/decantr/components';
+import { tags } from 'decantr/tags';
+import { h, text, cond, list, mount, onMount, onDestroy } from 'decantr/core';
+import { createSignal, createEffect, createMemo, createStore, batch, createRoot, on } from 'decantr/state';
+import { createQuery, createMutation, queryClient, createEntityStore, createURLSignal, createPersisted } from 'decantr/data';
+import { createRouter, link, navigate, useRoute } from 'decantr/router';
+import { css, setStyle, setMode } from 'decantr/css';
+import { Button, Input, Card, Modal, Tabs, ... } from 'decantr/components';
+import { createI18n } from 'decantr/i18n';
+import { createAuth, requireAuth } from 'decantr/tannins/auth';
+import { renderToString, renderToStream, hydrate } from 'decantr/ssr';
 ```
 
 ## Styles
 
-Available: `auradecantism` (default), `clean`, `retro`, `glassmorphism`, `command-center`
+**Core** (ships with framework, no extra import): `auradecantism` (default)
+
+**Add-on styles** (import individually via `import { clean } from 'decantr/styles/clean'` then `registerStyle(clean)`):
+`clean`, `retro`, `glassmorphism`, `command-center`, `bioluminescent`, `clay`, `dopamine`, `editorial`, `liquid-glass`, `prismatic`
+
 Modes: `light`, `dark`, `auto`
 Shapes: `sharp`, `rounded`, `pill`
 
+### Atom Capabilities
+- **Arbitrary transitions**: `_trans[color_0.15s_ease]` — underscores become spaces
+- **Opacity modifiers**: Work on all semantic color atoms — `_bgprimary/50`, `_bcborder/80`, `_fgmuted/60`
+- **Arbitrary values**: `_bg[#1a1a2e]`, `_w[calc(100%-2rem)]`, `_p[clamp(1rem,3vw,2rem)]`
+
 ## Registry
 
-- `node_modules/@decantr/decantr/src/registry/index.json` — Full API catalog
-- `node_modules/@decantr/decantr/src/registry/components.json` — Component props/types
-- `node_modules/@decantr/decantr/src/registry/archetypes/` — Domain archetypes
-- `node_modules/@decantr/decantr/src/registry/patterns/` — Experience patterns
-- `node_modules/@decantr/decantr/src/registry/recipe-*.json` — Visual language recipes
+- `node_modules/decantr/src/registry/index.json` — Full API catalog
+- `node_modules/decantr/src/registry/components.json` — Component props/types
+- `node_modules/decantr/src/registry/archetypes/` — Domain archetypes (v2: `{pattern, preset, as}` references)
+- `node_modules/decantr/src/registry/patterns/` — Experience patterns (v2: presets within files)
+- `node_modules/decantr/src/registry/recipe-*.json` — Visual language recipes
+
+## Build Configuration
+
+In `decantr.config.json`:
+```json
+{
+  "build": {
+    "sizeBudget": {
+      "jsRaw": 102400,
+      "jsBrotli": 25600,
+      "cssRaw": 51200,
+      "totalBrotli": 51200,
+      "chunkRaw": 51200
+    }
+  },
+  "plugins": [
+    "./plugins/my-plugin.js",
+    ["@acme/decantr-plugin", { "option": true }]
+  ]
+}
+```
+See `reference/plugins.md` for plugin API documentation.
 
 ## Commands
 
-- `npx @decantr/decantr dev` — Dev server with hot reload
-- `npx @decantr/decantr build` — Production build to `dist/`
-- `npx @decantr/decantr test` — Run tests
-- `npx @decantr/decantr validate` — Validate `decantr.essence.json`
+- `npx decantr dev` — Dev server with hot reload
+- `npx decantr build` — Production build to `dist/`
+- `npx decantr test` — Run tests
+- `npx decantr validate` — Validate `decantr.essence.json`
 

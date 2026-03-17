@@ -1,17 +1,17 @@
 {
-  "$schema": "https://decantr.ai/schemas/patterns.v1.json",
-  "description": "Experience patterns — composable building blocks that archetypes reference. Each pattern maps to a Blend (concrete component composition) and can be overridden per recipe.",
+  "$schema": "https://decantr.ai/schemas/patterns.v2.json",
+  "description": "Experience patterns — composable building blocks that archetypes reference. Each pattern maps to a Blend (concrete component composition) and can be overridden per recipe. v2 patterns support presets: named variants within a single pattern file.",
   "patterns": {
-    "hero": { "name": "Hero", "file": "hero.json" },
+    "hero": { "name": "Hero", "file": "hero.json", "presets": ["landing", "image-overlay", "image-overlay-compact"] },
     "kpi-grid": { "name": "KPI Grid", "file": "kpi-grid.json" },
     "data-table": { "name": "Data Table", "file": "data-table.json" },
     "activity-feed": { "name": "Activity Feed", "file": "activity-feed.json" },
     "chart-grid": { "name": "Chart Grid", "file": "chart-grid.json" },
-    "product-grid": { "name": "Product Grid", "file": "product-grid.json" },
+    "card-grid": { "name": "Card Grid", "file": "card-grid.json", "presets": ["product", "content", "collection", "icon"] },
     "filter-sidebar": { "name": "Filter Sidebar", "file": "filter-sidebar.json" },
     "wizard": { "name": "Wizard", "file": "wizard.json" },
     "detail-panel": { "name": "Detail Panel", "file": "detail-panel.json" },
-    "form-sections": { "name": "Form Sections", "file": "form-sections.json" },
+    "form-sections": { "name": "Form Sections", "file": "form-sections.json", "presets": ["settings", "creation", "structured"] },
     "post-list": { "name": "Post List", "file": "post-list.json" },
     "auth-form": { "name": "Auth Form", "file": "auth-form.json" },
     "article-content": { "name": "Article Content", "file": "article-content.json" },
@@ -26,7 +26,7 @@
     "author-card": { "name": "Author Card", "file": "author-card.json" },
     "table-of-contents": { "name": "Table of Contents", "file": "table-of-contents.json" },
     "filter-bar": { "name": "Filter Bar", "file": "filter-bar.json" },
-    "detail-header": { "name": "Detail Header", "file": "detail-header.json" },
+    "detail-header": { "name": "Detail Header", "file": "detail-header.json", "presets": ["standard", "profile"] },
     "media-gallery": { "name": "Media Gallery", "file": "media-gallery.json" },
     "pricing-table": { "name": "Pricing Table", "file": "pricing-table.json" },
     "order-history": { "name": "Order History", "file": "order-history.json" },
@@ -36,6 +36,12 @@
     "goal-tracker": { "name": "Goal Tracker", "file": "goal-tracker.json" },
     "pipeline-tracker": { "name": "Pipeline Tracker", "file": "pipeline-tracker.json" },
     "scorecard": { "name": "Scorecard", "file": "scorecard.json" },
-    "comparison-panel": { "name": "Comparison Panel", "file": "comparison-panel.json" }
+    "comparison-panel": { "name": "Comparison Panel", "file": "comparison-panel.json" },
+    "stats-bar": { "name": "Stats Bar", "file": "stats-bar.json" },
+    "checklist-card": { "name": "Checklist Card", "file": "checklist-card.json" },
+    "steps-card": { "name": "Steps Card", "file": "steps-card.json" },
+    "stat-card": { "name": "Stat Card", "file": "stat-card.json" },
+    "photo-to-recipe": { "name": "Photo to Recipe", "file": "photo-to-recipe.json" },
+    "chat-interface": { "name": "Chat Interface", "file": "chat-interface.json" }
   }
 }

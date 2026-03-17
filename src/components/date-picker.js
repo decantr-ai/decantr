@@ -8,7 +8,7 @@ import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { createFormField } from './_behaviors.js';
+import { caret, createFormField } from './_behaviors.js';
 import { icon } from './icon.js';
 import { applyFieldState, createFieldOverlay, renderCalendar, MONTHS } from './_primitives.js';
 
@@ -116,8 +116,8 @@ export function DatePicker(props = {}) {
     panel.replaceChildren();
     const year = viewDate.getFullYear();
 
-    const prevBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous year' }, '\u2039');
-    const nextBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next year' }, '\u203A');
+    const prevBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous year' }, caret('left'));
+    const nextBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next year' }, caret('right'));
     const titleBtn = buttonTag({ type: 'button', class: 'd-datepicker-title' }, String(year));
 
     prevBtn.addEventListener('click', () => { viewDate.setFullYear(year - 1); renderMonthView(); });
@@ -152,8 +152,8 @@ export function DatePicker(props = {}) {
     const year = viewDate.getFullYear();
     const startYear = Math.floor(year / 12) * 12;
 
-    const prevBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn' }, '\u2039');
-    const nextBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn' }, '\u203A');
+    const prevBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn' }, caret('left'));
+    const nextBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn' }, caret('right'));
     const title = span({ class: 'd-datepicker-title' }, `${startYear} - ${startYear + 11}`);
 
     prevBtn.addEventListener('click', () => { viewDate.setFullYear(year - 12); renderYearView(); });

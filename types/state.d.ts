@@ -42,27 +42,6 @@ declare module 'decantr/state' {
    */
   export function useLocalStorage<T>(key: string, initialValue: T): [() => T, (value: T | ((prev: T) => T)) => void];
 
-  interface Resource<T> {
-    /** Signal getter for the resolved data. */
-    data: () => T | undefined;
-    /** Signal getter for loading state. */
-    loading: () => boolean;
-    /** Signal getter for error state. */
-    error: () => Error | null;
-    /** Re-run the fetcher. */
-    refetch: () => Promise<void>;
-    /** Manually set the data value. */
-    mutate: (value: T) => void;
-  }
-
-  /**
-   * Create an async resource backed by a fetcher function.
-   */
-  export function createResource<T>(
-    fetcher: () => Promise<T>,
-    options?: { initialValue?: T; lazy?: boolean }
-  ): Resource<T>;
-
   interface Context<T> {
     /** Provide a value. Returns a cleanup function to restore previous value. */
     Provider: (value: T) => () => void;

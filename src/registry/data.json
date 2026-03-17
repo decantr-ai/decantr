@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/module.v1.json",
+  "module": "decantr/data",
+  "description": "Data layer — query cache, entity management, URL state, realtime, persistence, workers",
+  "categories": {
+    "query": {
+      "description": "Server state management with caching, deduplication, and stale-while-revalidate",
+      "exports": ["createQuery", "createInfiniteQuery", "createMutation", "queryClient"]
+    },
+    "entity": {
+      "description": "Normalized entity collections with per-entity reactivity",
+      "exports": ["createEntityStore"]
+    },
+    "url": {
+      "description": "URL-as-state with type-safe parsers and routing-mode awareness",
+      "exports": ["createURLSignal", "createURLStore", "parsers"]
+    },
+    "realtime": {
+      "description": "WebSocket and EventSource with auto-reconnect",
+      "exports": ["createWebSocket", "createEventSource"]
+    },
+    "persistence": {
+      "description": "Offline-first primitives — storage, IndexedDB, cross-tab sync, offline queue",
+      "exports": ["createPersisted", "createIndexedDB", "createCrossTab", "createOfflineQueue"]
+    },
+    "worker": {
+      "description": "Web Worker integration for off-main-thread computation",
+      "exports": ["createWorkerSignal", "createWorkerQuery"]
+    }
+  },
+  "functions": {
+    "createQuery": {
+      "params": [
+        { "name": "key", "type": "string | (() => string)" },
+        { "name": "fetcher", "type": "(ctx: { key, signal }) => Promise<T>" },
+        { "name": "options", "type": "QueryOptions<T>", "optional": true }
+      ],
+      "returns": "{ data, status, error, isLoading, isStale, isFetching, refetch, setData }"
+    },
+    "createInfiniteQuery": {
+      "params": [
+        { "name": "key", "type": "string | (() => string)" },
+        { "name": "fetcher", "type": "(ctx: { key, pageParam, signal }) => Promise<T>" },
+        { "name": "options", "type": "InfiniteQueryOptions<T>", "optional": true }
+      ],
+      "returns": "{ pages, allItems, hasNextPage, fetchNextPage, isFetchingNextPage, refetch }"
+    },
+    "createMutation": {
+      "params": [
+        { "name": "mutationFn", "type": "(vars: V) => Promise<T>" },
+        { "name": "options", "type": "MutationOptions", "optional": true }
+      ],
+      "returns": "{ mutate, mutateAsync, isLoading, error, data, reset }"
+    },
+    "queryClient": {
+      "type": "singleton",
+      "methods": ["invalidate", "prefetch", "setCache", "getCache", "clear"]
+    },
+    "createEntityStore": {
+      "params": [
+        { "name": "options", "type": "{ getId: (entity: T) => any }" }
+      ],
+      "returns": "EntityStore<T>"
+    },
+    "createURLSignal": {
+      "params": [
+        { "name": "key", "type": "string" },
+        { "name": "parser", "type": "Parser<T>" },
+        { "name": "options", "type": "{ defaultValue?, push? }", "optional": true }
+      ],
+      "returns": "[() => T, (v: T) => void]"
+    },
+    "createURLStore": {
+      "params": [
+        { "name": "schema", "type": "Record<string, { parser, defaultValue }>" }
+      ],
+      "returns": "{ ...getters, ...setters, values(), reset() }"
+    },
+    "createWebSocket": {
+      "params": [
+        { "name": "url", "type": "string" },
+        { "name": "options", "type": "WebSocketOptions", "optional": true }
+      ],
+      "returns": "{ lastMessage, messages, status, send, close, reconnect, on }"
+    },
+    "createEventSource": {
+      "params": [
+        { "name": "url", "type": "string" },
+        { "name": "options", "type": "{ events?, withCredentials? }", "optional": true }
+      ],
+      "returns": "{ lastEvent, status, close, on }"
+    },
+    "createPersisted": {
+      "params": [
+        { "name": "key", "type": "string" },
+        { "name": "init", "type": "T" },
+        { "name": "options", "type": "{ storage?, serialize?, deserialize? }", "optional": true }
+      ],
+      "returns": "[() => T, (v: T) => void]"
+    },
+    "createIndexedDB": {
+      "params": [
+        { "name": "dbName", "type": "string" },
+        { "name": "storeName", "type": "string" }
+      ],
+      "returns": "{ get, set, delete, getAll, clear }"
+    },
+    "createCrossTab": {
+      "params": [
+        { "name": "channel", "type": "string" },
+        { "name": "signal", "type": "[getter, setter]" }
+      ],
+      "returns": "() => void"
+    },
+    "createOfflineQueue": {
+      "params": [
+        { "name": "options", "type": "{ process, persist?, key?, retryDelay? }" }
+      ],
+      "returns": "{ add, pending, isOnline, flush }"
+    },
+    "createWorkerSignal": {
+      "params": [
+        { "name": "worker", "type": "Worker" }
+      ],
+      "returns": "{ result, busy, error, send, terminate }"
+    },
+    "createWorkerQuery": {
+      "params": [
+        { "name": "worker", "type": "Worker" },
+        { "name": "input", "type": "(() => any) | any" }
+      ],
+      "returns": "{ data, loading, error, refetch }"
+    }
+  }
+}

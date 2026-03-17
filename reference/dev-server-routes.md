@@ -45,12 +45,12 @@ The server rewrites bare module specifiers in JS files to browser-compatible pat
 
 | Source Import | Rewritten To |
 |--------------|-------------|
-| `from '@decantr/decantr/core'` | `from '/__decantr/core/index.js'` |
-| `from '@decantr/decantr/state'` | `from '/__decantr/state/index.js'` |
-| `from '@decantr/decantr/css'` | `from '/__decantr/css/index.js'` |
-| `from '@decantr/decantr/components'` | `from '/__decantr/components/index.js'` |
-| `from '@decantr/decantr/tags'` | `from '/__decantr/tags/index.js'` |
-| `from '@decantr/decantr/router'` | `from '/__decantr/router/index.js'` |
+| `from 'decantr/core'` | `from '/__decantr/core/index.js'` |
+| `from 'decantr/state'` | `from '/__decantr/state/index.js'` |
+| `from 'decantr/css'` | `from '/__decantr/css/index.js'` |
+| `from 'decantr/components'` | `from '/__decantr/components/index.js'` |
+| `from 'decantr/tags'` | `from '/__decantr/tags/index.js'` |
+| `from 'decantr/router'` | `from '/__decantr/router/index.js'` |
 
 Relative imports (`./`, `../`) are passed through unchanged.
 
@@ -63,8 +63,30 @@ Relative imports (`./`, `../`) are passed through unchanged.
 ## File Watching
 
 - Watches `src/` and `public/` for changes
-- Broadcasts `data: reload` via SSE on any file change
 - Accepts optional `options.watchDirs` array for watching additional directories (used by workbench)
+
+### Component-Level HMR
+
+The file watcher classifies each change to decide between a component-level HMR update and a full page reload:
+
+| File Path Pattern | Message Type | Behavior |
+|---|---|---|
+| `src/pages/*.js` | `hmr` | Re-imports and remounts the page component |
+| `src/components/*.js` | `hmr` | Re-imports and remounts the component |
+| `src/state/`, `src/css/`, `src/router/`, `src/app.js` | `reload` | Full page reload (infrastructure change) |
+| `decantr.essence.json` | `reload` | Full page reload (project DNA change) |
+| All other `src/` files | `reload` | Full page reload (safe default) |
+
+**How it works:**
+
+1. The SSE endpoint sends `{ "type": "hmr", "module": "/src/pages/home.js" }` for component files.
+2. The HMR client script (injected into `index.html`) intercepts the message and re-imports the module with a cache-busting `?t=` query parameter.
+3. `window.__d_hmr_remount(modulePath, newModule)` (registered by `src/core/index.js` in dev mode) unmounts and remounts the component.
+4. If no remount hook is available, the client falls back to a full page reload.
+
+**State preservation:** Module-level signals (defined in `src/state/` files) are not re-executed during HMR because only the changed component module is re-imported. Component-local signals are re-created, which is the expected behavior.
+
+**Registration:** Pages and components can register their mount root via `globalThis.__d_hmr_register(modulePath, rootElement)` to enable targeted remounting. Without registration, HMR falls back to remounting the `#app` root.
 
 ---
 

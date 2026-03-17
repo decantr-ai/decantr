@@ -33,7 +33,7 @@ export async function run() {
   }
 
   // Known archetypes
-  const KNOWN_ARCHETYPES = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard'];
+  const KNOWN_ARCHETYPES = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community'];
 
   // Known styles
   const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center'];
@@ -49,6 +49,46 @@ export async function run() {
     }
   }
 
+  // Valid responsive breakpoints for blend items
+  const VALID_BREAKPOINTS = ['sm', 'md', 'lg', 'xl', '2xl'];
+
+  // Validate blend item depth (Gap 2.3)
+  function validateBlendItems(blend, pageId, prefix) {
+    if (!Array.isArray(blend)) return;
+    for (let i = 0; i < blend.length; i++) {
+      const item = blend[i];
+      if (typeof item === 'string') continue;
+      if (item && typeof item === 'object' && !item.cols && item.pattern) continue; // v2 preset ref
+
+      if (item && typeof item === 'object' && item.cols) {
+        // Validate breakpoint
+        if (item.at != null) {
+          if (!VALID_BREAKPOINTS.includes(item.at)) {
+            errors.push(`${prefix}Page "${pageId}": blend row ${i} has invalid breakpoint "${item.at}". Valid: ${VALID_BREAKPOINTS.join(', ')}`);
+          }
+        }
+
+        // Validate span values
+        if (item.span != null) {
+          if (typeof item.span !== 'object' || Array.isArray(item.span)) {
+            errors.push(`${prefix}Page "${pageId}": blend row ${i} "span" must be an object mapping column IDs to weights`);
+          } else {
+            for (const [key, value] of Object.entries(item.span)) {
+              // Validate span values are positive integers
+              if (!Number.isInteger(value) || value < 1) {
+                errors.push(`${prefix}Page "${pageId}": blend row ${i} span["${key}"] must be a positive integer, got ${JSON.stringify(value)}`);
+              }
+              // Validate span keys match cols entries
+              if (!item.cols.includes(key)) {
+                errors.push(`${prefix}Page "${pageId}": blend row ${i} span key "${key}" does not match any cols entry. Cols: ${item.cols.join(', ')}`);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Validate structure entries
   function validateStructure(structure, prefix) {
     if (!Array.isArray(structure)) return;
@@ -56,6 +96,8 @@ export async function run() {
       if (!page.id) errors.push(`${prefix}structure entry missing "id"`);
       if (!page.skeleton) warnings.push(`${prefix}structure entry "${page.id || '?'}" missing "skeleton"`);
       if (!page.blend && !page.patterns) warnings.push(`${prefix}structure entry "${page.id || '?'}" missing "blend"`);
+      // Validate blend item depth
+      if (page.blend) validateBlendItems(page.blend, page.id || '?', prefix);
     }
   }
 
@@ -109,6 +151,17 @@ export async function run() {
     }
   }
 
+  // Version field validation (Gap 2.5)
+  if (essence.version != null) {
+    if (typeof essence.version !== 'string') {
+      errors.push('version must be a string (semver format, e.g. "1.0.0")');
+    } else if (!/^\d+\.\d+\.\d+$/.test(essence.version)) {
+      warnings.push(`version "${essence.version}" is not standard semver (expected "X.Y.Z")`);
+    }
+  } else {
+    warnings.push('No "version" field in essence. Consider adding a semver version (e.g. "1.0.0") to track essence evolution.');
+  }
+
   // Cork validation
   if (essence.cork && typeof essence.cork !== 'object') {
     errors.push('cork must be an object');
@@ -144,6 +197,51 @@ export async function run() {
     // No config file — that's fine
   }
 
+  // ─── Archetype inheritance validation ─────────────────────────
+  // If an archetype uses `extends`, verify the chain is valid
+  try {
+    const archetypeIdx = JSON.parse(await readFile(join(registryRoot, 'archetypes', 'index.json'), 'utf-8'));
+    const knownArchetypeIds = new Set(Object.keys(archetypeIdx.archetypes || {}));
+
+    // Load all archetypes to check extends chains
+    const archetypeData = {};
+    for (const [aid, meta] of Object.entries(archetypeIdx.archetypes || {})) {
+      try {
+        archetypeData[aid] = JSON.parse(await readFile(join(registryRoot, 'archetypes', meta.file), 'utf-8'));
+      } catch { /* skip unreadable */ }
+    }
+
+    for (const [aid, arch] of Object.entries(archetypeData)) {
+      if (!arch.extends) continue;
+
+      // Check that extends references an existing archetype
+      if (!knownArchetypeIds.has(arch.extends)) {
+        errors.push(`Archetype "${aid}": extends "${arch.extends}" is not a known archetype. Known: ${[...knownArchetypeIds].join(', ')}`);
+        continue;
+      }
+
+      // Check for circular inheritance by following the chain
+      const visited = new Set();
+      let current = aid;
+      let depth = 0;
+      while (current && depth < 10) {
+        if (visited.has(current)) {
+          errors.push(`Archetype "${aid}": circular inheritance detected: ${[...visited, current].join(' → ')}`);
+          break;
+        }
+        visited.add(current);
+        const currentArch = archetypeData[current];
+        current = currentArch?.extends || null;
+        depth++;
+      }
+      if (depth >= 10) {
+        errors.push(`Archetype "${aid}": inheritance chain exceeds depth limit (10)`);
+      }
+    }
+  } catch {
+    // Archetype registry not accessible — skip inheritance validation
+  }
+
   // ─── Generate prerequisites ───────────────────────────────────
 
   // Collect all structures for validation
@@ -156,18 +254,46 @@ export async function run() {
     warnings.push('No pages in structure — `decantr generate` will have nothing to produce');
   }
 
-  // Check patterns in blend arrays exist in registry
+  // Check patterns in blend arrays exist in registry (supports v2 preset references)
   try {
     const patternFiles = await readdir(join(registryRoot, 'patterns'));
     const knownPatterns = new Set(patternFiles.filter(f => f.endsWith('.json') && f !== 'index.json').map(f => f.replace('.json', '')));
 
+    // Load pattern index for preset validation
+    let patternIndex = {};
+    try {
+      const indexData = JSON.parse(await readFile(join(registryRoot, 'patterns', 'index.json'), 'utf-8'));
+      patternIndex = indexData.patterns || {};
+    } catch { /* skip */ }
+
+    function validateBlendRef(ref, pageId) {
+      if (typeof ref === 'string') {
+        if (!knownPatterns.has(ref)) {
+          warnings.push(`Page "${pageId}": pattern "${ref}" in blend not found in registry`);
+        }
+      } else if (ref && ref.pattern) {
+        // v2 preset reference: { pattern, preset, as }
+        if (!knownPatterns.has(ref.pattern)) {
+          warnings.push(`Page "${pageId}": pattern "${ref.pattern}" in blend not found in registry`);
+        } else if (ref.preset && patternIndex[ref.pattern]?.presets) {
+          if (!patternIndex[ref.pattern].presets.includes(ref.preset)) {
+            warnings.push(`Page "${pageId}": preset "${ref.preset}" not found on pattern "${ref.pattern}". Known presets: ${patternIndex[ref.pattern].presets.join(', ')}`);
+          }
+        }
+      }
+    }
+
     for (const page of allStructures) {
       const blend = page.blend || page.patterns || [];
       for (const item of blend) {
-        const ids = typeof item === 'string' ? [item] : (item.cols || []);
-        for (const id of ids) {
-          if (!knownPatterns.has(id)) {
-            warnings.push(`Page "${page.id}": pattern "${id}" in blend not found in registry`);
+        if (typeof item === 'string') {
+          validateBlendRef(item, page.id);
+        } else if (item.pattern) {
+          // v2 preset reference at top level
+          validateBlendRef(item, page.id);
+        } else if (item.cols) {
+          for (const col of item.cols) {
+            validateBlendRef(col, page.id);
           }
         }
       }

@@ -13,6 +13,8 @@ All compound components (Card, Modal, AlertDialog, Drawer) follow a unified spac
 | **Body:last-child** | adds `padding-bottom: var(--d-compound-pad)` |
 | **Footer** | `var(--d-compound-gap) var(--d-compound-pad) var(--d-compound-pad)` |
 
+**Bordered footer exception:** When a compound footer has a visible `border-top` (e.g. Card), the border provides inter-section separation, so the footer uses `var(--d-compound-pad)` on all sides for vertical centering. The asymmetric `compound-gap` top is only appropriate when the gap alone is the separator (Modal, Drawer).
+
 New compound components MUST follow this contract. Never hardcode padding in header/body/footer — use the compound tokens.
 
 ## Popup Offset Hierarchy

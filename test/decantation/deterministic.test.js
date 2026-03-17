@@ -636,9 +636,11 @@ describe('Registry Consistency', () => {
     for (const [archetypeId, archetype] of Object.entries(archetypes)) {
       for (const page of archetype.pages) {
         for (const pattern of page.patterns) {
+          // Support both v1 string IDs and v2 { pattern, preset, as } objects
+          const patternId = typeof pattern === 'string' ? pattern : pattern.pattern;
           assert.ok(
-            patternIndex.patterns[pattern],
-            `Archetype ${archetypeId} page ${page.id} references missing pattern: ${pattern}`
+            patternIndex.patterns[patternId],
+            `Archetype ${archetypeId} page ${page.id} references missing pattern: ${patternId}`
           );
         }
       }

@@ -1,9 +1,70 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "form-sections",
   "name": "Form Sections",
-  "description": "Grouped form fields organized into labeled sections with consistent spacing. Used for settings pages, profile editing, and multi-section data entry.",
+  "description": "Grouped form fields organized into labeled sections with consistent spacing. Supports settings pages, content creation forms, and structured data entry via presets.",
   "components": ["Input", "Select", "Switch", "Textarea", "Checkbox", "Button", "Separator"],
+  "default_preset": "settings",
+  "presets": {
+    "settings": {
+      "description": "Grouped form fields for settings pages and profile editing.",
+      "components": ["Input", "Select", "Switch", "Textarea", "Checkbox", "Button", "Separator"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _flexCol _gap8 _p6 _mxAuto",
+        "slots": {
+          "section": "Repeating group: section title (_heading5), description (_caption _muted), then field rows separated by Separator",
+          "field-row": "Label + control pair via _flex _flexCol _gap1 or _grid _gc2 for side-by-side",
+          "actions": "Bottom bar with save Button (primary) and cancel Button (ghost) via _flex _gap3 _justifyEnd"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Input, Select, Textarea, Button, Separator } from 'decantr/components';",
+        "example": "function FormSections() {\n  const { div, h3, p } = tags;\n\n  const section = (title, desc, ...fields) =>\n    div({ class: css('_flex _col _gap4') },\n      div({}, h3({ class: css('_heading5') }, title), p({ class: css('_fgmuted _textsm') }, desc)),\n      ...fields\n    );\n\n  return div({ class: css('_flex _col _gap8 _p6 _mw[720px]') },\n    section('Personal Info', 'Basic contact details',\n      div({ class: css('_grid _gc2 _gap4') },\n        Input({ label: 'First Name' }),\n        Input({ label: 'Last Name' })\n      ),\n      Input({ label: 'Email', type: 'email' })\n    ),\n    Separator(),\n    section('Company', 'Organization details',\n      Input({ label: 'Company Name' }),\n      Select({ label: 'Industry', options: [{ label: 'Technology', value: 'tech' }, { label: 'Finance', value: 'finance' }] })\n    ),\n    Separator(),\n    section('Notes', 'Additional information',\n      Textarea({ label: 'Notes', rows: 4 })\n    ),\n    div({ class: css('_flex _jcfe _gap3') },\n      Button({ variant: 'outline' }, 'Cancel'),\n      Button({ variant: 'primary' }, 'Save')\n    )\n  );\n}"
+      }
+    },
+    "creation": {
+      "description": "Content creation form with photo upload, basics, metadata, and dynamic lists. For recipe/article creation.",
+      "components": ["Card", "Card.Header", "Card.Body", "Input", "Textarea", "InputNumber", "Segmented", "Button", "Upload", "Collapsible", "Chip", "Separator", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _mw[720px] _mxAuto _p4",
+        "slots": {
+          "photo": "Upload dropzone for cover photo",
+          "basics": "Card with title Input, description Textarea",
+          "metadata": "Card with numeric inputs and segmented controls",
+          "dynamic-lists": "Cards with dynamic add/remove rows for items",
+          "tags": "Tag input with Chip display",
+          "submit": "Publish Button with draft toggle"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Card, Input, Textarea, InputNumber, Segmented, Button, Upload, Collapsible, Chip, Separator, icon } from 'decantr/components';",
+        "example": "function CreationForm() {\n  const { div, h3, label } = tags;\n  const [title, setTitle] = createSignal('');\n  const [items, setItems] = createSignal(['']);\n\n  const addItem = () => setItems([...items(), '']);\n\n  return div({ class: css('_flex _col _gap6 _mw[720px] _mxAuto _p4') },\n    Upload({ accept: 'image/*', variant: 'dragger' }, 'Upload cover photo'),\n    Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, 'Basic Info')),\n      Card.Body({ class: css('_flex _col _gap3') },\n        Input({ label: 'Title', placeholder: 'Name', value: title, onchange: e => setTitle(e.target.value) }),\n        Textarea({ label: 'Description', placeholder: 'Brief description...', rows: 3 })\n      )\n    ),\n    Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, 'Details')),\n      Card.Body({ class: css('_flex _col _gap3') },\n        div({ class: css('_grid _gc3 _gap3') },\n          InputNumber({ label: 'Prep (min)', min: 0 }),\n          InputNumber({ label: 'Cook (min)', min: 0 }),\n          InputNumber({ label: 'Servings', min: 1 })\n        ),\n        Segmented({ label: 'Difficulty', options: ['Easy', 'Medium', 'Hard'] })\n      )\n    ),\n    Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, 'Items')),\n      Card.Body({ class: css('_flex _col _gap2') },\n        ...items().map((_, i) =>\n          Input({ placeholder: `Item ${i + 1}` })\n        ),\n        Button({ variant: 'outline', size: 'sm', onclick: addItem }, icon('plus'), 'Add Item')\n      )\n    ),\n    div({ class: css('_flex _jce _gap3') },\n      Button({ variant: 'outline' }, 'Save Draft'),\n      Button({ variant: 'primary' }, 'Publish')\n    )\n  );\n}"
+      }
+    },
+    "structured": {
+      "description": "Advanced structured form with tabular data entry, hierarchical sections, and auto-calculated fields.",
+      "components": ["Card", "Card.Header", "Card.Body", "Input", "Textarea", "InputNumber", "Select", "Segmented", "Button", "Upload", "Tabs", "Separator", "Badge", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _mw[840px] _mxAuto _p4",
+        "slots": {
+          "photo": "Upload dropzone for cover photo",
+          "basics": "Card with title, description, and scale selector",
+          "structured-items": "Card with tabular rows: multiple columns of inputs per row",
+          "hierarchical-sections": "Card with named sections, each containing ordered sub-items",
+          "timing-summary": "Auto-calculated totals display",
+          "metadata": "Card with categorization tags and metadata",
+          "submit": "Publish Button with draft toggle"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Card, Input, Textarea, InputNumber, Select, Segmented, Button, Upload, Tabs, Separator, Badge, icon } from 'decantr/components';",
+        "example": "function StructuredForm() {\n  const { div, h3, span } = tags;\n  const [items, setItems] = createSignal([{ qty: '', unit: '', name: '', prep: '' }]);\n  const [sections, setSections] = createSignal([{ title: 'Main', steps: [{ text: '', time: 0 }] }]);\n  const units = ['g', 'kg', 'ml', 'l', 'cup', 'tbsp', 'tsp', 'oz', 'lb', 'piece'];\n\n  return div({ class: css('_flex _col _gap6 _mw[840px] _mxAuto _p4') },\n    Upload({ accept: 'image/*', variant: 'dragger' }, 'Upload cover photo'),\n    Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, 'Basic Info')),\n      Card.Body({ class: css('_flex _col _gap3') },\n        Input({ label: 'Title', placeholder: 'Name' }),\n        Textarea({ label: 'Description', rows: 3 }),\n        Segmented({ label: 'Scale', options: ['1x', '2x', '4x'] })\n      )\n    ),\n    Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, 'Structured Items')),\n      Card.Body({ class: css('_flex _col _gap2') },\n        ...items().map((item, i) =>\n          div({ class: css('_grid _gc4 _gap2 _aic') },\n            InputNumber({ placeholder: 'Qty', size: 'sm' }),\n            Select({ placeholder: 'Unit', options: units, size: 'sm' }),\n            Input({ placeholder: 'Name', size: 'sm' }),\n            Input({ placeholder: 'Notes', size: 'sm' })\n          )\n        ),\n        Button({ variant: 'outline', size: 'sm' }, icon('plus'), 'Add Item')\n      )\n    ),\n    Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, 'Sections')),\n      Card.Body({ class: css('_flex _col _gap4') },\n        ...sections().map((sec, si) =>\n          div({ class: css('_flex _col _gap3 _p3 _bgmuted _r4') },\n            Input({ value: sec.title, placeholder: 'Section name', size: 'sm' }),\n            ...sec.steps.map((step, i) =>\n              div({ class: css('_flex _gap2 _aic') },\n                Badge({ variant: 'outline' }, `${si + 1}.${i + 1}`),\n                Textarea({ placeholder: 'Step description', rows: 2, class: css('_flex1') }),\n                InputNumber({ placeholder: 'Min', size: 'sm', class: css('_w[80px]') })\n              )\n            ),\n            Button({ variant: 'outline', size: 'sm' }, icon('plus'), 'Add Step')\n          )\n        ),\n        Button({ variant: 'outline', size: 'sm' }, icon('plus'), 'Add Section')\n      )\n    ),\n    div({ class: css('_flex _jce _gap3') },\n      Button({ variant: 'outline' }, 'Save Draft'),\n      Button({ variant: 'primary' }, 'Publish')\n    )\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap8 _p6 _mxAuto",
@@ -17,7 +78,29 @@
     "command-center": {
       "wrapper": "cc-frame",
       "atoms": "cc-grid",
-      "notes": "Section headers use cc-label. Required field indicators use cc-glow. Action bar uses cc-bar. Background uses cc-grid."
+      "notes": "Section headers use cc-label. Required field indicators use cc-glow. Action bar uses cc-bar. Background uses cc-grid.",
+      "preset_notes": {
+        "creation": "Form sections use cc-frame-sm. Labels use cc-label. Submit button uses cc-glow.",
+        "structured": "Form sections use cc-frame-sm. Structured inputs use cc-grid layout. Timing data uses cc-data."
+      }
+    },
+    "auradecantism": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Form cards use d-glass. Section headers use d-gradient-text.",
+      "preset_notes": {
+        "creation": "Form cards use d-glass. Section headers use d-gradient-text. Submit button prominent.",
+        "structured": "Form cards use d-glass. Section headers use d-gradient-text. Structured table rows alternate opacity."
+      }
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Standard form with subtle borders. Clean input styling.",
+      "preset_notes": {
+        "creation": "Standard form cards with subtle borders. Clean input styling.",
+        "structured": "Standard form cards with borders. Clean tabular layout."
+      }
     }
   },
   "code": {

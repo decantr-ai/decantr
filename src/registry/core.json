@@ -85,6 +85,19 @@
       ],
       "description": "Unmount a previously mounted component tree."
     },
+    "setErrorHandler": {
+      "params": [
+        {
+          "name": "fn",
+          "type": "(info: { error: Error, component: string|null, stack: string|null, context: Object }) => void"
+        }
+      ],
+      "description": "Set a global error telemetry handler. Called whenever an ErrorBoundary catches an error."
+    },
+    "_getErrorHandler": {
+      "returns": "Function|null",
+      "description": "Get the current error telemetry handler (for testing/internal use)."
+    },
     "_getBoundaryHandler": {
       "returns": "Function|null",
       "description": "Get the current boundary error handler (used by effect patching)."
@@ -142,7 +155,7 @@
         }
       ],
       "returns": "HTMLElement",
-      "description": "Async boundary. Shows fallback while any createResource() in children is loading."
+      "description": "Async boundary. Shows fallback while any createQuery() in children is loading."
     },
     "Transition": {
       "params": [

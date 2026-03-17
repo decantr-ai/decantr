@@ -14,8 +14,13 @@ class EventTarget_ {
   }
   dispatchEvent(event) {
     try { event.target = this; } catch (e) { /* target may be read-only */ }
-    const set = this._listeners.get(event.type);
-    if (set) for (const fn of set) fn(event);
+    let node = this;
+    while (node) {
+      try { event.currentTarget = node; } catch (e) { /* currentTarget may be read-only */ }
+      const set = node._listeners ? node._listeners.get(event.type) : null;
+      if (set) for (const fn of set) fn(event);
+      node = event.bubbles ? node.parentNode : null;
+    }
     return true;
   }
 }
@@ -129,7 +134,18 @@ class Element_ extends Node_ {
     this._attrs = new Map();
     this.style = {};
     this.classList = new ClassList_(this);
+    this._defineReflectedProps();
     this._open = false;
+  }
+  _defineReflectedProps() {
+    for (const prop of ['disabled', 'checked', 'readOnly', 'required']) {
+      const attr = prop.toLowerCase();
+      Object.defineProperty(this, prop, {
+        get() { return this._attrs.has(attr); },
+        set(v) { if (v) this._attrs.set(attr, ''); else this._attrs.delete(attr); },
+        configurable: true,
+      });
+    }
   }
   get open() { return this._open; }
   showModal() { this._open = true; }
@@ -156,6 +172,20 @@ class Element_ extends Node_ {
   setAttribute(name, value) { this._attrs.set(name, String(value)); }
   removeAttribute(name) { this._attrs.delete(name); }
   hasAttribute(name) { return this._attrs.has(name); }
+  get dataset() {
+    const el = this;
+    return new Proxy({}, {
+      get(_, prop) {
+        const attr = 'data-' + prop.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+        return el._attrs.get(attr) ?? undefined;
+      },
+      set(_, prop, value) {
+        const attr = 'data-' + prop.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+        el._attrs.set(attr, String(value));
+        return true;
+      }
+    });
+  }
   get className() { return this._attrs.get('class') || ''; }
   set className(v) { this._attrs.set('class', v); }
   get id() { return this._attrs.get('id') || ''; }
@@ -280,7 +310,7 @@ class Event_ {
     this.defaultPrevented = false;
   }
   preventDefault() { this.defaultPrevented = true; }
-  stopPropagation() {}
+  stopPropagation() { this.bubbles = false; }
 }
 
 /**
@@ -296,7 +326,8 @@ export function createDOM() {
       _stack: [{ state: null, url: '/' }],
       pushState(state, title, url) { this._stack.push({ state, url }); win.location.pathname = url; },
       replaceState(state, title, url) { this._stack[this._stack.length - 1] = { state, url }; win.location.pathname = url; },
-      back() { if (this._stack.length > 1) this._stack.pop(); }
+      back() { if (this._stack.length > 1) this._stack.pop(); },
+      forward() { /* no-op in test DOM — no forward stack */ }
     },
     addEventListener: doc.addEventListener.bind(doc),
     removeEventListener: doc.removeEventListener.bind(doc),

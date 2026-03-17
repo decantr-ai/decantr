@@ -6,6 +6,7 @@
 import { h } from '../core/index.js';
 import { createEffect, createSignal } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
+import { caret } from './_behaviors.js';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -37,8 +38,8 @@ export function Calendar(props = {}) {
 
     // Header
     const headerRow = h('div', { class: 'd-calendar-header' });
-    const prevBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous' }, '\u2039');
-    const nextBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next' }, '\u203A');
+    const prevBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous' }, caret('left'));
+    const nextBtn = h('button', { type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next' }, caret('right'));
     const title = h('span', { class: 'd-calendar-title' },
       mode === 'month' ? `${MONTHS[viewDate.getMonth()]} ${viewDate.getFullYear()}` : String(viewDate.getFullYear())
     );

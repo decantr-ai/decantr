@@ -2,11 +2,12 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { ChartDetail, ChartGroupView, loadChartItems } from '../explorer/charts.js';
+import { ChartDetail, ChartGroupView, loadChartItems } from 'decantr/explorer/charts.js';
+import { wbPath } from '../path-prefix.js';
 
 const { div, h2, h3, p } = tags;
 
-const nav = (path) => navigate(path);
+const nav = (path) => navigate(wbPath(path));
 
 export function ChartsIndex() {
   const container = div({ class: css('_flex _col _gap6') },
@@ -17,11 +18,11 @@ export function ChartsIndex() {
   );
 
   loadChartItems().then(groups => {
-    container.appendChild(div({ class: 'de-card-grid' },
+    container.appendChild(div({ class: '_grid _gcaf280 _gap4' },
       ...groups.map(group =>
         div({
-          class: 'de-card-item',
-          onclick: () => navigate(`/charts/${group.id}`)
+          class: '_surface1 _r2 _p4 _b1 _bcborder _flex _col _gap2',
+          onclick: () => navigate(wbPath(`/charts/${group.id}`))
         },
           h3({ class: css('_heading6') }, group.label),
           p({ class: css('_caption _fgmutedfg') }, `${group.children.length} chart types`)
@@ -36,7 +37,7 @@ export function ChartsIndex() {
 export function ChartGroupPage({ group }) {
   return div({ class: css('_flex _col _gap4') },
     Breadcrumb({ items: [
-      { label: 'Charts', onclick: () => navigate('/charts') },
+      { label: 'Charts', onclick: () => navigate(wbPath('/charts')) },
       { label: group }
     ]}),
     ChartGroupView(group, nav)
@@ -46,8 +47,8 @@ export function ChartGroupPage({ group }) {
 export function ChartDetailPage({ group, name }) {
   return div({ class: css('_flex _col _gap4') },
     Breadcrumb({ items: [
-      { label: 'Charts', onclick: () => navigate('/charts') },
-      { label: group, onclick: () => navigate(`/charts/${group}`) },
+      { label: 'Charts', onclick: () => navigate(wbPath('/charts')) },
+      { label: group, onclick: () => navigate(wbPath(`/charts/${group}`)) },
       { label: name }
     ]}),
     ChartDetail(name, nav)

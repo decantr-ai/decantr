@@ -3,6 +3,7 @@
   "id": "financial-dashboard",
   "name": "Financial Dashboard",
   "description": "Performance dashboard for financial services, lending, and banking. Portfolio overview with goal tracking, production monitoring, pipeline management, collections, and compliance.",
+  "extends": "saas-dashboard",
   "pages": [
     {
       "id": "overview",
@@ -65,25 +66,10 @@
       "skeleton": "sidebar-main",
       "patterns": ["data-table", "detail-panel", "form-sections"],
       "default_blend": ["data-table", "detail-panel"]
-    },
-    {
-      "id": "settings",
-      "skeleton": "sidebar-main",
-      "patterns": ["form-sections"],
-      "default_blend": ["form-sections"]
-    },
-    {
-      "id": "login",
-      "skeleton": "centered",
-      "patterns": ["auth-form"],
-      "default_blend": ["auth-form"]
     }
   ],
-  "tannins": ["auth", "portfolio-state", "pipeline-state", "compliance-state", "search", "notifications", "report-export"],
-  "skeletons": {
-    "sidebar-main": "Collapsible sidebar navigation + header bar + scrollable main content",
-    "centered": "Centered card on background — for auth flows"
-  },
+  "tannins": ["portfolio-state", "pipeline-state", "compliance-state", "report-export"],
+  "skeletons": {},
   "suggested_vintage": {
     "styles": ["auradecantism", "command-center", "clean"],
     "modes": ["dark", "auto"]

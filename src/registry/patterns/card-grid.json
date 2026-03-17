@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "card-grid",
+  "name": "Card Grid",
+  "description": "Responsive grid of cards with configurable content. Supports product catalogs, recipe collections, feature showcases, and collection browsers via presets.",
+  "components": ["Card", "Card.Header", "Card.Body", "Card.Footer", "Button", "Badge", "icon"],
+  "default_preset": "product",
+  "presets": {
+    "product": {
+      "description": "Product cards with image, title, price, CTA. For e-commerce catalogs.",
+      "components": ["Card", "Card.Body", "Button", "Badge", "Image", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc3 _gap6 _p4",
+        "slots": {
+          "card-image": "Product image in Card.Header with aspect ratio container",
+          "card-body": "Card.Body with product title (_heading6), description (_caption), price (_heading5)",
+          "card-footer": "Card.Footer with primary Button CTA and optional secondary action",
+          "badge": "Optional Badge overlay for sale/new/featured status"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, Button, Image } from 'decantr/components';",
+        "example": "function ProductGrid() {\n  const { div, span, h3 } = tags;\n  const products = [\n    { image: '/images/product-1.jpg', name: 'Wireless Headphones', badge: 'New', description: 'Premium noise-cancelling headphones.', price: 199.99 },\n    { image: '/images/product-2.jpg', name: 'Mechanical Keyboard', badge: null, description: 'RGB backlit mechanical keyboard.', price: 149.99 },\n    { image: '/images/product-3.jpg', name: 'USB-C Hub', badge: 'Sale', description: '7-in-1 USB-C hub with HDMI output.', price: 49.99 },\n    { image: '/images/product-4.jpg', name: 'Monitor Stand', badge: null, description: 'Adjustable aluminum monitor stand.', price: 79.99 }\n  ];\n\n  return div({ class: css('_grid _gcaf280 _gap4 _p4') },\n    ...products.map(p =>\n      Card({},\n        Image({ src: p.image, alt: p.name, class: css('_wfull _h[200px] _object[cover]') }),\n        Card.Body({ class: css('_flex _col _gap2') },\n          div({ class: css('_flex _aic _jcsb') },\n            h3({ class: css('_heading5') }, p.name),\n            p.badge ? Badge({ variant: 'accent' }, p.badge) : null\n          ),\n          span({ class: css('_fgmuted _textsm') }, p.description),\n          div({ class: css('_flex _aic _jcsb _mt2') },\n            span({ class: css('_heading4') }, `$${p.price}`),\n            Button({ variant: 'primary', size: 'sm' }, 'Add to Cart')\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "content": {
+      "description": "Content cards with cover image, metadata, tags, and author attribution. For recipe/article feeds.",
+      "components": ["Card", "Card.Body", "Chip", "Avatar", "Badge", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc3 _gap6 _p4",
+        "slots": {
+          "card-image": "Cover photo with aspect ratio container and optional Badge overlay",
+          "card-body": "Title (_heading5), truncated description (_caption _fgmuted), metadata row",
+          "card-tags": "Horizontal Chip row for tags",
+          "card-footer": "Author Avatar + name link, optional count"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Chip, Avatar, Badge, icon } from 'decantr/components';",
+        "example": "function ContentCardGrid({ items }) {\n  const { div, span, h3, img } = tags;\n\n  return div({ class: css('_grid _gc3 _gap6 _p4') },\n    ...items.map(item =>\n      Card({},\n        img({ src: item.image, alt: item.title, class: css('_wfull _h[200px] _object[cover]') }),\n        Card.Body({ class: css('_flex _col _gap2') },\n          h3({ class: css('_heading5') }, item.title),\n          span({ class: css('_caption _fgmuted _lineClamp2') }, item.description),\n          div({ class: css('_flex _aic _gap3 _fgmuted _textsm') },\n            span({}, icon('clock'), ` ${item.time} min`),\n            span({}, icon('users'), ` ${item.servings} servings`)\n          ),\n          div({ class: css('_flex _gap1 _flexWrap') },\n            ...(item.tags || []).map(t => Chip({ size: 'sm' }, t))\n          ),\n          div({ class: css('_flex _aic _jcsb _mt2') },\n            div({ class: css('_flex _aic _gap2') },\n              Avatar({ src: item.author?.avatar, size: 'xs' }),\n              span({ class: css('_textsm') }, item.author?.name)\n            ),\n            span({ class: css('_textsm _fgmuted') }, icon('git-fork'), ` ${item.forks || 0}`)\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "collection": {
+      "description": "Collection cards with cover image, title, item count, and status badge. For browsing grouped content.",
+      "components": ["Card", "Card.Body", "Badge", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc3 _gap6 _p4",
+        "slots": {
+          "card-image": "Collection cover image with aspect ratio container",
+          "card-body": "Title (_heading5), description (_caption _fgmuted), item count",
+          "card-badge": "Badge showing public/private or other status"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+        "example": "function CollectionGrid({ collections }) {\n  const { div, span, h3, img } = tags;\n\n  return div({ class: css('_grid _gc3 _gap6 _p4') },\n    ...collections.map(col =>\n      Card({},\n        img({ src: col.cover, alt: col.title, class: css('_wfull _h[180px] _object[cover]') }),\n        Card.Body({ class: css('_flex _col _gap2') },\n          div({ class: css('_flex _aic _jcsb') },\n            h3({ class: css('_heading5') }, col.title),\n            Badge({ variant: col.isPublic ? 'success' : 'default' }, col.isPublic ? 'Public' : 'Private')\n          ),\n          span({ class: css('_caption _fgmuted _lineClamp2') }, col.description),\n          span({ class: css('_textsm _fgmuted') }, icon('book-open'), ` ${col.itemCount} items`)\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "icon": {
+      "description": "Feature cards with icon, title, and description. For landing page capabilities.",
+      "components": ["Card", "Card.Body", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc3 _gap6 _p4",
+        "slots": {
+          "cards": "Array of feature cards, each with icon circle, title (_heading5), and description (_caption _fgmuted)"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, icon } from 'decantr/components';",
+        "example": "function FeatureGrid({ features }) {\n  const { div, h3, p } = tags;\n\n  return div({ class: css('_grid _gc3 _gap6 _p4') },\n    ...features.map(f =>\n      Card({},\n        Card.Body({ class: css('_flex _col _gap3 _aic _tc') },\n          div({ class: css('_w[48px] _h[48px] _r4 _bgmuted _flex _aic _jcc _fgprimary') },\n            icon(f.icon)\n          ),\n          h3({ class: css('_heading5') }, f.title),\n          p({ class: css('_caption _fgmuted') }, f.description)\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc3 _gap6 _p4",
+    "slots": {
+      "card-image": "Card image with aspect ratio container",
+      "card-body": "Card.Body with title, description, and metadata",
+      "card-footer": "Card.Footer with CTA and optional secondary action",
+      "badge": "Optional Badge overlay for status"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "cc-grid",
+      "notes": "Cards use cc-frame-sm. Prices/counts use cc-data. Badges use cc-label. Grid background gets cc-grid.",
+      "preset_notes": {
+        "product": "Each Card uses cc-frame-sm. Prices use cc-data with cc-glow. Badge uses cc-label.",
+        "content": "Cards use cc-frame-sm. Metadata uses cc-data. Tag chips use cc-label.",
+        "collection": "Cards use cc-frame-sm. Item count uses cc-data. Status badge uses cc-label.",
+        "icon": "Cards use cc-frame-sm. Icons use cc-glow. Titles use cc-label."
+      }
+    },
+    "auradecantism": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Cards use d-glass. Titles highlighted on hover. Subtle aura-glow on card border.",
+      "preset_notes": {
+        "product": "Product cards use d-glass. Price highlighted. CTA button with aura-glow.",
+        "content": "Content cards use d-glass. Title highlighted. Hover reveals subtle aura-glow.",
+        "collection": "Collection cards use d-glass. Title highlighted on hover.",
+        "icon": "Feature cards use d-glass. Icon circles use d-gradient-text. Subtle hover glow."
+      }
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "",
+      "notes": "Standard cards with subtle shadow. Clean image + text layout. No extra decoration.",
+      "preset_notes": {
+        "product": "Standard product cards with shadow. Clean image + text layout.",
+        "content": "Standard card with subtle shadow. Clean image + text layout.",
+        "collection": "Standard cards with subtle shadow. Clean image + text layout.",
+        "icon": "Standard cards with subtle border. Clean icon + text layout."
+      }
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, Button, Image } from 'decantr/components';",
+    "example": "function ProductGrid() {\n  const { div, span, h3 } = tags;\n  const products = [\n    { image: '/images/product-1.jpg', name: 'Wireless Headphones', badge: 'New', description: 'Premium noise-cancelling headphones.', price: 199.99 },\n    { image: '/images/product-2.jpg', name: 'Mechanical Keyboard', badge: null, description: 'RGB backlit mechanical keyboard.', price: 149.99 }\n  ];\n\n  return div({ class: css('_grid _gcaf280 _gap4 _p4') },\n    ...products.map(p =>\n      Card({},\n        Image({ src: p.image, alt: p.name, class: css('_wfull _h[200px] _object[cover]') }),\n        Card.Body({ class: css('_flex _col _gap2') },\n          div({ class: css('_flex _aic _jcsb') },\n            h3({ class: css('_heading5') }, p.name),\n            p.badge ? Badge({ variant: 'accent' }, p.badge) : null\n          ),\n          span({ class: css('_fgmuted _textsm') }, p.description),\n          div({ class: css('_flex _aic _jcsb _mt2') },\n            span({ class: css('_heading4') }, `$${p.price}`),\n            Button({ variant: 'primary', size: 'sm' }, 'Add to Cart')\n          )\n        )\n      )\n    )\n  );\n}"
+  }
+}

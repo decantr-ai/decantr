@@ -184,6 +184,44 @@ export function injectGroupPeer(className, declaration, prefix) {
   scheduleFlush();
 }
 
+/** Pseudo-class prefix map */
+const PSEUDO_MAP = {
+  h: 'hover', f: 'focus', fv: 'focus-visible', a: 'active', fw: 'focus-within',
+};
+
+/**
+ * Inject a pseudo-class atom.
+ * @param {string} className — e.g. '_h:bgprimary'
+ * @param {string} declaration — CSS declaration(s)
+ * @param {string} prefix — 'h'|'f'|'fv'|'a'|'fw'
+ */
+export function injectPseudo(className, declaration, prefix) {
+  if (injected.has(className)) return;
+  injected.add(className);
+  if (typeof document === 'undefined') return;
+  const escaped = className.replace(/:/g, '\\:').replace(/\//g, '\\/').replace(/\[/g, '\\[').replace(/\]/g, '\\]').replace(/#/g, '\\#').replace(/%/g, '\\%').replace(/\(/g, '\\(').replace(/\)/g, '\\)').replace(/,/g, '\\,').replace(/\+/g, '\\+');
+  const pseudo = PSEUDO_MAP[prefix];
+  atomBuffer.push(`@layer d.atoms{.${escaped}:${pseudo}{${declaration}}}`);
+  scheduleFlush();
+}
+
+/**
+ * Inject a responsive + pseudo-class atom.
+ * @param {string} className — e.g. '_sm:h:bgprimary'
+ * @param {string} declaration — CSS declaration(s)
+ * @param {string} bp — breakpoint key (sm|md|lg|xl)
+ * @param {string} pseudo — pseudo-class name (hover|focus|focus-visible|active|focus-within)
+ */
+export function injectResponsivePseudo(className, declaration, bp, pseudo) {
+  if (injected.has(className)) return;
+  injected.add(className);
+  if (typeof document === 'undefined') return;
+  const escaped = className.replace(/:/g, '\\:').replace(/\//g, '\\/').replace(/\[/g, '\\[').replace(/\]/g, '\\]').replace(/#/g, '\\#').replace(/%/g, '\\%').replace(/\(/g, '\\(').replace(/\)/g, '\\)').replace(/,/g, '\\,').replace(/\+/g, '\\+');
+  if (!bpBuffers[bp]) bpBuffers[bp] = [];
+  bpBuffers[bp].push(`@layer d.atoms{@media(min-width:${BREAKPOINTS[bp]}px){.${escaped}:${pseudo}{${declaration}}}}`);
+  scheduleFlush();
+}
+
 /**
  * @returns {string}
  */

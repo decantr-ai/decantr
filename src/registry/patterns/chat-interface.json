@@ -1,0 +1,37 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "chat-interface",
+  "name": "Chat Interface",
+  "description": "AI chat interface with scrollable message area, suggestion prompt chips, and input bar with send button. Messages alternate between user and assistant bubbles. Used for chef chat and AI cooking assistants.",
+  "components": ["Card", "Card.Body", "Input", "Button", "Avatar", "Chip", "ScrollArea", "icon"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _h[calc(100vh-200px)] _b1 _r4 _overflow[hidden]",
+    "slots": {
+      "messages": "ScrollArea of chat bubbles — user messages right-aligned, assistant messages left-aligned with Avatar",
+      "suggestions": "Horizontal row of Chip suggestion prompts (e.g. 'What can I make with chicken?')",
+      "input-bar": "Bottom bar with text Input and send Button"
+    }
+  },
+  "recipe_overrides": {
+    "command-center": {
+      "wrapper": "cc-frame",
+      "atoms": "",
+      "notes": "Chat frame uses cc-frame. Assistant messages use cc-data. Suggestion chips use cc-label. Send button uses cc-glow."
+    },
+    "auradecantism": {
+      "wrapper": "d-glass",
+      "atoms": "_r4",
+      "notes": "Chat container on d-glass. Assistant avatar has aura-glow ring. User messages use accent background."
+    },
+    "clean": {
+      "wrapper": "",
+      "atoms": "_b1 _r4",
+      "notes": "Simple bordered chat container. Clean message bubbles with muted backgrounds."
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Card, Input, Button, Avatar, Chip, ScrollArea, icon } from 'decantr/components';",
+    "example": "function ChatInterface() {\n  const { div, span, p } = tags;\n  const [input, setInput] = createSignal('');\n  const [messages, setMessages] = createSignal([\n    { role: 'assistant', text: 'Hi! I\\'m your AI chef assistant. Ask me anything about cooking!' }\n  ]);\n  const suggestions = ['What can I make with chicken?', 'Suggest a quick dinner', 'How do I make pasta from scratch?'];\n\n  const send = () => {\n    if (!input()) return;\n    setMessages([...messages(), { role: 'user', text: input() }]);\n    setInput('');\n  };\n\n  return div({ class: css('_flex _col _h[calc(100vh-200px)] _b1 _r4 _overflow[hidden]') },\n    ScrollArea({ class: css('_flex1 _p4') },\n      div({ class: css('_flex _col _gap3') },\n        ...messages().map(m =>\n          div({ class: css(m.role === 'user' ? '_flex _jce' : '_flex _gap2') },\n            m.role === 'assistant' ? Avatar({ size: 'sm', fallback: 'AI' }) : null,\n            div({ class: css(`_p3 _r4 _mw[70%] ${m.role === 'user' ? '_bgprimary _fgprimary' : '_bgmuted'}`) },\n              p({}, m.text)\n            )\n          )\n        )\n      )\n    ),\n    div({ class: css('_flex _gap2 _p3 _borderb _flexWrap') },\n      ...suggestions.map(s =>\n        Chip({ variant: 'outline', onclick: () => setInput(s) }, s)\n      )\n    ),\n    div({ class: css('_flex _gap2 _p3 _bordert') },\n      Input({ placeholder: 'Ask your chef assistant...', value: input, onchange: e => setInput(e.target.value), class: css('_flex1') }),\n      Button({ variant: 'primary', onclick: send }, icon('send'))\n    )\n  );\n}"
+  }
+}

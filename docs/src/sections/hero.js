@@ -5,7 +5,7 @@ import { Button } from 'decantr/components';
 const { section, div, img, h1, p, span, a } = tags;
 
 export function HeroSection() {
-  return section({ class: `ds-mesh ${css('_flex _col _aic _jcc _minhscreen _relative _ohidden')}`, id: 'hero' },
+  return section({ class: `ds-mesh ${css('_flex _col _aic _jcc _minh[calc(100vh_-_52px)] _relative _ohidden')}`, id: 'hero' },
     // Decorative orbs
     div({ class: `ds-orb ds-drift-1 ds-orb-purple-35 ${css('_w[600px] _h[600px] _top[-15%] _left[-10%]')}` }),
     div({ class: `ds-orb ds-drift-2 ds-orb-cyan-25 ${css('_w[500px] _h[500px] _bottom[-10%] _right[-5%]')}` }),
@@ -43,10 +43,10 @@ export function HeroSection() {
 
         // CTA
         div({ class: css('_flex _row _gap4 _mt2') },
-          a({ href: '#power', class: css('_nounder') },
+          a({ href: '#process', class: css('_nounder') },
             Button({ variant: 'primary', size: 'lg', class: 'ds-glow' }, 'Explore the Power'),
           ),
-          Button({ variant: 'outline', size: 'lg', disabled: true }, 'Github - coming soon'),
+          a({ href: '#/docs', class: css('_nounder') }, Button({ variant: 'outline', size: 'lg' }, 'Read the Docs')),
         ),
       ),
     ),

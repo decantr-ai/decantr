@@ -10,7 +10,7 @@
           "type": "RouterConfig"
         }
       ],
-      "returns": "{ navigate: Function, outlet: Function, current: Function, path: Function, destroy: Function }",
+      "returns": "{ navigate: Function, outlet: Function, current: Function, path: Function, destroy: Function, onNavigate: Function }",
       "description": "Create a router instance."
     },
     "navigate": {
@@ -42,12 +42,32 @@
       "description": "Create a router-aware anchor element with active link detection."
     },
     "useRoute": {
-      "returns": "() => { path: string, params: Object, query: Object, component: Function|null, components: Function[], matched: boolean, name?: string }",
-      "description": "Get current route signal."
+      "returns": "() => { path: string, params: Object, query: Object, component: Function|null, components: Function[], matched: boolean, name?: string, meta: Object }",
+      "description": "Get current route signal. The returned signal includes a `meta` field — an object merged from parent routes down to the matched leaf. Parent meta is applied first, child meta overrides. Example: `{ path: '/admin', meta: { requiresAuth: true, breadcrumb: 'Admin' }, component: AdminPage }`"
     },
     "useSearchParams": {
       "returns": "[() => URLSearchParams, (params: Object|URLSearchParams) => void]",
       "description": "Reactive search params. Returns [getter, setter] tuple. Getter returns URLSearchParams from current URL query string. Setter updates query params without triggering full navigation."
+    },
+    "onNavigate": {
+      "params": [
+        {
+          "name": "callback",
+          "type": "(to: Object, from: Object) => void"
+        }
+      ],
+      "returns": "() => void",
+      "description": "Subscribe to navigation events on the active router. Returns an unsubscribe function."
+    },
+    "back": {
+      "description": "Navigate back in history. Delegates to active router. /"
+    },
+    "forward": {
+      "description": "Navigate forward in history. Delegates to active router. /"
+    },
+    "isNavigating": {
+      "returns": "boolean",
+      "description": "Reactive boolean signal — true while lazy routes are resolving."
     }
   }
 }

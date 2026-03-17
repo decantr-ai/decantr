@@ -703,12 +703,19 @@ function hasChanges(currentHashes, cachedHashes) {
 
 // ─── Phase 1: Build-Time Style Elimination ───────────────────────
 
+// Addon styles live in src/css/styles/addons/ and are imported explicitly by user code.
+// Only auradecantism remains a built-in in theme-registry.js.
 const STYLE_IMPORTS = {
-  'clean': { varName: 'clean', file: 'clean.js' },
-  'retro': { varName: 'retro', file: 'retro.js' },
-  'glassmorphism': { varName: 'glassmorphism', file: 'glassmorphism.js' },
-  'auradecantism': { varName: 'auradecantism', file: 'auradecantism.js' },
-  'command-center': { varName: 'commandCenter', file: 'command-center.js' },
+  'clean': { varName: 'clean', file: 'clean.js', addon: true },
+  'retro': { varName: 'retro', file: 'retro.js', addon: true },
+  'glassmorphism': { varName: 'glassmorphism', file: 'glassmorphism.js', addon: true },
+  'command-center': { varName: 'commandCenter', file: 'command-center.js', addon: true },
+  'clay': { varName: 'clay', file: 'clay.js', addon: true },
+  'liquid-glass': { varName: 'liquidGlass', file: 'liquid-glass.js', addon: true },
+  'dopamine': { varName: 'dopamine', file: 'dopamine.js', addon: true },
+  'prismatic': { varName: 'prismatic', file: 'prismatic.js', addon: true },
+  'bioluminescent': { varName: 'bioluminescent', file: 'bioluminescent.js', addon: true },
+  'editorial': { varName: 'editorial', file: 'editorial.js', addon: true },
 };
 
 /**
@@ -755,39 +762,25 @@ async function detectUsedStyles(modules, projectRoot) {
 }
 
 /**
- * Remove unused style imports and builtins from theme-registry.js source.
- * @param {string} source
+ * Remove unused addon style modules from the bundle.
+ * Since non-core styles now live in styles/addons/ and are imported by user code
+ * (not by theme-registry.js), this eliminates unused addon module files from the
+ * module map so they don't end up in the bundle.
+ * @param {Map<string, string>} modules
  * @param {Set<string>} usedStyles
- * @returns {string}
+ * @param {string} frameworkSrcDir
+ * @returns {number} Number of eliminated addon modules
  */
-function eliminateUnusedStyles(source, usedStyles) {
-  let result = source;
-  const removedVars = [];
-
+function eliminateUnusedAddonStyles(modules, usedStyles, frameworkSrcDir) {
+  let eliminated = 0;
   for (const [id, info] of Object.entries(STYLE_IMPORTS)) {
+    if (!info.addon) continue;
     if (!usedStyles.has(id)) {
-      // Remove import line
-      const escaped = info.file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const importRe = new RegExp(
-        `import\\s*\\{\\s*${info.varName}\\s*\\}\\s*from\\s*['\"]\\./styles/${escaped}['\"]\\s*;?\\n?`, 'g'
-      );
-      result = result.replace(importRe, '');
-      removedVars.push(info.varName);
+      const addonPath = join(frameworkSrcDir, 'css', 'styles', 'addons', info.file);
+      if (modules.delete(addonPath)) eliminated++;
     }
   }
-
-  // Rewrite builtins array to only include used styles
-  if (removedVars.length > 0) {
-    result = result.replace(
-      /const builtins = \[([^\]]+)\]/,
-      (match, items) => {
-        const kept = items.split(',').map(s => s.trim()).filter(s => s && !removedVars.includes(s));
-        return `const builtins = [${kept.join(', ')}]`;
-      }
-    );
-  }
-
-  return result;
+  return eliminated;
 }
 
 // ─── Phase 3: Component CSS Pruning ──────────────────────────────
@@ -823,7 +816,7 @@ const COMPONENT_CSS_MAP = {
   'data-table.js': ['data-table', 'table'], 'avatar-group.js': ['avatar-group', 'avatar'],
   'tag.js': ['tag'], 'list.js': ['list'], 'tree.js': ['tree'],
   'descriptions.js': ['descriptions'], 'calendar.js': ['calendar'],
-  'carousel.js': ['carousel'], 'empty.js': ['empty'], 'image.js': ['image'],
+  'carousel.js': ['carousel'], 'empty.js': ['empty'], 'placeholder.js': ['placeholder'], 'image.js': ['image'],
   'timeline.js': ['timeline'], 'hover-card.js': ['hover-card'],
   'alert-dialog.js': ['alert-dialog', 'modal'], 'result.js': ['result'],
   'popconfirm.js': ['popconfirm'], 'command.js': ['command-palette', 'shared-option'],
@@ -1055,20 +1048,23 @@ export async function build(projectRoot, options = {}) {
   const enablePurgeCSS = options.purgeCSS !== false;
   const enableTreeShake = options.treeShake !== false;
 
+  // Load config for build-time checks and budget validation
+  let config = null;
+  try {
+    const configRaw = await readFile(join(projectRoot, 'decantr.config.json'), 'utf-8').catch(() => null);
+    if (configRaw) config = JSON.parse(configRaw);
+  } catch { /* ignore */ }
+
   // Essence-config consistency check
   try {
-    const [essenceRaw, configRaw] = await Promise.all([
-      readFile(join(projectRoot, 'decantr.essence.json'), 'utf-8').catch(() => null),
-      readFile(join(projectRoot, 'decantr.config.json'), 'utf-8').catch(() => null)
-    ]);
+    const essenceRaw = await readFile(join(projectRoot, 'decantr.essence.json'), 'utf-8').catch(() => null);
 
     if (!essenceRaw) {
       console.log('  ⚠ No decantr.essence.json found — building without essence validation');
     } else {
       try {
         const essence = JSON.parse(essenceRaw);
-        if (configRaw) {
-          const config = JSON.parse(configRaw);
+        if (config) {
           const eStyle = essence.vintage?.style;
           const eMode = essence.vintage?.mode;
           if (eStyle && config.style && eStyle !== config.style) {
@@ -1127,13 +1123,10 @@ export async function build(projectRoot, options = {}) {
 
   // Phase 1: Style elimination
   const usedStyles = await detectUsedStyles(modules, projectRoot);
-  const themeRegistryPath = join(frameworkSrc, 'css', 'theme-registry.js');
-  if (modules.has(themeRegistryPath)) {
-    const eliminated = Object.keys(STYLE_IMPORTS).filter(id => !usedStyles.has(id)).length;
-    if (eliminated > 0) {
-      modules.set(themeRegistryPath, eliminateUnusedStyles(modules.get(themeRegistryPath), usedStyles));
-      console.log(`  Eliminated ${eliminated} unused style(s)`);
-    }
+  // Phase 1: Eliminate unused addon style modules from bundle
+  const addonEliminated = eliminateUnusedAddonStyles(modules, usedStyles, frameworkSrc);
+  if (addonEliminated > 0) {
+    console.log(`  Eliminated ${addonEliminated} unused addon style(s)`);
   }
 
   // Phase 3: Component CSS pruning
@@ -1158,13 +1151,6 @@ export async function build(projectRoot, options = {}) {
     modules.delete(join(frameworkSrc, 'css', 'atoms.js'));
     modules.delete(join(frameworkSrc, 'css', 'runtime.js'));
     console.log('  Static CSS extraction enabled (css() → passthrough)');
-  }
-
-  // Remove style modules eliminated by Phase 1
-  for (const [id, info] of Object.entries(STYLE_IMPORTS)) {
-    if (!usedStyles.has(id)) {
-      modules.delete(join(frameworkSrc, 'css', 'styles', info.file));
-    }
   }
 
   // Clean previous build output
@@ -1352,6 +1338,40 @@ export async function build(projectRoot, options = {}) {
 
   console.log('  ──────────────────────────────────────────');
   console.log(`    Total: ${formatSize(totalRaw)} │ ${formatSize(totalGzip)} gz │ ${formatSize(totalBrotli)} br`);
+
+  // ─── Bundle size budget check ──────────────────────────────────
+  const sizeBudget = config?.build?.sizeBudget || {};
+  const budgetWarnings = [];
+  if (sizeBudget.jsRaw && jsSize > sizeBudget.jsRaw) {
+    budgetWarnings.push(`JS raw ${formatSize(jsSize)} exceeds budget ${formatSize(sizeBudget.jsRaw)}`);
+  }
+  if (sizeBudget.jsBrotli && jsBrotli > sizeBudget.jsBrotli) {
+    budgetWarnings.push(`JS brotli ${formatSize(jsBrotli)} exceeds budget ${formatSize(sizeBudget.jsBrotli)}`);
+  }
+  if (sizeBudget.cssRaw && cssSize > sizeBudget.cssRaw) {
+    budgetWarnings.push(`CSS raw ${formatSize(cssSize)} exceeds budget ${formatSize(sizeBudget.cssRaw)}`);
+  }
+  if (sizeBudget.cssBrotli && cssBrotli > sizeBudget.cssBrotli) {
+    budgetWarnings.push(`CSS brotli ${formatSize(cssBrotli)} exceeds budget ${formatSize(sizeBudget.cssBrotli)}`);
+  }
+  if (sizeBudget.totalRaw && totalRaw > sizeBudget.totalRaw) {
+    budgetWarnings.push(`Total raw ${formatSize(totalRaw)} exceeds budget ${formatSize(sizeBudget.totalRaw)}`);
+  }
+  if (sizeBudget.totalBrotli && totalBrotli > sizeBudget.totalBrotli) {
+    budgetWarnings.push(`Total brotli ${formatSize(totalBrotli)} exceeds budget ${formatSize(sizeBudget.totalBrotli)}`);
+  }
+  if (sizeBudget.chunkRaw) {
+    for (const chunk of chunkOutputs) {
+      const cSize = Buffer.byteLength(chunk.content);
+      if (cSize > sizeBudget.chunkRaw) {
+        budgetWarnings.push(`Chunk ${chunk.name} ${formatSize(cSize)} exceeds chunk budget ${formatSize(sizeBudget.chunkRaw)}`);
+      }
+    }
+  }
+  if (budgetWarnings.length > 0) {
+    console.log('\n  ⚠ Size budget exceeded:');
+    for (const w of budgetWarnings) console.log(`    ⚠ ${w}`);
+  }
 
   // Compression ratios
   if (jsSize > 0) {

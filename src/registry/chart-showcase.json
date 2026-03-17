@@ -1,0 +1,160 @@
+{
+  "$schema": "https://decantr.ai/schemas/chart-showcase.v1.json",
+  "description": "Chart groups, type metadata, and variation specs for the Decantation Explorer",
+  "groups": {
+    "cartesian": { "label": "Cartesian", "description": "X/Y axis charts for trends, comparisons, and distributions", "types": ["line", "bar", "area", "combination", "histogram", "waterfall"] },
+    "circular": { "label": "Circular", "description": "Radial charts for proportions and multi-dimensional data", "types": ["pie", "radar", "radial", "gauge", "funnel"] },
+    "statistical": { "label": "Statistical", "description": "Data analysis and financial charts", "types": ["scatter", "bubble", "box-plot", "candlestick", "range-bar", "range-area"] },
+    "hierarchical": { "label": "Hierarchical", "description": "Relationships, flows, and organizational structures", "types": ["treemap", "sunburst", "sankey", "chord", "org-chart", "swimlane"] },
+    "micro": { "label": "Micro", "description": "Compact inline and dense visualization charts", "types": ["sparkline", "heatmap"] }
+  },
+  "types": {
+    "line": { "label": "Line", "description": "Track trends over categories or time" },
+    "bar": { "label": "Bar", "description": "Compare values across categories" },
+    "area": { "label": "Area", "description": "Show volume and trends with filled regions" },
+    "combination": { "label": "Combination", "description": "Mix chart types on shared axes" },
+    "histogram": { "label": "Histogram", "description": "Visualize frequency distribution of values" },
+    "waterfall": { "label": "Waterfall", "description": "Show cumulative effect of sequential values" },
+    "pie": { "label": "Pie", "description": "Show proportions of a whole" },
+    "radar": { "label": "Radar", "description": "Compare multi-dimensional data on radial axes" },
+    "radial": { "label": "Radial", "description": "Display values as radial bars" },
+    "gauge": { "label": "Gauge", "description": "Show a single metric against a range" },
+    "funnel": { "label": "Funnel", "description": "Show progressive reduction through stages" },
+    "scatter": { "label": "Scatter", "description": "Reveal correlations between two variables" },
+    "bubble": { "label": "Bubble", "description": "Scatter plot with size dimension" },
+    "box-plot": { "label": "Box Plot", "description": "Show statistical distribution with quartiles" },
+    "candlestick": { "label": "Candlestick", "description": "Visualize OHLC financial data" },
+    "range-bar": { "label": "Range Bar", "description": "Display value ranges as bars" },
+    "range-area": { "label": "Range Area", "description": "Show value ranges with filled bands" },
+    "heatmap": { "label": "Heatmap", "description": "Represent values in a color-coded matrix" },
+    "treemap": { "label": "Treemap", "description": "Show hierarchical data as nested rectangles" },
+    "sunburst": { "label": "Sunburst", "description": "Show hierarchical data as concentric rings" },
+    "sankey": { "label": "Sankey", "description": "Visualize flow between nodes" },
+    "chord": { "label": "Chord", "description": "Show inter-relationships between groups" },
+    "org-chart": { "label": "Org Chart", "description": "Display organizational hierarchy" },
+    "swimlane": { "label": "Swimlane", "description": "Kanban-style lane layout" },
+    "sparkline": { "label": "Sparkline", "description": "Compact inline chart for trends" }
+  },
+  "variations": {
+    "line": [
+      { "name": "Default", "description": "Smooth curve with dots and grid" },
+      { "name": "Linear", "description": "Straight line interpolation" },
+      { "name": "Multiple Series", "description": "Compare desktop vs mobile" },
+      { "name": "With Labels", "description": "Data point values displayed on chart" },
+      { "name": "No Dots", "description": "Clean line without data point markers" },
+      { "name": "Interactive", "description": "Crosshair guides on hover" },
+      { "name": "Live Stream", "description": "Real-time data feed with createStream() rolling buffer" }
+    ],
+    "bar": [
+      { "name": "Default", "description": "Vertical bars for category comparison" },
+      { "name": "Horizontal", "description": "Bars oriented horizontally" },
+      { "name": "Stacked", "description": "Series stacked to show total" },
+      { "name": "Multiple Series", "description": "Grouped bars side by side" },
+      { "name": "With Labels", "description": "Value labels on each bar" },
+      { "name": "Negative Values", "description": "Bars extending in both directions" }
+    ],
+    "area": [
+      { "name": "Default", "description": "Smooth filled area under curve" },
+      { "name": "Linear", "description": "Straight-line area fill" },
+      { "name": "Stacked", "description": "Multiple series stacked" },
+      { "name": "Multiple Series", "description": "Overlapping transparent areas" },
+      { "name": "With Labels", "description": "Data labels on area peaks" }
+    ],
+    "combination": [
+      { "name": "Bar + Line", "description": "Bar for volume, line for trend" },
+      { "name": "Area + Line", "description": "Filled area with overlaid line" },
+      { "name": "Multi-layer", "description": "Three series with mixed types" }
+    ],
+    "histogram": [
+      { "name": "Default", "description": "Auto-binned frequency distribution" },
+      { "name": "Custom Bins", "description": "Increased bin count for finer resolution" },
+      { "name": "With Labels", "description": "Count labels on each bin" }
+    ],
+    "waterfall": [
+      { "name": "Default", "description": "Running total with positive and negative deltas" },
+      { "name": "Horizontal", "description": "Horizontal waterfall layout" },
+      { "name": "With Labels", "description": "Value labels displayed on bars" }
+    ],
+    "pie": [
+      { "name": "Donut", "description": "Ring chart with center space" },
+      { "name": "Full Pie", "description": "Classic full circle pie chart" },
+      { "name": "With Labels", "description": "Slice labels showing values" },
+      { "name": "With Legend", "description": "External legend for slice identification" }
+    ],
+    "radar": [
+      { "name": "Default", "description": "Filled radar with area shading" },
+      { "name": "Multiple Series", "description": "Overlay two data profiles" },
+      { "name": "With Dots", "description": "Data point markers on vertices" },
+      { "name": "No Fill", "description": "Line-only radar without area fill" }
+    ],
+    "radial": [
+      { "name": "Default", "description": "Radial bars showing relative values" },
+      { "name": "With Labels", "description": "Value labels on each bar" },
+      { "name": "Three Items", "description": "Compact radial with fewer slices" }
+    ],
+    "gauge": [
+      { "name": "Radial", "description": "Arc gauge showing progress to target" },
+      { "name": "Bullet", "description": "Compact horizontal bullet gauge" },
+      { "name": "With Segments", "description": "Color-coded performance zones" }
+    ],
+    "funnel": [
+      { "name": "Default", "description": "Progressive funnel narrowing down" },
+      { "name": "Pyramid", "description": "Inverted triangle shape" }
+    ],
+    "scatter": [
+      { "name": "Default", "description": "Point cloud showing correlation" },
+      { "name": "With Labels", "description": "Labels on data points" },
+      { "name": "Multiple Series", "description": "Color-coded groups" }
+    ],
+    "bubble": [
+      { "name": "Default", "description": "Scatter with variable point sizes" },
+      { "name": "Multiple Series", "description": "Grouped bubbles by category" }
+    ],
+    "box-plot": [
+      { "name": "Default", "description": "Quartile distribution with 1.5 IQR whiskers" },
+      { "name": "Min-Max Whiskers", "description": "Whiskers extend to data extremes" }
+    ],
+    "candlestick": [
+      { "name": "Default", "description": "OHLC price movement bars" },
+      { "name": "With Grid", "description": "Grid lines for price reference" }
+    ],
+    "range-bar": [
+      { "name": "Default", "description": "Bars showing min-max range" },
+      { "name": "Horizontal", "description": "Horizontal range bars" }
+    ],
+    "range-area": [
+      { "name": "Default", "description": "Filled band between min and max" },
+      { "name": "Linear", "description": "Straight-line range band" }
+    ],
+    "heatmap": [
+      { "name": "Default", "description": "Color-coded matrix of values" },
+      { "name": "Custom Colors", "description": "Orange-to-purple color scale" },
+      { "name": "With Labels", "description": "Cell values displayed in grid" }
+    ],
+    "treemap": [
+      { "name": "Default", "description": "Nested rectangles proportional to value" },
+      { "name": "With Labels", "description": "Labels inside each rectangle" }
+    ],
+    "sunburst": [
+      { "name": "Default", "description": "Hierarchical data as concentric rings" },
+      { "name": "With Labels", "description": "Segment labels on each ring" }
+    ],
+    "sankey": [
+      { "name": "Default", "description": "Flow diagram from source to destination" }
+    ],
+    "chord": [
+      { "name": "Default", "description": "Circular relationship diagram" }
+    ],
+    "org-chart": [
+      { "name": "Top-Down", "description": "Standard top-down hierarchy" },
+      { "name": "Left-Right", "description": "Horizontal hierarchy layout" }
+    ],
+    "swimlane": [
+      { "name": "Default", "description": "Kanban board with lane columns" }
+    ],
+    "sparkline": [
+      { "name": "Default", "description": "Compact inline trend line" },
+      { "name": "Dense", "description": "More data points for detailed view" }
+    ]
+  }
+}

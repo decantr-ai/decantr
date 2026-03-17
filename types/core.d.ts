@@ -65,7 +65,7 @@ declare module 'decantr/core' {
   ): Comment;
 
   /**
-   * Async boundary. Shows fallback while createResource() calls in children are loading.
+   * Async boundary. Shows fallback while createQuery() calls in children are loading.
    */
   export function Suspense(
     props: { fallback: () => Node },

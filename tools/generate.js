@@ -40,6 +40,41 @@ async function loadPattern(id) {
   return loadJSON(join(registryRoot, 'patterns', `${id}.json`));
 }
 
+/**
+ * Resolve a pattern reference that may include a preset.
+ * Accepts both string IDs and { pattern, preset, as } objects.
+ * Returns the resolved pattern with preset-specific blend/code merged in.
+ */
+async function resolvePatternRef(ref) {
+  if (typeof ref === 'string') {
+    return { id: ref, alias: ref, pattern: await loadPattern(ref) };
+  }
+  if (ref && ref.pattern) {
+    const pattern = await loadPattern(ref.pattern);
+    const presetId = ref.preset || pattern.default_preset;
+    const alias = ref.as || ref.pattern;
+
+    // If pattern has presets and a matching preset exists, merge it
+    if (presetId && pattern.presets?.[presetId]) {
+      const preset = pattern.presets[presetId];
+      return {
+        id: ref.pattern,
+        alias,
+        pattern: {
+          ...pattern,
+          id: alias,
+          name: pattern.name + (presetId !== pattern.default_preset ? ` (${presetId})` : ''),
+          components: preset.components || pattern.components,
+          default_blend: preset.blend || pattern.default_blend,
+          code: preset.code || pattern.code,
+        }
+      };
+    }
+    return { id: ref.pattern, alias, pattern };
+  }
+  return null;
+}
+
 async function loadRecipe(id) {
   return loadJSON(join(registryRoot, `recipe-${id}.json`));
 }
@@ -90,11 +125,26 @@ function renderImports(imports) {
 
 // ─── Blend resolver ─────────────────────────────────────────────
 
+function resolveBlendId(item) {
+  // Extract the effective ID (alias) from a blend item
+  if (typeof item === 'string') return item;
+  if (item.as) return item.as;
+  if (item.pattern) return item.pattern;
+  return null;
+}
+
 function blendItemToCode(item, nameMap, indent = '    ') {
   if (typeof item === 'string') {
     // Full-width pattern
     const fn = nameMap.get(item) || toPascalCase(item);
     return `${indent}// @pattern: ${item}\n${indent}${fn}()`;
+  }
+
+  // v2 preset reference at top level: { pattern, preset, as }
+  if (item.pattern && !item.cols) {
+    const alias = item.as || item.pattern;
+    const fn = nameMap.get(alias) || toPascalCase(alias);
+    return `${indent}// @pattern: ${alias} (${item.pattern}:${item.preset || 'default'})\n${indent}${fn}()`;
   }
 
   if (item.cols) {
@@ -103,18 +153,20 @@ function blendItemToCode(item, nameMap, indent = '    ') {
 
     if (hasSpan) {
       // Weighted grid
-      const totalSpan = item.cols.reduce((sum, c) => sum + (item.span?.[c] || 1), 0);
+      const totalSpan = item.cols.reduce((sum, c) => sum + (item.span?.[resolveBlendId(c) || c] || 1), 0);
       const children = item.cols.map(c => {
-        const span = item.span?.[c] || 1;
-        const fn = nameMap.get(c) || toPascalCase(c);
-        return `${indent}  div({ class: css('_span${span}') },\n${indent}    // @pattern: ${c}\n${indent}    ${fn}()\n${indent}  )`;
+        const id = resolveBlendId(c) || c;
+        const span = item.span?.[id] || 1;
+        const fn = nameMap.get(id) || toPascalCase(id);
+        return `${indent}  div({ class: css('_span${span}') },\n${indent}    // @pattern: ${id}\n${indent}    ${fn}()\n${indent}  )`;
       }).join(',\n');
       return `${indent}div({ class: css('_grid _gc${totalSpan} _gap4') },\n${children}\n${indent})`;
     } else {
       // Equal-width grid
       const children = item.cols.map(c => {
-        const fn = nameMap.get(c) || toPascalCase(c);
-        return `${indent}  // @pattern: ${c}\n${indent}  ${fn}()`;
+        const id = resolveBlendId(c) || c;
+        const fn = nameMap.get(id) || toPascalCase(id);
+        return `${indent}  // @pattern: ${id}\n${indent}  ${fn}()`;
       }).join(',\n');
       return `${indent}div({ class: css('_grid _gc${colCount} _gap4') },\n${children}\n${indent})`;
     }
@@ -137,20 +189,23 @@ function toPascalCase(kebab) {
 // ─── Page generator ─────────────────────────────────────────────
 
 async function generatePage(page, vintage, recipe) {
-  const patternIds = extractPatternIds(page.blend || []);
+  const blendRefs = extractBlendRefs(page.blend || []);
   const patterns = new Map();
   let pageImports = parseImports("import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';");
 
-  // Load all patterns referenced in blend
-  for (const id of patternIds) {
+  // Load all patterns referenced in blend (supports both string IDs and {pattern, preset, as})
+  for (const ref of blendRefs) {
     try {
-      const pattern = await loadPattern(id);
-      patterns.set(id, pattern);
-      if (pattern.code?.imports) {
-        pageImports = mergeImports(pageImports, parseImports(pattern.code.imports));
+      const resolved = await resolvePatternRef(ref);
+      if (resolved) {
+        patterns.set(resolved.alias, resolved.pattern);
+        if (resolved.pattern.code?.imports) {
+          pageImports = mergeImports(pageImports, parseImports(resolved.pattern.code.imports));
+        }
       }
     } catch {
       // Pattern not found — generate placeholder
+      const id = typeof ref === 'string' ? ref : (ref.as || ref.pattern);
       patterns.set(id, { id, code: null });
     }
   }
@@ -205,16 +260,40 @@ ${blendCode}
   };
 }
 
-function extractPatternIds(blend) {
-  const ids = new Set();
+/**
+ * Extract all pattern references from a blend array.
+ * Returns a Set of refs (strings or {pattern, preset, as} objects).
+ * Handles both v1 flat strings and v2 preset references.
+ */
+function extractBlendRefs(blend) {
+  const refs = [];
+  const seen = new Set();
   for (const item of blend) {
     if (typeof item === 'string') {
-      ids.add(item);
+      if (!seen.has(item)) { refs.push(item); seen.add(item); }
+    } else if (item.pattern) {
+      // v2 preset reference in blend array
+      const key = item.as || item.pattern;
+      if (!seen.has(key)) { refs.push(item); seen.add(key); }
     } else if (item.cols) {
-      for (const col of item.cols) ids.add(col);
+      for (const col of item.cols) {
+        if (typeof col === 'string') {
+          if (!seen.has(col)) { refs.push(col); seen.add(col); }
+        } else if (col.pattern) {
+          const key = col.as || col.pattern;
+          if (!seen.has(key)) { refs.push(col); seen.add(key); }
+        }
+      }
     }
   }
-  return ids;
+  return refs;
+}
+
+// Backward compat: extract just the IDs (aliases) from blend refs
+function extractPatternIds(blend) {
+  return new Set(extractBlendRefs(blend).map(ref =>
+    typeof ref === 'string' ? ref : (ref.as || ref.pattern)
+  ));
 }
 
 // ─── Nav icon map ────────────────────────────────────────────────
@@ -257,12 +336,36 @@ function generateAppJs(essence, pages, skeletonCode) {
   // Build skeleton-specific App function and extra imports
   const { appFunction, extraImports } = buildSkeletonApp(skeletonId, nav);
 
+  // Addon style import/registration (non-core styles need explicit import)
+  const ADDON_STYLE_MAP = {
+    'clean': { varName: 'clean', pkg: 'clean' },
+    'retro': { varName: 'retro', pkg: 'retro' },
+    'glassmorphism': { varName: 'glassmorphism', pkg: 'glassmorphism' },
+    'command-center': { varName: 'commandCenter', pkg: 'command-center' },
+    'clay': { varName: 'clay', pkg: 'clay' },
+    'liquid-glass': { varName: 'liquidGlass', pkg: 'liquid-glass' },
+    'dopamine': { varName: 'dopamine', pkg: 'dopamine' },
+    'prismatic': { varName: 'prismatic', pkg: 'prismatic' },
+    'bioluminescent': { varName: 'bioluminescent', pkg: 'bioluminescent' },
+    'editorial': { varName: 'editorial', pkg: 'editorial' },
+  };
+  const addonInfo = ADDON_STYLE_MAP[style];
+  const cssImportNames = addonInfo
+    ? `css, setStyle, setMode, registerStyle`
+    : `css, setStyle, setMode`;
+  const addonImportLine = addonInfo
+    ? `\nimport { ${addonInfo.varName} } from 'decantr/styles/${addonInfo.pkg}';`
+    : '';
+  const addonRegisterLine = addonInfo
+    ? `registerStyle(${addonInfo.varName});\n`
+    : '';
+
   // Merge imports
   const baseImports = parseImports([
     "import { tags } from 'decantr/tags';",
     "import { mount } from 'decantr/core';",
     "import { createRouter } from 'decantr/router';",
-    "import { css, setStyle, setMode } from 'decantr/css';",
+    `import { ${cssImportNames} } from 'decantr/css';`,
   ].join('\n'));
 
   const skelImports = parseImports(extraImports);
@@ -271,10 +374,10 @@ function generateAppJs(essence, pages, skeletonCode) {
   return `// Generated by decantr generate — ${new Date().toISOString().split('T')[0]}
 // Modify freely — this is a starting point, not a final product.
 
-${renderImports(allImports)}
+${renderImports(allImports)}${addonImportLine}
 
 // ─── Style initialization ───────────────────────────────────────
-setStyle('${style}');
+${addonRegisterLine}setStyle('${style}');
 setMode('${mode}');
 
 // ─── Router ─────────────────────────────────────────────────────

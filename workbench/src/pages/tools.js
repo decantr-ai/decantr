@@ -2,7 +2,8 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { ThemeStudio, loadToolItems } from '../explorer/tools.js';
+import { ThemeStudio, loadToolItems } from 'decantr/explorer/tools.js';
+import { wbPath } from '../path-prefix.js';
 
 const { div, h2, h3, p } = tags;
 
@@ -15,11 +16,11 @@ export function ToolsIndex() {
   );
 
   loadToolItems().then(items => {
-    container.appendChild(div({ class: 'de-card-grid' },
+    container.appendChild(div({ class: '_grid _gcaf280 _gap4' },
       ...items.map(item =>
         div({
-          class: 'de-card-item',
-          onclick: () => navigate(`/tools/${item.id}`)
+          class: '_surface1 _r2 _p4 _b1 _bcborder _flex _col _gap2',
+          onclick: () => navigate(wbPath(`/tools/${item.id}`))
         },
           h3({ class: css('_heading6') }, item.label)
         )
@@ -37,7 +38,7 @@ export function ToolDetailPage({ tool }) {
 
   return div({ class: css('_flex _col _gap4') },
     Breadcrumb({ items: [
-      { label: 'Tools', onclick: () => navigate('/tools') },
+      { label: 'Tools', onclick: () => navigate(wbPath('/tools')) },
       { label: tool === 'theme-studio' ? 'Theme Studio' : tool }
     ]}),
     content

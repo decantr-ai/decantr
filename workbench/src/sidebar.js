@@ -2,17 +2,19 @@ import { createSignal, createEffect, createMemo } from 'decantr/state';
 import { tags } from 'decantr/tags';
 import { link, useRoute } from 'decantr/router';
 import { Input } from 'decantr/components';
+import { wbPath } from './path-prefix.js';
 
-import { loadFoundationItems } from './explorer/foundations.js';
-import { loadAtomItems } from './explorer/atoms.js';
-import { loadTokenItems } from './explorer/tokens.js';
-import { loadComponentItems } from './explorer/components.js';
-import { loadIconItems } from './explorer/icons.js';
-import { loadChartItems } from './explorer/charts.js';
-import { loadPatternItems } from './explorer/patterns.js';
-import { loadArchetypeItems } from './explorer/archetypes.js';
-import { loadRecipeItems } from './explorer/recipes.js';
-import { loadToolItems } from './explorer/tools.js';
+import { loadFoundationItems } from 'decantr/explorer/foundations.js';
+import { loadAtomItems } from 'decantr/explorer/atoms.js';
+import { loadTokenItems } from 'decantr/explorer/tokens.js';
+import { loadComponentItems } from 'decantr/explorer/components.js';
+import { loadIconItems } from 'decantr/explorer/icons.js';
+import { loadChartItems } from 'decantr/explorer/charts.js';
+import { loadPatternItems } from 'decantr/explorer/patterns.js';
+import { loadArchetypeItems } from 'decantr/explorer/archetypes.js';
+import { loadRecipeItems } from 'decantr/explorer/recipes.js';
+import { loadToolItems } from 'decantr/explorer/tools.js';
+import { loadShellItems } from 'decantr/explorer/shells.js';
 
 const { div, nav, span, button } = tags;
 
@@ -22,6 +24,7 @@ export const LAYERS = [
   { id: 'icons', label: 'Icons' },
   { id: 'charts', label: 'Charts' },
   { id: 'patterns', label: 'Patterns' },
+  { id: 'shells', label: 'Shells' },
   { id: 'archetypes', label: 'Archetypes' },
   { id: 'recipes', label: 'Recipes' },
   { id: 'foundations', label: 'Foundations' },
@@ -46,6 +49,7 @@ export async function loadAllSidebarItems() {
     icons: loadIconItems,
     charts: loadChartItems,
     patterns: loadPatternItems,
+    shells: loadShellItems,
     archetypes: loadArchetypeItems,
     recipes: loadRecipeItems,
     tools: loadToolItems,
@@ -86,9 +90,12 @@ export function SidebarNav() {
   const [filter, setFilter] = createSignal('');
 
   // Derive active layer from route to auto-expand
+  // Strip any path prefix (e.g. /workbench) before extracting the layer
   const activeLayer = createMemo(() => {
     const path = route().path || '';
-    return path.split('/').filter(Boolean)[0] || 'components';
+    const prefix = wbPath('');
+    const stripped = prefix ? path.replace(new RegExp('^' + prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/?'), '') : path;
+    return stripped.split('/').filter(Boolean)[0] || 'components';
   });
 
   // Auto-expand active layer on first load
@@ -166,7 +173,7 @@ export function SidebarNav() {
           for (const child of item.children) {
             itemsContainer.appendChild(
               link({
-                href: `/${layer.id}/${item.id}/${child}`,
+                href: wbPath(`/${layer.id}/${item.id}/${child}`),
                 class: 'de-nav-child',
                 activeClass: 'de-active'
               }, child)
@@ -176,7 +183,7 @@ export function SidebarNav() {
           // Simple item — direct link
           itemsContainer.appendChild(
             link({
-              href: `/${layer.id}/${item.id}`,
+              href: wbPath(`/${layer.id}/${item.id}`),
               class: 'de-nav-child',
               activeClass: 'de-active'
             }, item.label)

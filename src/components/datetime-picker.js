@@ -8,7 +8,7 @@ import { onDestroy } from '../core/index.js';
 import { createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { createOverlay } from './_behaviors.js';
+import { caret, createOverlay } from './_behaviors.js';
 import { icon } from './icon.js';
 
 const { div, span, button: buttonTag, input } = tags;
@@ -99,8 +99,8 @@ export function DateTimePicker(props = {}) {
     const calSection = div({ class: 'd-datetimepicker-date' });
 
     // Nav header
-    const prevBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous month' }, '\u2039');
-    const nextBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next month' }, '\u203A');
+    const prevBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Previous month' }, caret('left'));
+    const nextBtn = buttonTag({ type: 'button', class: 'd-datepicker-nav-btn', 'aria-label': 'Next month' }, caret('right'));
     const titleEl = span({ class: 'd-datepicker-title' }, `${MONTHS[month]} ${year}`);
 
     prevBtn.addEventListener('click', () => { viewDate.setMonth(month - 1); renderPanel(); });

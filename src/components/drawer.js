@@ -9,6 +9,7 @@ import { createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFocusTrap } from './_behaviors.js';
+import { icon } from './icon.js';
 
 const { div, button, span, dialog: dialogTag } = tags;
 
@@ -59,7 +60,7 @@ export function Drawer(props = {}, ...children) {
     class: 'd-drawer-close',
     type: 'button',
     'aria-label': 'Close drawer'
-  }, '\u00D7');
+  }, icon('x', { size: '1em' }));
 
   const panel = div({
     class: cx('d-drawer-panel', `d-drawer-${side}`)

@@ -2,11 +2,12 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { IconDetail, IconGroupView, loadIconItems } from '../explorer/icons.js';
+import { IconDetail, IconGroupView, loadIconItems } from 'decantr/explorer/icons.js';
+import { wbPath } from '../path-prefix.js';
 
 const { div, h2, h3, p } = tags;
 
-const nav = (path) => navigate(path);
+const nav = (path) => navigate(wbPath(path));
 
 export function IconsIndex() {
   const container = div({ class: css('_flex _col _gap6') },
@@ -17,11 +18,11 @@ export function IconsIndex() {
   );
 
   loadIconItems().then(groups => {
-    container.appendChild(div({ class: 'de-card-grid' },
+    container.appendChild(div({ class: '_grid _gcaf280 _gap4' },
       ...groups.map(group =>
         div({
-          class: 'de-card-item',
-          onclick: () => navigate(`/icons/${group.id}`)
+          class: '_surface1 _r2 _p4 _b1 _bcborder _flex _col _gap2',
+          onclick: () => navigate(wbPath(`/icons/${group.id}`))
         },
           h3({ class: css('_heading6') }, group.label)
         )
@@ -35,7 +36,7 @@ export function IconsIndex() {
 export function IconGroupPage({ group }) {
   return div({ class: css('_flex _col _gap4') },
     Breadcrumb({ items: [
-      { label: 'Icons', onclick: () => navigate('/icons') },
+      { label: 'Icons', onclick: () => navigate(wbPath('/icons')) },
       { label: group }
     ]}),
     IconGroupView(group, nav)
@@ -45,8 +46,8 @@ export function IconGroupPage({ group }) {
 export function IconDetailPage({ group, name }) {
   return div({ class: css('_flex _col _gap4') },
     Breadcrumb({ items: [
-      { label: 'Icons', onclick: () => navigate('/icons') },
-      { label: group, onclick: () => navigate(`/icons/${group}`) },
+      { label: 'Icons', onclick: () => navigate(wbPath('/icons')) },
+      { label: group, onclick: () => navigate(wbPath(`/icons/${group}`)) },
       { label: name }
     ]}),
     IconDetail(name)

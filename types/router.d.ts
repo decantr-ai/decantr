@@ -9,11 +9,15 @@ declare module 'decantr/router' {
     children?: RouteConfig[];
     /** Optional named route. */
     name?: string;
+    /** Arbitrary metadata merged parent→child, readable in guards via to.meta. */
+    meta?: Record<string, any>;
   }
 
   interface RouterConfig {
     /** Routing strategy. Default: 'hash'. */
     mode?: 'hash' | 'history';
+    /** Base path prefix for subdirectory deployments (e.g., '/app'). */
+    base?: string;
     /** Route definitions. */
     routes: RouteConfig[];
     /** Enable View Transitions API for route changes. */
@@ -34,6 +38,8 @@ declare module 'decantr/router' {
     components: Function[];
     matched: boolean;
     name?: string;
+    /** Merged route metadata (parent→child). */
+    meta: Record<string, any>;
   }
 
   interface Router {
@@ -47,6 +53,14 @@ declare module 'decantr/router' {
     path: () => string;
     /** Destroy the router and remove event listeners. */
     destroy: () => void;
+    /** Subscribe to navigation events. Returns an unsubscribe function. */
+    onNavigate: (callback: (to: RouteMatch, from: RouteMatch) => void) => () => void;
+    /** Navigate back in history. */
+    back: () => void;
+    /** Navigate forward in history. */
+    forward: () => void;
+    /** Signal getter — true while lazy routes are resolving. */
+    isNavigating: () => boolean;
   }
 
   /**
@@ -79,4 +93,24 @@ declare module 'decantr/router' {
    * Reactive search params. Returns [getter, setter] tuple.
    */
   export function useSearchParams(): [() => URLSearchParams, (params: Record<string, string> | URLSearchParams) => void];
+
+  /**
+   * Subscribe to navigation events on the active router. Returns an unsubscribe function.
+   */
+  export function onNavigate(callback: (to: RouteMatch, from: RouteMatch) => void): () => void;
+
+  /**
+   * Navigate back in history. Delegates to the active router.
+   */
+  export function back(): void;
+
+  /**
+   * Navigate forward in history. Delegates to the active router.
+   */
+  export function forward(): void;
+
+  /**
+   * Reactive boolean — true while lazy routes are resolving. Use for loading indicators.
+   */
+  export function isNavigating(): boolean;
 }

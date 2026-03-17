@@ -34,16 +34,13 @@ export const auradecantism = {
   },
   overrides: {
     light: {
-      '--d-surface-1': 'rgba(255,255,255,0.6)',
-      '--d-surface-2': 'rgba(255,255,255,0.72)',
-      '--d-surface-3': 'rgba(255,255,255,0.82)',
       '--d-surface-1-filter': 'blur(16px) saturate(1.6)',
       '--d-surface-2-filter': 'blur(20px) saturate(1.8)',
       '--d-surface-3-filter': 'blur(24px) saturate(2)',
       '--d-field-bg': 'rgba(255,255,255,0.5)',
-      '--d-field-border': 'rgba(0,0,0,0.08)',
-      '--d-field-border-hover': 'rgba(0,0,0,0.15)',
-      '--d-item-hover-bg': 'rgba(0,0,0,0.04)',
+      '--d-field-border': 'rgba(0,0,0,0.12)',
+      '--d-field-border-hover': 'rgba(0,0,0,0.22)',
+      '--d-item-hover-bg': 'rgba(0,0,0,0.06)',
     },
     dark: {
       '--d-surface-1': 'rgba(12,15,40,0.55)',
@@ -79,6 +76,7 @@ export const auradecantism = {
     '::-webkit-scrollbar-thumb:hover{background:var(--d-primary-hover)}',
     // Glass card enhancements
     '.d-card{border:var(--d-border-width) solid rgba(255,255,255,0.1);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
+    '.d-card-inner{border:var(--d-border-width) solid rgba(255,255,255,0.06);box-shadow:none}',
     '.d-modal-panel{border:var(--d-border-width) solid rgba(255,255,255,0.12);box-shadow:var(--d-elevation-3),inset 0 1px 0 rgba(255,255,255,0.08)}',
     // Button glow
     '.d-btn-primary{box-shadow:0 0 12px rgba(254,68,116,0.25)}',

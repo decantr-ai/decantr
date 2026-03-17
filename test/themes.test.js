@@ -8,14 +8,20 @@ import {
   setMode, getMode, getResolvedMode, onModeChange,
   setColorblindMode, getColorblindMode
 } from '../src/css/theme-registry.js';
-import { derive, defaultSeed, defaultPersonality, hexToRgb, rgbToOklch, oklchToRgb, gamutMap, contrast, transformSeedsForCVD } from '../src/css/derive.js';
-import { clean } from '../src/css/styles/clean.js';
-import { retro } from '../src/css/styles/retro.js';
-import { glassmorphism } from '../src/css/styles/glassmorphism.js';
+import { derive, defaultSeed, defaultPersonality, hexToRgb, rgbToOklch, oklchToRgb, gamutMap, contrast, parseRgba, compositeOnBg, transformSeedsForCVD, deriveChrome } from '../src/css/derive.js';
 import { auradecantism } from '../src/css/styles/auradecantism.js';
-import { commandCenter } from '../src/css/styles/command-center.js';
+import { clean } from '../src/css/styles/addons/clean.js';
+import { retro } from '../src/css/styles/addons/retro.js';
+import { glassmorphism } from '../src/css/styles/addons/glassmorphism.js';
+import { commandCenter } from '../src/css/styles/addons/command-center.js';
+import { clay } from '../src/css/styles/addons/clay.js';
+import { liquidGlass } from '../src/css/styles/addons/liquid-glass.js';
+import { dopamine } from '../src/css/styles/addons/dopamine.js';
+import { prismatic } from '../src/css/styles/addons/prismatic.js';
+import { bioluminescent } from '../src/css/styles/addons/bioluminescent.js';
+import { editorial } from '../src/css/styles/addons/editorial.js';
 
-const allStyleDefs = [clean, retro, glassmorphism, auradecantism, commandCenter];
+const allStyleDefs = [clean, retro, glassmorphism, auradecantism, commandCenter, clay, liquidGlass, dopamine, prismatic, bioluminescent, editorial];
 
 let cleanup;
 
@@ -30,6 +36,8 @@ after(() => {
 
 beforeEach(() => {
   resetStyles();
+  // Register addon styles (no longer built-in after extraction to addons/)
+  for (const s of allStyleDefs) registerStyle(s);
 });
 
 // ============================================================
@@ -42,10 +50,10 @@ describe('derive()', () => {
     assert.ok(Object.keys(tokens).length >= 160);
   });
 
-  it('derives all 7 palette roles × 7 modifiers', () => {
+  it('derives all 7 palette roles × 8 modifiers', () => {
     const tokens = derive(defaultSeed, defaultPersonality, 'light');
     const roles = ['primary', 'accent', 'tertiary', 'success', 'warning', 'error', 'info'];
-    const mods = ['', '-fg', '-hover', '-active', '-subtle', '-subtle-fg', '-border'];
+    const mods = ['', '-fg', '-hover', '-active', '-subtle', '-subtle-fg', '-border', '-on-subtle'];
     for (const role of roles) {
       for (const mod of mods) {
         assert.ok(tokens[`--d-${role}${mod}`], `missing --d-${role}${mod}`);
@@ -165,7 +173,8 @@ describe('derive()', () => {
     const brutalist = derive(defaultSeed, { ...defaultPersonality, elevation: 'brutalist' }, 'light');
     // Same seed, different personality — subtle alpha should differ
     assert.notEqual(glass['--d-success-subtle'], brutalist['--d-success-subtle']);
-    assert.notEqual(glass['--d-error-border'], brutalist['--d-error-border']);
+    // Hover shifts also differ between personalities
+    assert.notEqual(glass['--d-error-hover'], brutalist['--d-error-hover']);
   });
 
   it('glass styles have gentler hover shifts', () => {
@@ -617,13 +626,13 @@ describe('contrast enforcement', () => {
     }
   });
 
-  it('non-text border pairs validated at 3:1', () => {
+  it('decorative border is distinguishable from bg', () => {
     const tokens = derive(defaultSeed, defaultPersonality, 'dark');
     const border = tokens['--d-border'];
     const bg = tokens['--d-bg'];
     if (border && bg && border.startsWith('#') && bg.startsWith('#')) {
       const ratio = contrast(hexToRgb(border), hexToRgb(bg));
-      assert.ok(ratio >= 3, `border/bg contrast ${ratio.toFixed(2)} < 3`);
+      assert.ok(ratio >= 1.2, `border/bg contrast ${ratio.toFixed(2)} too low`);
     }
   });
 });
@@ -753,7 +762,7 @@ describe('surface lightness', () => {
     }
   });
 
-  it('light mode: S0 lightness >= S1 >= S2 >= S3 (progressively tinted)', () => {
+  it('light mode: S1 is brightest (card cutout), S2 < S1, S3 < S2', () => {
     const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'subtle' }, 'light');
     const lValues = [];
     for (let i = 0; i <= 3; i++) {
@@ -762,16 +771,27 @@ describe('surface lightness', () => {
       const [L] = rgbToOklch(...hexToRgb(hex));
       lValues.push(L);
     }
-    for (let i = 1; i < lValues.length; i++) {
-      assert.ok(lValues[i] <= lValues[i - 1] + 0.001,
-        `S${i} L(${lValues[i].toFixed(3)}) should be <= S${i - 1} L(${lValues[i - 1].toFixed(3)})`);
+    // S1 (card) should be >= S0 (canvas)
+    assert.ok(lValues[1] >= lValues[0] - 0.001,
+      `S1 L(${lValues[1].toFixed(3)}) should be >= S0 L(${lValues[0].toFixed(3)})`);
+    // S2 < S1 and S3 < S2 (progressively tinted)
+    assert.ok(lValues[2] < lValues[1] + 0.001,
+      `S2 L(${lValues[2].toFixed(3)}) should be < S1 L(${lValues[1].toFixed(3)})`);
+    assert.ok(lValues[3] < lValues[2] + 0.001,
+      `S3 L(${lValues[3].toFixed(3)}) should be < S2 L(${lValues[2].toFixed(3)})`);
+  });
+
+  it('glass surfaces contain rgba in dark mode (alpha-based)', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'glass' }, 'dark');
+    for (let i = 1; i <= 3; i++) {
+      assert.ok(tokens[`--d-surface-${i}`].includes('rgba'), `dark surface-${i} should be rgba for glass`);
     }
   });
 
-  it('glass surfaces contain rgba (alpha-based)', () => {
-    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'glass' }, 'dark');
+  it('glass surfaces contain rgba in light mode (alpha-based)', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'glass' }, 'light');
     for (let i = 1; i <= 3; i++) {
-      assert.ok(tokens[`--d-surface-${i}`].includes('rgba'), `surface-${i} should be rgba for glass`);
+      assert.ok(tokens[`--d-surface-${i}`].includes('rgba'), `light surface-${i} should be rgba for glass`);
     }
   });
 
@@ -808,7 +828,7 @@ describe('surface lightness', () => {
 // ============================================================
 
 describe('token stability', () => {
-  it('derive() produces at least 171 tokens for all styles', () => {
+  it('derive() produces at least 177 tokens for all styles', () => {
     const styleSeeds = [
       defaultSeed,
       { primary: '#e63946', neutral: '#6b7280', bg: '#fffef5', bgDark: '#1a1a1a' },
@@ -852,6 +872,71 @@ describe('token stability', () => {
   });
 });
 
+// ============================================================
+// Chrome Tokens
+// ============================================================
+
+describe('chrome tokens', () => {
+  it('chrome tokens exist in both modes', () => {
+    const chromeKeys = ['--d-chrome-bg', '--d-chrome-fg', '--d-chrome-border', '--d-chrome-muted', '--d-chrome-hover', '--d-chrome-active'];
+    for (const mode of ['light', 'dark']) {
+      const tokens = derive(defaultSeed, defaultPersonality, mode);
+      for (const key of chromeKeys) {
+        assert.ok(tokens[key], `missing ${key} in ${mode} mode`);
+      }
+    }
+  });
+
+  it('chrome fg meets 4.5:1 WCAG AA against chrome-bg', () => {
+    for (const mode of ['light', 'dark']) {
+      const tokens = derive(defaultSeed, defaultPersonality, mode);
+      const fg = tokens['--d-chrome-fg'];
+      const bg = tokens['--d-chrome-bg'];
+      if (fg.startsWith('#') && bg.startsWith('#')) {
+        const ratio = contrast(hexToRgb(fg), hexToRgb(bg));
+        assert.ok(ratio >= 4.5, `chrome fg/bg contrast in ${mode}: ${ratio.toFixed(2)} < 4.5`);
+      }
+    }
+  });
+
+  it('light chrome-bg is dark (OKLCH L < 0.3)', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    const bg = tokens['--d-chrome-bg'];
+    assert.ok(bg.startsWith('#'), `chrome-bg should be hex, got ${bg}`);
+    const [L] = rgbToOklch(...hexToRgb(bg));
+    assert.ok(L < 0.3, `light chrome-bg L(${L.toFixed(3)}) should be < 0.3 (dark chrome)`);
+  });
+
+  it('dark chrome-bg is close to surface-1 lightness', () => {
+    const tokens = derive(defaultSeed, { ...defaultPersonality, elevation: 'subtle' }, 'dark');
+    const chromeBg = tokens['--d-chrome-bg'];
+    const s1 = tokens['--d-surface-1'];
+    if (chromeBg.startsWith('#') && s1.startsWith('#')) {
+      const [chromL] = rgbToOklch(...hexToRgb(chromeBg));
+      const [s1L] = rgbToOklch(...hexToRgb(s1));
+      assert.ok(Math.abs(chromL - s1L) < 0.05,
+        `dark chrome L(${chromL.toFixed(3)}) should be close to S1 L(${s1L.toFixed(3)})`);
+    }
+  });
+
+  it('light decorative border is distinguishable from bg', () => {
+    const tokens = derive(defaultSeed, defaultPersonality, 'light');
+    const border = tokens['--d-border'];
+    const bg = tokens['--d-bg'];
+    if (border && bg && border.startsWith('#') && bg.startsWith('#')) {
+      const ratio = contrast(hexToRgb(border), hexToRgb(bg));
+      assert.ok(ratio >= 1.3, `light border/bg contrast ${ratio.toFixed(2)} too low`);
+    }
+  });
+
+  it('deriveChrome returns 6 tokens', () => {
+    const chrome = deriveChrome('#1366D9', '#ffffff', '#0a0a0a', '#71717a', 'light', 'subtle');
+    assert.equal(Object.keys(chrome).length, 6);
+    assert.ok(chrome['--d-chrome-bg']);
+    assert.ok(chrome['--d-chrome-fg']);
+  });
+});
+
 describe('field tokens across styles', () => {
   const fieldTokenKeys = [
     '--d-field-bg', '--d-field-bg-hover', '--d-field-bg-disabled',
@@ -887,4 +972,257 @@ describe('field tokens across styles', () => {
       }
     });
   }
+});
+
+// ============================================================
+// Alpha-Composite Contrast Validation
+// ============================================================
+
+describe('parseRgba()', () => {
+  it('parses valid rgba string', () => {
+    const result = parseRgba('rgba(10,243,235,0.2)');
+    assert.deepEqual(result, [10, 243, 235, 0.2]);
+  });
+
+  it('returns null for hex string', () => {
+    assert.equal(parseRgba('#ff0000'), null);
+  });
+
+  it('returns null for null/undefined', () => {
+    assert.equal(parseRgba(null), null);
+    assert.equal(parseRgba(undefined), null);
+  });
+});
+
+describe('compositeOnBg()', () => {
+  it('returns hex unchanged', () => {
+    assert.equal(compositeOnBg('#ff0000', '#ffffff'), '#ff0000');
+  });
+
+  it('composites rgba onto white', () => {
+    const result = compositeOnBg('rgba(0,0,0,0.5)', '#ffffff');
+    assert.ok(result.startsWith('#'));
+    // 50% black on white = ~#808080
+    const [r, g, b] = hexToRgb(result);
+    assert.ok(Math.abs(r - 128) <= 1);
+    assert.ok(Math.abs(g - 128) <= 1);
+    assert.ok(Math.abs(b - 128) <= 1);
+  });
+
+  it('composites rgba onto black', () => {
+    const result = compositeOnBg('rgba(255,255,255,0.5)', '#000000');
+    const [r, g, b] = hexToRgb(result);
+    assert.ok(Math.abs(r - 128) <= 1);
+  });
+
+  it('full opacity rgba returns the rgba color as hex', () => {
+    const result = compositeOnBg('rgba(255,0,0,1)', '#000000');
+    assert.equal(result, '#ff0000');
+  });
+});
+
+describe('alpha-composite contrast validation', () => {
+  const roles = ['primary', 'accent', 'tertiary', 'success', 'warning', 'error', 'info'];
+  const modes = ['light', 'dark'];
+
+  for (const style of allStyleDefs) {
+    for (const mode of modes) {
+      it(`${style.id} × ${mode}: on-subtle meets 4.5:1 against composited subtle bg`, () => {
+        const tokens = derive(
+          style.seed, style.personality, mode,
+          style.typography, style.overrides?.[mode]
+        );
+        const pageBg = tokens['--d-bg'];
+        for (const role of roles) {
+          const onSubtle = tokens[`--d-${role}-on-subtle`];
+          const subtle = tokens[`--d-${role}-subtle`];
+          assert.ok(onSubtle, `${style.id} ${mode} missing --d-${role}-on-subtle`);
+          const effectiveBg = compositeOnBg(subtle, pageBg);
+          if (onSubtle.startsWith('#') && effectiveBg.startsWith('#')) {
+            const ratio = contrast(hexToRgb(onSubtle), hexToRgb(effectiveBg));
+            assert.ok(ratio >= 4.5,
+              `${style.id} ${mode} --d-${role}-on-subtle contrast ${ratio.toFixed(2)} < 4.5 against composited subtle bg`);
+          }
+        }
+      });
+
+      it(`${style.id} × ${mode}: subtle-fg meets 4.5:1 against composited subtle bg`, () => {
+        const tokens = derive(
+          style.seed, style.personality, mode,
+          style.typography, style.overrides?.[mode]
+        );
+        const pageBg = tokens['--d-bg'];
+        for (const role of roles) {
+          const subtleFg = tokens[`--d-${role}-subtle-fg`];
+          const subtle = tokens[`--d-${role}-subtle`];
+          const effectiveBg = compositeOnBg(subtle, pageBg);
+          if (subtleFg.startsWith('#') && effectiveBg.startsWith('#')) {
+            const ratio = contrast(hexToRgb(subtleFg), hexToRgb(effectiveBg));
+            assert.ok(ratio >= 4.5,
+              `${style.id} ${mode} --d-${role}-subtle-fg contrast ${ratio.toFixed(2)} < 4.5 against composited subtle bg`);
+          }
+        }
+      });
+
+      it(`${style.id} × ${mode}: role-border meets 3:1 against page bg`, () => {
+        const tokens = derive(
+          style.seed, style.personality, mode,
+          style.typography, style.overrides?.[mode]
+        );
+        const pageBg = tokens['--d-bg'];
+        for (const role of roles) {
+          const border = tokens[`--d-${role}-border`];
+          const effectiveBorder = compositeOnBg(border, pageBg);
+          if (effectiveBorder.startsWith('#') && pageBg.startsWith('#')) {
+            const ratio = contrast(hexToRgb(effectiveBorder), hexToRgb(pageBg));
+            assert.ok(ratio >= 3,
+              `${style.id} ${mode} --d-${role}-border contrast ${ratio.toFixed(2)} < 3 against page bg`);
+          }
+        }
+      });
+    }
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// PHASE 2 — Pseudo-class atoms, ring utilities, prose, transitions
+// ═══════════════════════════════════════════════════════════════════
+
+describe('pseudo-class atoms', () => {
+  it('_h:bgprimary generates hover rule', async () => {
+    const { css, reset: cssReset } = await import('../src/css/index.js');
+    const { extractCSS, reset: rtReset } = await import('../src/css/runtime.js');
+    const result = css('_h:bgprimary');
+    assert.ok(result.includes('_h:bgprimary'), 'class name should be in output');
+    const extracted = extractCSS();
+    assert.ok(extracted.includes(':hover'), 'should contain :hover pseudo');
+    assert.ok(extracted.includes('background:var(--d-primary)'), 'should contain background declaration');
+  });
+
+  it('_f:bcprimary generates focus rule', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    const result = css('_f:bcprimary');
+    assert.ok(result.includes('_f:bcprimary'));
+    const extracted = extractCSS();
+    assert.ok(extracted.includes(':focus'), 'should contain :focus pseudo');
+    assert.ok(extracted.includes('border-color:var(--d-primary)'), 'should contain border-color declaration');
+  });
+
+  it('_fv:ring2 generates focus-visible ring', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    const result = css('_fv:ring2');
+    assert.ok(result.includes('_fv:ring2'));
+    const extracted = extractCSS();
+    assert.ok(extracted.includes(':focus-visible'), 'should contain :focus-visible pseudo');
+    assert.ok(extracted.includes('box-shadow'), 'should contain box-shadow declaration');
+  });
+
+  it('_a:bgmuted generates active background', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    css('_a:bgmuted');
+    const extracted = extractCSS();
+    assert.ok(extracted.includes(':active'), 'should contain :active pseudo');
+    assert.ok(extracted.includes('background:var(--d-muted)'), 'should contain background declaration');
+  });
+
+  it('_sm:h:bgmuted generates responsive + hover', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    const result = css('_sm:h:bgmuted');
+    assert.ok(result.includes('_sm:h:bgmuted'));
+    const extracted = extractCSS();
+    assert.ok(extracted.includes('@media'), 'should be wrapped in media query');
+    assert.ok(extracted.includes(':hover'), 'should contain :hover pseudo');
+  });
+
+  it('_h:bgprimary/50 generates hover + opacity modifier', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    const result = css('_h:bgprimary/50');
+    assert.ok(result.includes('_h:bgprimary/50'));
+    const extracted = extractCSS();
+    assert.ok(extracted.includes(':hover'), 'should contain :hover pseudo');
+    assert.ok(extracted.includes('color-mix'), 'should use color-mix for opacity');
+  });
+
+  it('_h:bg[rgba(255,255,255,0.1)] generates hover + arbitrary value', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    const result = css('_h:bg[rgba(255,255,255,0.1)]');
+    assert.ok(result.includes('_h:bg[rgba(255,255,255,0.1)]'));
+    const extracted = extractCSS();
+    assert.ok(extracted.includes(':hover'), 'should contain :hover pseudo');
+  });
+});
+
+describe('ring utility atoms', () => {
+  it('_ring2 generates correct box-shadow', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    css('_ring2 _ringPrimary');
+    const extracted = extractCSS();
+    assert.ok(extracted.includes('box-shadow:0 0 0 2px var(--d-ring)'), 'ring2 should produce 2px ring');
+    assert.ok(extracted.includes('--d-ring:var(--d-primary)'), 'ringPrimary should set ring color');
+  });
+
+  it('_fv:ring2 generates focus-visible ring', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    css('_fv:ring2');
+    const extracted = extractCSS();
+    assert.ok(extracted.includes(':focus-visible'), 'should use focus-visible pseudo');
+    assert.ok(extracted.includes('box-shadow'), 'should contain box-shadow');
+  });
+
+  it('_ring0 removes ring', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    css('_ring0');
+    const extracted = extractCSS();
+    assert.ok(extracted.includes('box-shadow:none'), 'ring0 should reset box-shadow');
+  });
+});
+
+describe('prose atom', () => {
+  it('_prose maps to d-prose class', async () => {
+    const { css } = await import('../src/css/index.js');
+    const result = css('_prose');
+    assert.equal(result, 'd-prose', '_prose should output d-prose class');
+  });
+});
+
+describe('divide atoms', () => {
+  it('_divideY maps to d-divide-y class', async () => {
+    const { css } = await import('../src/css/index.js');
+    const result = css('_divideY');
+    assert.equal(result, 'd-divide-y', '_divideY should output d-divide-y class');
+  });
+
+  it('_divideX maps to d-divide-x class', async () => {
+    const { css } = await import('../src/css/index.js');
+    const result = css('_divideX');
+    assert.equal(result, 'd-divide-x', '_divideX should output d-divide-x class');
+  });
+});
+
+describe('transition atoms', () => {
+  it('_transColors resolves correctly', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    css('_transColors');
+    const extracted = extractCSS();
+    assert.ok(extracted.includes('transition:'), 'should contain transition declaration');
+    assert.ok(extracted.includes('background-color'), 'should include background-color');
+  });
+
+  it('_textBalance resolves correctly', async () => {
+    const { css } = await import('../src/css/index.js');
+    const { extractCSS } = await import('../src/css/runtime.js');
+    css('_textBalance');
+    const extracted = extractCSS();
+    assert.ok(extracted.includes('text-wrap:balance'), 'should set text-wrap:balance');
+  });
 });

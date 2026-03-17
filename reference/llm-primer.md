@@ -7,13 +7,13 @@ Single-file reference for code generation. Covers the 20% that handles 80% of sc
 ## 1. All Imports
 
 ```js
-import { tags } from '@decantr/decantr/tags';                              // HTML elements
-import { h, text, cond, list, mount, onMount, onDestroy } from '@decantr/decantr/core';
-import { createSignal, createEffect, createMemo, createStore, batch } from '@decantr/decantr/state';
-import { createRouter, link, navigate, useRoute } from '@decantr/decantr/router';
-import { css, setStyle, setMode } from '@decantr/decantr/css';
-import { Button, Input, Card, Modal, Tabs, Select, ... } from '@decantr/decantr/components';
-import { Chart, Sparkline, chartSpec, createStream } from '@decantr/decantr/chart';
+import { tags } from 'decantr/tags';                              // HTML elements
+import { h, text, cond, list, mount, onMount, onDestroy } from 'decantr/core';
+import { createSignal, createEffect, createMemo, createStore, batch } from 'decantr/state';
+import { createRouter, link, navigate, useRoute, back, forward, isNavigating } from 'decantr/router';
+import { css, setStyle, setMode } from 'decantr/css';
+import { Button, Input, Card, Modal, Tabs, Select, ... } from 'decantr/components';
+import { Chart, Sparkline, chartSpec, createStream } from 'decantr/chart';
 ```
 
 **Usage pattern:**
@@ -88,6 +88,15 @@ Both naming styles work. Decantr terse names are canonical.
 
 > For spacing decision rules beyond defaults, see `reference/spatial-guidelines.md`.
 
+### Opacity Modifiers
+Append `/N` to any semantic color atom for alpha transparency (uses `color-mix()`):
+`_bgprimary/50` (50% opacity bg), `_fgaccent/30` (30% opacity text), `_bcborder/80` (80% opacity border).
+Valid opacities: 5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95. Works with responsive prefixes: `_sm:bgprimary/20`.
+
+### Arbitrary Transitions
+Use `_trans[...]` for custom transitions: `_trans[color_0.15s_ease]` (underscores become spaces).
+Standard shortcuts: `_trans` (all 0.2s ease), `_transfast` (0.1s), `_transslow` (0.4s), `_transnone`.
+
 ### Custom values
 Use bracket syntax: `_w[300px]`, `_h[100vh]`, `_p[2px]`, `_bg[#ff0000]`, `_grid-template-columns[240px_1fr]`
 
@@ -118,7 +127,11 @@ Button({ variant: 'primary'|'outline'|'ghost'|'destructive'|'link', size: 'sm'|'
 Input({ label, type, placeholder, value, onchange, oninput, disabled, class })
 
 // Card (with sub-components)
-Card({ class }, Card.Header({}, ...), Card.Body({}, ...), Card.Footer({}, ...))
+Card({ title, extra, hoverable, bordered, loading, size, type, cover, actions, class },
+  Card.Header({ extra }, ...), Card.Body({}, ...), Card.Footer({}, ...),
+  Card.Cover({}, img), Card.Meta({ avatar, title, description }),
+  Card.Grid({ hoverable }, ...), Card.Actions({}, ...)
+)
 
 // Select
 Select({ label, value, onchange, options: [{ label, value }], placeholder, class })
@@ -174,7 +187,7 @@ icon('icon-name')  // Returns SVG icon element
 ## 4. Chart API
 
 ```js
-import { Chart, Sparkline } from '@decantr/decantr/chart';
+import { Chart, Sparkline } from 'decantr/chart';
 
 // Full chart
 Chart({
@@ -344,7 +357,7 @@ function MinimalHeader({ brand, children }) {
 
 ---
 
-## 6. Top 10 Pattern Code Snippets
+## 6. Top 15 Pattern Code Snippets
 
 > **Spacing note:** Snippets below use comfortable-density defaults (`_gap4`, `_p4`).
 > Actual spacing must match the project's Clarity profile — see `reference/spatial-guidelines.md` §17.
@@ -472,7 +485,7 @@ function ActivityFeed({ items }) {
 }
 ```
 
-### product-grid
+### card-grid (preset: product)
 ```js
 function ProductGrid({ products }) {
   const { div, span, h3 } = tags;
@@ -543,6 +556,175 @@ function ContactForm() {
 }
 ```
 
+### card-grid (preset: content)
+```js
+function RecipeCardGrid({ recipes }) {
+  const { div, span, h3, img } = tags;
+  return div({ class: css('_grid _gc3 _gap6 _p4') },
+    ...recipes.map(r =>
+      Card({},
+        img({ src: r.image, alt: r.title, class: css('_wfull _h[200px] _object[cover]') }),
+        Card.Body({ class: css('_flex _col _gap2') },
+          h3({ class: css('_heading5') }, r.title),
+          span({ class: css('_caption _fgmuted') }, r.description),
+          div({ class: css('_flex _aic _gap3 _fgmuted _textsm') },
+            span({}, icon('clock'), ` ${r.time} min`),
+            span({}, icon('users'), ` ${r.servings} servings`)
+          ),
+          div({ class: css('_flex _gap1 _wrap') },
+            ...r.tags.map(t => Chip({ size: 'sm' }, t))
+          ),
+          div({ class: css('_flex _aic _jcsb _mt2') },
+            div({ class: css('_flex _aic _gap2') },
+              Avatar({ src: r.author.avatar, size: 'xs' }),
+              span({ class: css('_textsm') }, r.author.name)
+            ),
+            span({ class: css('_textsm _fgmuted') }, icon('git-fork'), ` ${r.forks}`)
+          )
+        )
+      )
+    )
+  );
+}
+```
+
+### form-sections (preset: creation)
+```js
+function RecipeFormSimple() {
+  const { div, h3 } = tags;
+  const [ingredients, setIngredients] = createSignal(['']);
+  const [instructions, setInstructions] = createSignal(['']);
+
+  return div({ class: css('_flex _col _gap6 _mw[720px] _mxAuto _p4') },
+    Upload({ accept: 'image/*', variant: 'dragger' }, 'Upload recipe photo'),
+    Card({},
+      Card.Header({}, h3({ class: css('_heading5') }, 'Basic Info')),
+      Card.Body({ class: css('_flex _col _gap3') },
+        Input({ label: 'Title', placeholder: 'Recipe name' }),
+        Textarea({ label: 'Description', rows: 3 })
+      )
+    ),
+    Card({},
+      Card.Header({}, h3({ class: css('_heading5') }, 'Details')),
+      Card.Body({ class: css('_flex _col _gap3') },
+        div({ class: css('_grid _gc3 _gap3') },
+          InputNumber({ label: 'Prep (min)', min: 0 }),
+          InputNumber({ label: 'Cook (min)', min: 0 }),
+          InputNumber({ label: 'Servings', min: 1 })
+        ),
+        Segmented({ label: 'Difficulty', options: ['Easy', 'Medium', 'Hard'] })
+      )
+    ),
+    Card({},
+      Card.Header({}, h3({ class: css('_heading5') }, 'Ingredients')),
+      Card.Body({ class: css('_flex _col _gap2') },
+        ...ingredients().map((_, i) => Input({ placeholder: `Ingredient ${i + 1}` })),
+        Button({ variant: 'outline', size: 'sm' }, icon('plus'), 'Add Ingredient')
+      )
+    ),
+    Card({},
+      Card.Header({}, h3({ class: css('_heading5') }, 'Instructions')),
+      Card.Body({ class: css('_flex _col _gap2') },
+        ...instructions().map((_, i) => Textarea({ placeholder: `Step ${i + 1}`, rows: 2 })),
+        Button({ variant: 'outline', size: 'sm' }, icon('plus'), 'Add Step')
+      )
+    ),
+    div({ class: css('_flex _jce _gap3') },
+      Button({ variant: 'outline' }, 'Save Draft'),
+      Button({ variant: 'primary' }, 'Publish Recipe')
+    )
+  );
+}
+```
+
+### chat-interface
+```js
+function ChatInterface() {
+  const { div, p } = tags;
+  const [input, setInput] = createSignal('');
+  const [messages, setMessages] = createSignal([
+    { role: 'assistant', text: 'Hi! I\'m your AI chef assistant.' }
+  ]);
+  const suggestions = ['What can I make with chicken?', 'Suggest a quick dinner'];
+
+  const send = () => {
+    if (!input()) return;
+    setMessages([...messages(), { role: 'user', text: input() }]);
+    setInput('');
+  };
+
+  return div({ class: css('_flex _col _h[calc(100vh-200px)] _b1 _r4 _overflow[hidden]') },
+    ScrollArea({ class: css('_flex1 _p4') },
+      div({ class: css('_flex _col _gap3') },
+        ...messages().map(m =>
+          div({ class: css(m.role === 'user' ? '_flex _jce' : '_flex _gap2') },
+            m.role === 'assistant' ? Avatar({ size: 'sm', fallback: 'AI' }) : null,
+            div({ class: css(`_p3 _r4 _mw[70%] ${m.role === 'user' ? '_bgprimary' : '_bgmuted'}`) },
+              p({}, m.text)
+            )
+          )
+        )
+      )
+    ),
+    div({ class: css('_flex _gap2 _p3 _borderb') },
+      ...suggestions.map(s => Chip({ variant: 'outline', onclick: () => setInput(s) }, s))
+    ),
+    div({ class: css('_flex _gap2 _p3 _bordert') },
+      Input({ placeholder: 'Ask your chef assistant...', value: input, class: css('_flex1') }),
+      Button({ variant: 'primary', onclick: send }, icon('send'))
+    )
+  );
+}
+```
+
+### photo-to-recipe
+```js
+function PhotoToRecipe() {
+  const { div, h3, p } = tags;
+  const [analyzing, setAnalyzing] = createSignal(false);
+  const [result, setResult] = createSignal(null);
+
+  return div({ class: css('_grid _gc2 _gap6 _p4') },
+    Card({},
+      Card.Header({}, h3({ class: css('_heading5') }, icon('camera'), ' Upload Photo')),
+      Card.Body({ class: css('_flex _col _gap4 _aic') },
+        Upload({ accept: 'image/*', variant: 'dragger', class: css('_wfull') }, 'Drop a food photo here'),
+        Button({ variant: 'primary', class: css('_wfull'), onclick: () => setAnalyzing(true) },
+          analyzing() ? Spinner({ size: 'sm' }) : icon('sparkles'),
+          analyzing() ? ' Analyzing...' : ' Generate Recipe'
+        )
+      )
+    ),
+    Card({},
+      Card.Header({}, h3({ class: css('_heading5') }, icon('sparkles'), ' AI Generated Recipe')),
+      Card.Body({},
+        result()
+          ? div({ class: css('_flex _col _gap3') }, h3({ class: css('_heading4') }, result().title))
+          : p({ class: css('_fgmuted _tc') }, 'Upload a photo to generate a recipe')
+      )
+    )
+  );
+}
+```
+
+### card-grid (preset: icon)
+```js
+function FeatureGrid({ features }) {
+  const { div, h3, p } = tags;
+  return div({ class: css('_grid _gc3 _gap6 _p4') },
+    ...features.map(f =>
+      Card({},
+        Card.Body({ class: css('_flex _col _gap3 _aic _tc') },
+          div({ class: css('_w[48px] _h[48px] _r4 _bgmuted _flex _aic _jcc _fgprimary') }, icon(f.icon)),
+          h3({ class: css('_heading5') }, f.title),
+          p({ class: css('_caption _fgmuted') }, f.description)
+        )
+      )
+    )
+  );
+}
+```
+
 ---
 
 ## 7. Recipe Application Guide
@@ -585,20 +767,52 @@ div({ class: css('_b1 _r4 _p4') },  // simple border + radius (tokens handle the
 ## 8. Styles & Modes
 
 ```js
-import { setStyle, setMode } from '@decantr/decantr/css';
+import { setStyle, setMode, registerStyle } from 'decantr/css';
 
-// Available styles
+// Core style (always available, no import needed)
 setStyle('auradecantism');  // Default: glass, gradients, vibrant (dark)
-setStyle('clean');          // Professional, subtle shadows (light)
-setStyle('retro');          // Neobrutalism, bold borders, sharp (light)
-setStyle('glassmorphism');  // Stormy blue glass (dark)
-setStyle('command-center'); // HUD/radar, monochrome cyan (dark)
+
+// Add-on styles (require import + registerStyle before use)
+// Available: clean, retro, glassmorphism, command-center,
+//            bioluminescent, clay, dopamine, editorial, liquid-glass, prismatic
+import { clean as cleanStyle } from 'decantr/styles/clean';
+registerStyle(cleanStyle);
+setStyle('clean');
 
 // Available modes
 setMode('light');
 setMode('dark');
 setMode('auto');  // Follows system preference
 ```
+
+**11 styles total:** `auradecantism` (core, default), `clean`, `retro`, `glassmorphism`, `command-center`, `bioluminescent`, `clay`, `dopamine`, `editorial`, `liquid-glass`, `prismatic` (all add-on).
+
+### Interactive State Atoms (Pseudo-Class Prefixes)
+
+```js
+// Hover, focus, focus-visible, active, focus-within — compose with ANY atom
+css('_h:bgprimary')       // background on hover
+css('_f:bcprimary')       // border-color on focus
+css('_fv:ring2')          // ring on keyboard focus
+css('_a:bgmuted')         // background on press
+css('_fw:bcprimary')      // border when child focused
+css('_sm:h:bgmuted')      // responsive + hover
+css('_h:bgprimary/50')    // hover + opacity modifier
+```
+
+### Ring, Transition, Prose, Divide
+
+```js
+css('_ring2 _ringPrimary')    // 2px primary ring
+css('_fv:ring2 _ringAccent')  // ring on keyboard focus
+css('_transColors')           // smooth color transitions
+css('_prose')                 // rich text typography
+css('_divideY')               // borders between stacked children
+css('_textBalance')           // balanced line wrapping
+```
+
+### Opacity Modifiers
+Works on all semantic color atoms: `_bgprimary/50`, `_fgaccent/30`, `_bcborder/80`
 
 ---
 
@@ -632,23 +846,44 @@ setUser('settings', 'theme', 'light');     // Nested update
 ```js
 const router = createRouter({
   mode: 'hash',  // or 'history'
+  base: '/app',  // optional — for subdirectory deployments
   routes: [
     { path: '/', component: HomePage },
     { path: '/products', component: ProductsPage },
     { path: '/product/:id', component: ProductPage },
+    { path: '/admin', component: AdminPage, meta: { requiresAuth: true, title: 'Admin' } },
     { path: '/:404', component: NotFoundPage },
   ],
-  beforeEach: (to, from) => { /* guard */ },
+  beforeEach: (to, from) => {
+    // Guard can read to.meta (merged parent→child)
+    if (to.meta.requiresAuth && !isLoggedIn()) return '/login';
+  },
 });
+
+// Navigation listener (subscribe/unsubscribe)
+const unsub = router.onNavigate((to, from) => {
+  analytics.track('page_view', { path: to.path, from: from.path });
+});
+// Later: unsub();
+
+// Standalone variant:
+// import { onNavigate } from 'decantr/router';
+// const unsub = onNavigate((to, from) => { /* track */ });
 
 // Navigation
 navigate('/products');
 navigate('/product/42');
+back();     // history.back() — fires guards
+forward();  // history.forward() — fires guards
 
-// Route params
+// Loading indicator for lazy routes
+// isNavigating() → reactive boolean, true while lazy components resolve
+
+// Route params + meta
 const route = useRoute();
 route.params.id;  // '42'
 route.query.sort; // from ?sort=price
+route.meta;       // { requiresAuth: true, title: 'Admin' }
 
 // Link component
 link({ href: '/products', class: css('_fgprimary') }, 'Products')
@@ -657,8 +892,8 @@ link({ href: '/products', class: css('_fgprimary') }, 'Products')
 ### Complete SPA Entry Point
 
 ```js
-import { mount } from '@decantr/decantr/core';
-import { createRouter } from '@decantr/decantr/router';
+import { mount } from 'decantr/core';
+import { createRouter } from 'decantr/router';
 
 const router = createRouter({
   mode: 'hash',
