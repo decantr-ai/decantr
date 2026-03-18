@@ -3,12 +3,24 @@
   "id": "checklist-card",
   "name": "Checklist Card",
   "description": "Item list in a Card with optional checkboxes for completion tracking. Used for ingredient lists, task lists, and checklists.",
-  "components": ["Card", "Card.Header", "Card.Body", "Checkbox", "icon"],
+  "components": [
+    "Card",
+    "Card.Header",
+    "Card.Body",
+    "Checkbox",
+    "icon"
+  ],
   "default_preset": "default",
   "presets": {
     "default": {
       "description": "Vertical list of items with Checkbox for completion tracking inside a Card.",
-      "components": ["Card", "Card.Header", "Card.Body", "Checkbox", "icon"],
+      "components": [
+        "Card",
+        "Card.Header",
+        "Card.Body",
+        "Checkbox",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _col _gap0",
@@ -29,23 +41,6 @@
     "slots": {
       "header": "Card.Header with title and optional count",
       "list": "Vertical list of items with Checkbox"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame-sm",
-      "atoms": "",
-      "notes": "Card uses cc-frame-sm. Quantities use cc-data. Checked items dimmed."
-    },
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4",
-      "notes": "Card on glass background. Section title uses d-gradient-text."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_b1 _r4",
-      "notes": "Simple bordered card. Clean checkbox list."
     }
   },
   "code": {

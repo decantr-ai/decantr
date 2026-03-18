@@ -1,5 +1,8 @@
 import { resolveAtomDecl } from '../src/css/atoms.js';
 
+/** Resolution cache — avoids redundant resolveAtomDecl() calls across extractions */
+const _atomCache = new Map();
+
 /** Responsive breakpoints (mobile-first, min-width) */
 const BREAKPOINTS = { sm: 640, md: 768, lg: 1024, xl: 1280 };
 const BP_ORDER = ['sm', 'md', 'lg', 'xl'];
@@ -34,7 +37,7 @@ const ALPHA_RE = /^(_[a-zA-Z0-9]+)\/(\d+)$/;
 const ARB_RE = /^_([a-zA-Z]+)\[([^\]]+)\]$/;
 
 function escapeClass(cls) {
-  return cls.replace(/:/g, '\\:').replace(/\//g, '\\/').replace(/\[/g, '\\[').replace(/\]/g, '\\]').replace(/#/g, '\\#').replace(/%/g, '\\%').replace(/\(/g, '\\(').replace(/\)/g, '\\)').replace(/,/g, '\\,').replace(/\+/g, '\\+');
+  return cls.replace(/[:/\[\]#%(),+]/g, m => `\\${m}`);
 }
 
 /**
@@ -43,6 +46,14 @@ function escapeClass(cls) {
  * @returns {{ className: string, decl: string }|null}
  */
 function resolveAtomFull(part) {
+  if (_atomCache.has(part)) return _atomCache.get(part);
+
+  const result = _resolveAtomFull(part);
+  _atomCache.set(part, result);
+  return result;
+}
+
+function _resolveAtomFull(part) {
   // Direct lookup via algorithmic resolver
   const decl = resolveAtomDecl(part);
   if (decl) return { className: part, decl };
@@ -98,6 +109,36 @@ export function extractClassNames(source) {
   while ((match = classPropRegex.exec(source)) !== null) {
     const classStr = match[2];
     classStr.split(/\s+/).forEach(c => { if (c) classes.add(c); });
+  }
+
+  return classes;
+}
+
+/**
+ * Extract class names from a Map of module sources (streaming, no concatenation).
+ * @param {Map<string, string>} modules
+ * @returns {Set<string>}
+ */
+export function extractClassNamesFromModules(modules) {
+  const classes = new Set();
+
+  const cssCallRegex = /css\(\s*(['"`])([\s\S]*?)\1/g;
+  const classPropRegex = /class:\s*(['"])([\s\S]*?)\1/g;
+
+  for (const source of modules.values()) {
+    let match;
+
+    cssCallRegex.lastIndex = 0;
+    while ((match = cssCallRegex.exec(source)) !== null) {
+      const classStr = match[2];
+      classStr.split(/\s+/).forEach(c => { if (c) classes.add(c); });
+    }
+
+    classPropRegex.lastIndex = 0;
+    while ((match = classPropRegex.exec(source)) !== null) {
+      const classStr = match[2];
+      classStr.split(/\s+/).forEach(c => { if (c) classes.add(c); });
+    }
   }
 
   return classes;

@@ -3,7 +3,15 @@
   "id": "wizard",
   "name": "Wizard",
   "description": "Multi-step form with progress indicator and prev/next navigation. Each step contains a form section with validation before advancing.",
-  "components": ["Button", "Progress", "Input", "Select", "Checkbox", "Switch", "Separator"],
+  "components": [
+    "Button",
+    "Progress",
+    "Input",
+    "Select",
+    "Checkbox",
+    "Switch",
+    "Separator"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap6 _p6 _mxAuto",
@@ -11,13 +19,6 @@
       "progress": "Step indicator using Progress or numbered Breadcrumb-style dots with _flex _gap2 _justifyCenter",
       "step-content": "Active step form fields, swapped via cond(). Each step is a form-sections pattern subset",
       "navigation": "Bottom bar with prev/next Buttons via _flex _justifyBetween, separated by Separator"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-grid",
-      "notes": "Step indicator uses cc-bar with cc-data for step numbers. Active step gets cc-glow. Navigation bar uses cc-bar. Background uses cc-grid."
     }
   },
   "code": {

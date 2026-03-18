@@ -3,7 +3,13 @@
   "id": "activity-feed",
   "name": "Activity Feed",
   "description": "Chronological list of activity events with avatars, timestamps, and action descriptions. Used in dashboards and profile pages.",
-  "components": ["Timeline", "Avatar", "Badge", "Text", "Separator"],
+  "components": [
+    "Timeline",
+    "Avatar",
+    "Badge",
+    "Text",
+    "Separator"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap2 _p4",
@@ -11,23 +17,6 @@
       "header": "Section title with _heading5 and optional filter/date-range controls",
       "feed": "Timeline of activity items, each with Avatar, action Text, timestamp Badge, and Separator between entries",
       "load-more": "Optional Button at bottom for pagination"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame-sm",
-      "atoms": "cc-scanline",
-      "notes": "Header uses cc-bar with cc-label. Timestamps use cc-data. Feed area gets cc-scanline. New/unread items get cc-glow pulse."
-    },
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4",
-      "notes": "Feed in d-glass panel. New items highlighted with subtle glow. Timestamps in muted text."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_b1 _r4",
-      "notes": "Feed in bordered container. Simple list items with bottom borders."
     }
   },
   "code": {

@@ -3,12 +3,28 @@
   "id": "form-sections",
   "name": "Form Sections",
   "description": "Grouped form fields organized into labeled sections with consistent spacing. Supports settings pages, content creation forms, and structured data entry via presets.",
-  "components": ["Input", "Select", "Switch", "Textarea", "Checkbox", "Button", "Separator"],
+  "components": [
+    "Input",
+    "Select",
+    "Switch",
+    "Textarea",
+    "Checkbox",
+    "Button",
+    "Separator"
+  ],
   "default_preset": "settings",
   "presets": {
     "settings": {
       "description": "Grouped form fields for settings pages and profile editing.",
-      "components": ["Input", "Select", "Switch", "Textarea", "Checkbox", "Button", "Separator"],
+      "components": [
+        "Input",
+        "Select",
+        "Switch",
+        "Textarea",
+        "Checkbox",
+        "Button",
+        "Separator"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _flexCol _gap8 _p6 _mxAuto",
@@ -25,7 +41,21 @@
     },
     "creation": {
       "description": "Content creation form with photo upload, basics, metadata, and dynamic lists. For recipe/article creation.",
-      "components": ["Card", "Card.Header", "Card.Body", "Input", "Textarea", "InputNumber", "Segmented", "Button", "Upload", "Collapsible", "Chip", "Separator", "icon"],
+      "components": [
+        "Card",
+        "Card.Header",
+        "Card.Body",
+        "Input",
+        "Textarea",
+        "InputNumber",
+        "Segmented",
+        "Button",
+        "Upload",
+        "Collapsible",
+        "Chip",
+        "Separator",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _col _gap6 _mw[720px] _mxAuto _p4",
@@ -45,7 +75,22 @@
     },
     "structured": {
       "description": "Advanced structured form with tabular data entry, hierarchical sections, and auto-calculated fields.",
-      "components": ["Card", "Card.Header", "Card.Body", "Input", "Textarea", "InputNumber", "Select", "Segmented", "Button", "Upload", "Tabs", "Separator", "Badge", "icon"],
+      "components": [
+        "Card",
+        "Card.Header",
+        "Card.Body",
+        "Input",
+        "Textarea",
+        "InputNumber",
+        "Select",
+        "Segmented",
+        "Button",
+        "Upload",
+        "Tabs",
+        "Separator",
+        "Badge",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _col _gap6 _mw[840px] _mxAuto _p4",
@@ -72,35 +117,6 @@
       "section": "Repeating group: section title (_heading5), description (_caption _muted), then field rows separated by Separator",
       "field-row": "Label + control pair via _flex _flexCol _gap1 or _grid _gc2 for side-by-side",
       "actions": "Bottom bar with save Button (primary) and cancel Button (ghost) via _flex _gap3 _justifyEnd"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-grid",
-      "notes": "Section headers use cc-label. Required field indicators use cc-glow. Action bar uses cc-bar. Background uses cc-grid.",
-      "preset_notes": {
-        "creation": "Form sections use cc-frame-sm. Labels use cc-label. Submit button uses cc-glow.",
-        "structured": "Form sections use cc-frame-sm. Structured inputs use cc-grid layout. Timing data uses cc-data."
-      }
-    },
-    "auradecantism": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Form cards use d-glass. Section headers use d-gradient-text.",
-      "preset_notes": {
-        "creation": "Form cards use d-glass. Section headers use d-gradient-text. Submit button prominent.",
-        "structured": "Form cards use d-glass. Section headers use d-gradient-text. Structured table rows alternate opacity."
-      }
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Standard form with subtle borders. Clean input styling.",
-      "preset_notes": {
-        "creation": "Standard form cards with subtle borders. Clean input styling.",
-        "structured": "Standard form cards with borders. Clean tabular layout."
-      }
     }
   },
   "code": {

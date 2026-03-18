@@ -3,7 +3,14 @@
   "id": "pipeline-tracker",
   "name": "Pipeline Tracker",
   "description": "Stage-based progression visualization with summary metrics per stage, funnel or horizontal bar visualization, and drill-down data table for items in each stage.",
-  "components": ["Chart", "Badge", "DataTable", "Tabs", "Statistic", "Select"],
+  "components": [
+    "Chart",
+    "Badge",
+    "DataTable",
+    "Tabs",
+    "Statistic",
+    "Select"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap4 _p4",
@@ -12,13 +19,6 @@
       "summary": "Horizontal row of stage cards (_flex _gap3): stage name, item count (Badge), total value (Statistic)",
       "visualization": "Chart({ type: 'funnel' }) or Chart({ type: 'bar' }) showing stage volumes with conversion rate annotations between stages",
       "detail": "Tabbed DataTable showing items in selected stage with drill-down"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-scanline cc-grid",
-      "notes": "Stage cards use cc-bar. Chart segments get cc-glow on hover. DataTable gets cc-scanline. Stage counts use cc-data."
     }
   },
   "code": {

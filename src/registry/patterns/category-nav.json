@@ -3,20 +3,18 @@
   "id": "category-nav",
   "name": "Category Navigation",
   "description": "Horizontal pill or tab navigation for filtering content by category. Scrollable on narrow viewports. Pairs with post-list and product-grid patterns.",
-  "components": ["Chip", "Badge", "Button", "Segmented"],
+  "components": [
+    "Chip",
+    "Badge",
+    "Button",
+    "Segmented"
+  ],
   "default_blend": {
     "layout": "flex",
     "atoms": "_flex _gap2 _p2 _overflowXAuto _flexWrap",
     "slots": {
       "categories": "Row of Chip or Segmented elements with active state styling",
       "count-badges": "Optional Badge on each category showing item count"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "none",
-      "atoms": "cc-bar",
-      "notes": "Entire nav uses cc-bar. Active category gets cc-glow. Count badges use cc-data. Category labels use cc-label."
     }
   },
   "code": {

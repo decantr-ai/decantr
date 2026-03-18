@@ -3,7 +3,15 @@
   "id": "auth-form",
   "name": "Auth Form",
   "description": "Authentication form with login, registration, and password recovery flows. Centered card layout with branding and social auth options.",
-  "components": ["Input", "Button", "Card", "Card.Header", "Card.Body", "Card.Footer", "Separator"],
+  "components": [
+    "Input",
+    "Button",
+    "Card",
+    "Card.Header",
+    "Card.Body",
+    "Card.Footer",
+    "Separator"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _itemsCenter _justifyCenter _minHScreen _p6",
@@ -11,23 +19,6 @@
       "branding": "Logo and app name at top with _heading4 _textCenter",
       "form": "Input fields (email, password) inside a Card with validation and submit Button",
       "footer": "Card.Footer with links to alternate flows (sign up / forgot password) and optional social auth Buttons separated by Separator"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame-sm",
-      "atoms": "cc-grid",
-      "notes": "Card uses cc-frame-sm. Branding uses cc-label with cc-glow. Submit button gets cc-glow. Background uses cc-grid."
-    },
-    "auradecantism": {
-      "wrapper": "d-mesh",
-      "atoms": "",
-      "notes": "Auth page on d-mesh background. Card uses d-glass. Brand text uses d-gradient-text. Submit button prominent."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_bgmuted",
-      "notes": "Simple centered card on muted background. Standard form styling."
     }
   },
   "code": {

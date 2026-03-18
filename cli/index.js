@@ -75,14 +75,30 @@ switch (command) {
   case 'migrate':
     await import('./commands/migrate.js').then(m => m.run());
     break;
+  case 'age':
+    await import('./commands/age.js').then(m => m.run());
+    break;
   case 'doctor':
     await import('./commands/doctor.js').then(m => m.run());
     break;
+  case 'registry':
+    await import('./commands/registry.js').then(m => m.run());
+    break;
+  case 'cellar':
+    await import('./commands/cellar.js').then(m => m.run());
+    break;
+  case 'compile-context': {
+    // Forward flags to compile-llm
+    const compileArgs = process.argv.slice(3);
+    // Flags are read from process.argv inside compile-llm.js
+    await import('../tools/compile-llm.js');
+    break;
+  }
   default: {
     const { art } = await import('./art.js');
     console.log(art());
     console.log(`
-  \x1b[1mdecantr\x1b[0m v0.9.0 \x1b[2m— AI-first web framework\x1b[0m
+  \x1b[1mdecantr\x1b[0m v${(await import('../tools/version.js')).VERSION} \x1b[2m— AI-first web framework\x1b[0m
 
   \x1b[1mCommands:\x1b[0m
     init       Create a new decantr project
@@ -96,8 +112,12 @@ switch (command) {
     audit      Audit project: framework coverage, quality, bundle size
     mcp        Start MCP server (stdio transport) for AI tool integration
     migrate    Migrate decantr.essence.json between versions
+    age        Full version upgrade (essence + config + AI-guided source updates)
     figma:tokens  Export design tokens in W3C DTCG / Figma format
+    registry   Community content registry (search, add, remove, update, list, publish)
     doctor     Check project health and environment
+    cellar     Inventory sub-projects and check health [--fix] [--link] [--json]
+    compile-context  Compile LLM task profiles from reference docs [--only=<profiles>] [--watch]
     figma:sync    Push tokens to Figma file via REST API
 
   \x1b[1mUsage:\x1b[0m
@@ -107,6 +127,8 @@ switch (command) {
     npx decantr test [--watch]
     npx decantr generate [--force] [--dry-run] [--page <id>]
     npx decantr migrate [--dry-run] [--target=<version>]
+    npx decantr age [--dry-run] [--to=<version>] [--report] [--skip-profile]
+    npx decantr cellar [--fix] [--link] [--json]
 `);
     break;
   }

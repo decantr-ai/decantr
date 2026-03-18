@@ -3,12 +3,16 @@
   "id": "stats-section",
   "name": "Stats Section",
   "description": "Bold metric numbers display for landing pages — performance stats, counts, achievements.",
-  "components": ["Statistic"],
+  "components": [
+    "Statistic"
+  ],
   "default_preset": "hero",
   "presets": {
     "hero": {
       "description": "Large animated stats in a full-width dramatic section.",
-      "components": ["Statistic"],
+      "components": [
+        "Statistic"
+      ],
       "blend": {
         "layout": "hero",
         "atoms": "_py16 _px6 _grid _gc1 _md:gc3 _gap8 _tc",
@@ -23,7 +27,9 @@
     },
     "inline": {
       "description": "Compact horizontal stats bar.",
-      "components": ["Statistic"],
+      "components": [
+        "Statistic"
+      ],
       "blend": {
         "layout": "row",
         "atoms": "_flex _aic _jcc _gap8 _py4 _wrap",
@@ -42,30 +48,6 @@
     "atoms": "_py16 _px6 _grid _gc1 _md:gc3 _gap8 _tc",
     "slots": {
       "stats": "Statistic components with animated values"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "d-mesh",
-      "atoms": "",
-      "notes": "d-mesh background. Statistic values use d-gradient-text.",
-      "preset_notes": {
-        "hero": "Full d-mesh bg. Values use d-gradient-text with large display.",
-        "inline": "No mesh bg. Compact layout with standard text."
-      }
-    },
-    "command-center": {
-      "wrapper": "cc-grid",
-      "atoms": "",
-      "notes": "cc-grid background. Values use cc-data.",
-      "preset_notes": {
-        "hero": "Full cc-grid bg. Values use cc-data."
-      }
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_bgmuted _r4",
-      "notes": "Subtle muted background. Standard Statistic styling."
     }
   },
   "code": {

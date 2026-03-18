@@ -164,7 +164,7 @@ async function loadPatterns() {
 /**
  * Convert a pattern definition to a Figma frame specification.
  * @param {Object} pattern - Pattern definition from registry
- * @param {string} [recipe] - Optional recipe override
+ * @param {Object|null} [recipeData] - Loaded recipe JSON with pattern_overrides
  * @returns {Object} Figma frame spec
  */
 /**
@@ -184,16 +184,16 @@ function resolvePreset(pattern, presetId) {
   };
 }
 
-function patternToFigmaFrame(pattern, recipe, presetId) {
+function patternToFigmaFrame(pattern, recipeData, presetId) {
   const resolved = resolvePreset(pattern, presetId);
   const blend = resolved.default_blend || {};
   const atoms = blend.atoms || '_flex _col _gap4 _p4';
 
-  // Apply recipe overrides if present
+  // Apply recipe pattern_overrides if present (overrides live in recipe JSON, not patterns)
   let effectiveAtoms = atoms;
   let wrapperClass = '';
-  if (recipe && resolved.recipe_overrides?.[recipe]) {
-    const override = resolved.recipe_overrides[recipe];
+  if (recipeData && recipeData.pattern_overrides?.[pattern.id]) {
+    const override = recipeData.pattern_overrides[pattern.id];
     if (override.atoms) effectiveAtoms = override.atoms;
     if (override.wrapper) wrapperClass = override.wrapper;
   }
@@ -480,8 +480,17 @@ export async function generateFigmaPatterns(opts = {}) {
     };
   }
 
+  // Load recipe JSON if specified (overrides live in recipe JSON, not patterns)
+  let recipeData = null;
+  if (recipe) {
+    try {
+      const recipeFile = join(registryRoot, `recipe-${recipe}.json`);
+      recipeData = JSON.parse(await readFile(recipeFile, 'utf-8'));
+    } catch { /* recipe not found — proceed without overrides */ }
+  }
+
   // Generate pattern frames
-  const patternFrames = patterns.map(p => patternToFigmaFrame(p, recipe));
+  const patternFrames = patterns.map(p => patternToFigmaFrame(p, recipeData));
 
   // Generate skeleton frames (3 viewports each)
   const skeletonFrames = [];

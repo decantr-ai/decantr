@@ -1,0 +1,43 @@
+# Decantr v1.0 — AI-First Web Framework
+
+## Before Any Code Change
+1. Read `decantr.essence.json`
+2. Read the task-specific context file below
+
+## Context Files
+
+| Task | File | Est. Tokens |
+|------|------|-------------|
+| Create new project | `node_modules/decantr/llm/task-init.md` | ~35-40k |
+| Add/modify a page | `node_modules/decantr/llm/task-page.md` | ~20-25k |
+| Create/modify component | `node_modules/decantr/llm/task-component.md` | ~20-25k |
+| Change styles/themes | `node_modules/decantr/llm/task-style.md` | ~15-20k |
+| Debug issues | `node_modules/decantr/llm/task-debug.md` | ~10-15k |
+| Refactor / fix drift | `node_modules/decantr/llm/task-refactor.md` | ~10-15k |
+
+## Cork Rules (Always Apply)
+1. Style matches the Vintage
+2. Page exists in the Structure
+3. Layout follows the Blend
+4. Composition follows the Recipe
+5. Spacing follows the Clarity profile
+
+## Framework Imports
+```js
+import { tags } from 'decantr/tags';
+import { h, text, cond, list, mount, onMount, onDestroy } from 'decantr/core';
+import { createSignal, createEffect, createMemo, createStore, batch } from 'decantr/state';
+import { createQuery, createMutation, queryClient } from 'decantr/data';
+import { createRouter, link, navigate, useRoute } from 'decantr/router';
+import { css, setStyle, setMode, registerStyle } from 'decantr/css';
+import { Button, Input, Card, Modal, Tabs, Select, ... } from 'decantr/components';
+import { Chart, Sparkline } from 'decantr/chart';
+import { icon } from 'decantr/icons';
+```
+
+## Commands
+- `npx decantr dev` — Dev server with hot reload
+- `npx decantr build` — Production build to `dist/`
+- `npx decantr test` — Run tests
+- `npx decantr validate` — Validate `decantr.essence.json`
+- `npx decantr compile-context` — Regenerate LLM context profiles

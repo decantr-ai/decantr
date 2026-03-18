@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { welcome, success, info, heading } from '../art.js';
 import {
   packageJson, configJson, essenceJson, indexHtml, manifestJson,
-  claudeMd, appJs, agentsMd
+  registryJson, claudeMd, appJs, agentsMd
 } from '../../tools/init-templates.js';
 import { VERSION } from '../../tools/version.js';
 
@@ -35,12 +35,22 @@ export async function run() {
   const name = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : basename(cwd);
   const templateName = parseTemplate();
 
-  // Validate template name if provided
+  // Validate template name if provided — check built-in first, then registry
   if (templateName && !TEMPLATES.includes(templateName)) {
-    console.log(`\x1b[31mError: Unknown template "${templateName}"\x1b[0m`);
-    console.log(info(`Available templates: ${TEMPLATES.join(', ')}`));
-    process.exitCode = 1;
-    return;
+    let foundInRegistry = false;
+    try {
+      const { createClient } = await import('../../src/registry/content-registry.js');
+      const client = await createClient({ cwd });
+      const data = await client.getContent('template', templateName);
+      if (data?.artifact?.content) foundInRegistry = true;
+    } catch { /* registry unavailable */ }
+
+    if (!foundInRegistry) {
+      console.log(`\x1b[31mError: Unknown template "${templateName}"\x1b[0m`);
+      console.log(info(`Available templates: ${TEMPLATES.join(', ')}`));
+      process.exitCode = 1;
+      return;
+    }
   }
 
   console.log(welcome(VERSION));
@@ -77,7 +87,8 @@ export async function run() {
     ['.decantr/manifest.json', manifestJson(name)],
     ['CLAUDE.md', claudeMd(name)],
     ['AGENTS.md', await agentsMd()],
-    ['src/app.js', templateApp()]
+    ['src/app.js', templateApp()],
+    ['decantr.registry.json', registryJson()],
   ];
 
   // Add template page stubs

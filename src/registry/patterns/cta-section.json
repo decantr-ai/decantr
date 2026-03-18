@@ -3,12 +3,18 @@
   "id": "cta-section",
   "name": "CTA Section",
   "description": "Call-to-action section with headline, supporting text, and action buttons. Supports standard and dramatic brand variants.",
-  "components": ["Button", "Title", "Text"],
+  "components": [
+    "Button",
+    "Title",
+    "Text"
+  ],
   "default_preset": "standard",
   "presets": {
     "standard": {
       "description": "Centered CTA with headline, description, and action buttons.",
-      "components": ["Button"],
+      "components": [
+        "Button"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _col _aic _tc _gap4 _py12 _px6",
@@ -25,7 +31,10 @@
     },
     "brand": {
       "description": "Full-width dramatic CTA with mesh background, large gradient heading, and landmark spacing.",
-      "components": ["Button", "icon"],
+      "components": [
+        "Button",
+        "icon"
+      ],
       "blend": {
         "layout": "hero",
         "atoms": "_flex _col _aic _tc _gap8 _py24 _px6 _relative",
@@ -49,32 +58,6 @@
       "headline": "Primary heading to drive user action",
       "description": "Supporting text that reinforces the CTA message",
       "cta-group": "One or more action buttons, typically primary + secondary"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "d-mesh",
-      "atoms": "",
-      "notes": "CTA on d-mesh background. Headline uses d-gradient-text. Primary button gets aura-glow.",
-      "preset_notes": {
-        "brand": "Full d-mesh bg with aura-orbs. Headline uses d-heading-display + d-gradient-text. Primary CTA gets aura-glow."
-      }
-    },
-    "command-center": {
-      "wrapper": "cc-grid",
-      "atoms": "",
-      "notes": "CTA with cc-grid bg. Headline uses cc-data. Primary button gets cc-glow.",
-      "preset_notes": {
-        "brand": "Full cc-grid bg. Headline uses cc-data large. Primary CTA gets cc-glow."
-      }
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_bgmuted _r4",
-      "notes": "CTA on subtle muted background. No gradients or glass.",
-      "preset_notes": {
-        "brand": "Large _bgmuted section with larger heading. No special effects."
-      }
     }
   },
   "code": {

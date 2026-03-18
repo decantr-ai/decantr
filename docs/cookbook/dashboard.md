@@ -84,7 +84,7 @@ export function DashboardShell(...children) {
         ...navItems.map(item =>
           link({ href: item.href, class: css('_flex _aic _gap2 _p2 _px3 _r2 _trans _fgfg _nounder') },
             icon(item.icon),
-            cond(() => !collapsed(), () => text(item.label))
+            cond(() => !collapsed(), () => text(() => item.label))
           )
         )
       )

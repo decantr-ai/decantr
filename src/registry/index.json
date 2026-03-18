@@ -79,10 +79,30 @@
   "recipes": {
     "description": "Visual language recipes — composition rules for drastic visual transformations beyond token-level styling",
     "entries": {
+      "auradecantism": {
+        "file": "recipe-auradecantism.json",
+        "style": "auradecantism",
+        "description": "Glass panels, gradient text, mesh backgrounds — the default Decantr visual language"
+      },
+      "clean": {
+        "file": "recipe-clean.json",
+        "style": "clean",
+        "description": "Minimal borders, subtle shadows, neutral palette — understated professional aesthetic"
+      },
+      "clay": {
+        "file": "recipe-clay.json",
+        "style": "clay",
+        "description": "Soft 3D claymorphism — rounded surfaces, inner shadows, pastel gradients"
+      },
       "command-center": {
         "file": "recipe-command-center.json",
         "style": "command-center",
         "description": "HUD/radar visual language — monochromatic cyan, beveled frames, scanlines, status bars"
+      },
+      "gaming-guild": {
+        "file": "recipe-gaming-guild.json",
+        "style": "gaming-guild",
+        "description": "Gaming community aesthetic — neon accents, card frames, rank badges, achievement unlocks"
       }
     }
   },

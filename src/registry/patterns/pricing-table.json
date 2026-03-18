@@ -3,7 +3,13 @@
   "id": "pricing-table",
   "name": "Pricing Table",
   "description": "Comparison pricing cards with features list, pricing tiers, and CTA buttons.",
-  "components": ["Card", "Button", "Badge", "Separator", "List"],
+  "components": [
+    "Card",
+    "Button",
+    "Badge",
+    "Separator",
+    "List"
+  ],
   "default_blend": {
     "layout": "grid",
     "atoms": "_grid _gc3 _gap6 _aic",
@@ -11,18 +17,6 @@
       "pricing-card": "Card per tier with price, name, and highlighted Badge",
       "features-list": "Checklist of included features separated by Separator",
       "cta": "Primary action Button per pricing tier"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Featured plan card uses d-glass-strong. Plan name uses d-gradient-text. CTA button on featured plan gets aura-glow."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Standard card layout. Featured plan has primary border. No extra decoration."
     }
   },
   "code": {

@@ -3,7 +3,15 @@
   "id": "filter-sidebar",
   "name": "Filter Sidebar",
   "description": "Vertical filter panel with grouped controls for refining data views. Pairs with data-table or product-grid patterns.",
-  "components": ["Checkbox", "Select", "Switch", "Button", "Separator", "Accordion", "Input"],
+  "components": [
+    "Checkbox",
+    "Select",
+    "Switch",
+    "Button",
+    "Separator",
+    "Accordion",
+    "Input"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap4 _p4 _wFull",
@@ -11,13 +19,6 @@
       "search": "Optional keyword Input with icon at top",
       "filter-groups": "Accordion sections each containing Checkbox lists, Select dropdowns, or Switch toggles",
       "actions": "Bottom bar with apply Button (primary) and clear Button (ghost), separated by Separator"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame-sm",
-      "atoms": "cc-scanline",
-      "notes": "Section headers use cc-label. Active filter counts use cc-data. Apply button gets cc-glow. Panel background uses cc-scanline."
     }
   },
   "code": {

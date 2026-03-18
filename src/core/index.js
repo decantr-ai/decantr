@@ -44,13 +44,14 @@ export function h(tag, props, ...children) {
 }
 
 /**
- * @param {Function} getter
+ * @param {Function|string} getter - A function returning the text value, or a static string
  * @returns {Text}
  */
 export function text(getter) {
+  const fn = typeof getter === 'function' ? getter : () => getter;
   const node = document.createTextNode('');
   createEffect(() => {
-    node.nodeValue = String(getter());
+    node.nodeValue = String(fn());
   });
   return node;
 }

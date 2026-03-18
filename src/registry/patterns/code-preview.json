@@ -3,12 +3,18 @@
   "id": "code-preview",
   "name": "Code Preview",
   "description": "Terminal or code showcase section for installation commands, code examples, and API demos.",
-  "components": ["CodeBlock", "Chip", "Button"],
+  "components": [
+    "CodeBlock",
+    "Chip",
+    "Button"
+  ],
   "default_preset": "terminal",
   "presets": {
     "terminal": {
       "description": "Full-width terminal-style CodeBlock with copy button.",
-      "components": ["CodeBlock"],
+      "components": [
+        "CodeBlock"
+      ],
       "blend": {
         "layout": "row",
         "atoms": "_flex _col _aic _gap4 _py12 _px6",
@@ -23,7 +29,11 @@
     },
     "split": {
       "description": "Two-column layout: left has heading + description + tech chips, right has CodeBlock.",
-      "components": ["CodeBlock", "Chip", "Button"],
+      "components": [
+        "CodeBlock",
+        "Chip",
+        "Button"
+      ],
       "blend": {
         "layout": "row",
         "atoms": "_grid _gc1 _lg:gc2 _gap8 _py12 _px6 _aic",
@@ -45,26 +55,6 @@
     "atoms": "_flex _col _aic _gap4 _py12 _px6",
     "slots": {
       "code": "Full-width CodeBlock display"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "CodeBlock wrapper uses d-glass-strong. Heading uses d-gradient-text.",
-      "preset_notes": {
-        "split": "Left heading uses d-gradient-text. Right CodeBlock wrapped in d-glass-strong."
-      }
-    },
-    "command-center": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "CodeBlock uses cc-frame. Heading uses cc-data."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Standard CodeBlock styling. No glass or gradient effects."
     }
   },
   "code": {

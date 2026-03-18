@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'node:zlib';
 import { minify } from './minify.js';
-import { extractClassNames, generateCSS } from './css-extract.js';
+import { extractClassNames, extractClassNamesFromModules, generateCSS } from './css-extract.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const frameworkSrc = resolve(__dirname, '..', 'src');
@@ -236,9 +236,10 @@ function bundle(modules, entrypoint, opts = {}) {
   const sorted = [];
   const visiting = new Set();
   const visited = new Set();
+  const circular = new Set();
   function visit(path) {
     if (visited.has(path)) return;
-    if (visiting.has(path)) return;
+    if (visiting.has(path)) { circular.add(path); return; }
     visiting.add(path);
     for (const dep of deps.get(path) || []) visit(dep);
     visiting.delete(path);
@@ -361,7 +362,15 @@ function bundle(modules, entrypoint, opts = {}) {
 
     const relPath = relative(process.cwd(), path);
     const moduleHeader = `// ${relPath}\n`;
-    const moduleCode = `const ${id} = (function(){\n${processed}\nreturn {${exportedNames.join(',')}};\n})();\n\n`;
+
+    // Scope hoisting: for eligible modules, emit declarations directly without IIFE wrapper
+    let moduleCode;
+    const isHoistable = !circular.has(path) && canHoist(processedSource) && exportedNames.length > 0;
+    if (isHoistable) {
+      moduleCode = `${processed}\nconst ${id} = {${exportedNames.join(',')}};\n\n`;
+    } else {
+      moduleCode = `const ${id} = (function(){\n${processed}\nreturn {${exportedNames.join(',')}};\n})();\n\n`;
+    }
 
     // Track source map mappings
     if (opts.sourcemap) {
@@ -465,6 +474,254 @@ function treeShakeIcons(bundled, allModuleSources) {
   );
 
   return bundled;
+}
+
+// ─── Dead Branch Elimination ─────────────────────────────────────
+
+/**
+ * Extract a brace-delimited block from source starting at startIndex.
+ * startIndex must point to the opening '{'.
+ * @param {string} source
+ * @param {number} startIndex
+ * @returns {{ block: string, end: number } | null}
+ */
+function extractBlock(source, startIndex) {
+  let depth = 0;
+  let i = startIndex;
+  while (i < source.length) {
+    const ch = source[i];
+    // Skip string literals to avoid counting braces inside them
+    if (ch === '"' || ch === "'" || ch === '`') {
+      const quote = ch;
+      i++;
+      while (i < source.length) {
+        if (source[i] === '\\') { i += 2; continue; }
+        if (source[i] === quote) { i++; break; }
+        i++;
+      }
+      continue;
+    }
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return { block: source.slice(startIndex, i + 1), end: i + 1 };
+    }
+    i++;
+  }
+  return null;
+}
+
+/**
+ * Dead branch elimination: remove statically-known dead code paths.
+ *
+ * Handles:
+ * 1. `if (false/0/null/undefined/''/""/) { ... }` — remove if-block, keep else if present (unwrapped)
+ * 2. `if (true/1) { ... } else { ... }` — keep if-block (unwrapped), remove else
+ * 3. Dev guards: `if (typeof __DECANTR_DEV__ !== 'undefined')` and `if (globalThis.__DECANTR_DEV__)` — remove in production
+ * 4. Unreachable code after `return ...;` or `throw ...;` within brace-delimited blocks
+ *
+ * @param {string} source
+ * @returns {string}
+ */
+export function eliminateDeadBranches(source) {
+  let result = source;
+
+  // Patterns 1-3: Static conditionals
+  // Falsy conditions — remove the if-block, keep the else-block (unwrapped) if present
+  const falsyConditions = [
+    /if\s*\(\s*false\s*\)/g,
+    /if\s*\(\s*0\s*\)/g,
+    /if\s*\(\s*null\s*\)/g,
+    /if\s*\(\s*undefined\s*\)/g,
+    /if\s*\(\s*''\s*\)/g,
+    /if\s*\(\s*""\s*\)/g,
+    // Dev guards (Pattern 3) — treated as falsy in production
+    /if\s*\(\s*typeof\s+__DECANTR_DEV__\s*!==\s*['"]undefined['"]\s*\)/g,
+    /if\s*\(\s*globalThis\.__DECANTR_DEV__\s*\)/g,
+  ];
+
+  for (const pattern of falsyConditions) {
+    let changed = true;
+    while (changed) {
+      changed = false;
+      pattern.lastIndex = 0;
+      const match = pattern.exec(result);
+      if (!match) continue;
+
+      const ifStart = match.index;
+      // Find the opening brace of the if-block
+      let scan = ifStart + match[0].length;
+      while (scan < result.length && /\s/.test(result[scan])) scan++;
+      if (result[scan] !== '{') continue;
+
+      const ifBlock = extractBlock(result, scan);
+      if (!ifBlock) continue;
+
+      // Check for an else clause after the if-block
+      let afterIf = ifBlock.end;
+      while (afterIf < result.length && /\s/.test(result[afterIf])) afterIf++;
+
+      if (result.slice(afterIf, afterIf + 4) === 'else') {
+        // There's an else block — find it and keep its body (unwrapped)
+        let elseBodyStart = afterIf + 4;
+        while (elseBodyStart < result.length && /\s/.test(result[elseBodyStart])) elseBodyStart++;
+
+        if (result[elseBodyStart] === '{') {
+          const elseBlock = extractBlock(result, elseBodyStart);
+          if (elseBlock) {
+            // Unwrap the else body (strip outer braces)
+            const elseBody = elseBlock.block.slice(1, -1);
+            result = result.slice(0, ifStart) + elseBody + result.slice(elseBlock.end);
+            changed = true;
+          }
+        }
+        // else if (...) — treat the entire else-if as the replacement
+        else if (result.slice(elseBodyStart, elseBodyStart + 2) === 'if') {
+          // Keep everything from "if" onwards (the else-if becomes the new if)
+          result = result.slice(0, ifStart) + result.slice(elseBodyStart);
+          changed = true;
+        }
+      } else {
+        // No else — just remove the entire if-block
+        result = result.slice(0, ifStart) + result.slice(ifBlock.end);
+        changed = true;
+      }
+    }
+  }
+
+  // Pattern 2: Truthy conditions — keep the if-block (unwrapped), remove the else
+  const truthyConditions = [
+    /if\s*\(\s*true\s*\)/g,
+    /if\s*\(\s*1\s*\)/g,
+  ];
+
+  for (const pattern of truthyConditions) {
+    let changed = true;
+    while (changed) {
+      changed = false;
+      pattern.lastIndex = 0;
+      const match = pattern.exec(result);
+      if (!match) continue;
+
+      const ifStart = match.index;
+      // Find the opening brace of the if-block
+      let scan = ifStart + match[0].length;
+      while (scan < result.length && /\s/.test(result[scan])) scan++;
+      if (result[scan] !== '{') continue;
+
+      const ifBlock = extractBlock(result, scan);
+      if (!ifBlock) continue;
+
+      // Unwrap the if-body (strip outer braces)
+      const ifBody = ifBlock.block.slice(1, -1);
+
+      // Check for an else clause after the if-block
+      let afterIf = ifBlock.end;
+      while (afterIf < result.length && /\s/.test(result[afterIf])) afterIf++;
+
+      let endOfStatement = ifBlock.end;
+
+      if (result.slice(afterIf, afterIf + 4) === 'else') {
+        // There's an else block — find it and remove it
+        let elseBodyStart = afterIf + 4;
+        while (elseBodyStart < result.length && /\s/.test(result[elseBodyStart])) elseBodyStart++;
+
+        if (result[elseBodyStart] === '{') {
+          const elseBlock = extractBlock(result, elseBodyStart);
+          if (elseBlock) {
+            endOfStatement = elseBlock.end;
+          }
+        } else if (result.slice(elseBodyStart, elseBodyStart + 2) === 'if') {
+          // else if — find the full else-if chain
+          // Skip to the end of the else-if block
+          let elseIfScan = elseBodyStart;
+          // Find the condition's closing paren, then its block
+          const condStart = result.indexOf('(', elseIfScan);
+          if (condStart !== -1) {
+            let parenDepth = 0;
+            let condEnd = condStart;
+            for (let j = condStart; j < result.length; j++) {
+              if (result[j] === '(') parenDepth++;
+              if (result[j] === ')') { parenDepth--; if (parenDepth === 0) { condEnd = j + 1; break; } }
+            }
+            let blockStart = condEnd;
+            while (blockStart < result.length && /\s/.test(result[blockStart])) blockStart++;
+            if (result[blockStart] === '{') {
+              const elseIfBlock = extractBlock(result, blockStart);
+              if (elseIfBlock) {
+                endOfStatement = elseIfBlock.end;
+              }
+            }
+          }
+        }
+      }
+
+      result = result.slice(0, ifStart) + ifBody + result.slice(endOfStatement);
+      changed = true;
+    }
+  }
+
+  // Pattern 4: Unreachable code after return/throw within brace-delimited blocks
+  // Match return or throw statements followed by code before the closing brace
+  result = result.replace(
+    /(\b(?:return|throw)\s[^;]*;)([^}]*?)(\n\s*\})/g,
+    (match, returnStmt, deadCode, closingBrace) => {
+      // Only remove if the dead code contains actual statements (not just whitespace/comments)
+      const stripped = deadCode.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '').trim();
+      if (!stripped) return match; // nothing to remove
+      return returnStmt + closingBrace;
+    }
+  );
+
+  return result;
+}
+
+// ─── Scope Hoisting ──────────────────────────────────────────────
+
+/**
+ * Check if a module source is eligible for scope hoisting.
+ * A module can be hoisted if it has no top-level side effects
+ * and no `this` at module scope.
+ * @param {string} source
+ * @returns {boolean}
+ */
+export function canHoist(source) {
+  const lines = source.split('\n');
+  let braceDepth = 0;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Track brace depth
+    for (const ch of trimmed) {
+      if (ch === '{') braceDepth++;
+      else if (ch === '}') braceDepth--;
+    }
+
+    // At top level (braceDepth === 0 or just returned to 0)
+    if (braceDepth <= 0) {
+      // this at module scope — check before skipping declarations
+      // since `const x = this.y` is a declaration but still references `this`
+      if (trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('/*') &&
+          !trimmed.startsWith('*') && !trimmed.startsWith('*/') &&
+          /\bthis\b/.test(trimmed)) {
+        return false;
+      }
+      // Skip declarations, empty lines, comments
+      if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('/*') ||
+          trimmed.startsWith('*') || trimmed.startsWith('*/') ||
+          trimmed.startsWith('const ') || trimmed.startsWith('let ') ||
+          trimmed.startsWith('var ') || trimmed.startsWith('function ') ||
+          trimmed.startsWith('export ') || trimmed.startsWith('import ') ||
+          trimmed.startsWith('return ') || trimmed === '}' || trimmed === '{') {
+        continue;
+      }
+      // If we see a bare function/method call (likely a side effect), can't hoist
+      if (/^\w+[\w.]*\s*\(/.test(trimmed) || /^new\s+/.test(trimmed)) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 /**
@@ -1136,16 +1393,16 @@ export async function build(projectRoot, options = {}) {
 
   // ─── Build-time optimizations ────────────────────────────────────
 
-  // Phase 1: Style elimination
-  const usedStyles = await detectUsedStyles(modules, projectRoot);
-  // Phase 1: Eliminate unused addon style modules from bundle
+  // Phase 1+3: Style elimination + Component CSS detection (parallel)
+  const [usedStyles, usedCSSKeys] = await Promise.all([
+    detectUsedStyles(modules, projectRoot),
+    Promise.resolve(detectUsedComponents(modules))
+  ]);
+  // Eliminate unused addon style modules from bundle
   const addonEliminated = eliminateUnusedAddonStyles(modules, usedStyles, frameworkSrc);
   if (addonEliminated > 0) {
     console.log(`  Eliminated ${addonEliminated} unused addon style(s)`);
   }
-
-  // Phase 3: Component CSS pruning
-  const usedCSSKeys = detectUsedComponents(modules);
   const componentsPath = join(frameworkSrc, 'css', 'components.js');
   if (modules.has(componentsPath)) {
     const originalSource = modules.get(componentsPath);
@@ -1181,6 +1438,9 @@ export async function build(projectRoot, options = {}) {
   // Tree-shake icons
   console.log('  Tree-shaking icons...');
   let processedBundle = treeShakeIcons(bundled, [...modules.values()]);
+
+  // Dead branch elimination
+  processedBundle = eliminateDeadBranches(processedBundle);
 
   // Code splitting: detect dynamic imports and create chunks
   /** @type {Map<string, string>} specifier → chunkFilename */
@@ -1239,8 +1499,7 @@ export async function build(projectRoot, options = {}) {
 
   // Extract CSS
   console.log('  Extracting CSS...');
-  const allSource = [...modules.values()].join('\n');
-  const classNames = extractClassNames(allSource);
+  const classNames = extractClassNamesFromModules(modules);
   let cssOutput = generateCSS(classNames);
 
   // CSS Purging
@@ -1265,21 +1524,23 @@ export async function build(projectRoot, options = {}) {
 
   // Write JS (with optional sourcemap reference)
   let jsContent = minified;
+  const writePromises = [];
   if (enableSourcemap && rawSourcemap) {
     const mapFile = `app.${jsHash}.js.map`;
     jsContent += `\n//# sourceMappingURL=./${mapFile}`;
-    await writeFile(join(outDir, 'assets', mapFile), rawSourcemap);
+    writePromises.push(writeFile(join(outDir, 'assets', mapFile), rawSourcemap));
   }
-  await writeFile(join(outDir, 'assets', jsFile), jsContent);
+  writePromises.push(writeFile(join(outDir, 'assets', jsFile), jsContent));
 
   if (cssOutput) {
-    await writeFile(join(outDir, 'assets', cssFile), cssOutput);
+    writePromises.push(writeFile(join(outDir, 'assets', cssFile), cssOutput));
   }
 
   // Write chunks
   for (const chunk of chunkOutputs) {
-    await writeFile(join(outDir, 'assets', chunk.name), chunk.content);
+    writePromises.push(writeFile(join(outDir, 'assets', chunk.name), chunk.content));
   }
+  await Promise.all(writePromises);
 
   // Transform HTML
   function transformHtml(html) {
@@ -1339,6 +1600,15 @@ export async function build(projectRoot, options = {}) {
   const cssBrotli = cssOutput ? brotliSize(cssOutput) : 0;
   const htmlBrotli = brotliSize(html);
 
+  // Pre-compute chunk stats to avoid redundant compression
+  const chunkStats = chunkOutputs.map(chunk => ({
+    name: chunk.name,
+    content: chunk.content,
+    size: Buffer.byteLength(chunk.content),
+    gzip: gzipSync(chunk.content).length,
+    brotli: brotliSize(chunk.content),
+  }));
+
   console.log('\n  Output:');
   console.log(`    assets/${jsFile}`);
   console.log(`      ${formatSize(jsSize)} │ ${formatSize(jsGzip)} gz │ ${formatSize(jsBrotli)} br`);
@@ -1350,21 +1620,18 @@ export async function build(projectRoot, options = {}) {
   console.log(`      ${formatSize(htmlSize)} │ ${formatSize(htmlGzip)} gz │ ${formatSize(htmlBrotli)} br`);
 
   // Chunk sizes
-  for (const chunk of chunkOutputs) {
-    const cSize = Buffer.byteLength(chunk.content);
-    const cGzip = gzipSync(chunk.content).length;
-    const cBrotli = brotliSize(chunk.content);
-    console.log(`    assets/${chunk.name}`);
-    console.log(`      ${formatSize(cSize)} │ ${formatSize(cGzip)} gz │ ${formatSize(cBrotli)} br`);
+  for (const cs of chunkStats) {
+    console.log(`    assets/${cs.name}`);
+    console.log(`      ${formatSize(cs.size)} │ ${formatSize(cs.gzip)} gz │ ${formatSize(cs.brotli)} br`);
   }
 
   if (enableSourcemap) {
     console.log(`    assets/app.${jsHash}.js.map`);
   }
 
-  const totalRaw = jsSize + cssSize + htmlSize + chunkOutputs.reduce((s, c) => s + Buffer.byteLength(c.content), 0);
-  const totalGzip = jsGzip + cssGzip + htmlGzip + chunkOutputs.reduce((s, c) => s + gzipSync(c.content).length, 0);
-  const totalBrotli = jsBrotli + cssBrotli + htmlBrotli + chunkOutputs.reduce((s, c) => s + brotliSize(c.content), 0);
+  const totalRaw = jsSize + cssSize + htmlSize + chunkStats.reduce((s, c) => s + c.size, 0);
+  const totalGzip = jsGzip + cssGzip + htmlGzip + chunkStats.reduce((s, c) => s + c.gzip, 0);
+  const totalBrotli = jsBrotli + cssBrotli + htmlBrotli + chunkStats.reduce((s, c) => s + c.brotli, 0);
 
   console.log('  ──────────────────────────────────────────');
   console.log(`    Total: ${formatSize(totalRaw)} │ ${formatSize(totalGzip)} gz │ ${formatSize(totalBrotli)} br`);
@@ -1391,10 +1658,9 @@ export async function build(projectRoot, options = {}) {
     budgetWarnings.push(`Total brotli ${formatSize(totalBrotli)} exceeds budget ${formatSize(sizeBudget.totalBrotli)}`);
   }
   if (sizeBudget.chunkRaw) {
-    for (const chunk of chunkOutputs) {
-      const cSize = Buffer.byteLength(chunk.content);
-      if (cSize > sizeBudget.chunkRaw) {
-        budgetWarnings.push(`Chunk ${chunk.name} ${formatSize(cSize)} exceeds chunk budget ${formatSize(sizeBudget.chunkRaw)}`);
+    for (const cs of chunkStats) {
+      if (cs.size > sizeBudget.chunkRaw) {
+        budgetWarnings.push(`Chunk ${cs.name} ${formatSize(cs.size)} exceeds chunk budget ${formatSize(sizeBudget.chunkRaw)}`);
       }
     }
   }

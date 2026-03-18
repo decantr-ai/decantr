@@ -3,25 +3,18 @@
   "id": "contact-form",
   "name": "Contact Form",
   "description": "Multi-field contact form with name, email, message, and optional subject/category.",
-  "components": ["Input", "Textarea", "Button", "Select"],
+  "components": [
+    "Input",
+    "Textarea",
+    "Button",
+    "Select"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _col _gap4 _maxw2xl _mx-auto",
     "slots": {
       "form-fields": "Stacked input fields for name, email, subject, and message",
       "submit-row": "Submit button with optional cancel or reset action"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4",
-      "notes": "Form in d-glass card. Submit button prominent. Heading uses d-gradient-text."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Standard card form. No extra decoration needed."
     }
   },
   "code": {

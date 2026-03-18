@@ -3,7 +3,16 @@
   "id": "chat-interface",
   "name": "Chat Interface",
   "description": "AI chat interface with scrollable message area, suggestion prompt chips, and input bar with send button. Messages alternate between user and assistant bubbles. Used for chef chat and AI cooking assistants.",
-  "components": ["Card", "Card.Body", "Input", "Button", "Avatar", "Chip", "ScrollArea", "icon"],
+  "components": [
+    "Card",
+    "Card.Body",
+    "Input",
+    "Button",
+    "Avatar",
+    "Chip",
+    "ScrollArea",
+    "icon"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _col _h[calc(100vh-200px)] _b1 _r4 _overflow[hidden]",
@@ -11,23 +20,6 @@
       "messages": "ScrollArea of chat bubbles — user messages right-aligned, assistant messages left-aligned with Avatar",
       "suggestions": "Horizontal row of Chip suggestion prompts (e.g. 'What can I make with chicken?')",
       "input-bar": "Bottom bar with text Input and send Button"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "",
-      "notes": "Chat frame uses cc-frame. Assistant messages use cc-data. Suggestion chips use cc-label. Send button uses cc-glow."
-    },
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4",
-      "notes": "Chat container on d-glass. Assistant avatar has aura-glow ring. User messages use accent background."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_b1 _r4",
-      "notes": "Simple bordered chat container. Clean message bubbles with muted backgrounds."
     }
   },
   "code": {

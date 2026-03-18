@@ -1,5 +1,5 @@
 {
-  "generated": "2026-03-12T02:53:45.685Z",
+  "generated": "2026-03-18T05:13:12.615Z",
   "corpus": {
     "total": 103,
     "categories": {
@@ -12,18 +12,18 @@
   },
   "failures": [],
   "deterministic": {
-    "classification_accuracy": 0.92,
-    "activation_accuracy": 0.59,
+    "classification_accuracy": 0.89,
+    "activation_accuracy": 0.52,
     "completeness_accuracy": 0.89,
-    "blend_accuracy": 0.89
+    "blend_accuracy": 0.7
   },
   "process_analysis": {
-    "automation_ratio": 0.65,
+    "automation_ratio": 0.62,
     "decision_counts": {
-      "automated": 455,
+      "automated": 429,
       "llm-required": 148,
-      "ambiguous": 18,
-      "fallback": 74
+      "ambiguous": 44,
+      "fallback": 75
     },
     "llm_intervention_points": [
       {
@@ -42,7 +42,7 @@
     "category_breakdowns": {
       "single-domain": {
         "total": 54,
-        "classification_ok": 48,
+        "classification_ok": 45,
         "failures": [
           {
             "id": "saas-002",
@@ -63,7 +63,65 @@
                 "saas-dashboard": 1.6,
                 "portfolio": 0,
                 "content-site": 0,
-                "docs-explorer": 0.4
+                "docs-explorer": 0.4,
+                "financial-dashboard": 0,
+                "recipe-community": 0,
+                "gaming-platform": 0.4,
+                "creative-tool": 0
+              }
+            }
+          },
+          {
+            "id": "saas-004",
+            "expected": {
+              "domain": "saas-dashboard",
+              "confidence": "confident",
+              "scores": {
+                "saas-dashboard": {
+                  "min": 2
+                }
+              }
+            },
+            "actual": {
+              "domain": "financial-dashboard",
+              "confidence": "ambiguous",
+              "scores": {
+                "ecommerce": 0,
+                "saas-dashboard": 3,
+                "portfolio": 0,
+                "content-site": 0,
+                "docs-explorer": 0,
+                "financial-dashboard": 4,
+                "recipe-community": 0.4,
+                "gaming-platform": 0.4,
+                "creative-tool": 0
+              }
+            }
+          },
+          {
+            "id": "saas-006",
+            "expected": {
+              "domain": "saas-dashboard",
+              "confidence": "confident",
+              "scores": {
+                "saas-dashboard": {
+                  "min": 2
+                }
+              }
+            },
+            "actual": {
+              "domain": "financial-dashboard",
+              "confidence": "ambiguous",
+              "scores": {
+                "ecommerce": 0,
+                "saas-dashboard": 3,
+                "portfolio": 0,
+                "content-site": 0,
+                "docs-explorer": 0,
+                "financial-dashboard": 4,
+                "recipe-community": 0,
+                "gaming-platform": 0,
+                "creative-tool": 0
               }
             }
           },
@@ -84,9 +142,40 @@
               "scores": {
                 "ecommerce": 0,
                 "saas-dashboard": 0,
-                "portfolio": 0.4,
+                "portfolio": 0,
                 "content-site": 1.6,
-                "docs-explorer": 0
+                "docs-explorer": 0,
+                "financial-dashboard": 0,
+                "recipe-community": 0,
+                "gaming-platform": 0,
+                "creative-tool": 0
+              }
+            }
+          },
+          {
+            "id": "content-002",
+            "expected": {
+              "domain": "content-site",
+              "confidence": "confident",
+              "scores": {
+                "content-site": {
+                  "min": 2
+                }
+              }
+            },
+            "actual": {
+              "domain": "recipe-community",
+              "confidence": "confident",
+              "scores": {
+                "ecommerce": 0,
+                "saas-dashboard": 0,
+                "portfolio": 0,
+                "content-site": 2,
+                "docs-explorer": 0,
+                "financial-dashboard": 0,
+                "recipe-community": 4,
+                "gaming-platform": 0,
+                "creative-tool": 0
               }
             }
           },
@@ -109,7 +198,11 @@
                 "saas-dashboard": 0,
                 "portfolio": 0,
                 "content-site": 1.6,
-                "docs-explorer": 0
+                "docs-explorer": 0,
+                "financial-dashboard": 0,
+                "recipe-community": 0,
+                "gaming-platform": 0,
+                "creative-tool": 0
               }
             }
           },
@@ -130,9 +223,13 @@
               "scores": {
                 "ecommerce": 0,
                 "saas-dashboard": 0,
-                "portfolio": 0.8,
+                "portfolio": 0,
                 "content-site": 1.2000000000000002,
-                "docs-explorer": 0
+                "docs-explorer": 0,
+                "financial-dashboard": 0,
+                "recipe-community": 0,
+                "gaming-platform": 0,
+                "creative-tool": 0
               }
             }
           },
@@ -153,9 +250,13 @@
               "scores": {
                 "ecommerce": 0,
                 "saas-dashboard": 0,
-                "portfolio": 0.8,
+                "portfolio": 0.4,
                 "content-site": 1.2000000000000002,
-                "docs-explorer": 0
+                "docs-explorer": 0,
+                "financial-dashboard": 0,
+                "recipe-community": 0,
+                "gaming-platform": 0,
+                "creative-tool": 0
               }
             }
           },
@@ -175,9 +276,13 @@
               "scores": {
                 "ecommerce": 0,
                 "saas-dashboard": 0,
-                "portfolio": 0.4,
+                "portfolio": 0,
                 "content-site": 0.8,
-                "docs-explorer": 0
+                "docs-explorer": 0,
+                "financial-dashboard": 0,
+                "recipe-community": 0.4,
+                "gaming-platform": 0,
+                "creative-tool": 0
               }
             }
           }
@@ -202,9 +307,13 @@
               "scores": {
                 "ecommerce": 0.4,
                 "saas-dashboard": 0,
-                "portfolio": 0.4,
+                "portfolio": 0,
                 "content-site": 0.4,
-                "docs-explorer": 0
+                "docs-explorer": 0,
+                "financial-dashboard": 0,
+                "recipe-community": 0,
+                "gaming-platform": 0,
+                "creative-tool": 0
               }
             }
           }
@@ -238,7 +347,11 @@
                 "saas-dashboard": 0,
                 "portfolio": 0,
                 "content-site": 0,
-                "docs-explorer": 0
+                "docs-explorer": 0,
+                "financial-dashboard": 0,
+                "recipe-community": 0,
+                "gaming-platform": 0,
+                "creative-tool": 0
               }
             }
           }
@@ -251,10 +364,12 @@
       }
     },
     "fallback_reasons": {
-      "No feature DAG for saas-dashboard, using archetype pages": 16,
+      "No feature DAG for saas-dashboard, using archetype pages": 13,
       "unknown": 29,
-      "No feature DAG for portfolio, using archetype pages": 15,
-      "No feature DAG for content-site, using archetype pages": 6,
+      "No feature DAG for financial-dashboard, using archetype pages": 7,
+      "No feature DAG for portfolio, using archetype pages": 12,
+      "No feature DAG for recipe-community, using archetype pages": 1,
+      "No feature DAG for content-site, using archetype pages": 5,
       "No feature DAG for docs-explorer, using archetype pages": 8
     },
     "framework_gaps": [
@@ -279,7 +394,7 @@
         "fix": "Create domains/docs-explorer.json"
       },
       {
-        "gap": "Synthetic triggers 71% vs hand-authored 86%",
+        "gap": "Synthetic triggers 63% vs hand-authored 89%",
         "impact": "Lower classification accuracy for non-ecommerce domains",
         "fix": "Author trigger files for all domains"
       }

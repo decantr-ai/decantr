@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/decantr)](https://www.npmjs.com/package/decantr)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-AI-first web framework. Zero dependencies. Native JS/CSS/HTML. v0.9.2
+AI-first web framework. Zero dependencies. Native JS/CSS/HTML. v0.9.6
 
 Decantr is designed for LLMs to generate, read, and maintain — not for human readability. Every API is optimized for token efficiency: terse atomic CSS atoms, proxy-based tag functions, and a machine-readable registry so agents can look up props and exports without parsing source files.
 
@@ -32,6 +32,7 @@ decantr/chart       — Chart components (bar, line, area, pie, donut, sparkline
 decantr/plugins     — loadPlugins(), runHook() — build/dev/generate lifecycle hooks
 decantr/i18n        — createI18n, locale management, RTL support
 decantr/ssr         — renderToString, renderToStream, hydrate
+decantr/tannins     — auth, auth-enterprise (OIDC/PKCE, RBAC), telemetry (Web Vitals, error capture)
 decantr/test        — render, fire, flush + node:test re-exports
 ```
 
@@ -44,11 +45,14 @@ decantr/test        — render, fire, flush + node:test re-exports
 - **Atomic CSS engine** — 1000+ `_`-prefixed utility atoms via `css()`
 - **Style + Mode system** — 12 visual styles (1 core + 3 add-on + 8 community) x light/dark/auto modes, 170+ design tokens
 - **Machine-readable registry** — JSON specs for 110+ components, 48 patterns, 9 archetypes, recipes
+- **Tannins** — Pluggable functional systems: auth (token-based), auth-enterprise (OIDC/PKCE, RBAC), telemetry (Web Vitals)
 - **Router** — Hash or History API, nested routes, guards, lazy loading
 - **Form system** — Reactive forms with 10 built-in validators and field arrays
 - **Build tooling** — Tree shaking, code splitting, source maps, CSS purging, incremental builds
 - **Plugin system** — Build/dev/generate lifecycle hooks via `loadPlugins()` and `runHook()`
 - **i18n + SSR** — Internationalization with RTL support, server-side rendering with streaming
+- **Compiled LLM context** — Task-specific context profiles compiled from reference docs for token-efficient AI generation
+- **Community content registry** — Search, install, publish, and manage community styles, patterns, and recipes
 
 ## Component Pattern
 
@@ -75,26 +79,31 @@ export function Counter({ initial = 0 } = {}) {
 ## CLI Commands
 
 ```bash
-decantr init [name]       # Scaffold a new project
-decantr dev               # Start dev server with hot reload
-decantr build             # Production build
-decantr test              # Run tests
-decantr test --watch      # Watch mode
-decantr validate          # Validate decantr.essence.json
-decantr lint              # Code quality gates
-decantr a11y              # Accessibility audit
-decantr doctor            # Check project health
-decantr generate          # Generate code from essence
-decantr migrate           # Migrate essence between versions
-decantr audit             # Run ecosystem audit
-decantr mcp               # Start MCP server
-decantr figma-tokens      # Import Figma design tokens
-decantr figma-sync        # Sync with Figma
+decantr init [name]           # Scaffold a new project (--template=<name> for starters)
+decantr dev                   # Start dev server with hot reload + component HMR
+decantr build                 # Production build (tree shake, code split, CSS purge)
+decantr test [--watch]        # Run tests
+decantr validate              # Validate decantr.essence.json
+decantr lint                  # Code quality gates (atoms, essence drift, inline styles)
+decantr a11y                  # Accessibility audit (8 WCAG rules)
+decantr doctor                # Check project health and environment
+decantr generate              # Generate code from essence (--force, --dry-run, --page)
+decantr migrate               # Migrate essence between versions (--dry-run, --target)
+decantr age                   # Full version upgrade (essence + config + AI-guided source)
+decantr audit                 # Run ecosystem audit
+decantr registry              # Community content (search, add, remove, update, list, publish)
+decantr cellar                # Inventory sub-projects and check health (--fix, --link, --json)
+decantr compile-context       # Compile LLM task profiles (--only=<profiles>, --watch)
+decantr mcp                   # Start MCP server (stdio transport)
+decantr figma:tokens          # Export design tokens in W3C DTCG / Figma format
+decantr figma:sync            # Push tokens to Figma file via REST API
 ```
 
 ## MCP Server
 
-Decantr ships a built-in [Model Context Protocol](https://modelcontextprotocol.io) server that exposes 9 read-only tools for querying the component registry, resolving atomic CSS classes, validating project essence files, and searching across the full design system. The server runs locally via stdio — no data is collected, transmitted, or stored externally.
+Decantr ships a built-in [Model Context Protocol](https://modelcontextprotocol.io) server that exposes 16 tools (15 read-only + 1 write) for querying the component registry, resolving atomic CSS, generating pattern code, managing community content, and validating project essence files. The server runs locally via stdio — no data is collected, transmitted, or stored externally.
+
+**Tools**: `lookup_component`, `lookup_pattern`, `lookup_archetype`, `lookup_skeleton`, `lookup_tokens`, `lookup_icon`, `resolve_atoms`, `get_component_signature`, `get_pattern_code`, `get_atom_reference`, `get_recipe_decorators`, `search_registry`, `search_content_registry`, `get_content_recommendations`, `validate_essence`, `install_from_registry`
 
 ### Start the server
 
@@ -204,6 +213,35 @@ Response:
 ### Privacy
 
 The MCP server runs locally via stdio. It reads only local registry JSON files shipped with the package. No data is collected, transmitted, or stored externally.
+
+## Compiled LLM Context
+
+Decantr compiles reference docs and registry JSON into task-specific context profiles optimized for token efficiency. Read the relevant profile before generating code:
+
+| Task | Profile |
+|------|---------|
+| Create new project | `llm/task-init.md` |
+| Add/modify a page | `llm/task-page.md` |
+| Create/modify component | `llm/task-component.md` |
+| Change styles/themes | `llm/task-style.md` |
+| Debug issues | `llm/task-debug.md` |
+| Refactor / fix drift | `llm/task-refactor.md` |
+
+Regenerate profiles: `npx decantr compile-context` (or `--watch` for dev mode).
+
+## Tannins
+
+Tannins are pluggable functional backbone systems:
+
+```javascript
+import { createAuth, requireAuth } from 'decantr/tannins/auth';
+import { createEnterpriseAuth, requireRoles } from 'decantr/tannins/auth-enterprise';
+import { createTelemetry } from 'decantr/tannins/telemetry';
+```
+
+- **auth** — Token-based authentication with reactive signals, cross-tab sync, auto-refresh on 401, route guards
+- **auth-enterprise** — OIDC/PKCE, RBAC, JWT inspection, session management (zero third-party dependencies)
+- **telemetry** — Web Vitals collection, error capture, query/navigation timing, pluggable reporters
 
 ## Documentation
 

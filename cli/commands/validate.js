@@ -35,8 +35,18 @@ export async function run() {
   // Known archetypes
   const KNOWN_ARCHETYPES = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community', 'gaming-platform', 'creative-tool'];
 
-  // Known styles
+  // Known styles — extend with registry-installed styles
   const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center'];
+  try {
+    const { readManifest, listEntries } = await import('../../tools/registry-manifest.js');
+    const manifest = await readManifest(cwd);
+    for (const entry of listEntries(manifest, 'styles')) {
+      if (!KNOWN_STYLES.includes(entry.name)) KNOWN_STYLES.push(entry.name);
+    }
+    for (const entry of listEntries(manifest, 'archetypes')) {
+      if (!KNOWN_ARCHETYPES.includes(entry.name)) KNOWN_ARCHETYPES.push(entry.name);
+    }
+  } catch { /* registry manifest not available */ }
 
   // Validate vintage
   function validateVintage(vintage, prefix) {

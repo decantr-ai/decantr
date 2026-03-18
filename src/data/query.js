@@ -169,7 +169,28 @@ export function createQuery(key, fetcher, options = {}) {
   const init = initialData !== undefined ? initialData : placeholderData;
   const [data, _setData] = createSignal(init !== undefined ? (select ? select(init) : init) : undefined);
   const [status, setStatus] = createSignal(init !== undefined ? 'success' : 'idle');
-  const [error, setError] = createSignal(/** @type {Error|null} */ (null));
+  const [_queryError, _setQueryError] = createSignal(/** @type {Error|null} */ (null));
+  let _errorObserved = false;
+
+  /** @type {() => Error|null} */
+  function error() {
+    _errorObserved = true;
+    return _queryError();
+  }
+
+  function setError(err) {
+    _setQueryError(err);
+    if (err && globalThis.__DECANTR_DEV__) {
+      _errorObserved = false;
+      queueMicrotask(() => {
+        if (!_errorObserved) {
+          const k = untrack(resolveKey);
+          console.warn('[decantr] Query "' + k + '" failed but error() was never read. Ensure your UI handles query errors.', err);
+        }
+      });
+    }
+  }
+
   const [isFetching, setIsFetching] = createSignal(false);
 
   const isLoading = createMemo(() => status() === 'loading');
@@ -644,8 +665,9 @@ export function createMutation(mutationFn, options = {}) {
 
     try {
       if (onMutate) context = await onMutate(variables);
-    } catch (_) {
+    } catch (e) {
       // onMutate failure is non-fatal to the mutation itself
+      if (globalThis.__DECANTR_DEV__) console.error('[decantr] Error in onMutate callback:', e);
     }
 
     try {
@@ -663,10 +685,10 @@ export function createMutation(mutationFn, options = {}) {
         setError(null);
       });
       if (onSuccess) {
-        try { onSuccess(result, variables, context); } catch (_) {}
+        try { onSuccess(result, variables, context); } catch (e) { if (globalThis.__DECANTR_DEV__) console.error('[decantr] Error in onSuccess callback:', e); }
       }
       if (onSettled) {
-        try { onSettled(result, undefined, variables, context); } catch (_) {}
+        try { onSettled(result, undefined, variables, context); } catch (e) { if (globalThis.__DECANTR_DEV__) console.error('[decantr] Error in onSettled callback:', e); }
       }
       return result;
     } catch (err) {
@@ -678,10 +700,10 @@ export function createMutation(mutationFn, options = {}) {
       if (onError) {
         try {
           onError(error, variables, context);
-        } catch (_) {}
+        } catch (e) { if (globalThis.__DECANTR_DEV__) console.error('[decantr] Error in onError callback:', e); }
       }
       if (onSettled) {
-        try { onSettled(undefined, error, variables, context); } catch (_) {}
+        try { onSettled(undefined, error, variables, context); } catch (e) { if (globalThis.__DECANTR_DEV__) console.error('[decantr] Error in onSettled callback:', e); }
       }
       throw error;
     }
@@ -692,7 +714,7 @@ export function createMutation(mutationFn, options = {}) {
    * @param {TVariables} variables
    */
   function mutate(variables) {
-    mutateAsync(variables).catch(() => {});
+    mutateAsync(variables).catch(e => { if (globalThis.__DECANTR_DEV__) console.error('[decantr] Unhandled mutation error:', e); });
   }
 
   /** Reset mutation state to initial. */

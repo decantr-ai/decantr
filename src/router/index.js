@@ -281,7 +281,13 @@ export function createRouter(config) {
 
     // Before guard
     if (!opts.skipGuards && beforeEach) {
-      const result = beforeEach(to, from);
+      let result;
+      try {
+        result = beforeEach(to, from);
+      } catch (e) {
+        if (globalThis.__DECANTR_DEV__) console.error('[decantr] Error in beforeEach guard:', e);
+        return; // Cancel navigation on guard error
+      }
       if (result === false) return;
       if (typeof result === 'string') {
         // Redirect — validate and navigate
@@ -322,7 +328,11 @@ export function createRouter(config) {
     setRoute(to);
 
     // After guard
-    if (afterEach) afterEach(to, from);
+    if (afterEach) {
+      try { afterEach(to, from); } catch (e) {
+        if (globalThis.__DECANTR_DEV__) console.error('[decantr] Error in afterEach guard:', e);
+      }
+    }
 
     // Fire navigation listeners
     for (let i = 0; i < listeners.length; i++) listeners[i](to, from);

@@ -3,12 +3,27 @@
   "id": "card-grid",
   "name": "Card Grid",
   "description": "Responsive grid of cards with configurable content. Supports product catalogs, recipe collections, feature showcases, and collection browsers via presets.",
-  "components": ["Card", "Card.Header", "Card.Body", "Card.Footer", "Button", "Badge", "icon"],
+  "components": [
+    "Card",
+    "Card.Header",
+    "Card.Body",
+    "Card.Footer",
+    "Button",
+    "Badge",
+    "icon"
+  ],
   "default_preset": "product",
   "presets": {
     "product": {
       "description": "Product cards with image, title, price, CTA. For e-commerce catalogs.",
-      "components": ["Card", "Card.Body", "Button", "Badge", "Image", "icon"],
+      "components": [
+        "Card",
+        "Card.Body",
+        "Button",
+        "Badge",
+        "Image",
+        "icon"
+      ],
       "blend": {
         "layout": "grid",
         "atoms": "_grid _gc3 _gap6 _p4",
@@ -26,7 +41,14 @@
     },
     "content": {
       "description": "Content cards with cover image, metadata, tags, and author attribution. For recipe/article feeds.",
-      "components": ["Card", "Card.Body", "Chip", "Avatar", "Badge", "icon"],
+      "components": [
+        "Card",
+        "Card.Body",
+        "Chip",
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
       "blend": {
         "layout": "grid",
         "atoms": "_grid _gc3 _gap6 _p4",
@@ -44,7 +66,12 @@
     },
     "collection": {
       "description": "Collection cards with cover image, title, item count, and status badge. For browsing grouped content.",
-      "components": ["Card", "Card.Body", "Badge", "icon"],
+      "components": [
+        "Card",
+        "Card.Body",
+        "Badge",
+        "icon"
+      ],
       "blend": {
         "layout": "grid",
         "atoms": "_grid _gc3 _gap6 _p4",
@@ -61,7 +88,11 @@
     },
     "icon": {
       "description": "Feature cards with icon, title, and description. For landing page capabilities.",
-      "components": ["Card", "Card.Body", "icon"],
+      "components": [
+        "Card",
+        "Card.Body",
+        "icon"
+      ],
       "blend": {
         "layout": "grid",
         "atoms": "_grid _gc3 _gap6 _p4",
@@ -83,41 +114,6 @@
       "card-body": "Card.Body with title, description, and metadata",
       "card-footer": "Card.Footer with CTA and optional secondary action",
       "badge": "Optional Badge overlay for status"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-grid",
-      "notes": "Cards use cc-frame-sm. Prices/counts use cc-data. Badges use cc-label. Grid background gets cc-grid.",
-      "preset_notes": {
-        "product": "Each Card uses cc-frame-sm. Prices use cc-data with cc-glow. Badge uses cc-label.",
-        "content": "Cards use cc-frame-sm. Metadata uses cc-data. Tag chips use cc-label.",
-        "collection": "Cards use cc-frame-sm. Item count uses cc-data. Status badge uses cc-label.",
-        "icon": "Cards use cc-frame-sm. Icons use cc-glow. Titles use cc-label."
-      }
-    },
-    "auradecantism": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Cards use d-glass. Titles highlighted on hover. Subtle aura-glow on card border.",
-      "preset_notes": {
-        "product": "Product cards use d-glass. Price highlighted. CTA button with aura-glow.",
-        "content": "Content cards use d-glass. Title highlighted. Hover reveals subtle aura-glow.",
-        "collection": "Collection cards use d-glass. Title highlighted on hover.",
-        "icon": "Feature cards use d-glass. Icon circles use d-gradient-text. Subtle hover glow."
-      }
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Standard cards with subtle shadow. Clean image + text layout. No extra decoration.",
-      "preset_notes": {
-        "product": "Standard product cards with shadow. Clean image + text layout.",
-        "content": "Standard card with subtle shadow. Clean image + text layout.",
-        "collection": "Standard cards with subtle shadow. Clean image + text layout.",
-        "icon": "Standard cards with subtle border. Clean icon + text layout."
-      }
     }
   },
   "code": {

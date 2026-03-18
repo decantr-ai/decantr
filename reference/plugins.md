@@ -250,3 +250,42 @@ Then reference the registered style and patterns in your Essence:
 - If a plugin setup function throws, the error is logged and the plugin is skipped.
 - If a hook handler throws during `runHook`, the error is logged and the remaining handlers continue.
 - Invalid plugin entries (wrong type, missing specifier) are warned and skipped.
+
+## Community Registry Distribution
+
+Plugins can also be distributed via the Decantr community content registry, which provides a lightweight alternative to npm for small, self-contained content.
+
+### Publishing a Plugin
+
+```bash
+decantr registry publish --type=plugin --file=plugins/my-plugin.js
+```
+
+The registry validates:
+- Plugin exports a function
+- No third-party runtime imports (the Decantr Way)
+- Size under 100KB
+
+### Installing a Plugin
+
+```bash
+decantr registry add plugin/my-plugin
+```
+
+This:
+1. Fetches the artifact from `registry.decantr.dev`
+2. Writes it to `plugins/my-plugin.js`
+3. Adds it to `decantr.config.json` plugins array
+4. Records the entry in `decantr.registry.json` with a SHA-256 checksum
+
+### Registry vs npm
+
+| Concern | Registry | npm |
+|---------|----------|-----|
+| Artifact size | Small (< 100KB) | Any |
+| Dependencies | None (self-contained) | Dependency tree |
+| Install location | Inlined into project | `node_modules/` |
+| Runtime dependency | None | Module resolution |
+| Use case | Styles, recipes, patterns, plugins | Complex packages |
+
+The registry is designed for Decantr-specific content that follows the "no third-party" principle. For plugins that need npm dependencies, continue using npm.

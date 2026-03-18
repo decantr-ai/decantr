@@ -22,20 +22,55 @@ const MIME = {
   '.woff2': 'font/woff2'
 };
 
+const ERROR_OVERLAY_SCRIPT = `<script type="module">
+import { initErrorOverlay } from '/__decantr/dev/error-overlay.js';
+initErrorOverlay();
+</script>`;
+
 const HMR_CLIENT = `<script>
 (function(){
-  const es = new EventSource('/__decantr_hmr');
+  var overlay = function() { return window.__d_error_overlay; };
+  var es = new EventSource('/__decantr_hmr');
   es.onmessage = function(e) {
-    const d = JSON.parse(e.data);
+    var d = JSON.parse(e.data);
     if (d.type === 'reload') { location.reload(); return; }
+    if (d.type === 'error' || d.type === 'warning') {
+      if (overlay()) { overlay().handleSSEError(d); }
+      return;
+    }
+    if (d.type === 'css-tokens') {
+      if (overlay()) { overlay().clear(); }
+      if (window.__d_hmr_css_tokens) {
+        window.__d_hmr_css_tokens();
+      } else {
+        location.reload();
+      }
+      return;
+    }
+    if (d.type === 'css-components') {
+      if (overlay()) { overlay().clear(); }
+      if (window.__d_hmr_css_components) {
+        window.__d_hmr_css_components();
+      } else {
+        location.reload();
+      }
+      return;
+    }
     if (d.type === 'hmr') {
+      if (overlay()) { overlay().clear(); }
       import(d.module + '?t=' + Date.now()).then(function(mod) {
         if (window.__d_hmr_remount) {
           window.__d_hmr_remount(d.module, mod);
         } else {
           location.reload();
         }
-      }).catch(function() { location.reload(); });
+      }).catch(function(err) {
+        if (overlay()) {
+          overlay().handleSSEError({ message: 'HMR module load failed: ' + (err.message || d.module), severity: 'error' });
+        } else {
+          location.reload();
+        }
+      });
     }
   };
   es.onerror = function() { setTimeout(function() { location.reload(); }, 1000); };
@@ -106,6 +141,53 @@ function rewriteImports(source) {
       return `${prefix}${quote}${resolved}${suffix}`;
     }
   );
+}
+
+/**
+ * Classify a file change into an HMR message.
+ * Page/component modules get component-level HMR; everything else triggers full reload.
+ * @param {string} filename — relative path within watched directory (e.g. "pages/home.js")
+ * @param {string} watchBase — "src" or other base prefix for the module path
+ * @returns {{ type: string, module?: string }}
+ */
+export function classifyChange(filename, watchBase) {
+  if (!filename) return { type: 'reload' };
+  const normalized = filename.replace(/\\/g, '/');
+
+  // CSS sub-path classification
+  if (normalized.startsWith('css/')) {
+    // Atom definitions and runtime engine → full reload
+    if (normalized === 'css/atoms.js' || normalized === 'css/runtime.js' || normalized === 'css/index.js') {
+      return { type: 'reload' };
+    }
+    // Theme registry, derive, and style definitions → token-only reload
+    if (normalized === 'css/theme-registry.js' || normalized === 'css/derive.js' || normalized.startsWith('css/styles/')) {
+      return { type: 'css-tokens' };
+    }
+    // Component CSS → component style reload
+    if (normalized === 'css/components.js') {
+      return { type: 'css-components' };
+    }
+    // Any other CSS file → full reload
+    return { type: 'reload' };
+  }
+
+  // Full reload triggers: state, router, app entry
+  if (
+    normalized.startsWith('state/') ||
+    normalized.startsWith('router/') ||
+    normalized === 'app.js'
+  ) {
+    return { type: 'reload' };
+  }
+
+  // Component-level HMR for pages and project components
+  if (normalized.startsWith('pages/') || normalized.startsWith('components/')) {
+    return { type: 'hmr', module: `/${watchBase}/${normalized}` };
+  }
+
+  // Safe default: full reload
+  return { type: 'reload' };
 }
 
 /**
@@ -206,9 +288,9 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
       }
 
       if (injectHmr) {
-        // Inject import map before first <script> tag, and HMR client before </body>
+        // Inject import map before first <script> tag, error overlay + HMR client before </body>
         content = content.replace('<head>', `<head>\n<script>globalThis.__DECANTR_DEV__=true</script>\n${generateImportMapTag()}`);
-        content = content.replace('</body>', `${HMR_CLIENT}\n</body>`);
+        content = content.replace('</body>', `${ERROR_OVERLAY_SCRIPT}\n${HMR_CLIENT}\n</body>`);
       }
 
       res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': 'no-store' });
@@ -216,6 +298,16 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
     } catch (e) {
       const rel = filePath.startsWith(projectRoot) ? filePath.slice(projectRoot.length + 1) : filePath;
       console.error(`  [error] Failed to serve ${rel}: ${e.message}`);
+      // Push error to overlay via SSE
+      const errorPayload = JSON.stringify({
+        type: 'error',
+        severity: 'error',
+        message: `Failed to serve ${rel}: ${e.message}`,
+        stack: e.stack || '',
+      });
+      for (const client of sseClients) {
+        client.write(`data: ${errorPayload}\n\n`);
+      }
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal server error');
     }
@@ -228,36 +320,6 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
     } catch {
       return false;
     }
-  }
-
-  /**
-   * Classify a file change into an HMR message.
-   * Page/component modules get component-level HMR; everything else triggers full reload.
-   * @param {string} filename — relative path within watched directory (e.g. "pages/home.js")
-   * @param {string} watchBase — "src" or other base prefix for the module path
-   * @returns {{ type: string, module?: string }}
-   */
-  function classifyChange(filename, watchBase) {
-    if (!filename) return { type: 'reload' };
-    const normalized = filename.replace(/\\/g, '/');
-
-    // Full reload triggers: state, css, router, app entry, essence
-    if (
-      normalized.startsWith('state/') ||
-      normalized.startsWith('css/') ||
-      normalized.startsWith('router/') ||
-      normalized === 'app.js'
-    ) {
-      return { type: 'reload' };
-    }
-
-    // Component-level HMR for pages and project components
-    if (normalized.startsWith('pages/') || normalized.startsWith('components/')) {
-      return { type: 'hmr', module: `/${watchBase}/${normalized}` };
-    }
-
-    // Safe default: full reload
-    return { type: 'reload' };
   }
 
   // Watch src/ and any extra watchDirs for changes

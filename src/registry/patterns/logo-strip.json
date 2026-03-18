@@ -3,12 +3,17 @@
   "id": "logo-strip",
   "name": "Logo Strip",
   "description": "Horizontal display of logos or icons for partners, sponsors, integrations, or tech stack. Supports static flex row and scrolling marquee.",
-  "components": ["Marquee", "icon"],
+  "components": [
+    "Marquee",
+    "icon"
+  ],
   "default_preset": "static",
   "presets": {
     "static": {
       "description": "Flex row of logos with opacity hover effect.",
-      "components": ["icon"],
+      "components": [
+        "icon"
+      ],
       "blend": {
         "layout": "row",
         "atoms": "_flex _aic _jcc _gap8 _wrap _py8",
@@ -24,7 +29,10 @@
     },
     "marquee": {
       "description": "Continuously scrolling logo rows using Marquee component. Two rows with opposite directions.",
-      "components": ["Marquee", "icon"],
+      "components": [
+        "Marquee",
+        "icon"
+      ],
       "blend": {
         "layout": "row",
         "atoms": "_flex _col _gap4 _py8",
@@ -46,26 +54,6 @@
     "slots": {
       "label": "Optional section label",
       "logos": "Horizontal row of logo images or icons"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Section label uses d-gradient-text-alt. Logos use _fgmuted with _h:fgfg transition.",
-      "preset_notes": {
-        "marquee": "Two Marquee rows with opposite directions. Logos use _fgmuted opacity treatment."
-      }
-    },
-    "command-center": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Section label uses cc-label. Logos use standard muted treatment."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Simple flex row. Label uses standard muted text."
     }
   },
   "code": {

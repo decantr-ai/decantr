@@ -3,30 +3,16 @@
   "id": "kpi-grid",
   "name": "KPI Grid",
   "description": "Responsive grid of metric cards showing key performance indicators. Each card displays a label, value, trend, and optional sparkline.",
-  "components": ["Statistic", "icon"],
+  "components": [
+    "Statistic",
+    "icon"
+  ],
   "default_blend": {
     "layout": "grid",
     "atoms": "_grid _gc1 _sm:gc2 _lg:gc4 _gap4 _p4",
     "slots": {
       "cards": "Array of Statistic instances with label, value, trend props",
       "header": "Optional section title with _heading4 and filter controls"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-bar cc-grid",
-      "notes": "KPI values use cc-data and cc-glow for critical metrics. Section header uses cc-bar with cc-label. Background gets cc-grid."
-    },
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4",
-      "notes": "Each KPI card wrapped in d-glass. Key values use d-gradient-text. Section header in d-gradient-text."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_b1 _r4",
-      "notes": "Simple bordered cards. No glass or gradients. Tokens handle all visual styling."
     }
   },
   "code": {

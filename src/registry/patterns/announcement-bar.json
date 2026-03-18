@@ -3,7 +3,11 @@
   "id": "announcement-bar",
   "name": "Announcement Bar",
   "description": "Dismissible top banner for announcements, news, and promotions. Standalone row layout, no Card wrap.",
-  "components": ["Badge", "Button", "icon"],
+  "components": [
+    "Badge",
+    "Button",
+    "icon"
+  ],
   "default_blend": {
     "layout": "row",
     "atoms": "_flex _aic _jcc _gap3 _py2 _px4 _textsm",
@@ -12,23 +16,6 @@
       "message": "Announcement text content",
       "action": "Optional link or button for CTA",
       "dismiss": "Close button to dismiss the bar"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "d-glass-subtle",
-      "atoms": "",
-      "notes": "Glass-subtle background. Badge uses outline variant. Dismiss button is ghost."
-    },
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "",
-      "notes": "cc-frame border. Badge uses cc-label."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_bgmuted _bcborder _borderB",
-      "notes": "Subtle muted background with bottom border."
     }
   },
   "code": {

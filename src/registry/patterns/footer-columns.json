@@ -3,12 +3,18 @@
   "id": "footer-columns",
   "name": "Footer Columns",
   "description": "Multi-column site footer with branding, link groups, social icons, and legal text.",
-  "components": ["Separator", "icon"],
+  "components": [
+    "Separator",
+    "icon"
+  ],
   "default_preset": "standard",
   "presets": {
     "standard": {
       "description": "Logo/brand column + 3 link columns + bottom copyright row.",
-      "components": ["Separator", "icon"],
+      "components": [
+        "Separator",
+        "icon"
+      ],
       "blend": {
         "layout": "row",
         "atoms": "_grid _gc1 _md:gc4 _gap8 _py12 _px6",
@@ -27,7 +33,9 @@
     },
     "minimal": {
       "description": "Single row with logo + links + social icons.",
-      "components": ["icon"],
+      "components": [
+        "icon"
+      ],
       "blend": {
         "layout": "row",
         "atoms": "_flex _aic _jcsb _py6 _px6 _wrap _gap4",
@@ -50,27 +58,6 @@
       "brand": "Logo and tagline",
       "link-groups": "Columns of footer links",
       "copyright": "Copyright text"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Brand name uses d-gradient-text. Links use _fgmuted with _h:fgfg transition. Border uses rgba(255,255,255,0.08).",
-      "preset_notes": {
-        "standard": "4-column grid. Brand column has d-gradient-text logo. Social icons use _fgmuted.",
-        "minimal": "Single-row flex. Brand name with d-gradient-text."
-      }
-    },
-    "command-center": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Standard footer styling with cc-label headings."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Clean, minimal footer. Standard link styling."
     }
   },
   "code": {

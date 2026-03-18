@@ -3,12 +3,24 @@
   "id": "stat-card",
   "name": "Stat Card",
   "description": "Compact grid of key statistics displayed in a Card. Used for nutrition facts, project metrics, and summary data blocks.",
-  "components": ["Card", "Card.Header", "Card.Body", "Statistic", "icon"],
+  "components": [
+    "Card",
+    "Card.Header",
+    "Card.Body",
+    "Statistic",
+    "icon"
+  ],
   "default_preset": "compact-grid",
   "presets": {
     "compact-grid": {
       "description": "2x2 grid of Statistic items inside a Card. For nutrition facts, key metrics summaries.",
-      "components": ["Card", "Card.Header", "Card.Body", "Statistic", "icon"],
+      "components": [
+        "Card",
+        "Card.Header",
+        "Card.Body",
+        "Statistic",
+        "icon"
+      ],
       "blend": {
         "layout": "grid",
         "atoms": "_grid _gc2 _gap3",
@@ -29,23 +41,6 @@
     "slots": {
       "header": "Card.Header with title",
       "stats": "Grid of Statistic components"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame-sm",
-      "atoms": "",
-      "notes": "Card uses cc-frame-sm. Values use cc-data with cc-glow on high values."
-    },
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4",
-      "notes": "Card on glass background. Values use d-gradient-text."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_b1 _r4",
-      "notes": "Simple bordered card with clean stat display."
     }
   },
   "code": {

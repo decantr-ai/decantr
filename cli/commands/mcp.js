@@ -18,6 +18,21 @@ const registryDir = join(srcRoot, 'registry');
 let components, patternsIndex, archetypesIndex, tokens, icons, skeletons;
 const patternCache = new Map();
 const archetypeCache = new Map();
+const recipeCache = new Map();
+
+// Atom categories for get_atom_reference
+const ATOM_CATEGORIES = {
+  layout: ['_flex', '_grid', '_col', '_row', '_wrap', '_flex1', '_none', '_block', '_inline', '_inlineFlex'],
+  alignment: ['_aic', '_aifs', '_aife', '_ais', '_aibs', '_jcc', '_jcsb', '_jcsa', '_jcse', '_jcfs', '_jcfe', '_center'],
+  spacing: ['_gap1', '_gap2', '_gap3', '_gap4', '_gap6', '_gap8', '_p1', '_p2', '_p3', '_p4', '_p6', '_p8', '_px4', '_px6', '_py3', '_py4', '_m0', '_mt4', '_mb4', '_mxa'],
+  grid: ['_gc1', '_gc2', '_gc3', '_gc4', '_gc6', '_gc12', '_span2', '_span3', '_span4', '_gcaf280'],
+  sizing: ['_wfull', '_hfull', '_minhscreen', '_flex1'],
+  typography: ['_heading1', '_heading2', '_heading3', '_heading4', '_heading5', '_heading6', '_body', '_bodylg', '_caption', '_label', '_overline', '_bold', '_tc', '_textxs', '_textsm', '_textbase', '_textlg', '_textxl', '_text2xl', '_truncate'],
+  color: ['_fgfg', '_fgmuted', '_fgmutedfg', '_fgprimary', '_fgsuccess', '_fgerror', '_fgwarning', '_bgbg', '_bgmuted', '_bgprimary', '_bgsuccess', '_bgerror', '_bgwarning', '_bgprimarysub'],
+  border: ['_b1', '_r2', '_r4', '_rfull', '_bcborder', '_bcprimary', '_bcsuccess', '_bcerror', '_borderB', '_borderR', '_borderT'],
+  effects: ['_shadow', '_shadowmd', '_trans', '_transfast', '_transslow', '_pointer', '_ohidden', '_relative', '_absolute', '_fixed', '_nounder'],
+  position: ['_relative', '_absolute', '_fixed', '_sticky', '_top0', '_left0', '_right0', '_bottom0'],
+};
 
 async function loadJSON(path) {
   return JSON.parse(await readFile(path, 'utf-8'));
@@ -50,6 +65,17 @@ async function getArchetype(id) {
   const data = await loadJSON(join(registryDir, 'archetypes', entry.file));
   archetypeCache.set(id, data);
   return data;
+}
+
+async function getRecipe(id) {
+  if (recipeCache.has(id)) return recipeCache.get(id);
+  try {
+    const data = await loadJSON(join(registryDir, `recipe-${id}.json`));
+    recipeCache.set(id, data);
+    return data;
+  } catch {
+    return null;
+  }
 }
 
 // ─── Atom resolver (imported dynamically to stay ESM-clean) ────
@@ -296,6 +322,110 @@ const TOOLS = [
     },
     annotations: READ_ONLY_ANNOTATIONS,
   },
+  {
+    name: 'get_component_signature',
+    title: 'Get Component Signature',
+    description: 'Get a concise component signature: required/optional props with types. Lighter than lookup_component — returns only what you need to use the component.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Component name (e.g. "Button", "DataTable", "Shell")' },
+      },
+      required: ['name'],
+    },
+    annotations: READ_ONLY_ANNOTATIONS,
+  },
+  {
+    name: 'get_pattern_code',
+    title: 'Get Pattern Code',
+    description: 'Get a pattern\'s code snippet with optional recipe decorators applied. Returns the pattern blend, components, and code with recipe-specific wrapper classes.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        pattern: { type: 'string', description: 'Pattern ID (e.g. "kpi-grid", "data-table", "hero")' },
+        recipe: { type: 'string', description: 'Optional recipe ID to apply decorators (e.g. "command-center", "auradecantism")' },
+        preset: { type: 'string', description: 'Optional preset name (e.g. "product", "content", "icon" for card-grid)' },
+      },
+      required: ['pattern'],
+    },
+    annotations: READ_ONLY_ANNOTATIONS,
+  },
+  {
+    name: 'get_atom_reference',
+    title: 'Get Atom Reference',
+    description: 'Get atom class names for a specific category. Categories: layout, alignment, spacing, grid, sizing, typography, color, border, effects, position. Omit category to list all categories.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        category: { type: 'string', description: 'Atom category (e.g. "layout", "spacing", "color"). Omit to list all categories with atom counts.' },
+      },
+    },
+    annotations: READ_ONLY_ANNOTATIONS,
+  },
+  {
+    name: 'get_recipe_decorators',
+    title: 'Get Recipe Decorators',
+    description: 'Get a recipe\'s decorator classes, pattern overrides, and composition examples. Returns everything needed to apply a recipe\'s visual language.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        recipe: { type: 'string', description: 'Recipe ID (e.g. "command-center", "auradecantism", "clean", "clay", "gaming-guild")' },
+      },
+      required: ['recipe'],
+    },
+    annotations: READ_ONLY_ANNOTATIONS,
+  },
+  {
+    name: 'search_content_registry',
+    title: 'Search Content Registry',
+    description: 'Search the Decantr community content registry for styles, recipes, patterns, archetypes, plugins, and templates. Returns matching content with metadata and install instructions.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query (e.g. "neon", "kanban", "brutalist")' },
+        type: { type: 'string', description: 'Filter by content type: style, recipe, pattern, archetype, plugin, template' },
+        character: { type: 'string', description: 'Filter by character trait (e.g. "bold", "minimal", "playful")' },
+        terroir: { type: 'string', description: 'Filter by terroir affinity (e.g. "portfolio", "saas-dashboard")' },
+      },
+      required: ['query'],
+    },
+    annotations: READ_ONLY_ANNOTATIONS,
+  },
+  {
+    name: 'get_content_recommendations',
+    title: 'Get Content Recommendations',
+    description: 'Get AI-native content recommendations based on project terroir, character, and style. Used during the Decantation Process (SETTLE/CLARIFY) to discover complementary community content.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        terroir: { type: 'string', description: 'Project terroir/archetype (e.g. "saas-dashboard")' },
+        character: { type: 'string', description: 'Comma-separated character traits (e.g. "bold,dramatic")' },
+        style: { type: 'string', description: 'Current style (e.g. "glassmorphism")' },
+        existing: { type: 'string', description: 'Comma-separated list of already-installed content IDs' },
+      },
+    },
+    annotations: READ_ONLY_ANNOTATIONS,
+  },
+  {
+    name: 'install_from_registry',
+    title: 'Install from Content Registry',
+    description: 'Install community content (style, recipe, pattern, etc.) from the registry into the project. Writes the artifact file, updates the manifest, and runs post-install index updates.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        type: { type: 'string', description: 'Content type: style, recipe, pattern, archetype, plugin' },
+        name: { type: 'string', description: 'Content ID (e.g. "neon", "kanban")' },
+        version: { type: 'string', description: 'Optional specific version' },
+      },
+      required: ['type', 'name'],
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
 ];
 
 // ─── Tool handlers ─────────────────────────────────────────────
@@ -485,6 +615,243 @@ async function handleTool(name, args) {
         return { found: false, message: `Skeleton "${skelName}" not found.`, suggestions: similar };
       }
       return { found: true, id: skelName, ...skel };
+    }
+
+    case 'get_component_signature': {
+      const err = validateStringArg(args, 'name');
+      if (err) return { error: err };
+      const compName = args.name;
+      let key = Object.keys(components.components).find(k => k === compName);
+      if (!key) key = Object.keys(components.components).find(k => k.toLowerCase() === compName.toLowerCase());
+      if (!key) {
+        const similar = Object.keys(components.components).filter(k => fuzzyMatch(compName, k)).slice(0, 5);
+        return { found: false, message: `Component "${compName}" not found.`, suggestions: similar };
+      }
+      const comp = components.components[key];
+      const props = comp.props || {};
+      const signature = {};
+      for (const [propName, propDef] of Object.entries(props)) {
+        signature[propName] = {
+          type: propDef.type,
+          required: propDef.required || false,
+          ...(propDef.reactive ? { reactive: true } : {}),
+          ...(propDef.default !== undefined ? { default: propDef.default } : {}),
+        };
+      }
+      return {
+        found: true,
+        name: key,
+        description: comp.description || null,
+        props: signature,
+        children: comp.children || null,
+        subComponents: comp.subComponents ? Object.keys(comp.subComponents) : null,
+      };
+    }
+
+    case 'get_pattern_code': {
+      const err = validateStringArg(args, 'pattern');
+      if (err) return { error: err };
+      const patternId = args.pattern;
+      const pattern = await getPattern(patternId);
+      if (!pattern) {
+        const similar = Object.keys(patternsIndex.patterns).filter(k => fuzzyMatch(patternId, k)).slice(0, 5);
+        return { found: false, message: `Pattern "${patternId}" not found.`, suggestions: similar };
+      }
+
+      // Resolve preset
+      const presetId = args.preset || pattern.default_preset;
+      const preset = presetId && pattern.presets?.[presetId] ? pattern.presets[presetId] : null;
+      const resolved = preset ? {
+        blend: preset.blend || preset.default_blend || pattern.default_blend,
+        components: preset.components || pattern.components,
+        code: preset.code || pattern.code,
+      } : {
+        blend: pattern.default_blend,
+        components: pattern.components,
+        code: pattern.code,
+      };
+
+      // Apply recipe decorators
+      let recipeDecorators = null;
+      if (args.recipe) {
+        const recipe = await getRecipe(args.recipe);
+        if (recipe) {
+          recipeDecorators = {
+            recipe: recipe.id,
+            decorators: recipe.decorators || {},
+            patternOverride: recipe.pattern_overrides?.[patternId] || null,
+          };
+        }
+      }
+
+      return {
+        found: true,
+        id: patternId,
+        name: pattern.name,
+        preset: presetId || null,
+        availablePresets: pattern.presets ? Object.keys(pattern.presets) : [],
+        blend: resolved.blend,
+        components: resolved.components,
+        code: resolved.code || null,
+        recipeDecorators,
+      };
+    }
+
+    case 'get_atom_reference': {
+      const category = args?.category;
+      if (!category) {
+        const summary = {};
+        for (const [cat, atoms] of Object.entries(ATOM_CATEGORIES)) {
+          summary[cat] = { count: atoms.length, examples: atoms.slice(0, 5) };
+        }
+        return { categories: summary, total_categories: Object.keys(ATOM_CATEGORIES).length };
+      }
+      const atoms = ATOM_CATEGORIES[category];
+      if (!atoms) {
+        return {
+          found: false,
+          message: `Category "${category}" not found.`,
+          available: Object.keys(ATOM_CATEGORIES),
+        };
+      }
+      // Resolve each atom to its CSS
+      const resolved = atoms.map(atom => {
+        const css = resolveAtomDecl(atom);
+        return { atom, css: css || null };
+      });
+      return { found: true, category, count: atoms.length, atoms: resolved };
+    }
+
+    case 'get_recipe_decorators': {
+      const err = validateStringArg(args, 'recipe');
+      if (err) return { error: err };
+      const recipeId = args.recipe;
+      const recipe = await getRecipe(recipeId);
+      if (!recipe) {
+        const available = ['auradecantism', 'clean', 'clay', 'command-center', 'gaming-guild'];
+        return { found: false, message: `Recipe "${recipeId}" not found.`, available };
+      }
+      return {
+        found: true,
+        id: recipe.id,
+        name: recipe.name,
+        style: recipe.style,
+        mode: recipe.mode,
+        description: recipe.description,
+        setup: recipe.setup || null,
+        decorators: recipe.decorators || {},
+        pattern_overrides: recipe.pattern_overrides || {},
+        compositions: recipe.compositions || [],
+      };
+    }
+
+    case 'search_content_registry': {
+      const err = validateStringArg(args, 'query');
+      if (err) return { error: err };
+      try {
+        const { createClient } = await import('../../src/registry/content-registry.js');
+        const client = await createClient({ cwd: process.cwd() });
+        const params = { q: args.query };
+        if (args.type) params.type = args.type;
+        if (args.character) params.character = args.character;
+        if (args.terroir) params.terroir = args.terroir;
+        const data = await client.search(params);
+        return {
+          total: data.total || 0,
+          results: (data.results || []).map(r => ({
+            type: r.type,
+            id: r.id,
+            version: r.version,
+            description: r.description,
+            ai_summary: r.ai_summary,
+            character: r.character,
+            install: `decantr registry add ${r.type}/${r.id}`,
+          })),
+        };
+      } catch (err) {
+        return { error: `Registry search failed: ${err.message}` };
+      }
+    }
+
+    case 'get_content_recommendations': {
+      try {
+        const { createClient } = await import('../../src/registry/content-registry.js');
+        const client = await createClient({ cwd: process.cwd() });
+        const params = {};
+        if (args.terroir) params.terroir = args.terroir;
+        if (args.character) params.character = args.character;
+        if (args.style) params.style = args.style;
+        if (args.existing) params.existing = args.existing;
+        const data = await client.getRecommendations(params);
+        return data;
+      } catch (err) {
+        return { error: `Recommendations failed: ${err.message}` };
+      }
+    }
+
+    case 'install_from_registry': {
+      const typeErr = validateStringArg(args, 'type');
+      if (typeErr) return { error: typeErr };
+      const nameErr = validateStringArg(args, 'name');
+      if (nameErr) return { error: nameErr };
+
+      try {
+        const { createClient } = await import('../../src/registry/content-registry.js');
+        const { readManifest, writeManifest, setEntry } = await import('../../tools/registry-manifest.js');
+        const { computeChecksum, validateArtifact } = await import('../../tools/registry-validator.js');
+        const { writeFile, mkdir } = await import('node:fs/promises');
+        const { join, dirname } = await import('node:path');
+
+        const cwd = process.cwd();
+        const client = await createClient({ cwd });
+        const data = await client.getContent(args.type, args.name, args.version);
+
+        if (!data?.artifact?.content) {
+          return { error: `No artifact content for ${args.type}/${args.name}` };
+        }
+
+        const validation = validateArtifact(args.type, data.artifact.content);
+        if (!validation.valid) {
+          return { error: `Validation failed: ${validation.errors.join(', ')}` };
+        }
+
+        // Determine install path
+        const pathMap = {
+          style: `src/css/styles/community/${args.name}.js`,
+          recipe: `src/registry/recipe-${args.name}.json`,
+          pattern: `src/registry/patterns/${args.name}.json`,
+          archetype: `src/registry/archetypes/${args.name}.json`,
+          plugin: `plugins/${args.name}.js`,
+        };
+        const relPath = pathMap[args.type];
+        if (!relPath) return { error: `Unknown content type: ${args.type}` };
+
+        const absPath = join(cwd, relPath);
+        await mkdir(dirname(absPath), { recursive: true });
+        await writeFile(absPath, data.artifact.content);
+
+        const checksum = computeChecksum(data.artifact.content);
+        const plural = args.type.endsWith('s') ? args.type : args.type + 's';
+        const manifest = await readManifest(cwd);
+        setEntry(manifest, plural, args.name, {
+          version: data.version,
+          source: 'registry',
+          checksum,
+          file: relPath,
+        });
+        await writeManifest(cwd, manifest);
+
+        return {
+          installed: true,
+          type: args.type,
+          name: args.name,
+          version: data.version,
+          file: relPath,
+          warnings: validation.warnings,
+        };
+      } catch (err) {
+        return { error: `Install failed: ${err.message}` };
+      }
     }
 
     default:

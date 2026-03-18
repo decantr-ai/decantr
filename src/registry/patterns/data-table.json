@@ -3,7 +3,14 @@
   "id": "data-table",
   "name": "Data Table",
   "description": "Sortable, filterable, paginated data table with a toolbar for search, filters, and bulk actions.",
-  "components": ["DataTable", "Input", "Select", "Button", "Badge", "Chip"],
+  "components": [
+    "DataTable",
+    "Input",
+    "Select",
+    "Button",
+    "Badge",
+    "Chip"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap4 _p4",
@@ -11,23 +18,6 @@
       "toolbar": "Horizontal bar with search Input, filter Select, action Buttons via _flex _gap3 _justifyBetween",
       "table": "DataTable instance with columns, data, sort, and pagination props",
       "bulk-actions": "Conditional bar shown when rows selected, with Buttons and Badge count"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-scanline",
-      "notes": "Toolbar gets cc-bar. Numeric cells use cc-data. Row hover uses cc-glow subtle. Table area wrapped in cc-scanline for data-heavy visual."
-    },
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4 _overflow[hidden]",
-      "notes": "Table wrapped in d-glass with rounded overflow. Toolbar header with d-gradient-text title."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_b1 _r4 _overflow[hidden]",
-      "notes": "Table in bordered container. Clean toolbar with border-bottom divider."
     }
   },
   "code": {

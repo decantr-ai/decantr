@@ -70,6 +70,37 @@ updateJSON(join(root, 'workbench', '.decantr', 'manifest.json'), data => {
   return false;
 });
 
+// --- Docs ---
+
+updateJSON(join(root, 'docs', 'package.json'), data => {
+  if (data.dependencies?.decantr && !data.dependencies.decantr.startsWith('file:') && data.dependencies.decantr !== '^' + version) {
+    data.dependencies.decantr = '^' + version;
+    return true;
+  }
+  return false;
+});
+
+// --- Playground ---
+
+updateJSON(join(root, 'playground', 'package.json'), data => {
+  if (data.dependencies?.decantr && data.dependencies.decantr !== '^' + version) {
+    data.dependencies.decantr = '^' + version;
+    return true;
+  }
+  return false;
+});
+
+updateJSON(join(root, 'playground', '.decantr', 'manifest.json'), data => {
+  if (data.version !== version) { data.version = version; return true; }
+  return false;
+});
+
+updateText(
+  join(root, 'playground', 'CLAUDE.md'),
+  /Built with \[decantr\]\(https:\/\/decantr\.ai\) v[\d.]+/,
+  `Built with [decantr](https://decantr.ai) v${version}`
+);
+
 // --- Showcase projects ---
 
 const showcaseDir = join(root, 'showcase');

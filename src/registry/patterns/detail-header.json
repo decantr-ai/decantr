@@ -3,12 +3,22 @@
   "id": "detail-header",
   "name": "Detail Header",
   "description": "Page header with breadcrumb, title, status badge, and action buttons. Supports standard page headers and user profile headers via presets.",
-  "components": ["Breadcrumb", "Title", "Badge", "Button"],
+  "components": [
+    "Breadcrumb",
+    "Title",
+    "Badge",
+    "Button"
+  ],
   "default_preset": "standard",
   "presets": {
     "standard": {
       "description": "Page header with breadcrumb, title, status badge, and action buttons.",
-      "components": ["Breadcrumb", "Badge", "Button", "icon"],
+      "components": [
+        "Breadcrumb",
+        "Badge",
+        "Button",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _col _gap3 _pb4 _borderb",
@@ -25,7 +35,13 @@
     },
     "profile": {
       "description": "User profile header with banner image, avatar, display name, bio, and edit button.",
-      "components": ["Avatar", "Button", "Upload", "Badge", "icon"],
+      "components": [
+        "Avatar",
+        "Button",
+        "Upload",
+        "Badge",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _col _gap0",
@@ -48,32 +64,6 @@
       "breadcrumb": "Breadcrumb navigation trail for page hierarchy",
       "title-row": "Title with inline status Badge",
       "actions": "Action Buttons for edit, delete, or export"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "",
-      "notes": "Header uses cc-frame. Title uses cc-data. Actions get cc-glow.",
-      "preset_notes": {
-        "profile": "Banner uses cc-grid overlay. Avatar ring uses cc-glow. Name uses cc-data."
-      }
-    },
-    "auradecantism": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Header blends with page background. Title can use d-gradient-text.",
-      "preset_notes": {
-        "profile": "Banner blends with d-mesh. Avatar has aura-glow ring. Name uses d-gradient-text."
-      }
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Standard header with subtle border. Clean layout.",
-      "preset_notes": {
-        "profile": "Simple banner image. Clean avatar with border. Standard text layout."
-      }
     }
   },
   "code": {

@@ -171,6 +171,39 @@ async function checkFrameworkVersion() {
   }
 }
 
+async function checkRegistryManifest() {
+  const manifestPath = join(cwd, 'decantr.registry.json');
+  if (!(await fileExists(manifestPath))) return; // optional file
+
+  const data = await readJSON(manifestPath);
+  if (!data) {
+    fail('decantr.registry.json exists but is invalid JSON');
+    return;
+  }
+  pass('decantr.registry.json is valid JSON');
+
+  if (!data.installed || typeof data.installed !== 'object') {
+    warn('decantr.registry.json missing "installed" section');
+    return;
+  }
+
+  // Check for stale entries (files that no longer exist on disk)
+  let stale = 0;
+  for (const [type, entries] of Object.entries(data.installed)) {
+    for (const [name, entry] of Object.entries(entries)) {
+      if (entry.file && !(await fileExists(join(cwd, entry.file)))) {
+        warn(`Registry entry ${type}/${name} references missing file: ${entry.file}`);
+        stale++;
+      }
+    }
+  }
+
+  if (stale === 0) {
+    const total = Object.values(data.installed).reduce((sum, entries) => sum + Object.keys(entries).length, 0);
+    if (total > 0) pass(`Registry manifest: ${total} installed item(s), no stale entries`);
+  }
+}
+
 // ── Main ──────────────────────────────────────────────────────────
 export async function run() {
   console.log(`\n${bold('decantr doctor')} ${dim('— checking project health')}\n`);
@@ -183,6 +216,7 @@ export async function run() {
   await checkDirectories();
   await checkPublicHTML();
   await checkFrameworkVersion();
+  await checkRegistryManifest();
 
   console.log(`\n${bold('Results:')} ${green(`${passes} passed`)}${warns ? `, ${yellow(`${warns} warnings`)}` : ''}${fails ? `, ${red(`${fails} failed`)}` : ''}\n`);
 

@@ -24,7 +24,8 @@
       "params": [
         {
           "name": "getter",
-          "type": "Function"
+          "type": "Function|string",
+          "description": "A function returning the text value, or a static string"
         }
       ],
       "returns": "Text"

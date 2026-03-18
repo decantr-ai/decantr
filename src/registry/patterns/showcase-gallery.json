@@ -3,12 +3,19 @@
   "id": "showcase-gallery",
   "name": "Showcase Gallery",
   "description": "Grid of screenshots or previews with hover effects for project portfolios, case studies, and 'built with X' showcases.",
-  "components": ["Card", "Image", "BrowserFrame"],
+  "components": [
+    "Card",
+    "Image",
+    "BrowserFrame"
+  ],
   "default_preset": "screenshots",
   "presets": {
     "screenshots": {
       "description": "Grid of BrowserFrame-wrapped screenshots with hover scale effect.",
-      "components": ["BrowserFrame", "Image"],
+      "components": [
+        "BrowserFrame",
+        "Image"
+      ],
       "blend": {
         "layout": "grid",
         "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
@@ -24,7 +31,10 @@
     },
     "cards": {
       "description": "Grid of styled content cards with title and description overlay.",
-      "components": ["Card", "Image"],
+      "components": [
+        "Card",
+        "Image"
+      ],
       "blend": {
         "layout": "grid",
         "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
@@ -45,27 +55,6 @@
     "slots": {
       "heading": "Section heading",
       "gallery": "Grid of showcase items"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Cards use d-glass. Hover effect includes scale + aura-glow. Section heading uses d-gradient-text.",
-      "preset_notes": {
-        "screenshots": "BrowserFrame cards with d-glass border. Hover scale + subtle glow.",
-        "cards": "Cards use d-glass with hover scale effect."
-      }
-    },
-    "command-center": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Cards use cc-frame. Section heading uses cc-data."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Standard card styling. Simple hover shadow effect."
     }
   },
   "code": {

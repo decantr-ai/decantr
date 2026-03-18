@@ -1,5 +1,7 @@
 # Decantr LLM Primer
 
+> **Note:** This file is a **compiler input** — it feeds into `tools/compile-llm.js` which produces task-specific profiles in `llm/`. LLMs should read the compiled profiles (e.g., `llm/task-page.md`) instead of this file directly. Run `npx decantr compile-context` to regenerate.
+
 Single-file reference for code generation. Covers the 20% that handles 80% of scaffolding needs.
 
 ---
@@ -14,6 +16,9 @@ import { createRouter, link, navigate, useRoute, back, forward, isNavigating } f
 import { css, setStyle, setMode } from 'decantr/css';
 import { Button, Input, Card, Modal, Tabs, Select, ... } from 'decantr/components';
 import { Chart, Sparkline, chartSpec, createStream } from 'decantr/chart';
+import { createAuth, requireAuth } from 'decantr/tannins/auth';
+import { createTelemetry } from 'decantr/tannins/telemetry';
+import { createEnterpriseAuth, requireRoles } from 'decantr/tannins/auth-enterprise';
 ```
 
 **Usage pattern:**
@@ -86,7 +91,7 @@ Both naming styles work. Decantr terse names are canonical.
 ### Spacing Scale
 `0`=0, `1`=0.25rem, `2`=0.5rem, `3`=0.75rem, `4`=1rem, `5`=1.25rem, `6`=1.5rem, `8`=2rem, `10`=2.5rem, `12`=3rem, `16`=4rem, `20`=5rem, `24`=6rem
 
-> For spacing decision rules beyond defaults, see `reference/spatial-guidelines.md`.
+> For spacing decision rules beyond defaults, see §12 Clarity Profile below and `reference/spatial-guidelines.md`.
 
 ### Opacity Modifiers
 Append `/N` to any semantic color atom for alpha transparency (uses `color-mix()`):
@@ -143,7 +148,7 @@ Modal({ visible: signal, onClose: fn, class }, ...children)
 Tabs({ items: [{ label, content: () => node }], class })
 
 // DataTable
-DataTable({ columns: [{ key, label, sortable, render }], data, sortable, paginate, pageSize, class })
+DataTable({ columns: [{ key, label, sortable, render: (cellValue, row) => HTMLElement|string }], data, sortable, paginate, pageSize, class })
 
 // Statistic
 Statistic({ label, value, prefix, suffix, trend: 'up'|'down', trendValue, icon, class })
@@ -252,7 +257,42 @@ Chart({
 
 ## 5. Skeleton Code (5 layouts)
 
-### sidebar-main
+### sidebar-main (recommended: Shell component)
+```js
+import { Shell, Breadcrumb, Command, Dropdown, icon } from 'decantr/components';
+
+function SidebarMainApp({ nav, router }) {
+  const [navState, setNavState] = createSignal('expanded');
+
+  return Shell({ config: 'sidebar-main', navState, onNavStateChange: setNavState },
+    Shell.Nav({},
+      ...nav.map(item => {
+        const isActive = () => router.path() === item.href;
+        return link({ href: item.href, class: () =>
+          css(`d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans ${
+            isActive() ? 'd-shell-nav-item-active _bgprimary/10 _fgprimary' : '_fgfg'
+          }`)
+        },
+          icon(item.icon),
+          cond(() => navState() === 'expanded', () => text(() => item.label))
+        );
+      })
+    ),
+    Shell.Header({},
+      Breadcrumb({ items: [{ label: 'Home', href: '/' }] }),
+      Command({ placeholder: 'Search... (Cmd+K)' }),
+      Dropdown({ trigger: icon('user'), items: [{ label: 'Settings' }, { label: 'Logout' }] })
+    ),
+    Shell.Body({ class: css('d-page-enter') },
+      router.outlet()
+    )
+  );
+}
+```
+
+Shell handles ARIA roles, responsive collapse, CSS grid-template-areas, and keyboard shortcuts (Ctrl+\\ toggles sidebar). See `reference/shells.md` for all 10 presets.
+
+### sidebar-main (manual alternative)
 ```js
 function SidebarMain({ nav, children }) {
   const { div, aside, main, header, span } = tags;
@@ -267,7 +307,7 @@ function SidebarMain({ nav, children }) {
       ),
       ...nav.map(item =>
         link({ href: item.href, class: css('_flex _aic _gap2 _p2 _px3 _r2 _trans _fgfg') },
-          icon(item.icon), cond(() => !collapsed(), () => text(item.label))
+          icon(item.icon), cond(() => !collapsed(), () => text(() => item.label))
         )
       )
     ),
@@ -360,7 +400,7 @@ function MinimalHeader({ brand, children }) {
 ## 6. Top 15 Pattern Code Snippets
 
 > **Spacing note:** Snippets below use comfortable-density defaults (`_gap4`, `_p4`).
-> Actual spacing must match the project's Clarity profile — see `reference/spatial-guidelines.md` §17.
+> Actual spacing must match the project's Clarity profile — see §12 below or `reference/spatial-guidelines.md` §17.
 
 ### kpi-grid
 ```js
@@ -950,4 +990,116 @@ Card({ class: css('_mw[600px] _mxa') },
     Button({ variant: 'primary', class: css('_wfull') }, 'Submit')
   )
 )
+```
+
+---
+
+## 12. Clarity Profile (Spacing by Character)
+
+Character traits determine density. Use the matching gap/padding values — do NOT default to `_gap4`/`_p4` everywhere.
+
+| Character Trait | Section Padding | Content Gap | Chrome Gap | Animation |
+|----------------|-----------------|-------------|------------|-----------|
+| "minimal", "clean" | `_py16` | `_gap6` | `_gap2` | `d-stagger` |
+| "professional", "balanced" | `_py12` | `_gap4` | `_gap2` | `d-stagger-up` |
+| "tactical", "dense" | `_py8` | `_gap3` | `_gap1` | `d-stagger-scale` |
+| "editorial", "luxurious" | `_py24` | `_gap8` | `_gap2` | `d-stagger` |
+| "technical", "utilitarian" | `_py8` | `_gap3` | `_gap1` | `d-stagger-scale` |
+
+For the full spatial decision matrix, see `reference/spatial-guidelines.md`.
+
+---
+
+## 13. Common Icon Names
+
+375 icons total. See `reference/icons.md` for the full catalog. Top icons by category:
+
+**Navigation:** `check`, `x`, `plus`, `minus`, `chevron-down`, `chevron-up`, `chevron-left`, `chevron-right`, `arrow-left`, `arrow-right`, `arrow-up`, `arrow-down`
+**Common UI:** `search`, `menu`, `home`, `bell`, `settings`, `star`, `edit`, `trash`, `copy`, `eye`, `eye-off`, `filter`, `download`, `upload`, `refresh`, `log-out`, `log-in`, `user`, `external-link`, `more-horizontal`
+**Feedback:** `info`, `alert-triangle`, `alert-circle`, `check-circle`, `x-circle`
+**Layout:** `layout-dashboard`, `panel-left`, `panel-right`, `sidebar`, `grid-3x3`, `list`
+**Charts:** `bar-chart`, `pie-chart`, `trending-up`, `trending-down`, `activity`
+**Data:** `file`, `file-text`, `folder`, `save`, `clipboard`, `link`, `tag`
+**People:** `user`, `users`, `user-plus`, `shield`, `lock`, `key`
+**Commerce:** `credit-card`, `shopping-cart`, `dollar-sign`, `package`
+**Dev:** `code`, `terminal`, `database`, `moon`, `sun`, `bug`
+**Communication:** `send`, `message-square`, `heart`, `phone`, `mail`
+
+---
+
+## 14. Style / Config Relationship
+
+`decantr.config.json` declares the **build-time** default style (for CSS purging and static extraction). `setStyle()`/`setMode()` in `app.js` sets the **runtime** state. They serve different purposes but should match:
+```js
+// decantr.config.json: { "style": "auradecantism", "mode": "dark" }
+// app.js:
+setStyle('auradecantism');
+setMode('dark');
+```
+
+---
+
+## 15. Glossary (Wine Vocabulary → Implementation)
+
+| Term | Plain English | Maps To |
+|------|-------------|---------|
+| **Terroir** | Domain type | Archetype file in `registry/archetypes/` |
+| **Vintage** | Style + mode + recipe + shape bundle | Style object + `setStyle()`/`setMode()` + recipe JSON |
+| **Character** | Brand personality traits | Drives Clarity profile (spacing density) |
+| **Tannins** | Functional systems | Auth, search, payments, etc. |
+| **Blend** | Page layout arrangement | Array of pattern rows in essence structure |
+| **Essence** | Project DNA config | `decantr.essence.json` |
+| **Vessel** | App type | SPA/MPA/SSR, routing mode |
+| **Cork** | Anti-drift enforcement | Validation rules in essence |
+| **Clarity** | Whitespace/density layer | Spatial rules from Character traits |
+
+---
+
+## 16. Common Pitfalls
+
+### `text()` — use getter functions for reactivity
+```js
+// WORKS but NOT reactive — static string, won't update if item.label changes
+text(item.label)
+
+// CORRECT — getter function enables reactive updates
+text(() => item.label)
+```
+
+### `cond()` for conditional DOM, not function children
+```js
+// WRONG — returns "[object HTMLSpanElement]"
+div({}, () => show() ? span({}, 'Hello') : null)
+
+// CORRECT
+div({}, cond(() => show(), () => span({}, 'Hello')))
+```
+
+### DataTable `render` receives `(cellValue, row)`, not `(row)`
+```js
+// WRONG — val is the cell value, not the row
+columns: [{ key: 'status', render: (row) => Badge({}, row.status) }]
+
+// CORRECT — first arg is cell value, second is full row
+columns: [{ key: 'status', render: (val, row) => Badge({}, val) }]
+```
+
+### Don't pass router object to mount
+```js
+// WRONG
+mount(document.getElementById('app'), router);
+
+// CORRECT — call router.outlet() to get the reactive DOM element
+mount(document.getElementById('app'), () => router.outlet());
+```
+
+### Style import + registration required for add-on styles
+```js
+// WRONG — setStyle alone doesn't load the style
+setStyle('command-center');
+
+// CORRECT — import, register, then set
+import { commandCenter } from 'decantr/styles/command-center';
+registerStyle(commandCenter);
+setStyle('command-center');
 ```

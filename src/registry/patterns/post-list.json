@@ -3,7 +3,15 @@
   "id": "post-list",
   "name": "Post List",
   "description": "List of article preview cards with title, excerpt, author, date, and category. Used for blogs, news feeds, and content indexes.",
-  "components": ["Card", "Card.Body", "Avatar", "Badge", "Chip", "Pagination", "Button"],
+  "components": [
+    "Card",
+    "Card.Body",
+    "Avatar",
+    "Badge",
+    "Chip",
+    "Pagination",
+    "Button"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap4 _p4",
@@ -11,13 +19,6 @@
       "category-filter": "Optional row of Chip filters at top for filtering by topic",
       "posts": "Card list with each Card.Body containing title, excerpt, Avatar author, date Badge, and category Chip",
       "pagination": "Bottom pagination controls or load-more Button via _flex _justifyCenter"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-scanline",
-      "notes": "Category pills use cc-label. Post dates use cc-data. Featured posts get cc-glow border. List area uses cc-scanline."
     }
   },
   "code": {

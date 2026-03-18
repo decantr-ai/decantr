@@ -1,5 +1,7 @@
 test/
 docs/
+workbench/
+showcase/
 .claude/
 .git/
 .npmignore

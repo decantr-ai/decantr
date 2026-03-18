@@ -3,7 +3,14 @@
   "id": "scorecard",
   "name": "Scorecard",
   "description": "Grouped metric tracking grid for OKR, initiative, or performance review tracking. Rows grouped by category, each showing metric label, current value, target, progress bar, status badge, and optional owner.",
-  "components": ["DataTable", "Progress", "Badge", "Text", "Separator", "Avatar"],
+  "components": [
+    "DataTable",
+    "Progress",
+    "Badge",
+    "Text",
+    "Separator",
+    "Avatar"
+  ],
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap6 _p4",
@@ -12,13 +19,6 @@
       "groups": "Repeating group sections separated by Separator. Category heading (Text _heading5) + metric rows",
       "metric-row": "Each row: label, current value, target, Progress bar, delta Badge (ahead/behind), optional Avatar owner",
       "footer": "Overall score summary or aggregate progress"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-scanline",
-      "notes": "Group headers use cc-bar with cc-label. Metric values use cc-data. Behind-target rows get cc-glow warning. Progress bars use cc-bar."
     }
   },
   "code": {

@@ -3,7 +3,13 @@
   "id": "filter-bar",
   "name": "Filter Bar",
   "description": "Horizontal filter controls with search, dropdowns, date pickers, and active filter chips.",
-  "components": ["Input", "Select", "Button", "DatePicker", "Chip"],
+  "components": [
+    "Input",
+    "Select",
+    "Button",
+    "DatePicker",
+    "Chip"
+  ],
   "default_blend": {
     "layout": "row",
     "atoms": "_flex _gap3 _aic _wrap _py3",
@@ -12,18 +18,6 @@
       "filters": "Select dropdowns and DatePicker controls",
       "active-filters": "Chip list showing currently applied filters",
       "actions": "Clear-all or apply Button actions"
-    }
-  },
-  "recipe_overrides": {
-    "auradecantism": {
-      "wrapper": "",
-      "atoms": "d-glass _r4 _px4 _py2",
-      "notes": "Filter bar in glass strip. Active filter chips use primary color."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_borderB _pb3",
-      "notes": "Filter bar with bottom border. Simple, no background."
     }
   },
   "code": {

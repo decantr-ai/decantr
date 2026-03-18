@@ -4,30 +4,16 @@
   "name": "Chart Grid",
   "description": "Responsive grid of chart containers for data visualization dashboards. Charts use their own title prop — no Card wrapping.",
   "contained": false,
-  "components": ["Chart", "Select"],
+  "components": [
+    "Chart",
+    "Select"
+  ],
   "default_blend": {
     "layout": "grid",
     "atoms": "_grid _gc1 _md:gc2 _gap4 _p4",
     "slots": {
       "header": "Dashboard section title with _heading4 and time-range Select",
       "charts": "Array of Chart({ type }) instances (line, bar, pie, area) using the title prop directly"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-grid",
-      "notes": "Chart titles use cc-label. Axis labels use cc-data. Background gets cc-grid. Header uses cc-bar."
-    },
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4",
-      "notes": "Each chart in d-glass panel. Chart title uses d-gradient-text. Section background can use d-mesh."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_b1 _r4",
-      "notes": "Charts in simple bordered containers. Clean header with border-bottom divider."
     }
   },
   "code": {

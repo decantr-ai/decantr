@@ -3,12 +3,18 @@
   "id": "hero",
   "name": "Hero Section",
   "description": "Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages, recipe detail headers, and marketing sections.",
-  "components": ["Button", "icon"],
+  "components": [
+    "Button",
+    "icon"
+  ],
   "default_preset": "landing",
   "presets": {
     "landing": {
       "description": "Centered headline + CTA + optional media",
-      "components": ["Button", "icon"],
+      "components": [
+        "Button",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _flexCol _itemsCenter _textCenter _gap6 _py16 _px6",
@@ -26,7 +32,11 @@
     },
     "image-overlay": {
       "description": "Full-bleed image with gradient overlay, content at bottom. Used for recipe/cookbook detail headers.",
-      "components": ["Button", "Chip", "icon"],
+      "components": [
+        "Button",
+        "Chip",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_relative _wfull _h[400px] _overflow[hidden] _r4",
@@ -45,7 +55,13 @@
     },
     "brand": {
       "description": "Full-viewport centered hero with massive headline, animated decorations, and dual CTAs. Entry point for brand landing pages.",
-      "components": ["Button", "Badge", "Chip", "icon", "Image"],
+      "components": [
+        "Button",
+        "Badge",
+        "Chip",
+        "icon",
+        "Image"
+      ],
       "blend": {
         "layout": "hero",
         "atoms": "_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative",
@@ -65,7 +81,12 @@
     },
     "split": {
       "description": "Two-column hero: media/logo on one side, headline + description + CTAs on the other. Stacks vertically on mobile.",
-      "components": ["Button", "Badge", "icon", "Image"],
+      "components": [
+        "Button",
+        "Badge",
+        "icon",
+        "Image"
+      ],
       "blend": {
         "layout": "row",
         "atoms": "_grid _gc1 _lg:gc2 _gap8 _py24 _px6 _minh[100vh] _aic _relative",
@@ -85,7 +106,12 @@
     },
     "image-overlay-compact": {
       "description": "Compact full-bleed image with overlay for collection headers. Shorter height, fewer slots.",
-      "components": ["Button", "Badge", "Avatar", "icon"],
+      "components": [
+        "Button",
+        "Badge",
+        "Avatar",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_relative _wfull _h[300px] _overflow[hidden] _r4",
@@ -109,37 +135,6 @@
       "description": "Supporting paragraph with _body _muted",
       "cta-group": "Horizontal Button group with _flex _gap3",
       "media": "Optional image, illustration, or chart component"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-grid",
-      "notes": "Headline uses cc-label. CTA buttons get cc-glow on primary action. Background uses cc-grid overlay.",
-      "preset_notes": {
-        "image-overlay": "Hero image framed with cc-frame border. Tags use cc-label. Title uses cc-data.",
-        "image-overlay-compact": "Hero framed with cc-frame border. Title uses cc-data. Count badge uses cc-label."
-      }
-    },
-    "auradecantism": {
-      "wrapper": "d-mesh",
-      "atoms": "",
-      "notes": "Hero section on d-mesh background. Headline uses d-gradient-text. CTA button gets aura-glow.",
-      "preset_notes": {
-        "brand": "Full d-mesh bg with aura-orbs. Headline uses d-heading-display + d-gradient-text. Primary CTA gets aura-glow. Badge uses aura-shimmer.",
-        "split": "Full d-mesh bg with aura-orbs. Media slot uses ds-float + ds-logo-glow animation. Headline uses d-heading-display + d-gradient-text. Primary CTA gets aura-glow.",
-        "image-overlay": "Gradient overlay uses d-mesh tones. Title uses d-gradient-text. Subtle aura-glow on action buttons.",
-        "image-overlay-compact": "Gradient overlay blends into d-mesh tones. Title uses d-gradient-text."
-      }
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_bgmuted _r4",
-      "notes": "Hero on subtle muted background. No gradients or glass. Standard button styling.",
-      "preset_notes": {
-        "image-overlay": "Simple image with dark gradient overlay for text legibility. No extra effects.",
-        "image-overlay-compact": "Simple image with dark gradient overlay for text legibility."
-      }
     }
   },
   "code": {

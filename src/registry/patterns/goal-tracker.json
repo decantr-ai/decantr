@@ -3,7 +3,13 @@
   "id": "goal-tracker",
   "name": "Goal Tracker",
   "description": "Grid of metric cards comparing current values against targets. Each card shows label, current value, target value, variance (amount and percentage), progress indicator, and status badge (on-track/at-risk/behind).",
-  "components": ["Statistic", "Progress", "Badge", "icon", "Sparkline"],
+  "components": [
+    "Statistic",
+    "Progress",
+    "Badge",
+    "icon",
+    "Sparkline"
+  ],
   "default_blend": {
     "layout": "grid",
     "atoms": "_grid _gc3 _gap4 _p4",
@@ -11,13 +17,6 @@
       "header": "Section title with _heading4, optional period selector (Select or Segmented)",
       "cards": "Array of goal cards. Each card: Statistic (current), Progress (fraction toward target), Badge (on-track/at-risk/behind), variance display (delta amount + %), optional Sparkline for trend",
       "summary": "Optional aggregate row showing overall achievement rate"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-grid",
-      "notes": "Goal values use cc-data. Status badges use cc-glow for critical (behind) items. Progress bars get cc-bar. Header uses cc-bar with cc-label."
     }
   },
   "code": {

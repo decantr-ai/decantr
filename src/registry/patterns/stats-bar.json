@@ -3,12 +3,22 @@
   "id": "stats-bar",
   "name": "Stats Bar",
   "description": "Horizontal stats row showing key metrics with icon + label + value pairs and action buttons. Used for recipe details, project summaries, and content metadata.",
-  "components": ["Button", "Separator", "Badge", "icon"],
+  "components": [
+    "Button",
+    "Separator",
+    "Badge",
+    "icon"
+  ],
   "default_preset": "default",
   "presets": {
     "default": {
       "description": "Horizontal row of icon + label + value pairs with action buttons on the right.",
-      "components": ["Button", "Separator", "Badge", "icon"],
+      "components": [
+        "Button",
+        "Separator",
+        "Badge",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _aic _jcsb _gap4 _py3 _px4 _borderb _bordert",
@@ -29,23 +39,6 @@
     "slots": {
       "stats": "Horizontal row of icon + label + value pairs",
       "actions": "Action buttons"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-bar",
-      "atoms": "",
-      "notes": "Stats use cc-data styling. Action buttons use cc-glow. Badge uses cc-label."
-    },
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4",
-      "notes": "Stats bar on glass background. Values use d-gradient-text for emphasis."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_bgmuted _r4",
-      "notes": "Simple bordered stats row on muted background. Standard icon + text pairs."
     }
   },
   "code": {

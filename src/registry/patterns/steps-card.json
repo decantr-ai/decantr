@@ -3,12 +3,24 @@
   "id": "steps-card",
   "name": "Steps Card",
   "description": "Numbered step-by-step instructions displayed in a Card. Each step has a circle number badge, text content, and optional timer/metadata.",
-  "components": ["Card", "Card.Header", "Card.Body", "Badge", "icon"],
+  "components": [
+    "Card",
+    "Card.Header",
+    "Card.Body",
+    "Badge",
+    "icon"
+  ],
   "default_preset": "default",
   "presets": {
     "default": {
       "description": "Ordered list of steps, each with circle Badge number, text, and optional timer.",
-      "components": ["Card", "Card.Header", "Card.Body", "Badge", "icon"],
+      "components": [
+        "Card",
+        "Card.Header",
+        "Card.Body",
+        "Badge",
+        "icon"
+      ],
       "blend": {
         "layout": "stack",
         "atoms": "_flex _col _gap0",
@@ -29,23 +41,6 @@
     "slots": {
       "header": "Card.Header with title and step count",
       "steps": "Ordered list of steps with numbered badges"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame-sm",
-      "atoms": "",
-      "notes": "Card uses cc-frame-sm. Step badges use cc-glow. Timer indicators use cc-data."
-    },
-    "auradecantism": {
-      "wrapper": "d-glass",
-      "atoms": "_r4",
-      "notes": "Card on glass background. Step numbers use d-gradient-text. Active step highlighted."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "_b1 _r4",
-      "notes": "Simple bordered card. Circle number badges with muted background."
     }
   },
   "code": {

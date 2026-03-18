@@ -51,6 +51,22 @@ export function configJson(name) {
   }, null, 2);
 }
 
+export function registryJson() {
+  return JSON.stringify({
+    $schema: 'https://registry.decantr.dev/schemas/manifest.v1.json',
+    version: '1.0.0',
+    registry: 'https://registry.decantr.dev/v1',
+    installed: {
+      styles: {},
+      recipes: {},
+      patterns: {},
+      archetypes: {},
+      plugins: {},
+      templates: {},
+    },
+  }, null, 2);
+}
+
 export function indexHtml(name) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -85,7 +101,18 @@ Built with [decantr](https://decantr.ai) v${VERSION} — AI-first web framework.
 
 ## Quick Start
 
-**Read this first:** \`node_modules/decantr/reference/llm-primer.md\` — single-file guide with all imports, top atoms with Tailwind equivalences, component signatures, Chart API, skeleton code, and pattern examples. This covers 80% of code generation needs.
+**Read the right context for your task:**
+
+| Task | Context File |
+|------|-------------|
+| Create new project | \`node_modules/decantr/llm/task-init.md\` |
+| Add/modify a page | \`node_modules/decantr/llm/task-page.md\` |
+| Create/modify component | \`node_modules/decantr/llm/task-component.md\` |
+| Change styles/themes | \`node_modules/decantr/llm/task-style.md\` |
+| Debug issues | \`node_modules/decantr/llm/task-debug.md\` |
+| Refactor / fix drift | \`node_modules/decantr/llm/task-refactor.md\` |
+
+Each profile is 8-24k tokens (vs. 120k+ reading everything). Read ONE profile per task.
 
 ## Project Structure
 
@@ -97,37 +124,20 @@ Built with [decantr](https://decantr.ai) v${VERSION} — AI-first web framework.
 - \`decantr.essence.json\` — Project DNA (generated during Decantation Process)
 - \`AGENTS.md\` — Framework translation layer (read this for API equivalences)
 
-## The Decantation Process
+## Recommended Workflow (Generate-First)
 
-Follow this process for ALL new projects and major feature additions:
+The fastest path to a working app:
 
-### Stage 1: POUR — User expresses intent in natural language
-### Stage 2: SETTLE — Decompose into five layers:
-- **Terroir**: Domain archetype → read \`node_modules/decantr/src/registry/archetypes/\`
-- **Vintage**: Style + mode + recipe → read \`node_modules/decantr/src/registry/recipe-*.json\`
-- **Character**: Brand personality traits (e.g. "tactical", "minimal", "playful")
-- **Structure**: Page/view map with skeleton assignments
-- **Tannins**: Functional systems (auth, search, payments, etc.)
-### Stage 3: CLARIFY — Write \`decantr.essence.json\` and confirm with user
-### Stage 4: DECANT — Resolve each page's Blend (spatial arrangement)
-Read the archetype's \`default_blend\` for each page. Copy into the Essence's \`blend\` array, then customize.
+1. **POUR** — Tell your AI what you want in natural language
+2. **CLARIFY** — AI writes \`decantr.essence.json\` (see schema below)
+3. **GENERATE** — Run \`npx decantr generate\` to scaffold all pages instantly (zero tokens, correct Shell/recipe/routing)
+4. **CUSTOMIZE** — AI modifies the generated code incrementally
 
-**Blend format**: Each \`blend\` is an ordered array of rows:
-- \`"pattern-id"\` — full-width pattern row
-- \`{ "cols": ["a", "b"], "at": "lg" }\` — equal-width side-by-side, collapse below \`lg\`
-- \`{ "cols": ["a", "b"], "span": { "a": 3 }, "at": "md" }\` — weighted columns (a=3fr, b=1fr)
+This path takes ~2-3 minutes vs. ~15 minutes of manual code generation. The generate engine handles Shell layout, recipe decoration, Clarity spacing, Card wrapping, and import deduplication automatically.
 
-Optional \`surface\` on each structure entry sets page container atoms (default: \`_flex _col _gap4 _p4 _overflow[auto] _flex1\`).
+### Manual Path (Alternative)
 
-### Stage 5: SERVE — Generate code from Blend specs
-For each page, read its \`blend\` array and apply:
-1. Create page container with \`surface\` atoms
-2. String rows → full-width pattern (use pattern's \`default_blend.atoms\`)
-3. \`{ cols }\` rows → \`_grid _gc{N} _gap4\` wrapper, collapse below \`at\` breakpoint
-4. \`{ cols, span }\` rows → \`_gc{total}\` grid, each pattern gets \`_span{weight}\`
-5. Apply recipe wrappers per \`recipe_overrides\`
-
-### Ongoing: AGE — Read Essence before every change. Guard against drift.
+For full control, follow the 5-stage Decantation Process documented in \`node_modules/decantr/reference/llm-primer.md\` and the framework's CLAUDE.md.
 
 ### Cork Rules (Anti-Drift)
 Before writing ANY code, read \`decantr.essence.json\`. Verify:
@@ -140,7 +150,7 @@ If a request conflicts with the Essence, flag the conflict and ask for confirmat
 
 ## Essence Schema
 
-You MUST create \`decantr.essence.json\` during CLARIFY. Do NOT proceed to DECANT without it.
+You MUST create \`decantr.essence.json\` during CLARIFY. Do NOT proceed to GENERATE without it.
 
 **Simple (single domain):**
 \`\`\`json

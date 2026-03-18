@@ -11,54 +11,11 @@
  *   npx decantr migrate --target=0.5.0
  */
 
-import { readFile, writeFile, copyFile, readdir } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { readFile, writeFile, copyFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { fileURLToPath } from 'node:url';
 import { success, info, heading } from '../art.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const MIGRATIONS_DIR = join(__dirname, '..', '..', 'tools', 'migrations');
-
-/**
- * Compare two semver strings. Returns -1, 0, or 1.
- */
-function compareSemver(a, b) {
-  const pa = a.split('.').map(Number);
-  const pb = b.split('.').map(Number);
-  for (let i = 0; i < 3; i++) {
-    if (pa[i] < pb[i]) return -1;
-    if (pa[i] > pb[i]) return 1;
-  }
-  return 0;
-}
-
-/**
- * Load all migration modules from tools/migrations/ in semver order.
- * Each module exports { version: string, migrate: (essence) => essence }.
- */
-async function loadMigrations() {
-  let files;
-  try {
-    files = await readdir(MIGRATIONS_DIR);
-  } catch {
-    return [];
-  }
-
-  const jsFiles = files
-    .filter(f => /^\d+\.\d+\.\d+\.js$/.test(f))
-    .sort((a, b) => compareSemver(a.replace('.js', ''), b.replace('.js', '')));
-
-  const migrations = [];
-  for (const file of jsFiles) {
-    const mod = await import(join(MIGRATIONS_DIR, file));
-    if (mod.version && typeof mod.migrate === 'function') {
-      migrations.push({ version: mod.version, migrate: mod.migrate, file });
-    }
-  }
-
-  return migrations;
-}
+import { compareSemver, loadMigrations } from '../../tools/migration-utils.js';
 
 export async function run() {
   const { values } = parseArgs({
@@ -171,5 +128,6 @@ export async function run() {
   await writeFile(essencePath, output, 'utf-8');
 
   console.log(`  ${success(`Migrated to ${result.version}.`)}`);
-  console.log(`\n  ${applicable.length} migration(s) applied successfully.\n`);
+  console.log(`\n  ${applicable.length} migration(s) applied successfully.`);
+  console.log(`\n  ${info('Tip: `decantr age` provides a more complete upgrade experience including config migration and AI-assisted source updates.')}\n`);
 }

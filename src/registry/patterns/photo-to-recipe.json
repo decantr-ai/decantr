@@ -3,30 +3,22 @@
   "id": "photo-to-recipe",
   "name": "Photo to Recipe",
   "description": "Two-column AI generation layout: left column has a photo upload dropzone, right column displays AI-generated recipe output with title, ingredients, and instructions. Used for AI-powered recipe extraction from food photos.",
-  "components": ["Card", "Card.Header", "Card.Body", "Upload", "Button", "Spinner", "Separator", "icon"],
+  "components": [
+    "Card",
+    "Card.Header",
+    "Card.Body",
+    "Upload",
+    "Button",
+    "Spinner",
+    "Separator",
+    "icon"
+  ],
   "default_blend": {
     "layout": "grid",
     "atoms": "_grid _gc2 _gap6 _p4 _aic",
     "slots": {
       "upload": "Left column: Upload dropzone with image preview, analyze Button",
       "output": "Right column: Card showing AI-generated recipe with title, ingredients list, instructions, and 'Save Recipe' action"
-    }
-  },
-  "recipe_overrides": {
-    "command-center": {
-      "wrapper": "cc-frame",
-      "atoms": "cc-grid",
-      "notes": "Upload zone uses cc-frame-sm. AI output card uses cc-frame-sm with cc-data for generated text. Analyze button uses cc-glow."
-    },
-    "auradecantism": {
-      "wrapper": "d-mesh",
-      "atoms": "",
-      "notes": "Upload dropzone on d-glass. Output card on d-glass. AI badge uses d-gradient-text."
-    },
-    "clean": {
-      "wrapper": "",
-      "atoms": "",
-      "notes": "Standard two-column layout with bordered cards. Clean upload dropzone."
     }
   },
   "code": {
