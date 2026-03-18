@@ -244,11 +244,13 @@ describe('Dead Branch Elimination', () => {
     assert.ok(!result.includes('const removed = 2'));
   });
 
-  it('removes code after return in block', () => {
+  it('preserves code after return (Pattern 4 removed — unsafe with string literals)', () => {
     const source = `function f() {\n  return 1;\n  const dead = 2;\n}`;
     const result = eliminateDeadBranches(source);
     assert.ok(result.includes('return 1;'));
-    assert.ok(!result.includes('const dead = 2'));
+    // Pattern 4 (dead code after return) was removed because regex-based approach
+    // cannot safely handle string literals containing semicolons (e.g. '&amp;')
+    assert.ok(result.includes('const dead = 2'));
   });
 
   it('preserves if (someVar) unchanged', () => {
@@ -306,6 +308,66 @@ describe('Scope Hoisting', () => {
   it('module with this inside function body IS hoistable', () => {
     const source = `function MyComponent() {\n  this.x = 1;\n}`;
     assert.equal(canHoist(source), true);
+  });
+  it('filters duplicate declarations when barrel re-exports hoisted names', async () => {
+    // Simulate the bug: module A exports `let currentEffect` and `function batch`,
+    // module B (barrel) re-exports them. Both are scope-hoisted → collision.
+    const { build } = await import('../tools/builder.js');
+    const fs = await import('fs');
+    const path = await import('path');
+    const os = await import('os');
+
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'decantr-hoist-'));
+    const srcDir = path.join(tmp, 'src');
+    fs.mkdirSync(srcDir);
+
+    // Module A: source module with let + function exports
+    fs.writeFileSync(path.join(srcDir, 'scheduler.js'),
+      `let currentEffect = null;\nfunction batch(fn) { fn(); }\nexport { currentEffect, batch };\n`
+    );
+    // Module B: barrel re-export
+    fs.writeFileSync(path.join(srcDir, 'index.js'),
+      `export { currentEffect, batch } from './scheduler.js';\n`
+    );
+    // Entry that imports from barrel
+    fs.writeFileSync(path.join(srcDir, 'app.js'),
+      `import { currentEffect, batch } from './index.js';\nconsole.log(currentEffect, batch);\n`
+    );
+
+    await build(tmp, {
+      sourcemap: false,
+      analyze: false,
+      incremental: false,
+      codeSplit: false,
+      purgeCSS: false,
+      treeShake: false,
+    });
+
+    // Read the built JS from the output directory
+    const assetsDir = path.join(tmp, 'dist', 'assets');
+    const jsFiles = fs.readdirSync(assetsDir).filter(f => f.endsWith('.js'));
+    assert.ok(jsFiles.length > 0, 'Expected at least one JS output file');
+    const bundleOutput = fs.readFileSync(path.join(assetsDir, jsFiles[0]), 'utf-8');
+
+    // The bundle must parse without SyntaxError (the original bug was a duplicate declaration)
+    assert.doesNotThrow(() => new Function(bundleOutput), 'Bundle should parse without SyntaxError');
+
+    // The barrel (hoisted) should NOT have a destructuring that re-declares currentEffect at bundle scope.
+    // Barrel module object should reference the hoisted var directly, not destructure it.
+    // Only the IIFE-wrapped modules may destructure from module objects.
+    // Check: no `const {currentEffect...} = _mN;` outside of IIFE wrappers
+    const iifeStripped = bundleOutput.replace(/\(function\(\)\{[\s\S]*?return\s*\{[\s\S]*?\}\s*;?\s*\}\)\(\)/g, '');
+    const topLevelDestructs = iifeStripped.match(/const\s*\{[^}]*currentEffect[^}]*\}\s*=\s*_m\d+/g) || [];
+    assert.equal(topLevelDestructs.length, 0,
+      `Expected no top-level destructuring of currentEffect (barrel should be filtered), found: ${topLevelDestructs.join(', ')}`
+    );
+
+    // The bundle should still reference batch and currentEffect
+    assert.ok(bundleOutput.includes('batch'), 'batch should be referenced in bundle');
+    assert.ok(bundleOutput.includes('currentEffect'), 'currentEffect should be referenced in bundle');
+
+    // Clean up
+    fs.rmSync(tmp, { recursive: true, force: true });
   });
 });
 

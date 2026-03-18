@@ -256,6 +256,7 @@ function bundle(modules, entrypoint, opts = {}) {
   let outputLine = 1; // start after IIFE wrapper
 
   let totalTreeShaken = 0;
+  const hoistedNames = new Set();
 
   for (const [path, source] of moduleList) {
     const id = moduleIds.get(path);
@@ -365,9 +366,76 @@ function bundle(modules, entrypoint, opts = {}) {
 
     // Scope hoisting: for eligible modules, emit declarations directly without IIFE wrapper
     let moduleCode;
-    const isHoistable = !circular.has(path) && canHoist(processedSource) && exportedNames.length > 0;
+    let isHoistable = !circular.has(path) && canHoist(processedSource) && exportedNames.length > 0;
+
     if (isHoistable) {
+      // Extract all names this module would declare at top scope
+      const moduleNames = new Set();
+      // Simple declarations: let/const/var name, function name
+      const simpleDeclRegex = /(?:^|[;\n])\s*(?:let|const|var)\s+(\w+)|(?:^|[;\n])\s*function\s+(\w+)/g;
+      let dm;
+      while ((dm = simpleDeclRegex.exec(processed)) !== null) {
+        const name = dm[1] || dm[2];
+        if (name && !name.startsWith('_m')) moduleNames.add(name);
+      }
+      // Destructuring bindings: const { a, b } = expr;
+      for (const dm of processed.matchAll(/const\s*\{([^}]+)\}\s*=\s*\w+;/g)) {
+        dm[1].split(',').forEach(b => {
+          const localName = b.trim().split(/\s*:\s*/).pop().trim();
+          if (localName) moduleNames.add(localName);
+        });
+      }
+
+      // Check for name conflicts with already-hoisted modules.
+      // Import/re-export destructurings from _mN can be safely filtered (the variable
+      // is already in scope from the source module). Other conflicts → fall back to IIFE.
+      let hasNonFilterableConflict = false;
+      for (const name of moduleNames) {
+        if (!hoistedNames.has(name)) continue;
+        // Check if this name comes ONLY from _mN destructurings (safe to filter)
+        const inModuleDestructRe = new RegExp(`const\\s*\\{[^}]*\\b${name}\\b[^}]*\\}\\s*=\\s*_m\\d+;`);
+        if (!inModuleDestructRe.test(processed)) {
+          hasNonFilterableConflict = true;
+          break;
+        }
+      }
+
+      if (hasNonFilterableConflict) {
+        isHoistable = false;
+      }
+    }
+
+    if (isHoistable) {
+      // Filter import/re-export destructurings that would collide with already-hoisted names
+      processed = processed.replace(
+        /const\s*\{([^}]+)\}\s*=\s*(_m\d+);/g,
+        (match, bindings, modRef) => {
+          const filtered = bindings.split(',')
+            .map(b => b.trim())
+            .filter(b => {
+              const localName = b.split(/\s*:\s*/).pop().trim();
+              return !hoistedNames.has(localName);
+            });
+          if (filtered.length === 0) return '';
+          return `const {${filtered.join(',')}} = ${modRef};`;
+        }
+      );
+
       moduleCode = `${processed}\nconst ${id} = {${exportedNames.join(',')}};\n\n`;
+
+      // Track ALL names this hoisted module introduces at bundle scope
+      const simpleDeclRegex2 = /(?:^|[;\n])\s*(?:let|const|var)\s+(\w+)|(?:^|[;\n])\s*function\s+(\w+)/g;
+      let dm;
+      while ((dm = simpleDeclRegex2.exec(processed)) !== null) {
+        const name = dm[1] || dm[2];
+        if (name && !name.startsWith('_m')) hoistedNames.add(name);
+      }
+      for (const dm of processed.matchAll(/const\s*\{([^}]+)\}\s*=\s*\w+;/g)) {
+        dm[1].split(',').forEach(b => {
+          const localName = b.trim().split(/\s*:\s*/).pop().trim();
+          if (localName) hoistedNames.add(localName);
+        });
+      }
     } else {
       moduleCode = `const ${id} = (function(){\n${processed}\nreturn {${exportedNames.join(',')}};\n})();\n\n`;
     }
@@ -661,17 +729,10 @@ export function eliminateDeadBranches(source) {
     }
   }
 
-  // Pattern 4: Unreachable code after return/throw within brace-delimited blocks
-  // Match return or throw statements followed by code before the closing brace
-  result = result.replace(
-    /(\b(?:return|throw)\s[^;]*;)([^}]*?)(\n\s*\})/g,
-    (match, returnStmt, deadCode, closingBrace) => {
-      // Only remove if the dead code contains actual statements (not just whitespace/comments)
-      const stripped = deadCode.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '').trim();
-      if (!stripped) return match; // nothing to remove
-      return returnStmt + closingBrace;
-    }
-  );
+  // Pattern 4 (dead code after return/throw) removed — regex-based approach cannot
+  // safely handle string literals containing semicolons (e.g. '&amp;'), regex literals,
+  // or multi-line expressions. The savings are negligible and the risk of corrupting
+  // valid code is too high.
 
   return result;
 }
