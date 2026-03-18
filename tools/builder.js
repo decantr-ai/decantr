@@ -432,12 +432,19 @@ function resolveSpecifier(specifier, fromPath) {
  * Tree-shake icon data: scan bundled output for icon('name') calls,
  * then rewrite ESSENTIAL and EXTENDED objects to only include referenced icons.
  */
-function treeShakeIcons(bundled) {
+function treeShakeIcons(bundled, allModuleSources) {
   const usedIcons = new Set();
+  // Match direct icon() calls: icon('name') / icon('name', opts)
   const iconCallRe = /icon\(\s*['"]([a-z][a-z0-9-]*)['"](?:\s*[,)])/g;
-  let m;
-  while ((m = iconCallRe.exec(bundled)) !== null) {
-    usedIcons.add(m[1]);
+  // Match icon props in object literals: icon: 'name' / icon:'name' / 'icon':'name'
+  const iconPropRe = /\bicon['"]?\s*:\s*['"]([a-z][a-z0-9-]*)['"]/g;
+
+  // Scan main bundle + all module sources (including chunks)
+  const sources = allModuleSources ? [bundled, ...allModuleSources] : [bundled];
+  for (const src of sources) {
+    let m;
+    while ((m = iconCallRe.exec(src)) !== null) usedIcons.add(m[1]);
+    while ((m = iconPropRe.exec(src)) !== null) usedIcons.add(m[1]);
   }
 
   if (usedIcons.size === 0) return bundled;
@@ -1173,7 +1180,7 @@ export async function build(projectRoot, options = {}) {
 
   // Tree-shake icons
   console.log('  Tree-shaking icons...');
-  let processedBundle = treeShakeIcons(bundled);
+  let processedBundle = treeShakeIcons(bundled, [...modules.values()]);
 
   // Code splitting: detect dynamic imports and create chunks
   /** @type {Map<string, string>} specifier → chunkFilename */

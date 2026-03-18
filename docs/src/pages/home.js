@@ -77,12 +77,12 @@ function LogoStripSection() {
 // ─── Section 4: Feature Grid (card-grid:icon) ────────────────────
 function FeatureGrid() {
   const features = [
-    { ic: 'zap', title: 'Signal Reactivity', desc: 'Fine-grained reactive primitives. No virtual DOM overhead — updates exactly what changed.' },
-    { ic: 'layers', title: '100+ Components', desc: 'From buttons to data tables, every component you need — zero dependencies required.' },
-    { ic: 'palette', title: 'Atomic CSS', desc: 'Utility-first atoms resolve at build time. Tree-shaken, purged, and compressed to <13KB.' },
-    { ic: 'moon', title: 'Dark Mode First', desc: 'Auradecantism dark mode by default. 10 style themes with light/dark/auto modes.' },
-    { ic: 'code', title: 'AI-First DX', desc: 'Designed for LLM code generation. Registry-driven patterns and archetypes for instant scaffolding.' },
-    { ic: 'shield', title: 'Enterprise Ready', desc: 'WCAG AA contrast validation, route guards, form validation, error boundaries, and more.' },
+    { icon: 'zap', title: 'Signal Reactivity', desc: 'Fine-grained reactive primitives. No virtual DOM overhead — updates exactly what changed.' },
+    { icon: 'layers', title: '100+ Components', desc: 'From buttons to data tables, every component you need — zero dependencies required.' },
+    { icon: 'palette', title: 'Atomic CSS', desc: 'Utility-first atoms resolve at build time. Tree-shaken, purged, and compressed to <13KB.' },
+    { icon: 'moon', title: 'Dark Mode First', desc: 'Auradecantism dark mode by default. 10 style themes with light/dark/auto modes.' },
+    { icon: 'code', title: 'AI-First DX', desc: 'Designed for LLM code generation. Registry-driven patterns and archetypes for instant scaffolding.' },
+    { icon: 'shield', title: 'Enterprise Ready', desc: 'WCAG AA contrast validation, route guards, form validation, error boundaries, and more.' },
   ];
 
   const el = section({ class: css('_flex _col _gap8 _py24 _px6 _aic') },
@@ -96,7 +96,7 @@ function FeatureGrid() {
           Card.Body({},
             div({ class: css('_flex _aic _gap3 _mb2') },
               div({ class: css('_w[40px] _h[40px] _r[12px] _bgprimary/10 _flex _aic _jcc _fgprimary') },
-                icon(f.ic)
+                icon(f.icon)
               ),
               h3({ class: css('_heading4') }, f.title)
             ),
