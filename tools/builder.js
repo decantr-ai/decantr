@@ -859,8 +859,10 @@ function pruneComponentCSS(source, usedKeys) {
   if (mapStart === -1 || mapEnd === -1) return source;
 
   const header = source.slice(0, mapStart + 'export const componentCSSMap = {\n'.length);
-  const mapBody = source.slice(header.length, mapEnd);
-  const footer = source.slice(mapEnd);
+  // Strip the closing }; from mapBody so it isn't lost when the last section is pruned
+  const closingBraceIdx = source.lastIndexOf('};', mapEnd);
+  const mapBody = source.slice(header.length, closingBraceIdx);
+  const footer = source.slice(closingBraceIdx);
 
   // Split by section separator comments (═══)
   const sections = mapBody.split(/(?=\s*\/\/ ═{3,})/);
