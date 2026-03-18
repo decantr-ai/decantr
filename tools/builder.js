@@ -259,6 +259,13 @@ function bundle(modules, entrypoint, opts = {}) {
   for (const [path, source] of moduleList) {
     const id = moduleIds.get(path);
 
+    // External modules (shared with main bundle) — emit a simple alias
+    if (opts.externals && opts.externals.has(path)) {
+      output += `const ${id}=${opts.externals.get(path)};\n`;
+      outputLine++;
+      continue;
+    }
+
     // Find exported names from original source (before tree shaking)
     const exportedNames = extractExportedNames(source);
 
@@ -322,7 +329,7 @@ function bundle(modules, entrypoint, opts = {}) {
           const parts = n.trim().split(/\s+as\s+/);
           const imported = parts[0].trim();
           const local = (parts[1] || imported).trim();
-          return local === imported ? `${local}` : `${local}: ${imported}`;
+          return local === imported ? `${local}` : `${imported}: ${local}`;
         }).filter(b => {
           const name = b.split(/\s*:\s*/)[0].trim();
           return !declaredNames.has(name);
@@ -385,7 +392,7 @@ function bundle(modules, entrypoint, opts = {}) {
     sourcemap = generateSourceMap(mappings, modules);
   }
 
-  return { code: output, sourcemap };
+  return { code: output, sourcemap, moduleIds };
 }
 
 /**
@@ -611,10 +618,9 @@ async function resolveChunks(mainModules, projectRoot) {
     if (chunks.has(chunkName)) continue;
 
     const chunkModules = await resolveModules(entryPath);
-    // Remove modules already in main bundle (shared code stays in main)
-    for (const path of chunkModules.keys()) {
-      if (mainModules.has(path)) chunkModules.delete(path);
-    }
+    // Shared modules are kept in the map so dependency resolution works;
+    // the build step marks them as externals so chunks alias them from
+    // window.__decantrShared instead of duplicating the code.
 
     if (chunkModules.size > 0) {
       chunks.set(chunkName, chunkModules);
@@ -1160,7 +1166,7 @@ export async function build(projectRoot, options = {}) {
 
   // Bundle (with tree shaking)
   console.log('  Bundling...');
-  const { code: bundled, sourcemap: rawSourcemap } = bundle(modules, entrypoint, {
+  const { code: bundled, sourcemap: rawSourcemap, moduleIds: mainModuleIds } = bundle(modules, entrypoint, {
     sourcemap: enableSourcemap,
     treeShake: enableTreeShake
   });
@@ -1179,8 +1185,23 @@ export async function build(projectRoot, options = {}) {
     const chunks = await resolveChunks(modules, projectRoot);
 
     if (chunks.size > 0) {
+      // Expose main bundle modules for chunks to reference
+      const sharedIds = [...mainModuleIds.values()].join(',');
+      processedBundle = processedBundle.replace(
+        /\}\)\(\);\s*$/,
+        `window.__decantrShared={${sharedIds}};\n})();\n`
+      );
+
       for (const [chunkName, chunkModules] of chunks) {
-        const { code: chunkCode } = bundle(chunkModules, '', { treeShake: enableTreeShake });
+        // Build externals map: shared modules alias from the global registry
+        const externals = new Map();
+        for (const path of chunkModules.keys()) {
+          if (mainModuleIds.has(path)) {
+            externals.set(path, `window.__decantrShared.${mainModuleIds.get(path)}`);
+          }
+        }
+
+        const { code: chunkCode } = bundle(chunkModules, '', { treeShake: enableTreeShake, externals });
         // Wrap chunk to expose its module as window.__decantrChunk
         const wrappedChunk = `window.__decantrChunk=${chunkCode.replace(/^\(function\(\)\{\n/, '(function(){').replace(/\}\)\(\);\n$/, '})()')};\n`;
         const minifiedChunk = minify(wrappedChunk);
