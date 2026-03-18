@@ -34,12 +34,14 @@ function ensureStyleEl() {
 function buildDataUri(inner, weight, filled) {
   const isFillBased = /fill=["'](?!none["'])/.test(inner);
   if (isFillBased) {
-    return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='black' stroke='none'>${inner}</svg>`)}")`;
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='black' stroke='none'>" + inner + "</svg>";
+    return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
   }
-  const fillAttr = filled ? `fill='black'` : `fill='none'`;
+  const fillAttr = filled ? "fill='black'" : "fill='none'";
   const sw = weight != null ? weight : 2;
-  const attrs = `${fillAttr} stroke='black' stroke-width='${sw}' stroke-linecap='round' stroke-linejoin='round'`;
-  return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' ${attrs}>${inner}</svg>`)}")`;
+  const attrs = fillAttr + " stroke='black' stroke-width='" + sw + "' stroke-linecap='round' stroke-linejoin='round'";
+  const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' " + attrs + ">" + inner + "</svg>";
+  return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
 }
 
 function injectIconCSS(name, inner, weight, filled) {
