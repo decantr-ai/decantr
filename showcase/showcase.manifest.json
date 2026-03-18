@@ -1,0 +1,44 @@
+{
+  "showcases": [
+    {
+      "id": "saas-dashboard",
+      "title": "SaaS Dashboard",
+      "description": "Analytics dashboard with KPI cards, data tables, charts, and real-time data. Built from the saas-dashboard archetype.",
+      "archetype": "saas-dashboard",
+      "style": "command-center",
+      "mode": "dark",
+      "tags": ["KPIs", "Charts", "Data Table", "Sidebar"],
+      "status": "live"
+    },
+    {
+      "id": "gaming-platform",
+      "title": "Gaming Platform",
+      "description": "Guild hub with leaderboards, news feed, member profiles, and game collections. Built from the gaming-platform archetype.",
+      "archetype": "gaming-platform",
+      "style": "gaming-guild",
+      "mode": "dark",
+      "tags": ["Leaderboard", "Cards", "Hero", "Sidebar"],
+      "status": "live"
+    },
+    {
+      "id": "portfolio",
+      "title": "Portfolio",
+      "description": "Full-bleed brand landing page with hero, feature grid, testimonials, and showcase gallery. Built from the portfolio archetype.",
+      "archetype": "portfolio",
+      "style": "auradecantism",
+      "mode": "dark",
+      "tags": ["Hero", "Gallery", "Stats", "Full-Bleed"],
+      "status": "live"
+    },
+    {
+      "id": "creative-tool",
+      "title": "Creative Tool",
+      "description": "Color palette generator with workspace, explore gallery, and palette detail views. Built from the creative-tool archetype.",
+      "archetype": "creative-tool",
+      "style": "clay",
+      "mode": "light",
+      "tags": ["Workspace", "Gallery", "Filters", "Detail"],
+      "status": "live"
+    }
+  ]
+}

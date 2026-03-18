@@ -7,6 +7,7 @@ import {
   Avatar, CodeBlock, Marquee, BrowserFrame,
   icon, createHighlighter, createScrollReveal
 } from 'decantr/components';
+import showcaseManifest from '../../../showcase/showcase.manifest.json';
 
 const { div, h1, h2, h3, p, span, a, section, footer, img } = tags;
 
@@ -212,33 +213,29 @@ function TestimonialWall() {
 
 // ─── Section 8: Showcase Gallery ─────────────────────────────────
 function ShowcaseGallery() {
-  const items = [
-    { title: 'SaaS Dashboard', url: 'dashboard.decantr.ai', desc: 'Command-center style analytics dashboard' },
-    { title: 'E-Commerce Store', url: 'shop.decantr.ai', desc: 'Product catalog with cart and checkout' },
-    { title: 'Developer Docs', url: 'docs.decantr.ai', desc: 'Full documentation site with search' },
-    { title: 'Blog Platform', url: 'blog.decantr.ai', desc: 'Content-first blog with dark mode' },
-    { title: 'Portfolio Site', url: 'portfolio.decantr.ai', desc: 'Personal brand landing page' },
-    { title: 'Admin Panel', url: 'admin.decantr.ai', desc: 'Data management with CRUD tables' },
-  ];
+  const items = showcaseManifest.showcases.filter(s => s.status === 'live');
 
   return section({ class: css('_flex _col _gap8 _py24 _px6 _aic') },
     div({ class: css('_tc') },
       h2({ class: css('_heading2 d-gradient-text _mb3') }, 'Built with Decantr'),
       p({ class: css('_body _fgmuted') }, 'See what developers are creating')
     ),
-    div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6 _mw[1100px] _wfull') },
+    div({ class: css('_grid _gc1 _md:gc2 _gap6 _mw[1100px] _wfull') },
       ...items.map(item =>
-        div({ class: css('_trans[transform_0.3s_ease] _h:scale[1.03]') },
-          BrowserFrame({ url: item.url },
+        a({ href: `/showcase/${item.id}/`, target: '_blank', rel: 'noopener', class: css('_nounder _trans[transform_0.3s_ease] _h:scale[1.03]') },
+          BrowserFrame({ url: `decantr.ai/showcase/${item.id}` },
             div({ class: css('_h[200px] _bgmuted _flex _aic _jcc _fgmuted') },
               div({ class: css('_tc _p4') },
                 h3({ class: css('_heading4 _fgfg _mb2') }, item.title),
-                p({ class: css('_textsm _fgmuted') }, item.desc)
+                p({ class: css('_textsm _fgmuted') }, item.description)
               )
             )
           )
         )
       )
+    ),
+    a({ href: '#/gallery', class: css('_nounder') },
+      Button({ variant: 'outline' }, 'View All Showcases', icon('arrow-right'))
     )
   );
 }

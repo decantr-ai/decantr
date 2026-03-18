@@ -6,6 +6,7 @@ on:
     paths:
       - 'docs/**'
       - 'src/registry/**'
+      - 'showcase/**'
 
 permissions:
   contents: read
@@ -33,6 +34,20 @@ jobs:
       - name: Build docs site
         run: npx decantr build
         working-directory: docs
+
+      - name: Build showcases
+        run: |
+          for dir in showcase/*/; do
+            id=$(basename "$dir")
+            echo "::group::Building showcase: $id"
+            (cd "$dir" && npm install && npx decantr build)
+            mkdir -p docs/dist/showcase/$id
+            cp -r "$dir/dist/"* docs/dist/showcase/$id/
+            echo "::endgroup::"
+          done
+          mkdir -p docs/dist/showcase/shared
+          cp showcase/showcase.manifest.json docs/dist/showcase/manifest.json
+          cp showcase/shared/showcase-nav.js docs/dist/showcase/shared/showcase-nav.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

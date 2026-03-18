@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#faf5ff"/>
+
+  <!-- Decorative blobs -->
+  <circle cx="200" cy="150" r="120" fill="#a78bfa" opacity="0.08"/>
+  <circle cx="1000" cy="480" r="160" fill="#a78bfa" opacity="0.06"/>
+
+  <!-- Left tools panel -->
+  <rect x="40" y="40" width="60" height="550" rx="12" fill="#f0e7ff" stroke="#a78bfa" stroke-opacity="0.2" stroke-width="1"/>
+  <rect x="52" y="65" width="36" height="36" rx="8" fill="#a78bfa" opacity="0.2"/>
+  <rect x="52" y="115" width="36" height="36" rx="8" fill="#a78bfa" opacity="0.15"/>
+  <rect x="52" y="165" width="36" height="36" rx="8" fill="#a78bfa" opacity="0.15"/>
+  <rect x="52" y="215" width="36" height="36" rx="8" fill="#a78bfa" opacity="0.15"/>
+  <rect x="52" y="265" width="36" height="36" rx="8" fill="#a78bfa" opacity="0.15"/>
+  <rect x="52" y="315" width="36" height="36" rx="8" fill="#a78bfa" opacity="0.1"/>
+  <rect x="52" y="365" width="36" height="36" rx="8" fill="#a78bfa" opacity="0.1"/>
+
+  <!-- Canvas area -->
+  <rect x="130" y="40" width="740" height="550" rx="14" fill="#ffffff" stroke="#a78bfa" stroke-opacity="0.15" stroke-width="1"/>
+  <!-- Canvas content - abstract shapes suggesting creative work -->
+  <rect x="200" y="120" width="280" height="180" rx="12" fill="#a78bfa" opacity="0.1"/>
+  <rect x="220" y="140" width="120" height="120" rx="60" fill="#a78bfa" opacity="0.15"/>
+  <rect x="380" y="180" width="80" height="80" rx="8" fill="#a78bfa" opacity="0.12" transform="rotate(15 420 220)"/>
+  <rect x="500" y="100" width="300" height="200" rx="10" fill="#f0e7ff"/>
+  <rect x="520" y="120" width="260" height="12" rx="4" fill="#a78bfa" opacity="0.3"/>
+  <rect x="520" y="146" width="200" height="8" rx="3" fill="#1a1a2e" opacity="0.1"/>
+  <rect x="520" y="166" width="230" height="8" rx="3" fill="#1a1a2e" opacity="0.08"/>
+  <rect x="520" y="186" width="180" height="8" rx="3" fill="#1a1a2e" opacity="0.08"/>
+  <!-- Color palette circles -->
+  <circle cx="260" cy="380" r="20" fill="#a78bfa" opacity="0.6"/>
+  <circle cx="310" cy="380" r="20" fill="#c4b5fd" opacity="0.6"/>
+  <circle cx="360" cy="380" r="20" fill="#7c3aed" opacity="0.5"/>
+  <circle cx="410" cy="380" r="20" fill="#ddd6fe" opacity="0.7"/>
+  <circle cx="460" cy="380" r="20" fill="#8b5cf6" opacity="0.5"/>
+  <!-- Layers suggestion -->
+  <rect x="200" y="430" width="600" height="60" rx="8" fill="#f5f0ff" stroke="#a78bfa" stroke-opacity="0.1" stroke-width="1"/>
+  <rect x="220" y="448" width="120" height="8" rx="3" fill="#a78bfa" opacity="0.25"/>
+  <rect x="220" y="466" width="80" height="6" rx="3" fill="#1a1a2e" opacity="0.08"/>
+  <rect x="400" y="448" width="120" height="8" rx="3" fill="#a78bfa" opacity="0.2"/>
+  <rect x="400" y="466" width="80" height="6" rx="3" fill="#1a1a2e" opacity="0.08"/>
+  <rect x="580" y="448" width="120" height="8" rx="3" fill="#a78bfa" opacity="0.15"/>
+  <rect x="580" y="466" width="80" height="6" rx="3" fill="#1a1a2e" opacity="0.08"/>
+
+  <!-- Right properties panel -->
+  <rect x="900" y="40" width="260" height="550" rx="14" fill="#f8f4ff" stroke="#a78bfa" stroke-opacity="0.15" stroke-width="1"/>
+  <rect x="920" y="70" width="120" height="12" rx="4" fill="#a78bfa" opacity="0.35"/>
+  <rect x="920" y="100" width="220" height="1" fill="#a78bfa" opacity="0.1"/>
+  <rect x="920" y="120" width="80" height="8" rx="3" fill="#1a1a2e" opacity="0.12"/>
+  <rect x="920" y="144" width="220" height="28" rx="6" fill="#ffffff" stroke="#a78bfa" stroke-opacity="0.15" stroke-width="1"/>
+  <rect x="920" y="190" width="80" height="8" rx="3" fill="#1a1a2e" opacity="0.12"/>
+  <rect x="920" y="214" width="220" height="28" rx="6" fill="#ffffff" stroke="#a78bfa" stroke-opacity="0.15" stroke-width="1"/>
+  <rect x="920" y="260" width="80" height="8" rx="3" fill="#1a1a2e" opacity="0.12"/>
+  <rect x="920" y="284" width="220" height="28" rx="6" fill="#ffffff" stroke="#a78bfa" stroke-opacity="0.15" stroke-width="1"/>
+  <!-- Slider -->
+  <rect x="920" y="334" width="80" height="8" rx="3" fill="#1a1a2e" opacity="0.12"/>
+  <rect x="920" y="358" width="220" height="4" rx="2" fill="#a78bfa" opacity="0.15"/>
+  <circle cx="1020" cy="360" r="8" fill="#a78bfa" opacity="0.5"/>
+
+  <!-- Title -->
+  <text x="600" y="554" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="700" fill="#a78bfa">Creative Tool</text>
+  <!-- Subtitle -->
+  <text x="600" y="586" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="400" fill="#1a1a2e" opacity="0.35">Decantr Showcase</text>
+</svg>

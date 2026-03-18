@@ -1,93 +1,66 @@
 /**
  * Showcase Gallery — displays pre-built applications generated from essence files.
  * Each showcase proves the Decantation Process works end-to-end.
+ *
+ * Showcase data is loaded from showcase.manifest.json (single source of truth).
  */
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { Card, Badge, Button, icon } from 'decantr/components';
 import { SiteShell } from '../layouts/site-shell.js';
+import showcaseManifest from '../../../showcase/showcase.manifest.json';
 
-const { div, h1, h2, h3, p, span, section, a } = tags;
+const { div, h1, h2, h3, p, span, section, a, img } = tags;
 
-const SHOWCASES = [
-  {
-    id: 'saas-dashboard',
-    title: 'SaaS Dashboard',
-    description: 'Analytics dashboard with KPI cards, data tables, charts, and real-time data. Built from the saas-dashboard archetype.',
-    archetype: 'saas-dashboard',
-    vintageStyle: 'command-center',
-    vintageMode: 'dark',
-    tags: ['KPIs', 'Charts', 'Data Table', 'Sidebar'],
-    status: 'live',
-  },
-  {
-    id: 'photography-portfolio',
-    title: 'Photography Portfolio',
-    description: 'Visual-first portfolio with hero gallery, project showcases, and contact form. Built from the portfolio archetype.',
-    archetype: 'portfolio',
-    vintageStyle: 'glassmorphism',
-    vintageMode: 'dark',
-    tags: ['Gallery', 'Hero', 'Contact', 'Full-Bleed'],
-    status: 'coming-soon',
-  },
-  {
-    id: 'ecommerce-store',
-    title: 'E-commerce Store',
-    description: 'Product catalog with filtering, cart, checkout flow, and account management. Built from the ecommerce archetype.',
-    archetype: 'ecommerce',
-    vintageStyle: 'clean',
-    vintageMode: 'light',
-    tags: ['Products', 'Cart', 'Checkout', 'Filters'],
-    status: 'coming-soon',
-  },
-  {
-    id: 'developer-blog',
-    title: 'Developer Blog',
-    description: 'Content-focused blog with syntax highlighting, table of contents, and reading progress. Built from the content-site archetype.',
-    archetype: 'content-site',
-    vintageStyle: 'auradecantism',
-    vintageMode: 'dark',
-    tags: ['Articles', 'Code Blocks', 'TOC', 'Search'],
-    status: 'coming-soon',
-  },
-  {
-    id: 'financial-dashboard',
-    title: 'Financial Dashboard',
-    description: 'Performance tracking with scorecards, pipeline visualization, and compliance reporting. Built from the financial-dashboard archetype.',
-    archetype: 'financial-dashboard',
-    vintageStyle: 'command-center',
-    vintageMode: 'dark',
-    tags: ['Scorecard', 'Pipeline', 'KPIs', 'Export'],
-    status: 'coming-soon',
-  },
-];
+const SHOWCASES = showcaseManifest.showcases;
 
 function ShowcaseCard({ showcase }) {
   const isLive = showcase.status === 'live';
+  const showcaseUrl = `/showcase/${showcase.id}/`;
 
   return Card({
     hoverable: true,
-    class: `ds-glass ${css('_flex _col _gap4 _p6 _ohidden')}`,
+    class: `ds-glass ${css('_flex _col _gap4 _p0 _ohidden')}`,
   },
-    div({ class: css('_flex _aic _jcsb') },
-      Badge({
-        variant: isLive ? 'success' : 'default',
-      }, isLive ? 'Live' : 'Coming Soon'),
-      div({ class: css('_flex _gap2') },
-        Badge({ variant: 'outline' }, showcase.vintageStyle),
-        Badge({ variant: 'outline' }, showcase.vintageMode),
-      ),
+    // Thumbnail
+    a({ href: showcaseUrl, target: '_blank', rel: 'noopener', class: css('_db _ohidden _bgmuted') },
+      img({
+        src: `/showcase/${showcase.id}/thumbnail.svg`,
+        alt: `${showcase.title} screenshot`,
+        loading: 'lazy',
+        class: css('_w100 _h[200px] _objcover _db _trans[transform_0.3s_ease] _h:scale[1.03]'),
+        onerror: 'this.style.display="none"',
+      }),
     ),
-    h3({ class: css('_heading5 _fgfg') }, showcase.title),
-    p({ class: css('_body _fgmutedfg _lhrelaxed') }, showcase.description),
-    div({ class: css('_flex _wrap _gap2') },
-      ...showcase.tags.map(tag =>
-        span({ class: css('_textsm _fgmutedfg _bgmuted _px2 _py1 _r1') }, tag)
+    // Card body
+    div({ class: css('_flex _col _gap4 _p6 _flex1') },
+      div({ class: css('_flex _aic _jcsb') },
+        Badge({
+          variant: isLive ? 'success' : 'default',
+        }, isLive ? 'Live' : 'Coming Soon'),
+        div({ class: css('_flex _gap2') },
+          Badge({ variant: 'outline' }, showcase.style),
+          Badge({ variant: 'outline' }, showcase.mode),
+        ),
       ),
-    ),
-    div({ class: css('_flex _aic _gap2 _mt2 _pt3 _borderT _bcborder') },
-      icon('layers', { size: '14px', class: css('_fgmutedfg') }),
-      span({ class: css('_textsm _fgmutedfg') }, `Archetype: ${showcase.archetype}`),
+      h3({ class: css('_heading5 _fgfg') }, showcase.title),
+      p({ class: css('_body _fgmutedfg _lhrelaxed') }, showcase.description),
+      div({ class: css('_flex _wrap _gap2') },
+        ...showcase.tags.map(tag =>
+          span({ class: css('_textsm _fgmutedfg _bgmuted _px2 _py1 _r1') }, tag)
+        ),
+      ),
+      div({ class: css('_flex _aic _jcsb _mt[auto] _pt3 _borderT _bcborder') },
+        div({ class: css('_flex _aic _gap2') },
+          icon('layers', { size: '14px', class: css('_fgmutedfg') }),
+          span({ class: css('_textsm _fgmutedfg') }, `Archetype: ${showcase.archetype}`),
+        ),
+        isLive
+          ? a({ href: showcaseUrl, target: '_blank', rel: 'noopener', class: css('_nounder') },
+              Button({ variant: 'primary', size: 'sm' }, 'View Live', icon('arrow-up-right', { size: '14px' })),
+            )
+          : null,
+      ),
     ),
   );
 }
