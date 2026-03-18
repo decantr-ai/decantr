@@ -1,6 +1,6 @@
 # gaming-platform
 
-Built with [decantr](https://decantr.ai) v0.4.2 — AI-first web framework.
+Built with [decantr](https://decantr.ai) v0.9.5 — AI-first web framework.
 
 ## Quick Start
 

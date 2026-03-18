@@ -6,6 +6,7 @@ import {
   packageJson, configJson, essenceJson, indexHtml, manifestJson,
   claudeMd, appJs, agentsMd
 } from '../../tools/init-templates.js';
+import { VERSION } from '../../tools/version.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const frameworkRoot = resolve(__dirname, '..', '..');
@@ -42,7 +43,7 @@ export async function run() {
     return;
   }
 
-  console.log(welcome('0.4.0'));
+  console.log(welcome(VERSION));
   if (templateName) {
     console.log(heading(`Creating project from "${templateName}" template...`));
   } else {

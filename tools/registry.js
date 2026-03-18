@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync, unlinkSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { VERSION } from './version.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -574,7 +575,7 @@ if (existsSync(indexPath)) {
 
 const index = {
   $schema: 'https://decantr.ai/schemas/registry.v1.json',
-  version: '0.4.0',
+  version: VERSION,
   generated,
   modules: {}
 };

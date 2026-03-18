@@ -7,6 +7,7 @@ import {
 import { readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { VERSION } from '../../tools/version.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const srcRoot = join(__dirname, '..', '..', 'src');
@@ -498,7 +499,7 @@ export async function run() {
   await Promise.all([loadRegistry(), loadAtomResolver()]);
 
   const server = new Server(
-    { name: 'decantr', version: '0.4.0' },
+    { name: 'decantr', version: VERSION },
     { capabilities: { tools: {} } }
   );
 

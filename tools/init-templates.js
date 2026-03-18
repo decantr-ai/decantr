@@ -5,6 +5,7 @@
 import { readFile } from 'node:fs/promises';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { VERSION } from './version.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const frameworkRoot = resolve(__dirname, '..');
@@ -25,7 +26,7 @@ export function packageJson(name) {
       test: 'decantr test'
     },
     dependencies: {
-      decantr: '^0.4.0'
+      decantr: '^' + VERSION
     }
   }, null, 2);
 }
@@ -69,7 +70,7 @@ export function indexHtml(name) {
 export function manifestJson(name) {
   return JSON.stringify({
     $schema: 'https://decantr.ai/schemas/manifest.v2.json',
-    version: '0.4.0',
+    version: VERSION,
     name,
     entrypoint: 'src/app.js',
     shell: 'public/index.html',
@@ -80,7 +81,7 @@ export function manifestJson(name) {
 export function claudeMd(name) {
   return `# ${name}
 
-Built with [decantr](https://decantr.ai) v0.4.0 — AI-first web framework.
+Built with [decantr](https://decantr.ai) v${VERSION} — AI-first web framework.
 
 ## Quick Start
 

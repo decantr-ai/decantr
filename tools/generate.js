@@ -22,6 +22,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { VERSION } from './version.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const registryRoot = join(__dirname, '..', 'src', 'registry');
@@ -765,7 +766,7 @@ function generateLock(essence) {
   return JSON.stringify({
     essenceHash: hash,
     generatedAt: new Date().toISOString(),
-    version: '0.4.0',
+    version: VERSION,
     pages: (essence.structure || []).map(p => p.id),
   }, null, 2);
 }

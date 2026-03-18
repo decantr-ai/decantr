@@ -44,7 +44,8 @@
   "scripts": {
     "dev": "decantr dev",
     "build": "decantr build",
-    "test": "decantr test"
+    "test": "decantr test",
+    "version": "node tools/sync-version.js && git add -A"
   },
   "exports": {
     "./core": "./src/core/index.js",

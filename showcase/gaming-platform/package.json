@@ -8,6 +8,6 @@
     "test": "decantr test"
   },
   "dependencies": {
-    "decantr": "^0.4.0"
+    "decantr": "^0.9.5"
   }
 }

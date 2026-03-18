@@ -6,13 +6,15 @@
     "url": "https://github.com/decantr-ai/decantr",
     "source": "github"
   },
-  "version": "0.4.0",
+  "version": "0.9.5",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "decantr",
-      "version": "0.4.0",
-      "transport": { "type": "stdio" },
+      "version": "0.9.5",
+      "transport": {
+        "type": "stdio"
+      },
       "environmentVariables": []
     }
   ]
