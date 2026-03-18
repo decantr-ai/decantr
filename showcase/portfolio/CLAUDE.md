@@ -1,6 +1,6 @@
 # Portfolio Showcase
 
-Built with [decantr](https://decantr.ai) v0.9.5 — AI-first web framework.
+Built with [decantr](https://decantr.ai) v0.9.6 — AI-first web framework.
 
 ## Project Structure
 

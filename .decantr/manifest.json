@@ -1,6 +1,6 @@
 {
   "$schema": "https://decantr.ai/schemas/manifest.v2.json",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "name": "/tmp/decantr-baseline-test",
   "entrypoint": "src/app.js",
   "shell": "public/index.html",

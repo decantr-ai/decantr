@@ -1,6 +1,6 @@
 {
   "$schema": "https://decantr.ai/schemas/registry.v1.json",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "generated": "2026-03-18",
   "modules": {
     "decantr/core": {
