@@ -10,7 +10,7 @@ Decantr is designed for LLMs to generate, read, and maintain — not for human r
 
 ## The Decantation Process
 
-Every Decantr app begins as a conversation. The **Decantation Process** is the AI sommelier that takes your plain-English description and carefully transforms it into a production-ready web application — one structured layer at a time.
+Every Decantr app begins as a conversation. The **Decantation Process** is a structured pipeline that turns a plain-English description into a production app — one layer at a time.
 
 ```
 POUR  →  SETTLE  →  CLARIFY  →  DECANT  →  SERVE  →  AGE
@@ -23,9 +23,9 @@ intent    layers     the Essence  layout     code       against drift
 
 ### Stage 1: POUR
 
-> *The grapes are harvested — raw, unprocessed, full of potential.*
+> *You describe what you want in plain English — the AI handles the rest.*
 
-You describe what you want in natural language. No config files, no boilerplate, no decisions about folder structure. Just say what you need.
+No config files, no boilerplate, no decisions about folder structure. Just say what you need.
 
 ```
 "I need a SaaS analytics dashboard with authentication,
@@ -36,25 +36,25 @@ You describe what you want in natural language. No config files, no boilerplate,
 
 ### Stage 2: SETTLE
 
-> *The crush separates skin from seed from juice — each part essential, none mixed together.*
+> *Your intent is decomposed into five independent layers.*
 
-The AI decomposes your intent into five orthogonal layers, each independent and composable:
+The AI breaks your description into five orthogonal layers, each independent and composable:
 
 ```
-Terroir    → saas-dashboard        (domain archetype — the soil your app grows in)
-Vintage    → command-center / dark  (visual style + mode — the grape variety and growing year)
-Character  → tactical, data-dense   (personality traits — the winemaker's signature)
-Structure  → overview, settings     (page map — the bottle lineup)
-Tannins    → auth, realtime-data    (functional systems — the backbone that gives body)
+Terroir    → saas-dashboard        (what kind of app — sets default patterns and pages)
+Vintage    → command-center / dark  (how it looks — visual style, color mode, shape)
+Character  → tactical, data-dense   (personality — controls spacing, density, and tone)
+Structure  → overview, settings     (pages — the views your app needs)
+Tannins    → auth, realtime-data    (backend systems — auth, payments, telemetry, etc.)
 ```
 
 ---
 
 ### Stage 3: CLARIFY
 
-> *The must is analyzed, its identity crystallized into a label.*
+> *Every decision is captured in one file. You review it before any code is generated.*
 
-The AI writes `decantr.essence.json` — your project's DNA. This single file captures every decision from SETTLE in a machine-readable format. You review and confirm it before any code is generated.
+The AI writes `decantr.essence.json` — your project's single source of truth. This file captures every decision from SETTLE in a machine-readable format.
 
 ```json
 {
@@ -73,9 +73,9 @@ The AI writes `decantr.essence.json` — your project's DNA. This single file ca
 
 ### Stage 4: DECANT
 
-> *Wine is poured from barrel to decanter — the spatial arrangement that lets it breathe.*
+> *Each page's spatial layout is resolved — where content blocks sit, how columns stack and reflow.*
 
-Each page's **Blend** is resolved — an ordered array of rows describing the spatial layout. Full-width patterns, side-by-side columns, weighted grids, responsive breakpoints. This is the blueprint for how content fills the page.
+Each page's **Blend** is resolved — an ordered array of rows describing the layout. Full-width patterns, side-by-side columns, weighted grids, responsive breakpoints. This is the blueprint for how content fills the page.
 
 ```json
 "blend": [
@@ -91,9 +91,9 @@ This reads as: a full-width hero, then a weighted two-column row (KPIs take 2/3,
 
 ### Stage 5: SERVE
 
-> *The wine is bottled — presentation-ready, poured exactly as the blend prescribes.*
+> *Code is generated directly from the layout spec. No freestyling.*
 
-Code is generated directly from the Blend spec. No freestyling. Each row maps to concrete markup: grid wrappers, pattern components, Card shells, responsive atoms.
+Each row in the Blend maps to concrete markup: grid wrappers, pattern components, Card shells, responsive atoms.
 
 ```javascript
 export function Overview() {
@@ -112,9 +112,9 @@ export function Overview() {
 
 ### Stage 6: AGE
 
-> *The wine ages in the cellar — time reveals flaws, and the Cork keeps oxygen out.*
+> *Every future change reads the Essence first. The Cork prevents drift.*
 
-Every future change reads the Essence first. The **Cork** enforces consistency — a checklist that runs before any code is written to prevent drift:
+The **Cork** enforces consistency — a checklist that runs before any code is written:
 
 - **Style** — Does this match the Vintage? Don't switch styles mid-project.
 - **Structure** — Does this page exist in the Essence? If new, add it first.
@@ -126,21 +126,21 @@ If a change conflicts with the Essence, the process flags it and asks before pro
 
 ---
 
-### Wine-to-Framework Decoder
+### Term Reference
 
-| Wine Term | Framework Meaning |
-|-----------|------------------|
-| **Terroir** | Domain archetype — the category of app (SaaS, e-commerce, portfolio, etc.) |
-| **Vintage** | Visual style + color mode + shape — the look and feel |
-| **Character** | Personality traits that influence spacing, density, and tone |
-| **Tannins** | Pluggable functional systems (auth, telemetry, payments) |
-| **Blend** | Spatial layout spec — rows, columns, and responsive breakpoints per page |
-| **Clarity** | Spacing profile derived from Character — controls density and breathing room |
-| **Cork** | Anti-drift enforcement — ensures every change respects the Essence |
-| **Bouquet** | The final sensory check — visual harmony after all layers compose |
-| **Vessel** | App shell type — SPA, MPA, or SSR with routing strategy |
-| **Essence** | `decantr.essence.json` — the project's DNA, written during CLARIFY |
-| **Recipe** | Visual identity overlay — background effects, decorations, material treatments |
+| Term | What It Does |
+|------|-------------|
+| **Terroir** | App category — sets default patterns, pages, and layout for your domain |
+| **Vintage** | Visual style + color mode + shape |
+| **Character** | Personality traits that control spacing density and tone |
+| **Tannins** | Pluggable backend systems (auth, telemetry, payments) |
+| **Blend** | Page layout spec — rows, columns, and responsive breakpoints |
+| **Clarity** | Spacing profile derived from Character — how dense or airy the UI feels |
+| **Cork** | Anti-drift rules — ensures every change respects the Essence |
+| **Bouquet** | Final visual harmony check after all layers compose |
+| **Vessel** | App shell type (SPA/MPA/SSR) and routing strategy |
+| **Essence** | `decantr.essence.json` — single source of truth for all project decisions |
+| **Recipe** | Visual identity layer — background effects, materials, decorations |
 
 ## Quick Start
 
