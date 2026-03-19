@@ -1583,6 +1583,7 @@ function MinimalHeader({ brand, children }) {
 | Pattern | Presets | Layout | Components |
 |---------|---------|--------|-----------|
 | activity-feed | default, notification-center, social, minimal, grouped | stack | Timeline, Avatar, Badge, Text, Separator |
+| anatomy-viewer | split | row | Card, Badge, Tabs, Button, icon |
 | announcement-bar | — | row | Badge, Button, icon |
 | article-content | — | grid | Card, Avatar, Badge, Text, Separator |
 | auth-form | — | stack | Input, Button, Card, Card.Header, Card.Body, Card.Footer, Separator |
@@ -1604,6 +1605,7 @@ function MinimalHeader({ brand, children }) {
 | deploy-log | live, history | stack | Badge, Button, Chip, Input, icon |
 | detail-header | standard, profile | stack | Breadcrumb, Title, Badge, Button |
 | detail-panel | — | stack | Tabs, Card, Card.Header, Card.Body, Avatar, Badge, Button, Separator, Tooltip |
+| ecosystem-grid | standard | grid | Card, Badge, Avatar, Chip, Button, icon |
 | explorer-shell | — | grid | Input, Select, Button |
 | file-manager | — | stack | Card, Button, Breadcrumb, Dropdown, icon, Badge |
 | filter-bar | default, toolbar, segmented, search-primary | row | Input, Select, Button, DatePicker, Chip |
