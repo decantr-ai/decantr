@@ -33,6 +33,15 @@ const NAV_SECTIONS = [
     ],
   },
   {
+    label: 'Prompt Workflow',
+    items: [
+      { id: 'pw-essence', label: 'The Essence File', path: '/docs/workflow/essence' },
+      { id: 'pw-decantation', label: 'Decantation Process', path: '/docs/workflow/decantation' },
+      { id: 'pw-mcp', label: 'Using MCP Server', path: '/docs/workflow/mcp' },
+      { id: 'pw-prompts', label: 'Prompt Templates', path: '/docs/workflow/prompts' },
+    ],
+  },
+  {
     label: 'Cookbook',
     items: [
       { id: 'ck-dashboard', label: 'SaaS Dashboard', path: '/docs/cookbook/dashboard' },
@@ -43,18 +52,11 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: 'Explore',
+    label: 'Dev Tools',
     items: [
-      { id: 'components', label: 'Components', path: '/explorer/components' },
-      { id: 'patterns', label: 'Patterns', path: '/explorer/patterns' },
-      { id: 'icons', label: 'Icons', path: '/explorer/icons' },
-      { id: 'tokens', label: 'Tokens', path: '/explorer/tokens' },
-      { id: 'foundations', label: 'API Reference', path: '/explorer/foundations' },
-      { id: 'archetypes', label: 'Archetypes', path: '/explorer/archetypes' },
-      { id: 'charts', label: 'Charts', path: '/explorer/charts' },
-      { id: 'shells', label: 'Shells', path: '/explorer/shells' },
-      { id: 'recipes', label: 'Recipes', path: '/explorer/recipes' },
-      { id: 'tools', label: 'Theme Studio', path: '/explorer/tools' },
+      { id: 'dt-explorer', label: 'Explorer', path: '/explorer' },
+      { id: 'dt-cli', label: 'CLI Reference', path: '/docs/tools/cli' },
+      { id: 'dt-config', label: 'Configuration', path: '/docs/tools/config' },
     ],
   },
 ];
