@@ -3,9 +3,14 @@
  */
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
+import { createSignal, createEffect } from 'decantr/state';
 import { Card, Badge, Button, Tabs, icon } from 'decantr/components';
 import { SiteShell } from '../layouts/site-shell.js';
 import { showcaseManifest } from '../data/showcases.js';
+import { AnatomyViewer } from '../sections/anatomy-viewer.js';
+import { EcosystemGrid } from '../sections/ecosystem-grid.js';
+import { featuredPatterns } from '../data/patterns-data.js';
+import { ecosystemItems, ecosystemStats } from '../data/ecosystem-data.js';
 
 const { div, h1, h2, h3, p, span, section, a, img } = tags;
 const SHOWCASES = showcaseManifest.showcases;
@@ -105,6 +110,48 @@ function ThemesTab() {
   );
 }
 
+// ─── Patterns Tab ────────────────────────────────────────────────
+function PatternsTab() {
+  const [activePattern, setActivePattern] = createSignal(featuredPatterns[0]);
+
+  // Container for anatomy viewer - will be reactively updated
+  const anatomyContainer = div({ class: css('_mt4') });
+
+  // Render anatomy viewer when pattern changes
+  createEffect(() => {
+    const pattern = activePattern();
+    anatomyContainer.innerHTML = '';
+    anatomyContainer.appendChild(AnatomyViewer({ pattern }));
+  });
+
+  return div({ class: css('_flex _col _gap6 _py8') },
+    // Pattern selector
+    div({ class: css('_flex _wrap _gap2 _jcc') },
+      ...featuredPatterns.map(p => {
+        const btn = Button({
+          variant: 'outline',
+          size: 'sm',
+          onclick: () => setActivePattern(p),
+        }, p.name);
+
+        createEffect(() => {
+          const isActive = activePattern().id === p.id;
+          btn.classList.toggle(css('_bgprimary/20 _bcprimary'), isActive);
+        });
+
+        return btn;
+      })
+    ),
+    // Anatomy viewer - reactive container
+    anatomyContainer
+  );
+}
+
+// ─── Ecosystem Tab ───────────────────────────────────────────────
+function EcosystemTab() {
+  return EcosystemGrid({ items: ecosystemItems, stats: ecosystemStats });
+}
+
 // ─── Page Composition ─────────────────────────────────────────────
 export function ShowcasePage() {
   return SiteShell(
@@ -120,8 +167,10 @@ export function ShowcasePage() {
       Tabs({
         tabs: [
           { id: 'apps', label: 'Apps', content: () => AppsTab() },
+          { id: 'patterns', label: 'Patterns', content: () => PatternsTab() },
           { id: 'components', label: 'Components', content: () => ComponentsTab() },
           { id: 'themes', label: 'Themes', content: () => ThemesTab() },
+          { id: 'ecosystem', label: 'Ecosystem', content: () => EcosystemTab() },
         ],
         active: 'apps',
         class: css('_jcc'),
