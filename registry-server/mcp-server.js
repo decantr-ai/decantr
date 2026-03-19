@@ -118,6 +118,20 @@ const TOOLS = [
       type: "object",
       properties: {}
     }
+  },
+  {
+    name: "get_visual_effects",
+    description: "Get visual effects configuration for a recipe, including type mappings, decorators, and intensity values.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        recipe: {
+          type: "string",
+          description: "Recipe ID (e.g., 'auradecantism', 'clean')"
+        }
+      },
+      required: ["recipe"]
+    }
   }
 ];
 
@@ -330,6 +344,31 @@ function listRecipes() {
   return { recipes, total: recipes.length };
 }
 
+function getVisualEffects({ recipe: recipeId }) {
+  const recipePath = join(REGISTRY_PATH, `recipe-${recipeId}.json`);
+
+  if (!existsSync(recipePath)) {
+    return { error: `Recipe not found: ${recipeId}` };
+  }
+
+  const recipe = readJson(recipePath);
+  const { visual_effects, decorators } = recipe;
+
+  if (!visual_effects) {
+    return { error: "No visual_effects config found" };
+  }
+
+  const intensity = visual_effects.intensity || "medium";
+  const intensity_values = visual_effects.intensity_values?.[intensity] || {};
+
+  return {
+    recipe: recipeId,
+    visual_effects,
+    decorators: decorators || {},
+    intensity_values
+  };
+}
+
 // Main server setup
 async function main() {
   const server = new Server(
@@ -377,6 +416,9 @@ async function main() {
           break;
         case "list_recipes":
           result = listRecipes();
+          break;
+        case "get_visual_effects":
+          result = getVisualEffects(args);
           break;
         default:
           throw new Error(`Unknown tool: ${name}`);
