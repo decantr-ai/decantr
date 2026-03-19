@@ -1,8 +1,9 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "filter-bar",
   "name": "Filter Bar",
   "description": "Horizontal filter controls with search, dropdowns, date pickers, and active filter chips.",
+  "contained": false,
   "components": [
     "Input",
     "Select",
@@ -10,6 +11,90 @@
     "DatePicker",
     "Chip"
   ],
+  "default_preset": "default",
+  "io": {
+    "produces": ["search", "filters"],
+    "consumes": [],
+    "actions": []
+  },
+  "presets": {
+    "default": {
+      "description": "Horizontal filter controls with search, dropdowns, date pickers, and active filter chips.",
+      "components": [
+        "Input",
+        "Select",
+        "Button",
+        "DatePicker",
+        "Chip"
+      ],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _gap3 _aic _wrap _py3",
+        "slots": {
+          "search": "Search Input for keyword filtering",
+          "filters": "Select dropdowns and DatePicker controls",
+          "active-filters": "Chip list showing currently applied filters",
+          "actions": "Clear-all or apply Button actions"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Input, Select, Button, DatePicker, Chip } from 'decantr/components';",
+        "example": "function FilterBar({ onSearch, onCategory } = {}) {\n  const { div } = tags;\n  const [search, setSearch] = createSignal('');\n  const [category, setCategory] = createSignal('all');\n  const [filters, setFilters] = createSignal([]);\n  const handleSearch = v => { setSearch(v); onSearch?.(v); };\n  const handleCategory = v => { setCategory(v); onCategory?.(v); if (v !== 'all') setFilters([...filters(), v]); };\n\n  return div({ class: css('_flex _gap3 _aic _wrap _py3') },\n    Input({ placeholder: 'Search...', value: search, onchange: e => handleSearch(e.target.value), class: css('_w[240px]') }),\n    Select({ value: category, onchange: handleCategory,\n      options: [\n        { label: 'All Categories', value: 'all' },\n        { label: 'Sales', value: 'sales' },\n        { label: 'Marketing', value: 'marketing' }\n      ] }),\n    DatePicker({ placeholder: 'Date range' }),\n    ...filters().map(f => Chip({ label: f, onClose: () => setFilters(filters().filter(x => x !== f)) })),\n    filters().length > 0 ? Button({ variant: 'ghost', size: 'sm', onclick: () => setFilters([]) }, 'Clear All') : null\n  );\n}"
+      }
+    },
+    "toolbar": {
+      "description": "Action toolbar with grouped buttons, toggles, and separator dividers. Used above data tables and content areas for bulk actions and view controls.",
+      "components": ["Button", "Separator", "Select", "Input", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _gap2 _aic _py2 _flexWrap",
+        "slots": {
+          "search": "Search Input for filtering",
+          "filters": "Filter Select dropdowns",
+          "separator": "Visual Separator between filter and action groups",
+          "actions": "Grouped action Buttons (add, export, bulk operations)"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Input, Select, Separator, icon } from 'decantr/components';",
+        "example": "function Toolbar({ onAdd, onExport }) {\n  const { div } = tags;\n  const [search, setSearch] = createSignal('');\n\n  return div({ class: css('_flex _gap2 _aic _py2 _flexWrap') },\n    Input({ placeholder: 'Search...', value: search, onchange: e => setSearch(e.target.value), class: css('_w[200px]'), size: 'sm' }),\n    Select({ options: [{ label: 'All Status', value: 'all' }, { label: 'Active', value: 'active' }, { label: 'Inactive', value: 'inactive' }], size: 'sm' }),\n    Separator({ orientation: 'vertical', class: css('_h6') }),\n    div({ class: css('_flex _gap2 _mlis[auto]') },\n      Button({ variant: 'outline', size: 'sm' }, icon('download', { size: '1em' }), ' Export'),\n      Button({ variant: 'primary', size: 'sm', onclick: onAdd }, icon('plus', { size: '1em' }), ' Add New')\n    )\n  );\n}"
+      }
+    },
+    "segmented": {
+      "description": "Filter bar using Segmented control for primary category filtering with search as secondary. Clean toggle-based filtering for views with discrete categories.",
+      "components": ["Segmented", "Input", "Button", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _gap3 _aic _wrap _py3",
+        "slots": {
+          "segmented": "Segmented control for primary filter categories",
+          "search": "Secondary search Input for keyword filtering",
+          "actions": "Optional action Buttons"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Segmented, Input, Button, icon } from 'decantr/components';",
+        "example": "function FilterBarSegmented({ onSearch, onView } = {}) {\n  const { div } = tags;\n  const [view, setView] = createSignal('all');\n  const [search, setSearch] = createSignal('');\n  const [showAdvanced, setShowAdvanced] = createSignal(false);\n  const handleView = v => { setView(v); onView?.(v); };\n  const handleSearch = v => { setSearch(v); onSearch?.(v); };\n\n  return div({ class: css('_flex _col _gap2') },\n    div({ class: css('_flex _gap3 _aic _wrap _py3') },\n      Segmented({\n        value: view,\n        onchange: handleView,\n        options: [\n          { label: 'All', value: 'all' },\n          { label: 'Active', value: 'active' },\n          { label: 'Archived', value: 'archived' },\n          { label: 'Draft', value: 'draft' }\n        ]\n      }),\n      Input({ placeholder: 'Search...', value: search, onchange: e => handleSearch(e.target.value), class: css('_w[200px]'), size: 'sm' }),\n      div({ class: css('_mlis[auto]') },\n        Button({ variant: 'outline', size: 'sm', onclick: () => setShowAdvanced(!showAdvanced()) }, icon('sliders', { size: '1em' }), ' More Filters')\n      )\n    ),\n    () => showAdvanced() ? div({ class: css('_flex _gap3 _aic _wrap _py2 _borderT _pt3') },\n      Input({ placeholder: 'Author...', size: 'sm', class: css('_w[160px]') }),\n      Input({ placeholder: 'Tag...', size: 'sm', class: css('_w[160px]') })\n    ) : null\n  );\n}"
+      }
+    },
+    "search-primary": {
+      "description": "Search-dominant filter bar where the search input takes most of the width. Filters and actions are secondary controls. Ideal for content-heavy pages and search-first experiences.",
+      "components": ["Input", "Select", "Button", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _gap3 _aic _py3",
+        "slots": {
+          "search": "Full-width search Input with _flex1 taking most of the row",
+          "filters": "Compact Select dropdown filters",
+          "actions": "Optional action Buttons"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Input, Select, Button, icon } from 'decantr/components';",
+        "example": "function FilterBarSearchPrimary() {\n  const { div } = tags;\n  const [search, setSearch] = createSignal('');\n  const [sort, setSort] = createSignal('recent');\n\n  return div({ class: css('_flex _gap3 _aic _py3') },\n    div({ class: css('_flex1 _relative') },\n      Input({ placeholder: 'Search anything...', value: search, onchange: e => setSearch(e.target.value), class: css('_wfull'), size: 'md' })\n    ),\n    Select({ value: sort, onchange: setSort, options: [\n      { label: 'Most Recent', value: 'recent' },\n      { label: 'Most Popular', value: 'popular' },\n      { label: 'Alphabetical', value: 'alpha' }\n    ], size: 'sm' }),\n    Button({ variant: 'outline', size: 'sm' }, icon('filter', { size: '1em' }), ' Filters'),\n    Button({ variant: 'primary', size: 'sm' }, icon('search', { size: '1em' }), ' Search')\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "row",
     "atoms": "_flex _gap3 _aic _wrap _py3",
@@ -22,6 +107,6 @@
   },
   "code": {
     "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Input, Select, Button, DatePicker, Chip } from 'decantr/components';",
-    "example": "function FilterBar() {\n  const { div } = tags;\n  const [search, setSearch] = createSignal('');\n  const [category, setCategory] = createSignal('all');\n  const [filters, setFilters] = createSignal([]);\n\n  return div({ class: css('_flex _gap3 _aic _wrap _py3') },\n    Input({ placeholder: 'Search...', value: search, onchange: e => setSearch(e.target.value), class: css('_w[240px]') }),\n    Select({ value: category, onchange: v => { setCategory(v); if (v !== 'all') setFilters([...filters(), v]); },\n      options: [\n        { label: 'All Categories', value: 'all' },\n        { label: 'Sales', value: 'sales' },\n        { label: 'Marketing', value: 'marketing' }\n      ] }),\n    DatePicker({ placeholder: 'Date range' }),\n    ...filters().map(f => Chip({ label: f, onClose: () => setFilters(filters().filter(x => x !== f)) })),\n    filters().length > 0 ? Button({ variant: 'ghost', size: 'sm', onclick: () => setFilters([]) }, 'Clear All') : null\n  );\n}"
+    "example": "function FilterBar({ onSearch, onCategory } = {}) {\n  const { div } = tags;\n  const [search, setSearch] = createSignal('');\n  const [category, setCategory] = createSignal('all');\n  const [filters, setFilters] = createSignal([]);\n  const handleSearch = v => { setSearch(v); onSearch?.(v); };\n  const handleCategory = v => { setCategory(v); onCategory?.(v); if (v !== 'all') setFilters([...filters(), v]); };\n\n  return div({ class: css('_flex _gap3 _aic _wrap _py3') },\n    Input({ placeholder: 'Search...', value: search, onchange: e => handleSearch(e.target.value), class: css('_w[240px]') }),\n    Select({ value: category, onchange: handleCategory,\n      options: [\n        { label: 'All Categories', value: 'all' },\n        { label: 'Sales', value: 'sales' },\n        { label: 'Marketing', value: 'marketing' }\n      ] }),\n    DatePicker({ placeholder: 'Date range' }),\n    ...filters().map(f => Chip({ label: f, onClose: () => setFilters(filters().filter(x => x !== f)) })),\n    filters().length > 0 ? Button({ variant: 'ghost', size: 'sm', onclick: () => setFilters([]) }, 'Clear All') : null\n  );\n}"
   }
 }

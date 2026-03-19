@@ -1,12 +1,12 @@
 {
   "$schema": "https://decantr.ai/schemas/registry.v1.json",
   "version": "0.9.6",
-  "generated": "2026-03-18",
+  "generated": "2026-03-19",
   "modules": {
     "decantr/core": {
       "description": "DOM engine — hyperscript rendering, conditional, list, mount, lifecycle",
       "file": "core.json",
-      "exports": 16
+      "exports": 15
     },
     "decantr/state": {
       "description": "Reactive primitives — signals, effects, memos, stores, batch",
@@ -26,7 +26,7 @@
     "decantr/components": {
       "description": "UI components — all return HTMLElement, all accept inline styles",
       "file": "components.json",
-      "exports": 111
+      "exports": 112
     },
     "decantr/tags": {
       "description": "Proxy-based tag functions for concise markup",
@@ -68,13 +68,17 @@
       "recipe-community": {
         "file": "archetypes/recipe-community.json",
         "description": "AI-powered recipe sharing platform"
+      },
+      "ecommerce-admin": {
+        "file": "archetypes/ecommerce-admin.json",
+        "description": "Merchant admin panel for e-commerce operations"
       }
     }
   },
   "patterns": {
     "description": "Experience patterns — composable UI building blocks that archetypes reference",
     "index": "patterns/index.json",
-    "count": 49
+    "count": 58
   },
   "recipes": {
     "description": "Visual language recipes — composition rules for drastic visual transformations beyond token-level styling",
@@ -89,15 +93,10 @@
         "style": "clean",
         "description": "Minimal borders, subtle shadows, neutral palette — understated professional aesthetic"
       },
-      "clay": {
-        "file": "recipe-clay.json",
-        "style": "clay",
-        "description": "Soft 3D claymorphism — rounded surfaces, inner shadows, pastel gradients"
-      },
-      "command-center": {
-        "file": "recipe-command-center.json",
-        "style": "command-center",
-        "description": "HUD/radar visual language — monochromatic cyan, beveled frames, scanlines, status bars"
+      "launchpad": {
+        "file": "recipe-launchpad.json",
+        "style": "launchpad",
+        "description": "Clean ShadCN/Tailwind aesthetic — zinc palette, violet accent, thin borders, subtle shadows"
       },
       "gaming-guild": {
         "file": "recipe-gaming-guild.json",

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "status-board",
+  "name": "Status Board",
+  "description": "Health indicator grid with real-time pulse animations showing service status. Used for system monitoring, integration status, and service health dashboards.",
+  "contained": false,
+  "components": ["Badge", "Chip", "icon"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gcaf280 _gap4",
+    "slots": {
+      "status-card": "Card per service with status indicator dot, service name, uptime percentage, and last-check timestamp",
+      "header": "Section title with overall system health summary Badge",
+      "legend": "Color legend for status states: operational, degraded, outage"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Card, Chip, icon } from 'decantr/components';",
+    "example": "function StatusBoard({ services }) {\n  const { div, span, h2, h3 } = tags;\n  const statusColor = s => s === 'operational' ? '_bgsuccess' : s === 'degraded' ? '_bgwarning' : '_bgerror';\n  const allOk = services.every(s => s.status === 'operational');\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'System Status'),\n      Badge({ variant: allOk ? 'success' : 'warning' }, allOk ? 'All Operational' : 'Issues Detected')\n    ),\n    div({ class: css('_grid _gcaf280 _gap4') },\n      ...services.map(svc =>\n        Card({},\n          Card.Body({ class: css('_flex _col _gap3 _p4') },\n            div({ class: css('_flex _aic _jcsb') },\n              div({ class: css('_flex _aic _gap2') },\n                div({ class: css(`_w[10px] _h[10px] _rfull ${statusColor(svc.status)}`) }),\n                h3({ class: css('_textsm _bold') }, svc.name)\n              ),\n              Chip({ label: svc.status, size: 'xs', variant: svc.status === 'operational' ? 'success' : svc.status === 'degraded' ? 'warning' : 'error' })\n            ),\n            div({ class: css('_flex _jcsb _textxs _fgmuted') },\n              span({}, `Uptime: ${svc.uptime}`),\n              span({}, `Last check: ${svc.lastCheck}`)\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+  }
+}

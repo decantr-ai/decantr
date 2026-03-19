@@ -1,11 +1,40 @@
 {
-  "$schema": "https://decantr.ai/schemas/recipe.v1.json",
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "schema_version": "2.0",
   "id": "clean",
   "name": "Clean",
   "style": "clean",
   "mode": "light",
   "description": "Professional, understated visual language. Subtle shadows, rounded corners, thin borders, smooth motion. No gradients, no glass, no glow. Closest to the shadcn/Tailwind aesthetic — universally appropriate.",
   "setup": "import { setStyle, setMode } from 'decantr/css';\nsetStyle('clean');\nsetMode('light');",
+  "spatial_hints": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": null,
+    "card_wrapping": "always",
+    "surface_override": null
+  },
+  "skeleton": {
+    "preferred": ["sidebar-main", "top-nav-main"],
+    "avoid": [],
+    "nav_style": "minimal",
+    "default_nav_state": "expanded",
+    "root": "",
+    "nav": "_bgbg _shadow[0_1px_3px_rgba(0,0,0,0.08)]",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "animation": {
+    "entrance": "d-stagger",
+    "micro": "smooth"
+  },
+  "pattern_preferences": {
+    "prefer": ["card-grid", "data-table", "form-sections"],
+    "avoid": [],
+    "default_presets": {}
+  },
   "decorators": {
     "cl-card": "Clean card with subtle shadow and rounded corners. Standard elevated container.",
     "cl-divider": "Thin border divider with muted color. Use between sections.",

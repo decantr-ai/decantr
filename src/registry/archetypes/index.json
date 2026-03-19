@@ -42,10 +42,15 @@
       "description": "Guild-based gaming community — leaderboards, game catalog, news, member profiles, achievements",
       "file": "gaming-platform.json"
     },
-    "creative-tool": {
-      "name": "Creative Tool",
-      "description": "Interactive creative tool — input-driven generators, specimen grids, gallery browsing, detail inspection",
-      "file": "creative-tool.json"
+    "cloud-platform": {
+      "name": "Cloud Platform",
+      "description": "Cloud infrastructure platform — app management, deploy logs, service catalog, usage monitoring, billing",
+      "file": "cloud-platform.json"
+    },
+    "ecommerce-admin": {
+      "name": "eCommerce Admin",
+      "description": "Merchant admin panel — product management, orders, customers, inventory, promotions, analytics",
+      "file": "ecommerce-admin.json"
     }
   }
 }

@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "schema_version": "2.0",
+  "id": "launchpad",
+  "name": "Launchpad",
+  "style": "launchpad",
+  "mode": "light",
+  "description": "Clean, professional visual language inspired by fly.io. Navy-violet palette with semi-transparent surfaces, violet-tinted shadows, gradient accent buttons. Universally appropriate for developer tools, dashboards, and cloud platforms.",
+  "setup": "import { registerStyle, setStyle, setMode } from 'decantr/css';\nimport { launchpad } from 'decantr/styles/community/launchpad';\nregisterStyle(launchpad);\nsetStyle('launchpad');\nsetMode('light');",
+  "spatial_hints": {
+    "density_bias": 0,
+    "content_gap_shift": 1,
+    "section_padding": "_py12",
+    "card_wrapping": "always",
+    "surface_override": null
+  },
+  "skeleton": {
+    "preferred": ["sidebar-main", "top-nav-main"],
+    "avoid": [],
+    "nav_style": "pill",
+    "default_nav_state": "expanded",
+    "root": "",
+    "nav": "_bgbg/80",
+    "header": "lp-header",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": {
+      "nav": { "width": "220px" },
+      "header": { "height": "52px" }
+    }
+  },
+  "animation": {
+    "entrance": "d-stagger",
+    "micro": "smooth"
+  },
+  "pattern_preferences": {
+    "prefer": ["deploy-log", "status-board", "kpi-grid"],
+    "avoid": [],
+    "default_presets": {
+      "data-table": "default",
+      "kpi-grid": "compact"
+    }
+  },
+  "decorators": {
+    "lp-panel": "Main content panel with semi-transparent white bg and violet-tinted shadow. Primary container for page content.",
+    "lp-card": "Card with white bg, lavender border, and subtle violet shadow. For individual items inside panels.",
+    "lp-card-hover": "Interactive card with hover shadow escalation. For clickable items.",
+    "lp-header": "Full-width header bar with glass effect and subtle shadow.",
+    "lp-btn-gradient": "Primary gradient button with violet-to-indigo gradient and inset shadow.",
+    "lp-btn-outline": "Outline button with lavender border and subtle shadow. For org switcher and secondary actions.",
+    "lp-nav-item": "Nav link with transparent bg, 8px radius, 450 weight. Violet hover tint.",
+    "lp-nav-active": "Active nav link with violet-10% bg and violet-700 text.",
+    "lp-surface": "Elevated surface with semi-transparent background.",
+    "lp-divider": "Section divider with lavender border. Use between nav sections.",
+    "lp-dot": "8px status dot indicator. Combine with lp-dot-success|warning|error for color.",
+    "lp-brand-bg": "Deep violet brand background. For hero sections and marketing blocks.",
+    "lp-gradient-hero": "Violet-to-transparent gradient overlay. For hero section depth.",
+    "lp-kbd": "Keyboard shortcut badge with lavender border.",
+    "lp-code-inline": "Inline code styling. Semi-transparent background, mono font.",
+    "lp-shimmer": "Subtle shimmer loading animation. For skeleton states."
+  },
+  "pattern_overrides": {
+    "hero": { "background": "lp-brand-bg" },
+    "card-grid": { "background": "lp-card" },
+    "kpi-grid": { "background": "lp-card" },
+    "filter-bar": { "background": "lp-surface" },
+    "data-table": { "background": "lp-card" },
+    "cta-section": { "background": "lp-brand-bg" },
+    "detail-header": { "background": "lp-surface" },
+    "stats-section": { "background": "lp-surface" },
+    "footer-columns": { "background": "lp-surface" },
+    "activity-feed": { "background": "lp-card" },
+    "chart-grid": { "background": "lp-card" },
+    "pricing-table": { "background": "lp-card" },
+    "status-board": { "background": "lp-card" },
+    "form-sections": { "background": "lp-card" },
+    "deploy-log": { "background": "lp-card" },
+    "resource-overview": { "background": "lp-card" },
+    "service-catalog": { "background": "lp-card" },
+    "checklist-card": { "background": "lp-card" },
+    "logo-strip": { "background": "lp-surface" }
+  },
+  "compositions": {
+    "panel": {
+      "description": "Main content panel with violet-tinted shadow.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('lp-panel _p4') },\n  div({ class: css('_flex _aic _jcsb _mb3') },\n    span({ class: css('_textsm _bold') }, 'Section Title')\n  ),\n  div({ class: css('_flex _col _gap3') },\n    // content here\n  )\n)"
+    },
+    "card": {
+      "wraps": "Card",
+      "description": "Card with lavender border and violet shadow.",
+      "example": "Card({},\n  Card.Header({},\n    span({ class: css('_heading5') }, 'Feature')\n  ),\n  Card.Body({},\n    p({ class: css('_fgmuted _textsm') }, 'Description text here')\n  )\n)"
+    },
+    "kpi": {
+      "wraps": "Statistic",
+      "description": "KPI metric in a card with violet-tinted shadow.",
+      "example": "Statistic({\n  label: 'Active Apps',\n  value: 42,\n  trend: 'up',\n  trendValue: '+3',\n  class: css('lp-card')\n})"
+    },
+    "table": {
+      "wraps": "DataTable",
+      "description": "DataTable in a bordered container.",
+      "example": "const { div, span } = tags;\ndiv({ class: css('lp-card _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_heading5') }, 'Tokens'),\n    span({ class: css('_textsm _fgmuted') }, '24 active')\n  ),\n  DataTable({ columns, data, sortable: true, paginate: true })\n)"
+    },
+    "form": {
+      "description": "Form in a card with clean layout.",
+      "example": "Card({ class: css('_mw[480px]') },\n  Card.Header({},\n    h2({ class: css('_heading4') }, 'Sign In')\n  ),\n  Card.Body({ class: css('_flex _col _gap3') },\n    Input({ label: 'Email', type: 'email' }),\n    Input({ label: 'Password', type: 'password' }),\n    Button({ variant: 'primary', class: css('_wfull') }, 'Continue')\n  )\n)"
+    },
+    "sidebar": {
+      "description": "Transparent sidebar with hr dividers between sections and violet active states.",
+      "example": "Shell.Nav({ class: css('_flex _col _py3 _px3') },\n  div({ class: css('_flex _aic _jcsb _gap2 _mb3') },\n    // Org switcher + Launch button\n  ),\n  hr({ class: css('lp-divider') }),\n  // nav items with lp-nav-item / lp-nav-active\n)"
+    },
+    "layout": {
+      "description": "Full page layout with top header and left sidebar.",
+      "example": "Shell({ config: 'top-nav-sidebar', navState, class: css('_h[100vh]') },\n  Shell.Header({ class: css('_flex _aic _jcsb _px6 lp-header') }, ...),\n  Shell.Nav({ class: css('_flex _col _py3 _px3') }, ...),\n  Shell.Body({ class: css('lp-panel _flex _col _gap4 _p6 _overflow[auto] _flex1') },\n    router.outlet()\n  )\n)"
+    },
+    "alert": {
+      "wraps": "Alert",
+      "description": "Standard Alert — launchpad tokens handle the styling.",
+      "example": "Alert({ variant: 'info' },\n  'Your app will be deployed to 3 regions.'\n)"
+    },
+    "modal": {
+      "wraps": "Modal",
+      "description": "Standard Modal with violet-tinted border styling.",
+      "example": "Modal({\n  visible: showModal,\n  onClose: () => setShowModal(false)\n},\n  h2({ class: css('_heading4 _mb4') }, 'Launch App'),\n  div({ class: css('_flex _col _gap4') },\n    // modal content\n  )\n)"
+    },
+    "chart": {
+      "wraps": "Chart",
+      "description": "Chart in bordered container.",
+      "example": "div({ class: css('lp-card _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_bold') }, 'CPU Usage'),\n    span({ class: css('_textxs _fgmuted') }, 'Last 24h')\n  ),\n  Chart({ type: 'area', data: cpuData, x: 'time', y: 'percent', height: 300 })\n)"
+    },
+    "deploy-log": {
+      "description": "Terminal-style deploy log with monospace font and color-coded severity.",
+      "example": "div({ class: css('lp-card _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n    span({ class: css('_bold') }, 'Deploy Log'),\n    Badge({ variant: 'success' }, 'Live')\n  ),\n  div({ class: css('_p4 _fontmono _textsm _bg[#0F0B1A] _fg[#EEEDF5] _overflow[auto] _mxh[400px]') },\n    // log lines\n  )\n)"
+    }
+  }
+}

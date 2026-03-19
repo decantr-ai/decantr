@@ -204,14 +204,6 @@
           "type": "Function"
         }
       ]
-    },
-    "onDestroy": {
-      "params": [
-        {
-          "name": "fn",
-          "type": "Function"
-        }
-      ]
     }
   }
 }

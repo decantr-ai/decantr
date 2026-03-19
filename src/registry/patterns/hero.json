@@ -125,6 +125,24 @@
         "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Badge, Avatar, icon } from 'decantr/components';",
         "example": "function CompactOverlayHero({ item }) {\n  const { div, h1, span, img } = tags;\n\n  return div({ class: css('_relative _wfull _h[300px] _overflow[hidden] _r4') },\n    img({ src: item.cover, alt: item.title, class: css('_absolute _inset0 _wfull _hfull _object[cover]') }),\n    div({ class: css('_absolute _inset0 _bg[linear-gradient(transparent_50%,rgba(0,0,0,0.8))]') }),\n    div({ class: css('_absolute _top0 _right0 _p4 _flex _gap2') },\n      Button({ variant: 'ghost', size: 'sm' }, icon('edit'), 'Edit'),\n      Button({ variant: 'ghost', size: 'sm' }, icon('trash'), 'Delete')\n    ),\n    div({ class: css('_absolute _bottom0 _left0 _right0 _p6 _flex _col _gap2') },\n      h1({ class: css('_heading2 _fgfg') }, item.title),\n      div({ class: css('_flex _aic _gap3') },\n        Badge({ variant: 'outline' }, `${item.count} items`),\n        div({ class: css('_flex _aic _gap2') },\n          Avatar({ src: item.author?.avatar, size: 'xs' }),\n          span({ class: css('_textsm') }, item.author?.name)\n        )\n      )\n    )\n  );\n}"
       }
+    },
+    "empty-state": {
+      "description": "Empty state placeholder with illustration slot, message, and action CTA. Used when a list or page has no data yet.",
+      "components": ["Button", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _tc _gap4 _py12 _px6",
+        "slots": {
+          "illustration": "Large icon or illustration placeholder",
+          "title": "Empty state heading with _heading4",
+          "description": "Explanatory text with _body _fgmuted",
+          "cta": "Primary action Button to create first item or import data"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function EmptyState({ icon: ic, title, description, actionLabel, onAction }) {\n  const { div, h3, p } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap4 _py12 _px6') },\n    div({ class: css('_w16 _h16 _flex _center _rfull _bgmuted/10') },\n      icon(ic, { size: '2rem', class: css('_fgmuted') })\n    ),\n    h3({ class: css('_heading4') }, title),\n    p({ class: css('_body _fgmuted _mw[480px]') }, description),\n    actionLabel ? Button({ variant: 'primary', onclick: onAction }, icon('plus', { size: '1em' }), ` ${actionLabel}`) : null\n  );\n}"
+      }
     }
   },
   "default_blend": {

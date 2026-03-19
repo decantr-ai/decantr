@@ -33,6 +33,22 @@
         "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Checkbox, icon } from 'decantr/components';",
         "example": "function ChecklistCard({ title, items }) {\n  const { div, h3, span } = tags;\n\n  return Card({},\n    Card.Header({},\n      div({ class: css('_flex _aic _jcsb') },\n        h3({ class: css('_heading5') }, icon('list'), ` ${title}`),\n        span({ class: css('_textsm _fgmuted') }, `${items.length} items`)\n      )\n    ),\n    Card.Body({ class: css('_flex _col _gap2') },\n      ...items.map(item =>\n        Checkbox({ label: typeof item === 'string' ? item : `${item.quantity} ${item.unit} ${item.name}${item.preparation ? ' — ' + item.preparation : ''}` })\n      )\n    )\n  );\n}"
       }
+    },
+    "onboarding": {
+      "description": "Onboarding checklist with progress percentage, step completion tracking, and step-by-step guidance. Used for new user onboarding and setup wizards.",
+      "components": ["Card", "Card.Header", "Card.Body", "Checkbox", "Badge", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0",
+        "slots": {
+          "header": "Card.Header with title, progress percentage Badge, and progress bar",
+          "steps": "Ordered list of onboarding steps with Checkbox, title, description, and completion state"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Badge, Card, Checkbox, icon } from 'decantr/components';",
+        "example": "function OnboardingChecklist({ steps }) {\n  const { div, span, h3, p } = tags;\n  const completed = steps.filter(s => s.done).length;\n  const pct = Math.round((completed / steps.length) * 100);\n\n  return Card({},\n    Card.Header({},\n      div({ class: css('_flex _aic _jcsb') },\n        h3({ class: css('_heading5') }, 'Getting Started'),\n        Badge({ variant: pct === 100 ? 'success' : 'primary' }, `${pct}%`)\n      ),\n      div({ class: css('_mt2 _h[4px] _bgmuted/20 _rfull _overflow[hidden]') },\n        div({ class: css(`_h[4px] _bgprimary _rfull _w[${pct}%]`) })\n      )\n    ),\n    Card.Body({ class: css('_flex _col _gap1') },\n      ...steps.map((step, i) =>\n        div({ class: css('_flex _gap3 _aic _p3 _borderB') },\n          Checkbox({ checked: step.done }),\n          div({ class: css('_flex _col _flex1') },\n            span({ class: css(`_textsm ${step.done ? '_fgmuted _lineThrough' : '_bold'}`) }, `${i + 1}. ${step.title}`),\n            p({ class: css('_textxs _fgmuted') }, step.description)\n          ),\n          step.done ? icon('check-circle', { class: css('_fgsuccess') }) : null\n        )\n      )\n    )\n  );\n}"
+      }
     }
   },
   "default_blend": {

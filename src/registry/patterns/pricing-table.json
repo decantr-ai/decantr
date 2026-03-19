@@ -1,5 +1,5 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "pricing-table",
   "name": "Pricing Table",
   "description": "Comparison pricing cards with features list, pricing tiers, and CTA buttons.",
@@ -10,6 +10,49 @@
     "Separator",
     "List"
   ],
+  "default_preset": "default",
+  "presets": {
+    "default": {
+      "description": "Comparison pricing cards with features list, pricing tiers, and CTA buttons.",
+      "components": [
+        "Card",
+        "Button",
+        "Badge",
+        "Separator",
+        "List"
+      ],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc3 _gap6 _aic",
+        "slots": {
+          "pricing-card": "Card per tier with price, name, and highlighted Badge",
+          "features-list": "Checklist of included features separated by Separator",
+          "cta": "Primary action Button per pricing tier"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Button, Badge, Separator, icon } from 'decantr/components';",
+        "example": "function PricingTable() {\n  const { div, span, h3, ul, li } = tags;\n  const plans = [\n    { name: 'Starter', price: 9, featured: false, features: ['5 projects', '1 GB storage', 'Email support'] },\n    { name: 'Pro', price: 29, featured: true, features: ['Unlimited projects', '10 GB storage', 'Priority support', 'API access', 'Custom domain'] },\n    { name: 'Enterprise', price: 99, featured: false, features: ['Everything in Pro', '100 GB storage', 'Dedicated support', 'SSO', 'Audit logs', 'SLA'] }\n  ];\n\n  return div({ class: css('_grid _gc3 _gap6 _p4 _aic') },\n    ...plans.map(plan =>\n      Card({ class: css(plan.featured ? '_b2 _bcprimary' : '') },\n        Card.Header({ class: css('_tc') },\n          plan.featured ? Badge({ variant: 'primary', class: css('_mb2') }, 'Popular') : null,\n          h3({ class: css('_heading4') }, plan.name),\n          div({ class: css('_mt2') },\n            span({ class: css('_heading1') }, `$${plan.price}`),\n            span({ class: css('_fgmuted') }, '/month')\n          )\n        ),\n        Separator(),\n        Card.Body({},\n          ul({ class: css('_flex _col _gap2') },\n            ...plan.features.map(f =>\n              li({ class: css('_flex _aic _gap2 _textsm') }, icon('check', { class: css('_fgsuccess') }), f)\n            )\n          )\n        ),\n        Card.Footer({},\n          Button({ variant: plan.featured ? 'primary' : 'outline', class: css('_wfull') }, 'Get Started')\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "feature-comparison": {
+      "description": "Feature comparison grid with check/x indicators per plan. Used for spec comparisons, plan feature matrices, and product comparison tables.",
+      "components": ["Card", "Badge", "icon", "Separator"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _overflow[auto]",
+        "slots": {
+          "header-row": "Plan name columns with optional highlight Badge",
+          "feature-row": "Feature name + check/x per plan column",
+          "category": "Optional feature category grouping with Separator"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Card, Separator, icon } from 'decantr/components';",
+        "example": "function FeatureComparison({ plans, features }) {\n  const { div, span, table, thead, tbody, tr, th, td } = tags;\n\n  return Card({},\n    Card.Body({ class: css('_overflow[auto]') },\n      table({ class: css('_wfull _textLeft') },\n        thead({},\n          tr({ class: css('_borderB') },\n            th({ class: css('_p3 _textsm _fgmuted') }, 'Feature'),\n            ...plans.map(p => th({ class: css('_p3 _tc') },\n              div({ class: css('_flex _col _aic _gap1') },\n                span({ class: css('_textsm _bold') }, p.name),\n                p.featured ? Badge({ variant: 'primary', size: 'sm' }, 'Popular') : null\n              )\n            ))\n          )\n        ),\n        tbody({},\n          ...features.map(feat =>\n            tr({ class: css('_borderB') },\n              td({ class: css('_p3 _textsm') }, feat.name),\n              ...plans.map(p => td({ class: css('_p3 _tc') },\n                feat.values[p.id] ? icon('check', { class: css('_fgsuccess') }) : icon('x', { class: css('_fgmuted/40') })\n              ))\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "grid",
     "atoms": "_grid _gc3 _gap6 _aic",

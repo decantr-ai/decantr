@@ -1,13 +1,102 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "chart-grid",
   "name": "Chart Grid",
-  "description": "Responsive grid of chart containers for data visualization dashboards. Charts use their own title prop — no Card wrapping.",
+  "description": "Responsive grid of chart containers for data visualization dashboards. Charts use their own title prop \u2014 no Card wrapping.",
   "contained": false,
   "components": [
     "Chart",
     "Select"
   ],
+  "default_preset": "default",
+  "io": {
+    "produces": [
+      "dateRange"
+    ],
+    "consumes": [],
+    "actions": []
+  },
+  "presets": {
+    "default": {
+      "description": "Responsive grid of chart containers for data visualization dashboards. Charts use their own title prop \u2014 no Card wrapping.",
+      "components": [
+        "Chart",
+        "Select"
+      ],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _gap4 _p4",
+        "slots": {
+          "header": "Dashboard section title with _heading4 and time-range Select",
+          "charts": "Array of Chart({ type }) instances (line, bar, pie, area) using the title prop directly"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Select } from 'decantr/components';\nimport { Chart } from 'decantr/chart';",
+        "example": "function ChartGrid({ range: extRange, onRange } = {}) {\n  const { div, h2 } = tags;\n  const [_range, _setRange] = createSignal('7d');\n  const range = extRange || _range;\n  const setRange = v => { _setRange(v); onRange?.(v); };\n  const data = {\n    revenue: [{ date: 'Jan', value: 4200 }, { date: 'Feb', value: 5100 }, { date: 'Mar', value: 4800 }, { date: 'Apr', value: 6200 }],\n    orders: [{ month: 'Jan', count: 120 }, { month: 'Feb', count: 145 }, { month: 'Mar', count: 132 }, { month: 'Apr', count: 168 }],\n    categories: [{ name: 'Electronics', value: 42 }, { name: 'Clothing', value: 28 }, { name: 'Books', value: 18 }, { name: 'Home', value: 12 }],\n    traffic: [{ date: 'Jan', visits: 8400 }, { date: 'Feb', visits: 9200 }, { date: 'Mar', visits: 8800 }, { date: 'Apr', visits: 11500 }]\n  };\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'Analytics'),\n      Select({ value: range, onchange: setRange, options: [\n        { label: 'Last 7 days', value: '7d' },\n        { label: 'Last 30 days', value: '30d' },\n        { label: 'Last 90 days', value: '90d' }\n      ] })\n    ),\n    div({ class: css('_grid _gc1 _md:gc2 _gap4') },\n      Chart({ type: 'line', data: data.revenue, x: 'date', y: 'value', title: 'Revenue', height: 280 }),\n      Chart({ type: 'bar', data: data.orders, x: 'month', y: 'count', title: 'Orders', height: 280 }),\n      Chart({ type: 'pie', data: data.categories, x: 'name', y: 'value', title: 'Categories', height: 280 }),\n      Chart({ type: 'area', data: data.traffic, x: 'date', y: 'visits', title: 'Traffic', height: 280 })\n    )\n  );\n}"
+      }
+    },
+    "dashboard": {
+      "description": "Mixed-size chart grid where one chart spans 2 columns for emphasis. Ideal for overview dashboards with a primary and supporting metrics.",
+      "components": [
+        "Chart",
+        "Select",
+        "Statistic"
+      ],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _gap4 _p4",
+        "slots": {
+          "header": "Dashboard section title with _heading4 and time-range Select",
+          "featured-chart": "Primary Chart spanning 2 columns with _md:span2",
+          "supporting-charts": "Smaller Chart instances filling remaining grid cells"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Select } from 'decantr/components';\nimport { Chart } from 'decantr/chart';",
+        "example": "function ChartGridDashboard({ range: extRange, onRange } = {}) {\n  const { div, h2 } = tags;\n  const [_range, _setRange] = createSignal('30d');\n  const range = extRange || _range;\n  const setRange = v => { _setRange(v); onRange?.(v); };\n  const revenueData = [{ date: 'Jan', value: 4200 }, { date: 'Feb', value: 5100 }, { date: 'Mar', value: 4800 }, { date: 'Apr', value: 6200 }, { date: 'May', value: 7100 }, { date: 'Jun', value: 6800 }];\n  const ordersData = [{ month: 'Jan', count: 120 }, { month: 'Feb', count: 145 }, { month: 'Mar', count: 132 }, { month: 'Apr', count: 168 }];\n  const categories = [{ name: 'Electronics', value: 42 }, { name: 'Clothing', value: 28 }, { name: 'Books', value: 18 }, { name: 'Home', value: 12 }];\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'Dashboard'),\n      Select({ value: range, onchange: setRange, options: [\n        { label: 'Last 7 days', value: '7d' },\n        { label: 'Last 30 days', value: '30d' },\n        { label: 'Last 90 days', value: '90d' }\n      ] })\n    ),\n    div({ class: css('_grid _gc1 _md:gc2 _gap4') },\n      div({ class: css('_md:span2') },\n        Chart({ type: 'area', data: revenueData, x: 'date', y: 'value', title: 'Revenue Trend', height: 320 })\n      ),\n      Chart({ type: 'bar', data: ordersData, x: 'month', y: 'count', title: 'Orders', height: 280 }),\n      Chart({ type: 'pie', data: categories, x: 'name', y: 'value', title: 'Categories', height: 280 })\n    )\n  );\n}"
+      }
+    },
+    "single-focus": {
+      "description": "One large chart with full width and a row of mini stats below. Use when a single metric needs deep focus with supporting context.",
+      "components": [
+        "Chart",
+        "Statistic",
+        "Select"
+      ],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4",
+        "slots": {
+          "header": "Section title with _heading4 and time-range Select",
+          "chart": "Single full-width Chart at height 400",
+          "stats": "Horizontal row of mini Statistic cards below the chart"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Select, Statistic } from 'decantr/components';\nimport { Chart } from 'decantr/chart';",
+        "example": "function ChartGridSingleFocus({ range: extRange, onRange } = {}) {\n  const { div, h2 } = tags;\n  const [_range, _setRange] = createSignal('30d');\n  const range = extRange || _range;\n  const setRange = v => { _setRange(v); onRange?.(v); };\n  const revenueData = [{ date: 'Jan', value: 4200 }, { date: 'Feb', value: 5100 }, { date: 'Mar', value: 4800 }, { date: 'Apr', value: 6200 }, { date: 'May', value: 7100 }, { date: 'Jun', value: 6800 }];\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'Revenue Analysis'),\n      Select({ value: range, onchange: setRange, options: [\n        { label: 'Last 7 days', value: '7d' },\n        { label: 'Last 30 days', value: '30d' },\n        { label: 'Last 90 days', value: '90d' }\n      ] })\n    ),\n    Chart({ type: 'area', data: revenueData, x: 'date', y: 'value', title: 'Revenue', height: 400 }),\n    div({ class: css('_grid _gc2 _md:gc4 _gap4') },\n      Statistic({ label: 'Total Revenue', value: 34100, prefix: '$', size: 'sm' }),\n      Statistic({ label: 'Avg Monthly', value: 5683, prefix: '$', size: 'sm' }),\n      Statistic({ label: 'Peak Month', value: 'May', size: 'sm' }),\n      Statistic({ label: 'Growth', value: 61.9, suffix: '%', trend: 'up', trendValue: '+61.9%', size: 'sm' })\n    )\n  );\n}"
+      }
+    },
+    "sparkline-row": {
+      "description": "Horizontal row of small sparkline charts for quick trend scanning. Compact visualization for dense dashboards.",
+      "components": [
+        "Sparkline",
+        "Statistic"
+      ],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _md:gc4 _gap3 _p4",
+        "slots": {
+          "cards": "Array of sparkline cards, each with a label, value, and Sparkline chart"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Sparkline } from 'decantr/chart';",
+        "example": "function ChartGridSparklineRow() {\n  const { div, span } = tags;\n  const metrics = [\n    { label: 'Revenue', value: '$12.4k', spark: [42, 48, 51, 45, 62, 58, 72], color: 'success' },\n    { label: 'Users', value: '8.4k', spark: [320, 340, 310, 380, 420, 450, 480], color: 'primary' },\n    { label: 'Bounce Rate', value: '42%', spark: [48, 45, 50, 42, 44, 40, 38], color: 'warning' },\n    { label: 'Latency', value: '124ms', spark: [130, 125, 140, 128, 118, 122, 124], color: 'error' }\n  ];\n\n  return div({ class: css('_grid _gc2 _md:gc4 _gap3') },\n    ...metrics.map(m =>\n      div({ class: css('_flex _col _gap2 _p3 _bgmuted/5 _r2') },\n        span({ class: css('_textxs _fgmuted') }, m.label),\n        span({ class: css('_textlg _bold') }, m.value),\n        Sparkline({ data: m.spark, height: 32, color: m.color })\n      )\n    )\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "grid",
     "atoms": "_grid _gc1 _md:gc2 _gap4 _p4",
@@ -17,7 +106,7 @@
     }
   },
   "code": {
-    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Select } from 'decantr/components';\nimport { Chart } from 'decantr/chart';",
-    "example": "function ChartGrid() {\n  const { div, h2 } = tags;\n  const data = {\n    revenue: [{ date: 'Jan', value: 4200 }, { date: 'Feb', value: 5100 }, { date: 'Mar', value: 4800 }, { date: 'Apr', value: 6200 }],\n    orders: [{ month: 'Jan', count: 120 }, { month: 'Feb', count: 145 }, { month: 'Mar', count: 132 }, { month: 'Apr', count: 168 }],\n    categories: [{ name: 'Electronics', value: 42 }, { name: 'Clothing', value: 28 }, { name: 'Books', value: 18 }, { name: 'Home', value: 12 }],\n    traffic: [{ date: 'Jan', visits: 8400 }, { date: 'Feb', visits: 9200 }, { date: 'Mar', visits: 8800 }, { date: 'Apr', visits: 11500 }]\n  };\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'Analytics'),\n      Select({ value: '7d', options: [\n        { label: 'Last 7 days', value: '7d' },\n        { label: 'Last 30 days', value: '30d' },\n        { label: 'Last 90 days', value: '90d' }\n      ] })\n    ),\n    div({ class: css('_grid _gc1 _md:gc2 _gap4') },\n      Chart({ type: 'line', data: data.revenue, x: 'date', y: 'value', title: 'Revenue', height: 280 }),\n      Chart({ type: 'bar', data: data.orders, x: 'month', y: 'count', title: 'Orders', height: 280 }),\n      Chart({ type: 'pie', data: data.categories, x: 'name', y: 'value', title: 'Categories', height: 280 }),\n      Chart({ type: 'area', data: data.traffic, x: 'date', y: 'visits', title: 'Traffic', height: 280 })\n    )\n  );\n}"
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Select } from 'decantr/components';\nimport { Chart } from 'decantr/chart';",
+    "example": "function ChartGrid({ range: extRange, onRange } = {}) {\n  const { div, h2 } = tags;\n  const [_range, _setRange] = createSignal('7d');\n  const range = extRange || _range;\n  const setRange = v => { _setRange(v); onRange?.(v); };\n  const data = {\n    revenue: [{ date: 'Jan', value: 4200 }, { date: 'Feb', value: 5100 }, { date: 'Mar', value: 4800 }, { date: 'Apr', value: 6200 }],\n    orders: [{ month: 'Jan', count: 120 }, { month: 'Feb', count: 145 }, { month: 'Mar', count: 132 }, { month: 'Apr', count: 168 }],\n    categories: [{ name: 'Electronics', value: 42 }, { name: 'Clothing', value: 28 }, { name: 'Books', value: 18 }, { name: 'Home', value: 12 }],\n    traffic: [{ date: 'Jan', visits: 8400 }, { date: 'Feb', visits: 9200 }, { date: 'Mar', visits: 8800 }, { date: 'Apr', visits: 11500 }]\n  };\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'Analytics'),\n      Select({ value: range, onchange: setRange, options: [\n        { label: 'Last 7 days', value: '7d' },\n        { label: 'Last 30 days', value: '30d' },\n        { label: 'Last 90 days', value: '90d' }\n      ] })\n    ),\n    div({ class: css('_grid _gc1 _md:gc2 _gap4') },\n      Chart({ type: 'line', data: data.revenue, x: 'date', y: 'value', title: 'Revenue', height: 280 }),\n      Chart({ type: 'bar', data: data.orders, x: 'month', y: 'count', title: 'Orders', height: 280 }),\n      Chart({ type: 'pie', data: data.categories, x: 'name', y: 'value', title: 'Categories', height: 280 }),\n      Chart({ type: 'area', data: data.traffic, x: 'date', y: 'visits', title: 'Traffic', height: 280 })\n    )\n  );\n}"
   }
 }

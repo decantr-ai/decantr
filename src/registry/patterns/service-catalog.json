@@ -1,0 +1,55 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "service-catalog",
+  "name": "Service Catalog",
+  "description": "Grid of available services and integrations with connect/manage actions. Status-dependent action buttons for service lifecycle management.",
+  "components": ["Card", "Card.Body", "Badge", "Button", "icon"],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Icon cards in a responsive grid. Each card shows service icon, name, description, status dot, and action button.",
+      "components": ["Card", "Card.Body", "Badge", "Button", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gcaf280 _gap4",
+        "slots": {
+          "header": "Section title with service count Badge and optional search",
+          "service-card": "Card per service with icon circle, name, description, status indicator, and action Button",
+          "action-button": "Status-dependent: connected=Manage, available=Connect, beta=Try Now"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Button, Card, icon } from 'decantr/components';",
+        "example": "function ServiceCatalogGrid({ services }) {\n  const { div, span, h2, h3, p } = tags;\n  const actionLabel = s => s === 'connected' ? 'Manage' : s === 'beta' ? 'Try Now' : 'Connect';\n  const actionVariant = s => s === 'connected' ? 'outline' : s === 'beta' ? 'accent' : 'primary';\n  const statusDot = s => s === 'connected' ? 'lp-dot lp-dot-success' : s === 'beta' ? 'lp-dot lp-dot-warning' : 'lp-dot';\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'Services'),\n      Badge({ variant: 'default' }, `${services.length} available`)\n    ),\n    div({ class: css('_grid _gcaf280 _gap4') },\n      ...services.map(svc =>\n        Card({ hover: true },\n          Card.Body({ class: css('_flex _col _gap3 _p4') },\n            div({ class: css('_flex _aic _gap3') },\n              div({ class: css('_w10 _h10 _rfull _bgprimary/10 _flex _center') },\n                icon(svc.icon, { size: '1.25em', class: css('_fgprimary') })\n              ),\n              div({ class: css('_flex _col _flex1') },\n                div({ class: css('_flex _aic _gap2') },\n                  h3({ class: css('_textsm _bold') }, svc.name),\n                  div({ class: css(statusDot(svc.status)) })\n                ),\n                p({ class: css('_textxs _fgmuted') }, svc.description)\n              )\n            ),\n            Button({ variant: actionVariant(svc.status), size: 'sm', class: css('_wfull') }, actionLabel(svc.status))\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "list": {
+      "description": "Compact rows for service listing. Each row shows icon, name, status chip, and action button inline.",
+      "components": ["Badge", "Button", "Chip", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0",
+        "slots": {
+          "header": "Section title with count and search",
+          "service-row": "Row with icon, name, description, status Chip, and action Button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Button, Chip, icon } from 'decantr/components';",
+        "example": "function ServiceCatalogList({ services }) {\n  const { div, span, h2 } = tags;\n  const actionLabel = s => s === 'connected' ? 'Manage' : s === 'beta' ? 'Try Now' : 'Connect';\n\n  return div({ class: css('_flex _col') },\n    div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n      h2({ class: css('_heading5') }, 'Services'),\n      Badge({ variant: 'default' }, `${services.length}`)\n    ),\n    ...services.map(svc =>\n      div({ class: css('_flex _aic _gap3 _px4 _py3 _borderB') },\n        div({ class: css('_w8 _h8 _rfull _bgprimary/10 _flex _center') },\n          icon(svc.icon, { size: '1em', class: css('_fgprimary') })\n        ),\n        div({ class: css('_flex _col _flex1') },\n          span({ class: css('_textsm _bold') }, svc.name),\n          span({ class: css('_textxs _fgmuted') }, svc.description)\n        ),\n        Chip({ label: svc.status, size: 'xs', variant: svc.status === 'connected' ? 'success' : 'default' }),\n        Button({ variant: 'ghost', size: 'sm' }, actionLabel(svc.status))\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gcaf280 _gap4",
+    "slots": {
+      "header": "Section title with service count",
+      "service-card": "Card per service with icon, name, status, and action"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Button, Card, icon } from 'decantr/components';",
+    "example": "function ServiceCatalogGrid({ services }) {\n  const { div, span, h2, h3, p } = tags;\n  const actionLabel = s => s === 'connected' ? 'Manage' : s === 'beta' ? 'Try Now' : 'Connect';\n  const actionVariant = s => s === 'connected' ? 'outline' : s === 'beta' ? 'accent' : 'primary';\n\n  return div({ class: css('_flex _col _gap4') },\n    h2({ class: css('_heading4') }, 'Services'),\n    div({ class: css('_grid _gcaf280 _gap4') },\n      ...services.map(svc =>\n        Card({ hover: true },\n          Card.Body({ class: css('_flex _col _gap3 _p4') },\n            div({ class: css('_flex _aic _gap3') },\n              div({ class: css('_w10 _h10 _rfull _bgprimary/10 _flex _center') },\n                icon(svc.icon, { size: '1.25em', class: css('_fgprimary') })\n              ),\n              div({ class: css('_flex _col _flex1') },\n                h3({ class: css('_textsm _bold') }, svc.name),\n                span({ class: css('_textxs _fgmuted') }, svc.description)\n              )\n            ),\n            Button({ variant: actionVariant(svc.status), size: 'sm', class: css('_wfull') }, actionLabel(svc.status))\n          )\n        )\n      )\n    )\n  );\n}"
+  }
+}

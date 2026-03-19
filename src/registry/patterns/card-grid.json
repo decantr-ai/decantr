@@ -13,6 +13,11 @@
     "icon"
   ],
   "default_preset": "product",
+  "io": {
+    "produces": [],
+    "consumes": ["search"],
+    "actions": []
+  },
   "presets": {
     "product": {
       "description": "Product cards with image, title, price, CTA. For e-commerce catalogs.",
@@ -103,6 +108,53 @@
       "code": {
         "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, icon } from 'decantr/components';",
         "example": "function FeatureGrid({ features }) {\n  const { div, h3, p } = tags;\n\n  return div({ class: css('_grid _gc3 _gap6 _p4') },\n    ...features.map(f =>\n      Card({},\n        Card.Body({ class: css('_flex _col _gap3 _aic _tc') },\n          div({ class: css('_w[48px] _h[48px] _r4 _bgmuted _flex _aic _jcc _fgprimary') },\n            icon(f.icon)\n          ),\n          h3({ class: css('_heading5') }, f.title),\n          p({ class: css('_caption _fgmuted') }, f.description)\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "resource": {
+      "description": "App/resource cards with status badge, metric chips (cpu/memory/machines/region), and click-to-navigate. For cloud platform app lists.",
+      "components": ["Card", "Card.Body", "Badge", "Chip", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gcaf280 _gap4",
+        "slots": {
+          "card": "Card per resource with name, status Badge, metric Chips, region tag",
+          "metrics": "Row of metric Chips showing cpu, memory, machines count"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Card, Chip, icon } from 'decantr/components';",
+        "example": "function ResourceGrid({ apps }) {\n  const { div, span, h4 } = tags;\n  const statusVariant = s => s === 'deployed' ? 'success' : s === 'pending' ? 'warning' : 'error';\n\n  return div({ class: css('_grid _gcaf280 _gap4') },\n    ...apps.map(app =>\n      Card({ hover: true },\n        Card.Body({ class: css('_flex _col _gap3 _p4') },\n          div({ class: css('_flex _aic _jcsb') },\n            div({ class: css('_flex _aic _gap2') },\n              icon('box', { size: '1em', class: css('_fgprimary') }),\n              h4({ class: css('_textsm _bold') }, app.name)\n            ),\n            Badge({ variant: statusVariant(app.status), size: 'sm' }, app.status)\n          ),\n          div({ class: css('_flex _gap2 _flexWrap') },\n            Chip({ label: `${app.cpu} CPU`, size: 'xs', icon: 'cpu' }),\n            Chip({ label: `${app.memory} MB`, size: 'xs', icon: 'hard-drive' }),\n            Chip({ label: `${app.machines} machines`, size: 'xs', icon: 'server' }),\n            Chip({ label: app.region, size: 'xs', icon: 'globe' })\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "service": {
+      "description": "Service cards with large icon circle, description, status dot, and action button. For service catalogs and integrations.",
+      "components": ["Card", "Card.Body", "Badge", "Button", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gcaf280 _gap4",
+        "slots": {
+          "card": "Card per service with icon circle, name, description, status dot, action Button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Button, Card, icon } from 'decantr/components';",
+        "example": "function ServiceGrid({ services }) {\n  const { div, span, h4, p } = tags;\n  const dotClass = s => s === 'connected' ? '_bgsuccess' : s === 'beta' ? '_bgwarning' : '_bgmuted';\n  const actionLabel = s => s === 'connected' ? 'Manage' : s === 'beta' ? 'Try Now' : 'Connect';\n\n  return div({ class: css('_grid _gcaf280 _gap4') },\n    ...services.map(svc =>\n      Card({ hover: true },\n        Card.Body({ class: css('_flex _col _aic _gap3 _p4 _tc') },\n          div({ class: css('_w12 _h12 _rfull _bgprimary/10 _flex _center') },\n            icon(svc.icon, { size: '1.5em', class: css('_fgprimary') })\n          ),\n          div({ class: css('_flex _col _aic _gap1') },\n            div({ class: css('_flex _aic _gap2') },\n              h4({ class: css('_textsm _bold') }, svc.name),\n              div({ class: css(`_w[8px] _h[8px] _rfull ${dotClass(svc.status)}`) })\n            ),\n            p({ class: css('_textxs _fgmuted _tc') }, svc.description)\n          ),\n          Button({ variant: 'outline', size: 'sm' }, actionLabel(svc.status))\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "user": {
+      "description": "User cards with avatar, name, role badge, status indicator, and contact actions. Used for team directories and user management.",
+      "components": ["Card", "Avatar", "Badge", "Button", "Chip", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gcaf280 _gap4",
+        "slots": {
+          "card": "Card per user with Avatar, name, role Badge, status indicator",
+          "contact-actions": "Email, message, profile action Buttons"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge, Button, Card, Chip, icon } from 'decantr/components';",
+        "example": "function UserGrid({ users }) {\n  const { div, span, h4 } = tags;\n\n  return div({ class: css('_grid _gcaf280 _gap4') },\n    ...users.map(user =>\n      Card({ hover: true },\n        Card.Body({ class: css('_flex _col _aic _gap3 _p4 _tc') },\n          Avatar({ name: user.name, size: 'lg' }),\n          div({ class: css('_flex _col _aic _gap1') },\n            h4({ class: css('_textsm _bold') }, user.name),\n            Badge({ variant: 'outline', size: 'sm' }, user.role),\n            Chip({ label: user.status, size: 'xs', variant: user.status === 'active' ? 'success' : 'default' })\n          ),\n          div({ class: css('_flex _gap2') },\n            Button({ variant: 'ghost', size: 'sm' }, icon('mail', { size: '1em' })),\n            Button({ variant: 'ghost', size: 'sm' }, icon('message-circle', { size: '1em' })),\n            Button({ variant: 'ghost', size: 'sm' }, icon('user', { size: '1em' }))\n          )\n        )\n      )\n    )\n  );\n}"
       }
     }
   },

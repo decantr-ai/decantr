@@ -71,7 +71,7 @@
   "tannins": ["portfolio-state", "pipeline-state", "compliance-state", "report-export"],
   "skeletons": {},
   "suggested_vintage": {
-    "styles": ["auradecantism", "command-center", "clean"],
+    "styles": ["auradecantism", "clean"],
     "modes": ["dark", "auto"]
   }
 }

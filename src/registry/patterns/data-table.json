@@ -1,5 +1,5 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "data-table",
   "name": "Data Table",
   "description": "Sortable, filterable, paginated data table with a toolbar for search, filters, and bulk actions.",
@@ -11,6 +11,87 @@
     "Badge",
     "Chip"
   ],
+  "default_preset": "default",
+  "io": {
+    "produces": [],
+    "consumes": ["search", "status", "data"],
+    "actions": ["export"]
+  },
+  "presets": {
+    "default": {
+      "description": "Sortable, filterable, paginated data table with a toolbar for search, filters, and bulk actions.",
+      "components": [
+        "DataTable",
+        "Input",
+        "Select",
+        "Button",
+        "Badge",
+        "Chip"
+      ],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _flexCol _gap4 _p4",
+        "slots": {
+          "toolbar": "Horizontal bar with search Input, filter Select, action Buttons via _flex _gap3 _justifyBetween",
+          "table": "DataTable instance with columns, data, sort, and pagination props",
+          "bulk-actions": "Conditional bar shown when rows selected, with Buttons and Badge count"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, createMemo } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { DataTable, Input, Select, Button, Badge } from 'decantr/components';",
+        "example": "function DataTablePattern({ search: extSearch, status: extStatus, onSearch, onStatus } = {}) {\n  const { div } = tags;\n  const [_search, _setSearch] = createSignal('');\n  const [_status, _setStatus] = createSignal('all');\n  const search = extSearch || _search;\n  const setSearch = v => { _setSearch(v); onSearch?.(v); };\n  const status = extStatus || _status;\n  const setStatus = v => { _setStatus(v); onStatus?.(v); };\n  const columns = [\n    { key: 'name', label: 'Name', sortable: true },\n    { key: 'email', label: 'Email', sortable: true },\n    { key: 'role', label: 'Role' },\n    { key: 'status', label: 'Status' }\n  ];\n  const rawData = [\n    { name: 'Alice Chen', email: 'alice@example.com', role: 'Admin', status: 'active' },\n    { name: 'Bob Patel', email: 'bob@example.com', role: 'Editor', status: 'active' },\n    { name: 'Carol Liu', email: 'carol@example.com', role: 'Viewer', status: 'inactive' },\n    { name: 'Dan Kim', email: 'dan@example.com', role: 'Editor', status: 'active' }\n  ];\n  const filteredData = createMemo(() => {\n    let rows = rawData;\n    const s = search().toLowerCase();\n    if (s) rows = rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(s)));\n    const st = status();\n    if (st !== 'all') rows = rows.filter(r => r.status === st);\n    return rows;\n  });\n  const exportCsv = () => {\n    const rows = filteredData();\n    if (!rows.length) return;\n    const keys = Object.keys(rows[0]);\n    const csv = [keys.join(','), ...rows.map(r => keys.map(k => String(r[k])).join(','))].join('\\n');\n    const blob = new Blob([csv], { type: 'text/csv' });\n    const a = document.createElement('a');\n    a.href = URL.createObjectURL(blob);\n    a.download = 'export.csv';\n    a.click();\n    URL.revokeObjectURL(a.href);\n  };\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _gap3 _aic _jcsb') },\n      Input({ placeholder: 'Search...', value: search, onchange: e => setSearch(e.target.value) }),\n      div({ class: css('_flex _gap2') },\n        Select({ value: status, onchange: v => setStatus(v), options: [\n          { label: 'All', value: 'all' },\n          { label: 'Active', value: 'active' },\n          { label: 'Inactive', value: 'inactive' }\n        ] }),\n        Button({ variant: 'outline', onclick: exportCsv }, 'Export')\n      )\n    ),\n    DataTable({ columns, data: filteredData, sortable: true, paginate: true, pageSize: 10 })\n  );\n}"
+      }
+    },
+    "audit-log": {
+      "description": "Audit log table with severity Badge column, color-coded rows, and log-level filter. Used for audit trails and system logs.",
+      "components": ["DataTable", "Badge", "Select", "Button", "Chip", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "filter-bar": "Severity filter Select + date range + search",
+          "table": "DataTable with severity Badge column, timestamp, actor, action, target columns",
+          "legend": "Optional severity level legend with color indicators"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, createMemo } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Badge, Button, DataTable, Select, icon } from 'decantr/components';",
+        "example": "function AuditLog({ entries: extEntries, level: extLevel, onLevel } = {}) {\n  const { div, span } = tags;\n  const [_level, _setLevel] = createSignal('all');\n  const level = extLevel || _level;\n  const setLevel = v => { _setLevel(v); onLevel?.(v); };\n  const sevVariant = s => s === 'critical' ? 'error' : s === 'warning' ? 'warning' : s === 'info' ? 'info' : 'default';\n  const defaultEntries = [\n    { severity: 'critical', timestamp: '2024-03-15 14:23', actor: 'system', action: 'Service restart', target: 'api-gateway' },\n    { severity: 'warning', timestamp: '2024-03-15 14:20', actor: 'alice@co.com', action: 'Permission change', target: 'user:bob' },\n    { severity: 'info', timestamp: '2024-03-15 14:15', actor: 'bob@co.com', action: 'Login', target: 'dashboard' },\n    { severity: 'info', timestamp: '2024-03-15 14:10', actor: 'carol@co.com', action: 'Export data', target: 'reports' }\n  ];\n  const rawEntries = extEntries || defaultEntries;\n  const filteredEntries = createMemo(() => {\n    const l = level();\n    return l === 'all' ? rawEntries : rawEntries.filter(e => e.severity === l);\n  });\n\n  const columns = [\n    { key: 'severity', label: 'Severity', render: row => Badge({ variant: sevVariant(row.severity), size: 'sm' }, row.severity) },\n    { key: 'timestamp', label: 'Timestamp', sortable: true },\n    { key: 'actor', label: 'Actor', sortable: true },\n    { key: 'action', label: 'Action' },\n    { key: 'target', label: 'Target' }\n  ];\n  const exportCsv = () => {\n    const rows = filteredEntries();\n    if (!rows.length) return;\n    const keys = Object.keys(rows[0]);\n    const csv = [keys.join(','), ...rows.map(r => keys.map(k => String(r[k])).join(','))].join('\\n');\n    const blob = new Blob([csv], { type: 'text/csv' });\n    const a = document.createElement('a');\n    a.href = URL.createObjectURL(blob);\n    a.download = 'audit-log.csv';\n    a.click();\n    URL.revokeObjectURL(a.href);\n  };\n\n  return div({ class: css('_flex _col _gap3') },\n    div({ class: css('_flex _gap3 _aic') },\n      Select({ value: level, onchange: v => setLevel(v), options: [\n        { label: 'All Levels', value: 'all' },\n        { label: 'Critical', value: 'critical' },\n        { label: 'Warning', value: 'warning' },\n        { label: 'Info', value: 'info' }\n      ] }),\n      Button({ variant: 'outline', size: 'sm', onclick: exportCsv }, icon('download', { size: '1em' }), ' Export')\n    ),\n    DataTable({ columns, data: filteredEntries, sortable: true, paginate: true, pageSize: 20 })\n  );\n}"
+      }
+    },
+    "master-detail": {
+      "description": "Split layout with data table on the left and a detail panel on the right. Selecting a row populates the detail view. Used for CRMs, admin panels, and record browsers.",
+      "components": ["DataTable", "Input", "Select", "Button", "Badge", "Card", "Card.Header", "Card.Body"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _lg:gc3 _gap4 _p4",
+        "slots": {
+          "table": "DataTable spanning 2 columns with row selection enabled",
+          "detail": "Card panel spanning 1 column showing selected row details"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { DataTable, Input, Button, Badge, Card } from 'decantr/components';",
+        "example": "function DataTableMasterDetail() {\n  const { div, h3, span, p } = tags;\n  const [selected, setSelected] = createSignal(null);\n  const columns = [\n    { key: 'name', label: 'Name', sortable: true },\n    { key: 'email', label: 'Email', sortable: true },\n    { key: 'role', label: 'Role' },\n    { key: 'status', label: 'Status', render: row => Badge({ variant: row.status === 'active' ? 'success' : 'default', size: 'sm' }, row.status) }\n  ];\n  const data = [\n    { id: 1, name: 'Alice Chen', email: 'alice@example.com', role: 'Admin', status: 'active', joined: 'Jan 2024', bio: 'Platform administrator' },\n    { id: 2, name: 'Bob Patel', email: 'bob@example.com', role: 'Editor', status: 'active', joined: 'Mar 2024', bio: 'Content editor' },\n    { id: 3, name: 'Carol Liu', email: 'carol@example.com', role: 'Viewer', status: 'inactive', joined: 'Jun 2024', bio: 'Read-only access' }\n  ];\n\n  return div({ class: css('_grid _gc1 _lg:gc3 _gap4') },\n    div({ class: css('_lg:span2 _flex _col _gap3') },\n      Input({ placeholder: 'Search users...', class: css('_wfull') }),\n      DataTable({ columns, data, sortable: true, paginate: true, pageSize: 10, onRowClick: row => setSelected(row) })\n    ),\n    () => selected() ? Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, selected().name)),\n      Card.Body({},\n        div({ class: css('_flex _col _gap3') },\n          div({}, span({ class: css('_textxs _fgmuted') }, 'Email'), p({ class: css('_textsm') }, selected().email)),\n          div({}, span({ class: css('_textxs _fgmuted') }, 'Role'), p({ class: css('_textsm') }, selected().role)),\n          div({}, span({ class: css('_textxs _fgmuted') }, 'Joined'), p({ class: css('_textsm') }, selected().joined)),\n          div({}, span({ class: css('_textxs _fgmuted') }, 'Bio'), p({ class: css('_textsm') }, selected().bio)),\n          div({ class: css('_flex _gap2 _mt2') },\n            Button({ variant: 'primary', size: 'sm' }, 'Edit'),\n            Button({ variant: 'outline', size: 'sm' }, 'Delete')\n          )\n        )\n      )\n    ) : div({ class: css('_flex _center _h[300px] _fgmuted _textsm') }, 'Select a row to view details')\n  );\n}"
+      }
+    },
+    "editable": {
+      "description": "Inline-editable data table with add row, edit, and delete actions. Input fields appear directly in table cells for quick data entry.",
+      "components": ["DataTable", "Input", "Button", "icon", "Select"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4",
+        "slots": {
+          "toolbar": "Add row Button and save/discard actions",
+          "table": "DataTable with editable Input cells, inline edit/delete action column"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, createStore } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { DataTable, Input, Button, Select, icon } from 'decantr/components';",
+        "example": "function DataTableEditable() {\n  const { div } = tags;\n  const [rows, setRows] = createStore([\n    { id: 1, name: 'Alice Chen', email: 'alice@example.com', role: 'Admin', editing: false },\n    { id: 2, name: 'Bob Patel', email: 'bob@example.com', role: 'Editor', editing: false },\n    { id: 3, name: 'Carol Liu', email: 'carol@example.com', role: 'Viewer', editing: false }\n  ]);\n  let nextId = 4;\n\n  const toggleEdit = id => setRows(rows.map(r => r.id === id ? { ...r, editing: !r.editing } : r));\n  const updateField = (id, key, val) => setRows(rows.map(r => r.id === id ? { ...r, [key]: val } : r));\n  const deleteRow = id => setRows(rows.filter(r => r.id !== id));\n  const addRow = () => setRows([...rows, { id: nextId++, name: '', email: '', role: 'Viewer', editing: true }]);\n\n  const columns = [\n    { key: 'name', label: 'Name', render: row => row.editing ? Input({ value: row.name, onchange: e => updateField(row.id, 'name', e.target.value), size: 'sm' }) : row.name },\n    { key: 'email', label: 'Email', render: row => row.editing ? Input({ value: row.email, onchange: e => updateField(row.id, 'email', e.target.value), size: 'sm' }) : row.email },\n    { key: 'role', label: 'Role', render: row => row.editing ? Select({ value: row.role, onchange: v => updateField(row.id, 'role', v), options: [{ label: 'Admin', value: 'Admin' }, { label: 'Editor', value: 'Editor' }, { label: 'Viewer', value: 'Viewer' }], size: 'sm' }) : row.role },\n    { key: 'actions', label: '', render: row => div({ class: css('_flex _gap1') },\n      Button({ variant: 'ghost', size: 'sm', onclick: () => toggleEdit(row.id) }, icon(row.editing ? 'check' : 'edit', { size: '1em' })),\n      Button({ variant: 'ghost', size: 'sm', onclick: () => deleteRow(row.id) }, icon('trash', { size: '1em' }))\n    ) }\n  ];\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _jce') },\n      Button({ variant: 'primary', size: 'sm', onclick: addRow }, icon('plus', { size: '1em' }), ' Add Row')\n    ),\n    DataTable({ columns, data: rows, paginate: true, pageSize: 10 })\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap4 _p4",
@@ -21,7 +102,7 @@
     }
   },
   "code": {
-    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { DataTable, Input, Select, Button, Badge } from 'decantr/components';",
-    "example": "function DataTablePattern() {\n  const { div } = tags;\n  const [search, setSearch] = createSignal('');\n  const [status, setStatus] = createSignal('all');\n  const columns = [\n    { key: 'name', label: 'Name', sortable: true },\n    { key: 'email', label: 'Email', sortable: true },\n    { key: 'role', label: 'Role' },\n    { key: 'status', label: 'Status' }\n  ];\n  const data = [\n    { name: 'Alice Chen', email: 'alice@example.com', role: 'Admin', status: 'active' },\n    { name: 'Bob Patel', email: 'bob@example.com', role: 'Editor', status: 'active' },\n    { name: 'Carol Liu', email: 'carol@example.com', role: 'Viewer', status: 'inactive' },\n    { name: 'Dan Kim', email: 'dan@example.com', role: 'Editor', status: 'active' }\n  ];\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _gap3 _aic _jcsb') },\n      Input({ placeholder: 'Search...', value: search, onchange: e => setSearch(e.target.value) }),\n      div({ class: css('_flex _gap2') },\n        Select({ value: status, onchange: v => setStatus(v), options: [\n          { label: 'All', value: 'all' },\n          { label: 'Active', value: 'active' },\n          { label: 'Inactive', value: 'inactive' }\n        ] }),\n        Button({ variant: 'outline' }, 'Export')\n      )\n    ),\n    DataTable({ columns, data, sortable: true, paginate: true, pageSize: 10 })\n  );\n}"
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, createMemo } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { DataTable, Input, Select, Button, Badge } from 'decantr/components';",
+    "example": "function DataTablePattern({ search: extSearch, status: extStatus, onSearch, onStatus } = {}) {\n  const { div } = tags;\n  const [_search, _setSearch] = createSignal('');\n  const [_status, _setStatus] = createSignal('all');\n  const search = extSearch || _search;\n  const setSearch = v => { _setSearch(v); onSearch?.(v); };\n  const status = extStatus || _status;\n  const setStatus = v => { _setStatus(v); onStatus?.(v); };\n  const columns = [\n    { key: 'name', label: 'Name', sortable: true },\n    { key: 'email', label: 'Email', sortable: true },\n    { key: 'role', label: 'Role' },\n    { key: 'status', label: 'Status' }\n  ];\n  const rawData = [\n    { name: 'Alice Chen', email: 'alice@example.com', role: 'Admin', status: 'active' },\n    { name: 'Bob Patel', email: 'bob@example.com', role: 'Editor', status: 'active' },\n    { name: 'Carol Liu', email: 'carol@example.com', role: 'Viewer', status: 'inactive' },\n    { name: 'Dan Kim', email: 'dan@example.com', role: 'Editor', status: 'active' }\n  ];\n  const filteredData = createMemo(() => {\n    let rows = rawData;\n    const s = search().toLowerCase();\n    if (s) rows = rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(s)));\n    const st = status();\n    if (st !== 'all') rows = rows.filter(r => r.status === st);\n    return rows;\n  });\n  const exportCsv = () => {\n    const rows = filteredData();\n    if (!rows.length) return;\n    const keys = Object.keys(rows[0]);\n    const csv = [keys.join(','), ...rows.map(r => keys.map(k => String(r[k])).join(','))].join('\\n');\n    const blob = new Blob([csv], { type: 'text/csv' });\n    const a = document.createElement('a');\n    a.href = URL.createObjectURL(blob);\n    a.download = 'export.csv';\n    a.click();\n    URL.revokeObjectURL(a.href);\n  };\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _gap3 _aic _jcsb') },\n      Input({ placeholder: 'Search...', value: search, onchange: e => setSearch(e.target.value) }),\n      div({ class: css('_flex _gap2') },\n        Select({ value: status, onchange: v => setStatus(v), options: [\n          { label: 'All', value: 'all' },\n          { label: 'Active', value: 'active' },\n          { label: 'Inactive', value: 'inactive' }\n        ] }),\n        Button({ variant: 'outline', onclick: exportCsv }, 'Export')\n      )\n    ),\n    DataTable({ columns, data: filteredData, sortable: true, paginate: true, pageSize: 10 })\n  );\n}"
   }
 }

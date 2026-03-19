@@ -1,0 +1,150 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "ecommerce-admin",
+  "name": "eCommerce Admin",
+  "description": "Admin dashboard for store operations — product catalog management, order processing, customer relationships, inventory tracking, promotions, and sales analytics.",
+  "extends": "saas-dashboard",
+  "pages": [
+    {
+      "id": "overview",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "kpi-grid",
+        "quick-actions",
+        { "pattern": "chart-grid", "as": "sales-charts" },
+        { "pattern": "activity-feed", "as": "recent-activity" }
+      ],
+      "default_blend": [
+        "kpi-grid",
+        "quick-actions",
+        { "cols": ["sales-charts", "recent-activity"], "span": { "sales-charts": 2 }, "at": "lg" }
+      ]
+    },
+    {
+      "id": "analytics",
+      "skeleton": "sidebar-main",
+      "patterns": ["filter-bar", "kpi-grid", "chart-grid", "comparison-panel"],
+      "default_blend": [
+        "filter-bar",
+        "kpi-grid",
+        "chart-grid",
+        "comparison-panel"
+      ]
+    },
+    {
+      "id": "products",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "kpi-grid",
+        { "pattern": "filter-bar", "preset": "toolbar", "as": "product-toolbar" },
+        "data-table"
+      ],
+      "default_blend": [
+        "kpi-grid",
+        "product-toolbar",
+        "data-table"
+      ]
+    },
+    {
+      "id": "product-detail",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "detail-header",
+        "media-gallery",
+        { "pattern": "form-sections", "preset": "creation", "as": "product-form" }
+      ],
+      "default_blend": [
+        "detail-header",
+        { "cols": ["media-gallery", "product-form"], "at": "md" }
+      ]
+    },
+    {
+      "id": "orders",
+      "skeleton": "sidebar-main",
+      "patterns": ["kpi-grid", "kanban-board"],
+      "default_blend": [
+        "kpi-grid",
+        "kanban-board"
+      ]
+    },
+    {
+      "id": "order-detail",
+      "skeleton": "sidebar-main",
+      "patterns": ["detail-header", "timeline", "detail-panel", "order-history"],
+      "default_blend": [
+        "detail-header",
+        { "cols": ["timeline", "detail-panel"], "span": { "timeline": 2 }, "at": "lg" },
+        "order-history"
+      ]
+    },
+    {
+      "id": "customers",
+      "skeleton": "sidebar-main",
+      "patterns": ["kpi-grid", "filter-bar", "data-table"],
+      "default_blend": [
+        "kpi-grid",
+        "filter-bar",
+        "data-table"
+      ]
+    },
+    {
+      "id": "customer-detail",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        { "pattern": "detail-header", "preset": "profile", "as": "customer-header" },
+        "kpi-grid",
+        "order-history",
+        "activity-feed"
+      ],
+      "default_blend": [
+        "customer-header",
+        "kpi-grid",
+        { "cols": ["order-history", "activity-feed"], "at": "lg" }
+      ]
+    },
+    {
+      "id": "inventory",
+      "skeleton": "sidebar-main",
+      "patterns": ["kpi-grid", "filter-bar", "data-table", "goal-tracker"],
+      "default_blend": [
+        "kpi-grid",
+        "filter-bar",
+        { "cols": ["data-table", "goal-tracker"], "span": { "data-table": 2 }, "at": "lg" }
+      ]
+    },
+    {
+      "id": "promotions",
+      "skeleton": "sidebar-main",
+      "patterns": ["kpi-grid", "filter-bar", "data-table"],
+      "default_blend": [
+        "kpi-grid",
+        "filter-bar",
+        "data-table"
+      ]
+    },
+    {
+      "id": "media-library",
+      "skeleton": "sidebar-main",
+      "patterns": ["file-manager"],
+      "default_blend": ["file-manager"]
+    },
+    {
+      "id": "support",
+      "skeleton": "sidebar-main",
+      "patterns": ["inbox"],
+      "default_blend": ["inbox"]
+    },
+    {
+      "id": "store-settings",
+      "skeleton": "sidebar-main",
+      "patterns": ["wizard"],
+      "default_blend": ["wizard"]
+    }
+  ],
+  "tannins": ["inventory-state", "order-state", "promotion-state"],
+  "skeletons": {},
+  "suggested_vintage": {
+    "styles": ["auradecantism", "clean"],
+    "modes": ["light", "dark", "auto"]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "changelog",
+  "name": "Changelog",
+  "description": "Version timeline with diff indicators and expandable details. Used for release notes, audit trails, deployment history, and activity logs.",
+  "contained": false,
+  "components": ["Badge", "Chip", "Separator", "icon"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap0",
+    "slots": {
+      "version-entry": "Timeline entry with version Badge, date, title, and change list",
+      "change-item": "Individual change with type Chip (added/changed/fixed/removed) and description",
+      "header": "Optional filter controls for version search or type filtering"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Badge, Chip, Separator, icon } from 'decantr/components';",
+    "example": "function Changelog({ releases }) {\n  const { div, span, h3, p, ul, li } = tags;\n\n  const typeVariant = t => t === 'added' ? 'success' : t === 'fixed' ? 'info' : t === 'changed' ? 'warning' : 'error';\n\n  return div({ class: css('_flex _col _gap0') },\n    ...releases.map((release, i) =>\n      div({ class: css('_flex _gap4 _pb8 _relative') },\n        div({ class: css('_flex _col _aic _w6 _flexShrink0') },\n          div({ class: css('_w[12px] _h[12px] _rfull _bgprimary _flexShrink0 _ring2 _ringPrimary') }),\n          i < releases.length - 1 ? div({ class: css('_w[2px] _flex1 _bcborder _bgborder') }) : null\n        ),\n        div({ class: css('_flex _col _gap3 _flex1 _pb4') },\n          div({ class: css('_flex _aic _gap3') },\n            Badge({ variant: 'primary' }, release.version),\n            h3({ class: css('_heading5') }, release.title),\n            span({ class: css('_textxs _fgmuted _mla') }, release.date)\n          ),\n          div({ class: css('_flex _col _gap2') },\n            ...release.changes.map(change =>\n              div({ class: css('_flex _gap2 _aic') },\n                Chip({ label: change.type, size: 'xs', variant: typeVariant(change.type) }),\n                span({ class: css('_textsm') }, change.text)\n              )\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+  }
+}

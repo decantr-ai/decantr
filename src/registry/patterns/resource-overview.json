@@ -1,0 +1,55 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "resource-overview",
+  "name": "Resource Overview",
+  "description": "Resource usage visualization with quotas, gauges, and progress bars. Color-coded by utilization level for infrastructure monitoring.",
+  "components": ["Badge", "Card", "Card.Body", "Chip", "icon"],
+  "default_preset": "gauge-grid",
+  "presets": {
+    "gauge-grid": {
+      "description": "Resource gauge cards in a responsive grid. Each card shows resource name, usage bar, current/max values, and status chip.",
+      "components": ["Badge", "Card", "Card.Body", "Chip", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gcaf280 _gap4",
+        "slots": {
+          "header": "Section title with overall usage summary Badge",
+          "gauge-card": "Card per resource with icon, name, progress bar, usage fraction, and status Chip",
+          "progress-bar": "Color-coded bar: <50% success, 50-70% primary, 70-90% warning, >90% error"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Card, Chip, icon } from 'decantr/components';",
+        "example": "function ResourceGaugeGrid({ resources }) {\n  const { div, span, h2, h3 } = tags;\n  const usageColor = pct => pct > 90 ? '_bgerror' : pct > 70 ? '_bgwarning' : pct > 50 ? '_bgprimary' : '_bgsuccess';\n  const usageLabel = pct => pct > 90 ? 'Critical' : pct > 70 ? 'High' : pct > 50 ? 'Moderate' : 'Healthy';\n  const usageVariant = pct => pct > 90 ? 'error' : pct > 70 ? 'warning' : pct > 50 ? 'default' : 'success';\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'Resource Usage'),\n      Badge({ variant: 'default' }, `${resources.length} resources`)\n    ),\n    div({ class: css('_grid _gcaf280 _gap4') },\n      ...resources.map(r => {\n        const pct = Math.round((r.used / r.max) * 100);\n        return Card({},\n          Card.Body({ class: css('_flex _col _gap3 _p4') },\n            div({ class: css('_flex _aic _jcsb') },\n              div({ class: css('_flex _aic _gap2') },\n                icon(r.icon, { size: '1em', class: css('_fgprimary') }),\n                h3({ class: css('_textsm _bold') }, r.name)\n              ),\n              Chip({ label: usageLabel(pct), size: 'xs', variant: usageVariant(pct) })\n            ),\n            div({ class: css('_flex _col _gap1') },\n              div({ class: css('_h[6px] _rfull _bgmuted/20 _wfull _overflow[hidden]') },\n                div({ class: css(`_h[6px] _rfull ${usageColor(pct)}`), style: `width:${pct}%` })\n              ),\n              div({ class: css('_flex _jcsb _textxs _fgmuted') },\n                span({}, `${r.used} ${r.unit}`),\n                span({}, `${r.max} ${r.unit}`)\n              )\n            )\n          )\n        );\n      })\n    )\n  );\n}"
+      }
+    },
+    "summary-bar": {
+      "description": "Compact inline resource summary with horizontal bars. Single-row overview of all resources.",
+      "components": ["Badge", "Chip", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _gap4 _p4 _flexWrap",
+        "slots": {
+          "resource-item": "Inline item with icon, label, compact progress bar, and percentage text"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Chip, icon } from 'decantr/components';",
+        "example": "function ResourceSummaryBar({ resources }) {\n  const { div, span } = tags;\n  const usageColor = pct => pct > 90 ? '_bgerror' : pct > 70 ? '_bgwarning' : pct > 50 ? '_bgprimary' : '_bgsuccess';\n\n  return div({ class: css('_flex _gap6 _p4 _flexWrap') },\n    ...resources.map(r => {\n      const pct = Math.round((r.used / r.max) * 100);\n      return div({ class: css('_flex _aic _gap3 _flex1 _miw[200px]') },\n        icon(r.icon, { size: '1em', class: css('_fgmuted') }),\n        div({ class: css('_flex _col _gap1 _flex1') },\n          div({ class: css('_flex _jcsb _textxs') },\n            span({ class: css('_bold') }, r.name),\n            span({ class: css('_fgmuted') }, `${pct}%`)\n          ),\n          div({ class: css('_h[4px] _rfull _bgmuted/20 _wfull _overflow[hidden]') },\n            div({ class: css(`_h[4px] _rfull ${usageColor(pct)}`), style: `width:${pct}%` })\n          )\n        )\n      );\n    })\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gcaf280 _gap4",
+    "slots": {
+      "header": "Section title with overall usage summary",
+      "gauge-card": "Card per resource with progress bar and status",
+      "progress-bar": "Color-coded utilization bar"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Card, Chip, icon } from 'decantr/components';",
+    "example": "function ResourceGaugeGrid({ resources }) {\n  const { div, span, h2, h3 } = tags;\n  const usageColor = pct => pct > 90 ? '_bgerror' : pct > 70 ? '_bgwarning' : pct > 50 ? '_bgprimary' : '_bgsuccess';\n\n  return div({ class: css('_flex _col _gap4') },\n    h2({ class: css('_heading4') }, 'Resource Usage'),\n    div({ class: css('_grid _gcaf280 _gap4') },\n      ...resources.map(r => {\n        const pct = Math.round((r.used / r.max) * 100);\n        return Card({},\n          Card.Body({ class: css('_flex _col _gap3 _p4') },\n            div({ class: css('_flex _aic _jcsb') },\n              div({ class: css('_flex _aic _gap2') },\n                icon(r.icon, { size: '1em', class: css('_fgprimary') }),\n                span({ class: css('_textsm _bold') }, r.name)\n              ),\n              span({ class: css('_textxs _fgmuted') }, `${pct}%`)\n            ),\n            div({ class: css('_h[6px] _rfull _bgmuted/20 _wfull _overflow[hidden]') },\n              div({ class: css(`_h[6px] _rfull ${usageColor(pct)}`), style: `width:${pct}%` })\n            )\n          )\n        );\n      })\n    )\n  );\n}"
+  }
+}
