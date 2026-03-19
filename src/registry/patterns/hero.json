@@ -79,6 +79,27 @@
         "example": "function BrandHero() {\n  const { div, h1, p, span } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative d-mesh') },\n    // Decorative orbs\n    span({ class: css('aura-orb _w[400px] _h[400px] _top[-10%] _left[-5%] _bg[rgba(254,68,116,0.15)]') }),\n    span({ class: css('aura-orb _w[300px] _h[300px] _bottom[10%] _right[-5%] _bg[rgba(10,243,235,0.1)]') }),\n    // Content\n    Badge({ variant: 'outline', icon: 'sparkles', class: css('aura-shimmer') }, 'Now in Beta'),\n    h1({ class: css('d-heading-display d-gradient-text') }, 'Build stunning apps in minutes'),\n    p({ class: css('_body _fgmuted _mw[640px] _textlg') }, 'The AI-first web framework that transforms your ideas into production-ready applications.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg', class: css('aura-glow') }, 'Get Started'),\n      Button({ variant: 'outline', size: 'lg' }, icon('github'), 'View Source')\n    )\n  );\n}"
       }
     },
+    "vision": {
+      "description": "AI-native vision statement hero with gradient headline, value prop, and dual CTAs. Hero-only gradient treatment.",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative",
+        "slots": {
+          "decoration": "Absolute-positioned aura-orb elements for ambient background",
+          "headline": "Display-size heading with d-heading-hero (gradient-only class)",
+          "description": "Value proposition paragraph with _textlg _fgmuted _mw[640px]",
+          "cta-group": "Horizontal Button group: primary (npx decantr init) + secondary (View Showcase)"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function VisionHero() {\n  const { div, section, h1, p, span } = tags;\n\n  return section({ class: css('_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative d-mesh') },\n    // Decorative orbs\n    span({ class: css('aura-orb _w[400px] _h[400px] _top[-10%] _left[-5%] _bg[rgba(254,68,116,0.15)]') }),\n    span({ class: css('aura-orb _w[300px] _h[300px] _bottom[10%] _right[-5%] _bg[rgba(10,243,235,0.1)]') }),\n    // Content\n    h1({ class: css('d-heading-hero') }, 'Frameworks were built for humans. Decantr is built for AI.'),\n    p({ class: css('_textlg _fgmuted _mw[640px] _lh[1.6]') }, 'The AI-native web framework. Registry-driven generation, signal reactivity, and 100+ components — all designed for LLMs to generate, read, and maintain.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg', class: css('aura-glow') }, icon('terminal'), 'npx decantr init'),\n      Button({ variant: 'outline', size: 'lg' }, 'View Showcase')\n    )\n  );\n}"
+      }
+    },
     "split": {
       "description": "Two-column hero: media/logo on one side, headline + description + CTAs on the other. Stacks vertically on mobile.",
       "components": [
