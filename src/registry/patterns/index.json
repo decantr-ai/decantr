@@ -46,6 +46,7 @@
     "leaderboard": { "name": "Leaderboard", "file": "leaderboard.json", "presets": ["ranked", "grid", "spotlight"] },
     "announcement-bar": { "name": "Announcement Bar", "file": "announcement-bar.json" },
     "logo-strip": { "name": "Logo Strip", "file": "logo-strip.json", "presets": ["static", "marquee"] },
+    "code-comparison": { "name": "Code Comparison", "file": "code-comparison.json", "presets": ["split", "stacked"] },
     "code-preview": { "name": "Code Preview", "file": "code-preview.json", "presets": ["terminal", "split"] },
     "stats-section": { "name": "Stats Section", "file": "stats-section.json", "presets": ["hero", "inline"] },
     "showcase-gallery": { "name": "Showcase Gallery", "file": "showcase-gallery.json", "presets": ["screenshots", "cards"] },
