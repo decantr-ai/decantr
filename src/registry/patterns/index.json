@@ -45,6 +45,7 @@
     "chat-interface": { "name": "Chat Interface", "file": "chat-interface.json" },
     "leaderboard": { "name": "Leaderboard", "file": "leaderboard.json", "presets": ["ranked", "grid", "spotlight"] },
     "announcement-bar": { "name": "Announcement Bar", "file": "announcement-bar.json" },
+    "bento-features": { "name": "Bento Features", "file": "bento-features.json", "presets": ["hero-stats", "grid-only"] },
     "logo-strip": { "name": "Logo Strip", "file": "logo-strip.json", "presets": ["static", "marquee"] },
     "code-comparison": { "name": "Code Comparison", "file": "code-comparison.json", "presets": ["split", "stacked"] },
     "code-preview": { "name": "Code Preview", "file": "code-preview.json", "presets": ["terminal", "split"] },
