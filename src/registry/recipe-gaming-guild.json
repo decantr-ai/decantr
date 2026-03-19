@@ -30,6 +30,26 @@
     "entrance": "d-stagger",
     "micro": "bouncy"
   },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "strong",
+    "type_mapping": {
+      "code_preview": ["d-terminal-chrome", "d-glow-accent"],
+      "stat_display": ["d-glow-primary", "d-stat-glow"],
+      "feature_card": ["d-glass", "d-glow-primary"],
+      "icon_container": ["d-icon-glow", "d-glow-accent"]
+    },
+    "component_fallback": {
+      "pre": "code_preview",
+      "Statistic": "stat_display",
+      "Card": "feature_card"
+    },
+    "intensity_values": {
+      "subtle": { "--d-glow-radius": "20px", "--d-glow-intensity": "0.2" },
+      "medium": { "--d-glow-radius": "35px", "--d-glow-intensity": "0.35" },
+      "strong": { "--d-glow-radius": "50px", "--d-glow-intensity": "0.5" }
+    }
+  },
   "pattern_preferences": {
     "prefer": ["activity-feed", "timeline", "card-grid"],
     "avoid": [],

@@ -30,6 +30,39 @@
     "entrance": "d-stagger",
     "micro": "smooth"
   },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "subtle",
+    "type_mapping": {
+      "code_preview": ["d-terminal-chrome"],
+      "stat_display": ["d-stat-glow"],
+      "feature_card": ["d-glass"],
+      "icon_container": ["d-icon-glow"]
+    },
+    "component_fallback": {
+      "pre": "code_preview",
+      "code": "code_preview",
+      "Statistic": "stat_display",
+      "Card": "feature_card"
+    },
+    "intensity_values": {
+      "subtle": {
+        "--d-glow-radius": "8px",
+        "--d-glow-intensity": "0.08",
+        "--d-gradient-hint-opacity": "0.03"
+      },
+      "medium": {
+        "--d-glow-radius": "12px",
+        "--d-glow-intensity": "0.12",
+        "--d-gradient-hint-opacity": "0.05"
+      },
+      "strong": {
+        "--d-glow-radius": "16px",
+        "--d-glow-intensity": "0.18",
+        "--d-gradient-hint-opacity": "0.08"
+      }
+    }
+  },
   "pattern_preferences": {
     "prefer": ["card-grid", "data-table", "form-sections"],
     "avoid": [],

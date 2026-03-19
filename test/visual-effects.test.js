@@ -42,6 +42,24 @@ describe('Visual Effects System', () => {
       assert.ok(intensity_values.medium, 'should have medium preset');
       assert.ok(intensity_values.strong, 'should have strong preset');
     });
+
+    it('clean has visual_effects with subtle intensity', async () => {
+      const recipe = await loadJSON(join(registryRoot, 'recipe-clean.json'));
+      assert.ok(recipe.visual_effects);
+      assert.equal(recipe.visual_effects.intensity, 'subtle');
+    });
+
+    it('gaming-guild has visual_effects with strong intensity', async () => {
+      const recipe = await loadJSON(join(registryRoot, 'recipe-gaming-guild.json'));
+      assert.ok(recipe.visual_effects);
+      assert.equal(recipe.visual_effects.intensity, 'strong');
+    });
+
+    it('launchpad has visual_effects with medium intensity', async () => {
+      const recipe = await loadJSON(join(registryRoot, 'recipe-launchpad.json'));
+      assert.ok(recipe.visual_effects);
+      assert.equal(recipe.visual_effects.intensity, 'medium');
+    });
   });
 
   describe('Decorator CSS', () => {

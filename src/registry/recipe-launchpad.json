@@ -33,6 +33,26 @@
     "entrance": "d-stagger",
     "micro": "smooth"
   },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "code_preview": ["d-terminal-chrome"],
+      "stat_display": ["d-glow-accent", "d-stat-glow"],
+      "feature_card": ["d-glass", "d-gradient-hint-accent"],
+      "icon_container": ["d-icon-glow"]
+    },
+    "component_fallback": {
+      "pre": "code_preview",
+      "Statistic": "stat_display",
+      "Card": "feature_card"
+    },
+    "intensity_values": {
+      "subtle": { "--d-glow-radius": "15px", "--d-glow-intensity": "0.15", "--d-gradient-hint-opacity": "0.04" },
+      "medium": { "--d-glow-radius": "25px", "--d-glow-intensity": "0.25", "--d-gradient-hint-opacity": "0.08" },
+      "strong": { "--d-glow-radius": "40px", "--d-glow-intensity": "0.4", "--d-gradient-hint-opacity": "0.12" }
+    }
+  },
   "pattern_preferences": {
     "prefer": ["deploy-log", "status-board", "kpi-grid"],
     "avoid": [],
