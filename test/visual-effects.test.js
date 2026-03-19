@@ -57,4 +57,41 @@ describe('Visual Effects System', () => {
       assert.ok(hasTerminal, 'd-terminal-chrome should be defined');
     });
   });
+
+  describe('resolveVisualEffects function', () => {
+    it('returns empty array when visual_effects disabled', async () => {
+      const { resolveVisualEffects } = await import('../tools/generate.js');
+      const recipe = { visual_effects: { enabled: false } };
+      const pattern = {};
+      const result = resolveVisualEffects(recipe, pattern);
+      assert.deepEqual(result, []);
+    });
+
+    it('returns decorators for explicit effect_types', async () => {
+      const { resolveVisualEffects } = await import('../tools/generate.js');
+      const recipe = {
+        visual_effects: {
+          enabled: true,
+          type_mapping: { code_preview: ['d-terminal-chrome'] }
+        }
+      };
+      const pattern = { effect_types: { terminal: 'code_preview' } };
+      const result = resolveVisualEffects(recipe, pattern, 'terminal');
+      assert.deepEqual(result, ['d-terminal-chrome']);
+    });
+
+    it('falls back to component detection', async () => {
+      const { resolveVisualEffects } = await import('../tools/generate.js');
+      const recipe = {
+        visual_effects: {
+          enabled: true,
+          type_mapping: { code_preview: ['d-terminal-chrome'] },
+          component_fallback: { pre: 'code_preview' }
+        }
+      };
+      const pattern = { code: { example: 'pre({ class: css(...) }, ...)' } };
+      const result = resolveVisualEffects(recipe, pattern);
+      assert.deepEqual(result, ['d-terminal-chrome']);
+    });
+  });
 });

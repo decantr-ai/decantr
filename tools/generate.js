@@ -106,6 +106,60 @@ async function loadRecipe(id) {
   return loadJSON(join(registryRoot, `recipe-${id}.json`));
 }
 
+// ─── Visual effects resolution ──────────────────────────────────
+
+/**
+ * Resolve visual effects for a pattern based on recipe config.
+ * Returns array of decorator class names to apply.
+ *
+ * @param {object} recipe - Recipe JSON with visual_effects config
+ * @param {object} pattern - Pattern JSON (may have effect_types)
+ * @param {string} slot - Optional slot name for targeted effects
+ * @returns {string[]} Array of decorator class names
+ */
+function resolveVisualEffects(recipe, pattern, slot = null) {
+  const ve = recipe.visual_effects;
+  if (!ve || !ve.enabled) return [];
+
+  const { type_mapping, component_fallback } = ve;
+  const decorators = [];
+
+  // Check explicit effect_types on pattern first
+  if (pattern.effect_types) {
+    const effectType = slot ? pattern.effect_types[slot] : Object.values(pattern.effect_types)[0];
+    if (effectType && type_mapping[effectType]) {
+      decorators.push(...type_mapping[effectType]);
+    }
+    return decorators;
+  }
+
+  // Fallback: detect components in pattern code
+  if (component_fallback && pattern.code?.example) {
+    const code = pattern.code.example;
+    for (const [component, effectType] of Object.entries(component_fallback)) {
+      if (code.includes(component) && type_mapping[effectType]) {
+        decorators.push(...type_mapping[effectType]);
+        break; // Only apply first match to avoid over-decoration
+      }
+    }
+  }
+
+  return [...new Set(decorators)]; // Dedupe
+}
+
+/**
+ * Get intensity CSS custom properties based on recipe config.
+ * @param {object} recipe - Recipe JSON with visual_effects config
+ * @returns {object} CSS custom property values
+ */
+function getIntensityValues(recipe) {
+  const ve = recipe.visual_effects;
+  if (!ve || !ve.enabled) return {};
+
+  const intensity = ve.intensity || 'medium';
+  return ve.intensity_values?.[intensity] || {};
+}
+
 // ─── Import deduplication ───────────────────────────────────────
 
 function parseImports(importStr) {
@@ -1239,3 +1293,6 @@ export async function generate(options = {}) {
 
   return { files, written, skipped };
 }
+
+// Export for testing
+export { resolveVisualEffects, getIntensityValues };
