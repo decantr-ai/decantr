@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <rect width="400" height="300" fill="#1a1a2e"/>
+  <rect x="20" y="80" width="85" height="100" rx="8" fill="#2a2a4e"/>
+  <rect x="115" y="80" width="85" height="100" rx="8" fill="#2a2a4e"/>
+  <rect x="210" y="80" width="85" height="100" rx="8" fill="#2a2a4e"/>
+  <rect x="305" y="80" width="75" height="100" rx="8" fill="#2a2a4e"/>
+  <text x="62" y="120" fill="#9ca3af" font-size="10" text-anchor="middle">Revenue</text>
+  <text x="62" y="145" fill="#e5e7eb" font-size="16" font-weight="bold" text-anchor="middle">$42.5k</text>
+</svg>
