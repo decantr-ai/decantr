@@ -52,6 +52,11 @@
         "data-table-view": 0.75,
         "sidebar-nav": 0.8,
         "activity-stream": 0.65
+      },
+      "suggested_blend": {
+        "full-width": "kpi-grid",
+        "with-chart": { "cols": ["kpi-grid", "chart-grid"], "span": {"kpi-grid": 2}, "at": "lg" },
+        "compact": { "pattern": "kpi-grid", "preset": "compact" }
       }
     },
     "chart-area": {
@@ -63,6 +68,11 @@
         "widget-grid": 0.85,
         "filter-controls": 0.75,
         "data-table-view": 0.7
+      },
+      "suggested_blend": {
+        "full-width": "chart-grid",
+        "dashboard-mixed": { "pattern": "chart-grid", "preset": "dashboard" },
+        "single-focus": { "pattern": "chart-grid", "preset": "single-focus" }
       }
     },
     "data-table-view": {
@@ -75,6 +85,11 @@
         "pagination-controls": 0.8,
         "header-bar": 0.7,
         "detail-view": 0.65
+      },
+      "suggested_blend": {
+        "full-width": "data-table",
+        "with-filters": { "cols": ["filter-bar", "data-table"], "at": "md" },
+        "master-detail": { "pattern": "data-table", "preset": "master-detail" }
       }
     },
     "filter-controls": {
@@ -86,6 +101,11 @@
         "data-table-view": 0.85,
         "product-catalog": 0.8,
         "chart-area": 0.65
+      },
+      "suggested_blend": {
+        "full-bar": "filter-bar",
+        "segmented": { "pattern": "filter-bar", "preset": "segmented" },
+        "search-first": { "pattern": "filter-bar", "preset": "search-primary" }
       }
     },
     "pagination-controls": {
@@ -120,6 +140,11 @@
         "testimonial-block": 0.7,
         "top-nav": 0.85,
         "pricing-block": 0.6
+      },
+      "suggested_blend": {
+        "landing": { "pattern": "hero", "preset": "landing" },
+        "image-overlay": { "pattern": "hero", "preset": "image-overlay" },
+        "compact": { "pattern": "hero", "preset": "image-overlay-compact" }
       }
     },
     "cta-block": {
@@ -205,6 +230,11 @@
       "co-occurs": {
         "form-wizard": 0.85,
         "pipeline-view": 0.7
+      },
+      "suggested_blend": {
+        "vertical": "timeline",
+        "milestone": { "pattern": "timeline", "preset": "milestone" },
+        "compact": { "pattern": "timeline", "preset": "compact" }
       }
     },
     "activity-stream": {
@@ -216,6 +246,11 @@
         "widget-grid": 0.65,
         "sidebar-nav": 0.6,
         "detail-view": 0.55
+      },
+      "suggested_blend": {
+        "full-width": "activity-feed",
+        "social": { "pattern": "activity-feed", "preset": "social" },
+        "sidebar-widget": { "pattern": "activity-feed", "preset": "minimal" }
       }
     },
     "blog-list": {
@@ -368,12 +403,17 @@
     "financial": {
       "description": "Financial dashboard with scorecards, pipelines, and comparisons.",
       "traits": ["sidebar-nav", "header-bar", "widget-grid", "chart-area", "goal-tracking", "comparison-view", "pipeline-view", "data-table-view"],
-      "suggested_vintage": { "style": "command-center", "mode": "dark" }
+      "suggested_vintage": { "style": "auradecantism", "mode": "dark" }
     },
     "docs": {
       "description": "Documentation site with sidebar, search, and article content.",
       "traits": ["sidebar-nav", "search-global", "article-view"],
       "suggested_vintage": { "style": "clean", "mode": "auto" }
+    },
+    "cloud-platform": {
+      "description": "Cloud infrastructure platform with app management, deploy logs, service catalog, and usage monitoring.",
+      "traits": ["sidebar-nav", "header-bar", "widget-grid", "chart-area", "data-table-view", "hero-section", "cta-block", "auth-flow", "activity-stream", "filter-controls"],
+      "suggested_vintage": { "style": "launchpad", "mode": "light" }
     }
   }
 }

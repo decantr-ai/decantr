@@ -4,6 +4,7 @@ import { injectBase, cx } from './_base.js';
 import { createFocusTrap } from './_behaviors.js';
 
 const MODAL_SECTIONS = ['d-modal-header', 'd-modal-body', 'd-modal-footer'];
+let _mid = 0;
 
 function hasSection(children) {
   return children.some(c =>
@@ -27,6 +28,7 @@ export function Modal(props = {}, ...children) {
   injectBase();
 
   const { title, footer, visible, onClose, width = '480px', class: cls } = props;
+  const titleId = title ? 'd-modal-t-' + (_mid++) : undefined;
 
   const closeBtn = h('button', {
     class: 'd-modal-close',
@@ -46,7 +48,7 @@ export function Modal(props = {}, ...children) {
     // Auto-wrap: title → header, children → body, footer → footer
     if (title) {
       panel.appendChild(h('div', { class: 'd-modal-header' },
-        h('span', { class: 'd-modal-title' }, title),
+        h('span', { class: 'd-modal-title', id: titleId }, title),
         closeBtn
       ));
     }
@@ -65,9 +67,13 @@ export function Modal(props = {}, ...children) {
     if (firstChild) firstChild.appendChild(closeBtn);
   }
 
-  const dialog = h('dialog', {
-    class: 'd-modal-content'
-  }, panel);
+  const dialogAttrs = {
+    class: 'd-modal-content',
+    'aria-modal': 'true'
+  };
+  if (titleId) dialogAttrs['aria-labelledby'] = titleId;
+
+  const dialog = h('dialog', dialogAttrs, panel);
 
   let _closing = false;
   const EXIT_DURATION = 150;

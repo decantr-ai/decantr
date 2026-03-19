@@ -1,0 +1,20 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "file-manager",
+  "name": "File Manager",
+  "description": "Grid/list toggle file browser with breadcrumb path navigation. Used for product media, document libraries, and asset management.",
+  "components": ["Card", "Button", "Breadcrumb", "Dropdown", "icon", "Badge"],
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _flex1",
+    "slots": {
+      "toolbar": "Breadcrumb path + view toggle (grid/list) + upload Button + sort Dropdown",
+      "grid": "Responsive grid of file/folder cards with thumbnail, name, size, date",
+      "list": "Alternative table view with columns for name, size, type, modified date"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Badge, Breadcrumb, Button, Card, Dropdown, icon } from 'decantr/components';",
+    "example": "function FileManager({ files, path }) {\n  const { div, span, img } = tags;\n  const [view, setView] = createSignal('grid');\n\n  return div({ class: css('_flex _col _gap4 _flex1') },\n    div({ class: css('_flex _aic _jcsb _flexWrap _gap3') },\n      Breadcrumb({ items: path.map((p, i) => ({ label: p, href: '#' })), separator: 'slash' }),\n      div({ class: css('_flex _gap2') },\n        Button({ variant: view() === 'grid' ? 'primary' : 'outline', size: 'sm', onclick: () => setView('grid') }, icon('grid', { size: '1em' })),\n        Button({ variant: view() === 'list' ? 'primary' : 'outline', size: 'sm', onclick: () => setView('list') }, icon('list', { size: '1em' })),\n        Button({ variant: 'primary', size: 'sm' }, icon('upload', { size: '1em' }), ' Upload')\n      )\n    ),\n    div({ class: css('_grid _gcaf200 _gap4') },\n      ...files.map(file =>\n        Card({ hover: true, class: css('_cursor[pointer]') },\n          Card.Body({ class: css('_flex _col _aic _gap2 _p4') },\n            div({ class: css('_w12 _h12 _flex _center _r2 _bgmuted/20') },\n              icon(file.type === 'folder' ? 'folder' : file.type === 'image' ? 'image' : 'file', { size: '1.5rem', class: css('_fgprimary') })\n            ),\n            span({ class: css('_textsm _bold _tc _truncate _wfull') }, file.name),\n            span({ class: css('_textxs _fgmuted') }, file.size || `${file.items} items`)\n          )\n        )\n      )\n    )\n  );\n}"
+  }
+}

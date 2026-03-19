@@ -111,13 +111,47 @@ Decantr's three density classes cascade all spacing tokens to children:
 
 The **Clarity** layer in the Decantation vocabulary governs whitespace. During SETTLE, the LLM determines Character traits which imply a Clarity profile:
 
-| Character Trait | Density | Section Padding | Content Gap | Chrome Gap | Zone Emphasis | Animation |
-|----------------|---------|-----------------|-------------|------------|--------------|-----------|
-| "minimal", "clean" | Spacious | Landmark (`_py16`) | `_gap6` | `_gap2` | Showcase + Content | Subtle fades (`d-stagger`) |
-| "professional", "balanced" | Comfortable | Sectional (`_py12`) | `_gap4` | `_gap2` | Content + Controls | Standard (`d-stagger-up`) |
-| "tactical", "dense" | Compact | Grouped (`_py8`) | `_gap3` | `_gap1` | Data-dense + Chrome | Snappy (`d-stagger-scale`) |
-| "editorial", "luxurious" | Spacious | Landmark (`_py24`) | `_gap8` | `_gap2` | Showcase | Graceful (`d-stagger`) |
-| "technical", "utilitarian" | Compact | Sectional (`_py8`) | `_gap3` | `_gap1` | Controls + Data-dense | Minimal (`d-stagger-scale`) |
+### Character-to-Clarity Priority Table
+
+When character traits span multiple clusters, the higher-priority (lower number) cluster determines the base density. Recipe `spatial_hints.density_bias` can then shift it.
+
+| Priority | Cluster | Matching Traits | Base Density |
+|----------|---------|-----------------|--------------|
+| 1 (highest) | Compact | tactical, dense, data-dense, technical, utilitarian | compact |
+| 2 | Editorial | editorial, luxurious, premium | spacious |
+| 3 | Expressive | playful, bouncy, fluffy, immersive, cinematic, dramatic | comfortable |
+| 4 | Spacious | minimal, clean, elegant | spacious |
+| 5 | Balanced | professional, modern, friendly | comfortable |
+| 6 (default) | Comfortable | (no match) | comfortable |
+
+Rationale: functional density constraints (compact/dense) are hardest to violate without breaking usability, so they take precedence. Aesthetic intent (editorial, expressive) comes next.
+
+### Composable Clarity Ranges
+
+Each cluster defines a **range** rather than exact values. The LLM selects within the range based on recipe `spatial_hints` overlay and user `clarity` override in the Essence.
+
+| Character Cluster | Density Range | Content Gap Range | Section Pad Range | Chrome Gap | Animation |
+|---|---|---|---|---|---|
+| Compact | Compact | `_gap2`–`_gap4` | `_py4`–`_py8` | `_gap1` | Snappy (`d-stagger-scale`) |
+| Editorial | Comfortable–Spacious | `_gap6`–`_gap8` | `_py16`–`_py24` | `_gap2` | Graceful (`d-stagger`) |
+| Expressive | Comfortable | `_gap5`–`_gap6` | `_py10`–`_py16` | `_gap2` | Bouncy / dramatic |
+| Spacious | Comfortable–Spacious | `_gap5`–`_gap8` | `_py12`–`_py24` | `_gap2` | Subtle fades (`d-stagger`) |
+| Balanced | Comfortable | `_gap4`–`_gap6` | `_py8`–`_py12` | `_gap2` | Standard (`d-stagger-up`) |
+| Default (no match) | Comfortable | `_gap4`–`_gap6` | `_py8`–`_py12` | `_gap2` | Standard (`d-stagger-up`) |
+
+### Resolution Order
+
+1. **Character baseline** — select cluster from priority table, pick middle of range
+2. **Recipe spatial_hints overlay** — `content_gap_shift` shifts the gap ±steps, `density_bias` shifts density level, `section_padding` overrides pad
+3. **User clarity override in Essence** — optional `"clarity": { "density": "spacious", "content_gap": "_gap6" }` in essence
+
+### Essence clarity Field (Optional)
+
+```json
+"clarity": { "density": "spacious", "content_gap": "_gap6" }
+```
+
+When present in the Essence, this field overrides both the character-derived baseline and the recipe overlay. Use when the user has a specific spatial preference that doesn't match their character traits.
 
 During DECANT, each page's blend spec inherits the Clarity profile. The `surface` atoms on each page should reflect the zone and the Character-derived density.
 
@@ -513,12 +547,13 @@ If a request conflicts with the Essence, flag the conflict and ask for confirmat
 
 
 ```
-POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
+POUR → TASTE → SETTLE → CLARIFY → DECANT → SERVE → AGE
 ```
 
 | Stage | Purpose |
 |-------|---------|
 | **POUR** | User expresses intent in natural language |
+| **TASTE** | Interpret intent → produce Impression (vibe, references, density, layout, novel elements) |
 | **SETTLE** | Decompose into 5 layers: Terroir (domain), Vintage (style+mode+recipe), Character (personality traits), Structure (pages), Tannins (functional systems) |
 | **CLARIFY** | Write `decantr.essence.json` — the project's persistent DNA. User confirms. |
 | **DECANT** | Resolve each page's Blend (spatial arrangement from archetype defaults) |
@@ -530,7 +565,7 @@ POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
 {
   "version": "1.0.0",
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
   "character": ["tactical", "data-dense"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [
@@ -576,6 +611,52 @@ import { icon } from 'decantr/icons';
 > Read this file when scaffolding a new project from scratch. Covers the full Decantation Process, all archetypes, styles, recipes, and skeleton templates.
 
 
+
+---
+
+# Cork Rules (Creative Tier)
+
+
+Cork enforcement: **Creative** — rules are advisory for initial scaffolding.
+
+Before writing code, read `decantr.essence.json` if it exists. During initial scaffolding (POUR → TASTE → SETTLE → CLARIFY → DECANT → SERVE):
+1. **Style**: Start from the Vintage. May explore adjacent styles if user intent suggests it.
+2. **Structure**: Build from scratch. Archetype pages are suggestions, not requirements.
+3. **Blend**: Archetype default_blend is a starting point. Reorder, add columns, change breakpoints to match the Impression.
+4. **Recipe**: Recipe compositions show the target aesthetic. Adapt them, don't copy literally. Use `pattern_preferences.default_presets` as suggestions.
+5. **Clarity**: Character traits suggest a density range, not exact atoms. Choose within the range from the Composable Clarity Ranges table.
+
+After initial SERVE, cork.mode auto-sets to "maintenance" and strict rules apply.
+
+
+---
+
+# TASTE Stage — Intent Interpretation
+
+
+Before SETTLE, produce a structured **Impression**:
+
+| Field | Description |
+|-------|-------------|
+| **Vibe** | 1-3 adjective phrases ("airy minimalist with bold type") |
+| **Reference signals** | Map user references to known recipes/styles ("like Notion" → clean) |
+| **Density intent** | Spacious / balanced / compact |
+| **Layout intent** | Sidebar dashboard / full-bleed / hybrid / novel |
+| **Novel elements** | Anything not fitting existing patterns |
+
+Store as `_impression` in Essence during CLARIFY:
+```json
+"_impression": {
+  "vibe": ["airy", "minimalist"],
+  "references": ["notion"],
+  "density_intent": "comfortable",
+  "layout_intent": "sidebar-main",
+  "novel_elements": []
+}
+```
+
+The Impression feeds SETTLE — use it to customize archetype defaults instead of copying them verbatim.
+
 # The Decantation Process (Full)
 
 
@@ -583,14 +664,38 @@ import { icon } from 'decantr/icons';
 
 The intelligence layer between user intent and generated code. A formalized methodology that decomposes raw UI requirements into structured, drift-free specifications.
 
-## The Six Stages
+## The Seven Stages
 
 ```
-POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
+POUR → TASTE → SETTLE → CLARIFY → DECANT → SERVE → AGE
 ```
 
 ### POUR (Intent Capture)
 User expresses what they want in natural language. No forms, no wizards.
+
+### TASTE (Intent Interpretation)
+Before decomposing into layers, interpret the user's intent holistically. Produce a structured **Impression**:
+
+| Impression Field | Description | Example |
+|-----------------|-------------|---------|
+| **Vibe** | 1-3 adjective phrases capturing the aesthetic feel | "airy minimalist with bold type" |
+| **Reference signals** | Map user references to known recipes/styles | "like Notion" → clean recipe; "claymorphic" → bouncy, rounded |
+| **Density intent** | Spacious / balanced / compact | "dense tactical cockpit" → compact |
+| **Layout intent** | Sidebar dashboard / full-bleed marketing / hybrid / novel | "dashboard with wide content" → sidebar-main |
+| **Novel elements** | Anything not fitting existing patterns | "kanban board with drag-drop" |
+
+The Impression is stored as `_impression` in the Essence during CLARIFY:
+```json
+"_impression": {
+  "vibe": ["airy", "minimalist", "bold typography"],
+  "references": ["notion", "linear"],
+  "density_intent": "comfortable",
+  "layout_intent": "sidebar-main with wide content area",
+  "novel_elements": ["kanban board with drag-drop"]
+}
+```
+
+TASTE feeds SETTLE — instead of copying archetype defaults blindly, SETTLE starts from the Impression and uses archetypes to fill gaps. The Impression persists in the Essence for AGE-stage drift detection.
 
 ### SETTLE (Intent Decomposition)
 The LLM decomposes intent into five named layers:
@@ -603,30 +708,72 @@ The LLM decomposes intent into five named layers:
 | **Structure** | Page/view map | Archetype `pages` + user customization |
 | **Tannins** | Functional systems | Archetype `tannins` + user requirements |
 
+**Archetype-as-Suggestion**: Read archetypes as **starting suggestions**, not templates. Use the Impression from TASTE to guide selection:
+- Identify which pages the user actually needs — drop unused archetype pages, add new ones
+- The archetype's `default_blend` is a **baseline** — customize based on user intent and recipe `pattern_preferences`
+- Trait composition (`src/registry/architect/traits.json`) is the primary path for novel designs, not a fallback
+- Each trait now provides `suggested_blend` options — use these for concrete layout alternatives
+
 ### CLARIFY (Essence Crystallization)
 The LLM writes `decantr.essence.json` — the project's persistent DNA. User confirms. From this point, every decision references the Essence.
 
 ### Pattern Design Review Gate
 
-**Mandatory checkpoint between CLARIFY and DECANT.** Before resolving any Blend specs, review every pattern referenced in the Essence's `blend` arrays against this checklist:
+**Mandatory checkpoint between CLARIFY and DECANT.** Enforcement varies by task context:
 
-1. **Can this be a preset on an existing pattern?** Check the pattern registry (`src/registry/patterns/`) for structurally similar patterns that already support presets. If the desired variation differs only in content slots, label placement, or density — add a preset instead of a new pattern file.
-2. **Does a structurally similar pattern already exist?** If two patterns share the same grid layout, component set, and slot structure but differ in domain-specific naming, merge the new one as a preset on the existing pattern. Example: `recipe-stats-bar` and `product-stats-bar` are the same structure — one pattern with domain presets.
-3. **Is the new pattern reusable across 2+ domains?** A pattern must be justified by cross-domain utility. If a pattern is only useful within a single archetype, it should be a preset on a more general pattern. Exception: if the archetype is new and the pattern is fundamental to its identity.
-4. **Does the domain-specific name justify a standalone file?** Only create a new pattern file when the structure (grid layout, component composition, slot arrangement) is fundamentally different from all existing patterns. A different name alone does not justify a new file.
+#### Creative Mode (task-init.md — new project scaffolding)
+- Quick check: does an existing pattern+preset fit? (5-second check, not a gate)
+- If no, create a **local pattern** in `src/patterns/{name}.json`
+- Local patterns don't need cross-domain reuse justification
+- Reference in blend: `{ "pattern": "local:pattern-name" }`
 
-**If any check fails**, refactor the blend to reference an existing pattern with a preset:
+#### Guided Mode (task-page.md — adding pages)
+- Check existing presets first
+- If no fit, create a local pattern with brief justification
+- Blend structure is enforced but new column arrangements are allowed
+
+#### Strict Mode (task-refactor.md, task-component.md, etc.)
+All 4 gates enforced:
+1. **Can this be a preset on an existing pattern?** Check the pattern registry for structurally similar patterns with presets.
+2. **Does a structurally similar pattern already exist?** Merge as a preset if layout, components, and slots match.
+3. **Is the new pattern reusable across 2+ domains?** A pattern must be justified by cross-domain utility.
+4. **Does the domain-specific name justify a standalone file?** Only when the structure is fundamentally different.
+
+**If any strict-mode check fails**, refactor to use an existing pattern preset:
 ```json
 { "pattern": "stats-bar", "preset": "recipe", "as": "recipe-stats-bar" }
 ```
-
-**Proceeding to DECANT without completing this review is a Cork violation.**
 
 ### DECANT (Spec Resolution)
 Each Structure page resolves to a **Blend** — a row-based layout tree that specifies spatial arrangement of patterns. The archetype provides `default_blend` per page; the LLM copies it into the Essence's `blend` and customizes.
 
 ### SERVE (Code Generation)
 Code generated from resolved Blend specs. The LLM reads each page's `blend` array and applies the SERVE algorithm (see Blend Spec below). No spatial improvisation — row order, column splits, and responsive breakpoints are all pre-specified.
+
+#### Preset Resolution Order
+When a blend item omits the preset, resolution follows this order (first non-null wins):
+1. **Explicit in blend**: `{ "pattern": "card-grid", "preset": "compact" }` — always authoritative
+2. **Recipe default_presets**: `recipe.pattern_preferences.default_presets["card-grid"]` — recipe's opinion
+3. **Pattern default_preset**: `pattern.default_preset` field in the pattern JSON — pattern's own default
+4. **No preset**: Use the pattern's base implementation
+
+#### Recipe Spatial Hooks
+Recipe `spatial_hints` influence generated code at generation time:
+- `card_wrapping`: Controls whether patterns are wrapped in Card components ("always" / "minimal" / "none")
+- `content_gap_shift`: Shifts the Clarity-derived gap up or down (e.g., +1 makes `_gap4` → `_gap5`)
+- `section_padding`: Overrides Clarity section padding
+
+#### Runtime vs Generation-Time Boundary
+
+| Layer | Applied When | Runtime-Switchable? |
+|-------|-------------|---------------------|
+| Recipe spatial_hints | Generation time | No (baked into code) |
+| Recipe skeleton decoration | Generation time | No (baked into code) |
+| Recipe animation entrance | Generation time | No (baked into code) |
+| `setStyle()` / `setMode()` | Runtime | Yes (CSS variable swap) |
+| Density class (`.d-compact`) | Runtime | Yes (class toggle) |
+
+For sectioned essences, resolve recipe per-section. Shell decoration follows the active section's recipe.
 
 ### AGE (Session Fortification)
 On every subsequent prompt, the LLM reads the Essence first. New pages inherit the Vintage. Drift is detected and flagged.
@@ -689,12 +836,12 @@ Location: `decantr.essence.json` (project root, generated during CLARIFY stage).
   "version": "1.0.0",
   "terroir": "saas-dashboard",
   "vintage": {
-    "style": "command-center",
+    "style": "auradecantism",
     "mode": "dark",
-    "recipe": "command-center",
-    "shape": "sharp"
+    "recipe": "auradecantism",
+    "shape": "rounded"
   },
-  "character": ["tactical", "data-dense", "operational"],
+  "character": ["professional", "data-rich"],
   "vessel": {
     "type": "spa",
     "routing": "hash"
@@ -749,8 +896,8 @@ For applications spanning multiple domains, the Essence supports a sectioned for
 ```json
 {
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
-  "character": ["tactical", "data-dense"],
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
+  "character": ["professional", "data-rich"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [...],
   "tannins": ["auth", "realtime-data"],
@@ -856,7 +1003,7 @@ Visual language composition rules for drastic visual transformations that go bey
 - **Decorators**: Available CSS classes (e.g., `cc-frame`, `cc-bar`)
 - **Compositions**: Per-component examples showing how to compose standard components differently
 
-Available recipes: `command-center`
+Available recipes: `auradecantism`
 
 ---
 
@@ -995,11 +1142,12 @@ How the LLM reads and applies a Blend during code generation:
    - **String**: render the pattern full-width. Use the pattern's `default_blend.atoms` for internal layout.
    - **`{ cols }`**: create a grid wrapper with `_grid _gc{N} _gap4` where N = number of columns. Add responsive collapse: below `at` breakpoint, use single column. Render each pattern inside.
    - **`{ cols, span }`**: compute total = sum of all span values (default 1 per unspecified). Grid gets `_gc{total}`. Each pattern gets `_span{weight}`.
-4. Wrap contained patterns in `Card(Card.Header, Card.Body)` — standalone patterns (layout `hero`/`row`) skip wrapping. Recipe styles override Card appearance via component CSS (e.g., command-center transforms `.d-card` into cc-frame aesthetic).
+4. Wrap contained patterns in `Card(Card.Header, Card.Body)` — standalone patterns (layout `hero`/`row`) skip wrapping. Recipe styles override Card appearance via component CSS.
 5. Apply recipe `pattern_overrides` from recipe JSON (background effects like `cc-grid`, `cc-scanline`) as Card class attributes
 6. Apply Clarity-derived gap to pattern code internals (`_gap4` → clarity gap)
 7. Add entrance animations: `d-page-enter` on page container, `d-stagger` / `d-stagger-up` on grid wrappers containing cards/KPIs, `animate: true` on Statistic components
 8. Fill pattern slots with domain content
+9. **WIRE** — Cross-pattern plumbing: when related patterns co-exist on a page (e.g., `filter-bar` + `data-table`), the generator creates page-level signals and passes them as props. Wiring rules are defined in `WIRING_RULES` in `tools/generate.js`. Pattern code examples accept optional props via `= {}` destructuring — when called without props, patterns use internal demo data; when wired, they consume shared page state.
 
 ### Separation of Concerns
 
@@ -1018,7 +1166,7 @@ Archetypes provide `default_blend` per page — the domain-typical spatial arran
 
 ## Monochrome Palette
 
-The `palette: 'monochrome'` personality trait in `derive.js` derives all 7 role colors from a single primary hue. Used by the Command Center style.
+The `palette: 'monochrome'` personality trait in `derive.js` derives all 7 role colors from a single primary hue.
 
 Derivation strategy (from primary H/S/L):
 - accent: H+15°, S×0.8, L+8
@@ -1087,6 +1235,15 @@ A tasting-notes file (`decantr.tasting-notes.md`) is an optional append-only ses
 
 ## Archetype Index
 
+### cloud-platform
+**Pages:** home, apps, app-detail, team, activity, services, tokens, usage, billing, settings, status, compliance, login
+**Patterns used:** hero, card-grid, logo-strip, stats-section, cta-section, footer-columns, filter-bar, [object Object], activity-feed, detail-header, kpi-grid, [object Object], data-table, service-catalog, resource-overview, chart-grid, pricing-table, form-sections, status-board, checklist-card, auth-form
+**Tannins:** auth, realtime-data, search, billing, team-management
+**Suggested vintage:** style=auradecantism, mode=dark
+**Skeletons:** full-bleed, sidebar-main, centered
+**home blend:** `[{"pattern":"hero","preset":"brand","as":"brand-hero"},{"pattern":"card-grid","preset":"icon","as":"feature-grid"},{"pattern":"logo-strip","preset":"marquee","as":"tech-logos"},{"pattern":"card-grid","preset":"icon","as":"capability-grid"},{"pattern":"stats-section","preset":"hero","as":"platform-stats"},{"pattern":"cta-section","preset":"brand","as":"enterprise-cta"},{"pattern":"footer-columns","preset":"minimal","as":"footer"}]`
+**apps blend:** `["filter-bar",{"cols":[{"pattern":"card-grid","preset":"resource","as":"app-grid"},"activity-feed"],"span":{"app-grid":2},"at":"lg"}]`
+
 ### content-site
 **Pages:** home, category, article, search, about, contact
 **Patterns used:** hero, category-nav, post-list, cta-section, pagination, article-content, table-of-contents, author-card, search-bar, detail-header, contact-form
@@ -1096,15 +1253,6 @@ A tasting-notes file (`decantr.tasting-notes.md`) is an optional append-only ses
 **home blend:** `["hero","category-nav","post-list","cta-section"]`
 **category blend:** `["category-nav","post-list","pagination"]`
 
-### creative-tool
-**Pages:** home, workspace, explore, detail
-**Patterns used:** hero, card-grid, stats-section, testimonials, cta-section, footer-columns, search-bar, filter-bar, specimen-grid, detail-header, comparison-panel
-**Tannins:** search
-**Suggested vintage:** style=auradecantism, mode=dark
-**Skeletons:** full-bleed, sidebar-main
-**home blend:** `[{"pattern":"hero","preset":"brand","as":"brand-hero"},{"pattern":"card-grid","preset":"icon","as":"feature-grid"},{"pattern":"stats-section","preset":"hero","as":"metrics"},{"pattern":"testimonials","preset":"marquee","as":"social-proof"},{"pattern":"cta-section","preset":"brand","as":"final-cta"},{"pattern":"footer-columns","preset":"minimal","as":"footer"}]`
-**workspace blend:** `["search-bar","filter-bar",{"pattern":"specimen-grid","preset":"preview","as":"palette-grid"}]`
-
 ### docs-explorer
 **Pages:** components, patterns, archetypes, recipes, foundations, atoms, tokens
 **Patterns used:** component-showcase, detail-panel, specimen-grid, token-inspector
@@ -1113,6 +1261,15 @@ A tasting-notes file (`decantr.tasting-notes.md`) is an optional append-only ses
 **Skeletons:** sidebar-main
 **components blend:** `["component-showcase"]`
 **patterns blend:** `["detail-panel"]`
+
+### ecommerce-admin
+**Pages:** overview, analytics, products, product-detail, orders, order-detail, customers, customer-detail, inventory, promotions, media-library, support, store-settings
+**Patterns used:** kpi-grid, quick-actions, sales-charts, recent-activity, filter-bar, chart-grid, comparison-panel, product-toolbar, data-table, detail-header, media-gallery, product-form, kanban-board, timeline, detail-panel, order-history, customer-header, activity-feed, goal-tracker, file-manager, inbox, wizard
+**Tannins:** inventory-state, order-state, promotion-state
+**Suggested vintage:** style=auradecantism, mode=dark
+**Skeletons:** 
+**overview blend:** `["kpi-grid","quick-actions",{"cols":["sales-charts","recent-activity"],"span":{"sales-charts":2},"at":"lg"}]`
+**analytics blend:** `["filter-bar","kpi-grid","chart-grid","comparison-panel"]`
 
 ### ecommerce
 **Pages:** home, catalog, product, cart, checkout, account, login, register
@@ -1182,29 +1339,11 @@ setMode('dark');`
 **Decorators (10):** d-mesh, d-glass, d-glass-strong, d-gradient-text, d-gradient-text-alt, aura-glow, aura-glow-strong, aura-ring, aura-orb, aura-shimmer
 **Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart
 
-### recipe-clay
-**Setup:** `import { registerStyle, setStyle, setMode } from 'decantr/css';
-import { clay } from 'decantr/styles/community/clay';
-registerStyle(clay);
-setStyle('clay');
-setMode('light');`
-**Decorators (14):** cy-pillow, cy-pillow-strong, cy-squish, cy-float, cy-blob, cy-soft, cy-dimple, cy-bounce, cy-jelly, cy-pastel-mesh, cy-label, cy-swatch, cy-glow, cy-pulse-soft
-**Pattern overrides:** hero, card-grid, specimen-grid, filter-bar, search-bar, cta-section, detail-header, testimonials, stats-section, comparison-panel, footer-columns
-**Compositions:** panel, card, kpi, sidebar, specimen, workspace
-
 ### recipe-clean
 **Setup:** `import { setStyle, setMode } from 'decantr/css';
 setStyle('clean');
 setMode('light');`
 **Decorators (6):** cl-card, cl-divider, cl-section, cl-muted-bg, cl-badge-dot, cl-subtle-hover
-**Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart
-
-### recipe-command-center
-**Setup:** `import { setStyle, setMode } from 'decantr/css';
-setStyle('command-center');
-setMode('dark');`
-**Decorators (19):** cc-frame, cc-frame-sm, cc-corner, cc-scanline, cc-grid, cc-bar, cc-bar-bottom, cc-blink, cc-glow, cc-glow-strong, cc-glow-pulse, cc-divider, cc-label, cc-data, cc-indicator, cc-indicator-ok, cc-indicator-warn, cc-indicator-error, cc-mesh
-**Pattern overrides:** kpi-grid, chart-grid, data-table, activity-feed, scorecard, pipeline-tracker, timeline, goal-tracker, comparison-panel
 **Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart
 
 ### recipe-gaming-guild
@@ -1216,6 +1355,16 @@ setMode('dark');`
 **Decorators (14):** gg-glow, gg-glow-accent, gg-glow-strong, gg-glow-pulse, gg-shimmer, gg-rank-up, gg-float, gg-xp-bar, gg-badge-pop, gg-mesh, gg-panel, gg-label, gg-data, gg-live
 **Pattern overrides:** hero, card-grid, leaderboard, kpi-grid, post-list, activity-feed, detail-header, stats-bar, timeline, cta-section, form-sections, auth-form, testimonials
 **Compositions:** panel, card, kpi, table, leaderboard, profile-card, sidebar, auth-modal, achievement
+
+### recipe-launchpad
+**Setup:** `import { registerStyle, setStyle, setMode } from 'decantr/css';
+import { launchpad } from 'decantr/styles/community/launchpad';
+registerStyle(launchpad);
+setStyle('launchpad');
+setMode('light');`
+**Decorators (16):** lp-panel, lp-card, lp-card-hover, lp-header, lp-btn-gradient, lp-btn-outline, lp-nav-item, lp-nav-active, lp-surface, lp-divider, lp-dot, lp-brand-bg, lp-gradient-hero, lp-kbd, lp-code-inline, lp-shimmer
+**Pattern overrides:** hero, card-grid, kpi-grid, filter-bar, data-table, cta-section, detail-header, stats-section, footer-columns, activity-feed, chart-grid, pricing-table, status-board, form-sections, deploy-log, resource-overview, service-catalog, checklist-card, logo-strip
+**Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart, deploy-log
 
 
 
@@ -1233,7 +1382,7 @@ import { setStyle, setMode, registerStyle } from 'decantr/css';
 setStyle('auradecantism');  // Default: glass, gradients, vibrant (dark)
 
 // Add-on styles (require import + registerStyle before use)
-// Available: clean, retro, glassmorphism, command-center,
+// Available: clean, retro, glassmorphism,
 //            bioluminescent, clay, dopamine, editorial, liquid-glass, prismatic
 import { clean as cleanStyle } from 'decantr/styles/clean';
 registerStyle(cleanStyle);
@@ -1245,7 +1394,7 @@ setMode('dark');
 setMode('auto');  // Follows system preference
 ```
 
-**11 styles total:** `auradecantism` (core, default), `clean`, `retro`, `glassmorphism`, `command-center`, `bioluminescent`, `clay`, `dopamine`, `editorial`, `liquid-glass`, `prismatic` (all add-on).
+**10 styles total:** `auradecantism` (core, default), `clean`, `retro`, `glassmorphism`, `bioluminescent`, `clay`, `dopamine`, `editorial`, `liquid-glass`, `prismatic` (all add-on).
 
 ### Interactive State Atoms (Pseudo-Class Prefixes)
 
@@ -1296,7 +1445,7 @@ function SidebarMainApp({ nav, router }) {
       ...nav.map(item => {
         const isActive = () => router.path() === item.href;
         return link({ href: item.href, class: () =>
-          css(`d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans ${
+          css(`d-shell-nav-item _r2 _trans ${
             isActive() ? 'd-shell-nav-item-active _bgprimary/10 _fgprimary' : '_fgfg'
           }`)
         },
@@ -1433,32 +1582,39 @@ function MinimalHeader({ brand, children }) {
 
 | Pattern | Presets | Layout | Components |
 |---------|---------|--------|-----------|
-| activity-feed | — | stack | Timeline, Avatar, Badge, Text, Separator |
+| activity-feed | default, notification-center, social, minimal, grouped | stack | Timeline, Avatar, Badge, Text, Separator |
 | announcement-bar | — | row | Badge, Button, icon |
 | article-content | — | grid | Card, Avatar, Badge, Text, Separator |
 | auth-form | — | stack | Input, Button, Card, Card.Header, Card.Body, Card.Footer, Separator |
 | author-card | — | row | Card, Avatar, Badge, Text, Button |
-| card-grid | product, content, collection, icon | grid | Card, Card.Header, Card.Body, Card.Footer, Button, Badge, icon |
+| bento-features | hero-stats, grid-only | stack | Card, Badge, icon |
+| card-grid | product, content, collection, icon, resource, service, user | grid | Card, Card.Header, Card.Body, Card.Footer, Button, Badge, icon |
 | category-nav | — | flex | Chip, Badge, Button, Segmented |
-| chart-grid | — | grid | Chart, Select |
+| changelog | — | stack | Badge, Chip, Separator, icon |
+| chart-grid | default, dashboard, single-focus, sparkline-row | grid | Chart, Select |
 | chat-interface | — | stack | Card, Card.Body, Input, Button, Avatar, Chip, ScrollArea, icon |
-| checklist-card | default | stack | Card, Card.Header, Card.Body, Checkbox, icon |
+| checklist-card | default, onboarding | stack | Card, Card.Header, Card.Body, Checkbox, icon |
+| code-comparison | split, stacked | row | CodeBlock, Card |
 | code-preview | terminal, split | row | CodeBlock, Chip, Button |
 | comparison-panel | — | grid | Statistic, Sparkline, Badge, Chart, Separator |
 | component-showcase | — | stack | * |
 | contact-form | — | stack | Input, Textarea, Button, Select |
 | cta-section | standard, brand | stack | Button, Title, Text |
-| data-table | — | stack | DataTable, Input, Select, Button, Badge, Chip |
+| data-table | default, audit-log, master-detail, editable | stack | DataTable, Input, Select, Button, Badge, Chip |
+| deploy-log | live, history | stack | Badge, Button, Chip, Input, icon |
 | detail-header | standard, profile | stack | Breadcrumb, Title, Badge, Button |
 | detail-panel | — | stack | Tabs, Card, Card.Header, Card.Body, Avatar, Badge, Button, Separator, Tooltip |
 | explorer-shell | — | grid | Input, Select, Button |
-| filter-bar | — | row | Input, Select, Button, DatePicker, Chip |
+| file-manager | — | stack | Card, Button, Breadcrumb, Dropdown, icon, Badge |
+| filter-bar | default, toolbar, segmented, search-primary | row | Input, Select, Button, DatePicker, Chip |
 | filter-sidebar | — | stack | Checkbox, Select, Switch, Button, Separator, Accordion, Input |
 | footer-columns | standard, minimal | row | Separator, icon |
 | form-sections | settings, creation, structured | stack | Input, Select, Switch, Textarea, Checkbox, Button, Separator |
 | goal-tracker | — | grid | Statistic, Progress, Badge, icon, Sparkline |
-| hero | landing, image-overlay, brand, split, image-overlay-compact | stack | Button, icon |
-| kpi-grid | — | grid | Statistic, icon |
+| hero | landing, image-overlay, brand, vision, split, image-overlay-compact, empty-state | stack | Button, icon |
+| inbox | — | split | Avatar, Badge, Chip, Button, icon, Separator |
+| kanban-board | — | row | Card, Badge, Button, Chip, icon |
+| kpi-grid | default, compact, featured, sparkline | grid | Statistic, icon |
 | leaderboard | ranked, grid, spotlight | stack | Card, Avatar, Badge, Statistic, Progress, icon |
 | logo-strip | static, marquee | row | Marquee, icon |
 | media-gallery | — | grid | Image, Card, Modal, Button |
@@ -1467,18 +1623,23 @@ function MinimalHeader({ brand, children }) {
 | photo-to-recipe | — | grid | Card, Card.Header, Card.Body, Upload, Button, Spinner, Separator, icon |
 | pipeline-tracker | — | stack | Chart, Badge, DataTable, Tabs, Statistic, Select |
 | post-list | — | stack | Card, Card.Body, Avatar, Badge, Chip, Pagination, Button |
-| pricing-table | — | grid | Card, Button, Badge, Separator, List |
+| pricing-table | default, feature-comparison | grid | Card, Button, Badge, Separator, List |
+| quick-actions | — | grid | Button, Card, icon |
+| resource-overview | gauge-grid, summary-bar | grid | Badge, Card, Card.Body, Chip, icon |
 | scorecard | — | stack | DataTable, Progress, Badge, Text, Separator, Avatar |
 | search-bar | — | row | Input, Button, Dropdown |
+| service-catalog | grid, list | grid | Card, Card.Body, Badge, Button, icon |
+| showcase-card | app, compact | stack | Card, Badge, Chip, Button, icon |
 | showcase-gallery | screenshots, cards | grid | Card, Image, BrowserFrame |
 | specimen-grid | swatch, preview | — | Card, Badge, Chip |
 | stat-card | compact-grid | grid | Card, Card.Header, Card.Body, Statistic, icon |
 | stats-bar | default | stack | Button, Separator, Badge, icon |
 | stats-section | hero, inline | hero | Statistic |
+| status-board | — | grid | Badge, Chip, icon |
 | steps-card | default | stack | Card, Card.Header, Card.Body, Badge, icon |
 | table-of-contents | — | stack | List, Link |
 | testimonials | grid, wall, marquee | grid | Card, Avatar, Badge, Text, Marquee |
-| timeline | — | stack | Timeline, Card, Card.Body, Badge, Avatar, icon, Separator |
+| timeline | default, calendar, compact, branching, milestone | stack | Timeline, Card, Card.Body, Badge, Avatar, icon, Separator |
 | token-inspector | — | stack | Card, Separator |
 | wizard | — | stack | Button, Progress, Input, Select, Checkbox, Switch, Separator |
 

@@ -99,7 +99,7 @@ export function Accordion(props = {}) {
     let idx = fromIdx;
     for (let i = 0; i < len; i++) {
       idx = (idx + direction + len) % len;
-      if (!triggers[idx].hasAttribute('data-disabled')) return idx;
+      if (triggers[idx].getAttribute('aria-disabled') !== 'true') return idx;
     }
     return fromIdx;
   }
@@ -122,7 +122,10 @@ export function Accordion(props = {}) {
       'aria-expanded': 'false',
       'aria-controls': regionId
     };
-    if (isItemDisabled(item)) triggerAttrs['data-disabled'] = '';
+    if (isItemDisabled(item)) {
+      triggerAttrs['data-disabled'] = '';
+      triggerAttrs['aria-disabled'] = 'true';
+    }
 
     const trigger = buttonTag(triggerAttrs, item.title, caret('down', { class: 'd-accordion-icon' }));
 

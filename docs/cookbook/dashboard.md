@@ -10,8 +10,8 @@ Start by defining the project DNA in `decantr.essence.json`:
 {
   "version": "1.0.0",
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
-  "character": ["tactical", "data-dense"],
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
+  "character": ["professional", "data-rich"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [
     { "id": "overview", "skeleton": "sidebar-main", "blend": ["kpi-grid", "chart-grid", "data-table"] },
@@ -30,9 +30,8 @@ Start by defining the project DNA in `decantr.essence.json`:
 ```js
 import { mount } from 'decantr/core';
 import { createRouter } from 'decantr/router';
-import { setStyle, setMode } from 'decantr/css';
+import { setMode } from 'decantr/css';
 
-setStyle('command-center');
 setMode('dark');
 
 const router = createRouter({
@@ -282,4 +281,4 @@ ws.on((msg) => {
 - `createQuery` handles all data fetching with caching and background refetch
 - `createMutation` + `queryClient.invalidate()` for write operations
 - `createWebSocket` for real-time updates
-- The `command-center` style gives the HUD/tactical aesthetic
+- The default `auradecantism` style provides a vibrant dark aesthetic with glass surfaces and gradients

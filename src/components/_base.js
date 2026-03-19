@@ -21,6 +21,8 @@ const BASE_CSS = [
   // UTILITIES
   // ═══════════════════════════════════════════════════════════════
   '.d-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
+  '.d-skip-link{position:absolute;top:-100%;left:0;z-index:9999;padding:0.75rem 1.5rem;background:var(--d-bg);color:var(--d-fg);border:2px solid var(--d-primary);border-radius:var(--d-radius);font-weight:600;text-decoration:none;opacity:0;pointer-events:none;transition:top 0.15s,opacity 0.15s}',
+  '.d-skip-link:focus{top:0.5rem;left:0.5rem;opacity:1;pointer-events:auto;outline:2px solid var(--d-ring);outline-offset:2px}',
   // Field sizing utility — override density tokens locally so child form elements inherit the tier
   '.d-field-xs{--d-density-min-h:var(--d-field-h-xs);--d-density-pad-y:var(--d-field-py-xs);--d-density-pad-x:var(--d-field-px-xs);--d-density-text:var(--d-field-text-xs);--d-density-gap:var(--d-field-gap-xs)}',
   '.d-field-sm{--d-density-min-h:var(--d-field-h-sm);--d-density-pad-y:var(--d-field-py-sm);--d-density-pad-x:var(--d-field-px-sm);--d-density-text:var(--d-field-text-sm);--d-density-gap:var(--d-field-gap-sm)}',
@@ -71,7 +73,7 @@ const BASE_CSS = [
   '.d-btn-sm{min-height:var(--d-field-h-sm);font-size:var(--d-field-text-sm);padding:var(--d-field-py-sm) var(--d-field-px-sm);gap:var(--d-field-gap-sm)}',
   '.d-btn-lg{min-height:var(--d-field-h-lg);font-size:var(--d-field-text-lg);padding:var(--d-field-py-lg) var(--d-field-px-lg);gap:var(--d-field-gap-lg)}',
   '.d-btn-icon{padding:var(--d-sp-2);aspect-ratio:1}',
-  '.d-btn-icon-xs{min-height:var(--d-field-h-xs);padding:var(--d-field-py-xs);aspect-ratio:1;font-size:var(--d-field-text-xs)}',
+  '.d-btn-icon-xs{min-height:max(var(--d-field-h-xs),2.75rem);min-width:max(var(--d-field-h-xs),2.75rem);padding:var(--d-field-py-xs);aspect-ratio:1;font-size:var(--d-field-text-xs)}',
   '.d-btn-icon-sm{min-height:var(--d-field-h-sm);padding:var(--d-field-py-sm);aspect-ratio:1;font-size:var(--d-field-text-sm)}',
   '.d-btn-icon-lg{min-height:var(--d-field-h-lg);padding:var(--d-field-py-lg);aspect-ratio:1;font-size:var(--d-field-text-lg)}',
   '.d-btn-block{display:flex;width:100%}',
@@ -1066,7 +1068,7 @@ const BASE_CSS = [
   // ═══════════════════════════════════════════════════════════════
   // STATISTIC
   // ═══════════════════════════════════════════════════════════════
-  '.d-statistic{display:flex;flex-direction:column;gap:var(--d-sp-1);padding:var(--d-sp-3);transition:transform var(--d-duration-fast) var(--d-easing-standard),box-shadow var(--d-duration-fast) var(--d-easing-standard)}',
+  '.d-statistic{display:flex;flex-direction:column;gap:var(--d-sp-2);padding:var(--d-sp-3);transition:transform var(--d-duration-fast) var(--d-easing-standard),box-shadow var(--d-duration-fast) var(--d-easing-standard)}',
   '.d-card .d-statistic{padding:0}',
   '.d-statistic:hover{transform:translateY(-1px)}',
   '.d-statistic-label{font-size:var(--d-text-sm);color:var(--d-muted)}',
@@ -1579,13 +1581,32 @@ const BASE_CSS = [
   '.d-shell-header-sticky{position:sticky;top:0}',
   '.d-shell-nav{grid-area:nav;display:flex;flex-direction:column;gap:var(--d-sp-1);padding:var(--d-sp-3);overflow-y:auto;overflow-x:hidden;transition:width var(--d-duration-normal,200ms) var(--d-easing-standard,ease),padding var(--d-duration-normal,200ms) var(--d-easing-standard,ease)}',
   '.d-shell-nav-hidden .d-shell-nav{padding:0;overflow:hidden}',
-  '.d-shell-nav-rail .d-shell-nav{padding:var(--d-sp-2);align-items:center}',
+  '.d-shell-nav-rail .d-shell-nav{padding:var(--d-sp-1);align-items:center}',
   '.d-shell-nav-inline{display:flex;align-items:center;gap:var(--d-sp-4);flex:1;justify-content:center}',
   '.d-shell-body{grid-area:body;overflow:auto;display:flex;flex-direction:column;min-height:0}',
   '.d-shell-footer{grid-area:footer;display:flex;align-items:center;gap:var(--d-sp-4);padding:0 var(--d-sp-6);min-height:var(--d-shell-footer-h,auto)}',
   '.d-shell-aside{grid-area:aside;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;padding:var(--d-sp-3)}',
-  '.d-shell-nav-item{position:relative;border-radius:var(--d-radius-inner);transition:color var(--d-duration-fast) var(--d-easing-standard),background var(--d-duration-fast) var(--d-easing-standard)}',
+  '.d-shell-nav-item{position:relative;display:flex;align-items:center;gap:var(--d-sp-2);padding:var(--d-sp-2) var(--d-sp-3);border-radius:var(--d-radius-inner);transition:color var(--d-duration-fast) var(--d-easing-standard),background var(--d-duration-fast) var(--d-easing-standard)}',
   '.d-shell-nav-item-active::before{content:"";position:absolute;left:0;top:25%;bottom:25%;width:3px;border-radius:var(--d-radius-sm);background:var(--d-primary);animation:d-scalein var(--d-duration-fast) var(--d-easing-decelerate)}',
+  '.d-shell-header,.d-shell-nav,.d-shell-body,.d-shell-footer,.d-shell-aside{border-radius:0}',
+  // Shell nav sub-components
+  '.d-shell-nav-group{display:flex;flex-direction:column;gap:var(--d-sp-1)}',
+  '.d-shell-nav-group+.d-shell-nav-group{margin-top:var(--d-sp-3)}',
+  '.d-shell-nav-group-label{font-size:var(--d-text-xs);font-weight:var(--d-fw-medium,500);padding:var(--d-sp-1) var(--d-sp-3);text-transform:uppercase;letter-spacing:0.05em;user-select:none}',
+  '.d-shell-nav-rail .d-shell-nav-group-label{display:none}',
+  '.d-shell-nav-footer{margin-top:auto;display:flex;align-items:center;gap:var(--d-sp-2);padding:var(--d-sp-3)}',
+  '.d-shell-nav-sub{display:flex;flex-direction:column}',
+  '.d-shell-nav-sub-trigger[aria-expanded="true"] .d-caret{transform:rotate(180deg)}',
+  '.d-shell-nav-sub-content{display:flex;flex-direction:column;gap:var(--d-sp-1);padding-left:var(--d-sp-6)}',
+  '.d-shell-nav-sub-content .d-shell-nav-item{font-size:var(--d-text-sm)}',
+  '.d-shell-trigger{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;background:none;border:none;padding:var(--d-sp-2);border-radius:var(--d-radius-inner);color:inherit;transition:background var(--d-duration-fast) var(--d-easing-standard)}',
+  '.d-shell-nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:var(--d-sp-5);height:var(--d-sp-5);padding:0 var(--d-sp-2);font-size:var(--d-text-xs);font-weight:var(--d-fw-medium,500);line-height:1;border-radius:var(--d-radius-full);margin-left:auto;flex-shrink:0}',
+  '.d-shell-nav-rail .d-shell-nav-badge{position:absolute;top:2px;right:2px;min-width:var(--d-sp-2);height:var(--d-sp-2);padding:0;font-size:0}',
+  '.d-shell-nav-rail .d-shell-nav-item{padding:var(--d-sp-2);justify-content:center}',
+  '.d-shell-nav-hidden .d-shell-nav-item{padding:0;overflow:hidden}',
+  // Shell inset variant (structural only — border-radius + backgrounds are in components.js theme layer)
+  '.d-shell-inset{gap:0;padding:var(--d-shell-inset-gap,var(--d-sp-2));padding-left:0}',
+  '.d-shell-inset .d-shell-nav{margin:calc(-1 * var(--d-shell-inset-gap,var(--d-sp-2)));margin-right:0;border-right:none}',
 
   // ═══════════════════════════════════════════════════════════════
   // STAGGER ANIMATION

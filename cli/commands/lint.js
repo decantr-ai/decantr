@@ -64,35 +64,41 @@ export async function run() {
     const jsFiles = await collectJSFiles(srcDir);
     const atomRegex = /_[a-zA-Z][a-zA-Z0-9\[\]]*(?:\/\d+)?/g;
 
-    // Load known atoms from registry
-    let knownAtomPrefixes;
+    // Import the actual resolver for accurate validation
+    let resolveAtomDecl;
     try {
-      const atomsSource = await readFile(join(__dirname, '..', '..', 'src', 'css', 'atoms.js'), 'utf-8');
-      knownAtomPrefixes = extractAtomPrefixes(atomsSource);
+      const atomsMod = await import(join(__dirname, '..', '..', 'src', 'css', 'atoms.js'));
+      resolveAtomDecl = atomsMod.resolveAtomDecl;
     } catch {
-      knownAtomPrefixes = null;
+      resolveAtomDecl = null;
     }
 
     let atomErrors = 0;
     for (const file of jsFiles) {
       const source = await readFile(file, 'utf-8');
-      // Only check inside css() calls
+      // Check inside css() calls and class: css() patterns
       const cssCallRegex = /css\(['"`]([^'"`]+)['"`]\)/g;
       let match;
       while ((match = cssCallRegex.exec(source)) !== null) {
         const atomStr = match[1];
         const atoms = atomStr.split(/\s+/).filter(a => a.startsWith('_'));
         for (const atom of atoms) {
-          // Skip arbitrary value atoms like _w[100px] and responsive prefixes
+          // Skip arbitrary value atoms like _w[100px]
           if (atom.includes('[')) continue;
+          // Skip responsive prefixes like _sm:gc2
           if (atom.includes(':')) continue;
-          // Basic validation: known prefixes
-          if (knownAtomPrefixes && !matchesKnownAtom(atom, knownAtomPrefixes)) {
-            const rel = relative(cwd, file);
-            warnings.push(`Unknown atom "${atom}" in ${rel}`);
-            atomErrors++;
-            if (atomErrors >= 20) break; // Don't flood
+          // Skip opacity modifiers like _bgprimary/10
+          const baseAtom = atom.includes('/') ? atom.split('/')[0] : atom;
+
+          if (resolveAtomDecl) {
+            // Use the actual resolver — zero false positives
+            if (!resolveAtomDecl(baseAtom)) {
+              const rel = relative(cwd, file);
+              warnings.push(`Unknown atom "${atom}" in ${rel}`);
+              atomErrors++;
+            }
           }
+          if (atomErrors >= 20) break;
         }
         if (atomErrors >= 20) break;
       }
@@ -132,6 +138,64 @@ export async function run() {
     // Already handled above
   }
 
+  // ─── 4. Spatial drift detection (Clarity violations) ────────
+  try {
+    const essenceRaw = await readFile(join(cwd, 'decantr.essence.json'), 'utf-8');
+    const essence = JSON.parse(essenceRaw);
+    const character = essence.character || [];
+    const traits = character.map(t => t.toLowerCase());
+
+    // Determine expected density cluster
+    let expectedDensity = 'comfortable';
+    if (traits.some(t => ['tactical', 'dense', 'data-dense', 'technical', 'utilitarian'].includes(t))) {
+      expectedDensity = 'compact';
+    } else if (traits.some(t => ['editorial', 'luxurious', 'premium'].includes(t))) {
+      expectedDensity = 'spacious';
+    } else if (traits.some(t => ['minimal', 'clean', 'elegant'].includes(t))) {
+      expectedDensity = 'spacious';
+    }
+
+    // User clarity override takes precedence
+    if (essence.clarity?.density) expectedDensity = essence.clarity.density;
+
+    // Define gap ranges per density
+    const gapRanges = {
+      compact: { min: 1, max: 4 },
+      comfortable: { min: 3, max: 6 },
+      spacious: { min: 5, max: 8 },
+    };
+    const range = gapRanges[expectedDensity] || gapRanges.comfortable;
+
+    const srcDir = join(cwd, 'src');
+    const jsFiles = await collectJSFiles(srcDir);
+    let spatialWarnings = 0;
+    for (const file of jsFiles) {
+      const source = await readFile(file, 'utf-8');
+      const cssCallRegex = /css\(['"`]([^'"`]+)['"`]\)/g;
+      let match;
+      while ((match = cssCallRegex.exec(source)) !== null) {
+        const atoms = match[1].split(/\s+/).filter(a => /^_gap\d+$/.test(a));
+        for (const atom of atoms) {
+          const gapNum = parseInt(atom.replace('_gap', ''));
+          if (gapNum < range.min || gapNum > range.max) {
+            const rel = relative(cwd, file);
+            warnings.push(`Spatial drift: "${atom}" in ${rel} is outside ${expectedDensity} range (_gap${range.min}–_gap${range.max})`);
+            spatialWarnings++;
+          }
+          if (spatialWarnings >= 10) break;
+        }
+        if (spatialWarnings >= 10) break;
+      }
+      if (spatialWarnings >= 10) {
+        warnings.push('... truncated (10+ spatial drift warnings)');
+        break;
+      }
+    }
+    console.log(`  ✓ Spatial drift check: ${expectedDensity} density, ${jsFiles.length} files scanned`);
+  } catch {
+    console.log('  ○ No essence — skipping spatial drift check');
+  }
+
   // ─── Report ─────────────────────────────────────────────────
   if (errors.length === 0 && warnings.length === 0) {
     console.log('\n  ✓ All checks passed\n');
@@ -163,47 +227,4 @@ async function collectJSFiles(dir) {
     }
   } catch { /* skip inaccessible dirs */ }
   return files;
-}
-
-function extractAtomPrefixes(atomsSource) {
-  // Extract known atom name patterns from atoms.js
-  const prefixes = new Set();
-  // Match ALIASES keys
-  const aliasRegex = /'(_[a-zA-Z]+)'/g;
-  let m;
-  while ((m = aliasRegex.exec(atomsSource)) !== null) {
-    prefixes.add(m[1]);
-  }
-  // Add common known atom bases
-  const common = [
-    '_flex', '_col', '_row', '_grid', '_gap', '_p', '_px', '_py', '_pt', '_pr', '_pb', '_pl',
-    '_m', '_mx', '_my', '_mt', '_mr', '_mb', '_ml', '_w', '_h', '_mw', '_mh', '_r', '_b',
-    '_aic', '_jcc', '_jcsb', '_jcse', '_jce', '_tc', '_tl', '_tr', '_ais', '_aie',
-    '_relative', '_absolute', '_fixed', '_sticky', '_static',
-    '_overflow', '_wfull', '_hfull', '_flex1', '_grow', '_shrink0',
-    '_heading1', '_heading2', '_heading3', '_heading4', '_heading5', '_heading6',
-    '_body', '_caption', '_textsm', '_textxs', '_bold', '_italic',
-    '_fgfg', '_fgmuted', '_fgmutedfg', '_fgprimary', '_bgbg', '_bgmuted',
-    '_nounder', '_trans', '_block', '_inline', '_inlineFlex',
-    '_borderB', '_borderT', '_borderR', '_borderL', '_bordert', '_borderb',
-    '_object', '_inset0', '_top0', '_bottom0', '_left0', '_right0',
-    '_lineClamp2', '_clamp2', '_wrap', '_flexWrap', '_rfull',
-    '_gc', '_span', '_gcaf', '_mxa', '_mxAuto',
-    '_center', '_lhrelaxed', '_fontBold',
-  ];
-  for (const c of common) prefixes.add(c);
-  return prefixes;
-}
-
-function matchesKnownAtom(atom, prefixes) {
-  if (prefixes.has(atom)) return true;
-  // Check prefix matches (e.g. _gap4 matches _gap prefix)
-  for (const prefix of prefixes) {
-    if (atom.startsWith(prefix) && atom.length > prefix.length) {
-      const suffix = atom.slice(prefix.length);
-      // Numeric suffix is always valid
-      if (/^\d+(-\d+)?$/.test(suffix)) return true;
-    }
-  }
-  return false;
 }

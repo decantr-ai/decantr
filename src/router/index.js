@@ -1,9 +1,11 @@
-import { createSignal, createEffect } from '../state/index.js';
+import { createSignal, createEffect, createRoot, getOwner, untrack } from '../state/index.js';
 import { getAnimations } from '../css/theme-registry.js';
 import { h } from '../core/index.js';
+import { disposeNode } from '../core/component.js';
 import { drainMountQueue, runDestroyFns } from '../core/lifecycle.js';
 import { hashStrategy } from './hash.js';
 import { historyStrategy } from './history.js';
+import { createLiveRegion } from '../components/_behaviors.js';
 
 /** @type {ReturnType<typeof createRouter>|null} */
 let activeRouter = null;
@@ -236,6 +238,12 @@ export function createRouter(config) {
 
   const [navigating, setNavigating] = createSignal(false);
 
+  // Persistent live region for route change announcements
+  let _liveRegion = null;
+  if (typeof document !== 'undefined') {
+    _liveRegion = createLiveRegion({ politeness: 'polite' });
+  }
+
   /** @type {Map<string, number>} scroll position cache */
   const scrollPositions = new Map();
 
@@ -337,6 +345,18 @@ export function createRouter(config) {
     // Fire navigation listeners
     for (let i = 0; i < listeners.length; i++) listeners[i](to, from);
 
+    // Focus management — move focus to main content for screen readers
+    if (typeof document !== 'undefined') {
+      const main = document.querySelector('[role="main"], main');
+      if (main) {
+        if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
+        main.focus({ preventScroll: true });
+      }
+      // Announce page change via live region
+      const pageTitle = to.meta?.title || to.path;
+      if (_liveRegion) _liveRegion.announce('Navigated to ' + pageTitle);
+    }
+
     // Scroll handling
     if (scrollBehavior === 'top') {
       if (typeof window !== 'undefined' && window.scrollTo) window.scrollTo(0, 0);
@@ -402,6 +422,8 @@ export function createRouter(config) {
 
       const swap = () => {
         if (currentNode) {
+          // Dispose reactive tree before DOM removal
+          disposeNode(currentNode);
           // Run cleanup from previous component's onMount returns
           runDestroyFns(currentDestroyFns);
           currentDestroyFns = [];
@@ -411,13 +433,27 @@ export function createRouter(config) {
         currentComp = comp;
         if (!comp) return;
 
-        // If there's a deeper component, this is a layout — pass child outlet
+        const args = hasChild
+          ? { ...r.params, outlet: () => outlet(depth + 1) }
+          : r.params;
+
+        // untrack prevents signal reads during page init from subscribing
+        // the outlet effect (e.g., Segmented reading value() at construction)
         let node;
-        if (hasChild) {
-          node = comp({ ...r.params, outlet: () => outlet(depth + 1) });
+        if (comp.__d_isComponent) {
+          // component()-wrapped — creates its own root
+          node = untrack(() => comp(args));
         } else {
-          node = comp(r.params);
+          // Bare function — wrap in createRoot for automatic cleanup
+          createRoot(() => {
+            const owner = getOwner();
+            node = untrack(() => comp(args));
+            if (node && typeof node === 'object' && node.nodeType) {
+              node.__d_owner = owner;
+            }
+          });
         }
+
         if (node) {
           currentNode = node;
           container.appendChild(currentNode);
@@ -457,6 +493,7 @@ export function createRouter(config) {
 
   function destroy() {
     unlisten();
+    if (_liveRegion) { _liveRegion.destroy(); _liveRegion = null; }
     if (activeRouter === router) activeRouter = null;
   }
 

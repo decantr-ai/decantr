@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Sync showcase manifest into docs
+        run: mkdir -p docs/src/data && echo "export const showcaseManifest = $(cat showcase/showcase.manifest.json);" > docs/src/data/showcases.js
+
       - name: Build docs site
         run: npx decantr build
         working-directory: docs

@@ -269,7 +269,7 @@ function SidebarMainApp({ nav, router }) {
       ...nav.map(item => {
         const isActive = () => router.path() === item.href;
         return link({ href: item.href, class: () =>
-          css(`d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans ${
+          css(`d-shell-nav-item _r2 _trans ${
             isActive() ? 'd-shell-nav-item-active _bgprimary/10 _fgprimary' : '_fgfg'
           }`)
         },
@@ -786,13 +786,6 @@ div({ class: css('d-glass _r4 _p4') },  // glass panel wrapper
 )
 ```
 
-### With command-center recipe:
-```js
-div({ class: css('cc-frame-sm cc-glow') },  // beveled frame + glow
-  Statistic({ label: 'ACTIVE THREATS', value: 42, icon: 'alert-triangle', class: css('_bg[transparent]') })
-)
-```
-
 ### With clean recipe:
 ```js
 div({ class: css('_b1 _r4 _p4') },  // simple border + radius (tokens handle the rest)
@@ -813,7 +806,7 @@ import { setStyle, setMode, registerStyle } from 'decantr/css';
 setStyle('auradecantism');  // Default: glass, gradients, vibrant (dark)
 
 // Add-on styles (require import + registerStyle before use)
-// Available: clean, retro, glassmorphism, command-center,
+// Available: clean, retro, glassmorphism,
 //            bioluminescent, clay, dopamine, editorial, liquid-glass, prismatic
 import { clean as cleanStyle } from 'decantr/styles/clean';
 registerStyle(cleanStyle);
@@ -825,7 +818,7 @@ setMode('dark');
 setMode('auto');  // Follows system preference
 ```
 
-**11 styles total:** `auradecantism` (core, default), `clean`, `retro`, `glassmorphism`, `command-center`, `bioluminescent`, `clay`, `dopamine`, `editorial`, `liquid-glass`, `prismatic` (all add-on).
+**10 styles total:** `auradecantism` (core, default), `clean`, `retro`, `glassmorphism`, `bioluminescent`, `clay`, `dopamine`, `editorial`, `liquid-glass`, `prismatic` (all add-on).
 
 ### Interactive State Atoms (Pseudo-Class Prefixes)
 
@@ -1096,10 +1089,10 @@ mount(document.getElementById('app'), () => router.outlet());
 ### Style import + registration required for add-on styles
 ```js
 // WRONG — setStyle alone doesn't load the style
-setStyle('command-center');
+setStyle('clean');
 
 // CORRECT — import, register, then set
-import { commandCenter } from 'decantr/styles/command-center';
-registerStyle(commandCenter);
-setStyle('command-center');
+import { clean as cleanStyle } from 'decantr/styles/clean';
+registerStyle(cleanStyle);
+setStyle('clean');
 ```

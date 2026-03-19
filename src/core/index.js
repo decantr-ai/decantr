@@ -1,5 +1,10 @@
 import { createEffect } from '../state/index.js';
-export { onMount, onDestroy } from './lifecycle.js';
+import { disposeNode } from './component.js';
+export { onMount, onDestroy, onCleanup } from './lifecycle.js';
+export { component } from './component.js';
+export { disposeNode };
+export { Show } from './show.js';
+export { For } from './for.js';
 import { drainMountQueue, drainDestroyQueue, pushScope, popScope, runDestroyFns } from './lifecycle.js';
 
 /**
@@ -69,6 +74,7 @@ export function cond(condition, thenFn, elseFn) {
   createEffect(() => {
     const result = condition();
     if (currentNode) {
+      disposeNode(currentNode);
       container.removeChild(currentNode);
       currentNode = null;
     }
@@ -113,9 +119,10 @@ export function list(itemsGetter, keyFn, renderFn) {
       }
     }
 
-    // Remove nodes no longer in list
+    // Remove nodes no longer in list — dispose reactive trees
     for (const [key, entry] of currentMap) {
       if (!newMap.has(key) && entry.node.parentNode === container) {
+        disposeNode(entry.node);
         container.removeChild(entry.node);
       }
     }
@@ -396,6 +403,7 @@ export function Suspense(props, ...children) {
   function showChildren() {
     if (showing === 'children') return;
     showing = 'children';
+    container.removeAttribute('aria-busy');
     while (container.firstChild) container.removeChild(container.firstChild);
     for (let i = 0; i < childNodes.length; i++) container.appendChild(childNodes[i]);
     fallbackNode = null;
@@ -404,6 +412,7 @@ export function Suspense(props, ...children) {
   function showFallback() {
     if (showing === 'fallback') return;
     showing = 'fallback';
+    container.setAttribute('aria-busy', 'true');
     while (container.firstChild) container.removeChild(container.firstChild);
     fallbackNode = props.fallback();
     if (fallbackNode) container.appendChild(fallbackNode);
@@ -447,7 +456,9 @@ export function Suspense(props, ...children) {
  */
 export function Transition(props, child) {
   const container = document.createElement('d-transition');
-  const duration = props.duration != null ? props.duration : 200;
+  const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const duration = reducedMotion ? 0 : (props.duration != null ? props.duration : 200);
   let currentNode = null;
   let exitTimer = null;
 
@@ -459,7 +470,7 @@ export function Transition(props, child) {
       const leaving = currentNode;
       currentNode = null;
 
-      if (props.exit) {
+      if (props.exit && !reducedMotion) {
         leaving.classList.add(props.exit);
         if (exitTimer) clearTimeout(exitTimer);
         exitTimer = setTimeout(() => {
@@ -476,7 +487,7 @@ export function Transition(props, child) {
       currentNode = next;
       container.appendChild(next);
 
-      if (props.enter) {
+      if (props.enter && !reducedMotion) {
         next.classList.add(props.enter);
         // Remove enter class after animation completes
         const entering = next;
@@ -528,11 +539,25 @@ function appendChildren(el, children) {
     } else if (child && typeof child === 'object' && child.nodeType) {
       el.appendChild(child);
     } else if (typeof child === 'function') {
-      const textNode = document.createTextNode('');
+      const anchor = document.createComment('');
+      el.appendChild(anchor);
+      let currentNode = null;
       createEffect(() => {
-        textNode.nodeValue = String(child());
+        const result = child();
+        if (currentNode) {
+          disposeNode(currentNode);
+          if (currentNode.parentNode) currentNode.parentNode.removeChild(currentNode);
+          currentNode = null;
+        }
+        if (result != null && result !== false) {
+          if (typeof result === 'object' && result.nodeType) {
+            currentNode = result;
+          } else {
+            currentNode = document.createTextNode(String(result));
+          }
+          anchor.parentNode.insertBefore(currentNode, anchor);
+        }
       });
-      el.appendChild(textNode);
     } else {
       el.appendChild(document.createTextNode(String(child)));
     }

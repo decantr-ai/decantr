@@ -1,0 +1,57 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "deploy-log",
+  "name": "Deploy Log",
+  "description": "Console/terminal output viewer for deployment logs, build output, and CLI traces. Monospace font with color-coded severity levels.",
+  "components": ["Badge", "Button", "Chip", "Input", "icon"],
+  "default_preset": "live",
+  "presets": {
+    "live": {
+      "description": "Streaming deploy log with status badge and auto-scroll. Shows real-time build/deploy output with severity-colored lines.",
+      "components": ["Badge", "Button", "Chip", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0",
+        "slots": {
+          "header": "Title bar with deploy name, status Badge (building/success/failed), and timestamp",
+          "log-area": "Monospace scrollable area with color-coded log lines (info=muted, warn=warning, error=error)",
+          "footer": "Action bar with Clear and Download buttons"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Button, icon } from 'decantr/components';",
+        "example": "function DeployLogLive({ entries, status }) {\n  const { div, span } = tags;\n  const statusVariant = status === 'success' ? 'success' : status === 'failed' ? 'error' : 'warning';\n  const levelColor = l => l === 'error' ? '_fgerror' : l === 'warn' ? '_fgwarning' : '_fgmuted';\n\n  return div({ class: css('_flex _col') },\n    div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n      div({ class: css('_flex _aic _gap2') },\n        icon('terminal', { size: '1em' }),\n        span({ class: css('_textsm _bold') }, 'Deploy Log')\n      ),\n      Badge({ variant: statusVariant }, status)\n    ),\n    div({ class: css('_p4 _fontmono _textsm _bg[#09090B] _fg[#E4E4E7] _overflow[auto] _mxh[400px]') },\n      ...entries.map(e =>\n        div({ class: css('_flex _gap2 _py0-5') },\n          span({ class: css('_fgmuted _textxs _shrink0') }, e.time),\n          span({ class: css(levelColor(e.level)) }, e.message)\n        )\n      )\n    ),\n    div({ class: css('_flex _aic _jcsb _px4 _py2 _borderT') },\n      span({ class: css('_textxs _fgmuted') }, `${entries.length} lines`),\n      div({ class: css('_flex _gap2') },\n        Button({ variant: 'ghost', size: 'sm' }, 'Clear'),\n        Button({ variant: 'ghost', size: 'sm' }, icon('download', { size: '1em' }), ' Download')\n      )\n    )\n  );\n}"
+      }
+    },
+    "history": {
+      "description": "Searchable deploy history log with filtering by severity and text search.",
+      "components": ["Badge", "Button", "Input", "Chip", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0",
+        "slots": {
+          "toolbar": "Search Input + severity filter Chips (all/info/warn/error)",
+          "log-area": "Filterable monospace log entries with timestamps and severity badges",
+          "pagination": "Log entry count and page controls"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Badge, Button, Chip, Input, icon } from 'decantr/components';",
+        "example": "function DeployLogHistory({ entries }) {\n  const { div, span } = tags;\n  const [filter, setFilter] = createSignal('all');\n  const levelColor = l => l === 'error' ? '_fgerror' : l === 'warn' ? '_fgwarning' : '_fgmuted';\n  const filtered = () => filter() === 'all' ? entries : entries.filter(e => e.level === filter());\n\n  return div({ class: css('_flex _col') },\n    div({ class: css('_flex _aic _gap3 _px4 _py3 _borderB') },\n      Input({ placeholder: 'Search logs...', size: 'sm', class: css('_flex1') }),\n      div({ class: css('_flex _gap1') },\n        ...['all', 'info', 'warn', 'error'].map(f =>\n          Chip({ label: f, size: 'sm', variant: filter() === f ? 'primary' : 'default', onclick: () => setFilter(f) })\n        )\n      )\n    ),\n    div({ class: css('_p4 _fontmono _textsm _bg[#09090B] _fg[#E4E4E7] _overflow[auto] _mxh[500px]') },\n      ...filtered().map(e =>\n        div({ class: css('_flex _gap2 _py0-5') },\n          span({ class: css('_fgmuted _textxs _shrink0') }, e.time),\n          Badge({ variant: e.level === 'error' ? 'error' : e.level === 'warn' ? 'warning' : 'default', size: 'xs' }, e.level),\n          span({ class: css(levelColor(e.level)) }, e.message)\n        )\n      )\n    ),\n    div({ class: css('_flex _aic _jcsb _px4 _py2 _borderT') },\n      span({ class: css('_textxs _fgmuted') }, `${filtered().length} entries`),\n      Button({ variant: 'ghost', size: 'sm' }, 'Export')\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap0",
+    "slots": {
+      "header": "Title bar with deploy name, status badge, and timestamp",
+      "log-area": "Monospace scrollable area with color-coded log lines",
+      "footer": "Action bar with controls"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Button, icon } from 'decantr/components';",
+    "example": "function DeployLogLive({ entries, status }) {\n  const { div, span } = tags;\n  const statusVariant = status === 'success' ? 'success' : status === 'failed' ? 'error' : 'warning';\n  const levelColor = l => l === 'error' ? '_fgerror' : l === 'warn' ? '_fgwarning' : '_fgmuted';\n\n  return div({ class: css('_flex _col') },\n    div({ class: css('_flex _aic _jcsb _px4 _py3 _borderB') },\n      div({ class: css('_flex _aic _gap2') },\n        icon('terminal', { size: '1em' }),\n        span({ class: css('_textsm _bold') }, 'Deploy Log')\n      ),\n      Badge({ variant: statusVariant }, status)\n    ),\n    div({ class: css('_p4 _fontmono _textsm _bg[#09090B] _fg[#E4E4E7] _overflow[auto] _mxh[400px]') },\n      ...entries.map(e =>\n        div({ class: css('_flex _gap2 _py0-5') },\n          span({ class: css('_fgmuted _textxs _shrink0') }, e.time),\n          span({ class: css(levelColor(e.level)) }, e.message)\n        )\n      )\n    )\n  );\n}"
+  }
+}

@@ -3,19 +3,16 @@
  */
 export function appJs() {
   return `import { createRouter, link } from 'decantr/router';
-import { css, setStyle, setMode, registerStyle } from 'decantr/css';
+import { css, setMode } from 'decantr/css';
 import { h, text, cond, mount } from 'decantr/core';
 import { tags } from 'decantr/tags';
 import { createSignal } from 'decantr/state';
 import { Button, icon } from 'decantr/components';
 import { useRoute } from 'decantr/router';
-import { commandCenter } from 'decantr/styles/command-center';
 
 import OverviewPage from './pages/overview.js';
 import SettingsPage from './pages/settings.js';
 
-registerStyle(commandCenter);
-setStyle('command-center');
 setMode('dark');
 
 const router = createRouter({

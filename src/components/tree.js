@@ -48,13 +48,20 @@ export function Tree(props = {}) {
 
   const tree = h('div', { class: cx('d-tree', cls), role: 'tree' });
 
-  function renderNode(node, depth) {
+  function renderNode(node, depth, posInSet, setSize) {
     const hasChildren = node.children && node.children.length;
     const isExpanded = expanded.has(node.key);
     const isSelected = selected.has(node.key);
     const isChecked = checked.has(node.key);
 
-    const nodeEl = h('div', { class: cx('d-tree-node', isSelected && 'd-tree-node-selected'), role: 'treeitem', 'aria-expanded': hasChildren ? String(isExpanded) : undefined });
+    const nodeEl = h('div', {
+      class: cx('d-tree-node', isSelected && 'd-tree-node-selected'),
+      role: 'treeitem',
+      'aria-expanded': hasChildren ? String(isExpanded) : undefined,
+      'aria-level': depth + 1,
+      'aria-setsize': setSize,
+      'aria-posinset': posInSet
+    });
 
     const content = h('div', { class: 'd-tree-node-content' });
 
@@ -124,7 +131,7 @@ export function Tree(props = {}) {
     // Children
     if (hasChildren && isExpanded) {
       const childContainer = h('div', { class: 'd-tree-children', role: 'group' });
-      node.children.forEach(child => childContainer.appendChild(renderNode(child, depth + 1)));
+      node.children.forEach((child, ci) => childContainer.appendChild(renderNode(child, depth + 1, ci + 1, node.children.length)));
       nodeEl.appendChild(childContainer);
     }
 
@@ -133,7 +140,7 @@ export function Tree(props = {}) {
 
   function render() {
     tree.replaceChildren();
-    data.forEach(node => tree.appendChild(renderNode(node, 0)));
+    data.forEach((node, i) => tree.appendChild(renderNode(node, 0, i + 1, data.length)));
   }
 
   render();

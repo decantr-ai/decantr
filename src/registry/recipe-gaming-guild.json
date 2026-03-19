@@ -1,11 +1,43 @@
 {
-  "$schema": "https://decantr.ai/schemas/recipe.v1.json",
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "schema_version": "2.0",
   "id": "gaming-guild",
   "name": "Gaming Guild",
   "style": "gaming-guild",
   "mode": "dark",
   "description": "Guild hall visual language. Electric indigo + neon emerald palette with glow elevation, deep indigo surfaces, and RPG-inspired data readouts. All standard Decantr components work — this recipe describes how to COMPOSE them for the gaming guild aesthetic.",
   "setup": "import { registerStyle, setStyle, setMode } from 'decantr/css';\nimport { gamingGuild } from 'decantr/styles/community/gaming-guild';\nregisterStyle(gamingGuild);\nsetStyle('gaming-guild');\nsetMode('dark');",
+  "spatial_hints": {
+    "density_bias": -1,
+    "content_gap_shift": -1,
+    "section_padding": "_py8",
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "skeleton": {
+    "preferred": ["sidebar-main"],
+    "avoid": ["minimal-header", "centered"],
+    "nav_style": "icon-glow",
+    "default_nav_state": "expanded",
+    "root": "gg-mesh",
+    "nav": "gg-panel",
+    "header": "",
+    "navLabel": "gg-label",
+    "brand": "d-gradient-text",
+    "dimensions": null
+  },
+  "animation": {
+    "entrance": "d-stagger",
+    "micro": "bouncy"
+  },
+  "pattern_preferences": {
+    "prefer": ["activity-feed", "timeline", "card-grid"],
+    "avoid": [],
+    "default_presets": {
+      "kpi-grid": "featured",
+      "activity-feed": "social"
+    }
+  },
   "decorators": {
     "gg-glow": "Indigo glow box-shadow. Apply to cards, panels, and highlighted elements.",
     "gg-glow-accent": "Emerald glow variant. Apply to success states and accent elements.",

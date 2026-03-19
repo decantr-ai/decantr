@@ -80,7 +80,7 @@
     "centered": "Centered card on background — for auth flows"
   },
   "suggested_vintage": {
-    "styles": ["auradecantism", "clean", "command-center"],
+    "styles": ["auradecantism", "clean"],
     "modes": ["dark", "auto"]
   }
 }

@@ -47,7 +47,7 @@ export function Input(props = {}) {
   if (oninput) inputProps.oninput = oninput;
   if (onchange) inputProps.onchange = onchange;
   if (ariaLabel) inputProps['aria-label'] = ariaLabel;
-  if (required) inputProps.required = '';
+  if (required) { inputProps.required = ''; inputProps['aria-required'] = 'true'; }
 
   const inputEl = inputTag(inputProps);
   if (ref) ref(inputEl);

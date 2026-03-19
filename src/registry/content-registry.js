@@ -204,11 +204,15 @@ export async function createClient(opts = {}) {
   const cwd = opts.cwd || process.cwd();
   let registry = DEFAULT_REGISTRY;
 
-  // Read registry URL from manifest if present
-  try {
-    const manifest = JSON.parse(await readFile(join(cwd, 'decantr.registry.json'), 'utf-8'));
-    if (manifest.registry) registry = manifest.registry;
-  } catch { /* use default */ }
+  // Priority: env var > manifest > default
+  if (process.env.DECANTR_REGISTRY_URL) {
+    registry = process.env.DECANTR_REGISTRY_URL;
+  } else {
+    try {
+      const manifest = JSON.parse(await readFile(join(cwd, 'decantr.registry.json'), 'utf-8'));
+      if (manifest.registry) registry = manifest.registry;
+    } catch { /* use default */ }
+  }
 
   return new ContentRegistryClient({ registry, cwd, token: opts.token });
 }

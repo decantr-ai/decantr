@@ -12,6 +12,7 @@ Read the task-specific context file **before** any code generation. These are co
 | Change styles/themes | `llm/task-style.md` |
 | Debug issues | `llm/task-debug.md` |
 | Refactor / fix drift | `llm/task-refactor.md` |
+| Add SSR to a project | `llm/task-ssr.md` |
 
 Always read `decantr.essence.json` before any code change.
 
@@ -37,7 +38,8 @@ Regenerate profiles: `node tools/compile-llm.js`
 Follow this process for ALL new projects and major feature additions:
 
 ### Stage 1: POUR — User expresses intent in natural language
-### Stage 2: SETTLE — Decompose into five layers:
+### Stage 1.5: TASTE — Interpret intent into structured Impression (vibe, references, density, layout, novel elements)
+### Stage 2: SETTLE — Decompose into five layers (guided by TASTE Impression):
 - **Terroir**: Domain archetype → read `node_modules/decantr/src/registry/archetypes/`
 - **Vintage**: Style + mode + recipe → read `node_modules/decantr/src/registry/recipe-*.json`
 - **Character**: Brand personality traits (e.g. "tactical", "minimal", "playful")
@@ -69,21 +71,29 @@ For each page, read its `blend` array and apply:
 2. String rows → full-width pattern (use pattern's `default_blend.atoms`)
 3. `{ cols, at }` rows → `_grid _gc1 _{at}:gc{N} _gap{clarity}` wrapper with responsive collapse
 4. `{ cols, span, at }` rows → responsive `_gc{total}` grid, each pattern gets `_span{weight}`
-5. Wrap contained patterns in `Card(Card.Header, Card.Body)` — standalone patterns (layout `hero`/`row` or `contained: false`) skip wrapping
+5. Wrap contained patterns in `Card(Card.Header, Card.Body)` — standalone patterns (layout `hero`/`row` or `contained: false`) skip wrapping. Recipe `spatial_hints.card_wrapping` controls wrapping behavior ("always"/"minimal"/"none")
 6. Apply recipe `pattern_overrides` (background effects) from recipe JSON as Card class attrs
-7. Apply Clarity-derived gap to pattern code internals (`_gap4` → clarity gap)
+7. Apply Clarity-derived gap to pattern code internals (`_gap4` → clarity gap). Recipe `spatial_hints.content_gap_shift` adjusts the gap.
+8. Preset resolution: explicit in blend → recipe `pattern_preferences.default_presets` → pattern `default_preset`
 
 **App shell (sidebar-main)** uses `Shell` component with:
-- `Shell.Nav` with `d-shell-nav-item` / `d-shell-nav-item-active` classes
+- `Shell.Nav` with `d-shell-nav-item` / `d-shell-nav-item-active` + recipe nav style variant classes
 - `Shell.Header` with `Breadcrumb`, `Command` (Cmd+K), `Popover` (bell), `Dropdown` (user)
 - `Shell.Body` with `d-page-enter` fade-in
 - Keyboard shortcut: `Ctrl+\` toggles sidebar
-- Recipe decoration via `getRecipeDecoration()` → injects cc-mesh, d-glass, etc.
+- Recipe decoration via `getRecipeDecoration(recipe)` → reads recipe `skeleton` fields (data-driven, not hardcoded)
+- Shell `dimensions` prop for recipe-driven nav width/header height overrides
+- Nav style variants: `d-shell-nav-style-pill`, `d-shell-nav-style-underline`, `d-shell-nav-style-filled`, `d-shell-nav-style-minimal`, `d-shell-nav-style-icon-glow`
 
 ### Ongoing: AGE — Read Essence before every change. Guard against drift.
 
 ### Cork Rules (Anti-Drift)
-Before writing ANY code, read `decantr.essence.json`. Verify:
+Cork enforcement varies by task context. See the task-specific context file for the active tier:
+- **Creative** (task-init.md): Rules are advisory for initial scaffolding. Archetypes and blends are starting points.
+- **Guided** (task-page.md): Structure enforced, layout is flexible. New local patterns allowed.
+- **Strict** (task-refactor, task-component, task-style, task-debug): All 5 rules enforced exactly.
+
+Default (strict): Before writing ANY code, read `decantr.essence.json`. Verify:
 1. Style matches the Vintage. Do not switch styles.
 2. Page exists in the Structure. If new, add it to the Essence first.
 3. Layout follows the page's Blend. Do not freestyle spatial arrangement.
@@ -100,8 +110,8 @@ You MUST create `decantr.essence.json` during CLARIFY. Do NOT proceed to DECANT 
 {
   "version": "1.0.0",
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
-  "character": ["tactical", "data-dense"],
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
+  "character": ["professional", "data-rich"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [
     { "id": "overview", "skeleton": "sidebar-main", "blend": ["kpi-grid", "data-table"] },
@@ -110,7 +120,15 @@ You MUST create `decantr.essence.json` during CLARIFY. Do NOT proceed to DECANT 
     ]}
   ],
   "tannins": ["auth", "realtime-data"],
-  "cork": { "enforce_style": true, "enforce_recipe": true }
+  "cork": { "enforce_style": true, "enforce_recipe": true, "mode": "maintenance" },
+  "clarity": { "density": "comfortable", "content_gap": "_gap4" },
+  "_impression": {
+    "vibe": ["professional", "data-rich"],
+    "references": [],
+    "density_intent": "comfortable",
+    "layout_intent": "sidebar-main",
+    "novel_elements": []
+  }
 }
 ```
 
@@ -156,10 +174,10 @@ import { renderToString, renderToStream, hydrate } from 'decantr/ssr';
 **Core** (ships with framework, no extra import): `auradecantism` (default)
 
 **Add-on styles** (import individually via `import { clean } from 'decantr/styles/clean'` then `registerStyle(clean)`):
-`clean`, `glassmorphism`, `command-center`
+`clean`, `glassmorphism`
 
 **Community styles** (import via `import { retro } from 'decantr/styles/community/retro'`):
-`retro`, `bioluminescent`, `clay`, `dopamine`, `editorial`, `liquid-glass`, `prismatic`
+`retro`, `bioluminescent`, `launchpad`, `dopamine`, `editorial`, `liquid-glass`, `prismatic`
 
 Modes: `light`, `dark`, `auto`
 Shapes: `sharp`, `rounded`, `pill`
@@ -175,7 +193,42 @@ Shapes: `sharp`, `rounded`, `pill`
 - `node_modules/decantr/src/registry/components.json` — Component props/types
 - `node_modules/decantr/src/registry/archetypes/` — Domain archetypes (v2: `{pattern, preset, as}` references)
 - `node_modules/decantr/src/registry/patterns/` — Experience patterns (v2: presets within files)
-- `node_modules/decantr/src/registry/recipe-*.json` — Visual language recipes
+- `node_modules/decantr/src/registry/recipe-*.json` — Visual language recipes (v2: spatial_hints, skeleton, animation, pattern_preferences)
+- `src/patterns/` — Project-local patterns (referenced via `local:` prefix in blend)
+
+## Plumbing (Cross-Pattern Wiring)
+
+When the generator detects related patterns on the same page (e.g., `filter-bar` + `data-table`), it automatically creates shared page-level signals and passes them as props.
+
+### `io` field on pattern JSON
+Patterns declare what they produce/consume via an optional `io` field:
+```json
+{
+  "io": {
+    "produces": ["search", "filters"],
+    "consumes": ["data", "search"],
+    "actions": ["export", "load-more"]
+  }
+}
+```
+This is codegen metadata only — never read at runtime. Patterns without `io` work exactly as before.
+
+### Wiring Rules
+`WIRING_RULES` in `tools/generate.js` defines which pattern pairs get wired:
+- `filter-bar` + `data-table` → shared `pageSearch` + `pageStatus` signals
+- `filter-bar` + `activity-feed` → shared `pageSearch` signal
+- `filter-bar` + `card-grid` → shared `pageSearch` signal
+
+### Pattern Prop Convention
+Pattern functions accept optional props with internal defaults:
+```js
+function DataTablePattern({ search: extSearch, status: extStatus } = {}) {
+  const [_search, _setSearch] = createSignal('');
+  const search = extSearch || _search;
+  // ...
+}
+```
+Called as `DataTablePattern()` → standalone with demo data. Called as `DataTablePattern({ search: pageSearch })` → wired to page state.
 
 ## Build Configuration
 

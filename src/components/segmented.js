@@ -84,10 +84,12 @@ export function Segmented(props = {}) {
     createEffect(() => {
       const v = disabled();
       container.toggleAttribute('data-disabled', v);
+      container.setAttribute('aria-disabled', v ? 'true' : 'false');
       items.forEach(({ el }) => { el.disabled = v; });
     });
   } else if (disabled) {
     container.setAttribute('data-disabled', '');
+    container.setAttribute('aria-disabled', 'true');
     items.forEach(({ el }) => { el.disabled = true; });
   }
 

@@ -117,6 +117,7 @@ export { createHighlighter } from './code-highlight.js';
 
 // ─── Utility ────────────────────────────────────────────────────
 export { VisuallyHidden } from './visually-hidden.js';
+export { SkipLink } from './skip-link.js';
 
 // ─── Behaviors ──────────────────────────────────────────────────
-export { createScrollSpy, createScrollReveal } from './_behaviors.js';
+export { createScrollSpy, createScrollReveal, createLiveRegion } from './_behaviors.js';

@@ -5,3 +5,5 @@ docs/index.html
 docs/assets/
 .claude/
 playground/
+.env
+test/e2e-scaffold/output/

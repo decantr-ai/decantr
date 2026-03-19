@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "terroir": "docs-explorer",
+  "vintage": {
+    "style": "clean",
+    "mode": "auto",
+    "recipe": "clean",
+    "shape": "sharp"
+  },
+  "character": ["technical", "organized"],
+  "vessel": { "type": "spa", "routing": "hash" },
+  "structure": [
+    { "id": "home", "skeleton": "sidebar-main", "blend": ["article-content"] },
+    { "id": "docs", "skeleton": "sidebar-main", "blend": ["article-content"] },
+    { "id": "api", "skeleton": "sidebar-main", "blend": ["article-content"] }
+  ],
+  "tannins": ["search", "version-selector"],
+  "cork": { "enforce_style": true, "mode": "maintenance" },
+  "clarity": { "density": "comfortable", "content_gap": "_gap4" }
+}

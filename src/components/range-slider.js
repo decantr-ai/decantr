@@ -159,11 +159,13 @@ export function RangeSlider(props = {}) {
   // Reactive disabled
   if (typeof disabled === 'function') {
     createEffect(() => {
-      if (disabled()) container.setAttribute('data-disabled', '');
-      else container.removeAttribute('data-disabled');
+      const v = disabled();
+      if (v) { container.setAttribute('data-disabled', ''); container.setAttribute('aria-disabled', 'true'); }
+      else { container.removeAttribute('data-disabled'); container.removeAttribute('aria-disabled'); }
     });
   } else if (disabled) {
     container.setAttribute('data-disabled', '');
+    container.setAttribute('aria-disabled', 'true');
   }
 
   // Reactive value

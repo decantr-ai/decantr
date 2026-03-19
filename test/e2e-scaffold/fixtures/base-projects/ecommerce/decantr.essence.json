@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "terroir": "ecommerce",
+  "vintage": {
+    "style": "clean",
+    "mode": "light",
+    "recipe": "clean",
+    "shape": "rounded"
+  },
+  "character": ["commercial", "trustworthy"],
+  "vessel": { "type": "spa", "routing": "hash" },
+  "structure": [
+    { "id": "home", "skeleton": "top-nav-main", "blend": ["hero", "card-grid"] },
+    { "id": "catalog", "skeleton": "top-nav-main", "blend": ["filter-bar", "card-grid"] },
+    { "id": "product-detail", "skeleton": "top-nav-main", "blend": ["detail-header"] },
+    { "id": "cart", "skeleton": "top-nav-main", "blend": ["checklist-card"] }
+  ],
+  "tannins": ["cart", "auth", "search"],
+  "cork": { "enforce_style": true, "mode": "maintenance" },
+  "clarity": { "density": "comfortable", "content_gap": "_gap4" }
+}

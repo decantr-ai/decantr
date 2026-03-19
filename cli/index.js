@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+try { process.loadEnvFile(); } catch { /* .env is optional */ }
+
 import { parseArgs } from 'node:util';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';

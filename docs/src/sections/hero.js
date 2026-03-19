@@ -16,7 +16,7 @@ function TerminalDemo() {
     { accent: true, text: '  SERVE   Generating 6 pages...' },
     { text: '' },
     { success: true, text: '  Done. Your app is ready at http://localhost:4200' },
-    { muted: true, text: '  4 pages | 12 components | command-center style | dark mode' },
+    { muted: true, text: '  4 pages | 12 components | auradecantism style | dark mode' },
   ];
 
   return div({ class: `ds-glass ${css('_w100 _maxw[640px] _r3 _ohidden')}` },

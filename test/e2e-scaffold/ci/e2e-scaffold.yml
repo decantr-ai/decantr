@@ -1,0 +1,150 @@
+# E2E Scaffold Test Workflow
+#
+# Runs LLM-driven scaffolding tests on a schedule or manually.
+# Requires ANTHROPIC_API_KEY secret to be set in repository settings.
+#
+# Usage:
+#   - Scheduled: Runs weekly on Monday at 6am UTC
+#   - Manual: Run from Actions tab with optional category/test filters
+#
+# Copy this file to .github/workflows/e2e-scaffold.yml to enable.
+
+name: E2E Scaffold Tests
+
+on:
+  schedule:
+    # Run weekly on Monday at 6am UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      category:
+        description: 'Test category (cold-start, modification, edge-cases, or all)'
+        required: false
+        default: 'all'
+      test:
+        description: 'Single test ID (e.g., CS-001)'
+        required: false
+      model:
+        description: 'Claude model to use'
+        required: false
+        default: 'claude-sonnet-4-20250514'
+      visual:
+        description: 'Enable visual validation'
+        type: boolean
+        default: false
+
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  DECANTR_E2E_MODEL: ${{ github.event.inputs.model || 'claude-sonnet-4-20250514' }}
+
+jobs:
+  scaffold-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (if visual)
+        if: ${{ github.event.inputs.visual == 'true' }}
+        run: |
+          npm install -D playwright
+          npx playwright install chromium
+
+      - name: Validate API Key
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "Error: ANTHROPIC_API_KEY secret not set"
+            exit 1
+          fi
+          echo "API key configured"
+
+      - name: Run E2E Scaffold Tests
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.category }}" != "all" ] && [ -n "${{ github.event.inputs.category }}" ]; then
+            ARGS="$ARGS --category ${{ github.event.inputs.category }}"
+          fi
+          if [ -n "${{ github.event.inputs.test }}" ]; then
+            ARGS="$ARGS --test ${{ github.event.inputs.test }}"
+          fi
+          if [ "${{ github.event.inputs.visual }}" == "true" ]; then
+            ARGS="$ARGS --visual"
+          fi
+          echo "Running: node test/e2e-scaffold/harness.js $ARGS"
+          node test/e2e-scaffold/harness.js $ARGS
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-scaffold-results-${{ github.run_id }}
+          path: |
+            test/e2e-scaffold/output/
+          retention-days: 30
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-scaffold-report-${{ github.run_id }}
+          path: |
+            test/e2e-scaffold/output/report.json
+            test/e2e-scaffold/output/REPORT.md
+          retention-days: 90
+
+      - name: Post Summary
+        if: always()
+        run: |
+          if [ -f "test/e2e-scaffold/output/REPORT.md" ]; then
+            echo "## E2E Scaffold Test Results" >> $GITHUB_STEP_SUMMARY
+            cat test/e2e-scaffold/output/REPORT.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## E2E Scaffold Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "No report generated. Check job logs for errors." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Daily sampling job - runs a subset of tests to catch regressions quickly
+  daily-sample:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Sample Tests
+        run: |
+          # Run a quick sample of tests (one from each category)
+          for TEST_ID in CS-001 MOD-001 EC-001; do
+            echo "Running $TEST_ID..."
+            node test/e2e-scaffold/harness.js --test $TEST_ID || true
+          done
+
+      - name: Upload Sample Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-scaffold-daily-${{ github.run_id }}
+          path: test/e2e-scaffold/output/
+          retention-days: 7

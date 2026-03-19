@@ -1,4 +1,5 @@
 import { createEffect } from '../state/index.js';
+import { h } from '../core/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createRovingTabindex } from './_behaviors.js';
@@ -100,20 +101,38 @@ export function RadioGroup(props = {}) {
       const v = disabled();
       radios.forEach(({ native }) => { native.disabled = v; });
       group.toggleAttribute('data-disabled', v);
+      group.setAttribute('aria-disabled', v ? 'true' : 'false');
     });
   } else if (disabled) {
     radios.forEach(({ native }) => { native.disabled = true; });
     group.setAttribute('data-disabled', '');
+    group.setAttribute('aria-disabled', 'true');
   }
+
+  // Error message element
+  const errId = `d-rg-err-${Date.now()}`;
+  const errEl = h('div', { class: 'd-radiogroup-error', id: errId, role: 'alert' });
+  errEl.style.display = 'none';
+  group.appendChild(errEl);
 
   // Reactive error
   if (typeof error === 'function') {
     createEffect(() => {
       const v = error();
       group.toggleAttribute('data-error', !!v);
+      group.setAttribute('aria-invalid', v ? 'true' : 'false');
+      const msg = typeof v === 'string' ? v : '';
+      errEl.textContent = msg;
+      errEl.style.display = v ? '' : 'none';
+      if (v) group.setAttribute('aria-errormessage', errId);
+      else group.removeAttribute('aria-errormessage');
     });
   } else if (error) {
     group.setAttribute('data-error', '');
+    group.setAttribute('aria-invalid', 'true');
+    if (typeof error === 'string') errEl.textContent = error;
+    errEl.style.display = '';
+    group.setAttribute('aria-errormessage', errId);
   }
 
   return group;

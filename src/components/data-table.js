@@ -2,7 +2,7 @@ import { h, text, onDestroy } from '../core/index.js';
 import { createSignal, createEffect, batch } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
-import { caret, createCheckControl } from './_behaviors.js';
+import { caret, createCheckControl, createLiveRegion } from './_behaviors.js';
 
 const { div, button: buttonTag, span, label: labelTag, select: selectTag, option: optionTag } = tags;
 
@@ -93,6 +93,9 @@ export function DataTable(props = {}) {
   const [colWidths, setColWidths] = createSignal({});
   const [scrollTop, setScrollTop] = createSignal(0);
 
+  // Live region for announcing sort/filter changes
+  const _dtLive = typeof document !== 'undefined' ? createLiveRegion() : null;
+
   // ─────────────────────────────────────────────────────────────
   // DERIVED DATA PIPELINE
   // ─────────────────────────────────────────────────────────────
@@ -166,6 +169,12 @@ export function DataTable(props = {}) {
         if (!multi && next.length > 1) next = next.filter(s => s.key === key);
       }
       if (onSort && next.length) onSort(next[next.length - 1]);
+      // Announce sort change to screen readers
+      if (_dtLive && next.length) {
+        const last = next[next.length - 1];
+        const col = rawCols.find(c => c.key === last.key);
+        if (col) _dtLive.announce(`Sorted by ${col.label} ${last.direction === 'asc' ? 'ascending' : 'descending'}`);
+      }
       return next;
     });
     setPage(1);
@@ -243,6 +252,14 @@ export function DataTable(props = {}) {
   function setFilter(key, value) {
     setFilters(prev => ({ ...prev, [key]: value }));
     setPage(1);
+    // Announce filter result count
+    if (_dtLive) {
+      // Defer to let the filtered data recalculate
+      setTimeout(() => {
+        const total = getFiltered().length;
+        _dtLive.announce(`${total} result${total !== 1 ? 's' : ''} found`);
+      }, 100);
+    }
   }
 
   function exportCSV() {
@@ -363,7 +380,8 @@ export function DataTable(props = {}) {
   // Table element
   const table = h('table', {
     class: cx('d-datatable-table', striped && 'd-datatable-striped', hoverable && 'd-datatable-hoverable'),
-    role: 'grid'
+    role: 'grid',
+    'aria-rowcount': '-1'
   });
 
   // thead
@@ -474,8 +492,23 @@ export function DataTable(props = {}) {
       });
     }
 
-    const handle = span({ class: 'd-datatable-resize-handle', 'aria-hidden': 'true' });
+    const handle = span({
+      class: 'd-datatable-resize-handle',
+      tabindex: '0',
+      role: 'separator',
+      'aria-orientation': 'vertical',
+      'aria-label': `Resize ${col.label} column`
+    });
     handle.addEventListener('mousedown', (e) => initResize(e, col, th));
+    handle.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const delta = e.key === 'ArrowRight' ? 10 : -10;
+        const newW = Math.max(MIN_COL_W, th.offsetWidth + delta);
+        setColWidths(prev => ({ ...prev, [col.key]: newW }));
+        th.style.width = newW + 'px';
+      }
+    });
     th.appendChild(handle);
 
     headerRow.appendChild(th);
@@ -511,6 +544,7 @@ export function DataTable(props = {}) {
     const tr = h('tr', {
       class: cx('d-datatable-row', isSelected && 'd-datatable-row-selected', isExpanded && 'd-datatable-row-expanded'),
       'data-row-key': key,
+      'aria-rowindex': idx + 2,
       onclick(e) { toggleSelect(row, idx, e.shiftKey); }
     });
 
@@ -543,7 +577,8 @@ export function DataTable(props = {}) {
 
     rawCols.forEach(col => {
       const val = row[col.key];
-      const content = col.render ? col.render(val, row) : (val != null ? String(val) : '');
+      const content = col.render ? col.render(val, row)
+        : (val != null && typeof val === 'object' && val.nodeType ? val : (val != null ? String(val) : ''));
 
       const td = h('td', {
         class: cx('d-datatable-td', col.pinned === 'left' && 'd-datatable-pinned-left', col.pinned === 'right' && 'd-datatable-pinned-right')
@@ -581,6 +616,9 @@ export function DataTable(props = {}) {
   createEffect(() => {
     const rows = getPageData();
     selected(); expanded(); filters(); sortCols(); page(); pageSize();
+
+    // Update aria-rowcount with total filtered row count
+    table.setAttribute('aria-rowcount', getTotal() + 1);
 
     while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
 
@@ -625,6 +663,7 @@ export function DataTable(props = {}) {
   onDestroy(() => {
     scrollWrap.removeEventListener('scroll', onScroll);
     if (_resizeCleanup) _resizeCleanup();
+    if (_dtLive) _dtLive.destroy();
   });
 
   scrollWrap.appendChild(table);

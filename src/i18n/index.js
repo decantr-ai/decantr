@@ -150,6 +150,9 @@ export function createI18n(config) {
   function setLocale(loc) {
     if (typeof loc !== 'string' || !loc) return;
     setLocaleSignal(loc);
+    if (typeof document !== 'undefined' && document.documentElement) {
+      document.documentElement.lang = loc;
+    }
   }
 
   /**

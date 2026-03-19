@@ -29,14 +29,15 @@ function resolveDecantrImport(subpath) {
 function findImports(source, baseDir) {
   const cleaned = source.replace(/`(?:[^`\\]|\\.)*`/gs, '""');
   const imports = [];
-  const regex = /(?:import|export)\s+(?:\{([^}]+)\}\s+from\s+)?['"](.+?)['"]/g;
-  let match;
-  while ((match = regex.exec(cleaned)) !== null) {
-    const names = match[1] ? match[1].split(',').map(n => {
+
+  function parseNames(raw) {
+    return raw.split(',').map(n => {
       const parts = n.trim().split(/\s+as\s+/);
       return (parts[1] || parts[0]).trim();
-    }) : undefined;
-    const specifier = match[2];
+    });
+  }
+
+  function addImport(specifier, names) {
     if (specifier.startsWith('decantr')) {
       const subpath = specifier.replace('decantr/', '').replace('decantr', 'core');
       imports.push({ resolved: resolveDecantrImport(subpath), specifier, names });
@@ -44,6 +45,37 @@ function findImports(source, baseDir) {
       imports.push({ resolved: resolve(baseDir, specifier), specifier, names });
     }
   }
+
+  let match;
+
+  // Mixed: import foo, { bar } from 'mod' (must precede default/named)
+  const mixedRe = /import\s+\w+\s*,\s*\{([^}]+)\}\s+from\s+['"](.+?)['"]/g;
+  while ((match = mixedRe.exec(cleaned)) !== null) addImport(match[2], parseNames(match[1]));
+
+  // Named: import { x, y } from 'mod'
+  const namedRe = /import\s+\{([^}]+)\}\s+from\s+['"](.+?)['"]/g;
+  while ((match = namedRe.exec(cleaned)) !== null) addImport(match[2], parseNames(match[1]));
+
+  // Namespace: import * as foo from 'mod'
+  const nsRe = /import\s+\*\s+as\s+\w+\s+from\s+['"](.+?)['"]/g;
+  while ((match = nsRe.exec(cleaned)) !== null) addImport(match[1], undefined);
+
+  // Default: import foo from 'mod'
+  const defaultRe = /import\s+(\w+)\s+from\s+['"](.+?)['"]/g;
+  while ((match = defaultRe.exec(cleaned)) !== null) addImport(match[2], undefined);
+
+  // Side-effect: import 'mod'
+  const sideEffectRe = /import\s+['"](.+?)['"]/g;
+  while ((match = sideEffectRe.exec(cleaned)) !== null) addImport(match[1], undefined);
+
+  // Export named from: export { x } from 'mod'
+  const exportNamedRe = /export\s+\{([^}]+)\}\s+from\s+['"](.+?)['"]/g;
+  while ((match = exportNamedRe.exec(cleaned)) !== null) addImport(match[2], parseNames(match[1]));
+
+  // Export all from: export * from 'mod'
+  const exportAllRe = /export\s+\*\s+from\s+['"](.+?)['"]/g;
+  while ((match = exportAllRe.exec(cleaned)) !== null) addImport(match[1], undefined);
+
   return imports;
 }
 
@@ -51,11 +83,12 @@ function findImports(source, baseDir) {
  * @param {string} entrypoint
  * @returns {Promise<Map<string, string>>}
  */
-async function resolveModules(entrypoint) {
+async function resolveModules(entrypoint, opts = {}) {
   /** @type {Map<string, string>} */
   const modules = new Map();
   const queue = [{ resolved: resolve(entrypoint), specifier: entrypoint, from: null }];
   const visited = new Set();
+  const errors = [];
 
   while (queue.length > 0) {
     const { resolved: filePath, specifier, from: fromFile } = queue.shift();
@@ -69,12 +102,19 @@ async function resolveModules(entrypoint) {
       queue.push(...imports.map(imp => ({ ...imp, from: filePath })));
     } catch (e) {
       const fromRel = fromFile ? relative(process.cwd(), fromFile) : 'entrypoint';
-      if (specifier && specifier.startsWith('decantr')) {
-        console.error(`  [error] Could not resolve import '${specifier}' from ${fromRel}`);
-      } else {
-        console.error(`  [error] Could not resolve '${specifier || filePath}' from ${fromRel}`);
-      }
+      const msg = specifier && specifier.startsWith('decantr')
+        ? `Could not resolve import '${specifier}' from ${fromRel}`
+        : `Could not resolve '${specifier || filePath}' from ${fromRel}`;
+      console.error(`  [error] ${msg}`);
+      errors.push(msg);
     }
+  }
+
+  if (errors.length > 0 && opts.strict !== false) {
+    throw new AggregateError(
+      errors.map(m => new Error(m)),
+      `Failed to resolve ${errors.length} module(s)`
+    );
   }
 
   return modules;
@@ -127,13 +167,18 @@ function treeShakeModule(source, usedExports, allExportedNames) {
   const removedExports = [];
   let processed = source;
 
+  // Strip comments before reference counting to avoid false positives
+  const strippedSource = source
+    .replace(/\/\/[^\n]*/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+
   for (const name of allExportedNames) {
     if (usedExports.has(name)) continue;
 
     // Check if name is used internally within the same module
     // Count references — if only the export declaration references it, safe to remove
     const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const refCount = (source.match(new RegExp(`\\b${escapedName}\\b`, 'g')) || []).length;
+    const refCount = (strippedSource.match(new RegExp(`\\b${escapedName}\\b`, 'g')) || []).length;
     // For `export const/function X`, the declaration is 1 reference.
     // Any internal usage adds more. If refCount >= 2, it's used internally — keep it.
     // For `export { X }` re-exports, X appears once — safe to remove if unused externally.
@@ -247,6 +292,12 @@ function bundle(modules, entrypoint, opts = {}) {
     sorted.push(path);
   }
   for (const path of modules.keys()) visit(path);
+
+  if (circular.size > 0) {
+    console.warn(`  ⚠ Circular dependencies detected (${circular.size} module(s) — falling back to IIFE wrapping):`);
+    for (const p of circular) console.warn(`    → ${relative(process.cwd(), p)}`);
+  }
+
   const moduleList = sorted.map(path => [path, modules.get(path)]);
 
   let output = '(function(){\n';
@@ -311,6 +362,17 @@ function bundle(modules, entrypoint, opts = {}) {
       }
     );
 
+    // Rewrite export-all: export * from 'module' → spread target into module object
+    processed = processed.replace(
+      /export\s+\*\s+from\s+['"](.+?)['"]\s*;?/g,
+      (match, specifier) => {
+        const resolvedPath = resolveSpecifier(specifier, path);
+        const targetId = moduleIds.get(resolvedPath);
+        if (!targetId) return `/* unresolved export-all: ${specifier} */`;
+        return `/* export-all: ${targetId} */`;
+      }
+    );
+
     // Collect names already declared by re-export transformations
     const declaredNames = new Set();
     for (const m of processed.matchAll(/const\s*\{([^}]+)\}\s*=\s*_m\d+;/g)) {
@@ -341,6 +403,34 @@ function bundle(modules, entrypoint, opts = {}) {
       }
     );
 
+    // Rewrite mixed imports: import foo, { bar } from 'mod'
+    processed = processed.replace(
+      /import\s+(\w+)\s*,\s*\{([^}]+)\}\s+from\s+['"](.+?)['"]\s*;?/g,
+      (match, defaultName, names, specifier) => {
+        const resolvedPath = resolveSpecifier(specifier, path);
+        const targetId = moduleIds.get(resolvedPath);
+        if (!targetId) return `/* unresolved: ${specifier} */`;
+        const bindings = names.split(',').map(n => {
+          const parts = n.trim().split(/\s+as\s+/);
+          const imported = parts[0].trim();
+          const local = (parts[1] || imported).trim();
+          return local === imported ? `${local}` : `${imported}: ${local}`;
+        });
+        return `const ${defaultName} = ${targetId}.default;\nconst {${bindings.join(',')}} = ${targetId};`;
+      }
+    );
+
+    // Rewrite namespace imports: import * as foo from 'mod'
+    processed = processed.replace(
+      /import\s+\*\s+as\s+(\w+)\s+from\s+['"](.+?)['"]\s*;?/g,
+      (match, name, specifier) => {
+        const resolvedPath = resolveSpecifier(specifier, path);
+        const targetId = moduleIds.get(resolvedPath);
+        if (!targetId) return `/* unresolved: ${specifier} */`;
+        return `const ${name} = ${targetId};`;
+      }
+    );
+
     // Rewrite default imports
     processed = processed.replace(
       /import\s+(\w+)\s+from\s+['"](.+?)['"]\s*;?/g,
@@ -354,6 +444,25 @@ function bundle(modules, entrypoint, opts = {}) {
 
     // Restore stashed template literals
     processed = processed.replace(/`__TPL_(\d+)__`/g, (_, i) => stash[i]);
+
+    // Rewrite export default (before other export rewrites)
+    let defaultExportBinding = null;
+    processed = processed.replace(
+      /export\s+default\s+function\s+(\w+)\s*\(/g,
+      (_, name) => { defaultExportBinding = name; return `function ${name}(`; }
+    );
+    if (!defaultExportBinding) {
+      processed = processed.replace(
+        /export\s+default\s+class\s+(\w+)/g,
+        (_, name) => { defaultExportBinding = name; return `class ${name}`; }
+      );
+    }
+    if (!defaultExportBinding) {
+      processed = processed.replace(
+        /export\s+default\s+/g,
+        () => { defaultExportBinding = '__default'; return 'const __default = '; }
+      );
+    }
 
     // Rewrite exports to module object
     processed = processed.replace(/export\s+function\s+(\w+)/g, `function $1`);
@@ -421,7 +530,15 @@ function bundle(modules, entrypoint, opts = {}) {
         }
       );
 
-      moduleCode = `${processed}\nconst ${id} = {${exportedNames.join(',')}};\n\n`;
+      const returnEntries = [...exportedNames];
+      if (defaultExportBinding) returnEntries.push(`'default':${defaultExportBinding}`);
+      // Collect export-all spreads
+      const exportAllTargets = [];
+      for (const m of processed.matchAll(/\/\* export-all: (_m\d+) \*\//g)) {
+        exportAllTargets.push(`...${m[1]}`);
+      }
+      const allReturnEntries = [...exportAllTargets, ...returnEntries];
+      moduleCode = `${processed}\nconst ${id} = {${allReturnEntries.join(',')}};\n\n`;
 
       // Track ALL names this hoisted module introduces at bundle scope
       const simpleDeclRegex2 = /(?:^|[;\n])\s*(?:let|const|var)\s+(\w+)|(?:^|[;\n])\s*function\s+(\w+)/g;
@@ -437,7 +554,14 @@ function bundle(modules, entrypoint, opts = {}) {
         });
       }
     } else {
-      moduleCode = `const ${id} = (function(){\n${processed}\nreturn {${exportedNames.join(',')}};\n})();\n\n`;
+      const returnEntries = [...exportedNames];
+      if (defaultExportBinding) returnEntries.push(`'default':${defaultExportBinding}`);
+      const exportAllTargets = [];
+      for (const m of processed.matchAll(/\/\* export-all: (_m\d+) \*\//g)) {
+        exportAllTargets.push(`...${m[1]}`);
+      }
+      const allReturnEntries = [...exportAllTargets, ...returnEntries];
+      moduleCode = `const ${id} = (function(){\n${processed}\nreturn {${allReturnEntries.join(',')}};\n})();\n\n`;
     }
 
     // Track source map mappings
@@ -942,7 +1066,7 @@ async function resolveChunks(mainModules, projectRoot) {
 
     if (chunks.has(chunkName)) continue;
 
-    const chunkModules = await resolveModules(entryPath);
+    const chunkModules = await resolveModules(entryPath, { strict: false });
     // Shared modules are kept in the map so dependency resolution works;
     // the build step marks them as externals so chunks alias them from
     // window.__decantrShared instead of duplicating the code.
@@ -975,8 +1099,10 @@ function rewriteDynamicImports(bundled, chunkFileMap) {
   );
 }
 
-/** Runtime chunk loader injected into the main bundle */
-const CHUNK_LOADER = `function __decantrLoadChunk(url){return new Promise(function(r,e){var s=document.createElement('script');s.src=url;s.onload=function(){r(window.__decantrChunk)};s.onerror=e;document.head.appendChild(s)})}\n`;
+/** Runtime chunk loader injected into the main bundle (with retry + error UI) */
+const CHUNK_LOADER = `window.__decantrChunks={};
+function __decantrLoadChunk(url,_attempt){_attempt=_attempt||0;return new Promise(function(r,e){var s=document.createElement('script');s.src=url;s.onload=function(){r(window.__decantrChunks[s.src])};s.onerror=function(){if(_attempt<2){s.remove();setTimeout(function(){__decantrLoadChunk(url,_attempt+1).then(r,e)},1000*(_attempt+1))}else{document.body.innerHTML='<div style="font-family:system-ui;padding:2rem;text-align:center"><h2>Failed to load application chunk</h2><p>Please check your connection and <a href=\"javascript:location.reload()\">reload the page</a>.</p></div>';e(new Error('Chunk load failed: '+url))}};document.head.appendChild(s)})}
+`;
 
 // ─── Incremental Build Cache ─────────────────────────────────────
 
@@ -1039,9 +1165,8 @@ function hasChanges(currentHashes, cachedHashes) {
 const STYLE_IMPORTS = {
   'clean': { varName: 'clean', file: 'clean.js', dir: 'addons', addon: true },
   'glassmorphism': { varName: 'glassmorphism', file: 'glassmorphism.js', dir: 'addons', addon: true },
-  'command-center': { varName: 'commandCenter', file: 'command-center.js', dir: 'addons', addon: true },
   'retro': { varName: 'retro', file: 'retro.js', dir: 'community', addon: true },
-  'clay': { varName: 'clay', file: 'clay.js', dir: 'community', addon: true },
+  'launchpad': { varName: 'launchpad', file: 'launchpad.js', dir: 'community', addon: true },
   'liquid-glass': { varName: 'liquidGlass', file: 'liquid-glass.js', dir: 'community', addon: true },
   'dopamine': { varName: 'dopamine', file: 'dopamine.js', dir: 'community', addon: true },
   'prismatic': { varName: 'prismatic', file: 'prismatic.js', dir: 'community', addon: true },
@@ -1170,7 +1295,12 @@ function detectUsedComponents(modules) {
     if (!path.startsWith(componentDir)) continue;
     const fileName = path.slice(componentDir.length + 1);
     const keys = COMPONENT_CSS_MAP[fileName];
-    if (keys) keys.forEach(k => usedKeys.add(k));
+    if (keys) {
+      keys.forEach(k => usedKeys.add(k));
+    } else if (fileName && !fileName.startsWith('_') && fileName.endsWith('.js')) {
+      // Unknown component not in map — derive CSS key from filename to avoid pruning its styles
+      usedKeys.add(fileName.replace('.js', ''));
+    }
   }
 
   return usedKeys;
@@ -1239,8 +1369,7 @@ function canStaticExtract(modules) {
     if (/css\s*\(\s*`/.test(source)) return false;
     // Check for variable-based css() calls: css(someVar)
     if (/css\s*\(\s*[a-zA-Z_$]\w*\s*[,)]/.test(source) && !/css\s*\(\s*['"]/.test(source)) {
-      // Only flag if there are css() calls with pure variable args and no string literals
-      // Simple heuristic: if any css() call doesn't start with a quote, flag it
+      return false;
     }
   }
   return true;
@@ -1282,8 +1411,8 @@ function purgeCSS(cssOutput, bundledJS) {
   let m;
   while ((m = strRe.exec(bundledJS)) !== null) {
     const val = m[1];
-    if (val.includes('_')) {
-      val.split(/\s+/).forEach(c => { if (c.startsWith('_')) referencedClasses.add(c); });
+    if (/^_[a-z]/.test(val) || val.includes(' _')) {
+      val.split(/\s+/).forEach(c => { if (/^_[a-zA-Z]/.test(c)) referencedClasses.add(c); });
     }
   }
 
@@ -1423,16 +1552,28 @@ export async function build(projectRoot, options = {}) {
     const currentHashes = computeFileHashes(modules);
     const cache = await loadBuildCache(cacheDir);
 
-    // Also check if HTML changed
+    // Also check if HTML, config, or essence changed
     let htmlHash = '';
+    let configHash = '';
+    let essenceHash = '';
     try {
       const htmlContent = await readFile(join(projectRoot, 'public', 'index.html'), 'utf-8');
       htmlHash = createHash('md5').update(htmlContent).digest('hex');
+    } catch {}
+    try {
+      const configContent = await readFile(join(projectRoot, 'decantr.config.json'), 'utf-8');
+      configHash = createHash('md5').update(configContent).digest('hex');
+    } catch {}
+    try {
+      const essenceContent = await readFile(join(projectRoot, 'decantr.essence.json'), 'utf-8');
+      essenceHash = createHash('md5').update(essenceContent).digest('hex');
     } catch {}
 
     const combinedHash = createHash('md5')
       .update(JSON.stringify(currentHashes))
       .update(htmlHash)
+      .update(configHash)
+      .update(essenceHash)
       .digest('hex');
 
     if (cache && cache.buildHash === combinedHash) {
@@ -1513,26 +1654,26 @@ export async function build(projectRoot, options = {}) {
     const chunks = await resolveChunks(modules, projectRoot);
 
     if (chunks.size > 0) {
-      // Expose main bundle modules for chunks to reference
-      const sharedIds = [...mainModuleIds.values()].join(',');
-      processedBundle = processedBundle.replace(
-        /\}\)\(\);\s*$/,
-        `window.__decantrShared={${sharedIds}};\n})();\n`
-      );
+      // Track which main modules are actually used as externals by chunks
+      const usedSharedIds = new Set();
 
       for (const [chunkName, chunkModules] of chunks) {
         // Build externals map: shared modules alias from the global registry
         const externals = new Map();
         for (const path of chunkModules.keys()) {
           if (mainModuleIds.has(path)) {
-            externals.set(path, `window.__decantrShared.${mainModuleIds.get(path)}`);
+            const moduleId = mainModuleIds.get(path);
+            externals.set(path, `window.__decantrShared.${moduleId}`);
+            usedSharedIds.add(moduleId);
           }
         }
 
-        const { code: chunkCode } = bundle(chunkModules, '', { treeShake: enableTreeShake, externals });
-        // Wrap chunk to expose its module as window.__decantrChunk
-        const wrappedChunk = `window.__decantrChunk=${chunkCode.replace(/^\(function\(\)\{\n/, '(function(){').replace(/\}\)\(\);\n$/, '})()')};\n`;
-        const minifiedChunk = minify(wrappedChunk);
+        const { code: chunkCode, moduleIds: chunkModuleIds } = bundle(chunkModules, '', { treeShake: enableTreeShake, externals });
+        // Inject return statement for the last module so the outer IIFE returns its exports
+        // The entry module (the dynamic import target) is first in the moduleIds map
+        const entryModuleId = [...chunkModuleIds.values()][0];
+        const wrappedChunk = chunkCode.replace(/\}\)\(\);\n?$/, `return ${entryModuleId};\n})();\n`).replace(/^\(function\(\)/, 'window.__decantrChunks[document.currentScript.src]=(function()');
+        const minifiedChunk = minify(wrappedChunk, { mangle: true });
         const chunkHash = hashContent(minifiedChunk);
         const chunkFile = `${chunkName}.${chunkHash}.js`;
 
@@ -1550,6 +1691,13 @@ export async function build(projectRoot, options = {}) {
         chunkOutputs.push({ name: chunkFile, content: minifiedChunk });
       }
       console.log(`  Created ${chunks.size} chunk(s)`);
+
+      // Expose only chunk-referenced main modules (not all)
+      const sharedIds = [...usedSharedIds].join(',');
+      processedBundle = processedBundle.replace(
+        /\}\)\(\);\s*$/,
+        `window.__decantrShared={${sharedIds}};\n})();\n`
+      );
 
       // Rewrite dynamic imports in main bundle
       processedBundle = rewriteDynamicImports(processedBundle, chunkFileMap);
@@ -1573,7 +1721,7 @@ export async function build(projectRoot, options = {}) {
 
   // Minify
   console.log('  Minifying...');
-  const minified = minify(processedBundle);
+  const minified = minify(processedBundle, { mangle: true });
   const jsHash = hashContent(minified);
   const cssHash = hashContent(cssOutput || '');
 
@@ -1745,13 +1893,22 @@ export async function build(projectRoot, options = {}) {
   // Module breakdown (analyze)
   if (enableAnalyze) {
     console.log('\n  Module Breakdown:');
-    const moduleMarkerRe = /\/\/ (.+?)\nconst _m\d+ = \(function\(\)\{([\s\S]*?)return \{/g;
     const moduleSizes = [];
+
+    // Match IIFE-wrapped modules: // path\nconst _mN = (function(){...return {
+    const iifeMarkerRe = /\/\/ (.+?)\nconst _m\d+ = \(function\(\)\{([\s\S]*?)return \{/g;
     let marker;
-    while ((marker = moduleMarkerRe.exec(processedBundle)) !== null) {
-      const modPath = marker[1];
-      const modSize = Buffer.byteLength(marker[2]);
-      moduleSizes.push({ path: modPath, size: modSize });
+    while ((marker = iifeMarkerRe.exec(processedBundle)) !== null) {
+      moduleSizes.push({ path: marker[1], size: Buffer.byteLength(marker[2]) });
+    }
+
+    // Match hoisted modules: // path\n...code...\nconst _mN = {
+    const hoistedMarkerRe = /\/\/ (.+?)\n([\s\S]*?)const _m\d+ = \{/g;
+    while ((marker = hoistedMarkerRe.exec(processedBundle)) !== null) {
+      // Skip if this was already matched as an IIFE
+      if (!moduleSizes.some(m => m.path === marker[1])) {
+        moduleSizes.push({ path: marker[1], size: Buffer.byteLength(marker[2]) });
+      }
     }
     moduleSizes.sort((a, b) => b.size - a.size);
     const top = moduleSizes.slice(0, 15);

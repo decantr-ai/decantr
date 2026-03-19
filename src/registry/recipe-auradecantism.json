@@ -1,11 +1,40 @@
 {
-  "$schema": "https://decantr.ai/schemas/recipe.v1.json",
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "schema_version": "2.0",
   "id": "auradecantism",
   "name": "Auradecantism",
   "style": "auradecantism",
   "mode": "dark",
   "description": "Luminous glass visual language. Mesh gradient backgrounds, frosted glass surfaces, gradient text, vibrant purple/cyan/pink palette, pill radius, bouncy motion. The signature Decantr aesthetic.",
   "setup": "import { setStyle, setMode } from 'decantr/css';\nsetStyle('auradecantism');\nsetMode('dark');",
+  "spatial_hints": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": null,
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "skeleton": {
+    "preferred": ["sidebar-main"],
+    "avoid": [],
+    "nav_style": "filled",
+    "default_nav_state": "expanded",
+    "root": "d-mesh",
+    "nav": "d-glass",
+    "header": "",
+    "navLabel": "",
+    "brand": "d-gradient-text",
+    "dimensions": null
+  },
+  "animation": {
+    "entrance": "d-stagger",
+    "micro": "bouncy"
+  },
+  "pattern_preferences": {
+    "prefer": ["kpi-grid", "chart-grid", "activity-feed"],
+    "avoid": [],
+    "default_presets": {}
+  },
   "decorators": {
     "d-mesh": "Radial mesh gradient background with pink, cyan, and purple overlays. Apply to page-level containers.",
     "d-glass": "Frosted glass panel — backdrop-blur, semi-transparent bg, subtle border highlight. Apply to cards and panels.",

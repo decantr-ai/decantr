@@ -38,7 +38,13 @@ async function loadSkeletons() {
   return data.skeletons;
 }
 
-async function loadPattern(id) {
+async function loadPattern(id, projectRoot) {
+  // Support local patterns via 'local:' prefix (project-local src/patterns/ dir)
+  if (id.startsWith('local:')) {
+    const localId = id.slice(6);
+    const localPath = join(projectRoot || process.cwd(), 'src', 'patterns', `${localId}.json`);
+    return loadJSON(localPath);
+  }
   return loadJSON(join(registryRoot, 'patterns', `${id}.json`));
 }
 
@@ -47,13 +53,32 @@ async function loadPattern(id) {
  * Accepts both string IDs and { pattern, preset, as } objects.
  * Returns the resolved pattern with preset-specific blend/code merged in.
  */
-async function resolvePatternRef(ref) {
+async function resolvePatternRef(ref, recipeDefaultPresets) {
   if (typeof ref === 'string') {
-    return { id: ref, alias: ref, pattern: await loadPattern(ref) };
+    const pattern = await loadPattern(ref);
+    // Recipe may suggest a default preset for this pattern
+    const presetId = recipeDefaultPresets?.[ref] || pattern.default_preset;
+    if (presetId && pattern.presets?.[presetId]) {
+      const preset = pattern.presets[presetId];
+      return {
+        id: ref,
+        alias: ref,
+        pattern: {
+          ...pattern,
+          id: ref,
+          name: pattern.name + (presetId !== pattern.default_preset ? ` (${presetId})` : ''),
+          components: preset.components || pattern.components,
+          default_blend: preset.blend || pattern.default_blend,
+          code: preset.code || pattern.code,
+        }
+      };
+    }
+    return { id: ref, alias: ref, pattern };
   }
   if (ref && ref.pattern) {
     const pattern = await loadPattern(ref.pattern);
-    const presetId = ref.preset || pattern.default_preset;
+    // Resolution order: explicit preset > recipe default > pattern default
+    const presetId = ref.preset || recipeDefaultPresets?.[ref.pattern] || pattern.default_preset;
     const alias = ref.as || ref.pattern;
 
     // If pattern has presets and a matching preset exists, merge it
@@ -135,7 +160,7 @@ function resolveBlendId(item) {
   return null;
 }
 
-function blendItemToCode(item, nameMap, indent = '    ', patterns = null, recipePatternOverrides = null, clarity = null) {
+function blendItemToCode(item, nameMap, indent = '    ', patterns = null, recipePatternOverrides = null, clarity = null, recipeCardWrapping = null, wirings = null) {
   const gap = clarity?.contentGap || '_gap4';
 
   // Wrap pattern in Card component (skip for standalone patterns like heroes and filter rows)
@@ -144,6 +169,11 @@ function blendItemToCode(item, nameMap, indent = '    ', patterns = null, recipe
     const layout = pattern?.default_blend?.layout;
     // Standalone patterns: heroes, horizontal control rows, explicitly uncontained
     if (layout === 'hero' || layout === 'row' || pattern?.contained === false) return call;
+
+    // Recipe card_wrapping hint
+    const wrapping = recipeCardWrapping || 'always';
+    if (wrapping === 'none') return call;
+    if (wrapping === 'minimal' && !pattern?.requires_card) return call;
 
     const i = localIndent || indent;
     const headerName = pattern?.name || toDisplayName(patternId);
@@ -155,7 +185,8 @@ function blendItemToCode(item, nameMap, indent = '    ', patterns = null, recipe
   if (typeof item === 'string') {
     // Full-width pattern
     const fn = nameMap.get(item) || toPascalCase(item);
-    const call = `${fn}()`;
+    const wireProps = wirings?.props?.get(item);
+    const call = wireProps ? `${fn}({ ${formatWireProps(wireProps)} })` : `${fn}()`;
     return `${indent}// @pattern: ${item}\n${indent}${wrapPattern(item, call)}`;
   }
 
@@ -163,7 +194,8 @@ function blendItemToCode(item, nameMap, indent = '    ', patterns = null, recipe
   if (item.pattern && !item.cols) {
     const alias = item.as || item.pattern;
     const fn = nameMap.get(alias) || toPascalCase(alias);
-    const call = `${fn}()`;
+    const wireProps = wirings?.props?.get(alias);
+    const call = wireProps ? `${fn}({ ${formatWireProps(wireProps)} })` : `${fn}()`;
     return `${indent}// @pattern: ${alias} (${item.pattern}:${item.preset || 'default'})\n${indent}${wrapPattern(alias, call)}`;
   }
 
@@ -181,7 +213,8 @@ function blendItemToCode(item, nameMap, indent = '    ', patterns = null, recipe
         const id = resolveBlendId(c) || c;
         const span = item.span?.[id] || 1;
         const fn = nameMap.get(id) || toPascalCase(id);
-        const call = `${fn}()`;
+        const wireProps = wirings?.props?.get(id);
+        const call = wireProps ? `${fn}({ ${formatWireProps(wireProps)} })` : `${fn}()`;
         return `${indent}  div({ class: css('_span${span}') },\n${indent}    // @pattern: ${id}\n${indent}    ${wrapPattern(id, call, indent + '    ')}\n${indent}  )`;
       }).join(',\n');
       const gridAtoms = bpPrefix ? `_grid ${bpPrefix}gc${totalSpan} ${gap}` : `_grid _gc${totalSpan} ${gap}`;
@@ -191,7 +224,8 @@ function blendItemToCode(item, nameMap, indent = '    ', patterns = null, recipe
       const children = item.cols.map(c => {
         const id = resolveBlendId(c) || c;
         const fn = nameMap.get(id) || toPascalCase(id);
-        const call = `${fn}()`;
+        const wireProps = wirings?.props?.get(id);
+        const call = wireProps ? `${fn}({ ${formatWireProps(wireProps)} })` : `${fn}()`;
         return `${indent}  // @pattern: ${id}\n${indent}  ${wrapPattern(id, call, indent + '  ')}`;
       }).join(',\n');
       const gridAtoms = bpPrefix ? `_grid ${bpPrefix}gc${colCount} ${gap}` : `_grid _gc${colCount} ${gap}`;
@@ -219,24 +253,62 @@ function toDisplayName(kebab) {
 
 // ─── Clarity profile (character → spacing) ──────────────────────
 // Source of truth: reference/spatial-guidelines.md §17
+//
+// Priority table (higher priority = lower number, wins on multi-trait conflict):
+// 1. Compact   — tactical, dense, data-dense, technical, utilitarian
+// 2. Editorial — editorial, luxurious, premium
+// 3. Expressive — playful, bouncy, fluffy, immersive, cinematic, dramatic
+// 4. Spacious  — minimal, clean, elegant
+// 5. Balanced  — professional, modern, friendly
+// 6. Default   — comfortable (no match)
+//
+// Rationale: functional density constraints (compact) are hardest to violate
+// without breaking usability, so they take precedence. Aesthetic intent comes next.
 
-function deriveClarityProfile(character) {
+function deriveClarityProfile(character, recipeSpatial) {
   const traits = (character || []).map(t => t.toLowerCase());
+  let base;
 
-  // editorial/luxurious → spacious
-  if (traits.some(t => ['editorial', 'luxurious'].includes(t))) {
-    return { contentGap: '_gap8', chromeGap: '_gap2', sectionPad: '_py24' };
-  }
-  // minimal/clean → spacious (less extreme)
-  if (traits.some(t => ['minimal', 'clean'].includes(t))) {
-    return { contentGap: '_gap6', chromeGap: '_gap2', sectionPad: '_py16' };
-  }
-  // tactical/dense/technical/utilitarian → compact
+  // Priority 1: Compact (functional density)
   if (traits.some(t => ['tactical', 'dense', 'data-dense', 'technical', 'utilitarian'].includes(t))) {
-    return { contentGap: '_gap3', chromeGap: '_gap1', sectionPad: '_py8' };
+    base = { contentGap: '_gap3', chromeGap: '_gap1', sectionPad: '_py8', density: 'compact' };
   }
-  // professional/balanced (default) → comfortable
-  return { contentGap: '_gap4', chromeGap: '_gap2', sectionPad: '_py12' };
+  // Priority 2: Editorial (spacious luxury)
+  else if (traits.some(t => ['editorial', 'luxurious', 'premium'].includes(t))) {
+    base = { contentGap: '_gap8', chromeGap: '_gap2', sectionPad: '_py24', density: 'spacious' };
+  }
+  // Priority 3: Expressive (comfortable with room)
+  else if (traits.some(t => ['playful', 'bouncy', 'fluffy', 'immersive', 'cinematic', 'dramatic'].includes(t))) {
+    base = { contentGap: '_gap5', chromeGap: '_gap2', sectionPad: '_py12', density: 'comfortable' };
+  }
+  // Priority 4: Spacious (clean minimalism)
+  else if (traits.some(t => ['minimal', 'clean', 'elegant'].includes(t))) {
+    base = { contentGap: '_gap6', chromeGap: '_gap2', sectionPad: '_py16', density: 'spacious' };
+  }
+  // Priority 5: Balanced (professional default)
+  else if (traits.some(t => ['professional', 'modern', 'friendly'].includes(t))) {
+    base = { contentGap: '_gap4', chromeGap: '_gap2', sectionPad: '_py12', density: 'comfortable' };
+  }
+  // Priority 6: Default
+  else {
+    base = { contentGap: '_gap4', chromeGap: '_gap2', sectionPad: '_py12', density: 'comfortable' };
+  }
+
+  // Recipe spatial overlay — recipe can shift the base profile
+  if (recipeSpatial) {
+    if (recipeSpatial.section_padding) base.sectionPad = recipeSpatial.section_padding;
+    if (recipeSpatial.content_gap_shift) {
+      const gapNum = parseInt(base.contentGap.replace('_gap', ''));
+      base.contentGap = `_gap${Math.max(1, Math.min(12, gapNum + recipeSpatial.content_gap_shift))}`;
+    }
+    if (recipeSpatial.density_bias) {
+      const densities = ['compact', 'comfortable', 'spacious'];
+      const idx = densities.indexOf(base.density);
+      base.density = densities[Math.max(0, Math.min(2, idx + recipeSpatial.density_bias))] || base.density;
+    }
+  }
+
+  return base;
 }
 
 // ─── Recipe pattern overrides resolver ───────────────────────────
@@ -248,12 +320,13 @@ function deriveClarityProfile(character) {
 async function generatePage(page, vintage, recipe, clarity = null) {
   const blendRefs = extractBlendRefs(page.blend || []);
   const patterns = new Map();
-  let pageImports = parseImports("import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';");
+  let pageImports = parseImports("import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { component } from 'decantr/core';");
 
   // Load all patterns referenced in blend (supports both string IDs and {pattern, preset, as})
+  const recipeDefaultPresets = recipe?.pattern_preferences?.default_presets || null;
   for (const ref of blendRefs) {
     try {
-      const resolved = await resolvePatternRef(ref);
+      const resolved = await resolvePatternRef(ref, recipeDefaultPresets);
       if (resolved) {
         patterns.set(resolved.alias, resolved.pattern);
         if (resolved.pattern.code?.imports) {
@@ -265,6 +338,13 @@ async function generatePage(page, vintage, recipe, clarity = null) {
       const id = typeof ref === 'string' ? ref : (ref.as || ref.pattern);
       patterns.set(id, { id, code: null });
     }
+  }
+
+  // Cross-pattern wiring: detect applicable rules
+  const wirings = detectWirings(page.blend || []);
+  const hasWirings = wirings.signals.size > 0;
+  if (hasWirings) {
+    pageImports = mergeImports(pageImports, parseImports("import { createSignal } from 'decantr/state';"));
   }
 
   // Build name map — extract actual function names from code examples
@@ -312,20 +392,31 @@ async function generatePage(page, vintage, recipe, clarity = null) {
   }
 
   // Generate page function body from blend
+  const recipeCardWrapping = recipe?.spatial_hints?.card_wrapping || null;
   const blendCode = (page.blend || []).map(item =>
-    blendItemToCode(item, nameMap, '    ', patterns, recipePatternOverrides, clarity)
+    blendItemToCode(item, nameMap, '    ', patterns, recipePatternOverrides, clarity, recipeCardWrapping, wirings)
   ).join(',\n');
 
   const defaultGap = clarity?.contentGap || '_gap4';
   const surface = page.surface || `_flex _col ${defaultGap} _p4 _overflow[auto] _flex1`;
   const pageName = toPascalCase(page.id) + 'Page';
 
-  const pageFunction = `export default function ${pageName}() {
-  const { div } = tags;
+  let wiringSignals = '';
+  if (hasWirings) {
+    const sigLines = [];
+    for (const [name, init] of wirings.signals) {
+      const setter = 'set' + name.charAt(0).toUpperCase() + name.slice(1);
+      sigLines.push(`  const [${name}, ${setter}] = createSignal(${init});`);
+    }
+    wiringSignals = '\n' + sigLines.join('\n') + '\n';
+  }
+
+  const pageFunction = `export default component(function ${pageName}() {
+  const { div } = tags;${wiringSignals}
   return div({ class: css('${surface}') },
 ${blendCode}
   );
-}`;
+})`;
 
   return {
     name: pageName,
@@ -381,13 +472,99 @@ const NAV_ICONS = {
   notifications: 'bell', pipeline: 'activity', goals: 'target',
   search: 'search', reports: 'bar-chart', products: 'file',
   orders: 'file', dashboard: 'layout-dashboard', profile: 'user',
+  apps: 'box', team: 'users', activity: 'activity', services: 'server',
+  tokens: 'key', usage: 'gauge', status: 'circle-dot', compliance: 'shield-check',
 };
+
+// ─── Cross-pattern wiring rules ─────────────────────────────────
+// When related patterns co-exist on a page, the generator creates
+// page-level signals and passes them as props to pattern functions.
+
+const WIRING_RULES = [
+  {
+    pair: ['filter-bar', 'data-table'],
+    signals: [
+      { name: 'pageSearch', init: "''" },
+      { name: 'pageStatus', init: "'all'" },
+    ],
+    props: {
+      'filter-bar': { onSearch: 'setPageSearch', onCategory: 'setPageStatus' },
+      'data-table': { search: 'pageSearch', status: 'pageStatus' },
+    }
+  },
+  {
+    pair: ['filter-bar', 'activity-feed'],
+    signals: [
+      { name: 'pageSearch', init: "''" },
+      { name: 'pageView', init: "'all'" },
+    ],
+    props: {
+      'filter-bar': { onSearch: 'setPageSearch', onView: 'setPageView' },
+      'activity-feed': { search: 'pageSearch', view: 'pageView' },
+    }
+  },
+  {
+    pair: ['filter-bar', 'card-grid'],
+    signals: [{ name: 'pageSearch', init: "''" }],
+    props: {
+      'filter-bar': { onSearch: 'setPageSearch' },
+      'card-grid': { search: 'pageSearch' },
+    }
+  },
+];
+
+function formatWireProps(props) {
+  return Object.entries(props).map(([k, v]) => `${k}: ${v}`).join(', ');
+}
+
+/**
+ * Detect applicable cross-pattern wiring rules for a page's blend.
+ * Returns { signals: Map<name, init>, props: Map<patternAlias, propsObj> }
+ */
+function detectWirings(blend) {
+  const baseIds = new Set();
+  const aliasToBase = new Map();
+  for (const ref of extractBlendRefs(blend)) {
+    if (typeof ref === 'string') {
+      baseIds.add(ref);
+      aliasToBase.set(ref, ref);
+    } else if (ref.pattern) {
+      const alias = ref.as || ref.pattern;
+      baseIds.add(ref.pattern);
+      aliasToBase.set(alias, ref.pattern);
+    }
+  }
+
+  const signals = new Map();
+  const props = new Map();
+
+  for (const rule of WIRING_RULES) {
+    const [a, b] = rule.pair;
+    if (!baseIds.has(a) || !baseIds.has(b)) continue;
+
+    for (const sig of rule.signals) {
+      if (!signals.has(sig.name)) signals.set(sig.name, sig.init);
+    }
+
+    for (const [baseId, propsObj] of Object.entries(rule.props)) {
+      for (const [alias, base] of aliasToBase) {
+        if (base === baseId) {
+          const existing = props.get(alias) || {};
+          props.set(alias, { ...existing, ...propsObj });
+        }
+      }
+    }
+  }
+
+  return { signals, props };
+}
 
 // ─── App.js generator ───────────────────────────────────────────
 
 function generateAppJs(essence, pages, skeletonCode, recipe = null, clarity = null) {
   const style = essence.vintage?.style || 'auradecantism';
   const mode = essence.vintage?.mode || 'dark';
+  const shape = essence.vintage?.shape || null;
   const routing = essence.vessel?.routing || 'hash';
 
   // Resolve route paths
@@ -404,6 +581,7 @@ function generateAppJs(essence, pages, skeletonCode, recipe = null, clarity = nu
     ? essence.sections.flatMap(s => s.structure || [])
     : (essence.structure || []);
   const skeletonId = structures[0]?.skeleton || 'sidebar-main';
+  const inset = structures.some(p => p.inset);
 
   // Build nav array — exclude centered-skeleton pages (auth flows)
   const nav = structures
@@ -412,20 +590,19 @@ function generateAppJs(essence, pages, skeletonCode, recipe = null, clarity = nu
 
   // Build skeleton-specific App function and extra imports
   const terroir = essence.terroir || 'App';
-  let { appFunction, extraImports } = buildSkeletonApp(skeletonId, nav, clarity, terroir);
+  let { appFunction, extraImports } = buildSkeletonApp(skeletonId, nav, clarity, terroir, inset);
 
   // Apply recipe-specific decoration to the skeleton
   if (recipe) {
-    appFunction = applyRecipeToSkeleton(appFunction, essence.vintage?.recipe, clarity);
+    appFunction = applyRecipeToSkeleton(appFunction, recipe, clarity);
   }
 
   // Addon style import/registration (non-core styles need explicit import)
   const ADDON_STYLE_MAP = {
     'clean': { varName: 'clean', pkg: 'clean' },
     'glassmorphism': { varName: 'glassmorphism', pkg: 'glassmorphism' },
-    'command-center': { varName: 'commandCenter', pkg: 'command-center' },
     'retro': { varName: 'retro', pkg: 'community/retro' },
-    'clay': { varName: 'clay', pkg: 'community/clay' },
+    'launchpad': { varName: 'launchpad', pkg: 'community/launchpad' },
     'liquid-glass': { varName: 'liquidGlass', pkg: 'community/liquid-glass' },
     'dopamine': { varName: 'dopamine', pkg: 'community/dopamine' },
     'prismatic': { varName: 'prismatic', pkg: 'community/prismatic' },
@@ -434,8 +611,8 @@ function generateAppJs(essence, pages, skeletonCode, recipe = null, clarity = nu
   };
   const addonInfo = ADDON_STYLE_MAP[style];
   const cssImportNames = addonInfo
-    ? `css, setStyle, setMode, registerStyle`
-    : `css, setStyle, setMode`;
+    ? `css, setShape, setStyle, setMode, registerStyle`
+    : `css, setShape, setStyle, setMode`;
   const addonImportLine = addonInfo
     ? `\nimport { ${addonInfo.varName} } from 'decantr/styles/${addonInfo.pkg}';`
     : '';
@@ -461,7 +638,7 @@ ${renderImports(allImports)}${addonImportLine}
 
 // ─── Style initialization ───────────────────────────────────────
 ${addonRegisterLine}setStyle('${style}');
-setMode('${mode}');
+setMode('${mode}');${shape ? `\nsetShape('${shape}');` : ''}
 
 // ─── Router ─────────────────────────────────────────────────────
 const router = createRouter({
@@ -479,7 +656,7 @@ mount(document.getElementById('app'), App);
 `;
 }
 
-function buildSkeletonApp(skeletonId, nav, clarity = null, terroir = 'App') {
+function buildSkeletonApp(skeletonId, nav, clarity = null, terroir = 'App', inset = false) {
   const navLiteral = `[\n${nav.map(n => `    { href: '${n.href}', icon: '${n.icon}', label: '${n.label}' }`).join(',\n')}\n  ]`;
   const contentGap = clarity?.contentGap || '_gap4';
   const chromeGap = clarity?.chromeGap || '_gap1';
@@ -522,7 +699,7 @@ function buildSkeletonApp(skeletonId, nav, clarity = null, terroir = 'App') {
   onMount(() => document.addEventListener('keydown', handleKey));
   onDestroy(() => document.removeEventListener('keydown', handleKey));
 
-  return Shell({ config: 'sidebar-main', navState, onNavStateChange: setNavState, class: css('_h[100vh]') },
+  return Shell({ config: 'sidebar-main',${inset ? ' inset: true,' : ''} navState, onNavStateChange: setNavState, class: css('_h[100vh]') },
     // Sidebar — recipe: sidebar chrome
     Shell.Nav({ class: css('_flex _col ${chromeGap} _bgmuted') },
       div({ class: css('_flex _aic _jcsb _mb4 _px3 _pt3') },
@@ -532,7 +709,7 @@ function buildSkeletonApp(skeletonId, nav, clarity = null, terroir = 'App') {
         )
       ),
       ...nav.map(item =>
-        link({ href: item.href, class: () => css(\`d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans \${route().path === item.href ? 'd-shell-nav-item-active _bgprimary/10 _fgprimary' : '_fgfg'}\`) },
+        link({ href: item.href, class: () => css(\`d-shell-nav-item _r2 _trans \${route().path === item.href ? 'd-shell-nav-item-active _bgprimary/10 _fgprimary' : '_fgfg'}\`) },
           icon(item.icon),
           cond(() => navState() !== 'rail', () => text(() => item.label))
         )
@@ -678,19 +855,26 @@ function buildSkeletonApp(skeletonId, nav, clarity = null, terroir = 'App') {
 // Applies recipe-specific CSS classes to skeleton template strings.
 // Each replacement targets comments/class strings produced by buildSkeletonApp().
 
-/** Get recipe-specific decoration classes for Shell skeleton regions */
-function getRecipeDecoration(recipeId) {
-  switch (recipeId) {
-    case 'command-center': return { root: 'cc-mesh', nav: 'cc-frame cc-grid', header: 'cc-bar', navLabel: 'cc-label', brand: 'cc-label' };
-    case 'auradecantism': return { root: 'd-mesh', nav: 'd-glass', header: '', navLabel: '', brand: 'd-gradient-text' };
-    case 'clean': return { root: '', nav: '_bgbg _shadow[0_1px_3px_rgba(0,0,0,0.08)]', header: '', navLabel: '', brand: '' };
-    default: return { root: '', nav: '', header: '', navLabel: '', brand: '' };
+/** Get recipe-specific decoration classes for Shell skeleton regions.
+ *  Data-driven: reads from recipe.skeleton fields instead of hardcoded switch.
+ */
+function getRecipeDecoration(recipe) {
+  if (!recipe?.skeleton) {
+    return { root: '', nav: '', header: '', navLabel: '', brand: '', navStyle: '' };
   }
+  return {
+    root: recipe.skeleton.root || '',
+    nav: recipe.skeleton.nav || '',
+    header: recipe.skeleton.header || '',
+    navLabel: recipe.skeleton.navLabel || '',
+    brand: recipe.skeleton.brand || '',
+    navStyle: recipe.skeleton.nav_style || '',
+  };
 }
 
-function applyRecipeToSkeleton(appFunction, recipeId, clarity) {
-  if (!recipeId) return appFunction;
-  const d = getRecipeDecoration(recipeId);
+function applyRecipeToSkeleton(appFunction, recipe, clarity) {
+  if (!recipe) return appFunction;
+  const d = getRecipeDecoration(recipe);
   let result = appFunction;
 
   // Root Shell: inject recipe root class
@@ -720,8 +904,8 @@ function applyRecipeToSkeleton(appFunction, recipeId, clarity) {
   // Nav links: add recipe navLabel class
   if (d.navLabel) {
     result = result.replace(
-      /d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans /g,
-      `d-shell-nav-item _flex _aic _gap2 _p2 _px3 _r2 _trans ${d.navLabel} `
+      /d-shell-nav-item _r2 _trans /g,
+      `d-shell-nav-item _r2 _trans ${d.navLabel} `
     );
   }
 
@@ -730,6 +914,31 @@ function applyRecipeToSkeleton(appFunction, recipeId, clarity) {
     result = result.replace(
       /Shell\.Header\(\{ class: css\('_flex _aic _jcsb _px6 _borderB'\)/,
       `Shell.Header({ class: css('_flex _aic _jcsb _px6 _borderB ${d.header}')`
+    );
+  }
+
+  // Nav style: inject nav style variant class on Shell root
+  if (d.navStyle) {
+    result = result.replace(
+      /d-shell-nav-item _r2 _trans/g,
+      `d-shell-nav-item d-shell-nav-style-${d.navStyle} _r2 _trans`
+    );
+  }
+
+  // Default nav state from recipe
+  if (recipe?.skeleton?.default_nav_state) {
+    result = result.replace(
+      /createSignal\('expanded'\)/,
+      `createSignal('${recipe.skeleton.default_nav_state}')`
+    );
+  }
+
+  // Shell dimensions from recipe
+  if (recipe?.skeleton?.dimensions) {
+    const dims = JSON.stringify(recipe.skeleton.dimensions);
+    result = result.replace(
+      /Shell\(\{ config: 'sidebar-main',/,
+      `Shell({ config: 'sidebar-main', dimensions: ${dims},`
     );
   }
 
@@ -790,6 +999,100 @@ export default function NotFoundPage() {
 `;
 }
 
+// ─── Post-generation quality validation ──────────────────────────
+
+async function validateScaffold(generatedPages) {
+  const warnings = [];
+  const errors = [];
+
+  // Load icon registry for validation
+  let iconRegistry;
+  try {
+    const iconMod = await import(join(__dirname, '..', 'src', 'icons', 'essential.js'));
+    iconRegistry = new Set(Object.keys(iconMod.ESSENTIAL));
+  } catch {
+    iconRegistry = null;
+  }
+
+  // Load atom resolver
+  let resolveAtomDecl;
+  try {
+    const atomsMod = await import(join(__dirname, '..', 'src', 'css', 'atoms.js'));
+    resolveAtomDecl = atomsMod.resolveAtomDecl;
+  } catch {
+    resolveAtomDecl = null;
+  }
+
+  for (const { pageId, code } of generatedPages) {
+    // 1. Card count check
+    const cardCount = (code.match(/\bCard\(/g) || []).length;
+    if (cardCount > 6) {
+      warnings.push(`${pageId}: ${cardCount} Card components — consider reducing nesting`);
+    }
+
+    // 2. Nested Card(Card( pattern
+    if (/Card\([^)]*Card\(/.test(code)) {
+      errors.push(`${pageId}: Nested Card(Card()) detected — remove inner card wrapping`);
+    }
+
+    // 3. Icon validation
+    if (iconRegistry) {
+      const iconCalls = code.matchAll(/icon\(['"]([^'"]+)['"]/g);
+      for (const m of iconCalls) {
+        if (!iconRegistry.has(m[1])) {
+          warnings.push(`${pageId}: Unknown icon "${m[1]}" — check src/icons/essential.js`);
+        }
+      }
+    }
+
+    // 4. Atom validation
+    if (resolveAtomDecl) {
+      const cssMatches = code.matchAll(/css\(['"`]([^'"`]+)['"`]\)/g);
+      for (const cm of cssMatches) {
+        const atoms = cm[1].split(/\s+/).filter(a => a.startsWith('_'));
+        for (const atom of atoms) {
+          if (atom.includes('[') || atom.includes(':')) continue;
+          const base = atom.includes('/') ? atom.split('/')[0] : atom;
+          if (!resolveAtomDecl(base)) {
+            warnings.push(`${pageId}: Unknown atom "${atom}"`);
+          }
+        }
+      }
+    }
+
+    // 5. Filter-bar in card check
+    if (/Card\([^)]*FilterBar\(/.test(code) || /Card\([^)]*filter-bar/.test(code)) {
+      warnings.push(`${pageId}: Filter bar should not be wrapped in a Card`);
+    }
+
+    // 6. Glass + glow stacking
+    if (/d-glass[^}]*aura-glow|aura-glow[^}]*d-glass/.test(code)) {
+      warnings.push(`${pageId}: "d-glass" and "aura-glow" used together — use one elevation effect per element`);
+    }
+
+    // 7. Dead signals — setter called but getter never read
+    const signalMatches = code.matchAll(/const \[(\w+), (set\w+)\] = createSignal\(/g);
+    for (const sm of signalMatches) {
+      const getter = sm[1];
+      // Count occurrences (first is the declaration)
+      const getterCount = (code.match(new RegExp(`\\b${getter}\\b`, 'g')) || []).length;
+      if (getterCount <= 1) {
+        warnings.push(`${pageId}: Signal "${getter}" is declared but never read — possible dead signal`);
+      }
+    }
+  }
+
+  // Report
+  if (warnings.length > 0 || errors.length > 0) {
+    console.log('\n  ── Scaffold validation ──');
+    for (const e of errors) console.error(`    ✗ ${e}`);
+    for (const w of warnings) console.warn(`    ⚠ ${w}`);
+    console.log('');
+  }
+
+  return { errors, warnings };
+}
+
 // ─── Main entry point ───────────────────────────────────────────
 
 export async function generate(options = {}) {
@@ -833,11 +1136,11 @@ export async function generate(options = {}) {
     }
   }
 
-  // 3b. Derive clarity profile from character traits
+  // 3b. Derive clarity profile from character traits + recipe spatial hints
   const character = isSectioned
     ? (essence.character || essence.sections?.[0]?.character || [])
     : (essence.character || []);
-  const clarity = deriveClarityProfile(character);
+  const clarity = deriveClarityProfile(character, recipe?.spatial_hints);
 
   // 4. Generate pages
   const pagesToGenerate = pageFilter
@@ -851,6 +1154,7 @@ export async function generate(options = {}) {
   const generatedPages = [];
   const files = [];
 
+  // @validate — call validateScaffold(generatedPages) after this loop
   for (const page of pagesToGenerate) {
     const vintage = page._section?.vintage || essence.vintage;
     const result = await generatePage(page, vintage, recipe, clarity);
@@ -885,6 +1189,15 @@ export async function generate(options = {}) {
       path: 'decantr.lock.json',
       content: generateLock(essence)
     });
+
+    // 9. Auto-set cork.mode to 'maintenance' after initial generation
+    if (!essence.cork?.mode || essence.cork.mode === 'creative') {
+      const updatedEssence = { ...essence, cork: { ...(essence.cork || {}), mode: 'maintenance' } };
+      files.push({
+        path: 'decantr.essence.json',
+        content: JSON.stringify(updatedEssence, null, 2) + '\n'
+      });
+    }
   }
 
   // 9. Write files

@@ -1,8 +1,9 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "timeline",
   "name": "Timeline",
   "description": "Vertical timeline of events with dates, descriptions, and status icons. Used for changelogs, order tracking, project milestones, and historical records.",
+  "contained": false,
   "components": [
     "Timeline",
     "Card",
@@ -12,6 +13,100 @@
     "icon",
     "Separator"
   ],
+  "default_preset": "default",
+  "presets": {
+    "default": {
+      "description": "Vertical timeline of events with dates, descriptions, and status icons. Used for changelogs, order tracking, project milestones, and historical records.",
+      "components": [
+        "Timeline",
+        "Card",
+        "Card.Body",
+        "Badge",
+        "Avatar",
+        "icon",
+        "Separator"
+      ],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _flexCol _gap0 _p4 _relative",
+        "slots": {
+          "header": "Optional section title with _heading4 and date range filter",
+          "event": "Repeating item: icon dot on vertical line + Card with date (_caption cc-data), title (_heading6), description (_body), and optional Badge status",
+          "connector": "Vertical line connecting events via absolute-positioned border-left on the timeline track"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge } from 'decantr/components';",
+        "example": "function TimelinePattern() {\n  const { div, span, h4, p, time } = tags;\n  const events = [\n    { title: 'Project launched', status: 'completed', description: 'Initial release deployed to production.', date: 'Mar 1, 2026' },\n    { title: 'Beta testing', status: 'completed', description: 'Invited 500 users for beta feedback.', date: 'Feb 15, 2026' },\n    { title: 'Design review', status: 'completed', description: 'Final design review with stakeholders.', date: 'Feb 1, 2026' },\n    { title: 'Development started', status: null, description: 'Sprint 1 kicked off with core features.', date: 'Jan 15, 2026' }\n  ];\n\n  return div({ class: css('_flex _col _gap0 _p4 _borderL _ml4') },\n    ...events.map(e =>\n      div({ class: css('_flex _gap4 _pb6 _relative') },\n        div({ class: css('_absolute _left[-9px] _w[16px] _h[16px] _r[9999px] _bgprimary _b2 _bcborder') }),\n        div({ class: css('_flex _col _gap1 _pl4') },\n          div({ class: css('_flex _aic _gap2') },\n            h4({ class: css('_textsm _bold') }, e.title),\n            e.status ? Badge({ variant: e.status === 'completed' ? 'success' : 'default', size: 'sm' }, e.status) : null\n          ),\n          p({ class: css('_textsm _fgmuted') }, e.description),\n          time({ class: css('_textxs _fgmuted') }, e.date)\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "calendar": {
+      "description": "Month/week grid view with event dots and day navigation. Used for scheduling, event planning, and date-based activity views.",
+      "components": ["Button", "Badge", "Card", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap3",
+        "slots": {
+          "header": "Month/year title with prev/next navigation Buttons",
+          "weekday-row": "Day-of-week labels row",
+          "day-grid": "7-column grid of day cells with event dot indicators",
+          "event-list": "Optional list of events for the selected day"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Badge, Button, Card, icon } from 'decantr/components';",
+        "example": "function Calendar({ events }) {\n  const { div, span, h3 } = tags;\n  const [month, setMonth] = createSignal(new Date().getMonth());\n  const [year, setYear] = createSignal(new Date().getFullYear());\n  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];\n  const daysInMonth = new Date(year(), month() + 1, 0).getDate();\n  const firstDay = new Date(year(), month(), 1).getDay();\n  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];\n\n  return Card({},\n    Card.Header({},\n      div({ class: css('_flex _aic _jcsb') },\n        Button({ variant: 'ghost', size: 'sm', onclick: () => { if (month() === 0) { setMonth(11); setYear(year() - 1); } else setMonth(month() - 1); } }, icon('chevron-left', { size: '1em' })),\n        h3({ class: css('_heading5') }, `${monthNames[month()]} ${year()}`),\n        Button({ variant: 'ghost', size: 'sm', onclick: () => { if (month() === 11) { setMonth(0); setYear(year() + 1); } else setMonth(month() + 1); } }, icon('chevron-right', { size: '1em' }))\n      )\n    ),\n    Card.Body({},\n      div({ class: css('_grid _gc7 _gap1') },\n        ...days.map(d => div({ class: css('_tc _textxs _fgmuted _py1') }, d)),\n        ...Array(firstDay).fill(null).map(() => div({})),\n        ...Array.from({ length: daysInMonth }, (_, i) => {\n          const day = i + 1;\n          const hasEvent = events?.some(e => e.day === day);\n          return div({ class: css('_flex _col _aic _gap1 _p2 _r2 _cursor[pointer] _hover:bgmuted/10') },\n            span({ class: css('_textsm') }, `${day}`),\n            hasEvent ? div({ class: css('_w[6px] _h[6px] _rfull _bgprimary') }) : null\n          );\n        })\n      )\n    )\n  );\n}"
+      }
+    },
+    "compact": {
+      "description": "Minimal timeline with smaller dots, tighter spacing, and no cards. Ideal for dense activity logs and sidebar widgets.",
+      "components": ["Badge", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap1 _p2",
+        "slots": {
+          "event": "Minimal row with small dot indicator, title text, and timestamp — no card wrapper"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge } from 'decantr/components';",
+        "example": "function TimelineCompact() {\n  const { div, span, time } = tags;\n  const events = [\n    { title: 'Deployed v2.4.1', time: '2 min ago', status: 'success' },\n    { title: 'PR #142 merged', time: '15 min ago', status: 'success' },\n    { title: 'Build failed', time: '1 hour ago', status: 'error' },\n    { title: 'Tests passed', time: '2 hours ago', status: 'success' },\n    { title: 'Branch created', time: '3 hours ago', status: null },\n    { title: 'Issue #89 opened', time: '5 hours ago', status: null }\n  ];\n  const dotColor = s => s === 'success' ? '_bgsuccess' : s === 'error' ? '_bgerror' : '_bgmuted';\n\n  return div({ class: css('_flex _col _gap1 _p2 _borderL _ml2') },\n    ...events.map(e =>\n      div({ class: css('_flex _aic _gap2 _py1 _relative') },\n        div({ class: css(`_absolute _left[-5px] _w[8px] _h[8px] _rfull ${dotColor(e.status)}`) }),\n        span({ class: css('_textsm _pl3') }, e.title),\n        time({ class: css('_textxs _fgmuted _mlis[auto] _shrink0') }, e.time)\n      )\n    )\n  );\n}"
+      }
+    },
+    "branching": {
+      "description": "Git-like branching timeline with merge indicators and branch labels. Used for version control history, deployment pipelines, and workflow visualizations.",
+      "components": ["Badge", "icon", "Avatar"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _p4",
+        "slots": {
+          "commit": "Timeline node with branch color indicator, commit message, author, and hash",
+          "merge": "Merge indicator showing two branches joining with a merge icon",
+          "branch-label": "Branch name Badge attached to timeline nodes"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Avatar, icon } from 'decantr/components';",
+        "example": "function TimelineBranching() {\n  const { div, span, code } = tags;\n  const commits = [\n    { hash: 'a1b2c3d', message: 'Merge feature/auth into main', author: 'Alice', branch: 'main', type: 'merge', mergedBranch: 'feature/auth' },\n    { hash: 'e4f5g6h', message: 'Add OAuth2 provider support', author: 'Bob', branch: 'feature/auth', type: 'commit' },\n    { hash: 'i7j8k9l', message: 'Implement token refresh logic', author: 'Bob', branch: 'feature/auth', type: 'commit' },\n    { hash: 'm0n1o2p', message: 'Fix pagination offset bug', author: 'Carol', branch: 'main', type: 'commit' },\n    { hash: 'q3r4s5t', message: 'Branch created from main', author: 'Bob', branch: 'feature/auth', type: 'branch' }\n  ];\n  const branchColor = b => b === 'main' ? '_bgprimary' : '_bgsuccess';\n\n  return div({ class: css('_flex _col _gap0 _p4') },\n    ...commits.map(c =>\n      div({ class: css('_flex _gap3 _py3 _borderB') },\n        div({ class: css('_flex _col _aic _w6') },\n          div({ class: css(`_w[12px] _h[12px] _rfull ${branchColor(c.branch)} ${c.type === 'merge' ? '_b2 _bcborder' : ''}`) }),\n          c.type !== 'branch' ? div({ class: css(`_w[2px] _flex1 ${branchColor(c.branch)}/30`) }) : null\n        ),\n        div({ class: css('_flex _col _gap1 _flex1') },\n          div({ class: css('_flex _aic _gap2 _wrap') },\n            span({ class: css('_textsm _bold') }, c.message),\n            Badge({ variant: c.branch === 'main' ? 'default' : 'success', size: 'sm' }, c.branch),\n            c.type === 'merge' ? Badge({ size: 'sm' }, icon('git-merge', { size: '0.75em' }), ` ${c.mergedBranch}`) : null\n          ),\n          div({ class: css('_flex _aic _gap2') },\n            span({ class: css('_textxs _fgmuted') }, c.author),\n            code({ class: css('_textxs _fgmuted _bgmuted/10 _px1 _r1') }, c.hash)\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "milestone": {
+      "description": "Horizontal milestone timeline for project phases, onboarding steps, or progress tracking. Scrollable on smaller screens.",
+      "components": ["Badge", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap0 _py4 _overflow[auto]",
+        "slots": {
+          "milestone": "Repeating node with circle indicator, label below, and connecting line between nodes",
+          "connector": "Horizontal line connecting milestone nodes"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, icon } from 'decantr/components';",
+        "example": "function TimelineMilestone() {\n  const { div, span } = tags;\n  const milestones = [\n    { label: 'Planning', status: 'completed', date: 'Jan 2026' },\n    { label: 'Design', status: 'completed', date: 'Feb 2026' },\n    { label: 'Development', status: 'active', date: 'Mar 2026' },\n    { label: 'Testing', status: 'upcoming', date: 'Apr 2026' },\n    { label: 'Launch', status: 'upcoming', date: 'May 2026' }\n  ];\n  const nodeStyle = s => s === 'completed' ? '_bgprimary _fgonprimary' : s === 'active' ? '_b2 _bcprimary _bgbackground' : '_b2 _bcborder _bgbackground';\n  const lineStyle = s => s === 'completed' ? '_bgprimary' : '_bgborder';\n\n  return div({ class: css('_flex _aic _py4 _overflow[auto]') },\n    ...milestones.flatMap((m, i) => [\n      div({ class: css('_flex _col _aic _gap2 _shrink0 _w[120px]') },\n        div({ class: css(`_flex _center _w8 _h8 _rfull ${nodeStyle(m.status)}`) },\n          m.status === 'completed' ? icon('check', { size: '1em' }) : span({ class: css('_textsm _bold') }, `${i + 1}`)\n        ),\n        span({ class: css('_textsm _bold _tc') }, m.label),\n        span({ class: css('_textxs _fgmuted') }, m.date),\n        m.status === 'active' ? Badge({ variant: 'primary', size: 'sm' }, 'In Progress') : null\n      ),\n      i < milestones.length - 1 ? div({ class: css(`_h[2px] _w8 _shrink0 ${lineStyle(m.status)}`) }) : null\n    ].filter(Boolean))\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap0 _p4 _relative",

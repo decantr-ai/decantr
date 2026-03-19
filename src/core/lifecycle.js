@@ -1,3 +1,5 @@
+import { getOwner, registerCleanup } from '../state/scheduler.js';
+
 /** @type {Function[]} */
 let mountQueue = [];
 /** @type {Function[]} */
@@ -13,15 +15,34 @@ export function onMount(fn) {
 }
 
 /**
- * @param {Function} fn — registered to current scope if one exists, else global queue
+ * Register a cleanup function. Prefers ownership tree when inside a
+ * component()/createRoot() scope, falls back to scope stack otherwise.
+ * Guarded against double execution.
+ *
+ * @param {Function} fn - Cleanup callback
  */
-export function onDestroy(fn) {
-  if (scopeStack.length > 0) {
-    scopeStack[scopeStack.length - 1].push(fn);
+export function onCleanup(fn) {
+  let disposed = false;
+  const guarded = () => {
+    if (disposed) return;
+    disposed = true;
+    fn();
+  };
+
+  if (getOwner()) {
+    registerCleanup(guarded);
+  } else if (scopeStack.length > 0) {
+    scopeStack[scopeStack.length - 1].push(guarded);
   } else {
-    destroyQueue.push(fn);
+    destroyQueue.push(guarded);
   }
 }
+
+/**
+ * Backward-compatible alias for onCleanup.
+ * @param {Function} fn
+ */
+export const onDestroy = onCleanup;
 
 /**
  * @returns {Function[]}

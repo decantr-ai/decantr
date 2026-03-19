@@ -1,5 +1,5 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "activity-feed",
   "name": "Activity Feed",
   "description": "Chronological list of activity events with avatars, timestamps, and action descriptions. Used in dashboards and profile pages.",
@@ -10,6 +10,102 @@
     "Text",
     "Separator"
   ],
+  "default_preset": "default",
+  "io": {
+    "produces": [],
+    "consumes": ["search"],
+    "actions": ["load-more"]
+  },
+  "presets": {
+    "default": {
+      "description": "Chronological list of activity events with avatars, timestamps, and action descriptions. Used in dashboards and profile pages.",
+      "components": [
+        "Timeline",
+        "Avatar",
+        "Badge",
+        "Text",
+        "Separator"
+      ],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _flexCol _gap2 _p4",
+        "slots": {
+          "header": "Section title with _heading5 and optional filter/date-range controls",
+          "feed": "Timeline of activity items, each with Avatar, action Text, timestamp Badge, and Separator between entries",
+          "load-more": "Optional Button at bottom for pagination"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { list } from 'decantr/core';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge, Button } from 'decantr/components';",
+        "example": "function ActivityFeed({ search: extSearch } = {}) {\n  const { div, span, h3 } = tags;\n  const [visibleCount, setVisibleCount] = createSignal(4);\n  const items = [\n    { avatar: '', user: 'Alice Chen', action: 'deployed v2.4.1 to production', time: '2 min ago', type: 'success' },\n    { avatar: '', user: 'Bob Patel', action: 'opened pull request #142', time: '15 min ago', type: 'default' },\n    { avatar: '', user: 'Carol Liu', action: 'commented on issue #89', time: '1 hour ago', type: 'default' },\n    { avatar: '', user: 'Dan Kim', action: 'merged branch feature/auth', time: '3 hours ago', type: 'success' },\n    { avatar: '', user: 'Eve Zhao', action: 'updated project settings', time: '5 hours ago', type: 'default' },\n    { avatar: '', user: 'Frank Wu', action: 'closed issue #85', time: '1 day ago', type: 'success' }\n  ];\n  const visibleItems = () => {\n    let filtered = items;\n    if (extSearch) {\n      const s = extSearch().toLowerCase();\n      if (s) filtered = filtered.filter(i => i.user.toLowerCase().includes(s) || i.action.toLowerCase().includes(s));\n    }\n    return filtered.slice(0, visibleCount());\n  };\n\n  return div({ class: css('_flex _col _gap2 _p4') },\n    h3({ class: css('_heading5') }, 'Recent Activity'),\n    list(visibleItems, (item) => item.user, item =>\n      div({ class: css('_flex _gap3 _aic _py2 _borderB') },\n        Avatar({ src: item.avatar, name: item.user, size: 'sm' }),\n        div({ class: css('_flex _col _flex1') },\n          span({ class: css('_textsm') }, span({ class: css('_bold') }, item.user), ` ${item.action}`),\n          span({ class: css('_textxs _fgmuted') }, item.time)\n        ),\n        Badge({ variant: item.type === 'success' ? 'success' : 'default' }, item.type)\n      )\n    ),\n    () => visibleCount() < items.length ? Button({ variant: 'ghost', class: css('_wfull _mt2'), onclick: () => setVisibleCount(visibleCount() + 4) }, 'Load More') : null\n  );\n}"
+      }
+    },
+    "notification-center": {
+      "description": "Notifications grouped by date with read/unread state and dismiss actions. Used for notification centers and alert panels.",
+      "components": ["Avatar", "Badge", "Button", "Chip", "icon", "Separator"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0",
+        "slots": {
+          "date-group": "Date header separator grouping notifications by day",
+          "notification": "Row with unread indicator, icon, message, timestamp, and dismiss Button",
+          "actions": "Mark all read Button, filter controls"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge, Button, Chip, Separator, icon } from 'decantr/components';",
+        "example": "function NotificationCenter({ notifications }) {\n  const { div, span, h4 } = tags;\n  const grouped = {};\n  notifications.forEach(n => { (grouped[n.date] = grouped[n.date] || []).push(n); });\n\n  return div({ class: css('_flex _col _gap0') },\n    ...Object.entries(grouped).flatMap(([date, items]) => [\n      div({ class: css('_px4 _py2 _bgmuted/10') },\n        span({ class: css('_textxs _bold _fgmuted') }, date)\n      ),\n      ...items.map(item =>\n        div({ class: css(`_flex _gap3 _aic _px4 _py3 _borderB ${item.unread ? '_bgprimary/5' : ''}`) },\n          div({ class: css('_flex _center _w8 _h8 _r2 _bgprimary/10') },\n            icon(item.icon, { size: '1em', class: css('_fgprimary') })\n          ),\n          div({ class: css('_flex _col _flex1') },\n            span({ class: css(`_textsm ${item.unread ? '_bold' : ''}`) }, item.message),\n            span({ class: css('_textxs _fgmuted') }, item.time)\n          ),\n          Button({ variant: 'ghost', size: 'sm' }, icon('x', { size: '1em' }))\n        )\n      )\n    ])\n  );\n}"
+      }
+    },
+    "social": {
+      "description": "Social media-style feed with reactions, comment counts, and share buttons. Richer cards per entry for community and social features.",
+      "components": ["Avatar", "Badge", "Button", "Card", "Card.Body", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _p4",
+        "slots": {
+          "post": "Card with Avatar header, content body, and reaction/comment/share footer row",
+          "reactions": "Row of reaction Buttons with counts (like, comment, share)",
+          "load-more": "Pagination Button at bottom"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { list } from 'decantr/core';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge, Button, Card, icon } from 'decantr/components';",
+        "example": "function ActivityFeedSocial({ search: extSearch } = {}) {\n  const { div, span, p, h3, time } = tags;\n  const [visibleCount, setVisibleCount] = createSignal(3);\n  const posts = [\n    { user: 'Alice Chen', avatar: '', content: 'Just shipped the new dashboard redesign! Check it out and let me know what you think.', time: '2 hours ago', likes: 12, comments: 4, shares: 2 },\n    { user: 'Bob Patel', avatar: '', content: 'Published a new blog post on scaling microservices. Link in bio.', time: '5 hours ago', likes: 28, comments: 8, shares: 6 },\n    { user: 'Carol Liu', avatar: '', content: 'Hit 10k users on our platform today! Thanks everyone for the support.', time: '1 day ago', likes: 54, comments: 15, shares: 12 },\n    { user: 'Dan Kim', avatar: '', content: 'Working on a new feature for the CLI tool. Stay tuned!', time: '2 days ago', likes: 8, comments: 2, shares: 1 }\n  ];\n  const visiblePosts = () => {\n    let filtered = posts;\n    if (extSearch) {\n      const s = extSearch().toLowerCase();\n      if (s) filtered = filtered.filter(p => p.user.toLowerCase().includes(s) || p.content.toLowerCase().includes(s));\n    }\n    return filtered.slice(0, visibleCount());\n  };\n\n  return div({ class: css('_flex _col _gap4') },\n    h3({ class: css('_heading5') }, 'Feed'),\n    list(visiblePosts, (post) => post.user, post =>\n      Card({},\n        Card.Body({},\n          div({ class: css('_flex _col _gap3') },\n            div({ class: css('_flex _aic _gap3') },\n              Avatar({ src: post.avatar, name: post.user, size: 'md' }),\n              div({ class: css('_flex _col') },\n                span({ class: css('_textsm _bold') }, post.user),\n                time({ class: css('_textxs _fgmuted') }, post.time)\n              )\n            ),\n            p({ class: css('_textsm') }, post.content),\n            div({ class: css('_flex _gap4 _aic _pt2 _borderT') },\n              Button({ variant: 'ghost', size: 'sm' }, icon('heart', { size: '1em' }), ` ${post.likes}`),\n              Button({ variant: 'ghost', size: 'sm' }, icon('message-circle', { size: '1em' }), ` ${post.comments}`),\n              Button({ variant: 'ghost', size: 'sm' }, icon('share', { size: '1em' }), ` ${post.shares}`)\n            )\n          )\n        )\n      )\n    ),\n    () => visibleCount() < posts.length ? Button({ variant: 'ghost', class: css('_wfull'), onclick: () => setVisibleCount(visibleCount() + 3) }, 'Load More') : null\n  );\n}"
+      }
+    },
+    "minimal": {
+      "description": "Ultra-minimal activity list with just text and timestamp. No avatars, no badges, no cards. Maximum information density.",
+      "components": [],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap1",
+        "slots": {
+          "entry": "Single line with action text and right-aligned timestamp"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function ActivityFeedMinimal() {\n  const { div, span, time, h3 } = tags;\n  const items = [\n    { text: 'Alice Chen deployed v2.4.1 to production', time: '2 min ago' },\n    { text: 'Bob Patel opened pull request #142', time: '15 min ago' },\n    { text: 'Carol Liu commented on issue #89', time: '1 hour ago' },\n    { text: 'Dan Kim merged branch feature/auth', time: '3 hours ago' },\n    { text: 'Eve Zhao updated project settings', time: '5 hours ago' },\n    { text: 'Frank Wu closed issue #85', time: '1 day ago' }\n  ];\n\n  return div({ class: css('_flex _col _gap1') },\n    h3({ class: css('_heading6 _fgmuted _mb2') }, 'Activity'),\n    ...items.map(item =>\n      div({ class: css('_flex _aic _jcsb _py1') },\n        span({ class: css('_textsm') }, item.text),\n        time({ class: css('_textxs _fgmuted _shrink0 _ml3') }, item.time)\n      )\n    )\n  );\n}"
+      }
+    },
+    "grouped": {
+      "description": "Activity items grouped by entity or category with collapsible group headers. Used when activity spans multiple projects, repos, or categories.",
+      "components": ["Avatar", "Badge", "Button", "icon", "Accordion"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap2 _p4",
+        "slots": {
+          "group-header": "Collapsible header with entity name, count Badge, and expand/collapse toggle",
+          "group-items": "Activity items within the group, each with avatar, action text, and timestamp"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { cond } from 'decantr/core';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge, Button, icon } from 'decantr/components';",
+        "example": "function ActivityFeedGrouped({ search: extSearch, view: extView } = {}) {\n  const { div, span, h3, time } = tags;\n  const groups = [\n    { name: 'decantr/core', items: [\n      { user: 'Alice', action: 'pushed 3 commits', time: '10 min ago', status: 'active' },\n      { user: 'Bob', action: 'opened PR #42', time: '1 hour ago', status: 'active' }\n    ]},\n    { name: 'decantr/docs', items: [\n      { user: 'Carol', action: 'updated tutorial page', time: '2 hours ago', status: 'active' },\n      { user: 'Dan', action: 'fixed typo in API docs', time: '3 hours ago', status: 'archived' },\n      { user: 'Eve', action: 'added SSR guide', time: '5 hours ago', status: 'draft' }\n    ]},\n    { name: 'decantr/cli', items: [\n      { user: 'Frank', action: 'released v1.2.0', time: '1 day ago', status: 'active' }\n    ]}\n  ];\n  function getFiltered() {\n    const v = extView ? extView() : 'all';\n    const s = extSearch ? extSearch().toLowerCase() : '';\n    return groups.map(group => {\n      let items = group.items;\n      if (v && v !== 'all') items = items.filter(i => i.status === v);\n      if (s) items = items.filter(i => i.user.toLowerCase().includes(s) || i.action.toLowerCase().includes(s));\n      return { ...group, items };\n    }).filter(g => g.items.length > 0);\n  }\n  function renderGroup(group) {\n    const [open, setOpen] = createSignal(true);\n    return div({ class: css('_flex _col _gap0 _borderB _pb2') },\n      Button({ variant: 'ghost', class: css('_flex _aic _jcsb _wfull _py2'), onclick: () => setOpen(!open()) },\n        div({ class: css('_flex _aic _gap2') },\n          icon('folder', { size: '1em' }),\n          span({ class: css('_textsm _bold') }, group.name),\n          Badge({ size: 'sm' }, `${group.items.length}`)\n        ),\n        cond(() => open(), () => icon('chevron-up', { size: '1em' }), () => icon('chevron-down', { size: '1em' }))\n      ),\n      cond(() => open(), () => div({ class: css('_flex _col _gap1 _pl6') },\n        ...group.items.map(item =>\n          div({ class: css('_flex _aic _gap2 _py1') },\n            Avatar({ name: item.user, size: 'xs' }),\n            span({ class: css('_textsm') }, span({ class: css('_bold') }, item.user), ` ${item.action}`),\n            time({ class: css('_textxs _fgmuted _mlis[auto] _shrink0') }, item.time)\n          )\n        )\n      ))\n    );\n  }\n\n  return div({ class: css('_flex _col _gap2') },\n    h3({ class: css('_heading5') }, 'Activity'),\n    () => {\n      const filtered = getFiltered();\n      if (!filtered.length) return span({ class: css('_fgmuted _textsm _p4') }, 'No matching activity');\n      const wrap = div({ class: css('_flex _col _gap0') });\n      filtered.forEach(g => wrap.appendChild(renderGroup(g)));\n      return wrap;\n    }\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "stack",
     "atoms": "_flex _flexCol _gap2 _p4",

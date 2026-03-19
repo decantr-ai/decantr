@@ -17,7 +17,7 @@
     "sidebar-main": "Explorer shell — persistent header with search trigger (Cmd+K), collapsible multi-layer sidebar with filter, scrollable main content, floating HUD for style/mode/shape/viewport switching"
   },
   "suggested_vintage": {
-    "styles": ["auradecantism", "clean", "command-center"],
+    "styles": ["auradecantism", "clean"],
     "modes": ["dark", "auto"]
   }
 }

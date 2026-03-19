@@ -1,0 +1,55 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "bento-features",
+  "name": "Bento Features",
+  "description": "Bento box feature grid with varied card sizes. Hero feature card (large) with stats and supporting feature cards.",
+  "components": ["Card", "Badge", "icon"],
+  "default_preset": "hero-stats",
+  "presets": {
+    "hero-stats": {
+      "description": "Large hero feature + stats row + supporting features",
+      "components": ["Card", "Badge", "icon", "CodeBlock"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6 _py12 _px6 _mw[1100px] _mx[auto]",
+        "slots": {
+          "hero-card": "Large Card (span 2 cols) with feature title, description, and visual preview",
+          "stats-row": "4-column grid of stat Cards (icon + value + label)",
+          "features-row": "3-column grid of supporting feature Cards"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+        "example": "function BentoFeatures({ hero, stats, features }) {\n  const { div, h2, h3, p, span } = tags;\n\n  return div({ class: css('_flex _col _gap6 _py12 _px6 _mw[1100px] _mx[auto]') },\n    // Hero feature card\n    Card({ class: css('d-glass _p6') },\n      Card.Body({ class: css('_grid _gc1 _lg:gc2 _gap6 _aic') },\n        div({ class: css('_flex _col _gap4') },\n          Badge({ variant: 'outline' }, hero.badge),\n          h2({ class: css('_heading2') }, hero.title),\n          p({ class: css('_fgmuted _lh[1.6]') }, hero.description)\n        ),\n        div({ class: css('d-glass-strong _r3 _p4 _hfull') }, hero.preview)\n      )\n    ),\n    // Stats row\n    div({ class: css('_grid _gc2 _md:gc4 _gap4') },\n      ...stats.map(s =>\n        Card({ class: css('d-glass _tc _p4') },\n          Card.Body({ class: css('_flex _col _gap2 _aic') },\n            icon(s.icon, { class: css('_fgprimary') }),\n            span({ class: css('_heading2 _fgfg') }, s.value),\n            span({ class: css('_textsm _fgmuted') }, s.label)\n          )\n        )\n      )\n    ),\n    // Features row\n    div({ class: css('_grid _gc1 _md:gc3 _gap4') },\n      ...features.map(f =>\n        Card({ class: css('d-glass') },\n          Card.Body({ class: css('_flex _col _gap3') },\n            div({ class: css('_w10 _h10 _r2 _bgprimary/10 _flex _aic _jcc _fgprimary') }, icon(f.icon)),\n            h3({ class: css('_heading5') }, f.title),\n            p({ class: css('_textsm _fgmuted') }, f.description)\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "grid-only": {
+      "description": "Simple uniform grid of feature cards",
+      "components": ["Card", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6",
+        "slots": {
+          "feature-cards": "Uniform Card grid with icon, title, description"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, icon } from 'decantr/components';",
+        "example": "function FeatureGrid({ features }) {\n  const { div, h3, p } = tags;\n\n  return div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6 _py12 _px6') },\n    ...features.map(f =>\n      Card({ class: css('d-glass') },\n        Card.Body({ class: css('_flex _col _gap3') },\n          div({ class: css('_w10 _h10 _r2 _bgprimary/10 _flex _aic _jcc _fgprimary') }, icon(f.icon)),\n          h3({ class: css('_heading5') }, f.title),\n          p({ class: css('_textsm _fgmuted') }, f.description)\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6 _py12 _px6 _mw[1100px] _mx[auto]",
+    "slots": {
+      "hero-card": "Large hero feature Card",
+      "stats-row": "Stats grid",
+      "features-row": "Supporting features grid"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+    "example": "function BentoFeatures({ hero, stats, features }) {\n  const { div, h2, h3, p, span } = tags;\n\n  return div({ class: css('_flex _col _gap6') },\n    Card({ class: css('d-glass _p6') },\n      Card.Body({},\n        h2({ class: css('_heading2') }, hero.title),\n        p({ class: css('_fgmuted') }, hero.description)\n      )\n    ),\n    div({ class: css('_grid _gc2 _md:gc4 _gap4') },\n      ...stats.map(s => Card({ class: css('d-glass _tc _p4') }, span({ class: css('_heading2') }, s.value), span({ class: css('_textsm _fgmuted') }, s.label)))\n    )\n  );\n}"
+  }
+}

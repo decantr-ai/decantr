@@ -1,0 +1,22 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "kanban-board",
+  "name": "Kanban Board",
+  "description": "Column-based board with draggable cards organized by status. Used for order management, deal pipelines, task workflows, and project tracking.",
+  "contained": false,
+  "components": ["Card", "Badge", "Button", "Chip", "icon"],
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_flex _gap4 _overflow[auto] _pb4 _flex1",
+    "slots": {
+      "column": "Vertical lane per status with header (title + count Badge) and scrollable card list",
+      "card": "Card per item with title, description snippet, assignee Chip, priority Badge",
+      "column-header": "Status label + item count + optional add Button",
+      "card-actions": "Contextual actions: assign, priority, move"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, Button, Card, Chip, icon } from 'decantr/components';",
+    "example": "function KanbanBoard({ columns }) {\n  const { div, span, h3 } = tags;\n\n  return div({ class: css('_flex _gap4 _overflow[auto] _pb4 _flex1') },\n    ...columns.map(col =>\n      div({ class: css('_flex _col _gap3 _minW[280px] _w[320px] _flexShrink0') },\n        div({ class: css('_flex _aic _jcsb _px2') },\n          div({ class: css('_flex _aic _gap2') },\n            span({ class: css('_w[8px] _h[8px] _rfull') }),\n            h3({ class: css('_textsm _bold') }, col.title),\n            Badge({ variant: 'outline', size: 'sm' }, `${col.items.length}`)\n          ),\n          Button({ variant: 'ghost', size: 'sm' }, icon('plus', { size: '1em' }))\n        ),\n        div({ class: css('_flex _col _gap2') },\n          ...col.items.map(item =>\n            Card({ hover: true, class: css('_cursor[pointer]') },\n              Card.Body({ class: css('_flex _col _gap2 _p3') },\n                div({ class: css('_flex _aic _jcsb') },\n                  span({ class: css('_textsm _bold') }, item.title),\n                  Badge({ variant: item.priority === 'high' ? 'error' : item.priority === 'medium' ? 'warning' : 'default', size: 'sm' }, item.priority)\n                ),\n                span({ class: css('_textxs _fgmuted _lineClamp2') }, item.description),\n                div({ class: css('_flex _aic _jcsb _mt1') },\n                  Chip({ label: item.assignee, size: 'xs' }),\n                  span({ class: css('_textxs _fgmuted') }, item.date)\n                )\n              )\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+  }
+}

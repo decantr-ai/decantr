@@ -1,0 +1,179 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "cloud-platform",
+  "name": "Cloud Platform",
+  "description": "Cloud infrastructure platform with marketing landing page and authenticated dashboard. App management, team collaboration, service catalog, deploy logs, usage monitoring, and billing.",
+  "pages": [
+    {
+      "id": "home",
+      "skeleton": "full-bleed",
+      "patterns": [
+        "hero",
+        "card-grid",
+        "logo-strip",
+        "stats-section",
+        "cta-section",
+        "footer-columns"
+      ],
+      "default_blend": [
+        { "pattern": "hero", "preset": "brand", "as": "brand-hero" },
+        { "pattern": "card-grid", "preset": "icon", "as": "feature-grid" },
+        { "pattern": "logo-strip", "preset": "marquee", "as": "tech-logos" },
+        { "pattern": "card-grid", "preset": "icon", "as": "capability-grid" },
+        { "pattern": "stats-section", "preset": "hero", "as": "platform-stats" },
+        { "pattern": "cta-section", "preset": "brand", "as": "enterprise-cta" },
+        { "pattern": "footer-columns", "preset": "minimal", "as": "footer" }
+      ]
+    },
+    {
+      "id": "apps",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "filter-bar",
+        "card-grid",
+        "activity-feed"
+      ],
+      "default_blend": [
+        "filter-bar",
+        { "cols": [{ "pattern": "card-grid", "preset": "resource", "as": "app-grid" }, "activity-feed"], "span": { "app-grid": 2 }, "at": "lg" }
+      ]
+    },
+    {
+      "id": "app-detail",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "detail-header",
+        "kpi-grid",
+        "deploy-log",
+        "data-table"
+      ],
+      "default_blend": [
+        "detail-header",
+        "kpi-grid",
+        { "cols": [{ "pattern": "deploy-log", "preset": "live", "as": "deploy-log" }, "data-table"], "at": "lg" }
+      ]
+    },
+    {
+      "id": "team",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "filter-bar",
+        "card-grid"
+      ],
+      "default_blend": [
+        "filter-bar",
+        { "pattern": "card-grid", "preset": "user", "as": "team-grid" }
+      ]
+    },
+    {
+      "id": "activity",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "filter-bar",
+        "activity-feed"
+      ],
+      "default_blend": [
+        "filter-bar",
+        "activity-feed"
+      ]
+    },
+    {
+      "id": "services",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "service-catalog"
+      ],
+      "default_blend": [
+        { "pattern": "service-catalog", "preset": "grid", "as": "service-grid" }
+      ]
+    },
+    {
+      "id": "tokens",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "filter-bar",
+        "data-table"
+      ],
+      "default_blend": [
+        { "pattern": "filter-bar", "preset": "toolbar", "as": "token-toolbar" },
+        "data-table"
+      ]
+    },
+    {
+      "id": "usage",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "resource-overview",
+        "chart-grid"
+      ],
+      "default_blend": [
+        { "pattern": "resource-overview", "preset": "gauge-grid", "as": "resource-gauges" },
+        "chart-grid"
+      ]
+    },
+    {
+      "id": "billing",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "kpi-grid",
+        "pricing-table"
+      ],
+      "default_blend": [
+        "kpi-grid",
+        "pricing-table"
+      ]
+    },
+    {
+      "id": "settings",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "form-sections"
+      ],
+      "default_blend": [
+        { "pattern": "form-sections", "preset": "settings", "as": "org-settings" }
+      ]
+    },
+    {
+      "id": "status",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "status-board"
+      ],
+      "default_blend": [
+        "status-board"
+      ]
+    },
+    {
+      "id": "compliance",
+      "skeleton": "sidebar-main",
+      "patterns": [
+        "checklist-card",
+        "data-table"
+      ],
+      "default_blend": [
+        { "pattern": "checklist-card", "preset": "onboarding", "as": "compliance-checklist" },
+        "data-table"
+      ]
+    },
+    {
+      "id": "login",
+      "skeleton": "centered",
+      "patterns": [
+        "auth-form"
+      ],
+      "default_blend": [
+        "auth-form"
+      ]
+    }
+  ],
+  "tannins": ["auth", "realtime-data", "search", "billing", "team-management"],
+  "skeletons": {
+    "full-bleed": "Floating nav over scroll-driven marketing sections — hero-first, maximum visual impact",
+    "sidebar-main": "Left sidebar with grouped nav (OVERVIEW + SERVICES + PLATFORM + ACCOUNT sections) + main content area",
+    "centered": "Centered card layout for authentication flows"
+  },
+  "suggested_vintage": {
+    "styles": ["launchpad", "clean"],
+    "modes": ["light", "dark"]
+  }
+}

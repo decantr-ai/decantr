@@ -358,6 +358,8 @@ export function positionPanel(triggerEl, panelEl, opts = {}) {
  * @param {Function} [opts.onHighlight] - Called with (element, index) when highlight changes
  * @returns {{ highlight: Function, getActiveIndex: () => number, setItems: Function, reset: Function, handleKeydown: Function, destroy: Function }}
  */
+let _listboxOptionId = 0;
+
 export function createListbox(containerEl, opts = {}) {
   const {
     itemSelector = '.d-option',
@@ -367,6 +369,7 @@ export function createListbox(containerEl, opts = {}) {
     orientation = 'vertical',
     multiSelect = false,
     typeAhead = false,
+    owner = null,
     onSelect,
     onHighlight,
   } = opts;
@@ -390,6 +393,13 @@ export function createListbox(containerEl, opts = {}) {
       el.setAttribute('aria-selected', i === index ? 'true' : 'false');
     });
     activeIndex = index;
+    // Assign IDs and set aria-activedescendant on owner
+    if (owner && items[index]) {
+      if (!items[index].id) items[index].id = 'd-lo-' + (_listboxOptionId++);
+      owner.setAttribute('aria-activedescendant', items[index].id);
+    } else if (owner) {
+      owner.removeAttribute('aria-activedescendant');
+    }
     // Scroll into view
     if (items[index]) items[index].scrollIntoView?.({ block: 'nearest' });
     if (onHighlight && items[index]) onHighlight(items[index], index);
@@ -447,7 +457,11 @@ export function createListbox(containerEl, opts = {}) {
 
   containerEl.addEventListener('keydown', handleKeydown);
 
-  function reset() { activeIndex = -1; highlight(-1); }
+  function reset() {
+    activeIndex = -1;
+    highlight(-1);
+    if (owner) owner.removeAttribute('aria-activedescendant');
+  }
   function getActiveIndex() { return activeIndex; }
   function destroy() { containerEl.removeEventListener('keydown', handleKeydown); }
 
@@ -1160,6 +1174,47 @@ export function createCheckControl(opts = {}) {
  * @param {boolean} [options.once=true] - Unobserve after first intersection
  * @returns {Function} Cleanup function for onDestroy
  */
+// ─── LIVE REGION ─────────────────────────────────────────────
+// Used by: Router, DataTable, Toast — dynamic announcements for screen readers
+
+/**
+ * Creates a persistent live region for announcing dynamic changes to screen readers.
+ *
+ * @param {Object} [opts]
+ * @param {'polite'|'assertive'} [opts.politeness='polite']
+ * @returns {{ announce: (msg: string) => void, destroy: () => void }}
+ */
+export function createLiveRegion(opts = {}) {
+  const { politeness = 'polite' } = opts;
+  let _timer = null;
+
+  const el = h('div', {
+    class: 'd-sr-only',
+    'aria-live': politeness,
+    'aria-atomic': 'true',
+    role: politeness === 'assertive' ? 'alert' : 'status'
+  });
+  el.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
+
+  if (typeof document !== 'undefined') document.body.appendChild(el);
+
+  function announce(msg) {
+    if (_timer) clearTimeout(_timer);
+    // Clear then set after a microtask so AT picks up the change
+    el.textContent = '';
+    setTimeout(() => { el.textContent = msg; }, 50);
+    _timer = setTimeout(() => { el.textContent = ''; _timer = null; }, 1000);
+  }
+
+  function destroy() {
+    if (_timer) clearTimeout(_timer);
+    if (el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  return { announce, destroy };
+}
+
+
 export function createScrollReveal(el, options = {}) {
   const { threshold = 0.1, rootMargin = '0px 0px -50px 0px', once = true } = options;
   if (typeof IntersectionObserver === 'undefined') return () => {};

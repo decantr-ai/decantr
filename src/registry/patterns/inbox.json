@@ -1,0 +1,22 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "inbox",
+  "name": "Inbox",
+  "description": "Split-pane layout with a scrollable message list on the left and a preview panel on the right. Used for notifications, support tickets, email, and messaging.",
+  "contained": false,
+  "components": ["Avatar", "Badge", "Chip", "Button", "icon", "Separator"],
+  "default_blend": {
+    "layout": "split",
+    "atoms": "_grid _gc1 _lg:gc3 _gap0 _h[calc(100vh-120px)] _overflow[hidden]",
+    "slots": {
+      "list-header": "Search input + filter controls above the message list",
+      "list": "Scrollable list of message items with avatar, subject, preview, timestamp, read/unread state",
+      "preview-header": "Subject line + sender info + action buttons",
+      "preview-body": "Full message content with scroll"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Avatar, Badge, Button, Chip, Input, Separator, icon } from 'decantr/components';",
+    "example": "function Inbox({ messages }) {\n  const { div, span, h3, p } = tags;\n  const [selected, setSelected] = createSignal(0);\n\n  return div({ class: css('_grid _gc1 _lg:gc3 _gap0 _h[calc(100vh-120px)] _overflow[hidden] _b1 _bcborder _r4') },\n    div({ class: css('_flex _col _borderR _overflow[hidden]') },\n      div({ class: css('_p3 _borderB') },\n        Input({ placeholder: 'Search messages...', class: css('_wfull') })\n      ),\n      div({ class: css('_flex1 _overflow[auto]') },\n        ...messages.map((msg, i) =>\n          div({ class: css(`_flex _gap3 _p3 _borderB _cursor[pointer] ${i === selected() ? '_bgprimary/10' : ''}`), onclick: () => setSelected(i) },\n            Avatar({ name: msg.from, size: 'sm' }),\n            div({ class: css('_flex _col _flex1 _minW0') },\n              div({ class: css('_flex _aic _jcsb') },\n                span({ class: css(`_textsm ${msg.unread ? '_bold' : ''}`) }, msg.from),\n                span({ class: css('_textxs _fgmuted') }, msg.time)\n              ),\n              span({ class: css('_textsm _bold _truncate') }, msg.subject),\n              span({ class: css('_textxs _fgmuted _truncate') }, msg.preview)\n            ),\n            msg.unread ? div({ class: css('_w[8px] _h[8px] _rfull _bgprimary _flexShrink0 _mt2') }) : null\n          )\n        )\n      )\n    ),\n    div({ class: css('_span2 _flex _col _overflow[hidden]') },\n      div({ class: css('_flex _aic _jcsb _p4 _borderB') },\n        div({ class: css('_flex _col') },\n          h3({ class: css('_heading5') }, messages[selected()]?.subject),\n          span({ class: css('_textsm _fgmuted') }, `From: ${messages[selected()]?.from}`)\n        ),\n        div({ class: css('_flex _gap2') },\n          Button({ variant: 'ghost', size: 'sm' }, icon('reply', { size: '1em' })),\n          Button({ variant: 'ghost', size: 'sm' }, icon('archive', { size: '1em' })),\n          Button({ variant: 'ghost', size: 'sm' }, icon('trash', { size: '1em' }))\n        )\n      ),\n      div({ class: css('_flex1 _overflow[auto] _p4') },\n        p({ class: css('_body _fgfg') }, messages[selected()]?.body)\n      )\n    )\n  );\n}"
+  }
+}

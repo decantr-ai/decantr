@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "terroir": "content-site",
+  "vintage": {
+    "style": "clean",
+    "mode": "light",
+    "recipe": "clean",
+    "shape": "rounded"
+  },
+  "character": ["editorial", "readable"],
+  "vessel": { "type": "spa", "routing": "hash" },
+  "structure": [
+    { "id": "home", "skeleton": "top-nav-main", "blend": ["hero", "card-grid"] },
+    { "id": "articles", "skeleton": "top-nav-main", "blend": ["card-grid"] },
+    { "id": "article-detail", "skeleton": "top-nav-main", "blend": ["article-content"] },
+    { "id": "about", "skeleton": "top-nav-main", "blend": ["article-content"] }
+  ],
+  "tannins": ["search"],
+  "cork": { "enforce_style": true, "mode": "maintenance" },
+  "clarity": { "density": "comfortable", "content_gap": "_gap4" }
+}

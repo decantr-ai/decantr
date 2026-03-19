@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "terroir": "saas-dashboard",
+  "vintage": {
+    "style": "auradecantism",
+    "mode": "dark",
+    "recipe": "auradecantism",
+    "shape": "rounded"
+  },
+  "character": ["professional", "data-rich"],
+  "vessel": { "type": "spa", "routing": "hash" },
+  "structure": [
+    { "id": "overview", "skeleton": "sidebar-main", "blend": ["kpi-grid", "chart-grid"] },
+    { "id": "analytics", "skeleton": "sidebar-main", "blend": ["chart-grid", "data-table"] },
+    { "id": "users", "skeleton": "sidebar-main", "blend": ["filter-bar", "data-table"] },
+    { "id": "settings", "skeleton": "sidebar-main", "blend": ["form-sections"] }
+  ],
+  "tannins": ["auth", "mock-data"],
+  "cork": { "enforce_style": true, "enforce_recipe": true, "mode": "maintenance" },
+  "clarity": { "density": "comfortable", "content_gap": "_gap4" }
+}

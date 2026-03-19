@@ -1,0 +1,19 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "quick-actions",
+  "name": "Quick Actions",
+  "description": "Command grid of action cards with icon and label for frequently used operations. Used on dashboard homepages and admin panels.",
+  "contained": false,
+  "components": ["Button", "Card", "icon"],
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc2 _sm:gc3 _lg:gc4 _gap3",
+    "slots": {
+      "action-card": "Clickable Card with centered icon + action label, hover effect for interactivity"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, icon } from 'decantr/components';",
+    "example": "function QuickActions({ actions }) {\n  const { div, span } = tags;\n\n  return div({ class: css('_grid _gc2 _sm:gc3 _lg:gc4 _gap3') },\n    ...actions.map(action =>\n      Card({ hover: true, class: css('_cursor[pointer]'), onclick: action.handler },\n        Card.Body({ class: css('_flex _col _aic _gap2 _p4 _tc') },\n          div({ class: css('_w10 _h10 _flex _center _r3 _bgprimary/10') },\n            icon(action.icon, { size: '1.25rem', class: css('_fgprimary') })\n          ),\n          span({ class: css('_textsm _medium') }, action.label)\n        )\n      )\n    )\n  );\n}"
+  }
+}

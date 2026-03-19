@@ -17,13 +17,12 @@ import { auradecantism } from 'decantr/css/styles/auradecantism.js';
 import { clean } from 'decantr/css/styles/addons/clean.js';
 import { retro } from 'decantr/css/styles/community/retro.js';
 import { glassmorphism } from 'decantr/css/styles/addons/glassmorphism.js';
-import { commandCenter } from 'decantr/css/styles/addons/command-center.js';
 
 const { div, h2, h3, h4, p, span, pre, code, section, strong, label } = tags;
 
 // ─── Style presets ────────────────────────────────────────────────
 
-const BUILT_IN_STYLES = [auradecantism, clean, retro, glassmorphism, commandCenter];
+const BUILT_IN_STYLES = [auradecantism, clean, retro, glassmorphism];
 
 const PRESET_OPTIONS = [
   { value: '__blank', label: 'Blank' },

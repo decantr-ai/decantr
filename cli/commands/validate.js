@@ -33,10 +33,10 @@ export async function run() {
   }
 
   // Known archetypes
-  const KNOWN_ARCHETYPES = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community', 'gaming-platform', 'creative-tool'];
+  const KNOWN_ARCHETYPES = ['ecommerce', 'ecommerce-admin', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community', 'gaming-platform', 'creative-tool'];
 
   // Known styles — extend with registry-installed styles
-  const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center'];
+  const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism'];
   try {
     const { readManifest, listEntries } = await import('../../tools/registry-manifest.js');
     const manifest = await readManifest(cwd);
@@ -176,6 +176,43 @@ export async function run() {
   if (essence.cork && typeof essence.cork !== 'object') {
     errors.push('cork must be an object');
   }
+  if (essence.cork && essence.cork.mode) {
+    const validModes = ['creative', 'maintenance'];
+    if (!validModes.includes(essence.cork.mode)) {
+      warnings.push(`cork.mode "${essence.cork.mode}" is not a recognized mode (${validModes.join(', ')})`);
+    }
+  }
+
+  // Impression validation (optional TASTE stage metadata)
+  if (essence._impression) {
+    if (typeof essence._impression !== 'object') {
+      errors.push('_impression must be an object');
+    } else {
+      const imp = essence._impression;
+      if (imp.vibe && !Array.isArray(imp.vibe)) errors.push('_impression.vibe must be an array of strings');
+      if (imp.references && !Array.isArray(imp.references)) errors.push('_impression.references must be an array');
+      const validDensity = ['spacious', 'balanced', 'comfortable', 'compact'];
+      if (imp.density_intent && !validDensity.includes(imp.density_intent)) {
+        warnings.push(`_impression.density_intent "${imp.density_intent}" is not a standard density (${validDensity.join(', ')})`);
+      }
+      if (imp.novel_elements && !Array.isArray(imp.novel_elements)) errors.push('_impression.novel_elements must be an array');
+    }
+  }
+
+  // Clarity override validation (optional)
+  if (essence.clarity) {
+    if (typeof essence.clarity !== 'object') {
+      errors.push('clarity must be an object');
+    } else {
+      const validDensities = ['compact', 'comfortable', 'spacious'];
+      if (essence.clarity.density && !validDensities.includes(essence.clarity.density)) {
+        warnings.push(`clarity.density "${essence.clarity.density}" is not a valid density (${validDensities.join(', ')})`);
+      }
+      if (essence.clarity.content_gap && !/^_gap\d+$/.test(essence.clarity.content_gap)) {
+        errors.push(`clarity.content_gap "${essence.clarity.content_gap}" must match _gapN format`);
+      }
+    }
+  }
 
   // Cross-reference with config
   try {
@@ -276,7 +313,7 @@ export async function run() {
       patternIndex = indexData.patterns || {};
     } catch { /* skip */ }
 
-    function validateBlendRef(ref, pageId) {
+    async function validateBlendRef(ref, pageId) {
       if (typeof ref === 'string') {
         if (!knownPatterns.has(ref)) {
           warnings.push(`Page "${pageId}": pattern "${ref}" in blend not found in registry`);
@@ -285,9 +322,16 @@ export async function run() {
         // v2 preset reference: { pattern, preset, as }
         if (!knownPatterns.has(ref.pattern)) {
           warnings.push(`Page "${pageId}": pattern "${ref.pattern}" in blend not found in registry`);
-        } else if (ref.preset && patternIndex[ref.pattern]?.presets) {
-          if (!patternIndex[ref.pattern].presets.includes(ref.preset)) {
-            warnings.push(`Page "${pageId}": preset "${ref.preset}" not found on pattern "${ref.pattern}". Known presets: ${patternIndex[ref.pattern].presets.join(', ')}`);
+        } else if (ref.preset) {
+          // Load actual pattern file to check presets (authoritative source)
+          try {
+            const patternData = JSON.parse(await readFile(join(registryRoot, 'patterns', `${ref.pattern}.json`), 'utf-8'));
+            const knownPresets = patternData.presets ? Object.keys(patternData.presets) : [];
+            if (knownPresets.length > 0 && !knownPresets.includes(ref.preset)) {
+              warnings.push(`Page "${pageId}": preset "${ref.preset}" not found on pattern "${ref.pattern}". Known presets: ${knownPresets.join(', ')}`);
+            }
+          } catch {
+            // Pattern file unreadable — skip preset check
           }
         }
       }
@@ -297,13 +341,13 @@ export async function run() {
       const blend = page.blend || page.patterns || [];
       for (const item of blend) {
         if (typeof item === 'string') {
-          validateBlendRef(item, page.id);
+          await validateBlendRef(item, page.id);
         } else if (item.pattern) {
           // v2 preset reference at top level
-          validateBlendRef(item, page.id);
+          await validateBlendRef(item, page.id);
         } else if (item.cols) {
           for (const col of item.cols) {
-            validateBlendRef(col, page.id);
+            await validateBlendRef(col, page.id);
           }
         }
       }

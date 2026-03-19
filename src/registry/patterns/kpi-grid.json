@@ -1,12 +1,83 @@
 {
-  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "id": "kpi-grid",
   "name": "KPI Grid",
   "description": "Responsive grid of metric cards showing key performance indicators. Each card displays a label, value, trend, and optional sparkline.",
+  "contained": false,
   "components": [
     "Statistic",
     "icon"
   ],
+  "default_preset": "default",
+  "io": {
+    "produces": [],
+    "consumes": ["data"],
+    "actions": []
+  },
+  "presets": {
+    "default": {
+      "description": "Responsive grid of metric cards showing key performance indicators. Each card displays a label, value, trend, and optional sparkline.",
+      "components": ["Statistic", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _sm:gc2 _lg:gc4 _gap4 _p4",
+        "slots": {
+          "cards": "Array of Statistic instances with label, value, trend props",
+          "header": "Optional section title with _heading4 and filter controls"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Statistic, icon } from 'decantr/components';",
+        "example": "function KpiGrid() {\n  const { div, h2 } = tags;\n  return div({ class: css('_flex _col _gap4') },\n    h2({ class: css('_heading4') }, 'Key Metrics'),\n    div({ class: css('_grid _gc1 _sm:gc2 _lg:gc4 _gap4') },\n      Statistic({ label: 'Revenue', value: 1248500, prefix: '$', trend: 'up', trendValue: '+12.5%' }),\n      Statistic({ label: 'Users', value: 84230, trend: 'up', trendValue: '+8.1%' }),\n      Statistic({ label: 'Orders', value: 6420, trend: 'down', trendValue: '-2.3%' }),\n      Statistic({ label: 'Conversion', value: 3.24, suffix: '%', trend: 'up', trendValue: '+0.5%' })\n    )\n  );\n}"
+      }
+    },
+    "compact": {
+      "description": "Dense KPI cards in a single row for information-heavy dashboards. Smaller text, tighter spacing.",
+      "components": ["Statistic", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _sm:gc3 _lg:gc6 _gap2 _p2",
+        "slots": {
+          "cards": "Array of compact Statistic instances with size sm, no sparkline"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Statistic, icon } from 'decantr/components';",
+        "example": "function KpiGridCompact() {\n  const { div } = tags;\n  return div({ class: css('_grid _gc2 _sm:gc3 _lg:gc6 _gap2') },\n    Statistic({ label: 'Revenue', value: 1248500, prefix: '$', trend: 'up', trendValue: '+12.5%', size: 'sm' }),\n    Statistic({ label: 'Users', value: 84230, trend: 'up', trendValue: '+8.1%', size: 'sm' }),\n    Statistic({ label: 'Orders', value: 6420, trend: 'down', trendValue: '-2.3%', size: 'sm' }),\n    Statistic({ label: 'Conversion', value: 3.24, suffix: '%', trend: 'up', trendValue: '+0.5%', size: 'sm' }),\n    Statistic({ label: 'Bounce Rate', value: 42.1, suffix: '%', trend: 'down', trendValue: '-1.2%', size: 'sm' }),\n    Statistic({ label: 'Avg Session', value: '4m 32s', size: 'sm' })\n  );\n}"
+      }
+    },
+    "featured": {
+      "description": "Hero KPI layout with one large featured metric and smaller supporting cards. Use for overview pages where one metric dominates.",
+      "components": ["Statistic", "icon", "Chart", "Sparkline"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _lg:gc4 _gap4 _p4",
+        "slots": {
+          "featured": "Large Statistic spanning 2 columns with sparkline chart",
+          "supporting": "3 smaller Statistic cards filling remaining space"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Statistic, icon } from 'decantr/components';\nimport { Sparkline } from 'decantr/chart';",
+        "example": "function KpiGridFeatured() {\n  const { div, h2, span } = tags;\n  const sparkData = [42, 48, 51, 45, 62, 58, 72, 68, 85];\n  return div({ class: css('_flex _col _gap4') },\n    h2({ class: css('_heading4') }, 'Key Metrics'),\n    div({ class: css('_grid _gc1 _lg:gc4 _gap4') },\n      div({ class: css('_lg:span2 _flex _col _gap3') },\n        Statistic({ label: 'Total Revenue', value: 2450000, prefix: '$', trend: 'up', trendValue: '+18.2%', size: 'lg', animate: 1200 }),\n        Sparkline({ data: sparkData, height: 48, color: 'primary' })\n      ),\n      Statistic({ label: 'Active Users', value: 84230, trend: 'up', trendValue: '+8.1%' }),\n      Statistic({ label: 'Conversion', value: 3.24, suffix: '%', trend: 'up', trendValue: '+0.5%' })\n    )\n  );\n}"
+      }
+    },
+    "sparkline": {
+      "description": "KPI cards with inline sparkline charts showing trend data. Richer data display for analytics dashboards.",
+      "components": ["Statistic", "Sparkline", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _sm:gc2 _lg:gc4 _gap4 _p4",
+        "slots": {
+          "cards": "Array of Statistic instances each with an embedded Sparkline showing trend data"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Statistic, icon } from 'decantr/components';\nimport { Sparkline } from 'decantr/chart';",
+        "example": "function KpiGridSparkline() {\n  const { div, h2 } = tags;\n  const metrics = [\n    { label: 'Revenue', value: 1248500, prefix: '$', trend: 'up', trendValue: '+12.5%', spark: [42, 48, 51, 45, 62, 58, 72] },\n    { label: 'Users', value: 84230, trend: 'up', trendValue: '+8.1%', spark: [320, 340, 310, 380, 420, 450, 480] },\n    { label: 'Orders', value: 6420, trend: 'down', trendValue: '-2.3%', spark: [180, 175, 190, 165, 155, 160, 148] },\n    { label: 'Conversion', value: 3.24, suffix: '%', trend: 'up', trendValue: '+0.5%', spark: [2.8, 2.9, 3.0, 3.1, 3.0, 3.2, 3.24] }\n  ];\n  return div({ class: css('_flex _col _gap4') },\n    h2({ class: css('_heading4') }, 'Key Metrics'),\n    div({ class: css('_grid _gc1 _sm:gc2 _lg:gc4 _gap4') },\n      ...metrics.map(m =>\n        div({ class: css('_flex _col _gap2') },\n          Statistic({ label: m.label, value: m.value, prefix: m.prefix, suffix: m.suffix, trend: m.trend, trendValue: m.trendValue }),\n          Sparkline({ data: m.spark, height: 32, color: m.trend === 'up' ? 'success' : 'error' })\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
   "default_blend": {
     "layout": "grid",
     "atoms": "_grid _gc1 _sm:gc2 _lg:gc4 _gap4 _p4",

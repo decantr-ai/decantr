@@ -37,6 +37,7 @@ export function Combobox(props = {}) {
 
   let currentValue = typeof value === 'function' ? value() : (value || '');
   let filtered = [...options];
+  let _comboOptId = 0;
 
   const input = inputTag({
     type: 'text',
@@ -75,6 +76,7 @@ export function Combobox(props = {}) {
     itemSelector: '.d-combobox-option:not(.d-combobox-option-disabled)',
     activeClass: 'd-combobox-option-highlight',
     orientation: 'vertical',
+    owner: input,
     onSelect: (el, idx) => {
       const selectableFiltered = filtered.filter(o => !o.disabled);
       if (selectableFiltered[idx]) selectOption(selectableFiltered[idx].value);
@@ -102,11 +104,14 @@ export function Combobox(props = {}) {
       return;
     }
     filtered.forEach((opt) => {
-      const el = div({
+      const optAttrs = {
         class: cx('d-combobox-option', opt.value === currentValue && 'd-combobox-option-active', opt.disabled && 'd-combobox-option-disabled'),
         role: 'option',
+        id: 'd-cb-o-' + (_comboOptId++),
         'aria-selected': opt.value === currentValue ? 'true' : 'false'
-      }, opt.label);
+      };
+      if (opt.disabled) optAttrs['aria-disabled'] = 'true';
+      const el = div(optAttrs, opt.label);
       if (!opt.disabled) {
         el.addEventListener('click', (e) => {
           e.stopPropagation();

@@ -14,6 +14,7 @@
 | Change styles/themes | `node_modules/decantr/llm/task-style.md` | ~15-20k |
 | Debug issues | `node_modules/decantr/llm/task-debug.md` | ~10-15k |
 | Refactor / fix drift | `node_modules/decantr/llm/task-refactor.md` | ~10-15k |
+| Add SSR to a project | `node_modules/decantr/llm/task-ssr.md` | ~15-20k |
 
 ## Cork Rules (Always Apply)
 1. Style matches the Vintage

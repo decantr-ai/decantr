@@ -266,7 +266,7 @@ Breakdown by optimization phase:
 
 | Phase | Savings (raw) | What is eliminated |
 |-------|---------------|-------------------|
-| Style elimination | ~17 KB | 4 unused style modules (clean, retro, glassmorphism, command-center) |
+| Style elimination | ~17 KB | 4 unused style modules (clean, retro, glassmorphism, etc.) |
 | Component CSS pruning | ~65 KB | 77/78 unused `componentCSSMap` sections |
 | Static CSS extraction | ~31 KB | `atoms.js` + `runtime.js` (css() becomes passthrough) |
 

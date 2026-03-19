@@ -639,7 +639,7 @@ if (existsSync(essencePath)) {
     const essence = JSON.parse(readFile(essencePath));
     const essenceErrors = [];
 
-    const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center'];
+    const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism'];
 
     if (essence.vintage?.style && !KNOWN_STYLES.includes(essence.vintage.style)) {
       essenceErrors.push(`vintage.style "${essence.vintage.style}" is not a registered style`);

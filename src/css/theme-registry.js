@@ -141,7 +141,23 @@ function applyCurrentState() {
     const styleCSS = style.components || '';
     const el = getStyleElement();
     if (el) el.textContent = `@layer d.theme{${componentCSS}${styleCSS}}`;
+
+    // Inject prefers-contrast and forced-colors fallbacks (once)
+    injectContrastCSS();
   });
+}
+
+let _contrastInjected = false;
+function injectContrastCSS() {
+  if (_contrastInjected || typeof document === 'undefined') return;
+  _contrastInjected = true;
+  const s = document.createElement('style');
+  s.setAttribute('data-decantr-contrast', '');
+  s.textContent = [
+    '@media(prefers-contrast:more){:root{--d-border:oklch(from var(--d-fg) l c h / 0.6);--d-border-strong:var(--d-fg);--d-muted-fg:var(--d-fg)}}',
+    '@media(forced-colors:active){.d-btn,.d-field,.d-select,.d-toggle,.d-segmented-item,.d-accordion-trigger,.d-checkbox-check,.d-radio-indicator,.d-switch-track{border:1px solid ButtonText}.d-btn:focus-visible,.d-field:focus-visible,[tabindex]:focus-visible{outline:2px solid Highlight}}'
+  ].join('');
+  document.head.appendChild(s);
 }
 
 // ============================================================

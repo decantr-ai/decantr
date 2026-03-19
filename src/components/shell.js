@@ -9,6 +9,7 @@ import { h, onDestroy } from '../core/index.js';
 import { createSignal, createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
+import { createDisclosure } from './_behaviors.js';
 
 const { div } = tags;
 
@@ -175,7 +176,7 @@ export function buildGridTemplate(cfg, navState) {
     const regionSet = new Set();
     for (const row of grid.areas) regionSet.add(row[c]);
 
-    if (regionSet.has('nav') && regionSet.size === 1) {
+    if (regionSet.has('nav') && !regionSet.has('body') && !regionSet.has('aside')) {
       colDefs.push(`var(--d-shell-nav-w, ${navWidth})`);
     } else if (regionSet.has('aside') && regionSet.size === 1) {
       colDefs.push(aside.width || DEFAULTS.aside.width);
@@ -229,12 +230,20 @@ export function Shell(props = {}, ...children) {
 
   const {
     config: configProp = 'sidebar-main',
+    inset = false,
+    dimensions,
     navState: navStateGetter,
     onNavStateChange,
     class: cls
   } = props;
 
   const cfg = resolveShellConfig(configProp);
+
+  // Apply recipe-driven dimension overrides
+  if (dimensions) {
+    if (dimensions.nav) Object.assign(cfg.nav, dimensions.nav);
+    if (dimensions.header) Object.assign(cfg.header, dimensions.header);
+  }
   const isTopNav = cfg.nav.position === 'top';
 
   // Internal nav state if not externally controlled
@@ -245,7 +254,7 @@ export function Shell(props = {}, ...children) {
   const getNavState = navStateGetter || internalNav;
 
   // Build grid element
-  const el = h('div', { class: cx('d-shell', cls) });
+  const el = h('div', { class: cx('d-shell', inset && 'd-shell-inset', cls) });
 
   // Reactive grid template
   createEffect(() => {
@@ -405,6 +414,84 @@ Shell.Footer = function ShellFooter(props = {}, ...children) {
 Shell.Aside = function ShellAside(props = {}, ...children) {
   const { class: cls } = props;
   return div({ class: cx('d-shell-aside', cls), role: 'complementary' }, ...children);
+};
+
+/**
+ * Shell.NavGroup — semantic nav section wrapper
+ * @param {Object} [props]
+ * @param {string} [props.class]
+ * @param {...(string|Node)} children
+ * @returns {HTMLElement}
+ */
+Shell.NavGroup = function ShellNavGroup(props = {}, ...children) {
+  const { class: cls } = props;
+  return div({ class: cx('d-shell-nav-group', cls), role: 'group' }, ...children);
+};
+
+/**
+ * Shell.NavGroupLabel — label for a nav group (hidden in rail mode via CSS)
+ * @param {Object} [props]
+ * @param {string} [props.class]
+ * @param {...(string|Node)} children
+ * @returns {HTMLElement}
+ */
+Shell.NavGroupLabel = function ShellNavGroupLabel(props = {}, ...children) {
+  const { class: cls } = props;
+  return div({ class: cx('d-shell-nav-group-label', cls) }, ...children);
+};
+
+/**
+ * Shell.NavFooter — anchored bottom section in sidebar
+ * @param {Object} [props]
+ * @param {string} [props.class]
+ * @param {...(string|Node)} children
+ * @returns {HTMLElement}
+ */
+Shell.NavFooter = function ShellNavFooter(props = {}, ...children) {
+  const { class: cls } = props;
+  return div({ class: cx('d-shell-nav-footer', cls) }, ...children);
+};
+
+/**
+ * Shell.NavSub — collapsible nested nav items
+ * @param {Object} [props]
+ * @param {boolean|Function} [props.open=false] - Initial open state
+ * @param {Node|Function} [props.trigger] - Trigger element for expand/collapse
+ * @param {string} [props.class]
+ * @param {...(string|Node)} children
+ * @returns {HTMLElement}
+ */
+Shell.NavSub = function ShellNavSub(props = {}, ...children) {
+  const { open = false, trigger, class: cls } = props;
+  const triggerEl = typeof trigger === 'function' ? trigger() : trigger;
+  if (triggerEl) triggerEl.classList.add('d-shell-nav-sub-trigger');
+  const content = div({ class: 'd-shell-nav-sub-content' }, ...children);
+  const el = div({ class: cx('d-shell-nav-sub', cls) }, triggerEl, content);
+  createDisclosure(triggerEl, content, {
+    defaultOpen: typeof open === 'function' ? open() : open,
+    animate: true
+  });
+  return el;
+};
+
+/**
+ * Shell.Trigger — visible toggle button for sidebar collapse
+ * @param {Object} [props]
+ * @param {Function} [props.onToggle] - Click handler
+ * @param {string} [props['aria-label']] - Accessible label
+ * @param {string} [props.class]
+ * @param {...(string|Node)} children
+ * @returns {HTMLElement}
+ */
+Shell.Trigger = function ShellTrigger(props = {}, ...children) {
+  const { class: cls, onToggle, 'aria-label': ariaLabel = 'Toggle sidebar' } = props;
+  const btn = h('button', {
+    type: 'button',
+    class: cx('d-shell-trigger', cls),
+    'aria-label': ariaLabel
+  }, ...children);
+  if (onToggle) btn.addEventListener('click', onToggle);
+  return btn;
 };
 
 // Export presets for external use (workbench, code generation)

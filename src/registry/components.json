@@ -494,6 +494,9 @@
         "variant": {
           "type": "string"
         },
+        "solid": {
+          "type": "boolean"
+        },
         "icon": {
           "type": "string|Node"
         },
@@ -5741,7 +5744,12 @@
         "Nav",
         "Body",
         "Footer",
-        "Aside"
+        "Aside",
+        "NavGroup",
+        "NavGroupLabel",
+        "NavFooter",
+        "NavSub",
+        "Trigger"
       ],
       "showcase": {
         "sections": [
@@ -5839,6 +5847,22 @@
             },
             "description": "Full card placeholder."
           }
+        ]
+      }
+    },
+    "SkipLink": {
+      "props": {
+        "target='#main": {
+          "type": "string"
+        },
+        "label='Skip": {
+          "type": "string"
+        }
+      },
+      "returns": "HTMLElement",
+      "showcase": {
+        "sections": [
+          "interactive"
         ]
       }
     },

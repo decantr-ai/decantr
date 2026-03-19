@@ -12,16 +12,15 @@ import { derive, defaultSeed, defaultPersonality, hexToRgb, rgbToOklch, oklchToR
 import { auradecantism } from '../src/css/styles/auradecantism.js';
 import { clean } from '../src/css/styles/addons/clean.js';
 import { glassmorphism } from '../src/css/styles/addons/glassmorphism.js';
-import { commandCenter } from '../src/css/styles/addons/command-center.js';
 import { retro } from '../src/css/styles/community/retro.js';
-import { clay } from '../src/css/styles/community/clay.js';
+import { launchpad } from '../src/css/styles/community/launchpad.js';
 import { liquidGlass } from '../src/css/styles/community/liquid-glass.js';
 import { dopamine } from '../src/css/styles/community/dopamine.js';
 import { prismatic } from '../src/css/styles/community/prismatic.js';
 import { bioluminescent } from '../src/css/styles/community/bioluminescent.js';
 import { editorial } from '../src/css/styles/community/editorial.js';
 
-const allStyleDefs = [clean, retro, glassmorphism, auradecantism, commandCenter, clay, liquidGlass, dopamine, prismatic, bioluminescent, editorial];
+const allStyleDefs = [clean, retro, glassmorphism, auradecantism, launchpad, liquidGlass, dopamine, prismatic, bioluminescent, editorial];
 
 let cleanup;
 
@@ -208,16 +207,15 @@ describe('derive()', () => {
 // ============================================================
 
 describe('getStyleList()', () => {
-  it('returns 11 built-in styles', () => {
+  it('returns 10 built-in styles', () => {
     const list = getStyleList();
-    assert.equal(list.length, 11);
+    assert.equal(list.length, 10);
     const ids = list.map(s => s.id);
     assert.ok(ids.includes('clean'));
     assert.ok(ids.includes('retro'));
     assert.ok(ids.includes('glassmorphism'));
     assert.ok(ids.includes('auradecantism'));
-    assert.ok(ids.includes('command-center'));
-    assert.ok(ids.includes('clay'));
+    assert.ok(ids.includes('launchpad'));
     assert.ok(ids.includes('liquid-glass'));
     assert.ok(ids.includes('dopamine'));
     assert.ok(ids.includes('prismatic'));
@@ -590,7 +588,7 @@ describe('OKLCH color math', () => {
 // ============================================================
 
 describe('contrast enforcement', () => {
-  const styles = ['clean', 'retro', 'glassmorphism', 'auradecantism', 'command-center'];
+  const styles = ['clean', 'retro', 'glassmorphism', 'auradecantism'];
   const modes = ['light', 'dark'];
 
   // Import style definitions for seed access

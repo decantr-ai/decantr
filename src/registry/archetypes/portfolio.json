@@ -38,7 +38,7 @@
     "full-bleed": "Floating nav over scroll-driven sections — hero-first, maximum visual impact"
   },
   "suggested_vintage": {
-    "styles": ["auradecantism", "glassmorphism", "command-center"],
+    "styles": ["auradecantism", "glassmorphism"],
     "modes": ["dark"]
   }
 }

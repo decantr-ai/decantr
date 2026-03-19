@@ -253,11 +253,13 @@ export function renderMenuItems(container, items, opts = {}) {
       children.push(span({ class: 'd-dropdown-item-shortcut' }, item.shortcut));
     }
 
-    const el = div({
+    const itemAttrs = {
       class: cx('d-dropdown-item', item.disabled && 'd-dropdown-item-disabled'),
       role: 'menuitem',
       tabindex: '-1'
-    }, ...children);
+    };
+    if (item.disabled) itemAttrs['aria-disabled'] = 'true';
+    const el = div(itemAttrs, ...children);
 
     if (!item.disabled) {
       el.addEventListener('click', (e) => {

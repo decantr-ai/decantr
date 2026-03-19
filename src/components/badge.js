@@ -9,6 +9,7 @@ import { icon as iconHelper } from './icon.js';
  * @param {boolean} [props.dot] - Show as dot instead of pill
  * @param {string} [props.status] - success|error|warning|processing
  * @param {string} [props.variant] - Alias for status
+ * @param {boolean} [props.solid] - Use saturated/solid colors instead of subtle
  * @param {string|Node} [props.icon] - Leading icon (string = icon name, Node = element)
  * @param {string} [props.class]
  * @param {...Node} children - If provided, badge wraps as superscript
@@ -17,7 +18,7 @@ import { icon as iconHelper } from './icon.js';
 export function Badge(props = {}, ...children) {
   injectBase();
 
-  const { count, color, dot, status, variant, icon, class: cls } = props;
+  const { count, color, dot, status, variant, solid, icon, class: cls } = props;
   const resolvedStatus = status || variant;
 
   // Known statuses that have CSS variant classes
@@ -48,7 +49,7 @@ export function Badge(props = {}, ...children) {
     return dotEl;
   }
 
-  const badgeClass = cx('d-badge', hasCssVariant && `d-badge-${resolvedStatus}`, cls);
+  const badgeClass = cx('d-badge', solid && 'd-badge-solid', hasCssVariant && `d-badge-${resolvedStatus}`, cls);
   const badgeEl = h('span', { class: badgeClass });
   if (bgColor) badgeEl.style.background = bgColor;
 

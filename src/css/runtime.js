@@ -136,6 +136,21 @@ export function injectResponsive(className, declaration, bp) {
   scheduleFlush();
 }
 
+/**
+ * Inject a media query-wrapped atom (for prefers-reduced-motion, etc.).
+ * @param {string} className — e.g. '_motionSafe:trans'
+ * @param {string} declaration — CSS declaration(s)
+ * @param {string} query — media query string (e.g. '(prefers-reduced-motion: no-preference)')
+ */
+export function injectMediaQuery(className, declaration, query) {
+  if (injected.has(className)) return;
+  injected.add(className);
+  if (typeof document === 'undefined') return;
+  const escaped = className.replace(/:/g, '\\:');
+  atomBuffer.push(`@layer d.atoms{@media${query}{.${escaped}{${declaration}}}}`);
+  scheduleFlush();
+}
+
 function ensureCqElement() {
   if (cqEl) return cqEl;
   if (typeof document === 'undefined') return null;

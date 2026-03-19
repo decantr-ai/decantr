@@ -145,7 +145,7 @@ Color distribution follows a proportional hierarchy that ensures visual balance:
 
 Four surface tiers create depth via monotonic lightness progression. The direction depends on mode and elevation type.
 
-### Non-glass styles (clean, retro, command-center)
+### Non-glass styles (clean, retro)
 
 **Dark mode** -- surfaces get progressively lighter:
 
@@ -191,7 +191,7 @@ Each surface tier has three companions:
 
 - **Monotonic progression**: Surface-0 is always the base. Each tier adds exactly one level of visual elevation. Never skip tiers (surface-0 directly to surface-3).
 - **Containment holds**: A surface-2 element should contain surface-1 or surface-0 children -- never surface-3.
-- **Never pure black**: The darkest dark-mode background (`bgDark`) should be at least `#050a10` (command-center) or `#060918` (auradecantism). Pure `#000000` causes eye strain and removes all depth perception.
+- **Never pure black**: The darkest dark-mode background (`bgDark`) should be at least `#060918` (auradecantism). Pure `#000000` causes eye strain and removes all depth perception.
 - **Never pure white**: The lightest light-mode background should be `#ffffff` at most, but surfaces tint away from it. Pure white `#fff` for the base is acceptable; surfaces must be tinted.
 
 ---
@@ -202,7 +202,7 @@ Color harmony describes how seed colors relate on the color wheel. Decantr's bui
 
 | Harmony type | Hue relationship | Built-in example | Character feel |
 |-------------|-----------------|-----------------|---------------|
-| **Monochromatic** | Single hue, varies by L/S | command-center (cyan only) | Technical, focused, military |
+| **Monochromatic** | Single hue, varies by L/S | (custom style) | Technical, focused, military |
 | **Complementary** | 180deg apart | N/A (too high contrast for full UI) | Bold, dramatic (use sparingly) |
 | **Analogous** | Within 60deg | glassmorphism (sky-blue + cyan + green) | Calm, harmonious, natural |
 | **Triadic** | 120deg apart | auradecantism (pink + cyan + purple) | Vibrant, energetic, creative |
@@ -460,7 +460,7 @@ Each base color gets 3 variations for sub-series:
 
 ### Style-specific chart overrides
 
-Auradecantism, glassmorphism, and command-center provide dark-mode chart color overrides for optimal vibrancy on dark backgrounds. These are specified in the style's `overrides.dark` block and take precedence over the derived defaults.
+Auradecantism and glassmorphism provide dark-mode chart color overrides for optimal vibrancy on dark backgrounds. These are specified in the style's `overrides.dark` block and take precedence over the derived defaults.
 
 ---
 
@@ -505,7 +505,7 @@ See `reference/atoms.md` for the full list of direction, from, via, and to atoms
 
 ### Mesh gradient composition
 
-Mesh backgrounds (used by auradecantism, glassmorphism, command-center) layer multiple radial gradients:
+Mesh backgrounds (used by auradecantism, glassmorphism) layer multiple radial gradients:
 
 ```css
 /* auradecantism .d-mesh */
@@ -554,7 +554,7 @@ Rules: always layer on top of `var(--d-bg)` as the final stop; use low opacity (
 | **Bold / Disruptive** | Red-pink (330-15deg) | Triadic (cyan + purple) | auradecantism |
 | **Natural / Sustainable** | Green (120-150deg) | Analogous earth (brown/amber) | clean with green seed |
 | **Premium / Luxury** | Purple-violet (270-300deg) | Monochromatic or gold accent | glassmorphism with purple seed |
-| **Operational / Military** | Cyan (180-195deg) | Monochromatic | command-center |
+| **Operational / Military** | Cyan (180-195deg) | Monochromatic | custom monochrome style |
 | **Playful / Creative** | Pink-orange (330-30deg) | Split-complementary | auradecantism or retro |
 
 ---
@@ -635,7 +635,6 @@ Display P3 gamut enables colors 25% more vivid than sRGB -- particularly in cyan
 
 - **Auradecantism**: Neon cyan (`#0AF3EB`) and hot pink (`#FE4474`) approach sRGB gamut boundaries.
 - **Glassmorphism**: Sky-blue and green accents benefit from P3 chroma.
-- **Command-center**: Cyan (`#00e5ff`) is near-P3-only at full chroma.
 
 ### Rules
 
@@ -716,25 +715,6 @@ Complete seed tables for all 5 built-in styles.
 | bgDark | `#0a0c10` | 0.07, 0.01, 250deg | Deep blue-black |
 
 **Identity**: Analogous (sky-blue/cyan/green). Cool palette. Vivid gradients. Glass elevation. Pill radius. Atmospheric and stormy.
-
-### Command Center
-
-| Seed | Hex | OKLCH approx (L, C, H) | Character |
-|------|-----|------------------------|-----------|
-| primary | `#00e5ff` | 0.84, 0.15, 205deg | Cyan |
-| neutral | `#1a2a3a` | 0.21, 0.03, 245deg | Dark navy |
-| bg | `#c8d6e0` | 0.86, 0.02, 230deg | Light steel |
-| bgDark | `#050a10` | 0.06, 0.02, 250deg | Near-black navy |
-
-**Identity**: Monochromatic. Single cyan hue. All 7 palette roles derived from primary via `deriveMonochromeSeed()` within +/-20deg hue. No gradients. Flat elevation. Sharp radius. Monospace font. Military/operational.
-
-**Missing seeds** (auto-derived from primary by monochrome palette):
-- accent: H+15deg, S*0.8, L+8
-- tertiary: H-15deg, S*0.7, L-5
-- success: H+10deg, S*0.9, L+12
-- warning: H-8deg, S*1.1, L+5
-- error: H-20deg, S*1.2, L-3
-- info: H+5deg, S*0.6, L+15
 
 ---
 
@@ -921,6 +901,26 @@ css('_bcborder/80')     // 80% opacity border
 ```
 
 Valid opacities: 5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95.
+
+---
+
+### Badge vs Chip Decision Rules
+
+| Component | When to use | Visual | Interactive? |
+|-----------|-------------|--------|-------------|
+| **Badge** | Status indicators, counts, version labels | Pill, subtle bg | No |
+| **Chip** | Filters, tags, categories, removable labels | Pill, border + subtle bg | Yes (click, remove) |
+
+**Rule**: If it's a status/count → Badge. If it's a label/filter/category → Chip. Never hand-roll status indicators with divs.
+
+Badge now defaults to subtle token backgrounds (e.g., `--d-success-subtle` + `--d-success-on-subtle`). Use `solid` prop for the saturated look when intentionally desired.
+
+### One Elevation Rule
+
+Each element should receive exactly **one** depth treatment. Do not stack multiple elevation effects:
+- `d-glass` OR `aura-glow` — never both on the same element
+- Card already has elevation from its own `box-shadow` — adding `d-glass` suppresses the card shadow automatically
+- Statistic components inside Cards should NOT receive `d-glass` or `aura-glow` — the Card provides the elevation layer
 
 ---
 

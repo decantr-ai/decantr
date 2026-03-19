@@ -417,6 +417,135 @@ function ruleContrastRatio(source, filename) {
   return issues;
 }
 
+/**
+ * Rule: dialog-label
+ * Dialogs and modals must have aria-labelledby or aria-label.
+ */
+function ruleDialogLabel(source, filename) {
+  const issues = [];
+
+  // Match h('dialog', {...}) calls
+  const dialogRe = /\bh\s*\(\s*['"]dialog['"]\s*,\s*\{/g;
+  let match;
+  while ((match = dialogRe.exec(source)) !== null) {
+    const ctx = getContext(source, match.index, 50, 500);
+    const hasLabelledBy = /['"]aria-labelledby['"]/.test(ctx) || /aria-labelledby\s*:/.test(ctx);
+    const hasLabel = /['"]aria-label['"]/.test(ctx) || /aria-label\s*:/.test(ctx);
+    if (!hasLabelledBy && !hasLabel) {
+      issues.push({
+        rule: 'dialog-label',
+        severity: 'error',
+        message: 'Dialog element missing accessible label (aria-labelledby or aria-label)',
+        file: filename,
+        line: findLineNumber(source, match.index),
+      });
+    }
+  }
+
+  // Match Modal({...}) component calls
+  const modalRe = /\bModal\s*\(\s*\{/g;
+  while ((match = modalRe.exec(source)) !== null) {
+    const ctx = getContext(source, match.index, 50, 400);
+    const hasTitle = /\btitle\s*:/.test(ctx);
+    const hasLabel = /['"]aria-label['"]/.test(ctx) || /aria-label\s*:/.test(ctx);
+    if (!hasTitle && !hasLabel) {
+      issues.push({
+        rule: 'dialog-label',
+        severity: 'warning',
+        message: 'Modal component missing title prop — dialog will lack aria-labelledby',
+        file: filename,
+        line: findLineNumber(source, match.index),
+      });
+    }
+  }
+
+  return issues;
+}
+
+/**
+ * Rule: listbox-label
+ * Listbox elements (role="listbox") should have an accessible label.
+ */
+function ruleListboxLabel(source, filename) {
+  const issues = [];
+
+  const listboxRe = /role\s*:\s*['"]listbox['"]/g;
+  let match;
+  while ((match = listboxRe.exec(source)) !== null) {
+    const ctx = getContext(source, match.index, 300, 300);
+    const hasAriaLabel = /['"]aria-label['"]/.test(ctx) || /aria-label\s*:/.test(ctx);
+    const hasAriaLabelledBy = /['"]aria-labelledby['"]/.test(ctx) || /aria-labelledby\s*:/.test(ctx);
+    // Skip framework internals — Select/Combobox wire labels via the trigger
+    const isFrameworkInternal = /d-select-dropdown|d-combobox-listbox/.test(ctx);
+    if (!hasAriaLabel && !hasAriaLabelledBy && !isFrameworkInternal) {
+      issues.push({
+        rule: 'listbox-label',
+        severity: 'warning',
+        message: 'Element with role="listbox" missing accessible label (aria-label or aria-labelledby)',
+        file: filename,
+        line: findLineNumber(source, match.index),
+      });
+    }
+  }
+
+  return issues;
+}
+
+/**
+ * Rule: table-structure
+ * Tables with role="grid" should have aria-rowcount or be wrapped in a labeled region.
+ */
+function ruleTableStructure(source, filename) {
+  const issues = [];
+
+  const gridRe = /role\s*:\s*['"]grid['"]/g;
+  let match;
+  while ((match = gridRe.exec(source)) !== null) {
+    const ctx = getContext(source, match.index, 200, 400);
+    const hasRowCount = /aria-rowcount/.test(ctx);
+    const hasLabel = /aria-label/.test(ctx);
+    // Skip framework internal DataTable (it handles this)
+    const isDataTable = /d-datatable/.test(ctx);
+    if (!hasRowCount && !isDataTable) {
+      issues.push({
+        rule: 'table-structure',
+        severity: 'warning',
+        message: 'Grid table missing aria-rowcount for assistive technology',
+        file: filename,
+        line: findLineNumber(source, match.index),
+      });
+    }
+  }
+
+  return issues;
+}
+
+/**
+ * Rule: live-region-valid
+ * Elements with aria-live should have valid politeness values and role.
+ */
+function ruleLiveRegionValid(source, filename) {
+  const issues = [];
+  const VALID_POLITENESS = new Set(['polite', 'assertive', 'off']);
+
+  const liveRe = /['"]aria-live['"]\s*:\s*['"]([^'"]+)['"]/g;
+  let match;
+  while ((match = liveRe.exec(source)) !== null) {
+    const value = match[1].toLowerCase();
+    if (!VALID_POLITENESS.has(value)) {
+      issues.push({
+        rule: 'live-region-valid',
+        severity: 'error',
+        message: `Invalid aria-live value "${match[1]}" — must be "polite", "assertive", or "off"`,
+        file: filename,
+        line: findLineNumber(source, match.index),
+      });
+    }
+  }
+
+  return issues;
+}
+
 // ─── Rule Registry ───────────────────────────────────────────────
 
 const RULES = [
@@ -428,6 +557,10 @@ const RULES = [
   ruleRoleValid,
   ruleHeadingOrder,
   ruleContrastRatio,
+  ruleDialogLabel,
+  ruleListboxLabel,
+  ruleTableStructure,
+  ruleLiveRegionValid,
 ];
 
 // ─── Public API ──────────────────────────────────────────────────

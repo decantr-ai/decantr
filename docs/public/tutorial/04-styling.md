@@ -146,7 +146,7 @@ import { setStyle, setMode } from 'decantr/css';
 setStyle('auradecantism');   // Default — glass, gradients, vibrant
 setStyle('clean');           // Professional, subtle shadows
 setStyle('glassmorphism');   // Stormy blue glass
-setStyle('command-center');  // HUD/radar, monochrome cyan
+setStyle('retro');           // Neobrutalism, offset shadows
 ```
 
 Each style defines a complete set of 170+ CSS custom properties — colors, shadows, radii, typography weights — that all components and atoms consume.
@@ -189,7 +189,7 @@ function ThemeSwitcher() {
         { label: 'Auradecantism', value: 'auradecantism' },
         { label: 'Clean', value: 'clean' },
         { label: 'Glassmorphism', value: 'glassmorphism' },
-        { label: 'Command Center', value: 'command-center' },
+        { label: 'Retro', value: 'retro' },
       ],
       onchange: (val) => setStyle(val)
     }),

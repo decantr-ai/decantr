@@ -111,13 +111,47 @@ Decantr's three density classes cascade all spacing tokens to children:
 
 The **Clarity** layer in the Decantation vocabulary governs whitespace. During SETTLE, the LLM determines Character traits which imply a Clarity profile:
 
-| Character Trait | Density | Section Padding | Content Gap | Chrome Gap | Zone Emphasis | Animation |
-|----------------|---------|-----------------|-------------|------------|--------------|-----------|
-| "minimal", "clean" | Spacious | Landmark (`_py16`) | `_gap6` | `_gap2` | Showcase + Content | Subtle fades (`d-stagger`) |
-| "professional", "balanced" | Comfortable | Sectional (`_py12`) | `_gap4` | `_gap2` | Content + Controls | Standard (`d-stagger-up`) |
-| "tactical", "dense" | Compact | Grouped (`_py8`) | `_gap3` | `_gap1` | Data-dense + Chrome | Snappy (`d-stagger-scale`) |
-| "editorial", "luxurious" | Spacious | Landmark (`_py24`) | `_gap8` | `_gap2` | Showcase | Graceful (`d-stagger`) |
-| "technical", "utilitarian" | Compact | Sectional (`_py8`) | `_gap3` | `_gap1` | Controls + Data-dense | Minimal (`d-stagger-scale`) |
+### Character-to-Clarity Priority Table
+
+When character traits span multiple clusters, the higher-priority (lower number) cluster determines the base density. Recipe `spatial_hints.density_bias` can then shift it.
+
+| Priority | Cluster | Matching Traits | Base Density |
+|----------|---------|-----------------|--------------|
+| 1 (highest) | Compact | tactical, dense, data-dense, technical, utilitarian | compact |
+| 2 | Editorial | editorial, luxurious, premium | spacious |
+| 3 | Expressive | playful, bouncy, fluffy, immersive, cinematic, dramatic | comfortable |
+| 4 | Spacious | minimal, clean, elegant | spacious |
+| 5 | Balanced | professional, modern, friendly | comfortable |
+| 6 (default) | Comfortable | (no match) | comfortable |
+
+Rationale: functional density constraints (compact/dense) are hardest to violate without breaking usability, so they take precedence. Aesthetic intent (editorial, expressive) comes next.
+
+### Composable Clarity Ranges
+
+Each cluster defines a **range** rather than exact values. The LLM selects within the range based on recipe `spatial_hints` overlay and user `clarity` override in the Essence.
+
+| Character Cluster | Density Range | Content Gap Range | Section Pad Range | Chrome Gap | Animation |
+|---|---|---|---|---|---|
+| Compact | Compact | `_gap2`–`_gap4` | `_py4`–`_py8` | `_gap1` | Snappy (`d-stagger-scale`) |
+| Editorial | Comfortable–Spacious | `_gap6`–`_gap8` | `_py16`–`_py24` | `_gap2` | Graceful (`d-stagger`) |
+| Expressive | Comfortable | `_gap5`–`_gap6` | `_py10`–`_py16` | `_gap2` | Bouncy / dramatic |
+| Spacious | Comfortable–Spacious | `_gap5`–`_gap8` | `_py12`–`_py24` | `_gap2` | Subtle fades (`d-stagger`) |
+| Balanced | Comfortable | `_gap4`–`_gap6` | `_py8`–`_py12` | `_gap2` | Standard (`d-stagger-up`) |
+| Default (no match) | Comfortable | `_gap4`–`_gap6` | `_py8`–`_py12` | `_gap2` | Standard (`d-stagger-up`) |
+
+### Resolution Order
+
+1. **Character baseline** — select cluster from priority table, pick middle of range
+2. **Recipe spatial_hints overlay** — `content_gap_shift` shifts the gap ±steps, `density_bias` shifts density level, `section_padding` overrides pad
+3. **User clarity override in Essence** — optional `"clarity": { "density": "spacious", "content_gap": "_gap6" }` in essence
+
+### Essence clarity Field (Optional)
+
+```json
+"clarity": { "density": "spacious", "content_gap": "_gap6" }
+```
+
+When present in the Essence, this field overrides both the character-derived baseline and the recipe overlay. Use when the user has a specific spatial preference that doesn't match their character traits.
 
 During DECANT, each page's blend spec inherits the Clarity profile. The `surface` atoms on each page should reflect the zone and the Character-derived density.
 
@@ -513,12 +547,13 @@ If a request conflicts with the Essence, flag the conflict and ask for confirmat
 
 
 ```
-POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
+POUR → TASTE → SETTLE → CLARIFY → DECANT → SERVE → AGE
 ```
 
 | Stage | Purpose |
 |-------|---------|
 | **POUR** | User expresses intent in natural language |
+| **TASTE** | Interpret intent → produce Impression (vibe, references, density, layout, novel elements) |
 | **SETTLE** | Decompose into 5 layers: Terroir (domain), Vintage (style+mode+recipe), Character (personality traits), Structure (pages), Tannins (functional systems) |
 | **CLARIFY** | Write `decantr.essence.json` — the project's persistent DNA. User confirms. |
 | **DECANT** | Resolve each page's Blend (spatial arrangement from archetype defaults) |
@@ -530,7 +565,7 @@ POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
 {
   "version": "1.0.0",
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
   "character": ["tactical", "data-dense"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [
@@ -591,7 +626,7 @@ Decantr uses an orthogonal **style x mode** architecture. Visual personality (st
 | clean | Modern minimal — rounded corners, subtle shadows, smooth motion | radius:rounded, elevation:subtle, motion:smooth, borders:thin, density:comfortable, gradient:none |
 | retro | Neobrutalism — sharp corners, offset shadows, bold borders | radius:sharp, elevation:brutalist, motion:snappy, borders:bold, density:comfortable, gradient:none |
 | glassmorphism | Frosted glass — translucent surfaces, vivid gradients, bouncy motion | radius:pill, elevation:glass, motion:bouncy, borders:thin, density:comfortable, gradient:vivid |
-| command-center | HUD/radar monochromatic — dark operational panels, beveled frames, scanlines, scoped monospace on data elements | radius:sharp, elevation:flat, motion:snappy, borders:bold, density:compact, gradient:none, palette:monochrome |
+
 
 ## Modes
 
@@ -619,9 +654,7 @@ registerStyle({
   typography: { '--d-fw-heading': '800' },  // optional overrides
   overrides: { light: {}, dark: {} },       // optional per-mode token overrides
   components: '',                            // optional component CSS (array of CSS rule strings or joined string)
-  // Component CSS overrides let styles transform standard components:
-  // e.g., command-center overrides .d-card → cc-frame aesthetic,
-  //        .d-statistic → cc-glow + cc-data, .d-table-wrap → cc-scanline
+  // Component CSS overrides let styles transform standard components.
   // This is the primary mechanism for recipe visual transforms.
 });
 ```
@@ -636,7 +669,7 @@ getShape();         // 'pill'
 getShapeList();     // ['sharp', 'rounded', 'pill']
 ```
 
-Shapes override the style's default radius. The command-center style defaults to `sharp`; glassmorphism defaults to `pill`.
+Shapes override the style's default radius. Glassmorphism defaults to `pill`; clean defaults to `rounded`.
 
 ## Colorblind Mode
 
@@ -671,7 +704,7 @@ Internal exports for testing/advanced use: `rgbToOklch(r,g,b)`, `oklchToRgb(L,C,
 
 ## Monochrome Palette
 
-The `palette: 'monochrome'` personality trait (used by command-center) constrains **decorative** role colors (accent, tertiary, info) within ±20° of the primary hue. **Semantic** roles (success, warning, error) retain their standard hues (green, amber, red) so that trend indicators, status badges, and alerts have correct color meaning even in monochrome mode. WCAG AA validated via `validateContrast()`.
+The `palette: 'monochrome'` personality trait constrains **decorative** role colors (accent, tertiary, info) within ±20° of the primary hue. **Semantic** roles (success, warning, error) retain their standard hues (green, amber, red) so that trend indicators, status badges, and alerts have correct color meaning even in monochrome mode. WCAG AA validated via `validateContrast()`.
 
 ## Animation System
 
@@ -718,7 +751,7 @@ See `reference/build-tooling.md` for full details on the detection and eliminati
 ## Key Files
 
 - `src/css/derive.js` — Color math, personality presets, main `derive()` function
-- `src/css/styles/auradecantism.js` / `clean.js` / `retro.js` / `glassmorphism.js` / `command-center.js` — Style definitions
+- `src/css/styles/auradecantism.js` / `clean.js` / `retro.js` / `glassmorphism.js` — Style definitions
 - `src/css/theme-registry.js` — State management, DOM injection, public API
 - `src/css/index.js` — Public CSS module exports
 
@@ -1203,29 +1236,11 @@ setMode('dark');`
 **Decorators (10):** d-mesh, d-glass, d-glass-strong, d-gradient-text, d-gradient-text-alt, aura-glow, aura-glow-strong, aura-ring, aura-orb, aura-shimmer
 **Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart
 
-### recipe-clay
-**Setup:** `import { registerStyle, setStyle, setMode } from 'decantr/css';
-import { clay } from 'decantr/styles/community/clay';
-registerStyle(clay);
-setStyle('clay');
-setMode('light');`
-**Decorators (14):** cy-pillow, cy-pillow-strong, cy-squish, cy-float, cy-blob, cy-soft, cy-dimple, cy-bounce, cy-jelly, cy-pastel-mesh, cy-label, cy-swatch, cy-glow, cy-pulse-soft
-**Pattern overrides:** hero, card-grid, specimen-grid, filter-bar, search-bar, cta-section, detail-header, testimonials, stats-section, comparison-panel, footer-columns
-**Compositions:** panel, card, kpi, sidebar, specimen, workspace
-
 ### recipe-clean
 **Setup:** `import { setStyle, setMode } from 'decantr/css';
 setStyle('clean');
 setMode('light');`
 **Decorators (6):** cl-card, cl-divider, cl-section, cl-muted-bg, cl-badge-dot, cl-subtle-hover
-**Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart
-
-### recipe-command-center
-**Setup:** `import { setStyle, setMode } from 'decantr/css';
-setStyle('command-center');
-setMode('dark');`
-**Decorators (19):** cc-frame, cc-frame-sm, cc-corner, cc-scanline, cc-grid, cc-bar, cc-bar-bottom, cc-blink, cc-glow, cc-glow-strong, cc-glow-pulse, cc-divider, cc-label, cc-data, cc-indicator, cc-indicator-ok, cc-indicator-warn, cc-indicator-error, cc-mesh
-**Pattern overrides:** kpi-grid, chart-grid, data-table, activity-feed, scorecard, pipeline-tracker, timeline, goal-tracker, comparison-panel
 **Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart
 
 ### recipe-gaming-guild
@@ -1237,6 +1252,16 @@ setMode('dark');`
 **Decorators (14):** gg-glow, gg-glow-accent, gg-glow-strong, gg-glow-pulse, gg-shimmer, gg-rank-up, gg-float, gg-xp-bar, gg-badge-pop, gg-mesh, gg-panel, gg-label, gg-data, gg-live
 **Pattern overrides:** hero, card-grid, leaderboard, kpi-grid, post-list, activity-feed, detail-header, stats-bar, timeline, cta-section, form-sections, auth-form, testimonials
 **Compositions:** panel, card, kpi, table, leaderboard, profile-card, sidebar, auth-modal, achievement
+
+### recipe-launchpad
+**Setup:** `import { registerStyle, setStyle, setMode } from 'decantr/css';
+import { launchpad } from 'decantr/styles/community/launchpad';
+registerStyle(launchpad);
+setStyle('launchpad');
+setMode('light');`
+**Decorators (16):** lp-panel, lp-card, lp-card-hover, lp-header, lp-btn-gradient, lp-btn-outline, lp-nav-item, lp-nav-active, lp-surface, lp-divider, lp-dot, lp-brand-bg, lp-gradient-hero, lp-kbd, lp-code-inline, lp-shimmer
+**Pattern overrides:** hero, card-grid, kpi-grid, filter-bar, data-table, cta-section, detail-header, stats-section, footer-columns, activity-feed, chart-grid, pricing-table, status-board, form-sections, deploy-log, resource-overview, service-catalog, checklist-card, logo-strip
+**Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart, deploy-log
 
 
 

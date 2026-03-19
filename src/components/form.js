@@ -76,12 +76,25 @@ export function Field(props = {}, ...children) {
     wrapper.appendChild(labelEl);
   }
 
+  const helpId = help ? `d-field-help-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` : null;
+
   children.forEach(child => {
-    if (child && child.nodeType) wrapper.appendChild(child);
+    if (child && child.nodeType) {
+      // Wire aria-describedby for help text on first form control
+      if (helpId && (child.tagName === 'INPUT' || child.tagName === 'SELECT' || child.tagName === 'TEXTAREA' ||
+          child.querySelector?.('input,select,textarea'))) {
+        const ctrl = child.tagName === 'INPUT' || child.tagName === 'SELECT' || child.tagName === 'TEXTAREA'
+          ? child : child.querySelector('input,select,textarea');
+        if (ctrl && !ctrl.getAttribute('aria-describedby')) {
+          ctrl.setAttribute('aria-describedby', helpId);
+        }
+      }
+      wrapper.appendChild(child);
+    }
   });
 
   if (help) {
-    wrapper.appendChild(h('div', { class: 'd-field-help' }, help));
+    wrapper.appendChild(h('div', { class: 'd-field-help', id: helpId }, help));
   }
 
   if (error) {

@@ -79,7 +79,7 @@ const SETTLE_TOOL = {
       },
       style: {
         type: 'string',
-        enum: ['auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center'],
+        enum: ['auradecantism', 'clean', 'retro', 'glassmorphism'],
         description: 'Suggested visual style',
       },
       mode: {
@@ -259,7 +259,7 @@ describe('Archetype Inheritance', () => {
     const resolved = await resolveArchetype('financial-dashboard');
     // Child financial-dashboard has its own suggested_vintage
     assert.ok(resolved.suggested_vintage);
-    assert.ok(resolved.suggested_vintage.styles.includes('command-center'),
+    assert.ok(resolved.suggested_vintage.styles.includes('auradecantism'),
       'Should have child suggested_vintage styles');
   });
 
