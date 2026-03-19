@@ -70,26 +70,31 @@ export const auradecantism = {
     'body{font-family:var(--d-font);background:var(--d-bg);color:var(--d-fg);line-height:var(--d-lh-normal);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}',
     '::selection{background:var(--d-selection-bg);color:var(--d-selection-fg)}',
     // Scrollbar
-    '::-webkit-scrollbar{width:6px;height:6px}',
-    '::-webkit-scrollbar-track{background:transparent}',
-    '::-webkit-scrollbar-thumb{background:var(--d-primary-border);border-radius:var(--d-radius-full)}',
-    '::-webkit-scrollbar-thumb:hover{background:var(--d-primary-hover)}',
+    '::-webkit-scrollbar{width:var(--d-scrollbar-w);height:var(--d-scrollbar-w)}',
+    '::-webkit-scrollbar-track{background:var(--d-scrollbar-track)}',
+    '::-webkit-scrollbar-thumb{background:var(--d-scrollbar-thumb);border-radius:var(--d-scrollbar-radius)}',
+    '::-webkit-scrollbar-thumb:hover{background:var(--d-scrollbar-thumb-hover)}',
     // Glass card enhancements
     '.d-card{border:var(--d-border-width) solid rgba(255,255,255,0.1);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
     '.d-card-inner{border:var(--d-border-width) solid rgba(255,255,255,0.06);box-shadow:none}',
+    '.d-card.d-glass-subtle{box-shadow:var(--d-elevation-0)}',
+    '.d-card.d-glass{box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
+    '.d-card.d-glass-strong{box-shadow:var(--d-elevation-2),inset 0 1px 0 rgba(255,255,255,0.08)}',
     '.d-modal-panel{border:var(--d-border-width) solid rgba(255,255,255,0.12);box-shadow:var(--d-elevation-3),inset 0 1px 0 rgba(255,255,255,0.08)}',
     // Button glow
-    '.d-btn-primary{box-shadow:0 0 12px rgba(254,68,116,0.25)}',
-    '.d-btn-primary:hover{box-shadow:0 0 20px rgba(254,68,116,0.4)}',
+    '.d-btn-primary{box-shadow:0 0 8px rgba(254,68,116,0.15)}',
+    '.d-btn-primary:hover{box-shadow:0 0 16px rgba(254,68,116,0.3)}',
     // Mesh gradient background utility
     '.d-mesh{background:radial-gradient(ellipse at 20% 50%,rgba(254,68,116,0.15) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(10,243,235,0.1) 0%,transparent 50%),radial-gradient(ellipse at 60% 80%,rgba(101,0,198,0.08) 0%,transparent 50%),var(--d-bg)}',
     // Gradient text utilities
     '.d-gradient-text{background:linear-gradient(135deg,var(--d-primary),var(--d-accent),var(--d-tertiary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
     '.d-gradient-text-alt{background:linear-gradient(135deg,var(--d-accent),var(--d-primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
+    // Hero headline gradient — reserved for hero sections only. Regular section headings use solid colors (_fgfg).
+    '.d-heading-hero{font-size:clamp(2.5rem, 5vw, 4rem);font-weight:900;letter-spacing:-0.04em;line-height:1.1;background:linear-gradient(135deg,var(--d-primary) 0%,var(--d-accent) 50%,var(--d-secondary) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
     // Glass panel utilities
-    '.d-glass-subtle{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:var(--d-border-width) solid rgba(255,255,255,0.05);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-0)}',
-    '.d-glass{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:var(--d-border-width) solid rgba(255,255,255,0.1);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
-    '.d-glass-strong{background:var(--d-surface-2);backdrop-filter:var(--d-surface-2-filter);-webkit-backdrop-filter:var(--d-surface-2-filter);border:var(--d-border-width) solid rgba(255,255,255,0.12);border-radius:var(--d-radius-lg);box-shadow:var(--d-elevation-2),inset 0 1px 0 rgba(255,255,255,0.08)}',
+    '.d-glass-subtle{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:var(--d-border-width) solid rgba(255,255,255,0.05);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-0)}',
+    '.d-glass{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:var(--d-border-width) solid rgba(255,255,255,0.1);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
+    '.d-glass-strong{background:var(--d-surface-2);backdrop-filter:var(--d-surface-2-filter);-webkit-backdrop-filter:var(--d-surface-2-filter);border:var(--d-border-width) solid rgba(255,255,255,0.12);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-2),inset 0 1px 0 rgba(255,255,255,0.08)}',
     // Frosted-glass dialog backdrops
     'dialog::backdrop{background:rgba(6,9,24,0.45);backdrop-filter:blur(16px) saturate(1.6);-webkit-backdrop-filter:blur(16px) saturate(1.6)}',
     // Aura glow utilities
