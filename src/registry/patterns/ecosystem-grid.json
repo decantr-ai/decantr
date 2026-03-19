@@ -1,0 +1,45 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "ecosystem-grid",
+  "name": "Ecosystem Grid",
+  "description": "Community registry display with contributor attribution, type chips, download counts, and publish CTAs. Used for showcasing community contributions.",
+  "components": [
+    "Card",
+    "Badge",
+    "Avatar",
+    "Chip",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Responsive grid of community contribution cards",
+      "components": ["Card", "Badge", "Avatar", "Chip", "Button", "icon"],
+      "blend": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6",
+        "slots": {
+          "header": "Section header with title and 'Publish Your Own' CTA",
+          "cards": "Grid of contribution cards with preview, type chip, attribution, downloads",
+          "footer": "Browse Registry CTA"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, Avatar, Chip, Button, icon } from 'decantr/components';",
+        "example": "function EcosystemGrid({ items }) {\n  const { div, h3, span, a } = tags;\n\n  return div({ class: css('_flex _col _gap8') },\n    // Header\n    div({ class: css('_flex _jcsb _aic') },\n      h3({ class: css('_heading4') }, 'Community Registry'),\n      Button({ variant: 'outline' }, icon('plus'), 'Publish Your Own')\n    ),\n    // Grid\n    div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6') },\n      ...items.map(item =>\n        Card({ hoverable: true, class: css('d-glass') },\n          Card.Body({ class: css('_flex _col _gap3') },\n            div({ class: css('_flex _jcsb _aic') },\n              Chip({ size: 'sm', variant: item.type === 'style' ? 'primary' : 'secondary' }, item.type),\n              span({ class: css('_textsm _fgmuted') }, `${item.downloads} downloads`)\n            ),\n            h3({ class: css('_heading5') }, item.name),\n            span({ class: css('_textsm _fgmuted') }, item.description),\n            div({ class: css('_flex _aic _gap2 _mt[auto] _pt3 _borderT _bcborder') },\n              Avatar({ src: item.author.avatar, size: 'xs' }),\n              span({ class: css('_textsm _fgmuted') }, `@${item.author.username}`)\n            )\n          )\n        )\n      )\n    ),\n    // Footer CTA\n    div({ class: css('_tc') },\n      Button({ variant: 'primary' }, 'Browse Full Registry', icon('arrow-right'))\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6",
+    "slots": {
+      "cards": "Grid of community contribution cards"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, Avatar, Chip, Button, icon } from 'decantr/components';",
+    "example": "function EcosystemGrid({ items }) {\n  const { div } = tags;\n  return div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6') }, ...items.map(i => Card({}, i.name)));\n}"
+  }
+}

@@ -2,8 +2,9 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { link } from 'decantr/router';
 import { onDestroy } from 'decantr/core';
+import { icon } from 'decantr/components';
 
-const { nav, div, img, span } = tags;
+const { nav, div, img, span, a } = tags;
 
 export function NavHeader() {
   const el = nav({
@@ -25,7 +26,17 @@ export function NavHeader() {
 
       // Right: Nav links
       div({ class: css('_flex _row _aic _gap6') },
-        link({ href: '/', exact: true, activeClass: 'ds-nav-active', class: 'ds-nav-link' }, 'Home'),
+        link({ href: '/showcase', activeClass: 'ds-nav-active', class: 'ds-nav-link' }, 'Showcase'),
+        link({ href: '/docs', activeClass: 'ds-nav-active', class: 'ds-nav-link' }, 'Docs'),
+        a({
+          href: 'https://github.com/anthropics/decantr',
+          target: '_blank',
+          rel: 'noopener',
+          class: css('ds-nav-link _flex _aic _gap1')
+        },
+          'GitHub',
+          icon('external-link', { size: '0.875rem' })
+        )
       ),
     ),
   );
