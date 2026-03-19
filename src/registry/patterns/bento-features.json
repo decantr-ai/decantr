@@ -5,6 +5,11 @@
   "description": "Bento box feature grid with varied card sizes. Hero feature card (large) with stats and supporting feature cards.",
   "components": ["Card", "Badge", "icon"],
   "default_preset": "asymmetric-glow",
+  "effect_types": {
+    "terminal": "code_preview",
+    "stats": "stat_display",
+    "features": "icon_container"
+  },
   "presets": {
     "asymmetric-glow": {
       "description": "Asymmetric bento with hero card spanning 2 rows on left, glass stat cards with colored glow on right (2 hero stats + secondary row), and simple feature row at bottom. Creates strong visual hierarchy through glow effects and card sizing.",

@@ -76,6 +76,15 @@ describe('Visual Effects System', () => {
     });
   });
 
+  describe('Pattern effect_types', () => {
+    it('bento-features pattern has effect_types', async () => {
+      const pattern = await loadJSON(join(registryRoot, 'patterns', 'bento-features.json'));
+      assert.ok(pattern.effect_types);
+      assert.equal(pattern.effect_types.terminal, 'code_preview');
+      assert.equal(pattern.effect_types.stats, 'stat_display');
+    });
+  });
+
   describe('resolveVisualEffects function', () => {
     it('returns empty array when visual_effects disabled', async () => {
       const { resolveVisualEffects } = await import('../tools/generate.js');
