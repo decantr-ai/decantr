@@ -6,19 +6,10 @@ import { Shell, NavigationMenu } from 'decantr/components';
 
 const { div, img, span } = tags;
 
-const SHOWCASE_LINKS = [
-  { label: 'SaaS Dashboard', href: '/showcase/saas-dashboard/' },
-  { label: 'Gaming Platform', href: '/showcase/gaming-platform/' },
-  { label: 'Portfolio', href: '/showcase/portfolio/' },
-  { label: 'Creative Tool', href: '/showcase/creative-tool/' },
-];
-
 const NAV_ITEMS = [
+  { label: 'Showcase', href: '#/showcase' },
   { label: 'Docs', href: '#/docs' },
-  { label: 'Explorer', href: '#/explorer' },
-  { label: 'Showcases', children: SHOWCASE_LINKS },
-  { label: 'Gallery', href: '#/gallery' },
-  { label: 'GitHub', href: 'https://github.com/nicholasgriffintn/decantr' },
+  { label: 'GitHub', href: 'https://github.com/decantr-ai/decantr' },
 ];
 
 // ── Shared header ──────────────────────────────────────────────────
@@ -27,16 +18,12 @@ function SiteHeader() {
   const route = useRoute();
   const navEl = NavigationMenu({ items: NAV_ITEMS });
 
-  // Set target="_blank" on the GitHub link and showcase links (full-page navs)
+  // Set target="_blank" on the GitHub link (external nav)
   const ghLink = navEl.querySelector('a[href*="github.com"]');
   if (ghLink) {
     ghLink.setAttribute('target', '_blank');
     ghLink.setAttribute('rel', 'noopener');
   }
-  navEl.querySelectorAll('a[href^="/showcase/"]').forEach(a => {
-    a.setAttribute('target', '_blank');
-    a.setAttribute('rel', 'noopener');
-  });
 
   // Track active nav item based on current route
   createEffect(() => {
