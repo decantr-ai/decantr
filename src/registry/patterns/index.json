@@ -62,6 +62,7 @@
     "deploy-log": { "name": "Deploy Log", "file": "deploy-log.json", "presets": ["live", "history"] },
     "resource-overview": { "name": "Resource Overview", "file": "resource-overview.json", "presets": ["gauge-grid", "summary-bar"] },
     "service-catalog": { "name": "Service Catalog", "file": "service-catalog.json", "presets": ["grid", "list"] },
-    "anatomy-viewer": { "name": "Anatomy Viewer", "file": "anatomy-viewer.json", "presets": ["split"] }
+    "anatomy-viewer": { "name": "Anatomy Viewer", "file": "anatomy-viewer.json", "presets": ["split"] },
+    "ecosystem-grid": { "name": "Ecosystem Grid", "file": "ecosystem-grid.json", "presets": ["standard"] }
   }
 }
