@@ -63,6 +63,11 @@ export const auradecantism = {
       '--d-chart-5': '#EF233C',
       '--d-chart-6': '#8B5CF6',
       '--d-chart-7': '#38BDF8',
+      // Visual effects intensity control
+      '--d-glow-radius': '30px',
+      '--d-glow-intensity': '0.3',
+      '--d-gradient-hint-opacity': '0.08',
+      '--d-chrome-bg': 'linear-gradient(145deg, #1a1a2e 0%, #0d0d14 100%)',
     },
   },
   components: [
@@ -90,7 +95,7 @@ export const auradecantism = {
     '.d-gradient-text{background:linear-gradient(135deg,var(--d-primary),var(--d-accent),var(--d-tertiary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
     '.d-gradient-text-alt{background:linear-gradient(135deg,var(--d-accent),var(--d-primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
     // Hero headline gradient — reserved for hero sections only. Regular section headings use solid colors (_fgfg).
-    '.d-heading-hero{font-size:clamp(2.5rem, 5vw, 4rem);font-weight:900;letter-spacing:-0.04em;line-height:1.1;background:linear-gradient(135deg,var(--d-primary) 0%,var(--d-accent) 50%,var(--d-secondary) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
+    '.d-heading-hero{font-size:clamp(2.5rem, 5vw, 4rem);font-weight:900;letter-spacing:-0.04em;line-height:1.1;background:linear-gradient(135deg,var(--d-primary) 0%,var(--d-accent) 50%,var(--d-tertiary) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}',
     // Glass panel utilities
     '.d-glass-subtle{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:var(--d-border-width) solid rgba(255,255,255,0.05);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-0)}',
     '.d-glass{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:var(--d-border-width) solid rgba(255,255,255,0.1);border-radius:var(--d-radius-panel);box-shadow:var(--d-elevation-1),inset 0 1px 0 rgba(255,255,255,0.06)}',
@@ -113,5 +118,28 @@ export const auradecantism = {
     '.aura-shimmer{position:relative;overflow:hidden}',
     '.aura-shimmer::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);animation:aura-shimmer-sweep 3s var(--d-easing-standard) infinite}',
     '@media(prefers-reduced-motion:reduce){.aura-ring,.aura-orb,.aura-shimmer::after{animation:none}}',
+    // Visual effects decorators
+    // d-glow-primary — accent glow effect
+    '.d-glow-primary{box-shadow:0 0 var(--d-glow-radius,30px) rgba(254,68,116,calc(var(--d-glow-intensity,0.3))),0 0 calc(var(--d-glow-radius,30px)*2) rgba(254,68,116,calc(var(--d-glow-intensity,0.3)/2)),inset 0 1px 0 rgba(255,255,255,0.08);border:1px solid rgba(254,68,116,0.4)}',
+    '.d-glow-primary:hover{box-shadow:0 0 calc(var(--d-glow-radius,30px)*1.3) rgba(254,68,116,calc(var(--d-glow-intensity,0.3)*1.3)),0 0 calc(var(--d-glow-radius,30px)*2.5) rgba(254,68,116,calc(var(--d-glow-intensity,0.3)/1.5)),inset 0 1px 0 rgba(255,255,255,0.1)}',
+    // d-glow-accent — secondary glow using accent color
+    '.d-glow-accent{box-shadow:0 0 var(--d-glow-radius,30px) rgba(10,243,235,calc(var(--d-glow-intensity,0.3))),inset 0 1px 0 rgba(255,255,255,0.08);border:1px solid rgba(10,243,235,0.4)}',
+    // d-stat-glow — text glow for large numbers
+    '.d-stat-glow{text-shadow:0 0 var(--d-glow-radius,30px) rgba(254,68,116,0.4)}',
+    // d-gradient-hint-primary — subtle gradient background
+    '.d-gradient-hint-primary{background:linear-gradient(135deg,rgba(254,68,116,var(--d-gradient-hint-opacity,0.08)) 0%,transparent 50%)}',
+    // d-gradient-hint-accent — gradient toward accent
+    '.d-gradient-hint-accent{background:linear-gradient(135deg,rgba(10,243,235,var(--d-gradient-hint-opacity,0.08)) 0%,transparent 50%)}',
+    // d-terminal-chrome — macOS-style terminal window
+    '.d-terminal-chrome{background:var(--d-chrome-bg,linear-gradient(145deg,#1a1a2e,#0d0d14));border-radius:var(--d-radius-panel);border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 40px rgba(10,243,235,0.08),inset 0 1px 0 rgba(255,255,255,0.05);overflow:hidden}',
+    '.d-terminal-chrome-header{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05)}',
+    '.d-terminal-chrome-dot{width:12px;height:12px;border-radius:50%}',
+    '.d-terminal-chrome-dot-red{background:#ff5f57}',
+    '.d-terminal-chrome-dot-yellow{background:#febc2e}',
+    '.d-terminal-chrome-dot-green{background:#28c840}',
+    '.d-terminal-chrome-title{margin-left:auto;font-size:11px;color:rgba(255,255,255,0.4);font-family:var(--d-font-mono)}',
+    '.d-terminal-chrome-body{padding:16px;font-family:var(--d-font-mono);font-size:12px;line-height:1.8}',
+    // d-icon-glow — glowing icon container
+    '.d-icon-glow{background:linear-gradient(135deg,rgba(254,68,116,0.15) 0%,rgba(254,68,116,0.05) 100%);box-shadow:0 0 20px rgba(254,68,116,0.1);border-radius:var(--d-radius-md);display:flex;align-items:center;justify-content:center}',
   ].join(''),
 };
