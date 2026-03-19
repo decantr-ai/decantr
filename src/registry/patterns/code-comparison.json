@@ -23,6 +23,23 @@
         "example": "function CodeComparison({ left, right, caption }) {\n  const { div, h3, p } = tags;\n\n  const panel = (label, code, lang) =>\n    Card({ class: css('_flex _col _gap0 _overflow[hidden]') },\n      Card.Header({},\n        h3({ class: css('_textsm _fgmuted _uppercase _tracking[0.05em]') }, label)\n      ),\n      Card.Body({ class: css('_p0') },\n        CodeBlock({ language: lang, highlight: createHighlighter }, code)\n      )\n    );\n\n  return div({ class: css('_flex _col _gap6') },\n    div({ class: css('_grid _gc1 _lg:gc2 _gap6') },\n      panel(left.label, left.code, left.lang || 'javascript'),\n      panel(right.label, right.code, right.lang || 'javascript')\n    ),\n    caption ? p({ class: css('_tc _fgmuted _textsm _italic') }, caption) : null\n  );\n}"
       }
     },
+    "vision-split": {
+      "description": "High-impact split-pane with gradient backgrounds, inline syntax highlighting, absolute-positioned badges, and tech stack chips. Used for hero-level comparisons like Traditional vs AI-Native. Does NOT use CodeBlock - uses hand-crafted syntax highlighting for maximum visual control.",
+      "components": [],
+      "blend": {
+        "layout": "row",
+        "atoms": "_grid _gc1 _lg:gc2 _gap0 _overflow[hidden] _r3 _minh[380px]",
+        "slots": {
+          "left-panel": "Gradient bg (#1a0a0a→#0d0d0d), badge top-left (red), inline syntax-highlighted code, tech chips at bottom",
+          "right-panel": "Gradient bg (#0a1a0a→#0d0d0d), badge top-right (green), inline syntax-highlighted code, success message at bottom",
+          "caption": "Bottom caption bar with highlighted keywords (structure, composition, intent)"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "// See docs/src/sections/vision-comparison.js for full implementation\n// Key elements:\n// - Inline syntax highlighting with span({ style: `color:${color}` }, text)\n// - One Dark color palette (#c678dd keywords, #e5c07b types, #98c379 strings, etc.)\n// - Decantr brand colors for JSON (#0AF3EB cyan keys, #FE4474 pink nested keys)\n// - Tech chips: TechChip('React'), TechChip('TypeScript'), etc.\n// - Success message with checkmark at bottom-right\n// - Highlighted keywords in caption (structure, composition, intent)"
+      }
+    },
     "stacked": {
       "description": "Vertical stack with labels, good for longer code samples",
       "components": ["CodeBlock", "Card"],

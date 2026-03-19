@@ -4,8 +4,74 @@
   "name": "Bento Features",
   "description": "Bento box feature grid with varied card sizes. Hero feature card (large) with stats and supporting feature cards.",
   "components": ["Card", "Badge", "icon"],
-  "default_preset": "hero-stats",
+  "default_preset": "asymmetric-glow",
   "presets": {
+    "asymmetric-glow": {
+      "description": "Asymmetric bento with hero card spanning 2 rows on left, glass stat cards with colored glow on right (2 hero stats + secondary row), and simple feature row at bottom. Creates strong visual hierarchy through glow effects and card sizing.",
+      "components": ["Card", "icon"],
+      "config": {
+        "heroStats": {
+          "type": "array",
+          "maxItems": 2,
+          "description": "Primary stats displayed as glass cards with colored glow. Each needs: value, label, sub, color (hex)",
+          "itemSchema": { "value": "string", "label": "string", "sub": "string", "color": "string|null" }
+        },
+        "secondaryStats": {
+          "type": "array",
+          "description": "Secondary stats shown in a single collapsed row. Each needs: value, label",
+          "itemSchema": { "value": "string", "label": "string" }
+        },
+        "glowIntensity": {
+          "type": "number",
+          "default": 0.3,
+          "min": 0,
+          "max": 1,
+          "description": "Opacity of the glow effect (0-1)"
+        },
+        "showFeatureRow": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show the bottom features row"
+        }
+      },
+      "blend": {
+        "layout": "asymmetric-grid",
+        "atoms": "_flex _col _gap6 _py24 _px6 _mw[1100px] _mx[auto]",
+        "slots": {
+          "bento-grid": "_grid _gc1 _lg:gc[1fr_1fr] _gap6 — asymmetric container",
+          "hero-card": "_lg:row[span_2] — Card spanning 2 rows with chip, heading, description, terminal",
+          "hero-stats": "_grid _gc2 _gap4 — 2 glass cards with colored glow borders",
+          "secondary-stats": "d-glass _p4 — collapsed row with dot separators",
+          "features-row": "_grid _gc1 _md:gc3 _gap6 _borderT — simple icon+text"
+        }
+      },
+      "helpers": {
+        "GlowStatCard": "Glass card with colored border glow. Props: value, label, sub, color, glowIntensity. Style: box-shadow with color opacity, inset highlight",
+        "SecondaryStatsRow": "Inline stats with dot separators. Props: stats[]. Centered, glass background"
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, icon } from 'decantr/components';",
+        "example": "// GlowStatCard — glass card with colored glow border\nfunction GlowStatCard({ value, label, sub, color, glowIntensity = 0.3 }) {\n  const glowHex = Math.round(glowIntensity * 255).toString(16).padStart(2, '0');\n  const glowStyle = color\n    ? `border-color: ${color}; box-shadow: 0 0 20px ${color}${glowHex}, inset 0 1px 0 rgba(255,255,255,0.1)`\n    : undefined;\n\n  return div({\n    class: css('d-glass _p5 _r3 _flex _col _gap2 _border _bc[transparent] _trans[box-shadow_0.3s,border-color_0.3s]'),\n    style: glowStyle\n  },\n    span({ class: css('_text[2.75rem] _bold _lh[1]'), style: color ? `color:${color}` : undefined }, value),\n    span({ class: css('_textbase _fgfg _bold') }, label),\n    span({ class: css('_textsm _fgmuted _lh[1.4]') }, sub)\n  );\n}\n\n// SecondaryStatsRow — inline stats with dot separators\nfunction SecondaryStatsRow({ stats }) {\n  return div({ class: css('d-glass _p4 _r3 _flex _aic _jcc _gap8') },\n    ...stats.flatMap((s, i) => [\n      i > 0 ? span({ class: css('_fgmuted/30') }, '·') : null,\n      div({ class: css('_flex _aic _gap2') },\n        span({ class: css('_textxl _bold _fgfg') }, s.value),\n        span({ class: css('_textsm _fgmuted') }, s.label)\n      )\n    ]).filter(Boolean)\n  );\n}\n\n// Main layout\nfunction BentoAsymmetricGlow({ hero, heroStats, secondaryStats, features }) {\n  return section({ class: css('_py24 _px6') },\n    div({ class: css('_mw[1100px] _mx[auto] _flex _col _gap6') },\n      // Asymmetric bento grid\n      div({ class: css('_grid _gc1 _lg:gc[1fr_1fr] _gap6') },\n        // Hero card (spans 2 rows)\n        div({ class: css('_lg:row[span_2]') },\n          Card({ class: css('d-glass _h100') },\n            Card.Body({ class: css('_flex _col _gap4 _h100 _jcsb') },\n              div({ class: css('_flex _col _gap4') },\n                span({ class: css('_fgprimary _textxs _uppercase _tracking[0.1em] _bold _self[start]') }, hero.chip),\n                h2({ class: css('_heading3 _fgfg') }, hero.title),\n                p({ class: css('_fgmuted _lh[1.6] _textsm') }, hero.description)\n              ),\n              hero.terminal\n            )\n          )\n        ),\n        // Hero stats with glow\n        div({ class: css('_grid _gc2 _gap4') }, ...heroStats.map(s => GlowStatCard(s))),\n        // Secondary stats row\n        SecondaryStatsRow({ stats: secondaryStats })\n      ),\n      // Features row\n      div({ class: css('_grid _gc1 _md:gc3 _gap6 _pt6 _borderT _bcborder') },\n        ...features.map(f =>\n          div({ class: css('_flex _aic _gap3') },\n            icon(f.icon, { class: css('_fgprimary _w5 _h5') }),\n            div({ class: css('_flex _col') },\n              span({ class: css('_textbase _fgfg _bold') }, f.title),\n              span({ class: css('_textsm _fgmuted') }, f.sub)\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "split-stats": {
+      "description": "DEPRECATED: Use asymmetric-glow instead. Simple hero left + stats right without glow effects.",
+      "components": ["Card", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _col _gap8 _py24 _px6 _mw[1100px] _mx[auto]",
+        "slots": {
+          "main-row": "_grid _gc1 _lg:gc2 _gap8 _aic — hero card left, stats 2x2 right",
+          "hero-card": "Card with text chip (not badge), heading, description, terminal preview",
+          "stats-grid": "_grid _gc2 _gap8 — large numbers with color, label, and sub-text",
+          "features-row": "_grid _gc1 _md:gc3 _gap6 — simple icon+text pairs, no cards"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, icon } from 'decantr/components';",
+        "example": "// See asymmetric-glow for the recommended implementation"
+      }
+    },
     "hero-stats": {
       "description": "Large hero feature + stats row + supporting features",
       "components": ["Card", "Badge", "icon", "CodeBlock"],
