@@ -30,6 +30,39 @@
     "entrance": "d-stagger",
     "micro": "bouncy"
   },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "code_preview": ["d-terminal-chrome"],
+      "stat_display": ["d-glow-primary", "d-stat-glow"],
+      "feature_card": ["d-glass", "d-gradient-hint-primary"],
+      "icon_container": ["d-icon-glow"]
+    },
+    "component_fallback": {
+      "pre": "code_preview",
+      "code": "code_preview",
+      "Statistic": "stat_display",
+      "Card": "feature_card"
+    },
+    "intensity_values": {
+      "subtle": {
+        "--d-glow-radius": "15px",
+        "--d-glow-intensity": "0.15",
+        "--d-gradient-hint-opacity": "0.04"
+      },
+      "medium": {
+        "--d-glow-radius": "30px",
+        "--d-glow-intensity": "0.3",
+        "--d-gradient-hint-opacity": "0.08"
+      },
+      "strong": {
+        "--d-glow-radius": "50px",
+        "--d-glow-intensity": "0.5",
+        "--d-gradient-hint-opacity": "0.12"
+      }
+    }
+  },
   "pattern_preferences": {
     "prefer": ["kpi-grid", "chart-grid", "activity-feed"],
     "avoid": [],
@@ -45,7 +78,14 @@
     "aura-glow-strong": "Intense glow for hero KPIs and primary CTAs. 20px spread.",
     "aura-ring": "Animated ring highlight on focus/active state. Pill-shaped glow border.",
     "aura-orb": "Floating decorative gradient orb. Position absolutely as background decoration.",
-    "aura-shimmer": "Subtle shimmer animation across surface. Use sparingly for loading or premium feel."
+    "aura-shimmer": "Subtle shimmer animation across surface. Use sparingly for loading or premium feel.",
+    "d-glow-primary": "Box-shadow glow using primary color. Apply to stats, featured cards.",
+    "d-glow-accent": "Box-shadow glow using accent color. For secondary highlights.",
+    "d-stat-glow": "Text-shadow glow for large numbers and metrics.",
+    "d-gradient-hint-primary": "Subtle gradient background toward primary color.",
+    "d-gradient-hint-accent": "Subtle gradient background toward accent color.",
+    "d-terminal-chrome": "macOS-style terminal window with traffic light dots and gradient background.",
+    "d-icon-glow": "Glowing icon container with gradient background."
   },
   "compositions": {
     "panel": {
