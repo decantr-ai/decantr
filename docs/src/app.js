@@ -44,8 +44,9 @@ function setupScrollReveal() {
 const lazyDocsHome = () => import('./pages/docs-home.js').then(m => m.DocsHomePage);
 const lazyTutorial = () => import('./pages/tutorial.js').then(m => m.TutorialPage);
 const lazyCookbook = () => import('./pages/cookbook.js').then(m => m.CookbookPage);
-const lazyExplorer = () => import('./pages/explorer-page.js').then(m => m.ExplorerPage);
-const lazyGallery = () => import('./pages/gallery.js').then(m => m.GalleryPage);
+const lazyExplorer = () => import('./pages/explorer-page.js').then(m => m.ExplorerPage).catch(() => () => div('Explorer failed to load'));
+const lazyGallery = () => import('./pages/gallery.js').then(m => m.GalleryPage).catch(e => { console.error('Gallery load failed:', e); return () => div('Gallery failed to load'); });
+const lazyShowcase = () => import('./pages/showcase.js').then(m => m.ShowcasePage);
 
 const router = createRouter({
   mode: 'hash',
@@ -60,6 +61,9 @@ const router = createRouter({
 
     // Showcase gallery
     { path: '/gallery', component: lazyGallery },
+
+    // Showcase page (tabbed: Apps, Components, Themes)
+    { path: '/showcase', component: lazyShowcase },
 
     // Unified explorer (replaces both /workbench and /docs/{section} routes)
     { path: '/explorer', component: lazyExplorer },
