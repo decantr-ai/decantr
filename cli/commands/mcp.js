@@ -89,7 +89,7 @@ async function loadAtomResolver() {
 // ─── Validation logic (extracted from validate.js) ─────────────
 
 const KNOWN_ARCHETYPES = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community', 'gaming-platform'];
-const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center'];
+const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism'];
 
 function validateEssence(essence) {
   const errors = [];
@@ -343,7 +343,7 @@ const TOOLS = [
       type: 'object',
       properties: {
         pattern: { type: 'string', description: 'Pattern ID (e.g. "kpi-grid", "data-table", "hero")' },
-        recipe: { type: 'string', description: 'Optional recipe ID to apply decorators (e.g. "command-center", "auradecantism")' },
+        recipe: { type: 'string', description: 'Optional recipe ID to apply decorators (e.g. "auradecantism", "clean")' },
         preset: { type: 'string', description: 'Optional preset name (e.g. "product", "content", "icon" for card-grid)' },
       },
       required: ['pattern'],
@@ -369,7 +369,7 @@ const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {
-        recipe: { type: 'string', description: 'Recipe ID (e.g. "command-center", "auradecantism", "clean", "clay", "gaming-guild")' },
+        recipe: { type: 'string', description: 'Recipe ID (e.g. "auradecantism", "clean", "clay", "gaming-guild")' },
       },
       required: ['recipe'],
     },
@@ -728,7 +728,7 @@ async function handleTool(name, args) {
       const recipeId = args.recipe;
       const recipe = await getRecipe(recipeId);
       if (!recipe) {
-        const available = ['auradecantism', 'clean', 'clay', 'command-center', 'gaming-guild'];
+        const available = ['auradecantism', 'clean', 'clay', 'gaming-guild'];
         return { found: false, message: `Recipe "${recipeId}" not found.`, available };
       }
       return {

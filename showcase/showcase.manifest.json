@@ -3,11 +3,21 @@
     {
       "id": "saas-dashboard",
       "title": "SaaS Dashboard",
-      "description": "Analytics dashboard with KPI cards, data tables, charts, and real-time data. Built from the saas-dashboard archetype.",
+      "description": "14-page analytics dashboard with KPI cards, kanban boards, inbox, status monitoring, and changelog. Built from the saas-dashboard archetype with auradecantism dark styling.",
       "archetype": "saas-dashboard",
-      "style": "command-center",
+      "style": "auradecantism",
       "mode": "dark",
-      "tags": ["KPIs", "Charts", "Data Table", "Sidebar"],
+      "tags": ["KPIs", "Charts", "Data Table", "Kanban", "Inbox", "Status Board", "Sidebar"],
+      "status": "live"
+    },
+    {
+      "id": "ecommerce-admin",
+      "title": "eCommerce Admin",
+      "description": "15-page merchant administration panel with product management, order kanban, customer CRM, inventory tracking, and file manager. Built from the ecommerce-admin archetype with auradecantism light styling.",
+      "archetype": "ecommerce-admin",
+      "style": "auradecantism",
+      "mode": "light",
+      "tags": ["Products", "Orders", "Kanban", "Inventory", "Customers", "File Manager", "Sidebar"],
       "status": "live"
     },
     {
@@ -31,13 +41,13 @@
       "status": "live"
     },
     {
-      "id": "creative-tool",
-      "title": "Creative Tool",
-      "description": "Color palette generator with workspace, explore gallery, and palette detail views. Built from the creative-tool archetype.",
-      "archetype": "creative-tool",
-      "style": "clay",
+      "id": "cloud-platform",
+      "title": "Cloud Platform",
+      "description": "Cloud infrastructure platform with marketing landing page and dashboard. App management, deploy logs, services, usage monitoring, and billing. Built from the cloud-platform archetype.",
+      "archetype": "cloud-platform",
+      "style": "launchpad",
       "mode": "light",
-      "tags": ["Workspace", "Gallery", "Filters", "Detail"],
+      "tags": ["Apps", "Deploy Logs", "Services", "Resources", "Marketing", "Sidebar"],
       "status": "live"
     }
   ]

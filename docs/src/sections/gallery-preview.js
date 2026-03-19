@@ -12,7 +12,7 @@ const PREVIEWS = [
   {
     title: 'SaaS Dashboard',
     archetype: 'saas-dashboard',
-    vintageLabel: 'command-center / dark',
+    vintageLabel: 'auradecantism / dark',
     tags: ['KPIs', 'Charts', 'Data Table'],
     live: true,
   },

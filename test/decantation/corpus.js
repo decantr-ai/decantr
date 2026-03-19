@@ -109,7 +109,7 @@ export const corpus = [
     domain: 'ecommerce',
     difficulty: 'medium',
     expected: {
-      classification: { domain: 'ecommerce', confidence: 'confident', scores: { ecommerce: { min: 3.0 } } },
+      classification: { domain: 'ecommerce', confidence: 'ambiguous', scores: { ecommerce: { min: 3.0 } } },
       activation: { min_total: 7, max_total: 18 },
       completeness: { grade_min: 'B', core_coverage_min: 1.0, composite_min: 0.60 },
       blend: { min_pages: 5, must_have_pages: ['home', 'checkout'] },

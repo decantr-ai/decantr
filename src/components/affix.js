@@ -3,7 +3,7 @@
  *
  * @module decantr/components/affix
  */
-import { h } from '../core/index.js';
+import { h, onCleanup } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
 
 /**
@@ -56,6 +56,10 @@ export function Affix(props = {}, ...children) {
   if (typeof window !== 'undefined') {
     window.addEventListener('scroll', check, { passive: true });
     window.addEventListener('resize', check, { passive: true });
+    onCleanup(() => {
+      window.removeEventListener('scroll', check);
+      window.removeEventListener('resize', check);
+    });
   }
 
   return placeholder;

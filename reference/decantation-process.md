@@ -2,14 +2,38 @@
 
 The intelligence layer between user intent and generated code. A formalized methodology that decomposes raw UI requirements into structured, drift-free specifications.
 
-## The Six Stages
+## The Seven Stages
 
 ```
-POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
+POUR → TASTE → SETTLE → CLARIFY → DECANT → SERVE → AGE
 ```
 
 ### POUR (Intent Capture)
 User expresses what they want in natural language. No forms, no wizards.
+
+### TASTE (Intent Interpretation)
+Before decomposing into layers, interpret the user's intent holistically. Produce a structured **Impression**:
+
+| Impression Field | Description | Example |
+|-----------------|-------------|---------|
+| **Vibe** | 1-3 adjective phrases capturing the aesthetic feel | "airy minimalist with bold type" |
+| **Reference signals** | Map user references to known recipes/styles | "like Notion" → clean recipe; "claymorphic" → bouncy, rounded |
+| **Density intent** | Spacious / balanced / compact | "dense tactical cockpit" → compact |
+| **Layout intent** | Sidebar dashboard / full-bleed marketing / hybrid / novel | "dashboard with wide content" → sidebar-main |
+| **Novel elements** | Anything not fitting existing patterns | "kanban board with drag-drop" |
+
+The Impression is stored as `_impression` in the Essence during CLARIFY:
+```json
+"_impression": {
+  "vibe": ["airy", "minimalist", "bold typography"],
+  "references": ["notion", "linear"],
+  "density_intent": "comfortable",
+  "layout_intent": "sidebar-main with wide content area",
+  "novel_elements": ["kanban board with drag-drop"]
+}
+```
+
+TASTE feeds SETTLE — instead of copying archetype defaults blindly, SETTLE starts from the Impression and uses archetypes to fill gaps. The Impression persists in the Essence for AGE-stage drift detection.
 
 ### SETTLE (Intent Decomposition)
 The LLM decomposes intent into five named layers:
@@ -22,30 +46,72 @@ The LLM decomposes intent into five named layers:
 | **Structure** | Page/view map | Archetype `pages` + user customization |
 | **Tannins** | Functional systems | Archetype `tannins` + user requirements |
 
+**Archetype-as-Suggestion**: Read archetypes as **starting suggestions**, not templates. Use the Impression from TASTE to guide selection:
+- Identify which pages the user actually needs — drop unused archetype pages, add new ones
+- The archetype's `default_blend` is a **baseline** — customize based on user intent and recipe `pattern_preferences`
+- Trait composition (`src/registry/architect/traits.json`) is the primary path for novel designs, not a fallback
+- Each trait now provides `suggested_blend` options — use these for concrete layout alternatives
+
 ### CLARIFY (Essence Crystallization)
 The LLM writes `decantr.essence.json` — the project's persistent DNA. User confirms. From this point, every decision references the Essence.
 
 ### Pattern Design Review Gate
 
-**Mandatory checkpoint between CLARIFY and DECANT.** Before resolving any Blend specs, review every pattern referenced in the Essence's `blend` arrays against this checklist:
+**Mandatory checkpoint between CLARIFY and DECANT.** Enforcement varies by task context:
 
-1. **Can this be a preset on an existing pattern?** Check the pattern registry (`src/registry/patterns/`) for structurally similar patterns that already support presets. If the desired variation differs only in content slots, label placement, or density — add a preset instead of a new pattern file.
-2. **Does a structurally similar pattern already exist?** If two patterns share the same grid layout, component set, and slot structure but differ in domain-specific naming, merge the new one as a preset on the existing pattern. Example: `recipe-stats-bar` and `product-stats-bar` are the same structure — one pattern with domain presets.
-3. **Is the new pattern reusable across 2+ domains?** A pattern must be justified by cross-domain utility. If a pattern is only useful within a single archetype, it should be a preset on a more general pattern. Exception: if the archetype is new and the pattern is fundamental to its identity.
-4. **Does the domain-specific name justify a standalone file?** Only create a new pattern file when the structure (grid layout, component composition, slot arrangement) is fundamentally different from all existing patterns. A different name alone does not justify a new file.
+#### Creative Mode (task-init.md — new project scaffolding)
+- Quick check: does an existing pattern+preset fit? (5-second check, not a gate)
+- If no, create a **local pattern** in `src/patterns/{name}.json`
+- Local patterns don't need cross-domain reuse justification
+- Reference in blend: `{ "pattern": "local:pattern-name" }`
 
-**If any check fails**, refactor the blend to reference an existing pattern with a preset:
+#### Guided Mode (task-page.md — adding pages)
+- Check existing presets first
+- If no fit, create a local pattern with brief justification
+- Blend structure is enforced but new column arrangements are allowed
+
+#### Strict Mode (task-refactor.md, task-component.md, etc.)
+All 4 gates enforced:
+1. **Can this be a preset on an existing pattern?** Check the pattern registry for structurally similar patterns with presets.
+2. **Does a structurally similar pattern already exist?** Merge as a preset if layout, components, and slots match.
+3. **Is the new pattern reusable across 2+ domains?** A pattern must be justified by cross-domain utility.
+4. **Does the domain-specific name justify a standalone file?** Only when the structure is fundamentally different.
+
+**If any strict-mode check fails**, refactor to use an existing pattern preset:
 ```json
 { "pattern": "stats-bar", "preset": "recipe", "as": "recipe-stats-bar" }
 ```
-
-**Proceeding to DECANT without completing this review is a Cork violation.**
 
 ### DECANT (Spec Resolution)
 Each Structure page resolves to a **Blend** — a row-based layout tree that specifies spatial arrangement of patterns. The archetype provides `default_blend` per page; the LLM copies it into the Essence's `blend` and customizes.
 
 ### SERVE (Code Generation)
 Code generated from resolved Blend specs. The LLM reads each page's `blend` array and applies the SERVE algorithm (see Blend Spec below). No spatial improvisation — row order, column splits, and responsive breakpoints are all pre-specified.
+
+#### Preset Resolution Order
+When a blend item omits the preset, resolution follows this order (first non-null wins):
+1. **Explicit in blend**: `{ "pattern": "card-grid", "preset": "compact" }` — always authoritative
+2. **Recipe default_presets**: `recipe.pattern_preferences.default_presets["card-grid"]` — recipe's opinion
+3. **Pattern default_preset**: `pattern.default_preset` field in the pattern JSON — pattern's own default
+4. **No preset**: Use the pattern's base implementation
+
+#### Recipe Spatial Hooks
+Recipe `spatial_hints` influence generated code at generation time:
+- `card_wrapping`: Controls whether patterns are wrapped in Card components ("always" / "minimal" / "none")
+- `content_gap_shift`: Shifts the Clarity-derived gap up or down (e.g., +1 makes `_gap4` → `_gap5`)
+- `section_padding`: Overrides Clarity section padding
+
+#### Runtime vs Generation-Time Boundary
+
+| Layer | Applied When | Runtime-Switchable? |
+|-------|-------------|---------------------|
+| Recipe spatial_hints | Generation time | No (baked into code) |
+| Recipe skeleton decoration | Generation time | No (baked into code) |
+| Recipe animation entrance | Generation time | No (baked into code) |
+| `setStyle()` / `setMode()` | Runtime | Yes (CSS variable swap) |
+| Density class (`.d-compact`) | Runtime | Yes (class toggle) |
+
+For sectioned essences, resolve recipe per-section. Shell decoration follows the active section's recipe.
 
 ### AGE (Session Fortification)
 On every subsequent prompt, the LLM reads the Essence first. New pages inherit the Vintage. Drift is detected and flagged.
@@ -108,12 +174,12 @@ Location: `decantr.essence.json` (project root, generated during CLARIFY stage).
   "version": "1.0.0",
   "terroir": "saas-dashboard",
   "vintage": {
-    "style": "command-center",
+    "style": "auradecantism",
     "mode": "dark",
-    "recipe": "command-center",
-    "shape": "sharp"
+    "recipe": "auradecantism",
+    "shape": "rounded"
   },
-  "character": ["tactical", "data-dense", "operational"],
+  "character": ["professional", "data-rich"],
   "vessel": {
     "type": "spa",
     "routing": "hash"
@@ -168,8 +234,8 @@ For applications spanning multiple domains, the Essence supports a sectioned for
 ```json
 {
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
-  "character": ["tactical", "data-dense"],
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
+  "character": ["professional", "data-rich"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [...],
   "tannins": ["auth", "realtime-data"],
@@ -275,7 +341,7 @@ Visual language composition rules for drastic visual transformations that go bey
 - **Decorators**: Available CSS classes (e.g., `cc-frame`, `cc-bar`)
 - **Compositions**: Per-component examples showing how to compose standard components differently
 
-Available recipes: `command-center`
+Available recipes: `auradecantism`
 
 ---
 
@@ -414,11 +480,12 @@ How the LLM reads and applies a Blend during code generation:
    - **String**: render the pattern full-width. Use the pattern's `default_blend.atoms` for internal layout.
    - **`{ cols }`**: create a grid wrapper with `_grid _gc{N} _gap4` where N = number of columns. Add responsive collapse: below `at` breakpoint, use single column. Render each pattern inside.
    - **`{ cols, span }`**: compute total = sum of all span values (default 1 per unspecified). Grid gets `_gc{total}`. Each pattern gets `_span{weight}`.
-4. Wrap contained patterns in `Card(Card.Header, Card.Body)` — standalone patterns (layout `hero`/`row`) skip wrapping. Recipe styles override Card appearance via component CSS (e.g., command-center transforms `.d-card` into cc-frame aesthetic).
+4. Wrap contained patterns in `Card(Card.Header, Card.Body)` — standalone patterns (layout `hero`/`row`) skip wrapping. Recipe styles override Card appearance via component CSS.
 5. Apply recipe `pattern_overrides` from recipe JSON (background effects like `cc-grid`, `cc-scanline`) as Card class attributes
 6. Apply Clarity-derived gap to pattern code internals (`_gap4` → clarity gap)
 7. Add entrance animations: `d-page-enter` on page container, `d-stagger` / `d-stagger-up` on grid wrappers containing cards/KPIs, `animate: true` on Statistic components
 8. Fill pattern slots with domain content
+9. **WIRE** — Cross-pattern plumbing: when related patterns co-exist on a page (e.g., `filter-bar` + `data-table`), the generator creates page-level signals and passes them as props. Wiring rules are defined in `WIRING_RULES` in `tools/generate.js`. Pattern code examples accept optional props via `= {}` destructuring — when called without props, patterns use internal demo data; when wired, they consume shared page state.
 
 ### Separation of Concerns
 
@@ -437,7 +504,7 @@ Archetypes provide `default_blend` per page — the domain-typical spatial arran
 
 ## Monochrome Palette
 
-The `palette: 'monochrome'` personality trait in `derive.js` derives all 7 role colors from a single primary hue. Used by the Command Center style.
+The `palette: 'monochrome'` personality trait in `derive.js` derives all 7 role colors from a single primary hue.
 
 Derivation strategy (from primary H/S/L):
 - accent: H+15°, S×0.8, L+8

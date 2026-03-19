@@ -111,13 +111,47 @@ Decantr's three density classes cascade all spacing tokens to children:
 
 The **Clarity** layer in the Decantation vocabulary governs whitespace. During SETTLE, the LLM determines Character traits which imply a Clarity profile:
 
-| Character Trait | Density | Section Padding | Content Gap | Chrome Gap | Zone Emphasis | Animation |
-|----------------|---------|-----------------|-------------|------------|--------------|-----------|
-| "minimal", "clean" | Spacious | Landmark (`_py16`) | `_gap6` | `_gap2` | Showcase + Content | Subtle fades (`d-stagger`) |
-| "professional", "balanced" | Comfortable | Sectional (`_py12`) | `_gap4` | `_gap2` | Content + Controls | Standard (`d-stagger-up`) |
-| "tactical", "dense" | Compact | Grouped (`_py8`) | `_gap3` | `_gap1` | Data-dense + Chrome | Snappy (`d-stagger-scale`) |
-| "editorial", "luxurious" | Spacious | Landmark (`_py24`) | `_gap8` | `_gap2` | Showcase | Graceful (`d-stagger`) |
-| "technical", "utilitarian" | Compact | Sectional (`_py8`) | `_gap3` | `_gap1` | Controls + Data-dense | Minimal (`d-stagger-scale`) |
+### Character-to-Clarity Priority Table
+
+When character traits span multiple clusters, the higher-priority (lower number) cluster determines the base density. Recipe `spatial_hints.density_bias` can then shift it.
+
+| Priority | Cluster | Matching Traits | Base Density |
+|----------|---------|-----------------|--------------|
+| 1 (highest) | Compact | tactical, dense, data-dense, technical, utilitarian | compact |
+| 2 | Editorial | editorial, luxurious, premium | spacious |
+| 3 | Expressive | playful, bouncy, fluffy, immersive, cinematic, dramatic | comfortable |
+| 4 | Spacious | minimal, clean, elegant | spacious |
+| 5 | Balanced | professional, modern, friendly | comfortable |
+| 6 (default) | Comfortable | (no match) | comfortable |
+
+Rationale: functional density constraints (compact/dense) are hardest to violate without breaking usability, so they take precedence. Aesthetic intent (editorial, expressive) comes next.
+
+### Composable Clarity Ranges
+
+Each cluster defines a **range** rather than exact values. The LLM selects within the range based on recipe `spatial_hints` overlay and user `clarity` override in the Essence.
+
+| Character Cluster | Density Range | Content Gap Range | Section Pad Range | Chrome Gap | Animation |
+|---|---|---|---|---|---|
+| Compact | Compact | `_gap2`–`_gap4` | `_py4`–`_py8` | `_gap1` | Snappy (`d-stagger-scale`) |
+| Editorial | Comfortable–Spacious | `_gap6`–`_gap8` | `_py16`–`_py24` | `_gap2` | Graceful (`d-stagger`) |
+| Expressive | Comfortable | `_gap5`–`_gap6` | `_py10`–`_py16` | `_gap2` | Bouncy / dramatic |
+| Spacious | Comfortable–Spacious | `_gap5`–`_gap8` | `_py12`–`_py24` | `_gap2` | Subtle fades (`d-stagger`) |
+| Balanced | Comfortable | `_gap4`–`_gap6` | `_py8`–`_py12` | `_gap2` | Standard (`d-stagger-up`) |
+| Default (no match) | Comfortable | `_gap4`–`_gap6` | `_py8`–`_py12` | `_gap2` | Standard (`d-stagger-up`) |
+
+### Resolution Order
+
+1. **Character baseline** — select cluster from priority table, pick middle of range
+2. **Recipe spatial_hints overlay** — `content_gap_shift` shifts the gap ±steps, `density_bias` shifts density level, `section_padding` overrides pad
+3. **User clarity override in Essence** — optional `"clarity": { "density": "spacious", "content_gap": "_gap6" }` in essence
+
+### Essence clarity Field (Optional)
+
+```json
+"clarity": { "density": "spacious", "content_gap": "_gap6" }
+```
+
+When present in the Essence, this field overrides both the character-derived baseline and the recipe overlay. Use when the user has a specific spatial preference that doesn't match their character traits.
 
 During DECANT, each page's blend spec inherits the Clarity profile. The `surface` atoms on each page should reflect the zone and the Character-derived density.
 
@@ -513,12 +547,13 @@ If a request conflicts with the Essence, flag the conflict and ask for confirmat
 
 
 ```
-POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
+POUR → TASTE → SETTLE → CLARIFY → DECANT → SERVE → AGE
 ```
 
 | Stage | Purpose |
 |-------|---------|
 | **POUR** | User expresses intent in natural language |
+| **TASTE** | Interpret intent → produce Impression (vibe, references, density, layout, novel elements) |
 | **SETTLE** | Decompose into 5 layers: Terroir (domain), Vintage (style+mode+recipe), Character (personality traits), Structure (pages), Tannins (functional systems) |
 | **CLARIFY** | Write `decantr.essence.json` — the project's persistent DNA. User confirms. |
 | **DECANT** | Resolve each page's Blend (spatial arrangement from archetype defaults) |
@@ -530,7 +565,7 @@ POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
 {
   "version": "1.0.0",
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
   "character": ["tactical", "data-dense"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [

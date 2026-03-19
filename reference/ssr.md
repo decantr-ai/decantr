@@ -179,6 +179,31 @@ If the SSR HTML doesn't match the client-side render, hydration will still work 
 
 Guard against mismatches by ensuring the component produces identical output for the same inputs on both server and client.
 
+### `ssrComponent(factory)`
+
+Creates a universal component that works in both SSR and client contexts. The factory function receives `(h, text, cond, list, css)` — during SSR these are the SSR primitives; on the client they throw (you must import real implementations directly).
+
+```js
+import { ssrComponent } from 'decantr/ssr';
+
+const Greeting = ssrComponent((h, text, cond, list, css) => {
+  return (props) => {
+    return h('div', { class: css('_flex _col _gap4') },
+      h('h2', null, text(() => `Hello, ${props.name}!`)),
+      cond(
+        () => props.showDetails,
+        () => h('p', null, 'Details go here...')
+      )
+    );
+  };
+});
+
+// During SSR:
+renderToString(() => Greeting({ name: 'World', showDetails: true }));
+```
+
+The factory pattern means your component code is written once and automatically uses the correct primitives based on context. `ssrComponent()` checks `isSSR()` internally — if true, it passes SSR primitives to the factory; otherwise it throws, signaling that you should import `h`, `text`, etc. directly for client rendering.
+
 ## Integration Example: Express
 
 ```js

@@ -1,0 +1,54 @@
+export const showcaseManifest = {
+  "showcases": [
+    {
+      "id": "saas-dashboard",
+      "title": "SaaS Dashboard",
+      "description": "14-page analytics dashboard with KPI cards, kanban boards, inbox, status monitoring, and changelog. Built from the saas-dashboard archetype with auradecantism dark styling.",
+      "archetype": "saas-dashboard",
+      "style": "auradecantism",
+      "mode": "dark",
+      "tags": ["KPIs", "Charts", "Data Table", "Kanban", "Inbox", "Status Board", "Sidebar"],
+      "status": "live"
+    },
+    {
+      "id": "ecommerce-admin",
+      "title": "eCommerce Admin",
+      "description": "15-page merchant administration panel with product management, order kanban, customer CRM, inventory tracking, and file manager. Built from the ecommerce-admin archetype with auradecantism light styling.",
+      "archetype": "ecommerce-admin",
+      "style": "auradecantism",
+      "mode": "light",
+      "tags": ["Products", "Orders", "Kanban", "Inventory", "Customers", "File Manager", "Sidebar"],
+      "status": "live"
+    },
+    {
+      "id": "gaming-platform",
+      "title": "Gaming Platform",
+      "description": "Guild hub with leaderboards, news feed, member profiles, and game collections. Built from the gaming-platform archetype.",
+      "archetype": "gaming-platform",
+      "style": "gaming-guild",
+      "mode": "dark",
+      "tags": ["Leaderboard", "Cards", "Hero", "Sidebar"],
+      "status": "live"
+    },
+    {
+      "id": "portfolio",
+      "title": "Portfolio",
+      "description": "Full-bleed brand landing page with hero, feature grid, testimonials, and showcase gallery. Built from the portfolio archetype.",
+      "archetype": "portfolio",
+      "style": "auradecantism",
+      "mode": "dark",
+      "tags": ["Hero", "Gallery", "Stats", "Full-Bleed"],
+      "status": "live"
+    },
+    {
+      "id": "creative-tool",
+      "title": "Creative Tool",
+      "description": "Color palette generator with workspace, explore gallery, and palette detail views. Built from the creative-tool archetype.",
+      "archetype": "creative-tool",
+      "style": "clay",
+      "mode": "light",
+      "tags": ["Workspace", "Gallery", "Filters", "Detail"],
+      "status": "live"
+    }
+  ]
+};

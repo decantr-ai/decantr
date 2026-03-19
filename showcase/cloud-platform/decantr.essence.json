@@ -1,0 +1,143 @@
+{
+  "version": "2.0.0",
+  "terroir": "cloud-platform",
+  "vintage": {
+    "style": "launchpad",
+    "mode": "light",
+    "recipe": "launchpad",
+    "shape": "rounded"
+  },
+  "character": ["professional", "technical", "clean"],
+  "vessel": {
+    "type": "spa",
+    "routing": "hash"
+  },
+  "structure": [
+    {
+      "id": "home",
+      "skeleton": "full-bleed",
+      "blend": [
+        { "pattern": "hero", "preset": "brand", "as": "brand-hero" },
+        { "pattern": "card-grid", "preset": "icon", "as": "feature-grid" },
+        { "pattern": "logo-strip", "preset": "marquee", "as": "tech-logos" },
+        { "pattern": "card-grid", "preset": "icon", "as": "capability-grid" },
+        { "pattern": "stats-section", "preset": "hero", "as": "platform-stats" },
+        { "pattern": "cta-section", "preset": "brand", "as": "enterprise-cta" },
+        { "pattern": "footer-columns", "preset": "minimal", "as": "footer" }
+      ],
+      "surface": "_flex _col _gap0 _overflow[auto]"
+    },
+    {
+      "id": "apps",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "filter-bar",
+        { "cols": [{ "pattern": "card-grid", "preset": "resource", "as": "app-grid" }, "activity-feed"], "span": { "app-grid": 2 }, "at": "lg" }
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "app-detail",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "detail-header",
+        "kpi-grid",
+        { "cols": [{ "pattern": "deploy-log", "preset": "live", "as": "deploy-log" }, "data-table"], "at": "lg" }
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "team",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "filter-bar",
+        { "pattern": "card-grid", "preset": "user", "as": "team-grid" }
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "activity",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "filter-bar",
+        "activity-feed"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "services",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "service-catalog", "preset": "grid", "as": "service-grid" }
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "tokens",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "filter-bar", "preset": "toolbar", "as": "token-toolbar" },
+        "data-table"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "usage",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "resource-overview", "preset": "gauge-grid", "as": "resource-gauges" },
+        "chart-grid"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "billing",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        "pricing-table"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "settings",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "form-sections", "preset": "settings", "as": "org-settings" }
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "status",
+      "skeleton": "sidebar-main",
+      "blend": ["status-board"],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "compliance",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "checklist-card", "preset": "onboarding", "as": "compliance-checklist" },
+        "data-table"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "login",
+      "skeleton": "centered",
+      "blend": ["auth-form"],
+      "surface": "_flex _col _center _hfull"
+    },
+    {
+      "id": "not-found",
+      "skeleton": "full-bleed",
+      "blend": [],
+      "surface": "_flex _col _center _hfull"
+    }
+  ],
+  "tannins": ["auth", "realtime-data", "search", "billing", "team-management"],
+  "cork": {
+    "enforce_style": true,
+    "enforce_recipe": true
+  }
+}

@@ -158,14 +158,20 @@ export const componentCSSMap = {
   // BADGE
   // ═══════════════════════════════════════════════════════════════
   badge: [
-    '.d-badge{background:var(--d-primary);color:var(--d-primary-fg);border-radius:var(--d-radius-full)}',
+    '.d-badge{background:var(--d-primary-subtle);color:var(--d-primary-on-subtle);border-radius:var(--d-radius-full)}',
     '.d-badge-dot{background:var(--d-primary)}',
     '.d-badge-dot.d-badge-processing{animation:d-pulse 2s ease-in-out infinite}',
-    '.d-badge-success{background:var(--d-success);color:var(--d-success-fg)}',
-    '.d-badge-error{background:var(--d-error);color:var(--d-error-fg)}',
-    '.d-badge-warning{background:var(--d-warning);color:var(--d-warning-fg)}',
-    '.d-badge-info{background:var(--d-info);color:var(--d-info-fg)}',
-    '.d-badge-processing{background:var(--d-primary);color:var(--d-primary-fg)}',
+    '.d-badge-success{background:var(--d-success-subtle);color:var(--d-success-on-subtle)}',
+    '.d-badge-error{background:var(--d-error-subtle);color:var(--d-error-on-subtle)}',
+    '.d-badge-warning{background:var(--d-warning-subtle);color:var(--d-warning-on-subtle)}',
+    '.d-badge-info{background:var(--d-info-subtle);color:var(--d-info-on-subtle)}',
+    '.d-badge-processing{background:var(--d-primary-subtle);color:var(--d-primary-on-subtle)}',
+    '.d-badge-solid{background:var(--d-primary);color:var(--d-primary-fg)}',
+    '.d-badge-solid.d-badge-success{background:var(--d-success);color:var(--d-success-fg)}',
+    '.d-badge-solid.d-badge-error{background:var(--d-error);color:var(--d-error-fg)}',
+    '.d-badge-solid.d-badge-warning{background:var(--d-warning);color:var(--d-warning-fg)}',
+    '.d-badge-solid.d-badge-info{background:var(--d-info);color:var(--d-info-fg)}',
+    '.d-badge-solid.d-badge-processing{background:var(--d-primary);color:var(--d-primary-fg)}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
@@ -920,6 +926,35 @@ export const componentCSSMap = {
     '.d-shell-nav-item:hover{background:var(--d-item-hover-bg);color:var(--d-fg)}',
     '.d-shell-nav-item:focus-visible{outline:var(--d-focus-ring-width) var(--d-focus-ring-style,solid) var(--d-focus-ring-color,var(--d-ring));outline-offset:var(--d-focus-ring-offset-inset)}',
     '.d-shell-nav-item-active{background:var(--d-primary-subtle);color:var(--d-primary-on-subtle)}',
+    '.d-shell-nav-group-label{color:var(--d-muted-fg)}',
+    '.d-shell-nav-footer{border-top:var(--d-border-width) var(--d-border-style) var(--d-border)}',
+    '.d-shell-nav-badge{background:var(--d-primary);color:var(--d-primary-fg)}',
+    '.d-shell-trigger:hover{background:var(--d-item-hover-bg)}',
+    '.d-shell-trigger:focus-visible{outline:var(--d-focus-ring-width) var(--d-focus-ring-style,solid) var(--d-focus-ring-color,var(--d-ring));outline-offset:var(--d-focus-ring-offset-inset)}',
+    // Override d-glass / style-level border-radius on shell regions (compound selector beats .d-glass 0,1,0)
+    '.d-shell>.d-shell-header,.d-shell>.d-shell-nav,.d-shell>.d-shell-body,.d-shell>.d-shell-footer,.d-shell>.d-shell-aside{border-radius:0}',
+    // Nav state overrides in theme layer (compound selectors 0,2,0 beat community style .d-shell-nav 0,1,0)
+    '.d-shell-nav-rail>.d-shell-nav{padding:var(--d-sp-1);align-items:center}',
+    '.d-shell-nav-rail .d-shell-nav-item{padding:var(--d-sp-2);justify-content:center}',
+    '.d-shell-nav-hidden>.d-shell-nav{padding:0;overflow:hidden}',
+    '.d-shell-nav-hidden .d-shell-nav-item{padding:0;overflow:hidden}',
+    // Nav style variants — recipe-driven visual diversity for nav items
+    '.d-shell-nav-style-pill.d-shell-nav-item-active{background:var(--d-primary-subtle);border-radius:var(--d-radius-full);padding-left:var(--d-sp-4);padding-right:var(--d-sp-4)}',
+    '.d-shell-nav-style-underline.d-shell-nav-item-active{background:transparent;color:var(--d-primary);border-bottom:2px solid var(--d-primary);border-radius:0;padding-bottom:calc(var(--d-sp-2) - 2px)}',
+    '.d-shell-nav-style-filled.d-shell-nav-item-active{background:var(--d-primary);color:var(--d-primary-fg)}',
+    '.d-shell-nav-style-minimal.d-shell-nav-item-active{background:transparent;color:var(--d-primary);font-weight:var(--d-font-weight-semibold,600)}',
+    '.d-shell-nav-style-icon-glow.d-shell-nav-item-active{background:transparent;color:var(--d-primary);filter:drop-shadow(0 0 6px var(--d-primary))}',
+    // Inset variant: backgrounds + distributed border-radius (must come after the reset above)
+    '.d-shell-inset>.d-shell-header,.d-shell-inset>.d-shell-body,.d-shell-inset>.d-shell-footer{background:var(--d-bg)}',
+    '.d-shell-inset>.d-shell-nav{background:var(--d-surface-0);border-right:none}',
+    '.d-shell-inset>.d-shell-aside{border-radius:var(--d-radius-lg);margin-left:var(--d-shell-inset-gap,var(--d-sp-2))}',
+    '.d-shell-inset>.d-shell-header{border-radius:var(--d-radius-lg) var(--d-radius-lg) 0 0}',
+    '.d-shell-inset>.d-shell-body{border-radius:0}',
+    '.d-shell-inset>.d-shell-footer{border-radius:0 0 var(--d-radius-lg) var(--d-radius-lg)}',
+    '.d-shell-inset:not(:has(.d-shell-footer))>.d-shell-body{border-radius:0 0 var(--d-radius-lg) var(--d-radius-lg)}',
+    '.d-shell-inset:not(:has(.d-shell-header))>.d-shell-body{border-radius:var(--d-radius-lg) var(--d-radius-lg) 0 0}',
+    '.d-shell-inset:not(:has(.d-shell-header)):not(:has(.d-shell-footer))>.d-shell-body{border-radius:var(--d-radius-lg)}',
+    '.d-shell-inset.d-shell-nav-hidden{padding-left:var(--d-shell-inset-gap,var(--d-sp-2))}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════

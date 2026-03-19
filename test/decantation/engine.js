@@ -144,7 +144,7 @@ export function deriveSyntheticTriggers(archetype) {
     'login', 'register', 'contact', 'about', 'search', 'navigation', 'content',
     'main', 'area', 'management', 'online', 'interactive', 'design', 'system',
     'information', 'that', 'this', 'from', 'into', 'have', 'been', 'will', 'make',
-    'platform', 'app', 'application', 'tool', 'service',
+    'platform', 'app', 'application', 'tool', 'service', 'admin', 'panel', 'merchant',
   ]);
 
   // Primary: full hyphenated id (always included even if parts are stop words)
@@ -157,7 +157,7 @@ export function deriveSyntheticTriggers(archetype) {
   const primary = [...new Set(rawPrimary)];
 
   // Secondary: key page ids (non-generic) + tannin names + description keywords
-  const genericPages = new Set(['home', 'login', 'register', 'contact', 'about', 'search', 'settings']);
+  const genericPages = new Set(['home', 'login', 'register', 'contact', 'about', 'search', 'settings', 'billing', 'notifications', 'not-found']);
   const secondary = [...new Set([
     ...archetype.pages.map(p => p.id).filter(p => !primary.includes(p) && !genericPages.has(p) && !STOP.has(p)),
     ...archetype.tannins.map(t => t.split('-')).flat().filter(t => !STOP.has(t) && t.length > 3),
@@ -165,7 +165,7 @@ export function deriveSyntheticTriggers(archetype) {
   ])];
 
   // Negative: other archetype ids
-  const otherIds = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community', 'gaming-platform']
+  const otherIds = ['ecommerce', 'ecommerce-admin', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community', 'gaming-platform', 'cloud-platform']
     .filter(a => a !== id);
   const negative = otherIds.map(a => `${a}-only`);
 
@@ -694,7 +694,7 @@ export function validateBlend(blend, patternIndex) {
 // ── Essence Validation ────────────────────────────────────────────────────
 
 const KNOWN_ARCHETYPES = ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community'];
-const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center'];
+const KNOWN_STYLES = ['auradecantism', 'clean', 'retro', 'glassmorphism'];
 
 /**
  * Validate an essence JSON object. Mirrors cli/commands/validate.js logic.

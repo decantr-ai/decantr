@@ -3,7 +3,7 @@
  *
  * @module decantr/components/carousel
  */
-import { h } from '../core/index.js';
+import { h, onCleanup } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret } from './_behaviors.js';
 
@@ -85,6 +85,7 @@ export function Carousel(props = {}) {
     startTimer();
     container.addEventListener('mouseenter', stopTimer);
     container.addEventListener('mouseleave', startTimer);
+    onCleanup(() => { clearInterval(_timer); });
   }
 
   // Keyboard

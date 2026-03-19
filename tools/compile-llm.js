@@ -12,11 +12,12 @@
  *   node tools/compile-llm.js --check                  # validate only, no write
  *   node tools/compile-llm.js --only=task-init,task-page  # compile specific profiles
  *   node tools/compile-llm.js --watch                  # recompile on source changes
+ *   node tools/compile-llm.js --essence=path/to/decantr.essence.json  # prune to project-referenced content
  *
  * Incremental caching: skips recompile when source hashes match previous build.
  * Cache stored at node_modules/.decantr-cache/compile-llm-cache.json
  *
- * Output: llm/task-{type}.md  (6 profiles)
+ * Output: llm/task-{type}.md  (7 profiles)
  *
  * @module tools/compile-llm
  */
@@ -50,6 +51,7 @@ const TOKEN_BUDGETS = {
   'task-style':     20000,
   'task-debug':     15000,
   'task-refactor':  15000,
+  'task-ssr':       20000,
 };
 
 // ---------------------------------------------------------------------------
@@ -73,6 +75,52 @@ function readJSON(filePath) {
   const raw = readFile(filePath);
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
+}
+
+// ---------------------------------------------------------------------------
+// Essence-aware filter: prune compiled output to project-referenced content
+// ---------------------------------------------------------------------------
+
+function loadEssenceFilter(essencePath) {
+  if (!essencePath) return null;
+  const raw = readFile(essencePath);
+  if (!raw) return null;
+  try {
+    const essence = JSON.parse(raw);
+    const archetypes = new Set();
+    const patterns = new Set();
+    const recipes = new Set();
+
+    // Single-domain essence
+    if (essence.terroir) archetypes.add(essence.terroir);
+    if (essence.vintage?.recipe) recipes.add(essence.vintage.recipe);
+
+    // Sectioned essence
+    if (essence.sections) {
+      for (const section of essence.sections) {
+        if (section.terroir) archetypes.add(section.terroir);
+        if (section.vintage?.recipe) recipes.add(section.vintage.recipe);
+        for (const page of section.structure || []) {
+          for (const item of page.blend || []) {
+            if (typeof item === 'string') patterns.add(item);
+            else if (item.pattern) patterns.add(item.pattern);
+          }
+        }
+      }
+    }
+
+    // Single-domain structure patterns
+    for (const page of essence.structure || []) {
+      for (const item of page.blend || []) {
+        if (typeof item === 'string') patterns.add(item);
+        else if (item.pattern) patterns.add(item.pattern);
+      }
+    }
+
+    return { archetypes, patterns, recipes };
+  } catch {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -322,7 +370,7 @@ function resolveInlineRefs(content, allSections) {
 // Registry extractors
 // ---------------------------------------------------------------------------
 
-function extractArchetypeSummaries(sources) {
+function extractArchetypeSummaries(sources, essenceFilter) {
   const lines = ['## Archetype Index\n'];
   const indexPath = 'archetypes/index.json';
   const index = sources.reg[indexPath];
@@ -331,6 +379,7 @@ function extractArchetypeSummaries(sources) {
   for (const [key, data] of Object.entries(sources.reg)) {
     if (!key.startsWith('archetypes/') || key === indexPath || !data) continue;
     const name = key.replace('archetypes/', '').replace('.json', '');
+    if (essenceFilter && !essenceFilter.archetypes.has(name)) continue;
     lines.push(`### ${name}`);
     if (data.pages) {
       lines.push(`**Pages:** ${data.pages.map(p => p.id).join(', ')}`);
@@ -367,7 +416,7 @@ function extractArchetypeSummaries(sources) {
   return lines.join('\n');
 }
 
-function extractPatternIndex(sources) {
+function extractPatternIndex(sources, essenceFilter) {
   const lines = ['## Pattern Index\n'];
   lines.push('| Pattern | Presets | Layout | Components |');
   lines.push('|---------|---------|--------|-----------|');
@@ -375,6 +424,7 @@ function extractPatternIndex(sources) {
   for (const [key, data] of Object.entries(sources.reg)) {
     if (!key.startsWith('patterns/') || key === 'patterns/index.json' || !data) continue;
     const name = key.replace('patterns/', '').replace('.json', '');
+    if (essenceFilter && !essenceFilter.patterns.has(name)) continue;
     const presets = data.presets ? Object.keys(data.presets).join(', ') : '—';
     const layout = data.default_blend?.layout || data.blend?.layout || '—';
     const comps = data.components ? data.components.join(', ') : '—';
@@ -383,11 +433,13 @@ function extractPatternIndex(sources) {
   return lines.join('\n');
 }
 
-function extractRecipeSummaries(sources) {
+function extractRecipeSummaries(sources, essenceFilter) {
   const lines = ['## Recipe Index\n'];
 
   for (const [key, data] of Object.entries(sources.reg)) {
     if (!key.startsWith('recipe-') || !data) continue;
+    const recipeName = key.replace('recipe-', '').replace('.json', '');
+    if (essenceFilter && !essenceFilter.recipes.has(recipeName)) continue;
     const name = key.replace('.json', '');
     lines.push(`### ${name}`);
     if (data.setup) lines.push(`**Setup:** \`${data.setup}\``);
@@ -428,6 +480,47 @@ function extractSkeletonSummary(sources) {
     }
   }
   return lines.join('\n');
+}
+
+// ─── Cork Rules (tiered enforcement) ────────────────────────────
+// Creative: advisory for new project scaffolding
+// Guided: semi-strict for adding pages
+// Strict: full enforcement for maintenance tasks
+
+function corkRulesForTier(tier) {
+  if (tier === 'creative') {
+    return `Cork enforcement: **Creative** — rules are advisory for initial scaffolding.
+
+Before writing code, read \`decantr.essence.json\` if it exists. During initial scaffolding (POUR → TASTE → SETTLE → CLARIFY → DECANT → SERVE):
+1. **Style**: Start from the Vintage. May explore adjacent styles if user intent suggests it.
+2. **Structure**: Build from scratch. Archetype pages are suggestions, not requirements.
+3. **Blend**: Archetype default_blend is a starting point. Reorder, add columns, change breakpoints to match the Impression.
+4. **Recipe**: Recipe compositions show the target aesthetic. Adapt them, don't copy literally. Use \`pattern_preferences.default_presets\` as suggestions.
+5. **Clarity**: Character traits suggest a density range, not exact atoms. Choose within the range from the Composable Clarity Ranges table.
+
+After initial SERVE, cork.mode auto-sets to "maintenance" and strict rules apply.`;
+  }
+  if (tier === 'guided') {
+    return `Cork enforcement: **Guided** — structure is enforced, layout is flexible.
+
+Before writing ANY code, read \`decantr.essence.json\`. Verify:
+1. **Style matches the Vintage.** Do not switch styles.
+2. **Page exists in the Structure.** If new, add it to the Essence first.
+3. **Layout follows the page's Blend** as a baseline, but new column arrangements and pattern reordering are allowed to match intent.
+4. **Composition follows the active Recipe.** Do not freestyle decoration.
+5. **Spacing follows the Clarity profile** — select within the range for the active character cluster.
+
+New local patterns (\`src/patterns/\`) are allowed with brief justification. If a request conflicts with the Essence, flag it and ask.`;
+  }
+  // Default: strict
+  return `Before writing ANY code, read \`decantr.essence.json\`. Verify:
+1. **Style matches the Vintage.** Do not switch styles.
+2. **Page exists in the Structure.** If new, add it to the Essence first.
+3. **Layout follows the page's Blend.** Do not freestyle spatial arrangement.
+4. **Composition follows the active Recipe.** Do not freestyle decoration.
+5. **Spacing follows the Clarity profile** derived from Character → see Clarity Profile table above. Do not default to \`_gap4\`/\`_p4\` everywhere.
+
+If a request conflicts with the Essence, flag the conflict and ask for confirmation.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -535,26 +628,20 @@ function assemblePreamble(sources) {
   const colorAtoms = extractSection(atoms, 'colors-semantic-');
   if (colorAtoms) parts.push(stripSeeAlso(colorAtoms));
 
-  // --- Cork Rules ---
+  // --- Cork Rules (strict tier — default for most tasks) ---
   parts.push('\n---\n\n# Cork Rules (Anti-Drift)\n');
-  parts.push(`Before writing ANY code, read \`decantr.essence.json\`. Verify:
-1. **Style matches the Vintage.** Do not switch styles.
-2. **Page exists in the Structure.** If new, add it to the Essence first.
-3. **Layout follows the page's Blend.** Do not freestyle spatial arrangement.
-4. **Composition follows the active Recipe.** Do not freestyle decoration.
-5. **Spacing follows the Clarity profile** derived from Character → see Clarity Profile table above. Do not default to \`_gap4\`/\`_p4\` everywhere.
-
-If a request conflicts with the Essence, flag the conflict and ask for confirmation.`);
+  parts.push(corkRulesForTier('strict'));
 
   // --- Decantation Process (summary) ---
   parts.push('\n---\n\n# Decantation Process (Summary)\n');
   parts.push(`\`\`\`
-POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
+POUR → TASTE → SETTLE → CLARIFY → DECANT → SERVE → AGE
 \`\`\`
 
 | Stage | Purpose |
 |-------|---------|
 | **POUR** | User expresses intent in natural language |
+| **TASTE** | Interpret intent → produce Impression (vibe, references, density, layout, novel elements) |
 | **SETTLE** | Decompose into 5 layers: Terroir (domain), Vintage (style+mode+recipe), Character (personality traits), Structure (pages), Tannins (functional systems) |
 | **CLARIFY** | Write \`decantr.essence.json\` — the project's persistent DNA. User confirms. |
 | **DECANT** | Resolve each page's Blend (spatial arrangement from archetype defaults) |
@@ -566,7 +653,7 @@ POUR → SETTLE → CLARIFY → DECANT → SERVE → AGE
 {
   "version": "1.0.0",
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
   "character": ["tactical", "data-dense"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [
@@ -606,7 +693,7 @@ import { icon } from 'decantr/icons';
 // ---------------------------------------------------------------------------
 
 // --- task-init: Create a New Decantr Project ---
-function buildTaskInit(sources, preamble) {
+function buildTaskInit(sources, preamble, essenceFilter) {
   const decant = sources.ref['decantation-process'] || '';
   const primer = parseSections(sources.ref['llm-primer'] || '');
 
@@ -615,17 +702,46 @@ function buildTaskInit(sources, preamble) {
   parts.push('\n\n---\n\n# Task: Create a New Decantr Project\n');
   parts.push('> Read this file when scaffolding a new project from scratch. Covers the full Decantation Process, all archetypes, styles, recipes, and skeleton templates.\n');
 
+  // Override strict Cork with creative tier for scaffolding
+  parts.push('\n---\n\n# Cork Rules (Creative Tier)\n');
+  parts.push(corkRulesForTier('creative'));
+
+  // TASTE stage guidance
+  parts.push('\n---\n\n# TASTE Stage — Intent Interpretation\n');
+  parts.push(`Before SETTLE, produce a structured **Impression**:
+
+| Field | Description |
+|-------|-------------|
+| **Vibe** | 1-3 adjective phrases ("airy minimalist with bold type") |
+| **Reference signals** | Map user references to known recipes/styles ("like Notion" → clean) |
+| **Density intent** | Spacious / balanced / compact |
+| **Layout intent** | Sidebar dashboard / full-bleed / hybrid / novel |
+| **Novel elements** | Anything not fitting existing patterns |
+
+Store as \`_impression\` in Essence during CLARIFY:
+\`\`\`json
+"_impression": {
+  "vibe": ["airy", "minimalist"],
+  "references": ["notion"],
+  "density_intent": "comfortable",
+  "layout_intent": "sidebar-main",
+  "novel_elements": []
+}
+\`\`\`
+
+The Impression feeds SETTLE — use it to customize archetype defaults instead of copying them verbatim.`);
+
   // Full decantation process
   parts.push('# The Decantation Process (Full)\n');
   parts.push(stripSeeAlso(decant));
 
-  // Archetype summaries (all)
+  // Archetype summaries (all, or filtered by essence)
   parts.push('\n---\n\n');
-  parts.push(extractArchetypeSummaries(sources));
+  parts.push(extractArchetypeSummaries(sources, essenceFilter));
 
-  // Recipe summaries (all)
+  // Recipe summaries (all, or filtered by essence)
   parts.push('\n---\n\n');
-  parts.push(extractRecipeSummaries(sources));
+  parts.push(extractRecipeSummaries(sources, essenceFilter));
 
   // Style catalog
   parts.push('\n---\n\n# Style Catalog\n');
@@ -637,9 +753,9 @@ function buildTaskInit(sources, preamble) {
   const skelCode = extractSection(primer, '5');
   if (skelCode) parts.push(stripSeeAlso(skelCode));
 
-  // Pattern index
+  // Pattern index (all, or filtered by essence)
   parts.push('\n---\n\n');
-  parts.push(extractPatternIndex(sources));
+  parts.push(extractPatternIndex(sources, essenceFilter));
 
   // Community registry discovery
   parts.push('\n---\n\n# Community Content Registry\n');
@@ -654,7 +770,7 @@ Registry content is installed locally with no runtime dependency. The manifest \
 }
 
 // --- task-page: Add/Modify a Page ---
-function buildTaskPage(sources, preamble) {
+function buildTaskPage(sources, preamble, essenceFilter) {
   const primer = parseSections(sources.ref['llm-primer'] || '');
   const spatial = parseSections(sources.ref['spatial-guidelines'] || '');
 
@@ -662,6 +778,10 @@ function buildTaskPage(sources, preamble) {
 
   parts.push('\n\n---\n\n# Task: Add or Modify a Page\n');
   parts.push('> Read this file when adding a page to an existing project. Always read `decantr.essence.json` first to identify the active archetype, recipe, and Clarity profile.\n');
+
+  // Override strict Cork with guided tier for page additions
+  parts.push('\n---\n\n# Cork Rules (Guided Tier)\n');
+  parts.push(corkRulesForTier('guided'));
 
   // How to read the essence
   parts.push('## Reading the Essence\n');
@@ -689,13 +809,13 @@ function buildTaskPage(sources, preamble) {
   const recipeGuide = extractSection(primer, '7');
   if (recipeGuide) parts.push(stripSeeAlso(recipeGuide));
 
-  // All archetype summaries (for page context)
+  // Archetype summaries (all, or filtered by essence)
   parts.push('\n---\n\n');
-  parts.push(extractArchetypeSummaries(sources));
+  parts.push(extractArchetypeSummaries(sources, essenceFilter));
 
-  // All recipe summaries
+  // Recipe summaries (all, or filtered by essence)
   parts.push('\n---\n\n');
-  parts.push(extractRecipeSummaries(sources));
+  parts.push(extractRecipeSummaries(sources, essenceFilter));
 
   // Pattern index with code snippets
   parts.push('\n---\n\n# Pattern Code Snippets\n');
@@ -720,7 +840,7 @@ function buildTaskPage(sources, preamble) {
 }
 
 // --- task-component: Create/Modify Components ---
-function buildTaskComponent(sources, preamble) {
+function buildTaskComponent(sources, preamble, essenceFilter) {
   const primer = parseSections(sources.ref['llm-primer'] || '');
   const lifecycle = sources.ref['component-lifecycle'] || '';
   const behaviors = sources.ref['behaviors'] || '';
@@ -792,7 +912,7 @@ function buildTaskComponent(sources, preamble) {
 }
 
 // --- task-style: Change Styles/Themes ---
-function buildTaskStyle(sources, preamble) {
+function buildTaskStyle(sources, preamble, essenceFilter) {
   const styleSystem = sources.ref['style-system'] || '';
   const tokens = sources.ref['tokens'] || '';
   const colorGuide = sources.ref['color-guidelines'] || '';
@@ -810,9 +930,9 @@ function buildTaskStyle(sources, preamble) {
   parts.push('\n---\n\n# Design Token Reference (Full)\n');
   parts.push(stripSeeAlso(tokens));
 
-  // Recipe summaries (for recipe visual transforms)
+  // Recipe summaries (for recipe visual transforms, filtered by essence if provided)
   parts.push('\n---\n\n');
-  parts.push(extractRecipeSummaries(sources));
+  parts.push(extractRecipeSummaries(sources, essenceFilter));
 
   // Community styles via registry
   parts.push('\n---\n\n# Community Styles via Registry\n');
@@ -826,7 +946,7 @@ function buildTaskStyle(sources, preamble) {
 }
 
 // --- task-debug: Debugging & Troubleshooting ---
-function buildTaskDebug(sources, preamble) {
+function buildTaskDebug(sources, preamble, essenceFilter) {
   const primer = parseSections(sources.ref['llm-primer'] || '');
   const agents = sources.agents || '';
 
@@ -892,7 +1012,7 @@ span({}, () => \`Count: \${count()}\`)
 }
 
 // --- task-refactor: Refactoring & Drift Correction ---
-function buildTaskRefactor(sources, preamble) {
+function buildTaskRefactor(sources, preamble, essenceFilter) {
   const decant = parseSections(sources.ref['decantation-process'] || '');
 
   const parts = [preamble];
@@ -965,6 +1085,137 @@ function buildTaskRefactor(sources, preamble) {
 | \`vessel.routing\` | \`config.router\` |
 
 Essence always wins. If config diverges, update config to match.`);
+
+  return parts.join('\n\n');
+}
+
+// --- task-ssr: Add Server-Side Rendering ---
+function buildTaskSSR(sources, preamble, essenceFilter) {
+  const parts = [preamble];
+
+  parts.push('\n\n---\n\n# Task: Add SSR to a Project\n');
+  parts.push('> Read this file when adding server-side rendering, streaming, or hydration to a Decantr app.\n');
+
+  // SSR reference doc (full)
+  parts.push('# SSR API Reference\n');
+  const ssrRef = sources.ref['ssr'] || '';
+  if (ssrRef) parts.push(ssrRef);
+
+  // Signal behavior during SSR
+  parts.push('\n## Signal Behavior During SSR\n');
+  parts.push(`During SSR, signals are **evaluated once** without creating reactive subscriptions.
+\`createEffect\` callbacks do NOT execute. \`onMount\`/\`onDestroy\` are no-ops.
+The result is a static HTML snapshot — reactivity only activates after client-side hydration.
+
+\`\`\`js
+const [count, setCount] = createSignal(0);
+renderToString(() => {
+  // count() reads 0 but does NOT subscribe
+  return ssrH('span', null, ssrText(() => count()));
+});
+setCount(5); // No effect on rendered HTML — still shows "0"
+\`\`\``);
+
+  // Hydration contract
+  parts.push('\n## Hydration Contract\n');
+  parts.push(`1. Call \`installHydrationRuntime()\` **once** before any \`hydrate()\` call
+2. Pass the same component function to \`hydrate()\` that was used for \`renderToString()\`
+3. The client render must produce the **same DOM structure** as SSR (same elements, same order)
+4. Hydration walks the DOM by position (depth-first), not by \`data-d-id\`
+5. Existing DOM nodes are **reused** — event listeners and signal subscriptions are attached to them
+
+\`\`\`js
+// Client bootstrap
+import { hydrate, installHydrationRuntime } from 'decantr/ssr';
+import { createEffect } from 'decantr/state';
+import { pushScope, popScope, drainMountQueue, runDestroyFns } from 'decantr/core';
+
+installHydrationRuntime(
+  { createEffect },
+  { pushScope, popScope, drainMountQueue, runDestroyFns }
+);
+
+hydrate(document.getElementById('app'), () => App());
+\`\`\``);
+
+  // Universal components
+  parts.push('\n## Universal Components (ssrComponent)\n');
+  parts.push(`\`ssrComponent(factory)\` creates a component that works in both SSR and client contexts.
+The factory receives \`(h, text, cond, list, css)\` — during SSR these are SSR primitives.
+
+\`\`\`js
+import { ssrComponent } from 'decantr/ssr';
+
+const Card = ssrComponent((h, text, cond, list, css) => {
+  return (props) => h('div', { class: css('_bgmuted _r2 _p4') },
+    h('h3', null, text(() => props.title)),
+    cond(() => props.body, () => h('p', null, text(() => props.body)))
+  );
+});
+\`\`\``);
+
+  // Common pitfalls
+  parts.push('\n## Common Pitfalls\n');
+  parts.push(`1. **Browser APIs in SSR** — \`window\`, \`document\`, \`localStorage\` don't exist on the server. Guard with \`isSSR()\`
+2. **Hydration mismatch** — Different signal values, browser-only branches, or time-dependent content between server and client cause glitches
+3. **CSS not injected** — Atomic CSS runtime doesn't inject during SSR. Use build-time CSS extraction (\`npx decantr build\`) or inline critical CSS
+4. **Portals unsupported** — \`Portal\` components are not available during SSR
+5. **Static routing** — Resolve the correct page component for each request URL before calling \`renderToString\`
+6. **Effects don't run** — \`createEffect\` callbacks are skipped during SSR. Data fetching must happen before \`renderToString\`
+7. **Forgetting installHydrationRuntime** — Must be called once on the client before \`hydrate()\``);
+
+  // Integration patterns
+  parts.push('\n## Integration Patterns\n');
+  parts.push(`### Express (Node.js)
+\`\`\`js
+import express from 'express';
+import { renderToString, ssrH, ssrCss } from 'decantr/ssr';
+
+const app = express();
+app.use(express.static('dist'));
+
+app.get('/', (req, res) => {
+  const html = renderToString(() => App());
+  res.send(\`<!DOCTYPE html><html><body><div id="app">\${html}</div><script type="module" src="/client.js"></script></body></html>\`);
+});
+\`\`\`
+
+### Edge (Hono / Cloudflare Workers)
+\`\`\`js
+import { Hono } from 'hono';
+import { renderToStream, ssrH } from 'decantr/ssr';
+
+const app = new Hono();
+app.get('/', (c) => {
+  const stream = renderToStream(() => App());
+  return new Response(stream, { headers: { 'Content-Type': 'text/html' } });
+});
+\`\`\`
+
+### Data Prefetching
+\`\`\`js
+// Server: fetch + render + embed state
+const data = await fetch('https://api.example.com/items').then(r => r.json());
+const html = renderToString(() => ItemsPage(data));
+res.send(\`...<script>window.__PREFETCHED__ = \${JSON.stringify(data)}</script>...\`);
+
+// Client: hydrate with same data
+const data = window.__PREFETCHED__ || [];
+hydrate(root, () => ItemsPage(data));
+\`\`\``);
+
+  // Import catalog
+  parts.push('\n---\n\n# SSR Import Catalog\n');
+  parts.push(`\`\`\`js
+// Server
+import { renderToString, renderToStream, ssrH, ssrText, ssrCond, ssrList, ssrCss, ssrOnMount, ssrOnDestroy, ssrComponent, isSSR } from 'decantr/ssr';
+import { createSignal, createMemo } from 'decantr/state';
+
+// Client (hydration)
+import { hydrate, installHydrationRuntime } from 'decantr/ssr';
+import { createEffect } from 'decantr/state';
+import { pushScope, popScope, drainMountQueue, runDestroyFns } from 'decantr/core';
+\`\`\``);
 
   return parts.join('\n\n');
 }
@@ -1075,6 +1326,7 @@ function generateReport(profiles, issues, preambleTokens) {
     ['Change style/theme', '122-240k', 'task-style'],
     ['Debug an issue', '122-240k', 'task-debug'],
     ['Refactor / fix drift', '122-240k', 'task-refactor'],
+    ['Add SSR to project', '122-240k', 'task-ssr'],
   ];
 
   for (const [scenario, current, profileName] of scenarios) {
@@ -1120,6 +1372,7 @@ function generateDispatcher() {
 | Change styles/themes | \`node_modules/decantr/llm/task-style.md\` | ~15-20k |
 | Debug issues | \`node_modules/decantr/llm/task-debug.md\` | ~10-15k |
 | Refactor / fix drift | \`node_modules/decantr/llm/task-refactor.md\` | ~10-15k |
+| Add SSR to a project | \`node_modules/decantr/llm/task-ssr.md\` | ~15-20k |
 
 ## Cork Rules (Always Apply)
 1. Style matches the Vintage
@@ -1164,6 +1417,15 @@ async function main() {
   const onlyArg = args.find(a => a.startsWith('--only='));
   const onlyProfiles = onlyArg ? onlyArg.split('=')[1].split(',') : null;
 
+  // Parse --essence flag for content pruning
+  const essencePath = args.find(a => a.startsWith('--essence='))?.split('=')[1];
+  const essenceFilter = loadEssenceFilter(essencePath);
+  if (essencePath && essenceFilter) {
+    console.log(`Essence filter active: ${essenceFilter.archetypes.size} archetypes, ${essenceFilter.patterns.size} patterns, ${essenceFilter.recipes.size} recipes`);
+  } else if (essencePath && !essenceFilter) {
+    console.warn(`Warning: Could not load essence file at ${essencePath} — compiling without filter`);
+  }
+
   // Incremental cache check
   if (!checkOnly && !reportMode) {
     const currentHashes = computeSourceHashes();
@@ -1202,12 +1464,13 @@ async function main() {
 
   // Profile builders map
   const profileBuilders = {
-    'task-init':      () => buildTaskInit(sources, preamble),
-    'task-page':      () => buildTaskPage(sources, preamble),
-    'task-component': () => buildTaskComponent(sources, preamble),
-    'task-style':     () => buildTaskStyle(sources, preamble),
-    'task-debug':     () => buildTaskDebug(sources, preamble),
-    'task-refactor':  () => buildTaskRefactor(sources, preamble),
+    'task-init':      () => buildTaskInit(sources, preamble, essenceFilter),
+    'task-page':      () => buildTaskPage(sources, preamble, essenceFilter),
+    'task-component': () => buildTaskComponent(sources, preamble, essenceFilter),
+    'task-style':     () => buildTaskStyle(sources, preamble, essenceFilter),
+    'task-debug':     () => buildTaskDebug(sources, preamble, essenceFilter),
+    'task-refactor':  () => buildTaskRefactor(sources, preamble, essenceFilter),
+    'task-ssr':        () => buildTaskSSR(sources, preamble, essenceFilter),
   };
 
   // Build profiles (filtered by --only if specified)
@@ -1296,6 +1559,6 @@ async function main() {
 }
 
 // Exports for testing
-export { parseSections, extractSection, estimateTokens, assemblePreamble, validate, loadSources, computeSourceHashes, loadCompileCache, saveCompileCache };
+export { parseSections, extractSection, estimateTokens, assemblePreamble, validate, loadSources, computeSourceHashes, loadCompileCache, saveCompileCache, loadEssenceFilter };
 
 await main();

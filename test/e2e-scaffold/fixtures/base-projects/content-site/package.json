@@ -1,0 +1,13 @@
+{
+  "name": "e2e-fixture-content-site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx decantr dev",
+    "build": "npx decantr build"
+  },
+  "dependencies": {
+    "decantr": "file:../../../../.."
+  }
+}

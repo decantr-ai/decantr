@@ -1098,35 +1098,6 @@ describe('derive() with monochrome palette', () => {
   });
 });
 
-describe('Command Center style', () => {
-  it('registers via registerStyle and appears in style list', async () => {
-    const { getStyleList, registerStyle } = await import('../src/css/index.js');
-    const { commandCenter } = await import('../src/css/styles/addons/command-center.js');
-    registerStyle(commandCenter);
-    const styles = getStyleList();
-    const ids = styles.map(s => s.id);
-    assert.ok(ids.includes('command-center'), 'command-center not in style list');
-  });
-
-  it('activates via setStyle after registration', async () => {
-    const { setStyle, getStyle, registerStyle } = await import('../src/css/index.js');
-    const { commandCenter } = await import('../src/css/styles/addons/command-center.js');
-    registerStyle(commandCenter);
-    setStyle('command-center');
-    const style = getStyle();
-    const id = typeof style === 'function' ? style() : style;
-    assert.equal(id, 'command-center');
-  });
-
-  it('uses monochrome palette personality', async () => {
-    const { commandCenter } = await import('../src/css/styles/addons/command-center.js');
-    assert.equal(commandCenter.personality.palette, 'monochrome');
-    assert.equal(commandCenter.personality.radius, 'sharp');
-    assert.equal(commandCenter.personality.borders, 'bold');
-    assert.equal(commandCenter.personality.density, 'compact');
-  });
-});
-
 describe('field tokens', () => {
   it('derive() includes all field tokens', () => {
     const tokens = derive(defaultSeed, defaultPersonality, 'dark');
@@ -1346,52 +1317,50 @@ describe('new styles registration', () => {
     const { clean } = await import('../src/css/styles/addons/clean.js');
     const { retro } = await import('../src/css/styles/community/retro.js');
     const { glassmorphism } = await import('../src/css/styles/addons/glassmorphism.js');
-    const { commandCenter } = await import('../src/css/styles/addons/command-center.js');
-    const { clay } = await import('../src/css/styles/community/clay.js');
+    const { launchpad } = await import('../src/css/styles/community/launchpad.js');
     const { liquidGlass } = await import('../src/css/styles/community/liquid-glass.js');
     const { dopamine } = await import('../src/css/styles/community/dopamine.js');
     const { prismatic } = await import('../src/css/styles/community/prismatic.js');
     const { bioluminescent } = await import('../src/css/styles/community/bioluminescent.js');
     const { editorial } = await import('../src/css/styles/community/editorial.js');
-    for (const s of [clean, retro, glassmorphism, commandCenter, clay, liquidGlass, dopamine, prismatic, bioluminescent, editorial]) {
+    for (const s of [clean, retro, glassmorphism, launchpad, liquidGlass, dopamine, prismatic, bioluminescent, editorial]) {
       registerStyle(s);
     }
     const styles = getStyleList();
     const ids = styles.map(s => s.id);
     const expected = [
-      'auradecantism', 'clean', 'retro', 'glassmorphism', 'command-center',
-      'clay', 'liquid-glass', 'dopamine', 'prismatic', 'bioluminescent', 'editorial',
+      'auradecantism', 'clean', 'retro', 'glassmorphism',
+      'launchpad', 'liquid-glass', 'dopamine', 'prismatic', 'bioluminescent', 'editorial',
     ];
     for (const id of expected) {
       assert.ok(ids.includes(id), `${id} not in style list`);
     }
-    assert.equal(styles.length, 11, `expected 11 styles after registration, got ${styles.length}`);
+    assert.equal(styles.length, 10, `expected 10 styles after registration, got ${styles.length}`);
   });
 });
 
-describe('clay style', () => {
+describe('launchpad style', () => {
   it('derive() produces valid tokens', async () => {
-    const { clay } = await import('../src/css/styles/community/clay.js');
-    const tokens = derive(clay.seed, clay.personality, 'dark');
+    const { launchpad } = await import('../src/css/styles/community/launchpad.js');
+    const tokens = derive(launchpad.seed, launchpad.personality, 'dark');
     assert.ok(tokens['--d-primary'], 'missing --d-primary');
     assert.ok(tokens['--d-bg'], 'missing --d-bg');
-    assert.ok(tokens['--d-elevation-1'].includes('inset'), 'clay should use inset shadows');
   });
 
   it('has correct personality', async () => {
-    const { clay } = await import('../src/css/styles/community/clay.js');
-    assert.equal(clay.personality.elevation, 'clay');
-    assert.equal(clay.personality.borders, 'none');
-    assert.equal(clay.personality.density, 'spacious');
+    const { launchpad } = await import('../src/css/styles/community/launchpad.js');
+    assert.equal(launchpad.personality.elevation, 'shadow');
+    assert.equal(launchpad.personality.borders, 'thin');
+    assert.equal(launchpad.personality.density, 'comfortable');
   });
 
   it('activates via setStyle after registration', async () => {
     const { setStyle, getStyle, registerStyle } = await import('../src/css/index.js');
-    const { clay } = await import('../src/css/styles/community/clay.js');
-    registerStyle(clay);
-    setStyle('clay');
+    const { launchpad } = await import('../src/css/styles/community/launchpad.js');
+    registerStyle(launchpad);
+    setStyle('launchpad');
     const id = typeof getStyle() === 'function' ? getStyle()() : getStyle();
-    assert.equal(id, 'clay');
+    assert.equal(id, 'launchpad');
   });
 });
 
@@ -1479,7 +1448,7 @@ describe('editorial style', () => {
 
 describe('new style contrast validation', () => {
   const styleDefs = [
-    ['clay', '../src/css/styles/community/clay.js', 'clay'],
+    ['launchpad', '../src/css/styles/community/launchpad.js', 'launchpad'],
     ['liquid-glass', '../src/css/styles/community/liquid-glass.js', 'liquidGlass'],
     ['dopamine', '../src/css/styles/community/dopamine.js', 'dopamine'],
     ['prismatic', '../src/css/styles/community/prismatic.js', 'prismatic'],

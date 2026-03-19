@@ -1,7 +1,7 @@
 import { tags } from 'decantr/tags';
 import { cond, mount, onDestroy, onMount, text } from 'decantr/core';
 import { createSignal } from 'decantr/state';
-import { css, registerStyle, setMode, setStyle } from 'decantr/css';
+import { css, registerStyle, setMode, setShape, setStyle } from 'decantr/css';
 import { createRouter, link, navigate, useRoute } from 'decantr/router';
 import { Breadcrumb, Button, Command, Dropdown, Input, Modal, Popover, Shell, icon } from 'decantr/components';
 import { gamingGuild } from 'decantr/styles/community/gaming-guild';
@@ -9,6 +9,7 @@ import { gamingGuild } from 'decantr/styles/community/gaming-guild';
 registerStyle(gamingGuild);
 setStyle('gaming-guild');
 setMode('dark');
+setShape('rounded');
 
 const router = createRouter({
   mode: 'hash',
@@ -96,11 +97,11 @@ function App() {
           cond(() => navState() !== 'rail',
             () => span({ class: css('gg-label _fgmuted _px4 _mb1 _mt3') }, section.label)
           ),
-          div({ class: css('_flex _col _gap1 _px2 d-stagger') },
+          div({ class: css('_flex _col _gap1 d-stagger') },
             ...section.items.map(item =>
               link({
                 href: item.href,
-                class: () => css(`d-shell-nav-item _flex _aic _gap2 _p2 _px3 _trans ${route().path === item.href ? 'd-shell-nav-item-active' : ''}`)
+                class: () => css(`d-shell-nav-item _trans ${route().path === item.href ? 'd-shell-nav-item-active' : ''}`)
               },
                 icon(item.ic, { size: '1em' }),
                 cond(() => navState() !== 'rail', () => text(() => item.label))

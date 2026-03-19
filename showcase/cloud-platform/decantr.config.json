@@ -1,0 +1,15 @@
+{
+  "$schema": "https://decantr.ai/schemas/config.v2.json",
+  "name": "Cloud Platform Showcase",
+  "style": "launchpad",
+  "mode": "light",
+  "router": "hash",
+  "dev": { "port": 4206 },
+  "build": {
+    "outDir": "dist",
+    "sourcemap": true,
+    "treeShake": true,
+    "codeSplit": true,
+    "purgeCSS": true
+  }
+}

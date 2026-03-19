@@ -559,6 +559,133 @@ export function mangle(source) {
     result = result.slice(0, iife.start) + body + result.slice(iife.end);
   }
 
+  // Phase 1b: Find hoisted module scopes (non-IIFE)
+  // Pattern: // path/to/module.js\n...code...\nconst _mN = {exports};
+  const moduleCommentRe = /\/\/ [^\n]+\n/g;
+  const moduleComments = [];
+  let mc;
+  while ((mc = moduleCommentRe.exec(result)) !== null) {
+    moduleComments.push({ index: mc.index, end: mc.index + mc[0].length });
+  }
+
+  // Identify hoisted regions: between module comments, excluding IIFE regions
+  const iifeRegions = iifes.map(i => ({ start: i.start - 50, end: i.end + 10 })); // rough bounds
+  const hoistedModules = [];
+
+  for (let i = 0; i < moduleComments.length; i++) {
+    const regionStart = moduleComments[i].end;
+    const regionEnd = i + 1 < moduleComments.length
+      ? moduleComments[i + 1].index
+      : result.indexOf('})();', regionStart);
+    if (regionEnd <= regionStart) continue;
+
+    // Skip if this region overlaps with an IIFE
+    const overlapsIife = iifeRegions.some(ir =>
+      regionStart >= ir.start && regionStart <= ir.end
+    );
+    if (overlapsIife) continue;
+
+    const body = result.slice(regionStart, regionEnd);
+    // Check for hoisted module pattern: must have `const _mN = {` at end
+    const moduleObjMatch = body.match(/const (_m\d+)\s*=\s*\{([^}]*)\}\s*;\s*$/);
+    if (!moduleObjMatch) continue;
+
+    hoistedModules.push({
+      start: regionStart,
+      end: regionEnd,
+      body,
+      moduleName: moduleObjMatch[1],
+      exportList: moduleObjMatch[2]
+    });
+  }
+
+  // Process hoisted modules — shared scope, so track names globally
+  const globalAvoidSet = new Set([...JS_RESERVED, ...GLOBAL_BUILTINS, ...NEVER_MANGLE]);
+  // Add all _mN references
+  const globalModRefs = result.match(/\b_m\d+\b/g) || [];
+  globalModRefs.forEach(r => globalAvoidSet.add(r));
+
+  // Collect all export names across hoisted modules (must not be renamed)
+  for (const hm of hoistedModules) {
+    if (hm.exportList) {
+      hm.exportList.split(',').forEach(e => {
+        const parts = e.trim().split(/\s*:\s*/);
+        // In {name} shorthand, the variable name IS the key — don't rename
+        // In {'default': foo}, foo can be renamed but 'default' is a string key
+        if (parts.length === 1 && parts[0]) globalAvoidSet.add(parts[0].trim());
+        // For keyed: {key: value}, only the value is a variable
+      });
+    }
+  }
+
+  // Collect all identifiers NOT being renamed to avoid collisions
+  const globalAllIdents = new Set();
+  const gIdentRe = /\b[a-zA-Z_$][a-zA-Z0-9_$]*\b/g;
+  let gi;
+  while ((gi = gIdentRe.exec(result)) !== null) globalAllIdents.add(gi[0]);
+
+  const globalNameGen = createNameGenerator(globalAvoidSet);
+  const globalRenames = new Map();
+
+  for (let hi = hoistedModules.length - 1; hi >= 0; hi--) {
+    const hm = hoistedModules[hi];
+    let body = hm.body;
+
+    const locals = findLocalDeclarations(body);
+
+    // Remove reserved, globals, _mN, already-renamed, and shorthand exports
+    const shorthandExports = new Set();
+    if (hm.exportList) {
+      hm.exportList.split(',').forEach(e => {
+        const parts = e.trim().split(/\s*:\s*/);
+        if (parts.length === 1 && parts[0]) shorthandExports.add(parts[0].trim());
+      });
+    }
+
+    for (const name of locals) {
+      if (JS_RESERVED.has(name) || GLOBAL_BUILTINS.has(name) || NEVER_MANGLE.has(name) ||
+          /^_m\d+$/.test(name) || shorthandExports.has(name) || globalRenames.has(name)) {
+        locals.delete(name);
+      }
+    }
+
+    if (locals.size === 0) continue;
+
+    const refCounts = [];
+    for (const name of locals) {
+      const count = countReferences(name, body);
+      if (count > 0) refCounts.push({ name, count });
+    }
+    refCounts.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    if (refCounts.length === 0) continue;
+
+    for (const { name } of refCounts) {
+      if (globalRenames.has(name)) continue; // Already have a global rename for this
+      const short = globalNameGen();
+      if (short !== name && short.length < name.length) {
+        globalRenames.set(name, short);
+        globalAvoidSet.add(short);
+      }
+    }
+  }
+
+  // Apply global renames across ALL hoisted module regions (from last to first)
+  if (globalRenames.size > 0) {
+    const sortedGlobalRenames = [...globalRenames.entries()].sort((a, b) => b[0].length - a[0].length);
+
+    for (let hi = hoistedModules.length - 1; hi >= 0; hi--) {
+      const hm = hoistedModules[hi];
+      let body = result.slice(hm.start, hm.end);
+
+      for (const [oldName, newName] of sortedGlobalRenames) {
+        const re = new RegExp(`(?<![.$\\w])${escapeRegExp(oldName)}(?![\\w$])`, 'g');
+        body = body.replace(re, newName);
+      }
+
+      result = result.slice(0, hm.start) + body + result.slice(hm.end);
+    }
+  }
+
   // Phase 6: Restore stashed strings
   result = unstashStrings(result, stash);
 

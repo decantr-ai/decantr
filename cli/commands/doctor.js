@@ -204,6 +204,40 @@ async function checkRegistryManifest() {
   }
 }
 
+async function checkBuildCache() {
+  const cachePath = join(cwd, 'node_modules', '.decantr-cache', 'build-cache.json');
+  if (!(await fileExists(cachePath))) return; // no cache is fine
+
+  const data = await readJSON(cachePath);
+  if (!data) {
+    warn('Build cache exists but is corrupted — run `decantr build` to rebuild');
+    return;
+  }
+  if (!data.fileHashes || !data.buildHash) {
+    warn('Build cache has invalid structure — run `decantr build` to rebuild');
+    return;
+  }
+  pass('Build cache is valid');
+}
+
+async function checkLockFileDrift() {
+  const lockPath = join(cwd, 'package-lock.json');
+  const nmPath = join(cwd, 'node_modules');
+  try {
+    const [lockStat, nmStat] = await Promise.all([
+      stat(lockPath),
+      stat(nmPath)
+    ]);
+    if (lockStat.mtimeMs > nmStat.mtimeMs) {
+      warn('package-lock.json is newer than node_modules — run npm install');
+    } else {
+      pass('node_modules is up to date with lock file');
+    }
+  } catch {
+    // Lock file or node_modules missing — other checks handle this
+  }
+}
+
 // ── Main ──────────────────────────────────────────────────────────
 export async function run() {
   console.log(`\n${bold('decantr doctor')} ${dim('— checking project health')}\n`);
@@ -217,6 +251,8 @@ export async function run() {
   await checkPublicHTML();
   await checkFrameworkVersion();
   await checkRegistryManifest();
+  await checkBuildCache();
+  await checkLockFileDrift();
 
   console.log(`\n${bold('Results:')} ${green(`${passes} passed`)}${warns ? `, ${yellow(`${warns} warnings`)}` : ''}${fails ? `, ${red(`${fails} failed`)}` : ''}\n`);
 

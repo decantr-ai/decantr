@@ -156,7 +156,7 @@ You MUST create \`decantr.essence.json\` during CLARIFY. Do NOT proceed to GENER
 \`\`\`json
 {
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
   "character": ["tactical", "data-dense"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [
@@ -200,7 +200,7 @@ import { Button, Input, Card, Modal, Tabs, ... } from 'decantr/components';
 
 ## Styles
 
-Available: \`auradecantism\` (default), \`clean\`, \`retro\`, \`glassmorphism\`, \`command-center\`
+Available: \`auradecantism\` (default), \`clean\`, \`retro\`, \`glassmorphism\`
 Modes: \`light\`, \`dark\`, \`auto\`
 Shapes: \`sharp\`, \`rounded\`, \`pill\`
 
@@ -225,7 +225,7 @@ Shapes: \`sharp\`, \`rounded\`, \`pill\`
 export function appJs() {
   return `import { mount } from 'decantr/core';
 import { tags } from 'decantr/tags';
-import { css, define, setStyle, setMode } from 'decantr/css';
+import { css, define, setShape, setStyle, setMode } from 'decantr/css';
 import { Image, CodeBlock } from 'decantr/components';
 
 const { div, span, p, h1 } = tags;
@@ -235,6 +235,7 @@ const { div, span, p, h1 } = tags;
 // For sectioned essences, add a router.beforeEach guard to switch per section.
 setStyle('auradecantism');
 setMode('dark');
+setShape('rounded');
 
 define('_pink', 'color:#FE4474');
 

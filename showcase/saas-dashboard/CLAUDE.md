@@ -10,11 +10,39 @@ Built with [decantr](https://decantr.ai) v0.9.6 — AI-first web framework.
 
 - `src/app.js` — Entry point, mounts the app to `#app`
 - `src/pages/` — Route page components
-- `src/components/` — Project-specific reusable components
 - `public/index.html` — HTML shell with theme CSS variables
 - `decantr.config.json` — Project configuration
 - `decantr.essence.json` — Project DNA (generated during Decantation Process)
 - `AGENTS.md` — Framework translation layer (read this for API equivalences)
+- `reference/llm-primer.md` — Imports, atoms, components, pattern snippets
+- `reference/spatial-guidelines.md` — Spacing rules, density zones, Clarity profiles
+- `reference/atoms.md` — Valid atom class names (always check before using `_` atoms)
+- `reference/shells.md` — Shell layout presets, config schema, nav states, grid area diagrams
+
+## Vintage
+
+- **Style:** auradecantism (core)
+- **Mode:** dark
+- **Shape:** rounded
+- **Recipe:** auradecantism
+- **Character:** professional, data-rich, luminous
+
+## Pages
+
+1. **overview** — sidebar-main: KPI grid, quick actions, chart grid + activity feed
+2. **analytics** — sidebar-main: filter bar, KPI grid, chart grid, comparison panel + data table
+3. **users** — sidebar-main: KPI grid, users toolbar, data table
+4. **user-detail** — sidebar-main: user header (profile preset), KPI grid, timeline + activity feed
+5. **teams** — sidebar-main: filter bar, team grid, data table
+6. **pipeline** — sidebar-main: filter bar, kanban board
+7. **billing** — sidebar-main: KPI grid, pricing table, order history
+8. **notifications** — sidebar-main: inbox
+9. **reports** — sidebar-main: filter bar, chart grid, scorecard, data table
+10. **changelog** — sidebar-main: changelog
+11. **status** — sidebar-main: status board
+12. **settings** — sidebar-main: settings form (settings preset)
+13. **login** — centered: auth form
+14. **not-found** — full-bleed: 404
 
 ## The Decantation Process
 
@@ -30,21 +58,39 @@ Follow this process for ALL new projects and major feature additions:
 ### Stage 3: CLARIFY — Write `decantr.essence.json` and confirm with user
 ### Stage 4: DECANT — Resolve each page's Blend (spatial arrangement)
 Read the archetype's `default_blend` for each page. Copy into the Essence's `blend` array, then customize.
+Derive Clarity profile from Character traits → `reference/spatial-guidelines.md` §17. Apply density-appropriate gaps to each page's `surface` atoms.
 
 **Blend format**: Each `blend` is an ordered array of rows:
-- `"pattern-id"` — full-width pattern row
+- `"pattern-id"` — full-width pattern row (default preset)
+- `{ "pattern": "hero", "preset": "image-overlay", "as": "recipe-hero" }` — pattern with preset + local alias
 - `{ "cols": ["a", "b"], "at": "lg" }` — equal-width side-by-side, collapse below `lg`
 - `{ "cols": ["a", "b"], "span": { "a": 3 }, "at": "md" }` — weighted columns (a=3fr, b=1fr)
+
+**Pattern Presets (v2)**: Patterns support named presets — structural variants within a single file.
+- `hero` has presets: `landing`, `image-overlay`, `image-overlay-compact`
+- `card-grid` has presets: `product`, `content`, `collection`, `icon`
+- `form-sections` has presets: `settings`, `creation`, `structured`
+- `detail-header` has presets: `standard`, `profile`
+Before creating a new pattern file, check if it can be a preset on an existing pattern.
 
 Optional `surface` on each structure entry sets page container atoms (default: `_flex _col _gap4 _p4 _overflow[auto] _flex1`).
 
 ### Stage 5: SERVE — Generate code from Blend specs
 For each page, read its `blend` array and apply:
-1. Create page container with `surface` atoms
+1. Create page container with `surface` atoms + `d-page-enter` class for entrance animation
 2. String rows → full-width pattern (use pattern's `default_blend.atoms`)
-3. `{ cols }` rows → `_grid _gc{N} _gap4` wrapper, collapse below `at` breakpoint
-4. `{ cols, span }` rows → `_gc{total}` grid, each pattern gets `_span{weight}`
-5. Apply recipe wrappers per `recipe_overrides`
+3. `{ cols, at }` rows → `_grid _gc1 _{at}:gc{N} _gap{clarity}` wrapper with responsive collapse
+4. `{ cols, span, at }` rows → responsive `_gc{total}` grid, each pattern gets `_span{weight}`
+5. Wrap contained patterns in `Card(Card.Header, Card.Body)` — standalone patterns (layout `hero`/`row` or `contained: false`) skip wrapping
+6. Apply recipe `pattern_overrides` (background effects) from recipe JSON as Card class attrs
+7. Apply Clarity-derived gap to pattern code internals (`_gap4` → clarity gap)
+
+**App shell (sidebar-main)** uses `Shell` component with:
+- `Shell.Nav` with `d-shell-nav-item` / `d-shell-nav-item-active` classes
+- `Shell.Header` with `Breadcrumb`, `Command` (Cmd+K), `Popover` (bell), `Dropdown` (user)
+- `Shell.Body` with `d-page-enter` fade-in
+- Keyboard shortcut: `Ctrl+\` toggles sidebar
+- Recipe decoration via `getRecipeDecoration()` → injects auradecantism utility classes (d-mesh, d-glass, d-gradient-text)
 
 ### Ongoing: AGE — Read Essence before every change. Guard against drift.
 
@@ -54,7 +100,7 @@ Before writing ANY code, read `decantr.essence.json`. Verify:
 2. Page exists in the Structure. If new, add it to the Essence first.
 3. Layout follows the page's Blend. Do not freestyle spatial arrangement.
 4. Composition follows the active Recipe. Do not freestyle decoration.
-5. Density and tone match the Character.
+5. Spacing follows the Clarity profile derived from Character → `reference/spatial-guidelines.md` §17. Do not default to `_gap4`/`_p4` everywhere.
 If a request conflicts with the Essence, flag the conflict and ask for confirmation.
 
 ## Essence Schema
@@ -64,35 +110,16 @@ You MUST create `decantr.essence.json` during CLARIFY. Do NOT proceed to DECANT 
 **Simple (single domain):**
 ```json
 {
+  "version": "2.0.0",
   "terroir": "saas-dashboard",
-  "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
-  "character": ["tactical", "data-dense"],
+  "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
+  "character": ["professional", "data-rich", "luminous"],
   "vessel": { "type": "spa", "routing": "hash" },
   "structure": [
     { "id": "overview", "skeleton": "sidebar-main", "blend": ["kpi-grid", "data-table"] }
   ],
-  "tannins": ["auth", "realtime-data"],
+  "tannins": ["auth", "analytics-state"],
   "cork": { "enforce_style": true, "enforce_recipe": true }
-}
-```
-
-**Sectioned (multi-domain):**
-```json
-{
-  "vessel": { "type": "spa", "routing": "hash" },
-  "character": ["professional", "technical"],
-  "sections": [
-    {
-      "id": "brand",
-      "path": "/",
-      "terroir": "portfolio",
-      "vintage": { "style": "glassmorphism", "mode": "dark" },
-      "structure": [{ "id": "home", "skeleton": "full-bleed", "blend": ["hero", "cta-section"] }],
-      "tannins": ["analytics"]
-    }
-  ],
-  "shared_tannins": ["auth"],
-  "cork": { "enforce_style": true, "enforce_sections": true }
 }
 ```
 
@@ -101,7 +128,8 @@ You MUST create `decantr.essence.json` during CLARIFY. Do NOT proceed to DECANT 
 ```js
 import { tags } from 'decantr/tags';
 import { h, text, cond, list, mount, onMount, onDestroy } from 'decantr/core';
-import { createSignal, createEffect, createMemo, createStore, batch } from 'decantr/state';
+import { createSignal, createEffect, createMemo, createStore, batch, createRoot, on } from 'decantr/state';
+import { createQuery, createMutation, queryClient, createEntityStore, createURLSignal, createPersisted } from 'decantr/data';
 import { createRouter, link, navigate, useRoute } from 'decantr/router';
 import { css, setStyle, setMode } from 'decantr/css';
 import { Button, Input, Card, Modal, Tabs, ... } from 'decantr/components';
@@ -109,7 +137,9 @@ import { Button, Input, Card, Modal, Tabs, ... } from 'decantr/components';
 
 ## Styles
 
-Available: `auradecantism` (default), `clean`, `retro`, `glassmorphism`, `command-center`
+This project uses the **auradecantism** core style in **dark** mode with **rounded** shape.
+
+Available: `auradecantism` (default), `clean`, `glassmorphism`, `retro`, `clay`, `liquid-glass`, `dopamine`, `prismatic`, `bioluminescent`, `editorial`, `gaming-guild`
 Modes: `light`, `dark`, `auto`
 Shapes: `sharp`, `rounded`, `pill`
 
@@ -127,5 +157,4 @@ Shapes: `sharp`, `rounded`, `pill`
 - `npx decantr build` — Production build to `dist/`
 - `npx decantr test` — Run tests
 - `npx decantr validate` — Validate `decantr.essence.json`
-- `npx decantr generate` — Generate code from `decantr.essence.json`
-
+- `npx decantr lint` — Check atoms, essence drift, inline styles

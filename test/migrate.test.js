@@ -465,7 +465,7 @@ describe('essence integrity', () => {
   it('0.6.0 preserves unrelated fields', () => {
     const input = {
       terroir: 'ecommerce',
-      vintage: { style: 'command-center', mode: 'dark', recipe: 'command-center' },
+      vintage: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism' },
       character: ['tactical'],
       tannins: ['auth'],
       structure: [{ id: 'home', skeleton: 'sidebar-main', blend: ['hero'], surface: '_flex _col' }],
@@ -474,7 +474,7 @@ describe('essence integrity', () => {
     };
     const result = m060(input);
     assert.equal(result.terroir, 'ecommerce');
-    assert.deepEqual(result.vintage, { style: 'command-center', mode: 'dark', recipe: 'command-center' });
+    assert.deepEqual(result.vintage, { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism' });
     assert.deepEqual(result.character, ['tactical']);
     assert.deepEqual(result.tannins, ['auth']);
     assert.deepEqual(result.cork, { enforce_style: true, enforce_recipe: true });

@@ -1,5 +1,5 @@
 import { resolveAtomDecl } from './atoms.js';
-import { inject, injectResponsive, injectResponsivePseudo, injectContainer, injectGroupPeer, injectPseudo, BREAKPOINTS, CQ_WIDTHS } from './runtime.js';
+import { inject, injectResponsive, injectResponsivePseudo, injectContainer, injectGroupPeer, injectPseudo, injectMediaQuery, BREAKPOINTS, CQ_WIDTHS } from './runtime.js';
 export { extractCSS, reset, BREAKPOINTS, CQ_WIDTHS } from './runtime.js';
 export {
   setTheme, getTheme, getThemeMeta, registerTheme, getThemeList,
@@ -24,6 +24,13 @@ const GP_RE = /^_(gh|gf|ga|ph|pf|pa):(.+)$/;
 
 /** Regex to detect pseudo-class prefix: _h:, _f:, _fv:, _a:, _fw: */
 const PSEUDO_RE = /^_(h|f|fv|a|fw):(.+)$/;
+
+/** Regex to detect motion preference prefix: _motionSafe:, _motionReduce: */
+const MOTION_RE = /^_(motionSafe|motionReduce):(.+)$/;
+const MOTION_QUERIES = {
+  motionSafe: '(prefers-reduced-motion: no-preference)',
+  motionReduce: '(prefers-reduced-motion: reduce)'
+};
 
 /** Valid pseudo-class prefixes */
 const PSEUDO_SET = new Set(['h', 'f', 'fv', 'a', 'fw']);
@@ -147,6 +154,20 @@ export function css(...classes) {
       if (part === '_prose') { result.push('d-prose'); continue; }
       if (part === '_divideY') { result.push('d-divide-y'); continue; }
       if (part === '_divideX') { result.push('d-divide-x'); continue; }
+
+      // Check for motion preference prefix: _motionSafe:trans, _motionReduce:transnone
+      const motionMatch = part.match(MOTION_RE);
+      if (motionMatch) {
+        const [, motionPrefix, innerAtom] = motionMatch;
+        const resolved = resolveAtom(`_${innerAtom}`);
+        if (resolved) {
+          injectMediaQuery(part, resolved.decl, MOTION_QUERIES[motionPrefix]);
+          result.push(part);
+        } else {
+          result.push(part);
+        }
+        continue;
+      }
 
       // Check for responsive prefix: _sm:gc3 → atom _gc3 at breakpoint sm
       const bpMatch = part.match(BP_RE);

@@ -1,5 +1,5 @@
 import { mount } from 'decantr/core';
-import { setMode, setStyle } from 'decantr/css';
+import { setMode, setShape, setStyle } from 'decantr/css';
 import { createRouter } from 'decantr/router';
 import { registerIcons } from 'decantr/components';
 
@@ -12,6 +12,7 @@ registerIcons({
 
 setStyle('auradecantism');
 setMode('dark');
+setShape('pill');
 
 const router = createRouter({
   mode: 'hash',

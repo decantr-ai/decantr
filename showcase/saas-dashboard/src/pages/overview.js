@@ -9,10 +9,21 @@ const { div, span, h2 } = tags;
 
 // ─── Mock data ──────────────────────────────────────────────────
 const kpis = [
-  { label: 'REVENUE', value: 1248500, prefix: '$', trend: 'up', trendValue: '+12.5%', ic: 'dollar-sign' },
-  { label: 'ACTIVE USERS', value: 84230, trend: 'up', trendValue: '+8.1%', ic: 'users' },
-  { label: 'ORDERS', value: 6420, trend: 'down', trendValue: '-2.3%', ic: 'shopping-cart' },
-  { label: 'CONVERSION', value: 3.24, suffix: '%', trend: 'up', trendValue: '+0.5%', ic: 'target' },
+  { label: 'Total Revenue', value: 1248500, prefix: '$', trend: 'up', trendValue: '+12.5%', ic: 'dollar-sign' },
+  { label: 'Active Users', value: 84230, trend: 'up', trendValue: '+8.1%', ic: 'users' },
+  { label: 'Orders', value: 6420, trend: 'down', trendValue: '-2.3%', ic: 'shopping-cart' },
+  { label: 'Conversion', value: 3.24, suffix: '%', trend: 'up', trendValue: '+0.5%', ic: 'target' },
+];
+
+const quickActions = [
+  { icon: 'user-plus', label: 'Add User', handler: () => {} },
+  { icon: 'file-plus', label: 'New Report', handler: () => {} },
+  { icon: 'settings', label: 'Settings', handler: () => {} },
+  { icon: 'download', label: 'Export Data', handler: () => {} },
+  { icon: 'bell', label: 'Notifications', handler: () => {} },
+  { icon: 'bar-chart', label: 'Analytics', handler: () => {} },
+  { icon: 'shield', label: 'Security', handler: () => {} },
+  { icon: 'help-circle', label: 'Support', handler: () => {} },
 ];
 
 const revenueData = [
@@ -35,15 +46,12 @@ const activities = [
 
 // ─── KPI Grid ───────────────────────────────────────────────────
 function KpiGrid() {
-  return div({ class: css('_flex _col _gap3') },
+  return div({ class: css('_flex _col _gap4') },
     div({ class: css('_flex _aic _jcsb') },
-      div({ class: css('_flex _aic _gap2') },
-        span({ class: css('cc-indicator cc-indicator-ok cc-blink') }),
-        h2({ class: css('cc-label _fgmutedfg') }, 'SYSTEM METRICS')
-      ),
-      span({ class: css('cc-data _textxs _fgmuted') }, new Date().toLocaleTimeString())
+      h2({ class: css('d-gradient-text _heading5 _bold') }, 'Key Metrics'),
+      span({ class: css('_textxs _fgmuted') }, new Date().toLocaleDateString())
     ),
-    div({ class: css('_grid _gc1 _sm:gc2 _lg:gc4 _gap3 d-stagger-scale') },
+    div({ class: css('_grid _gc1 _sm:gc2 _lg:gc4 _gap4 d-stagger-scale') },
       ...kpis.map(kpi =>
         Statistic({
           label: kpi.label,
@@ -53,8 +61,27 @@ function KpiGrid() {
           trend: kpi.trend,
           trendValue: kpi.trendValue,
           animate: 1200,
-          class: css('cc-glow'),
+          class: css('d-glass'),
         })
+      )
+    )
+  );
+}
+
+// ─── Quick Actions ──────────────────────────────────────────────
+function QuickActions() {
+  return div({ class: css('_flex _col _gap4') },
+    h2({ class: css('d-gradient-text _heading5 _bold') }, 'Quick Actions'),
+    div({ class: css('_grid _gc2 _sm:gc4 _lg:gc8 _gap3 d-stagger') },
+      ...quickActions.map(action =>
+        Card({ hover: true, class: css('d-glass _cursor[pointer]'), onclick: action.handler },
+          Card.Body({ class: css('_flex _col _aic _gap2 _p3 _tc') },
+            div({ class: css('_w8 _h8 _flex _center _r2 _bgprimary/10') },
+              icon(action.icon, { size: '1em', class: css('_fgprimary') })
+            ),
+            span({ class: css('_textxs _medium') }, action.label)
+          )
+        )
       )
     )
   );
@@ -62,33 +89,23 @@ function KpiGrid() {
 
 // ─── Chart Grid ─────────────────────────────────────────────────
 function ChartGrid() {
-  return div({ class: css('_flex _col _gap3') },
+  return div({ class: css('_flex _col _gap4') },
     div({ class: css('_flex _aic _jcsb') },
-      h2({ class: css('cc-label _fgmutedfg') }, 'ANALYTICS'),
+      h2({ class: css('d-gradient-text _heading5 _bold') }, 'Analytics'),
       Select({ value: '30d', options: [
         { label: 'Last 7 days', value: '7d' },
         { label: 'Last 30 days', value: '30d' },
         { label: 'Last 90 days', value: '90d' },
       ] })
     ),
-    div({ class: css('_grid _gc1 _md:gc2 _gap3 d-stagger-up') },
-      Card({ hover: true, class: css('cc-scanline') },
-        Card.Header({ class: css('cc-bar') },
-          span({ class: css('cc-label') }, 'REVENUE TREND'),
-          span({ class: css('cc-data cc-blink _textxs') }, 'LIVE')
-        ),
-        Card.Body({},
-          Chart({ type: 'area', data: revenueData, x: 'date', y: 'value', height: 240 })
-        )
+    div({ class: css('_grid _gc1 _md:gc2 _gap4 d-stagger-up') },
+      div({ class: css('d-glass _p4 _flex _col _gap3') },
+        span({ class: css('d-gradient-text _textsm _bold') }, 'Revenue Trend'),
+        Chart({ type: 'area', data: revenueData, x: 'date', y: 'value', height: 240 })
       ),
-      Card({ hover: true, class: css('cc-scanline') },
-        Card.Header({ class: css('cc-bar') },
-          span({ class: css('cc-label') }, 'ORDER VOLUME'),
-          span({ class: css('cc-indicator cc-indicator-ok') })
-        ),
-        Card.Body({},
-          Chart({ type: 'bar', data: ordersData, x: 'month', y: 'count', height: 240 })
-        )
+      div({ class: css('d-glass _p4 _flex _col _gap3') },
+        span({ class: css('d-gradient-text _textsm _bold') }, 'Order Volume'),
+        Chart({ type: 'bar', data: ordersData, x: 'month', y: 'count', height: 240 })
       ),
     )
   );
@@ -96,10 +113,9 @@ function ChartGrid() {
 
 // ─── Activity Feed ──────────────────────────────────────────────
 function ActivityFeed() {
-  return Card({ class: css('cc-scanline') },
-    Card.Header({ class: css('cc-bar') },
-      span({ class: css('cc-label') }, 'SIGNAL LOG'),
-      span({ class: css('cc-data cc-blink _textxs') }, 'STREAMING')
+  return Card({ class: css('d-glass') },
+    Card.Header({},
+      span({ class: css('d-gradient-text _textsm _bold') }, 'Recent Activity'),
     ),
     Card.Body({},
       div({ class: css('_flex _col _gap1 d-stagger') },
@@ -113,7 +129,7 @@ function ActivityFeed() {
                 span({ class: css('_medium') }, item.user),
                 span({ class: css('_fgmuted') }, ` ${item.action}`)
               ),
-              span({ class: css('cc-data _textxs _fgmuted') }, item.time)
+              span({ class: css('_textxs _fgmuted') }, item.time)
             ),
             Chip({
               label: item.variant === 'success' ? 'OK' : item.variant === 'error' ? 'ALERT' : 'INFO',
@@ -124,9 +140,9 @@ function ActivityFeed() {
         )
       )
     ),
-    Card.Footer({ class: css('cc-bar-bottom') },
-      span({ class: css('cc-label _textxs _fgmuted') }, `${activities.length} SIGNALS`),
-      Button({ variant: 'ghost', size: 'sm', class: css('cc-label _textxs') }, 'LOAD MORE')
+    Card.Footer({},
+      span({ class: css('_textxs _fgmuted') }, `${activities.length} events`),
+      Button({ variant: 'ghost', size: 'sm' }, 'View All')
     )
   );
 }
@@ -134,12 +150,13 @@ function ActivityFeed() {
 // ─── Page ───────────────────────────────────────────────────────
 export default function OverviewPage() {
   onMount(() => {
-    document.title = 'Overview — Command Center';
+    document.title = 'Overview — SaaS Dashboard';
   });
 
-  return div({ class: css('d-page-enter _flex _col _gap3') },
+  return div({ class: css('d-page-enter _flex _col _gap4') },
     KpiGrid(),
-    div({ class: css('_grid _gc1 _lg:gc3 _gap3') },
+    QuickActions(),
+    div({ class: css('_grid _gc1 _lg:gc3 _gap4') },
       div({ class: css('_span1 _lg:span2') }, ChartGrid()),
       ActivityFeed()
     )

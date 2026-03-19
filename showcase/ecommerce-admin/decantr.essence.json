@@ -1,0 +1,151 @@
+{
+  "version": "1.0.0",
+  "terroir": "ecommerce-admin",
+  "vintage": {
+    "style": "auradecantism",
+    "mode": "light",
+    "recipe": "auradecantism",
+    "shape": "rounded"
+  },
+  "character": ["professional", "efficient", "organized"],
+  "vessel": {
+    "type": "spa",
+    "routing": "hash"
+  },
+  "structure": [
+    {
+      "id": "overview",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        "quick-actions",
+        { "cols": ["chart-grid", "activity-feed"], "span": { "chart-grid": 2 }, "at": "lg" }
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "analytics",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "filter-bar",
+        "kpi-grid",
+        "chart-grid",
+        "comparison-panel"
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "products",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        { "pattern": "filter-bar", "preset": "toolbar", "as": "product-toolbar" },
+        "data-table"
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "product-detail",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "detail-header",
+        { "cols": ["media-gallery", "form-sections"], "at": "md" }
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "orders",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        "kanban-board"
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "order-detail",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "detail-header",
+        { "cols": ["timeline", "detail-panel"], "span": { "timeline": 2 }, "at": "lg" },
+        "order-history"
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "customers",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        "filter-bar",
+        "data-table"
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "customer-detail",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "detail-header", "preset": "profile", "as": "customer-header" },
+        "kpi-grid",
+        { "cols": ["order-history", "activity-feed"], "at": "lg" }
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "inventory",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        "filter-bar",
+        { "cols": ["data-table", "goal-tracker"], "span": { "data-table": 2 }, "at": "lg" }
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "promotions",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        "filter-bar",
+        "data-table"
+      ],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "media-library",
+      "skeleton": "sidebar-main",
+      "blend": ["file-manager"],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "support",
+      "skeleton": "sidebar-main",
+      "blend": ["inbox"],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "store-settings",
+      "skeleton": "sidebar-main",
+      "blend": ["wizard"],
+      "surface": "_flex _col _gap4 _p5 _overflow[auto] _flex1"
+    },
+    {
+      "id": "login",
+      "skeleton": "centered",
+      "blend": ["auth-form"],
+      "surface": "_flex _col _center _hfull"
+    },
+    {
+      "id": "not-found",
+      "skeleton": "full-bleed",
+      "blend": [],
+      "surface": "_flex _col _center _hfull"
+    }
+  ],
+  "tannins": ["auth", "inventory-state", "order-state", "promotion-state", "analytics-state"],
+  "cork": {
+    "enforce_style": true,
+    "enforce_recipe": true
+  }
+}

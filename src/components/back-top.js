@@ -3,7 +3,7 @@
  *
  * @module decantr/components/back-top
  */
-import { h } from '../core/index.js';
+import { h, onCleanup } from '../core/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon } from './icon.js';
 
@@ -66,10 +66,10 @@ export function BackTop(props = {}, ...children) {
     requestAnimationFrame(onScroll);
   }
 
-  // Expose destroy for cleanup
-  btn._destroy = () => {
+  // Cleanup scroll listener when component is disposed
+  onCleanup(() => {
     scrollTarget.removeEventListener('scroll', onScroll);
-  };
+  });
 
   return btn;
 }

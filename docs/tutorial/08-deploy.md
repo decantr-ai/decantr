@@ -225,6 +225,7 @@ Over the course of this tutorial, you have learned:
 
 ## Next Steps
 
+- **[09 — Server-Side Rendering](./09-ssr.md)** — Render on the server for SEO, streaming, and hydration
 - **[Cookbook: Dashboard](../cookbook/dashboard.md)** — Build a complete SaaS dashboard
 - **[Cookbook: Auth](../cookbook/auth.md)** — Add authentication with login, guards, and token management
 - **[Cookbook: Forms](../cookbook/forms.md)** — Advanced form handling with validation and field arrays
@@ -233,4 +234,4 @@ Over the course of this tutorial, you have learned:
 
 ---
 
-Previous: [07 — Data Fetching](./07-data.md)
+Previous: [07 — Data Fetching](./07-data.md) | Next: [09 — Server-Side Rendering](./09-ssr.md)

@@ -1,12 +1,12 @@
 /**
  * Starter template essence: SaaS Dashboard
- * Terroir: saas-dashboard | Style: command-center | Mode: dark | Shape: sharp
+ * Terroir: saas-dashboard | Style: auradecantism | Mode: dark | Shape: rounded
  */
 export function essenceJson() {
   return JSON.stringify({
     "version": "1.0.0",
     "terroir": "saas-dashboard",
-    "vintage": { "style": "command-center", "mode": "dark", "recipe": "command-center", "shape": "sharp" },
+    "vintage": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism", "shape": "rounded" },
     "character": ["tactical", "data-dense"],
     "vessel": { "type": "spa", "routing": "hash" },
     "structure": [

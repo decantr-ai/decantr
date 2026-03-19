@@ -68,6 +68,8 @@ export function Dropdown(props = {}) {
     itemSelector: '.d-dropdown-item:not(.d-dropdown-item-disabled)',
     activeClass: 'd-dropdown-item-highlight',
     orientation: 'vertical',
+    typeAhead: true,
+    owner: menu,
     onSelect: (el) => el.click()
   });
 

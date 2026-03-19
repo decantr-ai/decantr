@@ -10,7 +10,7 @@ Decantr uses an orthogonal **style x mode** architecture. Visual personality (st
 | clean | Modern minimal — rounded corners, subtle shadows, smooth motion | radius:rounded, elevation:subtle, motion:smooth, borders:thin, density:comfortable, gradient:none |
 | retro | Neobrutalism — sharp corners, offset shadows, bold borders | radius:sharp, elevation:brutalist, motion:snappy, borders:bold, density:comfortable, gradient:none |
 | glassmorphism | Frosted glass — translucent surfaces, vivid gradients, bouncy motion | radius:pill, elevation:glass, motion:bouncy, borders:thin, density:comfortable, gradient:vivid |
-| command-center | HUD/radar monochromatic — dark operational panels, beveled frames, scanlines, scoped monospace on data elements | radius:sharp, elevation:flat, motion:snappy, borders:bold, density:compact, gradient:none, palette:monochrome |
+
 
 ## Modes
 
@@ -38,9 +38,7 @@ registerStyle({
   typography: { '--d-fw-heading': '800' },  // optional overrides
   overrides: { light: {}, dark: {} },       // optional per-mode token overrides
   components: '',                            // optional component CSS (array of CSS rule strings or joined string)
-  // Component CSS overrides let styles transform standard components:
-  // e.g., command-center overrides .d-card → cc-frame aesthetic,
-  //        .d-statistic → cc-glow + cc-data, .d-table-wrap → cc-scanline
+  // Component CSS overrides let styles transform standard components.
   // This is the primary mechanism for recipe visual transforms.
 });
 ```
@@ -55,7 +53,7 @@ getShape();         // 'pill'
 getShapeList();     // ['sharp', 'rounded', 'pill']
 ```
 
-Shapes override the style's default radius. The command-center style defaults to `sharp`; glassmorphism defaults to `pill`.
+Shapes override the style's default radius. Glassmorphism defaults to `pill`; clean defaults to `rounded`.
 
 ## Colorblind Mode
 
@@ -90,7 +88,7 @@ Internal exports for testing/advanced use: `rgbToOklch(r,g,b)`, `oklchToRgb(L,C,
 
 ## Monochrome Palette
 
-The `palette: 'monochrome'` personality trait (used by command-center) constrains **decorative** role colors (accent, tertiary, info) within ±20° of the primary hue. **Semantic** roles (success, warning, error) retain their standard hues (green, amber, red) so that trend indicators, status badges, and alerts have correct color meaning even in monochrome mode. WCAG AA validated via `validateContrast()`.
+The `palette: 'monochrome'` personality trait constrains **decorative** role colors (accent, tertiary, info) within ±20° of the primary hue. **Semantic** roles (success, warning, error) retain their standard hues (green, amber, red) so that trend indicators, status badges, and alerts have correct color meaning even in monochrome mode. WCAG AA validated via `validateContrast()`.
 
 ## Animation System
 
@@ -137,7 +135,7 @@ See `reference/build-tooling.md` for full details on the detection and eliminati
 ## Key Files
 
 - `src/css/derive.js` — Color math, personality presets, main `derive()` function
-- `src/css/styles/auradecantism.js` / `clean.js` / `retro.js` / `glassmorphism.js` / `command-center.js` — Style definitions
+- `src/css/styles/auradecantism.js` / `clean.js` / `retro.js` / `glassmorphism.js` — Style definitions
 - `src/css/theme-registry.js` — State management, DOM injection, public API
 - `src/css/index.js` — Public CSS module exports
 

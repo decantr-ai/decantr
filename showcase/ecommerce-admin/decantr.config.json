@@ -1,0 +1,15 @@
+{
+  "$schema": "https://decantr.ai/schemas/config.v2.json",
+  "name": "eCommerce Admin Showcase",
+  "style": "auradecantism",
+  "mode": "light",
+  "router": "hash",
+  "dev": { "port": 4201 },
+  "build": {
+    "outDir": "dist",
+    "sourcemap": true,
+    "treeShake": true,
+    "codeSplit": true,
+    "purgeCSS": true
+  }
+}

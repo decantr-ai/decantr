@@ -8,7 +8,7 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { Card, Badge, Button, icon } from 'decantr/components';
 import { SiteShell } from '../layouts/site-shell.js';
-import showcaseManifest from '../../../showcase/showcase.manifest.json';
+import { showcaseManifest } from '../data/showcases.js';
 
 const { div, h1, h2, h3, p, span, section, a, img } = tags;
 
@@ -23,12 +23,12 @@ function ShowcaseCard({ showcase }) {
     class: `ds-glass ${css('_flex _col _gap4 _p0 _ohidden')}`,
   },
     // Thumbnail
-    a({ href: showcaseUrl, target: '_blank', rel: 'noopener', class: css('_db _ohidden _bgmuted') },
+    a({ href: showcaseUrl, target: '_blank', rel: 'noopener', class: css('_block _ohidden _bgmuted') },
       img({
         src: `/showcase/${showcase.id}/thumbnail.svg`,
         alt: `${showcase.title} screenshot`,
         loading: 'lazy',
-        class: css('_w100 _h[200px] _objcover _db _trans[transform_0.3s_ease] _h:scale[1.03]'),
+        class: css('_w100 _h[200px] _of[cover] _block _trans[transform_0.3s_ease] _h:scale[1.03]'),
         onerror: 'this.style.display="none"',
       }),
     ),
@@ -57,7 +57,7 @@ function ShowcaseCard({ showcase }) {
         ),
         isLive
           ? a({ href: showcaseUrl, target: '_blank', rel: 'noopener', class: css('_nounder') },
-              Button({ variant: 'primary', size: 'sm' }, 'View Live', icon('arrow-up-right', { size: '14px' })),
+              Button({ variant: 'primary', size: 'sm' }, 'View Live', icon('external-link', { size: '14px' })),
             )
           : null,
       ),

@@ -116,7 +116,7 @@ import { Button, Input, Card, Modal, Tabs, ... } from 'decantr/components';
 
 This project uses the **gaming-guild** community style in **dark** mode with **rounded** shape.
 
-Available: `auradecantism` (default), `clean`, `glassmorphism`, `command-center`, `retro`, `clay`, `liquid-glass`, `dopamine`, `prismatic`, `bioluminescent`, `editorial`, `gaming-guild`
+Available: `auradecantism` (default), `clean`, `glassmorphism`, `retro`, `clay`, `liquid-glass`, `dopamine`, `prismatic`, `bioluminescent`, `editorial`, `gaming-guild`
 Modes: `light`, `dark`, `auto`
 Shapes: `sharp`, `rounded`, `pill`
 

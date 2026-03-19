@@ -84,7 +84,7 @@ export function Toggle(props = {}, ...children) {
 export function ToggleGroup(props = {}) {
   injectBase();
 
-  const { items = [], value, type, multiple, variant, size, block, disabled, onchange, class: cls } = props;
+  const { items = [], value, type, multiple, variant, size, block, disabled, onchange, 'aria-label': ariaLabel, class: cls } = props;
 
   const isMulti = multiple || type === 'multiple';
   const isSingle = !isMulti;
@@ -92,10 +92,12 @@ export function ToggleGroup(props = {}) {
   let current = typeof value === 'function' ? value() : (value || (isMulti ? [] : ''));
 
   // Single-select uses radiogroup/radio; multi-select uses group/button+aria-pressed
-  const group = div({
+  const groupAttrs = {
     class: cx('d-toggle-group', size && `d-toggle-group-${size}`, block && 'd-toggle-group-block', cls),
     role: isSingle ? 'radiogroup' : 'group'
-  });
+  };
+  if (ariaLabel) groupAttrs['aria-label'] = ariaLabel;
+  const group = div(groupAttrs);
 
   // Sliding indicator for single-select
   let indicator = null;
@@ -193,10 +195,12 @@ export function ToggleGroup(props = {}) {
     createEffect(() => {
       const v = disabled();
       group.toggleAttribute('data-disabled', v);
+      group.setAttribute('aria-disabled', v ? 'true' : 'false');
       buttons.forEach(({ btn }) => { btn.disabled = v; });
     });
   } else if (disabled) {
     group.setAttribute('data-disabled', '');
+    group.setAttribute('aria-disabled', 'true');
     buttons.forEach(({ btn }) => { btn.disabled = true; });
   }
 

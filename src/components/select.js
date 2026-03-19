@@ -70,6 +70,7 @@ export function Select(props = {}) {
     itemSelector: '.d-select-option:not(.d-select-option-disabled)',
     activeClass: 'd-select-option-highlight',
     orientation: 'vertical',
+    owner: trigger,
     onSelect: (el, idx) => {
       const selectableOpts = options.filter(o => !o.disabled);
       if (selectableOpts[idx]) selectOption(selectableOpts[idx].value);
@@ -85,14 +86,19 @@ export function Select(props = {}) {
     else display.classList.remove('d-select-placeholder');
   }
 
+  let _selectOptId = 0;
+
   function renderOptions() {
     dropdown.replaceChildren();
     options.forEach((opt) => {
-      const el = div({
+      const optAttrs = {
         class: cx('d-select-option', opt.value === currentValue && 'd-select-option-active', opt.disabled && 'd-select-option-disabled'),
         role: 'option',
+        id: 'd-sel-o-' + (_selectOptId++),
         'aria-selected': opt.value === currentValue ? 'true' : 'false'
-      }, opt.label);
+      };
+      if (opt.disabled) optAttrs['aria-disabled'] = 'true';
+      const el = div(optAttrs, opt.label);
       if (!opt.disabled) {
         el.addEventListener('mousedown', (e) => {
           e.preventDefault();

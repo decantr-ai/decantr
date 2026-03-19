@@ -70,9 +70,11 @@ export function Button(props = {}, ...children) {
       if (v) {
         el.className = cx(className, 'd-btn-loading');
         el.setAttribute('disabled', '');
+        el.setAttribute('aria-busy', 'true');
         _addSpinner(el, resolvedSize);
       } else {
         el.className = className;
+        el.removeAttribute('aria-busy');
         _removeSpinner(el);
         if (typeof disabled === 'function' ? !disabled() : !disabled) {
           el.removeAttribute('disabled');
@@ -82,6 +84,7 @@ export function Button(props = {}, ...children) {
   } else if (loading) {
     el.className = cx(className, 'd-btn-loading');
     el.setAttribute('disabled', '');
+    el.setAttribute('aria-busy', 'true');
     _addSpinner(el, resolvedSize);
   }
 

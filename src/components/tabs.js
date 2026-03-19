@@ -234,10 +234,12 @@ export function Tabs(props = {}) {
     createEffect(() => {
       const v = disabled();
       container.toggleAttribute('data-disabled', v);
+      container.setAttribute('aria-disabled', v ? 'true' : 'false');
       tabEls.forEach(({ el }) => { el.disabled = v; });
     });
   } else if (disabled) {
     container.setAttribute('data-disabled', '');
+    container.setAttribute('aria-disabled', 'true');
     tabEls.forEach(({ el }) => { el.disabled = true; });
   }
 

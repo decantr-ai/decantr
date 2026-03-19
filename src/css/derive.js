@@ -1199,7 +1199,8 @@ export function derive(seed, personality, mode, typography, overrides, options) 
 
   // --- Scrollbar tokens (4 tokens) ---
   const scrollbar = {
-    '--d-scrollbar-w':           '8px',
+    '--d-scrollbar-w':           p.radius === 'sharp' ? '6px' : '4px',
+    '--d-scrollbar-radius':      p.radius === 'sharp' ? '0' : p.radius === 'pill' ? '9999px' : '4px',
     '--d-scrollbar-track':       'transparent',
     '--d-scrollbar-thumb':       'var(--d-border)',
     '--d-scrollbar-thumb-hover': 'var(--d-border-strong)',

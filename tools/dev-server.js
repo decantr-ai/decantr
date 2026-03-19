@@ -225,14 +225,20 @@ export function startDevServer(projectRoot, port = 3000, options = {}) {
     // Serve registry JSON files (no import rewriting — data, not modules)
     if (pathname.startsWith('/__decantr/registry/')) {
       const registryPath = pathname.slice('/__decantr/registry/'.length);
-      const filePath = join(frameworkSrc, 'registry', registryPath);
+      const filePath = resolve(frameworkSrc, 'registry', registryPath);
+      if (!filePath.startsWith(resolve(frameworkSrc, 'registry'))) {
+        res.writeHead(403); res.end('Forbidden'); return;
+      }
       return serveFile(filePath, res, false);
     }
 
     // Serve framework source files (kit, components, etc.)
     if (pathname.startsWith('/__decantr/')) {
       const modPath = pathname.slice('/__decantr/'.length);
-      let filePath = join(frameworkSrc, modPath);
+      let filePath = resolve(frameworkSrc, modPath);
+      if (!filePath.startsWith(resolve(frameworkSrc))) {
+        res.writeHead(403); res.end('Forbidden'); return;
+      }
       try {
         const s = await stat(filePath);
         if (s.isDirectory()) filePath = join(filePath, 'index.js');

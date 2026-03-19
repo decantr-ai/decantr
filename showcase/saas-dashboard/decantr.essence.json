@@ -1,13 +1,13 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "terroir": "saas-dashboard",
   "vintage": {
-    "style": "command-center",
+    "style": "auradecantism",
     "mode": "dark",
-    "recipe": "command-center",
-    "shape": "sharp"
+    "recipe": "auradecantism",
+    "shape": "rounded"
   },
-  "character": ["tactical", "data-dense", "professional"],
+  "character": ["professional", "data-rich", "luminous"],
   "vessel": {
     "type": "spa",
     "routing": "hash"
@@ -18,9 +18,10 @@
       "skeleton": "sidebar-main",
       "blend": [
         "kpi-grid",
+        "quick-actions",
         { "cols": ["chart-grid", "activity-feed"], "span": { "chart-grid": 2 }, "at": "lg" }
       ],
-      "surface": "_flex _col _gap3 _p4 _overflow[auto] _flex1"
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
     },
     {
       "id": "analytics",
@@ -29,18 +30,87 @@
         "filter-bar",
         "kpi-grid",
         "chart-grid",
-        "data-table"
+        { "cols": ["comparison-panel", "data-table"], "at": "lg" }
       ],
-      "surface": "_flex _col _gap3 _p4 _overflow[auto] _flex1"
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
     },
     {
       "id": "users",
       "skeleton": "sidebar-main",
       "blend": [
         "kpi-grid",
+        { "pattern": "filter-bar", "preset": "toolbar", "as": "users-toolbar" },
         "data-table"
       ],
-      "surface": "_flex _col _gap3 _p4 _overflow[auto] _flex1"
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "user-detail",
+      "skeleton": "sidebar-main",
+      "blend": [
+        { "pattern": "detail-header", "preset": "profile", "as": "user-header" },
+        "kpi-grid",
+        { "cols": ["timeline", "activity-feed"], "at": "lg" }
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "teams",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "filter-bar",
+        { "pattern": "card-grid", "preset": "user", "as": "team-grid" },
+        "data-table"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "pipeline",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "filter-bar",
+        "kanban-board"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "billing",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "kpi-grid",
+        "pricing-table",
+        "order-history"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "notifications",
+      "skeleton": "sidebar-main",
+      "blend": ["inbox"],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "reports",
+      "skeleton": "sidebar-main",
+      "blend": [
+        "filter-bar",
+        "chart-grid",
+        "scorecard",
+        "data-table"
+      ],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "changelog",
+      "skeleton": "sidebar-main",
+      "blend": ["changelog"],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "status",
+      "skeleton": "sidebar-main",
+      "blend": ["status-board"],
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
     },
     {
       "id": "settings",
@@ -48,7 +118,13 @@
       "blend": [
         { "pattern": "form-sections", "preset": "settings", "as": "settings-form" }
       ],
-      "surface": "_flex _col _gap3 _p4 _overflow[auto] _flex1"
+      "surface": "_flex _col _gap4 _p6 _overflow[auto] _flex1"
+    },
+    {
+      "id": "login",
+      "skeleton": "centered",
+      "blend": ["auth-form"],
+      "surface": "_flex _col _center _hfull"
     },
     {
       "id": "not-found",
@@ -57,7 +133,7 @@
       "surface": "_flex _col _center _hfull"
     }
   ],
-  "tannins": [],
+  "tannins": ["auth", "analytics-state", "search", "notifications", "user-management", "billing"],
   "cork": {
     "enforce_style": true,
     "enforce_recipe": true

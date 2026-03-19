@@ -15,10 +15,10 @@ const VALID_TYPES = ['style', 'recipe', 'pattern', 'archetype', 'plugin', 'templ
 const ID_PATTERN = /^[a-z][a-z0-9-]{1,49}$/;
 
 const BUILT_IN_IDS = {
-  style: ['auradecantism', 'clean', 'glassmorphism', 'command-center', 'retro', 'bioluminescent', 'clay', 'dopamine', 'editorial', 'liquid-glass', 'prismatic', 'gaming-guild'],
-  recipe: ['auradecantism', 'clean', 'command-center', 'clay', 'gaming-guild'],
+  style: ['auradecantism', 'clean', 'glassmorphism', 'retro', 'bioluminescent', 'launchpad', 'dopamine', 'editorial', 'liquid-glass', 'prismatic', 'gaming-guild'],
+  recipe: ['auradecantism', 'clean', 'launchpad', 'gaming-guild'],
   pattern: ['hero', 'card-grid', 'data-table', 'kpi-grid', 'filter-bar', 'activity-feed', 'chart-grid', 'stat-card', 'stats-bar', 'stats-section', 'timeline', 'form-sections', 'pricing-table', 'testimonials', 'footer-columns', 'logo-strip', 'cta-section', 'post-list', 'category-nav', 'detail-header', 'detail-panel', 'comparison-panel', 'pipeline-tracker', 'goal-tracker', 'scorecard', 'showcase-gallery', 'code-preview', 'chat-interface', 'wizard', 'steps-card', 'checklist-card', 'announcement-bar', 'photo-to-recipe', 'contact-form', 'auth-form', 'article-content', 'filter-sidebar', 'component-showcase'],
-  archetype: ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community', 'gaming-platform', 'creative-tool'],
+  archetype: ['ecommerce', 'saas-dashboard', 'portfolio', 'content-site', 'docs-explorer', 'financial-dashboard', 'recipe-community', 'gaming-platform', 'cloud-platform'],
   plugin: [],
   template: ['saas-dashboard', 'ecommerce', 'portfolio', 'content-site', 'landing-page'],
 };
@@ -170,6 +170,71 @@ export function validateRecipeArtifact(content) {
     warnings.push('Recipe has no decorators — it may be empty');
   }
 
+  // v2 optional fields validation
+  if (data.spatial_hints) {
+    if (typeof data.spatial_hints !== 'object') {
+      errors.push('spatial_hints must be an object');
+    } else {
+      if (data.spatial_hints.density_bias != null && (data.spatial_hints.density_bias < -2 || data.spatial_hints.density_bias > 2)) {
+        errors.push('spatial_hints.density_bias must be between -2 and 2');
+      }
+      if (data.spatial_hints.content_gap_shift != null && (data.spatial_hints.content_gap_shift < -2 || data.spatial_hints.content_gap_shift > 2)) {
+        errors.push('spatial_hints.content_gap_shift must be between -2 and 2');
+      }
+      const validWrapping = ['always', 'minimal', 'none'];
+      if (data.spatial_hints.card_wrapping && !validWrapping.includes(data.spatial_hints.card_wrapping)) {
+        errors.push(`spatial_hints.card_wrapping must be one of: ${validWrapping.join(', ')}`);
+      }
+    }
+  }
+
+  if (data.skeleton) {
+    if (typeof data.skeleton !== 'object') {
+      errors.push('skeleton must be an object');
+    } else {
+      const validNavStyles = ['filled', 'pill', 'underline', 'minimal', 'icon-glow'];
+      if (data.skeleton.nav_style && !validNavStyles.includes(data.skeleton.nav_style)) {
+        warnings.push(`skeleton.nav_style "${data.skeleton.nav_style}" is not a known variant (${validNavStyles.join(', ')})`);
+      }
+      const validNavStates = ['expanded', 'rail'];
+      if (data.skeleton.default_nav_state && !validNavStates.includes(data.skeleton.default_nav_state)) {
+        errors.push(`skeleton.default_nav_state must be one of: ${validNavStates.join(', ')}`);
+      }
+      const validSkeletons = ['sidebar-main', 'top-nav-main', 'centered', 'full-bleed', 'minimal-header', 'top-nav-sidebar', 'sidebar-right', 'sidebar-main-footer', 'sidebar-aside', 'top-nav-footer'];
+      if (data.skeleton.preferred) {
+        for (const s of data.skeleton.preferred) {
+          if (!validSkeletons.includes(s)) warnings.push(`skeleton.preferred "${s}" is not a known skeleton`);
+        }
+      }
+      if (data.skeleton.avoid) {
+        for (const s of data.skeleton.avoid) {
+          if (!validSkeletons.includes(s)) warnings.push(`skeleton.avoid "${s}" is not a known skeleton`);
+        }
+      }
+    }
+  }
+
+  if (data.animation) {
+    if (typeof data.animation !== 'object') {
+      errors.push('animation must be an object');
+    } else {
+      const validMicro = ['instant', 'snappy', 'smooth', 'bouncy'];
+      if (data.animation.micro && !validMicro.includes(data.animation.micro)) {
+        warnings.push(`animation.micro "${data.animation.micro}" is not a known variant (${validMicro.join(', ')})`);
+      }
+    }
+  }
+
+  if (data.pattern_preferences) {
+    if (typeof data.pattern_preferences !== 'object') {
+      errors.push('pattern_preferences must be an object');
+    }
+  }
+
+  if (data.schema_version && data.schema_version !== '2.0' && data.schema_version !== '1.0') {
+    warnings.push(`Unknown schema_version "${data.schema_version}"`);
+  }
+
   return { valid: errors.length === 0, errors, warnings };
 }
 
@@ -195,6 +260,25 @@ export function validatePatternArtifact(content) {
   if (!data.default_blend) warnings.push('Pattern has no default_blend');
   if (!data.components || !Array.isArray(data.components)) {
     warnings.push('Pattern has no components list');
+  }
+
+  // io field validation (optional, for cross-pattern wiring metadata)
+  if (data.io) {
+    if (typeof data.io !== 'object') {
+      errors.push('io must be an object');
+    } else {
+      const validIoKeys = ['produces', 'consumes', 'actions'];
+      for (const key of Object.keys(data.io)) {
+        if (!validIoKeys.includes(key)) {
+          warnings.push(`io has unknown key "${key}" — valid keys: ${validIoKeys.join(', ')}`);
+        }
+      }
+      for (const key of validIoKeys) {
+        if (data.io[key] && !Array.isArray(data.io[key])) {
+          errors.push(`io.${key} must be an array`);
+        }
+      }
+    }
   }
 
   return { valid: errors.length === 0, errors, warnings };

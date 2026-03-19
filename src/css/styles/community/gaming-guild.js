@@ -5,7 +5,7 @@
  * monospace data readouts and uppercase micro labels.
  *
  * Decorative classes (gg-* prefix) are injected via the components field,
- * following the same pattern as command-center's cc-* utilities.
+ * following the same pattern as auradecantism's d-* utilities.
  * These classes are used by the Gaming Guild recipe to compose
  * standard Decantr components into the guild-hall visual language.
  */
@@ -156,7 +156,7 @@ export const gamingGuild = {
     '.gg-data{font-family:var(--d-font-mono);font-variant-numeric:tabular-nums;letter-spacing:0.02em}',
     // ── gg-live: green pulsing dot indicator ──
     '.gg-live{display:inline-block;width:var(--d-sp-1-5);height:var(--d-sp-1-5);border-radius:var(--d-radius-full);background:var(--d-success);animation:gg-pulse 3s ease-in-out infinite}',
-    // Shell nav override
-    '.d-shell-nav{padding:var(--d-sp-2) 0}',
+    // Shell nav override (compound selector so rail/hidden state overrides still win)
+    '.d-shell>.d-shell-nav{padding:var(--d-sp-2) 0}',
   ].join(''),
 };
