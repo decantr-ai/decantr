@@ -22,7 +22,7 @@ export function Badge(props = {}, ...children) {
   const resolvedStatus = status || variant;
 
   // Known statuses that have CSS variant classes
-  const cssVariants = ['success', 'error', 'warning', 'info', 'processing'];
+  const cssVariants = ['success', 'error', 'warning', 'info', 'processing', 'primary'];
   const hasCssVariant = cssVariants.includes(resolvedStatus);
 
   // Fallback inline color for non-CSS variants (primary, accent, custom)

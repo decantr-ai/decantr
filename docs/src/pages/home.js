@@ -19,7 +19,7 @@ function VisionHero() {
     div({ class: css('_flex _col _aic _tc _gap8 _relative _z10 _mw[900px]') },
       h1({ class: css('d-heading-hero') }, 'Frameworks were built for humans. Decantr is built for AI.'),
       p({ class: css('_textxl _fgmuted _mw[640px] _lh[1.6]') },
-        'The AI-native web framework. Registry-driven generation, signal reactivity, and 100+ components — all designed for LLMs to generate, read, and maintain.'
+        'The AI UI-native web framework. Registry-driven generation, signal reactivity, and 100+ components — all designed for LLMs to generate, read, and maintain.'
       ),
       div({ class: css('_flex _gap4 _wrap _jcc') },
         Button({ variant: 'primary', size: 'lg', class: css('aura-glow') }, icon('terminal'), 'npx decantr init'),
@@ -44,13 +44,13 @@ function ProcessSection() {
 
   return section({ class: css('_py16 _px6 _bcborder _borderT _borderB') },
     div({ class: css('_mw[1100px] _mx[auto] _flex _col _gap6 _aic') },
-      span({ class: css('_textxs _fgmuted _uppercase _tracking[0.15em]') }, 'The Decantation Process'),
+      span({ class: css('_textsm _fgmuted _uppercase _tracking[0.15em]') }, 'The Decantation Process'),
       div({ class: css('_flex _wrap _jcc _gap4') },
         ...stages.map((s, i) =>
           div({ class: css('_flex _aic _gap3') },
             div({ class: css('_flex _col _aic') },
-              span({ class: css('_textsm _fgprimary _bold') }, s.name),
-              span({ class: css('_textxs _fgmuted') }, s.desc)
+              span({ class: css('_textbase _fgprimary _bold') }, s.name),
+              span({ class: css('_textsm _fgmuted') }, s.desc)
             ),
             i < stages.length - 1 ? icon('arrow-right', { class: css('_fgmuted/50') }) : null
           )

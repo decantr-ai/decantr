@@ -259,4 +259,6 @@ export const docsSiteCSS = [
 
   // ── Reduced motion ──
   '@media(prefers-reduced-motion:reduce){.de-content-enter,.de-search-entering{opacity:1!important;transform:none!important}.de-search-box{animation:none!important}.de-search-item{transition:none!important}}',
+  // ── Centered tabs override ──
+  '.d-tabs._jcc .d-tabs-list{justify-content:center}',
 ].join('');

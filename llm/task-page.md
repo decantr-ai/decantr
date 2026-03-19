@@ -794,7 +794,7 @@ div({ class: css('_b1 _r4 _p4') },  // simple border + radius (tokens handle the
 **Setup:** `import { setStyle, setMode } from 'decantr/css';
 setStyle('auradecantism');
 setMode('dark');`
-**Decorators (10):** d-mesh, d-glass, d-glass-strong, d-gradient-text, d-gradient-text-alt, aura-glow, aura-glow-strong, aura-ring, aura-orb, aura-shimmer
+**Decorators (17):** d-mesh, d-glass, d-glass-strong, d-gradient-text, d-gradient-text-alt, aura-glow, aura-glow-strong, aura-ring, aura-orb, aura-shimmer, d-glow-primary, d-glow-accent, d-stat-glow, d-gradient-hint-primary, d-gradient-hint-accent, d-terminal-chrome, d-icon-glow
 **Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart
 
 ### recipe-clean

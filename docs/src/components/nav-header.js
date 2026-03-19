@@ -12,10 +12,10 @@ export function NavHeader() {
     'aria-label': 'Main navigation',
     class: `ds-nav ${css('_fixed _top0 _left0 _w100 _z[var(--d-z-sticky)] _flex _aic _jcc')}`,
   },
-    div({ class: css('_flex _row _aic _jcbetween _w100 _px6 _py3 _maxw[1100px]') },
+    div({ class: css('_flex _row _aic _jcsb _w100 _px6 _py3 _maxw[1100px]') },
       // Left: Logo + Wordmark
       link({ href: '/', exact: true, class: css('_flex _row _aic _gap3 _nounder') },
-        img({ src: './images/logo.svg', alt: 'decantr', class: css('_w[28px]') }),
+        img({ src: '/images/logo.svg', alt: 'decantr', class: css('_w[32px] _h[auto]') }),
         span({ class: css('_bold _ls[-0.02em] _textlg _fgfg') },
           'decantr',
           span({ class: 'ds-pink' }, '.'),
@@ -29,7 +29,7 @@ export function NavHeader() {
         link({ href: '/showcase', activeClass: 'ds-nav-active', class: 'ds-nav-link' }, 'Showcase'),
         link({ href: '/docs', activeClass: 'ds-nav-active', class: 'ds-nav-link' }, 'Docs'),
         a({
-          href: 'https://github.com/anthropics/decantr',
+          href: 'https://github.com/decantr-ai/decantr',
           target: '_blank',
           rel: 'noopener',
           class: css('ds-nav-link _flex _aic _gap1')

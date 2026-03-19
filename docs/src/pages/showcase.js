@@ -4,8 +4,8 @@
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { createSignal, createEffect } from 'decantr/state';
-import { Card, Badge, Button, Tabs, icon } from 'decantr/components';
-import { SiteShell } from '../layouts/site-shell.js';
+import { Card, Badge, Button, Tabs, Chip, Tag, icon } from 'decantr/components';
+// NavHeader is mounted globally in app.js - no need for SiteShell
 import { showcaseManifest } from '../data/showcases.js';
 import { AnatomyViewer } from '../sections/anatomy-viewer.js';
 import { EcosystemGrid } from '../sections/ecosystem-grid.js';
@@ -37,7 +37,7 @@ function AppsTab() {
           h3({ class: css('_heading5 _fgfg') }, item.title),
           p({ class: css('_textsm _fgmuted _lh[1.6]') }, item.description),
           div({ class: css('_flex _wrap _gap2') },
-            ...item.tags.map(t => span({ class: css('_textxs _fgmuted _bgmuted/50 _px2 _py1 _r1') }, t))
+            ...item.tags.map(t => Tag({ class: css('_textxs _px2 _py1') }, t))
           ),
           div({ class: css('_flex _aic _jcsb _mt[auto] _pt4 _borderT _bcborder') },
             span({ class: css('_textsm _fgmuted') }, `Archetype: ${item.archetype}`),
@@ -99,9 +99,12 @@ function ThemesTab() {
         Card.Body({ class: css('_flex _col _gap3') },
           div({ class: css('_flex _aic _jcsb') },
             h3({ class: css('_heading5 _fgfg') }, t.name),
-            Badge({ variant: t.type === 'core' ? 'primary' : t.type === 'addon' ? 'secondary' : 'outline' },
-              t.type === 'core' ? 'Core' : t.type === 'addon' ? 'Add-on' : 'Community'
-            )
+            Chip({
+              label: t.type === 'core' ? 'Core' : t.type === 'addon' ? 'Add-on' : 'Community',
+              variant: 'filled',
+              color: t.type === 'core' ? 'error' : t.type === 'addon' ? 'warning' : 'info',
+              size: 'sm'
+            })
           ),
           p({ class: css('_textsm _fgmuted') }, t.desc)
         )
@@ -136,7 +139,8 @@ function PatternsTab() {
 
         createEffect(() => {
           const isActive = activePattern().id === p.id;
-          btn.classList.toggle(css('_bgprimary/20 _bcprimary'), isActive);
+          const classes = css('_bgprimary/20 _bcprimary').split(' ');
+          classes.forEach(c => btn.classList.toggle(c, isActive));
         });
 
         return btn;
@@ -154,27 +158,27 @@ function EcosystemTab() {
 
 // ─── Page Composition ─────────────────────────────────────────────
 export function ShowcasePage() {
-  return SiteShell(
-    section({ class: css('_flex _col _gap8 _py12 _px6 _mw[1100px] _mx[auto]') },
-      // Header
-      div({ class: css('_tc _flex _col _gap4 _aic') },
-        h1({ class: css('d-heading-hero') }, 'See What Decantr Builds'),
-        p({ class: css('_textlg _fgmuted _mw[600px]') },
-          'Production apps, 100+ components, and curated themes — all generated from essence files.'
-        )
-      ),
-      // Tabs
-      Tabs({
-        tabs: [
-          { id: 'apps', label: 'Apps', content: () => AppsTab() },
-          { id: 'patterns', label: 'Patterns', content: () => PatternsTab() },
-          { id: 'components', label: 'Components', content: () => ComponentsTab() },
-          { id: 'themes', label: 'Themes', content: () => ThemesTab() },
-          { id: 'ecosystem', label: 'Ecosystem', content: () => EcosystemTab() },
-        ],
-        active: 'apps',
-        class: css('_jcc'),
-      })
-    )
+  // No SiteShell - NavHeader is mounted globally in app.js
+  // _pt20 accounts for fixed NavHeader height
+  return section({ class: css('_flex _col _gap8 _pt20 _pb12 _px6 _mw[1100px] _mx[auto]') },
+    // Header
+    div({ class: css('_tc _flex _col _gap4 _aic') },
+      h1({ class: css('d-heading-hero') }, 'See What Decantr Builds'),
+      p({ class: css('_textlg _fgmuted _mw[600px]') },
+        'Production apps, 100+ components, and curated themes — all generated from essence files.'
+      )
+    ),
+    // Tabs
+    Tabs({
+      tabs: [
+        { id: 'apps', label: 'Apps', content: () => AppsTab() },
+        { id: 'patterns', label: 'Patterns', content: () => PatternsTab() },
+        { id: 'components', label: 'Components', content: () => ComponentsTab() },
+        { id: 'themes', label: 'Themes', content: () => ThemesTab() },
+        { id: 'ecosystem', label: 'Ecosystem', content: () => EcosystemTab() },
+      ],
+      active: 'apps',
+      class: css('_jcc'),
+    })
   );
 }

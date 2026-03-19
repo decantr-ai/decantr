@@ -1,0 +1,133 @@
+<h2>Design Section 3: Pattern & Generator</h2>
+<p class="subtitle">How patterns declare effect slots and how the generator applies decorators</p>
+
+<div class="section">
+  <h3>Pattern <code>effect_types</code> Field (Optional)</h3>
+  <p>Patterns can declare which effect slots they contain. If omitted, generator uses component detection.</p>
+
+  <pre style="background:#0d0d14;color:#e0e0e0;padding:16px;border-radius:8px;font-size:12px;line-height:1.8;overflow-x:auto">
+<span style="color:#888">// src/registry/patterns/bento-features.json</span>
+{
+  <span style="color:#0af3eb">"id"</span>: <span style="color:#98c379">"bento-features"</span>,
+  <span style="color:#0af3eb">"name"</span>: <span style="color:#98c379">"Bento Features"</span>,
+
+  <span style="color:#888">// NEW: Declare effect slots this pattern contains</span>
+  <span style="color:#fe4474">"effect_types"</span>: {
+    <span style="color:#0af3eb">"terminal"</span>: <span style="color:#98c379">"code_preview"</span>,      <span style="color:#888">// Terminal preview slot</span>
+    <span style="color:#0af3eb">"stats"</span>: <span style="color:#98c379">"stat_display"</span>,         <span style="color:#888">// Stat cards slot</span>
+    <span style="color:#0af3eb">"features"</span>: <span style="color:#98c379">"icon_container"</span>     <span style="color:#888">// Feature icons slot</span>
+  },
+
+  <span style="color:#888">// Existing fields...</span>
+  <span style="color:#0af3eb">"presets"</span>: { ... },
+  <span style="color:#0af3eb">"default_blend"</span>: { ... }
+}</pre>
+</div>
+
+<div class="section">
+  <h3>Generator Logic Flow</h3>
+  <p>The generator applies decorators automatically during code generation.</p>
+
+  <div style="background:#1e1e2e;border:1px solid #333;border-radius:8px;padding:20px;margin:16px 0">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="background:#0af3eb;color:#000;font-size:11px;font-weight:600;padding:4px 8px;border-radius:4px">1</div>
+        <div style="color:#fff;font-size:13px">Load recipe <code style="color:#0af3eb">visual_effects</code> config</div>
+      </div>
+      <div style="border-left:2px solid #333;margin-left:14px;padding-left:20px;color:#888;font-size:12px">
+        Check <code>enabled</code>, get <code>intensity</code>, load <code>type_mapping</code>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="background:#fe4474;color:#000;font-size:11px;font-weight:600;padding:4px 8px;border-radius:4px">2</div>
+        <div style="color:#fff;font-size:13px">For each pattern in blend, check for <code style="color:#fe4474">effect_types</code></div>
+      </div>
+      <div style="border-left:2px solid #333;margin-left:14px;padding-left:20px;color:#888;font-size:12px">
+        If declared → use explicit mapping<br>
+        If not → scan code for components, use <code>component_fallback</code>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="background:#a78bfa;color:#000;font-size:11px;font-weight:600;padding:4px 8px;border-radius:4px">3</div>
+        <div style="color:#fff;font-size:13px">Map effect types → decorator classes via <code style="color:#a78bfa">type_mapping</code></div>
+      </div>
+      <div style="border-left:2px solid #333;margin-left:14px;padding-left:20px;color:#888;font-size:12px">
+        <code>code_preview</code> → <code>["d-terminal-chrome"]</code><br>
+        <code>stat_display</code> → <code>["d-glow-primary", "d-stat-glow"]</code>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="background:#fbbf24;color:#000;font-size:11px;font-weight:600;padding:4px 8px;border-radius:4px">4</div>
+        <div style="color:#fff;font-size:13px">Inject decorators into generated code</div>
+      </div>
+      <div style="border-left:2px solid #333;margin-left:14px;padding-left:20px;color:#888;font-size:12px">
+        Add classes to appropriate elements in pattern output
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="background:#10b981;color:#000;font-size:11px;font-weight:600;padding:4px 8px;border-radius:4px">5</div>
+        <div style="color:#fff;font-size:13px">Set CSS custom properties based on <code style="color:#10b981">intensity</code></div>
+      </div>
+      <div style="border-left:2px solid #333;margin-left:14px;padding-left:20px;color:#888;font-size:12px">
+        Inject <code>--d-glow-radius</code>, <code>--d-glow-intensity</code>, etc. into page styles
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Generated Output Example</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0">
+    <div>
+      <div style="color:#888;font-size:11px;margin-bottom:8px">WITHOUT visual_effects</div>
+      <pre style="background:#0d0d14;color:#888;padding:12px;border-radius:6px;font-size:10px;line-height:1.6">function BentoFeatures() {
+  return div({ class: css('_grid _gap4') },
+    <span style="color:#666">// Plain pre element</span>
+    pre({ class: css('_p4 _r2') },
+      '$ decantr mcp...'
+    ),
+    <span style="color:#666">// Plain stat</span>
+    span({ class: css('_text3xl _bold') },
+      '100+'
+    )
+  );
+}</pre>
+    </div>
+    <div>
+      <div style="color:#0af3eb;font-size:11px;margin-bottom:8px">WITH visual_effects (auradecantism)</div>
+      <pre style="background:#0d0d14;color:#e0e0e0;padding:12px;border-radius:6px;font-size:10px;line-height:1.6">function BentoFeatures() {
+  return div({ class: css('_grid _gap4') },
+    <span style="color:#888">// Terminal with chrome + glow</span>
+    div({ class: css('<span style="color:#0af3eb">d-terminal-chrome</span>') },
+      pre({ class: css('_p4') },
+        '$ decantr mcp...'
+      )
+    ),
+    <span style="color:#888">// Stat with glow effects</span>
+    span({ class: css('_text3xl _bold <span style="color:#fe4474">d-glow-primary d-stat-glow</span>') },
+      '100+'
+    )
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Files to Modify</h3>
+  <div style="background:#1e1e2e;border:1px solid #333;border-radius:8px;padding:16px;margin:16px 0">
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:12px">
+      <code style="color:#0af3eb">tools/generate.js</code>
+      <span style="color:#888">Add visual_effects resolution + decorator injection</span>
+      <code style="color:#0af3eb">src/registry/patterns/*.json</code>
+      <span style="color:#888">Add optional effect_types to patterns</span>
+      <code style="color:#0af3eb">src/registry/recipe-*.json</code>
+      <span style="color:#888">Add visual_effects config to all 4 recipes</span>
+      <code style="color:#0af3eb">src/css/styles/*.js</code>
+      <span style="color:#888">Implement new decorator CSS classes</span>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px">Does this generator logic make sense? Next: MCP server updates for AI tooling.</p>

@@ -5,6 +5,7 @@ import { createRouter } from 'decantr/router';
 import { registerIcons } from 'decantr/components';
 import { docsSiteCSS } from './style.js';
 import { HomePage } from './pages/home.js';
+import { NavHeader } from './components/nav-header.js';
 
 registerIcons({
   'github': '<path d="M15 22v-4a4.8 4.8 0 00-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 004 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65S8.93 17.38 9 18v4"/><path d="M9 18c-4.51 2-5-2-7-2"/>',
@@ -44,6 +45,7 @@ function setupScrollReveal() {
 const lazyDocsHome = () => import('./pages/docs-home.js').then(m => m.DocsHomePage);
 const lazyTutorial = () => import('./pages/tutorial.js').then(m => m.TutorialPage);
 const lazyCookbook = () => import('./pages/cookbook.js').then(m => m.CookbookPage);
+const lazyWorkflow = () => import('./pages/workflow.js').then(m => m.WorkflowPage);
 const lazyExplorer = () => import('./pages/explorer-page.js').then(m => m.ExplorerPage).catch(() => () => div('Explorer failed to load'));
 const lazyGallery = () => import('./pages/gallery.js').then(m => m.GalleryPage).catch(e => { console.error('Gallery load failed:', e); return () => div('Gallery failed to load'); });
 const lazyShowcase = () => import('./pages/showcase.js').then(m => m.ShowcasePage);
@@ -58,6 +60,7 @@ const router = createRouter({
     { path: '/docs', component: lazyDocsHome },
     { path: '/docs/tutorial/:step', component: lazyTutorial },
     { path: '/docs/cookbook/:recipe', component: lazyCookbook },
+    { path: '/docs/workflow/:page', component: lazyWorkflow },
 
     // Showcase gallery
     { path: '/gallery', component: lazyGallery },
@@ -104,7 +107,10 @@ const router = createRouter({
 });
 
 function App() {
-  return div(router.outlet());
+  return div({ class: '_flex _col _minh[100vh]' },
+    NavHeader(),
+    router.outlet()
+  );
 }
 
 const root = document.getElementById('app');

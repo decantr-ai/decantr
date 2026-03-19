@@ -166,6 +166,7 @@ export const componentCSSMap = {
     '.d-badge-warning{background:var(--d-warning-subtle);color:var(--d-warning-on-subtle)}',
     '.d-badge-info{background:var(--d-info-subtle);color:var(--d-info-on-subtle)}',
     '.d-badge-processing{background:var(--d-primary-subtle);color:var(--d-primary-on-subtle)}',
+    '.d-badge-primary{background:var(--d-primary);color:var(--d-primary-fg)}',
     '.d-badge-solid{background:var(--d-primary);color:var(--d-primary-fg)}',
     '.d-badge-solid.d-badge-success{background:var(--d-success);color:var(--d-success-fg)}',
     '.d-badge-solid.d-badge-error{background:var(--d-error);color:var(--d-error-fg)}',
@@ -178,9 +179,21 @@ export const componentCSSMap = {
   // TAG
   // ═══════════════════════════════════════════════════════════════
   tag: [
-    '.d-tag{background:var(--d-surface-1);border:var(--d-border-width) var(--d-border-style) var(--d-border);border-radius:var(--d-radius);color:var(--d-fg)}',
+    '.d-tag{background:var(--d-surface-1);backdrop-filter:var(--d-surface-1-filter);-webkit-backdrop-filter:var(--d-surface-1-filter);border:var(--d-border-width) var(--d-border-style) rgba(255,255,255,0.12);border-radius:var(--d-radius);color:var(--d-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 0 10px rgba(101,0,198,0.2),0 1px 2px rgba(0,0,0,0.15);transition:all var(--d-duration-fast) var(--d-easing-standard)}',
     '.d-tag-close{color:var(--d-muted)}',
     '.d-tag-close:hover{color:var(--d-fg)}',
+    // Color variants
+    '.d-tag-primary{background:var(--d-primary-subtle);color:var(--d-primary-on-subtle);border-color:var(--d-primary-border);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 0 10px rgba(254,68,116,0.25),0 1px 2px rgba(0,0,0,0.15)}',
+    '.d-tag-success{background:var(--d-success-subtle);color:var(--d-success-on-subtle);border-color:var(--d-success-border);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 0 10px rgba(0,195,136,0.25),0 1px 2px rgba(0,0,0,0.15)}',
+    '.d-tag-warning{background:var(--d-warning-subtle);color:var(--d-warning-on-subtle);border-color:var(--d-warning-border);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 0 10px rgba(253,163,3,0.25),0 1px 2px rgba(0,0,0,0.15)}',
+    '.d-tag-danger{background:var(--d-error-subtle);color:var(--d-error-on-subtle);border-color:var(--d-error-border);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 0 10px rgba(254,68,116,0.25),0 1px 2px rgba(0,0,0,0.15)}',
+    '.d-tag-info{background:var(--d-info-subtle);color:var(--d-info-on-subtle);border-color:var(--d-info-border);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 0 10px rgba(10,243,235,0.25),0 1px 2px rgba(0,0,0,0.15)}',
+    // Checkable/interactive states
+    '.d-tag-checkable{cursor:pointer}',
+    '.d-tag-checkable:hover{filter:brightness(1.1)}',
+    '.d-tag-checkable[aria-checked="true"]{background:var(--d-primary);color:var(--d-primary-fg);border-color:var(--d-primary);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1),0 0 12px rgba(254,68,116,0.35),0 1px 2px rgba(0,0,0,0.15)}',
+    // Custom color support
+    '.d-tag-custom{background:var(--d-tag-bg);color:var(--d-tag-fg);border-color:var(--d-tag-bg)}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
@@ -191,13 +204,25 @@ export const componentCSSMap = {
     '.d-chip-outline{background:transparent}',
     '.d-chip-filled{background:var(--d-primary);color:var(--d-primary-fg);border-color:var(--d-primary)}',
     '.d-chip-selected{background:var(--d-primary-subtle);border-color:var(--d-primary);color:var(--d-primary-on-subtle)}',
-    '.d-chip-interactive:hover{background:var(--d-border);transform:translate(var(--d-hover-translate))}',
+    '.d-chip-interactive:hover:not(.d-chip-filled){background:var(--d-border)}',
+    '.d-chip-interactive:hover{transform:translate(var(--d-hover-translate))}',
+    '.d-chip-filled.d-chip-interactive:hover{filter:brightness(1.15)}',
     '.d-chip-remove{color:var(--d-muted)}',
     '.d-chip-remove:hover{color:var(--d-error)}',
     '.d-chip-success{background:var(--d-success-subtle);color:var(--d-success-on-subtle);border-color:var(--d-success-border)}',
     '.d-chip-error{background:var(--d-error-subtle);color:var(--d-error-on-subtle);border-color:var(--d-error-border)}',
     '.d-chip-warning{background:var(--d-warning-subtle);color:var(--d-warning-on-subtle);border-color:var(--d-warning-border)}',
     '.d-chip-info{background:var(--d-info-subtle);color:var(--d-info-on-subtle);border-color:var(--d-info-border)}',
+    // Outline + color combinations (transparent bg, colored border/text)
+    '.d-chip-outline.d-chip-success{background:transparent;border-color:var(--d-success);color:var(--d-success)}',
+    '.d-chip-outline.d-chip-error{background:transparent;border-color:var(--d-error);color:var(--d-error)}',
+    '.d-chip-outline.d-chip-warning{background:transparent;border-color:var(--d-warning);color:var(--d-warning)}',
+    '.d-chip-outline.d-chip-info{background:transparent;border-color:var(--d-info);color:var(--d-info)}',
+    // Filled + color combinations (solid bg, contrast text)
+    '.d-chip-filled.d-chip-success{background:var(--d-success);border-color:var(--d-success);color:var(--d-success-fg)}',
+    '.d-chip-filled.d-chip-error{background:var(--d-error);border-color:var(--d-error);color:var(--d-error-fg)}',
+    '.d-chip-filled.d-chip-warning{background:var(--d-warning);border-color:var(--d-warning);color:var(--d-warning-fg)}',
+    '.d-chip-filled.d-chip-info{background:var(--d-info);border-color:var(--d-info);color:var(--d-info-fg)}',
   ].join(''),
 
   // ═══════════════════════════════════════════════════════════════
@@ -474,7 +499,7 @@ export const componentCSSMap = {
   // TABS
   // ═══════════════════════════════════════════════════════════════
   tabs: [
-    '.d-tabs-list{border-bottom:var(--d-border-width) var(--d-border-style) var(--d-border);position:relative}',
+    '.d-tabs-list{display:flex;border-bottom:var(--d-border-width) var(--d-border-style) var(--d-border);position:relative}',
     '.d-tab{color:var(--d-muted);border-bottom:var(--d-border-width-strong) solid transparent;transition:all var(--d-duration-fast) var(--d-easing-standard)}',
     '.d-tab:hover:not([disabled]){color:var(--d-fg)}',
     '.d-tab-active{color:var(--d-primary);border-bottom-color:transparent}',

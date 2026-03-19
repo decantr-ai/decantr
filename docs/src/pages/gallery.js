@@ -7,7 +7,7 @@
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { Card, Badge, Button, icon } from 'decantr/components';
-import { SiteShell } from '../layouts/site-shell.js';
+// NavHeader is mounted globally in app.js - no need for SiteShell
 import { showcaseManifest } from '../data/showcases.js';
 
 const { div, h1, h2, h3, p, span, section, a, img } = tags;
@@ -66,8 +66,8 @@ function ShowcaseCard({ showcase }) {
 }
 
 export function GalleryPage() {
-  return SiteShell(
-    section({ class: `ds-section ${css('_flex _col _aic _gap12')}` },
+  // No SiteShell - NavHeader is mounted globally in app.js
+  return section({ class: `ds-section ${css('_flex _col _aic _gap12 _pt20')}` },
       div({ class: css('_flex _col _aic _gap4 _tc _maxw[700px]') },
         span({ class: css('_caption _uppercase _ls[0.1em] _fgprimary _bold') }, 'Showcase Gallery'),
         h1({ class: `ds-heading ds-gradient-text ${css('_fw[800] _ls[-0.03em] _lh[1.1]')}` },
@@ -93,7 +93,6 @@ export function GalleryPage() {
             Button({ variant: 'outline' }, 'Explore Components'),
           ),
         ),
-      ),
-    ),
-  );
+      )
+    );
 }

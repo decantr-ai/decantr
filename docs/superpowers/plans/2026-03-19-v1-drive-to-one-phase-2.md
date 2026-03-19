@@ -841,7 +841,7 @@ Use Edit tool with:
         link({ href: '/showcase', activeClass: 'ds-nav-active', class: 'ds-nav-link' }, 'Showcase'),
         link({ href: '/docs', activeClass: 'ds-nav-active', class: 'ds-nav-link' }, 'Docs'),
         a({
-          href: 'https://github.com/anthropics/decantr',
+          href: 'https://github.com/decantr-ai/decantr',
           target: '_blank',
           rel: 'noopener',
           class: css('ds-nav-link _flex _aic _gap1')

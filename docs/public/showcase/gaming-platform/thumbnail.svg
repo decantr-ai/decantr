@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#050510"/>
+
+  <!-- Top nav bar -->
+  <rect x="40" y="30" width="1120" height="50" rx="12" fill="#0a0a24"/>
+  <rect x="70" y="48" width="100" height="14" rx="4" fill="#3b82f6" opacity="0.6"/>
+  <rect x="200" y="50" width="60" height="10" rx="3" fill="#ffffff" opacity="0.12"/>
+  <rect x="280" y="50" width="60" height="10" rx="3" fill="#ffffff" opacity="0.12"/>
+  <rect x="360" y="50" width="60" height="10" rx="3" fill="#ffffff" opacity="0.12"/>
+
+  <!-- Hero / Featured game card -->
+  <rect x="40" y="100" width="700" height="340" rx="16" fill="#0a0a24" stroke="#3b82f6" stroke-opacity="0.25" stroke-width="1"/>
+  <!-- Hero image placeholder -->
+  <rect x="56" y="116" width="668" height="200" rx="10" fill="#0f0f2e"/>
+  <!-- Glow effect -->
+  <circle cx="390" cy="216" r="80" fill="#3b82f6" opacity="0.08"/>
+  <!-- Hero text lines -->
+  <rect x="70" y="336" width="240" height="16" rx="4" fill="#3b82f6" opacity="0.7"/>
+  <rect x="70" y="364" width="400" height="10" rx="3" fill="#ffffff" opacity="0.15"/>
+  <rect x="70" y="386" width="320" height="10" rx="3" fill="#ffffff" opacity="0.1"/>
+  <!-- Play button -->
+  <rect x="70" y="410" width="100" height="16" rx="8" fill="#3b82f6" opacity="0.8"/>
+
+  <!-- Side cards column -->
+  <rect x="770" y="100" width="390" height="160" rx="12" fill="#0a0a24" stroke="#3b82f6" stroke-opacity="0.15" stroke-width="1"/>
+  <rect x="790" y="120" width="120" height="80" rx="8" fill="#0f0f2e"/>
+  <rect x="926" y="130" width="180" height="10" rx="3" fill="#ffffff" opacity="0.15"/>
+  <rect x="926" y="152" width="140" height="8" rx="3" fill="#ffffff" opacity="0.08"/>
+  <rect x="926" y="172" width="60" height="12" rx="6" fill="#3b82f6" opacity="0.5"/>
+
+  <rect x="770" y="280" width="390" height="160" rx="12" fill="#0a0a24" stroke="#3b82f6" stroke-opacity="0.15" stroke-width="1"/>
+  <rect x="790" y="300" width="120" height="80" rx="8" fill="#0f0f2e"/>
+  <rect x="926" y="310" width="180" height="10" rx="3" fill="#ffffff" opacity="0.15"/>
+  <rect x="926" y="332" width="140" height="8" rx="3" fill="#ffffff" opacity="0.08"/>
+  <rect x="926" y="352" width="60" height="12" rx="6" fill="#3b82f6" opacity="0.5"/>
+
+  <!-- Game grid row -->
+  <rect x="40" y="460" width="170" height="100" rx="10" fill="#0a0a24"/>
+  <rect x="230" y="460" width="170" height="100" rx="10" fill="#0a0a24"/>
+  <rect x="420" y="460" width="170" height="100" rx="10" fill="#0a0a24"/>
+  <rect x="610" y="460" width="170" height="100" rx="10" fill="#0a0a24"/>
+  <rect x="800" y="460" width="170" height="100" rx="10" fill="#0a0a24"/>
+  <rect x="990" y="460" width="170" height="100" rx="10" fill="#0a0a24"/>
+  <!-- Accent lines on grid -->
+  <rect x="56" y="540" width="100" height="6" rx="3" fill="#3b82f6" opacity="0.3"/>
+  <rect x="246" y="540" width="80" height="6" rx="3" fill="#3b82f6" opacity="0.3"/>
+  <rect x="436" y="540" width="110" height="6" rx="3" fill="#3b82f6" opacity="0.3"/>
+  <rect x="626" y="540" width="90" height="6" rx="3" fill="#3b82f6" opacity="0.3"/>
+  <rect x="816" y="540" width="70" height="6" rx="3" fill="#3b82f6" opacity="0.3"/>
+  <rect x="1006" y="540" width="100" height="6" rx="3" fill="#3b82f6" opacity="0.3"/>
+
+  <!-- Title -->
+  <text x="600" y="600" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="700" fill="#3b82f6">Gaming Platform</text>
+  <!-- Subtitle -->
+  <text x="600" y="625" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="400" fill="#ffffff" opacity="0.3">Decantr Showcase</text>
+</svg>

@@ -1336,7 +1336,7 @@ A tasting-notes file (`decantr.tasting-notes.md`) is an optional append-only ses
 **Setup:** `import { setStyle, setMode } from 'decantr/css';
 setStyle('auradecantism');
 setMode('dark');`
-**Decorators (10):** d-mesh, d-glass, d-glass-strong, d-gradient-text, d-gradient-text-alt, aura-glow, aura-glow-strong, aura-ring, aura-orb, aura-shimmer
+**Decorators (17):** d-mesh, d-glass, d-glass-strong, d-gradient-text, d-gradient-text-alt, aura-glow, aura-glow-strong, aura-ring, aura-orb, aura-shimmer, d-glow-primary, d-glow-accent, d-stat-glow, d-gradient-hint-primary, d-gradient-hint-accent, d-terminal-chrome, d-icon-glow
 **Compositions:** panel, card, kpi, table, form, sidebar, layout, alert, modal, chart
 
 ### recipe-clean
@@ -1588,14 +1588,14 @@ function MinimalHeader({ brand, children }) {
 | article-content | — | grid | Card, Avatar, Badge, Text, Separator |
 | auth-form | — | stack | Input, Button, Card, Card.Header, Card.Body, Card.Footer, Separator |
 | author-card | — | row | Card, Avatar, Badge, Text, Button |
-| bento-features | hero-stats, grid-only | stack | Card, Badge, icon |
+| bento-features | asymmetric-glow, split-stats, hero-stats, grid-only | stack | Card, Badge, icon |
 | card-grid | product, content, collection, icon, resource, service, user | grid | Card, Card.Header, Card.Body, Card.Footer, Button, Badge, icon |
 | category-nav | — | flex | Chip, Badge, Button, Segmented |
 | changelog | — | stack | Badge, Chip, Separator, icon |
 | chart-grid | default, dashboard, single-focus, sparkline-row | grid | Chart, Select |
 | chat-interface | — | stack | Card, Card.Body, Input, Button, Avatar, Chip, ScrollArea, icon |
 | checklist-card | default, onboarding | stack | Card, Card.Header, Card.Body, Checkbox, icon |
-| code-comparison | split, stacked | row | CodeBlock, Card |
+| code-comparison | split, vision-split, stacked | row | CodeBlock, Card |
 | code-preview | terminal, split | row | CodeBlock, Chip, Button |
 | comparison-panel | — | grid | Statistic, Sparkline, Badge, Chart, Separator |
 | component-showcase | — | stack | * |

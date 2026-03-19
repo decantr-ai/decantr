@@ -48,7 +48,7 @@ export const showcaseManifest = {
       "style": "clay",
       "mode": "light",
       "tags": ["Workspace", "Gallery", "Filters", "Detail"],
-      "status": "live"
+      "status": "coming-soon"
     }
   ]
 };
