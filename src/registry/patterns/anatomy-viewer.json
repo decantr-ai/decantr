@@ -1,0 +1,46 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "anatomy-viewer",
+  "name": "Anatomy Viewer",
+  "description": "Interactive component breakdown with numbered hotspots on visual preview, component list, atoms used, and code signatures. Used for pattern documentation and education.",
+  "components": [
+    "Card",
+    "Badge",
+    "Tabs",
+    "Button",
+    "icon"
+  ],
+  "default_preset": "split",
+  "presets": {
+    "split": {
+      "description": "Two-column layout: visual preview with hotspots (left), breakdown panel (right)",
+      "components": ["Card", "Badge", "Tabs", "Button", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_grid _gc1 _lg:gc2 _gap6 _p6",
+        "slots": {
+          "preview": "Visual pattern preview with numbered hotspot overlays",
+          "component-list": "List of all components in pattern with selection state",
+          "detail-panel": "Selected component details: name, code signature, atoms used",
+          "layout-atoms": "Pattern-level layout atoms display"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { createSignal } from 'decantr/state';\nimport { Card, Badge, Button, icon } from 'decantr/components';",
+        "example": "function AnatomyViewer({ pattern }) {\n  const { div, h3, span, code, ul, li } = tags;\n  const [selected, setSelected] = createSignal(null);\n\n  return div({ class: css('_grid _gc1 _lg:gc2 _gap6') },\n    // Left: Preview with hotspots\n    Card({ class: css('_relative _overflow[hidden]') },\n      div({ class: css('_bgmuted/10 _p6 _flex _center _minh[300px]') },\n        // Pattern preview rendered here with numbered overlays\n        span({ class: css('_fgmuted') }, 'Pattern Preview')\n      )\n    ),\n    // Right: Breakdown panel\n    Card({},\n      Card.Header({}, h3({ class: css('_heading5') }, 'Components')),\n      Card.Body({},\n        ul({ class: css('_flex _col _gap2') },\n          ...pattern.components.map((c, i) =>\n            li({ \n              class: css('_flex _aic _gap2 _p2 _r1 _cursor[pointer] _h:bgmuted/10'),\n              onclick: () => setSelected(c)\n            },\n              Badge({ variant: 'outline', size: 'sm' }, String(i + 1)),\n              span({ class: css('_textsm') }, c)\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_grid _gc1 _lg:gc2 _gap6",
+    "slots": {
+      "preview": "Visual pattern preview with numbered hotspot overlays",
+      "breakdown": "Component list, atoms, code signatures"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge } from 'decantr/components';",
+    "example": "function AnatomyViewer({ pattern }) {\n  const { div, h3, span } = tags;\n  return div({ class: css('_grid _gc1 _lg:gc2 _gap6') },\n    Card({}, 'Preview'),\n    Card({}, 'Breakdown')\n  );\n}"
+  }
+}
