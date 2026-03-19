@@ -51,6 +51,7 @@
     "code-preview": { "name": "Code Preview", "file": "code-preview.json", "presets": ["terminal", "split"] },
     "stats-section": { "name": "Stats Section", "file": "stats-section.json", "presets": ["hero", "inline"] },
     "showcase-gallery": { "name": "Showcase Gallery", "file": "showcase-gallery.json", "presets": ["screenshots", "cards"] },
+    "showcase-card": { "name": "Showcase Card", "file": "showcase-card.json", "presets": ["app", "compact"] },
     "footer-columns": { "name": "Footer Columns", "file": "footer-columns.json", "presets": ["standard", "minimal"] },
     "kanban-board": { "name": "Kanban Board", "file": "kanban-board.json" },
     "inbox": { "name": "Inbox", "file": "inbox.json" },

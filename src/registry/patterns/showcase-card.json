@@ -1,0 +1,58 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "showcase-card",
+  "name": "Showcase Card",
+  "description": "App showcase card with thumbnail, live badge, style/mode chips, and metadata. Used in showcase galleries.",
+  "components": ["Card", "Badge", "Chip", "Button", "icon"],
+  "default_preset": "app",
+  "presets": {
+    "app": {
+      "description": "Full app showcase with thumbnail, badges, description, and tags",
+      "components": ["Card", "Badge", "Chip", "Button", "icon"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _overflow[hidden]",
+        "slots": {
+          "thumbnail": "Top image/preview area with hover scale",
+          "badge-row": "LIVE badge + style/mode chips",
+          "title": "App title with _heading5",
+          "description": "Short description with _fgmuted",
+          "tags": "Horizontal tag pills",
+          "footer": "Archetype label + View Live button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, Button, icon } from 'decantr/components';",
+        "example": "function ShowcaseCard({ item }) {\n  const { div, h3, p, span, a, img } = tags;\n  const isLive = item.status === 'live';\n  const url = `/showcase/${item.id}/`;\n\n  return Card({ hoverable: true, class: css('d-glass _flex _col _gap0 _overflow[hidden]') },\n    a({ href: url, target: '_blank', class: css('_block _overflow[hidden] _bgmuted') },\n      img({ src: `/showcase/${item.id}/thumbnail.svg`, alt: item.title, loading: 'lazy',\n            class: css('_wfull _h[200px] _object[cover] _trans[transform_0.3s_ease] _h:scale[1.03]') })\n    ),\n    div({ class: css('_flex _col _gap4 _p6 _flex1') },\n      div({ class: css('_flex _aic _jcsb') },\n        Badge({ variant: isLive ? 'success' : 'default' }, isLive ? 'LIVE' : 'Coming Soon'),\n        div({ class: css('_flex _gap2') },\n          Badge({ variant: 'outline' }, item.style),\n          Badge({ variant: 'outline' }, item.mode)\n        )\n      ),\n      h3({ class: css('_heading5 _fgfg') }, item.title),\n      p({ class: css('_textsm _fgmuted _lh[1.6]') }, item.description),\n      div({ class: css('_flex _wrap _gap2') },\n        ...item.tags.map(t => span({ class: css('_textxs _fgmuted _bgmuted/50 _px2 _py1 _r1') }, t))\n      ),\n      div({ class: css('_flex _aic _jcsb _mt[auto] _pt4 _borderT _bcborder') },\n        span({ class: css('_textsm _fgmuted') }, `Archetype: ${item.archetype}`),\n        isLive ? a({ href: url, target: '_blank', class: css('_nounder') },\n          Button({ variant: 'primary', size: 'sm' }, 'View Live', icon('external-link'))\n        ) : null\n      )\n    )\n  );\n}"
+      }
+    },
+    "compact": {
+      "description": "Compact card for grid displays, thumbnail + title only",
+      "components": ["Card", "Badge"],
+      "blend": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap0 _overflow[hidden]",
+        "slots": {
+          "thumbnail": "Square thumbnail with hover overlay",
+          "title": "Title + live badge"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge } from 'decantr/components';",
+        "example": "function CompactShowcaseCard({ item }) {\n  const { div, h4, a, img } = tags;\n\n  return Card({ hoverable: true, class: css('d-glass _overflow[hidden]') },\n    a({ href: `/showcase/${item.id}/`, target: '_blank', class: css('_block') },\n      img({ src: `/showcase/${item.id}/thumbnail.svg`, alt: item.title,\n            class: css('_wfull _h[150px] _object[cover]') })\n    ),\n    div({ class: css('_flex _aic _jcsb _p3') },\n      h4({ class: css('_textsm _fgfg') }, item.title),\n      Badge({ variant: 'success', size: 'xs' }, 'LIVE')\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap0 _overflow[hidden]",
+    "slots": {
+      "thumbnail": "Top preview area",
+      "content": "Title, description, metadata"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, Button, icon } from 'decantr/components';",
+    "example": "function ShowcaseCard({ item }) {\n  const { div, h3, p, a, img } = tags;\n\n  return Card({ hoverable: true, class: css('d-glass _overflow[hidden]') },\n    a({ href: `/showcase/${item.id}/`, target: '_blank' },\n      img({ src: `/showcase/${item.id}/thumbnail.svg`, alt: item.title, class: css('_wfull _h[200px] _object[cover]') })\n    ),\n    div({ class: css('_p6') },\n      h3({ class: css('_heading5') }, item.title),\n      p({ class: css('_textsm _fgmuted') }, item.description)\n    )\n  );\n}"
+  }
+}
