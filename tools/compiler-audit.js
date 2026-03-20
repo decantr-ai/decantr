@@ -14,6 +14,73 @@ import { spawn } from 'node:child_process';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 
+/**
+ * Run a command and return result
+ */
+function runCommand(cmd, args, cwd, timeout = 60000) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const proc = spawn(cmd, args, {
+      cwd,
+      shell: true,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    proc.stdout.on('data', (data) => { stdout += data; });
+    proc.stderr.on('data', (data) => { stderr += data; });
+
+    const timer = setTimeout(() => {
+      proc.kill();
+      resolve({
+        pass: false,
+        time: Date.now() - start,
+        error: 'Timeout after ' + timeout + 'ms',
+        stdout,
+        stderr
+      });
+    }, timeout);
+
+    proc.on('close', (code) => {
+      clearTimeout(timer);
+      resolve({
+        pass: code === 0,
+        time: Date.now() - start,
+        error: code === 0 ? null : stderr.slice(-500) || `Exit code ${code}`,
+        stdout,
+        stderr
+      });
+    });
+
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      resolve({
+        pass: false,
+        time: Date.now() - start,
+        error: err.message,
+        stdout,
+        stderr
+      });
+    });
+  });
+}
+
+const CLI_PATH = join(ROOT, 'cli/index.js');
+
+async function runPhase1(project) {
+  // Clean dist first
+  await runCommand('rm', ['-rf', 'dist'], project.path);
+  return runCommand('node', [CLI_PATH, 'build'], project.path);
+}
+
+async function runPhase2(project) {
+  // Clean dist first
+  await runCommand('rm', ['-rf', 'dist'], project.path);
+  return runCommand('node', [CLI_PATH, 'build', '--experimental-compiler'], project.path);
+}
+
 // Project locations to scan
 const PROJECT_LOCATIONS = [
   { category: 'Showcase', path: 'showcase' },
