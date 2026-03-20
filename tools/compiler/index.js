@@ -5,7 +5,7 @@
  * Pipeline: Tokenize → Parse → Graph → Transform → Optimize → Emit → Validate
  */
 
-import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rm, readdir, copyFile } from 'node:fs/promises';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,6 +24,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * @typedef {Object} BuildOptions
  * @property {string} entry - Entry point file path
  * @property {string} outDir - Output directory
+ * @property {string} [projectRoot] - Project root (for public/ dir)
  * @property {boolean} [minify=true] - Enable minification
  * @property {boolean} [sourceMaps=true] - Generate source maps
  * @property {boolean} [validate=true] - Validate output
@@ -46,7 +47,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 export async function build(options) {
   const startTime = performance.now();
-  const { entry, outDir, minify = true, sourceMaps = true, validate: doValidate = true, dev = false } = options;
+  const { entry, outDir, projectRoot, minify = true, sourceMaps = true, validate: doValidate = true, dev = false } = options;
 
   const result = {
     success: false,
@@ -112,6 +113,11 @@ export async function build(options) {
         result.outputs.push(mapPath);
       }
     }
+
+    // Phase 7: Copy static assets from public/
+    const root = projectRoot || dirname(dirname(entry));
+    const publicDir = join(root, 'public');
+    await copyPublicDir(publicDir, outDir, result.outputs);
 
     result.success = true;
     result.warnings = graph.warnings;
@@ -181,6 +187,35 @@ export function incrementalRebuild(oldGraph, changedFile, newSource) {
     affectedModules: Array.from(affected),
     newGraph
   };
+}
+
+/**
+ * Copy static assets from public/ to output directory
+ * @param {string} srcDir - Source public directory
+ * @param {string} destDir - Destination output directory
+ * @param {string[]} outputs - Array to track copied files
+ */
+async function copyPublicDir(srcDir, destDir, outputs, isRoot = true) {
+  let entries;
+  try {
+    entries = await readdir(srcDir, { withFileTypes: true });
+  } catch {
+    return; // public/ doesn't exist, skip
+  }
+
+  for (const entry of entries) {
+    const srcPath = join(srcDir, entry.name);
+    const destPath = join(destDir, entry.name);
+
+    if (entry.isDirectory()) {
+      await mkdir(destPath, { recursive: true });
+      await copyPublicDir(srcPath, destPath, outputs, false);
+    } else {
+      await mkdir(dirname(destPath), { recursive: true });
+      await copyFile(srcPath, destPath);
+      outputs.push(destPath);
+    }
+  }
 }
 
 export { tokenize } from './tokenizer.js';
