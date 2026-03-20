@@ -81,6 +81,66 @@ async function runPhase2(project) {
   return runCommand('node', [CLI_PATH, 'build', '--experimental-compiler'], project.path);
 }
 
+async function runPhase3(project) {
+  const distPath = join(project.path, 'dist');
+
+  try {
+    const files = await readdir(distPath);
+    const jsFiles = files.filter(f => f.endsWith('.js'));
+
+    if (jsFiles.length === 0) {
+      return { pass: false, files: 0, failures: [], error: 'No JS files in dist/' };
+    }
+
+    const failures = [];
+    for (const file of jsFiles) {
+      const filePath = join(distPath, file);
+      const result = await runCommand('node', ['-c', filePath], project.path, 10000);
+      if (!result.pass) {
+        failures.push({ file, error: result.error });
+      }
+    }
+
+    return {
+      pass: failures.length === 0,
+      files: jsFiles.length,
+      failures,
+      error: failures.length > 0 ? `${failures.length} file(s) failed syntax check` : null
+    };
+  } catch (err) {
+    return { pass: false, files: 0, failures: [], error: 'dist/ not found' };
+  }
+}
+
+async function runPhase4(project) {
+  const distPath = join(project.path, 'dist');
+
+  try {
+    const files = await readdir(distPath);
+    const mainFile = files.find(f => f.startsWith('main.') && f.endsWith('.js'));
+
+    if (!mainFile) {
+      return { pass: false, error: 'No main.*.js found in dist/' };
+    }
+
+    const filePath = join(distPath, mainFile);
+    // Use dynamic import test
+    const result = await runCommand(
+      'node',
+      ['--input-type=module', '-e', `import('${filePath}')`],
+      project.path,
+      10000
+    );
+
+    return {
+      pass: result.pass,
+      error: result.pass ? null : result.error
+    };
+  } catch (err) {
+    return { pass: false, error: err.message };
+  }
+}
+
 // Project locations to scan
 const PROJECT_LOCATIONS = [
   { category: 'Showcase', path: 'showcase' },
