@@ -285,16 +285,109 @@ async function auditProject(project) {
 }
 
 function generateReport(results) {
-  // TODO: Implement
-  return '';
+  const timestamp = new Date().toISOString();
+  const summary = {
+    total: results.length,
+    pass: results.filter(r => r.status === 'pass').length,
+    fail: results.filter(r => r.status === 'fail').length,
+    preExisting: results.filter(r => r.issueType === 'pre-existing').length,
+    compiler: results.filter(r => r.issueType === 'compiler').length,
+    syntax: results.filter(r => r.issueType === 'syntax').length,
+    runtime: results.filter(r => r.issueType === 'runtime').length,
+  };
+
+  let md = `# Compiler Audit Results
+
+**Generated:** ${timestamp}
+
+## Summary
+
+| Metric | Count |
+|--------|-------|
+| Total Projects | ${summary.total} |
+| Passing | ${summary.pass} |
+| Failing | ${summary.fail} |
+
+### Failure Breakdown
+
+| Type | Count | Description |
+|------|-------|-------------|
+| Pre-existing | ${summary.preExisting} | Fails on old builder too |
+| Compiler | ${summary.compiler} | New compiler regression |
+| Syntax | ${summary.syntax} | Output has syntax errors |
+| Runtime | ${summary.runtime} | Import fails at runtime |
+
+---
+
+## Checklist
+
+`;
+
+  // Group by category
+  const byCategory = {};
+  for (const result of results) {
+    if (!byCategory[result.category]) {
+      byCategory[result.category] = [];
+    }
+    byCategory[result.category].push(result);
+  }
+
+  for (const [category, projects] of Object.entries(byCategory)) {
+    md += `### ${category}\n\n`;
+
+    for (const project of projects) {
+      const checkbox = project.status === 'pass' ? '[x]' : '[ ]';
+      const status = project.status === 'pass'
+        ? `Pass (${project.phases.experimental.time}ms)`
+        : `**${project.issueType.toUpperCase()}**`;
+
+      md += `- ${checkbox} \`${project.name}\` — ${status}\n`;
+
+      // Add error details for failures
+      if (project.status === 'fail') {
+        const errorPhase = ['baseline', 'experimental', 'syntax', 'import']
+          .find(p => project.phases[p] && !project.phases[p].pass);
+        const error = project.phases[errorPhase]?.error || 'Unknown error';
+        const shortError = error.split('\n')[0].slice(0, 100);
+        md += `  - Error: ${shortError}\n`;
+      }
+    }
+    md += '\n';
+  }
+
+  md += `---
+
+## Re-running the Audit
+
+\`\`\`bash
+node tools/compiler-audit.js
+\`\`\`
+
+After fixing issues, re-run to update this checklist.
+`;
+
+  return md;
 }
 
 async function writeReport(report) {
-  // TODO: Implement
+  const reportPath = join(ROOT, 'docs/superpowers/specs/2026-03-19-compiler-audit.md');
+  await writeFile(reportPath, report);
+  console.log(`📝 Report written to: ${relative(ROOT, reportPath)}`);
 }
 
 function printSummary(results) {
-  // TODO: Implement
+  const pass = results.filter(r => r.status === 'pass').length;
+  const fail = results.filter(r => r.status === 'fail').length;
+
+  console.log('━'.repeat(50));
+  console.log(`\n📊 Summary: ${pass}/${results.length} passing\n`);
+
+  if (fail > 0) {
+    console.log('Failed projects:');
+    for (const result of results.filter(r => r.status === 'fail')) {
+      console.log(`  ✗ ${result.name} (${result.issueType})`);
+    }
+  }
 }
 
 main().catch(console.error);
