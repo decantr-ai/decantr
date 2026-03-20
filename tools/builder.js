@@ -18,6 +18,19 @@ function resolveDecantrImport(subpath) {
   const mod = subpath || 'core';
   const mapped = BUILD_IMPORT_MAP[mod];
   if (mapped) return join(frameworkSrc, mapped);
+
+  // Handle styles/community/* path
+  if (mod.startsWith('styles/community/')) {
+    const styleName = mod.replace('styles/community/', '');
+    return join(frameworkSrc, 'css/styles/community', styleName + '.js');
+  }
+
+  // Handle styles/* (non-community)
+  if (mod.startsWith('styles/')) {
+    const styleName = mod.replace('styles/', '');
+    return join(frameworkSrc, 'css/styles', styleName + '.js');
+  }
+
   return join(frameworkSrc, mod, 'index.js');
 }
 
