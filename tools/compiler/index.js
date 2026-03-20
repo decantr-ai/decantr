@@ -117,7 +117,12 @@ export async function build(options) {
     // Phase 7: Copy static assets from public/
     const root = projectRoot || dirname(dirname(entry));
     const publicDir = join(root, 'public');
-    await copyPublicDir(publicDir, outDir, result.outputs);
+
+    // Find bundled JS/CSS filenames for HTML transformation
+    const mainJs = outputs.find(o => o.file.startsWith('main.') && o.file.endsWith('.js'))?.file;
+    const mainCss = outputs.find(o => o.file.endsWith('.css'))?.file;
+
+    await copyPublicDir(publicDir, outDir, result.outputs, true, mainJs, mainCss);
 
     result.success = true;
     result.warnings = graph.warnings;
@@ -190,12 +195,33 @@ export function incrementalRebuild(oldGraph, changedFile, newSource) {
 }
 
 /**
+ * Transform HTML to reference bundled assets
+ */
+function transformHtml(html, mainJs, mainCss) {
+  // Replace module script with bundled JS
+  if (mainJs) {
+    html = html.replace(
+      /<script type="module"[^>]*src="[^"]*"[^>]*><\/script>/,
+      `<script type="module" src="./${mainJs}"></script>`
+    );
+  }
+  // Add CSS link if we have bundled CSS
+  if (mainCss) {
+    html = html.replace('</head>', `  <link rel="stylesheet" href="./${mainCss}">\n</head>`);
+  }
+  return html;
+}
+
+/**
  * Copy static assets from public/ to output directory
  * @param {string} srcDir - Source public directory
  * @param {string} destDir - Destination output directory
  * @param {string[]} outputs - Array to track copied files
+ * @param {boolean} isRoot - Whether this is the root public/ dir
+ * @param {string} mainJs - Bundled JS filename
+ * @param {string} mainCss - Bundled CSS filename
  */
-async function copyPublicDir(srcDir, destDir, outputs, isRoot = true) {
+async function copyPublicDir(srcDir, destDir, outputs, isRoot = true, mainJs, mainCss) {
   let entries;
   try {
     entries = await readdir(srcDir, { withFileTypes: true });
@@ -209,10 +235,16 @@ async function copyPublicDir(srcDir, destDir, outputs, isRoot = true) {
 
     if (entry.isDirectory()) {
       await mkdir(destPath, { recursive: true });
-      await copyPublicDir(srcPath, destPath, outputs, false);
+      await copyPublicDir(srcPath, destPath, outputs, false, mainJs, mainCss);
     } else {
       await mkdir(dirname(destPath), { recursive: true });
-      await copyFile(srcPath, destPath);
+      // Transform HTML files to reference bundled assets
+      if (entry.name.endsWith('.html')) {
+        const content = await readFile(srcPath, 'utf-8');
+        await writeFile(destPath, transformHtml(content, mainJs, mainCss));
+      } else {
+        await copyFile(srcPath, destPath);
+      }
       outputs.push(destPath);
     }
   }
