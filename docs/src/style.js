@@ -16,6 +16,10 @@ export const docsSiteCSS = [
   '@keyframes ds-rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
   '@keyframes ds-scale-in{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}',
   '@keyframes ds-flow-down{0%{opacity:0;transform:translateY(-10px)}50%{opacity:1}100%{opacity:0;transform:translateY(10px)}}',
+  // ── Docs page animations ──
+  '@keyframes fadeIn{from{opacity:0}to{opacity:1}}',
+  '@keyframes slideInLeft{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}',
+  '@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}',
   // ── Animation utility classes ──
   '.ds-animate{animation:ds-fade-up 0.7s var(--d-easing-decelerate) both}',
   '.ds-hidden{opacity:0;transform:translateY(30px)}',
@@ -179,6 +183,16 @@ export const docsSiteCSS = [
   '.ds-hl-comment{color:var(--d-muted-fg);font-style:italic}',
   '.ds-hl-number{color:var(--d-tertiary)}',
   // ── Docs sidebar (Shell-managed) ──
+  '.ds-docs-nav-item{transition:all 0.15s ease}',
+  '.ds-docs-nav-item:hover{transform:translateX(2px)}',
+  '.ds-docs-nav-active{position:relative}',
+  '.ds-docs-nav-active::before{content:"";position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--d-primary);border-radius:0 2px 2px 0}',
+  // ── Docs page content animations ──
+  '.ds-page-enter{animation:slideUp 0.3s ease both}',
+  '.ds-content-fade{animation:fadeIn 0.2s ease both}',
+  // ── Docs mobile menu ──
+  '@media(min-width:1024px){.ds-mobile-only{display:none!important}}',
+  '@media(max-width:1023px){.ds-desktop-only{display:none!important}}',
 
   // ══════════════════════════════════════════════════════════════
   // ── Workbench shell styles (de-* namespace) ──────────────────

@@ -1,58 +1,131 @@
 import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { link } from 'decantr/router';
-import { icon, Card } from 'decantr/components';
-import { DocsLayout } from '../layouts/docs-layout.js';
+import { icon } from 'decantr/components';
+import { DocsShell } from '../layouts/docs-shell.js';
 
 const { div, h1, h2, p, span, section } = tags;
 
-function QuickLink(label, desc, path, iconName) {
+// ── Styles ──────────────────────────────────────────────────────────
+const styles = {
+  container: css('_flex _col _gap8 _p6 _lg:p8'),
+
+  // Hero strip
+  hero: css('_flex _col _aic _gap3 _py8 _tc _relative'),
+  heroOrb: css('_absolute _top[-40px] _w[200px] _h[200px] _r[50%] _bg[radial-gradient(circle,var(--c-primary)/20_0%,transparent_70%)] _blur[40px] _pointer[none]'),
+  heroTitle: css('_heading1 _bg[linear-gradient(135deg,var(--c-fg)_0%,var(--c-primary)_100%)] _bgclip[text] _fg[transparent]'),
+  heroSubtitle: css('_textlg _fgmutedfg _maxw[500px]'),
+
+  // Quick start cards
+  quickStartGrid: css('_grid _gc3 _gap4 _md:gc1'),
+  quickCard: css('_flex _col _gap3 _p5 _r2 _bgmuted/30 _border _bcborder/50 _trans[all_0.2s] _h:bcprimary/50 _h:shadow[0_0_20px_var(--c-primary)/15] _cursor[pointer]'),
+  quickCardIcon: css('_w[40px] _h[40px] _r1 _bgprimary/15 _fgprimary _flex _aic _jcc'),
+  quickCardTitle: css('_label _bold _fgfg'),
+  quickCardDesc: css('_textsm _fgmutedfg'),
+
+  // Pathway section
+  pathwaySection: css('_flex _col _gap4'),
+  pathwayGrid: css('_grid _gc4 _gap4 _lg:gc2 _sm:gc1'),
+  pathwayCard: css('_flex _col _gap2 _p4 _r2 _bgmuted/20 _border _bcborder/30 _trans[all_0.2s] _h:bgmuted/40 _cursor[pointer]'),
+  pathwayIcon: css('_fgmutedfg _mb1'),
+  pathwayTitle: css('_textsm _bold _fgfg'),
+  pathwayDesc: css('_caption _fgmutedfg'),
+};
+
+// ── Quick Start Card ────────────────────────────────────────────────
+function QuickStartCard({ title, desc, path, iconName }) {
   return link({ href: path, class: css('_nounder _fgfg') },
-    Card({ hoverable: true, bordered: false, class: `ds-glass ${css('_flex _col _gap2 _p4')}` },
-      div({ class: css('_flex _aic _gap2') },
-        icon(iconName, { size: '1.25rem' }),
-        span({ class: css('_label _bold') }, label),
+    div({ class: styles.quickCard },
+      div({ class: styles.quickCardIcon },
+        icon(iconName, { size: '20px' }),
       ),
-      p({ class: css('_caption _fgmutedfg') }, desc),
+      div({ class: css('_flex _col _gap1') },
+        span({ class: styles.quickCardTitle }, title),
+        p({ class: styles.quickCardDesc }, desc),
+      ),
     ),
   );
 }
 
+// ── Pathway Card ────────────────────────────────────────────────────
+function PathwayCard({ title, desc, path, iconName }) {
+  return link({ href: path, class: css('_nounder _fgfg') },
+    div({ class: styles.pathwayCard },
+      icon(iconName, { size: '20px', class: styles.pathwayIcon }),
+      span({ class: styles.pathwayTitle }, title),
+      p({ class: styles.pathwayDesc }, desc),
+    ),
+  );
+}
+
+// ── Main Page ───────────────────────────────────────────────────────
 export function DocsHomePage() {
-  return DocsLayout(div({ class: css('_flex _col _gap8 _maxw[800px]') },
-    div({ class: css('_flex _col _gap3') },
-      h1({ class: css('_heading2') }, 'Documentation'),
-      p({ class: css('_textlg _fgmutedfg _lhrelaxed') },
-        'Everything you need to build with decantr. From first install to production deployment.'
+  return DocsShell(
+    div({ class: styles.container },
+      // Hero strip (compact)
+      section({ class: styles.hero },
+        div({ class: styles.heroOrb }),
+        h1({ class: styles.heroTitle }, 'Learn to Build with AI'),
+        p({ class: styles.heroSubtitle },
+          'The prompt-first guide to Decantr. Master the process of working with AI to build beautiful, functional applications.'
+        ),
       ),
-    ),
 
-    section({ class: css('_flex _col _gap3') },
-      h2({ class: css('_heading4') }, 'Getting Started'),
-      div({ class: css('_grid _gc2 _gap4 _sm:gc1') },
-        QuickLink('Tutorial', 'Step-by-step guide from zero to deployed app', '/docs/tutorial/01-install', 'book-open'),
-        QuickLink('Cookbook', 'Standalone recipes for common features', '/docs/cookbook/dashboard', 'chef-hat'),
+      // Quick Start cards (Start Here section)
+      section({ class: css('_flex _col _gap4') },
+        h2({ class: css('_heading4 _fgmutedfg') }, 'Start Here'),
+        div({ class: styles.quickStartGrid },
+          QuickStartCard({
+            title: 'Quick Setup',
+            desc: 'Get Decantr installed and create your first project in under 2 minutes.',
+            path: '/docs/quick-setup',
+            iconName: 'zap',
+          }),
+          QuickStartCard({
+            title: 'Your First Prompt',
+            desc: 'Learn how to communicate with AI to build your first feature.',
+            path: '/docs/first-prompt',
+            iconName: 'message-square',
+          }),
+          QuickStartCard({
+            title: 'The Decantation Process',
+            desc: 'Understand the 5-stage workflow that powers AI-native development.',
+            path: '/docs/decantation',
+            iconName: 'wine',
+          }),
+        ),
       ),
-    ),
 
-    section({ class: css('_flex _col _gap3') },
-      h2({ class: css('_heading4') }, 'Explore'),
-      div({ class: css('_grid _gc3 _gap4 _md:gc2 _sm:gc1') },
-        QuickLink('Components', '100+ UI components with live previews', '/explorer/components', 'blocks'),
-        QuickLink('Patterns', 'Compositional layout patterns', '/explorer/patterns', 'layout-grid'),
-        QuickLink('Icons', '400+ built-in icons', '/explorer/icons', 'sparkles'),
-        QuickLink('Tokens', 'Design token inspector', '/explorer/tokens', 'palette'),
-        QuickLink('API Reference', 'Core, State, Router, Forms, Data', '/explorer/foundations', 'code'),
-        QuickLink('Theme Studio', 'Customize and preview styles', '/explorer/tools', 'sliders-horizontal'),
+      // Pathway cards (section navigation)
+      section({ class: styles.pathwaySection },
+        h2({ class: css('_heading4 _fgmutedfg') }, 'Explore'),
+        div({ class: styles.pathwayGrid },
+          PathwayCard({
+            title: 'Building',
+            desc: 'Add pages, features, and work with prompts',
+            path: '/docs/building/pages',
+            iconName: 'hammer',
+          }),
+          PathwayCard({
+            title: 'Styling',
+            desc: 'Themes, colors, and visual effects',
+            path: '/docs/styling/themes',
+            iconName: 'palette',
+          }),
+          PathwayCard({
+            title: 'Customizing',
+            desc: 'Create patterns, themes, and publish',
+            path: '/docs/customizing/patterns',
+            iconName: 'puzzle',
+          }),
+          PathwayCard({
+            title: 'Reference',
+            desc: 'Components, patterns, atoms, and API',
+            path: '/explorer/components',
+            iconName: 'book-open',
+          }),
+        ),
       ),
     ),
-
-    section({ class: css('_flex _col _gap3') },
-      h2({ class: css('_heading4') }, 'Showcase'),
-      div({ class: css('_grid _gc2 _gap4 _sm:gc1') },
-        QuickLink('Gallery', 'Pre-built applications generated from essence files', '/gallery', 'layers'),
-        QuickLink('Explorer', 'Full explorer with style/mode/shape controls, viewport simulator, and search', '/explorer', 'settings'),
-      ),
-    ),
-  ));
+  );
 }

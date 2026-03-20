@@ -1,0 +1,27 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "docs-toc",
+  "name": "Docs TOC",
+  "description": "Right-side table of contents with scroll spy, active indicator bar, and smooth scroll navigation. Shows 'On this page' heading with clickable section links.",
+  "components": [],
+  "presets": ["standard", "minimal", "numbered"],
+  "default_preset": "standard",
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_sticky _top[80px] _flex _col _gap2 _py4 _pr4",
+    "slots": {
+      "label": "'On this page' heading",
+      "nav": "Vertical list of heading links with left border",
+      "indicator": "Active section indicator bar that moves on scroll"
+    }
+  },
+  "io": {
+    "produces": ["scroll-to"],
+    "consumes": ["headings"],
+    "actions": ["scroll-to-section"]
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, createEffect } from 'decantr/state';\nimport { onMount, onDestroy } from 'decantr/core';\nimport { css } from 'decantr/css';",
+    "example": "function DocsToc({ headings = [], minHeadings = 3 } = {}) {\n  const { div, nav, a, span } = tags;\n  if (headings.length < minHeadings) return div();\n\n  const [activeId, setActiveId] = createSignal(headings[0]?.id || '');\n\n  const container = div({ class: css('_sticky _top[80px] _flex _col _gap2 _py4') });\n  container.appendChild(span({ class: css('_caption _fgmutedfg _uppercase _ls[0.06em] _pb2') }, 'On this page'));\n\n  const navEl = nav({ class: css('_flex _col _gap0 _borderL _bcborder _pl3 _relative') });\n  const indicator = div({ class: css('_absolute _left[-1px] _w[2px] _h[20px] _bgprimary _r1 _trans[top_0.15s]') });\n  indicator.style.top = '0px';\n  navEl.appendChild(indicator);\n\n  headings.forEach((h, i) => {\n    const linkEl = a({\n      href: `#${h.id}`,\n      class: css('_textsm _fgmutedfg _nounder _py1 _trans _hover:fgfg'),\n      onclick: (e) => {\n        e.preventDefault();\n        document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' });\n      }\n    }, h.label);\n    navEl.appendChild(linkEl);\n  });\n\n  container.appendChild(navEl);\n\n  // Scroll spy with IntersectionObserver\n  onMount(() => {\n    const observer = new IntersectionObserver((entries) => {\n      for (const entry of entries) {\n        if (entry.isIntersecting) setActiveId(entry.target.id);\n      }\n    }, { rootMargin: '-80px 0px -70% 0px' });\n    headings.forEach(h => {\n      const el = document.getElementById(h.id);\n      if (el) observer.observe(el);\n    });\n    onDestroy(() => observer.disconnect());\n  });\n\n  // Update indicator position\n  createEffect(() => {\n    const idx = headings.findIndex(h => h.id === activeId());\n    indicator.style.top = `${idx * 28 + 4}px`;\n  });\n\n  return container;\n}"
+  }
+}

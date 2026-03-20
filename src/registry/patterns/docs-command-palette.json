@@ -1,0 +1,29 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "docs-command-palette",
+  "name": "Docs Command Palette",
+  "description": "Cmd+K search overlay for documentation navigation. Features fuzzy search, keyboard navigation (arrows, Enter, Escape), grouped results by section, and recent searches.",
+  "components": ["icon"],
+  "presets": ["standard", "minimal", "with-actions"],
+  "default_preset": "standard",
+  "default_blend": {
+    "layout": "modal",
+    "atoms": "_fixed _inset0 _z[100] _bg[rgba(0,0,0,0.6)] _backdrop[blur(4px)] _flex _aic _jcc",
+    "slots": {
+      "overlay": "Semi-transparent backdrop that closes on click",
+      "container": "Centered modal container with search input and results",
+      "input": "Search input with icon and Escape hint",
+      "results": "Scrollable list of grouped search results",
+      "item": "Individual result item with icon, title, and arrow indicator"
+    }
+  },
+  "io": {
+    "produces": ["navigate"],
+    "consumes": ["search-index"],
+    "actions": ["search", "navigate", "close"]
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, createEffect, createMemo } from 'decantr/state';\nimport { onDestroy } from 'decantr/core';\nimport { navigate } from 'decantr/router';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+    "example": "function DocsCommandPalette() {\n  const { div, input, span, kbd } = tags;\n  const [isOpen, setIsOpen] = createSignal(false);\n  const [query, setQuery] = createSignal('');\n  const [activeIndex, setActiveIndex] = createSignal(0);\n\n  const DOCS_INDEX = [\n    { title: 'Quick Setup', section: 'Start Here', path: '/docs/quick-setup', icon: 'zap', keywords: ['install'] },\n    { title: 'Adding Pages', section: 'Building', path: '/docs/building/pages', icon: 'file', keywords: ['page', 'route'] }\n  ];\n\n  const results = createMemo(() => {\n    const q = query().toLowerCase();\n    if (!q) return DOCS_INDEX;\n    return DOCS_INDEX.filter(item =>\n      item.title.toLowerCase().includes(q) ||\n      item.section.toLowerCase().includes(q) ||\n      item.keywords.some(k => k.includes(q))\n    );\n  });\n\n  function selectItem(item) {\n    setIsOpen(false);\n    setQuery('');\n    navigate(item.path);\n  }\n\n  function handleKeyDown(e) {\n    if (!isOpen()) {\n      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {\n        e.preventDefault();\n        setIsOpen(true);\n      }\n      return;\n    }\n    if (e.key === 'Escape') { setIsOpen(false); setQuery(''); }\n    if (e.key === 'ArrowDown') setActiveIndex(i => Math.min(i + 1, results().length - 1));\n    if (e.key === 'ArrowUp') setActiveIndex(i => Math.max(i - 1, 0));\n    if (e.key === 'Enter' && results()[activeIndex()]) selectItem(results()[activeIndex()]);\n  }\n\n  document.addEventListener('keydown', handleKeyDown);\n  onDestroy(() => document.removeEventListener('keydown', handleKeyDown));\n\n  const overlay = div({ class: css('_fixed _inset0 _z[100] _bg[rgba(0,0,0,0.6)] _backdrop[blur(4px)] _flex _aic _jcc') });\n  overlay.style.display = 'none';\n  overlay.onclick = (e) => { if (e.target === overlay) { setIsOpen(false); setQuery(''); } };\n\n  const container = div({ class: css('_w100 _maxw[560px] _bgbg _r2 _shadow _border _overflow[hidden] _flex _col') });\n  // ... input, results rendering\n\n  createEffect(() => { overlay.style.display = isOpen() ? 'flex' : 'none'; });\n\n  overlay.appendChild(container);\n  return overlay;\n}"
+  }
+}

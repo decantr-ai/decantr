@@ -63,6 +63,10 @@
     "resource-overview": { "name": "Resource Overview", "file": "resource-overview.json", "presets": ["gauge-grid", "summary-bar"] },
     "service-catalog": { "name": "Service Catalog", "file": "service-catalog.json", "presets": ["grid", "list"] },
     "anatomy-viewer": { "name": "Anatomy Viewer", "file": "anatomy-viewer.json", "presets": ["split"] },
-    "ecosystem-grid": { "name": "Ecosystem Grid", "file": "ecosystem-grid.json", "presets": ["standard"] }
+    "ecosystem-grid": { "name": "Ecosystem Grid", "file": "ecosystem-grid.json", "presets": ["standard"] },
+    "docs-shell": { "name": "Docs Shell", "file": "docs-shell.json", "presets": ["standard", "with-toc", "minimal"] },
+    "docs-sidebar": { "name": "Docs Sidebar", "file": "docs-sidebar.json", "presets": ["standard", "compact", "icons-only"] },
+    "docs-toc": { "name": "Docs TOC", "file": "docs-toc.json", "presets": ["standard", "minimal", "numbered"] },
+    "docs-command-palette": { "name": "Docs Command Palette", "file": "docs-command-palette.json", "presets": ["standard", "minimal", "with-actions"] }
   }
 }

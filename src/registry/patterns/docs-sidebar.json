@@ -1,0 +1,28 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "docs-sidebar",
+  "name": "Docs Sidebar",
+  "description": "Accordion navigation sidebar for documentation with collapsible sections, icons, search trigger (Cmd+K), glow active states, and mobile collapse support.",
+  "components": ["icon"],
+  "presets": ["standard", "compact", "icons-only"],
+  "default_preset": "standard",
+  "default_blend": {
+    "layout": "stack",
+    "atoms": "_flex _col _h100 _bgbg",
+    "slots": {
+      "search": "Search trigger button that opens command palette",
+      "nav": "Scrollable navigation container",
+      "section": "Collapsible accordion section with header and items",
+      "item": "Individual nav link with icon and active glow state"
+    }
+  },
+  "io": {
+    "produces": ["search-trigger"],
+    "consumes": ["current-route"],
+    "actions": ["toggle-section", "navigate"]
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, createEffect, createMemo } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';\nimport { link, useRoute } from 'decantr/router';",
+    "example": "function DocsSidebar({ onSearch } = {}) {\n  const { div, nav, span, button, kbd } = tags;\n  const route = useRoute();\n\n  const sections = [\n    { id: 'start', label: 'Start Here', highlight: true, items: [\n      { id: 'quick-setup', label: 'Quick Setup', path: '/docs/quick-setup', icon: 'zap' },\n      { id: 'first-prompt', label: 'First Prompt', path: '/docs/first-prompt', icon: 'message-square' }\n    ]},\n    { id: 'building', label: 'Building', collapsible: true, items: [\n      { id: 'pages', label: 'Adding Pages', path: '/docs/building/pages', icon: 'file' }\n    ]}\n  ];\n\n  return div({ class: css('_flex _col _h100 _bgbg') },\n    // Search trigger\n    div({ class: css('_px3 _pt3 _pb2') },\n      button({ class: css('_flex _aic _gap2 _w100 _px3 _py2 _r1 _bgmuted/30 _border _bcborder/50'), onclick: onSearch },\n        icon('search', { size: '14px' }),\n        span({ class: css('_textsm _fgmutedfg _flex1 _textl') }, 'Search...'),\n        kbd({ class: css('_px1 _r1 _bgmuted _textsm') }, '⌘K')\n      )\n    ),\n    // Navigation\n    nav({ class: css('_flex _col _gap1 _py2 _px2 _flex1 _overflow[auto]') },\n      ...sections.map(section => {\n        const [isOpen, setIsOpen] = createSignal(!section.collapsible);\n        return div({ class: css('_flex _col') },\n          div({ class: css('_flex _aic _jcsb _px2 _py1 _cursor[pointer]'), onclick: () => section.collapsible && setIsOpen(!isOpen()) },\n            span({ class: css(`_caption _uppercase _ls[0.06em] ${section.highlight ? '_fgprimary' : '_fgmutedfg'}`) }, section.label),\n            section.collapsible && icon('chevron-right', { size: '14px', class: css('_fgmutedfg') })\n          ),\n          div({ class: css('_flex _col _gap0'), style: isOpen() ? '' : 'display:none' },\n            ...section.items.map(item => link({ href: item.path, class: css('_flex _aic _gap2 _px3 _py2 _r1 _textsm _nounder _fgmutedfg _hover:bgmuted/30') },\n              icon(item.icon, { size: '16px' }),\n              span(item.label)\n            ))\n          )\n        );\n      })\n    )\n  );\n}"
+  }
+}
