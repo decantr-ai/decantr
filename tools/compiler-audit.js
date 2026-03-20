@@ -127,7 +127,7 @@ async function runPhase4(project) {
     // Use dynamic import test
     const result = await runCommand(
       'node',
-      ['--input-type=module', '-e', `import('${filePath}')`],
+      ['--input-type=module', '-e', `"import('${filePath}')"`],
       project.path,
       10000
     );

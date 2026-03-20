@@ -1,6 +1,6 @@
 # Compiler Audit Results
 
-**Generated:** 2026-03-20T01:42:17.993Z
+**Generated:** 2026-03-20T01:43:24.680Z
 
 ## Summary
 
@@ -26,9 +26,9 @@
 ### Apps
 
 - [ ] `docs` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/docs/dist/main.614de5a8.js:3
 - [ ] `playground` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/playground/dist/main.f558df10.js:3
 - [ ] `workbench` — **PRE-EXISTING**
   - Error: ebar.js
 
@@ -37,26 +37,26 @@
 - [ ] `showcase/cloud-platform` — **PRE-EXISTING**
   - Error: /app.js
 - [ ] `showcase/ecommerce-admin` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/showcase/ecommerce-admin/dist/main.cee671da.js:3
 - [ ] `showcase/gaming-platform` — **PRE-EXISTING**
   - Error: /app.js
 - [ ] `showcase/portfolio` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/showcase/portfolio/dist/main.0d81d467.js:3
 - [ ] `showcase/saas-dashboard` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/showcase/saas-dashboard/dist/main.40706676.js:3
 
 ### Test Fixtures
 
 - [ ] `test/e2e-scaffold/fixtures/base-projects/content-site` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/test/e2e-scaffold/fixtures/base-projects/content-site/dist/
 - [ ] `test/e2e-scaffold/fixtures/base-projects/docs-explorer` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/test/e2e-scaffold/fixtures/base-projects/docs-explorer/dist
 - [ ] `test/e2e-scaffold/fixtures/base-projects/ecommerce` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/test/e2e-scaffold/fixtures/base-projects/ecommerce/dist/mai
 - [ ] `test/e2e-scaffold/fixtures/base-projects/portfolio` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/test/e2e-scaffold/fixtures/base-projects/portfolio/dist/mai
 - [ ] `test/e2e-scaffold/fixtures/base-projects/saas-dashboard` — **RUNTIME**
-  - Error: /bin/sh: -c: line 0: syntax error near unexpected token `('
+  - Error: file:///Users/davidaimi/projects/decantr/test/e2e-scaffold/fixtures/base-projects/saas-dashboard/dis
 
 ---
 
