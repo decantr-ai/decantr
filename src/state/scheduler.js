@@ -6,13 +6,21 @@ let flushing = false;
 let scheduled = false;
 
 /** @type {ReactiveNode|null} */
-export let currentEffect = null;
+let _currentEffect = null;
+
+/**
+ * Get the current effect (needed for live binding in bundled code)
+ * @returns {ReactiveNode|null}
+ */
+export function getCurrentEffect() {
+  return _currentEffect;
+}
 
 /**
  * @param {ReactiveNode|null} effect
  */
 export function setCurrentEffect(effect) {
-  currentEffect = effect;
+  _currentEffect = effect;
 }
 
 // ─── Ownership Tree ─────────────────────────────────────────

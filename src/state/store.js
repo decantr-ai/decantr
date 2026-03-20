@@ -4,7 +4,7 @@
  * @module state/store
  */
 import { batch } from './index.js';
-import { currentEffect, isBatching, scheduleEffect } from './scheduler.js';
+import { getCurrentEffect, isBatching, scheduleEffect } from './scheduler.js';
 
 /** @type {WeakMap<object, object>} raw target -> proxy */
 const proxyCache = new WeakMap();
@@ -24,9 +24,10 @@ function getSubs(prop, target) {
 }
 
 function track(subs) {
-  if (!currentEffect) return;
-  subs.add(currentEffect);
-  if (currentEffect.sources) currentEffect.sources.add(subs);
+  const eff = getCurrentEffect();
+  if (!eff) return;
+  subs.add(eff);
+  if (eff.sources) eff.sources.add(subs);
 }
 
 function notify(subs) {

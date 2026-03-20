@@ -558,6 +558,148 @@ export function parse(tokens, file) {
   }
 
   /**
+   * Skip control flow statements (for, while, if, switch, try, do, with)
+   * These statements can contain variable declarations that shouldn't be
+   * treated as top-level declarations.
+   * Also checks for top-level await within the control flow.
+   */
+  function skipControlFlowStatement() {
+    const startPos = pos;
+
+    // First scan for await before skipping
+    // We need to check if there's any await in this control flow statement
+    if (scanForAwaitInControlFlow()) {
+      ast.hasTopLevelAwait = true;
+    }
+
+    // Reset to start position
+    pos = startPos;
+
+    advance(); // skip the keyword (for, while, etc.)
+
+    // Skip condition/head in parentheses if present
+    if (matchPunc('(')) {
+      skipBalanced('(', ')');
+    }
+
+    // Skip body - could be a block or single statement
+    if (matchPunc('{')) {
+      skipBalanced('{', '}');
+    } else {
+      // Single statement body - skip to semicolon
+      skipToEndOfStatement();
+    }
+
+    // Handle else clause for if statements
+    if (matchKeyword('else')) {
+      advance();
+      if (matchPunc('{')) {
+        skipBalanced('{', '}');
+      } else if (matchKeyword('if')) {
+        // else if - recurse (but we already scanned for await)
+        advance();
+        if (matchPunc('(')) skipBalanced('(', ')');
+        if (matchPunc('{')) {
+          skipBalanced('{', '}');
+        } else {
+          skipToEndOfStatement();
+        }
+      } else {
+        skipToEndOfStatement();
+      }
+    }
+
+    // Handle while clause for do-while
+    if (matchKeyword('while')) {
+      advance();
+      if (matchPunc('(')) {
+        skipBalanced('(', ')');
+      }
+      if (matchPunc(';')) {
+        advance();
+      }
+    }
+
+    // Handle catch/finally for try
+    if (matchKeyword('catch')) {
+      advance();
+      if (matchPunc('(')) {
+        skipBalanced('(', ')');
+      }
+      if (matchPunc('{')) {
+        skipBalanced('{', '}');
+      }
+    }
+    if (matchKeyword('finally')) {
+      advance();
+      if (matchPunc('{')) {
+        skipBalanced('{', '}');
+      }
+    }
+  }
+
+  /**
+   * Scan for await keyword in control flow statement (doesn't advance)
+   */
+  function scanForAwaitInControlFlow() {
+    const startPos = pos;
+    let braceDepth = 0;
+    let parenDepth = 0;
+    let foundAwait = false;
+
+    // Skip the control flow keyword
+    advance();
+
+    // Track nesting
+    while (!match('eof')) {
+      if (matchPunc('{')) braceDepth++;
+      else if (matchPunc('}')) braceDepth--;
+      else if (matchPunc('(')) parenDepth++;
+      else if (matchPunc(')')) parenDepth--;
+
+      // Check for await (but not inside nested functions)
+      if (matchKeyword('await')) {
+        foundAwait = true;
+      }
+
+      // Stop at nested function definitions (they have their own async context)
+      if (matchKeyword('function') || matchKeyword('async')) {
+        // Skip past function body
+        while (!matchPunc('{') && !match('eof')) advance();
+        if (matchPunc('{')) {
+          braceDepth++;
+          advance();
+          // Skip the entire function body
+          let funcDepth = 1;
+          while (funcDepth > 0 && !match('eof')) {
+            if (matchPunc('{')) funcDepth++;
+            else if (matchPunc('}')) funcDepth--;
+            advance();
+          }
+          braceDepth--;
+          continue;
+        }
+      }
+
+      // End when we've closed all brackets and hit a semicolon or another statement
+      if (braceDepth === 0 && parenDepth === 0) {
+        if (matchPunc(';')) break;
+        // Check for keywords that start new statements
+        if (matchKeyword('export') || matchKeyword('import') ||
+            matchKeyword('const') || matchKeyword('let') || matchKeyword('var') ||
+            matchKeyword('function') || matchKeyword('class')) {
+          break;
+        }
+      }
+
+      advance();
+    }
+
+    pos = startPos;
+    return foundAwait;
+  }
+
+  /**
    * Skip to end of current statement
    */
   function skipToEndOfStatement() {
@@ -642,6 +784,15 @@ export function parse(tokens, file) {
 
     // Top-level await
     if (checkTopLevelAwait()) {
+      continue;
+    }
+
+    // Skip control flow statements (for, while, if, switch, try, do, with)
+    // These can contain const/let/var but aren't top-level declarations
+    if (matchKeyword('for') || matchKeyword('while') || matchKeyword('if') ||
+        matchKeyword('switch') || matchKeyword('try') || matchKeyword('do') ||
+        matchKeyword('with')) {
+      skipControlFlowStatement();
       continue;
     }
 

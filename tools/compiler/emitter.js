@@ -27,18 +27,25 @@ export function emit(graph, options = {}) {
   const { sourceMaps = true, minify = false } = options;
   const outputs = [];
 
-  // Emit main bundle
-  const mainOutput = emitChunk(graph, 'main', { sourceMaps, minify });
-  outputs.push(mainOutput);
+  // First, emit all dynamic chunks to get their hashed filenames
+  const chunkUrlMap = {};
+  const chunkOutputs = [];
 
-  // Emit dynamic chunks
   for (const [chunkName, moduleIds] of graph.chunks) {
     if (chunkName === 'main') continue;
     if (moduleIds.length === 0) continue;
 
     const chunkOutput = emitChunk(graph, chunkName, { sourceMaps, minify, isAsync: true });
-    outputs.push(chunkOutput);
+    chunkOutputs.push(chunkOutput);
+    chunkUrlMap[chunkName] = `./${chunkOutput.file}`;
   }
+
+  // Now emit main bundle with the correct chunk URLs
+  const mainOutput = emitChunk(graph, 'main', { sourceMaps, minify, chunkUrlMap });
+  outputs.push(mainOutput);
+
+  // Add chunk outputs
+  outputs.push(...chunkOutputs);
 
   return outputs;
 }
@@ -47,7 +54,7 @@ export function emit(graph, options = {}) {
  * Emit a single chunk
  */
 function emitChunk(graph, chunkName, options) {
-  const { sourceMaps, minify, isAsync = false } = options;
+  const { sourceMaps, minify, isAsync = false, chunkUrlMap = {} } = options;
   const moduleIds = graph.chunks.get(chunkName) || [];
 
   // Get modules in topological order
@@ -63,15 +70,19 @@ function emitChunk(graph, chunkName, options) {
 
   // Chunk loader for main bundle
   if (chunkName === 'main') {
-    code += emitChunkLoader(graph);
+    code += emitChunkLoader(chunkUrlMap);
     line += countLines(code);
   }
 
   // Check if any module needs async IIFE
   const needsAsyncWrapper = modules.some(m => m.needsAsyncIIFE) || isAsync;
 
-  // Start wrapper
-  if (needsAsyncWrapper) {
+  // Start wrapper - async chunks assign the Promise to window.__decantrChunks
+  if (isAsync) {
+    // Async chunks: assign the IIFE promise directly so loader can await it
+    code += `window.__decantrChunks["${chunkName}"] = (async function() {\n`;
+    line++;
+  } else if (needsAsyncWrapper) {
     code += '(async function() {\n';
     line++;
   } else if (chunkName === 'main') {
@@ -79,9 +90,15 @@ function emitChunk(graph, chunkName, options) {
     line++;
   }
 
-  // Module registry
-  code += 'const __modules = {};\n';
-  line++;
+  // Module registry - main bundle creates global, chunks use it
+  if (chunkName === 'main') {
+    code += 'window.__modules = {};\n';
+    code += 'const __modules = window.__modules;\n';
+    line += 2;
+  } else {
+    code += 'const __modules = window.__modules;\n';
+    line++;
+  }
 
   // Emit each module
   for (const mod of modules) {
@@ -90,15 +107,18 @@ function emitChunk(graph, chunkName, options) {
     line += moduleCode.lines;
   }
 
-  // Export chunk if not main
+  // Export chunk if not main - return the exports from the async IIFE
   if (isAsync) {
     const chunkExports = getChunkExports(modules);
-    code += `\nwindow.__decantrChunks["${chunkName}"] = { ${chunkExports} };\n`;
+    code += `\nreturn { ${chunkExports} };\n`;
     line += 2;
   }
 
   // End wrapper
-  if (needsAsyncWrapper) {
+  if (isAsync) {
+    // Async chunks: close the IIFE that's assigned to window.__decantrChunks
+    code += '})();\n';
+  } else if (needsAsyncWrapper) {
     code += '})();\n';
   } else if (chunkName === 'main') {
     // Run entry point
@@ -124,28 +144,23 @@ function emitChunk(graph, chunkName, options) {
 
 /**
  * Emit chunk loader code
+ * @param {Object<string, string>} chunkUrlMap - Map of chunk names to their hashed URLs
  */
-function emitChunkLoader(graph) {
-  // Collect chunk URLs
-  const chunkUrls = {};
-  for (const [name, ids] of graph.chunks) {
-    if (name === 'main') continue;
-    if (ids.length === 0) continue;
-    chunkUrls[name] = `./${name}.js`;
-  }
-
+function emitChunkLoader(chunkUrlMap = {}) {
   return `
 // Chunk loader
 window.__decantrChunks = {};
 window.__decantrLoadChunk = function(name) {
   if (window.__decantrChunks[name]) {
+    // Chunk may be a Promise (async chunks) - always resolve it
     return Promise.resolve(window.__decantrChunks[name]);
   }
   return new Promise(function(resolve, reject) {
     var script = document.createElement('script');
-    script.src = ${JSON.stringify(chunkUrls)}[name] || ('./' + name + '.js');
+    script.src = ${JSON.stringify(chunkUrlMap)}[name] || ('./' + name + '.js');
     script.onload = function() {
-      resolve(window.__decantrChunks[name]);
+      // Chunk may be a Promise (async chunks) - resolve through it
+      Promise.resolve(window.__decantrChunks[name]).then(resolve, reject);
     };
     script.onerror = function() {
       reject(new Error('Chunk load failed: ' + name));
