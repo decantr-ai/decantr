@@ -42,8 +42,55 @@ async function main() {
 }
 
 async function discoverProjects() {
-  // TODO: Implement
-  return [];
+  const projects = [];
+
+  for (const location of PROJECT_LOCATIONS) {
+    const fullPath = join(ROOT, location.path);
+
+    try {
+      const stats = await stat(fullPath);
+      if (!stats.isDirectory()) continue;
+
+      if (location.single) {
+        // Single project (docs, playground, workbench)
+        const entryPoint = join(fullPath, 'src/app.js');
+        try {
+          await stat(entryPoint);
+          projects.push({
+            name: location.path,
+            path: fullPath,
+            category: location.category,
+          });
+        } catch {
+          // No src/app.js, skip
+        }
+      } else {
+        // Directory of projects (showcase, test fixtures)
+        const entries = await readdir(fullPath);
+        for (const entry of entries) {
+          const projectPath = join(fullPath, entry);
+          const projectStats = await stat(projectPath);
+          if (!projectStats.isDirectory()) continue;
+
+          const entryPoint = join(projectPath, 'src/app.js');
+          try {
+            await stat(entryPoint);
+            projects.push({
+              name: `${location.path}/${entry}`,
+              path: projectPath,
+              category: location.category,
+            });
+          } catch {
+            // No src/app.js, skip
+          }
+        }
+      }
+    } catch {
+      // Location doesn't exist, skip
+    }
+  }
+
+  return projects.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 async function auditProject(project) {
