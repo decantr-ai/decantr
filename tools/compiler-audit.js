@@ -14,6 +14,28 @@ import { spawn } from 'node:child_process';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 
+// Known browser-only errors that indicate valid browser code, not compiler bugs
+const BROWSER_ERRORS = [
+  'document is not defined',
+  'window is not defined',
+  'HTMLElement is not defined',
+  'MutationObserver is not defined',
+  'localStorage is not defined',
+  'sessionStorage is not defined',
+  'navigator is not defined',
+  'self is not defined',
+  'customElements is not defined',
+  'IntersectionObserver is not defined',
+  'ResizeObserver is not defined',
+  'requestAnimationFrame is not defined',
+  'getComputedStyle is not defined',
+];
+
+function isBrowserOnlyError(error) {
+  if (!error) return false;
+  return BROWSER_ERRORS.some(browserErr => error.includes(browserErr));
+}
+
 /**
  * Run a command and return result
  */
