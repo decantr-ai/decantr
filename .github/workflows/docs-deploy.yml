@@ -42,6 +42,8 @@ jobs:
         run: |
           for dir in showcase/*/; do
             id=$(basename "$dir")
+            # Skip shared - it's a library, not a buildable project
+            [[ "$id" == "shared" ]] && continue
             echo "::group::Building showcase: $id"
             (cd "$dir" && npm install && npx decantr build)
             mkdir -p docs/dist/showcase/$id
