@@ -12,11 +12,11 @@ import {
   Button, ColorPicker, Input, Select, Segmented, Tabs, Badge,
   Checkbox, Switch, Card, Chip, Alert, Drawer, icon
 } from 'decantr/components';
-import { derive, defaultSeed, defaultPersonality, deriveMonochromeSeed, hexToRgb, contrast } from 'decantr/css/derive.js';
-import { auradecantism } from 'decantr/css/styles/auradecantism.js';
-import { clean } from 'decantr/css/styles/addons/clean.js';
-import { retro } from 'decantr/css/styles/community/retro.js';
-import { glassmorphism } from 'decantr/css/styles/addons/glassmorphism.js';
+import { derive, defaultSeed, defaultPersonality, deriveMonochromeSeed, hexToRgb, contrast } from '../css/derive.js';
+import { auradecantism } from '../css/styles/auradecantism.js';
+import { clean } from '../css/styles/addons/clean.js';
+import { retro } from '../css/styles/community/retro.js';
+import { glassmorphism } from '../css/styles/addons/glassmorphism.js';
 
 const { div, h2, h3, h4, p, span, pre, code, section, strong, label } = tags;
 

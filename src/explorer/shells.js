@@ -2,7 +2,7 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { createSignal, createEffect } from 'decantr/state';
 import { Tabs, Separator, Chip, Button, Slider, Switch } from 'decantr/components';
-import { resolveShellConfig, buildGridTemplate } from 'decantr/components/shell.js';
+import { resolveShellConfig, buildGridTemplate } from '../components/shell.js';
 import { activeShellConfig, setActiveShellConfig } from './shell-config.js';
 import { injectExplorerCSS } from './styles.js';
 injectExplorerCSS();
