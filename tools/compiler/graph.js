@@ -193,6 +193,21 @@ export class ModuleGraph {
           }
         }
 
+        // Queue export sources (re-exports)
+        for (const exp of ast.exports) {
+          if (exp.source) {
+            const resolved = this._resolveImport(exp.source, file);
+            if (resolved) {
+              queue.push({
+                file: resolved,
+                from: file,
+                type: 'static',
+                specifier: exp.source
+              });
+            }
+          }
+        }
+
       } catch (err) {
         this.errors.push(new Error(`Failed to process ${file}: ${err.message}`));
       }
