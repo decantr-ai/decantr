@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "schema_version": "2.0",
+  "id": "docs",
+  "name": "Docs",
+  "style": "auradecantism",
+  "mode": "dark",
+  "description": "Prompt-first documentation recipe. Designed for teaching humans how to work with AI. Features accordion navigation with glow states, Cmd+K search, right-side TOC with scroll spy, and mobile-responsive hamburger menu. Auradecantism styling with glass effects and gradients, but information-dense.",
+  "setup": "import { setStyle, setMode } from 'decantr/css';\nsetStyle('auradecantism');\nsetMode('dark');",
+  "spatial_hints": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": null,
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "skeleton": {
+    "preferred": ["sidebar-main", "sidebar-aside"],
+    "avoid": ["centered"],
+    "nav_style": "pill",
+    "default_nav_state": "expanded",
+    "root": "",
+    "nav": "_bgbg _borderR _bcborder",
+    "header": "_bgbg _borderB _bcborder",
+    "navLabel": "_caption _fgmutedfg _uppercase _ls[0.06em]",
+    "brand": "_flex _aic _gap2 _fgfg _fw[700]",
+    "dimensions": {
+      "nav": { "width": "260px" },
+      "aside": { "width": "200px" }
+    }
+  },
+  "animation": {
+    "entrance": "fadeIn",
+    "micro": "smooth"
+  },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "code_preview": ["d-terminal-chrome", "d-glass"],
+      "nav_item_active": ["d-glow"],
+      "search_modal": ["d-glass"],
+      "callout": ["d-glass"]
+    },
+    "component_fallback": {
+      "pre": "code_preview",
+      "code": "code_preview"
+    },
+    "intensity_values": {
+      "subtle": {
+        "--d-glow-radius": "8px",
+        "--d-glow-intensity": "0.15"
+      },
+      "medium": {
+        "--d-glow-radius": "12px",
+        "--d-glow-intensity": "0.25"
+      },
+      "strong": {
+        "--d-glow-radius": "20px",
+        "--d-glow-intensity": "0.35"
+      }
+    }
+  },
+  "pattern_preferences": {
+    "prefer": ["docs-shell", "docs-sidebar", "docs-toc", "docs-command-palette"],
+    "avoid": [],
+    "default_presets": {
+      "docs-shell": "standard",
+      "docs-sidebar": "standard",
+      "docs-toc": "standard",
+      "docs-command-palette": "standard"
+    }
+  },
+  "decorators": {
+    "docs-nav-active": "Active navigation item with primary color glow. Use on current page links.",
+    "docs-callout-tip": "Tip callout with primary color accent. For helpful hints and best practices.",
+    "docs-callout-warning": "Warning callout with amber accent. For important caveats.",
+    "docs-callout-info": "Info callout with blue accent. For additional context.",
+    "docs-code-block": "Code block with glass effect and copy button. For code examples.",
+    "docs-prompt-box": "Prompt example box with gradient border. For AI prompt demonstrations."
+  },
+  "compositions": {
+    "shell": {
+      "description": "Docs layout with sidebar, content, and optional TOC.",
+      "example": "const { div } = tags;\nimport { DocsShell, DocsSidebar, DocsToc } from 'decantr/patterns';\n\nDocsShell({ title: 'Getting Started', headings },\n  // page content\n)"
+    },
+    "sidebar": {
+      "description": "Accordion navigation with search trigger and glow active states.",
+      "example": "import { DocsSidebar } from 'decantr/patterns';\n\nDocsSidebar({ onSearch: () => openCommandPalette() })"
+    },
+    "toc": {
+      "description": "Right-side table of contents with scroll spy.",
+      "example": "import { DocsToc } from 'decantr/patterns';\n\nDocsToc({ headings: [\n  { id: 'intro', label: 'Introduction', level: 2 },\n  { id: 'setup', label: 'Setup', level: 2 }\n]})"
+    },
+    "command-palette": {
+      "description": "Cmd+K search overlay with keyboard navigation.",
+      "example": "import { DocsCommandPalette } from 'decantr/patterns';\n\n// Mount once at app level\nDocsCommandPalette()"
+    },
+    "callout": {
+      "description": "Styled callout for tips, warnings, and info.",
+      "example": "const { div, span } = tags;\nimport { icon } from 'decantr/components';\n\ndiv({ class: css('_flex _gap3 _p4 _r2 _bgprimary/10 _bcprimary/30 _border') },\n  icon('lightbulb', { size: '18px', class: css('_fgprimary') }),\n  div({ class: css('_flex _col _gap1') },\n    span({ class: css('_label _bold') }, 'Pro Tip'),\n    span({ class: css('_textsm') }, 'Use semantic colors for consistent theming.')\n  )\n)"
+    },
+    "code-block": {
+      "description": "Code block with language label and copy button.",
+      "example": "const { div, pre, code, span } = tags;\nimport { icon } from 'decantr/components';\n\ndiv({ class: css('_r2 _bgmuted/30 _border _bcborder/50 _overflow[hidden]') },\n  div({ class: css('_flex _aic _jcsb _px4 _py2 _bgmuted/20 _borderB _bcborder/50') },\n    span({ class: css('_caption _fgmutedfg _uppercase') }, 'js'),\n    button({ class: css('_flex _aic _gap1 _px2 _py1 _r1 _textsm _fgmutedfg') }, icon('copy', { size: '14px' }), 'Copy')\n  ),\n  pre({ class: css('_p4 _overflow[auto]') },\n    code({ class: css('_fgfg') }, 'const hello = \"world\";')\n  )\n)"
+    },
+    "prompt-box": {
+      "description": "Prompt example with gradient accent.",
+      "example": "const { div, p, span } = tags;\nimport { icon } from 'decantr/components';\n\ndiv({ class: css('_flex _col _gap2 _p4 _r2 _bg[linear-gradient(135deg,var(--c-primary)/10,var(--c-primary)/5)] _border _bcprimary/30') },\n  div({ class: css('_flex _aic _gap2 _textsm _fgprimary _fw[500]') },\n    icon('message-square', { size: '16px' }),\n    span('Try this prompt:')\n  ),\n  p({ class: css('_textbase _lhrelaxed _fgfg _italic') }, '\"Add a settings page with user profile form\"')\n)"
+    }
+  }
+}

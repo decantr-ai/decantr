@@ -1,0 +1,29 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v1.json",
+  "id": "docs-shell",
+  "name": "Docs Shell",
+  "description": "Purpose-built documentation layout with sidebar navigation, main content area, optional right-side TOC, and mobile hamburger menu. Designed for prompt-first documentation sites.",
+  "components": ["Shell", "icon"],
+  "presets": ["standard", "with-toc", "minimal"],
+  "default_preset": "standard",
+  "default_blend": {
+    "layout": "grid",
+    "atoms": "_pt[56px] _minh[100vh] _relative",
+    "slots": {
+      "sidebar": "Left sidebar (260px) with accordion navigation and search trigger",
+      "content": "Main scrollable content area with max-width constraint",
+      "toc": "Optional right-side table of contents (200px, sticky)",
+      "mobile-bar": "Mobile hamburger menu bar below fixed header",
+      "command-palette": "Cmd+K search overlay modal"
+    }
+  },
+  "io": {
+    "produces": ["navigation", "search"],
+    "consumes": ["headings", "breadcrumbs"],
+    "actions": ["toggle-mobile-menu", "open-search"]
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, createEffect } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Shell, icon } from 'decantr/components';\nimport { link } from 'decantr/router';",
+    "example": "function DocsShell({ title, breadcrumbs = [], headings = [], showToc = true }, ...content) {\n  const { div, h1, nav, span, button } = tags;\n  const [navState, setNavState] = createSignal('expanded');\n  const [mobileMenuOpen, setMobileMenuOpen] = createSignal(false);\n\n  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen());\n\n  const config = showToc && headings.length >= 3\n    ? { regions: ['nav', 'body', 'aside'], grid: { areas: [['nav', 'body', 'aside']] }, nav: { width: '260px' }, aside: { width: '200px' } }\n    : { regions: ['nav', 'body'], grid: { areas: [['nav', 'body']] }, nav: { width: '260px' } };\n\n  return div({ class: css('_pt[56px] _minh[100vh]') },\n    // Mobile menu bar (hidden on lg+)\n    div({ class: css('_fixed _top[56px] _left0 _right0 _h[48px] _bgbg _borderB _flex _aic _px4 _z[50] _lg:none') },\n      button({ class: css('_flex _aic _gap2 _px3 _py2 _r1 _bgmuted/30'), onclick: toggleMobileMenu },\n        icon('menu', { size: '18px' }),\n        span({ class: css('_textsm _fgmutedfg') }, 'Menu')\n      )\n    ),\n    Shell({ config, navState, onNavStateChange: setNavState },\n      Shell.Nav({ class: css('_bgbg _borderR _overflow[auto]') },\n        // DocsSidebar component here\n      ),\n      Shell.Body({ class: css('_p6 _lg:p8 _maxw[800px] _lg:pt0 _pt[48px]') },\n        // Breadcrumb and title\n        nav({ class: css('_flex _aic _gap2 _textsm _fgmutedfg _mb4') },\n          link({ href: '/docs' }, 'Docs'),\n          ...breadcrumbs.map(b => [span('/'), link({ href: b.path }, b.label)]).flat()\n        ),\n        title && h1({ class: css('_heading2 _mb6') }, title),\n        ...content\n      ),\n      showToc && headings.length >= 3 && Shell.Aside({ class: css('_bgbg _borderL _lg:flex _hidden') },\n        // DocsToc component here\n      )\n    )\n  );\n}"
+  }
+}

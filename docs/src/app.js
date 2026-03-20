@@ -50,14 +50,58 @@ const lazyExplorer = () => import('./pages/explorer-page.js').then(m => m.Explor
 const lazyGallery = () => import('./pages/gallery.js').then(m => m.GalleryPage).catch(e => { console.error('Gallery load failed:', e); return () => div('Gallery failed to load'); });
 const lazyShowcase = () => import('./pages/showcase.js').then(m => m.ShowcasePage);
 
+// New prompt-first docs pages (Start Here)
+const lazyQuickSetup = () => import('./pages/docs/quick-setup.js').then(m => m.QuickSetupPage);
+const lazyFirstPrompt = () => import('./pages/docs/first-prompt.js').then(m => m.FirstPromptPage);
+const lazyDecantation = () => import('./pages/docs/decantation.js').then(m => m.DecantationPage);
+
+// Building section
+const lazyBuildingPages = () => import('./pages/docs/building/pages.js').then(m => m.AddingPagesPage);
+const lazyBuildingFeatures = () => import('./pages/docs/building/features.js').then(m => m.AddingFeaturesPage);
+const lazyBuildingPrompts = () => import('./pages/docs/building/prompts.js').then(m => m.PromptPatternsPage);
+const lazyBuildingEssence = () => import('./pages/docs/building/essence.js').then(m => m.WorkingWithEssencePage);
+
+// Styling section
+const lazyStylingThemes = () => import('./pages/docs/styling/themes.js').then(m => m.ThemesRecipesPage);
+const lazyStylingColors = () => import('./pages/docs/styling/colors.js').then(m => m.CustomizingColorsPage);
+const lazyStylingEffects = () => import('./pages/docs/styling/effects.js').then(m => m.VisualEffectsPage);
+
+// Customizing section
+const lazyCustomizingPatterns = () => import('./pages/docs/customizing/patterns.js').then(m => m.CreatingPatternsPage);
+const lazyCustomizingThemes = () => import('./pages/docs/customizing/themes.js').then(m => m.CreatingThemesPage);
+const lazyCustomizingPublishing = () => import('./pages/docs/customizing/publishing.js').then(m => m.PublishingPage);
+
 const router = createRouter({
   mode: 'hash',
   routes: [
     // Landing page
     { path: '/', component: HomePage },
 
-    // Documentation
+    // Documentation - Home
     { path: '/docs', component: lazyDocsHome },
+
+    // Documentation - Start Here
+    { path: '/docs/quick-setup', component: lazyQuickSetup },
+    { path: '/docs/first-prompt', component: lazyFirstPrompt },
+    { path: '/docs/decantation', component: lazyDecantation },
+
+    // Documentation - Building
+    { path: '/docs/building/pages', component: lazyBuildingPages },
+    { path: '/docs/building/features', component: lazyBuildingFeatures },
+    { path: '/docs/building/prompts', component: lazyBuildingPrompts },
+    { path: '/docs/building/essence', component: lazyBuildingEssence },
+
+    // Documentation - Styling
+    { path: '/docs/styling/themes', component: lazyStylingThemes },
+    { path: '/docs/styling/colors', component: lazyStylingColors },
+    { path: '/docs/styling/effects', component: lazyStylingEffects },
+
+    // Documentation - Customizing
+    { path: '/docs/customizing/patterns', component: lazyCustomizingPatterns },
+    { path: '/docs/customizing/themes', component: lazyCustomizingThemes },
+    { path: '/docs/customizing/publishing', component: lazyCustomizingPublishing },
+
+    // Documentation - Legacy routes (tutorial, cookbook, workflow)
     { path: '/docs/tutorial/:step', component: lazyTutorial },
     { path: '/docs/cookbook/:recipe', component: lazyCookbook },
     { path: '/docs/workflow/:page', component: lazyWorkflow },
