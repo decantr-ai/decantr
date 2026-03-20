@@ -2,7 +2,7 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { TokensExplorer, loadTokenItems } from 'decantr/explorer/tokens.js';
+import { TokensExplorer, loadTokenItems } from '../../../src/explorer/tokens.js';
 import { wbPath } from './path-prefix.js';
 
 const { div, h2, h3, p } = tags;

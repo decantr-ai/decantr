@@ -2,7 +2,7 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { ThemeStudio, loadToolItems } from 'decantr/explorer/tools.js';
+import { ThemeStudio, loadToolItems } from '../../../src/explorer/tools.js';
 import { wbPath } from './path-prefix.js';
 
 const { div, h2, h3, p } = tags;
