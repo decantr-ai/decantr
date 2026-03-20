@@ -142,11 +142,10 @@ async function runPhase4(project) {
     const mainFile = files.find(f => f.startsWith('main.') && f.endsWith('.js'));
 
     if (!mainFile) {
-      return { pass: false, error: 'No main.*.js found in dist/' };
+      return { pass: false, error: 'No main.*.js found in dist/', browser: false };
     }
 
     const filePath = join(distPath, mainFile);
-    // Use dynamic import test
     const result = await runCommand(
       'node',
       ['--input-type=module', '-e', `"import('${filePath}')"`],
@@ -154,12 +153,18 @@ async function runPhase4(project) {
       10000
     );
 
+    // Check if failure is due to browser-only code
+    if (!result.pass && isBrowserOnlyError(result.error)) {
+      return { pass: true, browser: true, error: null };
+    }
+
     return {
       pass: result.pass,
+      browser: false,
       error: result.pass ? null : result.error
     };
   } catch (err) {
-    return { pass: false, error: err.message };
+    return { pass: false, browser: false, error: err.message };
   }
 }
 
@@ -298,6 +303,9 @@ async function auditProject(project) {
   } else if (!result.phases.import?.pass) {
     result.status = 'fail';
     result.issueType = 'runtime';
+  } else if (result.phases.import?.browser) {
+    result.status = 'pass';
+    result.issueType = 'browser';
   } else {
     result.status = 'pass';
   }
@@ -316,6 +324,7 @@ function generateReport(results) {
     compiler: results.filter(r => r.issueType === 'compiler').length,
     syntax: results.filter(r => r.issueType === 'syntax').length,
     runtime: results.filter(r => r.issueType === 'runtime').length,
+    browser: results.filter(r => r.issueType === 'browser').length,
   };
 
   let md = `# Compiler Audit Results
@@ -338,6 +347,7 @@ function generateReport(results) {
 | Compiler | ${summary.compiler} | New compiler regression |
 | Syntax | ${summary.syntax} | Output has syntax errors |
 | Runtime | ${summary.runtime} | Import fails at runtime |
+| Browser-only | ${summary.browser} | Valid browser code (DOM APIs) |
 
 ---
 
@@ -360,7 +370,9 @@ function generateReport(results) {
     for (const project of projects) {
       const checkbox = project.status === 'pass' ? '[x]' : '[ ]';
       const status = project.status === 'pass'
-        ? `Pass (${project.phases.experimental.time}ms)`
+        ? project.issueType === 'browser'
+          ? 'Pass (browser-only)'
+          : `Pass (${project.phases.experimental.time}ms)`
         : `**${project.issueType.toUpperCase()}**`;
 
       md += `- ${checkbox} \`${project.name}\` — ${status}\n`;
