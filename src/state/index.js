@@ -1,5 +1,5 @@
 import {
-  currentEffect, setCurrentEffect, scheduleEffect, isBatching, flush,
+  getCurrentEffect, setCurrentEffect, scheduleEffect, isBatching, flush,
   getOwner, runWithOwner, createRoot, registerCleanup, createChildOwner,
   disposeOwner, handleError, onError
 } from './scheduler.js';
@@ -18,10 +18,11 @@ export function createSignal(initialValue) {
   const subscribers = new Set();
 
   function getter() {
-    if (currentEffect) {
-      subscribers.add(currentEffect);
+    const eff = getCurrentEffect();
+    if (eff) {
+      subscribers.add(eff);
       // Track this signal as a source of the current effect
-      if (currentEffect.sources) currentEffect.sources.add(subscribers);
+      if (eff.sources) eff.sources.add(subscribers);
     }
     return value;
   }
@@ -83,7 +84,7 @@ export function createEffect(fn) {
       if (typeof cleanup === 'function') {
         try { cleanup(); } catch (_) {}
       }
-      const prev = currentEffect;
+      const prev = getCurrentEffect();
       setCurrentEffect(effect);
       try {
         cleanup = fn();
@@ -153,7 +154,7 @@ export function createMemo(fn) {
   function recompute() {
     // Clean up old sources before re-tracking
     cleanupSources(effect);
-    const prev = currentEffect;
+    const prev = getCurrentEffect();
     setCurrentEffect(effect);
     try {
       const newVal = fn();
@@ -187,9 +188,10 @@ export function createMemo(fn) {
   });
 
   return function getter() {
-    if (currentEffect) {
-      subscribers.add(currentEffect);
-      if (currentEffect.sources) currentEffect.sources.add(subscribers);
+    const eff = getCurrentEffect();
+    if (eff) {
+      subscribers.add(eff);
+      if (eff.sources) eff.sources.add(subscribers);
     }
     if (dirty) {
       recompute();
@@ -204,7 +206,7 @@ export function createMemo(fn) {
  * @returns {T}
  */
 export function untrack(fn) {
-  const prev = currentEffect;
+  const prev = getCurrentEffect();
   setCurrentEffect(null);
   try {
     return fn();
@@ -273,10 +275,11 @@ export function createStore(initialValue) {
 
   return new Proxy(initialValue, {
     get(target, prop, receiver) {
-      if (currentEffect) {
+      const eff = getCurrentEffect();
+      if (eff) {
         const subs = getSubscribers(prop);
-        subs.add(currentEffect);
-        if (currentEffect.sources) currentEffect.sources.add(subs);
+        subs.add(eff);
+        if (eff.sources) eff.sources.add(subs);
       }
       return Reflect.get(target, prop, receiver);
     },
@@ -373,10 +376,11 @@ export function createSelector(source) {
   });
 
   return function isSelected(key) {
-    if (currentEffect) {
+    const eff = getCurrentEffect();
+    if (eff) {
       let set = subs.get(key);
       if (!set) { set = new Set(); subs.set(key, set); }
-      set.add(currentEffect);
+      set.add(eff);
     }
     return Object.is(key, source());
   };
@@ -413,13 +417,14 @@ export function createDeferred(fn) {
   };
 
   return function getter() {
-    if (currentEffect) {
-      subscribers.add(currentEffect);
-      if (currentEffect.sources) currentEffect.sources.add(subscribers);
+    const eff = getCurrentEffect();
+    if (eff) {
+      subscribers.add(eff);
+      if (eff.sources) eff.sources.add(subscribers);
     }
     if (!initialized || dirty) {
       cleanupSources(effect);
-      const prev = currentEffect;
+      const prev = getCurrentEffect();
       setCurrentEffect(effect);
       try {
         cached = fn();

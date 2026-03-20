@@ -2,7 +2,7 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { IconDetail, IconGroupView, loadIconItems } from 'decantr/explorer/icons.js';
+import { IconDetail, IconGroupView, loadIconItems } from '../../../src/explorer/icons.js';
 import { wbPath } from './path-prefix.js';
 
 const { div, h2, h3, p } = tags;

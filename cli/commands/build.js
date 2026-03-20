@@ -45,6 +45,7 @@ export async function run() {
     const result = await build({
       entry,
       outDir,
+      projectRoot: cwd,
       minify: true,
       sourceMaps: config.build.sourcemap,
       validate: true,

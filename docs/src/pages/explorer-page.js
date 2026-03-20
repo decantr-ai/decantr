@@ -11,22 +11,22 @@ import { css, setStyle, getStyleList, setMode, setShape, setColorblindMode } fro
 import { tags } from 'decantr/tags';
 import { Select, Drawer, icon, Input } from 'decantr/components';
 import { link, navigate, useRoute } from 'decantr/router';
-import { createFocusTrap } from 'decantr/components/_behaviors.js';
-import { initUsageIndex } from 'decantr/explorer/shared/usage-links.js';
-import { injectExplorerCSS } from 'decantr/explorer/styles.js';
+import { createFocusTrap } from '../../../src/components/_behaviors.js';
+import { initUsageIndex } from '../../../src/explorer/shared/usage-links.js';
+import { injectExplorerCSS } from '../../../src/explorer/styles.js';
 
 // Explorer data loaders for sidebar
-import { loadFoundationItems } from 'decantr/explorer/foundations.js';
-import { loadAtomItems } from 'decantr/explorer/atoms.js';
-import { loadTokenItems } from 'decantr/explorer/tokens.js';
-import { loadComponentItems } from 'decantr/explorer/components.js';
-import { loadIconItems } from 'decantr/explorer/icons.js';
-import { loadChartItems } from 'decantr/explorer/charts.js';
-import { loadPatternItems } from 'decantr/explorer/patterns.js';
-import { loadArchetypeItems } from 'decantr/explorer/archetypes.js';
-import { loadRecipeItems } from 'decantr/explorer/recipes.js';
-import { loadToolItems } from 'decantr/explorer/tools.js';
-import { loadShellItems } from 'decantr/explorer/shells.js';
+import { loadFoundationItems } from '../../../src/explorer/foundations.js';
+import { loadAtomItems } from '../../../src/explorer/atoms.js';
+import { loadTokenItems } from '../../../src/explorer/tokens.js';
+import { loadComponentItems } from '../../../src/explorer/components.js';
+import { loadIconItems } from '../../../src/explorer/icons.js';
+import { loadChartItems } from '../../../src/explorer/charts.js';
+import { loadPatternItems } from '../../../src/explorer/patterns.js';
+import { loadArchetypeItems } from '../../../src/explorer/archetypes.js';
+import { loadRecipeItems } from '../../../src/explorer/recipes.js';
+import { loadToolItems } from '../../../src/explorer/tools.js';
+import { loadShellItems } from '../../../src/explorer/shells.js';
 
 // Page facades (local copies, /explorer prefix)
 import { ComponentsIndex, ComponentGroupPage, ComponentDetailPage } from '../explorer/components.js';
