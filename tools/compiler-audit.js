@@ -221,8 +221,67 @@ async function discoverProjects() {
 }
 
 async function auditProject(project) {
-  // TODO: Implement
-  return {};
+  console.log(`📦 ${project.name}`);
+
+  const result = {
+    name: project.name,
+    path: project.path,
+    category: project.category,
+    phases: {
+      baseline: null,
+      experimental: null,
+      syntax: null,
+      import: null
+    },
+    status: 'unknown',
+    issueType: null
+  };
+
+  // Phase 1: Baseline build
+  process.stdout.write('  ├─ Baseline: ');
+  result.phases.baseline = await runPhase1(project);
+  console.log(result.phases.baseline.pass ? `✓ (${result.phases.baseline.time}ms)` : '✗');
+
+  // Phase 2: Experimental build
+  process.stdout.write('  ├─ Experimental: ');
+  result.phases.experimental = await runPhase2(project);
+  console.log(result.phases.experimental.pass ? `✓ (${result.phases.experimental.time}ms)` : '✗');
+
+  // Phase 3: Syntax check (only if experimental passed)
+  if (result.phases.experimental.pass) {
+    process.stdout.write('  ├─ Syntax: ');
+    result.phases.syntax = await runPhase3(project);
+    console.log(result.phases.syntax.pass ? `✓ (${result.phases.syntax.files} files)` : '✗');
+  }
+
+  // Phase 4: Import test (only if syntax passed)
+  if (result.phases.syntax?.pass) {
+    process.stdout.write('  └─ Import: ');
+    result.phases.import = await runPhase4(project);
+    console.log(result.phases.import.pass ? '✓' : '✗');
+  } else {
+    console.log('  └─ Import: skipped');
+  }
+
+  // Determine status and issue type
+  if (!result.phases.baseline.pass) {
+    result.status = 'fail';
+    result.issueType = 'pre-existing';
+  } else if (!result.phases.experimental.pass) {
+    result.status = 'fail';
+    result.issueType = 'compiler';
+  } else if (!result.phases.syntax?.pass) {
+    result.status = 'fail';
+    result.issueType = 'syntax';
+  } else if (!result.phases.import?.pass) {
+    result.status = 'fail';
+    result.issueType = 'runtime';
+  } else {
+    result.status = 'pass';
+  }
+
+  console.log('');
+  return result;
 }
 
 function generateReport(results) {
