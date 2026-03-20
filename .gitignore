@@ -7,3 +7,5 @@ docs/assets/
 playground/
 .env
 test/e2e-scaffold/output/
+**/.superpowers/
+**/superpowers/

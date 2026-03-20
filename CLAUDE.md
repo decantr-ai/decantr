@@ -256,6 +256,7 @@ See `reference/plugins.md` for plugin API documentation.
 
 - `npx decantr dev` — Dev server with hot reload
 - `npx decantr build` — Production build to `dist/`
+- `npx decantr build --experimental-compiler` — Build using new compiler (proper AST, better errors)
 - `npx decantr test` — Run tests
 - `npx decantr validate` — Validate `decantr.essence.json`
 - `npx decantr registry search <query>` — Search community content registry
