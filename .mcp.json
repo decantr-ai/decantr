@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "decantr-registry": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["registry-server/mcp-server.js"]
-    }
-  }
-}

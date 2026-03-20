@@ -1,8 +1,0 @@
-{"type":"server-started","port":61820,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:61820","screen_dir":"/Users/davidaimi/projects/decantr/.superpowers/brainstorm/48979-1773954992"}
-{"type":"screen-added","file":"/Users/davidaimi/projects/decantr/.superpowers/brainstorm/48979-1773954992/approaches.html"}
-{"type":"screen-added","file":"/Users/davidaimi/projects/decantr/.superpowers/brainstorm/48979-1773954992/design-1-decorators.html"}
-{"type":"screen-added","file":"/Users/davidaimi/projects/decantr/.superpowers/brainstorm/48979-1773954992/design-2-recipe-schema.html"}
-{"type":"screen-added","file":"/Users/davidaimi/projects/decantr/.superpowers/brainstorm/48979-1773954992/design-3-generator.html"}
-{"type":"screen-added","file":"/Users/davidaimi/projects/decantr/.superpowers/brainstorm/48979-1773954992/design-4-mcp.html"}
-{"type":"screen-added","file":"/Users/davidaimi/projects/decantr/.superpowers/brainstorm/48979-1773954992/waiting.html"}
-{"type":"server-stopped","reason":"idle timeout"}

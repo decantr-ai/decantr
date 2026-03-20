@@ -4,12 +4,12 @@ import { css, setStyle, getStyleList, setMode, setShape, setColorblindMode } fro
 import { tags } from 'decantr/tags';
 import { Select, Drawer, icon, Shell } from 'decantr/components';
 import { createRouter, navigate } from 'decantr/router';
-import { createFocusTrap } from 'decantr/components/_behaviors.js';
-import { initUsageIndex } from 'decantr/explorer/shared/usage-links.js';
+import { createFocusTrap } from '../../src/components/_behaviors.js';
+import { initUsageIndex } from '../../src/explorer/shared/usage-links.js';
 import { wbPath } from './path-prefix.js';
 
 import { SidebarNav, getSidebarItems, loadAllSidebarItems, searchIndex } from './sidebar.js';
-import { activeShellConfig } from 'decantr/explorer/shell-config.js';
+import { activeShellConfig } from '../../src/explorer/shell-config.js';
 
 // Pages
 import { ComponentsIndex, ComponentGroupPage, ComponentDetailPage } from './pages/components.js';

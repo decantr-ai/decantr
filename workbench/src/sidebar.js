@@ -4,17 +4,17 @@ import { link, useRoute } from 'decantr/router';
 import { Input } from 'decantr/components';
 import { wbPath } from './path-prefix.js';
 
-import { loadFoundationItems } from 'decantr/explorer/foundations.js';
-import { loadAtomItems } from 'decantr/explorer/atoms.js';
-import { loadTokenItems } from 'decantr/explorer/tokens.js';
-import { loadComponentItems } from 'decantr/explorer/components.js';
-import { loadIconItems } from 'decantr/explorer/icons.js';
-import { loadChartItems } from 'decantr/explorer/charts.js';
-import { loadPatternItems } from 'decantr/explorer/patterns.js';
-import { loadArchetypeItems } from 'decantr/explorer/archetypes.js';
-import { loadRecipeItems } from 'decantr/explorer/recipes.js';
-import { loadToolItems } from 'decantr/explorer/tools.js';
-import { loadShellItems } from 'decantr/explorer/shells.js';
+import { loadFoundationItems } from '../../src/explorer/foundations.js';
+import { loadAtomItems } from '../../src/explorer/atoms.js';
+import { loadTokenItems } from '../../src/explorer/tokens.js';
+import { loadComponentItems } from '../../src/explorer/components.js';
+import { loadIconItems } from '../../src/explorer/icons.js';
+import { loadChartItems } from '../../src/explorer/charts.js';
+import { loadPatternItems } from '../../src/explorer/patterns.js';
+import { loadArchetypeItems } from '../../src/explorer/archetypes.js';
+import { loadRecipeItems } from '../../src/explorer/recipes.js';
+import { loadToolItems } from '../../src/explorer/tools.js';
+import { loadShellItems } from '../../src/explorer/shells.js';
 
 const { div, nav, span, button } = tags;
 

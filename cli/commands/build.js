@@ -33,6 +33,32 @@ export async function run() {
   if (args.includes('--no-purge')) config.build.purgeCSS = false;
   if (args.includes('--no-tree-shake')) config.build.treeShake = false;
 
-  const { build } = await import('../../tools/builder.js');
-  await build(cwd, config.build);
+  // Experimental compiler flag
+  const useExperimentalCompiler = args.includes('--experimental-compiler');
+
+  if (useExperimentalCompiler) {
+    console.log('\x1b[33m[experimental]\x1b[0m Using new compiler architecture\n');
+    const { build } = await import('../../tools/compiler/index.js');
+    const entry = join(cwd, 'src/app.js');
+    const outDir = join(cwd, config.build.outDir);
+
+    const result = await build({
+      entry,
+      outDir,
+      minify: true,
+      sourceMaps: config.build.sourcemap,
+      validate: true,
+      dev: false
+    });
+
+    if (result.success) {
+      const { formatBuildSummary } = await import('../../tools/compiler/reporter.js');
+      console.log(formatBuildSummary(result));
+    } else {
+      process.exit(1);
+    }
+  } else {
+    const { build } = await import('../../tools/builder.js');
+    await build(cwd, config.build);
+  }
 }

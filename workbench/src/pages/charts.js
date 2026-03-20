@@ -2,7 +2,7 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { ChartDetail, ChartGroupView, loadChartItems } from 'decantr/explorer/charts.js';
+import { ChartDetail, ChartGroupView, loadChartItems } from '../../../src/explorer/charts.js';
 import { wbPath } from '../path-prefix.js';
 
 const { div, h2, h3, p } = tags;

@@ -1,9 +1,38 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
 docs/dist/
 docs/index.html
 docs/assets/
+
+# Generated
+llm/
+
+# Local config
 .claude/
-playground/
+.mcp.json
+.decantr/
+*.local.*
+
+# Environment
 .env
+
+# OS files
+**/.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test output
 test/e2e-scaffold/output/
+
+# Superpowers
+**/.superpowers/
+**/superpowers/
+
+# Playground
+playground/

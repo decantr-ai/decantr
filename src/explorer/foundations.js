@@ -2,7 +2,7 @@ import { h, cond, list, text } from 'decantr/core';
 import { createSignal, createEffect, createMemo, createStore, batch,
          createRoot, on, createHistory, createContext, createSelector,
          untrack } from 'decantr/state';
-import { withMiddleware, validationMiddleware, undoMiddleware } from 'decantr/state/middleware.js';
+import { withMiddleware, validationMiddleware, undoMiddleware } from '../state/middleware.js';
 import { createEntityStore } from 'decantr/data';
 import { createForm, validators } from 'decantr/form';
 import { css } from 'decantr/css';

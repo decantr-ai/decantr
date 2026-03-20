@@ -2,7 +2,7 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { PatternDetail, PatternListView } from 'decantr/explorer/patterns.js';
+import { PatternDetail, PatternListView } from '../../../src/explorer/patterns.js';
 import { wbPath } from '../path-prefix.js';
 
 const { div, h2, p } = tags;

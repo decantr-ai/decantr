@@ -2,7 +2,7 @@ import { css } from 'decantr/css';
 import { tags } from 'decantr/tags';
 import { navigate } from 'decantr/router';
 import { Breadcrumb } from 'decantr/components';
-import { ArchetypeDetail, ArchetypeListView } from 'decantr/explorer/archetypes.js';
+import { ArchetypeDetail, ArchetypeListView } from '../../../src/explorer/archetypes.js';
 import { wbPath } from '../path-prefix.js';
 
 const { div, h2, p } = tags;
