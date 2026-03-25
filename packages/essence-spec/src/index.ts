@@ -29,3 +29,6 @@ export { validateEssence } from './validate.js';
 export type { ValidationResult } from './validate.js';
 
 export { computeDensity } from './density.js';
+
+export { evaluateGuard } from './guard.js';
+export type { GuardViolation, GuardContext } from './guard.js';
