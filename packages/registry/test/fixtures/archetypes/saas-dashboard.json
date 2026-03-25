@@ -1,0 +1,13 @@
+{
+  "id": "saas-dashboard",
+  "version": "1.0.0",
+  "name": "SaaS Dashboard",
+  "description": "Data-rich dashboard with KPIs and tables",
+  "tags": ["saas", "dashboard"],
+  "pages": [
+    { "id": "overview", "default_layout": ["kpi-grid", "chart-grid"], "shell": "sidebar-main" },
+    { "id": "users", "default_layout": ["filter-bar", "data-table"], "shell": "sidebar-main" }
+  ],
+  "features": ["auth", "mock-data"],
+  "dependencies": { "patterns": { "kpi-grid": ">=1.0.0" }, "recipes": { "auradecantism": ">=1.0.0" } }
+}
