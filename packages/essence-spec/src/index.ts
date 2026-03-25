@@ -32,3 +32,5 @@ export { computeDensity } from './density.js';
 
 export { evaluateGuard } from './guard.js';
 export type { GuardViolation, GuardContext } from './guard.js';
+
+export { normalizeEssence } from './normalize.js';
