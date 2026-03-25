@@ -1,0 +1,26 @@
+export type {
+  Essence,
+  SectionedEssence,
+  EssenceFile,
+  EssenceSection,
+  Theme,
+  ThemeStyle,
+  ThemeMode,
+  ThemeShape,
+  Platform,
+  PlatformType,
+  RoutingStrategy,
+  StructurePage,
+  ShellType,
+  LayoutItem,
+  PatternRef,
+  ColumnLayout,
+  Density,
+  DensityLevel,
+  Guard,
+  GuardMode,
+  Impression,
+  GeneratorTarget,
+} from './types.js';
+
+export { isSectioned, isSimple } from './types.js';

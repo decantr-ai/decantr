@@ -1,0 +1,26 @@
+{
+  "name": "@decantr/essence-spec",
+  "version": "0.1.0",
+  "description": "Essence schema, validator, and TypeScript types for Decantr",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./schema": {
+      "import": "./schema/essence.v2.json"
+    }
+  },
+  "files": ["dist", "schema"],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "ajv": "^8.17.0"
+  }
+}
