@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schema/essence/2.0.json",
+  "title": "Decantr Essence v2",
+  "description": "Design intent specification for AI-generated web applications",
+  "oneOf": [
+    { "$ref": "#/$defs/SimpleEssence" },
+    { "$ref": "#/$defs/SectionedEssence" }
+  ],
+  "$defs": {
+    "SimpleEssence": {
+      "type": "object",
+      "required": ["version", "archetype", "theme", "character", "platform", "structure", "features", "density", "guard", "target"],
+      "additionalProperties": false,
+      "properties": {
+        "$schema": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "archetype": { "type": "string", "minLength": 1 },
+        "theme": { "$ref": "#/$defs/Theme" },
+        "character": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "platform": { "$ref": "#/$defs/Platform" },
+        "structure": { "type": "array", "items": { "$ref": "#/$defs/StructurePage" }, "minItems": 1 },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "density": { "$ref": "#/$defs/Density" },
+        "guard": { "$ref": "#/$defs/Guard" },
+        "target": { "type": "string", "minLength": 1 },
+        "_impression": { "$ref": "#/$defs/Impression" }
+      }
+    },
+    "SectionedEssence": {
+      "type": "object",
+      "required": ["version", "platform", "character", "sections", "density", "guard", "target"],
+      "additionalProperties": false,
+      "properties": {
+        "$schema": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "platform": { "$ref": "#/$defs/Platform" },
+        "character": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "sections": { "type": "array", "items": { "$ref": "#/$defs/Section" }, "minItems": 1 },
+        "shared_features": { "type": "array", "items": { "type": "string" } },
+        "density": { "$ref": "#/$defs/Density" },
+        "guard": { "$ref": "#/$defs/Guard" },
+        "target": { "type": "string", "minLength": 1 },
+        "_impression": { "$ref": "#/$defs/Impression" }
+      }
+    },
+    "Theme": {
+      "type": "object",
+      "required": ["style", "mode", "recipe"],
+      "additionalProperties": false,
+      "properties": {
+        "style": { "type": "string", "minLength": 1 },
+        "mode": { "type": "string", "enum": ["light", "dark", "auto"] },
+        "recipe": { "type": "string", "minLength": 1 },
+        "shape": { "type": "string", "enum": ["sharp", "rounded", "pill"] }
+      }
+    },
+    "Platform": {
+      "type": "object",
+      "required": ["type", "routing"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "enum": ["spa", "ssr", "static"] },
+        "routing": { "type": "string", "enum": ["hash", "history"] }
+      }
+    },
+    "StructurePage": {
+      "type": "object",
+      "required": ["id", "shell", "layout"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "shell": { "type": "string", "minLength": 1 },
+        "layout": { "type": "array", "items": { "$ref": "#/$defs/LayoutItem" }, "minItems": 1 },
+        "surface": { "type": "string" }
+      }
+    },
+    "LayoutItem": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "$ref": "#/$defs/PatternRef" },
+        { "$ref": "#/$defs/ColumnLayout" }
+      ]
+    },
+    "PatternRef": {
+      "type": "object",
+      "required": ["pattern"],
+      "additionalProperties": false,
+      "properties": {
+        "pattern": { "type": "string", "minLength": 1 },
+        "preset": { "type": "string" },
+        "as": { "type": "string" }
+      }
+    },
+    "ColumnLayout": {
+      "type": "object",
+      "required": ["cols"],
+      "additionalProperties": false,
+      "properties": {
+        "cols": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+        "at": { "type": "string", "enum": ["sm", "md", "lg", "xl", "2xl"] },
+        "span": { "type": "object", "additionalProperties": { "type": "number", "minimum": 1 } }
+      }
+    },
+    "Density": {
+      "type": "object",
+      "required": ["level", "content_gap"],
+      "additionalProperties": false,
+      "properties": {
+        "level": { "type": "string", "enum": ["compact", "comfortable", "spacious"] },
+        "content_gap": { "type": "string" }
+      }
+    },
+    "Guard": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "properties": {
+        "enforce_style": { "type": "boolean" },
+        "enforce_recipe": { "type": "boolean" },
+        "mode": { "type": "string", "enum": ["creative", "guided", "strict"] }
+      }
+    },
+    "Impression": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "vibe": { "type": "array", "items": { "type": "string" } },
+        "references": { "type": "array", "items": { "type": "string" } },
+        "density_intent": { "type": "string" },
+        "layout_intent": { "type": "string" },
+        "novel_elements": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "Section": {
+      "type": "object",
+      "required": ["id", "path", "archetype", "theme", "structure"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "path": { "type": "string", "pattern": "^/" },
+        "archetype": { "type": "string", "minLength": 1 },
+        "theme": { "$ref": "#/$defs/Theme" },
+        "structure": { "type": "array", "items": { "$ref": "#/$defs/StructurePage" }, "minItems": 1 },
+        "features": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
