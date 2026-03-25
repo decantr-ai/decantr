@@ -1,0 +1,16 @@
+{
+  "id": "hero",
+  "version": "2.0.0-override",
+  "name": "Hero Override",
+  "description": "Overridden hero for testing",
+  "tags": ["hero"],
+  "components": ["Button"],
+  "default_preset": "landing",
+  "presets": {
+    "landing": {
+      "description": "Overridden landing",
+      "blend": { "layout": "hero", "atoms": "_flex _col" },
+      "code": { "imports": "", "example": "function HeroOverride() {}" }
+    }
+  }
+}

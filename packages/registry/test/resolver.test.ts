@@ -41,9 +41,12 @@ describe('ContentResolver', () => {
   });
 
   it('uses override paths in priority order', async () => {
-    const resolver = createResolver({ contentRoot: fixtureRoot, overridePaths: [join(__dirname, 'fixtures-override')] });
+    const overrideDir = join(__dirname, 'fixtures-override');
+    const resolver = createResolver({ contentRoot: fixtureRoot, overridePaths: [overrideDir] });
     const result = await resolver.resolve('pattern', 'hero');
     expect(result).not.toBeNull();
-    expect(result!.item.id).toBe('hero');
+    expect(result!.source).toBe('local');
+    expect(result!.item.version).toBe('2.0.0-override');
+    expect(result!.item.name).toBe('Hero Override');
   });
 });
