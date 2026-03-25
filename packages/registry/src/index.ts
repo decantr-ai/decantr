@@ -14,3 +14,6 @@ export type {
 
 export { createResolver } from './resolver.js';
 export type { ResolverOptions, ContentResolver } from './resolver.js';
+
+export { resolvePatternPreset } from './pattern.js';
+export type { ResolvedPreset } from './pattern.js';
