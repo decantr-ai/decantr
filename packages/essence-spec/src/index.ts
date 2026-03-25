@@ -27,3 +27,5 @@ export { isSectioned, isSimple } from './types.js';
 
 export { validateEssence } from './validate.js';
 export type { ValidationResult } from './validate.js';
+
+export { computeDensity } from './density.js';
