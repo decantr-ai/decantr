@@ -1,0 +1,26 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "billing",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "Billing",
+  "description": "Billing, payment, and subscription management",
+  "tags": ["billing", "payment", "pricing", "subscription", "invoices"],
+  "classification": {
+    "triggers": {
+      "primary": ["billing", "payment", "pricing", "subscription"],
+      "secondary": ["invoices", "plans", "charges", "stripe"],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    { "id": "billing", "default_blend": ["kpi-grid", "pricing-table", "order-history"], "carafe": "sidebar-main" }
+  ],
+  "tannins": ["billing"],
+  "carafes": { "sidebar-main": "Sidebar navigation with main content area" },
+  "dependencies": { "patterns": { "kpi-grid": "^1.0.0", "pricing-table": "^1.0.0", "order-history": "^1.0.0" }, "recipes": {}, "styles": {} },
+  "suggested_vintage": { "styles": ["auradecantism", "clean"], "modes": ["dark", "auto"] }
+}

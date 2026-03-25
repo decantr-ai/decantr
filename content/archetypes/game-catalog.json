@@ -1,0 +1,95 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "game-catalog",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "Game Catalog",
+  "description": "Game discovery and browsing with search, filters, and guild recruitment pages",
+  "tags": ["gaming", "catalog", "discovery", "search", "library"],
+  "classification": {
+    "triggers": {
+      "primary": ["games", "game catalog", "game library"],
+      "secondary": ["game list", "game discovery", "arcade", "game browser"],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.8,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "games",
+      "patterns": [
+        "search-bar",
+        "filter-bar",
+        {
+          "pattern": "card-grid",
+          "preset": "collection",
+          "as": "game-catalog"
+        }
+      ],
+      "default_blend": [
+        "search-bar",
+        "filter-bar",
+        {
+          "pattern": "card-grid",
+          "preset": "collection",
+          "as": "game-catalog"
+        }
+      ],
+      "carafe": "sidebar-main"
+    },
+    {
+      "id": "join-guild",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "join-hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "icon",
+          "as": "perks-grid"
+        },
+        "testimonials",
+        "cta-section"
+      ],
+      "default_blend": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "join-hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "icon",
+          "as": "perks-grid"
+        },
+        "testimonials",
+        "cta-section"
+      ],
+      "carafe": "sidebar-main"
+    }
+  ],
+  "tannins": ["search"],
+  "carafes": {
+    "sidebar-main": "Left sidebar with grouped nav (INFO + SPOTLIGHT sections) + main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": "^1.0.0",
+      "cta-section": "^1.0.0",
+      "filter-bar": "^1.0.0",
+      "hero": "^1.0.0",
+      "search-bar": "^1.0.0",
+      "testimonials": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_vintage": {
+    "styles": ["gaming-guild"],
+    "modes": ["dark"]
+  }
+}

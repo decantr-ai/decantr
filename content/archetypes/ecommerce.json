@@ -1,0 +1,25 @@
+{
+  "$schema": "decantr-vignette-v1.0",
+  "id": "ecommerce",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "E-Commerce",
+  "description": "Online retail with product catalog, cart, checkout, and account management.",
+  "tags": [],
+  "compose": [
+    "ecommerce"
+  ],
+  "vintage": {
+    "style": "auradecantism",
+    "recipe": "auradecantism"
+  },
+  "character": [],
+  "overrides": {},
+  "dependencies": {
+    "archetypes": {
+      "ecommerce": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  }
+}

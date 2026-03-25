@@ -1,0 +1,28 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "auth-flow",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "Authentication Flow",
+  "description": "Login, registration, and password recovery with OAuth support",
+  "tags": ["auth", "login", "register", "oauth", "session"],
+  "classification": {
+    "triggers": {
+      "primary": ["login", "register", "sign up", "authentication", "oauth", "sign in"],
+      "secondary": ["password reset", "account creation", "session", "credentials", "forgot password"],
+      "negative": ["public-only", "no-auth", "static-site"]
+    },
+    "implies": ["settings"],
+    "weight": 1.0,
+    "tier": "core"
+  },
+  "pages": [
+    { "id": "login", "default_blend": ["auth-form"], "carafe": "centered" },
+    { "id": "register", "default_blend": [{ "pattern": "auth-form", "preset": "register" }], "carafe": "centered" },
+    { "id": "forgot-password", "default_blend": [{ "pattern": "auth-form", "preset": "reset" }], "carafe": "centered" }
+  ],
+  "tannins": ["auth"],
+  "carafes": { "centered": "Centered card on background for auth flows" },
+  "dependencies": { "patterns": { "auth-form": "^1.0.0" }, "recipes": {}, "styles": {} },
+  "suggested_vintage": { "styles": ["auradecantism", "clean"], "modes": ["dark", "auto"] }
+}

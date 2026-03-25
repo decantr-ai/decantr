@@ -1,0 +1,25 @@
+{
+  "$schema": "decantr-vignette-v1.0",
+  "id": "ecommerce-admin",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "eCommerce Admin",
+  "description": "Admin dashboard for store operations — product catalog management, order processing, customer relationships, inventory tracking, promotions, and sales analytics.",
+  "tags": [],
+  "compose": [
+    "ecommerce-admin"
+  ],
+  "vintage": {
+    "style": "auradecantism",
+    "recipe": "auradecantism"
+  },
+  "character": [],
+  "overrides": {},
+  "dependencies": {
+    "archetypes": {
+      "ecommerce-admin": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  }
+}
