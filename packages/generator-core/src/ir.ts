@@ -85,7 +85,7 @@ function buildPatternNode(
 
   const layout = preset?.blend.layout || 'column';
   const isStandalone = layout === 'hero' || layout === 'row';
-  const contained = pattern && preset ? shouldWrapInCard(pattern, preset, recipe) : true;
+  const contained = pattern && preset ? shouldWrapInCard(pattern, preset, recipe) : false;
   const components = pattern?.components || [];
 
   const patternMeta: IRPatternMeta = {
@@ -99,8 +99,8 @@ function buildPatternNode(
     components,
   };
 
-  const card = contained && !isStandalone
-    ? buildCardWrapping(pattern!, recipe)
+  const card = contained && !isStandalone && pattern
+    ? buildCardWrapping(pattern, recipe)
     : null;
 
   const wireProps = wiring?.props[alias] || wiring?.props[patternId] || null;

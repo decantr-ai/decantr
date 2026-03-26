@@ -89,6 +89,24 @@ function extractBlendRefs(layout: LayoutItem[]): { id: string; explicitPreset?: 
   return refs;
 }
 
+/** Flatten a layout array so column children are promoted to top-level for wiring detection */
+function flattenLayoutForWiring(layout: LayoutItem[]): LayoutItem[] {
+  const flat: LayoutItem[] = [];
+  for (const item of layout) {
+    if (typeof item === 'string') {
+      flat.push(item);
+    } else if (isPatternRef(item)) {
+      flat.push(item);
+    } else if (isColumnLayout(item)) {
+      // Promote column children as string refs
+      for (const col of item.cols) {
+        flat.push(col);
+      }
+    }
+  }
+  return flat;
+}
+
 function routePath(pageId: string, index: number): string {
   if (index === 0) return '/';
   return `/${pageId}`;
@@ -265,8 +283,8 @@ export async function resolveEssence(
       }
     }
 
-    // Detect wiring
-    const wiringResults = detectWirings(page.layout);
+    // Detect wiring (flatten cols so column children are visible)
+    const wiringResults = detectWirings(flattenLayoutForWiring(page.layout));
     const wiring = convertWiring(wiringResults);
 
     resolvedPages.push({ page, patterns, wiring });
