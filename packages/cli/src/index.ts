@@ -1,10 +1,12 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseArgs } from 'node:util';
-import { createInterface } from 'node:readline';
 import { validateEssence, evaluateGuard } from '@decantr/essence-spec';
 import type { EssenceFile } from '@decantr/essence-spec';
 import { createResolver, createRegistryClient } from '@decantr/registry';
+import { detectProject, formatDetection } from './detect.js';
+import { runInteractivePrompts, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
+import { scaffoldProject } from './scaffold.js';
+import { RegistryClient, syncRegistry } from './registry.js';
 
 // ── Helpers ──
 
@@ -23,7 +25,6 @@ function dim(text: string): string { return `${DIM}${text}${RESET}`; }
 function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
 
 function getContentRoot(): string {
-  // Bundled content relative to this package (monorepo dev)
   const bundled = join(import.meta.dirname, '..', '..', '..', 'content');
   return process.env.DECANTR_CONTENT_ROOT || bundled;
 }
@@ -59,12 +60,10 @@ async function cmdGet(type: string, id: string) {
     return;
   }
 
-  // Try local content first, fall back to API
   const resolver = getResolver();
   let result = await resolver.resolve(type as any, id);
 
   if (!result) {
-    // Fall back to live registry API
     const apiType = type === 'blueprint' ? 'blueprints' : `${type}s`;
     try {
       const res = await fetch(`https://decantr-registry.fly.dev/v1/${apiType}/${id}`);
@@ -75,7 +74,7 @@ async function cmdGet(type: string, id: string) {
           return;
         }
       }
-    } catch { /* API unavailable, fall through */ }
+    } catch { /* API unavailable */ }
 
     console.error(error(`${type} "${id}" not found.`));
     process.exitCode = 1;
@@ -118,7 +117,6 @@ async function cmdValidate(path?: string) {
     process.exitCode = 1;
   }
 
-  // Run guard rules
   try {
     const violations = evaluateGuard(essence, {});
     if (violations.length > 0) {
@@ -141,7 +139,6 @@ async function cmdList(type: string) {
     return;
   }
 
-  // Try local content first
   const { readdirSync } = await import('node:fs');
   const dir = join(getContentRoot(), type);
   let found = false;
@@ -159,7 +156,6 @@ async function cmdList(type: string) {
   } catch { /* local not available */ }
 
   if (!found) {
-    // Fall back to live registry API
     try {
       const res = await fetch(`https://decantr-registry.fly.dev/v1/${type}`);
       if (res.ok) {
@@ -175,226 +171,328 @@ async function cmdList(type: string) {
   }
 }
 
-// ── Interactive prompts ──
+// ── Init command (updated) ──
 
-function ask(question: string, defaultValue?: string): Promise<string> {
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  const prompt = defaultValue ? `${question} ${dim(`(${defaultValue})`)}: ` : `${question}: `;
-  return new Promise((resolve) => {
-    rl.question(prompt, (answer) => {
-      rl.close();
-      resolve(answer.trim() || defaultValue || '');
-    });
-  });
+interface InitArgs {
+  blueprint?: string;
+  archetype?: string;
+  theme?: string;
+  mode?: string;
+  shape?: string;
+  target?: string;
+  guard?: string;
+  density?: string;
+  shell?: string;
+  personality?: string;
+  features?: string;
+  existing?: boolean;
+  offline?: boolean;
+  yes?: boolean;
+  registry?: string;
 }
 
-async function select(question: string, options: string[], defaultIdx = 0): Promise<string> {
-  console.log(`\n${BOLD}${question}${RESET}`);
-  for (let i = 0; i < options.length; i++) {
-    const marker = i === defaultIdx ? `${GREEN}>${RESET}` : ' ';
-    console.log(`  ${marker} ${i + 1}. ${options[i]}`);
-  }
-  const answer = await ask(`Choose (1-${options.length})`, String(defaultIdx + 1));
-  const idx = parseInt(answer, 10) - 1;
-  return options[Math.max(0, Math.min(idx, options.length - 1))];
-}
+async function cmdInit(args: InitArgs) {
+  const projectRoot = process.cwd();
 
-// ── Init command ──
+  console.log(heading('Decantr Project Setup'));
 
-async function cmdInit() {
-  console.log(heading('Create a new Decantr project'));
+  // Detect project configuration
+  const detected = detectProject(projectRoot);
 
-  // Check if essence already exists
-  const essencePath = join(process.cwd(), 'decantr.essence.json');
-  if (existsSync(essencePath)) {
-    const overwrite = await ask('decantr.essence.json already exists. Overwrite?', 'n');
-    if (overwrite.toLowerCase() !== 'y') {
+  // Check for existing essence
+  if (detected.existingEssence && !args.existing) {
+    console.log(`${YELLOW}Warning: decantr.essence.json already exists.${RESET}`);
+    const overwrite = await confirm('Overwrite existing configuration?', false);
+    if (!overwrite) {
       console.log(dim('Cancelled.'));
       return;
     }
   }
 
-  // Fetch available archetypes from API
-  let archetypes: Array<{ id: string; name?: string; description?: string }> = [];
-  try {
-    const res = await fetch('https://decantr-registry.fly.dev/v1/archetypes');
-    if (res.ok) {
-      const data = await res.json() as { items: typeof archetypes };
-      archetypes = data.items;
+  // Create registry client
+  const registryClient = new RegistryClient({
+    cacheDir: join(projectRoot, '.decantr', 'cache'),
+    apiUrl: args.registry,
+    offline: args.offline,
+  });
+
+  // Fetch registry content
+  console.log(dim('Fetching registry content...'));
+
+  const [archetypesResult, blueprintsResult, themesResult] = await Promise.all([
+    registryClient.fetchArchetypes(),
+    registryClient.fetchBlueprints(),
+    registryClient.fetchThemes(),
+  ]);
+
+  const registrySource = archetypesResult.source.type;
+  if (registrySource === 'bundled') {
+    console.log(dim('Using bundled content (API unavailable)'));
+  }
+
+  const archetypes = archetypesResult.data.items;
+  const blueprints = blueprintsResult.data.items;
+  const themes = themesResult.data.items;
+
+  let options;
+
+  if (args.yes) {
+    // Non-interactive mode: use flags with defaults
+    const flags = parseFlags(args as Record<string, unknown>, detected);
+    options = mergeWithDefaults(flags, detected);
+  } else {
+    // Interactive mode
+    options = await runInteractivePrompts(detected, archetypes, blueprints, themes);
+  }
+
+  // Fetch blueprint data if selected
+  let blueprintData;
+  if (options.blueprint) {
+    const result = await registryClient.fetchBlueprint(options.blueprint);
+    if (result) {
+      blueprintData = result.data as {
+        id: string;
+        pages?: Array<{ id: string; shell: string; default_layout: string[] }>;
+        features?: string[];
+      };
     }
-  } catch { /* offline fallback below */ }
-
-  if (archetypes.length === 0) {
-    archetypes = [
-      { id: 'saas-dashboard', description: 'Analytics dashboard with KPIs and data tables' },
-      { id: 'ecommerce', description: 'Online store with product catalog' },
-      { id: 'portfolio', description: 'Personal or agency portfolio site' },
-      { id: 'marketing-landing', description: 'Product marketing landing page' },
-      { id: 'gaming-platform', description: 'Gaming community hub' },
-      { id: 'content-site', description: 'Blog or content site' },
-    ];
   }
 
-  // Select archetype — "blank canvas" first
-  const archetypeOptions = [
-    `none ${dim('— Start from scratch (blank canvas)')}`,
-    ...archetypes.map(a => `${a.id} ${dim(`— ${a.description || ''}`)}`),
-  ];
-  const selectedArchetype = await select('What are you building?', archetypeOptions);
-  const archetypeId = selectedArchetype.split(' ')[0];
-  const isBlank = archetypeId === 'none';
+  // Scaffold the project
+  console.log(heading('Scaffolding project...'));
 
-  // Fetch available themes from API
-  let themes: Array<{ id: string; description?: string }> = [];
-  try {
-    const res = await fetch('https://decantr-registry.fly.dev/v1/themes');
-    if (res.ok) {
-      const data = await res.json() as { items: typeof themes };
-      themes = data.items;
-    }
-  } catch { /* offline fallback */ }
+  const result = scaffoldProject(
+    projectRoot,
+    options,
+    detected,
+    blueprintData,
+    registrySource as 'api' | 'bundled'
+  );
 
-  if (themes.length === 0) {
-    themes = [
-      { id: 'luminarum', description: 'Dark geometric canvas with vibrant accents' },
-      { id: 'clean', description: 'Professional, minimal, universal' },
-      { id: 'glassmorphism', description: 'Frosted glass aesthetic' },
-    ];
+  // Output summary
+  console.log(success('\nProject scaffolded successfully!'));
+  console.log('');
+  console.log(`  ${cyan('decantr.essence.json')}  Design specification`);
+  console.log(`  ${cyan('DECANTR.md')}            LLM instructions`);
+  console.log(`  ${cyan('.decantr/project.json')} Project state`);
+  console.log(`  ${cyan('.decantr/context/')}     Task-specific guides`);
+
+  if (result.gitignoreUpdated) {
+    console.log(`  ${dim('.gitignore updated to exclude .decantr/cache/')}`);
   }
-
-  const themeOptions = themes.map(t => `${t.id} ${dim(`— ${t.description || ''}`)}`);
-  const selectedTheme = await select('Choose a theme', themeOptions);
-  const themeId = selectedTheme.split(' ')[0];
-
-  // Mode
-  const mode = await select('Mode', ['dark', 'light'], 0);
-
-  // Shape
-  const shape = await select('Shape', ['pill', 'rounded', 'sharp'], 0);
-
-  // Target framework
-  const target = await select('Target framework', ['react', 'vue', 'svelte', 'html'], 0);
-
-  // Fetch archetype to get page structure (skip if blank canvas)
-  let structure: Array<{ id: string; shell: string; layout: string[] }> = [];
-  let features: string[] = [];
-
-  if (!isBlank) {
-    try {
-      const res = await fetch(`https://decantr-registry.fly.dev/v1/archetypes/${archetypeId}`);
-      if (res.ok) {
-        const data = await res.json() as { pages?: Array<{ id: string; shell: string; default_layout: string[] }>; features?: string[] };
-        if (data.pages) {
-          structure = data.pages.map(p => ({
-            id: p.id,
-            shell: p.shell || 'sidebar-main',
-            layout: p.default_layout || [],
-          }));
-        }
-        if (data.features) features = data.features;
-      }
-    } catch { /* use defaults */ }
-  }
-
-  if (structure.length === 0) {
-    structure = [{ id: 'home', shell: 'full-bleed', layout: [] }];
-  }
-
-  // Build essence
-  const essence: Record<string, unknown> = {
-    version: '2.0.0',
-    theme: {
-      style: themeId,
-      mode,
-      recipe: themeId,
-      shape,
-    },
-    personality: ['professional'],
-    platform: { type: 'spa', routing: 'hash' },
-    structure,
-    features,
-    guard: { enforce_style: true, enforce_recipe: true, mode: 'strict' },
-    density: { level: 'comfortable', content_gap: '_gap4' },
-    target,
-  };
-
-  if (!isBlank) {
-    essence.archetype = archetypeId;
-  }
-
-  // Write file
-  writeFileSync(essencePath, JSON.stringify(essence, null, 2) + '\n');
-  console.log(success(`\nCreated decantr.essence.json`));
-  console.log(dim(`  Archetype: ${isBlank ? 'none (blank canvas)' : archetypeId}`));
-  console.log(dim(`  Theme: ${themeId} (${mode})`));
-  console.log(dim(`  Pages: ${structure.map(s => s.id).join(', ')}`));
-  console.log(dim(`  Target: ${target}`));
 
   // Validate
+  const essenceContent = readFileSync(result.essencePath, 'utf-8');
+  const essence = JSON.parse(essenceContent);
   const validation = validateEssence(essence);
+
   if (validation.valid) {
-    console.log(success('  Validation: passed'));
+    console.log(success('\nValidation passed.'));
   } else {
-    console.log(error(`  Validation: ${validation.errors.join(', ')}`));
+    console.log(error(`\nValidation warnings: ${validation.errors.join(', ')}`));
   }
 
-  // Build the AI prompt
-  const pageList = structure.map(s => {
-    const patterns = s.layout.length > 0 ? ` using patterns: ${s.layout.join(', ')}` : '';
-    return `  - "${s.id}" page (${s.shell} shell)${patterns}`;
-  }).join('\n');
-
-  const featureList = features.length > 0 ? `\nFeatures to include: ${features.join(', ')}` : '';
-
-  const prompt = `I have a decantr.essence.json file in this project that defines my design spec. Read it before generating any code.
-
-Build me a ${isBlank ? target + ' application' : archetypeId.replace(/-/g, ' ')} with the following structure:
-${pageList}
-${featureList}
-Theme: ${themeId} (${mode} mode, ${shape} shape)
-Target framework: ${target}
-
-Use the patterns listed in each page's layout array to determine what UI components to build. Follow the theme and density settings from the essence file. After generating code, I'll run "decantr validate" to check for design drift.`;
-
-  console.log(heading('Copy this prompt into your AI assistant:'));
-  console.log('┌──────────────────────────────────────────────────────────────┐');
-  console.log('│');
-  prompt.split('\n').forEach(line => {
-    console.log(`│  ${line}`);
-  });
-  console.log('│');
-  console.log('└──────────────────────────────────────────────────────────────┘');
+  // Next steps
+  console.log(heading('Next steps'));
+  console.log('1. Review DECANTR.md to understand the methodology');
+  console.log('2. Share DECANTR.md with your AI assistant');
+  console.log('3. Start building! The AI will follow the essence spec.');
   console.log('');
+
+  if (registrySource === 'bundled') {
+    console.log(dim('Run "decantr sync" when online to get the latest registry content.'));
+  }
 }
+
+// ── Status command ──
+
+async function cmdStatus() {
+  const projectRoot = process.cwd();
+  const essencePath = join(projectRoot, 'decantr.essence.json');
+  const projectJsonPath = join(projectRoot, '.decantr', 'project.json');
+
+  console.log(heading('Decantr Project Status'));
+
+  // Check essence
+  if (!existsSync(essencePath)) {
+    console.log(`${RED}No decantr.essence.json found.${RESET}`);
+    console.log(dim('Run "decantr init" to create one.'));
+    return;
+  }
+
+  // Validate essence
+  try {
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8'));
+    const validation = validateEssence(essence);
+
+    console.log(`${BOLD}Essence:${RESET}`);
+    if (validation.valid) {
+      console.log(`  ${GREEN}Valid${RESET}`);
+    } else {
+      console.log(`  ${RED}Invalid: ${validation.errors.join(', ')}${RESET}`);
+    }
+
+    console.log(`  Theme: ${essence.theme?.style || 'unknown'} (${essence.theme?.mode || 'unknown'})`);
+    console.log(`  Guard: ${essence.guard?.mode || 'unknown'}`);
+    console.log(`  Pages: ${(essence.structure || []).length}`);
+  } catch (e) {
+    console.log(`  ${RED}Error reading essence: ${(e as Error).message}${RESET}`);
+  }
+
+  // Check project.json
+  console.log('');
+  console.log(`${BOLD}Sync Status:${RESET}`);
+
+  if (existsSync(projectJsonPath)) {
+    try {
+      const projectJson = JSON.parse(readFileSync(projectJsonPath, 'utf-8'));
+      const syncStatus = projectJson.sync?.status || 'unknown';
+      const lastSync = projectJson.sync?.lastSync || 'never';
+      const source = projectJson.sync?.registrySource || 'unknown';
+
+      const statusColor = syncStatus === 'synced' ? GREEN : YELLOW;
+      console.log(`  Status: ${statusColor}${syncStatus}${RESET}`);
+      console.log(`  Last sync: ${dim(lastSync)}`);
+      console.log(`  Source: ${dim(source)}`);
+    } catch {
+      console.log(`  ${YELLOW}Could not read project.json${RESET}`);
+    }
+  } else {
+    console.log(`  ${YELLOW}No .decantr/project.json found${RESET}`);
+    console.log(dim('  Run "decantr init" to create project files.'));
+  }
+}
+
+// ── Sync command ──
+
+async function cmdSync() {
+  const projectRoot = process.cwd();
+  const cacheDir = join(projectRoot, '.decantr', 'cache');
+
+  console.log(heading('Syncing registry content...'));
+
+  const result = await syncRegistry(cacheDir);
+
+  if (result.source === 'api') {
+    console.log(success('Sync completed successfully.'));
+    if (result.synced.length > 0) {
+      console.log(`  Synced: ${result.synced.join(', ')}`);
+    }
+    if (result.failed.length > 0) {
+      console.log(`  ${YELLOW}Failed: ${result.failed.join(', ')}${RESET}`);
+    }
+  } else {
+    console.log(`${YELLOW}Could not sync: API unavailable${RESET}`);
+    console.log(dim('Using bundled content.'));
+  }
+}
+
+// ── Audit command ──
+
+async function cmdAudit() {
+  const projectRoot = process.cwd();
+  const essencePath = join(projectRoot, 'decantr.essence.json');
+
+  console.log(heading('Auditing project...'));
+
+  if (!existsSync(essencePath)) {
+    console.log(`${RED}No decantr.essence.json found.${RESET}`);
+    process.exitCode = 1;
+    return;
+  }
+
+  try {
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
+
+    // Validate essence
+    const validation = validateEssence(essence);
+    if (!validation.valid) {
+      console.log(`${RED}Essence validation failed:${RESET}`);
+      for (const err of validation.errors) {
+        console.log(`  ${RED}${err}${RESET}`);
+      }
+      process.exitCode = 1;
+      return;
+    }
+
+    console.log(success('Essence is valid.'));
+
+    // Check guard violations
+    const violations = evaluateGuard(essence, {});
+    if (violations.length > 0) {
+      console.log('');
+      console.log(`${YELLOW}Guard violations:${RESET}`);
+      for (const v of violations) {
+        const vr = v as Record<string, string>;
+        console.log(`  ${YELLOW}[${vr.rule}]${RESET} ${vr.message}`);
+      }
+    } else {
+      console.log(success('No guard violations.'));
+    }
+
+    // Summary
+    console.log('');
+    console.log(`${BOLD}Summary:${RESET}`);
+    console.log(`  Pages defined: ${(essence.structure as Array<unknown>).length}`);
+    console.log(`  Guard mode: ${(essence.guard as Record<string, string>).mode}`);
+    console.log(`  Theme: ${(essence.theme as Record<string, string>).style}`);
+
+  } catch (e) {
+    console.log(`${RED}Error: ${(e as Error).message}${RESET}`);
+    process.exitCode = 1;
+  }
+}
+
+// ── Help ──
 
 function cmdHelp() {
   console.log(`
 ${BOLD}decantr${RESET} — Design intelligence for AI-generated UI
 
 ${BOLD}Usage:${RESET}
-  decantr init
-  decantr search <query> [--type pattern|archetype|recipe|theme]
+  decantr init [options]
+  decantr status
+  decantr sync
+  decantr audit
+  decantr search <query> [--type <type>]
   decantr get <type> <id>
   decantr list <type>
   decantr validate [path]
   decantr help
 
+${BOLD}Init Options:${RESET}
+  --blueprint, -b    Blueprint ID
+  --theme            Theme ID
+  --mode             Color mode: dark | light | auto
+  --shape            Border shape: pill | rounded | sharp
+  --target           Framework: react | vue | svelte | nextjs | html
+  --guard            Guard mode: creative | guided | strict
+  --density          Spacing: compact | comfortable | spacious
+  --shell            Default shell layout
+  --existing         Initialize in existing project
+  --offline          Force offline mode
+  --yes, -y          Accept defaults, skip confirmations
+  --registry         Custom registry URL
+
 ${BOLD}Commands:${RESET}
-  ${cyan('init')}      Create a new decantr.essence.json — pick an archetype, theme, and target
-  ${cyan('search')}    Search the registry for patterns, archetypes, recipes, themes
-  ${cyan('get')}       Get full details of a registry item as JSON
-  ${cyan('list')}      List all items of a type (patterns, archetypes, recipes, themes, blueprints)
-  ${cyan('validate')}  Validate a decantr.essence.json file against the schema and guard rules
-  ${cyan('help')}      Show this help message
+  ${cyan('init')}      Initialize a new Decantr project with full scaffolding
+  ${cyan('status')}    Show project status and sync state
+  ${cyan('sync')}      Sync registry content from API
+  ${cyan('audit')}     Validate essence and check for drift
+  ${cyan('search')}    Search the registry
+  ${cyan('get')}       Get full details of a registry item
+  ${cyan('list')}      List items by type
+  ${cyan('validate')}  Validate essence file
+  ${cyan('help')}      Show this help
 
 ${BOLD}Examples:${RESET}
   decantr init
+  decantr init --blueprint=saas-dashboard --theme=luminarum --yes
+  decantr status
+  decantr sync
+  decantr audit
   decantr search dashboard
-  decantr search kpi --type pattern
-  decantr get pattern kpi-grid
-  decantr get recipe luminarum
   decantr list patterns
-  decantr validate
 `);
 }
 
@@ -411,7 +509,45 @@ async function main() {
 
   switch (command) {
     case 'init': {
-      await cmdInit();
+      // Parse init flags
+      const initArgs: InitArgs = {};
+      for (let i = 1; i < args.length; i++) {
+        const arg = args[i];
+        if (arg === '--yes' || arg === '-y') {
+          initArgs.yes = true;
+        } else if (arg === '--offline') {
+          initArgs.offline = true;
+        } else if (arg === '--existing') {
+          initArgs.existing = true;
+        } else if (arg.startsWith('--')) {
+          const [key, value] = arg.slice(2).split('=');
+          if (value) {
+            (initArgs as Record<string, string>)[key] = value;
+          } else if (args[i + 1] && !args[i + 1].startsWith('-')) {
+            (initArgs as Record<string, string>)[key] = args[++i];
+          }
+        } else if (arg.startsWith('-')) {
+          const key = arg.slice(1);
+          if (key === 'b' && args[i + 1]) initArgs.blueprint = args[++i];
+          if (key === 'y') initArgs.yes = true;
+        }
+      }
+      await cmdInit(initArgs);
+      break;
+    }
+
+    case 'status': {
+      await cmdStatus();
+      break;
+    }
+
+    case 'sync': {
+      await cmdSync();
+      break;
+    }
+
+    case 'audit': {
+      await cmdAudit();
       break;
     }
 
