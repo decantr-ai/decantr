@@ -3,7 +3,7 @@
   "private": true,
   "description": "Design intelligence layer for AI-generated web applications",
   "scripts": {
-    "build": "pnpm -r run build",
+    "build": "pnpm --filter @decantr/essence-spec --filter @decantr/registry run build && pnpm --filter @decantr/generator-core --filter @decantr/mcp-server run build && pnpm --filter @decantr/generator-decantr --filter @decantr/generator-react run build && pnpm --filter @decantr/cli run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
