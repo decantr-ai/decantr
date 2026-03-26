@@ -162,6 +162,10 @@ export function buildPageIR(
         ? Object.values(normalizedSpans).reduce((a, b) => a + b, 0)
         : cols.length;
 
+      // AUTO: Pass through multi-breakpoint and container query config from ColumnLayout
+      const breakpoints = item.breakpoints?.map(bp => ({ at: bp.at, cols: bp.cols })) || null;
+      const responsive = item.responsive || null;
+
       const gridNode: IRGridNode = {
         type: 'grid',
         id: `grid-${cols.join('-')}`,
@@ -169,6 +173,8 @@ export function buildPageIR(
         cols: totalCols,
         spans: normalizedSpans,
         breakpoint,
+        breakpoints,
+        responsive,
         spatial: { gap: density.gap },
       };
       children.push(gridNode);

@@ -63,6 +63,10 @@ export interface ColumnLayout {
   cols: string[];
   at?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   span?: Record<string, number>;
+  // AUTO: Multi-breakpoint grid — array of { at, cols } entries for cascading breakpoints
+  breakpoints?: { at: string; cols: number }[];
+  // AUTO: "container" uses container queries instead of viewport breakpoints
+  responsive?: 'viewport' | 'container';
 }
 
 export interface StructurePage {

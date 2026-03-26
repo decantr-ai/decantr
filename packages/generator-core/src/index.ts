@@ -17,6 +17,7 @@ export type {
   IRShellNode,
   IRPageNode,
   IRPatternNode,
+  IRBreakpointEntry,
   IRGridNode,
   IRNavNode,
   IRStoreNode,

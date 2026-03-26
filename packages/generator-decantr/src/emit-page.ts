@@ -2,7 +2,11 @@ import type {
   IRPageNode, IRPatternNode, IRGridNode, IRNode,
   GeneratedFile,
 } from '@decantr/generator-core';
-import { gridAtoms, spanAtom, surfaceAtoms, gapAtom } from './atoms.js';
+import {
+  gridAtoms, spanAtom, surfaceAtoms, gapAtom,
+  multiBreakpointGridAtoms, containerGridAtoms,
+  responsiveSpanAtom, containerSpanAtom,
+} from './atoms.js';
 import { parseImports, mergeImports, renderImports } from './imports.js';
 import type { VisualEffectsConfig } from './recipe-decorator.js';
 import { emitRecipeDecorationHelper } from './recipe-decorator.js';
@@ -111,20 +115,46 @@ function emitPatternFunction(node: IRPatternNode, densityGap: string): string {
 }
 
 function emitGridNode(node: IRGridNode, densityGap: string, anim: ResolvedAnimation): string {
-  const atoms = gridAtoms(node.cols, node.spans, node.breakpoint, densityGap);
+  // AUTO: Determine grid atoms based on responsive mode and breakpoint config
+  const isContainer = node.responsive === 'container';
+  const hasMultiBreakpoints = node.breakpoints && node.breakpoints.length > 0;
+
+  let atoms: string;
+  if (isContainer && hasMultiBreakpoints) {
+    atoms = containerGridAtoms(node.breakpoints!, densityGap);
+  } else if (hasMultiBreakpoints) {
+    atoms = multiBreakpointGridAtoms(node.breakpoints!, densityGap);
+  } else {
+    atoms = gridAtoms(node.cols, node.spans, node.breakpoint, densityGap);
+  }
+
   // AUTO: Add d-stagger class to grid container for sequential animation delays
   const staggerClass = anim.stagger ? ' d-stagger' : '';
+
+  // AUTO: Resolve the effective breakpoint for responsive span atoms
+  const effectiveBreakpoint = node.breakpoint || (node.breakpoints?.[0]?.at) || null;
 
   const children = node.children.map((child, i) => {
     const patternNode = child as IRPatternNode;
     const call = emitPatternCall(patternNode, densityGap, anim);
     // AUTO: Stagger items get d-stagger-item class and --stagger-index CSS variable
-    const staggerAttrs = anim.stagger
-      ? `class: css('d-stagger-item'), style: '--stagger-index: ${i}; --stagger-delay: ${anim.staggerDelay}ms', `
+    const staggerItemClass = anim.stagger ? ' d-stagger-item' : '';
+    const staggerStyle = anim.stagger
+      ? `, style: '--stagger-index: ${i}; --stagger-delay: ${anim.staggerDelay}ms'`
       : '';
+
     if (node.spans) {
       const weight = node.spans[patternNode.id] || 1;
-      return `div({ ${staggerAttrs}class: css('${spanAtom(weight)}${anim.stagger ? ' d-stagger-item' : ''}')${anim.stagger ? `, style: '--stagger-index: ${i}; --stagger-delay: ${anim.staggerDelay}ms'` : ''} },\n  ${call}\n)`;
+      // AUTO: Use breakpoint-prefixed span atoms when grid has a responsive breakpoint
+      let spanClass: string;
+      if (isContainer && effectiveBreakpoint) {
+        spanClass = containerSpanAtom(weight, effectiveBreakpoint);
+      } else if (effectiveBreakpoint) {
+        spanClass = responsiveSpanAtom(weight, effectiveBreakpoint);
+      } else {
+        spanClass = spanAtom(weight);
+      }
+      return `div({ class: css('${spanClass}${staggerItemClass}')${staggerStyle} },\n  ${call}\n)`;
     }
     if (anim.stagger) {
       return `div({ class: css('d-stagger-item'), style: '--stagger-index: ${i}; --stagger-delay: ${anim.staggerDelay}ms' },\n  ${call}\n)`;

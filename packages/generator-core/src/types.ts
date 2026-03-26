@@ -141,11 +141,21 @@ export interface IRPatternNode extends IRNode {
   wireProps: Record<string, string> | null;
 }
 
+// AUTO: Breakpoint entry for multi-breakpoint responsive grids
+export interface IRBreakpointEntry {
+  at: string;   // "sm" | "md" | "lg" | "xl" | "2xl"
+  cols: number;  // column count at this breakpoint
+}
+
 export interface IRGridNode extends IRNode {
   type: 'grid';
   cols: number;
   spans: Record<string, number> | null; // null = equal width
-  breakpoint: string | null;            // responsive collapse point
+  breakpoint: string | null;            // responsive collapse point (single breakpoint)
+  // AUTO: Multi-breakpoint support — overrides breakpoint when present
+  breakpoints?: IRBreakpointEntry[] | null;
+  // AUTO: "container" enables container query atoms instead of viewport breakpoints
+  responsive?: 'viewport' | 'container' | null;
 }
 
 export interface IRNavNode extends IRNode {
