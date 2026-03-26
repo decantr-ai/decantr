@@ -100,16 +100,16 @@ describe('emitTheme', () => {
     expect(toggle!.content).toContain("from '@/components/ui/dropdown-menu'");
   });
 
-  it('ThemeToggle uses Sun, Moon, Monitor icons from deep lucide paths', () => {
+  it('ThemeToggle uses Sun, Moon, Monitor icons from lucide-react barrel', () => {
     const app = makeApp();
     const files = emitTheme(app);
     const toggle = files.find(f => f.path === 'src/components/ThemeToggle.tsx');
 
-    expect(toggle!.content).toContain("from 'lucide-react/dist/esm/icons/sun'");
-    expect(toggle!.content).toContain("from 'lucide-react/dist/esm/icons/moon'");
-    expect(toggle!.content).toContain("from 'lucide-react/dist/esm/icons/monitor'");
-    // No barrel import
-    expect(toggle!.content).not.toMatch(/from ['"]lucide-react['"]/);
+    expect(toggle!.content).toContain("from 'lucide-react'");
+    expect(toggle!.content).toContain('Sun');
+    expect(toggle!.content).toContain('Moon');
+    expect(toggle!.content).toContain('Monitor');
+    expect(toggle!.content).not.toContain("from 'lucide-react/dist/esm/icons/");
   });
 
   it('does NOT generate ThemeToggle when mode is fixed (dark)', () => {

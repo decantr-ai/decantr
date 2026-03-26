@@ -188,13 +188,13 @@ describe('emitApp (React)', () => {
     expect(result.content).not.toContain('SidebarMenu');
   });
 
-  it('top-nav-main uses deep lucide-react imports (no barrel)', () => {
+  it('top-nav-main uses lucide-react barrel imports', () => {
     const app = makeApp();
     app.shell.config.type = 'top-nav-main';
     const result = emitApp(app);
 
-    expect(result.content).toContain("from 'lucide-react/dist/esm/icons/");
-    expect(result.content).not.toMatch(/from ['"]lucide-react['"]/);
+    expect(result.content).toContain("from 'lucide-react'");
+    expect(result.content).not.toContain("from 'lucide-react/dist/esm/icons/");
   });
 
   it('top-nav-main uses React.lazy and Suspense for pages', () => {

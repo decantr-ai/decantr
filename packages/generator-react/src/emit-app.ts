@@ -75,14 +75,9 @@ for (const [kebab, pascal] of Object.entries(LUCIDE_ICONS)) {
   LUCIDE_ICON_PATHS[pascal] = kebab;
 }
 
-/** Generate per-icon deep imports instead of barrel import (Vercel best practice) */
+/** Generate lucide-react icon imports */
 function lucideImportLines(icons: string[]): string {
-  return icons
-    .map(icon => {
-      const kebab = LUCIDE_ICON_PATHS[icon] || icon.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-      return `import { ${icon} } from 'lucide-react/dist/esm/icons/${kebab}';`;
-    })
-    .join('\n');
+  return `import { ${icons.join(', ')} } from 'lucide-react';`;
 }
 
 function buildSidebarMainApp(app: IRAppNode): string {
@@ -503,11 +498,11 @@ function wrapWithAuth(content: string): string {
     `import ProtectedRoute from '@/components/ProtectedRoute';\n`;
   const loginPageImport = `const LoginPage = React.lazy(() => import('./pages/LoginPage.tsx'));\n`;
 
-  // Insert auth imports before the first const (page lazy imports)
-  content = content.replace(
-    /^(import .+\n)+/m,
-    (match) => match + authImports,
-  );
+  // Insert auth imports before the first blank line (end of import block)
+  const firstBlank = content.indexOf('\n\n');
+  if (firstBlank !== -1) {
+    content = content.slice(0, firstBlank) + '\n' + authImports + content.slice(firstBlank);
+  }
 
   // Insert LoginPage lazy import after the other page lazy imports
   content = content.replace(
@@ -553,13 +548,13 @@ function wrapWithAuth(content: string): string {
 // AUTO: Wrap app content with ThemeProvider for dark/light mode support.
 // ThemeProvider wraps inside the Router so useTheme is available to all route components.
 function wrapWithTheme(content: string): string {
-  // Add ThemeProvider import after the last existing import line
-  const themeImport = `import { ThemeProvider } from '@/contexts/ThemeContext';\n`;
+  // Add ThemeProvider import before the first blank line (end of import block)
+  const themeImport = `import { ThemeProvider } from '@/contexts/ThemeContext';`;
 
-  content = content.replace(
-    /^(import .+\n)+/m,
-    (match) => match + themeImport,
-  );
+  const firstBlank = content.indexOf('\n\n');
+  if (firstBlank !== -1) {
+    content = content.slice(0, firstBlank) + '\n' + themeImport + content.slice(firstBlank);
+  }
 
   // Wrap the Router's children in ThemeProvider
   content = content.replace(

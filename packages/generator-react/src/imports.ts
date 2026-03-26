@@ -8,7 +8,21 @@ export function renderReactImports(imports: Map<string, string[]>): string {
   for (const mod of order) {
     const names = imports.get(mod);
     if (names && names.length > 0) {
-      lines.push(`import { ${[...new Set(names)].sort().join(', ')} } from '${mod}';`);
+      const unique = [...new Set(names)];
+      // React requires a default import, not a named one
+      if (mod === 'react') {
+        const hasDefault = unique.includes('React');
+        const named = unique.filter(n => n !== 'React').sort();
+        if (hasDefault && named.length > 0) {
+          lines.push(`import React, { ${named.join(', ')} } from '${mod}';`);
+        } else if (hasDefault) {
+          lines.push(`import React from '${mod}';`);
+        } else if (named.length > 0) {
+          lines.push(`import { ${named.join(', ')} } from '${mod}';`);
+        }
+      } else {
+        lines.push(`import { ${unique.sort().join(', ')} } from '${mod}';`);
+      }
     }
   }
 

@@ -110,9 +110,7 @@ export function useTheme(): ThemeContextValue {
 /** Emit src/components/ThemeToggle.tsx — dropdown with Light/Dark/System options */
 function emitThemeToggle(): GeneratedFile {
   const content = `import React from 'react';
-import { Sun } from 'lucide-react/dist/esm/icons/sun';
-import { Moon } from 'lucide-react/dist/esm/icons/moon';
-import { Monitor } from 'lucide-react/dist/esm/icons/monitor';
+import { Sun, Moon, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,

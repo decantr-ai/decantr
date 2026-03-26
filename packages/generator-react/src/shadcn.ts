@@ -509,9 +509,8 @@ export const PATTERN_TEMPLATE_MAP: Record<string, PatternShadcnTemplate> = {
       ['@/components/ui/card', ['Card', 'CardContent', 'CardHeader', 'CardTitle']],
     ]),
     body: (gap: string) => [
-      `    {/* AUTO: Replace with Recharts/Chart.js component */}`,
-      `    {/* import { LineChart, Line, BarChart, Bar, PieChart, Pie, AreaChart, Area, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts"; */}`,
       `    <div className="grid grid-cols-1 lg:grid-cols-2 ${gap}">`,
+      `      {/* AUTO: Replace with Recharts/Chart.js component */}`,
       `      {[`,
       `        { title: "Revenue Over Time", type: "line", legends: ["Revenue", "Expenses"] },`,
       `        { title: "Users by Region", type: "bar", legends: ["NA", "EU", "APAC"] },`,
@@ -546,8 +545,8 @@ export const PATTERN_TEMPLATE_MAP: Record<string, PatternShadcnTemplate> = {
       ['@/components/ui/card', ['Card', 'CardContent', 'CardHeader', 'CardTitle']],
     ]),
     body: (gap: string) => [
-      `    {/* AUTO: Replace with Recharts/Chart.js component */}`,
       `    <div className="flex flex-row ${gap} overflow-auto">`,
+      `      {/* AUTO: Replace with Recharts/Chart.js component */}`,
       `      {[`,
       `        { title: "Revenue Over Time", type: "line" },`,
       `        { title: "Users by Region", type: "bar" },`,
@@ -572,8 +571,8 @@ export const PATTERN_TEMPLATE_MAP: Record<string, PatternShadcnTemplate> = {
       ['@/components/ui/card', ['Card', 'CardContent', 'CardHeader', 'CardTitle']],
     ]),
     body: (gap: string) => [
-      `    {/* AUTO: Replace with Recharts/Chart.js component */}`,
       `    <div className="grid grid-cols-1 lg:grid-cols-2 ${gap}">`,
+      `      {/* AUTO: Replace with Recharts/Chart.js component */}`,
       `      <Card className="lg:col-span-2">`,
       `        <CardHeader>`,
       `          <CardTitle className="text-sm font-medium">Revenue Overview</CardTitle>`,

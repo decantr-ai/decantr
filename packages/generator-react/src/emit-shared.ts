@@ -248,13 +248,30 @@ export function emitIndexHtml(): GeneratedFile {
   };
 }
 
+/** Emit src/main.tsx — React entry point */
+export function emitMain(): GeneratedFile {
+  return {
+    path: 'src/main.tsx',
+    content: `import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './globals.css';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
+`,
+  };
+}
+
 /** Emit 404 page */
 export function emitNotFound(): GeneratedFile {
   return {
     path: 'src/pages/not-found.tsx',
     content: `import React from 'react';
-import { AlertCircle } from 'lucide-react/dist/esm/icons/alert-circle';
-import { ArrowLeft } from 'lucide-react/dist/esm/icons/arrow-left';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 

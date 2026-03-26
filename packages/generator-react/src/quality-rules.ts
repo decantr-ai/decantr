@@ -50,16 +50,6 @@ function checkNoBarrelImports(
 ) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    // Flag: import { X } from 'lucide-react' (barrel, not deep path)
-    if (/import\s+\{[^}]+\}\s+from\s+['"]lucide-react['"]/.test(line)) {
-      violations.push({
-        rule: 'no-barrel-imports',
-        severity: 'critical',
-        file: file.path,
-        line: i + 1,
-        message: 'Import icons from lucide-react/dist/esm/icons/[name] instead of lucide-react barrel',
-      });
-    }
     // Flag: import { X } from '@/components/ui' (barrel, not specific component)
     if (/import\s+\{[^}]+\}\s+from\s+['"]@\/components\/ui['"]/.test(line)) {
       violations.push({

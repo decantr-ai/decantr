@@ -136,8 +136,6 @@ describe('E2E: React E-commerce Generation', () => {
     for (const file of tsxFiles) {
       // No barrel imports from @/components/ui (must use @/components/ui/button etc.)
       expect(file.content).not.toMatch(/from ['"]@\/components\/ui['"]/);
-      // No barrel imports from lucide-react
-      expect(file.content).not.toMatch(/from ['"]lucide-react['"]/);
     }
   });
 

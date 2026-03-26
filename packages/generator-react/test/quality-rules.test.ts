@@ -60,14 +60,8 @@ describe('React Quality Rules', () => {
   // ── CRITICAL: no-barrel-imports ────────────────────────────
 
   describe('no-barrel-imports', () => {
-    it('flags import from lucide-react barrel', () => {
+    it('allows import from lucide-react barrel', () => {
       const file = makeFile('src/App.tsx', `import { Home } from 'lucide-react';`);
-      const v = validateReactOutput([file]);
-      expect(v.some(v => v.rule === 'no-barrel-imports')).toBe(true);
-    });
-
-    it('allows import from lucide-react deep path', () => {
-      const file = makeFile('src/App.tsx', `import { Home } from 'lucide-react/dist/esm/icons/home';`);
       const v = validateReactOutput([file]);
       expect(v.some(v => v.rule === 'no-barrel-imports')).toBe(false);
     });

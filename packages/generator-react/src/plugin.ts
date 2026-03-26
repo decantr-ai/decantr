@@ -6,7 +6,7 @@ import { emitPage } from './emit-page.js';
 import { emitHooks } from './emit-hooks.js';
 import {
   emitPackageJson, emitTailwindConfig, emitViteConfig,
-  emitGlobalsCss, emitUtils, emitTsConfig, emitIndexHtml, emitNotFound,
+  emitGlobalsCss, emitUtils, emitTsConfig, emitIndexHtml, emitMain, emitNotFound,
 } from './emit-shared.js';
 import { validateReactOutput } from './quality-rules.js';
 
@@ -25,6 +25,7 @@ export function createReactPlugin(): GeneratorPlugin {
       files.push(emitUtils());
       files.push(emitTsConfig());
       files.push(emitIndexHtml());
+      files.push(emitMain());
 
       // App shell (includes auth wrapping when features includes "auth")
       files.push(emitApp(app));
