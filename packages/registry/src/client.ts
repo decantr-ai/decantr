@@ -26,7 +26,10 @@ export function createRegistryClient(options: RegistryClientOptions = {}): Regis
       if (type) params.set('type', type);
       const res = await fetch(`${baseUrl}/search?${params}`);
       if (!res.ok) return [];
-      return res.json() as Promise<SearchResult[]>;
+      const data = await res.json() as { results?: SearchResult[]; total?: number } | SearchResult[];
+      // API returns { total, results } wrapper
+      if (Array.isArray(data)) return data;
+      return (data as { results: SearchResult[] }).results ?? [];
     },
     async fetch(type: string, id: string, version?: string): Promise<unknown> {
       const url = version ? `${baseUrl}/content/${type}/${id}/${version}` : `${baseUrl}/content/${type}/${id}`;
