@@ -58,10 +58,24 @@ async function cmdGet(type: string, id: string) {
     return;
   }
 
+  // Try local content first, fall back to API
   const resolver = getResolver();
-  const result = await resolver.resolve(type as any, id);
+  let result = await resolver.resolve(type as any, id);
 
   if (!result) {
+    // Fall back to live registry API
+    const apiType = type === 'blueprint' ? 'blueprints' : `${type}s`;
+    try {
+      const res = await fetch(`https://decantr-registry.fly.dev/v1/${apiType}/${id}`);
+      if (res.ok) {
+        const item = await res.json();
+        if (!item.error) {
+          console.log(JSON.stringify(item, null, 2));
+          return;
+        }
+      }
+    } catch { /* API unavailable, fall through */ }
+
     console.error(error(`${type} "${id}" not found.`));
     process.exitCode = 1;
     return;
@@ -126,29 +140,37 @@ async function cmdList(type: string) {
     return;
   }
 
+  // Try local content first
   const { readdirSync } = await import('node:fs');
   const dir = join(getContentRoot(), type);
+  let found = false;
 
   try {
     const files = readdirSync(dir).filter(f => f.endsWith('.json'));
-    console.log(heading(`${files.length} ${type}`));
-    for (const f of files) {
-      const data = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
-      console.log(`  ${cyan(data.id || f.replace('.json', ''))}  ${dim(data.description || data.name || '')}`);
-    }
-  } catch {
-    // Try core directory
-    const coreDir = join(getContentRoot(), 'core', type);
-    try {
-      const files = readdirSync(coreDir).filter(f => f.endsWith('.json'));
-      console.log(heading(`${files.length} ${type} (core)`));
+    if (files.length > 0) {
+      found = true;
+      console.log(heading(`${files.length} ${type}`));
       for (const f of files) {
-        const data = JSON.parse(readFileSync(join(coreDir, f), 'utf-8'));
+        const data = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
         console.log(`  ${cyan(data.id || f.replace('.json', ''))}  ${dim(data.description || data.name || '')}`);
       }
-    } catch {
-      console.log(dim(`No ${type} found.`));
     }
+  } catch { /* local not available */ }
+
+  if (!found) {
+    // Fall back to live registry API
+    try {
+      const res = await fetch(`https://decantr-registry.fly.dev/v1/${type}`);
+      if (res.ok) {
+        const data = await res.json() as { total: number; items: Array<{ id: string; name?: string; description?: string }> };
+        console.log(heading(`${data.total} ${type}`));
+        for (const item of data.items) {
+          console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+        }
+        return;
+      }
+    } catch { /* API unavailable */ }
+    console.log(dim(`No ${type} found.`));
   }
 }
 
