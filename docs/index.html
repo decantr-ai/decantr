@@ -214,6 +214,11 @@
       color: var(--fg);
     }
 
+    .hero-accent {
+      color: var(--coral);
+      font-style: italic;
+    }
+
     .hero-tagline {
       font-size: 1.15rem;
       color: var(--muted);
@@ -236,21 +241,22 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 14px 36px;
-      background: var(--coral);
-      color: #0D0D1A;
+      padding: 14px 40px;
+      background: linear-gradient(135deg, #F58882, #FE4474);
+      color: #fff;
       font-weight: 700;
       font-size: 1rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 100px;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
       text-decoration: none;
+      box-shadow: 0 4px 20px rgba(245,136,130,0.3);
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(245,136,130,0.4);
-      color: #0D0D1A;
+      box-shadow: 0 8px 36px rgba(245,136,130,0.5);
+      color: #fff;
     }
 
     .btn-ghost {
@@ -262,8 +268,8 @@
       color: var(--fg);
       font-weight: 700;
       font-size: 1rem;
-      border: 2px solid rgba(255,255,255,0.2);
-      border-radius: 8px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 100px;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
       text-decoration: none;
@@ -991,7 +997,7 @@
       font-weight: 700;
       font-size: 1rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 100px;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
       text-decoration: none;
@@ -1141,8 +1147,8 @@
       <img src="logo-portrait.svg" alt="Decantr" class="hero-logo">
     </div>
     <p class="hero-brand">Decantr</p>
-    <h1>Design intelligence<br>for AI-generated UI</h1>
-    <p class="hero-tagline">Your AI generates code. Decantr makes sure it's actually good.</p>
+    <h1>We don't care what you build with.<br>We care <span class="hero-accent">what</span> you build.</h1>
+    <p class="hero-tagline">Decantr is the design intelligence layer for AI-generated web applications.</p>
     <div class="hero-ctas">
       <a href="#quickstart" class="btn-primary">Get Started</a>
       <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
