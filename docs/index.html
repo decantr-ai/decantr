@@ -219,7 +219,7 @@
       gap: 64px;
     }
     .hero-left {
-      flex: 0 0 420px;
+      flex: 0 0 320px;
     }
     .hero-right {
       flex: 1;
@@ -246,9 +246,9 @@
     /* ── Logo Hero ── */
     .hero-logo-wrap {
       position: relative;
-      width: 380px;
-      height: 380px;
-      margin: 0 auto 48px;
+      width: 320px;
+      height: 320px;
+      margin: 0 auto;
     }
     .hero-logo-wrap img {
       width: 100%;
@@ -282,6 +282,8 @@
       }
     }
     .hero-logo-wrap.alive img {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
       animation: logoBreath 5s ease-in-out infinite;
     }
 
