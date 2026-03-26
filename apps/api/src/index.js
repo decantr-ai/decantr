@@ -60,9 +60,9 @@ const coreRecipes = loadContentDir('core/recipes');
 contentCache.patterns.push(...corePatterns);
 contentCache.recipes.push(...coreRecipes);
 
-// Load shells from carafes.json
+// Load shells from shells.json
 let shells = [];
-const shellsPath = join(CONTENT_ROOT, 'core', 'carafes.json');
+const shellsPath = join(CONTENT_ROOT, 'core', 'shells.json');
 if (existsSync(shellsPath)) {
   try {
     const data = JSON.parse(readFileSync(shellsPath, 'utf-8'));

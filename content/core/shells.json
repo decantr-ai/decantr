@@ -1,6 +1,6 @@
 {
   "$schema": "https://decantr.ai/schemas/skeletons.v1.json",
-  "ai_hint": "A shell is a page-level layout container that defines the spatial arrangement (header, nav, body, footer regions). Common shells: sidebar-main, full-bleed, top-nav-main, centered. Wine terminology: a shell holds and presents wine, just as this layout holds and presents page content.",
+  "ai_hint": "A shell is a page-level layout container that defines the spatial arrangement (header, nav, body, footer regions). Common shells: sidebar-main, full-bleed, top-nav-main, centered.",
   "shells": {
     "sidebar-main": {
       "name": "Sidebar + Main",
