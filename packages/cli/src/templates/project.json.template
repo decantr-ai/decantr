@@ -1,0 +1,30 @@
+{
+  "detected": {
+    "framework": "{{FRAMEWORK}}",
+    "version": "{{FRAMEWORK_VERSION}}",
+    "packageManager": "{{PACKAGE_MANAGER}}",
+    "hasTypeScript": {{HAS_TYPESCRIPT}},
+    "hasTailwind": {{HAS_TAILWIND}},
+    "existingRuleFiles": {{EXISTING_RULE_FILES}}
+  },
+  "overrides": {
+    "framework": {{FRAMEWORK_OVERRIDE}}
+  },
+  "sync": {
+    "status": "{{SYNC_STATUS}}",
+    "lastSync": "{{LAST_SYNC}}",
+    "registrySource": "{{REGISTRY_SOURCE}}",
+    "cachedContent": {
+      "archetypes": {{CACHED_ARCHETYPES}},
+      "patterns": {{CACHED_PATTERNS}},
+      "themes": {{CACHED_THEMES}},
+      "recipes": {{CACHED_RECIPES}}
+    }
+  },
+  "initialized": {
+    "at": "{{INIT_AT}}",
+    "via": "{{INIT_VIA}}",
+    "version": "{{CLI_VERSION}}",
+    "flags": "{{INIT_FLAGS}}"
+  }
+}

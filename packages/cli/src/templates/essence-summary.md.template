@@ -1,0 +1,50 @@
+# Essence Summary
+
+Auto-generated summary of `decantr.essence.json`.
+
+---
+
+## Project Identity
+
+| Property | Value |
+|----------|-------|
+| Archetype | {{ARCHETYPE}} |
+| Blueprint | {{BLUEPRINT}} |
+| Personality | {{PERSONALITY}} |
+| Target | {{TARGET}} |
+
+## Visual Identity
+
+| Property | Value |
+|----------|-------|
+| Theme | {{THEME_STYLE}} |
+| Mode | {{THEME_MODE}} |
+| Recipe | {{THEME_RECIPE}} |
+| Shape | {{SHAPE}} |
+
+## Structure
+
+{{PAGES_TABLE}}
+
+## Features
+
+{{FEATURES_LIST}}
+
+## Guard Configuration
+
+| Property | Value |
+|----------|-------|
+| Mode | {{GUARD_MODE}} |
+| Enforce Style | {{ENFORCE_STYLE}} |
+| Enforce Recipe | {{ENFORCE_RECIPE}} |
+
+## Density
+
+| Property | Value |
+|----------|-------|
+| Level | {{DENSITY}} |
+| Content Gap | {{CONTENT_GAP}} |
+
+---
+
+*Last updated: {{LAST_UPDATED}}*
