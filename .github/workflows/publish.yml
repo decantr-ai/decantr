@@ -21,6 +21,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
-      - run: pnpm -r publish --access public --no-git-checks --provenance --tag beta
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish packages with OIDC provenance
+        run: |
+          for pkg in essence-spec registry core mcp-server cli; do
+            echo "--- Publishing @decantr/$pkg ---"
+            cd packages/$pkg
+            npm publish --access public --provenance --tag beta 2>&1 || echo "Failed or already published: $pkg"
+            cd $GITHUB_WORKSPACE
+          done
