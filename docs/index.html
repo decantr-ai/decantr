@@ -168,65 +168,61 @@
 
     .hero-logo-wrap {
       position: relative;
-      width: 150px;
-      height: 150px;
-      margin: 0 auto 24px;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 32px;
     }
-    .hero-glow-ring {
-      position: absolute;
-      top: -16px; left: -16px;
-      width: 182px;
-      height: 182px;
-      border-radius: 50%;
-      background: conic-gradient(var(--coral), var(--amber), var(--cyan), var(--green), var(--purple), var(--coral));
-      opacity: 0.2;
-      filter: blur(14px);
-      animation: ringPulse 4s ease-in-out infinite;
-    }
-    @keyframes ringPulse {
-      0%, 100% { opacity: 0.15; transform: scale(1); }
-      50% { opacity: 0.3; transform: scale(1.05); }
+    .hero-glow-ring { display: none; }
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
     }
     .hero-logo {
-      width: 150px;
+      width: 120px;
       height: auto;
       display: block;
       position: relative;
       z-index: 1;
-      filter: drop-shadow(0 0 30px rgba(245,136,130,0.25));
+      animation: logoFloat 4s ease-in-out infinite;
     }
 
     .hero-brand {
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       font-variant: small-caps;
-      letter-spacing: 0.25em;
-      color: var(--muted);
-      margin-bottom: 36px;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 28px;
       text-transform: uppercase;
     }
 
     .hero h1 {
-      font-size: clamp(2.8rem, 5vw, 4.2rem);
-      font-weight: 700;
-      line-height: 1.1;
-      margin-bottom: 20px;
-      letter-spacing: -0.03em;
-      color: var(--fg);
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 600;
+      line-height: 1.35;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+      color: rgba(255,255,255,0.9);
     }
 
     .hero-accent {
       color: var(--coral);
-      font-style: italic;
+      font-weight: 800;
+      font-style: normal;
+      text-decoration: underline;
+      text-decoration-color: var(--coral);
+      text-underline-offset: 4px;
+      text-decoration-thickness: 3px;
     }
 
     .hero-tagline {
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       color: var(--muted);
       margin-bottom: 40px;
-      max-width: 520px;
+      max-width: 480px;
       margin-left: auto;
       margin-right: auto;
       line-height: 1.7;
+      letter-spacing: 0.01em;
     }
 
     .hero-ctas {
