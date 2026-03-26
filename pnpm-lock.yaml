@@ -35,6 +35,13 @@ importers:
       '@decantr/registry':
         specifier: workspace:*
         version: link:../registry
+    devDependencies:
+      '@decantr/generator-decantr':
+        specifier: workspace:*
+        version: link:../generator-decantr
+      '@decantr/generator-react':
+        specifier: workspace:*
+        version: link:../generator-react
 
   packages/generator-decantr:
     dependencies:
