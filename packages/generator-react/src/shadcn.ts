@@ -13,143 +13,37 @@ export interface ShadcnMapping {
   notes?: string;
 }
 
+// AUTO: Complete shadcn/ui component map — organized by category, alphabetical within each.
+// Every shadcn/ui component is listed here so the generator can resolve any IR component reference.
+
 export const COMPONENT_MAP: Record<string, ShadcnMapping> = {
-  Button: {
-    component: 'Button',
-    importPath: '@/components/ui/button',
-    imports: ['Button'],
+  // ── Layout ──────────────────────────────────────────────────────────────
+  AspectRatio: {
+    component: 'AspectRatio',
+    importPath: '@/components/ui/aspect-ratio',
+    imports: ['AspectRatio'],
   },
   Card: {
     component: 'Card',
     importPath: '@/components/ui/card',
-    imports: ['Card', 'CardHeader', 'CardTitle', 'CardContent'],
+    imports: ['Card', 'CardHeader', 'CardTitle', 'CardDescription', 'CardContent', 'CardFooter'],
     notes: 'Card.Header → CardHeader+CardTitle, Card.Body → CardContent',
   },
-  Input: {
-    component: 'Input',
-    importPath: '@/components/ui/input',
-    imports: ['Input'],
+  Collapsible: {
+    component: 'Collapsible',
+    importPath: '@/components/ui/collapsible',
+    imports: ['Collapsible', 'CollapsibleTrigger', 'CollapsibleContent'],
   },
-  Tabs: {
-    component: 'Tabs',
-    importPath: '@/components/ui/tabs',
-    imports: ['Tabs', 'TabsList', 'TabsTrigger', 'TabsContent'],
-  },
-  Modal: {
-    component: 'Dialog',
-    importPath: '@/components/ui/dialog',
-    imports: ['Dialog', 'DialogContent', 'DialogHeader', 'DialogTitle', 'DialogTrigger'],
-    notes: 'Modal → Dialog',
-  },
-  Dropdown: {
-    component: 'DropdownMenu',
-    importPath: '@/components/ui/dropdown-menu',
-    imports: ['DropdownMenu', 'DropdownMenuContent', 'DropdownMenuItem', 'DropdownMenuTrigger', 'DropdownMenuSeparator'],
-  },
-  Badge: {
-    component: 'Badge',
-    importPath: '@/components/ui/badge',
-    imports: ['Badge'],
-  },
-  Avatar: {
-    component: 'Avatar',
-    importPath: '@/components/ui/avatar',
-    imports: ['Avatar', 'AvatarImage', 'AvatarFallback'],
-  },
-  Popover: {
-    component: 'Popover',
-    importPath: '@/components/ui/popover',
-    imports: ['Popover', 'PopoverContent', 'PopoverTrigger'],
-  },
-  Command: {
-    component: 'Command',
-    importPath: '@/components/ui/command',
-    imports: ['CommandDialog', 'CommandInput', 'CommandList', 'CommandItem', 'CommandGroup'],
-    notes: 'Decantr Command palette → shadcn CommandDialog',
-  },
-  Breadcrumb: {
-    component: 'Breadcrumb',
-    importPath: '@/components/ui/breadcrumb',
-    imports: ['Breadcrumb', 'BreadcrumbList', 'BreadcrumbItem', 'BreadcrumbLink', 'BreadcrumbSeparator'],
-  },
-  // AUTO: filter-bar pattern component mappings
-  Select: {
-    component: 'Select',
-    importPath: '@/components/ui/select',
-    imports: ['Select', 'SelectTrigger', 'SelectContent', 'SelectItem', 'SelectValue'],
-  },
-  Chip: {
-    component: 'Badge',
-    importPath: '@/components/ui/badge',
-    imports: ['Badge'],
-    notes: 'Decantr Chip maps to shadcn Badge with variant',
-  },
-  // AUTO: data-table pattern component mappings
-  Table: {
-    component: 'Table',
-    importPath: '@/components/ui/table',
-    imports: ['Table', 'TableHeader', 'TableBody', 'TableRow', 'TableHead', 'TableCell'],
-  },
-  Checkbox: {
-    component: 'Checkbox',
-    importPath: '@/components/ui/checkbox',
-    imports: ['Checkbox'],
-  },
-  Pagination: {
-    component: 'Pagination',
-    importPath: '@/components/ui/pagination',
-    imports: ['Pagination', 'PaginationContent', 'PaginationItem', 'PaginationPrevious', 'PaginationNext'],
-  },
-  // AUTO: form-sections pattern component mappings
-  Label: {
-    component: 'Label',
-    importPath: '@/components/ui/label',
-    imports: ['Label'],
-  },
-  Textarea: {
-    component: 'Textarea',
-    importPath: '@/components/ui/textarea',
-    imports: ['Textarea'],
-  },
-  Switch: {
-    component: 'Switch',
-    importPath: '@/components/ui/switch',
-    imports: ['Switch'],
-  },
-  RadioGroup: {
-    component: 'RadioGroup',
-    importPath: '@/components/ui/radio-group',
-    imports: ['RadioGroup', 'RadioGroupItem'],
+  ScrollArea: {
+    component: 'ScrollArea',
+    importPath: '@/components/ui/scroll-area',
+    imports: ['ScrollArea', 'ScrollBar'],
   },
   Separator: {
     component: 'Separator',
     importPath: '@/components/ui/separator',
     imports: ['Separator'],
   },
-  // AUTO: activity-feed pattern component mappings
-  ScrollArea: {
-    component: 'ScrollArea',
-    importPath: '@/components/ui/scroll-area',
-    imports: ['ScrollArea'],
-  },
-  // AUTO: card-grid pattern component mappings
-  AspectRatio: {
-    component: 'AspectRatio',
-    importPath: '@/components/ui/aspect-ratio',
-    imports: ['AspectRatio'],
-  },
-  // AUTO: top-nav-main shell component mappings
-  NavigationMenu: {
-    component: 'NavigationMenu',
-    importPath: '@/components/ui/navigation-menu',
-    imports: ['NavigationMenu', 'NavigationMenuList', 'NavigationMenuItem', 'NavigationMenuLink'],
-  },
-  Sheet: {
-    component: 'Sheet',
-    importPath: '@/components/ui/sheet',
-    imports: ['Sheet', 'SheetTrigger', 'SheetContent'],
-  },
-  // AUTO: sidebar-main shell component mappings
   Sidebar: {
     component: 'Sidebar',
     importPath: '@/components/ui/sidebar',
@@ -158,6 +52,213 @@ export const COMPONENT_MAP: Record<string, ShadcnMapping> = {
       'SidebarMenu', 'SidebarMenuItem', 'SidebarMenuButton',
       'SidebarProvider', 'SidebarTrigger',
     ],
+  },
+  Tabs: {
+    component: 'Tabs',
+    importPath: '@/components/ui/tabs',
+    imports: ['Tabs', 'TabsList', 'TabsTrigger', 'TabsContent'],
+  },
+
+  // ── Form ────────────────────────────────────────────────────────────────
+  Button: {
+    component: 'Button',
+    importPath: '@/components/ui/button',
+    imports: ['Button'],
+  },
+  Calendar: {
+    component: 'Calendar',
+    importPath: '@/components/ui/calendar',
+    imports: ['Calendar'],
+  },
+  Checkbox: {
+    component: 'Checkbox',
+    importPath: '@/components/ui/checkbox',
+    imports: ['Checkbox'],
+  },
+  Input: {
+    component: 'Input',
+    importPath: '@/components/ui/input',
+    imports: ['Input'],
+  },
+  Label: {
+    component: 'Label',
+    importPath: '@/components/ui/label',
+    imports: ['Label'],
+  },
+  RadioGroup: {
+    component: 'RadioGroup',
+    importPath: '@/components/ui/radio-group',
+    imports: ['RadioGroup', 'RadioGroupItem'],
+  },
+  Select: {
+    component: 'Select',
+    importPath: '@/components/ui/select',
+    imports: ['Select', 'SelectTrigger', 'SelectContent', 'SelectItem', 'SelectValue', 'SelectGroup'],
+  },
+  Slider: {
+    component: 'Slider',
+    importPath: '@/components/ui/slider',
+    imports: ['Slider'],
+  },
+  Switch: {
+    component: 'Switch',
+    importPath: '@/components/ui/switch',
+    imports: ['Switch'],
+  },
+  Textarea: {
+    component: 'Textarea',
+    importPath: '@/components/ui/textarea',
+    imports: ['Textarea'],
+  },
+  Toggle: {
+    component: 'Toggle',
+    importPath: '@/components/ui/toggle',
+    imports: ['Toggle'],
+  },
+
+  // ── Data Display ────────────────────────────────────────────────────────
+  Avatar: {
+    component: 'Avatar',
+    importPath: '@/components/ui/avatar',
+    imports: ['Avatar', 'AvatarImage', 'AvatarFallback'],
+  },
+  Badge: {
+    component: 'Badge',
+    importPath: '@/components/ui/badge',
+    imports: ['Badge'],
+  },
+  Pagination: {
+    component: 'Pagination',
+    importPath: '@/components/ui/pagination',
+    imports: ['Pagination', 'PaginationContent', 'PaginationItem', 'PaginationPrevious', 'PaginationNext'],
+  },
+  Progress: {
+    component: 'Progress',
+    importPath: '@/components/ui/progress',
+    imports: ['Progress'],
+  },
+  Skeleton: {
+    component: 'Skeleton',
+    importPath: '@/components/ui/skeleton',
+    imports: ['Skeleton'],
+  },
+  Table: {
+    component: 'Table',
+    importPath: '@/components/ui/table',
+    imports: ['Table', 'TableHeader', 'TableBody', 'TableRow', 'TableHead', 'TableCell', 'TableFooter', 'TableCaption'],
+  },
+
+  // ── Overlay ─────────────────────────────────────────────────────────────
+  AlertDialog: {
+    component: 'AlertDialog',
+    importPath: '@/components/ui/alert-dialog',
+    imports: [
+      'AlertDialog', 'AlertDialogTrigger', 'AlertDialogContent',
+      'AlertDialogHeader', 'AlertDialogFooter', 'AlertDialogTitle',
+      'AlertDialogDescription', 'AlertDialogAction', 'AlertDialogCancel',
+    ],
+  },
+  Dialog: {
+    component: 'Dialog',
+    importPath: '@/components/ui/dialog',
+    imports: ['Dialog', 'DialogTrigger', 'DialogContent', 'DialogHeader', 'DialogFooter', 'DialogTitle', 'DialogDescription'],
+  },
+  Drawer: {
+    component: 'Drawer',
+    importPath: '@/components/ui/drawer',
+    imports: ['Drawer', 'DrawerTrigger', 'DrawerContent', 'DrawerHeader', 'DrawerFooter', 'DrawerTitle', 'DrawerDescription'],
+  },
+  HoverCard: {
+    component: 'HoverCard',
+    importPath: '@/components/ui/hover-card',
+    imports: ['HoverCard', 'HoverCardTrigger', 'HoverCardContent'],
+  },
+  Popover: {
+    component: 'Popover',
+    importPath: '@/components/ui/popover',
+    imports: ['Popover', 'PopoverContent', 'PopoverTrigger'],
+  },
+  Sheet: {
+    component: 'Sheet',
+    importPath: '@/components/ui/sheet',
+    imports: ['Sheet', 'SheetTrigger', 'SheetContent', 'SheetHeader', 'SheetFooter', 'SheetTitle', 'SheetDescription'],
+  },
+  Tooltip: {
+    component: 'Tooltip',
+    importPath: '@/components/ui/tooltip',
+    imports: ['Tooltip', 'TooltipTrigger', 'TooltipContent', 'TooltipProvider'],
+  },
+
+  // ── Navigation ──────────────────────────────────────────────────────────
+  Breadcrumb: {
+    component: 'Breadcrumb',
+    importPath: '@/components/ui/breadcrumb',
+    imports: ['Breadcrumb', 'BreadcrumbList', 'BreadcrumbItem', 'BreadcrumbLink', 'BreadcrumbSeparator', 'BreadcrumbPage'],
+  },
+  Command: {
+    component: 'Command',
+    importPath: '@/components/ui/command',
+    imports: ['Command', 'CommandDialog', 'CommandInput', 'CommandList', 'CommandEmpty', 'CommandGroup', 'CommandItem', 'CommandSeparator'],
+    notes: 'Decantr Command palette → shadcn Command / CommandDialog',
+  },
+  ContextMenu: {
+    component: 'ContextMenu',
+    importPath: '@/components/ui/context-menu',
+    imports: ['ContextMenu', 'ContextMenuTrigger', 'ContextMenuContent', 'ContextMenuItem', 'ContextMenuSeparator'],
+  },
+  DropdownMenu: {
+    component: 'DropdownMenu',
+    importPath: '@/components/ui/dropdown-menu',
+    imports: ['DropdownMenu', 'DropdownMenuTrigger', 'DropdownMenuContent', 'DropdownMenuItem', 'DropdownMenuSeparator', 'DropdownMenuLabel', 'DropdownMenuGroup'],
+  },
+  Menubar: {
+    component: 'Menubar',
+    importPath: '@/components/ui/menubar',
+    imports: ['Menubar', 'MenubarMenu', 'MenubarTrigger', 'MenubarContent', 'MenubarItem', 'MenubarSeparator'],
+  },
+  NavigationMenu: {
+    component: 'NavigationMenu',
+    importPath: '@/components/ui/navigation-menu',
+    imports: ['NavigationMenu', 'NavigationMenuList', 'NavigationMenuItem', 'NavigationMenuLink', 'NavigationMenuTrigger', 'NavigationMenuContent'],
+  },
+
+  // ── Feedback ────────────────────────────────────────────────────────────
+  Accordion: {
+    component: 'Accordion',
+    importPath: '@/components/ui/accordion',
+    imports: ['Accordion', 'AccordionItem', 'AccordionTrigger', 'AccordionContent'],
+  },
+  Alert: {
+    component: 'Alert',
+    importPath: '@/components/ui/alert',
+    imports: ['Alert', 'AlertTitle', 'AlertDescription'],
+  },
+  Toast: {
+    component: 'Toast',
+    importPath: '@/components/ui/toast',
+    imports: ['Toast', 'ToastAction'],
+    notes: 'Also requires Toaster from @/components/ui/toaster and useToast hook',
+  },
+
+  // ── Aliases ─────────────────────────────────────────────────────────────
+  // AUTO: Decantr abstract names that map to shadcn equivalents
+  Modal: {
+    component: 'Dialog',
+    importPath: '@/components/ui/dialog',
+    imports: ['Dialog', 'DialogTrigger', 'DialogContent', 'DialogHeader', 'DialogFooter', 'DialogTitle', 'DialogDescription'],
+    notes: 'Modal → Dialog (alias)',
+  },
+  Dropdown: {
+    component: 'DropdownMenu',
+    importPath: '@/components/ui/dropdown-menu',
+    imports: ['DropdownMenu', 'DropdownMenuTrigger', 'DropdownMenuContent', 'DropdownMenuItem', 'DropdownMenuSeparator', 'DropdownMenuLabel', 'DropdownMenuGroup'],
+    notes: 'Dropdown → DropdownMenu (alias)',
+  },
+  Chip: {
+    component: 'Badge',
+    importPath: '@/components/ui/badge',
+    imports: ['Badge'],
+    notes: 'Chip → Badge (alias)',
   },
 };
 
