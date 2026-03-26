@@ -16,7 +16,34 @@ function indent(code: string, level: number): string {
   return code.split('\n').map(l => l ? pad + l : l).join('\n');
 }
 
-function emitPatternCall(node: IRPatternNode, densityGap: string): string {
+// AUTO: Resolved animation settings with defaults applied
+interface ResolvedAnimation {
+  enabled: boolean;        // false when page_enter is "none"
+  pageEnterClass: string;  // e.g. "d-page-enter" or "d-page-enter-slide-left"
+  stagger: boolean;
+  staggerDelay: number;
+  cardEnter: boolean;
+}
+
+function resolveAnimation(config?: AnimationConfig | null): ResolvedAnimation {
+  if (config?.page_enter === 'none') {
+    return { enabled: false, pageEnterClass: '', stagger: false, staggerDelay: 50, cardEnter: false };
+  }
+  // AUTO: Map page_enter type to CSS class. "fade" is the default (d-page-enter).
+  const pageEnterType = config?.page_enter || 'fade';
+  const pageEnterClass = pageEnterType === 'fade'
+    ? 'd-page-enter'
+    : `d-page-enter-${pageEnterType}`;
+  return {
+    enabled: true,
+    pageEnterClass,
+    stagger: config?.stagger !== false,
+    staggerDelay: config?.stagger_delay ?? 50,
+    cardEnter: config?.card_enter !== false,
+  };
+}
+
+function emitPatternCall(node: IRPatternNode, densityGap: string, anim: ResolvedAnimation): string {
   const funcName = pascalCase(node.pattern.alias);
 
   // Build wire props argument
@@ -38,12 +65,14 @@ function emitPatternCall(node: IRPatternNode, densityGap: string): string {
     const veClasses = node.visualEffects?.decorators?.length
       ? ' ' + node.visualEffects.decorators.join(' ')
       : '';
+    // AUTO: Add d-card-enter class for card entrance animation when enabled
+    const cardEnterClass = anim.cardEnter ? ' d-card-enter' : '';
     // AUTO: Emit intensity CSS variables as inline style when recipe specifies them
     const veStyle = node.visualEffects?.intensity && Object.keys(node.visualEffects.intensity).length > 0
       ? `, style: '${Object.entries(node.visualEffects.intensity).map(([k, v]) => `${k}:${v}`).join(';')}'`
       : '';
     return [
-      `Card({ class: css('_flex _col${bgClass}${veClasses}')${veStyle} },`,
+      `Card({ class: css('_flex _col${bgClass}${veClasses}${cardEnterClass}')${veStyle} },`,
       `  Card.Header({}, '${node.card.headerLabel}'),`,
       `  Card.Body({},`,
       `    ${call}`,
@@ -81,40 +110,63 @@ function emitPatternFunction(node: IRPatternNode, densityGap: string): string {
   ].join('\n');
 }
 
-function emitGridNode(node: IRGridNode, densityGap: string): string {
+function emitGridNode(node: IRGridNode, densityGap: string, anim: ResolvedAnimation): string {
   const atoms = gridAtoms(node.cols, node.spans, node.breakpoint, densityGap);
+  // AUTO: Add d-stagger class to grid container for sequential animation delays
+  const staggerClass = anim.stagger ? ' d-stagger' : '';
 
   const children = node.children.map((child, i) => {
     const patternNode = child as IRPatternNode;
-    const call = emitPatternCall(patternNode, densityGap);
+    const call = emitPatternCall(patternNode, densityGap, anim);
+    // AUTO: Stagger items get d-stagger-item class and --stagger-index CSS variable
+    const staggerAttrs = anim.stagger
+      ? `class: css('d-stagger-item'), style: '--stagger-index: ${i}; --stagger-delay: ${anim.staggerDelay}ms', `
+      : '';
     if (node.spans) {
       const weight = node.spans[patternNode.id] || 1;
-      return `div({ class: css('${spanAtom(weight)}') },\n  ${call}\n)`;
+      return `div({ ${staggerAttrs}class: css('${spanAtom(weight)}${anim.stagger ? ' d-stagger-item' : ''}')${anim.stagger ? `, style: '--stagger-index: ${i}; --stagger-delay: ${anim.staggerDelay}ms'` : ''} },\n  ${call}\n)`;
+    }
+    if (anim.stagger) {
+      return `div({ class: css('d-stagger-item'), style: '--stagger-index: ${i}; --stagger-delay: ${anim.staggerDelay}ms' },\n  ${call}\n)`;
     }
     return call;
   });
 
   return [
-    `div({ class: css('${atoms}') },`,
+    `div({ class: css('${atoms}${staggerClass}') },`,
     ...children.map(c => indent(c, 1)),
     `)`,
   ].join('\n');
 }
 
-function emitNodeCode(node: IRNode, densityGap: string): string {
+function emitNodeCode(node: IRNode, densityGap: string, anim: ResolvedAnimation): string {
   if (node.type === 'pattern') {
-    return emitPatternCall(node as IRPatternNode, densityGap);
+    return emitPatternCall(node as IRPatternNode, densityGap, anim);
   }
   if (node.type === 'grid') {
-    return emitGridNode(node as IRGridNode, densityGap);
+    return emitGridNode(node as IRGridNode, densityGap, anim);
   }
   return `// Unknown node type: ${node.type}`;
+}
+
+// AUTO: Animation config for recipe-driven entrance animations.
+// Controls page entrance, card entrance, and stagger effects on grids/lists.
+export interface AnimationConfig {
+  /** Page entrance animation type. "none" disables all animation classes. */
+  page_enter?: 'fade' | 'slide-up' | 'slide-left' | 'none';
+  /** Enable stagger delay on grid/list children (default: true) */
+  stagger?: boolean;
+  /** Delay per stagger item in ms (default: 50) */
+  stagger_delay?: number;
+  /** Enable card entrance animation (default: true) */
+  card_enter?: boolean;
 }
 
 /** Options for recipe-driven visual decorations on a page */
 export interface EmitPageOptions {
   visualEffects?: VisualEffectsConfig | null;
   patternOverrides?: Record<string, { background?: string[] }> | null;
+  animation?: AnimationConfig | null;
 }
 
 /** Emit a single page .js file from its IR tree */
@@ -122,6 +174,7 @@ export function emitPage(page: IRPageNode, options?: EmitPageOptions): Generated
   const densityGap = page.children[0]?.spatial?.gap || '4';
   const surface = surfaceAtoms(page.surface, densityGap);
   const pageName = pascalCase(page.pageId);
+  const anim = resolveAnimation(options?.animation);
 
   // Collect all imports from patterns
   let allImports = new Map<string, Set<string>>();
@@ -170,7 +223,7 @@ export function emitPage(page: IRPageNode, options?: EmitPageOptions): Generated
 
   // Build page body
   const bodyChildren = page.children
-    .map(child => indent(emitNodeCode(child, densityGap), 2))
+    .map(child => indent(emitNodeCode(child, densityGap, anim), 2))
     .join(',\n');
 
   const importBlock = renderImports(allImports);
@@ -180,6 +233,9 @@ export function emitPage(page: IRPageNode, options?: EmitPageOptions): Generated
     options?.visualEffects,
     options?.patternOverrides,
   );
+
+  // AUTO: Page entrance class from animation config (default: d-page-enter)
+  const pageEnterSuffix = anim.pageEnterClass ? ` ${anim.pageEnterClass}` : '';
 
   const code = [
     importBlock,
@@ -191,7 +247,7 @@ export function emitPage(page: IRPageNode, options?: EmitPageOptions): Generated
     `  const { div } = tags;`,
     wiringCode,
     '',
-    `  return div({ class: css('${surface} d-page-enter') },`,
+    `  return div({ class: css('${surface}${pageEnterSuffix}') },`,
     bodyChildren,
     `  );`,
     `});`,
