@@ -49,7 +49,7 @@
     a:hover { color: var(--coral); text-decoration: none; }
 
     .container { max-width: var(--max-w); margin: 0 auto; padding: 0 32px; }
-    .hero .container { max-width: 1100px; }
+    .hero .container { max-width: 800px; }
 
     /* ── Animations ── */
     @keyframes fadeInUp {
@@ -132,12 +132,13 @@
     /* ── Hero ── */
     .hero {
       position: relative;
-      padding: 80px 0 60px;
+      padding: 100px 0 80px;
       text-align: center;
       overflow: hidden;
       min-height: 100vh;
       display: flex;
       align-items: center;
+      justify-content: center;
     }
 
     /* Aurora gradient mesh */
@@ -214,46 +215,18 @@
       width: 100%;
     }
 
-    .hero-split {
+    .hero-stack {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 48px;
-      justify-content: center;
-    }
-    .hero-left {
-      flex: 0 0 280px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .hero-right {
-      flex: 0 1 580px;
-      text-align: left;
-    }
-    .hero-right h1 { text-align: left; }
-    .hero-right .tagline { margin-left: 0; text-align: left; max-width: none; }
-    .hero-right .cta-row { justify-content: flex-start; }
-    .hero-right .install { margin-left: 0; max-width: none; }
-
-    @media (max-width: 900px) {
-      .hero-split {
-        flex-direction: column;
-        gap: 32px;
-      }
-      .hero-left { flex: none; }
-      .hero-right { text-align: center; }
-      .hero-right h1 { text-align: center; }
-      .hero-right .tagline { margin: 0 auto 44px; text-align: center; }
-      .hero-right .cta-row { justify-content: center; }
-      .hero-right .install { margin: 44px auto 0; }
     }
 
     /* ── Logo Hero ── */
     .hero-logo-wrap {
       position: relative;
-      width: 260px;
-      height: 260px;
-      margin: 0 auto;
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 36px;
     }
     .hero-logo-wrap img {
       width: 100%;
@@ -302,33 +275,33 @@
     }
     .logo-orb.visible { opacity: 1; transition: opacity 1s ease; }
     .orb-1 {
-      width: 50px; height: 50px;
+      width: 40px; height: 40px;
       background: var(--coral);
-      top: -5%; left: 0%;
+      top: -15%; left: -10%;
       animation: orbFloat1 8s ease-in-out infinite;
     }
     .orb-2 {
-      width: 40px; height: 40px;
+      width: 30px; height: 30px;
       background: var(--cyan);
-      top: 15%; right: -5%;
+      top: -5%; right: -15%;
       animation: orbFloat2 10s ease-in-out infinite 1s;
     }
     .orb-3 {
-      width: 35px; height: 35px;
+      width: 25px; height: 25px;
       background: var(--amber);
-      bottom: 0%; left: 25%;
+      bottom: -10%; left: 15%;
       animation: orbFloat3 9s ease-in-out infinite 0.5s;
     }
     .orb-4 {
-      width: 30px; height: 30px;
+      width: 20px; height: 20px;
       background: var(--green);
-      bottom: 20%; right: 0%;
+      bottom: 10%; right: -12%;
       animation: orbFloat1 11s ease-in-out infinite 2s;
     }
     .orb-5 {
-      width: 45px; height: 45px;
+      width: 35px; height: 35px;
       background: var(--purple);
-      top: 45%; left: -8%;
+      top: 35%; left: -18%;
       animation: orbFloat2 7s ease-in-out infinite 1.5s;
       opacity: 0.7;
     }
@@ -350,17 +323,17 @@
 
     @media (max-width: 768px) {
       .hero-logo-wrap {
-        width: 240px;
-        height: 240px;
-        margin-bottom: 32px;
+        width: 140px;
+        height: 140px;
+        margin-bottom: 28px;
       }
     }
 
     .hero h1 {
-      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
       font-weight: 800;
       letter-spacing: -0.03em;
-      line-height: 1.15;
+      line-height: 1.12;
       margin-bottom: 20px;
       animation: fadeInUp 0.8s ease-out 0.6s both;
     }
@@ -371,10 +344,10 @@
       background-clip: text;
     }
     .hero .tagline {
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       color: var(--muted);
-      max-width: 640px;
-      margin: 0 auto 32px;
+      max-width: 600px;
+      margin: 0 auto 36px;
       line-height: 1.7;
       animation: fadeInUp 0.8s ease-out 0.8s both;
     }
@@ -796,29 +769,25 @@
       <div class="particle"></div>
     </div>
     <div class="container">
-      <div class="hero-split">
-        <div class="hero-left">
-          <div class="hero-logo-wrap" id="heroLogo">
-            <div class="logo-orb orb-1"></div>
-            <div class="logo-orb orb-2"></div>
-            <div class="logo-orb orb-3"></div>
-            <div class="logo-orb orb-4"></div>
-            <div class="logo-orb orb-5"></div>
-            <img src="logo.svg" alt="Decantr">
-          </div>
+      <div class="hero-stack">
+        <div class="hero-logo-wrap" id="heroLogo">
+          <div class="logo-orb orb-1"></div>
+          <div class="logo-orb orb-2"></div>
+          <div class="logo-orb orb-3"></div>
+          <div class="logo-orb orb-4"></div>
+          <div class="logo-orb orb-5"></div>
+          <img src="logo.svg" alt="Decantr">
         </div>
-        <div class="hero-right">
-          <h1><span>Design intelligence</span><br>for AI-generated UI</h1>
-          <p class="tagline">We don't care what you build with. We care what you build. Decantr is a structured schema and intelligence layer that makes AI coding assistants generate consistent, production-quality web applications.</p>
-          <div class="cta-row">
-            <a href="#setup" class="btn btn-primary">Get Started</a>
-            <a href="https://github.com/decantr-ai/decantr" class="btn btn-secondary">GitHub</a>
-            <a href="https://www.npmjs.com/package/@decantr/mcp-server" class="btn btn-secondary">npm</a>
-          </div>
-          <div class="install">
-            <div class="comment"># Add to Claude Desktop, Cursor, or any MCP-compatible AI</div>
-            <div class="cmd">npx @decantr/mcp-server@beta</div>
-          </div>
+        <h1><span>Design intelligence</span><br>for AI-generated UI</h1>
+        <p class="tagline">We don't care what you build with. We care what you build. Decantr is a structured schema and intelligence layer that makes AI coding assistants generate consistent, production-quality web applications.</p>
+        <div class="cta-row">
+          <a href="#setup" class="btn btn-primary">Get Started</a>
+          <a href="https://github.com/decantr-ai/decantr" class="btn btn-secondary">GitHub</a>
+          <a href="https://www.npmjs.com/package/@decantr/mcp-server" class="btn btn-secondary">npm</a>
+        </div>
+        <div class="install">
+          <div class="comment"># Add to Claude Desktop, Cursor, or any MCP-compatible AI</div>
+          <div class="cmd">npx @decantr/mcp-server@beta</div>
         </div>
       </div>
     </div>
