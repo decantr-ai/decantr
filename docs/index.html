@@ -12,18 +12,29 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>D</text></svg>">
   <style>
     :root {
-      --bg: #0a0a0b;
-      --fg: #fafafa;
-      --muted: #a1a1aa;
-      --accent: #a78bfa;
-      --accent-dim: #7c3aed;
-      --card-bg: #18181b;
-      --card-border: #27272a;
-      --code-bg: #1e1e22;
-      --max-w: 960px;
+      --bg: #010E2E;
+      --bg-light: #041540;
+      --fg: #f0f2f8;
+      --muted: #8b93a8;
+      --coral: #F58882;
+      --navy: #010E2E;
+      --amber: #FDA303;
+      --cyan: #0AF3EB;
+      --crimson: #D80F4A;
+      --pink: #FE4474;
+      --green: #00E0AB;
+      --yellow: #FCD021;
+      --orange: #FC8D0D;
+      --purple: #6500C6;
+      --card-bg: rgba(4, 21, 64, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --code-bg: rgba(1, 10, 30, 0.8);
+      --max-w: 1000px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -31,102 +42,306 @@
       color: var(--fg);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    a { color: var(--cyan); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--coral); text-decoration: none; }
 
     .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
 
-    /* Hero */
+    /* ── Animations ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    @keyframes particleDrift {
+      0% { transform: translate(0, 0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+    }
+
+    @keyframes auroraShift {
+      0% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
+      25% { transform: translate(5%, -8%) rotate(3deg) scale(1.05); }
+      50% { transform: translate(-3%, 5%) rotate(-2deg) scale(0.95); }
+      75% { transform: translate(8%, 3%) rotate(4deg) scale(1.08); }
+      100% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
+    }
+
+    @keyframes auroraShift2 {
+      0% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
+      25% { transform: translate(-6%, 5%) rotate(-3deg) scale(1.1); }
+      50% { transform: translate(4%, -6%) rotate(2deg) scale(0.92); }
+      75% { transform: translate(-3%, -4%) rotate(-1deg) scale(1.05); }
+      100% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
+    }
+
+    @keyframes auroraShift3 {
+      0% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
+      33% { transform: translate(7%, 4%) rotate(5deg) scale(1.08); }
+      66% { transform: translate(-5%, -3%) rotate(-3deg) scale(0.95); }
+      100% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
+    }
+
+    @keyframes stepPop {
+      from { opacity: 0; transform: scale(0.8) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ── Scroll reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+    .reveal-delay-6 { transition-delay: 0.6s; }
+
+    /* ── Hero ── */
     .hero {
-      padding: 120px 0 80px;
+      position: relative;
+      padding: 140px 0 100px;
       text-align: center;
+      overflow: hidden;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
     }
+
+    /* Aurora gradient mesh */
+    .hero-aurora {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .hero-aurora::before,
+    .hero-aurora::after,
+    .hero-aurora .aurora-layer {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.25;
+    }
+    .hero-aurora::before {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--coral), transparent 70%);
+      top: -15%;
+      left: -10%;
+      animation: auroraShift 12s ease-in-out infinite;
+    }
+    .hero-aurora::after {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, var(--cyan), transparent 70%);
+      top: 10%;
+      right: -15%;
+      animation: auroraShift2 15s ease-in-out infinite;
+    }
+    .hero-aurora .aurora-layer {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, var(--amber), transparent 70%);
+      bottom: -20%;
+      left: 30%;
+      animation: auroraShift3 18s ease-in-out infinite;
+      opacity: 0.18;
+    }
+
+    /* Floating particles */
+    .hero-particles {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: currentColor;
+      pointer-events: none;
+    }
+    .particle:nth-child(1) { width: 3px; height: 3px; color: var(--cyan); top: 15%; left: 10%; --dx: 60px; --dy: -80px; animation: particleDrift 8s linear infinite; }
+    .particle:nth-child(2) { width: 2px; height: 2px; color: var(--coral); top: 25%; left: 80%; --dx: -40px; --dy: -60px; animation: particleDrift 10s linear infinite 1s; }
+    .particle:nth-child(3) { width: 4px; height: 4px; color: var(--amber); top: 60%; left: 20%; --dx: 80px; --dy: -100px; animation: particleDrift 12s linear infinite 2s; }
+    .particle:nth-child(4) { width: 2px; height: 2px; color: var(--green); top: 70%; left: 70%; --dx: -50px; --dy: -70px; animation: particleDrift 9s linear infinite 0.5s; }
+    .particle:nth-child(5) { width: 3px; height: 3px; color: var(--pink); top: 40%; left: 50%; --dx: 70px; --dy: -90px; animation: particleDrift 11s linear infinite 3s; }
+    .particle:nth-child(6) { width: 2px; height: 2px; color: var(--yellow); top: 80%; left: 40%; --dx: -30px; --dy: -120px; animation: particleDrift 14s linear infinite 4s; }
+    .particle:nth-child(7) { width: 3px; height: 3px; color: var(--cyan); top: 10%; left: 60%; --dx: 50px; --dy: 60px; animation: particleDrift 7s linear infinite 1.5s; }
+    .particle:nth-child(8) { width: 1px; height: 1px; color: var(--coral); top: 50%; left: 90%; --dx: -80px; --dy: -40px; animation: particleDrift 13s linear infinite 2.5s; }
+    .particle:nth-child(9) { width: 4px; height: 4px; color: var(--amber); top: 35%; left: 5%; --dx: 100px; --dy: -50px; animation: particleDrift 16s linear infinite 5s; opacity: 0.5; }
+    .particle:nth-child(10) { width: 2px; height: 2px; color: var(--green); top: 85%; left: 55%; --dx: 40px; --dy: -100px; animation: particleDrift 10s linear infinite 6s; }
+    .particle:nth-child(11) { width: 3px; height: 3px; color: var(--purple); top: 20%; left: 35%; --dx: -60px; --dy: 40px; animation: particleDrift 9s linear infinite 3.5s; opacity: 0.6; }
+    .particle:nth-child(12) { width: 2px; height: 2px; color: var(--orange); top: 55%; left: 15%; --dx: 90px; --dy: -30px; animation: particleDrift 11s linear infinite 7s; }
+
+    .hero .container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+    }
+
+    .hero-logo {
+      height: 80px;
+      width: auto;
+      margin-bottom: 32px;
+      animation: fadeIn 0.8s ease-out both;
+      filter: drop-shadow(0 0 30px rgba(10, 243, 235, 0.15));
+    }
+
     .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
       margin-bottom: 24px;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
     }
-    .hero h1 span { color: var(--accent); }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--coral), var(--amber) 40%, var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
     .hero .tagline {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       color: var(--muted);
       max-width: 640px;
-      margin: 0 auto 40px;
+      margin: 0 auto 44px;
+      line-height: 1.7;
+      animation: fadeInUp 0.8s ease-out 0.4s both;
     }
     .hero .cta-row {
       display: flex;
       gap: 16px;
       justify-content: center;
       flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease-out 0.6s both;
     }
+
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 12px 24px;
-      border-radius: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
       font-size: 1rem;
-      font-weight: 500;
-      transition: all 0.15s;
+      font-weight: 600;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       border: none;
       cursor: pointer;
+      text-decoration: none;
     }
     .btn-primary {
-      background: var(--accent);
-      color: #000;
+      background: linear-gradient(135deg, var(--coral), var(--pink));
+      color: #fff;
+      box-shadow: 0 4px 24px rgba(245, 136, 130, 0.3);
     }
-    .btn-primary:hover { background: #b49bff; text-decoration: none; }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(245, 136, 130, 0.45);
+      color: #fff;
+    }
     .btn-secondary {
-      background: transparent;
+      background: rgba(255, 255, 255, 0.05);
       color: var(--fg);
-      border: 1px solid var(--card-border);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
     }
-    .btn-secondary:hover { border-color: var(--muted); text-decoration: none; }
+    .btn-secondary:hover {
+      border-color: var(--cyan);
+      background: rgba(10, 243, 235, 0.06);
+      color: var(--cyan);
+      transform: translateY(-2px);
+    }
 
     /* Install block */
     .install {
       background: var(--code-bg);
       border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 16px 24px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.95rem;
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.9rem;
       max-width: 600px;
-      margin: 40px auto 0;
+      margin: 44px auto 0;
       text-align: left;
       color: var(--muted);
       overflow-x: auto;
+      border-top: 2px solid;
+      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+      animation: fadeInUp 0.8s ease-out 0.8s both;
+      backdrop-filter: blur(20px);
     }
-    .install .comment { color: #6b7280; }
+    .install .comment { color: #4a5578; }
     .install .cmd { color: var(--fg); }
 
-    /* Section */
+    /* ── Sections ── */
     .section {
-      padding: 80px 0;
-      border-top: 1px solid var(--card-border);
+      padding: 100px 0;
+      position: relative;
+    }
+    .section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(100%, 1000px);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.08) 80%, transparent);
     }
     .section h2 {
-      font-size: 2rem;
-      font-weight: 700;
+      font-size: 2.2rem;
+      font-weight: 800;
       margin-bottom: 16px;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
     }
     .section .subtitle {
       color: var(--muted);
       font-size: 1.1rem;
-      margin-bottom: 48px;
+      margin-bottom: 52px;
       max-width: 640px;
+      line-height: 1.7;
     }
 
-    /* Problem/Solution */
+    /* ── Problem/Solution ── */
     .problem-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      gap: 20px;
     }
     @media (max-width: 640px) {
       .problem-grid { grid-template-columns: 1fr; }
@@ -134,30 +349,122 @@
     .problem-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 24px;
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(20px);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .problem-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.12);
     }
     .problem-card h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 10px;
     }
     .problem-card p {
       color: var(--muted);
       font-size: 0.95rem;
+      line-height: 1.6;
     }
-    .problem-card.solution { border-color: var(--accent-dim); }
+    .problem-card.solution {
+      border-color: rgba(10, 243, 235, 0.2);
+      background: rgba(10, 243, 235, 0.03);
+    }
+    .problem-card.solution:hover {
+      border-color: rgba(10, 243, 235, 0.35);
+      box-shadow: 0 8px 40px rgba(10, 243, 235, 0.08);
+    }
     .problem-card .label {
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.7rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 12px;
+      letter-spacing: 0.1em;
+      margin-bottom: 14px;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
     }
-    .problem-card .label.red { color: #ef4444; }
-    .problem-card .label.green { color: #22c55e; }
+    .problem-card .label.red {
+      color: var(--coral);
+      background: rgba(245, 136, 130, 0.1);
+    }
+    .problem-card .label.green {
+      color: var(--green);
+      background: rgba(0, 224, 171, 0.1);
+    }
 
-    /* Tools */
+    /* ── Pipeline ── */
+    .pipeline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .pipeline-step {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      flex: 1;
+      min-width: 110px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .pipeline-step::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .pipeline-step:hover::before { opacity: 1; }
+    .pipeline-step:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .pipeline-step .num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .pipeline-step:nth-child(1) .num { color: var(--coral); background: rgba(245, 136, 130, 0.12); }
+    .pipeline-step:nth-child(2) .num { color: var(--amber); background: rgba(253, 163, 3, 0.12); }
+    .pipeline-step:nth-child(3) .num { color: var(--cyan); background: rgba(10, 243, 235, 0.12); }
+    .pipeline-step:nth-child(4) .num { color: var(--green); background: rgba(0, 224, 171, 0.12); }
+    .pipeline-step:nth-child(5) .num { color: var(--yellow); background: rgba(252, 208, 33, 0.12); }
+    .pipeline-step:nth-child(6) .num { color: var(--orange); background: rgba(252, 141, 13, 0.12); }
+    .pipeline-step:nth-child(7) .num { color: var(--purple); background: rgba(101, 0, 198, 0.2); }
+    .pipeline-step .name {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    /* Pipeline animated reveal */
+    .pipeline-step.reveal {
+      opacity: 0;
+      transform: scale(0.8) translateY(10px);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pipeline-step.reveal.visible {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    /* ── Tools grid ── */
     .tools-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -167,81 +474,76 @@
       .tools-grid { grid-template-columns: 1fr; }
     }
     .tool {
+      position: relative;
       background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 16px 20px;
+      border-radius: 12px;
+      padding: 20px 22px;
+      backdrop-filter: blur(20px);
+      border: 1px solid transparent;
+      background-clip: padding-box;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tool::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      transition: background 0.35s;
+    }
+    .tool:hover::before {
+      background: linear-gradient(135deg, var(--cyan), var(--coral), var(--amber));
+      opacity: 0.5;
+    }
+    .tool:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(10, 243, 235, 0.06);
     }
     .tool code {
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
       font-size: 0.85rem;
-      color: var(--accent);
+      color: var(--cyan);
+      font-weight: 600;
     }
     .tool p {
       color: var(--muted);
       font-size: 0.9rem;
-      margin-top: 4px;
+      margin-top: 6px;
+      line-height: 1.5;
     }
 
-    /* Pipeline */
-    .pipeline {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-    .pipeline-step {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 12px 16px;
-      flex: 1;
-      min-width: 120px;
-      text-align: center;
-    }
-    .pipeline-step .num {
-      font-size: 0.75rem;
-      color: var(--accent);
-      font-weight: 600;
-    }
-    .pipeline-step .name {
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-top: 4px;
-    }
-
-    /* Setup */
+    /* ── Setup ── */
     .setup-block {
       background: var(--code-bg);
       border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 20px 24px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      border-radius: 12px;
+      padding: 22px 26px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
       font-size: 0.85rem;
       line-height: 1.8;
       overflow-x: auto;
       white-space: pre;
+      backdrop-filter: blur(20px);
+      border-top: 2px solid;
+      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+      position: relative;
     }
-    .setup-block .key { color: #93c5fd; }
-    .setup-block .str { color: #86efac; }
+    .setup-block .key { color: var(--cyan); }
+    .setup-block .str { color: var(--green); }
     .setup-block .brace { color: var(--muted); }
 
-    /* Footer */
-    .footer {
-      padding: 48px 0;
-      border-top: 1px solid var(--card-border);
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-    .footer-links {
-      display: flex;
-      gap: 24px;
-      justify-content: center;
-      margin-bottom: 16px;
+    .section h3 {
+      font-weight: 700;
+      font-size: 1.1rem;
     }
 
-    /* Packages */
+    /* ── Packages ── */
     .pkg-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -253,22 +555,113 @@
     .pkg {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 20px;
+      border-radius: 12px;
+      padding: 24px;
+      backdrop-filter: blur(20px);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pkg:hover {
+      transform: translateY(-3px);
+      border-color: rgba(253, 163, 3, 0.25);
+      box-shadow: 0 8px 32px rgba(253, 163, 3, 0.06);
     }
     .pkg code {
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
       font-size: 0.85rem;
-      color: var(--accent);
+      color: var(--amber);
+      font-weight: 600;
     }
-    .pkg p { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+    .pkg p { color: var(--muted); font-size: 0.9rem; margin-top: 10px; line-height: 1.5; }
+
+    /* ── API section ── */
+    .api-block {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.9rem;
+      text-align: left;
+      color: var(--muted);
+      overflow-x: auto;
+      border-top: 2px solid;
+      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+      backdrop-filter: blur(20px);
+    }
+    .api-block .cmd { color: var(--fg); display: block; padding: 4px 0; }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 56px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      position: relative;
+    }
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(100%, 1000px);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.08) 80%, transparent);
+    }
+    .footer-logo {
+      height: 32px;
+      width: auto;
+      margin-bottom: 20px;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+    .footer-logo:hover { opacity: 0.8; }
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .footer-links a {
+      color: var(--muted);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--fg); }
+    .footer p a { color: var(--cyan); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero { padding: 100px 0 60px; min-height: auto; }
+      .section { padding: 72px 0; }
+      .pipeline { gap: 6px; }
+      .pipeline-step { min-width: 90px; padding: 12px 10px; }
+    }
   </style>
 </head>
 <body>
 
   <!-- Hero -->
   <div class="hero">
+    <div class="hero-aurora">
+      <div class="aurora-layer"></div>
+    </div>
+    <div class="hero-particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
     <div class="container">
+      <img src="logo.svg" alt="Decantr" class="hero-logo">
       <h1><span>Design intelligence</span><br>for AI-generated UI</h1>
       <p class="tagline">We don't care what you build with. We care what you build. Decantr is a structured schema and intelligence layer that makes AI coding assistants generate consistent, production-quality web applications.</p>
       <div class="cta-row">
@@ -286,25 +679,25 @@
   <!-- Problem / Solution -->
   <div class="section">
     <div class="container">
-      <h2>The problem with AI-generated UI</h2>
-      <p class="subtitle">Every AI code generator races to output faster. None of them think about what happens after they generate.</p>
+      <h2 class="reveal">The problem with AI-generated UI</h2>
+      <p class="subtitle reveal reveal-delay-1">Every AI code generator races to output faster. None of them think about what happens after they generate.</p>
       <div class="problem-grid">
-        <div class="problem-card">
+        <div class="problem-card reveal reveal-delay-1">
           <div class="label red">Without Decantr</div>
           <h3>Pages don't match each other</h3>
           <p>Each prompt produces a different layout, spacing, and component style. After 10 iterations, your app looks like it was built by 10 different people.</p>
         </div>
-        <div class="problem-card solution">
+        <div class="problem-card solution reveal reveal-delay-2">
           <div class="label green">With Decantr</div>
           <h3>Consistent design language</h3>
           <p>Patterns enforce consistent component composition. The Essence spec captures your design intent. Every page matches.</p>
         </div>
-        <div class="problem-card">
+        <div class="problem-card reveal reveal-delay-3">
           <div class="label red">Without Decantr</div>
           <h3>Every iteration drifts further</h3>
           <p>AI doesn't remember what it decided before. New features conflict with existing design decisions. Quality degrades over time.</p>
         </div>
-        <div class="problem-card solution">
+        <div class="problem-card solution reveal reveal-delay-4">
           <div class="label green">With Decantr</div>
           <h3>Guard rules prevent drift</h3>
           <p>Five guard rules validate every change against your spec. Theme, structure, layout, recipe, and density are enforced automatically.</p>
@@ -316,37 +709,37 @@
   <!-- How it works -->
   <div class="section">
     <div class="container">
-      <h2>How it works</h2>
-      <p class="subtitle">Decantr provides design intelligence through the MCP protocol. Your AI coding assistant calls Decantr's tools during code generation to produce better results.</p>
+      <h2 class="reveal">How it works</h2>
+      <p class="subtitle reveal reveal-delay-1">Decantr provides design intelligence through the MCP protocol. Your AI coding assistant calls Decantr's tools during code generation to produce better results.</p>
       <div class="pipeline">
-        <div class="pipeline-step"><div class="num">1</div><div class="name">Intent</div></div>
-        <div class="pipeline-step"><div class="num">2</div><div class="name">Interpret</div></div>
-        <div class="pipeline-step"><div class="num">3</div><div class="name">Decompose</div></div>
-        <div class="pipeline-step"><div class="num">4</div><div class="name">Specify</div></div>
-        <div class="pipeline-step"><div class="num">5</div><div class="name">Compose</div></div>
-        <div class="pipeline-step"><div class="num">6</div><div class="name">Generate</div></div>
-        <div class="pipeline-step"><div class="num">7</div><div class="name">Guard</div></div>
+        <div class="pipeline-step reveal reveal-delay-1"><div class="num">1</div><div class="name">Intent</div></div>
+        <div class="pipeline-step reveal reveal-delay-2"><div class="num">2</div><div class="name">Interpret</div></div>
+        <div class="pipeline-step reveal reveal-delay-3"><div class="num">3</div><div class="name">Decompose</div></div>
+        <div class="pipeline-step reveal reveal-delay-4"><div class="num">4</div><div class="name">Specify</div></div>
+        <div class="pipeline-step reveal reveal-delay-5"><div class="num">5</div><div class="name">Compose</div></div>
+        <div class="pipeline-step reveal reveal-delay-6"><div class="num">6</div><div class="name">Generate</div></div>
+        <div class="pipeline-step reveal" style="transition-delay: 0.7s;"><div class="num">7</div><div class="name">Guard</div></div>
       </div>
-      <p style="color: var(--muted); font-size: 0.95rem;">You describe what you want. Decantr structures it into a validated spec (the Essence file). Your AI generates code using Decantr's patterns, archetypes, and spatial rules. Guard rules prevent drift on every subsequent change.</p>
+      <p class="reveal" style="color: var(--muted); font-size: 0.95rem; line-height: 1.7;">You describe what you want. Decantr structures it into a validated spec (the Essence file). Your AI generates code using Decantr's patterns, archetypes, and spatial rules. Guard rules prevent drift on every subsequent change.</p>
     </div>
   </div>
 
   <!-- MCP Tools -->
   <div class="section">
     <div class="container">
-      <h2>10 MCP tools for your AI assistant</h2>
-      <p class="subtitle">Install the MCP server once. Every prompt gets smarter.</p>
+      <h2 class="reveal">10 MCP tools for your AI assistant</h2>
+      <p class="subtitle reveal reveal-delay-1">Install the MCP server once. Every prompt gets smarter.</p>
       <div class="tools-grid">
-        <div class="tool"><code>decantr_create_essence</code><p>Generate a design spec from a project description</p></div>
-        <div class="tool"><code>decantr_suggest_patterns</code><p>Get pattern recommendations for any page type</p></div>
-        <div class="tool"><code>decantr_resolve_pattern</code><p>Full pattern details with layout specs and components</p></div>
-        <div class="tool"><code>decantr_resolve_archetype</code><p>App templates with page maps and feature lists</p></div>
-        <div class="tool"><code>decantr_resolve_blueprint</code><p>Composed app templates with full structure</p></div>
-        <div class="tool"><code>decantr_resolve_recipe</code><p>Visual decoration rules and spatial hints</p></div>
-        <div class="tool"><code>decantr_check_drift</code><p>Detect when code violates your design spec</p></div>
-        <div class="tool"><code>decantr_validate</code><p>Validate your Essence file against the schema</p></div>
-        <div class="tool"><code>decantr_read_essence</code><p>Read the current design spec from your project</p></div>
-        <div class="tool"><code>decantr_search_registry</code><p>Search patterns, archetypes, recipes, and themes</p></div>
+        <div class="tool reveal reveal-delay-1"><code>decantr_create_essence</code><p>Generate a design spec from a project description</p></div>
+        <div class="tool reveal reveal-delay-1"><code>decantr_suggest_patterns</code><p>Get pattern recommendations for any page type</p></div>
+        <div class="tool reveal reveal-delay-2"><code>decantr_resolve_pattern</code><p>Full pattern details with layout specs and components</p></div>
+        <div class="tool reveal reveal-delay-2"><code>decantr_resolve_archetype</code><p>App templates with page maps and feature lists</p></div>
+        <div class="tool reveal reveal-delay-3"><code>decantr_resolve_blueprint</code><p>Composed app templates with full structure</p></div>
+        <div class="tool reveal reveal-delay-3"><code>decantr_resolve_recipe</code><p>Visual decoration rules and spatial hints</p></div>
+        <div class="tool reveal reveal-delay-4"><code>decantr_check_drift</code><p>Detect when code violates your design spec</p></div>
+        <div class="tool reveal reveal-delay-4"><code>decantr_validate</code><p>Validate your Essence file against the schema</p></div>
+        <div class="tool reveal reveal-delay-5"><code>decantr_read_essence</code><p>Read the current design spec from your project</p></div>
+        <div class="tool reveal reveal-delay-5"><code>decantr_search_registry</code><p>Search patterns, archetypes, recipes, and themes</p></div>
       </div>
     </div>
   </div>
@@ -354,12 +747,13 @@
   <!-- Setup -->
   <div class="section" id="setup">
     <div class="container">
-      <h2>Set up in 30 seconds</h2>
-      <p class="subtitle">Add Decantr to your AI coding assistant. No project changes needed.</p>
+      <h2 class="reveal">Set up in 30 seconds</h2>
+      <p class="subtitle reveal reveal-delay-1">Add Decantr to your AI coding assistant. No project changes needed.</p>
 
-      <h3 style="margin-bottom: 12px;">Claude Desktop</h3>
-      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to your <code style="color: var(--accent);">claude_desktop_config.json</code>:</p>
-      <div class="setup-block"><span class="brace">{</span>
+      <div class="reveal reveal-delay-2">
+        <h3 style="margin-bottom: 12px;">Claude Desktop</h3>
+        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to your <code style="color: var(--cyan);">claude_desktop_config.json</code>:</p>
+        <div class="setup-block"><span class="brace">{</span>
   <span class="key">"mcpServers"</span><span class="brace">: {</span>
     <span class="key">"decantr"</span><span class="brace">: {</span>
       <span class="key">"command"</span><span class="brace">:</span> <span class="str">"npx"</span><span class="brace">,</span>
@@ -367,10 +761,12 @@
     <span class="brace">}</span>
   <span class="brace">}</span>
 <span class="brace">}</span></div>
+      </div>
 
-      <h3 style="margin: 32px 0 12px;">Claude Code</h3>
-      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to your <code style="color: var(--accent);">settings.json</code>:</p>
-      <div class="setup-block"><span class="brace">{</span>
+      <div class="reveal reveal-delay-3">
+        <h3 style="margin: 36px 0 12px;">Claude Code</h3>
+        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to your <code style="color: var(--cyan);">settings.json</code>:</p>
+        <div class="setup-block"><span class="brace">{</span>
   <span class="key">"mcpServers"</span><span class="brace">: {</span>
     <span class="key">"decantr"</span><span class="brace">: {</span>
       <span class="key">"command"</span><span class="brace">:</span> <span class="str">"npx"</span><span class="brace">,</span>
@@ -378,10 +774,12 @@
     <span class="brace">}</span>
   <span class="brace">}</span>
 <span class="brace">}</span></div>
+      </div>
 
-      <h3 style="margin: 32px 0 12px;">Cursor</h3>
-      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to <code style="color: var(--accent);">.cursor/mcp.json</code> in your project:</p>
-      <div class="setup-block"><span class="brace">{</span>
+      <div class="reveal reveal-delay-4">
+        <h3 style="margin: 36px 0 12px;">Cursor</h3>
+        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to <code style="color: var(--cyan);">.cursor/mcp.json</code> in your project:</p>
+        <div class="setup-block"><span class="brace">{</span>
   <span class="key">"mcpServers"</span><span class="brace">: {</span>
     <span class="key">"decantr"</span><span class="brace">: {</span>
       <span class="key">"command"</span><span class="brace">:</span> <span class="str">"npx"</span><span class="brace">,</span>
@@ -389,28 +787,29 @@
     <span class="brace">}</span>
   <span class="brace">}</span>
 <span class="brace">}</span></div>
+      </div>
     </div>
   </div>
 
   <!-- Packages -->
   <div class="section">
     <div class="container">
-      <h2>Packages</h2>
-      <p class="subtitle">Open source. MIT licensed. Use what you need.</p>
+      <h2 class="reveal">Packages</h2>
+      <p class="subtitle reveal reveal-delay-1">Open source. MIT licensed. Use what you need.</p>
       <div class="pkg-grid">
-        <div class="pkg">
+        <div class="pkg reveal reveal-delay-1">
           <code>@decantr/mcp-server</code>
           <p>MCP server exposing 10 design intelligence tools to AI coding assistants</p>
         </div>
-        <div class="pkg">
+        <div class="pkg reveal reveal-delay-2">
           <code>@decantr/essence-spec</code>
           <p>JSON Schema for UI architecture intent. Validator and guard rules.</p>
         </div>
-        <div class="pkg">
+        <div class="pkg reveal reveal-delay-3">
           <code>@decantr/core</code>
           <p>Design Pipeline IR engine. Transforms Essence specs into framework-agnostic structure.</p>
         </div>
-        <div class="pkg">
+        <div class="pkg reveal reveal-delay-4">
           <code>@decantr/registry</code>
           <p>Content resolver with wiring rules. Patterns, archetypes, recipes, themes, blueprints.</p>
         </div>
@@ -421,13 +820,13 @@
   <!-- API -->
   <div class="section">
     <div class="container">
-      <h2>Registry API</h2>
-      <p class="subtitle">Browse the design intelligence registry. 10 patterns, 19 archetypes, 10 blueprints, 10 themes.</p>
-      <div class="install">
-        <div class="cmd">curl https://decantr-registry.fly.dev/v1/patterns</div>
-        <div class="cmd">curl https://decantr-registry.fly.dev/v1/archetypes</div>
-        <div class="cmd">curl https://decantr-registry.fly.dev/v1/search?q=dashboard</div>
-        <div class="cmd">curl https://decantr-registry.fly.dev/v1/schema</div>
+      <h2 class="reveal">Registry API</h2>
+      <p class="subtitle reveal reveal-delay-1">Browse the design intelligence registry. 10 patterns, 19 archetypes, 10 blueprints, 10 themes.</p>
+      <div class="api-block reveal reveal-delay-2">
+        <span class="cmd">curl https://decantr-registry.fly.dev/v1/patterns</span>
+        <span class="cmd">curl https://decantr-registry.fly.dev/v1/archetypes</span>
+        <span class="cmd">curl https://decantr-registry.fly.dev/v1/search?q=dashboard</span>
+        <span class="cmd">curl https://decantr-registry.fly.dev/v1/schema</span>
       </div>
     </div>
   </div>
@@ -435,6 +834,7 @@
   <!-- Footer -->
   <div class="footer">
     <div class="container">
+      <img src="logo.svg" alt="Decantr" class="footer-logo">
       <div class="footer-links">
         <a href="https://github.com/decantr-ai/decantr">GitHub</a>
         <a href="https://www.npmjs.com/org/decantr">npm</a>
@@ -443,6 +843,26 @@
       <p>MIT License. Built by <a href="https://github.com/decantr-ai">Decantr AI</a>.</p>
     </div>
   </div>
+
+  <script>
+    // Minimal IntersectionObserver for scroll-triggered reveal animations
+    document.addEventListener('DOMContentLoaded', function() {
+      var els = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        els.forEach(function(el) { observer.observe(el); });
+      } else {
+        els.forEach(function(el) { el.classList.add('visible'); });
+      }
+    });
+  </script>
 
 </body>
 </html>
