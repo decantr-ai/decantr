@@ -1,7 +1,14 @@
 {
   "name": "@decantr/essence-spec",
-  "version": "0.1.0",
+  "version": "1.0.0-beta.1",
   "description": "Essence schema, validator, and TypeScript types for Decantr",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/decantr-ai/decantr.git",
+    "directory": "packages/essence-spec"
+  },
+  "homepage": "https://decantr.ai",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,6 +22,9 @@
     }
   },
   "files": ["dist", "schema"],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
