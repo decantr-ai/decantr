@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decantr — Design Intelligence for AI-Generated UI</title>
+  <meta name="description" content="Decantr is OpenAPI for AI-generated UI. A structured schema and design intelligence layer that makes Claude, Cursor, and Copilot generate better, more consistent web applications.">
+  <meta property="og:title" content="Decantr — Design Intelligence for AI-Generated UI">
+  <meta property="og:description" content="We don't care what you build with. We care what you build.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://decantr.ai">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>D</text></svg>">
+  <style>
+    :root {
+      --bg: #0a0a0b;
+      --fg: #fafafa;
+      --muted: #a1a1aa;
+      --accent: #a78bfa;
+      --accent-dim: #7c3aed;
+      --card-bg: #18181b;
+      --card-border: #27272a;
+      --code-bg: #1e1e22;
+      --max-w: 960px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+
+    /* Hero */
+    .hero {
+      padding: 120px 0 80px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero .tagline {
+      font-size: 1.25rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto 40px;
+    }
+    .hero .cta-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.15s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+    .btn-primary:hover { background: #b49bff; text-decoration: none; }
+    .btn-secondary {
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--card-border);
+    }
+    .btn-secondary:hover { border-color: var(--muted); text-decoration: none; }
+
+    /* Install block */
+    .install {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px 24px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.95rem;
+      max-width: 600px;
+      margin: 40px auto 0;
+      text-align: left;
+      color: var(--muted);
+      overflow-x: auto;
+    }
+    .install .comment { color: #6b7280; }
+    .install .cmd { color: var(--fg); }
+
+    /* Section */
+    .section {
+      padding: 80px 0;
+      border-top: 1px solid var(--card-border);
+    }
+    .section h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .section .subtitle {
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin-bottom: 48px;
+      max-width: 640px;
+    }
+
+    /* Problem/Solution */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 640px) {
+      .problem-grid { grid-template-columns: 1fr; }
+    }
+    .problem-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .problem-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .problem-card p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .problem-card.solution { border-color: var(--accent-dim); }
+    .problem-card .label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    .problem-card .label.red { color: #ef4444; }
+    .problem-card .label.green { color: #22c55e; }
+
+    /* Tools */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 640px) {
+      .tools-grid { grid-template-columns: 1fr; }
+    }
+    .tool {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+    .tool code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+    .tool p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* Pipeline */
+    .pipeline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .pipeline-step {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      flex: 1;
+      min-width: 120px;
+      text-align: center;
+    }
+    .pipeline-step .num {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .pipeline-step .name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* Setup */
+    .setup-block {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .setup-block .key { color: #93c5fd; }
+    .setup-block .str { color: #86efac; }
+    .setup-block .brace { color: var(--muted); }
+
+    /* Footer */
+    .footer {
+      padding: 48px 0;
+      border-top: 1px solid var(--card-border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    /* Packages */
+    .pkg-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 640px) {
+      .pkg-grid { grid-template-columns: 1fr; }
+    }
+    .pkg {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .pkg code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+    .pkg p { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="container">
+      <h1><span>Design intelligence</span><br>for AI-generated UI</h1>
+      <p class="tagline">We don't care what you build with. We care what you build. Decantr is a structured schema and intelligence layer that makes AI coding assistants generate consistent, production-quality web applications.</p>
+      <div class="cta-row">
+        <a href="#setup" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/decantr-ai/decantr" class="btn btn-secondary">GitHub</a>
+        <a href="https://www.npmjs.com/package/@decantr/mcp-server" class="btn btn-secondary">npm</a>
+      </div>
+      <div class="install">
+        <div class="comment"># Add to Claude Desktop, Cursor, or any MCP-compatible AI</div>
+        <div class="cmd">npx @decantr/mcp-server@beta</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Problem / Solution -->
+  <div class="section">
+    <div class="container">
+      <h2>The problem with AI-generated UI</h2>
+      <p class="subtitle">Every AI code generator races to output faster. None of them think about what happens after they generate.</p>
+      <div class="problem-grid">
+        <div class="problem-card">
+          <div class="label red">Without Decantr</div>
+          <h3>Pages don't match each other</h3>
+          <p>Each prompt produces a different layout, spacing, and component style. After 10 iterations, your app looks like it was built by 10 different people.</p>
+        </div>
+        <div class="problem-card solution">
+          <div class="label green">With Decantr</div>
+          <h3>Consistent design language</h3>
+          <p>Patterns enforce consistent component composition. The Essence spec captures your design intent. Every page matches.</p>
+        </div>
+        <div class="problem-card">
+          <div class="label red">Without Decantr</div>
+          <h3>Every iteration drifts further</h3>
+          <p>AI doesn't remember what it decided before. New features conflict with existing design decisions. Quality degrades over time.</p>
+        </div>
+        <div class="problem-card solution">
+          <div class="label green">With Decantr</div>
+          <h3>Guard rules prevent drift</h3>
+          <p>Five guard rules validate every change against your spec. Theme, structure, layout, recipe, and density are enforced automatically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="section">
+    <div class="container">
+      <h2>How it works</h2>
+      <p class="subtitle">Decantr provides design intelligence through the MCP protocol. Your AI coding assistant calls Decantr's tools during code generation to produce better results.</p>
+      <div class="pipeline">
+        <div class="pipeline-step"><div class="num">1</div><div class="name">Intent</div></div>
+        <div class="pipeline-step"><div class="num">2</div><div class="name">Interpret</div></div>
+        <div class="pipeline-step"><div class="num">3</div><div class="name">Decompose</div></div>
+        <div class="pipeline-step"><div class="num">4</div><div class="name">Specify</div></div>
+        <div class="pipeline-step"><div class="num">5</div><div class="name">Compose</div></div>
+        <div class="pipeline-step"><div class="num">6</div><div class="name">Generate</div></div>
+        <div class="pipeline-step"><div class="num">7</div><div class="name">Guard</div></div>
+      </div>
+      <p style="color: var(--muted); font-size: 0.95rem;">You describe what you want. Decantr structures it into a validated spec (the Essence file). Your AI generates code using Decantr's patterns, archetypes, and spatial rules. Guard rules prevent drift on every subsequent change.</p>
+    </div>
+  </div>
+
+  <!-- MCP Tools -->
+  <div class="section">
+    <div class="container">
+      <h2>10 MCP tools for your AI assistant</h2>
+      <p class="subtitle">Install the MCP server once. Every prompt gets smarter.</p>
+      <div class="tools-grid">
+        <div class="tool"><code>decantr_create_essence</code><p>Generate a design spec from a project description</p></div>
+        <div class="tool"><code>decantr_suggest_patterns</code><p>Get pattern recommendations for any page type</p></div>
+        <div class="tool"><code>decantr_resolve_pattern</code><p>Full pattern details with layout specs and components</p></div>
+        <div class="tool"><code>decantr_resolve_archetype</code><p>App templates with page maps and feature lists</p></div>
+        <div class="tool"><code>decantr_resolve_blueprint</code><p>Composed app templates with full structure</p></div>
+        <div class="tool"><code>decantr_resolve_recipe</code><p>Visual decoration rules and spatial hints</p></div>
+        <div class="tool"><code>decantr_check_drift</code><p>Detect when code violates your design spec</p></div>
+        <div class="tool"><code>decantr_validate</code><p>Validate your Essence file against the schema</p></div>
+        <div class="tool"><code>decantr_read_essence</code><p>Read the current design spec from your project</p></div>
+        <div class="tool"><code>decantr_search_registry</code><p>Search patterns, archetypes, recipes, and themes</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup -->
+  <div class="section" id="setup">
+    <div class="container">
+      <h2>Set up in 30 seconds</h2>
+      <p class="subtitle">Add Decantr to your AI coding assistant. No project changes needed.</p>
+
+      <h3 style="margin-bottom: 12px;">Claude Desktop</h3>
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to your <code style="color: var(--accent);">claude_desktop_config.json</code>:</p>
+      <div class="setup-block"><span class="brace">{</span>
+  <span class="key">"mcpServers"</span><span class="brace">: {</span>
+    <span class="key">"decantr"</span><span class="brace">: {</span>
+      <span class="key">"command"</span><span class="brace">:</span> <span class="str">"npx"</span><span class="brace">,</span>
+      <span class="key">"args"</span><span class="brace">:</span> <span class="brace">[</span><span class="str">"@decantr/mcp-server@beta"</span><span class="brace">]</span>
+    <span class="brace">}</span>
+  <span class="brace">}</span>
+<span class="brace">}</span></div>
+
+      <h3 style="margin: 32px 0 12px;">Claude Code</h3>
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to your <code style="color: var(--accent);">settings.json</code>:</p>
+      <div class="setup-block"><span class="brace">{</span>
+  <span class="key">"mcpServers"</span><span class="brace">: {</span>
+    <span class="key">"decantr"</span><span class="brace">: {</span>
+      <span class="key">"command"</span><span class="brace">:</span> <span class="str">"npx"</span><span class="brace">,</span>
+      <span class="key">"args"</span><span class="brace">:</span> <span class="brace">[</span><span class="str">"@decantr/mcp-server@beta"</span><span class="brace">]</span>
+    <span class="brace">}</span>
+  <span class="brace">}</span>
+<span class="brace">}</span></div>
+
+      <h3 style="margin: 32px 0 12px;">Cursor</h3>
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to <code style="color: var(--accent);">.cursor/mcp.json</code> in your project:</p>
+      <div class="setup-block"><span class="brace">{</span>
+  <span class="key">"mcpServers"</span><span class="brace">: {</span>
+    <span class="key">"decantr"</span><span class="brace">: {</span>
+      <span class="key">"command"</span><span class="brace">:</span> <span class="str">"npx"</span><span class="brace">,</span>
+      <span class="key">"args"</span><span class="brace">:</span> <span class="brace">[</span><span class="str">"@decantr/mcp-server@beta"</span><span class="brace">]</span>
+    <span class="brace">}</span>
+  <span class="brace">}</span>
+<span class="brace">}</span></div>
+    </div>
+  </div>
+
+  <!-- Packages -->
+  <div class="section">
+    <div class="container">
+      <h2>Packages</h2>
+      <p class="subtitle">Open source. MIT licensed. Use what you need.</p>
+      <div class="pkg-grid">
+        <div class="pkg">
+          <code>@decantr/mcp-server</code>
+          <p>MCP server exposing 10 design intelligence tools to AI coding assistants</p>
+        </div>
+        <div class="pkg">
+          <code>@decantr/essence-spec</code>
+          <p>JSON Schema for UI architecture intent. Validator and guard rules.</p>
+        </div>
+        <div class="pkg">
+          <code>@decantr/core</code>
+          <p>Design Pipeline IR engine. Transforms Essence specs into framework-agnostic structure.</p>
+        </div>
+        <div class="pkg">
+          <code>@decantr/registry</code>
+          <p>Content resolver with wiring rules. Patterns, archetypes, recipes, themes, blueprints.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API -->
+  <div class="section">
+    <div class="container">
+      <h2>Registry API</h2>
+      <p class="subtitle">Browse the design intelligence registry. 10 patterns, 19 archetypes, 10 blueprints, 10 themes.</p>
+      <div class="install">
+        <div class="cmd">curl https://decantr-registry.fly.dev/v1/patterns</div>
+        <div class="cmd">curl https://decantr-registry.fly.dev/v1/archetypes</div>
+        <div class="cmd">curl https://decantr-registry.fly.dev/v1/search?q=dashboard</div>
+        <div class="cmd">curl https://decantr-registry.fly.dev/v1/schema</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://github.com/decantr-ai/decantr">GitHub</a>
+        <a href="https://www.npmjs.com/org/decantr">npm</a>
+        <a href="https://decantr-registry.fly.dev/v1/patterns">API</a>
+      </div>
+      <p>MIT License. Built by <a href="https://github.com/decantr-ai">Decantr AI</a>.</p>
+    </div>
+  </div>
+
+</body>
+</html>
