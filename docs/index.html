@@ -256,13 +256,36 @@
       color: var(--fg);
     }
 
-    /* ===== WAVE DIVIDERS ===== */
-    .wave-divider {
-      width: 100%;
-      margin-top: -1px;
-      margin-bottom: -1px;
+    /* ===== SECTION TRANSITIONS ===== */
+    /* Gradient bleeds at bottom of each section — seamless color flow */
+    section::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 250px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    section > .container {
       position: relative;
       z-index: 1;
+    }
+    .problem-section::after {
+      background: linear-gradient(180deg, transparent 0%, rgba(245,136,130,0.06) 70%, rgba(10,243,235,0.03) 100%);
+    }
+    .pipeline-section::after {
+      background: linear-gradient(180deg, transparent 0%, rgba(10,243,235,0.05) 70%, rgba(253,163,3,0.03) 100%);
+    }
+    .tools-section::after {
+      background: linear-gradient(180deg, transparent 0%, rgba(253,163,3,0.05) 70%, rgba(101,0,198,0.03) 100%);
+    }
+    .quickstart-section::after {
+      background: linear-gradient(180deg, transparent 0%, rgba(101,0,198,0.04) 70%, rgba(0,224,171,0.03) 100%);
+    }
+    .packages-section::after {
+      background: linear-gradient(180deg, transparent 0%, rgba(0,224,171,0.04) 100%);
     }
 
     /* ===== SECTION COMMON ===== */
@@ -1216,20 +1239,6 @@
 </section>
 
 <!-- Wave: Hero → Problem (coral glow fading in) -->
-<div class="wave-divider" style="height:140px">
-  <svg viewBox="0 0 1440 140" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
-    <defs>
-      <linearGradient id="w1" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#F58882" stop-opacity="0.05"/>
-        <stop offset="60%" stop-color="#F58882" stop-opacity="0.15"/>
-        <stop offset="100%" stop-color="#F58882" stop-opacity="0.12"/>
-      </linearGradient>
-    </defs>
-    <path fill="url(#w1)" d="M0,60 C320,120 640,20 960,80 C1120,100 1300,40 1440,50 L1440,140 L0,140 Z"/>
-    <path fill="rgba(245,136,130,0.05)" d="M0,90 C400,40 800,110 1200,50 C1350,35 1440,70 1440,70 L1440,140 L0,140 Z"/>
-  </svg>
-</div>
-
 <!-- ==================== PROBLEM ==================== -->
 <section id="problem" class="problem-section">
   <div class="container">
@@ -1371,19 +1380,6 @@
 </section>
 
 <!-- Wave: Problem → Pipeline (coral fading out, cyan fading in) -->
-<div class="wave-divider" style="height:140px">
-  <svg viewBox="0 0 1440 140" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
-    <defs>
-      <linearGradient id="w2" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#F58882" stop-opacity="0.15"/>
-        <stop offset="100%" stop-color="#0AF3EB" stop-opacity="0.12"/>
-      </linearGradient>
-    </defs>
-    <path fill="url(#w2)" d="M0,60 C320,120 640,20 960,80 C1120,100 1300,40 1440,50 L1440,140 L0,140 Z"/>
-    <path fill="rgba(10,243,235,0.05)" d="M0,90 C400,40 800,110 1200,50 C1350,35 1440,70 1440,70 L1440,140 L0,140 Z"/>
-  </svg>
-</div>
-
 <!-- ==================== PIPELINE ==================== -->
 <section class="pipeline-section">
   <div class="container">
@@ -1525,19 +1521,6 @@
 </section>
 
 <!-- Wave: Pipeline → Tools (cyan fading out, amber fading in) -->
-<div class="wave-divider" style="height:140px">
-  <svg viewBox="0 0 1440 140" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
-    <defs>
-      <linearGradient id="w3" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#0AF3EB" stop-opacity="0.15"/>
-        <stop offset="100%" stop-color="#FDA303" stop-opacity="0.12"/>
-      </linearGradient>
-    </defs>
-    <path fill="url(#w3)" d="M0,50 C240,110 480,20 720,70 C960,120 1200,30 1440,60 L1440,140 L0,140 Z"/>
-    <path fill="rgba(253,163,3,0.05)" d="M0,90 C360,40 720,100 1080,40 C1260,25 1440,60 1440,60 L1440,140 L0,140 Z"/>
-  </svg>
-</div>
-
 <!-- ==================== MCP TOOLS ==================== -->
 <section class="tools-section" id="tools">
   <div class="container">
@@ -1590,19 +1573,6 @@
 </section>
 
 <!-- Wave: Tools → Quick Start (amber fading out, purple fading in) -->
-<div class="wave-divider" style="height:140px">
-  <svg viewBox="0 0 1440 140" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
-    <defs>
-      <linearGradient id="w4" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#FDA303" stop-opacity="0.15"/>
-        <stop offset="100%" stop-color="#6500C6" stop-opacity="0.12"/>
-      </linearGradient>
-    </defs>
-    <path fill="url(#w4)" d="M0,70 C480,10 960,110 1440,40 L1440,140 L0,140 Z"/>
-    <path fill="rgba(101,0,198,0.05)" d="M0,50 C320,100 640,30 960,80 C1200,105 1440,45 1440,45 L1440,140 L0,140 Z"/>
-  </svg>
-</div>
-
 <!-- ==================== QUICK START ==================== -->
 <section class="quickstart-section" id="quickstart">
   <div class="container">
@@ -1684,19 +1654,6 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
 </section>
 
 <!-- Wave: Quick Start → Packages (purple fading out, green fading in) -->
-<div class="wave-divider" style="height:140px">
-  <svg viewBox="0 0 1440 140" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
-    <defs>
-      <linearGradient id="w5" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#6500C6" stop-opacity="0.15"/>
-        <stop offset="100%" stop-color="#00E0AB" stop-opacity="0.12"/>
-      </linearGradient>
-    </defs>
-    <path fill="url(#w5)" d="M0,30 C360,100 720,20 1080,80 C1260,105 1440,55 1440,55 L1440,140 L0,140 Z"/>
-    <path fill="rgba(0,224,171,0.05)" d="M0,60 C480,110 960,30 1440,70 L1440,140 L0,140 Z"/>
-  </svg>
-</div>
-
 <!-- ==================== PACKAGES ==================== -->
 <section class="packages-section" id="packages">
   <div class="container">
