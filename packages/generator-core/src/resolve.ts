@@ -110,6 +110,10 @@ function flattenLayoutForWiring(layout: LayoutItem[]): LayoutItem[] {
 
 function routePath(pageId: string, index: number): string {
   if (index === 0) return '/';
+  // AUTO: Pages ending in "-detail" get a dynamic :id route parameter
+  if (pageId.endsWith('-detail')) {
+    return `/${pageId}/:id`;
+  }
   return `/${pageId}`;
 }
 
