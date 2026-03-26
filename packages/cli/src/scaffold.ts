@@ -8,8 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export interface EssenceFile {
   version: string;
-  archetype?: string;
-  blueprint?: string;
+  archetype: string;
   theme: {
     style: string;
     mode: string;
@@ -95,9 +94,9 @@ function renderTemplate(template: string, vars: Record<string, string>): string 
  * Build the essence file from options and blueprint data.
  */
 export function buildEssence(options: InitOptions, blueprint?: BlueprintData): EssenceFile {
-  // Default structure if no blueprint
+  // Default structure if no blueprint - must have at least one pattern in layout
   let structure: EssenceFile['structure'] = [
-    { id: 'home', shell: options.shell, layout: [] }
+    { id: 'home', shell: options.shell, layout: ['hero'] }
   ];
   let features: string[] = options.features;
 
@@ -106,7 +105,8 @@ export function buildEssence(options: InitOptions, blueprint?: BlueprintData): E
     structure = blueprint.pages.map(p => ({
       id: p.id,
       shell: p.shell || options.shell,
-      layout: p.default_layout || [],
+      // Ensure layout has at least one item (schema requires minItems: 1)
+      layout: p.default_layout?.length ? p.default_layout : ['hero'],
     }));
   }
 
@@ -121,10 +121,12 @@ export function buildEssence(options: InitOptions, blueprint?: BlueprintData): E
     spacious: '_gap6',
   };
 
+  // Use blueprint or archetype as the archetype field (schema requires archetype, not blueprint)
+  const archetype = options.blueprint || options.archetype || 'custom';
+
   return {
     version: '2.0.0',
-    archetype: options.archetype,
-    blueprint: options.blueprint,
+    archetype,
     theme: {
       style: options.theme,
       mode: options.mode,
