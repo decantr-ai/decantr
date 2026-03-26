@@ -5,7 +5,7 @@ const VALID_SIMPLE: Record<string, unknown> = {
   version: '2.0.0',
   archetype: 'saas-dashboard',
   theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' },
-  character: ['professional', 'data-rich'],
+  personality: ['professional', 'data-rich'],
   platform: { type: 'spa', routing: 'hash' },
   structure: [
     { id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid', 'chart-grid'] },
@@ -19,7 +19,7 @@ const VALID_SIMPLE: Record<string, unknown> = {
 const VALID_SECTIONED: Record<string, unknown> = {
   version: '2.0.0',
   platform: { type: 'spa', routing: 'hash' },
-  character: ['professional'],
+  personality: ['professional'],
   sections: [
     {
       id: 'brand',
@@ -81,8 +81,8 @@ describe('validateEssence', () => {
     expect(result.valid).toBe(false);
   });
 
-  it('rejects empty character array', () => {
-    const bad = { ...VALID_SIMPLE, character: [] };
+  it('rejects empty personality array', () => {
+    const bad = { ...VALID_SIMPLE, personality: [] };
     const result = validateEssence(bad);
     expect(result.valid).toBe(false);
   });

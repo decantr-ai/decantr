@@ -9,7 +9,7 @@
   "presets": {
     "landing": {
       "description": "Standard landing hero",
-      "blend": { "layout": "hero", "atoms": "_flex _col _aic _tc _gap6 _py12 _px6" },
+      "layout": { "layout": "hero", "atoms": "_flex _col _aic _tc _gap6 _py12 _px6" },
       "code": { "imports": "import { Button } from 'decantr/components';", "example": "function HeroPattern() { return h('section', { class: css('_flex _col _aic') }, text('Hero')); }" }
     }
   }

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "prismatic",
+  "name": "Prismatic",
+  "description": "Chromatic depth shifting. Iridescent, futuristic. Surfaces change hue as they layer deeper, creating a rainbow-depth effect. Each elevation level has a different hue tint.",
+  "tags": [
+    "iridescent",
+    "chromatic",
+    "futuristic",
+    "depth",
+    "rainbow"
+  ],
+  "personality": "rounded + raised elevation + smooth motion + thin borders + vivid gradients",
+  "seed": {
+    "primary": "#6366f1",
+    "secondary": "#ec4899",
+    "accent": "#14b8a6",
+    "background": "#fafafa"
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=0.9.0",
+  "source": "community"
+}

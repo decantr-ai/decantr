@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { normalizeEssence } from '../src/normalize.js';
 
 describe('normalizeEssence', () => {
-  it('converts v1 wine terminology to v2 normalized terminology', () => {
+  it('converts v1 wine terminology to v2 normalized terms (layouts, features, theme, shell, personality)', () => {
     const v1 = {
       version: '1.0.0',
       terroir: 'saas-dashboard',
@@ -36,7 +36,7 @@ describe('normalizeEssence', () => {
       version: '2.0.0',
       archetype: 'saas-dashboard',
       theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism' },
-      character: ['professional'],
+      personality: ['professional'],
       platform: { type: 'spa', routing: 'hash' },
       structure: [{ id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid'] }],
       features: ['auth'],

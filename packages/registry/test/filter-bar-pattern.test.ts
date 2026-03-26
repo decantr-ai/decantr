@@ -38,22 +38,22 @@ describe('filter-bar pattern JSON', () => {
 
   it('standard preset has row layout with flex row atoms', () => {
     const standard = raw.presets.standard;
-    expect(standard.blend.layout).toBe('row');
-    expect(standard.blend.atoms).toContain('_flex');
-    expect(standard.blend.atoms).toContain('_row');
-    expect(standard.blend.atoms).toContain('_w[100%]');
+    expect(standard.layout.layout).toBe('row');
+    expect(standard.layout.atoms).toContain('_flex');
+    expect(standard.layout.atoms).toContain('_row');
+    expect(standard.layout.atoms).toContain('_w[100%]');
   });
 
   it('compact preset has row layout with tighter gap', () => {
     const compact = raw.presets.compact;
-    expect(compact.blend.layout).toBe('row');
-    expect(compact.blend.atoms).toContain('_gap2');
+    expect(compact.layout.layout).toBe('row');
+    expect(compact.layout.atoms).toContain('_gap2');
   });
 
   it('advanced preset has column layout for multi-row', () => {
     const advanced = raw.presets.advanced;
-    expect(advanced.blend.layout).toBe('column');
-    expect(advanced.blend.atoms).toContain('_col');
+    expect(advanced.layout.layout).toBe('column');
+    expect(advanced.layout.atoms).toContain('_col');
   });
 
   it('has io.produces with search, filters, and status', () => {

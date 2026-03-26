@@ -10,17 +10,38 @@
     "recipes": {},
     "styles": {},
     "requires_core": {
-      "components": ["Table", "Checkbox", "Button", "Input", "Badge", "icon"],
+      "components": [
+        "Table",
+        "Checkbox",
+        "Button",
+        "Input",
+        "Badge",
+        "icon"
+      ],
       "charts": []
     }
   },
-  "components": ["Table", "Checkbox", "Button", "Input", "Badge", "icon"],
+  "components": [
+    "Table",
+    "Checkbox",
+    "Button",
+    "Input",
+    "Badge",
+    "icon"
+  ],
   "default_preset": "standard",
   "presets": {
     "standard": {
       "description": "Full-featured table with column headers, sortable columns, row selection checkboxes, pagination footer",
-      "components": ["Table", "Checkbox", "Button", "Input", "Badge", "icon"],
-      "blend": {
+      "components": [
+        "Table",
+        "Checkbox",
+        "Button",
+        "Input",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
         "layout": "column",
         "atoms": "_flex _col _gap4 _w[100%] _overflow[auto]",
         "slots": {
@@ -37,8 +58,13 @@
     },
     "compact": {
       "description": "Denser rows, no selection, simpler pagination (prev/next only)",
-      "components": ["Table", "Button", "Badge", "icon"],
-      "blend": {
+      "components": [
+        "Table",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
         "layout": "column",
         "atoms": "_flex _col _gap2 _w[100%] _overflow[auto]",
         "slots": {
@@ -53,7 +79,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "column",
     "atoms": "_flex _col _gap4 _w[100%] _overflow[auto]",
     "slots": {
@@ -68,8 +94,19 @@
     "example": "function DataTable({ search, status, data }) {\n  const { div, span, thead, tbody, tr, th, td } = tags;\n\n  const columns = [\n    { key: 'name', label: 'Name', sortable: true },\n    { key: 'status', label: 'Status', sortable: true },\n    { key: 'email', label: 'Email', sortable: false },\n    { key: 'amount', label: 'Amount', sortable: true },\n  ];\n\n  const rows = data || [\n    { name: 'Alice Johnson', status: 'active', email: 'alice@example.com', amount: '$1,200' },\n    { name: 'Bob Smith', status: 'inactive', email: 'bob@example.com', amount: '$890' },\n    { name: 'Carol White', status: 'active', email: 'carol@example.com', amount: '$2,100' },\n  ];\n\n  return div({ class: css('_flex _col _gap4 _w[100%] _overflow[auto]') },\n    div({ class: css('_flex _jcsb _aic _gap4') },\n      Input({ placeholder: 'Search...', value: search || '', class: css('_mw[300px]') }),\n      div({ class: css('_flex _gap2') },\n        Button({ variant: 'outline', size: 'sm' }, icon('download'), 'Export'),\n        Button({ variant: 'outline', size: 'sm' }, icon('trash'), 'Delete')\n      )\n    ),\n    Table({ class: css('_w[100%]') },\n      thead({},\n        tr({},\n          th({ class: css('_p3') }, Checkbox({})),\n          ...columns.map(col =>\n            th({ class: css('_p3 _textleft _textsm _fgmuted') },\n              span({}, col.label),\n              col.sortable ? icon('chevrons-up-down', { size: '0.75rem', class: css('_ml1') }) : null\n            )\n          )\n        )\n      ),\n      tbody({},\n        ...rows.map(row =>\n          tr({ class: css('_borderbottom _border[var(--border)]') },\n            td({ class: css('_p3') }, Checkbox({})),\n            td({ class: css('_p3 _textsm _fontmedium') }, row.name),\n            td({ class: css('_p3') }, Badge({ variant: row.status === 'active' ? 'default' : 'secondary' }, row.status)),\n            td({ class: css('_p3 _textsm') }, row.email),\n            td({ class: css('_p3 _textsm _textright') }, row.amount)\n          )\n        )\n      )\n    ),\n    div({ class: css('_flex _jcsb _aic _py2') },\n      span({ class: css('_textsm _fgmuted') }, `${rows.length} row(s)`),\n      div({ class: css('_flex _gap2') },\n        Button({ variant: 'outline', size: 'sm', disabled: true }, 'Previous'),\n        Button({ variant: 'outline', size: 'sm' }, 'Next')\n      )\n    )\n  );\n}"
   },
   "io": {
-    "consumes": ["search", "filters", "data"],
-    "produces": ["selection", "sort"],
-    "actions": ["export", "delete", "edit"]
+    "consumes": [
+      "search",
+      "filters",
+      "data"
+    ],
+    "produces": [
+      "selection",
+      "sort"
+    ],
+    "actions": [
+      "export",
+      "delete",
+      "edit"
+    ]
   }
 }

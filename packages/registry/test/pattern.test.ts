@@ -8,12 +8,12 @@ const HERO_PATTERN: Pattern = {
   presets: {
     landing: {
       description: 'Standard landing',
-      blend: { layout: 'hero', atoms: '_flex _col _aic _tc _gap6' },
+      layout: { layout: 'hero', atoms: '_flex _col _aic _tc _gap6' },
       code: { imports: 'import { Button } from "decantr/components";', example: 'function HeroLanding() {}' },
     },
     'image-overlay': {
       description: 'Image background hero',
-      blend: { layout: 'hero', atoms: '_flex _col _aic _tc _gap4 _py16' },
+      layout: { layout: 'hero', atoms: '_flex _col _aic _tc _gap4 _py16' },
       code: { imports: 'import { Button } from "decantr/components";', example: 'function HeroImageOverlay() {}' },
     },
   },

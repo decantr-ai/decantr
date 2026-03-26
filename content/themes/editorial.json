@@ -1,0 +1,31 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "editorial",
+  "name": "Editorial",
+  "description": "Digital print magazine aesthetic. High-contrast, dramatic typography, zero decoration. Content is the design. Ink-on-paper warmth with modern sensibility.",
+  "tags": [
+    "magazine",
+    "typography",
+    "high-contrast",
+    "print",
+    "minimal"
+  ],
+  "personality": "sharp + flat elevation + instant motion + no borders + no gradients",
+  "seed": {
+    "primary": "#1a1a1a",
+    "secondary": "#c41e3a",
+    "accent": "#1a5276",
+    "background": "#fefcf9"
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=0.9.0",
+  "source": "community"
+}

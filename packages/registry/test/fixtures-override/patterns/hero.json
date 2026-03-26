@@ -9,7 +9,7 @@
   "presets": {
     "landing": {
       "description": "Overridden landing",
-      "blend": { "layout": "hero", "atoms": "_flex _col" },
+      "layout": { "layout": "hero", "atoms": "_flex _col" },
       "code": { "imports": "", "example": "function HeroOverride() {}" }
     }
   }

@@ -49,20 +49,20 @@ describe('card-grid pattern', () => {
 
   it('each preset has appropriate grid atoms', () => {
     // Product: 4-breakpoint responsive grid
-    expect(cardGrid.presets.product.blend.atoms).toContain('_xl:gc4');
-    expect(cardGrid.presets.product.blend.atoms).toContain('_sm:gc2');
+    expect(cardGrid.presets.product.layout.atoms).toContain('_xl:gc4');
+    expect(cardGrid.presets.product.layout.atoms).toContain('_sm:gc2');
 
     // Content: 3-col max
-    expect(cardGrid.presets.content.blend.atoms).toContain('_lg:gc3');
-    expect(cardGrid.presets.content.blend.atoms).not.toContain('_xl:gc4');
+    expect(cardGrid.presets.content.layout.atoms).toContain('_lg:gc3');
+    expect(cardGrid.presets.content.layout.atoms).not.toContain('_xl:gc4');
 
     // Collection: 2/3 cols
-    expect(cardGrid.presets.collection.blend.atoms).toContain('_gc2');
-    expect(cardGrid.presets.collection.blend.atoms).toContain('_lg:gc3');
+    expect(cardGrid.presets.collection.layout.atoms).toContain('_gc2');
+    expect(cardGrid.presets.collection.layout.atoms).toContain('_lg:gc3');
 
     // Icon: compact 2/3/4 cols
-    expect(cardGrid.presets.icon.blend.atoms).toContain('_gc2');
-    expect(cardGrid.presets.icon.blend.atoms).toContain('_lg:gc4');
+    expect(cardGrid.presets.icon.layout.atoms).toContain('_gc2');
+    expect(cardGrid.presets.icon.layout.atoms).toContain('_lg:gc4');
   });
 
   it('io declarations are correct', () => {

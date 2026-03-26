@@ -5,11 +5,32 @@
   "decantr_compat": ">=0.10.0",
   "name": "Cloud Infrastructure",
   "description": "Infrastructure management pages: apps, deployments, teams, services, tokens, usage monitoring, status, and compliance",
-  "tags": ["cloud", "infrastructure", "deploy", "devops", "monitoring", "compliance"],
+  "tags": [
+    "cloud",
+    "infrastructure",
+    "deploy",
+    "devops",
+    "monitoring",
+    "compliance"
+  ],
   "classification": {
     "triggers": {
-      "primary": ["cloud", "infrastructure", "deploy", "containers", "kubernetes", "servers"],
-      "secondary": ["microservices", "devops", "monitoring", "CI/CD", "tokens", "compliance"],
+      "primary": [
+        "cloud",
+        "infrastructure",
+        "deploy",
+        "containers",
+        "kubernetes",
+        "servers"
+      ],
+      "secondary": [
+        "microservices",
+        "devops",
+        "monitoring",
+        "CI/CD",
+        "tokens",
+        "compliance"
+      ],
       "negative": []
     },
     "implies": [],
@@ -19,95 +40,163 @@
   "pages": [
     {
       "id": "apps",
-      "patterns": ["filter-bar", "card-grid", "activity-feed"],
-      "default_blend": [
+      "patterns": [
+        "filter-bar",
+        "card-grid",
+        "activity-feed"
+      ],
+      "default_layout": [
         "filter-bar",
         {
           "cols": [
-            { "pattern": "card-grid", "preset": "resource", "as": "app-grid" },
+            {
+              "pattern": "card-grid",
+              "preset": "resource",
+              "as": "app-grid"
+            },
             "activity-feed"
           ],
-          "span": { "app-grid": 2 },
+          "span": {
+            "app-grid": 2
+          },
           "at": "lg"
         }
       ],
-      "carafe": "sidebar-main"
+      "shell": "sidebar-main"
     },
     {
       "id": "app-detail",
-      "patterns": ["detail-header", "kpi-grid", "deploy-log", "data-table"],
-      "default_blend": [
+      "patterns": [
+        "detail-header",
+        "kpi-grid",
+        "deploy-log",
+        "data-table"
+      ],
+      "default_layout": [
         "detail-header",
         "kpi-grid",
         {
           "cols": [
-            { "pattern": "deploy-log", "preset": "live", "as": "deploy-log" },
+            {
+              "pattern": "deploy-log",
+              "preset": "live",
+              "as": "deploy-log"
+            },
             "data-table"
           ],
           "at": "lg"
         }
       ],
-      "carafe": "sidebar-main"
+      "shell": "sidebar-main"
     },
     {
       "id": "team",
-      "patterns": ["filter-bar", "card-grid"],
-      "default_blend": [
+      "patterns": [
         "filter-bar",
-        { "pattern": "card-grid", "preset": "user", "as": "team-grid" }
+        "card-grid"
       ],
-      "carafe": "sidebar-main"
+      "default_layout": [
+        "filter-bar",
+        {
+          "pattern": "card-grid",
+          "preset": "user",
+          "as": "team-grid"
+        }
+      ],
+      "shell": "sidebar-main"
     },
     {
       "id": "activity",
-      "patterns": ["filter-bar", "activity-feed"],
-      "default_blend": ["filter-bar", "activity-feed"],
-      "carafe": "sidebar-main"
+      "patterns": [
+        "filter-bar",
+        "activity-feed"
+      ],
+      "default_layout": [
+        "filter-bar",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
     },
     {
       "id": "services",
-      "patterns": ["service-catalog"],
-      "default_blend": [
-        { "pattern": "service-catalog", "preset": "grid", "as": "service-grid" }
+      "patterns": [
+        "service-catalog"
       ],
-      "carafe": "sidebar-main"
+      "default_layout": [
+        {
+          "pattern": "service-catalog",
+          "preset": "grid",
+          "as": "service-grid"
+        }
+      ],
+      "shell": "sidebar-main"
     },
     {
       "id": "tokens",
-      "patterns": ["filter-bar", "data-table"],
-      "default_blend": [
-        { "pattern": "filter-bar", "preset": "toolbar", "as": "token-toolbar" },
+      "patterns": [
+        "filter-bar",
         "data-table"
       ],
-      "carafe": "sidebar-main"
+      "default_layout": [
+        {
+          "pattern": "filter-bar",
+          "preset": "toolbar",
+          "as": "token-toolbar"
+        },
+        "data-table"
+      ],
+      "shell": "sidebar-main"
     },
     {
       "id": "usage",
-      "patterns": ["resource-overview", "chart-grid"],
-      "default_blend": [
-        { "pattern": "resource-overview", "preset": "gauge-grid", "as": "resource-gauges" },
+      "patterns": [
+        "resource-overview",
         "chart-grid"
       ],
-      "carafe": "sidebar-main"
+      "default_layout": [
+        {
+          "pattern": "resource-overview",
+          "preset": "gauge-grid",
+          "as": "resource-gauges"
+        },
+        "chart-grid"
+      ],
+      "shell": "sidebar-main"
     },
     {
       "id": "status",
-      "patterns": ["status-board"],
-      "default_blend": ["status-board"],
-      "carafe": "sidebar-main"
+      "patterns": [
+        "status-board"
+      ],
+      "default_layout": [
+        "status-board"
+      ],
+      "shell": "sidebar-main"
     },
     {
       "id": "compliance",
-      "patterns": ["checklist-card", "data-table"],
-      "default_blend": [
-        { "pattern": "checklist-card", "preset": "onboarding", "as": "compliance-checklist" },
+      "patterns": [
+        "checklist-card",
         "data-table"
       ],
-      "carafe": "sidebar-main"
+      "default_layout": [
+        {
+          "pattern": "checklist-card",
+          "preset": "onboarding",
+          "as": "compliance-checklist"
+        },
+        "data-table"
+      ],
+      "shell": "sidebar-main"
     }
   ],
-  "tannins": ["realtime-data", "team-management"],
-  "carafes": { "sidebar-main": "Left sidebar with grouped nav + main content area" },
+  "features": [
+    "realtime-data",
+    "team-management"
+  ],
+  "shells": {
+    "sidebar-main": "Left sidebar with grouped nav + main content area"
+  },
   "dependencies": {
     "patterns": {
       "activity-feed": "^1.0.0",
@@ -126,5 +215,14 @@
     "recipes": {},
     "styles": {}
   },
-  "suggested_vintage": { "styles": ["launchpad", "clean"], "modes": ["light", "dark"] }
+  "suggested_theme": {
+    "styles": [
+      "launchpad",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
 }

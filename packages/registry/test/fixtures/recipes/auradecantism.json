@@ -4,7 +4,7 @@
   "mode": "dark",
   "schema_version": "2.0",
   "spatial_hints": { "density_bias": 0, "content_gap_shift": 0, "section_padding": "_p6", "card_wrapping": "minimal", "surface_override": null },
-  "carafe": { "preferred": ["sidebar-main"], "nav_style": "pill" },
+  "shell": { "preferred": ["sidebar-main"], "nav_style": "pill" },
   "visual_effects": { "enabled": true, "intensity": "subtle", "type_mapping": {}, "component_fallback": {} },
   "pattern_preferences": { "prefer": ["kpi-grid", "chart-grid"], "avoid": [], "default_presets": { "hero": "landing" } }
 }

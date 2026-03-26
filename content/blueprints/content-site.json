@@ -1,0 +1,25 @@
+{
+  "$schema": "decantr-vignette-v1.0",
+  "id": "content-site",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "Content Site",
+  "description": "Blog, magazine, documentation, or knowledge base with articles, categories, and search.",
+  "tags": [],
+  "compose": [
+    "content-site"
+  ],
+  "theme": {
+    "style": "auradecantism",
+    "recipe": "auradecantism"
+  },
+  "personality": [],
+  "overrides": {},
+  "dependencies": {
+    "archetypes": {
+      "content-site": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  }
+}

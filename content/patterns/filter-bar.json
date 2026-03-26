@@ -10,17 +10,34 @@
     "recipes": {},
     "styles": {},
     "requires_core": {
-      "components": ["Input", "Select", "Button", "Badge", "icon"],
+      "components": [
+        "Input",
+        "Select",
+        "Button",
+        "Badge",
+        "icon"
+      ],
       "charts": []
     }
   },
-  "components": ["Input", "Select", "Button", "Badge", "icon"],
+  "components": [
+    "Input",
+    "Select",
+    "Button",
+    "Badge",
+    "icon"
+  ],
   "default_preset": "standard",
   "presets": {
     "standard": {
       "description": "Search input + dropdown filters + action buttons in a horizontal bar",
-      "components": ["Input", "Select", "Button", "icon"],
-      "blend": {
+      "components": [
+        "Input",
+        "Select",
+        "Button",
+        "icon"
+      ],
+      "layout": {
         "layout": "row",
         "atoms": "_flex _row _gap3 _aic _w[100%] _py2",
         "slots": {
@@ -36,8 +53,14 @@
     },
     "compact": {
       "description": "Search input only, filters in a collapsible popover",
-      "components": ["Input", "Select", "Button", "Badge", "icon"],
-      "blend": {
+      "components": [
+        "Input",
+        "Select",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
         "layout": "row",
         "atoms": "_flex _row _gap2 _aic _w[100%] _py1",
         "slots": {
@@ -53,8 +76,14 @@
     },
     "advanced": {
       "description": "Multi-row with filter chips, saved filters, and clear-all",
-      "components": ["Input", "Select", "Button", "Badge", "icon"],
-      "blend": {
+      "components": [
+        "Input",
+        "Select",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
         "layout": "column",
         "atoms": "_flex _col _gap2 _w[100%] _py2",
         "slots": {
@@ -69,7 +98,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "row",
     "atoms": "_flex _row _gap3 _aic _w[100%] _py2",
     "slots": {
@@ -83,8 +112,15 @@
     "example": "function FilterBar({ onSearch, onCategory, onStatus }) {\n  const { div } = tags;\n\n  return div({ class: css('_flex _row _gap3 _aic _w[100%] _py2') },\n    Input({ placeholder: 'Search...', oninput: onSearch, class: css('_mw[300px] _flex1') }),\n    Select({ placeholder: 'Category', onchange: onCategory, class: css('_w[160px]') },\n      Select.Option({ value: 'all' }, 'All Categories'),\n      Select.Option({ value: 'active' }, 'Active'),\n      Select.Option({ value: 'archived' }, 'Archived')\n    ),\n    Select({ placeholder: 'Status', onchange: onStatus, class: css('_w[140px]') },\n      Select.Option({ value: 'all' }, 'All'),\n      Select.Option({ value: 'published' }, 'Published'),\n      Select.Option({ value: 'draft' }, 'Draft')\n    ),\n    div({ class: css('_flex _gap2 _mlaut') },\n      Button({ variant: 'outline', size: 'sm' }, icon('x'), 'Clear'),\n      Button({ variant: 'primary', size: 'sm' }, icon('filter'), 'Apply')\n    )\n  );\n}"
   },
   "io": {
-    "produces": ["search", "filters", "status"],
+    "produces": [
+      "search",
+      "filters",
+      "status"
+    ],
     "consumes": [],
-    "actions": ["clear", "apply"]
+    "actions": [
+      "clear",
+      "apply"
+    ]
   }
 }

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "launchpad",
+  "name": "Launchpad",
+  "description": "Clean, professional aesthetic inspired by fly.io. Navy-violet palette, semi-transparent surfaces, violet-tinted shadows. Gradient accent buttons, transparent nav with violet active states.",
+  "tags": [
+    "professional",
+    "violet",
+    "navy",
+    "saas",
+    "gradient-buttons"
+  ],
+  "personality": "rounded + shadow elevation + smooth motion + thin borders + no gradients",
+  "seed": {
+    "primary": "#7C3AED",
+    "secondary": "#4F46E5",
+    "accent": "#06B6D4",
+    "background": "#F9F9FD"
+  },
+  "modes": [
+    "light",
+    "dark"
+  ],
+  "shapes": [
+    "sharp",
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=0.9.0",
+  "source": "community"
+}

@@ -1,7 +1,7 @@
 // --- Pattern ---
 export interface PatternPreset {
   description: string;
-  blend: { layout: 'row' | 'column' | 'grid' | 'hero'; atoms: string };
+  layout: { layout: 'row' | 'column' | 'grid' | 'hero'; atoms: string };
   code: { imports: string; example: string };
 }
 
@@ -60,7 +60,7 @@ export interface RecipeVisualEffects {
   intensity_values?: Record<string, Record<string, string>>;
 }
 
-export interface RecipeCarafe {
+export interface RecipeShell {
   preferred: string[];
   nav_style: string;
   root?: string;
@@ -75,7 +75,7 @@ export interface Recipe {
   mode: string;
   schema_version: string;
   spatial_hints: RecipeSpatialHints;
-  carafe: RecipeCarafe;
+  shell: RecipeShell;
   visual_effects: RecipeVisualEffects;
   pattern_preferences: { prefer: string[]; avoid: string[]; default_presets?: Record<string, string> };
   pattern_overrides?: Record<string, { background?: string[] }>;
@@ -83,7 +83,7 @@ export interface Recipe {
 }
 
 // --- Content Resolution ---
-export type ContentType = 'pattern' | 'archetype' | 'recipe' | 'style';
+export type ContentType = 'pattern' | 'archetype' | 'recipe' | 'theme' | 'blueprint';
 
 export interface ResolvedContent<T> {
   item: T;

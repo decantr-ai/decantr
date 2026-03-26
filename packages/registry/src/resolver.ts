@@ -6,7 +6,8 @@ type ContentMap = {
   pattern: Pattern;
   archetype: Archetype;
   recipe: Recipe;
-  style: Record<string, unknown>;
+  theme: Record<string, unknown>;
+  blueprint: Record<string, unknown>;
 };
 
 export interface ResolverOptions {
@@ -22,7 +23,8 @@ const TYPE_DIRS: Record<ContentType, string> = {
   pattern: 'patterns',
   archetype: 'archetypes',
   recipe: 'recipes',
-  style: 'styles',
+  theme: 'themes',
+  blueprint: 'blueprints',
 };
 
 async function tryLoadJson<T>(filePath: string): Promise<T | null> {

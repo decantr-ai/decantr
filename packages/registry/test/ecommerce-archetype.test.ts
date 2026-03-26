@@ -31,10 +31,10 @@ describe('ecommerce archetype', () => {
     expect(pageIds).toContain('cart');
   });
 
-  it('each page has a default_blend', () => {
+  it('each page has a default_layout', () => {
     for (const page of archetype.pages) {
-      expect(page.default_blend, `page ${page.id} missing default_blend`).toBeInstanceOf(Array);
-      expect(page.default_blend.length, `page ${page.id} has empty default_blend`).toBeGreaterThan(0);
+      expect(page.default_layout, `page ${page.id} missing default_layout`).toBeInstanceOf(Array);
+      expect(page.default_layout.length, `page ${page.id} has empty default_layout`).toBeGreaterThan(0);
     }
   });
 
@@ -50,7 +50,7 @@ describe('ecommerce archetype', () => {
     };
 
     for (const page of archetype.pages) {
-      for (const item of page.default_blend) {
+      for (const item of page.default_layout) {
         if (typeof item === 'object' && item.pattern && item.preset) {
           const allowed = validPresets[item.pattern];
           expect(allowed, `unknown pattern ${item.pattern}`).toBeDefined();
@@ -65,7 +65,7 @@ describe('ecommerce archetype', () => {
     const referencedPatterns = new Set<string>();
 
     for (const page of archetype.pages) {
-      for (const item of page.default_blend) {
+      for (const item of page.default_layout) {
         if (typeof item === 'string') referencedPatterns.add(item);
         else if (item.pattern) referencedPatterns.add(item.pattern);
       }
@@ -90,7 +90,7 @@ describe('ecommerce archetype', () => {
   it('wiring works on the catalog page (filter-bar + card-grid)', () => {
     const catalogPage = archetype.pages.find((p: { id: string }) => p.id === 'catalog');
     expect(catalogPage).toBeDefined();
-    const wirings = detectWirings(catalogPage.default_blend);
+    const wirings = detectWirings(catalogPage.default_layout);
     expect(wirings).toHaveLength(1);
     expect(wirings[0].signals.length).toBeGreaterThan(0);
     expect(wirings[0].props['filter-bar']).toBeDefined();

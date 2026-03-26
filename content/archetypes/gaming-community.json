@@ -5,11 +5,30 @@
   "decantr_compat": ">=0.10.0",
   "name": "Gaming Community",
   "description": "Guild hub, news feed, hall of fame, and member profiles for social gaming communities",
-  "tags": ["gaming", "community", "guild", "leaderboard", "social", "esports"],
+  "tags": [
+    "gaming",
+    "community",
+    "guild",
+    "leaderboard",
+    "social",
+    "esports"
+  ],
   "classification": {
     "triggers": {
-      "primary": ["guild", "clan", "community", "leaderboard", "social gaming"],
-      "secondary": ["news feed", "member profile", "hall of fame", "achievements", "esports"],
+      "primary": [
+        "guild",
+        "clan",
+        "community",
+        "leaderboard",
+        "social gaming"
+      ],
+      "secondary": [
+        "news feed",
+        "member profile",
+        "hall of fame",
+        "achievements",
+        "esports"
+      ],
       "negative": []
     },
     "implies": [],
@@ -33,7 +52,7 @@
           "as": "top-players"
         }
       ],
-      "default_blend": [
+      "default_layout": [
         {
           "pattern": "hero",
           "preset": "landing",
@@ -48,7 +67,7 @@
           "at": "lg"
         }
       ],
-      "carafe": "sidebar-main"
+      "shell": "sidebar-main"
     },
     {
       "id": "news",
@@ -56,11 +75,11 @@
         "filter-bar",
         "post-list"
       ],
-      "default_blend": [
+      "default_layout": [
         "filter-bar",
         "post-list"
       ],
-      "carafe": "sidebar-main"
+      "shell": "sidebar-main"
     },
     {
       "id": "hall-of-fame",
@@ -73,7 +92,7 @@
         },
         "timeline"
       ],
-      "default_blend": [
+      "default_layout": [
         "stats-bar",
         {
           "pattern": "leaderboard",
@@ -82,7 +101,7 @@
         },
         "timeline"
       ],
-      "carafe": "sidebar-main"
+      "shell": "sidebar-main"
     },
     {
       "id": "member-profile",
@@ -101,7 +120,7 @@
         "activity-feed",
         "timeline"
       ],
-      "default_blend": [
+      "default_layout": [
         {
           "pattern": "detail-header",
           "preset": "profile",
@@ -120,11 +139,15 @@
         },
         "timeline"
       ],
-      "carafe": "sidebar-main"
+      "shell": "sidebar-main"
     }
   ],
-  "tannins": ["guild-state", "achievements", "realtime-data"],
-  "carafes": {
+  "features": [
+    "guild-state",
+    "achievements",
+    "realtime-data"
+  ],
+  "shells": {
     "sidebar-main": "Left sidebar with grouped nav (INFO + SPOTLIGHT sections) + main content area"
   },
   "dependencies": {
@@ -142,8 +165,12 @@
     "recipes": {},
     "styles": {}
   },
-  "suggested_vintage": {
-    "styles": ["gaming-guild"],
-    "modes": ["dark"]
+  "suggested_theme": {
+    "styles": [
+      "gaming-guild"
+    ],
+    "modes": [
+      "dark"
+    ]
   }
 }

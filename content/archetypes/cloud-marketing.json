@@ -5,11 +5,23 @@
   "decantr_compat": ">=0.10.0",
   "name": "Cloud Marketing",
   "description": "Marketing landing page for cloud and infrastructure platforms",
-  "tags": ["cloud", "marketing", "landing", "homepage"],
+  "tags": [
+    "cloud",
+    "marketing",
+    "landing",
+    "homepage"
+  ],
   "classification": {
     "triggers": {
-      "primary": ["cloud landing", "infrastructure marketing", "cloud homepage"],
-      "secondary": ["platform marketing", "cloud product page"],
+      "primary": [
+        "cloud landing",
+        "infrastructure marketing",
+        "cloud homepage"
+      ],
+      "secondary": [
+        "platform marketing",
+        "cloud product page"
+      ],
       "negative": []
     },
     "implies": [],
@@ -19,21 +31,58 @@
   "pages": [
     {
       "id": "home",
-      "patterns": ["hero", "card-grid", "logo-strip", "stats-section", "cta-section", "footer-columns"],
-      "default_blend": [
-        { "pattern": "hero", "preset": "brand", "as": "brand-hero" },
-        { "pattern": "card-grid", "preset": "icon", "as": "feature-grid" },
-        { "pattern": "logo-strip", "preset": "marquee", "as": "tech-logos" },
-        { "pattern": "card-grid", "preset": "icon", "as": "capability-grid" },
-        { "pattern": "stats-section", "preset": "hero", "as": "platform-stats" },
-        { "pattern": "cta-section", "preset": "brand", "as": "enterprise-cta" },
-        { "pattern": "footer-columns", "preset": "minimal", "as": "footer" }
+      "patterns": [
+        "hero",
+        "card-grid",
+        "logo-strip",
+        "stats-section",
+        "cta-section",
+        "footer-columns"
       ],
-      "carafe": "full-bleed"
+      "default_layout": [
+        {
+          "pattern": "hero",
+          "preset": "brand",
+          "as": "brand-hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "icon",
+          "as": "feature-grid"
+        },
+        {
+          "pattern": "logo-strip",
+          "preset": "marquee",
+          "as": "tech-logos"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "icon",
+          "as": "capability-grid"
+        },
+        {
+          "pattern": "stats-section",
+          "preset": "hero",
+          "as": "platform-stats"
+        },
+        {
+          "pattern": "cta-section",
+          "preset": "brand",
+          "as": "enterprise-cta"
+        },
+        {
+          "pattern": "footer-columns",
+          "preset": "minimal",
+          "as": "footer"
+        }
+      ],
+      "shell": "full-bleed"
     }
   ],
-  "tannins": [],
-  "carafes": { "full-bleed": "Floating nav over scroll-driven marketing sections — hero-first, maximum visual impact" },
+  "features": [],
+  "shells": {
+    "full-bleed": "Floating nav over scroll-driven marketing sections — hero-first, maximum visual impact"
+  },
   "dependencies": {
     "patterns": {
       "hero": "^1.0.0",
@@ -46,5 +95,14 @@
     "recipes": {},
     "styles": {}
   },
-  "suggested_vintage": { "styles": ["launchpad", "clean"], "modes": ["light", "dark"] }
+  "suggested_theme": {
+    "styles": [
+      "launchpad",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
 }

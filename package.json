@@ -3,15 +3,12 @@
   "private": true,
   "description": "Design intelligence layer for AI-generated web applications",
   "scripts": {
-    "build": "pnpm --filter @decantr/essence-spec --filter @decantr/registry run build && pnpm --filter @decantr/generator-core --filter @decantr/mcp-server run build && pnpm --filter @decantr/generator-decantr --filter @decantr/generator-react run build && pnpm --filter @decantr/cli run build",
+    "build": "pnpm --filter @decantr/essence-spec --filter @decantr/registry run build && pnpm --filter @decantr/core --filter @decantr/mcp-server run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
     "clean": "pnpm -r exec rm -rf dist",
-    "cli": "node packages/cli/dist/index.js",
-    "mcp": "node packages/mcp-server/dist/index.js",
-    "registry:test": "cd apps/registry-server && npm test",
-    "registry:dev": "cd apps/registry-server && node src/index.js"
+    "mcp": "node packages/mcp-server/dist/index.js"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

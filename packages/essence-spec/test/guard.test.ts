@@ -7,7 +7,7 @@ function makeEssence(overrides: Partial<Essence> = {}): Essence {
     version: '2.0.0',
     archetype: 'saas-dashboard',
     theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' },
-    character: ['professional'],
+    personality: ['professional'],
     platform: { type: 'spa', routing: 'hash' },
     structure: [
       { id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid'] },

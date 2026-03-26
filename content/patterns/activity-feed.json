@@ -10,17 +10,34 @@
     "recipes": {},
     "styles": {},
     "requires_core": {
-      "components": ["Avatar", "Badge", "Button", "Separator", "ScrollArea", "icon"],
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "Separator",
+        "ScrollArea",
+        "icon"
+      ],
       "charts": []
     }
   },
-  "components": ["Avatar", "Badge", "Button"],
+  "components": [
+    "Avatar",
+    "Badge",
+    "Button"
+  ],
   "default_preset": "standard",
   "presets": {
     "standard": {
       "description": "Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.",
-      "components": ["Avatar", "Badge", "Button", "Separator", "icon"],
-      "blend": {
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "Separator",
+        "icon"
+      ],
+      "layout": {
         "layout": "column",
         "atoms": "_flex _col _gap2 _w[100%]",
         "slots": {
@@ -39,8 +56,12 @@
     },
     "compact": {
       "description": "Dense list without avatars, just icon + text + relative time",
-      "components": ["Badge", "Button", "icon"],
-      "blend": {
+      "components": [
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
         "layout": "column",
         "atoms": "_flex _col _gap1 _w[100%]",
         "slots": {
@@ -57,8 +78,13 @@
     },
     "detailed": {
       "description": "Each activity is a mini-card with full context, attachments, and reply option",
-      "components": ["Avatar", "Badge", "Button", "icon"],
-      "blend": {
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
         "layout": "column",
         "atoms": "_flex _col _gap4 _w[100%]",
         "slots": {
@@ -74,7 +100,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "column",
     "atoms": "_flex _col _gap2 _w[100%]",
     "slots": {
@@ -91,8 +117,15 @@
     "example": "function ActivityFeed({ search, view }) {\n  const { div, span, p, h4, time } = tags;\n\n  const activities = [\n    { user: 'Alice Johnson', initials: 'AJ', action: 'created a new project', type: 'create', time: '2 hours ago', date: 'Today' },\n    { user: 'Bob Smith', initials: 'BS', action: 'commented on issue #42', type: 'comment', time: '4 hours ago', date: 'Today' },\n    { user: 'Carol White', initials: 'CW', action: 'deployed v2.1.0 to production', type: 'deploy', time: '1 day ago', date: 'Yesterday' },\n  ];\n\n  const grouped = {};\n  activities.forEach(a => { (grouped[a.date] = grouped[a.date] || []).push(a); });\n\n  return div({ class: css('_flex _col _gap2 _w[100%]') },\n    ...Object.entries(grouped).flatMap(([date, items]) => [\n      h4({ class: css('_textsm _fgmuted _fontmedium _py2') }, date),\n      ...items.map(item =>\n        div({ class: css('_flex _row _gap3 _items[start] _py2') },\n          Avatar({ size: 'sm', fallback: item.initials }),\n          div({ class: css('_flex _col _gap1 _flex1') },\n            p({ class: css('_textsm') },\n              span({ class: css('_fontmedium') }, item.user),\n              ` ${item.action}`\n            ),\n            time({ class: css('_textxs _fgmuted') }, item.time)\n          ),\n          Badge({ variant: 'outline', size: 'sm' }, item.type)\n        )\n      )\n    ]),\n    Button({ variant: 'outline', size: 'sm', class: css('_self[center] _mt4') }, icon('chevron-down', { size: '0.75rem' }), ' Load more')\n  );\n}"
   },
   "io": {
-    "consumes": ["search", "view", "filters"],
+    "consumes": [
+      "search",
+      "view",
+      "filters"
+    ],
     "produces": [],
-    "actions": ["load-more", "mark-read"]
+    "actions": [
+      "load-more",
+      "mark-read"
+    ]
   }
 }

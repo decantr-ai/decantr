@@ -35,19 +35,19 @@ describe('kpi-grid pattern JSON', () => {
     expect(raw.default_preset).toBe('dashboard');
   });
 
-  it('dashboard preset has correct blend layout', () => {
+  it('dashboard preset has correct layout', () => {
     const dashboard = raw.presets.dashboard;
-    expect(dashboard.blend.layout).toBe('grid');
-    expect(dashboard.blend.atoms).toContain('_grid');
-    expect(dashboard.blend.atoms).toContain('_gc2');
-    expect(dashboard.blend.atoms).toContain('_lg:gc4');
-    expect(dashboard.blend.atoms).toContain('_gap4');
+    expect(dashboard.layout.layout).toBe('grid');
+    expect(dashboard.layout.atoms).toContain('_grid');
+    expect(dashboard.layout.atoms).toContain('_gc2');
+    expect(dashboard.layout.atoms).toContain('_lg:gc4');
+    expect(dashboard.layout.atoms).toContain('_gap4');
   });
 
   it('compact preset has denser layout atoms', () => {
     const compact = raw.presets.compact;
-    expect(compact.blend.layout).toBe('grid');
-    expect(compact.blend.atoms).toContain('_gap2');
+    expect(compact.layout.layout).toBe('grid');
+    expect(compact.layout.atoms).toContain('_gap2');
   });
 
   it('has io declarations for produces and consumes', () => {

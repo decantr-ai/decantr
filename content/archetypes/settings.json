@@ -5,11 +5,23 @@
   "decantr_compat": ">=0.10.0",
   "name": "Settings",
   "description": "Application settings and preferences page",
-  "tags": ["settings", "preferences", "configuration"],
+  "tags": [
+    "settings",
+    "preferences",
+    "configuration"
+  ],
   "classification": {
     "triggers": {
-      "primary": ["settings", "preferences", "configuration"],
-      "secondary": ["profile", "account settings", "app config"],
+      "primary": [
+        "settings",
+        "preferences",
+        "configuration"
+      ],
+      "secondary": [
+        "profile",
+        "account settings",
+        "app config"
+      ],
       "negative": []
     },
     "implies": [],
@@ -17,10 +29,36 @@
     "tier": "recommended"
   },
   "pages": [
-    { "id": "settings", "default_blend": [{ "pattern": "form-sections", "preset": "settings" }], "carafe": "sidebar-main" }
+    {
+      "id": "settings",
+      "default_layout": [
+        {
+          "pattern": "form-sections",
+          "preset": "settings"
+        }
+      ],
+      "shell": "sidebar-main"
+    }
   ],
-  "tannins": [],
-  "carafes": { "sidebar-main": "Sidebar navigation with main content area" },
-  "dependencies": { "patterns": { "form-sections": "^1.0.0" }, "recipes": {}, "styles": {} },
-  "suggested_vintage": { "styles": ["auradecantism", "clean"], "modes": ["dark", "auto"] }
+  "features": [],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "form-sections": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "auradecantism",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "auto"
+    ]
+  }
 }

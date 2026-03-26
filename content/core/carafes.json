@@ -1,7 +1,7 @@
 {
   "$schema": "https://decantr.ai/schemas/skeletons.v1.json",
-  "ai_hint": "A carafe is a page-level layout container that defines the spatial arrangement (header, nav, body, footer regions). Common carafes: sidebar-main, full-bleed, top-nav-main, centered. Wine terminology: a carafe holds and presents wine, just as this layout holds and presents page content.",
-  "carafes": {
+  "ai_hint": "A shell is a page-level layout container that defines the spatial arrangement (header, nav, body, footer regions). Common shells: sidebar-main, full-bleed, top-nav-main, centered. Wine terminology: a shell holds and presents wine, just as this layout holds and presents page content.",
+  "shells": {
     "sidebar-main": {
       "name": "Sidebar + Main",
       "description": "Collapsible sidebar with header bar and scrollable main content area. Used by saas-dashboard, financial-dashboard, workbench, ecommerce (account pages).",

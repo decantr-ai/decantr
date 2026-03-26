@@ -5,11 +5,26 @@
   "decantr_compat": ">=0.10.0",
   "name": "Game Catalog",
   "description": "Game discovery and browsing with search, filters, and guild recruitment pages",
-  "tags": ["gaming", "catalog", "discovery", "search", "library"],
+  "tags": [
+    "gaming",
+    "catalog",
+    "discovery",
+    "search",
+    "library"
+  ],
   "classification": {
     "triggers": {
-      "primary": ["games", "game catalog", "game library"],
-      "secondary": ["game list", "game discovery", "arcade", "game browser"],
+      "primary": [
+        "games",
+        "game catalog",
+        "game library"
+      ],
+      "secondary": [
+        "game list",
+        "game discovery",
+        "arcade",
+        "game browser"
+      ],
       "negative": []
     },
     "implies": [],
@@ -28,7 +43,7 @@
           "as": "game-catalog"
         }
       ],
-      "default_blend": [
+      "default_layout": [
         "search-bar",
         "filter-bar",
         {
@@ -37,7 +52,7 @@
           "as": "game-catalog"
         }
       ],
-      "carafe": "sidebar-main"
+      "shell": "sidebar-main"
     },
     {
       "id": "join-guild",
@@ -55,7 +70,7 @@
         "testimonials",
         "cta-section"
       ],
-      "default_blend": [
+      "default_layout": [
         {
           "pattern": "hero",
           "preset": "landing",
@@ -69,11 +84,13 @@
         "testimonials",
         "cta-section"
       ],
-      "carafe": "sidebar-main"
+      "shell": "sidebar-main"
     }
   ],
-  "tannins": ["search"],
-  "carafes": {
+  "features": [
+    "search"
+  ],
+  "shells": {
     "sidebar-main": "Left sidebar with grouped nav (INFO + SPOTLIGHT sections) + main content area"
   },
   "dependencies": {
@@ -88,8 +105,12 @@
     "recipes": {},
     "styles": {}
   },
-  "suggested_vintage": {
-    "styles": ["gaming-guild"],
-    "modes": ["dark"]
+  "suggested_theme": {
+    "styles": [
+      "gaming-guild"
+    ],
+    "modes": [
+      "dark"
+    ]
   }
 }

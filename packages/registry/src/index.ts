@@ -6,7 +6,7 @@ export type {
   Archetype,
   RecipeSpatialHints,
   RecipeVisualEffects,
-  RecipeCarafe,
+  RecipeShell,
   Recipe,
   ContentType,
   ResolvedContent,

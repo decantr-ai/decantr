@@ -42,29 +42,29 @@ describe('cta-section pattern JSON', () => {
 
   it('standard preset has centered flex layout atoms', () => {
     const standard = raw.presets.standard;
-    expect(standard.blend.layout).toBe('hero');
-    expect(standard.blend.atoms).toContain('_flex');
-    expect(standard.blend.atoms).toContain('_col');
-    expect(standard.blend.atoms).toContain('_items[center]');
-    expect(standard.blend.atoms).toContain('_text[center]');
-    expect(standard.blend.atoms).toContain('_py12');
+    expect(standard.layout.layout).toBe('hero');
+    expect(standard.layout.atoms).toContain('_flex');
+    expect(standard.layout.atoms).toContain('_col');
+    expect(standard.layout.atoms).toContain('_items[center]');
+    expect(standard.layout.atoms).toContain('_text[center]');
+    expect(standard.layout.atoms).toContain('_py12');
   });
 
   it('split preset has grid layout atoms', () => {
     const split = raw.presets.split;
-    expect(split.blend.layout).toBe('row');
-    expect(split.blend.atoms).toContain('_grid');
-    expect(split.blend.atoms).toContain('_lg:gc2');
-    expect(split.blend.atoms).toContain('_items[center]');
+    expect(split.layout.layout).toBe('row');
+    expect(split.layout.atoms).toContain('_grid');
+    expect(split.layout.atoms).toContain('_lg:gc2');
+    expect(split.layout.atoms).toContain('_items[center]');
   });
 
   it('banner preset has horizontal bar layout atoms', () => {
     const banner = raw.presets.banner;
-    expect(banner.blend.layout).toBe('row');
-    expect(banner.blend.atoms).toContain('_flex _row');
-    expect(banner.blend.atoms).toContain('_justify[between]');
-    expect(banner.blend.atoms).toContain('_bgprimary/10');
-    expect(banner.blend.atoms).toContain('_rounded');
+    expect(banner.layout.layout).toBe('row');
+    expect(banner.layout.atoms).toContain('_flex _row');
+    expect(banner.layout.atoms).toContain('_justify[between]');
+    expect(banner.layout.atoms).toContain('_bgprimary/10');
+    expect(banner.layout.atoms).toContain('_rounded');
   });
 
   it('lists Button as component', () => {

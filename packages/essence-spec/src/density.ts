@@ -27,10 +27,10 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function computeDensity(
-  character: string[],
+  personality: string[],
   recipeSpatial?: RecipeSpatialHints,
 ): Density {
-  const lower = character.map(c => c.toLowerCase());
+  const lower = personality.map(c => c.toLowerCase());
 
   let level: DensityLevel = 'comfortable';
   let gap = 4;

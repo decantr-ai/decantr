@@ -51,12 +51,12 @@ describe('activity-feed pattern', () => {
     expect(pattern.components).toContain('Badge');
   });
 
-  it('each preset has valid blend and code', async () => {
+  it('each preset has valid layout and code', async () => {
     pattern = await loadPattern('activity-feed');
     for (const [name, preset] of Object.entries(pattern.presets)) {
-      expect(preset.blend, `${name} missing blend`).toBeDefined();
-      expect(preset.blend.layout, `${name} missing layout`).toBeTruthy();
-      expect(preset.blend.atoms, `${name} missing atoms`).toBeTruthy();
+      expect(preset.layout, `${name} missing layout`).toBeDefined();
+      expect(preset.layout.layout, `${name} missing layout`).toBeTruthy();
+      expect(preset.layout.atoms, `${name} missing atoms`).toBeTruthy();
       expect(preset.code, `${name} missing code`).toBeDefined();
       expect(preset.code.imports, `${name} missing imports`).toBeTruthy();
       expect(preset.code.example, `${name} missing example`).toBeTruthy();

@@ -5,11 +5,30 @@
   "decantr_compat": ">=0.10.0",
   "name": "Content Site",
   "description": "Blog, magazine, or documentation site with article listings, categories, and search",
-  "tags": ["blog", "magazine", "documentation", "articles", "content", "editorial"],
+  "tags": [
+    "blog",
+    "magazine",
+    "documentation",
+    "articles",
+    "content",
+    "editorial"
+  ],
   "classification": {
     "triggers": {
-      "primary": ["blog", "magazine", "documentation", "content-site", "articles"],
-      "secondary": ["editorial", "news", "knowledge-base", "wiki", "publishing"],
+      "primary": [
+        "blog",
+        "magazine",
+        "documentation",
+        "content-site",
+        "articles"
+      ],
+      "secondary": [
+        "editorial",
+        "news",
+        "knowledge-base",
+        "wiki",
+        "publishing"
+      ],
       "negative": []
     },
     "implies": [],
@@ -19,32 +38,51 @@
   "pages": [
     {
       "id": "home",
-      "default_blend": [
-        { "pattern": "hero", "preset": "landing" },
-        { "pattern": "card-grid", "preset": "content", "as": "latest-articles" }
+      "default_layout": [
+        {
+          "pattern": "hero",
+          "preset": "landing"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "latest-articles"
+        }
       ],
-      "carafe": "top-nav-main"
+      "shell": "top-nav-main"
     },
     {
       "id": "article",
-      "default_blend": [
-        { "pattern": "detail-header", "preset": "standard" }
+      "default_layout": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard"
+        }
       ],
-      "carafe": "top-nav-main",
+      "shell": "top-nav-main",
       "notes": "Article body content is rendered below the detail-header. Generator should emit a prose content area."
     },
     {
       "id": "categories",
-      "default_blend": [
+      "default_layout": [
         "filter-bar",
-        { "pattern": "card-grid", "preset": "content" }
+        {
+          "pattern": "card-grid",
+          "preset": "content"
+        }
       ],
-      "carafe": "top-nav-main",
+      "shell": "top-nav-main",
       "notes": "filter-bar produces search signals consumed by card-grid for category filtering"
     }
   ],
-  "tannins": ["search", "analytics", "rss"],
-  "carafes": { "top-nav-main": "Top navigation bar with main content area" },
+  "features": [
+    "search",
+    "analytics",
+    "rss"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area"
+  },
   "dependencies": {
     "patterns": {
       "hero": "^1.0.0",
@@ -55,5 +93,15 @@
     "recipes": {},
     "styles": {}
   },
-  "suggested_vintage": { "styles": ["auradecantism", "editorial", "clean"], "modes": ["light", "auto"] }
+  "suggested_theme": {
+    "styles": [
+      "auradecantism",
+      "editorial",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "auto"
+    ]
+  }
 }

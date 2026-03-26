@@ -10,17 +10,30 @@
     "recipes": {},
     "styles": {},
     "requires_core": {
-      "components": ["Card", "Badge", "icon"],
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
       "charts": []
     }
   },
-  "components": ["Card", "icon", "Badge"],
+  "contained": false,
+  "components": [
+    "Card",
+    "icon",
+    "Badge"
+  ],
   "default_preset": "dashboard",
   "presets": {
     "dashboard": {
       "description": "4-column grid of stat cards with icon, label, value, and change percentage",
-      "components": ["Card", "icon", "Badge"],
-      "blend": {
+      "components": [
+        "Card",
+        "icon",
+        "Badge"
+      ],
+      "layout": {
         "layout": "grid",
         "atoms": "_grid _gc2 _lg:gc4 _gap4 _p4",
         "slots": {
@@ -37,8 +50,10 @@
     },
     "compact": {
       "description": "Denser 2-row layout with smaller cards, no icons, just label + value + sparkline placeholder",
-      "components": ["Card"],
-      "blend": {
+      "components": [
+        "Card"
+      ],
+      "layout": {
         "layout": "grid",
         "atoms": "_grid _gc2 _lg:gc4 _gap2 _p2",
         "slots": {
@@ -53,7 +68,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "grid",
     "atoms": "_grid _gc2 _lg:gc4 _gap4 _p4",
     "slots": {
@@ -68,7 +83,11 @@
     "example": "function KpiGrid({ items }) {\n  const { div, span, p } = tags;\n\n  const kpis = items || [\n    { label: 'Total Revenue', value: '$45,231', change: '+20.1%', trend: 'up', ic: 'dollar-sign' },\n    { label: 'Subscriptions', value: '2,350', change: '+180', trend: 'up', ic: 'users' },\n    { label: 'Active Now', value: '573', change: '+19', trend: 'up', ic: 'activity' },\n    { label: 'Bounce Rate', value: '24.5%', change: '-4.3%', trend: 'down', ic: 'trending-down' },\n  ];\n\n  return div({ class: css('_grid _gc2 _lg:gc4 _gap4') },\n    ...kpis.map(kpi =>\n      Card({ class: css('_flex _col _gap2 _p4') },\n        div({ class: css('_flex _jcsb _aic') },\n          span({ class: css('_textsm _fgmuted') }, kpi.label),\n          icon(kpi.ic, { size: '1rem', class: css('_fgmuted') })\n        ),\n        p({ class: css('_heading2') }, kpi.value),\n        Badge({ variant: kpi.trend === 'up' ? 'default' : 'secondary' }, kpi.change)\n      )\n    )\n  );\n}"
   },
   "io": {
-    "produces": ["kpi-data"],
-    "consumes": ["date-range"]
+    "produces": [
+      "kpi-data"
+    ],
+    "consumes": [
+      "date-range"
+    ]
   }
 }

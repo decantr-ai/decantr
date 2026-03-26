@@ -10,17 +10,45 @@
     "recipes": {},
     "styles": {},
     "requires_core": {
-      "components": ["Card", "Input", "Select", "Switch", "Checkbox", "Button", "Label", "Textarea", "RadioGroup"],
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Switch",
+        "Checkbox",
+        "Button",
+        "Label",
+        "Textarea",
+        "RadioGroup"
+      ],
       "charts": []
     }
   },
-  "components": ["Card", "Input", "Select", "Switch", "Checkbox", "Button", "Label", "Textarea", "RadioGroup"],
+  "components": [
+    "Card",
+    "Input",
+    "Select",
+    "Switch",
+    "Checkbox",
+    "Button",
+    "Label",
+    "Textarea",
+    "RadioGroup"
+  ],
   "default_preset": "settings",
   "presets": {
     "settings": {
       "description": "Vertical stack of sections, each with a title/description on the left and form fields on the right (2-column layout per section). Save button at bottom.",
-      "components": ["Card", "Input", "Select", "Switch", "Button", "Label", "Textarea"],
-      "blend": {
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Switch",
+        "Button",
+        "Label",
+        "Textarea"
+      ],
+      "layout": {
         "layout": "stack",
         "atoms": "_flex _col _gap6 _p4",
         "slots": {
@@ -37,8 +65,16 @@
     },
     "creation": {
       "description": "Single-column wizard-like form with sections as steps. Progress indicator at top, prev/next buttons.",
-      "components": ["Card", "Input", "Select", "Checkbox", "Button", "Label", "Textarea"],
-      "blend": {
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Checkbox",
+        "Button",
+        "Label",
+        "Textarea"
+      ],
+      "layout": {
         "layout": "stack",
         "atoms": "_flex _col _gap6 _p4 _mw[640px] _mx[auto]",
         "slots": {
@@ -56,8 +92,17 @@
     },
     "structured": {
       "description": "Dense form with fieldsets, collapsible sections, and inline validation. Good for complex data entry.",
-      "components": ["Card", "Input", "Select", "Checkbox", "RadioGroup", "Button", "Label", "Textarea"],
-      "blend": {
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Checkbox",
+        "RadioGroup",
+        "Button",
+        "Label",
+        "Textarea"
+      ],
+      "layout": {
         "layout": "stack",
         "atoms": "_flex _col _gap4 _p4",
         "slots": {
@@ -73,7 +118,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "stack",
     "atoms": "_flex _col _gap6 _p4",
     "slots": {
@@ -88,8 +133,16 @@
     "example": "function FormSections({ onSave, onCancel }) {\n  const { div, h3, p, form } = tags;\n\n  return form({ class: css('_flex _col _gap6 _p4'), onsubmit: e => { e.preventDefault(); onSave?.(); } },\n    Card({ class: css('_flex _col _gap4 _p6') },\n      div({ class: css('_grid _gc1 _lg:gc2 _gap4') },\n        div({ class: css('_flex _col _gap1') },\n          h3({ class: css('_heading4') }, 'Profile'),\n          p({ class: css('_bodysm _fgmuted') }, 'Your personal information')\n        ),\n        div({ class: css('_flex _col _gap4') },\n          div({ class: css('_flex _col _gap2') },\n            Label({}, 'Display Name'),\n            Input({ placeholder: 'Enter your name' })\n          ),\n          div({ class: css('_flex _col _gap2') },\n            Label({}, 'Bio'),\n            Textarea({ placeholder: 'Tell us about yourself', rows: 3 })\n          )\n        )\n      )\n    ),\n    div({ class: css('_flex _gap3 _jce') },\n      Button({ variant: 'outline', onclick: onCancel }, 'Cancel'),\n      Button({ variant: 'primary', type: 'submit' }, 'Save Changes')\n    )\n  );\n}"
   },
   "io": {
-    "consumes": ["data"],
-    "produces": ["form-data"],
-    "actions": ["save", "cancel", "reset"]
+    "consumes": [
+      "data"
+    ],
+    "produces": [
+      "form-data"
+    ],
+    "actions": [
+      "save",
+      "cancel",
+      "reset"
+    ]
   }
 }

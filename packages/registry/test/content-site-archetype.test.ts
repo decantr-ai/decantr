@@ -30,17 +30,17 @@ describe('content-site archetype', () => {
     expect(pageIds).toContain('categories');
   });
 
-  it('each page has a default_blend', () => {
+  it('each page has a default_layout', () => {
     for (const page of archetype.pages) {
-      expect(page.default_blend, `page ${page.id} missing default_blend`).toBeInstanceOf(Array);
-      expect(page.default_blend.length, `page ${page.id} has empty default_blend`).toBeGreaterThan(0);
+      expect(page.default_layout, `page ${page.id} missing default_layout`).toBeInstanceOf(Array);
+      expect(page.default_layout.length, `page ${page.id} has empty default_layout`).toBeGreaterThan(0);
     }
   });
 
   it('article page uses detail-header with standard preset', () => {
     const articlePage = archetype.pages.find((p: { id: string }) => p.id === 'article');
     expect(articlePage).toBeDefined();
-    const detailHeader = articlePage.default_blend.find(
+    const detailHeader = articlePage.default_layout.find(
       (item: unknown) => typeof item === 'object' && item !== null && (item as { pattern: string }).pattern === 'detail-header'
     );
     expect(detailHeader).toBeDefined();
@@ -50,7 +50,7 @@ describe('content-site archetype', () => {
   it('categories page has filter-bar + card-grid for wired search/filter', () => {
     const categoriesPage = archetype.pages.find((p: { id: string }) => p.id === 'categories');
     expect(categoriesPage).toBeDefined();
-    const patternIds = categoriesPage.default_blend.map((item: unknown) => {
+    const patternIds = categoriesPage.default_layout.map((item: unknown) => {
       if (typeof item === 'string') return item;
       if (typeof item === 'object' && item !== null && 'pattern' in item) return (item as { pattern: string }).pattern;
       return null;
@@ -69,7 +69,7 @@ describe('content-site archetype', () => {
     };
 
     for (const page of archetype.pages) {
-      for (const item of page.default_blend) {
+      for (const item of page.default_layout) {
         if (typeof item === 'object' && item.pattern && item.preset) {
           const allowed = validPresets[item.pattern];
           expect(allowed, `unknown pattern ${item.pattern}`).toBeDefined();
@@ -84,7 +84,7 @@ describe('content-site archetype', () => {
     const referencedPatterns = new Set<string>();
 
     for (const page of archetype.pages) {
-      for (const item of page.default_blend) {
+      for (const item of page.default_layout) {
         if (typeof item === 'string') referencedPatterns.add(item);
         else if (item.pattern) referencedPatterns.add(item.pattern);
       }
@@ -108,7 +108,7 @@ describe('content-site archetype', () => {
   it('wiring works on the categories page (filter-bar + card-grid)', () => {
     const categoriesPage = archetype.pages.find((p: { id: string }) => p.id === 'categories');
     expect(categoriesPage).toBeDefined();
-    const wirings = detectWirings(categoriesPage.default_blend);
+    const wirings = detectWirings(categoriesPage.default_layout);
     expect(wirings).toHaveLength(1);
     expect(wirings[0].signals.length).toBeGreaterThan(0);
     expect(wirings[0].props['filter-bar']).toBeDefined();

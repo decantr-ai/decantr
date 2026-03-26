@@ -10,18 +10,26 @@
     "recipes": {},
     "styles": {},
     "requires_core": {
-      "components": ["Button", "icon"],
+      "components": [
+        "Button",
+        "icon"
+      ],
       "charts": []
     }
   },
-  "components": ["Button"],
+  "components": [
+    "Button"
+  ],
   "contained": false,
   "default_preset": "standard",
   "presets": {
     "standard": {
       "description": "Centered headline + subtext + primary/secondary buttons. Background can have gradient or subtle pattern.",
-      "components": ["Button", "icon"],
-      "blend": {
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
         "layout": "hero",
         "atoms": "_flex _col _items[center] _text[center] _py12 _px4 _gap4",
         "slots": {
@@ -37,8 +45,11 @@
     },
     "split": {
       "description": "Two-column: text on left, image/illustration on right",
-      "components": ["Button", "icon"],
-      "blend": {
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
         "layout": "row",
         "atoms": "_grid _gc1 _lg:gc2 _gap6 _items[center] _py8",
         "slots": {
@@ -56,8 +67,10 @@
     },
     "banner": {
       "description": "Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.",
-      "components": ["Button"],
-      "blend": {
+      "components": [
+        "Button"
+      ],
+      "layout": {
         "layout": "row",
         "atoms": "_flex _row _justify[between] _items[center] _py4 _px6 _rounded _bgprimary/10",
         "slots": {
@@ -71,7 +84,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "hero",
     "atoms": "_flex _col _items[center] _text[center] _py12 _px4 _gap4",
     "slots": {
@@ -87,6 +100,8 @@
   "io": {
     "consumes": [],
     "produces": [],
-    "actions": ["cta-click"]
+    "actions": [
+      "cta-click"
+    ]
   }
 }

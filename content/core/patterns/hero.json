@@ -33,7 +33,7 @@
         "Button",
         "icon"
       ],
-      "blend": {
+      "layout": {
         "layout": "stack",
         "atoms": "_flex _flexCol _itemsCenter _textCenter _gap6 _py16 _px6",
         "slots": {
@@ -55,7 +55,7 @@
         "Chip",
         "icon"
       ],
-      "blend": {
+      "layout": {
         "layout": "stack",
         "atoms": "_relative _wfull _h[400px] _overflow[hidden] _r4",
         "slots": {
@@ -80,7 +80,7 @@
         "icon",
         "Image"
       ],
-      "blend": {
+      "layout": {
         "layout": "hero",
         "atoms": "_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative",
         "slots": {
@@ -103,7 +103,7 @@
         "Button",
         "icon"
       ],
-      "blend": {
+      "layout": {
         "layout": "stack",
         "atoms": "_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative",
         "slots": {
@@ -126,7 +126,7 @@
         "icon",
         "Image"
       ],
-      "blend": {
+      "layout": {
         "layout": "row",
         "atoms": "_grid _gc1 _lg:gc2 _gap8 _py24 _px6 _minh[100vh] _aic _relative",
         "slots": {
@@ -151,7 +151,7 @@
         "Avatar",
         "icon"
       ],
-      "blend": {
+      "layout": {
         "layout": "stack",
         "atoms": "_relative _wfull _h[300px] _overflow[hidden] _r4",
         "slots": {
@@ -171,7 +171,7 @@
         "Button",
         "icon"
       ],
-      "blend": {
+      "layout": {
         "layout": "stack",
         "atoms": "_flex _col _aic _tc _gap4 _py12 _px6",
         "slots": {
@@ -187,7 +187,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "stack",
     "atoms": "_flex _flexCol _itemsCenter _textCenter _gap6 _py16 _px6",
     "slots": {

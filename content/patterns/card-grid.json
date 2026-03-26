@@ -10,17 +10,41 @@
     "recipes": {},
     "styles": {},
     "requires_core": {
-      "components": ["Card", "Button", "Badge", "Image", "icon"],
+      "components": [
+        "Card",
+        "Button",
+        "Badge",
+        "Image",
+        "icon"
+      ],
       "charts": []
     }
   },
-  "components": ["Card", "CardHeader", "CardBody", "CardFooter", "Image", "Button", "Badge"],
+  "contained": false,
+  "components": [
+    "Card",
+    "CardHeader",
+    "CardBody",
+    "CardFooter",
+    "Image",
+    "Button",
+    "Badge"
+  ],
   "default_preset": "product",
   "presets": {
     "product": {
       "description": "Product cards with image, title, price, rating, add-to-cart button. Grid: 1/2/3/4 cols at sm/md/lg/xl.",
-      "components": ["Card", "CardHeader", "CardBody", "CardFooter", "Image", "Button", "Badge", "icon"],
-      "blend": {
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "CardFooter",
+        "Image",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
         "layout": "grid",
         "atoms": "_grid _gc1 _sm:gc2 _lg:gc3 _xl:gc4 _gap4",
         "slots": {
@@ -38,8 +62,15 @@
     },
     "content": {
       "description": "Content/blog cards with thumbnail, title, excerpt, author, date. Grid: 1/2/3 cols.",
-      "components": ["Card", "CardHeader", "CardBody", "Image", "Badge", "icon"],
-      "blend": {
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "Image",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
         "layout": "grid",
         "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6",
         "slots": {
@@ -57,8 +88,12 @@
     },
     "collection": {
       "description": "Collection/category cards with background image, overlay title, item count. Grid: 2/3 cols.",
-      "components": ["Card", "Image", "Badge"],
-      "blend": {
+      "components": [
+        "Card",
+        "Image",
+        "Badge"
+      ],
+      "layout": {
         "layout": "grid",
         "atoms": "_grid _gc2 _lg:gc3 _gap4",
         "slots": {
@@ -74,8 +109,11 @@
     },
     "icon": {
       "description": "Small icon cards with icon, title, short description. Grid: 2/3/4 cols. Compact.",
-      "components": ["Card", "icon"],
-      "blend": {
+      "components": [
+        "Card",
+        "icon"
+      ],
+      "layout": {
         "layout": "grid",
         "atoms": "_grid _gc2 _md:gc3 _lg:gc4 _gap3",
         "slots": {
@@ -90,7 +128,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "grid",
     "atoms": "_grid _gc1 _sm:gc2 _lg:gc3 _xl:gc4 _gap4",
     "slots": {
@@ -106,8 +144,16 @@
     "example": "function CardGridProduct({ items }) {\n  const { div, img, span, p } = tags;\n\n  const products = items || [\n    { name: 'Wireless Headphones', price: '$79.99', rating: 4.5, reviews: 128, image: '/images/headphones.jpg' },\n    { name: 'Mechanical Keyboard', price: '$149.99', rating: 4.8, reviews: 256, image: '/images/keyboard.jpg' },\n    { name: 'USB-C Hub', price: '$49.99', rating: 4.2, reviews: 89, image: '/images/hub.jpg' },\n    { name: 'Webcam HD', price: '$69.99', rating: 4.6, reviews: 312, image: '/images/webcam.jpg' },\n  ];\n\n  return div({ class: css('_grid _gc1 _sm:gc2 _lg:gc3 _xl:gc4 _gap4') },\n    ...products.map(product =>\n      Card({ class: css('_flex _col _overflow[hidden]') },\n        div({ class: css('_aspect[4/3] _overflow[hidden]') },\n          img({ src: product.image, alt: product.name, class: css('_wfull _hfull _object[cover]') })\n        ),\n        div({ class: css('_flex _col _gap2 _p4') },\n          p({ class: css('_textsm _fontmedium') }, product.name),\n          p({ class: css('_heading4') }, product.price),\n          div({ class: css('_flex _aic _gap1') },\n            ...Array.from({ length: 5 }, (_, i) =>\n              icon(i < Math.floor(product.rating) ? 'star' : 'star', {\n                size: '0.75rem',\n                class: css(i < Math.floor(product.rating) ? '_fgprimary' : '_fgmuted')\n              })\n            ),\n            Badge({ variant: 'secondary', size: 'sm' }, `${product.reviews}`)\n          )\n        ),\n        div({ class: css('_p4 _pt0') },\n          Button({ variant: 'primary', size: 'sm', class: css('_wfull') }, icon('shopping-cart', { size: '1em' }), ' Add to Cart')\n        )\n      )\n    )\n  );\n}"
   },
   "io": {
-    "consumes": ["search", "filters", "data"],
-    "produces": ["selection"],
-    "actions": ["load-more"]
+    "consumes": [
+      "search",
+      "filters",
+      "data"
+    ],
+    "produces": [
+      "selection"
+    ],
+    "actions": [
+      "load-more"
+    ]
   }
 }

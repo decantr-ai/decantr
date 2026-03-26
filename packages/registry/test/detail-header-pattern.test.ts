@@ -41,18 +41,18 @@ describe('detail-header pattern JSON', () => {
 
   it('standard preset has row layout with bottom border atoms', () => {
     const standard = raw.presets.standard;
-    expect(standard.blend.layout).toBe('row');
-    expect(standard.blend.atoms).toContain('_pb4');
-    expect(standard.blend.atoms).toContain('_bbsolid');
-    expect(standard.blend.atoms).toContain('_bcborder');
+    expect(standard.layout.layout).toBe('row');
+    expect(standard.layout.atoms).toContain('_pb4');
+    expect(standard.layout.atoms).toContain('_bbsolid');
+    expect(standard.layout.atoms).toContain('_bcborder');
   });
 
   it('profile preset has row layout with start alignment', () => {
     const profile = raw.presets.profile;
-    expect(profile.blend.layout).toBe('row');
-    expect(profile.blend.atoms).toContain('_flex _row');
-    expect(profile.blend.atoms).toContain('_gap6');
-    expect(profile.blend.atoms).toContain('_items[start]');
+    expect(profile.layout.layout).toBe('row');
+    expect(profile.layout.atoms).toContain('_flex _row');
+    expect(profile.layout.atoms).toContain('_gap6');
+    expect(profile.layout.atoms).toContain('_items[start]');
   });
 
   it('lists Avatar, Badge, Button, Breadcrumb as components', () => {

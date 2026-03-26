@@ -30,17 +30,17 @@ describe('portfolio archetype', () => {
     expect(pageIds).toContain('contact');
   });
 
-  it('each page has a default_blend', () => {
+  it('each page has a default_layout', () => {
     for (const page of archetype.pages) {
-      expect(page.default_blend, `page ${page.id} missing default_blend`).toBeInstanceOf(Array);
-      expect(page.default_blend.length, `page ${page.id} has empty default_blend`).toBeGreaterThan(0);
+      expect(page.default_layout, `page ${page.id} missing default_layout`).toBeInstanceOf(Array);
+      expect(page.default_layout.length, `page ${page.id} has empty default_layout`).toBeGreaterThan(0);
     }
   });
 
   it('hero uses split preset on about page', () => {
     const aboutPage = archetype.pages.find((p: { id: string }) => p.id === 'about');
     expect(aboutPage).toBeDefined();
-    const heroEntry = aboutPage.default_blend.find(
+    const heroEntry = aboutPage.default_layout.find(
       (item: unknown) => typeof item === 'object' && item !== null && (item as { pattern: string }).pattern === 'hero'
     );
     expect(heroEntry).toBeDefined();
@@ -50,7 +50,7 @@ describe('portfolio archetype', () => {
   it('form-sections uses creation preset on contact page', () => {
     const contactPage = archetype.pages.find((p: { id: string }) => p.id === 'contact');
     expect(contactPage).toBeDefined();
-    const formEntry = contactPage.default_blend.find(
+    const formEntry = contactPage.default_layout.find(
       (item: unknown) => typeof item === 'object' && item !== null && (item as { pattern: string }).pattern === 'form-sections'
     );
     expect(formEntry).toBeDefined();
@@ -68,7 +68,7 @@ describe('portfolio archetype', () => {
     };
 
     for (const page of archetype.pages) {
-      for (const item of page.default_blend) {
+      for (const item of page.default_layout) {
         if (typeof item === 'object' && item.pattern && item.preset) {
           const allowed = validPresets[item.pattern];
           expect(allowed, `unknown pattern ${item.pattern}`).toBeDefined();
@@ -83,7 +83,7 @@ describe('portfolio archetype', () => {
     const referencedPatterns = new Set<string>();
 
     for (const page of archetype.pages) {
-      for (const item of page.default_blend) {
+      for (const item of page.default_layout) {
         if (typeof item === 'string') referencedPatterns.add(item);
         else if (item.pattern) referencedPatterns.add(item.pattern);
       }

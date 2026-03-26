@@ -5,11 +5,30 @@
   "decantr_compat": ">=0.10.0",
   "name": "E-commerce Store",
   "description": "Online store with product catalog, search, detail pages, and cart",
-  "tags": ["ecommerce", "store", "catalog", "cart", "products", "retail"],
+  "tags": [
+    "ecommerce",
+    "store",
+    "catalog",
+    "cart",
+    "products",
+    "retail"
+  ],
   "classification": {
     "triggers": {
-      "primary": ["ecommerce", "store", "shop", "catalog", "products"],
-      "secondary": ["cart", "checkout", "retail", "marketplace", "inventory"],
+      "primary": [
+        "ecommerce",
+        "store",
+        "shop",
+        "catalog",
+        "products"
+      ],
+      "secondary": [
+        "cart",
+        "checkout",
+        "retail",
+        "marketplace",
+        "inventory"
+      ],
       "negative": []
     },
     "implies": [],
@@ -19,42 +38,75 @@
   "pages": [
     {
       "id": "home",
-      "default_blend": [
-        { "pattern": "card-grid", "preset": "collection", "as": "featured-collections" },
-        { "pattern": "card-grid", "preset": "product", "as": "trending-products" },
+      "default_layout": [
+        {
+          "pattern": "card-grid",
+          "preset": "collection",
+          "as": "featured-collections"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "trending-products"
+        },
         "cta-section"
       ],
-      "carafe": "top-nav-main"
+      "shell": "top-nav-main"
     },
     {
       "id": "catalog",
-      "default_blend": [
+      "default_layout": [
         "filter-bar",
-        { "pattern": "card-grid", "preset": "product" }
+        {
+          "pattern": "card-grid",
+          "preset": "product"
+        }
       ],
-      "carafe": "top-nav-main",
+      "shell": "top-nav-main",
       "notes": "filter-bar produces search+filters signals consumed by card-grid"
     },
     {
       "id": "product-detail",
-      "default_blend": [
-        { "pattern": "detail-header", "preset": "standard" },
-        { "pattern": "form-sections", "preset": "structured", "as": "product-options" },
-        { "pattern": "card-grid", "preset": "product", "as": "related-products" }
+      "default_layout": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard"
+        },
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "product-options"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "related-products"
+        }
       ],
-      "carafe": "top-nav-main"
+      "shell": "top-nav-main"
     },
     {
       "id": "cart",
-      "default_blend": [
-        { "pattern": "data-table", "preset": "standard", "as": "cart-items" },
+      "default_layout": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "cart-items"
+        },
         "cta-section"
       ],
-      "carafe": "top-nav-main"
+      "shell": "top-nav-main"
     }
   ],
-  "tannins": ["auth", "payments", "search", "analytics"],
-  "carafes": { "top-nav-main": "Top navigation bar with main content area" },
+  "features": [
+    "auth",
+    "payments",
+    "search",
+    "analytics"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area"
+  },
   "dependencies": {
     "patterns": {
       "card-grid": "^1.0.0",
@@ -67,5 +119,14 @@
     "recipes": {},
     "styles": {}
   },
-  "suggested_vintage": { "styles": ["auradecantism", "clean"], "modes": ["light", "auto"] }
+  "suggested_theme": {
+    "styles": [
+      "auradecantism",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "auto"
+    ]
+  }
 }

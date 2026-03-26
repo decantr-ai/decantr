@@ -10,18 +10,36 @@
     "recipes": {},
     "styles": {},
     "requires_core": {
-      "components": ["Avatar", "Badge", "Button", "Breadcrumb", "Separator", "icon"],
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "Breadcrumb",
+        "Separator",
+        "icon"
+      ],
       "charts": []
     }
   },
-  "components": ["Avatar", "Badge", "Button", "Breadcrumb"],
+  "components": [
+    "Avatar",
+    "Badge",
+    "Button",
+    "Breadcrumb"
+  ],
   "contained": false,
   "default_preset": "standard",
   "presets": {
     "standard": {
       "description": "Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.",
-      "components": ["Badge", "Button", "Breadcrumb", "Separator", "icon"],
-      "blend": {
+      "components": [
+        "Badge",
+        "Button",
+        "Breadcrumb",
+        "Separator",
+        "icon"
+      ],
+      "layout": {
         "layout": "row",
         "atoms": "_flex _col _gap4 _pb4 _bbsolid _bcborder",
         "slots": {
@@ -40,8 +58,13 @@
     },
     "profile": {
       "description": "Large avatar on the left, name/title/bio on the right, stats row, and action buttons (follow, message).",
-      "components": ["Avatar", "Badge", "Button", "icon"],
-      "blend": {
+      "components": [
+        "Avatar",
+        "Badge",
+        "Button",
+        "icon"
+      ],
+      "layout": {
         "layout": "row",
         "atoms": "_flex _row _gap6 _items[start]",
         "slots": {
@@ -60,7 +83,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "row",
     "atoms": "_flex _col _gap4 _pb4 _bbsolid _bcborder",
     "slots": {
@@ -77,8 +100,16 @@
     "example": "function DetailHeader({ data }) {\n  const { div, h1, p, nav, a } = tags;\n\n  return div({ class: css('_flex _col _gap4 _pb4 _bbsolid _bcborder') },\n    Breadcrumb({},\n      Breadcrumb.Item({}, a({ href: '/' }, 'Home')),\n      Breadcrumb.Item({}, a({ href: '/items' }, 'Items')),\n      Breadcrumb.Item({ current: true }, data?.title || 'Detail')\n    ),\n    div({ class: css('_flex _row _jcsb _aic') },\n      div({ class: css('_flex _col _gap1') },\n        div({ class: css('_flex _row _gap3 _aic') },\n          h1({ class: css('_heading2') }, data?.title || 'Item Title'),\n          Badge({ variant: 'default' }, data?.status || 'Active')\n        ),\n        p({ class: css('_bodysm _fgmuted') }, data?.description || 'Item description goes here')\n      ),\n      div({ class: css('_flex _gap2') },\n        Button({ variant: 'outline', size: 'sm' }, icon('share'), 'Share'),\n        Button({ variant: 'outline', size: 'sm' }, icon('edit'), 'Edit'),\n        Button({ variant: 'destructive', size: 'sm' }, icon('trash'), 'Delete')\n      )\n    )\n  );\n}"
   },
   "io": {
-    "consumes": ["data"],
-    "produces": ["actions"],
-    "actions": ["edit", "delete", "share"]
+    "consumes": [
+      "data"
+    ],
+    "produces": [
+      "actions"
+    ],
+    "actions": [
+      "edit",
+      "delete",
+      "share"
+    ]
   }
 }

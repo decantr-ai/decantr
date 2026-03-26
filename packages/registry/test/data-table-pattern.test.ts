@@ -35,17 +35,17 @@ describe('data-table pattern JSON', () => {
     expect(raw.default_preset).toBe('standard');
   });
 
-  it('standard preset has correct blend layout', () => {
+  it('standard preset has correct layout', () => {
     const standard = raw.presets.standard;
-    expect(standard.blend.layout).toBe('column');
-    expect(standard.blend.atoms).toContain('_w[100%]');
-    expect(standard.blend.atoms).toContain('_overflow[auto]');
+    expect(standard.layout.layout).toBe('column');
+    expect(standard.layout.atoms).toContain('_w[100%]');
+    expect(standard.layout.atoms).toContain('_overflow[auto]');
   });
 
   it('compact preset has denser layout atoms', () => {
     const compact = raw.presets.compact;
-    expect(compact.blend.layout).toBe('column');
-    expect(compact.blend.atoms).toContain('_gap2');
+    expect(compact.layout.layout).toBe('column');
+    expect(compact.layout.atoms).toContain('_gap2');
   });
 
   it('has io declarations with search and filters in consumes', () => {

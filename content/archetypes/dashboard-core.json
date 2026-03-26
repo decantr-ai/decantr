@@ -5,11 +5,29 @@
   "decantr_compat": ">=0.10.0",
   "name": "Dashboard Core",
   "description": "Overview and analytics pages with KPIs, charts, and data tables",
-  "tags": ["dashboard", "overview", "analytics", "kpi", "metrics", "charts"],
+  "tags": [
+    "dashboard",
+    "overview",
+    "analytics",
+    "kpi",
+    "metrics",
+    "charts"
+  ],
   "classification": {
     "triggers": {
-      "primary": ["dashboard", "overview", "analytics", "KPI", "metrics"],
-      "secondary": ["charts", "reports", "data visualization", "monitoring"],
+      "primary": [
+        "dashboard",
+        "overview",
+        "analytics",
+        "KPI",
+        "metrics"
+      ],
+      "secondary": [
+        "charts",
+        "reports",
+        "data visualization",
+        "monitoring"
+      ],
       "negative": []
     },
     "implies": [],
@@ -17,11 +35,30 @@
     "tier": "core"
   },
   "pages": [
-    { "id": "overview", "default_blend": ["kpi-grid", "chart-grid", "activity-feed"], "carafe": "sidebar-main" },
-    { "id": "analytics", "default_blend": ["filter-bar", "data-table"], "carafe": "sidebar-main" }
+    {
+      "id": "overview",
+      "default_layout": [
+        "kpi-grid",
+        "chart-grid",
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "analytics",
+      "default_layout": [
+        "filter-bar",
+        "data-table"
+      ],
+      "shell": "sidebar-main"
+    }
   ],
-  "tannins": ["analytics-state"],
-  "carafes": { "sidebar-main": "Sidebar navigation with main content area" },
+  "features": [
+    "analytics-state"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
   "dependencies": {
     "patterns": {
       "kpi-grid": "^1.0.0",
@@ -33,5 +70,14 @@
     "recipes": {},
     "styles": {}
   },
-  "suggested_vintage": { "styles": ["auradecantism", "clean"], "modes": ["dark", "auto"] }
+  "suggested_theme": {
+    "styles": [
+      "auradecantism",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "auto"
+    ]
+  }
 }

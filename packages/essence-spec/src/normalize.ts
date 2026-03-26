@@ -1,7 +1,7 @@
 import type { Essence, SectionedEssence, EssenceFile, StructurePage, GuardMode } from './types.js';
 
 export function normalizeEssence(input: Record<string, unknown>): EssenceFile {
-  // Detect v2: has 'theme' and 'platform'
+  // Detect v2: has 'theme' and 'platform' (normalized terms)
   if (input.theme && input.platform) {
     return input as unknown as EssenceFile;
   }
@@ -14,6 +14,10 @@ export function normalizeEssence(input: Record<string, unknown>): EssenceFile {
 }
 
 function normalizeSimple(v1: Record<string, unknown>): Essence {
+  // v1 field names (wine terms) → v2 normalized names:
+  //   vintage → theme, vessel → platform, clarity → density,
+  //   cork → guard, terroir/vignette → archetype, tannins → features,
+  //   carafe → shell, blend → layout, character → personality
   const vintage = v1.vintage as Record<string, string> | undefined;
   const vessel = v1.vessel as Record<string, string> | undefined;
   const clarity = v1.clarity as Record<string, string> | undefined;
@@ -29,7 +33,8 @@ function normalizeSimple(v1: Record<string, unknown>): Essence {
       recipe: vintage?.recipe ?? '',
       ...(vintage?.shape ? { shape: vintage.shape as 'sharp' | 'rounded' | 'pill' } : {}),
     },
-    character: v1.character as string[],
+    // Accept both old 'character' and new 'personality' field names
+    personality: (v1.character ?? v1.personality) as string[],
     platform: {
       type: (vessel?.type ?? 'spa') as 'spa' | 'ssr' | 'static',
       routing: (vessel?.routing ?? 'hash') as 'hash' | 'history',
@@ -47,6 +52,10 @@ function normalizeSimple(v1: Record<string, unknown>): Essence {
 }
 
 function normalizeSectioned(v1: Record<string, unknown>): SectionedEssence {
+  // v1 field names (wine terms) → v2 normalized names:
+  //   vessel → platform, clarity → density, cork → guard,
+  //   terroir/vignette → archetype, tannins → features,
+  //   shared_tannins → shared_features, character → personality
   const vessel = v1.vessel as Record<string, string> | undefined;
   const clarity = v1.clarity as Record<string, string> | undefined;
   const cork = v1.cork as Record<string, unknown> | undefined;
@@ -58,7 +67,8 @@ function normalizeSectioned(v1: Record<string, unknown>): SectionedEssence {
       type: (vessel?.type ?? 'spa') as 'spa' | 'ssr' | 'static',
       routing: (vessel?.routing ?? 'hash') as 'hash' | 'history',
     },
-    character: v1.character as string[],
+    // Accept both old 'character' and new 'personality' field names
+    personality: (v1.character ?? v1.personality) as string[],
     sections: sections.map(section => ({
       id: section.id as string,
       path: section.path as string,
@@ -82,6 +92,7 @@ function normalizeSectioned(v1: Record<string, unknown>): SectionedEssence {
 }
 
 function normalizeStructurePage(page: Record<string, unknown>): StructurePage {
+  // Accept v1 wine terms (carafe → shell, blend → layout) for backward compatibility
   return {
     id: page.id as string,
     shell: (page.carafe ?? page.shell) as string,
@@ -90,6 +101,7 @@ function normalizeStructurePage(page: Record<string, unknown>): StructurePage {
   };
 }
 
+// Accept v1 'cork' object and normalize to v2 'guard'
 function normalizeGuard(cork: Record<string, unknown> | undefined): Essence['guard'] {
   if (!cork) return { mode: 'creative' };
 

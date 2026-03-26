@@ -5,11 +5,25 @@
   "decantr_compat": ">=0.10.0",
   "name": "Notifications",
   "description": "Notification inbox and alert management",
-  "tags": ["notifications", "inbox", "alerts", "messages", "updates"],
+  "tags": [
+    "notifications",
+    "inbox",
+    "alerts",
+    "messages",
+    "updates"
+  ],
   "classification": {
     "triggers": {
-      "primary": ["notifications", "inbox", "alerts"],
-      "secondary": ["messages", "updates", "notification center"],
+      "primary": [
+        "notifications",
+        "inbox",
+        "alerts"
+      ],
+      "secondary": [
+        "messages",
+        "updates",
+        "notification center"
+      ],
       "negative": []
     },
     "implies": [],
@@ -17,10 +31,35 @@
     "tier": "optional"
   },
   "pages": [
-    { "id": "notifications", "default_blend": ["activity-feed"], "carafe": "sidebar-main" }
+    {
+      "id": "notifications",
+      "default_layout": [
+        "activity-feed"
+      ],
+      "shell": "sidebar-main"
+    }
   ],
-  "tannins": ["notifications"],
-  "carafes": { "sidebar-main": "Sidebar navigation with main content area" },
-  "dependencies": { "patterns": { "activity-feed": "^1.0.0" }, "recipes": {}, "styles": {} },
-  "suggested_vintage": { "styles": ["auradecantism", "clean"], "modes": ["dark", "auto"] }
+  "features": [
+    "notifications"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "activity-feed": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "auradecantism",
+      "clean"
+    ],
+    "modes": [
+      "dark",
+      "auto"
+    ]
+  }
 }

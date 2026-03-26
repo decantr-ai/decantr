@@ -31,11 +31,17 @@ let _resolver: ContentResolver | null = null;
 
 export function getResolver(): ContentResolver {
   if (!_resolver) {
-    const cwd = process.cwd();
-    // Try project-local content first, then monorepo content
+    // Content resolution order:
+    // 1. DECANTR_CONTENT_ROOT env var (explicit override)
+    // 2. Bundled content relative to this package (monorepo dev)
+    // 3. node_modules/@decantr/content (npm installed)
+    const envRoot = process.env.DECANTR_CONTENT_ROOT;
+    const bundledRoot = join(import.meta.dirname, '..', '..', '..', 'content');
+    const npmRoot = join(process.cwd(), 'node_modules', '@decantr', 'content');
+
     _resolver = createResolver({
-      contentRoot: join(cwd, 'node_modules', '@decantr', 'content'),
-      overridePaths: [join(cwd, 'src', 'registry-content')],
+      contentRoot: envRoot || bundledRoot,
+      overridePaths: envRoot ? [] : [npmRoot],
     });
   }
   return _resolver;

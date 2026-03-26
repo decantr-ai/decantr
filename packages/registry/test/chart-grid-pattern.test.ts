@@ -36,28 +36,28 @@ describe('chart-grid pattern JSON', () => {
     expect(raw.default_preset).toBe('dashboard');
   });
 
-  it('dashboard preset has correct grid blend layout', () => {
+  it('dashboard preset has correct grid layout', () => {
     const dashboard = raw.presets.dashboard;
-    expect(dashboard.blend.layout).toBe('grid');
-    expect(dashboard.blend.atoms).toContain('_grid');
-    expect(dashboard.blend.atoms).toContain('_gc1');
-    expect(dashboard.blend.atoms).toContain('_lg:gc2');
-    expect(dashboard.blend.atoms).toContain('_gap4');
+    expect(dashboard.layout.layout).toBe('grid');
+    expect(dashboard.layout.atoms).toContain('_grid');
+    expect(dashboard.layout.atoms).toContain('_gc1');
+    expect(dashboard.layout.atoms).toContain('_lg:gc2');
+    expect(dashboard.layout.atoms).toContain('_gap4');
   });
 
   it('wide preset uses flex row layout with overflow', () => {
     const wide = raw.presets.wide;
-    expect(wide.blend.layout).toBe('row');
-    expect(wide.blend.atoms).toContain('_flex');
-    expect(wide.blend.atoms).toContain('_row');
-    expect(wide.blend.atoms).toContain('_overflow[auto]');
+    expect(wide.layout.layout).toBe('row');
+    expect(wide.layout.atoms).toContain('_flex');
+    expect(wide.layout.atoms).toContain('_row');
+    expect(wide.layout.atoms).toContain('_overflow[auto]');
   });
 
   it('mixed preset has grid layout for asymmetric charts', () => {
     const mixed = raw.presets.mixed;
-    expect(mixed.blend.layout).toBe('grid');
-    expect(mixed.blend.atoms).toContain('_grid');
-    expect(mixed.blend.atoms).toContain('_lg:gc2');
+    expect(mixed.layout.layout).toBe('grid');
+    expect(mixed.layout.atoms).toContain('_grid');
+    expect(mixed.layout.atoms).toContain('_lg:gc2');
   });
 
   it('has io declarations: consumes date-range and filters', () => {

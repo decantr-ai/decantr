@@ -19,7 +19,7 @@
     "card_wrapping": "minimal",
     "surface_override": null
   },
-  "carafe": {
+  "shell": {
     "preferred": [
       "sidebar-main"
     ],

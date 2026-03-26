@@ -2,7 +2,7 @@ import type { Pattern, PatternPreset } from './types.js';
 
 export interface ResolvedPreset {
   preset: string;
-  blend: PatternPreset['blend'];
+  layout: PatternPreset['layout'];
   code: PatternPreset['code'];
 }
 
@@ -17,7 +17,7 @@ export function resolvePatternPreset(
   if (!hasPresets) {
     return {
       preset: '',
-      blend: { layout: 'row', atoms: '' },
+      layout: { layout: 'row', atoms: '' },
       code: pattern.code ?? { imports: '', example: '' },
     };
   }
@@ -32,5 +32,5 @@ export function resolvePatternPreset(
   if (!presetName || !presets[presetName]) presetName = Object.keys(presets)[0];
 
   const preset = presets[presetName];
-  return { preset: presetName, blend: preset.blend, code: preset.code };
+  return { preset: presetName, layout: preset.layout, code: preset.code };
 }

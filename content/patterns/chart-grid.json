@@ -10,17 +10,30 @@
     "recipes": {},
     "styles": {},
     "requires_core": {
-      "components": ["Card", "CardHeader", "CardBody"],
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody"
+      ],
       "charts": []
     }
   },
-  "components": ["Card", "CardHeader", "CardBody"],
+  "contained": false,
+  "components": [
+    "Card",
+    "CardHeader",
+    "CardBody"
+  ],
   "default_preset": "dashboard",
   "presets": {
     "dashboard": {
       "description": "2x2 grid of chart cards, each with a title, chart placeholder area, and legend",
-      "components": ["Card", "CardHeader", "CardBody"],
-      "blend": {
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody"
+      ],
+      "layout": {
         "layout": "grid",
         "atoms": "_grid _gc1 _lg:gc2 _gap4",
         "slots": {
@@ -37,8 +50,10 @@
     },
     "wide": {
       "description": "Single row of charts, side-scrollable on mobile",
-      "components": ["Card"],
-      "blend": {
+      "components": [
+        "Card"
+      ],
+      "layout": {
         "layout": "row",
         "atoms": "_flex _row _gap4 _overflow[auto]",
         "slots": {
@@ -54,8 +69,10 @@
     },
     "mixed": {
       "description": "Asymmetric layout: one large chart spanning 2 cols + two smaller charts",
-      "components": ["Card"],
-      "blend": {
+      "components": [
+        "Card"
+      ],
+      "layout": {
         "layout": "grid",
         "atoms": "_grid _gc1 _lg:gc2 _gap4",
         "slots": {
@@ -69,7 +86,7 @@
       }
     }
   },
-  "default_blend": {
+  "default_layout": {
     "layout": "grid",
     "atoms": "_grid _gc1 _lg:gc2 _gap4",
     "slots": {
@@ -84,7 +101,10 @@
     "example": "function ChartGrid({ charts }) {\n  const { div, h3, span } = tags;\n\n  const items = charts || [\n    { title: 'Revenue Over Time', type: 'line', legends: ['Revenue', 'Expenses'] },\n    { title: 'Users by Region', type: 'bar', legends: ['NA', 'EU', 'APAC'] },\n    { title: 'Traffic Sources', type: 'pie', legends: ['Organic', 'Paid', 'Referral'] },\n    { title: 'Engagement Trend', type: 'area', legends: ['Sessions', 'Bounce Rate'] },\n  ];\n\n  return div({ class: css('_grid _gc1 _lg:gc2 _gap4') },\n    ...items.map(chart =>\n      Card({ class: css('_flex _col _gap2 _p4') },\n        h3({ class: css('_textsm _fontmedium') }, chart.title),\n        div({ class: css('_minh[200px] _bgmuted/10 _r2 _flex _center'), 'data-chart-type': chart.type },\n          span({ class: css('_fgmuted _textsm') }, `[${chart.type} chart placeholder]`)\n        ),\n        div({ class: css('_flex _gap2 _textxs _fgmuted') },\n          ...chart.legends.map(l =>\n            div({ class: css('_flex _aic _gap1') },\n              div({ class: css('_w2 _h2 _rfull _bgprimary') }),\n              span({}, l)\n            )\n          )\n        )\n      )\n    )\n  );\n}"
   },
   "io": {
-    "consumes": ["date-range", "filters"],
+    "consumes": [
+      "date-range",
+      "filters"
+    ],
     "produces": []
   }
 }

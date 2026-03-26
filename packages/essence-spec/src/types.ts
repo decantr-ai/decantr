@@ -1,10 +1,11 @@
 /**
  * Essence v2 schema types — normalized terminology.
  *
- * Terminology mapping (wine → normalized):
+ * Terminology mapping (v1 wine terms → v2 normalized):
  *   terroir → archetype, vintage → theme, tannins → features,
  *   carafe → shell, cork → guard, blend → layout, clarity → density,
- *   vessel → platform, decantation process → essence pipeline
+ *   vessel → platform, character → personality,
+ *   decantation process → essence pipeline
  */
 
 // --- Theme ---
@@ -116,7 +117,7 @@ export interface Essence {
   version: string;
   archetype: string;
   theme: Theme;
-  character: string[];
+  personality: string[];
   platform: Platform;
   structure: StructurePage[];
   features: string[];
@@ -141,7 +142,7 @@ export interface SectionedEssence {
   $schema?: string;
   version: string;
   platform: Platform;
-  character: string[];
+  personality: string[];
   sections: EssenceSection[];
   shared_features?: string[];
   density: Density;

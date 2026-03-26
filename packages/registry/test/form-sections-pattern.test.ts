@@ -36,25 +36,25 @@ describe('form-sections pattern JSON', () => {
     expect(raw.default_preset).toBe('settings');
   });
 
-  it('settings preset has 2-column grid blend layout', () => {
+  it('settings preset has 2-column grid layout', () => {
     const settings = raw.presets.settings;
-    expect(settings.blend.layout).toBe('stack');
-    expect(settings.blend.atoms).toContain('_flex');
-    expect(settings.blend.atoms).toContain('_col');
-    expect(settings.blend.atoms).toContain('_gap6');
+    expect(settings.layout.layout).toBe('stack');
+    expect(settings.layout.atoms).toContain('_flex');
+    expect(settings.layout.atoms).toContain('_col');
+    expect(settings.layout.atoms).toContain('_gap6');
   });
 
   it('creation preset uses single-column wizard layout', () => {
     const creation = raw.presets.creation;
-    expect(creation.blend.layout).toBe('stack');
-    expect(creation.blend.atoms).toContain('_mw[640px]');
-    expect(creation.blend.atoms).toContain('_mx[auto]');
+    expect(creation.layout.layout).toBe('stack');
+    expect(creation.layout.atoms).toContain('_mw[640px]');
+    expect(creation.layout.atoms).toContain('_mx[auto]');
   });
 
   it('structured preset has dense form layout', () => {
     const structured = raw.presets.structured;
-    expect(structured.blend.layout).toBe('stack');
-    expect(structured.blend.atoms).toContain('_gap4');
+    expect(structured.layout.layout).toBe('stack');
+    expect(structured.layout.atoms).toContain('_gap4');
   });
 
   it('includes all required form components', () => {
