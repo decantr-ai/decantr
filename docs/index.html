@@ -441,33 +441,51 @@
       position: relative;
       transition: transform 0.25s, box-shadow 0.25s;
       color: #fff;
+      background: transparent;
+      border: 3px solid;
     }
     .pipeline-card:hover {
       transform: translateY(-4px);
     }
 
-    .pipeline-card-1 { background: linear-gradient(135deg, #F58882, #E06060); }
-    .pipeline-card-1:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.3); }
-    .pipeline-card-2 { background: linear-gradient(135deg, #FDA303, #E09000); }
-    .pipeline-card-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.3); }
-    .pipeline-card-3 { background: linear-gradient(135deg, #0AF3EB, #08C4BE); color: #0D0D1A; }
-    .pipeline-card-3:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.3); }
-    .pipeline-card-3 .pipeline-num { color: rgba(13,13,26,0.5); }
-    .pipeline-card-4 { background: linear-gradient(135deg, #00E0AB, #00B88A); color: #0D0D1A; }
-    .pipeline-card-4:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.3); }
-    .pipeline-card-4 .pipeline-num { color: rgba(13,13,26,0.5); }
-    .pipeline-card-5 { background: linear-gradient(135deg, #FCD021, #E0B800); color: #0D0D1A; }
-    .pipeline-card-5:hover { box-shadow: 0 12px 40px rgba(252,208,33,0.3); }
-    .pipeline-card-5 .pipeline-num { color: rgba(13,13,26,0.5); }
-    .pipeline-card-6 { background: linear-gradient(135deg, #FC8D0D, #E07800); }
-    .pipeline-card-6:hover { box-shadow: 0 12px 40px rgba(252,141,13,0.3); }
-    .pipeline-card-7 { background: linear-gradient(135deg, #6500C6, #5000A0); }
-    .pipeline-card-7:hover { box-shadow: 0 12px 40px rgba(101,0,198,0.3); }
+    .pipeline-card-1 { border-color: #F58882; }
+    .pipeline-card-1:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.2); background: rgba(245,136,130,0.05); }
+    .pipeline-card-1 .pipeline-name { color: #F58882; }
+    .pipeline-card-1 .pipeline-num { color: rgba(245,136,130,0.5); }
+
+    .pipeline-card-2 { border-color: #FDA303; }
+    .pipeline-card-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.2); background: rgba(253,163,3,0.05); }
+    .pipeline-card-2 .pipeline-name { color: #FDA303; }
+    .pipeline-card-2 .pipeline-num { color: rgba(253,163,3,0.5); }
+
+    .pipeline-card-3 { border-color: #0AF3EB; }
+    .pipeline-card-3:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.2); background: rgba(10,243,235,0.05); }
+    .pipeline-card-3 .pipeline-name { color: #0AF3EB; }
+    .pipeline-card-3 .pipeline-num { color: rgba(10,243,235,0.5); }
+
+    .pipeline-card-4 { border-color: #00E0AB; }
+    .pipeline-card-4:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.2); background: rgba(0,224,171,0.05); }
+    .pipeline-card-4 .pipeline-name { color: #00E0AB; }
+    .pipeline-card-4 .pipeline-num { color: rgba(0,224,171,0.5); }
+
+    .pipeline-card-5 { border-color: #FCD021; }
+    .pipeline-card-5:hover { box-shadow: 0 12px 40px rgba(252,208,33,0.2); background: rgba(252,208,33,0.05); }
+    .pipeline-card-5 .pipeline-name { color: #FCD021; }
+    .pipeline-card-5 .pipeline-num { color: rgba(252,208,33,0.5); }
+
+    .pipeline-card-6 { border-color: #FC8D0D; }
+    .pipeline-card-6:hover { box-shadow: 0 12px 40px rgba(252,141,13,0.2); background: rgba(252,141,13,0.05); }
+    .pipeline-card-6 .pipeline-name { color: #FC8D0D; }
+    .pipeline-card-6 .pipeline-num { color: rgba(252,141,13,0.5); }
+
+    .pipeline-card-7 { border-color: #6500C6; }
+    .pipeline-card-7:hover { box-shadow: 0 12px 40px rgba(101,0,198,0.2); background: rgba(101,0,198,0.05); }
+    .pipeline-card-7 .pipeline-name { color: #6500C6; }
+    .pipeline-card-7 .pipeline-num { color: rgba(101,0,198,0.5); }
 
     .pipeline-num {
       font-family: var(--mono);
       font-size: 0.75rem;
-      color: rgba(255,255,255,0.5);
       margin-bottom: 8px;
       font-weight: 700;
     }
@@ -482,7 +500,7 @@
       font-size: 0.85rem;
       line-height: 1.5;
       margin-bottom: 16px;
-      opacity: 0.85;
+      color: var(--muted);
     }
 
     .pipeline-visual {
