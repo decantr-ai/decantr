@@ -1,5 +1,6 @@
 import type { IRAppNode, IRNavItem, IRRoute, GeneratedFile } from '@decantr/generator-core';
 import { hasAuth } from './emit-auth.js';
+import { isThemeToggleable } from './emit-theme.js';
 
 // AUTO: Module-level loading spinner JSX used as Suspense fallback in all shell variants
 const LOADING_SPINNER = `function LoadingSpinner() {
@@ -38,6 +39,8 @@ const LUCIDE_ICONS: Record<string, string> = {
   'folder': 'Folder',
   'git-branch': 'GitBranch',
   'monitor': 'Monitor',
+  'sun': 'Sun',
+  'moon': 'Moon',
   'shield': 'Shield',
   'database': 'Database',
   'rocket': 'Rocket',
@@ -87,6 +90,7 @@ function buildSidebarMainApp(app: IRAppNode): string {
   const { nav, brand } = shell.config;
   const routerComponent = app.routing === 'hash' ? 'HashRouter' : 'BrowserRouter';
   const icons = collectLucideIcons(nav);
+  const showToggle = isThemeToggleable(app);
   // AUTO: Redirect from / to first page if first route isn't /
   const defaultPath = routes[0]?.path ?? '/';
   const needsRedirect = defaultPath !== '/';
@@ -115,6 +119,14 @@ function buildSidebarMainApp(app: IRAppNode): string {
     ? `\n            <Route path="/" element={<Navigate to="${defaultPath}" replace />} />`
     : '';
 
+  // AUTO: ThemeToggle import only when theme mode is 'auto' (toggleable)
+  const themeToggleImport = showToggle
+    ? `import ThemeToggle from '@/components/ThemeToggle';\n`
+    : '';
+  const themeToggleButton = showToggle
+    ? '              <ThemeToggle />\n'
+    : '';
+
   return `import React, { useEffect, useRef } from 'react';
 import { ${routerComponent}, Routes, Route, NavLink${needsRedirect ? ', Navigate' : ''} } from 'react-router-dom';
 ${lucideImportLines(icons)}
@@ -132,6 +144,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CommandDialog, CommandInput, CommandList, CommandItem, CommandGroup } from '@/components/ui/command';
+${themeToggleImport}
 
 ${pageImports}
 
@@ -219,7 +232,7 @@ ${navMenuItems}
               <Button variant="ghost" size="sm">
                 <Bell className="h-4 w-4" />
               </Button>
-              <DropdownMenu>
+${themeToggleButton}              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm">
                     <User className="h-4 w-4" />
@@ -275,9 +288,18 @@ function buildTopNavApp(app: IRAppNode): string {
   const { nav, brand } = shell.config;
   const routerComponent = app.routing === 'hash' ? 'HashRouter' : 'BrowserRouter';
   const icons = collectTopNavLucideIcons(nav);
+  const showToggle = isThemeToggleable(app);
   // AUTO: Redirect from / to first page if first route isn't /
   const defaultPath = routes[0]?.path ?? '/';
   const needsRedirect = defaultPath !== '/';
+
+  // AUTO: ThemeToggle import and button for top-nav shell
+  const themeToggleImport = showToggle
+    ? `import ThemeToggle from '@/components/ThemeToggle';\n`
+    : '';
+  const themeToggleButton = showToggle
+    ? '              <ThemeToggle />\n'
+    : '';
 
   const pageImports = routes
     .map(r => `const ${pascalCase(r.pageId)}Page = React.lazy(() => import('./pages/${r.pageId}.tsx'));`)
@@ -326,7 +348,7 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-
+${themeToggleImport}
 ${pageImports}
 
 ${LOADING_SPINNER}
@@ -387,7 +409,7 @@ ${navMenuItems}
               <Button variant="ghost" size="sm">
                 <Bell className="h-4 w-4" />
               </Button>
-              <DropdownMenu>
+${themeToggleButton}              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="gap-2">
                     <Avatar className="h-6 w-6">
@@ -527,6 +549,30 @@ function wrapWithAuth(content: string): string {
   return content;
 }
 
+// AUTO: Wrap app content with ThemeProvider for dark/light mode support.
+// ThemeProvider wraps inside the Router so useTheme is available to all route components.
+function wrapWithTheme(content: string): string {
+  // Add ThemeProvider import after the last existing import line
+  const themeImport = `import { ThemeProvider } from '@/contexts/ThemeContext';\n`;
+
+  content = content.replace(
+    /^(import .+\n)+/m,
+    (match) => match + themeImport,
+  );
+
+  // Wrap the Router's children in ThemeProvider
+  content = content.replace(
+    /(<(?:BrowserRouter|HashRouter)>)\n/,
+    '$1\n      <ThemeProvider>\n',
+  );
+  content = content.replace(
+    /(\n\s*<\/(?:BrowserRouter|HashRouter)>)/,
+    '\n      </ThemeProvider>$1',
+  );
+
+  return content;
+}
+
 /** Emit src/App.tsx — the React root with router and shell layout */
 export function emitApp(app: IRAppNode): GeneratedFile {
   const shellType = app.shell.config.type;
@@ -546,6 +592,9 @@ export function emitApp(app: IRAppNode): GeneratedFile {
       content = buildFullBleedApp(app);
       break;
   }
+
+  // AUTO: Wrap with ThemeProvider — always present for theme support
+  content = wrapWithTheme(content);
 
   // AUTO: When auth feature is enabled, wrap with AuthProvider and add login route
   if (hasAuth(app)) {

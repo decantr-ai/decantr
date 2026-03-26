@@ -119,10 +119,10 @@ export default defineConfig({
   };
 }
 
-/** Emit src/globals.css with shadcn theme variables */
+/** Emit src/globals.css with shadcn theme variables.
+ *  AUTO: Always emits both :root (light) and .dark selectors so ThemeProvider
+ *  can toggle between them. When mode is fixed, ThemeProvider locks the class. */
 export function emitGlobalsCss(app: IRAppNode): GeneratedFile {
-  const isDark = app.theme.mode === 'dark';
-
   return {
     path: 'src/globals.css',
     content: `@tailwind base;
@@ -131,22 +131,43 @@ export function emitGlobalsCss(app: IRAppNode): GeneratedFile {
 
 @layer base {
   :root {
-    --background: ${isDark ? '222.2 84% 4.9%' : '0 0% 100%'};
-    --foreground: ${isDark ? '210 40% 98%' : '222.2 84% 4.9%'};
-    --card: ${isDark ? '222.2 84% 4.9%' : '0 0% 100%'};
-    --card-foreground: ${isDark ? '210 40% 98%' : '222.2 84% 4.9%'};
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
     --primary: 262.1 83.3% 57.8%;
     --primary-foreground: 210 40% 98%;
-    --secondary: ${isDark ? '217.2 32.6% 17.5%' : '210 40% 96.1%'};
-    --secondary-foreground: ${isDark ? '210 40% 98%' : '222.2 47.4% 11.2%'};
-    --muted: ${isDark ? '217.2 32.6% 17.5%' : '210 40% 96.1%'};
-    --muted-foreground: ${isDark ? '215 20.2% 65.1%' : '215.4 16.3% 46.9%'};
-    --accent: ${isDark ? '217.2 32.6% 17.5%' : '210 40% 96.1%'};
-    --accent-foreground: ${isDark ? '210 40% 98%' : '222.2 47.4% 11.2%'};
-    --destructive: ${isDark ? '0 62.8% 30.6%' : '0 84.2% 60.2%'};
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: ${isDark ? '217.2 32.6% 17.5%' : '214.3 31.8% 91.4%'};
-    --input: ${isDark ? '217.2 32.6% 17.5%' : '214.3 31.8% 91.4%'};
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
     --ring: 262.1 83.3% 57.8%;
     --radius: 0.5rem;
   }
