@@ -155,6 +155,53 @@
       align-items: center;
       position: relative;
       z-index: 1;
+      background: #060610;
+      overflow: hidden;
+    }
+
+    /* Breathing gradient orbs behind hero */
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero-orb-1 {
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(254,68,116,0.14), transparent 70%);
+      top: -15%;
+      left: -15%;
+      animation: orbBreathe1 8s ease-in-out infinite;
+    }
+    .hero-orb-2 {
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(10,243,235,0.10), transparent 70%);
+      bottom: -10%;
+      right: -10%;
+      animation: orbBreathe2 10s ease-in-out infinite;
+    }
+    .hero-orb-3 {
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(253,163,3,0.09), transparent 70%);
+      top: 20%;
+      right: 20%;
+      animation: orbBreathe3 12s ease-in-out infinite;
+    }
+    @keyframes orbBreathe1 {
+      0%, 100% { opacity: 0.6; transform: scale(1) translate(0, 0); }
+      50% { opacity: 1; transform: scale(1.15) translate(30px, -20px); }
+    }
+    @keyframes orbBreathe2 {
+      0%, 100% { opacity: 0.5; transform: scale(1) translate(0, 0); }
+      50% { opacity: 0.9; transform: scale(1.1) translate(-25px, 15px); }
+    }
+    @keyframes orbBreathe3 {
+      0%, 100% { opacity: 0.4; transform: scale(1) translate(0, 0); }
+      50% { opacity: 0.8; transform: scale(1.2) translate(20px, 25px); }
     }
 
     .hero-split {
@@ -162,15 +209,15 @@
       z-index: 2;
       display: flex;
       align-items: center;
-      gap: 60px;
-      max-width: var(--max-w);
+      gap: 64px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 0 32px;
+      padding: 0 40px;
       width: 100%;
     }
 
     .hero-left {
-      flex: 0 0 30%;
+      flex: 0 0 35%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -183,32 +230,32 @@
 
     @keyframes logoFloat {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
+      50% { transform: translateY(-14px); }
     }
     .hero-logo {
       width: 100%;
-      max-width: 340px;
+      max-width: 420px;
       height: auto;
       display: block;
       animation: logoFloat 4s ease-in-out infinite;
     }
 
     .hero-title {
-      font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+      font-size: clamp(2.8rem, 5.5vw, 4.5rem);
       font-weight: 800;
-      line-height: 1.15;
-      margin-bottom: 24px;
+      line-height: 1.1;
+      margin-bottom: 28px;
       letter-spacing: -0.03em;
       color: #fff;
     }
     .hero-title .accent-dot { color: #FE4474; }
 
     .hero-body {
-      font-size: 1.1rem;
-      color: rgba(255,255,255,0.65);
-      margin-bottom: 36px;
-      max-width: 520px;
-      line-height: 1.7;
+      font-size: 1.15rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 40px;
+      max-width: 540px;
+      line-height: 1.75;
     }
     .hero-body .hero-accent {
       color: #FE4474;
@@ -228,11 +275,13 @@
         flex-direction: column;
         text-align: center;
         gap: 40px;
+        padding: 0 24px;
       }
       .hero-left { flex: none; }
-      .hero-logo { max-width: 180px; }
+      .hero-logo { max-width: 220px; }
       .hero-right { text-align: center; }
       .hero-ctas { justify-content: center; }
+      .hero-title { font-size: 2.2rem; }
     }
 
     .btn-primary {
@@ -1123,6 +1172,9 @@
 
 <!-- ==================== HERO ==================== -->
 <section class="hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-orb hero-orb-3"></div>
   <div class="hero-split">
     <div class="hero-left">
       <img src="logo.svg" alt="Decantr" class="hero-logo">
