@@ -3,7 +3,7 @@ export function renderReactImports(imports: Map<string, string[]>): string {
   const lines: string[] = [];
 
   // Order: react first, then react-router-dom, then @/ paths, then rest
-  const order = ['react', 'react-router-dom', 'lucide-react'];
+  const order = ['react', 'react-router-dom'];
 
   for (const mod of order) {
     const names = imports.get(mod);
