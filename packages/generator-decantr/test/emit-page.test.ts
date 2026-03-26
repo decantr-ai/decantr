@@ -185,4 +185,61 @@ describe('emitPage', () => {
     const tagImports = result.content.match(/import.*decantr\/tags/g);
     expect(tagImports?.length).toBe(1);
   });
+
+  it('applies visual effect decorator classes to Card wrapper', () => {
+    const pattern = makePatternNode('kpi-grid', {
+      visualEffects: {
+        decorators: ['d-glass', 'd-gradient-hint-primary'],
+        intensity: {},
+      },
+    });
+    const page = makePage('overview', [pattern]);
+    const result = emitPage(page);
+
+    expect(result.content).toContain('d-glass');
+    expect(result.content).toContain('d-gradient-hint-primary');
+    expect(result.content).toContain('Card(');
+  });
+
+  it('applies visual effect intensity vars as inline style on Card', () => {
+    const pattern = makePatternNode('kpi-grid', {
+      visualEffects: {
+        decorators: ['d-glow-primary'],
+        intensity: { '--d-glow-radius': '30px', '--d-glow-intensity': '0.3' },
+      },
+    });
+    const page = makePage('overview', [pattern]);
+    const result = emitPage(page);
+
+    expect(result.content).toContain('d-glow-primary');
+    expect(result.content).toContain('--d-glow-radius:30px');
+    expect(result.content).toContain('--d-glow-intensity:0.3');
+  });
+
+  it('emits getRecipeDecoration helper when visual effects options are provided', () => {
+    const pattern = makePatternNode('kpi-grid', { card: null });
+    const page = makePage('overview', [pattern]);
+    const result = emitPage(page, {
+      visualEffects: {
+        enabled: true,
+        intensity: 'medium',
+        type_mapping: { feature_card: ['d-glass'] },
+        component_fallback: { Card: 'feature_card' },
+        intensity_values: { medium: { '--d-glow-radius': '30px' } },
+      },
+      patternOverrides: { 'kpi-grid': { background: ['_bg[surface2]'] } },
+    });
+
+    expect(result.content).toContain('function getRecipeDecoration(');
+    expect(result.content).toContain('d-glass');
+    expect(result.content).toContain('_bg[surface2]');
+  });
+
+  it('does not emit decoration helper when no visual effects options', () => {
+    const pattern = makePatternNode('kpi-grid', { card: null });
+    const page = makePage('overview', [pattern]);
+    const result = emitPage(page);
+
+    expect(result.content).not.toContain('getRecipeDecoration');
+  });
 });

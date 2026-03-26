@@ -4,6 +4,8 @@ import type {
 } from '@decantr/generator-core';
 import { gridAtoms, spanAtom, surfaceAtoms, gapAtom } from './atoms.js';
 import { parseImports, mergeImports, renderImports } from './imports.js';
+import type { VisualEffectsConfig } from './recipe-decorator.js';
+import { emitRecipeDecorationHelper } from './recipe-decorator.js';
 
 function pascalCase(str: string): string {
   return str.split(/[-_]/).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
@@ -31,8 +33,17 @@ function emitPatternCall(node: IRPatternNode, densityGap: string): string {
   // Card wrapping
   if (node.card) {
     const bgClass = node.card.background ? ` ${node.card.background}` : '';
+    // AUTO: Apply visual effect decorator classes (d-glass, d-gradient-hint-*, d-glow-*)
+    // from recipe visual_effects when present on the pattern node
+    const veClasses = node.visualEffects?.decorators?.length
+      ? ' ' + node.visualEffects.decorators.join(' ')
+      : '';
+    // AUTO: Emit intensity CSS variables as inline style when recipe specifies them
+    const veStyle = node.visualEffects?.intensity && Object.keys(node.visualEffects.intensity).length > 0
+      ? `, style: '${Object.entries(node.visualEffects.intensity).map(([k, v]) => `${k}:${v}`).join(';')}'`
+      : '';
     return [
-      `Card({ class: css('_flex _col${bgClass}') },`,
+      `Card({ class: css('_flex _col${bgClass}${veClasses}')${veStyle} },`,
       `  Card.Header({}, '${node.card.headerLabel}'),`,
       `  Card.Body({},`,
       `    ${call}`,
@@ -100,8 +111,14 @@ function emitNodeCode(node: IRNode, densityGap: string): string {
   return `// Unknown node type: ${node.type}`;
 }
 
+/** Options for recipe-driven visual decorations on a page */
+export interface EmitPageOptions {
+  visualEffects?: VisualEffectsConfig | null;
+  patternOverrides?: Record<string, { background?: string[] }> | null;
+}
+
 /** Emit a single page .js file from its IR tree */
-export function emitPage(page: IRPageNode): GeneratedFile {
+export function emitPage(page: IRPageNode, options?: EmitPageOptions): GeneratedFile {
   const densityGap = page.children[0]?.spatial?.gap || '4';
   const surface = surfaceAtoms(page.surface, densityGap);
   const pageName = pascalCase(page.pageId);
@@ -158,9 +175,16 @@ export function emitPage(page: IRPageNode): GeneratedFile {
 
   const importBlock = renderImports(allImports);
 
+  // AUTO: Emit runtime getRecipeDecoration() helper when recipe visual_effects are active
+  const decorationHelper = emitRecipeDecorationHelper(
+    options?.visualEffects,
+    options?.patternOverrides,
+  );
+
   const code = [
     importBlock,
     '',
+    ...(decorationHelper ? [decorationHelper, ''] : []),
     ...patternFunctions,
     '',
     `export default component('${pageName}Page', () => {`,
