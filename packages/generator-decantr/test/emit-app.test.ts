@@ -56,6 +56,7 @@ function makeApp(overrides?: Partial<IRAppNode>): IRAppNode {
     routing: 'hash',
     shell,
     store,
+    features: [],
     ...overrides,
   };
 }

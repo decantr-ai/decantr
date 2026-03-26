@@ -1,4 +1,5 @@
 import type { IRAppNode, IRNavItem, IRRoute, GeneratedFile } from '@decantr/generator-core';
+import { hasAuth } from './emit-auth.js';
 
 // AUTO: Module-level loading spinner JSX used as Suspense fallback in all shell variants
 const LOADING_SPINNER = `function LoadingSpinner() {
@@ -470,6 +471,62 @@ ${routeElements}${redirectRoute}
 `;
 }
 
+// AUTO: Wrap shell content with auth when features includes "auth".
+// Adds AuthProvider at the top level, a /login route outside the shell,
+// and wraps all shell routes in ProtectedRoute.
+function wrapWithAuth(content: string): string {
+  // 1. Add auth imports after the last existing import line
+  const authImports = `import { AuthProvider } from '@/contexts/AuthContext';\n` +
+    `import ProtectedRoute from '@/components/ProtectedRoute';\n`;
+  const loginPageImport = `const LoginPage = React.lazy(() => import('./pages/LoginPage.tsx'));\n`;
+
+  // Insert auth imports before the first const (page lazy imports)
+  content = content.replace(
+    /^(import .+\n)+/m,
+    (match) => match + authImports,
+  );
+
+  // Insert LoginPage lazy import after the other page lazy imports
+  content = content.replace(
+    /(const \w+Page = React\.lazy\(.+\);\n)(?!const \w+Page)/,
+    (match) => match + loginPageImport,
+  );
+
+  // 2. Wrap each route element (except path="*") in ProtectedRoute
+  content = content.replace(
+    /(<Route path="(?!\*)[^"]*" element=\{)(<React\.Suspense[^}]+\}><\w+Page \/><\/React\.Suspense>)(\} \/>)/g,
+    (_, prefix, suspense, suffix) =>
+      `${prefix}<ProtectedRoute>${suspense}</ProtectedRoute>${suffix}`,
+  );
+
+  // Also wrap Navigate redirect routes in ProtectedRoute
+  content = content.replace(
+    /(<Route path="\/" element=\{)(<Navigate[^}]+\})(\} \/>)/g,
+    (_, prefix, nav, suffix) =>
+      `${prefix}<ProtectedRoute>${nav}</ProtectedRoute>${suffix}`,
+  );
+
+  // 3. Add login route (NOT protected, NOT in shell) before the catch-all
+  const loginRoute = `              <Route path="/login" element={<React.Suspense fallback={<LoadingSpinner />}><LoginPage /></React.Suspense>} />`;
+  content = content.replace(
+    /(\s*<Route path="\*" element=\{<NotFoundPage \/>\} \/>)/,
+    '\n' + loginRoute + '$1',
+  );
+
+  // 4. Wrap the Router's children in AuthProvider
+  // Find the opening router tag and wrap its children
+  content = content.replace(
+    /(<(?:BrowserRouter|HashRouter)>)\n/,
+    '$1\n      <AuthProvider>\n',
+  );
+  content = content.replace(
+    /(\n\s*<\/(?:BrowserRouter|HashRouter)>)/,
+    '\n      </AuthProvider>$1',
+  );
+
+  return content;
+}
+
 /** Emit src/App.tsx — the React root with router and shell layout */
 export function emitApp(app: IRAppNode): GeneratedFile {
   const shellType = app.shell.config.type;
@@ -488,6 +545,11 @@ export function emitApp(app: IRAppNode): GeneratedFile {
     default:
       content = buildFullBleedApp(app);
       break;
+  }
+
+  // AUTO: When auth feature is enabled, wrap with AuthProvider and add login route
+  if (hasAuth(app)) {
+    content = wrapWithAuth(content);
   }
 
   return { path: 'src/App.tsx', content };

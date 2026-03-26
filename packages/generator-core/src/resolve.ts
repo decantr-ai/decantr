@@ -24,6 +24,7 @@ export interface ResolvedEssence {
   theme: IRTheme;
   shell: IRShellConfig;
   routes: IRRoute[];
+  features: string[];
 }
 
 // ─── Icon Mapping ─────────────────────────────────────────────
@@ -318,5 +319,6 @@ export async function resolveEssence(
     theme,
     shell,
     routes,
+    features: simpleEssence.features ?? [],
   };
 }

@@ -86,6 +86,7 @@ export async function runPipeline(
     routing: (resolved.essence as { platform?: { routing?: string } }).platform?.routing as 'hash' | 'history' || 'hash',
     shell: shellNode,
     store: storeNode,
+    features: resolved.features,
   };
 
   // 7. Emit

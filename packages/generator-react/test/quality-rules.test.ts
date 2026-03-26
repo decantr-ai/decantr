@@ -28,7 +28,7 @@ function makeApp(overrides?: Partial<IRAppNode>): IRAppNode {
     type: 'app', id: 'app', children: [],
     theme: { style: 'auradecantism', mode: 'dark', shape: null, recipe: 'auradecantism', isAddon: false },
     routes: [{ path: '/', pageId: 'overview' }, { path: '/settings', pageId: 'settings' }],
-    routing: 'hash', shell, store, ...overrides,
+    routing: 'hash', shell, store, features: [], ...overrides,
   };
 }
 

@@ -4,3 +4,4 @@ export { COMPONENT_MAP, resolveShadcnComponent, collectShadcnImports } from './s
 export type { ShadcnMapping } from './shadcn.js';
 export { validateReactOutput } from './quality-rules.js';
 export type { QualityViolation } from './quality-rules.js';
+export { emitAuth, hasAuth } from './emit-auth.js';

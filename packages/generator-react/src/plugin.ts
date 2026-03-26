@@ -1,5 +1,6 @@
 import type { GeneratorPlugin, IRAppNode, IRPageNode, GeneratedFile } from '@decantr/generator-core';
 import { emitApp } from './emit-app.js';
+import { emitAuth } from './emit-auth.js';
 import { emitPage } from './emit-page.js';
 import {
   emitPackageJson, emitTailwindConfig, emitViteConfig,
@@ -23,8 +24,11 @@ export function createReactPlugin(): GeneratorPlugin {
       files.push(emitTsConfig());
       files.push(emitIndexHtml());
 
-      // App shell
+      // App shell (includes auth wrapping when features includes "auth")
       files.push(emitApp(app));
+
+      // AUTH: Auth scaffolding (AuthContext, LoginPage, ProtectedRoute)
+      files.push(...emitAuth(app));
 
       // Pages
       for (const child of app.children) {

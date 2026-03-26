@@ -111,6 +111,7 @@ export interface IRAppNode extends IRNode {
   routing: 'hash' | 'history';
   shell: IRShellNode;
   store: IRStoreNode;
+  features: string[];
 }
 
 export interface IRShellNode extends IRNode {
