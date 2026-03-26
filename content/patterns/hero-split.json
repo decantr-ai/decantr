@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "hero-split",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Hero Split",
+  "description": "Split hero section with media (logo or image) on one side and text with CTAs on the other. Supports breathing gradient orbs background, pill-shaped buttons, and responsive stacking. The split layout places emphasis on brand identity alongside a clear value proposition.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Image"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Image"
+  ],
+  "contained": false,
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Media on left (1/3 width) with logo or image, content on right (2/3 width) with title, tagline, and pill CTA buttons. Background features breathing gradient orbs with blur. Responsive: stacks vertically on mobile with media on top.",
+      "components": [
+        "Button",
+        "Image"
+      ],
+      "layout": {
+        "layout": "hero",
+        "atoms": "_flex _row _items[center] _gap16 _mw[1200px] _mx[auto] _px10 _wfull _minh[100vh] _relative _z2",
+        "slots": {
+          "media-area": "Left column at flex: 0 0 35%, centered content. Contains logo or hero image with float animation and drop-shadow. Wrapper: _flex _items[center] _justify[center]",
+          "title": "Large heading with _heading1 _fw800 _lh[1.1] _ls[-0.03em] _mb7. Supports inline accent color spans for punctuation or keywords.",
+          "tagline": "Supporting paragraph with _body _fgmuted/60 _mw[540px] _lh[1.75] _mb10. Supports inline accent spans with _fgprimary _fw700 _italic.",
+          "cta-group": "Horizontal button group with _flex _gap4 _flexwrap. Contains primary pill Button (rounded-full, shadow) and ghost pill Button (border, transparent bg)."
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Image } from 'decantr/components';",
+        "example": "function HeroSplit() {\n  const { section, div, h1, p, span } = tags;\n\n  return section({ class: css('_flex _items[center] _minh[100vh] _relative _overflow[hidden]') },\n    // Breathing gradient orbs (background decorations)\n    div({ class: css('_absolute _rounded[50%] _blur[100px] _pointer[none] _z0'), style: 'width:700px;height:700px;top:-15%;left:-15%;background:radial-gradient(circle,rgba(254,68,116,0.22),transparent 65%);animation:orbBreathe1 8s ease-in-out infinite' }),\n    div({ class: css('_absolute _rounded[50%] _blur[100px] _pointer[none] _z0'), style: 'width:550px;height:550px;bottom:-10%;right:-10%;background:radial-gradient(circle,rgba(10,243,235,0.16),transparent 65%);animation:orbBreathe2 10s ease-in-out infinite' }),\n    // Split layout\n    div({ class: css('_flex _items[center] _gap16 _mw[1200px] _mx[auto] _px10 _wfull _relative _z2') },\n      div({ class: css('_flex0[35%] _flex _items[center] _justify[center]') },\n        Image({ src: '/logo.svg', alt: 'Logo', class: css('_wfull _mw[420px] _block'), style: 'animation:logoFloat 4s ease-in-out infinite' })\n      ),\n      div({ class: css('_flex1 _text[left]') },\n        h1({ class: css('_heading1 _fw800 _lh[1.1] _ls[-0.03em] _mb7') },\n          'Design Intelligence', span({ class: css('_fgprimary') }, '.'), ' for AI-Generated UI'\n        ),\n        p({ class: css('_body _fgmuted/60 _mw[540px] _lh[1.75] _mb10') },\n          'A structured schema and design intelligence layer that makes AI assistants generate ',\n          span({ class: css('_fgprimary _fw700 _italic') }, 'better, more consistent'),\n          ' web applications.'\n        ),\n        div({ class: css('_flex _gap4 _flexwrap') },\n          Button({ variant: 'primary', size: 'lg', class: css('_rounded[100px] _shadow') }, 'Get Started'),\n          Button({ variant: 'ghost', size: 'lg', class: css('_rounded[100px] _border') }, 'Learn More')\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "reversed": {
+      "description": "Content on left (2/3 width) with title, tagline, and CTA buttons. Media on right (1/3 width) with image or illustration. Same breathing orb background. Good for right-handed visual emphasis.",
+      "components": [
+        "Button",
+        "Image"
+      ],
+      "layout": {
+        "layout": "hero",
+        "atoms": "_flex _row _items[center] _gap16 _mw[1200px] _mx[auto] _px10 _wfull _minh[100vh] _relative _z2",
+        "slots": {
+          "title": "Large heading on the left with _heading1 _fw800 _lh[1.1] _ls[-0.03em] _mb7",
+          "tagline": "Supporting paragraph with _body _fgmuted/60 _mw[540px] _lh[1.75] _mb10",
+          "cta-group": "Horizontal button group with _flex _gap4, primary pill + ghost pill Buttons",
+          "media-area": "Right column at flex: 0 0 35%, contains hero image or illustration with float animation"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Image } from 'decantr/components';",
+        "example": "function HeroSplitReversed() {\n  const { section, div, h1, p } = tags;\n\n  return section({ class: css('_flex _items[center] _minh[100vh] _relative _overflow[hidden]') },\n    div({ class: css('_flex _items[center] _gap16 _mw[1200px] _mx[auto] _px10 _wfull _relative _z2') },\n      div({ class: css('_flex1 _text[left]') },\n        h1({ class: css('_heading1 _fw800 _lh[1.1] _mb7') }, 'Your Headline Here'),\n        p({ class: css('_body _fgmuted/60 _mw[540px] _mb10') }, 'Supporting tagline text.'),\n        div({ class: css('_flex _gap4') },\n          Button({ variant: 'primary', size: 'lg', class: css('_rounded[100px]') }, 'Primary CTA'),\n          Button({ variant: 'ghost', size: 'lg', class: css('_rounded[100px]') }, 'Secondary CTA')\n        )\n      ),\n      div({ class: css('_flex0[35%] _flex _items[center] _justify[center]') },\n        Image({ src: '/hero-image.svg', alt: 'Hero', class: css('_wfull _mw[420px]') })\n      )\n    )\n  );\n}"
+      }
+    },
+    "centered": {
+      "description": "Centered single-column layout with media above and text below. Logo/image centered at top, followed by centered title, tagline, and CTA buttons. Good for simpler landing pages.",
+      "components": [
+        "Button",
+        "Image"
+      ],
+      "layout": {
+        "layout": "hero",
+        "atoms": "_flex _col _items[center] _text[center] _minh[100vh] _justify[center] _px6 _relative",
+        "slots": {
+          "media-area": "Centered image/logo above text with _mb8, max-width constrained",
+          "title": "Centered heading with _heading1 _fw800 _lh[1.1] _mb6 _text[center]",
+          "tagline": "Centered paragraph with _body _fgmuted/60 _mw[600px] _text[center] _mb10",
+          "cta-group": "Centered button group with _flex _gap4 _justify[center], pill Buttons"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Image } from 'decantr/components';",
+        "example": "function HeroSplitCentered() {\n  const { section, div, h1, p } = tags;\n\n  return section({ class: css('_flex _col _items[center] _text[center] _minh[100vh] _justify[center] _px6 _relative') },\n    Image({ src: '/logo.svg', alt: 'Logo', class: css('_mw[280px] _mb8') }),\n    h1({ class: css('_heading1 _fw800 _lh[1.1] _mb6') }, 'Your Headline'),\n    p({ class: css('_body _fgmuted/60 _mw[600px] _mb10') }, 'Supporting text here.'),\n    div({ class: css('_flex _gap4 _justify[center]') },\n      Button({ variant: 'primary', size: 'lg', class: css('_rounded[100px]') }, 'Get Started'),\n      Button({ variant: 'ghost', size: 'lg', class: css('_rounded[100px]') }, 'Learn More')\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "hero",
+    "atoms": "_flex _row _items[center] _gap16 _mw[1200px] _mx[auto] _px10 _wfull _minh[100vh] _relative _z2",
+    "slots": {
+      "media-area": "Logo or hero image area (1/3 width)",
+      "title": "Primary heading with accent punctuation",
+      "tagline": "Supporting paragraph with accent inline spans",
+      "cta-group": "Pill-shaped action buttons"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Image } from 'decantr/components';",
+    "example": "function HeroSplit() {\n  const { section, div, h1, p, span } = tags;\n\n  return section({ class: css('_flex _items[center] _minh[100vh] _relative _overflow[hidden]') },\n    div({ class: css('_flex _items[center] _gap16 _mw[1200px] _mx[auto] _px10 _wfull _relative _z2') },\n      div({ class: css('_flex0[35%] _flex _items[center] _justify[center]') },\n        Image({ src: '/logo.svg', alt: 'Logo', class: css('_wfull _mw[420px]') })\n      ),\n      div({ class: css('_flex1 _text[left]') },\n        h1({ class: css('_heading1 _fw800 _lh[1.1] _mb7') }, 'Headline Here'),\n        p({ class: css('_body _fgmuted/60 _mw[540px] _mb10') }, 'Tagline text.'),\n        div({ class: css('_flex _gap4') },\n          Button({ variant: 'primary', size: 'lg', class: css('_rounded[100px]') }, 'Primary'),\n          Button({ variant: 'ghost', size: 'lg', class: css('_rounded[100px]') }, 'Secondary')\n        )\n      )\n    )\n  );\n}"
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": [
+      "cta-click"
+    ]
+  }
+}

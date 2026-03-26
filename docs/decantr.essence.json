@@ -1,0 +1,51 @@
+{
+  "version": "2.0.0",
+  "archetype": "marketing-landing",
+  "theme": {
+    "style": "luminarum",
+    "mode": "dark",
+    "recipe": "luminarum",
+    "shape": "pill"
+  },
+  "personality": [
+    "bold",
+    "technical",
+    "premium",
+    "vibrant"
+  ],
+  "platform": {
+    "type": "spa",
+    "routing": "hash"
+  },
+  "structure": [
+    {
+      "id": "home",
+      "shell": "full-bleed",
+      "layout": [
+        { "pattern": "hero-split", "preset": "standard", "as": "product-hero" },
+        { "pattern": "before-after", "preset": "browser-frames", "as": "drift-comparison" },
+        { "pattern": "pipeline-cards", "preset": "outlined", "as": "design-pipeline" },
+        { "pattern": "tool-list", "preset": "standard", "as": "mcp-tools" },
+        { "pattern": "quick-start", "preset": "cards", "as": "setup-guide" },
+        { "pattern": "tech-pills", "preset": "colored", "as": "works-with" },
+        { "pattern": "cta-banner", "preset": "gradient", "as": "bottom-cta" }
+      ]
+    }
+  ],
+  "features": [],
+  "guard": {
+    "enforce_style": true,
+    "enforce_recipe": true,
+    "mode": "strict"
+  },
+  "density": {
+    "level": "comfortable",
+    "content_gap": "_gap6"
+  },
+  "target": "html",
+  "_meta": {
+    "project": "decantr.ai homepage",
+    "description": "The Decantr product landing page — dogfooding the design intelligence system",
+    "url": "https://decantr.ai"
+  }
+}

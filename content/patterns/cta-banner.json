@@ -1,0 +1,84 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "cta-banner",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "CTA Banner",
+  "description": "Full-width gradient call-to-action banner with bold headline, supporting subtext, and a prominent action button. Conversion-focused section designed to sit near the bottom of landing pages. Features a multi-stop gradient background that spans the full viewport width.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button"
+  ],
+  "contained": false,
+  "default_preset": "gradient",
+  "presets": {
+    "gradient": {
+      "description": "Full-width section with a vibrant multi-stop gradient background (coral -> amber -> cyan -> green at 135deg). Dark text on the bright gradient. Centered layout with: bold headline (2.2rem, dark), supporting paragraph (1.1rem, dark/70%), and a dark pill button. Generous padding (100px vertical). The gradient creates a strong visual break from dark content sections above and below.",
+      "components": [
+        "Button"
+      ],
+      "layout": {
+        "layout": "hero",
+        "atoms": "_py25 _px6 _text[center] _relative _z1",
+        "slots": {
+          "headline": "Bold heading with _fs[2.2rem] _fw700 _fgdark _mb3 _ls[-0.02em]. Direct, action-oriented text like 'Ready to Build Something Great?'",
+          "subtext": "Supporting paragraph with _fs[1.1rem] _fgdark/70 _mb8. Brief value proposition or urgency statement.",
+          "cta-button": "Dark pill Button: _inline-flex _items[center] _gap2 _py3 _px9 _bgdark _fgwhite _fw700 _fs[1rem] _border[none] _rounded[100px] _transition. Hover: translateY(-2px) with dark box-shadow."
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button } from 'decantr/components';",
+        "example": "function CtaBannerGradient() {\n  const { section, h2, p } = tags;\n\n  return section({ class: css('_py25 _px6 _text[center] _relative _z1'), style: 'background:linear-gradient(135deg,#F58882,#FDA303,#0AF3EB,#00E0AB)' },\n    h2({ class: css('_fs[2.2rem] _fw700 _fgdark _mb3 _ls[-0.02em]') }, 'Ready to Build Something Great?'),\n    p({ class: css('_fs[1.1rem] _fgdark/70 _mb8') }, 'Start building consistent, production-quality applications today.'),\n    Button({ variant: 'dark', size: 'lg', class: css('_rounded[100px] _bgdark _fgwhite _fw700 _py3 _px9') }, 'Get Started')\n  );\n}"
+      }
+    },
+    "dark": {
+      "description": "Dark background section with colored text and a colored pill button. Reversed contrast from the gradient preset. Uses the dark app background with a vibrant accent-colored headline, muted subtext, and a primary-colored pill button. Subtler visual treatment, good for sections that should feel integrated with the overall dark theme.",
+      "components": [
+        "Button"
+      ],
+      "layout": {
+        "layout": "hero",
+        "atoms": "_py25 _px6 _text[center] _relative _z1 _bgdark",
+        "slots": {
+          "headline": "Bold heading with _fs[2.2rem] _fw700 _fgprimary _mb3 _ls[-0.02em]. Uses the brand accent color.",
+          "subtext": "Supporting paragraph with _fs[1.1rem] _fgmuted _mb8.",
+          "cta-button": "Primary pill Button: _rounded[100px] _bgprimary _fgwhite _fw700 _py3 _px9. Hover lifts with shadow."
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button } from 'decantr/components';",
+        "example": "function CtaBannerDark() {\n  const { section, h2, p } = tags;\n\n  return section({ class: css('_py25 _px6 _text[center] _relative _z1 _bgdark') },\n    h2({ class: css('_fs[2.2rem] _fw700 _fgprimary _mb3') }, 'Start Building Today'),\n    p({ class: css('_fs[1.1rem] _fgmuted _mb8') }, 'Join thousands of developers using design intelligence.'),\n    Button({ variant: 'primary', size: 'lg', class: css('_rounded[100px]') }, 'Get Started Free')\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "hero",
+    "atoms": "_py25 _px6 _text[center] _relative _z1",
+    "slots": {
+      "headline": "Bold, conversion-focused headline",
+      "subtext": "Supporting value proposition text",
+      "cta-button": "Prominent pill-shaped action button"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button } from 'decantr/components';",
+    "example": "function CtaBanner() {\n  const { section, h2, p } = tags;\n\n  return section({ class: css('_py25 _px6 _text[center] _relative _z1'), style: 'background:linear-gradient(135deg,#F58882,#FDA303,#0AF3EB,#00E0AB)' },\n    h2({ class: css('_fs[2.2rem] _fw700 _fgdark _mb3') }, 'Ready to Get Started?'),\n    p({ class: css('_fs[1.1rem] _fgdark/70 _mb8') }, 'Full-width gradient background with bold headline and conversion-focused CTA.'),\n    Button({ variant: 'dark', size: 'lg', class: css('_rounded[100px]') }, 'Take Action')\n  );\n}"
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": [
+      "cta-click"
+    ]
+  }
+}
