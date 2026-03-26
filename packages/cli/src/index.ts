@@ -235,10 +235,14 @@ async function cmdInit() {
     ];
   }
 
-  // Select archetype
-  const archetypeOptions = archetypes.map(a => `${a.id} ${dim(`— ${a.description || ''}`)}`);
+  // Select archetype — "blank canvas" first
+  const archetypeOptions = [
+    `none ${dim('— Start from scratch (blank canvas)')}`,
+    ...archetypes.map(a => `${a.id} ${dim(`— ${a.description || ''}`)}`),
+  ];
   const selectedArchetype = await select('What are you building?', archetypeOptions);
   const archetypeId = selectedArchetype.split(' ')[0];
+  const isBlank = archetypeId === 'none';
 
   // Fetch available themes from API
   let themes: Array<{ id: string; description?: string }> = [];
@@ -271,38 +275,34 @@ async function cmdInit() {
   // Target framework
   const target = await select('Target framework', ['react', 'vue', 'svelte', 'html'], 0);
 
-  // Fetch archetype to get page structure
-  let pages: Array<{ id: string; shell: string; default_layout: string[] }> = [];
-  try {
-    const res = await fetch(`https://decantr-registry.fly.dev/v1/archetypes/${archetypeId}`);
-    if (res.ok) {
-      const data = await res.json() as { pages?: typeof pages };
-      if (data.pages) pages = data.pages;
-    }
-  } catch { /* use empty */ }
-
-  const structure = pages.length > 0
-    ? pages.map(p => ({
-        id: p.id,
-        shell: p.shell || 'sidebar-main',
-        layout: p.default_layout || [],
-      }))
-    : [{ id: 'home', shell: 'full-bleed', layout: ['hero-split'] }];
-
-  // Fetch archetype features
+  // Fetch archetype to get page structure (skip if blank canvas)
+  let structure: Array<{ id: string; shell: string; layout: string[] }> = [];
   let features: string[] = [];
-  try {
-    const res = await fetch(`https://decantr-registry.fly.dev/v1/archetypes/${archetypeId}`);
-    if (res.ok) {
-      const data = await res.json() as { features?: string[] };
-      if (data.features) features = data.features;
-    }
-  } catch { /* empty */ }
+
+  if (!isBlank) {
+    try {
+      const res = await fetch(`https://decantr-registry.fly.dev/v1/archetypes/${archetypeId}`);
+      if (res.ok) {
+        const data = await res.json() as { pages?: Array<{ id: string; shell: string; default_layout: string[] }>; features?: string[] };
+        if (data.pages) {
+          structure = data.pages.map(p => ({
+            id: p.id,
+            shell: p.shell || 'sidebar-main',
+            layout: p.default_layout || [],
+          }));
+        }
+        if (data.features) features = data.features;
+      }
+    } catch { /* use defaults */ }
+  }
+
+  if (structure.length === 0) {
+    structure = [{ id: 'home', shell: 'full-bleed', layout: [] }];
+  }
 
   // Build essence
-  const essence = {
+  const essence: Record<string, unknown> = {
     version: '2.0.0',
-    archetype: archetypeId,
     theme: {
       style: themeId,
       mode,
@@ -318,10 +318,14 @@ async function cmdInit() {
     target,
   };
 
+  if (!isBlank) {
+    essence.archetype = archetypeId;
+  }
+
   // Write file
   writeFileSync(essencePath, JSON.stringify(essence, null, 2) + '\n');
   console.log(success(`\nCreated decantr.essence.json`));
-  console.log(dim(`  Archetype: ${archetypeId}`));
+  console.log(dim(`  Archetype: ${isBlank ? 'none (blank canvas)' : archetypeId}`));
   console.log(dim(`  Theme: ${themeId} (${mode})`));
   console.log(dim(`  Pages: ${structure.map(s => s.id).join(', ')}`));
   console.log(dim(`  Target: ${target}`));
@@ -334,11 +338,33 @@ async function cmdInit() {
     console.log(error(`  Validation: ${validation.errors.join(', ')}`));
   }
 
-  console.log(heading('Next steps'));
-  console.log(`  1. Open your AI assistant (Claude, Cursor, etc.)`);
-  console.log(`  2. Tell it to read ${cyan('decantr.essence.json')} before generating code`);
-  console.log(`  3. The essence file defines your theme, pages, and patterns`);
-  console.log(`  4. Run ${cyan('decantr validate')} after changes to check for drift\n`);
+  // Build the AI prompt
+  const pageList = structure.map(s => {
+    const patterns = s.layout.length > 0 ? ` using patterns: ${s.layout.join(', ')}` : '';
+    return `  - "${s.id}" page (${s.shell} shell)${patterns}`;
+  }).join('\n');
+
+  const featureList = features.length > 0 ? `\nFeatures to include: ${features.join(', ')}` : '';
+
+  const prompt = `I have a decantr.essence.json file in this project that defines my design spec. Read it before generating any code.
+
+Build me a ${isBlank ? target + ' application' : archetypeId.replace(/-/g, ' ')} with the following structure:
+${pageList}
+${featureList}
+Theme: ${themeId} (${mode} mode, ${shape} shape)
+Target framework: ${target}
+
+Use the patterns listed in each page's layout array to determine what UI components to build. Follow the theme and density settings from the essence file. After generating code, I'll run "decantr validate" to check for design drift.`;
+
+  console.log(heading('Copy this prompt into your AI assistant:'));
+  console.log('┌──────────────────────────────────────────────────────────────┐');
+  console.log('│');
+  prompt.split('\n').forEach(line => {
+    console.log(`│  ${line}`);
+  });
+  console.log('│');
+  console.log('└──────────────────────────────────────────────────────────────┘');
+  console.log('');
 }
 
 function cmdHelp() {
