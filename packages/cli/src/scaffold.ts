@@ -38,12 +38,9 @@ export interface EssenceFile {
   target: string;
 }
 
-export interface BlueprintData {
+export interface ArchetypeData {
   id: string;
   name?: string;
-  archetypes?: string[];
-  theme?: string;
-  personality?: string[];
   pages?: Array<{
     id: string;
     shell: string;
@@ -93,16 +90,16 @@ function renderTemplate(template: string, vars: Record<string, string>): string 
 /**
  * Build the essence file from options and blueprint data.
  */
-export function buildEssence(options: InitOptions, blueprint?: BlueprintData): EssenceFile {
-  // Default structure if no blueprint - must have at least one pattern in layout
+export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData): EssenceFile {
+  // Default structure if no archetype - must have at least one pattern in layout
   let structure: EssenceFile['structure'] = [
     { id: 'home', shell: options.shell, layout: ['hero'] }
   ];
   let features: string[] = options.features;
 
-  // Use blueprint structure if available
-  if (blueprint?.pages) {
-    structure = blueprint.pages.map(p => ({
+  // Use archetype structure if available
+  if (archetypeData?.pages) {
+    structure = archetypeData.pages.map(p => ({
       id: p.id,
       shell: p.shell || options.shell,
       // Ensure layout has at least one item (schema requires minItems: 1)
@@ -110,8 +107,8 @@ export function buildEssence(options: InitOptions, blueprint?: BlueprintData): E
     }));
   }
 
-  if (blueprint?.features) {
-    features = [...new Set([...features, ...blueprint.features])];
+  if (archetypeData?.features) {
+    features = [...new Set([...features, ...archetypeData.features])];
   }
 
   // Map density to content gap
@@ -121,8 +118,8 @@ export function buildEssence(options: InitOptions, blueprint?: BlueprintData): E
     spacious: '_gap6',
   };
 
-  // Use blueprint or archetype as the archetype field (schema requires archetype, not blueprint)
-  const archetype = options.blueprint || options.archetype || 'custom';
+  // Use resolved archetype (from blueprint's compose or direct selection)
+  const archetype = options.archetype || 'custom';
 
   return {
     version: '2.0.0',
@@ -367,11 +364,11 @@ export function scaffoldProject(
   projectRoot: string,
   options: InitOptions,
   detected: DetectedProject,
-  blueprint?: BlueprintData,
+  archetypeData?: ArchetypeData,
   registrySource: 'api' | 'bundled' = 'bundled'
 ): ScaffoldResult {
   // Build essence
-  const essence = buildEssence(options, blueprint);
+  const essence = buildEssence(options, archetypeData);
 
   // Create directories
   const decantrDir = join(projectRoot, '.decantr');

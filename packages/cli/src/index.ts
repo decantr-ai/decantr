@@ -245,16 +245,39 @@ async function cmdInit(args: InitArgs) {
     options = await runInteractivePrompts(detected, archetypes, blueprints, themes);
   }
 
-  // Fetch blueprint data if selected
-  let blueprintData;
+  // Fetch blueprint/archetype data
+  let archetypeData: {
+    id: string;
+    pages?: Array<{ id: string; shell: string; default_layout: string[] }>;
+    features?: string[];
+  } | undefined;
+
   if (options.blueprint) {
-    const result = await registryClient.fetchBlueprint(options.blueprint);
-    if (result) {
-      blueprintData = result.data as {
+    // Fetch the blueprint to get its primary archetype
+    const blueprintResult = await registryClient.fetchBlueprint(options.blueprint);
+    if (blueprintResult) {
+      const blueprint = blueprintResult.data as {
         id: string;
-        pages?: Array<{ id: string; shell: string; default_layout: string[] }>;
+        compose?: string[];
         features?: string[];
       };
+      // Get the primary archetype from compose array
+      const primaryArchetype = blueprint.compose?.[0];
+      if (primaryArchetype) {
+        // Fetch the archetype to get its pages
+        const archetypeResult = await registryClient.fetchArchetype(primaryArchetype);
+        if (archetypeResult) {
+          archetypeData = archetypeResult.data as typeof archetypeData;
+          // Override archetype in options with the resolved one
+          options.archetype = primaryArchetype;
+        }
+      }
+    }
+  } else if (options.archetype) {
+    // Direct archetype selection
+    const archetypeResult = await registryClient.fetchArchetype(options.archetype);
+    if (archetypeResult) {
+      archetypeData = archetypeResult.data as typeof archetypeData;
     }
   }
 
@@ -265,7 +288,7 @@ async function cmdInit(args: InitArgs) {
     projectRoot,
     options,
     detected,
-    blueprintData,
+    archetypeData,
     registrySource as 'api' | 'bundled'
   );
 
