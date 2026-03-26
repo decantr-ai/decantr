@@ -3,7 +3,7 @@ import type {
   GeneratedFile,
 } from '@decantr/generator-core';
 import { gridClasses, spanClass, surfaceClasses, gapClass } from './tailwind.js';
-import { collectShadcnImports } from './shadcn.js';
+import { collectShadcnImports, resolvePatternTemplate } from './shadcn.js';
 import { renderReactImports, basePageImports, wiringImports, mergeReactImports } from './imports.js';
 
 function pascalCase(str: string): string {
@@ -28,12 +28,15 @@ function buildPatternComponent(node: IRPatternNode, densityGap: string): string 
     propsParam = `{ ${Object.keys(node.wireProps!).join(', ')} }: ${propsType}`;
   }
 
-  // Generate placeholder JSX based on the pattern
+  // AUTO: Check for pattern-specific shadcn template first
+  const patternTemplate = resolvePatternTemplate(node.pattern.patternId);
   const components = node.pattern.components;
   const hasCard = components.includes('Card');
 
   let body: string;
-  if (hasCard) {
+  if (patternTemplate) {
+    body = patternTemplate.body(gapClass(densityGap));
+  } else if (hasCard) {
     body = [
       `    <div className="${gapClass(densityGap)} grid grid-cols-1 md:grid-cols-2">`,
       `      <Card>`,
@@ -159,6 +162,25 @@ export function emitPage(page: IRPageNode): GeneratedFile {
   const shadcnImports = collectShadcnImports([...new Set(allComponents)]);
   for (const [path, names] of shadcnImports) {
     imports = mergeReactImports(imports, new Map([[path, names]]));
+  }
+
+  // AUTO: Add pattern-specific template imports
+  const addPatternTemplateImports = (node: IRNode) => {
+    if (node.type === 'pattern') {
+      const pn = node as IRPatternNode;
+      const tmpl = resolvePatternTemplate(pn.pattern.patternId);
+      if (tmpl) {
+        for (const [path, names] of tmpl.imports) {
+          imports = mergeReactImports(imports, new Map([[path, names]]));
+        }
+      }
+    }
+    for (const child of node.children) {
+      addPatternTemplateImports(child);
+    }
+  };
+  for (const child of page.children) {
+    addPatternTemplateImports(child);
   }
 
   // Add wiring imports
