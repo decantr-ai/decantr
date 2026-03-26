@@ -12,12 +12,10 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>D</text></svg>">
   <style>
     :root {
-      --bg: #09090B;
+      --bg: #0D0D1A;
       --fg: #FAFAFA;
-      --muted: #71717A;
-      --card-bg: rgba(255,255,255,0.03);
-      --card-border: rgba(255,255,255,0.08);
-      --code-bg: #111113;
+      --muted: #9898A8;
+      --code-bg: #0A0A14;
       --coral: #F58882;
       --amber: #FDA303;
       --cyan: #0AF3EB;
@@ -26,6 +24,7 @@
       --orange: #FC8D0D;
       --purple: #6500C6;
       --pink: #FE4474;
+      --crimson: #D80F4A;
       --max-w: 1100px;
       --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
       --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -41,12 +40,98 @@
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      position: relative;
     }
 
     a { color: var(--cyan); text-decoration: none; transition: color 0.2s; }
     a:hover { color: var(--coral); }
 
     .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+
+    /* ===== FLOATING DOTS ===== */
+    .bg-dot {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: dotPulse 3s ease-in-out infinite;
+      z-index: 0;
+    }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.3); }
+    }
+
+    /* ===== PARTICLE NETWORK ===== */
+    .particle-network {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .particle-dot {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.15;
+    }
+    .particle-line {
+      position: absolute;
+      height: 1px;
+      opacity: 0.06;
+      transform-origin: 0 0;
+    }
+
+    /* ===== SECTION DIVIDER ===== */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+    .divider-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin: 0 20px;
+      flex-shrink: 0;
+    }
+
+    /* ===== CARD DECORATIONS ===== */
+    .card-decorated {
+      position: relative;
+    }
+    .card-decorated::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      width: 20px;
+      height: 20px;
+      border-top: 2px solid rgba(255,255,255,0.5);
+      border-left: 2px solid rgba(255,255,255,0.5);
+      pointer-events: none;
+    }
+    .card-decorated::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 20px;
+      height: 20px;
+      border-bottom: 2px solid rgba(255,255,255,0.5);
+      border-right: 2px solid rgba(255,255,255,0.5);
+      pointer-events: none;
+    }
 
     /* ===== REVEAL ===== */
     .reveal {
@@ -71,48 +156,72 @@
       justify-content: center;
       text-align: center;
       position: relative;
-      background: var(--bg);
+      z-index: 1;
     }
 
     .hero-content {
       position: relative;
       z-index: 2;
-      max-width: 700px;
+      max-width: 720px;
       padding: 0 24px;
     }
 
+    .hero-logo-wrap {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 24px;
+    }
+    .hero-glow-ring {
+      position: absolute;
+      top: -16px; left: -16px;
+      width: 182px;
+      height: 182px;
+      border-radius: 50%;
+      background: conic-gradient(var(--coral), var(--amber), var(--cyan), var(--green), var(--purple), var(--coral));
+      opacity: 0.2;
+      filter: blur(14px);
+      animation: ringPulse 4s ease-in-out infinite;
+    }
+    @keyframes ringPulse {
+      0%, 100% { opacity: 0.15; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(1.05); }
+    }
     .hero-logo {
-      width: 130px;
+      width: 150px;
       height: auto;
       display: block;
-      margin: 0 auto 20px;
-      filter: drop-shadow(0 0 20px rgba(245,136,130,0.25));
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 0 30px rgba(245,136,130,0.25));
     }
 
     .hero-brand {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       font-variant: small-caps;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.25em;
       color: var(--muted);
-      margin-bottom: 32px;
+      margin-bottom: 36px;
+      text-transform: uppercase;
     }
 
     .hero h1 {
-      font-size: clamp(2.8rem, 5vw, 4rem);
+      font-size: clamp(2.8rem, 5vw, 4.2rem);
       font-weight: 700;
-      line-height: 1.15;
+      line-height: 1.1;
       margin-bottom: 20px;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
       color: var(--fg);
     }
 
     .hero-tagline {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       color: var(--muted);
       margin-bottom: 40px;
       max-width: 520px;
       margin-left: auto;
       margin-right: auto;
+      line-height: 1.7;
     }
 
     .hero-ctas {
@@ -120,17 +229,17 @@
       gap: 16px;
       justify-content: center;
       flex-wrap: wrap;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .btn-primary {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 14px 32px;
+      padding: 14px 36px;
       background: var(--coral);
-      color: #09090B;
-      font-weight: 600;
+      color: #0D0D1A;
+      font-weight: 700;
       font-size: 1rem;
       border: none;
       border-radius: 8px;
@@ -140,52 +249,63 @@
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(245,136,130,0.3);
-      color: #09090B;
+      box-shadow: 0 8px 30px rgba(245,136,130,0.4);
+      color: #0D0D1A;
     }
 
     .btn-ghost {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 14px 32px;
+      padding: 14px 36px;
       background: transparent;
       color: var(--fg);
-      font-weight: 600;
+      font-weight: 700;
       font-size: 1rem;
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.2);
       border-radius: 8px;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
       text-decoration: none;
     }
     .btn-ghost:hover {
-      border-color: rgba(255,255,255,0.4);
-      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.05);
       color: var(--fg);
     }
 
     .hero-license {
       font-size: 0.82rem;
       color: var(--muted);
+      margin-bottom: 28px;
     }
 
-    /* shimmer lines removed */
+    .hero-palette {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    .hero-palette-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .hero-palette-dot:hover { transform: scale(1.5); }
 
     /* ===== SECTION COMMON ===== */
     .section {
       padding: 120px 0;
       position: relative;
+      z-index: 1;
     }
 
-    /* clip-path dividers removed */
-
     .section-heading {
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
       font-weight: 700;
       text-align: center;
       margin-bottom: 16px;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
       color: var(--fg);
     }
 
@@ -199,16 +319,11 @@
     }
 
     /* ===== PROBLEM SECTION ===== */
-    .problem-section {
-      background: var(--bg);
-      border-top: 1px solid var(--pink);
-    }
-
     .problem-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 48px;
-      max-width: 900px;
+      max-width: 920px;
       margin: 0 auto;
     }
 
@@ -220,220 +335,154 @@
       margin-bottom: 16px;
       text-align: center;
     }
-    .label-bad { color: var(--pink); }
-    .label-good { color: var(--green); }
 
-    .good-col-wrap { position: relative; }
-
-    .consistency-bar {
-      position: absolute;
-      left: -20px;
-      top: 60px;
-      bottom: 20px;
-      width: 3px;
-      background: linear-gradient(180deg, var(--green), var(--cyan));
-      border-radius: 3px;
-    }
-    .consistency-badge {
-      position: absolute;
-      left: -20px;
-      top: 50%;
-      transform: translate(-50%, -50%) rotate(-90deg);
-      font-size: 0.6rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--green);
-      background: var(--bg);
-      padding: 4px 10px;
-      white-space: nowrap;
-    }
-
-    .zero-drift-pill {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 4px 14px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--green);
-      border: 1px solid rgba(0,224,171,0.3);
-      border-radius: 20px;
-      background: rgba(0,224,171,0.06);
-      text-align: center;
-    }
-
-    .browser-frame {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      overflow: hidden;
+    .problem-card-bad {
+      background: linear-gradient(135deg, #F58882, #FE4474);
+      border-radius: 14px;
+      padding: 20px;
       margin-bottom: 16px;
+      color: #fff;
+      position: relative;
+    }
+    .problem-card-good {
+      background: linear-gradient(135deg, #0AF3EB, #00E0AB);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+      color: #0D0D1A;
+      position: relative;
     }
 
     .browser-frame-bar {
-      height: 28px;
-      background: rgba(255,255,255,0.03);
+      height: 24px;
       display: flex;
       align-items: center;
-      padding: 0 10px;
-      gap: 6px;
+      gap: 5px;
+      margin-bottom: 12px;
     }
-
-    .browser-dot {
-      width: 8px;
-      height: 8px;
+    .browser-dot-w {
+      width: 7px; height: 7px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.4);
     }
-
+    .browser-dot-d {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(13,13,26,0.3);
+    }
     .browser-frame-label {
       margin-left: auto;
       font-size: 0.65rem;
-      color: var(--muted);
-      opacity: 0.6;
-    }
-
-    .browser-frame-body {
-      padding: 16px;
-      min-height: 80px;
+      font-weight: 600;
+      opacity: 0.7;
     }
 
     .mock-card {
-      border-radius: 8px;
-      height: 20px;
+      border-radius: 6px;
+      height: 16px;
       margin-bottom: 8px;
     }
-
     .mock-row {
       display: flex;
       gap: 8px;
       margin-bottom: 8px;
     }
-
     .mock-block {
-      border-radius: 6px;
-      height: 36px;
+      border-radius: 5px;
+      height: 30px;
       flex: 1;
     }
 
-    .good .mock-block {
-      background: rgba(0,224,171,0.12);
-      border: 1px solid rgba(0,224,171,0.18);
-    }
-    .good .mock-card {
-      background: rgba(0,224,171,0.08);
-      border: 1px solid rgba(0,224,171,0.12);
+    .problem-card-bad .mock-block { background: rgba(255,255,255,0.2); }
+    .problem-card-bad .mock-card { background: rgba(255,255,255,0.15); }
+    .problem-card-good .mock-block { background: rgba(13,13,26,0.15); }
+    .problem-card-good .mock-card { background: rgba(13,13,26,0.1); }
+
+    .drift-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.7;
+      margin-bottom: 8px;
     }
 
-    .drift-1 .mock-block {
-      background: rgba(245,136,130,0.1);
-      border: 1px solid rgba(245,136,130,0.15);
-    }
-    .drift-1 .mock-card {
-      background: rgba(245,136,130,0.06);
-      border: 1px solid rgba(245,136,130,0.1);
-    }
-
-    .drift-2 .mock-block {
-      background: rgba(253,163,3,0.1);
-      border: 1px solid rgba(253,163,3,0.15);
-    }
-    .drift-2 .mock-card {
-      background: rgba(253,163,3,0.06);
-    }
-    .drift-2 .mock-row { gap: 4px; }
-    .drift-2 .mock-row:nth-child(2) { gap: 16px; }
-
-    .drift-3 .mock-block:nth-child(1) {
-      background: rgba(254,68,116,0.12);
-      border: 1px solid rgba(254,68,116,0.18);
-      border-radius: 0;
-      flex: 2;
-    }
-    .drift-3 .mock-block:nth-child(2) {
-      background: rgba(101,0,198,0.15);
-      border: 1px solid rgba(101,0,198,0.2);
-      border-radius: 12px;
-      flex: 0.5;
-    }
-    .drift-3 .mock-block:nth-child(3) {
-      background: rgba(252,141,13,0.12);
-      border: 2px dashed rgba(252,141,13,0.25);
-      flex: 1.5;
-    }
-    .drift-3 .mock-card {
-      background: rgba(216,15,74,0.08);
-      height: 14px;
-      border-radius: 0;
-    }
-    .drift-3 .mock-card:nth-child(2) {
-      height: 28px;
-      border-radius: 10px;
-      background: rgba(10,243,235,0.08);
-      margin-left: 20px;
+    .zero-drift-pill {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 18px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #0D0D1A;
+      border-radius: 20px;
+      background: var(--green);
+      text-align: center;
     }
 
     /* ===== PIPELINE SECTION ===== */
-    .pipeline-section {
-      background: var(--bg);
-      border-top: 1px solid var(--cyan);
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 920px;
+      margin: 0 auto;
     }
-
-    .pipeline-scroll {
-      display: flex;
-      gap: 20px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      padding-bottom: 16px;
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    .pipeline-grid > :last-child {
+      grid-column: 1 / -1;
+      max-width: calc(50% - 12px);
+      justify-self: center;
     }
-    .pipeline-scroll::-webkit-scrollbar { display: none; }
 
     .pipeline-card {
-      min-width: 280px;
-      max-width: 300px;
-      flex-shrink: 0;
-      background: var(--bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 24px 20px;
-      scroll-snap-align: start;
-      transition: transform 0.2s ease;
+      border-radius: 16px;
+      padding: 28px 24px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+      color: #fff;
     }
     .pipeline-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-4px);
     }
 
-    .pipeline-card-1 { border-top: 3px solid var(--coral); }
-    .pipeline-card-2 { border-top: 3px solid var(--amber); }
-    .pipeline-card-3 { border-top: 3px solid var(--cyan); }
-    .pipeline-card-4 { border-top: 3px solid var(--green); }
-    .pipeline-card-5 { border-top: 3px solid var(--yellow); }
-    .pipeline-card-6 { border-top: 3px solid var(--orange); }
-    .pipeline-card-7 { border-top: 3px solid var(--purple); }
+    .pipeline-card-1 { background: linear-gradient(135deg, #F58882, #E06060); }
+    .pipeline-card-1:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.3); }
+    .pipeline-card-2 { background: linear-gradient(135deg, #FDA303, #E09000); }
+    .pipeline-card-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.3); }
+    .pipeline-card-3 { background: linear-gradient(135deg, #0AF3EB, #08C4BE); color: #0D0D1A; }
+    .pipeline-card-3:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.3); }
+    .pipeline-card-3 .pipeline-num { color: rgba(13,13,26,0.5); }
+    .pipeline-card-4 { background: linear-gradient(135deg, #00E0AB, #00B88A); color: #0D0D1A; }
+    .pipeline-card-4:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.3); }
+    .pipeline-card-4 .pipeline-num { color: rgba(13,13,26,0.5); }
+    .pipeline-card-5 { background: linear-gradient(135deg, #FCD021, #E0B800); color: #0D0D1A; }
+    .pipeline-card-5:hover { box-shadow: 0 12px 40px rgba(252,208,33,0.3); }
+    .pipeline-card-5 .pipeline-num { color: rgba(13,13,26,0.5); }
+    .pipeline-card-6 { background: linear-gradient(135deg, #FC8D0D, #E07800); }
+    .pipeline-card-6:hover { box-shadow: 0 12px 40px rgba(252,141,13,0.3); }
+    .pipeline-card-7 { background: linear-gradient(135deg, #6500C6, #5000A0); }
+    .pipeline-card-7:hover { box-shadow: 0 12px 40px rgba(101,0,198,0.3); }
 
     .pipeline-num {
       font-family: var(--mono);
       font-size: 0.75rem;
-      color: var(--muted);
+      color: rgba(255,255,255,0.5);
       margin-bottom: 8px;
+      font-weight: 700;
     }
 
     .pipeline-name {
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      color: var(--fg);
       margin-bottom: 8px;
     }
 
     .pipeline-desc {
       font-size: 0.85rem;
-      color: var(--muted);
       line-height: 1.5;
       margin-bottom: 16px;
+      opacity: 0.85;
     }
 
     .pipeline-visual {
@@ -441,12 +490,10 @@
     }
 
     .chat-bubble {
-      background: rgba(245,136,130,0.08);
-      border: 1px solid rgba(245,136,130,0.12);
+      background: rgba(0,0,0,0.2);
       border-radius: 10px 10px 10px 2px;
       padding: 12px 14px;
       font-size: 0.82rem;
-      color: var(--fg);
       line-height: 1.5;
     }
 
@@ -455,15 +502,12 @@
       flex-wrap: wrap;
       gap: 6px;
     }
-
     .tag {
-      background: rgba(10,243,235,0.08);
-      border: 1px solid rgba(10,243,235,0.15);
+      background: rgba(0,0,0,0.2);
       border-radius: 6px;
       padding: 4px 8px;
       font-family: var(--mono);
       font-size: 0.7rem;
-      color: var(--cyan);
     }
 
     .layer-stack {
@@ -471,33 +515,27 @@
       flex-direction: column;
       gap: 6px;
     }
-
     .layer {
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 0.78rem;
       font-weight: 600;
+      background: rgba(0,0,0,0.15);
     }
-    .layer-theme { background: rgba(253,163,3,0.1); color: var(--amber); border: 1px solid rgba(253,163,3,0.18); }
-    .layer-structure { background: rgba(10,243,235,0.08); color: var(--cyan); border: 1px solid rgba(10,243,235,0.15); }
-    .layer-features { background: rgba(0,224,171,0.08); color: var(--green); border: 1px solid rgba(0,224,171,0.15); }
 
     .mini-code {
-      background: var(--code-bg);
+      background: rgba(0,0,0,0.35);
       border-radius: 8px;
       padding: 12px 14px;
       font-family: var(--mono);
       font-size: 0.7rem;
       line-height: 1.7;
-      color: var(--muted);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-top: 2px solid var(--cyan);
       overflow-x: auto;
       white-space: pre;
     }
-    .mini-code .k { color: var(--coral); }
-    .mini-code .s { color: var(--green); }
-    .mini-code .n { color: var(--amber); }
+    .mini-code .k { opacity: 0.7; }
+    .mini-code .s { color: #fff; }
+    .mini-code .n { opacity: 0.8; }
 
     .pattern-compose {
       display: flex;
@@ -506,32 +544,25 @@
       flex-wrap: wrap;
       font-size: 0.78rem;
     }
-
     .pattern-chip {
-      background: rgba(252,208,33,0.08);
-      border: 1px solid rgba(252,208,33,0.18);
+      background: rgba(0,0,0,0.2);
       border-radius: 6px;
       padding: 4px 8px;
       font-family: var(--mono);
       font-size: 0.7rem;
-      color: var(--yellow);
     }
-
-    .compose-arrow { color: var(--muted); font-size: 0.9rem; }
-
+    .compose-arrow { opacity: 0.7; font-size: 0.9rem; }
     .compose-result {
-      background: rgba(0,224,171,0.08);
-      border: 1px solid rgba(0,224,171,0.15);
+      background: rgba(0,0,0,0.25);
       border-radius: 6px;
       padding: 4px 10px;
-      color: var(--green);
       font-size: 0.78rem;
       font-weight: 600;
     }
 
     .code-label {
       font-size: 0.68rem;
-      color: var(--muted);
+      opacity: 0.6;
       margin-top: 8px;
       text-align: right;
       font-style: italic;
@@ -542,19 +573,11 @@
       flex-direction: column;
       gap: 6px;
     }
-    .check-pass {
+    .check-pass, .check-fail {
       display: flex;
       align-items: center;
       gap: 8px;
       font-size: 0.8rem;
-      color: var(--green);
-    }
-    .check-fail {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.8rem;
-      color: var(--pink);
     }
     .check-icon {
       width: 18px;
@@ -567,15 +590,10 @@
       font-weight: 700;
       flex-shrink: 0;
     }
-    .check-icon-pass { background: rgba(0,224,171,0.15); }
-    .check-icon-fail { background: rgba(254,68,116,0.15); }
+    .check-icon-pass { background: rgba(255,255,255,0.2); }
+    .check-icon-fail { background: rgba(255,255,255,0.15); }
 
     /* ===== TOOLS SECTION ===== */
-    .tools-section {
-      background: var(--bg);
-      border-top: 1px solid var(--amber);
-    }
-
     .tools-list {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -585,21 +603,73 @@
     }
 
     .tool-item {
-      padding: 16px 20px;
+      padding: 18px 20px;
+      padding-left: 36px;
       border-bottom: 1px solid rgba(255,255,255,0.06);
       transition: background 0.2s;
+      background: rgba(255,255,255,0.02);
+      position: relative;
     }
+    .tool-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+    .tool-item:nth-child(1)::before { background: var(--coral); }
+    .tool-item:nth-child(2)::before { background: var(--amber); }
+    .tool-item:nth-child(3)::before { background: var(--cyan); }
+    .tool-item:nth-child(4)::before { background: var(--green); }
+    .tool-item:nth-child(5)::before { background: var(--yellow); }
+    .tool-item:nth-child(6)::before { background: var(--orange); }
+    .tool-item:nth-child(7)::before { background: var(--purple); }
+    .tool-item:nth-child(8)::before { background: var(--pink); }
+    .tool-item:nth-child(9)::before { background: var(--crimson); }
+    .tool-item:nth-child(10)::before { background: var(--coral); }
+
     .tool-item:hover {
-      background: rgba(253,163,3,0.04);
+      background: rgba(255,255,255,0.05);
     }
 
     .tool-name {
       font-family: var(--mono);
       font-size: 0.82rem;
-      color: var(--amber);
       margin-bottom: 4px;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+    .tool-item:nth-child(1) .tool-name { color: var(--coral); }
+    .tool-item:nth-child(2) .tool-name { color: var(--amber); }
+    .tool-item:nth-child(3) .tool-name { color: var(--cyan); }
+    .tool-item:nth-child(4) .tool-name { color: var(--green); }
+    .tool-item:nth-child(5) .tool-name { color: var(--yellow); }
+    .tool-item:nth-child(6) .tool-name { color: var(--orange); }
+    .tool-item:nth-child(7) .tool-name { color: var(--purple); }
+    .tool-item:nth-child(8) .tool-name { color: var(--pink); }
+    .tool-item:nth-child(9) .tool-name { color: var(--crimson); }
+    .tool-item:nth-child(10) .tool-name { color: var(--coral); }
+
+    .tool-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .tool-item:nth-child(1) .tool-dot { background: var(--coral); }
+    .tool-item:nth-child(2) .tool-dot { background: var(--amber); }
+    .tool-item:nth-child(3) .tool-dot { background: var(--cyan); }
+    .tool-item:nth-child(4) .tool-dot { background: var(--green); }
+    .tool-item:nth-child(5) .tool-dot { background: var(--yellow); }
+    .tool-item:nth-child(6) .tool-dot { background: var(--orange); }
+    .tool-item:nth-child(7) .tool-dot { background: var(--purple); }
+    .tool-item:nth-child(8) .tool-dot { background: var(--pink); }
+    .tool-item:nth-child(9) .tool-dot { background: var(--crimson); }
+    .tool-item:nth-child(10) .tool-dot { background: var(--coral); }
 
     .tool-desc {
       font-size: 0.82rem;
@@ -608,11 +678,6 @@
     }
 
     /* ===== QUICK START SECTION ===== */
-    .quickstart-section {
-      background: var(--bg);
-      border-top: 1px solid var(--purple);
-    }
-
     .qs-steps {
       display: flex;
       gap: 24px;
@@ -622,16 +687,27 @@
 
     .qs-step {
       flex: 1;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-top: 3px solid var(--purple);
-      border-radius: 12px;
-      padding: 24px 20px;
-      transition: transform 0.2s;
+      border-radius: 16px;
+      padding: 28px 22px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+      color: #fff;
     }
     .qs-step:hover {
-      transform: translateY(-2px);
+      transform: translateY(-4px);
     }
+    .qs-step-1 {
+      background: linear-gradient(135deg, #F58882, #D06060);
+    }
+    .qs-step-1:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.3); }
+    .qs-step-2 {
+      background: linear-gradient(135deg, #FDA303, #D08800);
+    }
+    .qs-step-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.3); }
+    .qs-step-3 {
+      background: linear-gradient(135deg, #6500C6, #4A0090);
+    }
+    .qs-step-3:hover { box-shadow: 0 12px 40px rgba(101,0,198,0.3); }
 
     .qs-num {
       width: 40px;
@@ -643,7 +719,7 @@
       font-size: 1rem;
       font-weight: 700;
       margin-bottom: 16px;
-      background: var(--purple);
+      background: rgba(0,0,0,0.2);
       color: #fff;
     }
 
@@ -651,54 +727,47 @@
       font-size: 1rem;
       font-weight: 700;
       margin-bottom: 14px;
-      color: var(--fg);
     }
 
     .qs-code-block {
-      background: var(--code-bg);
+      background: rgba(0,0,0,0.3);
       border-radius: 8px;
       padding: 14px;
       text-align: left;
       font-family: var(--mono);
       font-size: 0.7rem;
       line-height: 1.7;
-      color: var(--muted);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-top: 2px solid var(--purple);
       overflow-x: auto;
       white-space: pre;
+      color: rgba(255,255,255,0.85);
     }
-    .qs-code-block .k { color: var(--coral); }
-    .qs-code-block .s { color: var(--green); }
+    .qs-step-1 .qs-code-block .k { color: #FFD4D2; }
+    .qs-step-1 .qs-code-block .s { color: #fff; }
 
     .qs-chat {
-      background: rgba(245,136,130,0.06);
-      border: 1px solid rgba(245,136,130,0.1);
+      background: rgba(0,0,0,0.2);
       border-radius: 10px 10px 10px 2px;
       padding: 14px 16px;
       font-size: 0.82rem;
       text-align: left;
-      color: var(--fg);
       line-height: 1.5;
     }
 
     .qs-output {
-      background: var(--code-bg);
+      background: rgba(0,0,0,0.3);
       border-radius: 8px;
       padding: 14px;
       text-align: left;
       font-family: var(--mono);
       font-size: 0.68rem;
       line-height: 1.7;
-      color: var(--muted);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-top: 2px solid var(--purple);
       white-space: pre;
       overflow-x: auto;
+      color: rgba(255,255,255,0.85);
     }
-    .qs-output .k { color: var(--coral); }
-    .qs-output .s { color: var(--green); }
-    .qs-output .c { color: var(--cyan); }
+    .qs-step-3 .qs-output .k { color: #C9A0FF; }
+    .qs-step-3 .qs-output .s { color: #fff; }
+    .qs-step-3 .qs-output .c { color: #B080E0; }
 
     .config-tabs {
       max-width: 640px;
@@ -715,7 +784,7 @@
 
     .tab-btn {
       background: transparent;
-      border: 1px solid var(--card-border);
+      border: 1px solid rgba(255,255,255,0.1);
       border-bottom: none;
       color: var(--muted);
       padding: 10px 20px;
@@ -728,8 +797,8 @@
     }
     .tab-btn.active {
       background: var(--code-bg);
-      color: var(--purple);
-      border-color: var(--card-border);
+      color: var(--cyan);
+      border-color: rgba(255,255,255,0.1);
     }
 
     .tab-content { display: none; }
@@ -737,7 +806,7 @@
 
     .tab-code {
       background: var(--code-bg);
-      border: 1px solid var(--card-border);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 0 8px 8px 8px;
       padding: 20px;
       font-family: var(--mono);
@@ -751,11 +820,6 @@
     .tab-code .s { color: var(--green); }
 
     /* ===== PACKAGES SECTION ===== */
-    .packages-section {
-      background: var(--bg);
-      border-top: 1px solid var(--green);
-    }
-
     .packages-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -765,35 +829,54 @@
     }
 
     .pkg-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 24px;
-      transition: transform 0.2s, border-color 0.2s;
+      border-radius: 16px;
+      padding: 28px 24px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
     }
     .pkg-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(0,224,171,0.2);
+      transform: translateY(-4px);
     }
+
+    .pkg-card-1 {
+      background: linear-gradient(135deg, #00E0AB, #00B88A);
+      color: #0D0D1A;
+    }
+    .pkg-card-1:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.3); }
+    .pkg-card-2 {
+      background: linear-gradient(135deg, #FDA303, #D08800);
+      color: #0D0D1A;
+    }
+    .pkg-card-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.3); }
+    .pkg-card-3 {
+      background: linear-gradient(135deg, #0AF3EB, #08B8B2);
+      color: #0D0D1A;
+    }
+    .pkg-card-3:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.3); }
+    .pkg-card-4 {
+      background: linear-gradient(135deg, #F58882, #D06060);
+      color: #fff;
+    }
+    .pkg-card-4:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.3); }
 
     .pkg-name {
       font-family: var(--mono);
       font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--green);
-      margin-bottom: 6px;
+      font-weight: 700;
+      margin-bottom: 8px;
     }
 
     .pkg-desc {
       font-size: 0.82rem;
-      color: var(--muted);
       line-height: 1.5;
+      opacity: 0.85;
     }
 
     /* ===== WORKS WITH ===== */
     .works-section {
-      background: var(--bg);
       padding: 80px 0;
+      position: relative;
+      z-index: 1;
     }
 
     .works-row {
@@ -806,58 +889,76 @@
     }
 
     .works-pill {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
-      padding: 8px 20px;
+      padding: 8px 22px;
       font-size: 0.85rem;
-      color: var(--muted);
-      font-weight: 500;
-      transition: border-color 0.2s, color 0.2s;
+      font-weight: 600;
+      transition: transform 0.2s;
     }
-    .works-pill:hover {
-      border-color: rgba(0,224,171,0.3);
-      color: var(--fg);
-    }
+    .works-pill:hover { transform: translateY(-2px); }
+
+    .works-pill:nth-child(1) { background: rgba(245,136,130,0.15); color: var(--coral); }
+    .works-pill:nth-child(2) { background: rgba(253,163,3,0.15); color: var(--amber); }
+    .works-pill:nth-child(3) { background: rgba(10,243,235,0.15); color: var(--cyan); }
+    .works-pill:nth-child(4) { background: rgba(0,224,171,0.15); color: var(--green); }
+    .works-pill:nth-child(5) { background: rgba(252,208,33,0.15); color: var(--yellow); }
+    .works-pill:nth-child(6) { background: rgba(101,0,198,0.15); color: #A855F7; }
+    .works-pill:nth-child(7) { background: rgba(254,68,116,0.15); color: var(--pink); }
+    .works-pill:nth-child(8) { background: rgba(252,141,13,0.15); color: var(--orange); }
 
     /* ===== BOTTOM CTA ===== */
     .bottom-cta {
       padding: 100px 24px;
-      background: var(--bg);
       text-align: center;
       position: relative;
-    }
-
-    .bottom-cta-line {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan), var(--coral));
-      background-size: 200% 100%;
-      animation: shimmer 3s linear infinite;
+      z-index: 1;
+      background: linear-gradient(135deg, #F58882, #FDA303, #0AF3EB, #00E0AB);
+      color: #0D0D1A;
     }
 
     .bottom-cta h2 {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 700;
-      color: var(--fg);
+      color: #0D0D1A;
       margin-bottom: 12px;
+      letter-spacing: -0.02em;
     }
 
     .bottom-cta p {
-      font-size: 1.05rem;
-      color: var(--muted);
+      font-size: 1.1rem;
+      color: rgba(13,13,26,0.7);
       margin-bottom: 32px;
+    }
+
+    .btn-cta-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 36px;
+      background: #0D0D1A;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+    }
+    .btn-cta-dark:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      color: #fff;
     }
 
     /* ===== FOOTER ===== */
     footer {
       background: var(--bg);
-      border-top: 1px solid var(--card-border);
+      border-top: 1px solid rgba(255,255,255,0.06);
       padding: 40px 24px;
       text-align: center;
+      position: relative;
+      z-index: 1;
     }
 
     .footer-logo {
@@ -881,13 +982,14 @@
 
     .footer-copy {
       font-size: 0.78rem;
-      color: rgba(113,113,122,0.5);
+      color: rgba(152,152,168,0.5);
     }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .problem-grid { grid-template-columns: 1fr; gap: 32px; }
-      .consistency-bar, .consistency-badge { display: none; }
+      .pipeline-grid { grid-template-columns: 1fr; }
+      .pipeline-grid > :last-child { max-width: 100%; }
       .tools-list { grid-template-columns: 1fr; }
       .qs-steps { flex-direction: column; }
       .packages-grid { grid-template-columns: 1fr; }
@@ -906,10 +1008,87 @@
 </head>
 <body>
 
+<!-- ===== PARTICLE NETWORK ===== -->
+<div class="particle-network">
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--coral);top:8%;left:12%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--cyan);top:5%;left:45%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--amber);top:12%;left:78%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--green);top:18%;left:30%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--purple);top:22%;left:60%"></div>
+  <div class="particle-dot" style="width:6px;height:6px;background:var(--pink);top:15%;left:92%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--yellow);top:28%;left:8%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--coral);top:32%;left:50%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--orange);top:35%;left:85%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--cyan);top:40%;left:22%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--green);top:45%;left:70%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--amber);top:50%;left:5%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--purple);top:52%;left:40%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--pink);top:58%;left:88%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--coral);top:62%;left:15%"></div>
+  <div class="particle-dot" style="width:6px;height:6px;background:var(--cyan);top:65%;left:55%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--yellow);top:70%;left:35%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--green);top:72%;left:80%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--orange);top:78%;left:10%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--amber);top:80%;left:62%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--purple);top:85%;left:42%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--pink);top:88%;left:75%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--coral);top:92%;left:25%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--cyan);top:95%;left:58%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--green);top:3%;left:68%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--yellow);top:38%;left:48%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--crimson);top:55%;left:18%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--amber);top:75%;left:52%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--orange);top:42%;left:95%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--purple);top:68%;left:3%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--coral);top:25%;left:38%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--cyan);top:48%;left:82%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--green);top:82%;left:90%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--pink);top:33%;left:72%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--yellow);top:60%;left:42%"></div>
+
+  <div class="particle-line" style="width:120px;background:var(--coral);top:9%;left:13%;transform:rotate(25deg)"></div>
+  <div class="particle-line" style="width:90px;background:var(--cyan);top:6%;left:46%;transform:rotate(-15deg)"></div>
+  <div class="particle-line" style="width:150px;background:var(--green);top:19%;left:31%;transform:rotate(40deg)"></div>
+  <div class="particle-line" style="width:100px;background:var(--amber);top:13%;left:79%;transform:rotate(-30deg)"></div>
+  <div class="particle-line" style="width:130px;background:var(--purple);top:33%;left:51%;transform:rotate(15deg)"></div>
+  <div class="particle-line" style="width:80px;background:var(--pink);top:46%;left:23%;transform:rotate(-20deg)"></div>
+  <div class="particle-line" style="width:110px;background:var(--yellow);top:53%;left:41%;transform:rotate(35deg)"></div>
+  <div class="particle-line" style="width:140px;background:var(--orange);top:66%;left:56%;transform:rotate(-10deg)"></div>
+  <div class="particle-line" style="width:95px;background:var(--coral);top:73%;left:11%;transform:rotate(30deg)"></div>
+  <div class="particle-line" style="width:120px;background:var(--cyan);top:80%;left:63%;transform:rotate(-25deg)"></div>
+  <div class="particle-line" style="width:85px;background:var(--green);top:86%;left:26%;transform:rotate(20deg)"></div>
+  <div class="particle-line" style="width:110px;background:var(--amber);top:93%;left:59%;transform:rotate(-35deg)"></div>
+</div>
+
+<!-- ===== FLOATING DOTS ===== -->
+<div class="bg-dot" style="width:5px;height:5px;background:var(--coral);top:10%;left:5%;animation-delay:0s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--cyan);top:20%;left:90%;animation-delay:0.5s"></div>
+<div class="bg-dot" style="width:6px;height:6px;background:var(--amber);top:35%;left:3%;animation-delay:1s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--green);top:50%;left:95%;animation-delay:1.5s"></div>
+<div class="bg-dot" style="width:5px;height:5px;background:var(--purple);top:65%;left:7%;animation-delay:2s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--pink);top:75%;left:92%;animation-delay:0.3s"></div>
+<div class="bg-dot" style="width:7px;height:7px;background:var(--yellow);top:85%;left:4%;animation-delay:0.8s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--orange);top:15%;left:88%;animation-delay:1.2s"></div>
+<div class="bg-dot" style="width:5px;height:5px;background:var(--coral);top:45%;left:2%;animation-delay:1.8s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--cyan);top:55%;left:97%;animation-delay:2.2s"></div>
+<div class="bg-dot" style="width:6px;height:6px;background:var(--green);top:30%;left:96%;animation-delay:0.6s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--amber);top:90%;left:93%;animation-delay:1.4s"></div>
+<div class="bg-dot" style="width:5px;height:5px;background:var(--purple);top:8%;left:50%;animation-delay:2.5s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--pink);top:40%;left:48%;animation-delay:0.9s"></div>
+<div class="bg-dot" style="width:8px;height:8px;background:var(--coral);top:70%;left:50%;animation-delay:1.6s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--yellow);top:25%;left:52%;animation-delay:2.1s"></div>
+<div class="bg-dot" style="width:5px;height:5px;background:var(--orange);top:60%;left:6%;animation-delay:0.4s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--green);top:82%;left:50%;animation-delay:1.1s"></div>
+<div class="bg-dot" style="width:6px;height:6px;background:var(--cyan);top:5%;left:30%;animation-delay:1.7s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--crimson);top:95%;left:15%;animation-delay:2.3s"></div>
+
 <!-- ==================== HERO ==================== -->
 <section class="hero">
   <div class="hero-content">
-    <img src="logo-portrait.svg" alt="Decantr" class="hero-logo">
+    <div class="hero-logo-wrap">
+      <div class="hero-glow-ring"></div>
+      <img src="logo-portrait.svg" alt="Decantr" class="hero-logo">
+    </div>
     <p class="hero-brand">Decantr</p>
     <h1>Design intelligence<br>for AI-generated UI</h1>
     <p class="hero-tagline">Your AI generates code. Decantr makes sure it's actually good.</p>
@@ -918,160 +1097,156 @@
       <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
     </div>
     <p class="hero-license">Free and open source. MIT licensed.</p>
+    <div class="hero-palette">
+      <span class="hero-palette-dot" style="background:var(--coral)"></span>
+      <span class="hero-palette-dot" style="background:var(--amber)"></span>
+      <span class="hero-palette-dot" style="background:var(--cyan)"></span>
+      <span class="hero-palette-dot" style="background:var(--green)"></span>
+      <span class="hero-palette-dot" style="background:var(--purple)"></span>
+    </div>
   </div>
 </section>
 
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--pink)"></span></div>
+
 <!-- ==================== PROBLEM ==================== -->
-<section id="problem" class="section problem-section">
+<section id="problem" class="section">
   <div class="container">
     <h2 class="section-heading reveal">Every AI-generated app has an expiration date</h2>
     <p class="section-sub reveal">AI coding assistants have no memory of design intent. Every prompt is a fresh start. By prompt 10, your app looks like it was built by 10 different people.</p>
 
     <div class="problem-grid">
       <div class="reveal">
-        <p class="problem-col-label label-bad">Without Decantr</p>
+        <p class="problem-col-label" style="color:var(--pink)">Without Decantr</p>
 
-        <div class="browser-frame drift-1">
+        <div class="problem-card-bad card-decorated">
+          <div class="drift-label">Prompt 1</div>
           <div class="browser-frame-bar">
-            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-            <span class="browser-frame-label">Prompt 1</span>
+            <span class="browser-dot-w"></span><span class="browser-dot-w"></span><span class="browser-dot-w"></span>
           </div>
-          <div class="browser-frame-body">
-            <div class="mock-card" style="width:40%"></div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-            </div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-            </div>
+          <div class="mock-card" style="width:40%"></div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
           </div>
         </div>
 
-        <div class="browser-frame drift-2">
+        <div class="problem-card-bad card-decorated">
+          <div class="drift-label">Prompt 5</div>
           <div class="browser-frame-bar">
-            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-            <span class="browser-frame-label">Prompt 5</span>
+            <span class="browser-dot-w"></span><span class="browser-dot-w"></span><span class="browser-dot-w"></span>
           </div>
-          <div class="browser-frame-body">
-            <div class="mock-card" style="width:60%;margin-left:10px"></div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block" style="flex:1.5"></div>
-              <div class="mock-block" style="flex:0.7"></div>
-            </div>
-            <div class="mock-row">
-              <div class="mock-block" style="flex:0.5"></div>
-              <div class="mock-block"></div>
-            </div>
+          <div class="mock-card" style="width:60%;margin-left:10px"></div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block" style="flex:1.5"></div>
+            <div class="mock-block" style="flex:0.7"></div>
+          </div>
+          <div class="mock-row" style="gap:16px">
+            <div class="mock-block" style="flex:0.5"></div>
+            <div class="mock-block"></div>
           </div>
         </div>
 
-        <div class="browser-frame drift-3">
+        <div class="problem-card-bad card-decorated">
+          <div class="drift-label">Prompt 10</div>
           <div class="browser-frame-bar">
-            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-            <span class="browser-frame-label">Prompt 10</span>
+            <span class="browser-dot-w"></span><span class="browser-dot-w"></span><span class="browser-dot-w"></span>
           </div>
-          <div class="browser-frame-body">
-            <div class="mock-card"></div>
-            <div class="mock-card"></div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-            </div>
+          <div class="mock-card"></div>
+          <div class="mock-card" style="height:24px;border-radius:10px;width:70%"></div>
+          <div class="mock-row">
+            <div class="mock-block" style="flex:2;border-radius:0"></div>
+            <div class="mock-block" style="flex:0.5;border-radius:12px"></div>
+            <div class="mock-block" style="flex:1.5;border:2px dashed rgba(255,255,255,0.3)"></div>
           </div>
         </div>
       </div>
 
       <div class="reveal reveal-d2">
-        <p class="problem-col-label label-good">With Decantr</p>
+        <p class="problem-col-label" style="color:var(--green)">With Decantr</p>
 
-        <div class="good-col-wrap">
-          <div class="consistency-bar"></div>
-          <div class="consistency-badge">zero drift</div>
-
-          <div class="browser-frame good">
-            <div class="browser-frame-bar">
-              <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-              <span class="browser-frame-label">Prompt 1</span>
-            </div>
-            <div class="browser-frame-body">
-              <div class="mock-card" style="width:40%"></div>
-              <div class="mock-row">
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-              </div>
-              <div class="mock-row">
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-              </div>
-            </div>
+        <div class="problem-card-good card-decorated" style="--bracket-color:rgba(13,13,26,0.3)">
+          <div class="drift-label">Prompt 1</div>
+          <div class="browser-frame-bar">
+            <span class="browser-dot-d"></span><span class="browser-dot-d"></span><span class="browser-dot-d"></span>
           </div>
-
-          <div class="browser-frame good">
-            <div class="browser-frame-bar">
-              <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-              <span class="browser-frame-label">Prompt 5</span>
-            </div>
-            <div class="browser-frame-body">
-              <div class="mock-card" style="width:40%"></div>
-              <div class="mock-row">
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-              </div>
-              <div class="mock-row">
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-              </div>
-            </div>
+          <div class="mock-card" style="width:40%"></div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
           </div>
-
-          <div class="browser-frame good">
-            <div class="browser-frame-bar">
-              <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-              <span class="browser-frame-label">Prompt 10</span>
-            </div>
-            <div class="browser-frame-body">
-              <div class="mock-card" style="width:40%"></div>
-              <div class="mock-row">
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-              </div>
-              <div class="mock-row">
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-                <div class="mock-block"></div>
-              </div>
-            </div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
           </div>
+        </div>
 
-          <div style="text-align:center">
-            <span class="zero-drift-pill">Zero drift</span>
+        <div class="problem-card-good card-decorated">
+          <div class="drift-label">Prompt 5</div>
+          <div class="browser-frame-bar">
+            <span class="browser-dot-d"></span><span class="browser-dot-d"></span><span class="browser-dot-d"></span>
           </div>
+          <div class="mock-card" style="width:40%"></div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+          </div>
+        </div>
+
+        <div class="problem-card-good card-decorated">
+          <div class="drift-label">Prompt 10</div>
+          <div class="browser-frame-bar">
+            <span class="browser-dot-d"></span><span class="browser-dot-d"></span><span class="browser-dot-d"></span>
+          </div>
+          <div class="mock-card" style="width:40%"></div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+          </div>
+        </div>
+
+        <div style="text-align:center">
+          <span class="zero-drift-pill">Zero drift</span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--cyan)"></span></div>
+
 <!-- ==================== PIPELINE ==================== -->
-<section class="section pipeline-section">
+<section class="section">
   <div class="container">
     <h2 class="section-heading reveal">From intent to production-quality code</h2>
     <p class="section-sub reveal">The Design Pipeline transforms what you say into what you see -- in seven stages.</p>
 
-    <div class="pipeline-scroll reveal">
+    <div class="pipeline-grid">
 
-      <div class="pipeline-card pipeline-card-1">
+      <div class="pipeline-card pipeline-card-1 card-decorated reveal reveal-d1">
         <div class="pipeline-num">01</div>
         <div class="pipeline-name">Intent</div>
         <div class="pipeline-desc">You describe what you want to build, in plain language. No config files. No setup.</div>
@@ -1080,7 +1255,7 @@
         </div>
       </div>
 
-      <div class="pipeline-card pipeline-card-2">
+      <div class="pipeline-card pipeline-card-2 card-decorated reveal reveal-d2">
         <div class="pipeline-num">02</div>
         <div class="pipeline-name">Interpret</div>
         <div class="pipeline-desc">Your intent is parsed into structured signals: app type, features, and design personality.</div>
@@ -1093,20 +1268,20 @@
         </div>
       </div>
 
-      <div class="pipeline-card pipeline-card-3">
+      <div class="pipeline-card pipeline-card-3 card-decorated reveal reveal-d3">
         <div class="pipeline-num">03</div>
         <div class="pipeline-name">Decompose</div>
         <div class="pipeline-desc">The structured intent is separated into three independent layers that can evolve separately.</div>
         <div class="pipeline-visual">
           <div class="layer-stack">
-            <div class="layer layer-theme">Theme</div>
-            <div class="layer layer-structure">Structure</div>
-            <div class="layer layer-features">Features</div>
+            <div class="layer">Theme</div>
+            <div class="layer">Structure</div>
+            <div class="layer">Features</div>
           </div>
         </div>
       </div>
 
-      <div class="pipeline-card pipeline-card-4">
+      <div class="pipeline-card pipeline-card-4 card-decorated reveal reveal-d4">
         <div class="pipeline-num">04</div>
         <div class="pipeline-name">Specify</div>
         <div class="pipeline-desc">A machine-readable spec is written -- your decantr.essence.json -- the single source of truth.</div>
@@ -1122,7 +1297,7 @@
         </div>
       </div>
 
-      <div class="pipeline-card pipeline-card-5">
+      <div class="pipeline-card pipeline-card-5 card-decorated reveal reveal-d5">
         <div class="pipeline-num">05</div>
         <div class="pipeline-name">Compose</div>
         <div class="pipeline-desc">Patterns are resolved and composed into complete page layouts, ready for code generation.</div>
@@ -1139,7 +1314,7 @@
         </div>
       </div>
 
-      <div class="pipeline-card pipeline-card-6">
+      <div class="pipeline-card pipeline-card-6 card-decorated reveal reveal-d6">
         <div class="pipeline-num">06</div>
         <div class="pipeline-name">Generate</div>
         <div class="pipeline-desc">Your AI assistant generates code using the resolved composition. Decantr doesn't generate code -- your AI does, better.</div>
@@ -1156,7 +1331,7 @@
         </div>
       </div>
 
-      <div class="pipeline-card pipeline-card-7">
+      <div class="pipeline-card pipeline-card-7 card-decorated reveal reveal-d7">
         <div class="pipeline-num">07</div>
         <div class="pipeline-name">Guard</div>
         <div class="pipeline-desc">Every change is validated against the spec. Drift is detected before it ships.</div>
@@ -1182,65 +1357,71 @@
   </div>
 </section>
 
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--amber)"></span></div>
+
 <!-- ==================== MCP TOOLS ==================== -->
-<section class="section tools-section" id="tools">
+<section class="section" id="tools">
   <div class="container">
     <h2 class="section-heading reveal">10 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
 
     <div class="tools-list reveal">
       <div class="tool-item">
-        <div class="tool-name">decantr_create_essence</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_create_essence</div>
         <p class="tool-desc">Generate a design spec from a description</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name">decantr_suggest_patterns</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_suggest_patterns</div>
         <p class="tool-desc">Get pattern recommendations for any page</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name">decantr_resolve_pattern</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_pattern</div>
         <p class="tool-desc">Full pattern details with layout specs</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name">decantr_resolve_archetype</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_archetype</div>
         <p class="tool-desc">App templates with page maps</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name">decantr_resolve_blueprint</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_blueprint</div>
         <p class="tool-desc">Composed templates with full structure</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name">decantr_resolve_recipe</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_recipe</div>
         <p class="tool-desc">Visual decoration rules and spatial hints</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name">decantr_check_drift</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_check_drift</div>
         <p class="tool-desc">Detect design spec violations</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name">decantr_validate</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_validate</div>
         <p class="tool-desc">Validate Essence against the schema</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name">decantr_read_essence</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_read_essence</div>
         <p class="tool-desc">Read the current design spec</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name">decantr_search_registry</div>
+        <div class="tool-name"><span class="tool-dot"></span>decantr_search_registry</div>
         <p class="tool-desc">Search patterns, archetypes, themes</p>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--purple)"></span></div>
+
 <!-- ==================== QUICK START ==================== -->
-<section class="section quickstart-section" id="quickstart">
+<section class="section" id="quickstart">
   <div class="container">
     <h2 class="section-heading reveal">Get started in 30 seconds</h2>
     <p class="section-sub reveal">Three steps. No build tools. No configuration rabbit holes.</p>
 
     <div class="qs-steps">
-      <div class="qs-step reveal reveal-d1">
+      <div class="qs-step qs-step-1 card-decorated reveal reveal-d1">
         <div class="qs-num">1</div>
         <h3>Add Decantr to your AI</h3>
         <div class="qs-code-block"><span class="k">{</span>
@@ -1253,13 +1434,13 @@
 <span class="k">}</span></div>
       </div>
 
-      <div class="qs-step reveal reveal-d2">
+      <div class="qs-step qs-step-2 card-decorated reveal reveal-d2">
         <div class="qs-num">2</div>
         <h3>Describe your project</h3>
         <div class="qs-chat">Build me a SaaS analytics dashboard with dark theme, KPI cards, and chart grids</div>
       </div>
 
-      <div class="qs-step reveal reveal-d3">
+      <div class="qs-step qs-step-3 card-decorated reveal reveal-d3">
         <div class="qs-num">3</div>
         <h3>Get consistent code</h3>
         <div class="qs-output"><span class="c">// Generated with design intelligence</span>
@@ -1313,32 +1494,38 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
   </div>
 </section>
 
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--green)"></span></div>
+
 <!-- ==================== PACKAGES ==================== -->
-<section class="section packages-section" id="packages">
+<section class="section" id="packages">
   <div class="container">
     <h2 class="section-heading reveal">Open source. MIT licensed.</h2>
     <p class="section-sub reveal">Four packages, one mission: make AI-generated UI not suck.</p>
 
     <div class="packages-grid">
-      <div class="pkg-card reveal reveal-d1">
+      <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/mcp-server</div>
         <p class="pkg-desc">MCP server exposing 10 design intelligence tools to AI assistants</p>
       </div>
-      <div class="pkg-card reveal reveal-d2">
+      <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/essence-spec</div>
         <p class="pkg-desc">Schema, validator, guard rules, and TypeScript types for the Essence format</p>
       </div>
-      <div class="pkg-card reveal reveal-d3">
+      <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/core</div>
         <p class="pkg-desc">Design Pipeline IR engine -- the brain behind intent-to-composition</p>
       </div>
-      <div class="pkg-card reveal reveal-d4">
+      <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d4">
         <div class="pkg-name">@decantr/registry</div>
         <p class="pkg-desc">Content resolver for patterns, archetypes, themes, and recipes</p>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--coral)"></span></div>
 
 <!-- ==================== WORKS WITH ==================== -->
 <section class="works-section">
@@ -1359,10 +1546,9 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
 
 <!-- ==================== BOTTOM CTA ==================== -->
 <div class="bottom-cta">
-  <div class="bottom-cta-line"></div>
   <h2>Stop generating UI slop.</h2>
   <p>Add Decantr to your AI assistant in 30 seconds.</p>
-  <a href="#quickstart" class="btn-primary">Get Started</a>
+  <a href="#quickstart" class="btn-cta-dark">Get Started</a>
 </div>
 
 <!-- ==================== FOOTER ==================== -->
