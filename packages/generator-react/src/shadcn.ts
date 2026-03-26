@@ -138,6 +138,17 @@ export const COMPONENT_MAP: Record<string, ShadcnMapping> = {
     importPath: '@/components/ui/aspect-ratio',
     imports: ['AspectRatio'],
   },
+  // AUTO: top-nav-main shell component mappings
+  NavigationMenu: {
+    component: 'NavigationMenu',
+    importPath: '@/components/ui/navigation-menu',
+    imports: ['NavigationMenu', 'NavigationMenuList', 'NavigationMenuItem', 'NavigationMenuLink'],
+  },
+  Sheet: {
+    component: 'Sheet',
+    importPath: '@/components/ui/sheet',
+    imports: ['Sheet', 'SheetTrigger', 'SheetContent'],
+  },
   // AUTO: sidebar-main shell component mappings
   Sidebar: {
     component: 'Sidebar',

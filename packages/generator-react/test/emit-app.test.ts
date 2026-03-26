@@ -133,6 +133,78 @@ describe('emitApp (React)', () => {
     expect(result.content).not.toContain('SidebarProvider');
   });
 
+  it('top-nav-main uses NavigationMenu for horizontal nav', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+
+    expect(result.content).toContain('NavigationMenu');
+    expect(result.content).toContain('NavigationMenuList');
+    expect(result.content).toContain('NavigationMenuItem');
+    expect(result.content).toContain('NavigationMenuLink');
+  });
+
+  it('top-nav-main has sticky header with correct classes', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+
+    expect(result.content).toContain('sticky top-0 z-50');
+    expect(result.content).toContain('border-b');
+    expect(result.content).toContain('bg-background');
+  });
+
+  it('top-nav-main has mobile Sheet menu', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+
+    expect(result.content).toContain('Sheet');
+    expect(result.content).toContain('SheetTrigger');
+    expect(result.content).toContain('SheetContent');
+    expect(result.content).toContain('md:hidden');
+  });
+
+  it('top-nav-main derives navigation items from essence structure', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+
+    expect(result.content).toContain('Overview');
+    expect(result.content).toContain('Settings');
+    expect(result.content).toContain('NavLink');
+  });
+
+  it('top-nav-main has no sidebar components', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+
+    expect(result.content).not.toContain('SidebarProvider');
+    expect(result.content).not.toContain('SidebarContent');
+    expect(result.content).not.toContain('SidebarHeader');
+    expect(result.content).not.toContain('SidebarFooter');
+    expect(result.content).not.toContain('SidebarMenu');
+  });
+
+  it('top-nav-main uses deep lucide-react imports (no barrel)', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+
+    expect(result.content).toContain("from 'lucide-react/dist/esm/icons/");
+    expect(result.content).not.toMatch(/from ['"]lucide-react['"]/);
+  });
+
+  it('top-nav-main uses React.lazy and Suspense for pages', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+
+    expect(result.content).toContain('React.lazy');
+    expect(result.content).toContain('React.Suspense');
+  });
+
   it('uses lucide-react icons', () => {
     const app = makeApp();
     const result = emitApp(app);

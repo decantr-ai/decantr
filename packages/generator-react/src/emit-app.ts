@@ -36,6 +36,7 @@ const LUCIDE_ICONS: Record<string, string> = {
   'alert-circle': 'AlertCircle',
   'arrow-left': 'ArrowLeft',
   'circle': 'Circle',
+  'menu': 'Menu',
 };
 
 function lucideComponent(icon: string): string {
@@ -235,37 +236,151 @@ ${nav.map(n => `              <CommandItem>${n.label}</CommandItem>`).join('\n')
 `;
 }
 
+// AUTO: Collect lucide icons needed for top-nav-main shell
+function collectTopNavLucideIcons(nav: IRNavItem[]): string[] {
+  const icons = new Set<string>();
+  for (const item of nav) {
+    icons.add(lucideComponent(item.icon));
+  }
+  icons.add('Bell');
+  icons.add('User');
+  icons.add('Search');
+  icons.add('Menu');
+  icons.add('AlertCircle');
+  return [...icons].sort();
+}
+
 function buildTopNavApp(app: IRAppNode): string {
   const { routes, shell } = app;
   const { nav, brand } = shell.config;
   const routerComponent = app.routing === 'hash' ? 'HashRouter' : 'BrowserRouter';
+  const icons = collectTopNavLucideIcons(nav);
 
   const pageImports = routes
     .map(r => `const ${pascalCase(r.pageId)}Page = React.lazy(() => import('./pages/${r.pageId}.tsx'));`)
     .join('\n');
 
+  // AUTO: NavigationMenu items from essence nav structure
+  const navMenuItems = nav
+    .map(n => `                <NavigationMenuItem key="${n.href}">
+                  <NavigationMenuLink asChild>
+                    <NavLink to="${n.href}" className={({ isActive }) => isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}>
+                      ${n.label}
+                    </NavLink>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>`)
+    .join('\n');
+
+  // AUTO: Mobile Sheet nav items
+  const mobileNavItems = nav
+    .map(n => `              <NavLink
+                to="${n.href}"
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) => \`flex items-center gap-3 rounded-lg px-3 py-2 text-sm \${isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'}\`}
+              >
+                <${lucideComponent(n.icon)} className="h-4 w-4" />
+                ${n.label}
+              </NavLink>`)
+    .join('\n');
+
   const routeElements = routes
-    .map(r => `          <Route path="${r.path}" element={<React.Suspense fallback={<div>Loading...</div>}><${pascalCase(r.pageId)}Page /></React.Suspense>} />`)
+    .map(r => `            <Route path="${r.path}" element={<React.Suspense fallback={<div>Loading...</div>}><${pascalCase(r.pageId)}Page /></React.Suspense>} />`)
     .join('\n');
 
   return `import React from 'react';
 import { ${routerComponent}, Routes, Route, NavLink } from 'react-router-dom';
+${lucideImportLines(icons)}
+import { Button } from '@/components/ui/button';
+import {
+  NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink,
+} from '@/components/ui/navigation-menu';
+import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 ${pageImports}
 
+function NotFoundPage() {
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 h-full p-6">
+      <AlertCircle className="h-12 w-12 text-muted-foreground" />
+      <h1 className="text-3xl font-semibold">Page Not Found</h1>
+      <p className="text-muted-foreground text-center">The page you're looking for doesn't exist.</p>
+    </div>
+  );
+}
+
 export default function App() {
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+
   return (
     <${routerComponent}>
-      <div className="flex flex-col h-full">
-        <nav className="flex items-center justify-between px-6 py-3 border-b">
-          <span className="text-lg font-semibold">${brand}</span>
-          <div className="flex gap-4">
-${nav.map(n => `            <NavLink to="${n.href}" className={({ isActive }) => isActive ? 'text-primary' : 'text-muted-foreground'}>${n.label}</NavLink>`).join('\n')}
+      <div className="flex flex-col min-h-screen">
+        {/* AUTO: Sticky top navigation bar */}
+        <header className="sticky top-0 z-50 border-b bg-background">
+          <div className="flex items-center justify-between px-6 h-14">
+            {/* Left: mobile hamburger + brand */}
+            <div className="flex items-center gap-4">
+              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="md:hidden">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle navigation</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-64">
+                  <div className="flex flex-col gap-4 pt-4">
+                    <span className="text-lg font-semibold px-3">${brand}</span>
+                    <nav className="flex flex-col gap-1">
+${mobileNavItems}
+                    </nav>
+                  </div>
+                </SheetContent>
+              </Sheet>
+              <span className="text-lg font-semibold">${brand}</span>
+
+              {/* Desktop horizontal navigation */}
+              <NavigationMenu className="hidden md:flex">
+                <NavigationMenuList>
+${navMenuItems}
+                </NavigationMenuList>
+              </NavigationMenu>
+            </div>
+
+            {/* Right: actions */}
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm">
+                <Search className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <Bell className="h-4 w-4" />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src="/avatar.png" alt="User" />
+                      <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem>Sign out</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </nav>
-        <main className="flex-1 overflow-auto">
+        </header>
+
+        {/* Main content area */}
+        <main className="flex-1 overflow-auto p-6">
           <Routes>
 ${routeElements}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       </div>
