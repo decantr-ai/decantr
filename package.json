@@ -7,7 +7,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
-    "clean": "pnpm -r exec rm -rf dist"
+    "clean": "pnpm -r exec rm -rf dist",
+    "cli": "node packages/cli/dist/index.js",
+    "mcp": "node packages/mcp-server/dist/index.js"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
