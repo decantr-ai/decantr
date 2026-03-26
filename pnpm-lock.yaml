@@ -21,6 +21,15 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.5.0)
 
+  packages/cli:
+    dependencies:
+      '@decantr/essence-spec':
+        specifier: workspace:*
+        version: link:../essence-spec
+      '@decantr/registry':
+        specifier: workspace:*
+        version: link:../registry
+
   packages/core:
     dependencies:
       '@decantr/essence-spec':
