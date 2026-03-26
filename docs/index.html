@@ -72,7 +72,6 @@
       text-align: center;
       position: relative;
       background: var(--bg);
-      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 0 100%);
     }
 
     .hero-content {
@@ -171,21 +170,7 @@
       color: var(--muted);
     }
 
-    .shimmer-line {
-      position: absolute;
-      bottom: 40px;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan), var(--coral));
-      background-size: 200% 100%;
-      animation: shimmer 3s linear infinite;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
+    /* shimmer lines removed */
 
     /* ===== SECTION COMMON ===== */
     .section {
@@ -193,15 +178,7 @@
       position: relative;
     }
 
-    .section-clip-a {
-      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 0 100%);
-    }
-    .section-clip-b {
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 40px));
-    }
-    .section-pad-top {
-      padding-top: 160px;
-    }
+    /* clip-path dividers removed */
 
     .section-heading {
       font-size: clamp(1.6rem, 4vw, 2.4rem);
@@ -915,7 +892,6 @@
       .qs-steps { flex-direction: column; }
       .packages-grid { grid-template-columns: 1fr; }
       .section { padding: 80px 0; }
-      .section-pad-top { padding-top: 120px; }
       .tab-buttons { flex-wrap: wrap; }
     }
 
@@ -943,11 +919,10 @@
     </div>
     <p class="hero-license">Free and open source. MIT licensed.</p>
   </div>
-  <div class="shimmer-line"></div>
 </section>
 
 <!-- ==================== PROBLEM ==================== -->
-<section id="problem" class="section section-clip-a section-pad-top problem-section">
+<section id="problem" class="section problem-section">
   <div class="container">
     <h2 class="section-heading reveal">Every AI-generated app has an expiration date</h2>
     <p class="section-sub reveal">AI coding assistants have no memory of design intent. Every prompt is a fresh start. By prompt 10, your app looks like it was built by 10 different people.</p>
@@ -1089,7 +1064,7 @@
 </section>
 
 <!-- ==================== PIPELINE ==================== -->
-<section class="section section-clip-b section-pad-top pipeline-section">
+<section class="section pipeline-section">
   <div class="container">
     <h2 class="section-heading reveal">From intent to production-quality code</h2>
     <p class="section-sub reveal">The Design Pipeline transforms what you say into what you see -- in seven stages.</p>
@@ -1208,7 +1183,7 @@
 </section>
 
 <!-- ==================== MCP TOOLS ==================== -->
-<section class="section section-clip-a section-pad-top tools-section" id="tools">
+<section class="section tools-section" id="tools">
   <div class="container">
     <h2 class="section-heading reveal">10 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
@@ -1259,7 +1234,7 @@
 </section>
 
 <!-- ==================== QUICK START ==================== -->
-<section class="section section-clip-b section-pad-top quickstart-section" id="quickstart">
+<section class="section quickstart-section" id="quickstart">
   <div class="container">
     <h2 class="section-heading reveal">Get started in 30 seconds</h2>
     <p class="section-sub reveal">Three steps. No build tools. No configuration rabbit holes.</p>
@@ -1339,7 +1314,7 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
 </section>
 
 <!-- ==================== PACKAGES ==================== -->
-<section class="section section-clip-a section-pad-top packages-section" id="packages">
+<section class="section packages-section" id="packages">
   <div class="container">
     <h2 class="section-heading reveal">Open source. MIT licensed.</h2>
     <p class="section-sub reveal">Four packages, one mission: make AI-generated UI not suck.</p>
