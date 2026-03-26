@@ -1,0 +1,22 @@
+{
+  "name": "@decantr/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Decantr — exposes design intelligence tools to AI coding assistants",
+  "type": "module",
+  "bin": {
+    "decantr-mcp": "./dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@decantr/essence-spec": "workspace:*",
+    "@decantr/registry": "workspace:*"
+  }
+}
