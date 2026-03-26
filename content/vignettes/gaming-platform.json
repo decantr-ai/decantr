@@ -1,0 +1,23 @@
+{
+  "$schema": "decantr-vignette-v1.0",
+  "id": "gaming-platform",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "Gaming Platform",
+  "description": "Gaming community hub with profiles, leaderboards, and game catalog",
+  "tags": ["gaming", "community", "social", "leaderboard"],
+  "compose": ["gaming-community", "game-catalog", "auth-flow", "settings"],
+  "vintage": { "style": "auradecantism", "recipe": "auradecantism" },
+  "character": ["immersive", "energetic", "competitive"],
+  "overrides": {
+    "pages": {},
+    "pages_remove": ["forgot-password"],
+    "tannins_add": ["notifications"],
+    "tannins_remove": []
+  },
+  "dependencies": {
+    "archetypes": { "gaming-community": "^1.0.0", "game-catalog": "^1.0.0", "auth-flow": "^1.0.0", "settings": "^1.0.0" },
+    "recipes": {},
+    "styles": {}
+  }
+}

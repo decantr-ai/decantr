@@ -1,0 +1,32 @@
+{
+  "$schema": "decantr-vignette-v1.0",
+  "id": "cloud-platform",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "Cloud Platform",
+  "description": "Full cloud infrastructure platform with marketing landing, app management, team collaboration, service catalog, deploy logs, usage monitoring, billing, and auth",
+  "tags": ["cloud", "infrastructure", "devops", "enterprise", "platform"],
+  "compose": ["cloud-marketing", "cloud-infrastructure", "billing", "auth-flow", "settings"],
+  "vintage": { "style": "launchpad", "recipe": "auradecantism" },
+  "character": ["technical", "enterprise", "reliable"],
+  "overrides": {
+    "pages": {
+      "billing": { "default_blend": ["kpi-grid", "pricing-table"] },
+      "settings": { "default_blend": [{ "pattern": "form-sections", "preset": "settings", "as": "org-settings" }] }
+    },
+    "pages_remove": ["forgot-password"],
+    "tannins_add": ["search"],
+    "tannins_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "cloud-marketing": "^1.0.0",
+      "cloud-infrastructure": "^1.0.0",
+      "billing": "^1.0.0",
+      "auth-flow": "^1.0.0",
+      "settings": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  }
+}

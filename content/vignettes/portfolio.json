@@ -1,0 +1,25 @@
+{
+  "$schema": "decantr-vignette-v1.0",
+  "id": "portfolio",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "Portfolio",
+  "description": "Single-page brand landing site with stunning hero, feature showcase, social proof, and conversion-focused layout.",
+  "tags": [],
+  "compose": [
+    "portfolio"
+  ],
+  "vintage": {
+    "style": "auradecantism",
+    "recipe": "auradecantism"
+  },
+  "character": [],
+  "overrides": {},
+  "dependencies": {
+    "archetypes": {
+      "portfolio": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  }
+}
