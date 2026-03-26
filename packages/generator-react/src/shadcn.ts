@@ -830,6 +830,51 @@ export const PATTERN_TEMPLATE_MAP: Record<string, PatternShadcnTemplate> = {
       `    </div>`,
     ].join('\n'),
   },
+  // AUTO: cta-section pattern templates for React + shadcn/ui emission
+  'cta-section': {
+    imports: new Map([
+      ['@/components/ui/button', ['Button']],
+    ]),
+    body: (gap: string) => [
+      `    <section className="flex flex-col items-center text-center py-12 px-4 ${gap}">`,
+      `      <h2 className="text-3xl font-bold tracking-tight">Ready to Get Started?</h2>`,
+      `      <p className="text-muted-foreground max-w-[640px]">Join thousands of developers building better applications faster with our platform.</p>`,
+      `      <div className="flex gap-3">`,
+      `        <Button size="lg">Start Free Trial</Button>`,
+      `        <Button variant="outline" size="lg">Learn More</Button>`,
+      `      </div>`,
+      `    </section>`,
+    ].join('\n'),
+  },
+  'cta-section:split': {
+    imports: new Map([
+      ['@/components/ui/button', ['Button']],
+    ]),
+    body: (gap: string) => [
+      `    <section className="grid grid-cols-1 lg:grid-cols-2 ${gap} items-center py-8">`,
+      `      <div className="flex flex-col gap-4">`,
+      `        <h2 className="text-3xl font-bold tracking-tight">Take Your Project to the Next Level</h2>`,
+      `        <p className="text-muted-foreground">Our platform provides everything you need to build, deploy, and scale your applications with confidence.</p>`,
+      `        <div className="flex gap-3">`,
+      `          <Button size="lg">Get Started</Button>`,
+      `          <Button variant="ghost" size="lg">See Examples</Button>`,
+      `        </div>`,
+      `      </div>`,
+      `      <img src="/images/cta-illustration.svg" alt="Platform illustration" className="w-full rounded-lg" />`,
+      `    </section>`,
+    ].join('\n'),
+  },
+  'cta-section:banner': {
+    imports: new Map([
+      ['@/components/ui/button', ['Button']],
+    ]),
+    body: (gap: string) => [
+      `    <div className="flex items-center justify-between py-4 px-6 rounded-lg bg-primary/10">`,
+      `      <p className="font-medium">Ready to upgrade? Get 20% off annual plans today.</p>`,
+      `      <Button size="sm">Upgrade Now</Button>`,
+      `    </div>`,
+    ].join('\n'),
+  },
   'kpi-grid': {
     imports: new Map([
       ['@/components/ui/card', ['Card', 'CardContent', 'CardHeader', 'CardTitle']],

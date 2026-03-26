@@ -1,0 +1,92 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "cta-section",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.9.0",
+  "name": "CTA Section",
+  "description": "Full-width call-to-action section with headline, description, and action buttons",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": ["Button", "icon"],
+      "charts": []
+    }
+  },
+  "components": ["Button"],
+  "contained": false,
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Centered headline + subtext + primary/secondary buttons. Background can have gradient or subtle pattern.",
+      "components": ["Button", "icon"],
+      "blend": {
+        "layout": "hero",
+        "atoms": "_flex _col _items[center] _text[center] _py12 _px4 _gap4",
+        "slots": {
+          "headline": "Section heading with _heading2, centered",
+          "description": "Supporting paragraph with _body _fgmuted _mw[640px]",
+          "cta-group": "Horizontal Button group with _flex _gap3, primary + secondary"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function CtaSection() {\n  const { section, h2, p, div } = tags;\n\n  return section({ class: css('_flex _col _items[center] _text[center] _py12 _px4 _gap4') },\n    h2({ class: css('_heading2') }, 'Ready to Get Started?'),\n    p({ class: css('_body _fgmuted _mw[640px]') }, 'Join thousands of developers building better applications faster with our platform.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg' }, 'Start Free Trial'),\n      Button({ variant: 'outline', size: 'lg' }, 'Learn More')\n    )\n  );\n}"
+      }
+    },
+    "split": {
+      "description": "Two-column: text on left, image/illustration on right",
+      "components": ["Button", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_grid _gc1 _lg:gc2 _gap6 _items[center] _py8",
+        "slots": {
+          "text-col": "Left column with headline, description, and CTA buttons: _flex _col _gap4",
+          "headline": "Section heading with _heading2",
+          "description": "Supporting paragraph with _body _fgmuted",
+          "cta-group": "Horizontal Button group with _flex _gap3",
+          "media-col": "Right column with image or illustration"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function CtaSectionSplit() {\n  const { section, div, h2, p, img } = tags;\n\n  return section({ class: css('_grid _gc1 _lg:gc2 _gap6 _items[center] _py8') },\n    div({ class: css('_flex _col _gap4') },\n      h2({ class: css('_heading2') }, 'Take Your Project to the Next Level'),\n      p({ class: css('_body _fgmuted') }, 'Our platform provides everything you need to build, deploy, and scale your applications with confidence.'),\n      div({ class: css('_flex _gap3') },\n        Button({ variant: 'primary', size: 'lg' }, 'Get Started'),\n        Button({ variant: 'ghost', size: 'lg' }, icon('arrow-right'), 'See Examples')\n      )\n    ),\n    img({ src: '/images/cta-illustration.svg', alt: 'Platform illustration', class: css('_wfull _rounded') })\n  );\n}"
+      }
+    },
+    "banner": {
+      "description": "Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.",
+      "components": ["Button"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _row _justify[between] _items[center] _py4 _px6 _rounded _bgprimary/10",
+        "slots": {
+          "text": "Inline text with _body _fontmedium",
+          "cta": "Single primary Button on the right"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button } from 'decantr/components';",
+        "example": "function CtaSectionBanner() {\n  const { div, p } = tags;\n\n  return div({ class: css('_flex _row _justify[between] _items[center] _py4 _px6 _rounded _bgprimary/10') },\n    p({ class: css('_body _fontmedium') }, 'Ready to upgrade? Get 20% off annual plans today.'),\n    Button({ variant: 'primary', size: 'sm' }, 'Upgrade Now')\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "hero",
+    "atoms": "_flex _col _items[center] _text[center] _py12 _px4 _gap4",
+    "slots": {
+      "headline": "Section heading, centered",
+      "description": "Supporting paragraph",
+      "cta-group": "Action buttons"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+    "example": "function CtaSection() {\n  const { section, h2, p, div } = tags;\n\n  return section({ class: css('_flex _col _items[center] _text[center] _py12 _px4 _gap4') },\n    h2({ class: css('_heading2') }, 'Ready to Get Started?'),\n    p({ class: css('_body _fgmuted _mw[640px]') }, 'Join thousands of developers building better applications faster with our platform.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg' }, 'Start Free Trial'),\n      Button({ variant: 'outline', size: 'lg' }, 'Learn More')\n    )\n  );\n}"
+  },
+  "io": {
+    "consumes": [],
+    "produces": [],
+    "actions": ["cta-click"]
+  }
+}
