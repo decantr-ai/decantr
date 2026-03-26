@@ -1,0 +1,90 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "filter-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.9.0",
+  "name": "Filter Bar",
+  "description": "Search input and filter controls for filtering page content. Sits above data-consuming patterns like data-table, card-grid, and activity-feed.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": ["Input", "Select", "Button", "Badge", "icon"],
+      "charts": []
+    }
+  },
+  "components": ["Input", "Select", "Button", "Badge", "icon"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Search input + dropdown filters + action buttons in a horizontal bar",
+      "components": ["Input", "Select", "Button", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _row _gap3 _aic _w[100%] _py2",
+        "slots": {
+          "search": "Search Input with placeholder text",
+          "filters": "One or more Select dropdowns for category/status filtering",
+          "actions": "Action Buttons (clear, apply, etc.)"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Input, Select, Button, icon } from 'decantr/components';",
+        "example": "function FilterBar({ onSearch, onCategory, onStatus }) {\n  const { div } = tags;\n\n  return div({ class: css('_flex _row _gap3 _aic _w[100%] _py2') },\n    Input({ placeholder: 'Search...', oninput: onSearch, class: css('_mw[300px] _flex1') }),\n    Select({ placeholder: 'Category', onchange: onCategory, class: css('_w[160px]') },\n      Select.Option({ value: 'all' }, 'All Categories'),\n      Select.Option({ value: 'active' }, 'Active'),\n      Select.Option({ value: 'archived' }, 'Archived')\n    ),\n    Select({ placeholder: 'Status', onchange: onStatus, class: css('_w[140px]') },\n      Select.Option({ value: 'all' }, 'All'),\n      Select.Option({ value: 'published' }, 'Published'),\n      Select.Option({ value: 'draft' }, 'Draft')\n    ),\n    div({ class: css('_flex _gap2 _mlaut') },\n      Button({ variant: 'outline', size: 'sm' }, icon('x'), 'Clear'),\n      Button({ variant: 'primary', size: 'sm' }, icon('filter'), 'Apply')\n    )\n  );\n}"
+      }
+    },
+    "compact": {
+      "description": "Search input only, filters in a collapsible popover",
+      "components": ["Input", "Select", "Button", "Badge", "icon"],
+      "blend": {
+        "layout": "row",
+        "atoms": "_flex _row _gap2 _aic _w[100%] _py1",
+        "slots": {
+          "search": "Search Input, takes full width",
+          "filter-toggle": "Button that opens a Popover with filter Select controls",
+          "active-filters": "Badge chips showing currently active filters"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Input, Select, Button, Badge, icon } from 'decantr/components';",
+        "example": "function FilterBarCompact({ onSearch, onCategory, filters }) {\n  const { div } = tags;\n\n  return div({ class: css('_flex _row _gap2 _aic _w[100%] _py1') },\n    Input({ placeholder: 'Search...', oninput: onSearch, class: css('_flex1') }),\n    Button({ variant: 'outline', size: 'sm' }, icon('sliders-horizontal'), 'Filters'),\n    ...(filters || []).map(f =>\n      Badge({ variant: 'secondary', size: 'sm', class: css('_flex _aic _gap1') },\n        f.label,\n        Button({ variant: 'ghost', size: 'xs', onclick: f.onRemove }, icon('x', { size: '0.75rem' }))\n      )\n    )\n  );\n}"
+      }
+    },
+    "advanced": {
+      "description": "Multi-row with filter chips, saved filters, and clear-all",
+      "components": ["Input", "Select", "Button", "Badge", "icon"],
+      "blend": {
+        "layout": "column",
+        "atoms": "_flex _col _gap2 _w[100%] _py2",
+        "slots": {
+          "search-row": "Top row: Search Input + filter dropdowns + action Buttons",
+          "chips-row": "Second row: Badge filter chips showing active filters with remove buttons",
+          "saved-filters": "Optional row: saved filter presets as outline Buttons"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Input, Select, Button, Badge, icon } from 'decantr/components';",
+        "example": "function FilterBarAdvanced({ onSearch, onCategory, onStatus, filters, savedFilters }) {\n  const { div, span } = tags;\n\n  return div({ class: css('_flex _col _gap2 _w[100%] _py2') },\n    div({ class: css('_flex _row _gap3 _aic') },\n      Input({ placeholder: 'Search...', oninput: onSearch, class: css('_mw[300px] _flex1') }),\n      Select({ placeholder: 'Category', onchange: onCategory, class: css('_w[160px]') },\n        Select.Option({ value: 'all' }, 'All Categories'),\n        Select.Option({ value: 'active' }, 'Active'),\n        Select.Option({ value: 'archived' }, 'Archived')\n      ),\n      Select({ placeholder: 'Status', onchange: onStatus, class: css('_w[140px]') },\n        Select.Option({ value: 'all' }, 'All'),\n        Select.Option({ value: 'published' }, 'Published'),\n        Select.Option({ value: 'draft' }, 'Draft')\n      ),\n      Button({ variant: 'outline', size: 'sm' }, icon('x'), 'Clear All')\n    ),\n    (filters && filters.length > 0) ? div({ class: css('_flex _row _gap2 _flexWrap') },\n      span({ class: css('_textsm _fgmuted _aic _flex') }, 'Active:'),\n      ...filters.map(f =>\n        Badge({ variant: 'secondary', size: 'sm', class: css('_flex _aic _gap1') },\n          f.label,\n          Button({ variant: 'ghost', size: 'xs', onclick: f.onRemove }, icon('x', { size: '0.75rem' }))\n        )\n      )\n    ) : null,\n    (savedFilters && savedFilters.length > 0) ? div({ class: css('_flex _row _gap2') },\n      span({ class: css('_textsm _fgmuted _aic _flex') }, 'Saved:'),\n      ...savedFilters.map(sf =>\n        Button({ variant: 'outline', size: 'xs', onclick: sf.onApply }, sf.name)\n      )\n    ) : null\n  );\n}"
+      }
+    }
+  },
+  "default_blend": {
+    "layout": "row",
+    "atoms": "_flex _row _gap3 _aic _w[100%] _py2",
+    "slots": {
+      "search": "Search Input with placeholder text",
+      "filters": "One or more Select dropdowns for category/status filtering",
+      "actions": "Action Buttons (clear, apply, etc.)"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Input, Select, Button, icon } from 'decantr/components';",
+    "example": "function FilterBar({ onSearch, onCategory, onStatus }) {\n  const { div } = tags;\n\n  return div({ class: css('_flex _row _gap3 _aic _w[100%] _py2') },\n    Input({ placeholder: 'Search...', oninput: onSearch, class: css('_mw[300px] _flex1') }),\n    Select({ placeholder: 'Category', onchange: onCategory, class: css('_w[160px]') },\n      Select.Option({ value: 'all' }, 'All Categories'),\n      Select.Option({ value: 'active' }, 'Active'),\n      Select.Option({ value: 'archived' }, 'Archived')\n    ),\n    Select({ placeholder: 'Status', onchange: onStatus, class: css('_w[140px]') },\n      Select.Option({ value: 'all' }, 'All'),\n      Select.Option({ value: 'published' }, 'Published'),\n      Select.Option({ value: 'draft' }, 'Draft')\n    ),\n    div({ class: css('_flex _gap2 _mlaut') },\n      Button({ variant: 'outline', size: 'sm' }, icon('x'), 'Clear'),\n      Button({ variant: 'primary', size: 'sm' }, icon('filter'), 'Apply')\n    )\n  );\n}"
+  },
+  "io": {
+    "produces": ["search", "filters", "status"],
+    "consumes": [],
+    "actions": ["clear", "apply"]
+  }
+}
