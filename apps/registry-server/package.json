@@ -1,0 +1,24 @@
+{
+  "name": "decantr-registry-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test test/**/*.test.js",
+    "admin": "node scripts/admin.js",
+    "seed": "node scripts/import-builtins.js",
+    "seed:local": "node scripts/import-builtins.js --from ../registry-portal",
+    "backup": "node scripts/backup.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^11.7.0",
+    "hono": "^4.6.0"
+  }
+}

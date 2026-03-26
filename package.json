@@ -9,7 +9,9 @@
     "lint": "tsc --noEmit",
     "clean": "pnpm -r exec rm -rf dist",
     "cli": "node packages/cli/dist/index.js",
-    "mcp": "node packages/mcp-server/dist/index.js"
+    "mcp": "node packages/mcp-server/dist/index.js",
+    "registry:test": "cd apps/registry-server && npm test",
+    "registry:dev": "cd apps/registry-server && node src/index.js"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
