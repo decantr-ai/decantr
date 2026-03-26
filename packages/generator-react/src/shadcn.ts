@@ -138,6 +138,16 @@ export const COMPONENT_MAP: Record<string, ShadcnMapping> = {
     importPath: '@/components/ui/aspect-ratio',
     imports: ['AspectRatio'],
   },
+  // AUTO: sidebar-main shell component mappings
+  Sidebar: {
+    component: 'Sidebar',
+    importPath: '@/components/ui/sidebar',
+    imports: [
+      'Sidebar', 'SidebarContent', 'SidebarFooter', 'SidebarHeader',
+      'SidebarMenu', 'SidebarMenuItem', 'SidebarMenuButton',
+      'SidebarProvider', 'SidebarTrigger',
+    ],
+  },
 };
 
 // AUTO: Pattern-level shadcn templates for patterns that need specific React layouts

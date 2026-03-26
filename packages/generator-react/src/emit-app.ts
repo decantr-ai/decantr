@@ -81,29 +81,39 @@ function buildSidebarMainApp(app: IRAppNode): string {
     .map(r => `const ${pascalCase(r.pageId)}Page = React.lazy(() => import('./pages/${r.pageId}.tsx'));`)
     .join('\n');
 
-  const navItems = nav
-    .map(n => `          <NavLink
-            key="${n.href}"
-            to="${n.href}"
-            className={({ isActive }) =>
-              cn('flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted')
-            }
-          >
-            <${lucideComponent(n.icon)} className="h-4 w-4" />
-            {navState === 'expanded' && <span>${n.label}</span>}
-          </NavLink>`)
+  // AUTO: Generate SidebarMenuItems from nav, using NavLink for active state
+  const navMenuItems = nav
+    .map(n => `              <SidebarMenuItem key="${n.href}">
+                <SidebarMenuButton asChild>
+                  <NavLink to="${n.href}" className={({ isActive }) => isActive ? 'text-primary' : ''}>
+                    <${lucideComponent(n.icon)} className="h-4 w-4" />
+                    <span>${n.label}</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>`)
     .join('\n');
 
   const routeElements = routes
     .map(r => `            <Route path="${r.path}" element={<React.Suspense fallback={<div>Loading...</div>}><${pascalCase(r.pageId)}Page /></React.Suspense>} />`)
     .join('\n');
 
-  return `import React, { useState, useEffect } from 'react';
+  return `import React, { useEffect, useRef } from 'react';
 import { ${routerComponent}, Routes, Route, NavLink } from 'react-router-dom';
 ${lucideImportLines(icons)}
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import {
+  Sidebar, SidebarContent, SidebarFooter, SidebarHeader,
+  SidebarMenu, SidebarMenuItem, SidebarMenuButton,
+  SidebarProvider, SidebarTrigger,
+} from '@/components/ui/sidebar';
+import {
+  Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { CommandDialog, CommandInput, CommandList, CommandItem, CommandGroup } from '@/components/ui/command';
 
 ${pageImports}
 
@@ -118,18 +128,18 @@ function NotFoundPage() {
 }
 
 export default function App() {
-  const [navState, setNavState] = useState<'expanded' | 'rail'>('expanded');
-  const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdOpen, setCmdOpen] = React.useState(false);
+  const sidebarRef = useRef<{ toggleSidebar?: () => void }>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === '\\\\') {
         e.preventDefault();
-        setNavState(s => s === 'expanded' ? 'rail' : 'expanded');
+        sidebarRef.current?.toggleSidebar?.();
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setCmdOpen(open => !open);
+        setCmdOpen(prev => !prev);
       }
     };
     document.addEventListener('keydown', handler);
@@ -138,27 +148,49 @@ export default function App() {
 
   return (
     <${routerComponent}>
-      <div className="flex h-screen">
-        {/* Sidebar */}
-        <aside className={cn(
-          'flex flex-col gap-1 bg-muted border-r transition-all',
-          navState === 'expanded' ? 'w-64' : 'w-16'
-        )}>
-          <div className="flex items-center justify-between p-3">
-            {navState === 'expanded' && <span className="text-lg font-semibold">${brand}</span>}
-            <Button variant="ghost" size="sm" onClick={() => setNavState(s => s === 'expanded' ? 'rail' : 'expanded')}>
-              <PanelLeft className="h-4 w-4" />
-            </Button>
-          </div>
-          <nav className="flex flex-col gap-0.5 px-2">
-${navItems}
-          </nav>
-        </aside>
+      <SidebarProvider ref={sidebarRef}>
+        <Sidebar collapsible="icon">
+          <SidebarHeader>
+            <span className="text-lg font-semibold px-2">${brand}</span>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarMenu>
+${navMenuItems}
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton>
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src="/avatar.png" alt="User" />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
+                  <span>User</span>
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top" align="start">
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Sign out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarFooter>
+        </Sidebar>
 
         {/* Main area */}
         <div className="flex flex-col flex-1">
           <header className="flex items-center justify-between px-6 h-14 border-b">
-            <div>{/* Breadcrumb */}</div>
+            <div className="flex items-center gap-2">
+              <SidebarTrigger />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink href="/">${brand}</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => setCmdOpen(true)}>
                 <Search className="h-4 w-4" />
@@ -166,9 +198,18 @@ ${navItems}
               <Button variant="ghost" size="sm">
                 <Bell className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
-                <User className="h-4 w-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem>Sign out</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
           <main className="flex-1 overflow-auto p-6">
@@ -178,7 +219,16 @@ ${routeElements}
             </Routes>
           </main>
         </div>
-      </div>
+
+        <CommandDialog open={cmdOpen} onOpenChange={setCmdOpen}>
+          <CommandInput placeholder="Type a command or search..." />
+          <CommandList>
+            <CommandGroup heading="Pages">
+${nav.map(n => `              <CommandItem>${n.label}</CommandItem>`).join('\n')}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
+      </SidebarProvider>
     </${routerComponent}>
   );
 }

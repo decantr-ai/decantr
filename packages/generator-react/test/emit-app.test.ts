@@ -57,23 +57,62 @@ describe('emitApp (React)', () => {
     expect(result.content).toContain('react-router-dom');
   });
 
-  it('generates sidebar layout with NavLink items', () => {
+  it('generates sidebar-main layout with SidebarProvider', () => {
     const app = makeApp();
     const result = emitApp(app);
 
-    expect(result.content).toContain('NavLink');
-    expect(result.content).toContain('Overview');
-    expect(result.content).toContain('Settings');
-    expect(result.content).toContain('aside');
+    expect(result.content).toContain('SidebarProvider');
   });
 
-  it('generates top-nav layout variant', () => {
+  it('sidebar has SidebarHeader, SidebarContent, and SidebarFooter', () => {
     const app = makeApp();
-    app.shell.config.type = 'top-nav-main';
     const result = emitApp(app);
 
+    expect(result.content).toContain('SidebarHeader');
+    expect(result.content).toContain('SidebarContent');
+    expect(result.content).toContain('SidebarFooter');
+  });
+
+  it('SidebarTrigger is present in main content header', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain('<SidebarTrigger');
+  });
+
+  it('generates Ctrl+\\ keyboard shortcut handler', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain("e.key === '\\\\'");
+    expect(result.content).toContain('e.ctrlKey');
+  });
+
+  it('navigation items are generated from essence nav structure', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain('SidebarMenu');
+    expect(result.content).toContain('SidebarMenuItem');
+    expect(result.content).toContain('SidebarMenuButton');
+    expect(result.content).toContain('Overview');
+    expect(result.content).toContain('Settings');
     expect(result.content).toContain('NavLink');
-    expect(result.content).not.toContain('aside');
+  });
+
+  it('imports shadcn sidebar components from specific path', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain("from '@/components/ui/sidebar'");
+    expect(result.content).not.toMatch(/from ['"]@\/components\/ui['"]/);
+  });
+
+  it('uses collapsible="icon" variant on Sidebar', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain('collapsible="icon"');
   });
 
   it('includes CommandDialog for Cmd+K', () => {
@@ -82,6 +121,16 @@ describe('emitApp (React)', () => {
 
     expect(result.content).toContain("e.key === 'k'");
     expect(result.content).toContain('setCmdOpen');
+    expect(result.content).toContain('CommandDialog');
+  });
+
+  it('generates top-nav layout variant', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+
+    expect(result.content).toContain('NavLink');
+    expect(result.content).not.toContain('SidebarProvider');
   });
 
   it('uses lucide-react icons', () => {
@@ -112,7 +161,39 @@ describe('emitApp (React)', () => {
     app.shell.config.type = 'full-bleed';
     const result = emitApp(app);
 
-    expect(result.content).not.toContain('aside');
+    expect(result.content).not.toContain('SidebarProvider');
     expect(result.content).toContain('Routes');
+  });
+
+  it('includes Breadcrumb in the header', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain('Breadcrumb');
+    expect(result.content).toContain('BreadcrumbList');
+  });
+
+  it('includes Avatar in sidebar footer', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain('Avatar');
+    expect(result.content).toContain('AvatarFallback');
+  });
+
+  it('uses React.lazy for page imports', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain('React.lazy');
+    expect(result.content).toContain('React.Suspense');
+  });
+
+  it('uses functional setState (no stale closure)', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    // setCmdOpen should use functional updater
+    expect(result.content).toContain('setCmdOpen(prev =>');
   });
 });
