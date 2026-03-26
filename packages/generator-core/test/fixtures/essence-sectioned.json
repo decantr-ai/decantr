@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "platform": { "type": "spa", "routing": "hash" },
+  "character": ["professional", "technical"],
+  "sections": [
+    {
+      "id": "brand",
+      "path": "/",
+      "archetype": "portfolio",
+      "theme": { "style": "glassmorphism", "mode": "dark", "recipe": "auradecantism" },
+      "structure": [
+        { "id": "home", "shell": "full-bleed", "layout": ["hero"] }
+      ],
+      "features": ["analytics"]
+    }
+  ],
+  "shared_features": ["auth"],
+  "density": { "level": "comfortable", "content_gap": "4" },
+  "guard": { "enforce_style": true, "enforce_recipe": true, "mode": "strict" },
+  "target": "decantr"
+}

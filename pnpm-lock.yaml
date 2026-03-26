@@ -27,6 +27,39 @@ importers:
         specifier: ^8.17.0
         version: 8.18.0
 
+  packages/generator-core:
+    dependencies:
+      '@decantr/essence-spec':
+        specifier: workspace:*
+        version: link:../essence-spec
+      '@decantr/registry':
+        specifier: workspace:*
+        version: link:../registry
+
+  packages/generator-decantr:
+    dependencies:
+      '@decantr/essence-spec':
+        specifier: workspace:*
+        version: link:../essence-spec
+      '@decantr/generator-core':
+        specifier: workspace:*
+        version: link:../generator-core
+      '@decantr/registry':
+        specifier: workspace:*
+        version: link:../registry
+
+  packages/generator-react:
+    dependencies:
+      '@decantr/essence-spec':
+        specifier: workspace:*
+        version: link:../essence-spec
+      '@decantr/generator-core':
+        specifier: workspace:*
+        version: link:../generator-core
+      '@decantr/registry':
+        specifier: workspace:*
+        version: link:../registry
+
   packages/registry:
     dependencies:
       '@decantr/essence-spec':
