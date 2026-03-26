@@ -12,32 +12,30 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>D</text></svg>">
   <style>
     :root {
-      --bg: #010E2E;
-      --bg-alt: #060B24;
-      --bg-light: #041540;
-      --fg: #f0f2f8;
-      --muted: #8b93a8;
+      --bg: #09090B;
+      --fg: #FAFAFA;
+      --muted: #71717A;
+      --card-bg: rgba(255,255,255,0.03);
+      --card-border: rgba(255,255,255,0.08);
+      --code-bg: #111113;
       --coral: #F58882;
-      --navy: #010E2E;
       --amber: #FDA303;
       --cyan: #0AF3EB;
-      --crimson: #D80F4A;
-      --pink: #FE4474;
       --green: #00E0AB;
       --yellow: #FCD021;
       --orange: #FC8D0D;
       --purple: #6500C6;
-      --card-bg: rgba(8, 18, 52, 0.65);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --code-bg: rgba(1, 10, 30, 0.8);
+      --pink: #FE4474;
       --max-w: 1100px;
+      --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-family: var(--sans);
       background: var(--bg);
       color: var(--fg);
       line-height: 1.6;
@@ -50,16 +48,20 @@
 
     .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
 
-    /* ===== REVEAL ANIMATION ===== */
+    /* ===== REVEAL ===== */
     .reveal {
       opacity: 0;
-      transform: translateY(32px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
     }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+    .reveal-d4 { transition-delay: 0.4s; }
+    .reveal-d5 { transition-delay: 0.5s; }
+    .reveal-d6 { transition-delay: 0.6s; }
+    .reveal-d7 { transition-delay: 0.7s; }
 
     /* ===== HERO ===== */
     .hero {
@@ -69,140 +71,47 @@
       justify-content: center;
       text-align: center;
       position: relative;
-      overflow: hidden;
-    }
-
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(245,136,130,0.08) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 20% 60%, rgba(10,243,235,0.06) 0%, transparent 50%),
-        radial-gradient(ellipse 50% 40% at 80% 30%, rgba(253,163,3,0.05) 0%, transparent 50%),
-        var(--bg);
-    }
-
-    .hero-particles {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      overflow: hidden;
-    }
-
-    .particle {
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      border-radius: 50%;
-      opacity: 0.3;
-      animation: particleFloat 8s ease-in-out infinite;
-    }
-
-    @keyframes particleFloat {
-      0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
-      50% { transform: translateY(-30px) translateX(15px); opacity: 0.5; }
+      background: var(--bg);
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 0 100%);
     }
 
     .hero-content {
       position: relative;
       z-index: 2;
-      max-width: 720px;
+      max-width: 700px;
+      padding: 0 24px;
     }
 
-    .hero-logo-wrap {
-      position: relative;
-      display: inline-block;
-      margin-bottom: 40px;
-    }
-
-    .hero-logo-wrap img {
-      width: 180px;
+    .hero-logo {
+      width: 130px;
       height: auto;
-      position: relative;
-      z-index: 2;
+      display: block;
+      margin: 0 auto 20px;
+      filter: drop-shadow(0 0 20px rgba(245,136,130,0.25));
     }
 
-    .logo-glow {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(245,136,130,0.15) 0%, rgba(10,243,235,0.08) 40%, transparent 70%);
-      animation: breathe 4s ease-in-out infinite;
-      z-index: 1;
-    }
-
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      z-index: 1;
-      animation: orbFloat 6s ease-in-out infinite;
-    }
-
-    .orb-1 {
-      width: 12px; height: 12px;
-      background: var(--coral);
-      top: 10%; left: 5%;
-      animation-delay: 0s;
-      opacity: 0.5;
-    }
-    .orb-2 {
-      width: 8px; height: 8px;
-      background: var(--cyan);
-      top: 20%; right: 8%;
-      animation-delay: 1s;
-      opacity: 0.4;
-    }
-    .orb-3 {
-      width: 10px; height: 10px;
-      background: var(--amber);
-      bottom: 15%; left: 12%;
-      animation-delay: 2s;
-      opacity: 0.45;
-    }
-    .orb-4 {
-      width: 6px; height: 6px;
-      background: var(--green);
-      bottom: 25%; right: 15%;
-      animation-delay: 3s;
-      opacity: 0.35;
-    }
-
-    @keyframes breathe {
-      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-      50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.7; }
-    }
-
-    @keyframes orbFloat {
-      0%, 100% { transform: translateY(0) translateX(0); }
-      33% { transform: translateY(-12px) translateX(8px); }
-      66% { transform: translateY(6px) translateX(-6px); }
+    .hero-brand {
+      font-size: 0.85rem;
+      font-variant: small-caps;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      margin-bottom: 32px;
     }
 
     .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 800;
+      font-size: clamp(2.8rem, 5vw, 4rem);
+      font-weight: 700;
       line-height: 1.15;
       margin-bottom: 20px;
       letter-spacing: -0.02em;
+      color: var(--fg);
     }
 
-    .gradient-text {
-      background: linear-gradient(135deg, var(--coral), var(--amber), var(--cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-sub {
-      font-size: clamp(1rem, 2.5vw, 1.25rem);
+    .hero-tagline {
+      font-size: 1.1rem;
       color: var(--muted);
       margin-bottom: 40px;
-      max-width: 540px;
+      max-width: 520px;
       margin-left: auto;
       margin-right: auto;
     }
@@ -212,6 +121,7 @@
       gap: 16px;
       justify-content: center;
       flex-wrap: wrap;
+      margin-bottom: 20px;
     }
 
     .btn-primary {
@@ -219,20 +129,20 @@
       align-items: center;
       gap: 8px;
       padding: 14px 32px;
-      background: linear-gradient(135deg, var(--coral), var(--pink));
-      color: #fff;
+      background: var(--coral);
+      color: #09090B;
       font-weight: 600;
       font-size: 1rem;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
       text-decoration: none;
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(245,136,130,0.3);
-      color: #fff;
+      box-shadow: 0 8px 24px rgba(245,136,130,0.3);
+      color: #09090B;
     }
 
     .btn-ghost {
@@ -244,192 +154,79 @@
       color: var(--fg);
       font-weight: 600;
       font-size: 1rem;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
       text-decoration: none;
     }
     .btn-ghost:hover {
-      border-color: rgba(255,255,255,0.3);
+      border-color: rgba(255,255,255,0.4);
       background: rgba(255,255,255,0.04);
       color: var(--fg);
     }
 
-    /* ===== SECTION TRANSITIONS ===== */
-    /* Gradient bleeds at bottom of each section — seamless color flow */
-    section::after {
-      content: '';
+    .hero-license {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .shimmer-line {
       position: absolute;
-      bottom: 0;
+      bottom: 40px;
       left: 0;
       right: 0;
-      height: 250px;
-      pointer-events: none;
-      z-index: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan), var(--coral));
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
     }
-    section > .container {
-      position: relative;
-      z-index: 1;
-    }
-    .problem-section::after {
-      background: linear-gradient(180deg, transparent 0%, rgba(245,136,130,0.06) 70%, rgba(10,243,235,0.03) 100%);
-    }
-    .pipeline-section::after {
-      background: linear-gradient(180deg, transparent 0%, rgba(10,243,235,0.05) 70%, rgba(253,163,3,0.03) 100%);
-    }
-    .tools-section::after {
-      background: linear-gradient(180deg, transparent 0%, rgba(253,163,3,0.05) 70%, rgba(101,0,198,0.03) 100%);
-    }
-    .quickstart-section::after {
-      background: linear-gradient(180deg, transparent 0%, rgba(101,0,198,0.04) 70%, rgba(0,224,171,0.03) 100%);
-    }
-    .packages-section::after {
-      background: linear-gradient(180deg, transparent 0%, rgba(0,224,171,0.04) 100%);
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
     }
 
     /* ===== SECTION COMMON ===== */
-    section {
-      padding: 80px 0;
+    .section {
+      padding: 120px 0;
       position: relative;
-      overflow: hidden;
     }
 
-    .section-alt { background: var(--bg); }
+    .section-clip-a {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 0 100%);
+    }
+    .section-clip-b {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 40px));
+    }
+    .section-pad-top {
+      padding-top: 160px;
+    }
 
     .section-heading {
       font-size: clamp(1.6rem, 4vw, 2.4rem);
-      font-weight: 800;
+      font-weight: 700;
       text-align: center;
       margin-bottom: 16px;
       letter-spacing: -0.02em;
+      color: var(--fg);
     }
 
     .section-sub {
       text-align: center;
       color: var(--muted);
-      max-width: 640px;
+      max-width: 620px;
       margin: 0 auto 56px;
       font-size: 1.05rem;
       line-height: 1.7;
     }
 
-    /* ===== LUMINOUS DEPTH — Section ambient glows ===== */
-
-    /* Problem section — coral/crimson glow bottom-right */
+    /* ===== PROBLEM SECTION ===== */
     .problem-section {
       background: var(--bg);
-      position: relative;
-      overflow: hidden;
-    }
-    .problem-section::before {
-      content: '';
-      position: absolute;
-      width: 800px;
-      height: 600px;
-      bottom: -200px;
-      right: -200px;
-      background: radial-gradient(ellipse, rgba(245,136,130,0.12), transparent 70%);
-      pointer-events: none;
+      border-top: 1px solid var(--pink);
     }
 
-    /* Pipeline section — cyan/teal glow from left */
-    .pipeline-section {
-      background: var(--bg);
-      position: relative;
-      overflow: hidden;
-    }
-    .pipeline-section::before {
-      content: '';
-      position: absolute;
-      width: 700px;
-      height: 700px;
-      top: -100px;
-      left: -300px;
-      background: radial-gradient(ellipse, rgba(10,243,235,0.10), transparent 70%);
-      pointer-events: none;
-    }
-
-    /* Tools section — amber/gold glow from top-center */
-    .tools-section {
-      background: var(--bg);
-      position: relative;
-      overflow: hidden;
-    }
-    .tools-section::before {
-      content: '';
-      position: absolute;
-      width: 900px;
-      height: 500px;
-      top: -150px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: radial-gradient(ellipse, rgba(253,163,3,0.10), transparent 70%);
-      pointer-events: none;
-    }
-
-    /* Quick Start section — purple/indigo glow from bottom-left */
-    .quickstart-section {
-      background: var(--bg);
-      position: relative;
-      overflow: hidden;
-    }
-    .quickstart-section::before {
-      content: '';
-      position: absolute;
-      width: 800px;
-      height: 600px;
-      bottom: -200px;
-      left: -250px;
-      background: radial-gradient(ellipse, rgba(101,0,198,0.10), transparent 70%);
-      pointer-events: none;
-    }
-
-    /* Packages section — green glow from right */
-    .packages-section {
-      background: var(--bg);
-      position: relative;
-      overflow: hidden;
-    }
-    .packages-section::before {
-      content: '';
-      position: absolute;
-      width: 700px;
-      height: 600px;
-      top: 50%;
-      right: -250px;
-      transform: translateY(-50%);
-      background: radial-gradient(ellipse, rgba(0,224,171,0.08), transparent 70%);
-      pointer-events: none;
-    }
-
-    /* Works With section — minimal subtle glow */
-    .works-section {
-      background: var(--bg);
-      padding: 60px 0;
-      position: relative;
-      overflow: hidden;
-    }
-    .works-section::before {
-      content: '';
-      position: absolute;
-      width: 600px;
-      height: 400px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(ellipse, rgba(255,255,255,0.02), transparent 70%);
-      pointer-events: none;
-    }
-
-    /* ===== SECTION-SPECIFIC CARD BORDERS ===== */
-    .problem-section .browser-frame { border-top: 2px solid rgba(245,136,130,0.3); }
-    .pipeline-section .timeline-step { border-left-color: rgba(10,243,235,0.15); }
-    .tools-section .tool-card { border-top: 2px solid rgba(253,163,3,0.2); }
-    .quickstart-section .qs-step { border-top: 2px solid rgba(101,0,198,0.25); border-radius: 8px; }
-    .packages-section .pkg-card { border-top: 2px solid rgba(0,224,171,0.25); }
-
-    /* ===== PROBLEM SECTION ===== */
     .problem-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -446,12 +243,11 @@
       margin-bottom: 16px;
       text-align: center;
     }
-    .label-bad { color: var(--crimson); }
+    .label-bad { color: var(--pink); }
     .label-good { color: var(--green); }
 
-    .good-col-wrap {
-      position: relative;
-    }
+    .good-col-wrap { position: relative; }
+
     .consistency-bar {
       position: absolute;
       left: -20px;
@@ -475,17 +271,28 @@
       padding: 4px 10px;
       white-space: nowrap;
     }
-    @media (max-width: 768px) {
-      .consistency-bar, .consistency-badge { display: none; }
+
+    .zero-drift-pill {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 14px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--green);
+      border: 1px solid rgba(0,224,171,0.3);
+      border-radius: 20px;
+      background: rgba(0,224,171,0.06);
+      text-align: center;
     }
 
     .browser-frame {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
       overflow: hidden;
       margin-bottom: 16px;
-      backdrop-filter: blur(12px);
     }
 
     .browser-frame-bar {
@@ -501,7 +308,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.12);
     }
 
     .browser-frame-label {
@@ -516,9 +323,8 @@
       min-height: 80px;
     }
 
-    /* Bad frames */
     .mock-card {
-      border-radius: 6px;
+      border-radius: 8px;
       height: 20px;
       margin-bottom: 8px;
     }
@@ -530,161 +336,139 @@
     }
 
     .mock-block {
-      border-radius: 4px;
+      border-radius: 6px;
       height: 36px;
       flex: 1;
     }
 
-    /* Good - consistent */
     .good .mock-block {
-      background: rgba(0,224,171,0.15);
-      border: 1px solid rgba(0,224,171,0.2);
+      background: rgba(0,224,171,0.12);
+      border: 1px solid rgba(0,224,171,0.18);
     }
     .good .mock-card {
-      background: rgba(0,224,171,0.1);
-      border: 1px solid rgba(0,224,171,0.15);
+      background: rgba(0,224,171,0.08);
+      border: 1px solid rgba(0,224,171,0.12);
     }
 
-    /* Bad - drift */
     .drift-1 .mock-block {
-      background: rgba(245,136,130,0.12);
-      border: 1px solid rgba(245,136,130,0.18);
+      background: rgba(245,136,130,0.1);
+      border: 1px solid rgba(245,136,130,0.15);
     }
     .drift-1 .mock-card {
-      background: rgba(245,136,130,0.08);
-      border: 1px solid rgba(245,136,130,0.12);
+      background: rgba(245,136,130,0.06);
+      border: 1px solid rgba(245,136,130,0.1);
     }
 
     .drift-2 .mock-block {
-      background: rgba(253,163,3,0.12);
-      border: 1px solid rgba(253,163,3,0.18);
+      background: rgba(253,163,3,0.1);
+      border: 1px solid rgba(253,163,3,0.15);
     }
     .drift-2 .mock-card {
-      background: rgba(253,163,3,0.08);
+      background: rgba(253,163,3,0.06);
     }
     .drift-2 .mock-row { gap: 4px; }
     .drift-2 .mock-row:nth-child(2) { gap: 16px; }
 
     .drift-3 .mock-block:nth-child(1) {
-      background: rgba(254,68,116,0.15);
-      border: 1px solid rgba(254,68,116,0.2);
+      background: rgba(254,68,116,0.12);
+      border: 1px solid rgba(254,68,116,0.18);
       border-radius: 0;
       flex: 2;
     }
     .drift-3 .mock-block:nth-child(2) {
-      background: rgba(101,0,198,0.2);
-      border: 1px solid rgba(101,0,198,0.25);
+      background: rgba(101,0,198,0.15);
+      border: 1px solid rgba(101,0,198,0.2);
       border-radius: 12px;
       flex: 0.5;
     }
     .drift-3 .mock-block:nth-child(3) {
-      background: rgba(252,141,13,0.15);
-      border: 2px dashed rgba(252,141,13,0.3);
+      background: rgba(252,141,13,0.12);
+      border: 2px dashed rgba(252,141,13,0.25);
       flex: 1.5;
     }
     .drift-3 .mock-card {
-      background: rgba(216,15,74,0.1);
+      background: rgba(216,15,74,0.08);
       height: 14px;
       border-radius: 0;
     }
     .drift-3 .mock-card:nth-child(2) {
       height: 28px;
       border-radius: 10px;
-      background: rgba(10,243,235,0.1);
+      background: rgba(10,243,235,0.08);
       margin-left: 20px;
     }
 
-    /* ===== WHY SECTION ===== */
-    /* why-section removed — redundant with browser comparison */
+    /* ===== PIPELINE SECTION ===== */
+    .pipeline-section {
+      background: var(--bg);
+      border-top: 1px solid var(--cyan);
+    }
 
-    .stat-desc {
-      font-size: 0.9rem;
+    .pipeline-scroll {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 16px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .pipeline-scroll::-webkit-scrollbar { display: none; }
+
+    .pipeline-card {
+      min-width: 280px;
+      max-width: 300px;
+      flex-shrink: 0;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px 20px;
+      scroll-snap-align: start;
+      transition: transform 0.2s ease;
+    }
+    .pipeline-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .pipeline-card-1 { border-top: 3px solid var(--coral); }
+    .pipeline-card-2 { border-top: 3px solid var(--amber); }
+    .pipeline-card-3 { border-top: 3px solid var(--cyan); }
+    .pipeline-card-4 { border-top: 3px solid var(--green); }
+    .pipeline-card-5 { border-top: 3px solid var(--yellow); }
+    .pipeline-card-6 { border-top: 3px solid var(--orange); }
+    .pipeline-card-7 { border-top: 3px solid var(--purple); }
+
+    .pipeline-num {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .pipeline-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 8px;
+    }
+
+    .pipeline-desc {
+      font-size: 0.85rem;
       color: var(--muted);
       line-height: 1.5;
+      margin-bottom: 16px;
     }
 
-    /* ===== PIPELINE ===== */
-
-    .timeline {
-      position: relative;
-      max-width: 860px;
-      margin: 0 auto;
-    }
-
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 24px;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: linear-gradient(to bottom, var(--coral), var(--amber), var(--cyan));
-      border-radius: 2px;
-    }
-
-    .timeline-step {
-      position: relative;
-      padding-left: 72px;
-      padding-bottom: 48px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      align-items: start;
-    }
-
-    .timeline-step:last-child { padding-bottom: 0; }
-
-    .step-dot {
-      position: absolute;
-      left: 12px;
-      top: 4px;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--bg);
-      z-index: 1;
-    }
-
-    .step-dot-1 { background: var(--coral); }
-    .step-dot-2 { background: var(--amber); }
-    .step-dot-3 { background: var(--cyan); }
-    .step-dot-4 { background: var(--green); }
-    .step-dot-5 { background: var(--yellow); }
-    .step-dot-6 { background: var(--orange); }
-    .step-dot-7 { background: var(--pink); }
-
-    .step-info h3 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .step-info p {
-      font-size: 0.9rem;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .step-visual {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 16px;
-      backdrop-filter: blur(12px);
+    .pipeline-visual {
       font-size: 0.82rem;
     }
 
     .chat-bubble {
-      background: rgba(245,136,130,0.1);
-      border: 1px solid rgba(245,136,130,0.15);
+      background: rgba(245,136,130,0.08);
+      border: 1px solid rgba(245,136,130,0.12);
       border-radius: 10px 10px 10px 2px;
-      padding: 12px 16px;
-      font-size: 0.85rem;
+      padding: 12px 14px;
+      font-size: 0.82rem;
       color: var(--fg);
       line-height: 1.5;
     }
@@ -692,49 +476,48 @@
     .tag-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
 
     .tag {
-      background: rgba(10,243,235,0.1);
-      border: 1px solid rgba(10,243,235,0.2);
+      background: rgba(10,243,235,0.08);
+      border: 1px solid rgba(10,243,235,0.15);
       border-radius: 6px;
-      padding: 4px 10px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.75rem;
+      padding: 4px 8px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
       color: var(--cyan);
     }
 
     .layer-stack {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .layer {
-      padding: 8px 14px;
+      padding: 6px 12px;
       border-radius: 6px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
     }
-    .layer-theme { background: rgba(253,163,3,0.12); color: var(--amber); border: 1px solid rgba(253,163,3,0.2); }
-    .layer-structure { background: rgba(10,243,235,0.1); color: var(--cyan); border: 1px solid rgba(10,243,235,0.18); }
-    .layer-features { background: rgba(0,224,171,0.1); color: var(--green); border: 1px solid rgba(0,224,171,0.18); }
+    .layer-theme { background: rgba(253,163,3,0.1); color: var(--amber); border: 1px solid rgba(253,163,3,0.18); }
+    .layer-structure { background: rgba(10,243,235,0.08); color: var(--cyan); border: 1px solid rgba(10,243,235,0.15); }
+    .layer-features { background: rgba(0,224,171,0.08); color: var(--green); border: 1px solid rgba(0,224,171,0.15); }
 
     .mini-code {
       background: var(--code-bg);
       border-radius: 8px;
       padding: 12px 14px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.72rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
       line-height: 1.7;
       color: var(--muted);
-      border-top: 3px solid;
-      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: 2px solid var(--cyan);
       overflow-x: auto;
       white-space: pre;
     }
-
     .mini-code .k { color: var(--coral); }
     .mini-code .s { color: var(--green); }
     .mini-code .n { color: var(--amber); }
@@ -742,38 +525,35 @@
     .pattern-compose {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
     }
 
     .pattern-chip {
-      background: rgba(252,208,33,0.1);
-      border: 1px solid rgba(252,208,33,0.2);
+      background: rgba(252,208,33,0.08);
+      border: 1px solid rgba(252,208,33,0.18);
       border-radius: 6px;
-      padding: 4px 10px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.72rem;
+      padding: 4px 8px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
       color: var(--yellow);
     }
 
-    .compose-arrow {
-      color: var(--muted);
-      font-size: 1rem;
-    }
+    .compose-arrow { color: var(--muted); font-size: 0.9rem; }
 
     .compose-result {
-      background: rgba(0,224,171,0.1);
-      border: 1px solid rgba(0,224,171,0.18);
+      background: rgba(0,224,171,0.08);
+      border: 1px solid rgba(0,224,171,0.15);
       border-radius: 6px;
-      padding: 4px 12px;
+      padding: 4px 10px;
       color: var(--green);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
     }
 
     .code-label {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: var(--muted);
       margin-top: 8px;
       text-align: right;
@@ -783,150 +563,141 @@
     .check-result {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
-
     .check-pass {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--green);
     }
-
     .check-fail {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.82rem;
-      color: var(--crimson);
+      font-size: 0.8rem;
+      color: var(--pink);
     }
-
     .check-icon {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       font-weight: 700;
       flex-shrink: 0;
     }
+    .check-icon-pass { background: rgba(0,224,171,0.15); }
+    .check-icon-fail { background: rgba(254,68,116,0.15); }
 
-    .check-icon-pass { background: rgba(0,224,171,0.2); }
-    .check-icon-fail { background: rgba(216,15,74,0.2); }
+    /* ===== TOOLS SECTION ===== */
+    .tools-section {
+      background: var(--bg);
+      border-top: 1px solid var(--amber);
+    }
 
-    /* ===== MCP TOOLS ===== */
-
-    .tools-grid {
+    .tools-list {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
       max-width: 880px;
       margin: 0 auto;
     }
 
-    .tool-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 20px;
-      backdrop-filter: blur(12px);
-      transition: border-color 0.3s, box-shadow 0.3s;
+    .tool-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.2s;
     }
-
-    .tool-card:hover {
-      border-color: rgba(10,243,235,0.3);
-      box-shadow: 0 0 20px rgba(10,243,235,0.06);
+    .tool-item:hover {
+      background: rgba(253,163,3,0.04);
     }
 
     .tool-name {
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-family: var(--mono);
       font-size: 0.82rem;
-      color: var(--cyan);
-      margin-bottom: 6px;
+      color: var(--amber);
+      margin-bottom: 4px;
       font-weight: 600;
     }
 
     .tool-desc {
       font-size: 0.82rem;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
-    /* ===== QUICK START ===== */
+    /* ===== QUICK START SECTION ===== */
+    .quickstart-section {
+      background: var(--bg);
+      border-top: 1px solid var(--purple);
+    }
 
     .qs-steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
-      max-width: 900px;
+      display: flex;
+      gap: 24px;
+      max-width: 920px;
       margin: 0 auto 48px;
-      position: relative;
-    }
-
-    .qs-steps::before {
-      content: '';
-      position: absolute;
-      top: 28px;
-      left: 15%;
-      right: 15%;
-      height: 2px;
-      background: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan));
     }
 
     .qs-step {
-      text-align: center;
-      position: relative;
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-top: 3px solid var(--purple);
+      border-radius: 12px;
+      padding: 24px 20px;
+      transition: transform 0.2s;
+    }
+    .qs-step:hover {
+      transform: translateY(-2px);
     }
 
     .qs-num {
-      width: 56px;
-      height: 56px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
-      font-weight: 800;
-      margin: 0 auto 16px;
-      position: relative;
-      z-index: 1;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: var(--purple);
+      color: #fff;
     }
-
-    .qs-num-1 { background: linear-gradient(135deg, var(--coral), var(--pink)); color: #fff; }
-    .qs-num-2 { background: linear-gradient(135deg, var(--amber), var(--orange)); color: var(--bg); }
-    .qs-num-3 { background: linear-gradient(135deg, var(--cyan), var(--green)); color: var(--bg); }
 
     .qs-step h3 {
       font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+      color: var(--fg);
     }
 
     .qs-code-block {
       background: var(--code-bg);
-      border-radius: 10px;
-      padding: 16px;
+      border-radius: 8px;
+      padding: 14px;
       text-align: left;
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-family: var(--mono);
       font-size: 0.7rem;
       line-height: 1.7;
       color: var(--muted);
-      border-top: 3px solid;
-      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: 2px solid var(--purple);
       overflow-x: auto;
+      white-space: pre;
     }
-
-    .qs-code-block { white-space: pre; }
     .qs-code-block .k { color: var(--coral); }
     .qs-code-block .s { color: var(--green); }
 
     .qs-chat {
-      background: rgba(245,136,130,0.08);
-      border: 1px solid rgba(245,136,130,0.12);
-      border-radius: 12px 12px 12px 2px;
+      background: rgba(245,136,130,0.06);
+      border: 1px solid rgba(245,136,130,0.1);
+      border-radius: 10px 10px 10px 2px;
       padding: 14px 16px;
       font-size: 0.82rem;
       text-align: left;
@@ -936,15 +707,15 @@
 
     .qs-output {
       background: var(--code-bg);
-      border-radius: 10px;
+      border-radius: 8px;
       padding: 14px;
       text-align: left;
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-family: var(--mono);
       font-size: 0.68rem;
       line-height: 1.7;
       color: var(--muted);
-      border-top: 3px solid;
-      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: 2px solid var(--purple);
       white-space: pre;
       overflow-x: auto;
     }
@@ -978,42 +749,41 @@
       transition: color 0.2s, background 0.2s;
       border-radius: 8px 8px 0 0;
     }
-
     .tab-btn.active {
       background: var(--code-bg);
-      color: var(--cyan);
+      color: var(--purple);
       border-color: var(--card-border);
     }
 
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     .tab-code {
       background: var(--code-bg);
       border: 1px solid var(--card-border);
       border-radius: 0 8px 8px 8px;
       padding: 20px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-family: var(--mono);
       font-size: 0.75rem;
       line-height: 1.7;
       color: var(--muted);
       overflow-x: auto;
+      white-space: pre;
     }
-    .tab-code { white-space: pre; }
     .tab-code .k { color: var(--coral); }
     .tab-code .s { color: var(--green); }
 
-    /* ===== PACKAGES ===== */
+    /* ===== PACKAGES SECTION ===== */
+    .packages-section {
+      background: var(--bg);
+      border-top: 1px solid var(--green);
+    }
 
     .packages-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
-      max-width: 720px;
+      max-width: 780px;
       margin: 0 auto;
     }
 
@@ -1022,19 +792,18 @@
       border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 24px;
-      backdrop-filter: blur(12px);
-      transition: border-color 0.3s;
+      transition: transform 0.2s, border-color 0.2s;
     }
-
     .pkg-card:hover {
-      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+      border-color: rgba(0,224,171,0.2);
     }
 
     .pkg-name {
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-family: var(--mono);
       font-size: 0.88rem;
       font-weight: 600;
-      color: var(--fg);
+      color: var(--green);
       margin-bottom: 6px;
     }
 
@@ -1045,6 +814,10 @@
     }
 
     /* ===== WORKS WITH ===== */
+    .works-section {
+      background: var(--bg);
+      padding: 80px 0;
+    }
 
     .works-row {
       display: flex;
@@ -1056,54 +829,50 @@
     }
 
     .works-pill {
-      background: rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
       padding: 8px 20px;
       font-size: 0.85rem;
       color: var(--muted);
       font-weight: 500;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .works-pill:hover {
+      border-color: rgba(0,224,171,0.3);
+      color: var(--fg);
     }
 
     /* ===== BOTTOM CTA ===== */
     .bottom-cta {
-      padding: 80px 24px;
-      background: linear-gradient(135deg, var(--coral), var(--amber), var(--cyan));
+      padding: 100px 24px;
+      background: var(--bg);
       text-align: center;
+      position: relative;
+    }
+
+    .bottom-cta-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan), var(--coral));
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
     }
 
     .bottom-cta h2 {
-      font-size: clamp(1.6rem, 4vw, 2.2rem);
-      font-weight: 800;
-      color: var(--bg);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--fg);
       margin-bottom: 12px;
     }
 
     .bottom-cta p {
       font-size: 1.05rem;
-      color: rgba(1,14,46,0.7);
+      color: var(--muted);
       margin-bottom: 32px;
-    }
-
-    .btn-dark {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 32px;
-      background: var(--bg);
-      color: var(--fg);
-      font-weight: 600;
-      font-size: 1rem;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .btn-dark:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(1,14,46,0.3);
-      color: var(--fg);
     }
 
     /* ===== FOOTER ===== */
@@ -1115,10 +884,10 @@
     }
 
     .footer-logo {
-      width: 32px;
+      width: 28px;
       height: auto;
       margin-bottom: 16px;
-      opacity: 0.6;
+      opacity: 0.5;
     }
 
     .footer-links {
@@ -1127,126 +896,63 @@
       gap: 24px;
       margin-bottom: 16px;
     }
-
     .footer-links a {
       font-size: 0.85rem;
       color: var(--muted);
     }
-    .footer-links a:hover { color: var(--cyan); }
+    .footer-links a:hover { color: var(--fg); }
 
     .footer-copy {
       font-size: 0.78rem;
-      color: rgba(139,147,168,0.5);
+      color: rgba(113,113,122,0.5);
     }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-      .problem-grid {
-        grid-template-columns: 1fr;
-        gap: 32px;
-      }
-
-      .stat-cards {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-
-      .timeline-step {
-        grid-template-columns: 1fr;
-      }
-
-      .tools-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .qs-steps {
-        grid-template-columns: 1fr;
-        gap: 24px;
-      }
-      .qs-steps::before { display: none; }
-
-      .packages-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .timeline::before {
-        left: 16px;
-      }
-
-      .timeline-step {
-        padding-left: 56px;
-      }
-
-      .step-dot {
-        left: 4px;
-      }
-
-      section {
-        padding: 56px 0;
-      }
+      .problem-grid { grid-template-columns: 1fr; gap: 32px; }
+      .consistency-bar, .consistency-badge { display: none; }
+      .tools-list { grid-template-columns: 1fr; }
+      .qs-steps { flex-direction: column; }
+      .packages-grid { grid-template-columns: 1fr; }
+      .section { padding: 80px 0; }
+      .section-pad-top { padding-top: 120px; }
+      .tab-buttons { flex-wrap: wrap; }
     }
 
     @media (max-width: 480px) {
-      .hero h1 {
-        font-size: 1.7rem;
-      }
-      .tab-buttons {
-        flex-wrap: wrap;
-      }
+      .hero h1 { font-size: 2rem; }
     }
 
-    /* ===== STAGGERED REVEALS ===== */
-    .reveal-delay-1 { transition-delay: 0.1s; }
-    .reveal-delay-2 { transition-delay: 0.2s; }
-    .reveal-delay-3 { transition-delay: 0.3s; }
-    .reveal-delay-4 { transition-delay: 0.4s; }
-    .reveal-delay-5 { transition-delay: 0.5s; }
-    .reveal-delay-6 { transition-delay: 0.6s; }
-    .reveal-delay-7 { transition-delay: 0.7s; }
+    @media (min-width: 1200px) {
+      .packages-grid { grid-template-columns: repeat(4, 1fr); }
+    }
   </style>
 </head>
 <body>
 
 <!-- ==================== HERO ==================== -->
 <section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-particles">
-    <div class="particle" style="top:15%;left:10%;background:var(--coral);animation-delay:0s"></div>
-    <div class="particle" style="top:25%;left:85%;background:var(--cyan);animation-delay:1.5s"></div>
-    <div class="particle" style="top:60%;left:20%;background:var(--amber);animation-delay:3s"></div>
-    <div class="particle" style="top:70%;left:75%;background:var(--green);animation-delay:4.5s"></div>
-    <div class="particle" style="top:40%;left:50%;background:var(--yellow);animation-delay:2s"></div>
-    <div class="particle" style="top:80%;left:40%;background:var(--coral);animation-delay:5s"></div>
-    <div class="particle" style="top:10%;left:60%;background:var(--cyan);animation-delay:1s"></div>
-    <div class="particle" style="top:50%;left:90%;background:var(--amber);animation-delay:3.5s"></div>
-  </div>
   <div class="hero-content">
-    <div class="hero-logo-wrap">
-      <div class="logo-glow"></div>
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-      <div class="orb orb-4"></div>
-      <img src="logo-portrait.svg" alt="Decantr">
-    </div>
-    <h1><span class="gradient-text">Design intelligence</span> for AI-generated UI</h1>
-    <p class="hero-sub">Your AI generates code. Decantr makes sure it's actually good.</p>
+    <img src="logo-portrait.svg" alt="Decantr" class="hero-logo">
+    <p class="hero-brand">Decantr</p>
+    <h1>Design intelligence<br>for AI-generated UI</h1>
+    <p class="hero-tagline">Your AI generates code. Decantr makes sure it's actually good.</p>
     <div class="hero-ctas">
-      <a href="#quickstart" class="btn-primary">Get Started <span aria-hidden="true">&rarr;</span></a>
+      <a href="#quickstart" class="btn-primary">Get Started</a>
       <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
     </div>
+    <p class="hero-license">Free and open source. MIT licensed.</p>
   </div>
+  <div class="shimmer-line"></div>
 </section>
 
-<!-- Wave: Hero → Problem (coral glow fading in) -->
 <!-- ==================== PROBLEM ==================== -->
-<section id="problem" class="problem-section">
+<section id="problem" class="section section-clip-a section-pad-top problem-section">
   <div class="container">
     <h2 class="section-heading reveal">Every AI-generated app has an expiration date</h2>
     <p class="section-sub reveal">AI coding assistants have no memory of design intent. Every prompt is a fresh start. By prompt 10, your app looks like it was built by 10 different people.</p>
 
     <div class="problem-grid">
-      <!-- WITHOUT -->
       <div class="reveal">
         <p class="problem-col-label label-bad">Without Decantr</p>
 
@@ -1306,108 +1012,104 @@
         </div>
       </div>
 
-      <!-- WITH -->
-      <div class="reveal reveal-delay-2">
+      <div class="reveal reveal-d2">
         <p class="problem-col-label label-good">With Decantr</p>
 
         <div class="good-col-wrap">
-        <div class="consistency-bar"></div>
-        <div class="consistency-badge">zero drift</div>
+          <div class="consistency-bar"></div>
+          <div class="consistency-badge">zero drift</div>
 
-        <div class="browser-frame good">
-          <div class="browser-frame-bar">
-            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-            <span class="browser-frame-label">Prompt 1</span>
-          </div>
-          <div class="browser-frame-body">
-            <div class="mock-card" style="width:40%"></div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
+          <div class="browser-frame good">
+            <div class="browser-frame-bar">
+              <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+              <span class="browser-frame-label">Prompt 1</span>
             </div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
+            <div class="browser-frame-body">
+              <div class="mock-card" style="width:40%"></div>
+              <div class="mock-row">
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+              </div>
+              <div class="mock-row">
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="browser-frame good">
-          <div class="browser-frame-bar">
-            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-            <span class="browser-frame-label">Prompt 5</span>
-          </div>
-          <div class="browser-frame-body">
-            <div class="mock-card" style="width:40%"></div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
+          <div class="browser-frame good">
+            <div class="browser-frame-bar">
+              <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+              <span class="browser-frame-label">Prompt 5</span>
             </div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
+            <div class="browser-frame-body">
+              <div class="mock-card" style="width:40%"></div>
+              <div class="mock-row">
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+              </div>
+              <div class="mock-row">
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="browser-frame good">
-          <div class="browser-frame-bar">
-            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
-            <span class="browser-frame-label">Prompt 10</span>
-          </div>
-          <div class="browser-frame-body">
-            <div class="mock-card" style="width:40%"></div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
+          <div class="browser-frame good">
+            <div class="browser-frame-bar">
+              <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+              <span class="browser-frame-label">Prompt 10</span>
             </div>
-            <div class="mock-row">
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
-              <div class="mock-block"></div>
+            <div class="browser-frame-body">
+              <div class="mock-card" style="width:40%"></div>
+              <div class="mock-row">
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+              </div>
+              <div class="mock-row">
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+                <div class="mock-block"></div>
+              </div>
             </div>
           </div>
-        </div>
+
+          <div style="text-align:center">
+            <span class="zero-drift-pill">Zero drift</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Wave: Problem → Pipeline (coral fading out, cyan fading in) -->
 <!-- ==================== PIPELINE ==================== -->
-<section class="pipeline-section">
+<section class="section section-clip-b section-pad-top pipeline-section">
   <div class="container">
     <h2 class="section-heading reveal">From intent to production-quality code</h2>
     <p class="section-sub reveal">The Design Pipeline transforms what you say into what you see -- in seven stages.</p>
 
-    <div class="timeline">
+    <div class="pipeline-scroll reveal">
 
-      <!-- Step 1: Intent -->
-      <div class="timeline-step reveal reveal-delay-1">
-        <div class="step-dot step-dot-1">1</div>
-        <div class="step-info">
-          <h3>Intent</h3>
-          <p>You describe what you want to build, in plain language. No config files. No setup.</p>
-        </div>
-        <div class="step-visual">
+      <div class="pipeline-card pipeline-card-1">
+        <div class="pipeline-num">01</div>
+        <div class="pipeline-name">Intent</div>
+        <div class="pipeline-desc">You describe what you want to build, in plain language. No config files. No setup.</div>
+        <div class="pipeline-visual">
           <div class="chat-bubble">Build me a SaaS dashboard with analytics and user management</div>
         </div>
       </div>
 
-      <!-- Step 2: Interpret -->
-      <div class="timeline-step reveal reveal-delay-2">
-        <div class="step-dot step-dot-2">2</div>
-        <div class="step-info">
-          <h3>Interpret</h3>
-          <p>Your intent is parsed into structured signals: app type, features, and design personality.</p>
-        </div>
-        <div class="step-visual">
+      <div class="pipeline-card pipeline-card-2">
+        <div class="pipeline-num">02</div>
+        <div class="pipeline-name">Interpret</div>
+        <div class="pipeline-desc">Your intent is parsed into structured signals: app type, features, and design personality.</div>
+        <div class="pipeline-visual">
           <div class="tag-list">
             <span class="tag">archetype: saas-dashboard</span>
             <span class="tag">features: analytics, auth</span>
@@ -1416,14 +1118,11 @@
         </div>
       </div>
 
-      <!-- Step 3: Decompose -->
-      <div class="timeline-step reveal reveal-delay-3">
-        <div class="step-dot step-dot-3">3</div>
-        <div class="step-info">
-          <h3>Decompose</h3>
-          <p>The structured intent is separated into three independent layers that can evolve separately.</p>
-        </div>
-        <div class="step-visual">
+      <div class="pipeline-card pipeline-card-3">
+        <div class="pipeline-num">03</div>
+        <div class="pipeline-name">Decompose</div>
+        <div class="pipeline-desc">The structured intent is separated into three independent layers that can evolve separately.</div>
+        <div class="pipeline-visual">
           <div class="layer-stack">
             <div class="layer layer-theme">Theme</div>
             <div class="layer layer-structure">Structure</div>
@@ -1432,14 +1131,11 @@
         </div>
       </div>
 
-      <!-- Step 4: Specify -->
-      <div class="timeline-step reveal reveal-delay-4">
-        <div class="step-dot step-dot-4">4</div>
-        <div class="step-info">
-          <h3>Specify</h3>
-          <p>A machine-readable spec is written -- your decantr.essence.json -- the single source of truth.</p>
-        </div>
-        <div class="step-visual">
+      <div class="pipeline-card pipeline-card-4">
+        <div class="pipeline-num">04</div>
+        <div class="pipeline-name">Specify</div>
+        <div class="pipeline-desc">A machine-readable spec is written -- your decantr.essence.json -- the single source of truth.</div>
+        <div class="pipeline-visual">
           <div class="mini-code"><span class="k">{</span>
   <span class="s">"theme"</span>: <span class="s">"clean"</span>,
   <span class="s">"personality"</span>: <span class="s">"professional"</span>,
@@ -1451,14 +1147,11 @@
         </div>
       </div>
 
-      <!-- Step 5: Compose -->
-      <div class="timeline-step reveal reveal-delay-5">
-        <div class="step-dot step-dot-5">5</div>
-        <div class="step-info">
-          <h3>Compose</h3>
-          <p>Patterns are resolved and composed into complete page layouts, ready for code generation.</p>
-        </div>
-        <div class="step-visual">
+      <div class="pipeline-card pipeline-card-5">
+        <div class="pipeline-num">05</div>
+        <div class="pipeline-name">Compose</div>
+        <div class="pipeline-desc">Patterns are resolved and composed into complete page layouts, ready for code generation.</div>
+        <div class="pipeline-visual">
           <div class="pattern-compose">
             <span class="pattern-chip">kpi-grid</span>
             <span class="compose-arrow">+</span>
@@ -1471,14 +1164,11 @@
         </div>
       </div>
 
-      <!-- Step 6: Generate -->
-      <div class="timeline-step reveal reveal-delay-6">
-        <div class="step-dot step-dot-6">6</div>
-        <div class="step-info">
-          <h3>Generate</h3>
-          <p>Your AI assistant generates code using the resolved composition. Decantr doesn't generate code -- your AI does, better.</p>
-        </div>
-        <div class="step-visual">
+      <div class="pipeline-card pipeline-card-6">
+        <div class="pipeline-num">06</div>
+        <div class="pipeline-name">Generate</div>
+        <div class="pipeline-desc">Your AI assistant generates code using the resolved composition. Decantr doesn't generate code -- your AI does, better.</div>
+        <div class="pipeline-visual">
           <div class="mini-code"><span class="k">export default</span> <span class="n">function</span> <span class="s">Dashboard</span>() {
   <span class="k">return</span> (
     &lt;<span class="n">div</span> <span class="s">className</span>=<span class="s">"grid gap-6"</span>&gt;
@@ -1491,14 +1181,11 @@
         </div>
       </div>
 
-      <!-- Step 7: Guard -->
-      <div class="timeline-step reveal reveal-delay-7">
-        <div class="step-dot step-dot-7">7</div>
-        <div class="step-info">
-          <h3>Guard</h3>
-          <p>Every change is validated against the spec. Drift is detected before it ships.</p>
-        </div>
-        <div class="step-visual">
+      <div class="pipeline-card pipeline-card-7">
+        <div class="pipeline-num">07</div>
+        <div class="pipeline-name">Guard</div>
+        <div class="pipeline-desc">Every change is validated against the spec. Drift is detected before it ships.</div>
+        <div class="pipeline-visual">
           <div class="check-result">
             <div class="check-pass">
               <span class="check-icon check-icon-pass">&#10003;</span>
@@ -1520,51 +1207,50 @@
   </div>
 </section>
 
-<!-- Wave: Pipeline → Tools (cyan fading out, amber fading in) -->
 <!-- ==================== MCP TOOLS ==================== -->
-<section class="tools-section" id="tools">
+<section class="section section-clip-a section-pad-top tools-section" id="tools">
   <div class="container">
     <h2 class="section-heading reveal">10 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
 
-    <div class="tools-grid">
-      <div class="tool-card reveal reveal-delay-1">
+    <div class="tools-list reveal">
+      <div class="tool-item">
         <div class="tool-name">decantr_create_essence</div>
         <p class="tool-desc">Generate a design spec from a description</p>
       </div>
-      <div class="tool-card reveal reveal-delay-1">
+      <div class="tool-item">
         <div class="tool-name">decantr_suggest_patterns</div>
         <p class="tool-desc">Get pattern recommendations for any page</p>
       </div>
-      <div class="tool-card reveal reveal-delay-2">
+      <div class="tool-item">
         <div class="tool-name">decantr_resolve_pattern</div>
         <p class="tool-desc">Full pattern details with layout specs</p>
       </div>
-      <div class="tool-card reveal reveal-delay-2">
+      <div class="tool-item">
         <div class="tool-name">decantr_resolve_archetype</div>
         <p class="tool-desc">App templates with page maps</p>
       </div>
-      <div class="tool-card reveal reveal-delay-3">
+      <div class="tool-item">
         <div class="tool-name">decantr_resolve_blueprint</div>
         <p class="tool-desc">Composed templates with full structure</p>
       </div>
-      <div class="tool-card reveal reveal-delay-3">
+      <div class="tool-item">
         <div class="tool-name">decantr_resolve_recipe</div>
         <p class="tool-desc">Visual decoration rules and spatial hints</p>
       </div>
-      <div class="tool-card reveal reveal-delay-4">
+      <div class="tool-item">
         <div class="tool-name">decantr_check_drift</div>
         <p class="tool-desc">Detect design spec violations</p>
       </div>
-      <div class="tool-card reveal reveal-delay-4">
+      <div class="tool-item">
         <div class="tool-name">decantr_validate</div>
         <p class="tool-desc">Validate Essence against the schema</p>
       </div>
-      <div class="tool-card reveal reveal-delay-5">
+      <div class="tool-item">
         <div class="tool-name">decantr_read_essence</div>
         <p class="tool-desc">Read the current design spec</p>
       </div>
-      <div class="tool-card reveal reveal-delay-5">
+      <div class="tool-item">
         <div class="tool-name">decantr_search_registry</div>
         <p class="tool-desc">Search patterns, archetypes, themes</p>
       </div>
@@ -1572,16 +1258,15 @@
   </div>
 </section>
 
-<!-- Wave: Tools → Quick Start (amber fading out, purple fading in) -->
 <!-- ==================== QUICK START ==================== -->
-<section class="quickstart-section" id="quickstart">
+<section class="section section-clip-b section-pad-top quickstart-section" id="quickstart">
   <div class="container">
     <h2 class="section-heading reveal">Get started in 30 seconds</h2>
     <p class="section-sub reveal">Three steps. No build tools. No configuration rabbit holes.</p>
 
     <div class="qs-steps">
-      <div class="qs-step reveal reveal-delay-1">
-        <div class="qs-num qs-num-1">1</div>
+      <div class="qs-step reveal reveal-d1">
+        <div class="qs-num">1</div>
         <h3>Add Decantr to your AI</h3>
         <div class="qs-code-block"><span class="k">{</span>
   <span class="s">"mcpServers"</span>: <span class="k">{</span>
@@ -1593,14 +1278,14 @@
 <span class="k">}</span></div>
       </div>
 
-      <div class="qs-step reveal reveal-delay-2">
-        <div class="qs-num qs-num-2">2</div>
+      <div class="qs-step reveal reveal-d2">
+        <div class="qs-num">2</div>
         <h3>Describe your project</h3>
         <div class="qs-chat">Build me a SaaS analytics dashboard with dark theme, KPI cards, and chart grids</div>
       </div>
 
-      <div class="qs-step reveal reveal-delay-3">
-        <div class="qs-num qs-num-3">3</div>
+      <div class="qs-step reveal reveal-d3">
+        <div class="qs-num">3</div>
         <h3>Get consistent code</h3>
         <div class="qs-output"><span class="c">// Generated with design intelligence</span>
 <span class="k">export default</span> <span class="s">function</span> Dashboard() {
@@ -1653,27 +1338,26 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
   </div>
 </section>
 
-<!-- Wave: Quick Start → Packages (purple fading out, green fading in) -->
 <!-- ==================== PACKAGES ==================== -->
-<section class="packages-section" id="packages">
+<section class="section section-clip-a section-pad-top packages-section" id="packages">
   <div class="container">
     <h2 class="section-heading reveal">Open source. MIT licensed.</h2>
     <p class="section-sub reveal">Four packages, one mission: make AI-generated UI not suck.</p>
 
     <div class="packages-grid">
-      <div class="pkg-card reveal reveal-delay-1">
+      <div class="pkg-card reveal reveal-d1">
         <div class="pkg-name">@decantr/mcp-server</div>
         <p class="pkg-desc">MCP server exposing 10 design intelligence tools to AI assistants</p>
       </div>
-      <div class="pkg-card reveal reveal-delay-2">
+      <div class="pkg-card reveal reveal-d2">
         <div class="pkg-name">@decantr/essence-spec</div>
         <p class="pkg-desc">Schema, validator, guard rules, and TypeScript types for the Essence format</p>
       </div>
-      <div class="pkg-card reveal reveal-delay-3">
+      <div class="pkg-card reveal reveal-d3">
         <div class="pkg-name">@decantr/core</div>
         <p class="pkg-desc">Design Pipeline IR engine -- the brain behind intent-to-composition</p>
       </div>
-      <div class="pkg-card reveal reveal-delay-4">
+      <div class="pkg-card reveal reveal-d4">
         <div class="pkg-name">@decantr/registry</div>
         <p class="pkg-desc">Content resolver for patterns, archetypes, themes, and recipes</p>
       </div>
@@ -1700,9 +1384,10 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
 
 <!-- ==================== BOTTOM CTA ==================== -->
 <div class="bottom-cta">
+  <div class="bottom-cta-line"></div>
   <h2>Stop generating UI slop.</h2>
   <p>Add Decantr to your AI assistant in 30 seconds.</p>
-  <a href="#quickstart" class="btn-dark">Get Started <span aria-hidden="true">&rarr;</span></a>
+  <a href="#quickstart" class="btn-primary">Get Started</a>
 </div>
 
 <!-- ==================== FOOTER ==================== -->
