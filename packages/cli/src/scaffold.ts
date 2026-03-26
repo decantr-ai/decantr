@@ -67,14 +67,15 @@ const CLI_VERSION = '1.0.0';
  * Load a template file from the templates directory.
  */
 function loadTemplate(name: string): string {
-  const templatePath = join(__dirname, 'templates', name);
-  if (existsSync(templatePath)) {
-    return readFileSync(templatePath, 'utf-8');
+  // When running from dist/, templates are at ../src/templates/
+  const fromDist = join(__dirname, '..', 'src', 'templates', name);
+  if (existsSync(fromDist)) {
+    return readFileSync(fromDist, 'utf-8');
   }
-  // Fallback for dev (when running from src)
-  const srcPath = join(__dirname, '..', 'src', 'templates', name);
-  if (existsSync(srcPath)) {
-    return readFileSync(srcPath, 'utf-8');
+  // When running from src/ in dev, templates are at ./templates/
+  const fromSrc = join(__dirname, 'templates', name);
+  if (existsSync(fromSrc)) {
+    return readFileSync(fromSrc, 'utf-8');
   }
   throw new Error(`Template not found: ${name}`);
 }
