@@ -204,12 +204,17 @@ describe('buildPageIR', () => {
     ]);
     const wiring: IRWiring = {
       signals: [
-        { name: 'pageSearch', setter: 'setPageSearch', init: "''" },
-        { name: 'pageStatus', setter: 'setPageStatus', init: "'all'" },
+        { name: 'pageSearch', setter: 'setPageSearch', init: "''", hookType: 'search' },
+        { name: 'pageStatus', setter: 'setPageStatus', init: "'all'", hookType: 'filter' },
       ],
       props: {
         'filter-bar': { onSearch: 'setPageSearch', onCategory: 'setPageStatus' },
         'data-table': { search: 'pageSearch', status: 'pageStatus' },
+      },
+      hooks: ['search', 'filter'],
+      hookProps: {
+        'filter-bar': { search: 'search', filters: 'filters' },
+        'data-table': { search: 'search', filters: 'filters' },
       },
     };
 

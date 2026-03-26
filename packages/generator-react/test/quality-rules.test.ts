@@ -302,9 +302,13 @@ describe('React Quality Rules', () => {
     it('emit-page with wiring has zero violations', () => {
       const wiring: IRWiring = {
         signals: [
-          { name: 'search', setter: 'setSearch', init: "''" },
+          { name: 'search', setter: 'setSearch', init: "''", hookType: 'search' },
         ],
         props: {},
+        hooks: ['search'],
+        hookProps: {
+          'data-table': { search: 'search' },
+        },
       };
       const pattern = makePatternNode('data-table', {
         card: null,

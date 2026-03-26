@@ -1,8 +1,9 @@
-import type { GeneratorPlugin, IRAppNode, IRPageNode, GeneratedFile } from '@decantr/generator-core';
+import type { GeneratorPlugin, IRAppNode, IRPageNode, IRHookType, GeneratedFile } from '@decantr/generator-core';
 import { emitApp } from './emit-app.js';
 import { emitAuth } from './emit-auth.js';
 import { emitTheme } from './emit-theme.js';
 import { emitPage } from './emit-page.js';
+import { emitHooks } from './emit-hooks.js';
 import {
   emitPackageJson, emitTailwindConfig, emitViteConfig,
   emitGlobalsCss, emitUtils, emitTsConfig, emitIndexHtml, emitNotFound,
@@ -33,6 +34,22 @@ export function createReactPlugin(): GeneratorPlugin {
 
       // AUTH: Auth scaffolding (AuthContext, LoginPage, ProtectedRoute)
       files.push(...emitAuth(app));
+
+      // AUTO: Collect all hook types needed across pages, then emit hook files
+      const allHookTypes = new Set<IRHookType>();
+      for (const child of app.children) {
+        if (child.type === 'page') {
+          const page = child as IRPageNode;
+          if (page.wiring?.hooks) {
+            for (const h of page.wiring.hooks) {
+              allHookTypes.add(h);
+            }
+          }
+        }
+      }
+      if (allHookTypes.size > 0) {
+        files.push(...emitHooks(allHookTypes));
+      }
 
       // Pages
       for (const child of app.children) {

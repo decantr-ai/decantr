@@ -52,9 +52,9 @@ describe('E2E: React target', () => {
     expect(overview.content).toContain('className=');
     expect(overview.content).toContain('grid');
 
-    // Verify React wiring uses useState
-    expect(overview.content).toContain('useState');
-    expect(overview.content).toContain('pageSearch');
+    // AUTO: Verify React wiring uses custom hooks instead of raw useState
+    expect(overview.content).toContain('usePageSearch');
+    expect(overview.content).toContain('const search = usePageSearch()');
 
     // Verify patterns are generated (even unresolved ones get placeholders)
     expect(overview.content).toContain('function KpiGrid');
@@ -83,9 +83,12 @@ describe('E2E: React target', () => {
       dryRun: true,
     });
 
-    // Both should produce the same number of page files
-    const decantrPages = decantrResult.files.filter(f => f.path.startsWith('src/pages/') && !f.path.includes('not-found')).length;
-    const reactPages = reactResult.files.filter(f => f.path.startsWith('src/pages/') && !f.path.includes('not-found')).length;
+    // AUTO: Both should produce the same number of essence-defined page files
+    // (exclude not-found and auth pages like LoginPage which are target-specific)
+    const essencePageIds = new Set(decantrResult.ir.routes.map(r => r.pageId));
+    const extractPageId = (filePath: string) => filePath.replace('src/pages/', '').replace(/\.(tsx|js)$/, '');
+    const decantrPages = decantrResult.files.filter(f => f.path.startsWith('src/pages/') && essencePageIds.has(extractPageId(f.path))).length;
+    const reactPages = reactResult.files.filter(f => f.path.startsWith('src/pages/') && essencePageIds.has(extractPageId(f.path))).length;
     expect(decantrPages).toBe(reactPages);
 
     // Both should share the same IR (routes and theme)

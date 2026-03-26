@@ -19,16 +19,23 @@ export interface IRSpatial {
   };
 }
 
+// AUTO: Hook types for custom hook generation in wired pages
+export type IRHookType = 'search' | 'filter' | 'selection' | 'sort';
+
 export interface IRWiringSignal {
   name: string;           // e.g. "pageSearch"
   setter: string;         // e.g. "setPageSearch"
   init: string;           // e.g. "''" or "'all'"
+  hookType: IRHookType;   // e.g. "search" or "filter"
 }
 
 export interface IRWiring {
   signals: IRWiringSignal[];
   props: Record<string, Record<string, string>>;
   // key = pattern alias, value = { propName: signalOrSetter }
+  // AUTO: hook-based wiring for rich custom hook generation
+  hooks: IRHookType[];
+  hookProps: Record<string, Record<string, string>>;
 }
 
 export interface IRPatternMeta {

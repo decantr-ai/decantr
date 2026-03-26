@@ -149,29 +149,39 @@ describe('emitPage (React)', () => {
     expect(result.content).toContain('col-span-1');
   });
 
-  it('emits useState hooks for wiring signals', () => {
+  it('emits custom hooks for wiring signals with hook types', () => {
     const wiring: IRWiring = {
       signals: [
-        { name: 'pageSearch', setter: 'setPageSearch', init: "''" },
-        { name: 'pageStatus', setter: 'setPageStatus', init: "'all'" },
+        { name: 'pageSearch', setter: 'setPageSearch', init: "''", hookType: 'search' },
+        { name: 'pageStatus', setter: 'setPageStatus', init: "'all'", hookType: 'filter' },
       ],
       props: {},
+      hooks: ['search', 'filter'],
+      hookProps: {
+        'kpi-grid': { search: 'search', filters: 'filters' },
+      },
     };
     const pattern = makePatternNode('kpi-grid', { card: null });
     const page = makePage('overview', [pattern], wiring);
     const result = emitPage(page);
 
-    expect(result.content).toContain('useState');
-    expect(result.content).toContain("const [pageSearch, setPageSearch] = useState('')");
+    expect(result.content).toContain('usePageSearch');
+    expect(result.content).toContain('usePageFilters');
+    expect(result.content).toContain('const search = usePageSearch()');
+    expect(result.content).toContain('const filters = usePageFilters()');
   });
 
-  it('passes wire props to pattern components as JSX props', () => {
+  it('passes hook variables as props to wired pattern components', () => {
     const wiring: IRWiring = {
       signals: [
-        { name: 'pageSearch', setter: 'setPageSearch', init: "''" },
+        { name: 'pageSearch', setter: 'setPageSearch', init: "''", hookType: 'search' },
       ],
       props: {
         'data-table': { search: 'pageSearch' },
+      },
+      hooks: ['search'],
+      hookProps: {
+        'data-table': { search: 'search' },
       },
     };
     const dataTable = makePatternNode('data-table', {
@@ -181,7 +191,7 @@ describe('emitPage (React)', () => {
     const page = makePage('overview', [dataTable], wiring);
     const result = emitPage(page);
 
-    expect(result.content).toContain('search={pageSearch}');
+    expect(result.content).toContain('search={search}');
   });
 
   it('collects correct shadcn imports for used components', () => {

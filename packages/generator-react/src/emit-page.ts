@@ -1,10 +1,11 @@
 import type {
-  IRPageNode, IRPatternNode, IRGridNode, IRNode,
+  IRPageNode, IRPatternNode, IRGridNode, IRNode, IRHookType,
   GeneratedFile,
 } from '@decantr/generator-core';
 import { gridClasses, spanClass, surfaceClasses, gapClass } from './tailwind.js';
 import { collectShadcnImports, resolvePatternTemplate } from './shadcn.js';
-import { renderReactImports, basePageImports, wiringImports, mergeReactImports } from './imports.js';
+import { renderReactImports, basePageImports, mergeReactImports } from './imports.js';
+import { HOOK_REGISTRY } from './emit-hooks.js';
 
 function pascalCase(str: string): string {
   return str.split(/[-_]/).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
@@ -15,17 +16,49 @@ function indent(code: string, level: number): string {
   return code.split('\n').map(l => l ? pad + l : l).join('\n');
 }
 
-function buildPatternComponent(node: IRPatternNode, densityGap: string): string {
-  const funcName = pascalCase(node.pattern.alias);
-  const hasWireProps = node.wireProps && Object.keys(node.wireProps).length > 0;
+// AUTO: Determine if this page uses hook-based wiring (has hooks array)
+function useHookWiring(page: IRPageNode): boolean {
+  return !!(page.wiring && page.wiring.hooks && page.wiring.hooks.length > 0);
+}
 
-  // Build props interface
-  let propsType = '';
+// AUTO: Build typed props interface for a pattern using hook types
+function buildHookPropsInterface(
+  funcName: string,
+  hookPropEntries: Record<string, string>,
+): string {
+  const fields = Object.entries(hookPropEntries)
+    .map(([propName, hookVar]) => {
+      // Find the hook type from the variable name
+      const meta = Object.values(HOOK_REGISTRY).find(m => m.variableName === hookVar);
+      if (meta) {
+        return `  ${propName}?: ${meta.typeName};`;
+      }
+      return `  ${propName}?: any;`;
+    })
+    .join('\n');
+  return `interface ${funcName}Props {\n${fields}\n}`;
+}
+
+function buildPatternComponent(
+  node: IRPatternNode,
+  densityGap: string,
+  hookPropEntries: Record<string, string> | null,
+): string {
+  const funcName = pascalCase(node.pattern.alias);
+  const hasHookProps = hookPropEntries && Object.keys(hookPropEntries).length > 0;
+  const hasWireProps = !hasHookProps && node.wireProps && Object.keys(node.wireProps).length > 0;
+
+  // AUTO: Build typed props for hook-based wiring
+  let propsInterface = '';
   let propsParam = '';
-  if (hasWireProps) {
+  if (hasHookProps) {
+    propsInterface = buildHookPropsInterface(funcName, hookPropEntries!);
+    const destructured = Object.keys(hookPropEntries!).join(', ');
+    propsParam = `{ ${destructured} }: ${funcName}Props`;
+  } else if (hasWireProps) {
     const entries = Object.keys(node.wireProps!).map(k => `${k}?: any`).join('; ');
-    propsType = `{ ${entries} }`;
-    propsParam = `{ ${Object.keys(node.wireProps!).join(', ')} }: ${propsType}`;
+    const propsType = `{ ${entries} }`;
+    propsParam = `props: ${propsType}`;
   }
 
   // AUTO: Check for pattern-specific shadcn template first
@@ -58,21 +91,40 @@ function buildPatternComponent(node: IRPatternNode, densityGap: string): string 
     ].join('\n');
   }
 
-  return [
-    `function ${funcName}(${propsParam ? `props: ${propsType}` : ''}) {`,
-    hasWireProps ? `  const { ${Object.keys(node.wireProps!).join(', ')} } = props;` : '',
+  const lines: string[] = [];
+  if (propsInterface) {
+    lines.push(propsInterface);
+    lines.push('');
+  }
+  lines.push(
+    `function ${funcName}(${propsParam}) {`,
+    ...(hasWireProps && !hasHookProps
+      ? [`  const { ${Object.keys(node.wireProps!).join(', ')} } = props;`]
+      : []),
     `  return (`,
     body,
     `  );`,
     `}`,
-  ].filter(Boolean).join('\n');
+  );
+
+  return lines.join('\n');
 }
 
-function emitPatternCall(node: IRPatternNode): string {
+function emitPatternCall(
+  node: IRPatternNode,
+  hookPropEntries: Record<string, string> | null,
+): string {
   const funcName = pascalCase(node.pattern.alias);
+  const hasHookProps = hookPropEntries && Object.keys(hookPropEntries).length > 0;
 
   let propsStr = '';
-  if (node.wireProps && Object.keys(node.wireProps).length > 0) {
+  if (hasHookProps) {
+    // AUTO: Pass hook variables as props
+    const entries = Object.entries(hookPropEntries!)
+      .map(([propName, hookVar]) => `${propName}={${hookVar}}`)
+      .join(' ');
+    propsStr = ` ${entries}`;
+  } else if (node.wireProps && Object.keys(node.wireProps).length > 0) {
     const entries = Object.entries(node.wireProps)
       .map(([k, v]) => `${k}={${v}}`)
       .join(' ');
@@ -97,12 +149,19 @@ function emitPatternCall(node: IRPatternNode): string {
   return jsx;
 }
 
-function emitGridNode(node: IRGridNode, densityGap: string): string {
+function emitGridNode(
+  node: IRGridNode,
+  densityGap: string,
+  hookPropsMap: Record<string, Record<string, string>> | null,
+): string {
   const classes = gridClasses(node.cols, node.spans, node.breakpoint, densityGap);
 
   const children = node.children.map(child => {
     const patternNode = child as IRPatternNode;
-    const call = emitPatternCall(patternNode);
+    const patternHookProps = hookPropsMap
+      ? (hookPropsMap[patternNode.pattern.alias] || hookPropsMap[patternNode.pattern.patternId] || null)
+      : null;
+    const call = emitPatternCall(patternNode, patternHookProps);
     if (node.spans) {
       const weight = node.spans[patternNode.id] || 1;
       return `  <div className="${spanClass(weight)}">\n    ${call}\n  </div>`;
@@ -117,14 +176,45 @@ function emitGridNode(node: IRGridNode, densityGap: string): string {
   ].join('\n');
 }
 
-function emitNodeJsx(node: IRNode, densityGap: string): string {
+function emitNodeJsx(
+  node: IRNode,
+  densityGap: string,
+  hookPropsMap: Record<string, Record<string, string>> | null,
+): string {
   if (node.type === 'pattern') {
-    return emitPatternCall(node as IRPatternNode);
+    const pn = node as IRPatternNode;
+    const patternHookProps = hookPropsMap
+      ? (hookPropsMap[pn.pattern.alias] || hookPropsMap[pn.pattern.patternId] || null)
+      : null;
+    return emitPatternCall(pn, patternHookProps);
   }
   if (node.type === 'grid') {
-    return emitGridNode(node as IRGridNode, densityGap);
+    return emitGridNode(node as IRGridNode, densityGap, hookPropsMap);
   }
   return `{/* Unknown node type: ${node.type} */}`;
+}
+
+// AUTO: Generate page-level state interface from active hooks
+function buildPageStateInterface(pageName: string, hooks: IRHookType[]): string {
+  const fields: string[] = [];
+  for (const hookType of hooks) {
+    const meta = HOOK_REGISTRY[hookType];
+    switch (hookType) {
+      case 'search':
+        fields.push('  search: string;', '  debouncedSearch: string;');
+        break;
+      case 'filter':
+        fields.push('  filters: Record<string, string>;', '  activeFilterCount: number;');
+        break;
+      case 'selection':
+        fields.push('  selected: string[];');
+        break;
+      case 'sort':
+        fields.push('  sortColumn: string | null;', '  sortDirection: \'asc\' | \'desc\';');
+        break;
+    }
+  }
+  return `interface ${pageName}PageState {\n${fields.join('\n')}\n}`;
 }
 
 /** Emit a single React page .tsx file from its IR tree */
@@ -132,9 +222,13 @@ export function emitPage(page: IRPageNode): GeneratedFile {
   const densityGap = page.children[0]?.spatial?.gap || '4';
   const surface = surfaceClasses(page.surface, densityGap);
   const pageName = pascalCase(page.pageId);
+  const isHookWired = useHookWiring(page);
 
   // Collect imports
   let imports = basePageImports();
+
+  // AUTO: Determine hook props map for this page
+  const hookPropsMap = isHookWired ? page.wiring!.hookProps : null;
 
   // Collect all components from patterns
   const allComponents: string[] = [];
@@ -144,7 +238,10 @@ export function emitPage(page: IRPageNode): GeneratedFile {
     if (node.type === 'pattern') {
       const pn = node as IRPatternNode;
       allComponents.push(...pn.pattern.components);
-      patternComponents.push(buildPatternComponent(pn, densityGap));
+      const patternHookProps = hookPropsMap
+        ? (hookPropsMap[pn.pattern.alias] || hookPropsMap[pn.pattern.patternId] || null)
+        : null;
+      patternComponents.push(buildPatternComponent(pn, densityGap, patternHookProps));
       if (pn.card) {
         allComponents.push('Card');
       }
@@ -183,14 +280,35 @@ export function emitPage(page: IRPageNode): GeneratedFile {
     addPatternTemplateImports(child);
   }
 
-  // Add wiring imports
-  if (page.wiring && page.wiring.signals.length > 0) {
-    imports = mergeReactImports(imports, wiringImports());
-  }
-
-  // Build wiring hooks
+  // AUTO: Hook-based wiring — import hooks and compose at page level
   let wiringCode = '';
-  if (page.wiring && page.wiring.signals.length > 0) {
+  let pageStateInterface = '';
+
+  if (isHookWired) {
+    const hooks = page.wiring!.hooks;
+
+    // Add hook imports
+    for (const hookType of hooks) {
+      const meta = HOOK_REGISTRY[hookType];
+      imports = mergeReactImports(
+        imports,
+        new Map([[`@/hooks/${meta.fileName}`, [meta.hookName]]]),
+      );
+    }
+
+    // Generate page state interface
+    pageStateInterface = buildPageStateInterface(pageName, hooks);
+
+    // Generate hook calls
+    wiringCode = hooks
+      .map(hookType => {
+        const meta = HOOK_REGISTRY[hookType];
+        return `  const ${meta.variableName} = ${meta.hookName}();`;
+      })
+      .join('\n');
+  } else if (page.wiring && page.wiring.signals.length > 0) {
+    // Legacy: raw useState wiring for pages without hook types
+    imports = mergeReactImports(imports, new Map([['react', ['useState']]]));
     wiringCode = page.wiring.signals
       .map(s => {
         const init = s.init.replace(/'/g, "'");
@@ -201,14 +319,19 @@ export function emitPage(page: IRPageNode): GeneratedFile {
 
   // Build body JSX
   const bodyJsx = page.children
-    .map(child => indent(emitNodeJsx(child, densityGap), 3))
+    .map(child => indent(emitNodeJsx(child, densityGap, hookPropsMap), 3))
     .join('\n');
 
   const importBlock = renderReactImports(imports);
 
-  const code = [
-    importBlock,
-    '',
+  const blocks: string[] = [importBlock, ''];
+
+  // AUTO: Add page state interface before pattern components
+  if (pageStateInterface) {
+    blocks.push(pageStateInterface, '');
+  }
+
+  blocks.push(
     ...patternComponents,
     '',
     `export default function ${pageName}Page() {`,
@@ -221,7 +344,9 @@ export function emitPage(page: IRPageNode): GeneratedFile {
     `  );`,
     `}`,
     '',
-  ].join('\n');
+  );
+
+  const code = blocks.join('\n');
 
   return {
     path: `src/pages/${page.pageId}.tsx`,

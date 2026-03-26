@@ -7,7 +7,10 @@ describe('detectWirings', () => {
     const layout: LayoutItem[] = ['filter-bar', 'data-table'];
     const wirings = detectWirings(layout);
     expect(wirings).toHaveLength(1);
-    expect(wirings[0].signals).toEqual([{ name: 'pageSearch', init: "''" }, { name: 'pageStatus', init: "'all'" }]);
+    expect(wirings[0].signals).toEqual([
+      { name: 'pageSearch', init: "''", hookType: 'search' },
+      { name: 'pageStatus', init: "'all'", hookType: 'filter' },
+    ]);
     expect(wirings[0].props['filter-bar']).toHaveProperty('onSearch');
     expect(wirings[0].props['data-table']).toHaveProperty('search');
   });
@@ -16,7 +19,7 @@ describe('detectWirings', () => {
     const layout: LayoutItem[] = ['filter-bar', { pattern: 'card-grid', preset: 'product' }];
     const wirings = detectWirings(layout);
     expect(wirings).toHaveLength(1);
-    expect(wirings[0].signals).toEqual([{ name: 'pageSearch', init: "''" }]);
+    expect(wirings[0].signals).toEqual([{ name: 'pageSearch', init: "''", hookType: 'search' }]);
   });
 
   it('detects filter-bar + activity-feed wiring', () => {

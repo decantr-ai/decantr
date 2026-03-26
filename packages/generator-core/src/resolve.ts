@@ -160,6 +160,8 @@ function convertWiring(wiringResults: ReturnType<typeof detectWirings>): IRWirin
 
   const signals: IRWiringSignal[] = [];
   const props: Record<string, Record<string, string>> = {};
+  const hookProps: Record<string, Record<string, string>> = {};
+  const hookSet = new Set<IRWiringSignal['hookType']>();
 
   for (const result of wiringResults) {
     for (const signal of result.signals) {
@@ -170,15 +172,21 @@ function convertWiring(wiringResults: ReturnType<typeof detectWirings>): IRWirin
           name: signal.name,
           setter,
           init: signal.init,
+          hookType: signal.hookType,
         });
+        hookSet.add(signal.hookType);
       }
     }
     for (const [alias, aliasProps] of Object.entries(result.props)) {
       props[alias] = { ...props[alias], ...aliasProps };
     }
+    // AUTO: Merge hook-based prop mappings
+    for (const [alias, aliasHookProps] of Object.entries(result.hookProps)) {
+      hookProps[alias] = { ...hookProps[alias], ...aliasHookProps };
+    }
   }
 
-  return { signals, props };
+  return { signals, props, hooks: [...hookSet], hookProps };
 }
 
 // ─── Visual Effects Resolution ────────────────────────────────

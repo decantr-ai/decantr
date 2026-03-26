@@ -1,6 +1,7 @@
 export type {
   IRNodeType,
   IRSpatial,
+  IRHookType,
   IRWiringSignal,
   IRWiring,
   IRPatternMeta,
