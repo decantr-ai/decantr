@@ -1,5 +1,14 @@
 import type { IRAppNode, IRNavItem, IRRoute, GeneratedFile } from '@decantr/generator-core';
 
+// AUTO: Module-level loading spinner JSX used as Suspense fallback in all shell variants
+const LOADING_SPINNER = `function LoadingSpinner() {
+  return (
+    <div className="flex items-center justify-center h-full w-full p-12">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+    </div>
+  );
+}`;
+
 function pascalCase(str: string): string {
   return str.split(/[-_]/).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
 }
@@ -77,6 +86,9 @@ function buildSidebarMainApp(app: IRAppNode): string {
   const { nav, brand } = shell.config;
   const routerComponent = app.routing === 'hash' ? 'HashRouter' : 'BrowserRouter';
   const icons = collectLucideIcons(nav);
+  // AUTO: Redirect from / to first page if first route isn't /
+  const defaultPath = routes[0]?.path ?? '/';
+  const needsRedirect = defaultPath !== '/';
 
   const pageImports = routes
     .map(r => `const ${pascalCase(r.pageId)}Page = React.lazy(() => import('./pages/${r.pageId}.tsx'));`)
@@ -95,11 +107,15 @@ function buildSidebarMainApp(app: IRAppNode): string {
     .join('\n');
 
   const routeElements = routes
-    .map(r => `            <Route path="${r.path}" element={<React.Suspense fallback={<div>Loading...</div>}><${pascalCase(r.pageId)}Page /></React.Suspense>} />`)
+    .map(r => `            <Route path="${r.path}" element={<React.Suspense fallback={<LoadingSpinner />}><${pascalCase(r.pageId)}Page /></React.Suspense>} />`)
     .join('\n');
 
+  const redirectRoute = needsRedirect
+    ? `\n            <Route path="/" element={<Navigate to="${defaultPath}" replace />} />`
+    : '';
+
   return `import React, { useEffect, useRef } from 'react';
-import { ${routerComponent}, Routes, Route, NavLink } from 'react-router-dom';
+import { ${routerComponent}, Routes, Route, NavLink${needsRedirect ? ', Navigate' : ''} } from 'react-router-dom';
 ${lucideImportLines(icons)}
 import { Button } from '@/components/ui/button';
 import {
@@ -118,12 +134,15 @@ import { CommandDialog, CommandInput, CommandList, CommandItem, CommandGroup } f
 
 ${pageImports}
 
+${LOADING_SPINNER}
+
 function NotFoundPage() {
   return (
     <div className="flex flex-col items-center justify-center gap-4 h-full p-6">
       <AlertCircle className="h-12 w-12 text-muted-foreground" />
       <h1 className="text-3xl font-semibold">Page Not Found</h1>
       <p className="text-muted-foreground text-center">The page you're looking for doesn't exist.</p>
+      <a href="${defaultPath}" className="text-sm text-primary hover:underline">Go back home</a>
     </div>
   );
 }
@@ -215,7 +234,7 @@ ${navMenuItems}
           </header>
           <main className="flex-1 overflow-auto p-6">
             <Routes>
-${routeElements}
+${routeElements}${redirectRoute}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
@@ -255,6 +274,9 @@ function buildTopNavApp(app: IRAppNode): string {
   const { nav, brand } = shell.config;
   const routerComponent = app.routing === 'hash' ? 'HashRouter' : 'BrowserRouter';
   const icons = collectTopNavLucideIcons(nav);
+  // AUTO: Redirect from / to first page if first route isn't /
+  const defaultPath = routes[0]?.path ?? '/';
+  const needsRedirect = defaultPath !== '/';
 
   const pageImports = routes
     .map(r => `const ${pascalCase(r.pageId)}Page = React.lazy(() => import('./pages/${r.pageId}.tsx'));`)
@@ -284,11 +306,15 @@ function buildTopNavApp(app: IRAppNode): string {
     .join('\n');
 
   const routeElements = routes
-    .map(r => `            <Route path="${r.path}" element={<React.Suspense fallback={<div>Loading...</div>}><${pascalCase(r.pageId)}Page /></React.Suspense>} />`)
+    .map(r => `            <Route path="${r.path}" element={<React.Suspense fallback={<LoadingSpinner />}><${pascalCase(r.pageId)}Page /></React.Suspense>} />`)
     .join('\n');
 
+  const redirectRoute = needsRedirect
+    ? `\n            <Route path="/" element={<Navigate to="${defaultPath}" replace />} />`
+    : '';
+
   return `import React from 'react';
-import { ${routerComponent}, Routes, Route, NavLink } from 'react-router-dom';
+import { ${routerComponent}, Routes, Route, NavLink${needsRedirect ? ', Navigate' : ''} } from 'react-router-dom';
 ${lucideImportLines(icons)}
 import { Button } from '@/components/ui/button';
 import {
@@ -302,12 +328,15 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 ${pageImports}
 
+${LOADING_SPINNER}
+
 function NotFoundPage() {
   return (
     <div className="flex flex-col items-center justify-center gap-4 h-full p-6">
       <AlertCircle className="h-12 w-12 text-muted-foreground" />
       <h1 className="text-3xl font-semibold">Page Not Found</h1>
       <p className="text-muted-foreground text-center">The page you're looking for doesn't exist.</p>
+      <a href="${defaultPath}" className="text-sm text-primary hover:underline">Go back home</a>
     </div>
   );
 }
@@ -379,7 +408,7 @@ ${navMenuItems}
         {/* Main content area */}
         <main className="flex-1 overflow-auto p-6">
           <Routes>
-${routeElements}
+${routeElements}${redirectRoute}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
@@ -393,26 +422,46 @@ ${routeElements}
 function buildFullBleedApp(app: IRAppNode): string {
   const { routes } = app;
   const routerComponent = app.routing === 'hash' ? 'HashRouter' : 'BrowserRouter';
+  // AUTO: Redirect from / to first page if first route isn't /
+  const defaultPath = routes[0]?.path ?? '/';
+  const needsRedirect = defaultPath !== '/';
 
   const pageImports = routes
     .map(r => `const ${pascalCase(r.pageId)}Page = React.lazy(() => import('./pages/${r.pageId}.tsx'));`)
     .join('\n');
 
   const routeElements = routes
-    .map(r => `        <Route path="${r.path}" element={<React.Suspense fallback={<div>Loading...</div>}><${pascalCase(r.pageId)}Page /></React.Suspense>} />`)
+    .map(r => `        <Route path="${r.path}" element={<React.Suspense fallback={<LoadingSpinner />}><${pascalCase(r.pageId)}Page /></React.Suspense>} />`)
     .join('\n');
 
+  const redirectRoute = needsRedirect
+    ? `\n        <Route path="/" element={<Navigate to="${defaultPath}" replace />} />`
+    : '';
+
   return `import React from 'react';
-import { ${routerComponent}, Routes, Route } from 'react-router-dom';
+import { ${routerComponent}, Routes, Route${needsRedirect ? ', Navigate' : ''} } from 'react-router-dom';
 
 ${pageImports}
+
+${LOADING_SPINNER}
+
+function NotFoundPage() {
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 h-full p-6">
+      <h1 className="text-3xl font-semibold">Page Not Found</h1>
+      <p className="text-muted-foreground text-center">The page you're looking for doesn't exist.</p>
+      <a href="${defaultPath}" className="text-sm text-primary hover:underline">Go back home</a>
+    </div>
+  );
+}
 
 export default function App() {
   return (
     <${routerComponent}>
       <div className="flex flex-col h-full">
         <Routes>
-${routeElements}
+${routeElements}${redirectRoute}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
     </${routerComponent}>

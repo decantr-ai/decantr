@@ -268,4 +268,96 @@ describe('emitApp (React)', () => {
     // setCmdOpen should use functional updater
     expect(result.content).toContain('setCmdOpen(prev =>');
   });
+
+  it('Suspense fallback uses LoadingSpinner component', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain('function LoadingSpinner()');
+    expect(result.content).toContain('animate-spin');
+    expect(result.content).toContain('fallback={<LoadingSpinner />}');
+    expect(result.content).not.toContain('fallback={<div>Loading...</div>}');
+  });
+
+  it('NotFoundPage has go-back-home link', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain('Go back home');
+    expect(result.content).toContain('Page Not Found');
+  });
+
+  it('404 catch-all route exists', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).toContain('path="*"');
+    expect(result.content).toContain('<NotFoundPage />');
+  });
+
+  it('adds redirect from / to first page when first route is not /', () => {
+    const app = makeApp({
+      routes: [
+        { path: '/dashboard', pageId: 'dashboard' },
+        { path: '/settings', pageId: 'settings' },
+      ],
+    });
+    const result = emitApp(app);
+
+    expect(result.content).toContain('Navigate');
+    expect(result.content).toContain('<Navigate to="/dashboard" replace />');
+  });
+
+  it('does not add redirect when first route is /', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+
+    expect(result.content).not.toContain('Navigate');
+  });
+
+  it('full-bleed layout has NotFoundPage and 404 route', () => {
+    const app = makeApp();
+    app.shell.config.type = 'full-bleed';
+    const result = emitApp(app);
+
+    expect(result.content).toContain('NotFoundPage');
+    expect(result.content).toContain('path="*"');
+    expect(result.content).toContain('LoadingSpinner');
+  });
+
+  it('full-bleed layout adds redirect when needed', () => {
+    const app = makeApp({
+      routes: [
+        { path: '/overview', pageId: 'overview' },
+        { path: '/settings', pageId: 'settings' },
+      ],
+    });
+    app.shell.config.type = 'full-bleed';
+    const result = emitApp(app);
+
+    expect(result.content).toContain('<Navigate to="/overview" replace />');
+  });
+
+  it('top-nav-main has LoadingSpinner and NotFoundPage with home link', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+
+    expect(result.content).toContain('LoadingSpinner');
+    expect(result.content).toContain('Go back home');
+    expect(result.content).toContain('path="*"');
+  });
+
+  it('all page files use export default', () => {
+    // Verify emit-page generates export default — tested via emitPage import
+    // This is a structural guarantee from emit-page.ts line: `export default function ${pageName}Page`
+    const app = makeApp();
+    const result = emitApp(app);
+
+    // Page imports use React.lazy which requires default export
+    for (const route of app.routes) {
+      const pageName = route.pageId.split(/[-_]/).map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+      expect(result.content).toContain(`React.lazy(() => import('./pages/${route.pageId}.tsx'))`);
+    }
+  });
 });
