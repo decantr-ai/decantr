@@ -153,84 +153,86 @@
       min-height: 100vh;
       display: flex;
       align-items: center;
-      justify-content: center;
-      text-align: center;
       position: relative;
       z-index: 1;
     }
 
-    .hero-content {
+    .hero-split {
       position: relative;
       z-index: 2;
-      max-width: 720px;
-      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 60px;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 32px;
+      width: 100%;
     }
 
-    .hero-logo-wrap {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 32px;
+    .hero-left {
+      flex: 0 0 30%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .hero-glow-ring { display: none; }
+
+    .hero-right {
+      flex: 1;
+      text-align: left;
+    }
+
     @keyframes logoFloat {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-12px); }
     }
     .hero-logo {
-      width: 120px;
+      width: 100%;
+      max-width: 260px;
       height: auto;
       display: block;
-      position: relative;
-      z-index: 1;
       animation: logoFloat 4s ease-in-out infinite;
     }
 
-    .hero-brand {
-      font-size: 0.8rem;
-      font-variant: small-caps;
-      letter-spacing: 0.3em;
-      color: rgba(255,255,255,0.35);
-      margin-bottom: 28px;
-      text-transform: uppercase;
-    }
-
-    .hero h1 {
-      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-      font-weight: 600;
-      line-height: 1.35;
-      margin-bottom: 24px;
-      letter-spacing: -0.02em;
-      color: rgba(255,255,255,0.9);
-    }
-
-    .hero-accent {
-      color: var(--coral);
+    .hero-title {
+      font-size: clamp(2rem, 3.5vw, 3rem);
       font-weight: 800;
-      font-style: normal;
-      text-decoration: underline;
-      text-decoration-color: var(--coral);
-      text-underline-offset: 4px;
-      text-decoration-thickness: 3px;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+      color: #fff;
     }
+    .hero-title .accent-dot { color: var(--coral); }
 
-    .hero-tagline {
-      font-size: 1.05rem;
-      color: var(--muted);
-      margin-bottom: 40px;
-      max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
+    .hero-body {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 36px;
+      max-width: 520px;
       line-height: 1.7;
-      letter-spacing: 0.01em;
+    }
+    .hero-body .hero-accent {
+      color: var(--coral);
+      font-weight: 700;
+      font-style: italic;
     }
 
     .hero-ctas {
       display: flex;
       gap: 16px;
-      justify-content: center;
+      justify-content: flex-start;
       flex-wrap: wrap;
-      margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .hero-split {
+        flex-direction: column;
+        text-align: center;
+        gap: 40px;
+      }
+      .hero-left { flex: none; }
+      .hero-logo { max-width: 180px; }
+      .hero-right { text-align: center; }
+      .hero-ctas { justify-content: center; }
     }
 
     .btn-primary {
@@ -276,24 +278,7 @@
       color: var(--fg);
     }
 
-    .hero-license {
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-bottom: 28px;
-    }
-
-    .hero-palette {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-    }
-    .hero-palette-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      transition: transform 0.2s;
-    }
-    .hero-palette-dot:hover { transform: scale(1.5); }
+    /* hero-license and palette removed */
 
     /* ===== SECTION COMMON ===== */
     .section {
@@ -1137,25 +1122,17 @@
 
 <!-- ==================== HERO ==================== -->
 <section class="hero">
-  <div class="hero-content">
-    <div class="hero-logo-wrap">
-      <div class="hero-glow-ring"></div>
-      <img src="logo-portrait.svg" alt="Decantr" class="hero-logo">
+  <div class="hero-split">
+    <div class="hero-left">
+      <img src="logo.svg" alt="Decantr" class="hero-logo">
     </div>
-    <p class="hero-brand">Decantr</p>
-    <h1>We don't care what you build with.<br>We care <span class="hero-accent">what</span> you build.</h1>
-    <p class="hero-tagline">Decantr is the design intelligence layer for AI-generated web applications.</p>
-    <div class="hero-ctas">
-      <a href="#quickstart" class="btn-primary">Get Started</a>
-      <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
-    </div>
-    <p class="hero-license">Free and open source. MIT licensed.</p>
-    <div class="hero-palette">
-      <span class="hero-palette-dot" style="background:var(--coral)"></span>
-      <span class="hero-palette-dot" style="background:var(--amber)"></span>
-      <span class="hero-palette-dot" style="background:var(--cyan)"></span>
-      <span class="hero-palette-dot" style="background:var(--green)"></span>
-      <span class="hero-palette-dot" style="background:var(--purple)"></span>
+    <div class="hero-right">
+      <h1 class="hero-title">decantr<span class="accent-dot">.</span>a<span class="accent-dot">i</span></h1>
+      <p class="hero-body">Decantr is the design intelligence layer for AI-generated web applications. We don't care what you build with. We care <span class="hero-accent">what</span> you build.</p>
+      <div class="hero-ctas">
+        <a href="#quickstart" class="btn-primary">Get Started</a>
+        <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
+      </div>
     </div>
   </div>
 </section>
