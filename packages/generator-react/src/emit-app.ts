@@ -258,7 +258,7 @@ ${routeElements}${redirectRoute}
           <CommandInput placeholder="Type a command or search..." />
           <CommandList>
             <CommandGroup heading="Pages">
-${nav.map(n => `              <CommandItem>${n.label}</CommandItem>`).join('\n')}
+${nav.map(n => `              <CommandItem key="${n.href}">${n.label}</CommandItem>`).join('\n')}
             </CommandGroup>
           </CommandList>
         </CommandDialog>
@@ -319,6 +319,7 @@ function buildTopNavApp(app: IRAppNode): string {
   // AUTO: Mobile Sheet nav items
   const mobileNavItems = nav
     .map(n => `              <NavLink
+                key="${n.href}"
                 to="${n.href}"
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) => \`flex items-center gap-3 rounded-lg px-3 py-2 text-sm \${isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'}\`}

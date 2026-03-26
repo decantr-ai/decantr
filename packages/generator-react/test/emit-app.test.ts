@@ -349,6 +349,24 @@ describe('emitApp (React)', () => {
     expect(result.content).toContain('path="*"');
   });
 
+  it('sidebar CommandDialog items have key props', () => {
+    const app = makeApp();
+    const result = emitApp(app);
+    // CommandItem elements in the command palette should have key
+    expect(result.content).toMatch(/<CommandItem key="/);
+  });
+
+  it('top-nav mobile nav items have key props', () => {
+    const app = makeApp();
+    app.shell.config.type = 'top-nav-main';
+    const result = emitApp(app);
+    // Mobile NavLink elements inside Sheet should have key prop
+    // Count key props on NavLink elements — each nav item should have one
+    const navLinkKeys = result.content.match(/<NavLink\s+key="/g);
+    expect(navLinkKeys).not.toBeNull();
+    expect(navLinkKeys!.length).toBeGreaterThanOrEqual(app.shell.config.nav.length);
+  });
+
   it('all page files use export default', () => {
     // Verify emit-page generates export default — tested via emitPage import
     // This is a structural guarantee from emit-page.ts line: `export default function ${pageName}Page`

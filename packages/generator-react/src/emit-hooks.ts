@@ -188,15 +188,13 @@ export function usePageSort(): PageSortState {
   }, []);
 
   const toggleSort = useCallback((column: string) => {
-    setSortColumn(prev => {
-      if (prev === column) return column;
+    setSortColumn(prevColumn => {
+      setSortDirection(prevDir =>
+        prevColumn === column ? (prevDir === 'asc' ? 'desc' : 'asc') : 'asc',
+      );
       return column;
     });
-    setSortDirection(prev => {
-      if (sortColumn === column) return prev === 'asc' ? 'desc' : 'asc';
-      return 'asc';
-    });
-  }, [sortColumn]);
+  }, []);
 
   return { sortColumn, sortDirection, setSort, toggleSort };
 }

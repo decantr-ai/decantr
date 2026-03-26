@@ -33,7 +33,7 @@ function buildHookPropsInterface(
       if (meta) {
         return `  ${propName}?: ${meta.typeName};`;
       }
-      return `  ${propName}?: any;`;
+      return `  ${propName}?: unknown;`;
     })
     .join('\n');
   return `interface ${funcName}Props {\n${fields}\n}`;
@@ -56,7 +56,7 @@ function buildPatternComponent(
     const destructured = Object.keys(hookPropEntries!).join(', ');
     propsParam = `{ ${destructured} }: ${funcName}Props`;
   } else if (hasWireProps) {
-    const entries = Object.keys(node.wireProps!).map(k => `${k}?: any`).join('; ');
+    const entries = Object.keys(node.wireProps!).map(k => `${k}?: unknown`).join('; ');
     const propsType = `{ ${entries} }`;
     propsParam = `props: ${propsType}`;
   }

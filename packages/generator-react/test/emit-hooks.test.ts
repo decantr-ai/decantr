@@ -104,6 +104,16 @@ describe('emitHooks', () => {
     expect(files[0].content).toContain('toggleSort');
   });
 
+  it('usePageSort toggleSort uses functional setState (no stale closure)', () => {
+    const files = emitHooks(new Set<IRHookType>(['sort']));
+    const content = files[0].content;
+    // toggleSort must use functional updater to read prevColumn, not closure sortColumn
+    expect(content).toContain('setSortColumn(prevColumn');
+    expect(content).toContain('setSortDirection(prevDir');
+    // Should have empty dependency array (no stale closure on sortColumn)
+    expect(content).toContain('}, [])');
+  });
+
   it('only generates hooks that are needed', () => {
     const files = emitHooks(new Set<IRHookType>(['search', 'filter']));
     expect(files).toHaveLength(2);

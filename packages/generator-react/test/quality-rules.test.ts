@@ -320,6 +320,17 @@ describe('React Quality Rules', () => {
       expect(violations).toHaveLength(0);
     });
 
+    it('emit-page with legacy wireProps uses no any type', () => {
+      const pattern = makePatternNode('my-widget', {
+        card: null,
+        wireProps: { data: 'fetchedData', onAction: 'handleAction' },
+      });
+      const page = makePage('dashboard', [pattern]);
+      const file = emitPage(page);
+      expect(file.content).not.toContain(': any');
+      expect(file.content).toContain(': unknown');
+    });
+
     it('emitNotFound output has zero violations', () => {
       const file = emitNotFound();
       const violations = validateReactOutput([file]);
