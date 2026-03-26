@@ -29,11 +29,10 @@
       --card-bg: rgba(4, 21, 64, 0.6);
       --card-border: rgba(255, 255, 255, 0.08);
       --code-bg: rgba(1, 10, 30, 0.8);
-      --max-w: 1000px;
+      --max-w: 1100px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
 
     body {
@@ -46,951 +45,1642 @@
     }
 
     a { color: var(--cyan); text-decoration: none; transition: color 0.2s; }
-    a:hover { color: var(--coral); text-decoration: none; }
+    a:hover { color: var(--coral); }
 
-    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 32px; }
-    .hero .container { max-width: 800px; }
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
 
-    /* ── Animations ── */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes slideInLeft {
-      from { opacity: 0; transform: translateX(-40px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    @keyframes pulseGlow {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 0.8; }
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-20px); }
-    }
-
-    @keyframes particleDrift {
-      0% { transform: translate(0, 0); opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
-    }
-
-    @keyframes auroraShift {
-      0% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
-      25% { transform: translate(5%, -8%) rotate(3deg) scale(1.05); }
-      50% { transform: translate(-3%, 5%) rotate(-2deg) scale(0.95); }
-      75% { transform: translate(8%, 3%) rotate(4deg) scale(1.08); }
-      100% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
-    }
-
-    @keyframes auroraShift2 {
-      0% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
-      25% { transform: translate(-6%, 5%) rotate(-3deg) scale(1.1); }
-      50% { transform: translate(4%, -6%) rotate(2deg) scale(0.92); }
-      75% { transform: translate(-3%, -4%) rotate(-1deg) scale(1.05); }
-      100% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
-    }
-
-    @keyframes auroraShift3 {
-      0% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
-      33% { transform: translate(7%, 4%) rotate(5deg) scale(1.08); }
-      66% { transform: translate(-5%, -3%) rotate(-3deg) scale(0.95); }
-      100% { transform: translate(0%, 0%) rotate(0deg) scale(1); }
-    }
-
-    @keyframes stepPop {
-      from { opacity: 0; transform: scale(0.8) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    /* ── Scroll reveal ── */
+    /* ===== REVEAL ANIMATION ===== */
     .reveal {
       opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(32px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
     }
     .reveal.visible {
       opacity: 1;
       transform: translateY(0);
     }
-    .reveal-delay-1 { transition-delay: 0.1s; }
-    .reveal-delay-2 { transition-delay: 0.2s; }
-    .reveal-delay-3 { transition-delay: 0.3s; }
-    .reveal-delay-4 { transition-delay: 0.4s; }
-    .reveal-delay-5 { transition-delay: 0.5s; }
-    .reveal-delay-6 { transition-delay: 0.6s; }
 
-    /* ── Hero ── */
+    /* ===== HERO ===== */
     .hero {
-      position: relative;
-      padding: 100px 0 80px;
-      text-align: center;
-      overflow: hidden;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
     }
 
-    /* Aurora gradient mesh */
-    .hero-aurora {
+    .hero-bg {
       position: absolute;
       inset: 0;
-      overflow: hidden;
       z-index: 0;
-    }
-    .hero-aurora::before,
-    .hero-aurora::after,
-    .hero-aurora .aurora-layer {
-      content: '';
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(120px);
-      opacity: 0.25;
-    }
-    .hero-aurora::before {
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, var(--coral), transparent 70%);
-      top: -15%;
-      left: -10%;
-      animation: auroraShift 12s ease-in-out infinite;
-    }
-    .hero-aurora::after {
-      width: 700px;
-      height: 700px;
-      background: radial-gradient(circle, var(--cyan), transparent 70%);
-      top: 10%;
-      right: -15%;
-      animation: auroraShift2 15s ease-in-out infinite;
-    }
-    .hero-aurora .aurora-layer {
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, var(--amber), transparent 70%);
-      bottom: -20%;
-      left: 30%;
-      animation: auroraShift3 18s ease-in-out infinite;
-      opacity: 0.18;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(245,136,130,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 20% 60%, rgba(10,243,235,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 80% 30%, rgba(253,163,3,0.05) 0%, transparent 50%),
+        var(--bg);
     }
 
-    /* Floating particles */
     .hero-particles {
       position: absolute;
       inset: 0;
       z-index: 1;
       overflow: hidden;
     }
+
     .particle {
       position: absolute;
+      width: 3px;
+      height: 3px;
       border-radius: 50%;
-      background: currentColor;
-      pointer-events: none;
+      opacity: 0.3;
+      animation: particleFloat 8s ease-in-out infinite;
     }
-    .particle:nth-child(1) { width: 3px; height: 3px; color: var(--cyan); top: 15%; left: 10%; --dx: 60px; --dy: -80px; animation: particleDrift 8s linear infinite; }
-    .particle:nth-child(2) { width: 2px; height: 2px; color: var(--coral); top: 25%; left: 80%; --dx: -40px; --dy: -60px; animation: particleDrift 10s linear infinite 1s; }
-    .particle:nth-child(3) { width: 4px; height: 4px; color: var(--amber); top: 60%; left: 20%; --dx: 80px; --dy: -100px; animation: particleDrift 12s linear infinite 2s; }
-    .particle:nth-child(4) { width: 2px; height: 2px; color: var(--green); top: 70%; left: 70%; --dx: -50px; --dy: -70px; animation: particleDrift 9s linear infinite 0.5s; }
-    .particle:nth-child(5) { width: 3px; height: 3px; color: var(--pink); top: 40%; left: 50%; --dx: 70px; --dy: -90px; animation: particleDrift 11s linear infinite 3s; }
-    .particle:nth-child(6) { width: 2px; height: 2px; color: var(--yellow); top: 80%; left: 40%; --dx: -30px; --dy: -120px; animation: particleDrift 14s linear infinite 4s; }
-    .particle:nth-child(7) { width: 3px; height: 3px; color: var(--cyan); top: 10%; left: 60%; --dx: 50px; --dy: 60px; animation: particleDrift 7s linear infinite 1.5s; }
-    .particle:nth-child(8) { width: 1px; height: 1px; color: var(--coral); top: 50%; left: 90%; --dx: -80px; --dy: -40px; animation: particleDrift 13s linear infinite 2.5s; }
-    .particle:nth-child(9) { width: 4px; height: 4px; color: var(--amber); top: 35%; left: 5%; --dx: 100px; --dy: -50px; animation: particleDrift 16s linear infinite 5s; opacity: 0.5; }
-    .particle:nth-child(10) { width: 2px; height: 2px; color: var(--green); top: 85%; left: 55%; --dx: 40px; --dy: -100px; animation: particleDrift 10s linear infinite 6s; }
-    .particle:nth-child(11) { width: 3px; height: 3px; color: var(--purple); top: 20%; left: 35%; --dx: -60px; --dy: 40px; animation: particleDrift 9s linear infinite 3.5s; opacity: 0.6; }
-    .particle:nth-child(12) { width: 2px; height: 2px; color: var(--orange); top: 55%; left: 15%; --dx: 90px; --dy: -30px; animation: particleDrift 11s linear infinite 7s; }
 
-    .hero .container {
+    @keyframes particleFloat {
+      0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
+      50% { transform: translateY(-30px) translateX(15px); opacity: 0.5; }
+    }
+
+    .hero-content {
       position: relative;
       z-index: 2;
-      width: 100%;
+      max-width: 720px;
     }
 
-    .hero-stack {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* ── Logo Hero ── */
     .hero-logo-wrap {
       position: relative;
-      width: 180px;
-      height: 180px;
-      margin: 0 auto 36px;
+      display: inline-block;
+      margin-bottom: 40px;
     }
+
     .hero-logo-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+      width: 180px;
+      height: auto;
       position: relative;
       z-index: 2;
-      opacity: 0;
-      transform: scale(0.3) rotate(-15deg);
-      animation: logoReveal 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-      filter: drop-shadow(0 0 40px rgba(10, 243, 235, 0.2))
-              drop-shadow(0 0 80px rgba(245, 136, 130, 0.15));
-    }
-    @keyframes logoReveal {
-      0% { opacity: 0; transform: scale(0.3) rotate(-15deg); }
-      50% { opacity: 1; transform: scale(1.08) rotate(2deg); }
-      70% { transform: scale(0.96) rotate(-1deg); }
-      100% { opacity: 1; transform: scale(1) rotate(0deg); }
-    }
-    @keyframes logoBreath {
-      0%, 100% {
-        filter: drop-shadow(0 0 40px rgba(10, 243, 235, 0.2))
-                drop-shadow(0 0 80px rgba(245, 136, 130, 0.15));
-        transform: translateY(0px) scale(1);
-      }
-      50% {
-        filter: drop-shadow(0 0 60px rgba(10, 243, 235, 0.4))
-                drop-shadow(0 0 100px rgba(245, 136, 130, 0.25))
-                drop-shadow(0 0 120px rgba(253, 163, 3, 0.15));
-        transform: translateY(-8px) scale(1.01);
-      }
-    }
-    .hero-logo-wrap.alive img {
-      opacity: 1;
-      transform: scale(1) rotate(0deg);
-      animation: logoBreath 5s ease-in-out infinite;
     }
 
-    /* Orbiting color orbs around the logo */
-    .logo-orb {
+    .logo-glow {
       position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 260px;
+      height: 260px;
       border-radius: 50%;
-      filter: blur(20px);
-      opacity: 0;
+      background: radial-gradient(circle, rgba(245,136,130,0.15) 0%, rgba(10,243,235,0.08) 40%, transparent 70%);
+      animation: breathe 4s ease-in-out infinite;
       z-index: 1;
     }
-    .logo-orb.visible { opacity: 1; transition: opacity 1s ease; }
-    .orb-1 {
-      width: 40px; height: 40px;
-      background: var(--coral);
-      top: -15%; left: -10%;
-      animation: orbFloat1 8s ease-in-out infinite;
-    }
-    .orb-2 {
-      width: 30px; height: 30px;
-      background: var(--cyan);
-      top: -5%; right: -15%;
-      animation: orbFloat2 10s ease-in-out infinite 1s;
-    }
-    .orb-3 {
-      width: 25px; height: 25px;
-      background: var(--amber);
-      bottom: -10%; left: 15%;
-      animation: orbFloat3 9s ease-in-out infinite 0.5s;
-    }
-    .orb-4 {
-      width: 20px; height: 20px;
-      background: var(--green);
-      bottom: 10%; right: -12%;
-      animation: orbFloat1 11s ease-in-out infinite 2s;
-    }
-    .orb-5 {
-      width: 35px; height: 35px;
-      background: var(--purple);
-      top: 35%; left: -18%;
-      animation: orbFloat2 7s ease-in-out infinite 1.5s;
-      opacity: 0.7;
-    }
-    @keyframes orbFloat1 {
-      0%, 100% { transform: translate(0, 0); }
-      25% { transform: translate(15px, -20px); }
-      50% { transform: translate(-10px, 15px); }
-      75% { transform: translate(20px, 10px); }
-    }
-    @keyframes orbFloat2 {
-      0%, 100% { transform: translate(0, 0); }
-      33% { transform: translate(-20px, 15px); }
-      66% { transform: translate(15px, -10px); }
-    }
-    @keyframes orbFloat3 {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(20px, -15px); }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      z-index: 1;
+      animation: orbFloat 6s ease-in-out infinite;
     }
 
-    @media (max-width: 768px) {
-      .hero-logo-wrap {
-        width: 140px;
-        height: 140px;
-        margin-bottom: 28px;
-      }
+    .orb-1 {
+      width: 12px; height: 12px;
+      background: var(--coral);
+      top: 10%; left: 5%;
+      animation-delay: 0s;
+      opacity: 0.5;
+    }
+    .orb-2 {
+      width: 8px; height: 8px;
+      background: var(--cyan);
+      top: 20%; right: 8%;
+      animation-delay: 1s;
+      opacity: 0.4;
+    }
+    .orb-3 {
+      width: 10px; height: 10px;
+      background: var(--amber);
+      bottom: 15%; left: 12%;
+      animation-delay: 2s;
+      opacity: 0.45;
+    }
+    .orb-4 {
+      width: 6px; height: 6px;
+      background: var(--green);
+      bottom: 25%; right: 15%;
+      animation-delay: 3s;
+      opacity: 0.35;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.7; }
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      33% { transform: translateY(-12px) translateX(8px); }
+      66% { transform: translateY(6px) translateX(-6px); }
     }
 
     .hero h1 {
-      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-size: clamp(2rem, 5vw, 3.2rem);
       font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.12;
+      line-height: 1.15;
       margin-bottom: 20px;
-      animation: fadeInUp 0.8s ease-out 0.6s both;
+      letter-spacing: -0.02em;
     }
-    .hero h1 span {
-      background: linear-gradient(135deg, var(--coral), var(--amber) 40%, var(--cyan));
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--coral), var(--amber), var(--cyan));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .hero .tagline {
-      font-size: 1.1rem;
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
       color: var(--muted);
-      max-width: 600px;
-      margin: 0 auto 36px;
-      line-height: 1.7;
-      animation: fadeInUp 0.8s ease-out 0.8s both;
+      margin-bottom: 40px;
+      max-width: 540px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .hero .cta-row {
+
+    .hero-ctas {
       display: flex;
       gap: 16px;
       justify-content: center;
       flex-wrap: wrap;
-      animation: fadeInUp 0.8s ease-out 1.0s both;
     }
 
-    .btn {
+    .btn-primary {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 14px 28px;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .btn-primary {
+      padding: 14px 32px;
       background: linear-gradient(135deg, var(--coral), var(--pink));
       color: #fff;
-      box-shadow: 0 4px 24px rgba(245, 136, 130, 0.3);
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(245, 136, 130, 0.45);
+      box-shadow: 0 8px 30px rgba(245,136,130,0.3);
       color: #fff;
     }
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: transparent;
       color: var(--fg);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(10px);
+      font-weight: 600;
+      font-size: 1rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      text-decoration: none;
     }
-    .btn-secondary:hover {
-      border-color: var(--cyan);
-      background: rgba(10, 243, 235, 0.06);
-      color: var(--cyan);
-      transform: translateY(-2px);
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.04);
+      color: var(--fg);
     }
 
-    /* Install block */
-    .install {
-      background: var(--code-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 20px 24px;
-      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-      font-size: 0.9rem;
-      max-width: 600px;
-      margin: 28px auto 0;
-      text-align: left;
-      color: var(--muted);
-      overflow-x: auto;
-      border-top: 2px solid;
-      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
-      animation: fadeInUp 0.8s ease-out 1.2s both;
-      backdrop-filter: blur(20px);
+    /* ===== WAVE DIVIDERS ===== */
+    .wave-divider {
+      width: 100%;
+      display: block;
+      margin-top: -1px;
+      line-height: 0;
     }
-    .install .comment { color: #4a5578; }
-    .install .cmd { color: var(--fg); }
+    .wave-divider svg {
+      width: 100%;
+      display: block;
+    }
 
-    /* ── Sections ── */
-    .section {
-      padding: 100px 0;
-      position: relative;
+    /* ===== SECTION COMMON ===== */
+    section {
+      padding: 80px 0;
     }
-    .section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(100%, 1000px);
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.08) 80%, transparent);
-    }
-    .section h2 {
-      font-size: 2.2rem;
+
+    .section-heading {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
       font-weight: 800;
+      text-align: center;
       margin-bottom: 16px;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.02em;
     }
-    .section .subtitle {
+
+    .section-sub {
+      text-align: center;
       color: var(--muted);
-      font-size: 1.1rem;
-      margin-bottom: 52px;
       max-width: 640px;
+      margin: 0 auto 56px;
+      font-size: 1.05rem;
       line-height: 1.7;
     }
 
-    /* ── Problem/Solution ── */
+    /* ===== PROBLEM SECTION ===== */
     .problem-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 48px;
+      max-width: 900px;
+      margin: 0 auto;
     }
-    @media (max-width: 640px) {
-      .problem-grid { grid-template-columns: 1fr; }
-    }
-    .problem-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 28px;
-      backdrop-filter: blur(20px);
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .problem-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(255, 255, 255, 0.12);
-    }
-    .problem-card h3 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-    .problem-card p {
-      color: var(--muted);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-    .problem-card.solution {
-      border-color: rgba(10, 243, 235, 0.2);
-      background: rgba(10, 243, 235, 0.03);
-    }
-    .problem-card.solution:hover {
-      border-color: rgba(10, 243, 235, 0.35);
-      box-shadow: 0 8px 40px rgba(10, 243, 235, 0.08);
-    }
-    .problem-card .label {
-      font-size: 0.7rem;
+
+    .problem-col-label {
+      font-size: 0.85rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 14px;
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 6px;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+      text-align: center;
     }
-    .problem-card .label.red {
-      color: var(--coral);
-      background: rgba(245, 136, 130, 0.1);
-    }
-    .problem-card .label.green {
-      color: var(--green);
-      background: rgba(0, 224, 171, 0.1);
+    .label-bad { color: var(--crimson); }
+    .label-good { color: var(--green); }
+
+    .browser-frame {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      backdrop-filter: blur(12px);
     }
 
-    /* ── Pipeline ── */
-    .pipeline {
+    .browser-frame-bar {
+      height: 28px;
+      background: rgba(255,255,255,0.03);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+    }
+
+    .browser-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+    }
+
+    .browser-frame-label {
+      margin-left: auto;
+      font-size: 0.65rem;
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    .browser-frame-body {
+      padding: 16px;
+      min-height: 80px;
+    }
+
+    /* Bad frames */
+    .mock-card {
+      border-radius: 6px;
+      height: 20px;
+      margin-bottom: 8px;
+    }
+
+    .mock-row {
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-      position: relative;
+      margin-bottom: 8px;
     }
-    .pipeline-step {
+
+    .mock-block {
+      border-radius: 4px;
+      height: 36px;
+      flex: 1;
+    }
+
+    /* Good - consistent */
+    .good .mock-block {
+      background: rgba(0,224,171,0.15);
+      border: 1px solid rgba(0,224,171,0.2);
+    }
+    .good .mock-card {
+      background: rgba(0,224,171,0.1);
+      border: 1px solid rgba(0,224,171,0.15);
+    }
+
+    /* Bad - drift */
+    .drift-1 .mock-block {
+      background: rgba(245,136,130,0.12);
+      border: 1px solid rgba(245,136,130,0.18);
+    }
+    .drift-1 .mock-card {
+      background: rgba(245,136,130,0.08);
+      border: 1px solid rgba(245,136,130,0.12);
+    }
+
+    .drift-2 .mock-block {
+      background: rgba(253,163,3,0.12);
+      border: 1px solid rgba(253,163,3,0.18);
+    }
+    .drift-2 .mock-card {
+      background: rgba(253,163,3,0.08);
+    }
+    .drift-2 .mock-row { gap: 4px; }
+    .drift-2 .mock-row:nth-child(2) { gap: 16px; }
+
+    .drift-3 .mock-block:nth-child(1) {
+      background: rgba(254,68,116,0.15);
+      border: 1px solid rgba(254,68,116,0.2);
+      border-radius: 0;
+      flex: 2;
+    }
+    .drift-3 .mock-block:nth-child(2) {
+      background: rgba(101,0,198,0.2);
+      border: 1px solid rgba(101,0,198,0.25);
+      border-radius: 12px;
+      flex: 0.5;
+    }
+    .drift-3 .mock-block:nth-child(3) {
+      background: rgba(252,141,13,0.15);
+      border: 2px dashed rgba(252,141,13,0.3);
+      flex: 1.5;
+    }
+    .drift-3 .mock-card {
+      background: rgba(216,15,74,0.1);
+      height: 14px;
+      border-radius: 0;
+    }
+    .drift-3 .mock-card:nth-child(2) {
+      height: 28px;
+      border-radius: 10px;
+      background: rgba(10,243,235,0.1);
+      margin-left: 20px;
+    }
+
+    /* ===== WHY SECTION ===== */
+    .why-section { background: var(--bg-light); }
+
+    .why-quote {
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 600;
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 56px;
+      line-height: 1.5;
+      color: var(--fg);
+    }
+
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .stat-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 16px 18px;
-      flex: 1;
-      min-width: 110px;
+      padding: 32px 24px;
       text-align: center;
-      backdrop-filter: blur(20px);
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
+      backdrop-filter: blur(16px);
     }
-    .pipeline-step::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan));
-      opacity: 0;
-      transition: opacity 0.3s;
+
+    .stat-number {
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--coral), var(--amber), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
     }
-    .pipeline-step:hover::before { opacity: 1; }
-    .pipeline-step:hover {
-      transform: translateY(-3px);
-      border-color: rgba(255, 255, 255, 0.15);
-    }
-    .pipeline-step .num {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      margin-bottom: 6px;
-    }
-    .pipeline-step:nth-child(1) .num { color: var(--coral); background: rgba(245, 136, 130, 0.12); }
-    .pipeline-step:nth-child(2) .num { color: var(--amber); background: rgba(253, 163, 3, 0.12); }
-    .pipeline-step:nth-child(3) .num { color: var(--cyan); background: rgba(10, 243, 235, 0.12); }
-    .pipeline-step:nth-child(4) .num { color: var(--green); background: rgba(0, 224, 171, 0.12); }
-    .pipeline-step:nth-child(5) .num { color: var(--yellow); background: rgba(252, 208, 33, 0.12); }
-    .pipeline-step:nth-child(6) .num { color: var(--orange); background: rgba(252, 141, 13, 0.12); }
-    .pipeline-step:nth-child(7) .num { color: var(--purple); background: rgba(101, 0, 198, 0.2); }
-    .pipeline-step .name {
+
+    .stat-desc {
       font-size: 0.9rem;
-      font-weight: 700;
-    }
-
-    /* Pipeline animated reveal */
-    .pipeline-step.reveal {
-      opacity: 0;
-      transform: scale(0.8) translateY(10px);
-      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .pipeline-step.reveal.visible {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-
-    /* ── Tools grid ── */
-    .tools-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    @media (max-width: 640px) {
-      .tools-grid { grid-template-columns: 1fr; }
-    }
-    .tool {
-      position: relative;
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 20px 22px;
-      backdrop-filter: blur(20px);
-      border: 1px solid transparent;
-      background-clip: padding-box;
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .tool::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 12px;
-      padding: 1px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-      transition: background 0.35s;
-    }
-    .tool:hover::before {
-      background: linear-gradient(135deg, var(--cyan), var(--coral), var(--amber));
-      opacity: 0.5;
-    }
-    .tool:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 32px rgba(10, 243, 235, 0.06);
-    }
-    .tool code {
-      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-      font-size: 0.85rem;
-      color: var(--cyan);
-      font-weight: 600;
-    }
-    .tool p {
       color: var(--muted);
-      font-size: 0.9rem;
-      margin-top: 6px;
       line-height: 1.5;
     }
 
-    /* ── Setup ── */
-    .setup-block {
-      background: var(--code-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 22px 26px;
-      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-      font-size: 0.85rem;
-      line-height: 1.8;
-      overflow-x: auto;
-      white-space: pre;
-      backdrop-filter: blur(20px);
-      border-top: 2px solid;
-      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+    /* ===== PIPELINE ===== */
+    .pipeline-section { background: var(--bg); }
+
+    .timeline {
       position: relative;
-    }
-    .setup-block .key { color: var(--cyan); }
-    .setup-block .str { color: var(--green); }
-    .setup-block .brace { color: var(--muted); }
-
-    .section h3 {
-      font-weight: 700;
-      font-size: 1.1rem;
+      max-width: 860px;
+      margin: 0 auto;
     }
 
-    /* ── Packages ── */
-    .pkg-grid {
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 24px;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, var(--coral), var(--amber), var(--cyan));
+      border-radius: 2px;
+    }
+
+    .timeline-step {
+      position: relative;
+      padding-left: 72px;
+      padding-bottom: 48px;
       display: grid;
       grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .timeline-step:last-child { padding-bottom: 0; }
+
+    .step-dot {
+      position: absolute;
+      left: 12px;
+      top: 4px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--bg);
+      z-index: 1;
+    }
+
+    .step-dot-1 { background: var(--coral); }
+    .step-dot-2 { background: var(--amber); }
+    .step-dot-3 { background: var(--cyan); }
+    .step-dot-4 { background: var(--green); }
+    .step-dot-5 { background: var(--yellow); }
+    .step-dot-6 { background: var(--orange); }
+    .step-dot-7 { background: var(--pink); }
+
+    .step-info h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .step-info p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .step-visual {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+      backdrop-filter: blur(12px);
+      font-size: 0.82rem;
+    }
+
+    .chat-bubble {
+      background: rgba(245,136,130,0.1);
+      border: 1px solid rgba(245,136,130,0.15);
+      border-radius: 10px 10px 10px 2px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--fg);
+      line-height: 1.5;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      background: rgba(10,243,235,0.1);
+      border: 1px solid rgba(10,243,235,0.2);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.75rem;
+      color: var(--cyan);
+    }
+
+    .layer-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .layer {
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .layer-theme { background: rgba(253,163,3,0.12); color: var(--amber); border: 1px solid rgba(253,163,3,0.2); }
+    .layer-structure { background: rgba(10,243,235,0.1); color: var(--cyan); border: 1px solid rgba(10,243,235,0.18); }
+    .layer-features { background: rgba(0,224,171,0.1); color: var(--green); border: 1px solid rgba(0,224,171,0.18); }
+
+    .mini-code {
+      background: var(--code-bg);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.72rem;
+      line-height: 1.7;
+      color: var(--muted);
+      border-top: 3px solid;
+      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+      overflow-x: auto;
+    }
+
+    .mini-code .k { color: var(--coral); }
+    .mini-code .s { color: var(--green); }
+    .mini-code .n { color: var(--amber); }
+
+    .pattern-compose {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+    }
+
+    .pattern-chip {
+      background: rgba(252,208,33,0.1);
+      border: 1px solid rgba(252,208,33,0.2);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.72rem;
+      color: var(--yellow);
+    }
+
+    .compose-arrow {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .compose-result {
+      background: rgba(0,224,171,0.1);
+      border: 1px solid rgba(0,224,171,0.18);
+      border-radius: 6px;
+      padding: 4px 12px;
+      color: var(--green);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .code-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: right;
+      font-style: italic;
+    }
+
+    .check-result {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .check-pass {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--green);
+    }
+
+    .check-fail {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--crimson);
+    }
+
+    .check-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .check-icon-pass { background: rgba(0,224,171,0.2); }
+    .check-icon-fail { background: rgba(216,15,74,0.2); }
+
+    /* ===== MCP TOOLS ===== */
+    .tools-section { background: var(--bg-light); }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 16px;
+      max-width: 880px;
+      margin: 0 auto;
     }
-    @media (max-width: 640px) {
-      .pkg-grid { grid-template-columns: 1fr; }
+
+    .tool-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
-    .pkg {
+
+    .tool-card:hover {
+      border-color: rgba(10,243,235,0.3);
+      box-shadow: 0 0 20px rgba(10,243,235,0.06);
+    }
+
+    .tool-name {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.82rem;
+      color: var(--cyan);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .tool-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ===== QUICK START ===== */
+    .quickstart-section { background: var(--bg); }
+
+    .qs-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      max-width: 900px;
+      margin: 0 auto 48px;
+      position: relative;
+    }
+
+    .qs-steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 15%;
+      right: 15%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan));
+    }
+
+    .qs-step {
+      text-align: center;
+      position: relative;
+    }
+
+    .qs-num {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin: 0 auto 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .qs-num-1 { background: linear-gradient(135deg, var(--coral), var(--pink)); color: #fff; }
+    .qs-num-2 { background: linear-gradient(135deg, var(--amber), var(--orange)); color: var(--bg); }
+    .qs-num-3 { background: linear-gradient(135deg, var(--cyan), var(--green)); color: var(--bg); }
+
+    .qs-step h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .qs-code-block {
+      background: var(--code-bg);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: left;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.7rem;
+      line-height: 1.7;
+      color: var(--muted);
+      border-top: 3px solid;
+      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+      overflow-x: auto;
+    }
+
+    .qs-code-block .k { color: var(--coral); }
+    .qs-code-block .s { color: var(--green); }
+
+    .qs-chat {
+      background: rgba(245,136,130,0.08);
+      border: 1px solid rgba(245,136,130,0.12);
+      border-radius: 12px 12px 12px 2px;
+      padding: 14px 16px;
+      font-size: 0.82rem;
+      text-align: left;
+      color: var(--fg);
+      line-height: 1.5;
+    }
+
+    .qs-output {
+      background: var(--code-bg);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: left;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.68rem;
+      line-height: 1.7;
+      color: var(--muted);
+      border-top: 3px solid;
+      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+    }
+    .qs-output .k { color: var(--coral); }
+    .qs-output .s { color: var(--green); }
+    .qs-output .c { color: var(--cyan); }
+
+    .config-tabs {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 0;
+      margin-bottom: -1px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      border-bottom: none;
+      color: var(--muted);
+      padding: 10px 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.2s, background 0.2s;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .tab-btn.active {
+      background: var(--code-bg);
+      color: var(--cyan);
+      border-color: var(--card-border);
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    .tab-code {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0 8px 8px 8px;
+      padding: 20px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.75rem;
+      line-height: 1.7;
+      color: var(--muted);
+      overflow-x: auto;
+    }
+    .tab-code .k { color: var(--coral); }
+    .tab-code .s { color: var(--green); }
+
+    /* ===== PACKAGES ===== */
+    .packages-section { background: var(--bg-light); }
+
+    .packages-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .pkg-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 24px;
-      backdrop-filter: blur(20px);
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(12px);
+      transition: border-color 0.3s;
     }
-    .pkg:hover {
-      transform: translateY(-3px);
-      border-color: rgba(253, 163, 3, 0.25);
-      box-shadow: 0 8px 32px rgba(253, 163, 3, 0.06);
+
+    .pkg-card:hover {
+      border-color: rgba(255,255,255,0.15);
     }
-    .pkg code {
-      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-      font-size: 0.85rem;
-      color: var(--amber);
+
+    .pkg-name {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.88rem;
       font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 6px;
     }
-    .pkg p { color: var(--muted); font-size: 0.9rem; margin-top: 10px; line-height: 1.5; }
 
-    /* ── API section ── */
-    .api-block {
-      background: var(--code-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 20px 24px;
-      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-      font-size: 0.9rem;
-      text-align: left;
+    .pkg-desc {
+      font-size: 0.82rem;
       color: var(--muted);
-      overflow-x: auto;
-      border-top: 2px solid;
-      border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
-      backdrop-filter: blur(20px);
+      line-height: 1.5;
     }
-    .api-block .cmd { color: var(--fg); display: block; padding: 4px 0; }
 
-    /* ── Footer ── */
-    .footer {
-      padding: 56px 0;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.9rem;
-      position: relative;
+    /* ===== WORKS WITH ===== */
+    .works-section {
+      background: var(--bg);
+      padding: 60px 0;
     }
-    .footer::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(100%, 1000px);
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.08) 80%, transparent);
-    }
-    .footer-logo {
-      height: 32px;
-      width: auto;
-      margin-bottom: 20px;
-      opacity: 0.5;
-      transition: opacity 0.3s;
-    }
-    .footer-logo:hover { opacity: 0.8; }
-    .footer-links {
+
+    .works-row {
       display: flex;
-      gap: 28px;
+      flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: 16px;
+      gap: 12px;
+      max-width: 700px;
+      margin: 0 auto;
     }
-    .footer-links a {
+
+    .works-pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 8px 20px;
+      font-size: 0.85rem;
       color: var(--muted);
       font-weight: 500;
-      transition: color 0.2s;
     }
-    .footer-links a:hover { color: var(--fg); }
-    .footer p a { color: var(--cyan); }
 
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
-      .hero { padding: 100px 0 60px; min-height: auto; }
-      .section { padding: 72px 0; }
-      .pipeline { gap: 6px; }
-      .pipeline-step { min-width: 90px; padding: 12px 10px; }
+    /* ===== BOTTOM CTA ===== */
+    .bottom-cta {
+      padding: 80px 24px;
+      background: linear-gradient(135deg, var(--coral), var(--amber), var(--cyan));
+      text-align: center;
     }
+
+    .bottom-cta h2 {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      color: var(--bg);
+      margin-bottom: 12px;
+    }
+
+    .bottom-cta p {
+      font-size: 1.05rem;
+      color: rgba(1,14,46,0.7);
+      margin-bottom: 32px;
+    }
+
+    .btn-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: var(--bg);
+      color: var(--fg);
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-dark:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(1,14,46,0.3);
+      color: var(--fg);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--card-border);
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .footer-logo {
+      width: 32px;
+      height: auto;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+
+    .footer-links a {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .footer-links a:hover { color: var(--cyan); }
+
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(139,147,168,0.5);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .problem-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+
+      .stat-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .timeline-step {
+        grid-template-columns: 1fr;
+      }
+
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .qs-steps {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .qs-steps::before { display: none; }
+
+      .packages-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline::before {
+        left: 16px;
+      }
+
+      .timeline-step {
+        padding-left: 56px;
+      }
+
+      .step-dot {
+        left: 4px;
+      }
+
+      section {
+        padding: 56px 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 1.7rem;
+      }
+      .tab-buttons {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* ===== STAGGERED REVEALS ===== */
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+    .reveal-delay-6 { transition-delay: 0.6s; }
+    .reveal-delay-7 { transition-delay: 0.7s; }
   </style>
 </head>
 <body>
 
-  <!-- Hero -->
-  <div class="hero">
-    <div class="hero-aurora">
-      <div class="aurora-layer"></div>
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-particles">
+    <div class="particle" style="top:15%;left:10%;background:var(--coral);animation-delay:0s"></div>
+    <div class="particle" style="top:25%;left:85%;background:var(--cyan);animation-delay:1.5s"></div>
+    <div class="particle" style="top:60%;left:20%;background:var(--amber);animation-delay:3s"></div>
+    <div class="particle" style="top:70%;left:75%;background:var(--green);animation-delay:4.5s"></div>
+    <div class="particle" style="top:40%;left:50%;background:var(--yellow);animation-delay:2s"></div>
+    <div class="particle" style="top:80%;left:40%;background:var(--coral);animation-delay:5s"></div>
+    <div class="particle" style="top:10%;left:60%;background:var(--cyan);animation-delay:1s"></div>
+    <div class="particle" style="top:50%;left:90%;background:var(--amber);animation-delay:3.5s"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-logo-wrap">
+      <div class="logo-glow"></div>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="orb orb-4"></div>
+      <img src="logo-portrait.svg" alt="Decantr">
     </div>
-    <div class="hero-particles">
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-    </div>
-    <div class="container">
-      <div class="hero-stack">
-        <div class="hero-logo-wrap" id="heroLogo">
-          <div class="logo-orb orb-1"></div>
-          <div class="logo-orb orb-2"></div>
-          <div class="logo-orb orb-3"></div>
-          <div class="logo-orb orb-4"></div>
-          <div class="logo-orb orb-5"></div>
-          <img src="logo.svg" alt="Decantr">
-        </div>
-        <h1><span>Design intelligence</span><br>for AI-generated UI</h1>
-        <p class="tagline">We don't care what you build with. We care what you build. Decantr is a structured schema and intelligence layer that makes AI coding assistants generate consistent, production-quality web applications.</p>
-        <div class="cta-row">
-          <a href="#setup" class="btn btn-primary">Get Started</a>
-          <a href="https://github.com/decantr-ai/decantr" class="btn btn-secondary">GitHub</a>
-          <a href="https://www.npmjs.com/package/@decantr/mcp-server" class="btn btn-secondary">npm</a>
-        </div>
-        <div class="install">
-          <div class="comment"># Add to Claude Desktop, Cursor, or any MCP-compatible AI</div>
-          <div class="cmd">npx @decantr/mcp-server@beta</div>
-        </div>
-      </div>
+    <h1><span class="gradient-text">Design intelligence</span> for AI-generated UI</h1>
+    <p class="hero-sub">Your AI generates code. Decantr makes sure it's actually good.</p>
+    <div class="hero-ctas">
+      <a href="#quickstart" class="btn-primary">Get Started <span aria-hidden="true">&rarr;</span></a>
+      <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
     </div>
   </div>
+</section>
 
-  <!-- Problem / Solution -->
-  <div class="section">
-    <div class="container">
-      <h2 class="reveal">The problem with AI-generated UI</h2>
-      <p class="subtitle reveal reveal-delay-1">Every AI code generator races to output faster. None of them think about what happens after they generate.</p>
-      <div class="problem-grid">
-        <div class="problem-card reveal reveal-delay-1">
-          <div class="label red">Without Decantr</div>
-          <h3>Pages don't match each other</h3>
-          <p>Each prompt produces a different layout, spacing, and component style. After 10 iterations, your app looks like it was built by 10 different people.</p>
+<!-- Wave 1 -->
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+    <path fill="rgba(245,136,130,0.06)" d="M0,40 C360,100 1080,0 1440,60 L1440,120 L0,120 Z"/>
+  </svg>
+</div>
+
+<!-- ==================== PROBLEM ==================== -->
+<section id="problem" style="background:var(--bg-light)">
+  <div class="container">
+    <h2 class="section-heading reveal">Every AI-generated app has an expiration date</h2>
+    <p class="section-sub reveal">AI coding assistants have no memory of design intent. Every prompt is a fresh start. By prompt 10, your app looks like it was built by 10 different people.</p>
+
+    <div class="problem-grid">
+      <!-- WITHOUT -->
+      <div class="reveal">
+        <p class="problem-col-label label-bad">Without Decantr</p>
+
+        <div class="browser-frame drift-1">
+          <div class="browser-frame-bar">
+            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+            <span class="browser-frame-label">Prompt 1</span>
+          </div>
+          <div class="browser-frame-body">
+            <div class="mock-card" style="width:40%"></div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+            </div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+            </div>
+          </div>
         </div>
-        <div class="problem-card solution reveal reveal-delay-2">
-          <div class="label green">With Decantr</div>
-          <h3>Consistent design language</h3>
-          <p>Patterns enforce consistent component composition. The Essence spec captures your design intent. Every page matches.</p>
+
+        <div class="browser-frame drift-2">
+          <div class="browser-frame-bar">
+            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+            <span class="browser-frame-label">Prompt 5</span>
+          </div>
+          <div class="browser-frame-body">
+            <div class="mock-card" style="width:60%;margin-left:10px"></div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block" style="flex:1.5"></div>
+              <div class="mock-block" style="flex:0.7"></div>
+            </div>
+            <div class="mock-row">
+              <div class="mock-block" style="flex:0.5"></div>
+              <div class="mock-block"></div>
+            </div>
+          </div>
         </div>
-        <div class="problem-card reveal reveal-delay-3">
-          <div class="label red">Without Decantr</div>
-          <h3>Every iteration drifts further</h3>
-          <p>AI doesn't remember what it decided before. New features conflict with existing design decisions. Quality degrades over time.</p>
-        </div>
-        <div class="problem-card solution reveal reveal-delay-4">
-          <div class="label green">With Decantr</div>
-          <h3>Guard rules prevent drift</h3>
-          <p>Five guard rules validate every change against your spec. Theme, structure, layout, recipe, and density are enforced automatically.</p>
+
+        <div class="browser-frame drift-3">
+          <div class="browser-frame-bar">
+            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+            <span class="browser-frame-label">Prompt 10</span>
+          </div>
+          <div class="browser-frame-body">
+            <div class="mock-card"></div>
+            <div class="mock-card"></div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- How it works -->
-  <div class="section">
-    <div class="container">
-      <h2 class="reveal">How it works</h2>
-      <p class="subtitle reveal reveal-delay-1">Decantr provides design intelligence through the MCP protocol. Your AI coding assistant calls Decantr's tools during code generation to produce better results.</p>
-      <div class="pipeline">
-        <div class="pipeline-step reveal reveal-delay-1"><div class="num">1</div><div class="name">Intent</div></div>
-        <div class="pipeline-step reveal reveal-delay-2"><div class="num">2</div><div class="name">Interpret</div></div>
-        <div class="pipeline-step reveal reveal-delay-3"><div class="num">3</div><div class="name">Decompose</div></div>
-        <div class="pipeline-step reveal reveal-delay-4"><div class="num">4</div><div class="name">Specify</div></div>
-        <div class="pipeline-step reveal reveal-delay-5"><div class="num">5</div><div class="name">Compose</div></div>
-        <div class="pipeline-step reveal reveal-delay-6"><div class="num">6</div><div class="name">Generate</div></div>
-        <div class="pipeline-step reveal" style="transition-delay: 0.7s;"><div class="num">7</div><div class="name">Guard</div></div>
-      </div>
-      <p class="reveal" style="color: var(--muted); font-size: 0.95rem; line-height: 1.7;">You describe what you want. Decantr structures it into a validated spec (the Essence file). Your AI generates code using Decantr's patterns, archetypes, and spatial rules. Guard rules prevent drift on every subsequent change.</p>
-    </div>
-  </div>
-
-  <!-- MCP Tools -->
-  <div class="section">
-    <div class="container">
-      <h2 class="reveal">10 MCP tools for your AI assistant</h2>
-      <p class="subtitle reveal reveal-delay-1">Install the MCP server once. Every prompt gets smarter.</p>
-      <div class="tools-grid">
-        <div class="tool reveal reveal-delay-1"><code>decantr_create_essence</code><p>Generate a design spec from a project description</p></div>
-        <div class="tool reveal reveal-delay-1"><code>decantr_suggest_patterns</code><p>Get pattern recommendations for any page type</p></div>
-        <div class="tool reveal reveal-delay-2"><code>decantr_resolve_pattern</code><p>Full pattern details with layout specs and components</p></div>
-        <div class="tool reveal reveal-delay-2"><code>decantr_resolve_archetype</code><p>App templates with page maps and feature lists</p></div>
-        <div class="tool reveal reveal-delay-3"><code>decantr_resolve_blueprint</code><p>Composed app templates with full structure</p></div>
-        <div class="tool reveal reveal-delay-3"><code>decantr_resolve_recipe</code><p>Visual decoration rules and spatial hints</p></div>
-        <div class="tool reveal reveal-delay-4"><code>decantr_check_drift</code><p>Detect when code violates your design spec</p></div>
-        <div class="tool reveal reveal-delay-4"><code>decantr_validate</code><p>Validate your Essence file against the schema</p></div>
-        <div class="tool reveal reveal-delay-5"><code>decantr_read_essence</code><p>Read the current design spec from your project</p></div>
-        <div class="tool reveal reveal-delay-5"><code>decantr_search_registry</code><p>Search patterns, archetypes, recipes, and themes</p></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Setup -->
-  <div class="section" id="setup">
-    <div class="container">
-      <h2 class="reveal">Set up in 30 seconds</h2>
-      <p class="subtitle reveal reveal-delay-1">Add Decantr to your AI coding assistant. No project changes needed.</p>
-
+      <!-- WITH -->
       <div class="reveal reveal-delay-2">
-        <h3 style="margin-bottom: 12px;">Claude Desktop</h3>
-        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to your <code style="color: var(--cyan);">claude_desktop_config.json</code>:</p>
-        <div class="setup-block"><span class="brace">{</span>
-  <span class="key">"mcpServers"</span><span class="brace">: {</span>
-    <span class="key">"decantr"</span><span class="brace">: {</span>
-      <span class="key">"command"</span><span class="brace">:</span> <span class="str">"npx"</span><span class="brace">,</span>
-      <span class="key">"args"</span><span class="brace">:</span> <span class="brace">[</span><span class="str">"@decantr/mcp-server@beta"</span><span class="brace">]</span>
-    <span class="brace">}</span>
-  <span class="brace">}</span>
-<span class="brace">}</span></div>
-      </div>
+        <p class="problem-col-label label-good">With Decantr</p>
 
-      <div class="reveal reveal-delay-3">
-        <h3 style="margin: 36px 0 12px;">Claude Code</h3>
-        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to your <code style="color: var(--cyan);">settings.json</code>:</p>
-        <div class="setup-block"><span class="brace">{</span>
-  <span class="key">"mcpServers"</span><span class="brace">: {</span>
-    <span class="key">"decantr"</span><span class="brace">: {</span>
-      <span class="key">"command"</span><span class="brace">:</span> <span class="str">"npx"</span><span class="brace">,</span>
-      <span class="key">"args"</span><span class="brace">:</span> <span class="brace">[</span><span class="str">"@decantr/mcp-server@beta"</span><span class="brace">]</span>
-    <span class="brace">}</span>
-  <span class="brace">}</span>
-<span class="brace">}</span></div>
-      </div>
+        <div class="browser-frame good">
+          <div class="browser-frame-bar">
+            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+            <span class="browser-frame-label">Prompt 1</span>
+          </div>
+          <div class="browser-frame-body">
+            <div class="mock-card" style="width:40%"></div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+            </div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+            </div>
+          </div>
+        </div>
 
-      <div class="reveal reveal-delay-4">
-        <h3 style="margin: 36px 0 12px;">Cursor</h3>
-        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Add to <code style="color: var(--cyan);">.cursor/mcp.json</code> in your project:</p>
-        <div class="setup-block"><span class="brace">{</span>
-  <span class="key">"mcpServers"</span><span class="brace">: {</span>
-    <span class="key">"decantr"</span><span class="brace">: {</span>
-      <span class="key">"command"</span><span class="brace">:</span> <span class="str">"npx"</span><span class="brace">,</span>
-      <span class="key">"args"</span><span class="brace">:</span> <span class="brace">[</span><span class="str">"@decantr/mcp-server@beta"</span><span class="brace">]</span>
-    <span class="brace">}</span>
-  <span class="brace">}</span>
-<span class="brace">}</span></div>
+        <div class="browser-frame good">
+          <div class="browser-frame-bar">
+            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+            <span class="browser-frame-label">Prompt 5</span>
+          </div>
+          <div class="browser-frame-body">
+            <div class="mock-card" style="width:40%"></div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+            </div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="browser-frame good">
+          <div class="browser-frame-bar">
+            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+            <span class="browser-frame-label">Prompt 10</span>
+          </div>
+          <div class="browser-frame-body">
+            <div class="mock-card" style="width:40%"></div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+            </div>
+            <div class="mock-row">
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+              <div class="mock-block"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- Packages -->
-  <div class="section">
-    <div class="container">
-      <h2 class="reveal">Packages</h2>
-      <p class="subtitle reveal reveal-delay-1">Open source. MIT licensed. Use what you need.</p>
-      <div class="pkg-grid">
-        <div class="pkg reveal reveal-delay-1">
-          <code>@decantr/mcp-server</code>
-          <p>MCP server exposing 10 design intelligence tools to AI coding assistants</p>
+<!-- Wave 2 -->
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+    <path fill="rgba(10,243,235,0.05)" d="M0,80 C480,20 960,100 1440,40 L1440,120 L0,120 Z"/>
+  </svg>
+</div>
+
+<!-- ==================== WHY ==================== -->
+<section class="why-section">
+  <div class="container">
+    <p class="why-quote reveal">Decantr is the source of truth for how your app should look and feel.</p>
+
+    <div class="stat-cards">
+      <div class="stat-card reveal reveal-delay-1">
+        <div class="stat-number">Zero drift</div>
+        <p class="stat-desc">across unlimited iterations</p>
+      </div>
+      <div class="stat-card reveal reveal-delay-2">
+        <div class="stat-number">One spec</div>
+        <p class="stat-desc">any framework -- React, Vue, Svelte, or anything</p>
+      </div>
+      <div class="stat-card reveal reveal-delay-3">
+        <div class="stat-number">10 tools</div>
+        <p class="stat-desc">embedded in your AI assistant via MCP</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Wave 3 -->
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+    <path fill="rgba(253,163,3,0.05)" d="M0,60 C240,10 720,110 1440,30 L1440,120 L0,120 Z"/>
+  </svg>
+</div>
+
+<!-- ==================== PIPELINE ==================== -->
+<section class="pipeline-section">
+  <div class="container">
+    <h2 class="section-heading reveal">From intent to production-quality code</h2>
+    <p class="section-sub reveal">The Design Pipeline transforms what you say into what you see -- in seven stages.</p>
+
+    <div class="timeline">
+
+      <!-- Step 1: Intent -->
+      <div class="timeline-step reveal reveal-delay-1">
+        <div class="step-dot step-dot-1">1</div>
+        <div class="step-info">
+          <h3>Intent</h3>
+          <p>You describe what you want to build, in plain language. No config files. No setup.</p>
         </div>
-        <div class="pkg reveal reveal-delay-2">
-          <code>@decantr/essence-spec</code>
-          <p>JSON Schema for UI architecture intent. Validator and guard rules.</p>
+        <div class="step-visual">
+          <div class="chat-bubble">Build me a SaaS dashboard with analytics and user management</div>
         </div>
-        <div class="pkg reveal reveal-delay-3">
-          <code>@decantr/core</code>
-          <p>Design Pipeline IR engine. Transforms Essence specs into framework-agnostic structure.</p>
+      </div>
+
+      <!-- Step 2: Interpret -->
+      <div class="timeline-step reveal reveal-delay-2">
+        <div class="step-dot step-dot-2">2</div>
+        <div class="step-info">
+          <h3>Interpret</h3>
+          <p>Your intent is parsed into structured signals: app type, features, and design personality.</p>
         </div>
-        <div class="pkg reveal reveal-delay-4">
-          <code>@decantr/registry</code>
-          <p>Content resolver with wiring rules. Patterns, archetypes, recipes, themes, blueprints.</p>
+        <div class="step-visual">
+          <div class="tag-list">
+            <span class="tag">archetype: saas-dashboard</span>
+            <span class="tag">features: analytics, auth</span>
+            <span class="tag">personality: professional</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Decompose -->
+      <div class="timeline-step reveal reveal-delay-3">
+        <div class="step-dot step-dot-3">3</div>
+        <div class="step-info">
+          <h3>Decompose</h3>
+          <p>The structured intent is separated into three independent layers that can evolve separately.</p>
+        </div>
+        <div class="step-visual">
+          <div class="layer-stack">
+            <div class="layer layer-theme">Theme</div>
+            <div class="layer layer-structure">Structure</div>
+            <div class="layer layer-features">Features</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Specify -->
+      <div class="timeline-step reveal reveal-delay-4">
+        <div class="step-dot step-dot-4">4</div>
+        <div class="step-info">
+          <h3>Specify</h3>
+          <p>A machine-readable spec is written -- your decantr.essence.json -- the single source of truth.</p>
+        </div>
+        <div class="step-visual">
+          <div class="mini-code">
+<span class="k">{</span>
+  <span class="s">"theme"</span>: <span class="s">"clean"</span>,
+  <span class="s">"personality"</span>: <span class="s">"professional"</span>,
+  <span class="s">"density"</span>: <span class="s">"comfortable"</span>,
+  <span class="s">"pages"</span>: <span class="k">{</span>
+    <span class="s">"dashboard"</span>: [<span class="s">"kpi-grid"</span>, <span class="s">"chart-grid"</span>]
+  <span class="k">}</span>
+<span class="k">}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Compose -->
+      <div class="timeline-step reveal reveal-delay-5">
+        <div class="step-dot step-dot-5">5</div>
+        <div class="step-info">
+          <h3>Compose</h3>
+          <p>Patterns are resolved and composed into complete page layouts, ready for code generation.</p>
+        </div>
+        <div class="step-visual">
+          <div class="pattern-compose">
+            <span class="pattern-chip">kpi-grid</span>
+            <span class="compose-arrow">+</span>
+            <span class="pattern-chip">chart-grid</span>
+            <span class="compose-arrow">+</span>
+            <span class="pattern-chip">data-table</span>
+            <span class="compose-arrow">&rarr;</span>
+            <span class="compose-result">page layout</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6: Generate -->
+      <div class="timeline-step reveal reveal-delay-6">
+        <div class="step-dot step-dot-6">6</div>
+        <div class="step-info">
+          <h3>Generate</h3>
+          <p>Your AI assistant generates code using the resolved composition. Decantr doesn't generate code -- your AI does, better.</p>
+        </div>
+        <div class="step-visual">
+          <div class="mini-code">
+<span class="k">export default</span> <span class="n">function</span> <span class="s">Dashboard</span>() {
+  <span class="k">return</span> (
+    &lt;<span class="n">div</span> <span class="s">className</span>=<span class="s">"grid gap-6"</span>&gt;
+      &lt;<span class="n">KpiGrid</span> /&gt;
+      &lt;<span class="n">ChartGrid</span> /&gt;
+    &lt;/<span class="n">div</span>&gt;
+  );
+}
+          </div>
+          <p class="code-label">powered by your AI</p>
+        </div>
+      </div>
+
+      <!-- Step 7: Guard -->
+      <div class="timeline-step reveal reveal-delay-7">
+        <div class="step-dot step-dot-7">7</div>
+        <div class="step-info">
+          <h3>Guard</h3>
+          <p>Every change is validated against the spec. Drift is detected before it ships.</p>
+        </div>
+        <div class="step-visual">
+          <div class="check-result">
+            <div class="check-pass">
+              <span class="check-icon check-icon-pass">&#10003;</span>
+              Theme: clean
+            </div>
+            <div class="check-pass">
+              <span class="check-icon check-icon-pass">&#10003;</span>
+              Structure: valid
+            </div>
+            <div class="check-fail">
+              <span class="check-icon check-icon-fail">&#10005;</span>
+              Style mismatch detected
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Wave 4 -->
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+    <path fill="rgba(0,224,171,0.05)" d="M0,30 C360,90 1080,10 1440,70 L1440,120 L0,120 Z"/>
+  </svg>
+</div>
+
+<!-- ==================== MCP TOOLS ==================== -->
+<section class="tools-section" id="tools">
+  <div class="container">
+    <h2 class="section-heading reveal">10 tools for your AI assistant</h2>
+    <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
+
+    <div class="tools-grid">
+      <div class="tool-card reveal reveal-delay-1">
+        <div class="tool-name">decantr_create_essence</div>
+        <p class="tool-desc">Generate a design spec from a description</p>
+      </div>
+      <div class="tool-card reveal reveal-delay-1">
+        <div class="tool-name">decantr_suggest_patterns</div>
+        <p class="tool-desc">Get pattern recommendations for any page</p>
+      </div>
+      <div class="tool-card reveal reveal-delay-2">
+        <div class="tool-name">decantr_resolve_pattern</div>
+        <p class="tool-desc">Full pattern details with layout specs</p>
+      </div>
+      <div class="tool-card reveal reveal-delay-2">
+        <div class="tool-name">decantr_resolve_archetype</div>
+        <p class="tool-desc">App templates with page maps</p>
+      </div>
+      <div class="tool-card reveal reveal-delay-3">
+        <div class="tool-name">decantr_resolve_blueprint</div>
+        <p class="tool-desc">Composed templates with full structure</p>
+      </div>
+      <div class="tool-card reveal reveal-delay-3">
+        <div class="tool-name">decantr_resolve_recipe</div>
+        <p class="tool-desc">Visual decoration rules and spatial hints</p>
+      </div>
+      <div class="tool-card reveal reveal-delay-4">
+        <div class="tool-name">decantr_check_drift</div>
+        <p class="tool-desc">Detect design spec violations</p>
+      </div>
+      <div class="tool-card reveal reveal-delay-4">
+        <div class="tool-name">decantr_validate</div>
+        <p class="tool-desc">Validate Essence against the schema</p>
+      </div>
+      <div class="tool-card reveal reveal-delay-5">
+        <div class="tool-name">decantr_read_essence</div>
+        <p class="tool-desc">Read the current design spec</p>
+      </div>
+      <div class="tool-card reveal reveal-delay-5">
+        <div class="tool-name">decantr_search_registry</div>
+        <p class="tool-desc">Search patterns, archetypes, themes</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Wave 5 -->
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+    <path fill="rgba(245,136,130,0.05)" d="M0,70 C480,10 960,100 1440,50 L1440,120 L0,120 Z"/>
+  </svg>
+</div>
+
+<!-- ==================== QUICK START ==================== -->
+<section class="quickstart-section" id="quickstart">
+  <div class="container">
+    <h2 class="section-heading reveal">Get started in 30 seconds</h2>
+    <p class="section-sub reveal">Three steps. No build tools. No configuration rabbit holes.</p>
+
+    <div class="qs-steps">
+      <div class="qs-step reveal reveal-delay-1">
+        <div class="qs-num qs-num-1">1</div>
+        <h3>Add Decantr to your AI</h3>
+        <div class="qs-code-block">
+<span class="k">{</span>
+  <span class="s">"mcpServers"</span>: <span class="k">{</span>
+    <span class="s">"decantr"</span>: <span class="k">{</span>
+      <span class="s">"command"</span>: <span class="s">"npx"</span>,
+      <span class="s">"args"</span>: [<span class="s">"@decantr/mcp-server"</span>]
+    <span class="k">}</span>
+  <span class="k">}</span>
+<span class="k">}</span>
+        </div>
+      </div>
+
+      <div class="qs-step reveal reveal-delay-2">
+        <div class="qs-num qs-num-2">2</div>
+        <h3>Describe your project</h3>
+        <div class="qs-chat">Build me a SaaS analytics dashboard with dark theme, KPI cards, and chart grids</div>
+      </div>
+
+      <div class="qs-step reveal reveal-delay-3">
+        <div class="qs-num qs-num-3">3</div>
+        <h3>Get consistent code</h3>
+        <div class="qs-output">
+<span class="c">// Generated with design intelligence</span>
+<span class="k">export default</span> <span class="s">function</span> Dashboard() {
+  <span class="k">return</span> (
+    &lt;<span class="s">Layout</span> theme=<span class="s">"dark"</span>&gt;
+      &lt;<span class="s">KpiGrid</span> /&gt;
+      &lt;<span class="s">ChartGrid</span> /&gt;
+    &lt;/<span class="s">Layout</span>&gt;
+  );
+}
+        </div>
+      </div>
+    </div>
+
+    <div class="config-tabs reveal">
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="claude-desktop">Claude Desktop</button>
+        <button class="tab-btn" data-tab="claude-code">Claude Code</button>
+        <button class="tab-btn" data-tab="cursor">Cursor</button>
+      </div>
+
+      <div class="tab-content active" id="tab-claude-desktop">
+        <div class="tab-code">
+<span class="s">// ~/Library/Application Support/Claude/claude_desktop_config.json</span>
+<span class="k">{</span>
+  <span class="s">"mcpServers"</span>: <span class="k">{</span>
+    <span class="s">"decantr"</span>: <span class="k">{</span>
+      <span class="s">"command"</span>: <span class="s">"npx"</span>,
+      <span class="s">"args"</span>: [<span class="s">"@decantr/mcp-server"</span>]
+    <span class="k">}</span>
+  <span class="k">}</span>
+<span class="k">}</span>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-claude-code">
+        <div class="tab-code">
+<span class="s">// Run in your terminal:</span>
+claude mcp add decantr -- npx @decantr/mcp-server
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-cursor">
+        <div class="tab-code">
+<span class="s">// .cursor/mcp.json</span>
+<span class="k">{</span>
+  <span class="s">"mcpServers"</span>: <span class="k">{</span>
+    <span class="s">"decantr"</span>: <span class="k">{</span>
+      <span class="s">"command"</span>: <span class="s">"npx"</span>,
+      <span class="s">"args"</span>: [<span class="s">"@decantr/mcp-server"</span>]
+    <span class="k">}</span>
+  <span class="k">}</span>
+<span class="k">}</span>
         </div>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- API -->
-  <div class="section">
-    <div class="container">
-      <h2 class="reveal">Registry API</h2>
-      <p class="subtitle reveal reveal-delay-1">Browse the design intelligence registry. 10 patterns, 19 archetypes, 10 blueprints, 10 themes.</p>
-      <div class="api-block reveal reveal-delay-2">
-        <span class="cmd">curl https://decantr-registry.fly.dev/v1/patterns</span>
-        <span class="cmd">curl https://decantr-registry.fly.dev/v1/archetypes</span>
-        <span class="cmd">curl https://decantr-registry.fly.dev/v1/search?q=dashboard</span>
-        <span class="cmd">curl https://decantr-registry.fly.dev/v1/schema</span>
+<!-- Wave 6 -->
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+    <path fill="rgba(10,243,235,0.04)" d="M0,50 C360,100 1080,20 1440,80 L1440,120 L0,120 Z"/>
+  </svg>
+</div>
+
+<!-- ==================== PACKAGES ==================== -->
+<section class="packages-section" id="packages">
+  <div class="container">
+    <h2 class="section-heading reveal">Open source. MIT licensed.</h2>
+    <p class="section-sub reveal">Four packages, one mission: make AI-generated UI not suck.</p>
+
+    <div class="packages-grid">
+      <div class="pkg-card reveal reveal-delay-1">
+        <div class="pkg-name">@decantr/mcp-server</div>
+        <p class="pkg-desc">MCP server exposing 10 design intelligence tools to AI assistants</p>
+      </div>
+      <div class="pkg-card reveal reveal-delay-2">
+        <div class="pkg-name">@decantr/essence-spec</div>
+        <p class="pkg-desc">Schema, validator, guard rules, and TypeScript types for the Essence format</p>
+      </div>
+      <div class="pkg-card reveal reveal-delay-3">
+        <div class="pkg-name">@decantr/core</div>
+        <p class="pkg-desc">Design Pipeline IR engine -- the brain behind intent-to-composition</p>
+      </div>
+      <div class="pkg-card reveal reveal-delay-4">
+        <div class="pkg-name">@decantr/registry</div>
+        <p class="pkg-desc">Content resolver for patterns, archetypes, themes, and recipes</p>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- Footer -->
-  <div class="footer">
-    <div class="container">
-      <img src="logo.svg" alt="Decantr" class="footer-logo">
-      <div class="footer-links">
-        <a href="https://github.com/decantr-ai/decantr">GitHub</a>
-        <a href="https://www.npmjs.com/org/decantr">npm</a>
-        <a href="https://decantr-registry.fly.dev/v1/patterns">API</a>
-      </div>
-      <p>MIT License. Built by <a href="https://github.com/decantr-ai">Decantr AI</a>.</p>
+<!-- ==================== WORKS WITH ==================== -->
+<section class="works-section">
+  <div class="container">
+    <h2 class="section-heading reveal" style="margin-bottom:32px">Works with your stack</h2>
+    <div class="works-row reveal">
+      <span class="works-pill">Claude</span>
+      <span class="works-pill">Cursor</span>
+      <span class="works-pill">Windsurf</span>
+      <span class="works-pill">React</span>
+      <span class="works-pill">Vue</span>
+      <span class="works-pill">Svelte</span>
+      <span class="works-pill">Tailwind</span>
+      <span class="works-pill">Next.js</span>
     </div>
   </div>
+</section>
 
-  <script>
-    // Show orbs after logo reveals, then start breathing animation
-    setTimeout(function() {
-      document.querySelectorAll('.logo-orb').forEach(function(orb) {
-        orb.classList.add('visible');
+<!-- ==================== BOTTOM CTA ==================== -->
+<div class="bottom-cta">
+  <h2>Stop generating UI slop.</h2>
+  <p>Add Decantr to your AI assistant in 30 seconds.</p>
+  <a href="#quickstart" class="btn-dark">Get Started <span aria-hidden="true">&rarr;</span></a>
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+  <img src="logo.svg" alt="Decantr" class="footer-logo">
+  <div class="footer-links">
+    <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener">npm</a>
+    <a href="#tools">API</a>
+  </div>
+  <p class="footer-copy">MIT License. Built by Decantr AI.</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  (function() {
+    var els = document.querySelectorAll('.reveal');
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
       });
-    }, 1200);
-    setTimeout(function() {
-      var logo = document.getElementById('heroLogo');
-      if (logo) logo.classList.add('alive');
-    }, 2200);
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(function(el) { observer.observe(el); });
+  })();
 
-    // Minimal IntersectionObserver for scroll-triggered reveal animations
-    document.addEventListener('DOMContentLoaded', function() {
-      var els = document.querySelectorAll('.reveal');
-      if ('IntersectionObserver' in window) {
-        var observer = new IntersectionObserver(function(entries) {
-          entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('visible');
-              observer.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-        els.forEach(function(el) { observer.observe(el); });
-      } else {
-        els.forEach(function(el) { el.classList.add('visible'); });
-      }
+  // Config tabs
+  (function() {
+    var btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+        document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
+      });
     });
-  </script>
+  })();
+</script>
 
 </body>
 </html>
