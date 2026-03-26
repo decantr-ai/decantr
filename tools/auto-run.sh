@@ -29,7 +29,7 @@ parse_task() {
   TASK_TYPE="" TASK_NAME="" TASK_BODY=""
   local in_fm=false fm_done=false body_lines=()
 
-  while IFS= read -r line; do
+  while IFS= read -r line || [[ -n "$line" ]]; do
     if [[ "$fm_done" == false ]]; then
       if [[ "$line" == "---" && "$in_fm" == false ]]; then in_fm=true; continue
       elif [[ "$line" == "---" && "$in_fm" == true ]]; then in_fm=false; fm_done=true; continue
@@ -42,10 +42,12 @@ parse_task() {
       fi
     fi
     body_lines+=("$line")
-  done < "$file"
+  done < "$file" || true
 
   TASK_BODY="$(printf '%s\n' "${body_lines[@]}")"
-  [[ -z "$TASK_NAME" ]] && TASK_NAME="$(basename "$file" .md)"
+  if [[ -z "$TASK_NAME" ]]; then
+    TASK_NAME="$(basename "$file" .md)"
+  fi
 }
 
 run_task() {
@@ -68,8 +70,11 @@ run_task() {
   mkdir -p "$LOG_DIR"
   local start_time; start_time=$(date +%s)
   local raw_json; raw_json="$(mktemp)"
+  local prompt_file; prompt_file="$(mktemp)"
+  printf '%s' "$TASK_BODY" > "$prompt_file"
 
-  if (cd "$PROJECT_DIR" && claude -p "$TASK_BODY" --output-format json --allowedTools "$ALLOWED_TOOLS" < /dev/null > "$raw_json" 2>&1); then
+  if (cd "$PROJECT_DIR" && claude -p --output-format json --allowedTools "$ALLOWED_TOOLS" < "$prompt_file" > "$raw_json" 2>&1); then
+    rm -f "$prompt_file"
     python3 -c "
 import sys, json
 data = json.load(open('$raw_json'))
@@ -85,6 +90,7 @@ for msg in data:
     echo "✓ Completed: $TASK_NAME (${duration}s)"
     return 0
   else
+    rm -f "$prompt_file"
     mv "$raw_json" "$logfile"
     local duration=$(( $(date +%s) - start_time ))
     echo "✗ Failed: $TASK_NAME (${duration}s)"
