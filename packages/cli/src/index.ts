@@ -2,8 +2,15 @@ import { parseArgs } from 'node:util';
 
 const VERSION = '0.1.0';
 
-const { positionals } = parseArgs({ allowPositionals: true, strict: false });
-const command = positionals[0];
+const { positionals, values } = parseArgs({
+  allowPositionals: true,
+  strict: false,
+  options: {
+    version: { type: 'boolean', short: 'v', default: false },
+    help: { type: 'boolean', short: 'h', default: false },
+  },
+});
+const command = values.version ? '--version' : values.help ? '--help' : positionals[0];
 
 switch (command) {
   case 'init':
