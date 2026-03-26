@@ -48,7 +48,8 @@
     a { color: var(--cyan); text-decoration: none; transition: color 0.2s; }
     a:hover { color: var(--coral); text-decoration: none; }
 
-    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 32px; }
+    .hero .container { max-width: 1100px; }
 
     /* ── Animations ── */
     @keyframes fadeInUp {
@@ -131,10 +132,10 @@
     /* ── Hero ── */
     .hero {
       position: relative;
-      padding: 140px 0 100px;
+      padding: 80px 0 60px;
       text-align: center;
       overflow: hidden;
-      min-height: 90vh;
+      min-height: 100vh;
       display: flex;
       align-items: center;
     }
@@ -216,19 +217,23 @@
     .hero-split {
       display: flex;
       align-items: center;
-      gap: 64px;
+      gap: 48px;
+      justify-content: center;
     }
     .hero-left {
-      flex: 0 0 320px;
+      flex: 0 0 280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .hero-right {
-      flex: 1;
+      flex: 0 1 580px;
       text-align: left;
     }
     .hero-right h1 { text-align: left; }
-    .hero-right .tagline { margin-left: 0; text-align: left; }
+    .hero-right .tagline { margin-left: 0; text-align: left; max-width: none; }
     .hero-right .cta-row { justify-content: flex-start; }
-    .hero-right .install { margin-left: 0; }
+    .hero-right .install { margin-left: 0; max-width: none; }
 
     @media (max-width: 900px) {
       .hero-split {
@@ -246,8 +251,8 @@
     /* ── Logo Hero ── */
     .hero-logo-wrap {
       position: relative;
-      width: 320px;
-      height: 320px;
+      width: 260px;
+      height: 260px;
       margin: 0 auto;
     }
     .hero-logo-wrap img {
@@ -297,33 +302,33 @@
     }
     .logo-orb.visible { opacity: 1; transition: opacity 1s ease; }
     .orb-1 {
-      width: 80px; height: 80px;
+      width: 50px; height: 50px;
       background: var(--coral);
-      top: -10%; left: -15%;
+      top: -5%; left: 0%;
       animation: orbFloat1 8s ease-in-out infinite;
     }
     .orb-2 {
-      width: 60px; height: 60px;
+      width: 40px; height: 40px;
       background: var(--cyan);
-      top: 10%; right: -12%;
+      top: 15%; right: -5%;
       animation: orbFloat2 10s ease-in-out infinite 1s;
     }
     .orb-3 {
-      width: 50px; height: 50px;
+      width: 35px; height: 35px;
       background: var(--amber);
-      bottom: -5%; left: 20%;
+      bottom: 0%; left: 25%;
       animation: orbFloat3 9s ease-in-out infinite 0.5s;
     }
     .orb-4 {
-      width: 40px; height: 40px;
+      width: 30px; height: 30px;
       background: var(--green);
-      bottom: 15%; right: -8%;
+      bottom: 20%; right: 0%;
       animation: orbFloat1 11s ease-in-out infinite 2s;
     }
     .orb-5 {
-      width: 70px; height: 70px;
+      width: 45px; height: 45px;
       background: var(--purple);
-      top: 40%; left: -18%;
+      top: 45%; left: -8%;
       animation: orbFloat2 7s ease-in-out infinite 1.5s;
       opacity: 0.7;
     }
@@ -352,11 +357,11 @@
     }
 
     .hero h1 {
-      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
       font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1.08;
-      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 20px;
       animation: fadeInUp 0.8s ease-out 0.6s both;
     }
     .hero h1 span {
@@ -366,10 +371,10 @@
       background-clip: text;
     }
     .hero .tagline {
-      font-size: 1.2rem;
+      font-size: 1.05rem;
       color: var(--muted);
       max-width: 640px;
-      margin: 0 auto 44px;
+      margin: 0 auto 32px;
       line-height: 1.7;
       animation: fadeInUp 0.8s ease-out 0.8s both;
     }
@@ -426,7 +431,7 @@
       font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
       font-size: 0.9rem;
       max-width: 600px;
-      margin: 44px auto 0;
+      margin: 28px auto 0;
       text-align: left;
       color: var(--muted);
       overflow-x: auto;
