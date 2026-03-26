@@ -50,7 +50,25 @@ function collectLucideIcons(nav: IRNavItem[]): string[] {
   icons.add('PanelLeft');
   icons.add('Bell');
   icons.add('User');
+  icons.add('Search');
+  icons.add('AlertCircle');
   return [...icons].sort();
+}
+
+// AUTO: Build reverse map PascalCase → kebab-case for deep lucide-react imports
+const LUCIDE_ICON_PATHS: Record<string, string> = {};
+for (const [kebab, pascal] of Object.entries(LUCIDE_ICONS)) {
+  LUCIDE_ICON_PATHS[pascal] = kebab;
+}
+
+/** Generate per-icon deep imports instead of barrel import (Vercel best practice) */
+function lucideImportLines(icons: string[]): string {
+  return icons
+    .map(icon => {
+      const kebab = LUCIDE_ICON_PATHS[icon] || icon.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+      return `import { ${icon} } from 'lucide-react/dist/esm/icons/${kebab}';`;
+    })
+    .join('\n');
 }
 
 function buildSidebarMainApp(app: IRAppNode): string {
@@ -83,7 +101,7 @@ function buildSidebarMainApp(app: IRAppNode): string {
 
   return `import React, { useState, useEffect } from 'react';
 import { ${routerComponent}, Routes, Route, NavLink } from 'react-router-dom';
-import { ${icons.join(', ')} } from 'lucide-react';
+${lucideImportLines(icons)}
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 

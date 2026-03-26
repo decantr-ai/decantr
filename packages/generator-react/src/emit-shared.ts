@@ -232,7 +232,8 @@ export function emitNotFound(): GeneratedFile {
   return {
     path: 'src/pages/not-found.tsx',
     content: `import React from 'react';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle } from 'lucide-react/dist/esm/icons/alert-circle';
+import { ArrowLeft } from 'lucide-react/dist/esm/icons/arrow-left';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 

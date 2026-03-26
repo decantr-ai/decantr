@@ -5,6 +5,7 @@ import {
   emitPackageJson, emitTailwindConfig, emitViteConfig,
   emitGlobalsCss, emitUtils, emitTsConfig, emitIndexHtml, emitNotFound,
 } from './emit-shared.js';
+import { validateReactOutput } from './quality-rules.js';
 
 export function createReactPlugin(): GeneratorPlugin {
   return {
@@ -34,6 +35,15 @@ export function createReactPlugin(): GeneratorPlugin {
 
       // 404 page
       files.push(emitNotFound());
+
+      // AUTO: Post-generation quality check (Vercel React best practices)
+      const violations = validateReactOutput(files);
+      if (violations.length > 0) {
+        for (const v of violations) {
+          const loc = v.line ? `:${v.line}` : '';
+          console.warn(`[quality:${v.severity}] ${v.rule} — ${v.file}${loc}: ${v.message}`);
+        }
+      }
 
       return files;
     },
