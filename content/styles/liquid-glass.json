@@ -1,0 +1,18 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "liquid-glass",
+  "name": "Liquid Glass",
+  "description": "Apple-inspired premium glass aesthetic. Refined, dynamic refraction feel. Extreme blur values, dramatic opacity ramp, specular highlights. True black dark mode.",
+  "tags": ["apple", "premium", "glass", "refraction", "specular"],
+  "personality": "pill + glass elevation + smooth motion + thin borders + vivid gradients",
+  "seed": {
+    "primary": "#007aff",
+    "secondary": "#5856d6",
+    "accent": "#34c759",
+    "background": "#f2f2f7"
+  },
+  "modes": ["light", "dark"],
+  "shapes": ["sharp", "rounded", "pill"],
+  "decantr_compat": ">=0.9.0",
+  "source": "community"
+}
