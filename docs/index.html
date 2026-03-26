@@ -457,42 +457,61 @@
     /* ===== WHY SECTION ===== */
     .why-section { background: var(--bg-light); }
 
-    .why-quote {
-      font-size: clamp(1.2rem, 3vw, 1.6rem);
-      font-weight: 600;
-      text-align: center;
-      max-width: 700px;
-      margin: 0 auto 56px;
-      line-height: 1.5;
-      color: var(--fg);
-    }
-
-    .stat-cards {
+    .before-after-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      max-width: 800px;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 860px;
       margin: 0 auto;
     }
-
-    .stat-card {
+    .ba-header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 10px 16px;
+      border-radius: 8px 8px 0 0;
+      text-align: center;
+    }
+    .ba-header-bad {
+      color: var(--crimson);
+      background: rgba(216, 15, 74, 0.08);
+    }
+    .ba-header-good {
+      color: var(--green);
+      background: rgba(0, 224, 171, 0.08);
+    }
+    .ba-row {
+      display: contents;
+    }
+    .ba-cell {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 32px 24px;
-      text-align: center;
+      border-radius: 10px;
+      padding: 20px;
       backdrop-filter: blur(16px);
+      transition: border-color 0.3s;
     }
-
-    .stat-number {
-      font-size: 1.6rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--coral), var(--amber), var(--cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 8px;
+    .ba-cell-bad { border-left: 3px solid rgba(216, 15, 74, 0.3); }
+    .ba-cell-good { border-left: 3px solid rgba(0, 224, 171, 0.3); }
+    .ba-cell-good:hover { border-color: rgba(0, 224, 171, 0.4); }
+    .ba-cell h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
     }
+    .ba-cell p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .ba-cell .ba-outcome {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .ba-cell-bad .ba-outcome { color: var(--crimson); }
+    .ba-cell-good .ba-outcome { color: var(--green); }
 
     .stat-desc {
       font-size: 0.9rem;
@@ -1300,20 +1319,44 @@
 <!-- ==================== WHY ==================== -->
 <section class="why-section">
   <div class="container">
-    <p class="why-quote reveal">Decantr is the source of truth for how your app should look and feel.</p>
+    <h2 class="section-heading reveal">What actually changes</h2>
+    <p class="section-sub reveal reveal-delay-1">Three scenarios every developer hits. One with design intelligence, one without.</p>
 
-    <div class="stat-cards">
-      <div class="stat-card reveal reveal-delay-1">
-        <div class="stat-number">Zero drift</div>
-        <p class="stat-desc">across unlimited iterations</p>
+    <div class="before-after-grid">
+      <div class="ba-header ba-header-bad reveal">Without Decantr</div>
+      <div class="ba-header ba-header-good reveal">With Decantr</div>
+
+      <div class="ba-cell ba-cell-bad reveal reveal-delay-1">
+        <h4>Adding a new page</h4>
+        <p>You prompt "add a settings page." The AI generates one with different spacing, card styles, and nav patterns than your existing pages. You spend 30 minutes fixing it to match.</p>
+        <div class="ba-outcome">30 min fixing every new page</div>
       </div>
-      <div class="stat-card reveal reveal-delay-2">
-        <div class="stat-number">One spec</div>
-        <p class="stat-desc">any framework -- React, Vue, Svelte, or anything</p>
+      <div class="ba-cell ba-cell-good reveal reveal-delay-1">
+        <h4>Adding a new page</h4>
+        <p>The AI reads your Essence spec first, resolves the right patterns, and generates a settings page that matches your existing dashboard. Zero manual fixes.</p>
+        <div class="ba-outcome">0 min — it matches automatically</div>
       </div>
-      <div class="stat-card reveal reveal-delay-3">
-        <div class="stat-number">10 tools</div>
-        <p class="stat-desc">embedded in your AI assistant via MCP</p>
+
+      <div class="ba-cell ba-cell-bad reveal reveal-delay-2">
+        <h4>Iteration 10+</h4>
+        <p>Each prompt introduces subtle inconsistencies. Gap-2 here, gap-8 there. Rounded buttons on one page, sharp on another. The app looks like it was built by 10 different people.</p>
+        <div class="ba-outcome">Design debt compounds with every prompt</div>
+      </div>
+      <div class="ba-cell ba-cell-good reveal reveal-delay-2">
+        <h4>Iteration 10+</h4>
+        <p>Guard rules validate every change against the Essence spec. Theme, layout, density, and recipe rules are enforced automatically. Iteration 10 looks like iteration 1.</p>
+        <div class="ba-outcome">Consistency enforced — iteration 100 still matches</div>
+      </div>
+
+      <div class="ba-cell ba-cell-bad reveal reveal-delay-3">
+        <h4>Team handoff</h4>
+        <p>Another developer prompts the same AI with different words. They get a completely different visual interpretation. No shared source of truth for design decisions.</p>
+        <div class="ba-outcome">Every developer gets different output</div>
+      </div>
+      <div class="ba-cell ba-cell-good reveal reveal-delay-3">
+        <h4>Team handoff</h4>
+        <p>The Essence spec is checked into the repo. Every developer's AI reads the same spec, resolves the same patterns, and follows the same rules. Consistent output across the entire team.</p>
+        <div class="ba-outcome">Same spec, same output — regardless of who prompts</div>
       </div>
     </div>
   </div>
