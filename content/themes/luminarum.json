@@ -1,0 +1,41 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "luminarum",
+  "name": "Luminarum",
+  "description": "Dark geometric canvas with vibrant faceted color accents. Breathing gradient orbs, outlined cards with colored strokes, particle network details. Tech-forward meets visual candy.",
+  "tags": [
+    "dark",
+    "vibrant",
+    "geometric",
+    "technical",
+    "premium",
+    "colorful"
+  ],
+  "personality": "sharp + bold elevation + breathing motion + colored strokes + geometric gradients",
+  "seed": {
+    "primary": "#FE4474",
+    "secondary": "#0AF3EB",
+    "accent": "#FDA303",
+    "background": "#0D0D1A"
+  },
+  "palette": {
+    "coral": "#F58882",
+    "pink": "#FE4474",
+    "crimson": "#D80F4A",
+    "cyan": "#0AF3EB",
+    "green": "#00E0AB",
+    "amber": "#FDA303",
+    "yellow": "#FCD021",
+    "orange": "#FC8D0D",
+    "purple": "#6500C6"
+  },
+  "modes": [
+    "dark"
+  ],
+  "shapes": [
+    "rounded",
+    "pill"
+  ],
+  "decantr_compat": ">=1.0.0",
+  "source": "core"
+}

@@ -1,0 +1,174 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "id": "luminarum",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Luminarum",
+  "description": "Dark geometric canvas with vibrant faceted accents. Outlined cards with colored strokes, breathing gradient orbs, particle network backdrop, vibrant filled feature cards. The Decantr brand aesthetic.",
+  "dependencies": {
+    "styles": {
+      "luminarum": ">=1.0.0"
+    }
+  },
+  "schema_version": "2.0",
+  "style": "luminarum",
+  "mode": "dark",
+  "spatial_hints": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "120px",
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main"
+    ],
+    "avoid": [],
+    "nav_style": "filled",
+    "default_nav_state": "expanded",
+    "root": "lum-canvas",
+    "nav": "lum-glass",
+    "header": "",
+    "navLabel": "",
+    "brand": "lum-brand",
+    "dimensions": null
+  },
+  "animation": {
+    "entrance": "lum-fade-up",
+    "micro": "smooth"
+  },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "code_preview": [
+        "lum-code-block"
+      ],
+      "stat_display": [
+        "lum-stat-glow"
+      ],
+      "feature_card": [
+        "lum-card-vibrant"
+      ],
+      "outline_card": [
+        "lum-card-outlined"
+      ],
+      "hero_section": [
+        "lum-orbs"
+      ],
+      "background": [
+        "lum-particles"
+      ]
+    },
+    "component_fallback": {
+      "pre": "code_preview",
+      "code": "code_preview",
+      "Statistic": "stat_display",
+      "Card": "outline_card"
+    },
+    "intensity_values": {
+      "subtle": {
+        "--lum-orb-opacity": "0.08",
+        "--lum-stroke-width": "2px",
+        "--lum-glow-radius": "15px"
+      },
+      "medium": {
+        "--lum-orb-opacity": "0.15",
+        "--lum-stroke-width": "3px",
+        "--lum-glow-radius": "30px"
+      },
+      "strong": {
+        "--lum-orb-opacity": "0.22",
+        "--lum-stroke-width": "4px",
+        "--lum-glow-radius": "50px"
+      }
+    }
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "kpi-grid",
+      "chart-grid",
+      "data-table",
+      "card-grid"
+    ],
+    "avoid": [],
+    "default_presets": {}
+  },
+  "card_styles": {
+    "outlined": {
+      "description": "Transparent background with colored border stroke. Heading uses the stroke color. Content uses muted white. Hover fills with 5% of stroke color.",
+      "properties": {
+        "background": "transparent",
+        "border": "var(--lum-stroke-width, 3px) solid var(--lum-card-color)",
+        "border-radius": "16px",
+        "color": "rgba(255,255,255,0.75)"
+      },
+      "heading_color": "var(--lum-card-color)",
+      "hover": {
+        "background": "rgba(var(--lum-card-color-rgb), 0.05)",
+        "box-shadow": "0 12px 40px rgba(var(--lum-card-color-rgb), 0.2)",
+        "transform": "translateY(-4px)"
+      }
+    },
+    "vibrant": {
+      "description": "Fully filled card with vibrant gradient background and white text. Corner accent brackets for geometric detail.",
+      "properties": {
+        "background": "linear-gradient(135deg, var(--lum-card-color), var(--lum-card-color-alt))",
+        "border-radius": "16px",
+        "color": "#fff"
+      },
+      "corner_brackets": true,
+      "hover": {
+        "transform": "translateY(-4px)",
+        "box-shadow": "0 16px 48px rgba(var(--lum-card-color-rgb), 0.3)"
+      }
+    }
+  },
+  "color_rotation": {
+    "description": "Sections and cards rotate through the brand palette for visual variety. Each section gets one accent color.",
+    "sequence": [
+      { "name": "coral", "color": "#F58882", "rgb": "245,136,130" },
+      { "name": "pink", "color": "#FE4474", "rgb": "254,68,116" },
+      { "name": "amber", "color": "#FDA303", "rgb": "253,163,3" },
+      { "name": "cyan", "color": "#0AF3EB", "rgb": "10,243,235" },
+      { "name": "green", "color": "#00E0AB", "rgb": "0,224,171" },
+      { "name": "yellow", "color": "#FCD021", "rgb": "252,208,33" },
+      { "name": "orange", "color": "#FC8D0D", "rgb": "252,141,13" },
+      { "name": "purple", "color": "#6500C6", "rgb": "101,0,198" }
+    ]
+  },
+  "decorators": {
+    "lum-canvas": "Dark particle network background (#0D0D1A). Scattered small dots and thin connecting lines in brand colors at low opacity. Apply to page root.",
+    "lum-glass": "Subtle glass panel with rgba(255,255,255,0.03) background and 0.08 opacity border. No heavy blur — clean transparency.",
+    "lum-orbs": "Breathing gradient orbs behind hero/feature sections. Large radial gradients in primary/secondary/accent at 15-22% opacity, slowly pulsing and drifting.",
+    "lum-particles": "Fixed-position small dots (2-8px) in brand colors scattered across the viewport at 15% opacity with subtle pulse animation.",
+    "lum-card-outlined": "Outlined card with colored border stroke, transparent bg, colored heading. The stroke color comes from the section's accent.",
+    "lum-card-vibrant": "Filled card with vibrant gradient background, white text, corner accent brackets.",
+    "lum-code-block": "Dark code block (#111113 bg) with colored top border (2px) matching section accent. Monospace font, syntax highlighting.",
+    "lum-stat-glow": "Number badge with filled circle in accent color, dark text inside.",
+    "lum-brand": "Brand text with accent color on punctuation (e.g. 'decantr.ai' with coral period and 'i').",
+    "lum-fade-up": "Scroll-reveal animation: fade in + translate up 24px over 0.6s.",
+    "lum-divider": "Section divider: thin horizontal line with centered colored dot. Dot color matches the next section's accent."
+  },
+  "compositions": {
+    "hero": {
+      "description": "Split hero with large logo (1/3) and content (2/3). Dark bg with breathing gradient orbs behind. Logo floats gently.",
+      "layout": "split-1-3",
+      "effects": ["lum-orbs"]
+    },
+    "feature-grid": {
+      "description": "Grid of vibrant filled cards with corner brackets. Each card a different brand color.",
+      "card_style": "vibrant"
+    },
+    "pipeline": {
+      "description": "Grid of outlined cards showing process steps. Each card has a different accent color stroke with numbered badge.",
+      "card_style": "outlined"
+    },
+    "tool-list": {
+      "description": "Two-column list with colored dot bullets and colored left border stripes on hover.",
+      "card_style": "none"
+    }
+  }
+}
