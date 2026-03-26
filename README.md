@@ -1,8 +1,8 @@
 # Decantr
 
-**Design intelligence layer for AI-generated web applications.**
+**Decantr is the design intelligence layer for AI-generated web applications. We don't care what you build with. We care what you build.**
 
-v0/Bolt/Lovable race to generate code faster. Decantr generates code better.
+Every AI code generator is racing to output faster. None of them are thinking about what happens after they generate. Decantr is the design intelligence layer that sits between generation and production — transforming raw AI output into applications that actually look, feel, and perform like they were built by a senior team. We don't care what you build with. We care what you build.
 
 ---
 
