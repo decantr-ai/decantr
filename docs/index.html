@@ -13,6 +13,7 @@
   <style>
     :root {
       --bg: #010E2E;
+      --bg-alt: #060B24;
       --bg-light: #041540;
       --fg: #f0f2f8;
       --muted: #8b93a8;
@@ -26,7 +27,7 @@
       --yellow: #FCD021;
       --orange: #FC8D0D;
       --purple: #6500C6;
-      --card-bg: rgba(4, 21, 64, 0.6);
+      --card-bg: rgba(8, 18, 52, 0.65);
       --card-border: rgba(255, 255, 255, 0.08);
       --code-bg: rgba(1, 10, 30, 0.8);
       --max-w: 1100px;
@@ -258,19 +259,18 @@
     /* ===== WAVE DIVIDERS ===== */
     .wave-divider {
       width: 100%;
-      display: block;
       margin-top: -1px;
-      line-height: 0;
-    }
-    .wave-divider svg {
-      width: 100%;
-      display: block;
+      margin-bottom: -1px;
+      position: relative;
+      z-index: 1;
     }
 
     /* ===== SECTION COMMON ===== */
     section {
       padding: 80px 0;
     }
+
+    .section-alt { background: var(--bg-alt); }
 
     .section-heading {
       font-size: clamp(1.6rem, 4vw, 2.4rem);
@@ -679,7 +679,6 @@
     .check-icon-fail { background: rgba(216,15,74,0.2); }
 
     /* ===== MCP TOOLS ===== */
-    .tools-section { background: var(--bg-light); }
 
     .tools-grid {
       display: grid;
@@ -871,7 +870,6 @@
     .tab-code .s { color: var(--green); }
 
     /* ===== PACKAGES ===== */
-    .packages-section { background: var(--bg-light); }
 
     .packages-grid {
       display: grid;
@@ -1107,14 +1105,16 @@
 </section>
 
 <!-- Wave 1 -->
-<div class="wave-divider">
-  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-    <path fill="rgba(245,136,130,0.06)" d="M0,40 C360,100 1080,0 1440,60 L1440,120 L0,120 Z"/>
+<div class="wave-divider" style="height:120px">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+    <defs><linearGradient id="w1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#F58882" stop-opacity="0.18"/><stop offset="100%" stop-color="#FDA303" stop-opacity="0.22"/></linearGradient></defs>
+    <path fill="url(#w1)" d="M0,60 C320,110 640,10 960,70 C1120,95 1300,40 1440,50 L1440,120 L0,120 Z"/>
+    <path fill="rgba(245,136,130,0.06)" d="M0,80 C400,30 800,100 1200,50 C1350,35 1440,60 1440,60 L1440,120 L0,120 Z"/>
   </svg>
 </div>
 
 <!-- ==================== PROBLEM ==================== -->
-<section id="problem" style="background:var(--bg-light)">
+<section id="problem" class="section-alt">
   <div class="container">
     <h2 class="section-heading reveal">Every AI-generated app has an expiration date</h2>
     <p class="section-sub reveal">AI coding assistants have no memory of design intent. Every prompt is a fresh start. By prompt 10, your app looks like it was built by 10 different people.</p>
@@ -1254,9 +1254,11 @@
 </section>
 
 <!-- Wave 2 -->
-<div class="wave-divider">
-  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-    <path fill="rgba(253,163,3,0.05)" d="M0,60 C240,10 720,110 1440,30 L1440,120 L0,120 Z"/>
+<div class="wave-divider" style="height:120px">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+    <defs><linearGradient id="w2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0AF3EB" stop-opacity="0.15"/><stop offset="100%" stop-color="#00E0AB" stop-opacity="0.20"/></linearGradient></defs>
+    <path fill="url(#w2)" d="M0,40 C360,100 720,20 1080,80 C1260,100 1440,50 1440,50 L1440,120 L0,120 Z"/>
+    <path fill="rgba(10,243,235,0.05)" d="M0,70 C480,20 960,90 1440,30 L1440,120 L0,120 Z"/>
   </svg>
 </div>
 
@@ -1400,15 +1402,17 @@
   </div>
 </section>
 
-<!-- Wave 4 -->
-<div class="wave-divider">
-  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-    <path fill="rgba(0,224,171,0.05)" d="M0,30 C360,90 1080,10 1440,70 L1440,120 L0,120 Z"/>
+<!-- Wave 3 -->
+<div class="wave-divider" style="height:120px">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+    <defs><linearGradient id="w3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FDA303" stop-opacity="0.16"/><stop offset="60%" stop-color="#FCD021" stop-opacity="0.20"/><stop offset="100%" stop-color="#FC8D0D" stop-opacity="0.14"/></linearGradient></defs>
+    <path fill="url(#w3)" d="M0,50 C240,100 480,20 720,70 C960,110 1200,30 1440,60 L1440,120 L0,120 Z"/>
+    <path fill="rgba(253,163,3,0.06)" d="M0,90 C360,40 720,80 1080,30 C1260,15 1440,50 1440,50 L1440,120 L0,120 Z"/>
   </svg>
 </div>
 
 <!-- ==================== MCP TOOLS ==================== -->
-<section class="tools-section" id="tools">
+<section class="tools-section section-alt" id="tools">
   <div class="container">
     <h2 class="section-heading reveal">10 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
@@ -1458,10 +1462,12 @@
   </div>
 </section>
 
-<!-- Wave 5 -->
-<div class="wave-divider">
-  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-    <path fill="rgba(245,136,130,0.05)" d="M0,70 C480,10 960,100 1440,50 L1440,120 L0,120 Z"/>
+<!-- Wave 4 -->
+<div class="wave-divider" style="height:120px">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+    <defs><linearGradient id="w4" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#F58882" stop-opacity="0.14"/><stop offset="50%" stop-color="#6500C6" stop-opacity="0.12"/><stop offset="100%" stop-color="#0AF3EB" stop-opacity="0.18"/></linearGradient></defs>
+    <path fill="url(#w4)" d="M0,70 C480,10 960,100 1440,40 L1440,120 L0,120 Z"/>
+    <path fill="rgba(101,0,198,0.05)" d="M0,50 C320,90 640,30 960,70 C1200,95 1440,45 1440,45 L1440,120 L0,120 Z"/>
   </svg>
 </div>
 
@@ -1545,15 +1551,17 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
   </div>
 </section>
 
-<!-- Wave 6 -->
-<div class="wave-divider">
-  <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-    <path fill="rgba(10,243,235,0.04)" d="M0,50 C360,100 1080,20 1440,80 L1440,120 L0,120 Z"/>
+<!-- Wave 5 -->
+<div class="wave-divider" style="height:120px">
+  <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+    <defs><linearGradient id="w5" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00E0AB" stop-opacity="0.15"/><stop offset="100%" stop-color="#0AF3EB" stop-opacity="0.20"/></linearGradient></defs>
+    <path fill="url(#w5)" d="M0,30 C360,90 720,20 1080,80 C1260,95 1440,55 1440,55 L1440,120 L0,120 Z"/>
+    <path fill="rgba(0,224,171,0.06)" d="M0,60 C480,100 960,30 1440,70 L1440,120 L0,120 Z"/>
   </svg>
 </div>
 
 <!-- ==================== PACKAGES ==================== -->
-<section class="packages-section" id="packages">
+<section class="packages-section section-alt" id="packages">
   <div class="container">
     <h2 class="section-heading reveal">Open source. MIT licensed.</h2>
     <p class="section-sub reveal">Four packages, one mission: make AI-generated UI not suck.</p>
