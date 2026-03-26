@@ -67,6 +67,35 @@ Ensure these are mapped:
 - Navigation items derived from essence structure
 - No sidebar components present
 
+## React Quality Compliance
+
+All generated React code MUST follow these Vercel React best practices (enforced by quality-rules.ts if it exists, otherwise enforce manually):
+
+**CRITICAL — zero tolerance:**
+- NO barrel imports (import from specific paths: `@/components/ui/button` not `@/components/ui`)
+- NO inline component definitions (never define a component inside another component)
+- React.lazy() for page imports in router files
+- Suspense boundaries around lazy-loaded routes
+
+**HIGH — zero tolerance:**
+- Functional setState when new state depends on previous (`setCount(prev => prev + 1)` not `setCount(count + 1)`)
+- No useEffect for derived state (use useMemo instead of useEffect + setState)
+- Hoist non-primitive default props to module level (`const DEFAULT_ITEMS: Item[] = []` outside component)
+
+**MEDIUM — fix if encountered:**
+- Hoist static JSX to module level
+- Use React.memo for components receiving complex props
+- Use primitive values in useEffect dependency arrays
+
+**After completing your implementation**, if `packages/generator-react/src/quality-rules.ts` exists, run:
+```ts
+import { validateReactOutput } from './quality-rules.js';
+// Pass your generated files through validation
+```
+If it doesn't exist yet, manually verify the CRITICAL rules by reading your generated output.
+
+Add to acceptance criteria: "Generated React code has zero CRITICAL or HIGH quality violations"
+
 ### Acceptance Criteria
 - [ ] `emit-app.ts` handles `top-nav-main` carafe
 - [ ] Horizontal nav bar with NavigationMenu components
