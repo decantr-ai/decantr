@@ -139,7 +139,8 @@ function buildRecipeDecoration(recipe: Recipe): IRRecipeDecoration {
     header: carafe.header || '',
     brand: (carafeAny['brand'] as string) || '',
     navLabel: (carafeAny['navLabel'] as string) || '',
-    navStyle: carafe.nav_style || 'minimal',
+    // AUTO: default nav style is 'pill' per Decantr framework convention
+    navStyle: carafe.nav_style || 'pill',
     defaultNavState: (carafeAny['default_nav_state'] as string) || 'expanded',
     dimensions: carafe.dimensions || null,
   };

@@ -26,7 +26,8 @@ function buildSidebarMainApp(app: IRAppNode): string {
   const rootClass = recipe?.root || '';
   const navClass = recipe?.nav || '';
   const brandClass = recipe?.brand || '';
-  const navStyle = recipe?.navStyle || 'minimal';
+  // AUTO: default nav style is 'pill' per Decantr framework convention
+  const navStyle = recipe?.navStyle || 'pill';
   const defaultNavState = recipe?.defaultNavState || 'expanded';
 
   // Style setup
@@ -120,6 +121,21 @@ function buildTopNavApp(app: IRAppNode): string {
   const { theme, routes, routing, shell } = app;
   const brand = shell.config.brand;
   const nav = shell.config.nav;
+  const recipe = shell.config.recipe;
+
+  // AUTO: nav style and dimensions support for top-nav-main, mirroring sidebar-main
+  const navStyle = recipe?.navStyle || 'pill';
+  const rootClass = recipe?.root || '';
+  const brandClass = recipe?.brand || '';
+
+  let dimensionsProp = '';
+  if (recipe?.dimensions) {
+    const dims = recipe.dimensions;
+    const entries: string[] = [];
+    if (dims.navWidth) entries.push(`navWidth: '${dims.navWidth}'`);
+    if (dims.headerHeight) entries.push(`headerHeight: '${dims.headerHeight}'`);
+    if (entries.length > 0) dimensionsProp = `, style: 'height:${dims.headerHeight || 'auto'}'`;
+  }
 
   return `import { tags } from 'decantr/tags';
 import { mount, component } from 'decantr/core';
@@ -141,11 +157,11 @@ ${generateRouteEntries(routes)}
 export default component('App', () => {
   const { div, nav, span } = tags;
 
-  return div({ class: css('_flex _col _hfull') },
-    nav({ class: css('_flex _aic _jcsb _px6 _py3 _borderB') },
-      span({ class: css('_heading5') }, '${brand}'),
+  return div({ class: css('_flex _col _hfull ${rootClass}') },
+    nav({ class: css('_flex _aic _jcsb _px6 _py3 _borderB')${dimensionsProp} },
+      span({ class: css('_heading5 ${brandClass}') }, '${brand}'),
       div({ class: css('_flex _gap4') },
-${nav.map(n => `        link('${n.href}', { class: css('d-shell-nav-item') }, '${n.label}')`).join(',\n')}
+${nav.map(n => `        link('${n.href}', { class: css(\`d-shell-nav-item d-shell-nav-style-${navStyle} \${useRoute().path === '${n.href}' ? 'd-shell-nav-item-active' : ''}\`) }, '${n.label}')`).join(',\n')}
       )
     ),
     div({ class: css('_flex1 _overflow[auto] d-page-enter') },

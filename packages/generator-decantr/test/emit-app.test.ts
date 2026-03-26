@@ -133,4 +133,113 @@ describe('emitApp', () => {
 
     expect(result.content).toContain("mode: 'history'");
   });
+
+  // --- Nav style variant tests ---
+
+  describe('nav style variants', () => {
+    const navStyles = [
+      { style: 'pill', cssClass: 'd-shell-nav-style-pill' },
+      { style: 'underline', cssClass: 'd-shell-nav-style-underline' },
+      { style: 'filled', cssClass: 'd-shell-nav-style-filled' },
+      { style: 'minimal', cssClass: 'd-shell-nav-style-minimal' },
+      { style: 'icon-glow', cssClass: 'd-shell-nav-style-icon-glow' },
+    ];
+
+    for (const { style, cssClass } of navStyles) {
+      it(`sidebar-main: emits ${cssClass} for nav_style "${style}"`, () => {
+        const app = makeApp();
+        app.shell.config.recipe!.navStyle = style;
+        const result = emitApp(app);
+
+        expect(result.content).toContain(cssClass);
+      });
+
+      it(`top-nav-main: emits ${cssClass} for nav_style "${style}"`, () => {
+        const app = makeApp();
+        app.shell.config.type = 'top-nav-main';
+        app.shell.config.recipe!.navStyle = style;
+        const result = emitApp(app);
+
+        expect(result.content).toContain(cssClass);
+      });
+    }
+
+    it('defaults to pill when navStyle is not specified (sidebar-main)', () => {
+      const app = makeApp();
+      app.shell.config.recipe = null;
+      const result = emitApp(app);
+
+      expect(result.content).toContain('d-shell-nav-style-pill');
+    });
+
+    it('defaults to pill when navStyle is not specified (top-nav-main)', () => {
+      const app = makeApp();
+      app.shell.config.type = 'top-nav-main';
+      app.shell.config.recipe = null;
+      const result = emitApp(app);
+
+      expect(result.content).toContain('d-shell-nav-style-pill');
+    });
+  });
+
+  describe('nav item classes', () => {
+    it('sidebar-main nav items have d-shell-nav-item base class', () => {
+      const app = makeApp();
+      const result = emitApp(app);
+
+      expect(result.content).toContain('d-shell-nav-item');
+    });
+
+    it('sidebar-main nav items have d-shell-nav-item-active for active route', () => {
+      const app = makeApp();
+      const result = emitApp(app);
+
+      expect(result.content).toContain('d-shell-nav-item-active');
+    });
+
+    it('top-nav-main nav items have d-shell-nav-item base class', () => {
+      const app = makeApp();
+      app.shell.config.type = 'top-nav-main';
+      const result = emitApp(app);
+
+      expect(result.content).toContain('d-shell-nav-item');
+    });
+
+    it('top-nav-main nav items have d-shell-nav-item-active for active route', () => {
+      const app = makeApp();
+      app.shell.config.type = 'top-nav-main';
+      const result = emitApp(app);
+
+      expect(result.content).toContain('d-shell-nav-item-active');
+    });
+  });
+
+  describe('shell dimensions', () => {
+    it('passes dimensions prop when present in recipe (sidebar-main)', () => {
+      const app = makeApp();
+      app.shell.config.recipe!.dimensions = { navWidth: '280px', headerHeight: '56px' };
+      const result = emitApp(app);
+
+      expect(result.content).toContain("navWidth: '280px'");
+      expect(result.content).toContain("headerHeight: '56px'");
+    });
+
+    it('omits dimensions prop when null (sidebar-main)', () => {
+      const app = makeApp();
+      app.shell.config.recipe!.dimensions = null;
+      const result = emitApp(app);
+
+      expect(result.content).not.toContain('navWidth');
+      expect(result.content).not.toContain('headerHeight');
+    });
+
+    it('applies header height in top-nav-main when dimensions present', () => {
+      const app = makeApp();
+      app.shell.config.type = 'top-nav-main';
+      app.shell.config.recipe!.dimensions = { headerHeight: '56px' };
+      const result = emitApp(app);
+
+      expect(result.content).toContain('56px');
+    });
+  });
 });
