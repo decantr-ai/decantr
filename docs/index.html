@@ -309,6 +309,36 @@
     .label-bad { color: var(--crimson); }
     .label-good { color: var(--green); }
 
+    .good-col-wrap {
+      position: relative;
+    }
+    .consistency-bar {
+      position: absolute;
+      left: -20px;
+      top: 60px;
+      bottom: 20px;
+      width: 3px;
+      background: linear-gradient(180deg, var(--green), var(--cyan));
+      border-radius: 3px;
+    }
+    .consistency-badge {
+      position: absolute;
+      left: -20px;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(-90deg);
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--green);
+      background: var(--bg);
+      padding: 4px 10px;
+      white-space: nowrap;
+    }
+    @media (max-width: 768px) {
+      .consistency-bar, .consistency-badge { display: none; }
+    }
+
     .browser-frame {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -815,6 +845,8 @@
       color: var(--muted);
       border-top: 3px solid;
       border-image: linear-gradient(90deg, var(--coral), var(--amber), var(--cyan)) 1;
+      white-space: pre;
+      overflow-x: auto;
     }
     .qs-output .k { color: var(--coral); }
     .qs-output .s { color: var(--green); }
@@ -1189,6 +1221,10 @@
       <div class="reveal reveal-delay-2">
         <p class="problem-col-label label-good">With Decantr</p>
 
+        <div class="good-col-wrap">
+        <div class="consistency-bar"></div>
+        <div class="consistency-badge">zero drift</div>
+
         <div class="browser-frame good">
           <div class="browser-frame-bar">
             <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
@@ -1247,6 +1283,7 @@
               <div class="mock-block"></div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -1349,16 +1386,14 @@
           <p>A machine-readable spec is written -- your decantr.essence.json -- the single source of truth.</p>
         </div>
         <div class="step-visual">
-          <div class="mini-code">
-<span class="k">{</span>
+          <div class="mini-code"><span class="k">{</span>
   <span class="s">"theme"</span>: <span class="s">"clean"</span>,
   <span class="s">"personality"</span>: <span class="s">"professional"</span>,
   <span class="s">"density"</span>: <span class="s">"comfortable"</span>,
   <span class="s">"pages"</span>: <span class="k">{</span>
     <span class="s">"dashboard"</span>: [<span class="s">"kpi-grid"</span>, <span class="s">"chart-grid"</span>]
   <span class="k">}</span>
-<span class="k">}</span>
-          </div>
+<span class="k">}</span></div>
         </div>
       </div>
 
@@ -1390,16 +1425,14 @@
           <p>Your AI assistant generates code using the resolved composition. Decantr doesn't generate code -- your AI does, better.</p>
         </div>
         <div class="step-visual">
-          <div class="mini-code">
-<span class="k">export default</span> <span class="n">function</span> <span class="s">Dashboard</span>() {
+          <div class="mini-code"><span class="k">export default</span> <span class="n">function</span> <span class="s">Dashboard</span>() {
   <span class="k">return</span> (
     &lt;<span class="n">div</span> <span class="s">className</span>=<span class="s">"grid gap-6"</span>&gt;
       &lt;<span class="n">KpiGrid</span> /&gt;
       &lt;<span class="n">ChartGrid</span> /&gt;
     &lt;/<span class="n">div</span>&gt;
   );
-}
-          </div>
+}</div>
           <p class="code-label">powered by your AI</p>
         </div>
       </div>
@@ -1508,16 +1541,14 @@
       <div class="qs-step reveal reveal-delay-1">
         <div class="qs-num qs-num-1">1</div>
         <h3>Add Decantr to your AI</h3>
-        <div class="qs-code-block">
-<span class="k">{</span>
+        <div class="qs-code-block"><span class="k">{</span>
   <span class="s">"mcpServers"</span>: <span class="k">{</span>
     <span class="s">"decantr"</span>: <span class="k">{</span>
       <span class="s">"command"</span>: <span class="s">"npx"</span>,
       <span class="s">"args"</span>: [<span class="s">"@decantr/mcp-server"</span>]
     <span class="k">}</span>
   <span class="k">}</span>
-<span class="k">}</span>
-        </div>
+<span class="k">}</span></div>
       </div>
 
       <div class="qs-step reveal reveal-delay-2">
@@ -1529,8 +1560,7 @@
       <div class="qs-step reveal reveal-delay-3">
         <div class="qs-num qs-num-3">3</div>
         <h3>Get consistent code</h3>
-        <div class="qs-output">
-<span class="c">// Generated with design intelligence</span>
+        <div class="qs-output"><span class="c">// Generated with design intelligence</span>
 <span class="k">export default</span> <span class="s">function</span> Dashboard() {
   <span class="k">return</span> (
     &lt;<span class="s">Layout</span> theme=<span class="s">"dark"</span>&gt;
@@ -1538,8 +1568,7 @@
       &lt;<span class="s">ChartGrid</span> /&gt;
     &lt;/<span class="s">Layout</span>&gt;
   );
-}
-        </div>
+}</div>
       </div>
     </div>
 
@@ -1551,8 +1580,7 @@
       </div>
 
       <div class="tab-content active" id="tab-claude-desktop">
-        <div class="tab-code">
-<span class="s">// ~/Library/Application Support/Claude/claude_desktop_config.json</span>
+        <div class="tab-code"><span class="s">// ~/Library/Application Support/Claude/claude_desktop_config.json</span>
 <span class="k">{</span>
   <span class="s">"mcpServers"</span>: <span class="k">{</span>
     <span class="s">"decantr"</span>: <span class="k">{</span>
@@ -1560,20 +1588,16 @@
       <span class="s">"args"</span>: [<span class="s">"@decantr/mcp-server"</span>]
     <span class="k">}</span>
   <span class="k">}</span>
-<span class="k">}</span>
-        </div>
+<span class="k">}</span></div>
       </div>
 
       <div class="tab-content" id="tab-claude-code">
-        <div class="tab-code">
-<span class="s">// Run in your terminal:</span>
-claude mcp add decantr -- npx @decantr/mcp-server
-        </div>
+        <div class="tab-code"><span class="s">// Run in your terminal:</span>
+claude mcp add decantr -- npx @decantr/mcp-server</div>
       </div>
 
       <div class="tab-content" id="tab-cursor">
-        <div class="tab-code">
-<span class="s">// .cursor/mcp.json</span>
+        <div class="tab-code"><span class="s">// .cursor/mcp.json</span>
 <span class="k">{</span>
   <span class="s">"mcpServers"</span>: <span class="k">{</span>
     <span class="s">"decantr"</span>: <span class="k">{</span>
@@ -1581,8 +1605,7 @@ claude mcp add decantr -- npx @decantr/mcp-server
       <span class="s">"args"</span>: [<span class="s">"@decantr/mcp-server"</span>]
     <span class="k">}</span>
   <span class="k">}</span>
-<span class="k">}</span>
-        </div>
+<span class="k">}</span></div>
       </div>
     </div>
   </div>
