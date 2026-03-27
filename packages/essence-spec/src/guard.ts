@@ -1,10 +1,11 @@
-import type { EssenceFile, StructurePage } from './types.js';
+import type { EssenceFile, StructurePage, LayoutItem } from './types.js';
 import { isSimple, isSectioned } from './types.js';
 
 export interface GuardViolation {
-  rule: 'style' | 'structure' | 'layout' | 'recipe' | 'density';
+  rule: 'style' | 'structure' | 'layout' | 'recipe' | 'density' | 'theme-mode' | 'pattern-exists';
   severity: 'error' | 'warning';
   message: string;
+  suggestion?: string;
 }
 
 export interface GuardContext {
@@ -13,9 +14,130 @@ export interface GuardContext {
   recipe?: string;
   layout?: string[];
   density_gap?: string;
+  themeRegistry?: Map<string, { modes: string[] }>;
+  patternRegistry?: Map<string, unknown>;
 }
 
-export function evaluateGuard(essence: EssenceFile, context: GuardContext): GuardViolation[] {
+/**
+ * Check if the theme supports the specified mode.
+ */
+function checkThemeModeCompatibility(
+  essence: EssenceFile,
+  context: GuardContext
+): GuardViolation | null {
+  if (!context.themeRegistry) return null;
+
+  const themeId = isSimple(essence) ? essence.theme?.style : null;
+  const mode = isSimple(essence) ? essence.theme?.mode : null;
+
+  if (!themeId || !mode) return null;
+
+  const theme = context.themeRegistry.get(themeId);
+  if (!theme) {
+    // Theme not found - separate validation
+    return null;
+  }
+
+  if (!theme.modes.includes(mode) && mode !== 'auto') {
+    const supportedModes = theme.modes.join(', ');
+    const suggestion = theme.modes.length > 0
+      ? `Use mode: "${theme.modes[0]}" instead, or choose a theme that supports ${mode} mode.`
+      : undefined;
+
+    return {
+      rule: 'theme-mode',
+      severity: 'error',
+      message: `Theme "${themeId}" does not support "${mode}" mode. Supported modes: ${supportedModes}.`,
+      suggestion,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Collect all pattern IDs from a layout item, recursively handling nested structures.
+ */
+function collectPatternIds(item: LayoutItem, ids: Set<string>): void {
+  if (typeof item === 'string') {
+    ids.add(item);
+    return;
+  }
+  if (typeof item === 'object' && item !== null) {
+    if ('pattern' in item && typeof item.pattern === 'string') {
+      ids.add(item.pattern);
+    }
+    if ('cols' in item && Array.isArray(item.cols)) {
+      for (const col of item.cols) {
+        // cols contains strings (pattern IDs)
+        if (typeof col === 'string') {
+          ids.add(col);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Find similar pattern IDs in the registry for suggestion.
+ */
+function findSimilarPatterns(target: string, registry: Map<string, unknown>): string[] {
+  const similar: string[] = [];
+  const targetLower = target.toLowerCase();
+
+  for (const id of registry.keys()) {
+    const idLower = id.toLowerCase();
+    // Simple similarity: contains target or target contains id
+    if (idLower.includes(targetLower) || targetLower.includes(idLower)) {
+      similar.push(id);
+    }
+  }
+
+  return similar.slice(0, 3); // Top 3 suggestions
+}
+
+/**
+ * Check if all referenced patterns exist in the registry.
+ */
+function checkPatternExistence(
+  essence: EssenceFile,
+  context: GuardContext
+): GuardViolation[] {
+  if (!context.patternRegistry) return [];
+
+  const violations: GuardViolation[] = [];
+  const referencedPatterns = new Set<string>();
+
+  // Collect all pattern references from structure
+  const pages = getAllPages(essence);
+  for (const page of pages) {
+    for (const item of page.layout || []) {
+      collectPatternIds(item, referencedPatterns);
+    }
+  }
+
+  // Check each pattern exists
+  for (const patternId of referencedPatterns) {
+    if (!context.patternRegistry.has(patternId)) {
+      // Find similar patterns for suggestion
+      const similar = findSimilarPatterns(patternId, context.patternRegistry);
+      const suggestion = similar.length > 0
+        ? `Similar patterns: ${similar.join(', ')}`
+        : `Run "decantr search ${patternId}" to find alternatives.`;
+
+      violations.push({
+        rule: 'pattern-exists',
+        severity: 'error',
+        message: `Pattern "${patternId}" is referenced but does not exist in the registry.`,
+        suggestion,
+      });
+    }
+  }
+
+  return violations;
+}
+
+export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}): GuardViolation[] {
   const guard = essence.guard;
 
   if (guard.mode === 'creative') {
@@ -93,6 +215,16 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext): Guar
       });
     }
   }
+
+  // Rule 6: Theme/mode compatibility (always checked when registry available)
+  const themeModeViolation = checkThemeModeCompatibility(essence, context);
+  if (themeModeViolation) {
+    violations.push(themeModeViolation);
+  }
+
+  // Rule 7: Pattern existence (always checked when registry available)
+  const patternViolations = checkPatternExistence(essence, context);
+  violations.push(...patternViolations);
 
   return violations;
 }

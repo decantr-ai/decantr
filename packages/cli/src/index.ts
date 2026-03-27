@@ -160,6 +160,45 @@ async function cmdGet(type: string, id: string) {
   console.log(JSON.stringify(result.item, null, 2));
 }
 
+function buildRegistryContext(): { themeRegistry: Map<string, { modes: string[] }>; patternRegistry: Map<string, unknown> } {
+  const { readdirSync } = require('node:fs');
+  const themeRegistry = new Map<string, { modes: string[] }>();
+  const patternRegistry = new Map<string, unknown>();
+  const contentRoot = getContentRoot();
+
+  // Load themes from main and core directories
+  const themeDirs = [join(contentRoot, 'themes'), join(contentRoot, 'core', 'themes')];
+  for (const dir of themeDirs) {
+    try {
+      if (existsSync(dir)) {
+        for (const f of readdirSync(dir).filter((f: string) => f.endsWith('.json'))) {
+          const data = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
+          if (data.id && !themeRegistry.has(data.id)) {
+            themeRegistry.set(data.id, { modes: data.modes || ['light', 'dark'] });
+          }
+        }
+      }
+    } catch { /* skip if unavailable */ }
+  }
+
+  // Load patterns from main and core directories
+  const patternDirs = [join(contentRoot, 'patterns'), join(contentRoot, 'core', 'patterns')];
+  for (const dir of patternDirs) {
+    try {
+      if (existsSync(dir)) {
+        for (const f of readdirSync(dir).filter((f: string) => f.endsWith('.json'))) {
+          const data = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
+          if (data.id && !patternRegistry.has(data.id)) {
+            patternRegistry.set(data.id, data);
+          }
+        }
+      }
+    } catch { /* skip if unavailable */ }
+  }
+
+  return { themeRegistry, patternRegistry };
+}
+
 async function cmdValidate(path?: string) {
   const essencePath = path || join(process.cwd(), 'decantr.essence.json');
   let raw: string;
@@ -194,12 +233,17 @@ async function cmdValidate(path?: string) {
   }
 
   try {
-    const violations = evaluateGuard(essence, {});
+    // Build registry context for guard validation
+    const { themeRegistry, patternRegistry } = buildRegistryContext();
+    const violations = evaluateGuard(essence, { themeRegistry, patternRegistry });
     if (violations.length > 0) {
       console.log(heading('Guard violations:'));
       for (const v of violations) {
         const vr = v as Record<string, string>;
         console.log(`  ${YELLOW}[${vr.rule}]${RESET} ${vr.message}`);
+        if (vr.suggestion) {
+          console.log(`    ${DIM}Suggestion: ${vr.suggestion}${RESET}`);
+        }
       }
     } else if (result.valid) {
       console.log(success('No guard violations.'));
@@ -556,14 +600,18 @@ async function cmdAudit() {
 
     console.log(success('Essence is valid.'));
 
-    // Check guard violations
-    const violations = evaluateGuard(essence, {});
+    // Build registry context for guard validation
+    const { themeRegistry, patternRegistry } = buildRegistryContext();
+    const violations = evaluateGuard(essence, { themeRegistry, patternRegistry });
     if (violations.length > 0) {
       console.log('');
       console.log(`${YELLOW}Guard violations:${RESET}`);
       for (const v of violations) {
         const vr = v as Record<string, string>;
         console.log(`  ${YELLOW}[${vr.rule}]${RESET} ${vr.message}`);
+        if (vr.suggestion) {
+          console.log(`    ${DIM}Suggestion: ${vr.suggestion}${RESET}`);
+        }
       }
     } else {
       console.log(success('No guard violations.'));
