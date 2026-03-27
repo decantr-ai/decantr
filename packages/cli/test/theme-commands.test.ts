@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { mkdirSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { validateCustomTheme, createTheme } from '../src/theme-commands.js';
+import { validateCustomTheme, createTheme, listCustomThemes, deleteTheme, importTheme } from '../src/theme-commands.js';
 
 describe('validateCustomTheme', () => {
   it('returns valid for complete theme', () => {
@@ -130,5 +130,110 @@ describe('createTheme', () => {
     const validation = validateCustomTheme(theme);
 
     expect(validation.valid).toBe(true);
+  });
+});
+
+describe('listCustomThemes', () => {
+  const testDir = join(process.cwd(), 'test-theme-list');
+
+  beforeEach(() => {
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  it('returns empty array when no custom themes', () => {
+    const themes = listCustomThemes(testDir);
+    expect(themes).toHaveLength(0);
+  });
+
+  it('returns list of custom themes', () => {
+    createTheme(testDir, 'theme1', 'Theme One');
+    createTheme(testDir, 'theme2', 'Theme Two');
+
+    const themes = listCustomThemes(testDir);
+
+    expect(themes).toHaveLength(2);
+    expect(themes.map(t => t.id)).toContain('theme1');
+    expect(themes.map(t => t.id)).toContain('theme2');
+  });
+});
+
+describe('deleteTheme', () => {
+  const testDir = join(process.cwd(), 'test-theme-delete');
+
+  beforeEach(() => {
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  it('deletes existing theme', () => {
+    createTheme(testDir, 'mytheme', 'My Theme');
+    const themePath = join(testDir, '.decantr', 'custom', 'themes', 'mytheme.json');
+
+    expect(existsSync(themePath)).toBe(true);
+
+    const result = deleteTheme(testDir, 'mytheme');
+
+    expect(result.success).toBe(true);
+    expect(existsSync(themePath)).toBe(false);
+  });
+
+  it('returns error for non-existent theme', () => {
+    const result = deleteTheme(testDir, 'nonexistent');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not found');
+  });
+});
+
+describe('importTheme', () => {
+  const testDir = join(process.cwd(), 'test-theme-import');
+  const importDir = join(process.cwd(), 'test-theme-import-source');
+
+  beforeEach(() => {
+    mkdirSync(testDir, { recursive: true });
+    mkdirSync(importDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+    rmSync(importDir, { recursive: true, force: true });
+  });
+
+  it('imports valid theme file', () => {
+    const theme = {
+      id: 'imported',
+      name: 'Imported Theme',
+      seed: { primary: '#000', secondary: '#111', accent: '#222', background: '#fff' },
+      modes: ['dark'],
+      shapes: ['rounded'],
+      decantr_compat: '>=1.0.0',
+      source: 'custom'
+    };
+    const sourcePath = join(importDir, 'external-theme.json');
+    writeFileSync(sourcePath, JSON.stringify(theme));
+
+    const result = importTheme(testDir, sourcePath);
+
+    expect(result.success).toBe(true);
+    expect(existsSync(join(testDir, '.decantr', 'custom', 'themes', 'imported.json'))).toBe(true);
+  });
+
+  it('rejects invalid theme file', () => {
+    const theme = { id: 'bad', name: 'Bad' }; // missing required fields
+    const sourcePath = join(importDir, 'bad-theme.json');
+    writeFileSync(sourcePath, JSON.stringify(theme));
+
+    const result = importTheme(testDir, sourcePath);
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toBeDefined();
+    expect(result.errors!.length).toBeGreaterThan(0);
   });
 });
