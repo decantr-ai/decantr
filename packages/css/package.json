@@ -1,0 +1,36 @@
+{
+  "name": "@decantr/css",
+  "version": "1.0.0",
+  "description": "Framework-agnostic CSS atoms runtime for Decantr projects",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "decantr",
+    "css",
+    "atoms",
+    "utility-css"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^26.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  }
+}

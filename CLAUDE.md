@@ -14,6 +14,7 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 | `@decantr/registry` | `packages/registry/` | Content resolver, wiring rules, pattern preset resolution |
 | `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing tools to AI assistants |
+| `@decantr/css` | `packages/css/` | Framework-agnostic CSS atoms runtime for layout utilities |
 | `decantr` | `packages/cli/` | CLI for project initialization, registry queries, validation |
 
 ## Terminology

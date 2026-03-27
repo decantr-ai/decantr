@@ -142,6 +142,7 @@ Options:
 | `@decantr/registry` | [![npm](https://img.shields.io/npm/v/@decantr/registry)](https://www.npmjs.com/package/@decantr/registry) | Content resolver, wiring rules, and pattern preset resolution |
 | `@decantr/core` | [![npm](https://img.shields.io/npm/v/@decantr/core)](https://www.npmjs.com/package/@decantr/core) | Design Pipeline IR engine for AI-generated UI |
 | `@decantr/mcp-server` | [![npm](https://img.shields.io/npm/v/@decantr/mcp-server)](https://www.npmjs.com/package/@decantr/mcp-server) | MCP server exposing design intelligence tools to AI coding assistants |
+| `@decantr/css` | [![npm](https://img.shields.io/npm/v/@decantr/css)](https://www.npmjs.com/package/@decantr/css) | Framework-agnostic CSS atoms runtime for layout utilities |
 | `@decantr/cli` | [![npm](https://img.shields.io/npm/v/@decantr/cli)](https://www.npmjs.com/package/@decantr/cli) | CLI for project initialization, registry queries, and validation |
 
 ### Package Scripts
@@ -316,6 +317,8 @@ When you run `decantr init`, these files are created:
 |------|---------|
 | `decantr.essence.json` | The machine-readable design spec. Your AI reads this to understand what to build. |
 | `DECANTR.md` | LLM instructions. Share this with your AI assistant for context. |
+| `src/styles/tokens.css` | Theme tokens (CSS variables for colors, spacing, radii). |
+| `src/styles/decorators.css` | Recipe decorator classes generated from the selected recipe. |
 | `.decantr/project.json` | Project state including sync timestamps and registry source. |
 | `.decantr/context/` | Task-specific guides for different workflows. |
 | `.decantr/cache/` | Local cache of registry content (gitignored). |

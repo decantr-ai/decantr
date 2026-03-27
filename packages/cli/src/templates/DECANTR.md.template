@@ -237,6 +237,19 @@ Use the same component variants throughout a pattern. If buttons are `primary` s
 
 ## CSS Implementation
 
+This project uses **@decantr/css** for layout atoms and the generated CSS files for theme tokens and recipe decorators.
+
+### Setup
+
+```javascript
+// 1. Import the atoms runtime
+import { css } from '@decantr/css';
+
+// 2. Import generated CSS files (created by decantr init)
+import './styles/tokens.css';      // Theme tokens (--d-primary, --d-surface, etc.)
+import './styles/decorators.css';  // Recipe decorators ({{THEME_RECIPE}}-card, etc.)
+```
+
 ### HTML Setup
 
 Your `index.html` MUST have theme and mode attributes:
@@ -256,64 +269,51 @@ Your `index.html` MUST have theme and mode attributes:
 - `data-mode` enables light/dark toggle
 - `color-scheme` tells the browser to style native controls (scrollbars, inputs) correctly
 
-### CSS Layer Structure
+### Using Atoms
 
-Use `@layer` for proper cascade control:
+The `css()` function processes atom strings and injects CSS at runtime:
 
-```css
-@layer decantr.reset, decantr.tokens, decantr.decorators, decantr.patterns, decantr.utilities, app;
+```jsx
+// Layout atoms
+<div className={css('_flex _col _gap4 _p4')}>
+  <h1 className={css('_heading1')}>Title</h1>
+  <p className={css('_textsm _fgmuted')}>Description</p>
+</div>
 
-@layer decantr.reset {
-  *, *::before, *::after { box-sizing: border-box; }
-  body { margin: 0; }
-}
+// Responsive prefixes (mobile-first)
+<div className={css('_gc1 _sm:gc2 _lg:gc4')}>
+  {/* 1 col -> 2 cols at 640px -> 4 cols at 1024px */}
+</div>
 
-@layer decantr.tokens {
-  /* Base spacing (theme-agnostic) */
-  :root {
-    --gap1: 4px;
-    --gap2: 8px;
-    --gap3: 12px;
-    --gap4: 16px;
-    --gap6: 24px;
-    --gap8: 32px;
-    --gap12: 48px;
-  }
+// Pseudo-class prefixes
+<button className={css('_bgprimary _h:bgprimary/80')}>
+  Hover me
+</button>
+```
 
-  /* Theme-specific tokens */
-  html[data-theme="{{THEME_STYLE}}"] {
-    color-scheme: {{THEME_MODE}};
+### Common Atoms
 
-    /* Seed colors from theme */
-    --d-primary: /* from theme.seed.primary */;
-    --d-secondary: /* from theme.seed.secondary */;
-    --d-accent: /* from theme.seed.accent */;
-    --d-bg: /* from theme.seed.background */;
+| Category | Atoms | Description |
+|----------|-------|-------------|
+| Display | `_flex`, `_grid`, `_block`, `_none` | Display types |
+| Flexbox | `_col`, `_row`, `_wrap`, `_flex1` | Flex direction/behavior |
+| Alignment | `_aic`, `_jcc`, `_jcsb` | Align/justify content |
+| Spacing | `_gap{n}`, `_p{n}`, `_m{n}`, `_px{n}` | Gap, padding, margin |
+| Sizing | `_wfull`, `_hfull`, `_w{n}`, `_h{n}` | Width, height |
+| Typography | `_textsm`, `_textlg`, `_heading1`-`_heading6` | Font sizes |
+| Colors | `_bgprimary`, `_bgsurface`, `_fgmuted` | Background, foreground |
 
-    /* Surface stack */
-    --d-surface: rgba(255, 255, 255, 0.03);
-    --d-surface-raised: rgba(255, 255, 255, 0.06);
-    --d-border: rgba(255, 255, 255, 0.1);
+### CSS Architecture
 
-    /* Text hierarchy */
-    --d-text: #FFFFFF;
-    --d-text-secondary: rgba(255, 255, 255, 0.7);
-    --d-text-muted: rgba(255, 255, 255, 0.4);
-  }
-}
+The CSS is organized into two parts:
 
-@layer decantr.decorators {
-  /* Recipe-specific classes from {{THEME_RECIPE}} */
-}
+1. **Atoms (@decantr/css)** - Layout utilities injected at runtime into `@layer d.atoms`
+2. **Generated CSS files** - Theme tokens and recipe decorators created during scaffold
 
-@layer decantr.patterns {
-  .pattern-hero { }
-  .pattern-kpi-grid { }
-}
-
-@layer app {
-  /* Your application overrides */
-}
+```
+src/styles/
+  tokens.css      # :root { --d-primary: #...; --d-surface: #...; }
+  decorators.css  # .{{THEME_RECIPE}}-card { ... }
 ```
 
 ### Variable Naming Convention
@@ -321,8 +321,8 @@ Use `@layer` for proper cascade control:
 | Prefix | Purpose | Example |
 |--------|---------|---------|
 | `--d-` | Core Decantr tokens | `--d-primary`, `--d-bg` |
-| `--{recipe}-` | Recipe-specific | `--lum-orb-opacity` |
-| `--gap{N}` | Spacing tokens | `--gap4`, `--gap8` |
+| `--d-gap-{n}` | Spacing tokens | `--d-gap-4`, `--d-gap-8` |
+| `--d-radius` | Border radius | `--d-radius`, `--d-radius-lg` |
 
 ### Theme Switching (JavaScript)
 
