@@ -51,13 +51,11 @@ Wine metaphors are used in branding only. Code and schema use normalized terms.
 content/
   archetypes/     # 20 app archetypes (e.g., saas-dashboard.json, gaming-community.json)
   blueprints/     # 11 composed app templates
-  patterns/       # 16 UI section patterns (e.g., kpi-grid.json, activity-feed.json)
-  recipes/        # 1 visual decoration rule (luminarum.json)
-  themes/         # 11 theme definitions (e.g., luminarum.json, glassmorphism.json)
+  patterns/       # 21 UI section patterns (e.g., kpi-grid.json, hero.json, leaderboard.json)
+  recipes/        # 6 visual decoration rules (luminarum.json, glassmorphism.json, etc.)
+  themes/         # 12 theme definitions (e.g., luminarum.json, auradecantism.json)
   core/           # Core defaults
     shells.json   # Shell layout definitions
-    patterns/     # Base patterns (hero.json)
-    recipes/      # Base recipes (auradecantism.json)
 ```
 
 ## Design Pipeline
@@ -125,6 +123,13 @@ decantr list <type>       # List all items of type
 decantr sync              # Sync registry from API
 decantr audit             # Audit project for issues
 ```
+
+## Documentation
+
+| File | Purpose |
+|------|---------|
+| `docs/css-scaffolding-guide.md` | Full CSS implementation spec (@layer structure, theme scoping, color-scheme, variable naming). Generated DECANTR.md includes a condensed version; this is the expanded reference. |
+| `docs/plans/` | Implementation plans and specs for major features |
 
 ## Development Notes
 
