@@ -72,15 +72,16 @@ The seven stages of the Design Pipeline:
 
 ## Guard Rules
 
-The guard system (`packages/essence-spec/src/guard.ts`) enforces five rules:
+The guard system (`packages/essence-spec/src/guard.ts`) enforces six rules:
 
 1. **Style guard** -- Code must use the theme specified in the Essence. Changing themes without updating the Essence is a violation (error severity).
 2. **Structure guard** -- Pages referenced in code must exist in the Essence structure. Generating code for an undefined page is a violation (error severity). Enforced in both `guided` and `strict` modes.
 3. **Layout guard** -- Pattern order in a page must match the Essence layout spec. Strict mode only (error severity).
 4. **Recipe guard** -- Visual recipe used in code must match the Essence recipe. Switching recipes without updating the Essence is a violation (error severity).
 5. **Density guard** -- Content gap values must match the Essence density setting. Strict mode only (warning severity).
+6. **Accessibility guard** -- Code must meet the WCAG level specified in the Essence. Enforced in both `guided` and `strict` modes (error severity).
 
-Guard modes: `creative` (no enforcement), `guided` (rules 1, 2, 4), `strict` (all rules).
+Guard modes: `creative` (no enforcement), `guided` (rules 1, 2, 4, 6), `strict` (all rules).
 
 ## Build and Test
 
