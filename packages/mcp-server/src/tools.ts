@@ -2,8 +2,9 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { validateEssence, evaluateGuard } from '@decantr/essence-spec';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { createRegistryClient, resolvePatternPreset } from '@decantr/registry';
-import { validateStringArg, getResolver } from './helpers.js';
+import { resolvePatternPreset } from '@decantr/registry';
+import type { Pattern } from '@decantr/registry';
+import { validateStringArg, fuzzyScore, getAPIClient } from './helpers.js';
 
 const READ_ONLY = {
   readOnlyHint: true,
@@ -60,6 +61,7 @@ export const TOOLS = [
       properties: {
         id: { type: 'string', description: 'Pattern ID (e.g. "hero", "data-table", "kpi-grid")' },
         preset: { type: 'string', description: 'Optional preset name (e.g. "product", "content")' },
+        namespace: { type: 'string', description: 'Namespace (default: "@official")' },
       },
       required: ['id'],
     },
@@ -73,6 +75,7 @@ export const TOOLS = [
       type: 'object' as const,
       properties: {
         id: { type: 'string', description: 'Archetype ID (e.g. "saas-dashboard", "ecommerce")' },
+        namespace: { type: 'string', description: 'Namespace (default: "@official")' },
       },
       required: ['id'],
     },
@@ -86,6 +89,7 @@ export const TOOLS = [
       type: 'object' as const,
       properties: {
         id: { type: 'string', description: 'Recipe ID (e.g. "auradecantism")' },
+        namespace: { type: 'string', description: 'Namespace (default: "@official")' },
       },
       required: ['id'],
     },
@@ -99,6 +103,7 @@ export const TOOLS = [
       type: 'object' as const,
       properties: {
         id: { type: 'string', description: 'Blueprint ID (e.g. "saas-dashboard", "ecommerce", "portfolio")' },
+        namespace: { type: 'string', description: 'Namespace (default: "@official")' },
       },
       required: ['id'],
     },
@@ -153,6 +158,8 @@ export const TOOLS = [
 ];
 
 export async function handleTool(name: string, args: Record<string, unknown>): Promise<unknown> {
+  const apiClient = getAPIClient();
+
   switch (name) {
     case 'decantr_read_essence': {
       const essencePath = (args.path as string) || join(process.cwd(), 'decantr.essence.json');
@@ -174,7 +181,6 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
       const result = validateEssence(essence);
 
-      // Also run guard if valid
       let guardViolations: unknown[] = [];
       if (result.valid && typeof essence === 'object' && essence !== null) {
         try {
@@ -189,16 +195,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const err = validateStringArg(args, 'query');
       if (err) return { error: err };
       try {
-        const client = createRegistryClient();
-        const results = await client.search(args.query as string, args.type as string | undefined);
+        const response = await apiClient.search({
+          q: args.query as string,
+          type: args.type as string | undefined,
+        });
         return {
-          total: results.length,
-          results: results.map((r) => ({
+          total: response.total,
+          results: response.results.map((r) => ({
             type: r.type,
-            id: r.id,
+            id: r.slug,
+            namespace: r.namespace,
             name: r.name,
             description: r.description,
-            install: `decantr registry add ${r.type}/${r.id}`,
+            install: `decantr get ${r.type} ${r.slug}`,
           })),
         };
       } catch (e) {
@@ -209,122 +218,122 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
     case 'decantr_resolve_pattern': {
       const err = validateStringArg(args, 'id');
       if (err) return { error: err };
-      const resolver = getResolver();
-      const resolved = await resolver.resolve('pattern', args.id as string);
-      if (!resolved) {
-        return { found: false, message: `Pattern "${args.id}" not found.` };
+      const namespace = (args.namespace as string) || '@official';
+      try {
+        const pattern = await apiClient.getPattern(namespace, args.id as string);
+        const result: Record<string, unknown> = { found: true, ...pattern };
+        if (args.preset && typeof args.preset === 'string') {
+          const preset = resolvePatternPreset(pattern as Pattern, args.preset);
+          if (preset) result.resolvedPreset = preset;
+        }
+        return result;
+      } catch {
+        return { found: false, message: `Pattern "${args.id}" not found in ${namespace}.` };
       }
-      const result: Record<string, unknown> = { found: true, ...resolved.item };
-      // Apply preset if requested
-      if (args.preset && typeof args.preset === 'string') {
-        const preset = resolvePatternPreset(resolved.item, args.preset as string);
-        if (preset) result.resolvedPreset = preset;
-      }
-      return result;
     }
 
     case 'decantr_resolve_archetype': {
       const err = validateStringArg(args, 'id');
       if (err) return { error: err };
-      const resolver = getResolver();
-      const resolved = await resolver.resolve('archetype', args.id as string);
-      if (!resolved) {
-        return { found: false, message: `Archetype "${args.id}" not found.` };
+      const namespace = (args.namespace as string) || '@official';
+      try {
+        const archetype = await apiClient.getArchetype(namespace, args.id as string);
+        return { found: true, ...archetype };
+      } catch {
+        return { found: false, message: `Archetype "${args.id}" not found in ${namespace}.` };
       }
-      return { found: true, ...resolved.item };
     }
 
     case 'decantr_resolve_recipe': {
       const err = validateStringArg(args, 'id');
       if (err) return { error: err };
-      const resolver = getResolver();
-      const resolved = await resolver.resolve('recipe', args.id as string);
-      if (!resolved) {
-        return { found: false, message: `Recipe "${args.id}" not found.` };
+      const namespace = (args.namespace as string) || '@official';
+      try {
+        const recipe = await apiClient.getRecipe(namespace, args.id as string);
+        return { found: true, ...recipe };
+      } catch {
+        return { found: false, message: `Recipe "${args.id}" not found in ${namespace}.` };
       }
-      return { found: true, ...resolved.item };
     }
 
     case 'decantr_resolve_blueprint': {
       const err = validateStringArg(args, 'id');
       if (err) return { error: err };
-      const resolver = getResolver();
-      const resolved = await resolver.resolve('blueprint', args.id as string);
-      if (!resolved) {
-        return { found: false, message: `Blueprint "${args.id}" not found.` };
+      const namespace = (args.namespace as string) || '@official';
+      try {
+        const blueprint = await apiClient.getBlueprint(namespace, args.id as string);
+        return { found: true, ...blueprint };
+      } catch {
+        return { found: false, message: `Blueprint "${args.id}" not found in ${namespace}.` };
       }
-      return { found: true, ...resolved.item };
     }
 
     case 'decantr_suggest_patterns': {
       const err = validateStringArg(args, 'description');
       if (err) return { error: err };
       const desc = (args.description as string).toLowerCase();
-      const resolver = getResolver();
 
-      // Load all patterns and score by keyword relevance
-      const patternIds = [
-        'hero', 'kpi-grid', 'data-table', 'card-grid', 'chart-grid',
-        'filter-bar', 'form-sections', 'detail-header', 'activity-feed', 'cta-section',
-      ];
+      try {
+        const patternsResponse = await apiClient.listContent<Pattern>('patterns', {
+          namespace: '@official',
+          limit: 100,
+        });
 
-      const suggestions: { id: string; score: number; name: string; description: string; components: string[]; layout: string }[] = [];
+        const suggestions: { id: string; score: number; name: string; description: string; components: string[]; layout: string }[] = [];
 
-      for (const id of patternIds) {
-        const resolved = await resolver.resolve('pattern', id);
-        if (!resolved) continue;
-        const p = resolved.item as Record<string, unknown>;
+        for (const p of patternsResponse.items) {
+          const searchable = [
+            p.name || '',
+            p.description || '',
+            ...(p.components || []),
+            ...(p.tags || []),
+          ].join(' ').toLowerCase();
 
-        // Score based on keyword matching against name, description, component names, tags
-        const searchable = [
-          p.name as string || '',
-          p.description as string || '',
-          ...(p.components as string[] || []),
-          ...(p.tags as string[] || []),
-        ].join(' ').toLowerCase();
+          let score = 0;
+          const words = desc.split(/\s+/);
+          for (const word of words) {
+            if (word.length < 3) continue;
+            if (searchable.includes(word)) score += 10;
+          }
 
-        let score = 0;
-        const words = desc.split(/\s+/);
-        for (const word of words) {
-          if (word.length < 3) continue;
-          if (searchable.includes(word)) score += 10;
+          // Boost for common keyword associations
+          if (desc.includes('dashboard') && ['kpi-grid', 'chart-grid', 'data-table', 'filter-bar'].includes(p.id)) score += 20;
+          if (desc.includes('metric') && p.id === 'kpi-grid') score += 15;
+          if (desc.includes('chart') && p.id === 'chart-grid') score += 15;
+          if (desc.includes('table') && p.id === 'data-table') score += 15;
+          if (desc.includes('form') && p.id === 'form-sections') score += 15;
+          if (desc.includes('setting') && p.id === 'form-sections') score += 15;
+          if (desc.includes('landing') && ['hero', 'cta-section', 'card-grid'].includes(p.id)) score += 20;
+          if (desc.includes('hero') && p.id === 'hero') score += 20;
+          if (desc.includes('ecommerce') && ['card-grid', 'filter-bar', 'detail-header'].includes(p.id)) score += 15;
+          if (desc.includes('product') && p.id === 'card-grid') score += 15;
+          if (desc.includes('feed') && p.id === 'activity-feed') score += 15;
+          if (desc.includes('filter') && p.id === 'filter-bar') score += 15;
+          if (desc.includes('search') && p.id === 'filter-bar') score += 10;
+
+          if (score > 0) {
+            const preset = p.presets ? Object.values(p.presets)[0] : null;
+            suggestions.push({
+              id: p.id,
+              score,
+              name: p.name || p.id,
+              description: p.description || '',
+              components: p.components || [],
+              layout: preset?.layout ? preset.layout.layout : 'grid',
+            });
+          }
         }
 
-        // Boost for common keyword associations
-        if (desc.includes('dashboard') && ['kpi-grid', 'chart-grid', 'data-table', 'filter-bar'].includes(id)) score += 20;
-        if (desc.includes('metric') && id === 'kpi-grid') score += 15;
-        if (desc.includes('chart') && id === 'chart-grid') score += 15;
-        if (desc.includes('table') && id === 'data-table') score += 15;
-        if (desc.includes('form') && id === 'form-sections') score += 15;
-        if (desc.includes('setting') && id === 'form-sections') score += 15;
-        if (desc.includes('landing') && ['hero', 'cta-section', 'card-grid'].includes(id)) score += 20;
-        if (desc.includes('hero') && id === 'hero') score += 20;
-        if (desc.includes('ecommerce') && ['card-grid', 'filter-bar', 'detail-header'].includes(id)) score += 15;
-        if (desc.includes('product') && id === 'card-grid') score += 15;
-        if (desc.includes('feed') && id === 'activity-feed') score += 15;
-        if (desc.includes('filter') && id === 'filter-bar') score += 15;
-        if (desc.includes('search') && id === 'filter-bar') score += 10;
+        suggestions.sort((a, b) => b.score - a.score);
 
-        if (score > 0) {
-          const preset = p.presets && typeof p.presets === 'object' ? Object.values(p.presets)[0] as Record<string, unknown> : null;
-          suggestions.push({
-            id,
-            score,
-            name: p.name as string || id,
-            description: p.description as string || '',
-            components: p.components as string[] || [],
-            layout: preset?.layout ? ((preset.layout as Record<string, string>).layout || 'grid') : 'grid',
-          });
-        }
+        return {
+          query: args.description,
+          suggestions: suggestions.slice(0, 5),
+          total: suggestions.length,
+        };
+      } catch (e) {
+        return { error: `Could not fetch patterns: ${(e as Error).message}` };
       }
-
-      suggestions.sort((a, b) => b.score - a.score);
-
-      return {
-        query: args.description,
-        suggestions: suggestions.slice(0, 5),
-        total: suggestions.length,
-      };
     }
 
     case 'decantr_check_drift': {
@@ -343,7 +352,6 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       const violations: { rule: string; severity: string; message: string }[] = [];
 
-      // Check theme drift
       if (args.theme_used && typeof args.theme_used === 'string') {
         const expectedTheme = (essence as Record<string, unknown>).theme as Record<string, string> | undefined;
         if (expectedTheme?.style && args.theme_used !== expectedTheme.style) {
@@ -355,7 +363,6 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         }
       }
 
-      // Check page exists in structure
       if (args.page_id && typeof args.page_id === 'string') {
         const structure = (essence as Record<string, unknown>).structure as Array<{ id: string }> | undefined;
         if (structure && !structure.find(p => p.id === args.page_id)) {
@@ -367,7 +374,6 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         }
       }
 
-      // Run guard rules
       try {
         const guardViolations = evaluateGuard(essence, {
           pageId: args.page_id as string | undefined,
@@ -394,15 +400,12 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const desc = (args.description as string).toLowerCase();
       const framework = (args.framework as string) || 'react';
 
-      // Match description to best archetype
       const archetypeScores: { id: string; score: number }[] = [];
       const archetypeIds = [
         'saas-dashboard', 'ecommerce', 'portfolio', 'content-site',
         'financial-dashboard', 'cloud-platform', 'gaming-platform',
         'ecommerce-admin', 'workbench',
       ];
-
-      const resolver = getResolver();
 
       for (const id of archetypeIds) {
         let score = 0;
@@ -425,12 +428,18 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       archetypeScores.sort((a, b) => b.score - a.score);
       const bestMatch = archetypeScores[0]?.id || 'saas-dashboard';
 
-      // Load the archetype to build the essence skeleton
-      const archetypeResult = await resolver.resolve('archetype', bestMatch);
-      const archetype = archetypeResult?.item as Record<string, unknown> | null;
+      // Try to fetch archetype from API for richer skeleton
+      let pages: Array<{ id: string; shell: string; default_layout: string[] }> | undefined;
+      let features: string[] = [];
 
-      // Build structure from archetype pages
-      const pages = archetype?.pages as Array<{ id: string; shell: string; default_layout: string[] }> | undefined;
+      try {
+        const archetype = await apiClient.getArchetype('@official', bestMatch);
+        pages = archetype.pages as Array<{ id: string; shell: string; default_layout: string[] }>;
+        features = archetype.features || [];
+      } catch {
+        // API unavailable, use minimal defaults
+      }
+
       const structure = (pages || [{ id: 'home', shell: 'full-bleed', default_layout: ['hero'] }]).map(p => ({
         id: p.id,
         shell: p.shell || 'sidebar-main',
@@ -449,7 +458,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         personality: ['professional'],
         platform: { type: 'spa', routing: 'hash' },
         structure,
-        features: (archetype?.features as string[]) || [],
+        features,
         guard: { enforce_style: true, enforce_recipe: true, mode: 'strict' },
         density: { level: 'comfortable', content_gap: '_gap4' },
         target: framework,

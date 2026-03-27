@@ -1,5 +1,4 @@
-import { createResolver, type ContentResolver } from '@decantr/registry';
-import { join } from 'node:path';
+import { RegistryAPIClient } from '@decantr/registry';
 
 const MAX_INPUT_LENGTH = 1000;
 
@@ -27,26 +26,18 @@ export function fuzzyScore(query: string, text: string): number {
   return qi === q.length ? 60 : 0;
 }
 
-let _resolver: ContentResolver | null = null;
+let _apiClient: RegistryAPIClient | null = null;
 
-export function getResolver(): ContentResolver {
-  if (!_resolver) {
-    // Content resolution order:
-    // 1. DECANTR_CONTENT_ROOT env var (explicit override)
-    // 2. Bundled content relative to this package (monorepo dev)
-    // 3. node_modules/@decantr/content (npm installed)
-    const envRoot = process.env.DECANTR_CONTENT_ROOT;
-    const bundledRoot = join(import.meta.dirname, '..', '..', '..', 'content');
-    const npmRoot = join(process.cwd(), 'node_modules', '@decantr', 'content');
-
-    _resolver = createResolver({
-      contentRoot: envRoot || bundledRoot,
-      overridePaths: envRoot ? [] : [npmRoot],
+export function getAPIClient(): RegistryAPIClient {
+  if (!_apiClient) {
+    _apiClient = new RegistryAPIClient({
+      baseUrl: process.env.DECANTR_API_URL || undefined,
+      apiKey: process.env.DECANTR_API_KEY || undefined,
     });
   }
-  return _resolver;
+  return _apiClient;
 }
 
-export function resetResolver(): void {
-  _resolver = null;
+export function resetAPIClient(): void {
+  _apiClient = null;
 }
