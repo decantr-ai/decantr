@@ -228,6 +228,20 @@ function buildRegistryContext(): { themeRegistry: Map<string, { modes: string[] 
     } catch { /* skip if unavailable */ }
   }
 
+  // Load custom themes
+  const customThemesDir = join(process.cwd(), '.decantr', 'custom', 'themes');
+  try {
+    if (existsSync(customThemesDir)) {
+      for (const f of readdirSync(customThemesDir).filter((f: string) => f.endsWith('.json'))) {
+        const data = JSON.parse(readFileSync(join(customThemesDir, f), 'utf-8'));
+        if (data.id) {
+          // Register with custom: prefix
+          themeRegistry.set(`custom:${data.id}`, { modes: data.modes || ['light', 'dark'] });
+        }
+      }
+    }
+  } catch { /* skip if unavailable */ }
+
   // Load patterns from main and core directories
   const patternDirs = [join(contentRoot, 'patterns'), join(contentRoot, 'core', 'patterns')];
   for (const dir of patternDirs) {
