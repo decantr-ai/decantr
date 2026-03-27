@@ -21,6 +21,9 @@ export type {
   GuardMode,
   Impression,
   GeneratorTarget,
+  Accessibility,
+  WcagLevel,
+  CvdPreference,
 } from './types.js';
 
 export { isSectioned, isSimple } from './types.js';

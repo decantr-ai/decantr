@@ -110,6 +110,23 @@ export interface Impression {
 
 export type GeneratorTarget = 'decantr' | 'react' | 'vue' | 'svelte' | string;
 
+// --- Accessibility ---
+
+export type WcagLevel = 'none' | 'A' | 'AA' | 'AAA';
+
+export type CvdPreference =
+  | 'none'
+  | 'auto'
+  | 'deuteranopia'
+  | 'protanopia'
+  | 'tritanopia'
+  | 'achromatopsia';
+
+export interface Accessibility {
+  wcag_level?: WcagLevel;
+  cvd_preference?: CvdPreference;
+}
+
 // --- Essence (simple) ---
 
 export interface Essence {
@@ -124,6 +141,7 @@ export interface Essence {
   density: Density;
   guard: Guard;
   target: GeneratorTarget;
+  accessibility?: Accessibility;
   _impression?: Impression;
 }
 
@@ -148,6 +166,7 @@ export interface SectionedEssence {
   density: Density;
   guard: Guard;
   target: GeneratorTarget;
+  accessibility?: Accessibility;
   _impression?: Impression;
 }
 
