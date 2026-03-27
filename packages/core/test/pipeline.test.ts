@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
 const contentRoot = join(import.meta.dirname, '..', '..', '..', 'content', 'core');
+const recipesRoot = join(import.meta.dirname, '..', '..', '..', 'content');
 
 function loadFixture(name: string): EssenceFile {
   const path = join(import.meta.dirname, 'fixtures', `${name}.json`);
@@ -60,7 +61,7 @@ describe('runPipeline', () => {
 
   it('applies recipe decoration to shell IR', async () => {
     const essence = loadFixture('essence-saas');
-    const result = await runPipeline(essence, { contentRoot });
+    const result = await runPipeline(essence, { contentRoot, overridePaths: [recipesRoot] });
 
     const shell = result.ir.shell;
     expect(shell.config.recipe).not.toBeNull();

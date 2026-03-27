@@ -1,0 +1,26 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "auradecantism",
+  "name": "Auradecantism",
+  "description": "Luminous glass aesthetic with purple/cyan/pink palette. Bouncy pill shapes, glass morphism effects, and vibrant gradients.",
+  "tags": ["dark", "glass", "vibrant", "modern", "premium", "animated"],
+  "personality": "luminous + bouncy + glass + vibrant gradients + pill shapes",
+  "seed": {
+    "primary": "#A855F7",
+    "secondary": "#0EA5E9",
+    "accent": "#EC4899",
+    "background": "#0F0A1A"
+  },
+  "palette": {
+    "purple": "#A855F7",
+    "cyan": "#0EA5E9",
+    "pink": "#EC4899",
+    "magenta": "#D946EF",
+    "indigo": "#6366F1",
+    "violet": "#8B5CF6"
+  },
+  "modes": ["dark"],
+  "shapes": ["pill", "rounded"],
+  "decantr_compat": ">=1.0.0",
+  "source": "core"
+}

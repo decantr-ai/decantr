@@ -1,0 +1,64 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "id": "glassmorphism",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Glassmorphism",
+  "description": "Frosted glass panels with blur effects, subtle borders, and layered transparency.",
+  "dependencies": {
+    "styles": {
+      "glassmorphism": ">=1.0.0"
+    }
+  },
+  "schema_version": "2.0",
+  "style": "glassmorphism",
+  "mode": "dark",
+  "spatial_hints": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "80px",
+    "card_wrapping": "glass",
+    "surface_override": null
+  },
+  "shell": {
+    "preferred": ["sidebar-main", "top-nav-main"],
+    "avoid": [],
+    "nav_style": "glass",
+    "default_nav_state": "expanded",
+    "root": "glass-backdrop",
+    "nav": "glass-panel",
+    "header": "glass-header"
+  },
+  "animation": {
+    "entrance": "glass-fade-up",
+    "micro": "smooth"
+  },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "card": ["glass-card"],
+      "nav": ["glass-panel"],
+      "modal": ["glass-overlay"]
+    }
+  },
+  "card_styles": {
+    "glass": {
+      "description": "Frosted glass card with blur and subtle border",
+      "properties": {
+        "background": "rgba(255,255,255,0.05)",
+        "backdrop-filter": "blur(20px)",
+        "border": "1px solid rgba(255,255,255,0.1)",
+        "border-radius": "16px"
+      }
+    }
+  },
+  "decorators": {
+    "glass-backdrop": "Dark gradient background with subtle noise texture.",
+    "glass-panel": "Frosted panel with blur(20px), 5% white background, subtle border.",
+    "glass-card": "Individual glass card element.",
+    "glass-header": "Glass hero section with layered blur panels.",
+    "glass-overlay": "Modal overlay with heavy blur.",
+    "glass-fade-up": "Entrance animation: fade + translateY(20px) over 0.5s."
+  }
+}
