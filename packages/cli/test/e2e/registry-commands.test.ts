@@ -3,10 +3,10 @@ import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 
 describe('registry commands', () => {
-  const cliPath = join(__dirname, '..', '..', 'src', 'index.ts');
+  const cliPath = join(__dirname, '..', '..', 'dist', 'index.js');
 
   it('search returns results', () => {
-    const output = execSync(`npx tsx ${cliPath} search dashboard`, {
+    const output = execSync(`node ${cliPath} search dashboard`, {
       cwd: process.cwd(),
       encoding: 'utf-8'
     });
@@ -16,7 +16,7 @@ describe('registry commands', () => {
   });
 
   it('list blueprints returns items', () => {
-    const output = execSync(`npx tsx ${cliPath} list blueprints`, {
+    const output = execSync(`node ${cliPath} list blueprints`, {
       cwd: process.cwd(),
       encoding: 'utf-8'
     });
@@ -26,7 +26,7 @@ describe('registry commands', () => {
   });
 
   it('get pattern returns JSON', () => {
-    const output = execSync(`npx tsx ${cliPath} get pattern hero`, {
+    const output = execSync(`node ${cliPath} get pattern hero`, {
       cwd: process.cwd(),
       encoding: 'utf-8'
     });
@@ -36,7 +36,7 @@ describe('registry commands', () => {
   });
 
   it('list shells returns items', () => {
-    const output = execSync(`npx tsx ${cliPath} list shells`, {
+    const output = execSync(`node ${cliPath} list shells`, {
       cwd: process.cwd(),
       encoding: 'utf-8'
     });

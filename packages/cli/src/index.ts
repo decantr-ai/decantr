@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { validateEssence, evaluateGuard } from '@decantr/essence-spec';
 import type { EssenceFile } from '@decantr/essence-spec';
 import { RegistryAPIClient } from '@decantr/registry';
@@ -214,6 +215,18 @@ async function cmdGet(type: string, id: string) {
     console.log(JSON.stringify(result.data, null, 2));
     return;
   }
+
+  // Fallback to bundled content
+  const currentDir = dirname(fileURLToPath(import.meta.url));
+  const bundledFromDist = join(currentDir, '..', 'src', 'bundled', apiType, `${id}.json`);
+  const bundledFromSrc = join(currentDir, 'bundled', apiType, `${id}.json`);
+  const bundledPath = existsSync(bundledFromDist) ? bundledFromDist : existsSync(bundledFromSrc) ? bundledFromSrc : null;
+  if (bundledPath) {
+    const data = JSON.parse(readFileSync(bundledPath, 'utf-8'));
+    console.log(JSON.stringify(data, null, 2));
+    return;
+  }
+
   console.error(error(`${type} "${id}" not found.`));
   process.exitCode = 1;
   return;

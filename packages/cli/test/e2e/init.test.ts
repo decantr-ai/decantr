@@ -6,7 +6,7 @@ import { execSync } from 'node:child_process';
 
 describe('init command', () => {
   let testDir: string;
-  const cliPath = join(__dirname, '..', '..', 'src', 'index.ts');
+  const cliPath = join(__dirname, '..', '..', 'dist', 'index.js');
 
   beforeEach(() => {
     testDir = mkdtempSync(join(tmpdir(), 'decantr-test-'));
@@ -17,7 +17,7 @@ describe('init command', () => {
   });
 
   it('creates essence file with default blueprint', () => {
-    execSync(`npx tsx ${cliPath} init --yes`, {
+    execSync(`node ${cliPath} init --yes`, {
       cwd: testDir,
       env: { ...process.env, DECANTR_OFFLINE: 'true' }
     });
@@ -26,7 +26,7 @@ describe('init command', () => {
   });
 
   it('creates DECANTR.md file', () => {
-    execSync(`npx tsx ${cliPath} init --yes`, {
+    execSync(`node ${cliPath} init --yes`, {
       cwd: testDir,
       env: { ...process.env, DECANTR_OFFLINE: 'true' }
     });
@@ -35,7 +35,7 @@ describe('init command', () => {
   });
 
   it('DECANTR.md uses @decantr/cli not decantr', () => {
-    execSync(`npx tsx ${cliPath} init --yes`, {
+    execSync(`node ${cliPath} init --yes`, {
       cwd: testDir,
       env: { ...process.env, DECANTR_OFFLINE: 'true' }
     });
@@ -46,7 +46,7 @@ describe('init command', () => {
   });
 
   it('creates .decantr directory', () => {
-    execSync(`npx tsx ${cliPath} init --yes`, {
+    execSync(`node ${cliPath} init --yes`, {
       cwd: testDir,
       env: { ...process.env, DECANTR_OFFLINE: 'true' }
     });
