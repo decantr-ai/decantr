@@ -55,3 +55,44 @@ export function validateCustomTheme(theme: Record<string, unknown>): ThemeValida
     errors
   };
 }
+
+export interface CreateThemeResult {
+  success: boolean;
+  path?: string;
+  error?: string;
+}
+
+export function createTheme(
+  projectRoot: string,
+  id: string,
+  name: string
+): CreateThemeResult {
+  const customThemesDir = join(projectRoot, '.decantr', 'custom', 'themes');
+  const themePath = join(customThemesDir, `${id}.json`);
+  const howToPath = join(customThemesDir, 'how-to-theme.md');
+
+  // Create directory if needed
+  mkdirSync(customThemesDir, { recursive: true });
+
+  // Check if theme already exists
+  if (existsSync(themePath)) {
+    return {
+      success: false,
+      error: `Theme "${id}" already exists at ${themePath}`
+    };
+  }
+
+  // Write theme skeleton
+  const skeleton = getThemeSkeleton(id, name);
+  writeFileSync(themePath, JSON.stringify(skeleton, null, 2));
+
+  // Write how-to doc if not exists
+  if (!existsSync(howToPath)) {
+    writeFileSync(howToPath, getHowToThemeDoc());
+  }
+
+  return {
+    success: true,
+    path: themePath
+  };
+}

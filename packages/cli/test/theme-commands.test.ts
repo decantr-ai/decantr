@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { validateCustomTheme } from '../src/theme-commands.js';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { validateCustomTheme, createTheme } from '../src/theme-commands.js';
 
 describe('validateCustomTheme', () => {
   it('returns valid for complete theme', () => {
@@ -85,5 +87,48 @@ describe('validateCustomTheme', () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('Invalid shape "oval" - use: sharp, rounded, pill');
+  });
+});
+
+describe('createTheme', () => {
+  const testDir = join(process.cwd(), 'test-theme-create');
+
+  beforeEach(() => {
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  it('creates theme file in .decantr/custom/themes', () => {
+    const result = createTheme(testDir, 'mytheme', 'My Theme');
+
+    expect(result.success).toBe(true);
+    expect(existsSync(join(testDir, '.decantr', 'custom', 'themes', 'mytheme.json'))).toBe(true);
+  });
+
+  it('creates how-to-theme.md if not exists', () => {
+    createTheme(testDir, 'mytheme', 'My Theme');
+
+    expect(existsSync(join(testDir, '.decantr', 'custom', 'themes', 'how-to-theme.md'))).toBe(true);
+  });
+
+  it('does not overwrite existing theme', () => {
+    createTheme(testDir, 'mytheme', 'My Theme');
+    const result = createTheme(testDir, 'mytheme', 'My Theme Again');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('already exists');
+  });
+
+  it('creates valid theme skeleton', () => {
+    createTheme(testDir, 'mytheme', 'My Theme');
+
+    const themePath = join(testDir, '.decantr', 'custom', 'themes', 'mytheme.json');
+    const theme = JSON.parse(readFileSync(themePath, 'utf-8'));
+    const validation = validateCustomTheme(theme);
+
+    expect(validation.valid).toBe(true);
   });
 });
