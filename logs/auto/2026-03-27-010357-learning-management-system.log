@@ -1,0 +1,23 @@
+I'll invoke the brainstorming skill since this is a substantial creative design task.
+I'll follow the brainstorming process. Let me start by exploring the project context and the reference spec you mentioned.
+Let me examine existing patterns and theme structures to understand the format better.
+Let me load the TodoWrite tool and examine one more archetype to understand the structure.
+I've reviewed the project context. Your requirements are comprehensive - you've provided:
+- Theme specifications (Classroom with palette, CVD support)
+- Shell assignments (sidebar-main for instructor, minimal-header for learner)
+- 14 domain-specific patterns with clear purposes
+- 12 archetypes (6 reused, 6 new)
+- Complete route map with 20 routes
+- Quality checklist
+
+Before I proceed to the design, I have one clarifying question:
+
+**Quiz types:** You mentioned the quiz builder should "support multiple types." Which question types should be supported?
+
+Options:
+- **A) Essential set:** Multiple choice, True/False, Short answer
+- **B) Standard set:** Above + Fill-in-blank, Matching, Ordering
+- **C) Full set:** All above + Essay (manual grading), File upload, Code exercise
+- **D) Let me specify
+
+This affects both `quiz-builder.json` and `quiz-taker.json` patterns.

@@ -1,0 +1,204 @@
+{
+  "$schema": "decantr-vignette-v1.0",
+  "id": "realtime-collaboration-workspace",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Real-Time Collaboration Workspace",
+  "description": "Complete collaboration platform with live presence, remote cursors, inline comments, and hierarchical pages. Notion/Linear-style productivity workspace with warm, content-focused design.",
+  "tags": [
+    "collaboration",
+    "realtime",
+    "productivity",
+    "workspace",
+    "documents",
+    "notion",
+    "linear"
+  ],
+  "compose": [
+    "workspace-home",
+    "document-editor",
+    "workspace-settings",
+    "auth-full",
+    "settings-full",
+    "marketing-productivity",
+    "about-hybrid",
+    "contact",
+    "legal"
+  ],
+  "theme": {
+    "style": "paper",
+    "mode": "light",
+    "recipe": "paper",
+    "shape": "rounded"
+  },
+  "personality": [
+    "warm",
+    "clean",
+    "minimal",
+    "professional",
+    "collaborative"
+  ],
+  "overrides": {
+    "pages": {},
+    "pages_remove": [],
+    "features_add": [
+      "theme-toggle",
+      "presence",
+      "realtime"
+    ],
+    "features_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "workspace-home": "^1.0.0",
+      "document-editor": "^1.0.0",
+      "workspace-settings": "^1.0.0",
+      "auth-full": "^1.0.0",
+      "settings-full": "^1.0.0",
+      "marketing-productivity": "^1.0.0",
+      "about-hybrid": "^1.0.0",
+      "contact": "^1.0.0",
+      "legal": "^1.0.0"
+    },
+    "recipes": {
+      "paper": "^1.0.0"
+    },
+    "styles": {
+      "paper": "^1.0.0"
+    }
+  },
+  "features": [
+    "auth",
+    "mfa",
+    "realtime",
+    "presence",
+    "comments",
+    "mentions",
+    "versioning",
+    "sharing",
+    "search",
+    "export",
+    "theme-toggle"
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-productivity",
+      "page": "home"
+    },
+    "/about": {
+      "shell": "top-nav-footer",
+      "archetype": "about-hybrid",
+      "page": "about"
+    },
+    "/contact": {
+      "shell": "top-nav-footer",
+      "archetype": "contact",
+      "page": "contact"
+    },
+    "/pricing": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-productivity",
+      "page": "pricing"
+    },
+    "/privacy": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "privacy"
+    },
+    "/terms": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "terms"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "forgot-password"
+    },
+    "/reset-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "reset-password"
+    },
+    "/verify-email": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "verify-email"
+    },
+    "/mfa-setup": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-setup"
+    },
+    "/mfa-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-verify"
+    },
+    "/home": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-home",
+      "page": "dashboard"
+    },
+    "/doc/:id": {
+      "shell": "workspace-aside",
+      "archetype": "document-editor",
+      "page": "doc"
+    },
+    "/settings": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "general"
+    },
+    "/settings/members": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "members"
+    },
+    "/settings/permissions": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "permissions"
+    },
+    "/settings/billing": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "billing"
+    },
+    "/team": {
+      "shell": "sidebar-main",
+      "archetype": "workspace-settings",
+      "page": "members"
+    },
+    "/profile": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "profile"
+    },
+    "/profile/security": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "security"
+    },
+    "/profile/preferences": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "preferences"
+    }
+  },
+  "seo_hints": {
+    "schema_org": ["Organization", "WebApplication", "SoftwareApplication", "CollaborativeWorkspace"],
+    "meta_priorities": ["description", "og:image", "twitter:card"]
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-productivity",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Marketing Productivity",
+  "description": "Marketing landing page for productivity and collaboration tools. Features hero, feature grid, collaboration showcase, pricing, and testimonials.",
+  "tags": [
+    "marketing",
+    "landing",
+    "productivity",
+    "saas",
+    "collaboration"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "productivity landing",
+        "collaboration marketing",
+        "workspace marketing",
+        "notion alternative"
+      ],
+      "secondary": [
+        "landing page",
+        "marketing site",
+        "feature showcase"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "brand",
+          "as": "hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "feature",
+          "as": "features"
+        },
+        {
+          "pattern": "before-after",
+          "preset": "standard",
+          "as": "collaboration-demo"
+        },
+        {
+          "pattern": "pricing-usage",
+          "preset": "standard",
+          "as": "pricing"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "testimonial",
+          "as": "testimonials"
+        },
+        {
+          "pattern": "cta-banner",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "collaboration-demo",
+        "pricing",
+        "testimonials",
+        "cta"
+      ],
+      "shell": "top-nav-footer"
+    },
+    {
+      "id": "pricing",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "minimal",
+          "as": "hero"
+        },
+        {
+          "pattern": "pricing-usage",
+          "preset": "detailed",
+          "as": "pricing"
+        },
+        {
+          "pattern": "cta-banner",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "pricing",
+        "cta"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "features": [
+    "marketing",
+    "pricing",
+    "testimonials",
+    "cta"
+  ],
+  "shells": {
+    "top-nav-footer": "Marketing layout with header nav and footer"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "before-after": "^1.0.0",
+      "pricing-usage": "^1.0.0",
+      "cta-banner": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "paper"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

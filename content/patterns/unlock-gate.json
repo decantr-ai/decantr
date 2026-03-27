@@ -1,0 +1,117 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "unlock-gate",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Unlock Gate",
+  "description": "Paywall/tier gate component that blurs or hides content and prompts subscription. Shows required tier and quick subscribe flow.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "blur",
+  "presets": {
+    "blur": {
+      "description": "Blurred preview with unlock overlay",
+      "components": [
+        "Button",
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "overlay",
+        "atoms": "_relative _overflow[hidden]",
+        "slots": {
+          "preview": "Blurred content preview",
+          "overlay": "Unlock prompt overlay",
+          "tier-info": "Required tier badge",
+          "cta": "Subscribe button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, icon } from 'decantr/components';",
+        "example": "function UnlockGateBlur({ preview, requiredTier, onSubscribe, creatorName }) {\n  const { div, img, p, span } = tags;\n\n  return div({ class: css('_relative _overflow[hidden]') },\n    div({ class: css('_aspect[16/9] _bgmuted/10') },\n      preview ? img({ src: preview, class: css('_wfull _hfull _objcover _blur[12px] _scale[1.05]') }) :\n        div({ class: css('_wfull _hfull _bgGradient _from[#F97316/20] _to[#8B5CF6/20]') })\n    ),\n    div({ class: css('_absolute _inset0 _bg[rgba(250,249,247,0.85)] _dark:bg[rgba(28,25,23,0.9)] _flex _col _center _p6 _tc') },\n      div({ class: css('_w16 _h16 _r[50%] _bgbg _shadow _flex _center _mb4') },\n        icon('lock', { size: '28', class: css('_fgmuted') })\n      ),\n      p({ class: css('_heading4 _mb2') }, 'Exclusive Content'),\n      p({ class: css('_fgmuted _mb4 _maxw[320px]') },\n        'Subscribe to ', span({ class: css('_fontmedium _fgfg') }, requiredTier.name),\n        ' to unlock this content from ', creatorName\n      ),\n      div({ class: css('_flex _aic _gap2 _mb4') },\n        div({ class: css('_w3 _h3 _r1'), style: `background:${requiredTier.color || '#F97316'}` }),\n        span({ class: css('_fontmedium') }, requiredTier.name),\n        span({ class: css('_fgmuted') }, ' - $', requiredTier.monthlyPrice, '/mo')\n      ),\n      Button({ variant: 'primary', size: 'lg', class: css('studio-glow'), onclick: onSubscribe },\n        'Subscribe to Unlock'\n      )\n    )\n  );\n}"
+      }
+    },
+    "solid": {
+      "description": "Solid overlay without preview",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "center",
+        "atoms": "_aspect[16/9] _bgmuted/5 _flex _col _center _r3",
+        "slots": {
+          "message": "Unlock prompt text",
+          "tier-info": "Required tier",
+          "cta": "Subscribe button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function UnlockGateSolid({ requiredTier, onSubscribe }) {\n  const { div, p, span } = tags;\n\n  return div({ class: css('_aspect[16/9] _bgmuted/5 _flex _col _center _r3 _border _borderdashed _bordermuted') },\n    icon('lock', { size: '32', class: css('_fgmuted _mb4') }),\n    p({ class: css('_fontmedium _mb2') }, 'Premium Content'),\n    p({ class: css('_textsm _fgmuted _mb4') }, 'Requires ', requiredTier.name, ' membership'),\n    Button({ variant: 'primary', onclick: onSubscribe }, 'Subscribe - $', requiredTier.monthlyPrice, '/mo')\n  );\n}"
+      }
+    },
+    "teaser": {
+      "description": "Partial content visible with fade to gate",
+      "components": [
+        "Button",
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_relative",
+        "slots": {
+          "teaser-content": "Visible portion of content",
+          "fade": "Gradient fade to gate",
+          "gate": "Subscribe prompt"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, icon } from 'decantr/components';",
+        "example": "function UnlockGateTeaser({ teaserContent, requiredTier, onSubscribe }) {\n  const { div, p } = tags;\n\n  return div({ class: css('_relative') },\n    div({ class: css('_maxh[200px] _overflow[hidden]') },\n      p({ class: css('_whitespace[pre-wrap]') }, teaserContent)\n    ),\n    div({ class: css('_absolute _bottom0 _left0 _right0 _h[200px] _bg[linear-gradient(transparent,var(--d-bg))]') }),\n    div({ class: css('_absolute _bottom0 _left0 _right0 _tc _pb4') },\n      Card({ class: css('studio-card _p4 _inline-flex _flex _col _aic _shadow') },\n        p({ class: css('_fontmedium _mb2') }, 'Continue reading...'),\n        p({ class: css('_textsm _fgmuted _mb3') }, 'Subscribe to ', requiredTier.name, ' for full access'),\n        Button({ variant: 'primary', onclick: onSubscribe },\n          icon('unlock', { size: '16', class: css('_mr2') }), 'Unlock Full Post'\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "overlay",
+    "atoms": "_relative",
+    "slots": {
+      "preview": "Content preview",
+      "overlay": "Gate overlay",
+      "cta": "Unlock action"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, icon } from 'decantr/components';",
+    "example": "function UnlockGate(props) {\n  return BlurUnlockGate(props);\n}"
+  },
+  "io": {
+    "produces": [
+      "unlock-click",
+      "subscribe-click"
+    ],
+    "consumes": [
+      "tier-data",
+      "preview-content"
+    ]
+  }
+}

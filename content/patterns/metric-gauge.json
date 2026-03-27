@@ -1,0 +1,124 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "metric-gauge",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Metric Gauge",
+  "description": "CLI-style metric displays with value, trend indicators, and optional sparklines.",
+  "dependencies": {
+    "patterns": {
+      "ascii-chart": "^1.0.0"
+    },
+    "recipes": {
+      "terminal": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "single",
+  "presets": {
+    "single": {
+      "description": "Single large metric value display",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _mono _fggreen",
+        "slots": {
+          "label": "Metric name",
+          "value": "Current value",
+          "unit": "Unit suffix",
+          "trend": "Up/down trend arrow"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function SingleMetric({ label, value, unit, trend, thresholds }) {\n  const { div, span } = tags;\n\n  const getColor = (val) => {\n    if (!thresholds) return '#00FF00';\n    if (val >= thresholds.critical) return '#FF0000';\n    if (val >= thresholds.warning) return '#FFB000';\n    return '#00FF00';\n  };\n\n  const trendIcon = trend > 0 ? 'arrow-up' : trend < 0 ? 'arrow-down' : null;\n  const trendColor = trend > 0 ? '#FF0000' : trend < 0 ? '#00FF00' : '#FFB000';\n\n  return div({ class: css('term-panel _flex _col _aic _p4') },\n    span({ class: css('_textsm _fgmuted _mb1') }, label),\n    div({ class: css('_flex _aic _gap2') },\n      span({ class: css('_text[2em] _fontbold term-glow'), style: `color: ${getColor(value)}` }, value),\n      unit ? span({ class: css('_fgmuted') }, unit) : null,\n      trendIcon ? icon(trendIcon, { size: '20', style: `color: ${trendColor}` }) : null\n    )\n  );\n}"
+      }
+    },
+    "inline": {
+      "description": "Inline key: value metric display",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _gap2 _mono _fggreen",
+        "slots": {
+          "label": "Metric name",
+          "value": "Current value"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function InlineMetric({ label, value, unit, color }) {\n  const { span } = tags;\n\n  return span({ class: css('_flex _aic _gap1 _mono') },\n    span({ class: css('_fgmuted') }, `${label}:`),\n    span({ style: color ? `color: ${color}` : '' }, value),\n    unit ? span({ class: css('_fgmuted') }, unit) : null\n  );\n}"
+      }
+    },
+    "block": {
+      "description": "Boxed metric with border and sparkline",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "label": "Metric name",
+          "value": "Current value",
+          "sparkline": "Mini trend chart"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function BlockMetric({ label, value, unit, history = [] }) {\n  const { div, span } = tags;\n  const braille = ['⣀', '⣄', '⣆', '⣇', '⣧', '⣷', '⣿'];\n\n  const sparkline = () => {\n    if (!history.length) return '';\n    const min = Math.min(...history);\n    const max = Math.max(...history);\n    const range = max - min || 1;\n    return history.slice(-15).map(v => {\n      const idx = Math.floor(((v - min) / range) * (braille.length - 1));\n      return braille[idx];\n    }).join('');\n  };\n\n  return div({ class: css('term-panel _p2 _w[140px]') },\n    span({ class: css('_textsm _fgmuted') }, label),\n    div({ class: css('_flex _aic _gap1 _my1') },\n      span({ class: css('_text[1.5em] _fontbold term-glow') }, value),\n      unit ? span({ class: css('_fgmuted _textsm') }, unit) : null\n    ),\n    history.length ? span({ class: css('_textsm _fgmuted term-sparkline') }, sparkline()) : null\n  );\n}"
+      }
+    },
+    "grid": {
+      "description": "Grid of multiple metrics",
+      "components": [],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gap2 _mono _fggreen",
+        "slots": {
+          "metrics": "Array of metric displays"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function MetricGrid({ metrics, columns = 4 }) {\n  const { div } = tags;\n\n  return div({ class: css('_grid _gap2'), style: `grid-template-columns: repeat(${columns}, 1fr)` },\n    ...metrics.map(m => BlockMetric(m))\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _aic _gap2 _mono _fggreen",
+    "slots": {
+      "label": "Metric name",
+      "value": "Current value",
+      "unit": "Unit suffix",
+      "trend": "Trend indicator"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+    "example": "function MetricGauge({ variant = 'single', ...props }) {\n  switch (variant) {\n    case 'inline': return InlineMetric(props);\n    case 'block': return BlockMetric(props);\n    case 'grid': return MetricGrid(props);\n    default: return SingleMetric(props);\n  }\n}"
+  },
+  "features": [
+    "color-thresholds",
+    "trend-indicators",
+    "historical-sparkline",
+    "click-detail"
+  ],
+  "thresholds": {
+    "success": { "color": "#00FF00", "description": "Normal/good state" },
+    "warning": { "color": "#FFB000", "description": "Warning threshold" },
+    "critical": { "color": "#FF0000", "description": "Critical threshold" }
+  }
+}

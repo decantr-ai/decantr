@@ -1,0 +1,85 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "creator-dashboard",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Creator Dashboard",
+  "description": "Creator admin dashboard home with earnings summary, recent activity, and quick actions.",
+  "tags": [
+    "creator",
+    "dashboard",
+    "analytics",
+    "monetization"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "creator dashboard",
+        "creator home",
+        "creator admin"
+      ],
+      "secondary": [
+        "earnings overview",
+        "subscriber activity"
+      ],
+      "negative": []
+    },
+    "implies": ["creator-earnings", "creator-content"],
+    "weight": 1.0,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "kpi-grid",
+          "preset": "compact",
+          "as": "stats"
+        },
+        {
+          "pattern": "earnings-dashboard",
+          "preset": "summary",
+          "as": "earnings-summary"
+        },
+        {
+          "pattern": "activity-feed",
+          "preset": "compact",
+          "as": "recent-activity"
+        }
+      ],
+      "default_layout": [
+        "stats",
+        "earnings-summary",
+        "recent-activity"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "features": [
+    "earnings-kpis",
+    "activity-feed",
+    "quick-actions"
+  ],
+  "shells": {
+    "sidebar-main": "Creator dashboard with collapsible sidebar navigation"
+  },
+  "dependencies": {
+    "patterns": {
+      "kpi-grid": "^1.0.0",
+      "earnings-dashboard": "^1.0.0",
+      "activity-feed": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

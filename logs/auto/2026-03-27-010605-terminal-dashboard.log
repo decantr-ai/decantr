@@ -1,0 +1,61 @@
+I'll design and implement this terminal dashboard blueprint. Let me start by reading the Carbon AI Portal spec as my structural template, along with existing content to understand the format.
+Let me examine a few existing patterns to understand the JSON structure.
+I have a good understanding of the structure. Let me create the design spec first, then implement all the JSON files.
+## Terminal Dashboard Blueprint Complete
+
+All files have been created and validated. Here's what was built:
+
+### Files Created
+
+**Design Spec:**
+- `docs/superpowers/specs/2026-03-27-terminal-dashboard-design.md`
+
+**Theme & Recipe:**
+- `content/themes/terminal.json` - Pure terminal aesthetic (phosphor green on black)
+- `content/recipes/terminal.json` - ASCII borders, glow effects, monospace typography
+
+**Shell:**
+- Added `terminal-split` to `content/core/shells.json` - Status bar, split panes, hotkey bar
+
+**Patterns (13 new):**
+| Pattern | Description |
+|---------|-------------|
+| `terminal-emulator.json` | Interactive terminal I/O with history |
+| `log-stream.json` | Real-time log streaming with filtering |
+| `command-palette.json` | Cmd+K command search overlay |
+| `ascii-chart.json` | Line, bar, sparkline, braille charts |
+| `retro-table.json` | ASCII-bordered data tables |
+| `split-pane.json` | Resizable horizontal/vertical/quad panes |
+| `status-bar.json` | Top/bottom status indicators |
+| `hotkey-bar.json` | F1-F10 function key shortcuts |
+| `progress-bar.json` | ASCII bar, spinner, dots progress |
+| `metric-gauge.json` | Single/inline/block/grid metrics |
+| `tree-view.json` | ASCII tree with `├──` connectors |
+| `diff-view.json` | Split/unified/inline diff display |
+| `help-modal.json` | Keyboard shortcuts modal |
+
+**Archetypes (5 new):**
+- `terminal-home.json` - Main dashboard with split panes
+- `log-viewer.json` - Log streaming focus
+- `metrics-monitor.json` - System metrics with charts
+- `config-editor.json` - Config files with tree nav
+- `marketing-devtool.json` - Dev tool landing page
+
+**Blueprint:**
+- `content/blueprints/terminal-dashboard.json`
+
+### Route Map
+| Route | Shell | Purpose |
+|-------|-------|---------|
+| `/` | `top-nav-footer` | Marketing landing |
+| `/docs` | `top-nav-footer` | Documentation |
+| `/login` | `centered` | Terminal-styled auth |
+| `/app` | `terminal-split` | Main terminal |
+| `/app/logs` | `terminal-split` | Log viewer |
+| `/app/metrics` | `terminal-split` | Metrics monitor |
+| `/app/config` | `terminal-split` | Config editor |
+
+### Validation
+- Build: **passed**
+- All JSON files: **valid**
+- All tests: **280 passed**

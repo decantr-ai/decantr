@@ -1,0 +1,102 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "fan-checkout",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Fan Checkout",
+  "description": "Purchase and subscription checkout flow for fans. Complete payment for subscriptions and one-time purchases.",
+  "tags": [
+    "fan",
+    "checkout",
+    "payment",
+    "subscribe",
+    "purchase"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "checkout",
+        "payment flow",
+        "subscribe checkout"
+      ],
+      "secondary": [
+        "purchase",
+        "payment"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "checkout",
+      "patterns": [
+        {
+          "pattern": "checkout-flow",
+          "preset": "subscribe",
+          "as": "subscribe-checkout"
+        }
+      ],
+      "default_layout": [
+        "subscribe-checkout"
+      ],
+      "shell": "minimal-header"
+    },
+    {
+      "id": "purchase",
+      "patterns": [
+        {
+          "pattern": "checkout-flow",
+          "preset": "purchase",
+          "as": "purchase-checkout"
+        }
+      ],
+      "default_layout": [
+        "purchase-checkout"
+      ],
+      "shell": "minimal-header"
+    },
+    {
+      "id": "success",
+      "patterns": [
+        {
+          "pattern": "cta-section",
+          "preset": "success",
+          "as": "success-message"
+        }
+      ],
+      "default_layout": [
+        "success-message"
+      ],
+      "shell": "minimal-header"
+    }
+  ],
+  "features": [
+    "stripe-integration",
+    "promo-codes",
+    "apple-pay",
+    "google-pay"
+  ],
+  "shells": {
+    "minimal-header": "Minimal distraction checkout layout"
+  },
+  "dependencies": {
+    "patterns": {
+      "checkout-flow": "^1.0.0",
+      "cta-section": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

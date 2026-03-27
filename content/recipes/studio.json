@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "id": "studio",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Studio",
+  "description": "Warm, creative aesthetic with coral and purple accents. Friendly animations, soft rounded cards, premium feel without coldness. Inspired by Figma, Framer, Gumroad.",
+  "dependencies": {
+    "styles": {
+      "studio": ">=1.0.0"
+    }
+  },
+  "schema_version": "2.0",
+  "style": "studio",
+  "mode": "light",
+  "spatial_hints": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "64px",
+    "card_wrapping": "soft",
+    "surface_override": null
+  },
+  "shell": {
+    "preferred": [
+      "sidebar-main",
+      "top-nav-main",
+      "top-nav-footer"
+    ],
+    "avoid": [],
+    "nav_style": "friendly",
+    "default_nav_state": "expanded",
+    "root": "studio-canvas",
+    "nav": "studio-surface",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "animation": {
+    "entrance": "studio-fade-up",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "durations": {
+      "hover": "180ms",
+      "entrance": "250ms",
+      "modal": "280ms",
+      "page": "350ms"
+    }
+  },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "medium",
+    "type_mapping": {
+      "card": ["studio-card"],
+      "card_premium": ["studio-card-premium"],
+      "input": ["studio-input"],
+      "tier": ["studio-badge-tier"]
+    },
+    "component_fallback": {
+      "pre": "code_block",
+      "code": "code_block",
+      "Card": "card",
+      "Input": "input"
+    }
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "tier-builder",
+      "tier-card",
+      "earnings-dashboard",
+      "content-feed",
+      "storefront-hero",
+      "checkout-flow"
+    ],
+    "avoid": [],
+    "default_presets": {}
+  },
+  "decorators": {
+    "studio-canvas": "Warm background using theme background token. Friendly, inviting foundation.",
+    "studio-surface": "Soft surface elevation with 1px warm border and subtle shadow. Uses surface background.",
+    "studio-input": "Warm border with coral focus ring and gentle glow effect. Friendly input styling.",
+    "studio-card": "Surface background, soft shadow, 12px radius, hover lift transition.",
+    "studio-card-premium": "Premium card with purple gradient border for exclusive content.",
+    "studio-divider": "Warm hairline separator using border-color token.",
+    "studio-badge-tier": "Tier badge with gradient backgrounds for subscription levels.",
+    "studio-avatar-creator": "Larger creator avatar with accent ring highlight.",
+    "studio-fade-up": "Entrance animation: opacity 0 to 1, translateY 16px to 0, 250ms ease-out.",
+    "studio-skeleton": "Loading placeholder with warm pulse animation.",
+    "studio-glow": "Subtle primary-tinted glow effect for call-to-action buttons.",
+    "studio-gate-blur": "Backdrop blur effect for content behind paywalls."
+  },
+  "compositions": {
+    "dashboard": {
+      "description": "Creator dashboard with sidebar navigation. Analytics, content management, subscriber views.",
+      "shell": "sidebar-main",
+      "effects": ["studio-surface"]
+    },
+    "storefront": {
+      "description": "Fan-facing storefront with top navigation. Creator profiles, content browsing.",
+      "shell": "top-nav-main",
+      "card_style": "studio-card"
+    },
+    "checkout": {
+      "description": "Minimal checkout flow with focused content area.",
+      "shell": "minimal-header",
+      "card_style": "studio-card-premium"
+    },
+    "marketing": {
+      "description": "Marketing pages with top nav and footer. Clean sections with warm accents.",
+      "shell": "top-nav-footer"
+    },
+    "auth": {
+      "description": "Centered auth forms with warm card styling.",
+      "shell": "centered",
+      "card_style": "studio-card"
+    }
+  }
+}

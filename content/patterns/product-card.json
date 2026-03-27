@@ -1,0 +1,120 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "product-card",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Product Card",
+  "description": "Single product/post display card with thumbnail, price, type indicator, and actions. Used within product grids.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Square thumbnail card for grids",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "studio-card _overflow[hidden]",
+        "slots": {
+          "thumbnail": "Preview image/video",
+          "title": "Product name",
+          "price": "Price or tier indicator",
+          "meta": "Date, type, likes",
+          "lock-indicator": "Locked badge for gated content"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+        "example": "function ProductCardGrid({ product, onClick }) {\n  const { div, img, h3, span } = tags;\n  const typeIcon = { image: 'image', video: 'video', audio: 'music', document: 'file-text' };\n\n  return Card({ class: css('studio-card _overflow[hidden] _trans _hover:shadow _cursor[pointer]'), onclick: () => onClick?.(product) },\n    div({ class: css('_relative _aspect[16/9] _bgmuted/10') },\n      product.thumbnail\n        ? img({ src: product.thumbnail, class: css('_wfull _hfull _objcover') })\n        : div({ class: css('_flex _center _hfull') },\n            icon(typeIcon[product.type] || 'file', { size: '32', class: css('_fgmuted') })\n          ),\n      product.locked ? div({ class: css('_absolute _inset0 studio-gate-blur _flex _center') },\n        div({ class: css('_w10 _h10 _r[50%] _bgbg _flex _center _shadow') },\n          icon('lock', { size: '20', class: css('_fgmuted') })\n        )\n      ) : null,\n      product.type === 'video' ? div({ class: css('_absolute _bottom2 _right2 _px2 _py1 _r1 _bg[rgba(0,0,0,0.7)] _text[white] _textxs') },\n        product.duration || '0:00'\n      ) : null,\n      div({ class: css('_absolute _top2 _left2') },\n        Badge({ variant: 'secondary', size: 'xs', class: css('_bgbg/80') },\n          icon(typeIcon[product.type], { size: '12', class: css('_mr1') }),\n          product.type\n        )\n      )\n    ),\n    div({ class: css('_p4') },\n      h3({ class: css('_fontmedium _truncate _mb2') }, product.title),\n      div({ class: css('_flex _jcsb _aic') },\n        product.price > 0\n          ? span({ class: css('_fontmedium _fgPrimary') }, '$', product.price)\n          : Badge({ variant: 'secondary', size: 'sm' }, product.tierName || 'Free'),\n        div({ class: css('_flex _aic _gap2 _textsm _fgmuted') },\n          div({ class: css('_flex _aic _gap1') }, icon('heart', { size: '14' }), product.likes || 0),\n          div({ class: css('_flex _aic _gap1') }, icon('message-circle', { size: '14' }), product.comments || 0)\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "list": {
+      "description": "Horizontal list item",
+      "components": [
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "studio-card _p4 _flex _gap4",
+        "slots": {
+          "thumbnail": "Small thumbnail",
+          "content": "Title, description",
+          "meta": "Price, actions"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+        "example": "function ProductCardList({ product, onClick }) {\n  const { div, img, h3, p, span } = tags;\n\n  return Card({ class: css('studio-card _p4 _flex _gap4 _cursor[pointer]'), onclick: () => onClick?.(product) },\n    div({ class: css('_w24 _h16 _r2 _overflow[hidden] _bgmuted/10 _flex-shrink-0') },\n      product.thumbnail\n        ? img({ src: product.thumbnail, class: css('_wfull _hfull _objcover') })\n        : null\n    ),\n    div({ class: css('_flex1 _minw0') },\n      div({ class: css('_flex _aic _gap2 _mb1') },\n        h3({ class: css('_fontmedium _truncate') }, product.title),\n        product.locked ? icon('lock', { size: '14', class: css('_fgmuted') }) : null\n      ),\n      p({ class: css('_textsm _fgmuted _lineClamp2') }, product.description)\n    ),\n    div({ class: css('_flex _col _aic _jcc _flex-shrink-0') },\n      product.price > 0\n        ? span({ class: css('_fontmedium _fgPrimary') }, '$', product.price)\n        : Badge({ variant: 'secondary' }, product.tierName || 'Free')\n    )\n  );\n}"
+      }
+    },
+    "featured": {
+      "description": "Large featured card with more details",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "studio-card _overflow[hidden] _lg:flex _lg:row",
+        "slots": {
+          "media": "Large preview area",
+          "content": "Full title, description, meta",
+          "actions": "Buy, like, share buttons"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, Badge, icon } from 'decantr/components';",
+        "example": "function FeaturedProductCard({ product, onBuy }) {\n  const { div, img, h2, p, span } = tags;\n\n  return Card({ class: css('studio-card _overflow[hidden] _lg:flex') },\n    div({ class: css('_lg:w[50%] _aspect[16/9] _lg:aspect[auto] _bgmuted/10') },\n      product.thumbnail ? img({ src: product.thumbnail, class: css('_wfull _hfull _objcover') }) : null\n    ),\n    div({ class: css('_p6 _lg:w[50%] _flex _col _jcsb') },\n      div({},\n        div({ class: css('_flex _gap2 _mb3') },\n          Badge({ variant: 'default' }, product.type),\n          product.locked ? Badge({ variant: 'secondary' }, 'Premium') : null\n        ),\n        h2({ class: css('_heading3 _mb3') }, product.title),\n        p({ class: css('_fgmuted _mb4') }, product.description)\n      ),\n      div({ class: css('_flex _aic _jcsb') },\n        div({ class: css('_flex _aic _gap4') },\n          span({ class: css('_heading3 _fgPrimary') }, '$', product.price),\n          div({ class: css('_flex _aic _gap3 _fgmuted _textsm') },\n            div({ class: css('_flex _aic _gap1') }, icon('heart', { size: '16' }), product.likes),\n            div({ class: css('_flex _aic _gap1') }, icon('eye', { size: '16' }), product.views)\n          )\n        ),\n        div({ class: css('_flex _gap2') },\n          Button({ variant: 'ghost' }, icon('share-2')),\n          Button({ variant: 'primary', onclick: () => onBuy?.(product) }, 'Buy Now')\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "card",
+    "atoms": "studio-card _overflow[hidden]",
+    "slots": {
+      "thumbnail": "Preview image",
+      "title": "Product name",
+      "price": "Price display",
+      "actions": "Card actions"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+    "example": "function ProductCard(props) {\n  return GridProductCard(props);\n}"
+  },
+  "io": {
+    "produces": [
+      "product-click",
+      "buy-click"
+    ],
+    "consumes": [
+      "product-data"
+    ]
+  }
+}

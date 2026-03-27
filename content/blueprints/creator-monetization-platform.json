@@ -1,0 +1,257 @@
+{
+  "$schema": "decantr-vignette-v1.0",
+  "id": "creator-monetization-platform",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Creator Monetization Platform",
+  "description": "Complete creator monetization platform with dual-shell architecture. Creator dashboard for content, subscribers, and earnings management. Fan storefront for browsing and purchasing. Patreon/Gumroad-style.",
+  "tags": [
+    "creator",
+    "monetization",
+    "subscription",
+    "patreon",
+    "gumroad",
+    "storefront"
+  ],
+  "compose": [
+    "creator-dashboard",
+    "creator-earnings",
+    "creator-content",
+    "creator-subscribers",
+    "creator-tiers",
+    "fan-storefront",
+    "fan-library",
+    "fan-checkout",
+    "marketing-creator",
+    "auth-full",
+    "settings-full",
+    "about-hybrid",
+    "contact",
+    "legal"
+  ],
+  "theme": {
+    "style": "studio",
+    "mode": "light",
+    "recipe": "studio",
+    "shape": "rounded"
+  },
+  "personality": [
+    "creative",
+    "warm",
+    "friendly",
+    "premium",
+    "approachable"
+  ],
+  "overrides": {
+    "pages": {},
+    "pages_remove": [],
+    "features_add": [
+      "theme-toggle"
+    ],
+    "features_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "creator-dashboard": "^1.0.0",
+      "creator-earnings": "^1.0.0",
+      "creator-content": "^1.0.0",
+      "creator-subscribers": "^1.0.0",
+      "creator-tiers": "^1.0.0",
+      "fan-storefront": "^1.0.0",
+      "fan-library": "^1.0.0",
+      "fan-checkout": "^1.0.0",
+      "marketing-creator": "^1.0.0",
+      "auth-full": "^1.0.0",
+      "settings-full": "^1.0.0",
+      "about-hybrid": "^1.0.0",
+      "contact": "^1.0.0",
+      "legal": "^1.0.0"
+    },
+    "recipes": {
+      "studio": "^1.0.0"
+    },
+    "styles": {
+      "studio": "^1.0.0"
+    }
+  },
+  "features": [
+    "auth",
+    "mfa",
+    "payments",
+    "subscriptions",
+    "file-upload",
+    "analytics",
+    "theme-toggle"
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-creator",
+      "page": "home"
+    },
+    "/about": {
+      "shell": "top-nav-footer",
+      "archetype": "about-hybrid",
+      "page": "about"
+    },
+    "/contact": {
+      "shell": "top-nav-footer",
+      "archetype": "contact",
+      "page": "contact"
+    },
+    "/pricing": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-creator",
+      "page": "pricing"
+    },
+    "/privacy": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "privacy"
+    },
+    "/terms": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "terms"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "forgot-password"
+    },
+    "/reset-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "reset-password"
+    },
+    "/verify-email": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "verify-email"
+    },
+    "/mfa-setup": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-setup"
+    },
+    "/mfa-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-verify"
+    },
+    "/creator/:username": {
+      "shell": "top-nav-main",
+      "archetype": "fan-storefront",
+      "page": "profile"
+    },
+    "/creator/:username/post/:id": {
+      "shell": "top-nav-main",
+      "archetype": "fan-storefront",
+      "page": "post"
+    },
+    "/dashboard": {
+      "shell": "sidebar-main",
+      "archetype": "creator-dashboard",
+      "page": "home"
+    },
+    "/dashboard/content": {
+      "shell": "sidebar-main",
+      "archetype": "creator-content",
+      "page": "content"
+    },
+    "/dashboard/content/new": {
+      "shell": "sidebar-main",
+      "archetype": "creator-content",
+      "page": "new"
+    },
+    "/dashboard/content/:id/edit": {
+      "shell": "sidebar-main",
+      "archetype": "creator-content",
+      "page": "edit"
+    },
+    "/dashboard/earnings": {
+      "shell": "sidebar-main",
+      "archetype": "creator-earnings",
+      "page": "earnings"
+    },
+    "/dashboard/subscribers": {
+      "shell": "sidebar-main",
+      "archetype": "creator-subscribers",
+      "page": "subscribers"
+    },
+    "/dashboard/subscribers/:id": {
+      "shell": "sidebar-main",
+      "archetype": "creator-subscribers",
+      "page": "subscriber-detail"
+    },
+    "/dashboard/tiers": {
+      "shell": "sidebar-main",
+      "archetype": "creator-tiers",
+      "page": "tiers"
+    },
+    "/library": {
+      "shell": "top-nav-main",
+      "archetype": "fan-library",
+      "page": "library"
+    },
+    "/library/subscriptions": {
+      "shell": "top-nav-main",
+      "archetype": "fan-library",
+      "page": "subscriptions"
+    },
+    "/checkout": {
+      "shell": "minimal-header",
+      "archetype": "fan-checkout",
+      "page": "checkout"
+    },
+    "/checkout/purchase": {
+      "shell": "minimal-header",
+      "archetype": "fan-checkout",
+      "page": "purchase"
+    },
+    "/checkout/success": {
+      "shell": "minimal-header",
+      "archetype": "fan-checkout",
+      "page": "success"
+    },
+    "/settings/profile": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "profile"
+    },
+    "/settings/security": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "security"
+    },
+    "/settings/preferences": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "preferences"
+    },
+    "/settings/payouts": {
+      "shell": "sidebar-main",
+      "archetype": "creator-earnings",
+      "page": "payouts"
+    },
+    "/settings/account": {
+      "shell": "sidebar-main",
+      "archetype": "settings-full",
+      "page": "danger"
+    }
+  },
+  "seo_hints": {
+    "schema_org": ["Organization", "WebApplication", "Product"],
+    "meta_priorities": ["description", "og:image", "twitter:card"]
+  }
+}

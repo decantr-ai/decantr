@@ -1,0 +1,87 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "hotkey-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Hotkey Bar",
+  "description": "Function key shortcut bar inspired by DOS/Norton Commander style interfaces.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {
+      "terminal": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [],
+      "charts": []
+    }
+  },
+  "components": [],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "F1-F10 function key bar",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _jcsb _px1 _mono _textsm _h[28px] _bgmuted",
+        "slots": {
+          "keys": "Array of F1-F10 hotkey bindings"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { onMount, onDestroy } from 'decantr/state';\nimport { css } from 'decantr/css';",
+        "example": "function HotkeyBar({ keys }) {\n  const { div, span, kbd } = tags;\n\n  const defaultKeys = [\n    { key: 'F1', label: 'Help' },\n    { key: 'F2', label: 'Menu' },\n    { key: 'F3', label: 'View' },\n    { key: 'F4', label: 'Edit' },\n    { key: 'F5', label: 'Copy' },\n    { key: 'F6', label: 'Move' },\n    { key: 'F7', label: 'Mkdir' },\n    { key: 'F8', label: 'Delete' },\n    { key: 'F9', label: 'PullDn' },\n    { key: 'F10', label: 'Quit' }\n  ];\n\n  const hotkeys = keys || defaultKeys;\n\n  const handleKeyDown = (e) => {\n    const hotkey = hotkeys.find(h => h.key === e.key);\n    if (hotkey?.action) {\n      e.preventDefault();\n      hotkey.action();\n    }\n  };\n\n  onMount(() => document.addEventListener('keydown', handleKeyDown));\n  onDestroy(() => document.removeEventListener('keydown', handleKeyDown));\n\n  return div({ class: css('_flex _aic _jcsb _h[28px] _bgsurface _borderT _bordercolor[#333]') },\n    ...hotkeys.map(h =>\n      div({\n        class: css('_flex _aic _cursor[pointer] _hover:bgmuted/30 _px1'),\n        onclick: h.action,\n        title: h.description\n      },\n        kbd({ class: css('term-hotkey _bgprimary _fgblack _px1 _textsm _fontbold') }, h.key.replace('F', '')),\n        span({ class: css('_fggreen _px1 _textsm') }, h.label)\n      )\n    )\n  );\n}"
+      }
+    },
+    "extended": {
+      "description": "F1-F12 extended function key bar",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _jcsb _px1 _mono _textsm _h[28px] _bgmuted",
+        "slots": {
+          "keys": "Array of F1-F12 hotkey bindings"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function ExtendedHotkeyBar({ keys }) {\n  const defaultKeys = [\n    { key: 'F1', label: 'Help' },\n    { key: 'F2', label: 'Config' },\n    { key: 'F3', label: 'Logs' },\n    { key: 'F4', label: 'Metrics' },\n    { key: 'F5', label: 'Refresh' },\n    { key: 'F6', label: 'Search' },\n    { key: 'F7', label: 'Filter' },\n    { key: 'F8', label: 'Export' },\n    { key: 'F9', label: 'Theme' },\n    { key: 'F10', label: 'Settings' },\n    { key: 'F11', label: 'Fullscr' },\n    { key: 'F12', label: 'Quit' }\n  ];\n  return HotkeyBar({ keys: keys || defaultKeys });\n}"
+      }
+    },
+    "custom": {
+      "description": "Custom key bindings with modifiers",
+      "components": [],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _gap4 _px2 _mono _textsm _h[28px] _bgmuted",
+        "slots": {
+          "keys": "Custom key bindings with labels"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function CustomHotkeyBar({ keys }) {\n  const { div, span, kbd } = tags;\n\n  return div({ class: css('_flex _aic _gap4 _h[28px] _bgsurface _borderT _bordercolor[#333] _px2') },\n    ...keys.map(h =>\n      div({ class: css('_flex _aic _gap1 _cursor[pointer]'), onclick: h.action },\n        kbd({ class: css('term-hotkey _border _bordercolor[#555] _px1 _textsm') }, h.key),\n        span({ class: css('_fgmuted _textsm') }, h.label)\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _aic _jcsb _px1 _mono _textsm _h[28px]",
+    "slots": {
+      "keys": "Hotkey bindings"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+    "example": "function HotkeyBar({ keys, variant = 'standard' }) {\n  switch (variant) {\n    case 'extended': return ExtendedHotkeyBar({ keys });\n    case 'custom': return CustomHotkeyBar({ keys });\n    default: return StandardHotkeyBar({ keys });\n  }\n}"
+  },
+  "features": [
+    "click-activate",
+    "keyboard-trigger",
+    "disabled-state",
+    "active-pressed-state"
+  ]
+}

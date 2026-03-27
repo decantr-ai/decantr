@@ -1,0 +1,128 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "checkout-flow",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Checkout Flow",
+  "description": "Complete purchase/subscribe checkout process with payment form, promo codes, order summary, and success confirmation.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Radio",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Input",
+    "Badge",
+    "Radio",
+    "icon"
+  ],
+  "default_preset": "subscribe",
+  "presets": {
+    "subscribe": {
+      "description": "Tier subscription checkout",
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Radio",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _gc1 _lg:gc2 _gap8 _maxw[960px] _mx[auto]",
+        "slots": {
+          "summary": "Tier/order summary card",
+          "payment-form": "Card/payment method inputs",
+          "promo-code": "Discount code input",
+          "terms": "Terms acceptance checkbox",
+          "submit": "Subscribe/pay button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Card, Input, Badge, Radio, icon } from 'decantr/components';",
+        "example": "function SubscribeCheckout({ tier, creator, onComplete }) {\n  const { div, h2, h3, p, span, label, form, input } = tags;\n  const [billingCycle, setBillingCycle] = createSignal('monthly');\n  const [promoCode, setPromoCode] = createSignal('');\n  const [promoApplied, setPromoApplied] = createSignal(null);\n  const [processing, setProcessing] = createSignal(false);\n  const [termsAccepted, setTermsAccepted] = createSignal(false);\n\n  const price = billingCycle() === 'yearly' ? tier.yearlyPrice : tier.monthlyPrice;\n  const discount = promoApplied()?.percent || 0;\n  const total = price * (1 - discount / 100);\n\n  const applyPromo = () => {\n    if (promoCode().toLowerCase() === 'welcome20') {\n      setPromoApplied({ code: 'WELCOME20', percent: 20 });\n    }\n  };\n\n  const handleSubmit = async () => {\n    setProcessing(true);\n    await new Promise(r => setTimeout(r, 2000));\n    setProcessing(false);\n    onComplete?.();\n  };\n\n  return div({ class: css('_grid _gc1 _lg:gc2 _gap8 _maxw[960px] _mx[auto] _py8 _px4') },\n    div({ class: css('_flex _col _gap6') },\n      div({},\n        h2({ class: css('_heading3 _mb2') }, 'Subscribe to ', creator.name),\n        p({ class: css('_fgmuted') }, 'You\\'re subscribing to the ', tier.name, ' tier')\n      ),\n      Card({ class: css('studio-card _p6') },\n        h3({ class: css('_heading5 _mb4') }, 'Billing Cycle'),\n        div({ class: css('_grid _gc2 _gap4') },\n          div({\n            class: css(`_p4 _r3 _border _cursor[pointer] _trans ${billingCycle() === 'monthly' ? '_borderPrimary _bgPrimary/5' : '_bordermuted'}`),\n            onclick: () => setBillingCycle('monthly')\n          },\n            div({ class: css('_flex _jcsb _aic') },\n              div({},\n                span({ class: css('_fontmedium') }, 'Monthly'),\n                p({ class: css('_textsm _fgmuted') }, 'Billed monthly')\n              ),\n              Radio({ checked: billingCycle() === 'monthly' })\n            ),\n            p({ class: css('_heading4 _mt2') }, '$', tier.monthlyPrice, '/mo')\n          ),\n          div({\n            class: css(`_p4 _r3 _border _cursor[pointer] _trans ${billingCycle() === 'yearly' ? '_borderPrimary _bgPrimary/5' : '_bordermuted'}`),\n            onclick: () => setBillingCycle('yearly')\n          },\n            div({ class: css('_flex _jcsb _aic') },\n              div({},\n                span({ class: css('_fontmedium') }, 'Yearly'),\n                Badge({ variant: 'default', size: 'xs', class: css('_ml2') }, 'Save 20%')\n              ),\n              Radio({ checked: billingCycle() === 'yearly' })\n            ),\n            p({ class: css('_heading4 _mt2') }, '$', tier.yearlyPrice, '/yr')\n          )\n        )\n      ),\n      Card({ class: css('studio-card _p6') },\n        h3({ class: css('_heading5 _mb4') }, 'Payment Method'),\n        div({ class: css('_flex _col _gap4') },\n          div({ class: css('_flex _col _gap2') },\n            label({ class: css('_textsm _fontmedium') }, 'Card Number'),\n            div({ class: css('studio-input _flex _aic _p3 _r2') },\n              icon('credit-card', { size: '18', class: css('_fgmuted _mr2') }),\n              input({ type: 'text', placeholder: '1234 5678 9012 3456', class: css('_flex1 _outline0 _bgTransparent') })\n            )\n          ),\n          div({ class: css('_grid _gc2 _gap4') },\n            div({ class: css('_flex _col _gap2') },\n              label({ class: css('_textsm _fontmedium') }, 'Expiry'),\n              Input({ placeholder: 'MM / YY' })\n            ),\n            div({ class: css('_flex _col _gap2') },\n              label({ class: css('_textsm _fontmedium') }, 'CVC'),\n              Input({ placeholder: '123' })\n            )\n          )\n        ),\n        div({ class: css('_flex _gap2 _mt4 _pt4 _borderT') },\n          Button({ variant: 'outline', size: 'sm', class: css('_flex _aic _gap2') },\n            icon('credit-card', { size: '16' }), 'Apple Pay'\n          ),\n          Button({ variant: 'outline', size: 'sm', class: css('_flex _aic _gap2') },\n            icon('credit-card', { size: '16' }), 'Google Pay'\n          )\n        )\n      ),\n      div({ class: css('_flex _col _gap2') },\n        label({ class: css('_textsm _fontmedium') }, 'Promo Code'),\n        div({ class: css('_flex _gap2') },\n          Input({ value: promoCode(), onchange: (e) => setPromoCode(e.target.value), placeholder: 'Enter code', class: css('_flex1') }),\n          Button({ variant: 'outline', onclick: applyPromo }, 'Apply')\n        ),\n        promoApplied() ? div({ class: css('_flex _aic _gap2 _textsm _fgSuccess') },\n          icon('check-circle', { size: '14' }), promoApplied().code, ' applied - ', promoApplied().percent, '% off'\n        ) : null\n      )\n    ),\n    div({ class: css('_flex _col _gap4') },\n      Card({ class: css('studio-card _p6 _sticky _top4') },\n        h3({ class: css('_heading5 _mb4') }, 'Order Summary'),\n        div({ class: css('_flex _aic _gap4 _pb4 _borderB _mb4') },\n          div({ class: css('_w12 _h12 _r2 _bgPrimary/10 _flex _center') },\n            icon('crown', { class: css('_fgPrimary') })\n          ),\n          div({ class: css('_flex1') },\n            span({ class: css('_fontmedium') }, tier.name, ' Tier'),\n            p({ class: css('_textsm _fgmuted') }, creator.name)\n          )\n        ),\n        div({ class: css('_flex _col _gap2 _pb4 _borderB _mb4') },\n          div({ class: css('_flex _jcsb _textsm') },\n            span({ class: css('_fgmuted') }, 'Subtotal'),\n            span({}, '$', price.toFixed(2))\n          ),\n          promoApplied() ? div({ class: css('_flex _jcsb _textsm _fgSuccess') },\n            span({}, 'Discount (', promoApplied().percent, '%)'),\n            span({}, '-$', (price * promoApplied().percent / 100).toFixed(2))\n          ) : null\n        ),\n        div({ class: css('_flex _jcsb _fontmedium _mb6') },\n          span({}, 'Total'),\n          span({ class: css('_heading4') }, '$', total.toFixed(2))\n        ),\n        div({ class: css('_flex _aic _gap2 _mb4') },\n          input({ type: 'checkbox', checked: termsAccepted(), onchange: (e) => setTermsAccepted(e.target.checked) }),\n          span({ class: css('_textsm _fgmuted') }, 'I agree to the terms of service and privacy policy')\n        ),\n        Button({\n          variant: 'primary',\n          size: 'lg',\n          class: css('_wfull studio-glow'),\n          disabled: !termsAccepted() || processing(),\n          onclick: handleSubmit\n        },\n          processing() ? 'Processing...' : 'Subscribe for $' + total.toFixed(2) + (billingCycle() === 'yearly' ? '/yr' : '/mo')\n        ),\n        p({ class: css('_textsm _fgmuted _tc _mt4 _flex _aic _jcc _gap1') },\n          icon('lock', { size: '12' }), 'Secure checkout powered by Stripe'\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "purchase": {
+      "description": "One-time product purchase",
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _gc1 _lg:gc2 _gap8 _maxw[960px] _mx[auto]",
+        "slots": {
+          "summary": "Product summary",
+          "payment-form": "Payment inputs",
+          "submit": "Purchase button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Card, Input, icon } from 'decantr/components';",
+        "example": "function PurchaseCheckout({ product, onComplete }) {\n  const { div, h2, h3, p, span, img } = tags;\n  const [processing, setProcessing] = createSignal(false);\n\n  const handlePurchase = async () => {\n    setProcessing(true);\n    await new Promise(r => setTimeout(r, 2000));\n    setProcessing(false);\n    onComplete?.();\n  };\n\n  return div({ class: css('_grid _gc1 _lg:gc2 _gap8 _maxw[960px] _mx[auto] _py8 _px4') },\n    Card({ class: css('studio-card _p6') },\n      h3({ class: css('_heading5 _mb4') }, 'Payment'),\n      div({ class: css('_flex _col _gap4') },\n        Input({ placeholder: 'Card number' }),\n        div({ class: css('_grid _gc2 _gap4') },\n          Input({ placeholder: 'MM / YY' }),\n          Input({ placeholder: 'CVC' })\n        )\n      )\n    ),\n    Card({ class: css('studio-card _p6') },\n      h3({ class: css('_heading5 _mb4') }, 'You\\'re buying'),\n      div({ class: css('_flex _gap4 _mb4') },\n        product.thumbnail ? img({ src: product.thumbnail, class: css('_w20 _h14 _r2 _objcover') }) : null,\n        div({},\n          h2({ class: css('_fontmedium') }, product.title),\n          p({ class: css('_textsm _fgmuted') }, product.creator)\n        )\n      ),\n      div({ class: css('_flex _jcsb _fontmedium _py4 _borderT _borderB _mb4') },\n        span({}, 'Total'),\n        span({ class: css('_heading4') }, '$', product.price)\n      ),\n      Button({ variant: 'primary', size: 'lg', class: css('_wfull'), disabled: processing(), onclick: handlePurchase },\n        processing() ? 'Processing...' : 'Buy Now'\n      )\n    )\n  );\n}"
+      }
+    },
+    "upgrade": {
+      "description": "Tier upgrade flow",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "center",
+        "atoms": "_flex _col _gap6 _maxw[480px] _mx[auto]",
+        "slots": {
+          "comparison": "Current vs new tier",
+          "pricing": "Prorated price",
+          "submit": "Upgrade button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, Badge, icon } from 'decantr/components';",
+        "example": "function UpgradeCheckout({ currentTier, newTier, onComplete }) {\n  const { div, h2, p, span } = tags;\n  const proratedAmount = newTier.monthlyPrice - currentTier.monthlyPrice;\n\n  return div({ class: css('_flex _col _gap6 _maxw[480px] _mx[auto] _py8 _px4') },\n    h2({ class: css('_heading3 _tc') }, 'Upgrade to ', newTier.name),\n    Card({ class: css('studio-card _p6') },\n      div({ class: css('_flex _jcsb _aic _pb4 _borderB _mb4') },\n        div({},\n          p({ class: css('_textsm _fgmuted') }, 'Current'),\n          span({ class: css('_fontmedium') }, currentTier.name)\n        ),\n        icon('arrow-right', { class: css('_fgmuted') }),\n        div({ class: css('_tr') },\n          p({ class: css('_textsm _fgmuted') }, 'New'),\n          span({ class: css('_fontmedium _fgPrimary') }, newTier.name)\n        )\n      ),\n      p({ class: css('_textsm _fgmuted _mb4') }, 'You\\'ll be charged the prorated difference for this billing period.'),\n      div({ class: css('_flex _jcsb _fontmedium') },\n        span({}, 'Amount due today'),\n        span({ class: css('_heading4') }, '$', proratedAmount.toFixed(2))\n      )\n    ),\n    Button({ variant: 'primary', size: 'lg', class: css('_wfull studio-glow'), onclick: onComplete },\n      'Confirm Upgrade'\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "split",
+    "atoms": "_grid _gc1 _lg:gc2 _gap8",
+    "slots": {
+      "summary": "Order summary",
+      "payment": "Payment form",
+      "submit": "Submit button"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, Input, Badge, icon } from 'decantr/components';",
+    "example": "function CheckoutFlow(props) {\n  return SubscribeCheckout(props);\n}"
+  },
+  "io": {
+    "produces": [
+      "checkout-complete",
+      "payment-error"
+    ],
+    "consumes": [
+      "tier-data",
+      "product-data"
+    ]
+  }
+}

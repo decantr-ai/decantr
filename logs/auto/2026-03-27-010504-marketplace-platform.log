@@ -1,0 +1,71 @@
+I'll use the brainstorming skill first since this is creative work designing a complete blueprint.
+Using brainstorming skill to design the Marketplace Platform Blueprint.
+
+Let me start by exploring the project context - reading the Carbon AI Portal spec and understanding existing patterns.
+Let me read a few existing patterns to understand the structure better.
+I've reviewed the project context and the Carbon AI Portal spec. Your task spec is comprehensive - you've essentially done the brainstorming. Let me confirm a few design decisions before writing the spec.
+
+---
+
+## Design Confirmation
+
+### 1. Theme & Recipe: Bazaar
+
+**Light mode default** (commerce standard) with these tokens:
+- Primary: `#2563EB` (commerce blue - trust)
+- Secondary: `#10B981` (success green - transactions)  
+- Accent: `#F97316` (warm orange - CTAs)
+- CVD support for deuteranopia/protanopia
+
+**Order status colors:**
+- Pending: amber/yellow
+- Processing: blue
+- Shipped: purple
+- Delivered: green
+- Cancelled/Refunded: gray/red
+
+Does this look right so far?
+
+### 2. Dual Shell Architecture
+
+```
+BUYER EXPERIENCE (top-nav-main):
+┌─────────────────────────────────────────────────────────┐
+│ [Logo]  Search...  [Categories ▾]  [Cart 🛒]  [Account] │
+├─────────────────────────────────────────────────────────┤
+│                     Content Area                         │
+└─────────────────────────────────────────────────────────┘
+
+SELLER EXPERIENCE (sidebar-main):
+┌────────────┬────────────────────────────────────────────┐
+│ Dashboard  │                                            │
+│ Listings   │         Content Area                       │
+│ Orders     │                                            │
+│ Payouts    │                                            │
+│ Analytics  │                                            │
+│ Settings   │                                            │
+└────────────┴────────────────────────────────────────────┘
+```
+
+### 3. Key Pattern Behaviors
+
+| Pattern | Key Feature |
+|---------|-------------|
+| `product-gallery` | Carousel with thumbnails, zoom on hover, mobile swipe |
+| `checkout-flow` | 3 steps: Shipping → Payment → Review (progress bar) |
+| `review-form` | 1-5 star rating + title + body + optional photos |
+| `dispute-thread` | Chat-like thread with escalation to support |
+| `payout-dashboard` | Earnings chart, pending/available balance, payout history |
+
+### 4. Patterns to Create vs. Reuse
+
+**Create new (15):**
+- `listing-builder`, `product-gallery`, `product-detail`, `search-filter-grid`
+- `cart-drawer`, `order-card`, `order-detail`, `order-list`
+- `review-form`, `review-list`, `seller-profile`, `payout-dashboard`, `dispute-thread`
+
+**Reuse existing (with marketplace presets):**
+- `product-card` - already exists, add `marketplace` preset
+- `checkout-flow` - already exists, add `marketplace-purchase` preset
+
+Does this approach work? Any patterns you'd like to add or remove?

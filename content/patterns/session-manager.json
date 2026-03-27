@@ -1,0 +1,63 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "session-manager",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Session Manager",
+  "description": "Active sessions panel showing current device, other sessions with device info, location, last active, and revoke controls.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full session list with current device highlighted",
+      "components": [
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "current-session": "This device session card with 'Current' badge",
+          "sessions-list": "Other active sessions list",
+          "revoke-all": "Logout from all devices button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Badge, icon } from 'decantr/components';",
+        "example": "function SessionManager({ sessions, currentSessionId, onRevoke, onRevokeAll }) {\n  const { div, h3, p, span, time } = tags;\n\n  const deviceIcon = (device) => {\n    if (device.includes('iPhone') || device.includes('Android')) return 'smartphone';\n    if (device.includes('iPad') || device.includes('Tablet')) return 'tablet';\n    return 'monitor';\n  };\n\n  const currentSession = sessions.find(s => s.id === currentSessionId);\n  const otherSessions = sessions.filter(s => s.id !== currentSessionId);\n\n  return div({ class: css('_flex _col _gap6') },\n    div({ class: css('carbon-card _p4 _r2 _borderPrimary') },\n      div({ class: css('_flex _aic _gap3') },\n        div({ class: css('_w10 _h10 _rfull _bgPrimary/10 _flex _center') },\n          icon(deviceIcon(currentSession.device), { class: css('_fgPrimary') })\n        ),\n        div({ class: css('_flex1') },\n          div({ class: css('_flex _aic _gap2') },\n            span({ class: css('_font500') }, currentSession.device),\n            Badge({ variant: 'success', size: 'xs' }, 'Current')\n          ),\n          p({ class: css('_textsm _fgmuted') }, `${currentSession.browser} - ${currentSession.location}`)\n        )\n      )\n    ),\n    otherSessions.length > 0 ? div({ class: css('_flex _col _gap3') },\n      h3({ class: css('_heading5 _mb2') }, 'Other sessions'),\n      ...otherSessions.map(session =>\n        div({ class: css('carbon-card _p4 _r2 _flex _aic _gap3') },\n          div({ class: css('_w10 _h10 _rfull _bgmuted/10 _flex _center') },\n            icon(deviceIcon(session.device), { class: css('_fgmuted') })\n          ),\n          div({ class: css('_flex1') },\n            span({ class: css('_font500') }, session.device),\n            p({ class: css('_textsm _fgmuted') }, `${session.browser} - ${session.location}`),\n            time({ class: css('_textsm _fgmuted') }, `Last active: ${session.lastActive}`)\n          ),\n          Button({ variant: 'ghost', size: 'sm', onclick: () => onRevoke(session.id) },\n            icon('log-out', { size: '16' }), 'Revoke'\n          )\n        )\n      )\n    ) : null,\n    otherSessions.length > 0 ? Button({\n      variant: 'outline',\n      class: css('_fgDanger _borderDanger'),\n      onclick: onRevokeAll\n    }, icon('log-out'), 'Sign out of all other sessions') : null\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "current-session": "This device with 'Current' badge",
+      "sessions-list": "Other sessions with device, browser, location, last active",
+      "revoke-all": "Sign out everywhere button"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Badge, icon } from 'decantr/components';",
+    "example": "function SessionManager({ sessions, currentSessionId, onRevoke }) {\n  return StandardSessionManager({ sessions, currentSessionId, onRevoke });\n}"
+  }
+}

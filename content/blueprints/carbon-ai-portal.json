@@ -1,0 +1,172 @@
+{
+  "$schema": "decantr-vignette-v1.0",
+  "id": "carbon-ai-portal",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Carbon AI Portal",
+  "description": "Complete AI chatbot platform with auth, marketing, settings, and legal pages. Sleek developer-tool aesthetic with neutral-cool grays and soft muted blue accent.",
+  "tags": [
+    "ai",
+    "chatbot",
+    "saas",
+    "developer",
+    "professional"
+  ],
+  "compose": [
+    "ai-chatbot",
+    "auth-full",
+    "settings-full",
+    "marketing-saas",
+    "about-hybrid",
+    "contact",
+    "legal"
+  ],
+  "theme": {
+    "style": "carbon",
+    "mode": "dark",
+    "recipe": "carbon",
+    "shape": "rounded"
+  },
+  "personality": [
+    "professional",
+    "minimal",
+    "developer-focused",
+    "polished"
+  ],
+  "overrides": {
+    "pages": {},
+    "pages_remove": [],
+    "features_add": [
+      "theme-toggle"
+    ],
+    "features_remove": []
+  },
+  "dependencies": {
+    "archetypes": {
+      "ai-chatbot": "^1.0.0",
+      "auth-full": "^1.0.0",
+      "settings-full": "^1.0.0",
+      "marketing-saas": "^1.0.0",
+      "about-hybrid": "^1.0.0",
+      "contact": "^1.0.0",
+      "legal": "^1.0.0"
+    },
+    "recipes": {
+      "carbon": "^1.0.0"
+    },
+    "styles": {
+      "carbon": "^1.0.0"
+    }
+  },
+  "features": [
+    "auth",
+    "mfa",
+    "chat",
+    "file-upload",
+    "markdown",
+    "search",
+    "export",
+    "theme-toggle"
+  ],
+  "routes": {
+    "/": {
+      "shell": "top-nav-footer",
+      "archetype": "marketing-saas",
+      "page": "home"
+    },
+    "/about": {
+      "shell": "top-nav-footer",
+      "archetype": "about-hybrid",
+      "page": "about"
+    },
+    "/contact": {
+      "shell": "top-nav-footer",
+      "archetype": "contact",
+      "page": "contact"
+    },
+    "/privacy": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "privacy"
+    },
+    "/terms": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "terms"
+    },
+    "/cookies": {
+      "shell": "top-nav-footer",
+      "archetype": "legal",
+      "page": "cookies"
+    },
+    "/login": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "login"
+    },
+    "/register": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "register"
+    },
+    "/forgot-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "forgot-password"
+    },
+    "/reset-password": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "reset-password"
+    },
+    "/verify-email": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "verify-email"
+    },
+    "/mfa-setup": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-setup"
+    },
+    "/mfa-verify": {
+      "shell": "centered",
+      "archetype": "auth-full",
+      "page": "mfa-verify"
+    },
+    "/chat": {
+      "shell": "chat-portal",
+      "archetype": "ai-chatbot",
+      "page": "new"
+    },
+    "/chat/:id": {
+      "shell": "chat-portal",
+      "archetype": "ai-chatbot",
+      "page": "chat"
+    },
+    "/settings/profile": {
+      "shell": "chat-portal",
+      "archetype": "settings-full",
+      "page": "profile"
+    },
+    "/settings/security": {
+      "shell": "chat-portal",
+      "archetype": "settings-full",
+      "page": "security"
+    },
+    "/settings/preferences": {
+      "shell": "chat-portal",
+      "archetype": "settings-full",
+      "page": "preferences"
+    },
+    "/settings/account": {
+      "shell": "chat-portal",
+      "archetype": "settings-full",
+      "page": "danger"
+    }
+  },
+  "seo_hints": {
+    "schema_org": ["Organization", "WebApplication", "SoftwareApplication"],
+    "meta_priorities": ["description", "og:image", "twitter:card"]
+  }
+}

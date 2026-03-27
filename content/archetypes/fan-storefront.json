@@ -1,0 +1,95 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "fan-storefront",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Fan Storefront",
+  "description": "Public creator storefront for fans. Browse content, view tiers, and subscribe to creators.",
+  "tags": [
+    "fan",
+    "storefront",
+    "creator-page",
+    "subscribe",
+    "browse"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "creator storefront",
+        "creator page",
+        "fan view"
+      ],
+      "secondary": [
+        "public profile",
+        "subscribe page"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "profile",
+      "patterns": [
+        {
+          "pattern": "creator-profile",
+          "preset": "standard",
+          "as": "creator-page"
+        }
+      ],
+      "default_layout": [
+        "creator-page"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "post",
+      "patterns": [
+        {
+          "pattern": "content-feed",
+          "preset": "standard",
+          "as": "single-post"
+        },
+        {
+          "pattern": "unlock-gate",
+          "preset": "blur",
+          "as": "paywall"
+        }
+      ],
+      "default_layout": [
+        "single-post",
+        "paywall"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "features": [
+    "creator-profile",
+    "tier-display",
+    "content-preview",
+    "subscribe-flow"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar for browsing experience"
+  },
+  "dependencies": {
+    "patterns": {
+      "creator-profile": "^1.0.0",
+      "content-feed": "^1.0.0",
+      "unlock-gate": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

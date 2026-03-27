@@ -1,0 +1,120 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "pm-financials",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Property Management Financials",
+  "description": "Property management financial analytics including P&L overview, rent roll, expense tracking, and payment history for real estate portfolios.",
+  "tags": [
+    "property-management",
+    "financials",
+    "analytics",
+    "real-estate",
+    "rent-roll"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "property financials",
+        "rent roll",
+        "property expense tracking",
+        "property p&l"
+      ],
+      "secondary": [
+        "property cash flow",
+        "rental income",
+        "noi tracking"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "patterns": [
+        {
+          "pattern": "pnl-dashboard",
+          "preset": "standard",
+          "as": "pnl"
+        }
+      ],
+      "default_layout": [
+        "pnl"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "rent-roll",
+      "patterns": [
+        {
+          "pattern": "rent-roll",
+          "preset": "standard",
+          "as": "rent-roll"
+        }
+      ],
+      "default_layout": [
+        "rent-roll"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "expenses",
+      "patterns": [
+        {
+          "pattern": "expense-tracker",
+          "preset": "list",
+          "as": "expenses"
+        }
+      ],
+      "default_layout": [
+        "expenses"
+      ],
+      "shell": "sidebar-main"
+    },
+    {
+      "id": "payments",
+      "patterns": [
+        {
+          "pattern": "payment-history",
+          "preset": "portfolio",
+          "as": "payments"
+        }
+      ],
+      "default_layout": [
+        "payments"
+      ],
+      "shell": "sidebar-main"
+    }
+  ],
+  "features": [
+    "analytics",
+    "export",
+    "charts",
+    "date-range"
+  ],
+  "shells": {
+    "sidebar-main": "Sidebar navigation for financial management"
+  },
+  "dependencies": {
+    "patterns": {
+      "pnl-dashboard": "^1.0.0",
+      "rent-roll": "^1.0.0",
+      "expense-tracker": "^1.0.0",
+      "payment-history": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "estate"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

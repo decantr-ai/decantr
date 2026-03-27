@@ -1,0 +1,98 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "marketing-realestate",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Marketing Real Estate",
+  "description": "Marketing landing page for property management SaaS platforms with hero, features, pricing, testimonials, and CTA sections.",
+  "tags": [
+    "property-management",
+    "marketing",
+    "landing-page",
+    "real-estate",
+    "saas"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "property management marketing",
+        "real estate saas landing",
+        "landlord software marketing"
+      ],
+      "secondary": [
+        "property management landing page",
+        "rental software marketing"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "patterns": [
+        {
+          "pattern": "hero",
+          "preset": "brand",
+          "as": "hero"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "feature",
+          "as": "features"
+        },
+        {
+          "pattern": "pricing-usage",
+          "preset": "standard",
+          "as": "pricing"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "testimonial",
+          "as": "testimonials"
+        },
+        {
+          "pattern": "cta-banner",
+          "preset": "standard",
+          "as": "cta"
+        }
+      ],
+      "default_layout": [
+        "hero",
+        "features",
+        "pricing",
+        "testimonials",
+        "cta"
+      ],
+      "shell": "top-nav-footer"
+    }
+  ],
+  "features": [
+    "marketing",
+    "seo",
+    "responsive"
+  ],
+  "shells": {
+    "top-nav-footer": "Marketing site layout with navigation and footer"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "pricing-usage": "^1.0.0",
+      "cta-banner": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "estate"
+    ],
+    "modes": [
+      "light"
+    ]
+  }
+}

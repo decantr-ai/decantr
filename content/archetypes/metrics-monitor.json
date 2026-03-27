@@ -1,0 +1,149 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "metrics-monitor",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Metrics Monitor",
+  "description": "System metrics dashboard with ASCII charts, gauges, and real-time updates. Terminal-style monitoring interface.",
+  "tags": [
+    "terminal",
+    "metrics",
+    "monitoring",
+    "charts",
+    "dashboard"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "metrics dashboard",
+        "system monitor",
+        "performance metrics",
+        "resource monitor"
+      ],
+      "secondary": [
+        "cpu usage",
+        "memory monitor",
+        "htop",
+        "top command"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "metrics",
+      "patterns": [
+        {
+          "pattern": "status-bar",
+          "preset": "top",
+          "as": "status"
+        },
+        {
+          "pattern": "split-pane",
+          "preset": "quad",
+          "as": "quad-split"
+        },
+        {
+          "pattern": "metric-gauge",
+          "preset": "grid",
+          "as": "metrics-grid"
+        },
+        {
+          "pattern": "ascii-chart",
+          "preset": "line",
+          "as": "line-chart"
+        },
+        {
+          "pattern": "ascii-chart",
+          "preset": "bar",
+          "as": "bar-chart"
+        },
+        {
+          "pattern": "retro-table",
+          "preset": "compact",
+          "as": "process-table"
+        },
+        {
+          "pattern": "hotkey-bar",
+          "preset": "standard",
+          "as": "hotkeys"
+        }
+      ],
+      "default_layout": [
+        "status",
+        "quad-split",
+        "hotkeys"
+      ],
+      "shell": "terminal-split"
+    },
+    {
+      "id": "detail",
+      "patterns": [
+        {
+          "pattern": "status-bar",
+          "preset": "top",
+          "as": "status"
+        },
+        {
+          "pattern": "ascii-chart",
+          "preset": "braille",
+          "as": "detailed-chart"
+        },
+        {
+          "pattern": "metric-gauge",
+          "preset": "block",
+          "as": "metric-detail"
+        },
+        {
+          "pattern": "hotkey-bar",
+          "preset": "standard",
+          "as": "hotkeys"
+        }
+      ],
+      "default_layout": [
+        "status",
+        "detailed-chart",
+        "metric-detail",
+        "hotkeys"
+      ],
+      "shell": "terminal-split"
+    }
+  ],
+  "features": [
+    "realtime-metrics",
+    "ascii-charts",
+    "sparklines",
+    "threshold-alerts",
+    "historical-data"
+  ],
+  "shells": {
+    "terminal-split": "Terminal layout with quad-split for metrics"
+  },
+  "dependencies": {
+    "patterns": {
+      "status-bar": "^1.0.0",
+      "split-pane": "^1.0.0",
+      "metric-gauge": "^1.0.0",
+      "ascii-chart": "^1.0.0",
+      "retro-table": "^1.0.0",
+      "hotkey-bar": "^1.0.0"
+    },
+    "recipes": {
+      "terminal": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    }
+  },
+  "suggested_theme": {
+    "styles": [
+      "terminal"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

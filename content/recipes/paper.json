@@ -1,0 +1,114 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "id": "paper",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Paper",
+  "description": "Clean, minimal collaboration aesthetic with warm whites and content-focused design. Natural animations, generous whitespace, inspired by Notion and iA Writer.",
+  "dependencies": {
+    "styles": {
+      "paper": ">=1.0.0"
+    }
+  },
+  "schema_version": "2.0",
+  "style": "paper",
+  "mode": "light",
+  "spatial_hints": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "64px",
+    "card_wrapping": "none",
+    "surface_override": null
+  },
+  "shell": {
+    "preferred": [
+      "workspace-aside",
+      "sidebar-main",
+      "top-nav-footer"
+    ],
+    "avoid": [
+      "full-bleed"
+    ],
+    "nav_style": "minimal",
+    "default_nav_state": "expanded",
+    "root": "paper-canvas",
+    "nav": "paper-surface",
+    "header": "",
+    "navLabel": "",
+    "brand": "",
+    "dimensions": null
+  },
+  "animation": {
+    "entrance": "paper-fade",
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.25, 0.1, 0.25, 1)",
+    "durations": {
+      "hover": "120ms",
+      "entrance": "180ms",
+      "modal": "200ms",
+      "page": "250ms",
+      "cursor": "50ms"
+    }
+  },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "minimal",
+    "type_mapping": {
+      "card": ["paper-card"],
+      "input": ["paper-input"],
+      "editor": ["paper-prose"],
+      "comment": ["paper-comment"]
+    },
+    "component_fallback": {
+      "pre": "editor",
+      "code": "editor",
+      "Card": "card",
+      "Input": "input"
+    }
+  },
+  "pattern_preferences": {
+    "prefer": [
+      "doc-editor",
+      "page-tree",
+      "comment-thread",
+      "presence-avatars",
+      "activity-feed"
+    ],
+    "avoid": [],
+    "default_presets": {}
+  },
+  "decorators": {
+    "paper-canvas": "Warm cream background in light mode, soft charcoal in dark. Clean foundation for content.",
+    "paper-surface": "Clean panel surface with subtle warmth. Used for sidebars and elevated areas.",
+    "paper-card": "Minimal card styling with 1px warm border, 6px radius, no shadow. Content over decoration.",
+    "paper-input": "Warm gray border with teal focus ring. Clean input styling for forms and editors.",
+    "paper-divider": "Hairline separator using warm gray. Subtle content division.",
+    "paper-prose": "Optimized typography for reading. 16px base, 1.75 line-height, Inter font stack, max-width 680px.",
+    "paper-comment": "Comment bubble with subtle shadow and presence color accent. Used in comment threads.",
+    "paper-cursor": "Remote cursor SVG with name label. Colored by collaborator presence color.",
+    "paper-presence": "Avatar ring indicating collaborator presence. Ring color matches assigned presence color.",
+    "paper-selection": "Highlighted text selection for remote collaborators. Tinted with presence color at 20% opacity.",
+    "paper-fade": "Entrance animation: opacity 0 to 1, 180ms natural easing. No translation."
+  },
+  "compositions": {
+    "editor": {
+      "description": "Document editor with real-time collaboration. Page tree, editor, and comment sidebar.",
+      "shell": "workspace-aside",
+      "effects": ["paper-prose", "paper-cursor"]
+    },
+    "workspace": {
+      "description": "Workspace dashboard with activity and recent documents.",
+      "shell": "sidebar-main",
+      "card_style": "paper-card"
+    },
+    "auth": {
+      "description": "Centered auth forms with clean card styling.",
+      "shell": "centered",
+      "card_style": "paper-card"
+    },
+    "marketing": {
+      "description": "Marketing pages with top nav and footer. Clean sections with generous whitespace.",
+      "shell": "top-nav-footer"
+    }
+  }
+}

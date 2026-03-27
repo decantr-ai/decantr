@@ -1,0 +1,109 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "rent-reminder",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Rent Reminder",
+  "description": "Payment reminder notification with contextual styling for upcoming, due today, and overdue states. Includes one-click payment action.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": ["Button", "icon", "Badge"],
+      "charts": []
+    }
+  },
+  "components": ["Button", "icon", "Badge"],
+  "default_preset": "upcoming",
+  "presets": {
+    "upcoming": {
+      "description": "Upcoming payment reminder",
+      "components": ["Button", "icon"],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _p4 _r2 _bgPrimary/10",
+        "slots": {
+          "icon": "Calendar icon",
+          "title": "Reminder headline",
+          "amount": "Amount due",
+          "due-date": "Due date",
+          "action": "Pay now button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { link } from 'decantr/router';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function RentReminderUpcoming({ amount, dueDate, daysUntil }) {\n  const { div, span, p } = tags;\n\n  return div({ class: css('estate-card _p4 _flex _aic _gap4 _borderL[4px] _borderPrimary') },\n    div({ class: css('_w10 _h10 _r2 _bgPrimary/10 _flex _aic _jcc') },\n      icon('calendar', { class: css('_fgPrimary') })\n    ),\n    div({ class: css('_flex1') },\n      span({ class: css('_font500 _block') }, 'Rent Payment Due Soon'),\n      p({ class: css('_textsm _fgmuted') },\n        `Due in ${daysUntil} day${daysUntil === 1 ? '' : 's'} (${new Date(dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`\n      )\n    ),\n    span({ class: css('_heading4') }, `$${amount.toLocaleString()}`),\n    link({ href: '/tenant-portal/payments' },\n      Button({ variant: 'primary' }, 'Pay Now')\n    )\n  );\n}"
+      }
+    },
+    "due-today": {
+      "description": "Due today alert",
+      "components": ["Button", "icon"],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _p4 _r2 _bgWarning/10",
+        "slots": {
+          "icon": "Alert icon",
+          "title": "Due today message",
+          "amount": "Amount due",
+          "action": "Pay now button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { link } from 'decantr/router';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function RentReminderDueToday({ amount }) {\n  const { div, span, p } = tags;\n\n  return div({ class: css('estate-card _p4 _flex _aic _gap4 _borderL[4px] _borderWarning _bgWarning/5') },\n    div({ class: css('_w10 _h10 _r2 _bgWarning/10 _flex _aic _jcc') },\n      icon('clock', { class: css('_fgwarning') })\n    ),\n    div({ class: css('_flex1') },\n      span({ class: css('_font500 _block _fgwarning') }, 'Rent Payment Due Today'),\n      p({ class: css('_textsm _fgmuted') }, 'Pay now to avoid late fees')\n    ),\n    span({ class: css('_heading4') }, `$${amount.toLocaleString()}`),\n    link({ href: '/tenant-portal/payments' },\n      Button({ variant: 'primary' }, 'Pay Now')\n    )\n  );\n}"
+      }
+    },
+    "overdue": {
+      "description": "Overdue payment warning",
+      "components": ["Button", "icon"],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _p4 _r2 _bgDanger/10",
+        "slots": {
+          "icon": "Warning icon",
+          "title": "Overdue message",
+          "amount": "Amount with late fee",
+          "days-overdue": "Days overdue",
+          "action": "Pay now button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { link } from 'decantr/router';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function RentReminderOverdue({ amount, lateFee, daysOverdue, gracePeriodRemaining }) {\n  const { div, span, p } = tags;\n  const total = amount + lateFee;\n\n  return div({ class: css('estate-card _p4 _flex _aic _gap4 _borderL[4px] _borderDanger _bgDanger/5') },\n    div({ class: css('_w10 _h10 _r2 _bgDanger/10 _flex _aic _jcc') },\n      icon('alert-triangle', { class: css('_fgdanger') })\n    ),\n    div({ class: css('_flex1') },\n      span({ class: css('_font500 _block _fgdanger') }, 'Rent Payment Overdue'),\n      p({ class: css('_textsm _fgmuted') },\n        daysOverdue === 1 ? '1 day overdue' : `${daysOverdue} days overdue`,\n        lateFee > 0 ? ` • Late fee: $${lateFee}` : '',\n        gracePeriodRemaining > 0 ? ` • Grace period: ${gracePeriodRemaining} days left` : ''\n      )\n    ),\n    div({ class: css('_tr') },\n      span({ class: css('_heading4 _block') }, `$${total.toLocaleString()}`),\n      lateFee > 0 ? span({ class: css('_textxs _fgdanger') }, `Includes $${lateFee} late fee`) : null\n    ),\n    link({ href: '/tenant-portal/payments' },\n      Button({ variant: 'primary' }, 'Pay Now')\n    )\n  );\n}"
+      }
+    },
+    "paid": {
+      "description": "Payment confirmed",
+      "components": ["icon"],
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _gap4 _p4 _r2 _bgSuccess/10",
+        "slots": {
+          "icon": "Check icon",
+          "title": "Paid confirmation",
+          "amount": "Amount paid",
+          "date": "Payment date"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function RentReminderPaid({ amount, paidDate }) {\n  const { div, span, p } = tags;\n\n  return div({ class: css('estate-card _p4 _flex _aic _gap4 _borderL[4px] _borderSuccess _bgSuccess/5') },\n    div({ class: css('_w10 _h10 _r2 _bgSuccess/10 _flex _aic _jcc') },\n      icon('check-circle', { class: css('_fgsuccess') })\n    ),\n    div({ class: css('_flex1') },\n      span({ class: css('_font500 _block _fgsuccess') }, 'Rent Paid'),\n      p({ class: css('_textsm _fgmuted') }, `Paid on ${new Date(paidDate).toLocaleDateString()}`)\n    ),\n    span({ class: css('_heading4 _fgsuccess') }, `$${amount.toLocaleString()}`)\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _gap4 _p4 _r2",
+    "slots": {
+      "icon": "Status icon",
+      "content": "Message and details",
+      "amount": "Amount",
+      "action": "Action button"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+    "example": "// See preset examples above"
+  }
+}

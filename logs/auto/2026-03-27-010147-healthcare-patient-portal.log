@@ -1,0 +1,14 @@
+I'll start by invoking the brainstorming skill since this is creative design work.
+I'll follow the brainstorming process. Let me first explore the project context to understand the existing structure and check the reference spec.
+Let me read a few existing content files to understand the exact JSON structure.
+I've reviewed the project context and your detailed specification. The Carbon AI Portal provides an excellent template structure.
+
+Your spec is remarkably thorough. I have one clarifying question before presenting the design:
+
+**Shell inheritance:** Should `patient-portal` be a completely new shell definition (like `chat-portal`), or should it inherit/extend from `sidebar-main` with healthcare-specific defaults? The layout you sketched (200px left nav, flex main) is similar to `sidebar-main` but with narrower nav (240px vs 200px) and healthcare-specific nav items.
+
+My recommendation: **Create a new shell** for two reasons:
+1. The nav width is different (200px vs 240px)
+2. Healthcare portals often need specific behaviors (session timeouts, security banners, quick-exit buttons for sensitive contexts)
+
+Does that align with your thinking?

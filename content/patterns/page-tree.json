@@ -1,0 +1,122 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "page-tree",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Page Tree",
+  "description": "Hierarchical page navigation with drag-and-drop reordering, inline rename, and nested page support. Used in workspace sidebars.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Input",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Input",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full tree with icons, expand/collapse, and context menus",
+      "components": [
+        "Button",
+        "Input",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap0.5",
+        "slots": {
+          "search": "Filter pages by name",
+          "favorites": "Pinned pages section",
+          "tree": "Nested page items",
+          "new-button": "Create new page button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Input, icon } from 'decantr/components';\nimport { link } from 'decantr/router';",
+        "example": "function PageTree({ pages, favorites, currentPageId, onReorder, onRename, onDelete, onNewPage }) {\n  const { div, span, input, nav, ul, li, button } = tags;\n  const [searchQuery, setSearchQuery] = createSignal('');\n  const [expandedIds, setExpandedIds] = createSignal(new Set());\n  const [editingId, setEditingId] = createSignal(null);\n  const [contextMenu, setContextMenu] = createSignal(null);\n\n  const toggleExpand = (id) => {\n    const expanded = new Set(expandedIds());\n    expanded.has(id) ? expanded.delete(id) : expanded.add(id);\n    setExpandedIds(expanded);\n  };\n\n  const filterPages = (pages, query) => {\n    if (!query) return pages;\n    return pages.filter(p => \n      p.title.toLowerCase().includes(query.toLowerCase()) ||\n      (p.children && filterPages(p.children, query).length > 0)\n    );\n  };\n\n  const renderPage = (page, depth = 0) => {\n    const isActive = page.id === currentPageId;\n    const isExpanded = expandedIds().has(page.id);\n    const hasChildren = page.children && page.children.length > 0;\n    const isEditing = editingId() === page.id;\n\n    return li({ key: page.id, class: css('_list[none]') },\n      div({\n        class: css(`_flex _aic _gap1 _py1 _px2 _r1 _cursor[pointer] _trans ${isActive ? '_bg[var(--primary)/10] _fg[var(--primary)]' : '_hover:bg[var(--surface-raised)]'}`),\n        style: `padding-left: ${depth * 16 + 8}px`,\n        draggable: !isEditing,\n        ondragstart: (e) => e.dataTransfer.setData('pageId', page.id),\n        ondragover: (e) => e.preventDefault(),\n        ondrop: (e) => onReorder(e.dataTransfer.getData('pageId'), page.id),\n        oncontextmenu: (e) => { e.preventDefault(); setContextMenu({ id: page.id, x: e.clientX, y: e.clientY }); }\n      },\n        // Expand toggle\n        hasChildren ? button({\n          class: css('_p0.5 _r1 _hover:bg[var(--surface)]'),\n          onclick: (e) => { e.stopPropagation(); toggleExpand(page.id); }\n        }, icon(isExpanded ? 'chevron-down' : 'chevron-right', { size: '12' })) \n        : span({ class: css('_w5') }),\n        // Icon\n        span({ class: css('_text[1.1em]') }, page.icon || '📄'),\n        // Title (editable)\n        isEditing ? input({\n          type: 'text',\n          value: page.title,\n          class: css('_flex1 _px1 _py0.5 _textsm _border _r1'),\n          autofocus: true,\n          onblur: (e) => { onRename(page.id, e.target.value); setEditingId(null); },\n          onkeydown: (e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setEditingId(null); },\n          onclick: (e) => e.stopPropagation()\n        }) : link({\n          href: `/doc/${page.id}`,\n          class: css('_flex1 _textsm _truncate _nounder _fgfg'),\n          ondblclick: (e) => { e.preventDefault(); setEditingId(page.id); }\n        }, page.title)\n      ),\n      // Children\n      hasChildren && isExpanded ? ul({ class: css('_list[none] _m0 _p0') },\n        ...page.children.map(child => renderPage(child, depth + 1))\n      ) : null\n    );\n  };\n\n  const filteredPages = filterPages(pages, searchQuery());\n\n  return nav({ class: css('_flex _col _hfull') },\n    // Search\n    div({ class: css('_p2') },\n      div({ class: css('_flex _aic _gap2 _px2 _py1.5 _r1 _border _bg[var(--surface)]') },\n        icon('search', { size: '14', class: css('_fgmuted') }),\n        input({\n          type: 'text',\n          placeholder: 'Search pages...',\n          class: css('_flex1 _border[none] _outline[none] _textsm _bg[transparent]'),\n          value: searchQuery(),\n          onInput: (e) => setSearchQuery(e.target.value)\n        })\n      )\n    ),\n    // Favorites\n    favorites.length > 0 ? div({ class: css('_px2 _pb2') },\n      span({ class: css('_textxs _fgmuted _fontmedium _uppercase _tracking[0.05em]') }, 'Favorites'),\n      ul({ class: css('_list[none] _m0 _p0 _mt1') },\n        ...favorites.map(f => renderPage(f))\n      )\n    ) : null,\n    // Main tree\n    div({ class: css('_flex1 _overflow[auto] _px2') },\n      span({ class: css('_textxs _fgmuted _fontmedium _uppercase _tracking[0.05em]') }, 'Pages'),\n      ul({ class: css('_list[none] _m0 _p0 _mt1') },\n        ...filteredPages.map(p => renderPage(p))\n      )\n    ),\n    // New page button\n    div({ class: css('_p2 _borderT') },\n      Button({ variant: 'outline', class: css('_wfull'), onclick: onNewPage },\n        icon('plus', { size: '14' }), ' New Page'\n      )\n    ),\n    // Context menu\n    contextMenu() ? div({\n      class: css('_fixed _bg[var(--surface)] _shadow _r1 _border _py1 _z[100]'),\n      style: `top: ${contextMenu().y}px; left: ${contextMenu().x}px`\n    },\n      button({ class: css('_flex _aic _gap2 _w[full] _px3 _py1.5 _textsm _hover:bg[var(--surface-raised)]'), onclick: () => { setEditingId(contextMenu().id); setContextMenu(null); } },\n        icon('edit-2', { size: '14' }), 'Rename'\n      ),\n      button({ class: css('_flex _aic _gap2 _w[full] _px3 _py1.5 _textsm _hover:bg[var(--surface-raised)]'), onclick: () => { onDelete(contextMenu().id); setContextMenu(null); } },\n        icon('trash-2', { size: '14' }), 'Delete'\n      )\n    ) : null\n  );\n}"
+      }
+    },
+    "compact": {
+      "description": "Dense tree with smaller text",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap0",
+        "slots": {
+          "tree": "Dense nested page items"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';\nimport { link } from 'decantr/router';",
+        "example": "function CompactPageTree({ pages, currentPageId }) {\n  const { nav, ul, li, span } = tags;\n\n  const renderPage = (page, depth = 0) => li({ class: css('_list[none]') },\n    link({\n      href: `/doc/${page.id}`,\n      class: css(`_flex _aic _gap1 _py0.5 _px2 _textxs _truncate _nounder ${page.id === currentPageId ? '_fg[var(--primary)]' : '_fgfg'}`),\n      style: `padding-left: ${depth * 12 + 4}px`\n    },\n      span({ class: css('_text[0.9em]') }, page.icon || '📄'),\n      page.title\n    ),\n    page.children ? ul({ class: css('_list[none] _m0 _p0') },\n      ...page.children.map(c => renderPage(c, depth + 1))\n    ) : null\n  );\n\n  return nav({ class: css('_flex _col') },\n    ul({ class: css('_list[none] _m0 _p0') },\n      ...pages.map(p => renderPage(p))\n    )\n  );\n}"
+      }
+    },
+    "flat": {
+      "description": "Single-level page list without hierarchy",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap1",
+        "slots": {
+          "search": "Filter input",
+          "pages": "Flat page list"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';\nimport { link } from 'decantr/router';",
+        "example": "function FlatPageList({ pages, currentPageId, onNewPage }) {\n  const { nav, div, input, span } = tags;\n  const [query, setQuery] = createSignal('');\n\n  const filtered = pages.filter(p => p.title.toLowerCase().includes(query().toLowerCase()));\n\n  return nav({ class: css('_flex _col _gap2 _p2') },\n    div({ class: css('_flex _aic _gap2 _px2 _py1.5 _r1 _border') },\n      icon('search', { size: '14', class: css('_fgmuted') }),\n      input({\n        type: 'text',\n        placeholder: 'Search...',\n        class: css('_flex1 _border[none] _outline[none] _textsm'),\n        onInput: (e) => setQuery(e.target.value)\n      })\n    ),\n    ...filtered.map(page =>\n      link({\n        href: `/doc/${page.id}`,\n        class: css(`_flex _aic _gap2 _p2 _r1 _nounder ${page.id === currentPageId ? '_bg[var(--primary)/10] _fg[var(--primary)]' : '_hover:bg[var(--surface-raised)]'}`)\n      },\n        span({ class: css('_text[1.1em]') }, page.icon || '📄'),\n        span({ class: css('_textsm _truncate') }, page.title)\n      )\n    ),\n    Button({ variant: 'outline', onclick: onNewPage },\n      icon('plus', { size: '14' }), ' New Page'\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "column",
+    "atoms": "_flex _col _gap0.5",
+    "slots": {
+      "search": "Filter pages by name",
+      "favorites": "Pinned/favorite pages section",
+      "tree": "Nested page items with expand/collapse",
+      "item-actions": "Per-item context menu (rename, delete, duplicate)",
+      "new-button": "Create new page button"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Input, icon } from 'decantr/components';\nimport { link } from 'decantr/router';",
+    "example": "function PageTree({ pages, currentPageId }) {\n  return StandardPageTree({ pages, currentPageId });\n}"
+  },
+  "io": {
+    "consumes": [
+      "pages",
+      "currentPageId",
+      "favorites"
+    ],
+    "produces": [
+      "page-select",
+      "page-reorder"
+    ],
+    "actions": [
+      "new-page",
+      "rename-page",
+      "delete-page",
+      "duplicate-page",
+      "reorder",
+      "toggle-favorite"
+    ]
+  }
+}

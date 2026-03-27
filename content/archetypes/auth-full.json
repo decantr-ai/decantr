@@ -1,0 +1,176 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "auth-full",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Auth Full",
+  "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+  "tags": [
+    "auth",
+    "authentication",
+    "login",
+    "register",
+    "mfa"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "authentication",
+        "login",
+        "sign in",
+        "register",
+        "sign up"
+      ],
+      "secondary": [
+        "forgot password",
+        "mfa",
+        "two-factor",
+        "email verification"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "login",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "login",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "register",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "register",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "forgot-password",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "forgot-password",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "reset-password",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "reset-password",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "verify-email",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "verify-email",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "mfa-setup",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "mfa-setup",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "mfa-verify",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "mfa-verify",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    },
+    {
+      "id": "phone-verify",
+      "patterns": [
+        {
+          "pattern": "auth-form",
+          "preset": "phone-verify",
+          "as": "form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ],
+      "shell": "centered"
+    }
+  ],
+  "features": [
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset"
+  ],
+  "shells": {
+    "centered": "Centered card layout for focused auth forms"
+  },
+  "dependencies": {
+    "patterns": {
+      "auth-form": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "carbon"
+    ],
+    "modes": [
+      "dark",
+      "light"
+    ]
+  }
+}

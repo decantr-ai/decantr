@@ -1,0 +1,136 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "share-modal",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Share Modal",
+  "description": "Invite collaborators and manage document sharing. Includes email invite, shareable link, and current collaborators management.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Input",
+        "Select",
+        "Avatar",
+        "Tabs",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Input",
+    "Select",
+    "Avatar",
+    "Tabs",
+    "icon"
+  ],
+  "default_preset": "invite",
+  "presets": {
+    "invite": {
+      "description": "Email invite form with role selector",
+      "components": [
+        "Button",
+        "Input",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "modal",
+        "atoms": "_flex _col _gap4 _p6 _w[480px]",
+        "slots": {
+          "header": "Modal title and close button",
+          "invite-form": "Email input with role selector",
+          "send-button": "Send invitation button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Input, Select, icon } from 'decantr/components';",
+        "example": "function InviteForm({ onInvite, onClose, suggestions = [] }) {\n  const { div, span, h2, label } = tags;\n  const [email, setEmail] = createSignal('');\n  const [role, setRole] = createSignal('editor');\n  const [showSuggestions, setShowSuggestions] = createSignal(false);\n\n  const roles = [\n    { value: 'viewer', label: 'Can view' },\n    { value: 'commenter', label: 'Can comment' },\n    { value: 'editor', label: 'Can edit' },\n    { value: 'admin', label: 'Full access' }\n  ];\n\n  const handleSubmit = () => {\n    if (email().includes('@')) {\n      onInvite({ email: email(), role: role() });\n      setEmail('');\n    }\n  };\n\n  const filteredSuggestions = suggestions.filter(s => \n    s.email.toLowerCase().includes(email().toLowerCase()) ||\n    s.name.toLowerCase().includes(email().toLowerCase())\n  ).slice(0, 5);\n\n  return div({ class: css('_flex _col _gap4') },\n    // Header\n    div({ class: css('_flex _aic _jcsb') },\n      h2({ class: css('_heading4') }, 'Share document'),\n      Button({ variant: 'ghost', size: 'sm', onclick: onClose }, icon('x'))\n    ),\n    // Invite form\n    div({ class: css('_flex _col _gap2') },\n      label({ class: css('_textsm _fontmedium') }, 'Invite people'),\n      div({ class: css('_flex _gap2') },\n        div({ class: css('_flex1 _relative') },\n          Input({\n            type: 'email',\n            placeholder: 'Email address',\n            value: email(),\n            onInput: (e) => { setEmail(e.target.value); setShowSuggestions(true); },\n            onFocus: () => setShowSuggestions(true),\n            onBlur: () => setTimeout(() => setShowSuggestions(false), 200)\n          }),\n          // Autocomplete suggestions\n          showSuggestions() && filteredSuggestions.length > 0 ? div({\n            class: css('_absolute _top[100%] _left0 _wfull _bg[var(--surface)] _shadow _r1 _border _mt1 _z[10]')\n          },\n            ...filteredSuggestions.map(s => div({\n              class: css('_flex _aic _gap2 _p2 _cursor[pointer] _hover:bg[var(--surface-raised)]'),\n              onclick: () => { setEmail(s.email); setShowSuggestions(false); }\n            },\n              Avatar({ src: s.avatar, fallback: s.initials, size: 'sm' }),\n              div({ class: css('_flex _col') },\n                span({ class: css('_textsm _fontmedium') }, s.name),\n                span({ class: css('_textxs _fgmuted') }, s.email)\n              )\n            ))\n          ) : null\n        ),\n        Select({\n          value: role(),\n          onChange: (e) => setRole(e.target.value),\n          options: roles,\n          class: css('_w[140px]')\n        }),\n        Button({ onclick: handleSubmit, disabled: !email().includes('@') }, 'Invite')\n      )\n    )\n  );\n}"
+      }
+    },
+    "link": {
+      "description": "Shareable link management",
+      "components": [
+        "Button",
+        "Input",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "link-display": "Shareable URL with copy button",
+          "link-settings": "Permission level for link access",
+          "toggle": "Enable/disable link sharing"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Input, Select, icon } from 'decantr/components';",
+        "example": "function LinkSharing({ shareLink, linkEnabled, linkPermission, onToggle, onPermissionChange }) {\n  const { div, span, label } = tags;\n  const [copied, setCopied] = createSignal(false);\n\n  const copyLink = () => {\n    navigator.clipboard.writeText(shareLink);\n    setCopied(true);\n    setTimeout(() => setCopied(false), 2000);\n  };\n\n  const permissions = [\n    { value: 'view', label: 'Anyone with link can view' },\n    { value: 'comment', label: 'Anyone with link can comment' },\n    { value: 'edit', label: 'Anyone with link can edit' }\n  ];\n\n  return div({ class: css('_flex _col _gap4') },\n    // Toggle\n    div({ class: css('_flex _aic _jcsb') },\n      div({ class: css('_flex _col') },\n        span({ class: css('_textsm _fontmedium') }, 'Share with link'),\n        span({ class: css('_textxs _fgmuted') }, 'Anyone with the link can access')\n      ),\n      Button({\n        variant: linkEnabled ? 'default' : 'outline',\n        size: 'sm',\n        onclick: onToggle\n      }, linkEnabled ? 'Enabled' : 'Disabled')\n    ),\n    // Link and permissions\n    linkEnabled ? div({ class: css('_flex _col _gap3') },\n      // Copy link\n      div({ class: css('_flex _gap2') },\n        Input({\n          type: 'text',\n          value: shareLink,\n          readOnly: true,\n          class: css('_flex1 _bg[var(--surface-raised)]')\n        }),\n        Button({ variant: 'outline', onclick: copyLink },\n          icon(copied() ? 'check' : 'copy', { size: '14' }),\n          copied() ? ' Copied!' : ' Copy'\n        )\n      ),\n      // Permission level\n      Select({\n        value: linkPermission,\n        onChange: (e) => onPermissionChange(e.target.value),\n        options: permissions\n      })\n    ) : null\n  );\n}"
+      }
+    },
+    "members": {
+      "description": "Current collaborators list with role management",
+      "components": [
+        "Avatar",
+        "Button",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "column",
+        "atoms": "_flex _col _gap2",
+        "slots": {
+          "members-list": "List of current collaborators with roles",
+          "pending": "Pending invitations"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Avatar, Button, Select, icon } from 'decantr/components';",
+        "example": "function MembersList({ members, pending, currentUserId, onRoleChange, onRemove, onCancelInvite }) {\n  const { div, span } = tags;\n\n  const roles = [\n    { value: 'viewer', label: 'Viewer' },\n    { value: 'commenter', label: 'Commenter' },\n    { value: 'editor', label: 'Editor' },\n    { value: 'admin', label: 'Admin' }\n  ];\n\n  return div({ class: css('_flex _col _gap4') },\n    // Current members\n    div({ class: css('_flex _col _gap2') },\n      span({ class: css('_textsm _fontmedium _fgmuted') }, 'Members'),\n      ...members.map(member =>\n        div({ class: css('_flex _aic _gap3 _py2') },\n          Avatar({ src: member.avatar, fallback: member.initials, size: 'sm' }),\n          div({ class: css('_flex _col _flex1') },\n            span({ class: css('_textsm _fontmedium') }, member.name),\n            span({ class: css('_textxs _fgmuted') }, member.email)\n          ),\n          member.id === currentUserId ? span({ class: css('_textxs _fgmuted') }, 'You') :\n            div({ class: css('_flex _aic _gap2') },\n              Select({\n                value: member.role,\n                onChange: (e) => onRoleChange(member.id, e.target.value),\n                options: roles,\n                size: 'sm'\n              }),\n              Button({ variant: 'ghost', size: 'sm', onclick: () => onRemove(member.id) },\n                icon('x', { size: '14' })\n              )\n            )\n        )\n      )\n    ),\n    // Pending invites\n    pending.length > 0 ? div({ class: css('_flex _col _gap2 _pt4 _borderT') },\n      span({ class: css('_textsm _fontmedium _fgmuted') }, 'Pending invitations'),\n      ...pending.map(invite =>\n        div({ class: css('_flex _aic _gap3 _py2 _opacity70') },\n          div({ class: css('_w8 _h8 _rfull _bg[var(--surface-raised)] _flex _aic _jcc') },\n            icon('mail', { size: '14', class: css('_fgmuted') })\n          ),\n          div({ class: css('_flex _col _flex1') },\n            span({ class: css('_textsm') }, invite.email),\n            span({ class: css('_textxs _fgmuted') }, `Invited as ${invite.role}`)\n          ),\n          Button({ variant: 'ghost', size: 'sm', onclick: () => onCancelInvite(invite.id) },\n            'Cancel'\n          )\n        )\n      )\n    ) : null\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "modal",
+    "atoms": "_flex _col _gap4 _p6 _w[480px]",
+    "slots": {
+      "tabs": "Invite / Link / Members navigation",
+      "invite-form": "Email input with role selector and autocomplete",
+      "link-settings": "Shareable link toggle and permissions",
+      "members-list": "Current collaborators with role management",
+      "pending": "Pending invitations list"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Input, Select, Avatar, Tabs, icon } from 'decantr/components';",
+    "example": "function ShareModal({ document, members, pending, onInvite, onClose }) {\n  const [activeTab, setActiveTab] = createSignal('invite');\n  return Modal({ onClose },\n    Tabs({ value: activeTab(), onChange: setActiveTab, items: ['invite', 'link', 'members'] }),\n    activeTab() === 'invite' ? InviteForm({ onInvite }) :\n    activeTab() === 'link' ? LinkSharing({ shareLink: document.shareLink }) :\n    MembersList({ members, pending })\n  );\n}"
+  },
+  "io": {
+    "consumes": [
+      "document",
+      "members",
+      "pending",
+      "suggestions"
+    ],
+    "produces": [
+      "invite",
+      "role-change",
+      "remove-member"
+    ],
+    "actions": [
+      "send-invite",
+      "cancel-invite",
+      "change-role",
+      "remove-member",
+      "toggle-link",
+      "copy-link"
+    ]
+  }
+}

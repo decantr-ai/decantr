@@ -1,0 +1,85 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "payment-history",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Payment History",
+  "description": "Payment records table with date range filtering, export, and receipt generation. Supports tenant, property, and portfolio views.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": ["Button", "icon", "Badge", "Input", "Select"],
+      "charts": []
+    }
+  },
+  "components": ["Button", "icon", "Badge", "Input", "Select"],
+  "default_preset": "portfolio",
+  "presets": {
+    "portfolio": {
+      "description": "All payments across portfolio",
+      "components": ["Button", "icon", "Badge", "Input", "Select"],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title, date range picker, export",
+          "filters": "Payment type, status, property filters",
+          "summary": "Total for period",
+          "table": "Payment records"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, icon, Badge, Input, Select } from 'decantr/components';",
+        "example": "function PaymentHistory({ payments }) {\n  const { div, h1, span, table, thead, tbody, tr, th, td } = tags;\n  const [dateFrom, setDateFrom] = createSignal('');\n  const [dateTo, setDateTo] = createSignal('');\n  const [typeFilter, setTypeFilter] = createSignal('all');\n  const [statusFilter, setStatusFilter] = createSignal('all');\n\n  const filtered = () => payments.filter(p => {\n    if (typeFilter() !== 'all' && p.type !== typeFilter()) return false;\n    if (statusFilter() !== 'all' && p.status !== statusFilter()) return false;\n    if (dateFrom() && new Date(p.date) < new Date(dateFrom())) return false;\n    if (dateTo() && new Date(p.date) > new Date(dateTo())) return false;\n    return true;\n  });\n\n  const total = filtered().filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);\n\n  return div({ class: css('_flex _col _gap6') },\n    div({ class: css('_flex _jcsb _aic') },\n      h1({ class: css('_heading3') }, 'Payment History'),\n      Button({ variant: 'outline' }, icon('download'), 'Export CSV')\n    ),\n    div({ class: css('_flex _gap4 _aic _flexwrap') },\n      div({ class: css('_flex _gap2 _aic') },\n        span({ class: css('_textsm _fgmuted') }, 'From'),\n        Input({ type: 'date', value: dateFrom(), oninput: e => setDateFrom(e.target.value) }),\n        span({ class: css('_textsm _fgmuted') }, 'To'),\n        Input({ type: 'date', value: dateTo(), oninput: e => setDateTo(e.target.value) })\n      ),\n      Select({ value: typeFilter(), onchange: e => setTypeFilter(e.target.value) },\n        tags.option({ value: 'all' }, 'All Types'),\n        tags.option({ value: 'rent' }, 'Rent'),\n        tags.option({ value: 'deposit' }, 'Deposit'),\n        tags.option({ value: 'fee' }, 'Fee'),\n        tags.option({ value: 'other' }, 'Other')\n      ),\n      Select({ value: statusFilter(), onchange: e => setStatusFilter(e.target.value) },\n        tags.option({ value: 'all' }, 'All Status'),\n        tags.option({ value: 'completed' }, 'Completed'),\n        tags.option({ value: 'pending' }, 'Pending'),\n        tags.option({ value: 'failed' }, 'Failed'),\n        tags.option({ value: 'refunded' }, 'Refunded')\n      ),\n      span({ class: css('_ml[auto] _font500') }, `Total: $${total.toLocaleString()}`)\n    ),\n    div({ class: css('estate-table _overflow[auto]') },\n      table({ class: css('_wfull') },\n        thead({},\n          tr({ class: css('_bgSurface') },\n            th({ class: css('_p3 _textleft _font500') }, 'Date'),\n            th({ class: css('_p3 _textleft _font500') }, 'Tenant'),\n            th({ class: css('_p3 _textleft _font500') }, 'Property / Unit'),\n            th({ class: css('_p3 _tc _font500') }, 'Type'),\n            th({ class: css('_p3 _tr _font500') }, 'Amount'),\n            th({ class: css('_p3 _textleft _font500') }, 'Method'),\n            th({ class: css('_p3 _tc _font500') }, 'Status'),\n            th({ class: css('_p3') })\n          )\n        ),\n        tbody({},\n          ...filtered().map((p, i) => {\n            const statusColor = p.status === 'completed' ? 'success' : p.status === 'pending' ? 'warning' : p.status === 'failed' ? 'danger' : 'default';\n            return tr({ class: css(i % 2 === 0 ? '' : '_bgSurfaceRaised') },\n              td({ class: css('_p3 _textsm') }, new Date(p.date).toLocaleDateString()),\n              td({ class: css('_p3 _font500') }, p.tenantName),\n              td({ class: css('_p3 _textsm') }, `${p.propertyName} - Unit ${p.unitNumber}`),\n              td({ class: css('_p3 _tc') }, Badge({ variant: 'outline' }, p.type)),\n              td({ class: css('_p3 _tr _font500') }, `$${p.amount.toLocaleString()}`),\n              td({ class: css('_p3 _textsm') }, p.method),\n              td({ class: css('_p3 _tc') }, Badge({ variant: statusColor }, p.status)),\n              td({ class: css('_p3') },\n                p.status === 'completed' ? Button({ variant: 'ghost', size: 'sm' }, icon('file-text', { size: '14' })) : null\n              )\n            );\n          })\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "tenant": {
+      "description": "Single tenant payment history",
+      "components": ["Button", "icon", "Badge"],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title",
+          "table": "Tenant's payment records"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon, Badge } from 'decantr/components';",
+        "example": "function TenantPaymentHistory({ payments }) {\n  const { div, h2, span, table, thead, tbody, tr, th, td } = tags;\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _jcsb _aic') },\n      h2({ class: css('_heading5') }, 'Payment History'),\n      Button({ variant: 'outline', size: 'sm' }, icon('download'), 'Export')\n    ),\n    div({ class: css('estate-table _overflow[auto]') },\n      table({ class: css('_wfull') },\n        thead({},\n          tr({ class: css('_bgSurface') },\n            th({ class: css('_p3 _textleft _font500') }, 'Date'),\n            th({ class: css('_p3 _tc _font500') }, 'Type'),\n            th({ class: css('_p3 _tr _font500') }, 'Amount'),\n            th({ class: css('_p3 _tc _font500') }, 'Status'),\n            th({ class: css('_p3') })\n          )\n        ),\n        tbody({},\n          ...payments.map((p, i) => {\n            const statusColor = p.status === 'completed' ? 'success' : p.status === 'pending' ? 'warning' : 'danger';\n            return tr({ class: css(i % 2 === 0 ? '' : '_bgSurfaceRaised') },\n              td({ class: css('_p3 _textsm') }, new Date(p.date).toLocaleDateString()),\n              td({ class: css('_p3 _tc') }, Badge({ variant: 'outline' }, p.type)),\n              td({ class: css('_p3 _tr _font500') }, `$${p.amount.toLocaleString()}`),\n              td({ class: css('_p3 _tc') }, Badge({ variant: statusColor }, p.status)),\n              td({ class: css('_p3') },\n                p.status === 'completed' ? Button({ variant: 'ghost', size: 'sm' }, icon('file-text', { size: '14' })) : null\n              )\n            );\n          })\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "property": {
+      "description": "Property-wide payment history",
+      "components": ["Button", "icon", "Badge", "Select"],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title and filters",
+          "table": "Property payment records"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon, Badge, Select } from 'decantr/components';",
+        "example": "// Similar to portfolio but filtered to single property"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "header": "Title and controls",
+      "filters": "Date and type filters",
+      "table": "Payment records",
+      "summary": "Totals"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon, Badge } from 'decantr/components';",
+    "example": "// See preset examples above"
+  }
+}

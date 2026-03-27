@@ -1,0 +1,119 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tier-card",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Tier Card",
+  "description": "Single subscription tier display card with pricing, benefits, and subscribe CTA. Used on storefronts and upgrade flows.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "storefront",
+  "presets": {
+    "storefront": {
+      "description": "Public-facing tier card with subscribe CTA",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "studio-card _flex _col _p6 _r3",
+        "slots": {
+          "header": "Tier name, price, badge",
+          "benefits": "List of included perks",
+          "cta": "Subscribe/upgrade button",
+          "subscribers": "Optional subscriber count"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Card, Badge, icon } from 'decantr/components';",
+        "example": "function TierCard({ tier, onSubscribe, isPopular = false, billingCycle = 'monthly' }) {\n  const { div, h3, p, span, ul, li } = tags;\n  const price = billingCycle === 'yearly' ? tier.yearlyPrice : tier.monthlyPrice;\n  const period = billingCycle === 'yearly' ? '/year' : '/month';\n\n  return Card({ class: css(`studio-card _flex _col _p6 _r3 _trans _hover:shadow ${isPopular ? 'studio-card-premium' : ''}`) },\n    isPopular ? Badge({ variant: 'default', class: css('_self[start] _mb3 _bgPrimary') }, 'Most Popular') : null,\n    div({ class: css('_mb4') },\n      div({ class: css('_flex _aic _gap2 _mb2') },\n        div({ class: css('_w3 _h3 _r1'), style: `background:${tier.color || '#F97316'}` }),\n        h3({ class: css('_heading4') }, tier.name)\n      ),\n      p({ class: css('_textsm _fgmuted') }, tier.description)\n    ),\n    div({ class: css('_flex _aic _gap1 _mb6') },\n      span({ class: css('_heading1') }, '$', price),\n      span({ class: css('_fgmuted') }, period)\n    ),\n    ul({ class: css('_flex _col _gap3 _mb6 _flex1') },\n      ...tier.benefits.map(benefit =>\n        li({ class: css('_flex _aic _gap2') },\n          icon('check', { size: '18', class: css('_fgSuccess') }),\n          span({ class: css('_textsm') }, benefit)\n        )\n      )\n    ),\n    Button({ variant: isPopular ? 'primary' : 'outline', class: css('_wfull studio-glow'), onclick: () => onSubscribe?.(tier) },\n      'Subscribe'\n    ),\n    tier.subscriberCount ? p({ class: css('_textsm _fgmuted _tc _mt3') },\n      icon('users', { size: '14', class: css('_mr1') }), tier.subscriberCount, ' subscribers'\n    ) : null\n  );\n}"
+      }
+    },
+    "compact": {
+      "description": "Small inline tier display",
+      "components": [
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "inline",
+        "atoms": "_flex _aic _gap3 _p3 _r2 _bgmuted/5",
+        "slots": {
+          "color": "Tier color indicator",
+          "name": "Tier name",
+          "price": "Price display"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Badge, icon } from 'decantr/components';",
+        "example": "function CompactTierCard({ tier }) {\n  const { div, span } = tags;\n\n  return div({ class: css('_flex _aic _gap3 _p3 _r2 _bgmuted/5') },\n    div({ class: css('_w2 _h2 _r[4px]'), style: `background:${tier.color}` }),\n    span({ class: css('_fontmedium _flex1') }, tier.name),\n    Badge({ variant: 'secondary' }, '$', tier.monthlyPrice, '/mo')\n  );\n}"
+      }
+    },
+    "featured": {
+      "description": "Large highlighted tier with glow effect",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "card",
+        "atoms": "studio-card-premium _flex _col _p8 _r4 _scale[1.05]",
+        "slots": {
+          "header": "Tier name with featured badge",
+          "benefits": "Extended benefits list",
+          "cta": "Prominent subscribe button",
+          "guarantee": "Money-back guarantee text"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, Badge, icon } from 'decantr/components';",
+        "example": "function FeaturedTierCard({ tier, onSubscribe }) {\n  const { div, h3, p, span, ul, li } = tags;\n\n  return Card({ class: css('studio-card-premium _flex _col _p8 _r4 _shadow') },\n    Badge({ variant: 'default', class: css('_self[start] _mb4 _bgSecondary') }, 'Best Value'),\n    div({ class: css('_mb6') },\n      h3({ class: css('_heading3 _mb2') }, tier.name),\n      p({ class: css('_fgmuted') }, tier.description)\n    ),\n    div({ class: css('_flex _aic _gap2 _mb8') },\n      span({ class: css('_heading1 _text[3rem]') }, '$', tier.monthlyPrice),\n      div({ class: css('_flex _col') },\n        span({ class: css('_fgmuted') }, '/month'),\n        span({ class: css('_textsm _fgSuccess') }, 'Save 20% yearly')\n      )\n    ),\n    ul({ class: css('_flex _col _gap4 _mb8') },\n      ...tier.benefits.map(benefit =>\n        li({ class: css('_flex _aic _gap3') },\n          div({ class: css('_w6 _h6 _r[50%] _bgSuccess/10 _flex _center') },\n            icon('check', { size: '16', class: css('_fgSuccess') })\n          ),\n          span({}) , benefit\n        )\n      )\n    ),\n    Button({ variant: 'primary', size: 'lg', class: css('_wfull studio-glow'), onclick: () => onSubscribe?.(tier) },\n      'Start Membership'\n    ),\n    p({ class: css('_textsm _fgmuted _tc _mt4 _flex _aic _jcc _gap1') },\n      icon('shield', { size: '14' }), '30-day money-back guarantee'\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "card",
+    "atoms": "studio-card _flex _col _p6 _r3",
+    "slots": {
+      "header": "Tier name and price",
+      "benefits": "Benefits list",
+      "cta": "Subscribe button"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, Badge, icon } from 'decantr/components';",
+    "example": "function TierCard(props) {\n  return StorefrontTierCard(props);\n}"
+  },
+  "io": {
+    "produces": [
+      "subscribe-click"
+    ],
+    "consumes": [
+      "tier-data",
+      "billing-cycle"
+    ]
+  }
+}

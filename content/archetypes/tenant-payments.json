@@ -1,0 +1,101 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "tenant-payments",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Tenant Payments",
+  "description": "Tenant payment management including rent reminders, payment history, and autopay setup configuration.",
+  "tags": [
+    "property-management",
+    "tenant",
+    "payments",
+    "autopay",
+    "real-estate"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "tenant payments",
+        "pay rent",
+        "autopay setup",
+        "payment history"
+      ],
+      "secondary": [
+        "rent payment",
+        "tenant billing"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "overview",
+      "patterns": [
+        {
+          "pattern": "rent-reminder",
+          "preset": "upcoming",
+          "as": "reminder"
+        },
+        {
+          "pattern": "payment-history",
+          "preset": "tenant",
+          "as": "history"
+        },
+        {
+          "pattern": "tenant-payment-setup",
+          "preset": "standard",
+          "as": "setup"
+        }
+      ],
+      "default_layout": [
+        "reminder",
+        "setup",
+        "history"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "setup",
+      "patterns": [
+        {
+          "pattern": "tenant-payment-setup",
+          "preset": "standard",
+          "as": "setup"
+        }
+      ],
+      "default_layout": [
+        "setup"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "features": [
+    "payments",
+    "autopay",
+    "receipts"
+  ],
+  "shells": {
+    "top-nav-main": "Simple top navigation for tenant payments"
+  },
+  "dependencies": {
+    "patterns": {
+      "rent-reminder": "^1.0.0",
+      "payment-history": "^1.0.0",
+      "tenant-payment-setup": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "estate"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}

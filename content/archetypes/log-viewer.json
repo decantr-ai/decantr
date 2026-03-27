@@ -1,0 +1,121 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "log-viewer",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Log Viewer",
+  "description": "Dedicated log streaming interface with filtering, search, and real-time updates. Focus view for log analysis and monitoring.",
+  "tags": [
+    "terminal",
+    "logs",
+    "monitoring",
+    "streaming",
+    "developer"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "log viewer",
+        "log streaming",
+        "log monitor",
+        "log analysis"
+      ],
+      "secondary": [
+        "tail logs",
+        "console output",
+        "debug logs",
+        "error tracking"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 0.9,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "logs",
+      "patterns": [
+        {
+          "pattern": "status-bar",
+          "preset": "top",
+          "as": "status"
+        },
+        {
+          "pattern": "log-stream",
+          "preset": "filtered",
+          "as": "log-stream"
+        },
+        {
+          "pattern": "hotkey-bar",
+          "preset": "standard",
+          "as": "hotkeys"
+        }
+      ],
+      "default_layout": [
+        "status",
+        "log-stream",
+        "hotkeys"
+      ],
+      "shell": "terminal-split"
+    },
+    {
+      "id": "grouped",
+      "patterns": [
+        {
+          "pattern": "status-bar",
+          "preset": "top",
+          "as": "status"
+        },
+        {
+          "pattern": "log-stream",
+          "preset": "grouped",
+          "as": "grouped-logs"
+        },
+        {
+          "pattern": "hotkey-bar",
+          "preset": "standard",
+          "as": "hotkeys"
+        }
+      ],
+      "default_layout": [
+        "status",
+        "grouped-logs",
+        "hotkeys"
+      ],
+      "shell": "terminal-split"
+    }
+  ],
+  "features": [
+    "log-streaming",
+    "log-filtering",
+    "log-search",
+    "log-levels",
+    "auto-scroll",
+    "export-logs"
+  ],
+  "shells": {
+    "terminal-split": "Terminal layout optimized for log viewing"
+  },
+  "dependencies": {
+    "patterns": {
+      "status-bar": "^1.0.0",
+      "log-stream": "^1.0.0",
+      "hotkey-bar": "^1.0.0"
+    },
+    "recipes": {
+      "terminal": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    }
+  },
+  "suggested_theme": {
+    "styles": [
+      "terminal"
+    ],
+    "modes": [
+      "dark"
+    ]
+  }
+}

@@ -681,6 +681,234 @@
         "imports": "import { Shell } from 'decantr/components';",
         "example": "Shell({ config: 'top-nav-sidebar' },\n  Shell.Header({}, headerContent),\n  Shell.Nav({}, sidebarContent),\n  Shell.Body({}, mainContent)\n)"
       }
+    },
+    "workspace-aside": {
+      "name": "Workspace Aside",
+      "description": "Three-column layout for collaborative editing with page tree navigation, document editor body, and comment/activity sidebar. Used by document-editor archetype for real-time collaboration.",
+      "layout": "grid",
+      "atoms": "_grid _h[100vh]",
+      "config": {
+        "regions": [
+          "header",
+          "nav",
+          "body",
+          "aside"
+        ],
+        "grid": {
+          "areas": [
+            [
+              "nav",
+              "header",
+              "header"
+            ],
+            [
+              "nav",
+              "body",
+              "aside"
+            ]
+          ]
+        },
+        "nav": {
+          "position": "left",
+          "width": "240px",
+          "collapseTo": "48px",
+          "collapseBelow": "lg"
+        },
+        "header": {
+          "height": "52px",
+          "sticky": true
+        },
+        "body": {
+          "scroll": true,
+          "editorMode": true
+        },
+        "aside": {
+          "width": "280px",
+          "collapsible": true,
+          "collapseBelow": "xl"
+        }
+      },
+      "configurable": {
+        "nav": {
+          "positions": [
+            "left"
+          ],
+          "modes": [
+            "full",
+            "rail",
+            "hidden"
+          ]
+        },
+        "header": {
+          "toggleable": true
+        },
+        "aside": {
+          "toggleable": true
+        },
+        "sizing": {
+          "sidebarWidth": {
+            "min": 48,
+            "max": 320,
+            "default": 240
+          },
+          "headerHeight": {
+            "min": 44,
+            "max": 64,
+            "default": 52
+          },
+          "asideWidth": {
+            "min": 240,
+            "max": 400,
+            "default": 280
+          }
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { h, text, onMount, onDestroy } from 'decantr/core';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { link, useRoute } from 'decantr/router';\nimport { Button, Avatar, icon } from 'decantr/components';",
+        "example": "function WorkspaceAside({ pages, collaborators, children, comments }) {\n  const { div, aside, main, header, span, nav, section } = tags;\n  const [navCollapsed, setNavCollapsed] = createSignal(false);\n  const [asideCollapsed, setAsideCollapsed] = createSignal(false);\n\n  return div({ class: css('_grid _h[100vh]'), style: () => `grid-template-columns:${navCollapsed() ? '48px' : '240px'} 1fr ${asideCollapsed() ? '0' : '280px'};grid-template-rows:52px 1fr` },\n    // Page tree sidebar\n    aside({ class: css('_flex _col _bgmuted _borderR'), style: 'grid-row:1/3' },\n      div({ class: css('_flex _aic _jcsb _p3 _borderB') },\n        !navCollapsed() ? span({ class: css('_heading5') }, 'Pages') : null,\n        Button({ variant: 'ghost', size: 'sm', onclick: () => setNavCollapsed(!navCollapsed()) },\n          icon('panel-left')\n        )\n      ),\n      nav({ class: css('_flex _col _gap1 _p2 _flex1 _overflow[auto]') },\n        ...pages.map(p =>\n          link({ href: `/doc/${p.id}`, class: css('_flex _aic _gap2 _p2 _r2 _trans') },\n            span({ class: css('_text[1.25em]') }, p.icon),\n            !navCollapsed() ? span({ class: css('_truncate') }, p.title) : null\n          )\n        )\n      ),\n      div({ class: css('_p2 _borderT') },\n        Button({ variant: 'outline', class: css('_wfull') },\n          icon('plus'), !navCollapsed() ? ' New Page' : null\n        )\n      )\n    ),\n    // Header with presence\n    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB _bgbg'), style: 'grid-column:2/4' },\n      span({ class: css('_heading4') }, 'Document'),\n      div({ class: css('_flex _aic _gap4') },\n        Button({ variant: 'outline', size: 'sm' }, icon('share'), ' Share'),\n        div({ class: css('_flex _aic _-ml2') },\n          ...collaborators.slice(0, 4).map((c, i) =>\n            Avatar({ src: c.avatar, size: 'sm', class: css(`_ring2 _ring[${c.color}] _ml[-8px]`) })\n          ),\n          collaborators.length > 4 ? span({ class: css('_textsm _fgmuted _ml2') }, `+${collaborators.length - 4}`) : null\n        ),\n        Button({ variant: 'ghost', size: 'sm' }, icon('bell')),\n        Avatar({ size: 'sm' })\n      )\n    ),\n    // Document body\n    main({ class: css('_flex _col _overflow[auto] _p8') },\n      ...children\n    ),\n    // Comment sidebar\n    !asideCollapsed() ? section({ class: css('_flex _col _borderL _bgbg _overflow[auto]') },\n      div({ class: css('_flex _aic _jcsb _p4 _borderB') },\n        span({ class: css('_fontmedium') }, 'Comments'),\n        Button({ variant: 'ghost', size: 'sm', onclick: () => setAsideCollapsed(true) },\n          icon('x')\n        )\n      ),\n      div({ class: css('_flex1 _p4 _overflow[auto]') },\n        ...comments\n      )\n    ) : Button({\n      variant: 'ghost',\n      size: 'sm',\n      class: css('_absolute _right4 _top[60px]'),\n      onclick: () => setAsideCollapsed(false)\n    }, icon('message-square'))\n  );\n}"
+      }
+    },
+    "terminal-split": {
+      "name": "Terminal Split",
+      "description": "Terminal-style layout with status bar, resizable split panes, and hotkey bar. Optimized for CLI tool interfaces with monospace typography and ASCII borders.",
+      "layout": "grid",
+      "atoms": "_grid _h[100vh] _mono _bgblack",
+      "config": {
+        "regions": [
+          "status-bar",
+          "body",
+          "hotkey-bar"
+        ],
+        "grid": {
+          "areas": [
+            ["status-bar"],
+            ["body"],
+            ["hotkey-bar"]
+          ]
+        },
+        "status-bar": {
+          "height": "24px",
+          "sticky": true
+        },
+        "body": {
+          "scroll": false,
+          "splitPanes": true,
+          "resizable": true
+        },
+        "hotkey-bar": {
+          "height": "28px",
+          "sticky": true
+        }
+      },
+      "configurable": {
+        "body": {
+          "layouts": [
+            "horizontal",
+            "vertical",
+            "quad"
+          ],
+          "minPaneSize": 100
+        },
+        "status-bar": {
+          "toggleable": true,
+          "positions": [
+            "top",
+            "bottom"
+          ]
+        },
+        "hotkey-bar": {
+          "toggleable": true
+        },
+        "sizing": {
+          "statusBarHeight": {
+            "min": 20,
+            "max": 32,
+            "default": 24
+          },
+          "hotkeyBarHeight": {
+            "min": 24,
+            "max": 40,
+            "default": 28
+          }
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, onMount, onDestroy } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function TerminalSplit({ appName, version, status, hotkeys, children }) {\n  const { div, header, main, footer, span, kbd } = tags;\n  const [paneWidths, setPaneWidths] = createSignal([50, 50]);\n\n  const handleKeyDown = (e) => {\n    const hotkey = hotkeys.find(h => h.key === e.key);\n    if (hotkey) {\n      e.preventDefault();\n      hotkey.action();\n    }\n  };\n\n  onMount(() => document.addEventListener('keydown', handleKeyDown));\n  onDestroy(() => document.removeEventListener('keydown', handleKeyDown));\n\n  return div({ class: css('_grid _h[100vh] _mono _bgblack _fggreen'), style: 'grid-template-rows: 24px 1fr 28px' },\n    // Status bar\n    header({ class: css('_flex _aic _jcsb _px2 _bggreen _fgblack _textsm') },\n      span({}, `${appName} v${version}`),\n      span({}, `[status: ${status}]`)\n    ),\n    // Split pane body\n    main({ class: css('_flex _overflow[hidden] _p2') },\n      div({ class: css('term-panel _flex1 _overflow[auto] _p2'), style: () => `width: ${paneWidths()[0]}%` },\n        children[0]\n      ),\n      div({ class: css('_w1 _cursor[col-resize] _bgborder') }),\n      div({ class: css('term-panel _flex1 _overflow[auto] _p2'), style: () => `width: ${paneWidths()[1]}%` },\n        children[1]\n      )\n    ),\n    // Hotkey bar\n    footer({ class: css('_flex _aic _gap4 _px2 _bgmuted _textsm') },\n      ...hotkeys.map(h =>\n        div({ class: css('_flex _aic _gap1'), onclick: h.action },\n          kbd({ class: css('term-hotkey _px1 _border _r1') }, h.key),\n          span({ class: css('_fgmuted') }, h.label)\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "chat-portal": {
+      "name": "Chat Portal",
+      "description": "AI chatbot layout with collapsible conversation sidebar and anchored input. Used by ai-chatbot archetype for chat-first applications.",
+      "layout": "grid",
+      "atoms": "_grid _h[100vh]",
+      "config": {
+        "regions": [
+          "header",
+          "nav",
+          "body"
+        ],
+        "grid": {
+          "areas": [
+            [
+              "nav",
+              "header"
+            ],
+            [
+              "nav",
+              "body"
+            ]
+          ]
+        },
+        "nav": {
+          "position": "left",
+          "width": "280px",
+          "collapseTo": "64px",
+          "collapseBelow": "md"
+        },
+        "header": {
+          "height": "52px",
+          "sticky": true
+        },
+        "body": {
+          "scroll": true,
+          "inputAnchored": true
+        }
+      },
+      "configurable": {
+        "nav": {
+          "positions": [
+            "left"
+          ],
+          "modes": [
+            "full",
+            "rail",
+            "hidden"
+          ]
+        },
+        "header": {
+          "toggleable": true
+        },
+        "footer": {
+          "toggleable": false
+        },
+        "sizing": {
+          "sidebarWidth": {
+            "min": 64,
+            "max": 320,
+            "default": 280
+          },
+          "headerHeight": {
+            "min": 44,
+            "max": 64,
+            "default": 52
+          }
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { h, text, onMount, onDestroy } from 'decantr/core';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { link, useRoute } from 'decantr/router';\nimport { Button, Avatar, icon } from 'decantr/components';",
+        "example": "function ChatPortal({ conversations, children }) {\n  const { div, aside, main, header, span, nav } = tags;\n  const [collapsed, setCollapsed] = createSignal(false);\n\n  return div({ class: css('_grid _h[100vh]'), style: () => `grid-template-columns:${collapsed() ? '64px' : '280px'} 1fr;grid-template-rows:52px 1fr` },\n    // Conversation sidebar\n    aside({ class: css('_flex _col _bgmuted _borderR'), style: 'grid-row:1/3' },\n      div({ class: css('_flex _aic _jcsb _p3 _borderB') },\n        !collapsed() ? span({ class: css('_heading5') }, 'Conversations') : null,\n        Button({ variant: 'ghost', size: 'sm', onclick: () => setCollapsed(!collapsed()) },\n          icon('panel-left')\n        )\n      ),\n      nav({ class: css('_flex _col _gap1 _p2 _flex1 _overflow[auto]') },\n        ...conversations.map(c =>\n          link({ href: `/chat/${c.id}`, class: css('_flex _aic _gap2 _p2 _r2 _trans') },\n            Avatar({ src: c.avatar, size: 'sm' }),\n            !collapsed() ? span({ class: css('_truncate') }, c.title) : null\n          )\n        )\n      ),\n      div({ class: css('_p2 _borderT') },\n        Button({ variant: 'outline', class: css('_wfull') },\n          icon('plus'), !collapsed() ? ' New Chat' : null\n        )\n      )\n    ),\n    // Header\n    header({ class: css('_flex _aic _jcsb _px6 _py3 _borderB _bgbg') },\n      span({ class: css('_heading4') }, 'Chat'),\n      div({ class: css('_flex _aic _gap2') },\n        Button({ variant: 'ghost', size: 'sm' }, icon('bell')),\n        Avatar({ size: 'sm' })\n      )\n    ),\n    // Chat body with anchored input\n    main({ class: css('_flex _col _overflow[hidden]') },\n      div({ class: css('_flex1 _overflow[auto] _p6') },\n        ...children\n      )\n    )\n  );\n}"
+      }
     }
   }
 }

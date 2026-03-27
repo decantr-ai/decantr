@@ -1,0 +1,97 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "studio",
+  "name": "Studio",
+  "description": "Warm, creative theme with coral accents and rich purple premium highlights. Friendly, approachable, premium but not cold. Inspired by Figma, Framer, Gumroad.",
+  "tags": [
+    "light",
+    "dark",
+    "creative",
+    "warm",
+    "friendly",
+    "premium"
+  ],
+  "personality": "creative + warm + friendly + premium",
+  "seed": {
+    "primary": "#F97316",
+    "secondary": "#8B5CF6",
+    "accent": "#14B8A6",
+    "background": "#FAF9F7"
+  },
+  "palette": {
+    "background": {
+      "light": "#FAF9F7",
+      "dark": "#1C1917"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#231F1E"
+    },
+    "surface-raised": {
+      "light": "#F5F3F0",
+      "dark": "#2C2624"
+    },
+    "border": {
+      "light": "#E7E5E4",
+      "dark": "#44403C"
+    },
+    "text": {
+      "light": "#1C1917",
+      "dark": "#FAF9F7"
+    },
+    "text-muted": {
+      "light": "#78716C",
+      "dark": "#A8A29E"
+    },
+    "primary": {
+      "light": "#F97316",
+      "dark": "#FB923C"
+    },
+    "primary-hover": {
+      "light": "#EA580C",
+      "dark": "#FDBA74"
+    },
+    "secondary": {
+      "light": "#8B5CF6",
+      "dark": "#A78BFA"
+    },
+    "secondary-hover": {
+      "light": "#7C3AED",
+      "dark": "#C4B5FD"
+    },
+    "accent": {
+      "light": "#14B8A6",
+      "dark": "#2DD4BF"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded",
+    "soft",
+    "pill"
+  ],
+  "cvd_support": ["deuteranopia", "protanopia"],
+  "tokens": {
+    "base": {
+      "success": "#14B8A6",
+      "danger": "#EF4444",
+      "warning": "#F59E0B"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#0EA5E9",
+        "danger": "#F59E0B"
+      },
+      "protanopia": {
+        "success": "#06B6D4",
+        "danger": "#FBBF24"
+      }
+    }
+  },
+  "decantr_compat": ">=1.0.0",
+  "source": "core"
+}

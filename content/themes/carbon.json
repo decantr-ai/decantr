@@ -1,0 +1,85 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "carbon",
+  "name": "Carbon",
+  "description": "Neutral-cool grayscale theme with slate undertones. Developer-tool aesthetic inspired by Claude, VS Code, and Devin AI. Soft muted blue accent.",
+  "tags": [
+    "dark",
+    "light",
+    "neutral",
+    "developer",
+    "minimal",
+    "professional"
+  ],
+  "personality": "clean + minimal + professional + developer-focused",
+  "seed": {
+    "primary": "#7C93B0",
+    "secondary": "#A1A1AA",
+    "accent": "#6B8AAE",
+    "background": "#18181B"
+  },
+  "palette": {
+    "background": {
+      "light": "#FAFAFA",
+      "dark": "#18181B"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#1F1F23"
+    },
+    "surface-raised": {
+      "light": "#F4F4F5",
+      "dark": "#27272A"
+    },
+    "border": {
+      "light": "#E4E4E7",
+      "dark": "#3F3F46"
+    },
+    "text": {
+      "light": "#18181B",
+      "dark": "#FAFAFA"
+    },
+    "text-muted": {
+      "light": "#71717A",
+      "dark": "#A1A1AA"
+    },
+    "primary": {
+      "light": "#6B8AAE",
+      "dark": "#7C93B0"
+    },
+    "primary-hover": {
+      "light": "#5A7A9E",
+      "dark": "#8CA3C0"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded",
+    "sharp",
+    "pill"
+  ],
+  "cvd_support": ["deuteranopia", "protanopia"],
+  "tokens": {
+    "base": {
+      "success": "#22C55E",
+      "danger": "#EF4444",
+      "warning": "#F59E0B"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#2196F3",
+        "danger": "#FF8F00"
+      },
+      "protanopia": {
+        "success": "#03A9F4",
+        "danger": "#FFC107"
+      }
+    }
+  },
+  "decantr_compat": ">=1.0.0",
+  "source": "core"
+}

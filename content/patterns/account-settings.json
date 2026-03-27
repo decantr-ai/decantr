@@ -1,0 +1,127 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "account-settings",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Account Settings",
+  "description": "Account management forms with presets for profile, security, preferences, and danger zone (account deletion).",
+  "dependencies": {
+    "patterns": {
+      "session-manager": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Avatar",
+    "Badge",
+    "icon"
+  ],
+  "default_preset": "profile",
+  "presets": {
+    "profile": {
+      "description": "Profile editing with avatar upload, name, email, bio",
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap8",
+        "slots": {
+          "avatar": "Avatar with upload/change button",
+          "form": "Name, email, bio inputs with inline edit",
+          "save": "Save changes button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Avatar, icon } from 'decantr/components';",
+        "example": "function ProfileSettings({ user, onSave }) {\n  const { div, form, h2, input, label, textarea } = tags;\n  const [name, setName] = createSignal(user.name);\n  const [email, setEmail] = createSignal(user.email);\n  const [bio, setBio] = createSignal(user.bio || '');\n  const [avatar, setAvatar] = createSignal(user.avatar);\n\n  const handleAvatarChange = (e) => {\n    const file = e.target.files[0];\n    if (file) setAvatar(URL.createObjectURL(file));\n  };\n\n  return div({ class: css('_flex _col _gap8 _maxw[600px]') },\n    h2({ class: css('_heading4 _mb4') }, 'Profile'),\n    div({ class: css('_flex _aic _gap6') },\n      div({ class: css('_relative') },\n        Avatar({ src: avatar(), size: 'xl' }),\n        label({ class: css('_absolute _bottom0 _right0 _w8 _h8 _rfull _bgPrimary _flex _center _cursor[pointer]') },\n          icon('camera', { size: '14', class: css('_fgWhite') }),\n          input({ type: 'file', accept: 'image/*', class: css('_hidden'), onchange: handleAvatarChange })\n        )\n      ),\n      div({ class: css('_flex _col _gap1') },\n        Button({ variant: 'outline', size: 'sm' }, 'Change photo'),\n        Button({ variant: 'ghost', size: 'sm', class: css('_fgmuted') }, 'Remove')\n      )\n    ),\n    form({ class: css('_flex _col _gap4'), onsubmit: (e) => { e.preventDefault(); onSave({ name: name(), email: email(), bio: bio(), avatar: avatar() }); } },\n      div({ class: css('_flex _col _gap1') },\n        label({ class: css('_textsm _font500') }, 'Name'),\n        input({ type: 'text', class: css('carbon-input _p2 _r2'), value: name(), oninput: (e) => setName(e.target.value) })\n      ),\n      div({ class: css('_flex _col _gap1') },\n        label({ class: css('_textsm _font500') }, 'Email'),\n        input({ type: 'email', class: css('carbon-input _p2 _r2'), value: email(), oninput: (e) => setEmail(e.target.value) })\n      ),\n      div({ class: css('_flex _col _gap1') },\n        label({ class: css('_textsm _font500') }, 'Bio'),\n        textarea({ class: css('carbon-input _p2 _r2 _resize[vertical]'), rows: 3, value: bio(), oninput: (e) => setBio(e.target.value), placeholder: 'Tell us about yourself...' })\n      ),\n      Button({ type: 'submit', variant: 'primary' }, 'Save Changes')\n    )\n  );\n}"
+      }
+    },
+    "security": {
+      "description": "Security settings with password change and MFA controls",
+      "components": [
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap8",
+        "slots": {
+          "password": "Change password form",
+          "mfa": "MFA enable/disable toggle with status",
+          "sessions": "Session manager component"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Badge, icon } from 'decantr/components';",
+        "example": "function SecuritySettings({ user, onChangePassword, onToggleMFA }) {\n  const { div, form, h2, h3, p, input, label } = tags;\n  const [currentPw, setCurrentPw] = createSignal('');\n  const [newPw, setNewPw] = createSignal('');\n  const [confirmPw, setConfirmPw] = createSignal('');\n\n  return div({ class: css('_flex _col _gap8 _maxw[600px]') },\n    h2({ class: css('_heading4 _mb4') }, 'Security'),\n    div({ class: css('carbon-card _p6 _r2') },\n      h3({ class: css('_heading5 _mb4') }, 'Change password'),\n      form({ class: css('_flex _col _gap4'), onsubmit: (e) => { e.preventDefault(); onChangePassword({ current: currentPw(), new: newPw() }); } },\n        div({ class: css('_flex _col _gap1') },\n          label({ class: css('_textsm _font500') }, 'Current password'),\n          input({ type: 'password', class: css('carbon-input _p2 _r2'), value: currentPw(), oninput: (e) => setCurrentPw(e.target.value) })\n        ),\n        div({ class: css('_flex _col _gap1') },\n          label({ class: css('_textsm _font500') }, 'New password'),\n          input({ type: 'password', class: css('carbon-input _p2 _r2'), value: newPw(), oninput: (e) => setNewPw(e.target.value) })\n        ),\n        div({ class: css('_flex _col _gap1') },\n          label({ class: css('_textsm _font500') }, 'Confirm new password'),\n          input({ type: 'password', class: css('carbon-input _p2 _r2'), value: confirmPw(), oninput: (e) => setConfirmPw(e.target.value) })\n        ),\n        Button({ type: 'submit', variant: 'primary' }, 'Update Password')\n      )\n    ),\n    div({ class: css('carbon-card _p6 _r2 _flex _jcsb _aic') },\n      div({},\n        div({ class: css('_flex _aic _gap2 _mb1') },\n          h3({ class: css('_heading5') }, 'Two-factor authentication'),\n          user.mfaEnabled ? Badge({ variant: 'success', size: 'sm' }, 'Enabled') : Badge({ variant: 'outline', size: 'sm' }, 'Disabled')\n        ),\n        p({ class: css('_textsm _fgmuted') }, 'Add an extra layer of security to your account')\n      ),\n      Button({ variant: user.mfaEnabled ? 'outline' : 'primary', onclick: onToggleMFA },\n        user.mfaEnabled ? 'Disable' : 'Enable'\n      )\n    )\n  );\n}"
+      }
+    },
+    "preferences": {
+      "description": "User preferences for theme, notifications, language",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap8",
+        "slots": {
+          "theme": "Theme selector (light/dark/auto)",
+          "notifications": "Notification toggles",
+          "language": "Language/locale selector"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function PreferencesSettings({ preferences, onSave }) {\n  const { div, h2, h3, p, label, select, option } = tags;\n  const [theme, setTheme] = createSignal(preferences.theme);\n  const [emailNotifs, setEmailNotifs] = createSignal(preferences.emailNotifications);\n  const [language, setLanguage] = createSignal(preferences.language);\n\n  const themes = ['light', 'dark', 'auto'];\n  const languages = [{ code: 'en', name: 'English' }, { code: 'es', name: 'Spanish' }, { code: 'fr', name: 'French' }];\n\n  return div({ class: css('_flex _col _gap8 _maxw[600px]') },\n    h2({ class: css('_heading4 _mb4') }, 'Preferences'),\n    div({ class: css('carbon-card _p6 _r2') },\n      h3({ class: css('_heading5 _mb4') }, 'Appearance'),\n      div({ class: css('_flex _gap3') },\n        ...themes.map(t =>\n          Button({\n            variant: theme() === t ? 'primary' : 'outline',\n            onclick: () => setTheme(t)\n          }, icon(t === 'dark' ? 'moon' : t === 'light' ? 'sun' : 'monitor'), t.charAt(0).toUpperCase() + t.slice(1))\n        )\n      )\n    ),\n    div({ class: css('carbon-card _p6 _r2') },\n      h3({ class: css('_heading5 _mb4') }, 'Notifications'),\n      label({ class: css('_flex _aic _jcsb _cursor[pointer]') },\n        div({},\n          p({ class: css('_font500') }, 'Email notifications'),\n          p({ class: css('_textsm _fgmuted') }, 'Receive updates about your account')\n        ),\n        input({ type: 'checkbox', checked: emailNotifs(), onchange: () => setEmailNotifs(!emailNotifs()), class: css('_w5 _h5') })\n      )\n    ),\n    div({ class: css('carbon-card _p6 _r2') },\n      h3({ class: css('_heading5 _mb4') }, 'Language'),\n      select({ class: css('carbon-input _p2 _r2 _wfull'), value: language(), onchange: (e) => setLanguage(e.target.value) },\n        ...languages.map(l => option({ value: l.code }, l.name))\n      )\n    ),\n    Button({ variant: 'primary', onclick: () => onSave({ theme: theme(), emailNotifications: emailNotifs(), language: language() }) }, 'Save Preferences')\n  );\n}"
+      }
+    },
+    "danger-zone": {
+      "description": "Account deletion with typed confirmation",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "warning": "Deletion warning message",
+          "confirm": "Typed confirmation input",
+          "delete": "Delete account button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function DangerZoneSettings({ user, onDelete }) {\n  const { div, h2, h3, p, input, label } = tags;\n  const [confirm, setConfirm] = createSignal('');\n  const confirmText = 'delete my account';\n\n  return div({ class: css('_flex _col _gap6 _maxw[600px]') },\n    h2({ class: css('_heading4 _fgDanger _mb4') }, 'Danger Zone'),\n    div({ class: css('_p6 _r2 _border[2px] _borderDanger/50') },\n      div({ class: css('_flex _aic _gap3 _mb4') },\n        icon('alert-triangle', { class: css('_fgDanger') }),\n        h3({ class: css('_heading5 _fgDanger') }, 'Delete Account')\n      ),\n      p({ class: css('_fgmuted _mb4') }, 'Once you delete your account, there is no going back. All your data will be permanently removed.'),\n      div({ class: css('_flex _col _gap2 _mb4') },\n        label({ class: css('_textsm _font500') }, `Type \"${confirmText}\" to confirm:`),\n        input({ type: 'text', class: css('carbon-input _p2 _r2'), value: confirm(), oninput: (e) => setConfirm(e.target.value), placeholder: confirmText })\n      ),\n      Button({\n        variant: 'primary',\n        class: css('_bgDanger _wfull'),\n        disabled: confirm() !== confirmText,\n        onclick: onDelete\n      }, icon('trash'), 'Delete Account')\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap8",
+    "slots": {
+      "form": "Settings form fields",
+      "save": "Save button"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Avatar, icon } from 'decantr/components';",
+    "example": "function AccountSettings({ preset = 'profile', ...props }) {\n  const presets = { profile: ProfileSettings, security: SecuritySettings, preferences: PreferencesSettings, 'danger-zone': DangerZoneSettings };\n  return presets[preset](props);\n}"
+  }
+}

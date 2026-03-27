@@ -1,0 +1,111 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "diff-view",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Diff View",
+  "description": "Side-by-side or unified diff display for code and text comparison.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {
+      "terminal": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "icon"
+  ],
+  "default_preset": "split",
+  "presets": {
+    "split": {
+      "description": "Side-by-side diff view",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _hfull _mono _bgblack _fggreen",
+        "slots": {
+          "header": "File names, stats",
+          "left": "Original content",
+          "right": "Modified content",
+          "gutter": "Line numbers, change markers"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function SplitDiff({ original, modified, fileName }) {\n  const { div, span, pre } = tags;\n\n  const computeDiff = () => {\n    const origLines = original.split('\\n');\n    const modLines = modified.split('\\n');\n    const maxLines = Math.max(origLines.length, modLines.length);\n    const diff = [];\n\n    for (let i = 0; i < maxLines; i++) {\n      const orig = origLines[i] || '';\n      const mod = modLines[i] || '';\n      const type = orig === mod ? 'same' : !origLines[i] ? 'add' : !modLines[i] ? 'del' : 'change';\n      diff.push({ lineNum: i + 1, orig, mod, type });\n    }\n    return diff;\n  };\n\n  const typeStyles = {\n    same: '',\n    add: '_bg[#002200]',\n    del: '_bg[#220000]',\n    change: '_bg[#222200]'\n  };\n\n  return div({ class: css('term-panel _flex _col _hfull') },\n    div({ class: css('_flex _aic _jcsb _p2 _borderB _bordercolor[#333]') },\n      span({ class: css('_fontbold') }, fileName || 'Diff'),\n      div({ class: css('_flex _aic _gap2 _textsm') },\n        span({ class: css('_fggreen') }, `+${computeDiff().filter(d => d.type === 'add').length}`),\n        span({ class: css('_fgred') }, `-${computeDiff().filter(d => d.type === 'del').length}`)\n      )\n    ),\n    div({ class: css('_grid _flex1 _overflow[auto]'), style: 'grid-template-columns: 1fr 1fr' },\n      pre({ class: css('_m0 _p2 _borderR _bordercolor[#333] _overflow[auto]') },\n        ...computeDiff().map(line =>\n          div({ class: css(`_flex ${typeStyles[line.type]}`) },\n            span({ class: css('_w[40px] _fgmuted _textright _pr2 _select[none]') }, line.lineNum),\n            span({ class: line.type === 'del' ? css('term-diff-del') : '' }, line.orig || ' ')\n          )\n        )\n      ),\n      pre({ class: css('_m0 _p2 _overflow[auto]') },\n        ...computeDiff().map(line =>\n          div({ class: css(`_flex ${typeStyles[line.type]}`) },\n            span({ class: css('_w[40px] _fgmuted _textright _pr2 _select[none]') }, line.lineNum),\n            span({ class: line.type === 'add' ? css('term-diff-add') : '' }, line.mod || ' ')\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "unified": {
+      "description": "Unified diff format view",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _bgblack _fggreen",
+        "slots": {
+          "header": "Diff header with stats",
+          "hunks": "Diff hunks with context"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function UnifiedDiff({ diff, fileName }) {\n  const { div, span, pre } = tags;\n\n  const parseUnified = (text) => {\n    return text.split('\\n').map((line, i) => {\n      let type = 'context';\n      if (line.startsWith('+')) type = 'add';\n      else if (line.startsWith('-')) type = 'del';\n      else if (line.startsWith('@')) type = 'hunk';\n      return { num: i + 1, text: line, type };\n    });\n  };\n\n  const lines = parseUnified(diff);\n  const lineStyles = {\n    add: '_bg[#002200] _fggreen',\n    del: '_bg[#220000] _fgred',\n    hunk: '_fgcyan _bgmuted/10',\n    context: ''\n  };\n\n  return div({ class: css('term-panel _flex _col _hfull') },\n    div({ class: css('_p2 _borderB _bordercolor[#333] _fontbold') }, fileName || 'Diff'),\n    pre({ class: css('_m0 _p2 _flex1 _overflow[auto]') },\n      ...lines.map(line =>\n        div({ class: css(`_flex ${lineStyles[line.type]}`) },\n          span({ class: css('_w[40px] _fgmuted _textright _pr2 _select[none]') },\n            line.type === 'hunk' ? '' : line.num\n          ),\n          span({}, line.text)\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "inline": {
+      "description": "Inline word-level diff",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _bgblack _fggreen",
+        "slots": {
+          "content": "Mixed inline additions and deletions"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function InlineDiff({ original, modified }) {\n  const { div, span, del, ins } = tags;\n  // Simple word-level diff (production would use proper diff algorithm)\n  const origWords = original.split(' ');\n  const modWords = modified.split(' ');\n\n  const result = [];\n  let i = 0, j = 0;\n  while (i < origWords.length || j < modWords.length) {\n    if (origWords[i] === modWords[j]) {\n      result.push({ type: 'same', text: origWords[i] });\n      i++; j++;\n    } else if (!modWords.includes(origWords[i])) {\n      result.push({ type: 'del', text: origWords[i] });\n      i++;\n    } else {\n      result.push({ type: 'add', text: modWords[j] });\n      j++;\n    }\n  }\n\n  return div({ class: css('term-panel _p2') },\n    ...result.map(w => {\n      if (w.type === 'del') return del({ class: css('_bg[#330000] _fgred _line-through') }, w.text + ' ');\n      if (w.type === 'add') return ins({ class: css('_bg[#003300] _fggreen _no-underline') }, w.text + ' ');\n      return span({}, w.text + ' ');\n    })\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _hfull _mono _bgblack _fggreen",
+    "slots": {
+      "header": "File names and stats",
+      "left": "Original",
+      "right": "Modified"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+    "example": "function DiffView({ variant = 'split', ...props }) {\n  switch (variant) {\n    case 'unified': return UnifiedDiff(props);\n    case 'inline': return InlineDiff(props);\n    default: return SplitDiff(props);\n  }\n}"
+  },
+  "features": [
+    "syntax-highlighting",
+    "line-navigation",
+    "copy-hunks",
+    "expand-collapse",
+    "jump-to-change"
+  ],
+  "keyboard_shortcuts": {
+    "n": "Next change",
+    "p": "Previous change",
+    "e": "Expand all",
+    "c": "Collapse all"
+  }
+}

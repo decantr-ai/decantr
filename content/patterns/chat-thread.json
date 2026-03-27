@@ -1,0 +1,90 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "chat-thread",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Chat Thread",
+  "description": "Full message thread container with scrollable messages, typing indicator, pagination, and auto-scroll behavior.",
+  "dependencies": {
+    "patterns": {
+      "chat-message": "^1.0.0",
+      "chat-input": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Avatar",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Standard chat thread with messages and anchored input",
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _overflow[hidden]",
+        "slots": {
+          "messages": "Scrollable message list",
+          "typing-indicator": "AI is thinking... indicator",
+          "load-more": "History pagination button",
+          "scroll-to-bottom": "Floating button when scrolled up"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, onMount } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function ChatThread({ messages, isTyping, onLoadMore, hasMore }) {\n  const { div, span } = tags;\n  const [showScrollBtn, setShowScrollBtn] = createSignal(false);\n  let containerRef;\n\n  const scrollToBottom = () => {\n    containerRef?.scrollTo({ top: containerRef.scrollHeight, behavior: 'smooth' });\n  };\n\n  const handleScroll = (e) => {\n    const { scrollTop, scrollHeight, clientHeight } = e.target;\n    setShowScrollBtn(scrollHeight - scrollTop - clientHeight > 100);\n  };\n\n  onMount(() => scrollToBottom());\n\n  return div({ class: css('_flex _col _hfull _overflow[hidden] _relative') },\n    div({ \n      ref: (el) => containerRef = el,\n      class: css('_flex1 _overflow[auto] _p6 _flex _col _gap2'),\n      onscroll: handleScroll\n    },\n      hasMore ? div({ class: css('_flex _jcc _py4') },\n        Button({ variant: 'ghost', size: 'sm', onclick: onLoadMore },\n          icon('chevron-up'), 'Load earlier messages'\n        )\n      ) : null,\n      ...messages.map(m => ChatMessage({ message: m, variant: m.role })),\n      isTyping ? div({ class: css('_flex _aic _gap2 _py2') },\n        span({ class: css('carbon-skeleton _w8 _h8 _rfull') }),\n        span({ class: css('_fgmuted _textsm') }, 'AI is thinking...')\n      ) : null\n    ),\n    showScrollBtn() ? Button({\n      variant: 'outline',\n      size: 'sm',\n      class: css('_absolute _bottom20 _right6 _shadow'),\n      onclick: scrollToBottom\n    }, icon('chevron-down')) : null\n  );\n}"
+      }
+    },
+    "branched": {
+      "description": "Thread with branch indicator for conversation forks",
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _overflow[hidden]",
+        "slots": {
+          "branch-indicator": "Visual marker showing conversation branch point",
+          "messages": "Scrollable message list",
+          "typing-indicator": "AI is thinking... indicator"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function BranchedThread({ messages, branchPoint, branches }) {\n  const { div, span } = tags;\n\n  return div({ class: css('_flex _col _hfull _overflow[hidden]') },\n    branchPoint ? div({ class: css('_flex _aic _gap2 _px6 _py2 _bgmuted/5 _borderB') },\n      icon('git-branch', { size: '14', class: css('_fgmuted') }),\n      span({ class: css('_textsm _fgmuted') }, `Branched from message ${branchPoint}`),\n      branches.length > 1 ? Button({ variant: 'ghost', size: 'xs' },\n        `${branches.length} branches`, icon('chevron-down')\n      ) : null\n    ) : null,\n    div({ class: css('_flex1 _overflow[auto] _p6 _flex _col _gap2') },\n      ...messages.map(m => ChatMessage({ message: m, variant: m.role }))\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _hfull _overflow[hidden]",
+    "slots": {
+      "messages": "Scrollable message list with ChatMessage components",
+      "typing-indicator": "AI is thinking... animated indicator",
+      "load-more": "History pagination trigger",
+      "branch-indicator": "Branched conversation marker",
+      "scroll-to-bottom": "Floating FAB when scrolled up"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Avatar, icon } from 'decantr/components';",
+    "example": "function ChatThread({ messages, isTyping, onLoadMore }) {\n  return StandardChatThread({ messages, isTyping, onLoadMore });\n}"
+  }
+}

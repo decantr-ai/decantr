@@ -1,0 +1,86 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "status-bar",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Status Bar",
+  "description": "Terminal-style status line with real-time indicators, mode display, and clickable sections.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {
+      "terminal": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "bottom",
+  "presets": {
+    "top": {
+      "description": "Status bar at top of screen (title bar style)",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _jcsb _px2 _mono _textsm _h[24px]",
+        "slots": {
+          "left": "App name, version, mode",
+          "center": "Current file/context",
+          "right": "Time, status indicators"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, onMount, onDestroy } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function TopStatusBar({ appName, version, mode, status, indicators = [] }) {\n  const { div, span } = tags;\n  const [time, setTime] = createSignal(new Date().toLocaleTimeString());\n\n  onMount(() => {\n    const interval = setInterval(() => setTime(new Date().toLocaleTimeString()), 1000);\n    return () => clearInterval(interval);\n  });\n\n  const statusColors = {\n    online: '#00FF00',\n    offline: '#FF0000',\n    busy: '#FFB000'\n  };\n\n  return div({ class: css('term-status _flex _aic _jcsb _px2 _h[24px] _bggreen _fgblack') },\n    div({ class: css('_flex _aic _gap2') },\n      span({ class: css('_fontbold') }, appName),\n      span({ class: css('_fgmuted') }, `v${version}`),\n      mode ? span({ class: css('_px1 _bg[rgba(0,0,0,0.2)] _r1') }, mode) : null\n    ),\n    div({ class: css('_flex _aic _gap4') },\n      ...indicators.map(ind =>\n        span({ class: css('_flex _aic _gap1'), style: `color: ${ind.color}` },\n          icon(ind.icon, { size: '12' }), ind.label\n        )\n      ),\n      span({ style: `color: ${statusColors[status]}` }, `[${status}]`),\n      span({}, time)\n    )\n  );\n}"
+      }
+    },
+    "bottom": {
+      "description": "Status bar at bottom of screen (vim style)",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "flex",
+        "atoms": "_flex _aic _jcsb _px2 _mono _textsm _h[24px] _bgmuted",
+        "slots": {
+          "left": "Mode, file info",
+          "center": "Optional center content",
+          "right": "Position, encoding, status"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function BottomStatusBar({ mode, file, line, col, encoding = 'UTF-8', branch }) {\n  const { div, span } = tags;\n\n  return div({ class: css('_flex _aic _jcsb _px2 _h[24px] _bgsurface _borderT _bordercolor[#333]') },\n    div({ class: css('_flex _aic _gap2') },\n      span({ class: css('_px1 _bgprimary _fgblack _fontbold') }, mode || 'NORMAL'),\n      file ? span({ class: css('_fgmuted') }, file) : null,\n      branch ? span({ class: css('_flex _aic _gap1 _fgmuted') }, icon('git-branch', { size: '12' }), branch) : null\n    ),\n    div({ class: css('_flex _aic _gap4') },\n      span({ class: css('_fgmuted') }, encoding),\n      span({}, `Ln ${line || 1}, Col ${col || 1}`)\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "flex",
+    "atoms": "_flex _aic _jcsb _px2 _mono _textsm _h[24px]",
+    "slots": {
+      "left": "Left-aligned items",
+      "center": "Center-aligned items",
+      "right": "Right-aligned items"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+    "example": "function StatusBar({ position = 'bottom', ...props }) {\n  return position === 'top'\n    ? TopStatusBar(props)\n    : BottomStatusBar(props);\n}"
+  },
+  "features": [
+    "realtime-updates",
+    "color-coded-status",
+    "click-actions",
+    "tooltip-hover"
+  ]
+}

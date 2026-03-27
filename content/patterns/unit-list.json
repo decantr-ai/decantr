@@ -1,0 +1,68 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "unit-list",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Unit List",
+  "description": "Units within a property displayed as cards or table. Shows unit number, specs, tenant, rent, and status.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": ["Button", "icon", "Badge"],
+      "charts": []
+    }
+  },
+  "components": ["Button", "icon", "Badge"],
+  "default_preset": "grid",
+  "presets": {
+    "grid": {
+      "description": "Card grid of units",
+      "components": ["Button", "icon", "Badge"],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title, add unit button",
+          "summary": "Total units, occupied, vacant, revenue",
+          "filters": "Status filter",
+          "items": "Unit cards"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { link } from 'decantr/router';\nimport { Button, icon, Badge } from 'decantr/components';",
+        "example": "function UnitList({ propertyId, units }) {\n  const { div, h2, span } = tags;\n  const [filter, setFilter] = createSignal('all');\n\n  const filtered = () => filter() === 'all' ? units : units.filter(u => u.status === filter());\n  const occupied = units.filter(u => u.status === 'occupied').length;\n  const vacant = units.filter(u => u.status === 'vacant').length;\n  const totalRent = units.reduce((sum, u) => sum + (u.status === 'occupied' ? u.rent : 0), 0);\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _jcsb _aic') },\n      h2({ class: css('_heading4') }, 'Units'),\n      Button({ variant: 'primary', size: 'sm' }, icon('plus'), 'Add Unit')\n    ),\n    div({ class: css('_flex _gap4 _aic') },\n      div({ class: css('_flex _gap1') },\n        Button({ variant: filter() === 'all' ? 'default' : 'ghost', size: 'sm', onclick: () => setFilter('all') }, `All (${units.length})`),\n        Button({ variant: filter() === 'occupied' ? 'default' : 'ghost', size: 'sm', onclick: () => setFilter('occupied') }, `Occupied (${occupied})`),\n        Button({ variant: filter() === 'vacant' ? 'default' : 'ghost', size: 'sm', onclick: () => setFilter('vacant') }, `Vacant (${vacant})`)\n      ),\n      span({ class: css('_ml[auto] _textsm _fgmuted') }, `Total Rent: $${totalRent.toLocaleString()}/mo`)\n    ),\n    div({ class: css('_grid _cols3 _gap4') },\n      ...filtered().map(unit => UnitCard({ propertyId, unit }))\n    )\n  );\n}\n\nfunction UnitCard({ propertyId, unit }) {\n  const { div, span, p } = tags;\n  const statusColor = unit.status === 'occupied' ? 'success' : 'danger';\n\n  return link({ href: `/properties/${propertyId}/units/${unit.id}`, class: css('estate-card _p4 _flex _col _gap3 _trans _hoverShadow') },\n    div({ class: css('_flex _jcsb _aic') },\n      span({ class: css('_heading5') }, `Unit ${unit.number}`),\n      Badge({ variant: statusColor }, unit.status)\n    ),\n    div({ class: css('_flex _gap4 _textsm _fgmuted') },\n      span({}, `${unit.beds} bed`),\n      span({}, `${unit.baths} bath`),\n      span({}, `${unit.sqft} sqft`)\n    ),\n    unit.tenant ? div({ class: css('_pt3 _borderT') },\n      p({ class: css('_textsm _font500') }, unit.tenant.name),\n      p({ class: css('_textxs _fgmuted') }, `Lease ends ${unit.leaseEnd}`)\n    ) : div({ class: css('_pt3 _borderT _fgmuted _textsm') }, 'Vacant'),\n    div({ class: css('_flex _jcsb _aic _pt2') },\n      span({ class: css('_heading6') }, `$${unit.rent.toLocaleString()}/mo`),\n      Button({ variant: 'ghost', size: 'sm' }, icon('chevron-right'))\n    )\n  );\n}"
+      }
+    },
+    "table": {
+      "description": "Table view of units",
+      "components": ["Button", "icon", "Badge"],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "header": "Title and controls",
+          "table": "Units table"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { link } from 'decantr/router';\nimport { Button, icon, Badge } from 'decantr/components';",
+        "example": "function UnitTable({ propertyId, units }) {\n  const { div, table, thead, tbody, tr, th, td, span } = tags;\n\n  return div({ class: css('estate-table _overflow[auto]') },\n    table({ class: css('_wfull') },\n      thead({},\n        tr({ class: css('_bgSurface') },\n          th({ class: css('_p3 _textleft _font500') }, 'Unit'),\n          th({ class: css('_p3 _textleft _font500') }, 'Specs'),\n          th({ class: css('_p3 _textleft _font500') }, 'Tenant'),\n          th({ class: css('_p3 _tr _font500') }, 'Rent'),\n          th({ class: css('_p3 _textleft _font500') }, 'Lease End'),\n          th({ class: css('_p3 _tc _font500') }, 'Status'),\n          th({ class: css('_p3') })\n        )\n      ),\n      tbody({},\n        ...units.map((u, i) =>\n          tr({ class: css(i % 2 === 0 ? '' : '_bgSurfaceRaised') },\n            td({ class: css('_p3 _font500') }, `Unit ${u.number}`),\n            td({ class: css('_p3 _textsm _fgmuted') }, `${u.beds}bd / ${u.baths}ba / ${u.sqft}sf`),\n            td({ class: css('_p3') }, u.tenant ? u.tenant.name : span({ class: css('_fgmuted') }, '—')),\n            td({ class: css('_p3 _tr _font500') }, `$${u.rent.toLocaleString()}`),\n            td({ class: css('_p3 _textsm') }, u.leaseEnd || '—'),\n            td({ class: css('_p3 _tc') }, Badge({ variant: u.status === 'occupied' ? 'success' : 'danger' }, u.status)),\n            td({ class: css('_p3') },\n              link({ href: `/properties/${propertyId}/units/${u.id}` },\n                Button({ variant: 'ghost', size: 'sm' }, icon('chevron-right'))\n              )\n            )\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "header": "Title and add button",
+      "summary": "Unit counts",
+      "items": "Unit cards or rows"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon, Badge } from 'decantr/components';",
+    "example": "// See preset examples above"
+  }
+}

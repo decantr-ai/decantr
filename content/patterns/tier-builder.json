@@ -1,0 +1,107 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tier-builder",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Tier Builder",
+  "description": "Subscription tier configuration interface with drag-reorder, benefit editor, pricing inputs, and live preview.",
+  "dependencies": {
+    "patterns": {
+      "tier-card": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Switch",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Input",
+    "Badge",
+    "Switch",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full tier editor with drag-reorder, benefits, and live preview",
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Switch",
+        "icon"
+      ],
+      "layout": {
+        "layout": "split",
+        "atoms": "_grid _gc1 _lg:gc2 _gap6",
+        "slots": {
+          "tier-list": "Existing tiers with drag handles for reordering",
+          "tier-form": "Create/edit tier form with all fields",
+          "benefits-editor": "Add/remove/reorder tier benefits",
+          "price-input": "Monthly and yearly pricing inputs",
+          "preview": "Live tier card preview"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Card, Input, Badge, Switch, icon } from 'decantr/components';",
+        "example": "function TierBuilder({ tiers: initialTiers = [], onSave }) {\n  const { div, h2, h3, p, span, label, form } = tags;\n  const [tiers, setTiers] = createSignal(initialTiers);\n  const [editing, setEditing] = createSignal(null);\n  const [newBenefit, setNewBenefit] = createSignal('');\n\n  const defaultTier = { name: '', description: '', monthlyPrice: 0, yearlyPrice: 0, benefits: [], color: '#F97316', published: false };\n  const [form_, setForm] = createSignal({ ...defaultTier });\n\n  const editTier = (tier) => { setEditing(tier.id); setForm({ ...tier }); };\n  const addBenefit = () => {\n    if (newBenefit().trim()) {\n      setForm({ ...form_(), benefits: [...form_().benefits, newBenefit().trim()] });\n      setNewBenefit('');\n    }\n  };\n  const removeBenefit = (i) => setForm({ ...form_(), benefits: form_().benefits.filter((_, idx) => idx !== i) });\n\n  const saveTier = () => {\n    if (editing()) {\n      setTiers(tiers().map(t => t.id === editing() ? { ...form_(), id: editing() } : t));\n    } else {\n      setTiers([...tiers(), { ...form_(), id: crypto.randomUUID() }]);\n    }\n    setEditing(null);\n    setForm({ ...defaultTier });\n    onSave?.(tiers());\n  };\n\n  const deleteTier = (id) => setTiers(tiers().filter(t => t.id !== id));\n\n  return div({ class: css('_grid _gc1 _lg:gc2 _gap6') },\n    div({ class: css('_flex _col _gap4') },\n      h2({ class: css('_heading4 _mb2') }, 'Your Tiers'),\n      tiers().length === 0\n        ? Card({ class: css('studio-card _p6 _tc _fgmuted') }, 'No tiers yet. Create your first tier!')\n        : div({ class: css('_flex _col _gap3') },\n            ...tiers().map((tier, i) =>\n              Card({ class: css(`studio-card _p4 _flex _aic _gap4 ${editing() === tier.id ? '_ring2 _ringPrimary' : ''}`) },\n                div({ class: css('_cursor[grab] _fgmuted') }, icon('grip-vertical')),\n                div({ class: css('_w3 _h3 _r1'), style: `background:${tier.color}` }),\n                div({ class: css('_flex1') },\n                  div({ class: css('_flex _aic _gap2') },\n                    span({ class: css('_fontmedium') }, tier.name),\n                    tier.published ? Badge({ variant: 'default', size: 'xs' }, 'Live') : Badge({ variant: 'secondary', size: 'xs' }, 'Draft')\n                  ),\n                  span({ class: css('_textsm _fgmuted') }, '$', tier.monthlyPrice, '/mo')\n                ),\n                Button({ variant: 'ghost', size: 'sm', onclick: () => editTier(tier) }, icon('edit-2', { size: '16' })),\n                Button({ variant: 'ghost', size: 'sm', onclick: () => deleteTier(tier.id) }, icon('trash-2', { size: '16' }))\n              )\n            )\n          ),\n      Button({ variant: 'outline', onclick: () => { setEditing(null); setForm({ ...defaultTier }); } },\n        icon('plus', { size: '16', class: css('_mr2') }), 'Add Tier'\n      )\n    ),\n    Card({ class: css('studio-card _p6 _flex _col _gap4') },\n      h3({ class: css('_heading5 _mb2') }, editing() ? 'Edit Tier' : 'New Tier'),\n      div({ class: css('_flex _col _gap4') },\n        div({ class: css('_flex _col _gap2') },\n          label({ class: css('_textsm _fontmedium') }, 'Tier Name'),\n          Input({ value: form_().name, onchange: (e) => setForm({ ...form_(), name: e.target.value }), placeholder: 'e.g., Supporter, Pro, VIP' })\n        ),\n        div({ class: css('_flex _col _gap2') },\n          label({ class: css('_textsm _fontmedium') }, 'Description'),\n          Input({ value: form_().description, onchange: (e) => setForm({ ...form_(), description: e.target.value }), placeholder: 'What subscribers get...' })\n        ),\n        div({ class: css('_grid _gc2 _gap4') },\n          div({ class: css('_flex _col _gap2') },\n            label({ class: css('_textsm _fontmedium') }, 'Monthly Price'),\n            Input({ type: 'number', value: form_().monthlyPrice, onchange: (e) => setForm({ ...form_(), monthlyPrice: Number(e.target.value) }), placeholder: '5' })\n          ),\n          div({ class: css('_flex _col _gap2') },\n            label({ class: css('_textsm _fontmedium') }, 'Yearly Price'),\n            Input({ type: 'number', value: form_().yearlyPrice, onchange: (e) => setForm({ ...form_(), yearlyPrice: Number(e.target.value) }), placeholder: '50' })\n          )\n        ),\n        div({ class: css('_flex _col _gap2') },\n          label({ class: css('_textsm _fontmedium') }, 'Benefits'),\n          div({ class: css('_flex _gap2') },\n            Input({ value: newBenefit(), onchange: (e) => setNewBenefit(e.target.value), placeholder: 'Add a benefit...', class: css('_flex1') }),\n            Button({ variant: 'outline', onclick: addBenefit }, icon('plus'))\n          ),\n          form_().benefits.length > 0 ? div({ class: css('_flex _col _gap2 _mt2') },\n            ...form_().benefits.map((b, i) =>\n              div({ class: css('_flex _aic _gap2 _p2 _bgmuted/5 _r2') },\n                icon('check', { size: '16', class: css('_fgSuccess') }),\n                span({ class: css('_flex1 _textsm') }, b),\n                Button({ variant: 'ghost', size: 'sm', onclick: () => removeBenefit(i) }, icon('x', { size: '14' }))\n              )\n            )\n          ) : null\n        ),\n        div({ class: css('_flex _aic _jcsb') },\n          div({ class: css('_flex _aic _gap2') },\n            Switch({ checked: form_().published, onchange: (e) => setForm({ ...form_(), published: e.target.checked }) }),\n            span({ class: css('_textsm') }, 'Publish immediately')\n          ),\n          div({ class: css('_flex _gap2') },\n            editing() ? Button({ variant: 'ghost', onclick: () => { setEditing(null); setForm({ ...defaultTier }); } }, 'Cancel') : null,\n            Button({ variant: 'primary', onclick: saveTier, disabled: !form_().name }, editing() ? 'Save Changes' : 'Create Tier')\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "compact": {
+      "description": "Simplified tier list view for mobile",
+      "components": [
+        "Button",
+        "Card",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "tier-list": "Compact tier cards",
+          "add-button": "Add tier button"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, Badge, icon } from 'decantr/components';",
+        "example": "function CompactTierBuilder({ tiers, onEdit, onAdd }) {\n  const { div, span } = tags;\n\n  return div({ class: css('_flex _col _gap3') },\n    ...tiers.map(tier =>\n      Card({ class: css('studio-card _p4 _flex _aic _jcsb'), onclick: () => onEdit(tier) },\n        div({ class: css('_flex _aic _gap3') },\n          div({ class: css('_w2 _h8 _r1'), style: `background:${tier.color}` }),\n          div({},\n            span({ class: css('_fontmedium') }, tier.name),\n            div({ class: css('_textsm _fgmuted') }, '$', tier.monthlyPrice, '/mo')\n          )\n        ),\n        icon('chevron-right', { class: css('_fgmuted') })\n      )\n    ),\n    Button({ variant: 'outline', onclick: onAdd }, icon('plus', { class: css('_mr2') }), 'Add Tier')\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "split",
+    "atoms": "_grid _gc1 _lg:gc2 _gap6",
+    "slots": {
+      "tier-list": "Existing tiers",
+      "tier-form": "Tier editor form",
+      "benefits-editor": "Benefits management",
+      "preview": "Live preview"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, Input, Badge, Switch, icon } from 'decantr/components';",
+    "example": "function TierBuilder(props) {\n  return StandardTierBuilder(props);\n}"
+  },
+  "io": {
+    "produces": [
+      "tier-data",
+      "tier-saved"
+    ],
+    "consumes": [
+      "existing-tiers"
+    ]
+  }
+}

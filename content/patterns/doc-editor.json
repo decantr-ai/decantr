@@ -1,0 +1,126 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "doc-editor",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Document Editor",
+  "description": "Rich text block editor with real-time collaboration support. CRDT-based synchronization, floating toolbar, slash commands, and remote cursor overlay.",
+  "dependencies": {
+    "patterns": {
+      "block-toolbar": "^1.0.0",
+      "slash-command": "^1.0.0",
+      "mention-popup": "^1.0.0",
+      "remote-cursor": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Avatar",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full-featured block editor with toolbar, slash commands, and collaboration features",
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _relative",
+        "slots": {
+          "cursors-layer": "Overlay for remote collaborator cursors",
+          "selections-layer": "Overlay for remote text selections",
+          "toolbar": "Floating formatting toolbar on selection",
+          "content": "Contenteditable block container",
+          "slash-menu": "Block type command palette",
+          "mention-popup": "@mention autocomplete dropdown"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, onMount } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';",
+        "example": "function DocEditor({ doc, collaborators, onUpdate }) {\n  const { div, article, section } = tags;\n  const [showToolbar, setShowToolbar] = createSignal(false);\n  const [toolbarPos, setToolbarPos] = createSignal({ x: 0, y: 0 });\n  const [showSlash, setShowSlash] = createSignal(false);\n  const [showMention, setShowMention] = createSignal(false);\n\n  const handleSelection = () => {\n    const sel = window.getSelection();\n    if (sel && !sel.isCollapsed) {\n      const rect = sel.getRangeAt(0).getBoundingClientRect();\n      setToolbarPos({ x: rect.left + rect.width / 2, y: rect.top - 8 });\n      setShowToolbar(true);\n    } else {\n      setShowToolbar(false);\n    }\n  };\n\n  const handleKeyDown = (e) => {\n    if (e.key === '/' && e.target.textContent === '') {\n      setShowSlash(true);\n    } else if (e.key === '@') {\n      setShowMention(true);\n    } else if (e.key === 'Escape') {\n      setShowSlash(false);\n      setShowMention(false);\n    }\n  };\n\n  return div({ class: css('_flex _col _hfull _relative paper-prose') },\n    // Remote cursors layer\n    div({ class: css('_absolute _inset0 _pointer[none] _z[10]') },\n      ...collaborators.filter(c => c.cursor).map(c =>\n        RemoteCursor({ user: c, position: c.cursor })\n      )\n    ),\n    // Remote selections layer\n    div({ class: css('_absolute _inset0 _pointer[none] _z[5]') },\n      ...collaborators.filter(c => c.selection).map(c =>\n        div({ \n          class: css('paper-selection'),\n          style: `background: ${c.color}20; position: absolute; top: ${c.selection.top}px; left: ${c.selection.left}px; width: ${c.selection.width}px; height: ${c.selection.height}px;`\n        })\n      )\n    ),\n    // Floating toolbar\n    showToolbar() ? BlockToolbar({\n      position: toolbarPos(),\n      onFormat: (cmd) => document.execCommand(cmd),\n      onClose: () => setShowToolbar(false)\n    }) : null,\n    // Editor content\n    article({\n      class: css('_flex1 _outline[none] _mw[680px] _mx[auto] _py8 _px4'),\n      contenteditable: 'true',\n      onmouseup: handleSelection,\n      onkeyup: handleSelection,\n      onkeydown: handleKeyDown,\n      oninput: (e) => onUpdate(e.target.innerHTML)\n    },\n      ...doc.blocks.map(block => renderBlock(block))\n    ),\n    // Slash command menu\n    showSlash() ? SlashCommand({\n      onSelect: (type) => { insertBlock(type); setShowSlash(false); },\n      onClose: () => setShowSlash(false)\n    }) : null,\n    // Mention popup\n    showMention() ? MentionPopup({\n      collaborators,\n      onSelect: (user) => { insertMention(user); setShowMention(false); },\n      onClose: () => setShowMention(false)\n    }) : null\n  );\n}\n\nfunction renderBlock(block) {\n  const { div, p, h1, h2, h3, ul, ol, li, blockquote, pre, code, img } = tags;\n  switch (block.type) {\n    case 'paragraph': return p({ 'data-block-id': block.id }, block.content);\n    case 'heading1': return h1({ 'data-block-id': block.id }, block.content);\n    case 'heading2': return h2({ 'data-block-id': block.id }, block.content);\n    case 'heading3': return h3({ 'data-block-id': block.id }, block.content);\n    case 'bullet-list': return ul({ 'data-block-id': block.id }, ...block.items.map(i => li({}, i)));\n    case 'numbered-list': return ol({ 'data-block-id': block.id }, ...block.items.map(i => li({}, i)));\n    case 'quote': return blockquote({ 'data-block-id': block.id, class: css('_borderL4 _border[var(--primary)] _pl4 _italic') }, block.content);\n    case 'code': return pre({ 'data-block-id': block.id, class: css('_p4 _r2 _bg[var(--surface-raised)]') }, code({}, block.content));\n    case 'image': return img({ 'data-block-id': block.id, src: block.src, alt: block.alt, class: css('_wfull _r2') });\n    default: return p({ 'data-block-id': block.id }, block.content);\n  }\n}"
+      }
+    },
+    "minimal": {
+      "description": "Focused writing mode with minimal UI",
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull _relative",
+        "slots": {
+          "content": "Contenteditable with minimal distractions",
+          "word-count": "Optional word/character count"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function MinimalEditor({ doc, onUpdate }) {\n  const { div, article, span } = tags;\n  const [wordCount, setWordCount] = createSignal(0);\n\n  const countWords = (text) => text.trim().split(/\\s+/).filter(w => w).length;\n\n  return div({ class: css('_flex _col _hfull _relative') },\n    article({\n      class: css('_flex1 _outline[none] _mw[600px] _mx[auto] _py12 _px4 paper-prose'),\n      contenteditable: 'true',\n      oninput: (e) => {\n        onUpdate(e.target.innerHTML);\n        setWordCount(countWords(e.target.textContent));\n      }\n    }),\n    span({ class: css('_absolute _bottom4 _right4 _textsm _fgmuted') },\n      () => `${wordCount()} words`\n    )\n  );\n}"
+      }
+    },
+    "presentation": {
+      "description": "Read-only view mode for sharing",
+      "components": [],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _hfull",
+        "slots": {
+          "content": "Rendered document (non-editable)"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';",
+        "example": "function PresentationView({ doc }) {\n  const { article } = tags;\n  return article({ class: css('_mw[680px] _mx[auto] _py8 _px4 paper-prose') },\n    ...doc.blocks.map(block => renderBlock(block))\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _hfull _relative",
+    "slots": {
+      "cursors-layer": "Overlay for remote collaborator cursors",
+      "selections-layer": "Overlay for remote text selections",
+      "toolbar": "Floating formatting toolbar on selection",
+      "content": "Contenteditable block container",
+      "slash-menu": "Block type command palette",
+      "mention-popup": "@mention autocomplete dropdown"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, onMount } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Avatar, icon } from 'decantr/components';",
+    "example": "function DocEditor({ doc, collaborators, onUpdate }) {\n  return StandardDocEditor({ doc, collaborators, onUpdate });\n}"
+  },
+  "io": {
+    "consumes": [
+      "doc",
+      "collaborators",
+      "permissions"
+    ],
+    "produces": [
+      "content-update",
+      "selection-change",
+      "cursor-move"
+    ],
+    "actions": [
+      "format-text",
+      "insert-block",
+      "delete-block",
+      "add-comment"
+    ]
+  }
+}

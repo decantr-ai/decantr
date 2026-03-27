@@ -1,0 +1,87 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "slash-command",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Slash Command",
+  "description": "Block-type command palette triggered by / character. Provides quick access to insert different block types with keyboard navigation.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full command list with icons organized by category",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "dropdown",
+        "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[320px] _max-h[400px] _overflow[auto] _z[100]",
+        "slots": {
+          "search": "Command filter input",
+          "categories": "Grouped command sections",
+          "commands": "Individual command items"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal, createEffect } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function SlashCommand({ position, query, onSelect, onClose }) {\n  const { div, span, button, input, kbd } = tags;\n  const [selectedIndex, setSelectedIndex] = createSignal(0);\n\n  const commands = [\n    { category: 'Text', items: [\n      { id: 'paragraph', name: 'Text', description: 'Plain text block', icon: 'type', shortcut: null },\n      { id: 'heading1', name: 'Heading 1', description: 'Large section heading', icon: 'heading-1', shortcut: '# ' },\n      { id: 'heading2', name: 'Heading 2', description: 'Medium section heading', icon: 'heading-2', shortcut: '## ' },\n      { id: 'heading3', name: 'Heading 3', description: 'Small section heading', icon: 'heading-3', shortcut: '### ' },\n    ]},\n    { category: 'Lists', items: [\n      { id: 'bullet-list', name: 'Bulleted list', description: 'Unordered list items', icon: 'list', shortcut: '- ' },\n      { id: 'numbered-list', name: 'Numbered list', description: 'Ordered list items', icon: 'list-ordered', shortcut: '1. ' },\n      { id: 'todo-list', name: 'To-do list', description: 'Checklist items', icon: 'check-square', shortcut: '[] ' },\n    ]},\n    { category: 'Media', items: [\n      { id: 'image', name: 'Image', description: 'Upload or embed image', icon: 'image', shortcut: null },\n      { id: 'video', name: 'Video', description: 'Embed video', icon: 'video', shortcut: null },\n      { id: 'file', name: 'File', description: 'Attach a file', icon: 'paperclip', shortcut: null },\n    ]},\n    { category: 'Advanced', items: [\n      { id: 'code', name: 'Code block', description: 'Syntax highlighted code', icon: 'code', shortcut: '```' },\n      { id: 'quote', name: 'Quote', description: 'Blockquote', icon: 'quote', shortcut: '> ' },\n      { id: 'divider', name: 'Divider', description: 'Horizontal separator', icon: 'minus', shortcut: '---' },\n      { id: 'callout', name: 'Callout', description: 'Highlighted info box', icon: 'alert-circle', shortcut: null },\n      { id: 'table', name: 'Table', description: 'Data table', icon: 'table', shortcut: null },\n    ]}\n  ];\n\n  const flatCommands = commands.flatMap(c => c.items);\n  const filteredCommands = query \n    ? flatCommands.filter(c => \n        c.name.toLowerCase().includes(query.toLowerCase()) ||\n        c.description.toLowerCase().includes(query.toLowerCase())\n      )\n    : null;\n\n  const displayCommands = filteredCommands || flatCommands;\n\n  const handleKeyDown = (e) => {\n    const max = displayCommands.length - 1;\n    if (e.key === 'ArrowDown') {\n      e.preventDefault();\n      setSelectedIndex(Math.min(selectedIndex() + 1, max));\n    } else if (e.key === 'ArrowUp') {\n      e.preventDefault();\n      setSelectedIndex(Math.max(selectedIndex() - 1, 0));\n    } else if (e.key === 'Enter') {\n      e.preventDefault();\n      displayCommands[selectedIndex()] && onSelect(displayCommands[selectedIndex()]);\n    } else if (e.key === 'Escape') {\n      onClose();\n    }\n  };\n\n  createEffect(() => {\n    document.addEventListener('keydown', handleKeyDown);\n    return () => document.removeEventListener('keydown', handleKeyDown);\n  });\n\n  const renderCommand = (cmd, globalIndex) => button({\n    class: css(`_flex _aic _gap3 _p2 _wfull _textleft _r1 ${globalIndex === selectedIndex() ? '_bg[var(--primary)/10]' : '_hover:bg[var(--surface-raised)]'}`),\n    onclick: () => onSelect(cmd),\n    onmouseenter: () => setSelectedIndex(globalIndex)\n  },\n    div({ class: css('_w8 _h8 _rfull _bg[var(--surface-raised)] _flex _aic _jcc') },\n      icon(cmd.icon, { size: '16' })\n    ),\n    div({ class: css('_flex _col _flex1') },\n      span({ class: css('_textsm _fontmedium') }, cmd.name),\n      span({ class: css('_textxs _fgmuted') }, cmd.description)\n    ),\n    cmd.shortcut ? kbd({ class: css('_textxs _fgmuted _px1.5 _py0.5 _bg[var(--surface-raised)] _r1 _font[mono]') }, cmd.shortcut) : null\n  );\n\n  let globalIndex = 0;\n\n  return div({\n    class: css('_absolute _bg[var(--surface)] _shadow _r2 _border _w[320px] _max-h[400px] _overflow[auto] _z[100]'),\n    style: `top: ${position.y}px; left: ${position.x}px`\n  },\n    // Show filtered results or categorized list\n    filteredCommands ? div({ class: css('_p2') },\n      filteredCommands.length > 0 \n        ? filteredCommands.map((cmd, i) => renderCommand(cmd, i))\n        : div({ class: css('_py4 _textcenter _textsm _fgmuted') }, 'No commands found')\n    ) : commands.map(category => div({ class: css('_p2') },\n      span({ class: css('_textxs _fgmuted _fontmedium _uppercase _tracking[0.05em] _px2') }, category.category),\n      div({ class: css('_flex _col _mt1') },\n        ...category.items.map(cmd => {\n          const el = renderCommand(cmd, globalIndex);\n          globalIndex++;\n          return el;\n        })\n      )\n    ))\n  );\n}"
+      }
+    },
+    "filtered": {
+      "description": "Show only commands matching current filter",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "dropdown",
+        "atoms": "_absolute _bg[var(--surface)] _shadow _r1 _border _w[280px] _z[100]",
+        "slots": {
+          "results": "Filtered command list only"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function FilteredSlashCommand({ position, query, commands, onSelect }) {\n  const { div, span, button } = tags;\n  const [selectedIndex, setSelectedIndex] = createSignal(0);\n\n  const filtered = commands.filter(c => \n    c.name.toLowerCase().includes(query.toLowerCase())\n  ).slice(0, 10);\n\n  return div({\n    class: css('_absolute _bg[var(--surface)] _shadow _r1 _border _w[280px] _z[100] _py1'),\n    style: `top: ${position.y}px; left: ${position.x}px`\n  },\n    filtered.length > 0 ? filtered.map((cmd, i) =>\n      button({\n        class: css(`_flex _aic _gap2 _px3 _py2 _wfull _textleft ${i === selectedIndex() ? '_bg[var(--surface-raised)]' : ''}`),\n        onclick: () => onSelect(cmd),\n        onmouseenter: () => setSelectedIndex(i)\n      },\n        icon(cmd.icon, { size: '16' }),\n        span({ class: css('_textsm') }, cmd.name)\n      )\n    ) : div({ class: css('_px3 _py4 _textsm _fgmuted _textcenter') }, 'No commands found')\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "dropdown",
+    "atoms": "_absolute _bg[var(--surface)] _shadow _r2 _border _w[320px] _z[100]",
+    "slots": {
+      "search": "Command filter input (typically inline)",
+      "categories": "Grouped command sections (Text, Lists, Media, Advanced)",
+      "commands": "Individual command items with icon, name, description, shortcut"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+    "example": "function SlashCommand({ position, query, onSelect, onClose }) {\n  return StandardSlashCommand({ position, query, onSelect, onClose });\n}"
+  },
+  "io": {
+    "consumes": [
+      "position",
+      "query"
+    ],
+    "produces": [
+      "select"
+    ],
+    "actions": [
+      "select-command",
+      "close"
+    ]
+  }
+}

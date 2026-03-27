@@ -1,0 +1,13 @@
+I'll use the brainstorming skill since this is creative work involving designing and building a complete platform blueprint.
+I'll follow the brainstorming process. Let me start by exploring the project context and the Carbon AI Portal spec you referenced as a template.
+Let me examine some existing JSON files to understand the exact structure.
+Let me also check the shells configuration and one archetype for the complete picture.
+I've reviewed the Carbon AI Portal spec and the existing content structure. Your requirements are detailed and well-scoped. I have one clarifying question:
+
+**Animation Style:**
+
+The spec says Festival should be "exciting but professional." The Carbon recipe uses smooth 200ms transitions with no bounce. For Festival, which approach fits better?
+
+A) **Energetic** — Spring physics, subtle bounce on hover/focus, entrance animations with more movement (250ms)
+B) **Refined energy** — Smooth like Carbon but slightly faster (180ms), with one signature "pop" effect for CTAs like "Get Tickets"  
+C) **Event-adaptive** — Subtle by default, but patterns like `check-in-scanner` and `event-hero` get more dynamic animations to match the event context

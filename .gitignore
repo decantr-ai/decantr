@@ -2,6 +2,7 @@ node_modules/
 dist/
 *.tsbuildinfo
 .DS_Store
+.worktrees
 .worktrees/
 .claude/
 docs/superpowers/
@@ -9,3 +10,9 @@ docs/superpowers/
 packages/cli/decantr.essence.json
 packages/cli/DECANTR.md
 packages/cli/.decantr/
+.worktrees/*
+.logs
+tools/auto-tasks
+tools/auto-tasks/done/*
+tools/auto-tasks/queue/*
+tools/auto

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "paper",
+  "name": "Paper",
+  "description": "Clean, minimal, content-focused theme with warm whites and soft grays. Inspired by high-end writing apps like iA Writer, Bear, and Notion.",
+  "tags": [
+    "warm",
+    "light",
+    "minimal",
+    "writing",
+    "clean",
+    "professional",
+    "collaboration"
+  ],
+  "personality": "warm + clean + minimal + content-focused",
+  "seed": {
+    "primary": "#2E8B8B",
+    "secondary": "#78756F",
+    "accent": "#E07B4C",
+    "background": "#FDFCFA"
+  },
+  "palette": {
+    "background": {
+      "light": "#FDFCFA",
+      "dark": "#1C1B1A"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#252422"
+    },
+    "surface-raised": {
+      "light": "#F9F8F6",
+      "dark": "#2D2B29"
+    },
+    "border": {
+      "light": "#E8E6E3",
+      "dark": "#3D3A36"
+    },
+    "text": {
+      "light": "#1A1918",
+      "dark": "#FAF9F7"
+    },
+    "text-muted": {
+      "light": "#78756F",
+      "dark": "#A8A49E"
+    },
+    "primary": {
+      "light": "#2E8B8B",
+      "dark": "#3DA5A5"
+    },
+    "primary-hover": {
+      "light": "#257575",
+      "dark": "#4DBFBF"
+    },
+    "accent": {
+      "light": "#E07B4C",
+      "dark": "#F09B6C"
+    }
+  },
+  "presence": {
+    "colors": [
+      { "name": "Blue", "light": "#3B82F6", "dark": "#60A5FA" },
+      { "name": "Purple", "light": "#8B5CF6", "dark": "#A78BFA" },
+      { "name": "Pink", "light": "#EC4899", "dark": "#F472B6" },
+      { "name": "Orange", "light": "#F97316", "dark": "#FB923C" },
+      { "name": "Teal", "light": "#14B8A6", "dark": "#2DD4BF" },
+      { "name": "Yellow", "light": "#EAB308", "dark": "#FACC15" },
+      { "name": "Red", "light": "#EF4444", "dark": "#F87171" },
+      { "name": "Green", "light": "#22C55E", "dark": "#4ADE80" }
+    ]
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded",
+    "sharp"
+  ],
+  "cvd_support": ["deuteranopia", "protanopia"],
+  "tokens": {
+    "base": {
+      "success": "#22C55E",
+      "danger": "#EF4444",
+      "warning": "#EAB308",
+      "info": "#3B82F6"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#3B82F6",
+        "danger": "#F97316"
+      },
+      "protanopia": {
+        "success": "#0EA5E9",
+        "danger": "#FACC15"
+      }
+    }
+  },
+  "decantr_compat": ">=1.0.0",
+  "source": "core"
+}

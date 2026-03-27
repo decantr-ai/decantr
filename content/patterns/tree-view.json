@@ -1,0 +1,115 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tree-view",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Tree View",
+  "description": "File/data tree with ASCII connectors for hierarchical navigation.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {
+      "terminal": "^1.0.0"
+    },
+    "styles": {
+      "terminal": "^1.0.0"
+    },
+    "requires_core": {
+      "components": [
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Expandable tree with ASCII connectors",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen _overflow[auto]",
+        "slots": {
+          "root": "Tree root node",
+          "nodes": "Child tree nodes"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function TreeView({ data, onSelect, defaultExpanded = [] }) {\n  const { div, span } = tags;\n  const [expanded, setExpanded] = createSignal(new Set(defaultExpanded));\n  const [selected, setSelected] = createSignal(null);\n\n  const toggleExpand = (id) => {\n    const newExpanded = new Set(expanded());\n    if (newExpanded.has(id)) newExpanded.delete(id);\n    else newExpanded.add(id);\n    setExpanded(newExpanded);\n  };\n\n  const handleSelect = (node) => {\n    setSelected(node.id);\n    onSelect?.(node);\n  };\n\n  const renderNode = (node, prefix = '', isLast = true) => {\n    const connector = isLast ? '└── ' : '├── ';\n    const childPrefix = prefix + (isLast ? '    ' : '│   ');\n    const hasChildren = node.children?.length > 0;\n    const isExpanded = expanded().has(node.id);\n    const isSelected = selected() === node.id;\n\n    return [\n      div({\n        class: css(`_flex _aic _cursor[pointer] ${isSelected ? '_bgmuted/20' : ''} _hover:bgmuted/10`),\n        onclick: () => hasChildren ? toggleExpand(node.id) : handleSelect(node)\n      },\n        span({ class: css('_fgmuted _whitespace[pre]') }, prefix + connector),\n        hasChildren ? span({ class: css('_mr1') }, isExpanded ? '[-]' : '[+]') : null,\n        icon(node.icon || (hasChildren ? 'folder' : 'file'), { size: '14', class: css('_mr1') }),\n        span({ class: isSelected ? css('term-glow') : '' }, node.label)\n      ),\n      ...(hasChildren && isExpanded ? node.children.flatMap((child, i) =>\n        renderNode(child, childPrefix, i === node.children.length - 1)\n      ) : [])\n    ];\n  };\n\n  return div({ class: css('term-panel _p2 _overflow[auto]') },\n    ...data.flatMap((node, i) => renderNode(node, '', i === data.length - 1))\n  );\n}"
+      }
+    },
+    "flat": {
+      "description": "Indented list without connectors",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "items": "Indented list items"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { icon } from 'decantr/components';",
+        "example": "function FlatTree({ data, onSelect }) {\n  const { div, span } = tags;\n\n  const renderNode = (node, depth = 0) => {\n    const indent = '  '.repeat(depth);\n    return [\n      div({ class: css('_flex _aic _cursor[pointer] _hover:bgmuted/10'), onclick: () => onSelect?.(node) },\n        span({ class: css('_whitespace[pre]') }, indent),\n        icon(node.icon || 'file', { size: '14', class: css('_mr1 _fgmuted') }),\n        span({}, node.label)\n      ),\n      ...(node.children?.flatMap(child => renderNode(child, depth + 1)) || [])\n    ];\n  };\n\n  return div({ class: css('term-panel _p2') }, ...data.flatMap(node => renderNode(node)));\n}"
+      }
+    },
+    "checkbox": {
+      "description": "Tree with selection checkboxes",
+      "components": [
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _mono _fggreen",
+        "slots": {
+          "nodes": "Tree nodes with checkboxes"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';",
+        "example": "function CheckboxTree({ data, onSelectionChange }) {\n  const { div, span, input } = tags;\n  const [checked, setChecked] = createSignal(new Set());\n\n  const toggleCheck = (id) => {\n    const newChecked = new Set(checked());\n    if (newChecked.has(id)) newChecked.delete(id);\n    else newChecked.add(id);\n    setChecked(newChecked);\n    onSelectionChange?.(Array.from(newChecked));\n  };\n\n  const renderNode = (node, prefix = '', isLast = true) => {\n    const connector = isLast ? '└── ' : '├── ';\n    const childPrefix = prefix + (isLast ? '    ' : '│   ');\n\n    return [\n      div({ class: css('_flex _aic') },\n        span({ class: css('_fgmuted _whitespace[pre]') }, prefix + connector),\n        input({\n          type: 'checkbox',\n          checked: checked().has(node.id),\n          onchange: () => toggleCheck(node.id),\n          class: css('_mr1')\n        }),\n        span({}, node.label)\n      ),\n      ...(node.children?.flatMap((child, i) =>\n        renderNode(child, childPrefix, i === node.children.length - 1)\n      ) || [])\n    ];\n  };\n\n  return div({ class: css('term-panel _p2') },\n    ...data.flatMap((node, i) => renderNode(node, '', i === data.length - 1))\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _mono _fggreen",
+    "slots": {
+      "root": "Tree root",
+      "nodes": "Tree nodes"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';",
+    "example": "function TreeView({ data, variant = 'standard', ...props }) {\n  switch (variant) {\n    case 'flat': return FlatTree({ data, ...props });\n    case 'checkbox': return CheckboxTree({ data, ...props });\n    default: return StandardTreeView({ data, ...props });\n  }\n}"
+  },
+  "features": [
+    "expand-collapse",
+    "multi-select",
+    "drag-drop",
+    "context-menu",
+    "search-filter",
+    "keyboard-navigation"
+  ],
+  "keyboard_shortcuts": {
+    "ArrowUp": "Previous node",
+    "ArrowDown": "Next node",
+    "ArrowLeft": "Collapse or go to parent",
+    "ArrowRight": "Expand or go to first child",
+    "Enter": "Select node",
+    "Space": "Toggle checkbox"
+  },
+  "ascii_connectors": {
+    "branch": "├── ",
+    "last": "└── ",
+    "vertical": "│   ",
+    "empty": "    "
+  }
+}

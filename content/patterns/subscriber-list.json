@@ -1,0 +1,110 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "subscriber-list",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Subscriber List",
+  "description": "Fan/subscriber management table with filtering, search, sorting, and bulk actions. Export and messaging capabilities.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Avatar",
+        "Checkbox",
+        "Select",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "components": [
+    "Button",
+    "Card",
+    "Input",
+    "Badge",
+    "Avatar",
+    "Checkbox",
+    "Select",
+    "icon"
+  ],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full data table with all subscriber info",
+      "components": [
+        "Button",
+        "Card",
+        "Input",
+        "Badge",
+        "Avatar",
+        "Checkbox",
+        "Select",
+        "icon"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4",
+        "slots": {
+          "filters": "Tier, date, status filters",
+          "search": "Subscriber search input",
+          "table": "Subscriber data rows",
+          "pagination": "Page navigation controls",
+          "bulk-actions": "Mass action buttons"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, Card, Input, Badge, Avatar, Checkbox, Select, icon } from 'decantr/components';",
+        "example": "function SubscriberList({ subscribers: initialSubs = [], tiers = [] }) {\n  const { div, table, thead, tbody, tr, th, td, span } = tags;\n  const [search, setSearch] = createSignal('');\n  const [tierFilter, setTierFilter] = createSignal('all');\n  const [selected, setSelected] = createSignal([]);\n  const [sortBy, setSortBy] = createSignal('joined');\n  const [sortDir, setSortDir] = createSignal('desc');\n\n  const filtered = () => {\n    let subs = initialSubs;\n    if (search()) subs = subs.filter(s => s.name.toLowerCase().includes(search().toLowerCase()) || s.email.toLowerCase().includes(search().toLowerCase()));\n    if (tierFilter() !== 'all') subs = subs.filter(s => s.tierId === tierFilter());\n    return subs.sort((a, b) => {\n      const dir = sortDir() === 'asc' ? 1 : -1;\n      if (sortBy() === 'joined') return dir * (new Date(b.joinedAt) - new Date(a.joinedAt));\n      if (sortBy() === 'lifetime') return dir * (b.lifetimeValue - a.lifetimeValue);\n      return 0;\n    });\n  };\n\n  const toggleAll = () => setSelected(selected().length === filtered().length ? [] : filtered().map(s => s.id));\n  const toggleOne = (id) => setSelected(selected().includes(id) ? selected().filter(i => i !== id) : [...selected(), id]);\n\n  const SortHeader = ({ col, label }) =>\n    th({ class: css('_textsm _fontmedium _fgmuted _p3 _tl _cursor[pointer]'), onclick: () => {\n      if (sortBy() === col) setSortDir(sortDir() === 'asc' ? 'desc' : 'asc');\n      else { setSortBy(col); setSortDir('desc'); }\n    }},\n      div({ class: css('_flex _aic _gap1') },\n        label,\n        sortBy() === col ? icon(sortDir() === 'asc' ? 'chevron-up' : 'chevron-down', { size: '14' }) : null\n      )\n    );\n\n  return div({ class: css('_flex _col _gap4') },\n    div({ class: css('_flex _gap4 _aic _jcsb _flexwrap') },\n      div({ class: css('_flex _gap3 _aic') },\n        div({ class: css('_relative') },\n          icon('search', { size: '18', class: css('_absolute _left3 _top[50%] _translate[0,-50%] _fgmuted') }),\n          Input({ value: search(), onchange: (e) => setSearch(e.target.value), placeholder: 'Search subscribers...', class: css('_pl10 _w[280px]') })\n        ),\n        Select({ value: tierFilter(), onchange: (e) => setTierFilter(e.target.value), options: [{ value: 'all', label: 'All Tiers' }, ...tiers.map(t => ({ value: t.id, label: t.name }))] })\n      ),\n      div({ class: css('_flex _gap2') },\n        selected().length > 0 ? [\n          Button({ variant: 'outline', size: 'sm' }, icon('mail', { size: '14', class: css('_mr1') }), 'Message'),\n          Button({ variant: 'outline', size: 'sm' }, icon('download', { size: '14', class: css('_mr1') }), 'Export')\n        ] : [\n          Button({ variant: 'outline', size: 'sm' }, icon('download', { size: '14', class: css('_mr1') }), 'Export All')\n        ]\n      )\n    ),\n    Card({ class: css('studio-card _overflow[hidden]') },\n      table({ class: css('_wfull') },\n        thead({ class: css('_bgmuted/5 _borderB') },\n          tr({},\n            th({ class: css('_p3 _w10') }, Checkbox({ checked: selected().length === filtered().length && filtered().length > 0, onchange: toggleAll })),\n            th({ class: css('_textsm _fontmedium _fgmuted _p3 _tl') }, 'Subscriber'),\n            SortHeader({ col: 'tier', label: 'Tier' }),\n            SortHeader({ col: 'joined', label: 'Joined' }),\n            th({ class: css('_textsm _fontmedium _fgmuted _p3 _tl') }, 'Status'),\n            SortHeader({ col: 'lifetime', label: 'Lifetime' }),\n            th({ class: css('_p3 _w16') }, '')\n          )\n        ),\n        tbody({},\n          ...filtered().map(sub =>\n            tr({ class: css('_borderB _last:borderB0 _hover:bgmuted/5 _trans') },\n              td({ class: css('_p3') }, Checkbox({ checked: selected().includes(sub.id), onchange: () => toggleOne(sub.id) })),\n              td({ class: css('_p3') },\n                div({ class: css('_flex _aic _gap3') },\n                  Avatar({ src: sub.avatar, name: sub.name, size: 'sm' }),\n                  div({},\n                    span({ class: css('_fontmedium') }, sub.name),\n                    div({ class: css('_textsm _fgmuted') }, sub.email)\n                  )\n                )\n              ),\n              td({ class: css('_p3') },\n                div({ class: css('_flex _aic _gap2') },\n                  div({ class: css('_w2 _h2 _r[4px]'), style: `background:${sub.tierColor}` }),\n                  span({ class: css('_textsm') }, sub.tierName)\n                )\n              ),\n              td({ class: css('_p3 _textsm _fgmuted') }, new Date(sub.joinedAt).toLocaleDateString()),\n              td({ class: css('_p3') },\n                Badge({ variant: sub.status === 'active' ? 'default' : 'secondary', size: 'sm' },\n                  sub.status === 'active' ? 'Active' : 'Cancelled'\n                )\n              ),\n              td({ class: css('_p3 _textsm _fontmedium') }, '$', sub.lifetimeValue.toFixed(2)),\n              td({ class: css('_p3') },\n                Button({ variant: 'ghost', size: 'sm' }, icon('more-horizontal', { size: '16' }))\n              )\n            )\n          )\n        )\n      )\n    ),\n    div({ class: css('_flex _jcsb _aic _textsm _fgmuted') },\n      span({}, filtered().length, ' subscribers'),\n      div({ class: css('_flex _gap2') },\n        Button({ variant: 'outline', size: 'sm', disabled: true }, 'Previous'),\n        Button({ variant: 'outline', size: 'sm' }, 'Next')\n      )\n    )\n  );\n}"
+      }
+    },
+    "compact": {
+      "description": "Card grid view for mobile",
+      "components": [
+        "Card",
+        "Avatar",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _gap4",
+        "slots": {
+          "cards": "Subscriber info cards"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Avatar, Badge, icon } from 'decantr/components';",
+        "example": "function CompactSubscriberList({ subscribers }) {\n  const { div, span } = tags;\n\n  return div({ class: css('_grid _gc1 _md:gc2 _gap4') },\n    ...subscribers.map(sub =>\n      Card({ class: css('studio-card _p4 _flex _aic _gap4') },\n        Avatar({ src: sub.avatar, name: sub.name }),\n        div({ class: css('_flex1') },\n          div({ class: css('_flex _aic _gap2 _mb1') },\n            span({ class: css('_fontmedium') }, sub.name),\n            Badge({ variant: 'secondary', size: 'xs' }, sub.tierName)\n          ),\n          span({ class: css('_textsm _fgmuted') }, 'Joined ', new Date(sub.joinedAt).toLocaleDateString())\n        ),\n        icon('chevron-right', { class: css('_fgmuted') })\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "filters": "Filter controls",
+      "table": "Subscriber table",
+      "pagination": "Page controls"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Card, Input, Badge, Avatar, Checkbox, Select, icon } from 'decantr/components';",
+    "example": "function SubscriberList(props) {\n  return StandardSubscriberList(props);\n}"
+  },
+  "io": {
+    "produces": [
+      "subscriber-selected",
+      "export-triggered"
+    ],
+    "consumes": [
+      "subscriber-data",
+      "tier-data"
+    ]
+  }
+}

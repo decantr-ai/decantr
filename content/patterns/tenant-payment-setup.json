@@ -1,0 +1,54 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "tenant-payment-setup",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Tenant Payment Setup",
+  "description": "Tenant autopay configuration with payment method management, ACH/card setup, autopay toggle, and upcoming payment preview.",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": ["Button", "icon", "Badge", "Input", "Select"],
+      "charts": []
+    }
+  },
+  "components": ["Button", "icon", "Badge", "Input", "Select"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Full payment setup view",
+      "components": ["Button", "icon", "Badge", "Input", "Select"],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "header": "Title, autopay status indicator",
+          "current-method": "Current payment method summary",
+          "methods": "Saved payment methods list",
+          "add-method": "Add bank account or card form",
+          "autopay-settings": "Autopay toggle, day of month",
+          "schedule": "Upcoming payments preview"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { createSignal } from 'decantr/state';\nimport { css } from 'decantr/css';\nimport { Button, icon, Badge, Input, Select } from 'decantr/components';",
+        "example": "function TenantPaymentSetup({ tenant, paymentMethods, upcomingPayments }) {\n  const { div, h1, h2, span, p, label } = tags;\n  const [autopayEnabled, setAutopayEnabled] = createSignal(tenant.autopayEnabled);\n  const [autopayDay, setAutopayDay] = createSignal(tenant.autopayDay || 1);\n  const [showAddForm, setShowAddForm] = createSignal(false);\n  const [addFormType, setAddFormType] = createSignal('bank');\n\n  const primaryMethod = paymentMethods.find(m => m.isPrimary);\n\n  return div({ class: css('_flex _col _gap6') },\n    div({ class: css('_flex _jcsb _aic') },\n      h1({ class: css('_heading3') }, 'Payment Settings'),\n      Badge({ variant: autopayEnabled() ? 'success' : 'default' }, autopayEnabled() ? 'Autopay On' : 'Autopay Off')\n    ),\n    div({ class: css('estate-card _p6') },\n      h2({ class: css('_heading5 _mb4') }, 'Autopay'),\n      div({ class: css('_flex _jcsb _aic _p4 _bgSurfaceRaised _r2') },\n        div({},\n          span({ class: css('_font500 _block') }, 'Automatic Payments'),\n          p({ class: css('_textsm _fgmuted') }, 'Automatically pay rent on the same day each month')\n        ),\n        Button({\n          variant: autopayEnabled() ? 'primary' : 'outline',\n          onclick: () => setAutopayEnabled(!autopayEnabled())\n        }, autopayEnabled() ? 'Enabled' : 'Enable')\n      ),\n      autopayEnabled() ? div({ class: css('_mt4 _flex _aic _gap4') },\n        label({ class: css('_textsm _font500') }, 'Pay on day'),\n        Select({ value: autopayDay(), onchange: e => setAutopayDay(parseInt(e.target.value)) },\n          ...Array.from({ length: 28 }, (_, i) => tags.option({ value: i + 1 }, `${i + 1}${getOrdinalSuffix(i + 1)}`))\n        ),\n        span({ class: css('_textsm _fgmuted') }, 'of each month')\n      ) : null\n    ),\n    div({ class: css('estate-card _p6') },\n      div({ class: css('_flex _jcsb _aic _mb4') },\n        h2({ class: css('_heading5') }, 'Payment Methods'),\n        Button({ variant: 'outline', size: 'sm', onclick: () => setShowAddForm(true) }, icon('plus'), 'Add Method')\n      ),\n      paymentMethods.length === 0 ? div({ class: css('_p6 _tc _bgSurfaceRaised _r2') },\n        icon('credit-card', { size: '32', class: css('_fgmuted _mb2') }),\n        p({ class: css('_fgmuted _mb4') }, 'No payment methods saved'),\n        Button({ variant: 'primary', onclick: () => setShowAddForm(true) }, icon('plus'), 'Add Payment Method')\n      ) : div({ class: css('_flex _col _gap3') },\n        ...paymentMethods.map(method =>\n          div({ class: css(`_flex _aic _gap4 _p4 _r2 ${method.isPrimary ? '_borderPrimary _border[2px]' : '_border'}`) },\n            icon(method.type === 'bank' ? 'building' : 'credit-card', { size: '24' }),\n            div({ class: css('_flex1') },\n              span({ class: css('_font500 _block') }, method.type === 'bank' ? `${method.bankName} ****${method.last4}` : `${method.brand} ****${method.last4}`),\n              span({ class: css('_textsm _fgmuted') }, method.type === 'bank' ? 'Bank Account' : `Expires ${method.expMonth}/${method.expYear}`)\n            ),\n            method.isPrimary ? Badge({ variant: 'success' }, 'Primary') : Button({ variant: 'ghost', size: 'sm' }, 'Set Primary'),\n            Button({ variant: 'ghost', size: 'sm' }, icon('trash', { size: '16' }))\n          )\n        )\n      ),\n      showAddForm() ? div({ class: css('_mt6 _pt6 _borderT') },\n        h2({ class: css('_heading6 _mb4') }, 'Add Payment Method'),\n        div({ class: css('_flex _gap2 _mb4') },\n          Button({ variant: addFormType() === 'bank' ? 'default' : 'outline', onclick: () => setAddFormType('bank') }, icon('building'), 'Bank Account'),\n          Button({ variant: addFormType() === 'card' ? 'default' : 'outline', onclick: () => setAddFormType('card') }, icon('credit-card'), 'Card')\n        ),\n        addFormType() === 'bank' ? BankAccountForm() : CardForm(),\n        div({ class: css('_flex _jce _gap2 _mt4') },\n          Button({ variant: 'outline', onclick: () => setShowAddForm(false) }, 'Cancel'),\n          Button({ variant: 'primary' }, 'Save Payment Method')\n        )\n      ) : null\n    ),\n    upcomingPayments.length > 0 ? div({ class: css('estate-card _p6') },\n      h2({ class: css('_heading5 _mb4') }, 'Upcoming Payments'),\n      div({ class: css('_flex _col _gap3') },\n        ...upcomingPayments.map(payment =>\n          div({ class: css('_flex _jcsb _aic _p4 _bgSurfaceRaised _r2') },\n            div({},\n              span({ class: css('_font500 _block') }, payment.description),\n              span({ class: css('_textsm _fgmuted') }, new Date(payment.dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))\n            ),\n            span({ class: css('_heading5') }, `$${payment.amount.toLocaleString()}`)\n          )\n        )\n      )\n    ) : null\n  );\n}\n\nfunction BankAccountForm() {\n  const { div, label } = tags;\n  return div({ class: css('_grid _cols2 _gap4') },\n    div({},\n      label({ class: css('_textsm _font500 _mb1 _block') }, 'Routing Number'),\n      Input({ type: 'text', placeholder: '9 digits', maxlength: 9 })\n    ),\n    div({},\n      label({ class: css('_textsm _font500 _mb1 _block') }, 'Account Number'),\n      Input({ type: 'text', placeholder: 'Account number' })\n    ),\n    div({},\n      label({ class: css('_textsm _font500 _mb1 _block') }, 'Account Type'),\n      Select({},\n        tags.option({ value: 'checking' }, 'Checking'),\n        tags.option({ value: 'savings' }, 'Savings')\n      )\n    ),\n    div({},\n      label({ class: css('_textsm _font500 _mb1 _block') }, 'Account Holder Name'),\n      Input({ type: 'text', placeholder: 'Name on account' })\n    )\n  );\n}\n\nfunction CardForm() {\n  const { div, label } = tags;\n  return div({ class: css('_grid _cols2 _gap4') },\n    div({ class: css('_col[span-2]') },\n      label({ class: css('_textsm _font500 _mb1 _block') }, 'Card Number'),\n      Input({ type: 'text', placeholder: '1234 5678 9012 3456', maxlength: 19 })\n    ),\n    div({},\n      label({ class: css('_textsm _font500 _mb1 _block') }, 'Expiration'),\n      Input({ type: 'text', placeholder: 'MM/YY', maxlength: 5 })\n    ),\n    div({},\n      label({ class: css('_textsm _font500 _mb1 _block') }, 'CVC'),\n      Input({ type: 'text', placeholder: '123', maxlength: 4 })\n    ),\n    div({ class: css('_col[span-2]') },\n      label({ class: css('_textsm _font500 _mb1 _block') }, 'Name on Card'),\n      Input({ type: 'text', placeholder: 'Full name' })\n    )\n  );\n}\n\nfunction getOrdinalSuffix(n) {\n  const s = ['th', 'st', 'nd', 'rd'];\n  const v = n % 100;\n  return s[(v - 20) % 10] || s[v] || s[0];\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap6",
+    "slots": {
+      "autopay": "Autopay settings",
+      "methods": "Payment methods",
+      "upcoming": "Upcoming payments"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon, Badge, Input, Select } from 'decantr/components';",
+    "example": "// See preset examples above"
+  }
+}

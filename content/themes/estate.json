@@ -1,0 +1,112 @@
+{
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "id": "estate",
+  "name": "Estate",
+  "description": "Professional, trustworthy theme for property management. Deep navy for stability, forest green for growth, warm gold accent. Light mode default for business applications.",
+  "tags": [
+    "light",
+    "dark",
+    "professional",
+    "real-estate",
+    "business",
+    "warm",
+    "trustworthy"
+  ],
+  "personality": "professional + trustworthy + warm + premium",
+  "seed": {
+    "primary": "#1E3A5F",
+    "secondary": "#166534",
+    "accent": "#B8860B",
+    "background": "#FDFBF7"
+  },
+  "palette": {
+    "background": {
+      "light": "#FDFBF7",
+      "dark": "#1A1A1F"
+    },
+    "surface": {
+      "light": "#FFFFFF",
+      "dark": "#242428"
+    },
+    "surface-raised": {
+      "light": "#F7F5F0",
+      "dark": "#2D2D32"
+    },
+    "border": {
+      "light": "#E8E4DC",
+      "dark": "#3A3A42"
+    },
+    "text": {
+      "light": "#1A1A1F",
+      "dark": "#FDFBF7"
+    },
+    "text-muted": {
+      "light": "#6B6860",
+      "dark": "#9A9890"
+    },
+    "primary": {
+      "light": "#1E3A5F",
+      "dark": "#3B5A7F"
+    },
+    "primary-hover": {
+      "light": "#162D4A",
+      "dark": "#4A6A8F"
+    },
+    "secondary": {
+      "light": "#166534",
+      "dark": "#22803D"
+    },
+    "secondary-hover": {
+      "light": "#14532D",
+      "dark": "#2D9048"
+    },
+    "accent": {
+      "light": "#B8860B",
+      "dark": "#D4A017"
+    },
+    "accent-hover": {
+      "light": "#9A7209",
+      "dark": "#E8B41F"
+    }
+  },
+  "modes": [
+    "light",
+    "dark",
+    "auto"
+  ],
+  "shapes": [
+    "rounded",
+    "sharp"
+  ],
+  "cvd_support": ["deuteranopia", "protanopia"],
+  "tokens": {
+    "base": {
+      "success": "#16A34A",
+      "danger": "#DC2626",
+      "warning": "#D97706"
+    },
+    "cvd": {
+      "deuteranopia": {
+        "success": "#2196F3",
+        "danger": "#FF8F00"
+      },
+      "protanopia": {
+        "success": "#03A9F4",
+        "danger": "#FFC107"
+      }
+    },
+    "domain": {
+      "occupied": "success",
+      "vacant": "danger",
+      "paid": "success",
+      "pending": "warning",
+      "overdue": "danger",
+      "due-soon": "warning",
+      "maintenance-open": "warning",
+      "maintenance-urgent": "danger",
+      "maintenance-resolved": "success"
+    }
+  },
+  "decantr_compat": ">=1.0.0",
+  "source": "core"
+}

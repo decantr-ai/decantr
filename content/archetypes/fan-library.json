@@ -1,0 +1,95 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "fan-library",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Fan Library",
+  "description": "Fan's purchased and subscribed content library. View all unlocked content and manage subscriptions.",
+  "tags": [
+    "fan",
+    "library",
+    "purchases",
+    "subscriptions",
+    "content"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "fan library",
+        "my purchases",
+        "my subscriptions"
+      ],
+      "secondary": [
+        "purchased content",
+        "unlocked content"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "recommended"
+  },
+  "pages": [
+    {
+      "id": "library",
+      "patterns": [
+        {
+          "pattern": "filter-bar",
+          "preset": "standard",
+          "as": "filters"
+        },
+        {
+          "pattern": "product-grid",
+          "preset": "standard",
+          "as": "content-grid"
+        }
+      ],
+      "default_layout": [
+        "filters",
+        "content-grid"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "subscriptions",
+      "patterns": [
+        {
+          "pattern": "card-grid",
+          "preset": "subscription",
+          "as": "subscription-cards"
+        }
+      ],
+      "default_layout": [
+        "subscription-cards"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "features": [
+    "content-library",
+    "subscription-management",
+    "download-content",
+    "creator-links"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation for fan browsing"
+  },
+  "dependencies": {
+    "patterns": {
+      "filter-bar": "^1.0.0",
+      "product-grid": "^1.0.0",
+      "card-grid": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "studio"
+    ],
+    "modes": [
+      "light",
+      "dark"
+    ]
+  }
+}
