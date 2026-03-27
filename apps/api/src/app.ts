@@ -9,6 +9,7 @@ import { publishRoutes } from './routes/publish.js';
 import { orgRoutes } from './routes/orgs.js';
 import { adminRoutes } from './routes/admin.js';
 import { optionalAuth } from './middleware/auth.js';
+import { rateLimiter } from './middleware/rate-limit.js';
 
 export function createApp(): Hono<Env> {
   const app = new Hono<Env>();
@@ -24,6 +25,9 @@ export function createApp(): Hono<Env> {
 
   // Optional auth on all v1 routes
   app.use('/v1/*', optionalAuth());
+
+  // Rate limiting (after auth so it can read the auth context)
+  app.use('/v1/*', rateLimiter());
 
   // Mount route modules
   app.route('/', healthRoutes);
