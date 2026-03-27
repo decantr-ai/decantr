@@ -6,9 +6,18 @@ import type { InitOptions } from './prompts.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+/**
+ * A layout item can be:
+ * - A string (pattern name): "kpi-grid"
+ * - A pattern object: { pattern: "hero", preset: "landing", as?: "guild-hero" }
+ * - A column layout: { cols: ["a", "b"], at: "lg" }
+ */
+export type LayoutItem = string | Record<string, unknown>;
+
 export interface EssenceFile {
   version: string;
   archetype: string;
+  blueprint?: string;
   theme: {
     style: string;
     mode: string;
@@ -23,7 +32,7 @@ export interface EssenceFile {
   structure: Array<{
     id: string;
     shell: string;
-    layout: string[];
+    layout: LayoutItem[];
   }>;
   features: string[];
   guard: {
@@ -44,7 +53,7 @@ export interface ArchetypeData {
   pages?: Array<{
     id: string;
     shell: string;
-    default_layout: string[];
+    default_layout: LayoutItem[];
   }>;
   features?: string[];
 }
@@ -58,6 +67,72 @@ export interface ScaffoldResult {
 }
 
 const CLI_VERSION = '1.0.0';
+
+/**
+ * Theme data for populating DECANTR.md theme quick reference.
+ */
+export interface ThemeData {
+  seed?: Record<string, string>;
+  palette?: Record<string, string>;
+}
+
+/**
+ * Recipe data for populating DECANTR.md decorators reference.
+ */
+export interface RecipeData {
+  decorators?: Record<string, string>;
+}
+
+/**
+ * Serialize a layout item to a readable string.
+ * Handles strings, pattern objects, and column layouts.
+ */
+export function serializeLayoutItem(item: unknown): string {
+  if (typeof item === 'string') {
+    return item;
+  }
+  if (typeof item === 'object' && item !== null) {
+    const obj = item as Record<string, unknown>;
+
+    // Pattern with preset: "hero (landing)" or "hero (landing) as guild-hero"
+    if (typeof obj.pattern === 'string') {
+      const preset = obj.preset ? ` (${obj.preset})` : '';
+      const alias = obj.as ? ` as ${obj.as}` : '';
+      return `${obj.pattern}${preset}${alias}`;
+    }
+
+    // Column layout: "[activity-feed | top-players] @lg"
+    if (Array.isArray(obj.cols)) {
+      const cols = obj.cols.map(serializeLayoutItem).join(' | ');
+      const breakpoint = obj.at ? ` @${obj.at}` : '';
+      return `[${cols}]${breakpoint}`;
+    }
+  }
+  return 'custom';
+}
+
+/**
+ * Extract the pattern name from a layout item (for patterns list).
+ */
+function extractPatternNames(item: unknown): string[] {
+  if (typeof item === 'string') {
+    return [item];
+  }
+  if (typeof item === 'object' && item !== null) {
+    const obj = item as Record<string, unknown>;
+
+    // Pattern object: extract pattern name
+    if (typeof obj.pattern === 'string') {
+      return [obj.pattern];
+    }
+
+    // Column layout: extract names from nested items
+    if (Array.isArray(obj.cols)) {
+      return obj.cols.flatMap(extractPatternNames);
+    }
+  }
+  return [];
+}
 
 /**
  * Load a template file from the templates directory.
@@ -153,18 +228,24 @@ export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData
 /**
  * Generate the DECANTR.md file from template and essence.
  */
-function generateDecantrMd(essence: EssenceFile, detected: DetectedProject): string {
+function generateDecantrMd(
+  essence: EssenceFile,
+  detected: DetectedProject,
+  themeData?: ThemeData,
+  recipeData?: RecipeData
+): string {
   const template = loadTemplate('DECANTR.md.template');
 
-  // Build pages table
-  const pagesTable = essence.structure.map(p =>
-    `| ${p.id} | ${p.shell} | ${p.layout.join(', ') || 'none'} |`
-  ).join('\n');
+  // Build pages table with proper serialization of layout items
+  const pagesTable = essence.structure.map(p => {
+    const layoutStr = p.layout.map(serializeLayoutItem).join(', ') || 'none';
+    return `| ${p.id} | ${p.shell} | ${layoutStr} |`;
+  }).join('\n');
 
-  // Build patterns list
-  const allPatterns = [...new Set(essence.structure.flatMap(p => p.layout))];
-  const patternsList = allPatterns.length > 0
-    ? allPatterns.map(p => `- \`${p}\``).join('\n')
+  // Build patterns list - extract unique pattern names
+  const allPatternNames = [...new Set(essence.structure.flatMap(p => p.layout.flatMap(extractPatternNames)))];
+  const patternsList = allPatternNames.length > 0
+    ? allPatternNames.map(p => `- \`${p}\``).join('\n')
     : '- No patterns specified yet';
 
   // Build project summary
@@ -188,6 +269,33 @@ function generateDecantrMd(essence: EssenceFile, detected: DetectedProject): str
   const defaultShell = essence.structure[0]?.shell || 'sidebar-main';
   const shellStructure = shellStructures[defaultShell] || 'Custom shell layout';
 
+  // Build theme quick reference
+  let themeQuickRef = '';
+  if (themeData?.seed) {
+    const colors = Object.entries(themeData.seed)
+      .map(([name, hex]) => `- **${name}:** \`${hex}\``)
+      .join('\n');
+    themeQuickRef = `**Seed Colors:**\n${colors}`;
+  }
+
+  // Add recipe decorators
+  if (recipeData?.decorators) {
+    const decorators = Object.entries(recipeData.decorators)
+      .slice(0, 5)  // Top 5 decorators
+      .map(([name, desc]) => `- \`${name}\` — ${desc}`)
+      .join('\n');
+    if (themeQuickRef) {
+      themeQuickRef += `\n\n**Key Decorators:**\n${decorators}`;
+    } else {
+      themeQuickRef = `**Key Decorators:**\n${decorators}`;
+    }
+  }
+
+  // Default if no theme/recipe data
+  if (!themeQuickRef) {
+    themeQuickRef = `See \`decantr get theme ${essence.theme.style}\` for details.`;
+  }
+
   const vars: Record<string, string> = {
     GUARD_MODE: essence.guard.mode,
     PROJECT_SUMMARY: projectSummary,
@@ -205,6 +313,7 @@ function generateDecantrMd(essence: EssenceFile, detected: DetectedProject): str
     AVAILABLE_THEMES: '(See registry or .decantr/cache/themes/)',
     AVAILABLE_SHELLS: 'sidebar-main, top-nav-main, centered, full-bleed, minimal-header',
     VERSION: CLI_VERSION,
+    THEME_QUICK_REFERENCE: themeQuickRef,
   };
 
   return renderTemplate(template, vars);
@@ -273,12 +382,12 @@ function generateTaskContext(
   const template = loadTemplate(templateName);
 
   const defaultShell = essence.structure[0]?.shell || 'sidebar-main';
-  const layout = essence.structure[0]?.layout.join(', ') || 'none';
+  const layout = essence.structure[0]?.layout.map(serializeLayoutItem).join(', ') || 'none';
 
   // Build scaffold structure description
   const scaffoldStructure = essence.structure.map(p => {
     const patterns = p.layout.length > 0
-      ? `\n  - Patterns: ${p.layout.join(', ')}`
+      ? `\n  - Patterns: ${p.layout.map(serializeLayoutItem).join(', ')}`
       : '';
     return `- **${p.id}** (${p.shell})${patterns}`;
   }).join('\n');
@@ -305,10 +414,10 @@ function generateTaskContext(
 function generateEssenceSummary(essence: EssenceFile): string {
   const template = loadTemplate('essence-summary.md.template');
 
-  // Build pages table
+  // Build pages table with proper serialization
   const pagesTable = `| Page | Shell | Layout |
 |------|-------|--------|
-${essence.structure.map(p => `| ${p.id} | ${p.shell} | ${p.layout.join(', ') || 'none'} |`).join('\n')}`;
+${essence.structure.map(p => `| ${p.id} | ${p.shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`).join('\n')}`;
 
   // Build features list
   const featuresList = essence.features.length > 0
@@ -365,7 +474,9 @@ export function scaffoldProject(
   options: InitOptions,
   detected: DetectedProject,
   archetypeData?: ArchetypeData,
-  registrySource: 'api' | 'bundled' = 'bundled'
+  registrySource: 'api' | 'bundled' = 'bundled',
+  themeData?: ThemeData,
+  recipeData?: RecipeData
 ): ScaffoldResult {
   // Build essence
   const essence = buildEssence(options, archetypeData);
@@ -384,7 +495,7 @@ export function scaffoldProject(
 
   // Write DECANTR.md
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
-  writeFileSync(decantrMdPath, generateDecantrMd(essence, detected));
+  writeFileSync(decantrMdPath, generateDecantrMd(essence, detected, themeData, recipeData));
 
   // Write project.json
   const projectJsonPath = join(decantrDir, 'project.json');

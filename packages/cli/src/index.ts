@@ -5,7 +5,7 @@ import type { EssenceFile } from '@decantr/essence-spec';
 import { createResolver, createRegistryClient } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
-import { scaffoldProject } from './scaffold.js';
+import { scaffoldProject, type ThemeData, type RecipeData, type LayoutItem } from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 
 // ── Helpers ──
@@ -391,7 +391,7 @@ async function cmdInit(args: InitArgs) {
   // Fetch blueprint/archetype data
   let archetypeData: {
     id: string;
-    pages?: Array<{ id: string; shell: string; default_layout: string[] }>;
+    pages?: Array<{ id: string; shell: string; default_layout: LayoutItem[] }>;
     features?: string[];
   } | undefined;
 
@@ -424,6 +424,20 @@ async function cmdInit(args: InitArgs) {
     }
   }
 
+  // Fetch theme data for DECANTR.md quick reference
+  let themeData: ThemeData | undefined;
+  let recipeData: RecipeData | undefined;
+
+  if (options.theme) {
+    const themeResult = await registryClient.fetchTheme(options.theme);
+    if (themeResult) {
+      const theme = themeResult.data as { seed?: Record<string, string> };
+      if (theme.seed) {
+        themeData = { seed: theme.seed };
+      }
+    }
+  }
+
   // Scaffold the project
   console.log(heading('Scaffolding project...'));
 
@@ -432,7 +446,9 @@ async function cmdInit(args: InitArgs) {
     options,
     detected,
     archetypeData,
-    registrySource as 'api' | 'bundled'
+    registrySource as 'api' | 'bundled',
+    themeData,
+    recipeData
   );
 
   // Output summary
