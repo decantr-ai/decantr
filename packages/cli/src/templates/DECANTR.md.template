@@ -104,8 +104,8 @@ When a user request would violate guard rules:
 
 **To fetch complete theme and recipe specs:**
 ```bash
-npx decantr get theme {{THEME_STYLE}}
-npx decantr get recipe {{THEME_RECIPE}}
+npx @decantr/cli get theme {{THEME_STYLE}}
+npx @decantr/cli get recipe {{THEME_RECIPE}}
 ```
 
 {{ACCESSIBILITY_SECTION}}
@@ -130,16 +130,16 @@ npx decantr get recipe {{THEME_RECIPE}}
 
 ```bash
 # Get full theme spec (colors, palette, modes)
-npx decantr get theme {{THEME_STYLE}}
+npx @decantr/cli get theme {{THEME_STYLE}}
 
 # Get recipe decorators and effects
-npx decantr get recipe {{THEME_RECIPE}}
+npx @decantr/cli get recipe {{THEME_RECIPE}}
 
 # Get pattern structure and presets
-npx decantr get pattern <pattern-name>
+npx @decantr/cli get pattern <pattern-name>
 
 # Search for patterns
-npx decantr search <query>
+npx @decantr/cli search <query>
 ```
 
 ### With MCP Tools (If Available)
@@ -338,8 +338,8 @@ document.querySelector('meta[name="color-scheme"]').content = 'light';
 ### Get Full Theme/Recipe Specs
 
 ```bash
-npx decantr get theme {{THEME_STYLE}}   # See seed colors, palette
-npx decantr get recipe {{THEME_RECIPE}} # See decorators, effects
+npx @decantr/cli get theme {{THEME_STYLE}}   # See seed colors, palette
+npx @decantr/cli get recipe {{THEME_RECIPE}} # See decorators, effects
 ```
 
 ---
