@@ -338,10 +338,45 @@ async function cmdList(type: string) {
     }
   } catch { /* core not available */ }
 
-  if (items.length > 0) {
-    console.log(heading(`${items.length} ${type}`));
-    for (const item of items) {
-      console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+  // Load custom themes if listing themes
+  const customItems: Array<{ id: string; description?: string; name?: string; source: 'custom' }> = [];
+  if (type === 'themes') {
+    try {
+      const custom = listCustomThemes(process.cwd());
+      for (const theme of custom) {
+        customItems.push({
+          id: `custom:${theme.id}`,
+          description: theme.description,
+          name: theme.name,
+          source: 'custom'
+        });
+      }
+    } catch { /* custom themes unavailable */ }
+  }
+
+  if (items.length > 0 || customItems.length > 0) {
+    if (type === 'themes') {
+      // Show separate sections for registry and custom themes
+      console.log(heading(`Registry themes (${items.length}):`));
+      for (const item of items) {
+        console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+      }
+      if (customItems.length > 0) {
+        console.log('');
+        console.log(heading(`Custom themes (${customItems.length}):`));
+        for (const item of customItems) {
+          console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+        }
+      } else {
+        console.log('');
+        console.log(dim('Custom themes (0):'));
+        console.log(dim('  Run "decantr theme create <name>" to create a custom theme.'));
+      }
+    } else {
+      console.log(heading(`${items.length} ${type}`));
+      for (const item of items) {
+        console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+      }
     }
     return;
   }
@@ -351,9 +386,19 @@ async function cmdList(type: string) {
     const res = await fetch(`https://decantr-registry.fly.dev/v1/${type}`);
     if (res.ok) {
       const data = await res.json() as { total: number; items: Array<{ id: string; name?: string; description?: string }> };
-      console.log(heading(`${data.total} ${type}`));
-      for (const item of data.items) {
-        console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+      if (type === 'themes') {
+        console.log(heading(`Registry themes (${data.total}):`));
+        for (const item of data.items) {
+          console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+        }
+        console.log('');
+        console.log(dim('Custom themes (0):'));
+        console.log(dim('  Run "decantr theme create <name>" to create a custom theme.'));
+      } else {
+        console.log(heading(`${data.total} ${type}`));
+        for (const item of data.items) {
+          console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+        }
       }
       return;
     }
