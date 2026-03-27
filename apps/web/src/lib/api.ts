@@ -1,5 +1,15 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 
+export interface ContentItem {
+  id: string;
+  type: string;
+  namespace: string;
+  slug: string;
+  version: number;
+  status: string;
+  data: Record<string, unknown>;
+}
+
 interface FetchOptions {
   token?: string;
   apiKey?: string;
@@ -59,3 +69,33 @@ export const api = {
   createPortal: (token: string, body: any) =>
     apiFetch<any>('/billing/portal', { token, method: 'POST', body: JSON.stringify(body) }),
 };
+
+// Standalone exports for server components
+export function listContent(
+  type: string,
+  params?: { namespace?: string; limit?: number; offset?: number }
+) {
+  const query: Record<string, string> = {};
+  if (params?.namespace) query.namespace = params.namespace;
+  if (params?.limit != null) query.limit = String(params.limit);
+  if (params?.offset != null) query.offset = String(params.offset);
+  return apiFetch<{ total: number; items: ContentItem[] }>(
+    `/${type}${Object.keys(query).length ? `?${new URLSearchParams(query)}` : ''}`
+  );
+}
+
+export function searchContent(
+  q: string,
+  params?: { type?: string; namespace?: string }
+) {
+  const query: Record<string, string> = { q };
+  if (params?.type) query.type = params.type;
+  if (params?.namespace) query.namespace = params.namespace;
+  return apiFetch<{ total: number; items: ContentItem[] }>(
+    `/search?${new URLSearchParams(query)}`
+  );
+}
+
+export function getContent(type: string, namespace: string, slug: string) {
+  return apiFetch<ContentItem>(`/${type}/${namespace}/${slug}`);
+}
