@@ -128,6 +128,46 @@ async function cmdSearch(query: string, type?: string) {
   }
 }
 
+async function cmdSuggest(query: string, type?: string) {
+  const client = createRegistryClient();
+  const searchType = type || 'pattern';
+  const results = await client.search(query, searchType);
+
+  if (results.length === 0) {
+    console.log(dim(`No suggestions for "${query}"`));
+    console.log('');
+    console.log('Try:');
+    console.log(`  ${cyan('decantr list patterns')} - see all patterns`);
+    console.log(`  ${cyan('decantr search <broader-term>')} - broaden your search`);
+    return;
+  }
+
+  console.log(heading(`Suggestions for "${query}"`));
+
+  // Group by relevance: exact matches vs related
+  const queryLower = query.toLowerCase();
+  const exact = results.filter(r => r.id.toLowerCase().includes(queryLower));
+  const related = results.filter(r => !r.id.toLowerCase().includes(queryLower));
+
+  if (exact.length > 0) {
+    console.log(`${BOLD}Direct matches:${RESET}`);
+    for (const r of exact.slice(0, 3)) {
+      console.log(`  ${cyan(r.id)} - ${r.description || ''}`);
+    }
+    console.log('');
+  }
+
+  if (related.length > 0) {
+    console.log(`${BOLD}Related:${RESET}`);
+    for (const r of related.slice(0, 5)) {
+      console.log(`  ${cyan(r.id)} - ${r.description || ''}`);
+    }
+    console.log('');
+  }
+
+  console.log(dim(`Use "decantr get pattern <id>" for full details`));
+}
+
 async function cmdGet(type: string, id: string) {
   const validTypes = ['pattern', 'archetype', 'recipe', 'theme', 'blueprint'] as const;
   if (!validTypes.includes(type as any)) {
@@ -658,6 +698,7 @@ ${BOLD}Usage:${RESET}
   decantr sync
   decantr audit
   decantr search <query> [--type <type>]
+  decantr suggest <query> [--type <type>]
   decantr get <type> <id>
   decantr list <type>
   decantr validate [path]
@@ -683,6 +724,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('sync')}      Sync registry content from API
   ${cyan('audit')}     Validate essence and check for drift
   ${cyan('search')}    Search the registry
+  ${cyan('suggest')}   Suggest patterns or alternatives for a query
   ${cyan('get')}       Get full details of a registry item
   ${cyan('list')}      List items by type
   ${cyan('validate')}  Validate essence file
@@ -695,6 +737,8 @@ ${BOLD}Examples:${RESET}
   decantr sync
   decantr audit
   decantr search dashboard
+  decantr suggest leaderboard
+  decantr suggest ranking --type pattern
   decantr list patterns
 `);
 }
@@ -764,6 +808,19 @@ async function main() {
       const typeIdx = args.indexOf('--type');
       const type = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
       await cmdSearch(query, type);
+      break;
+    }
+
+    case 'suggest': {
+      const query = args[1];
+      if (!query) {
+        console.error(error('Usage: decantr suggest <query> [--type <type>]'));
+        process.exitCode = 1;
+        return;
+      }
+      const typeIdx = args.indexOf('--type');
+      const type = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
+      await cmdSuggest(query, type);
       break;
     }
 
