@@ -22,6 +22,10 @@ export interface InitOptions {
   personality: string[];
   features: string[];
   existing: boolean;
+  accessibility?: {
+    wcag_level?: string;
+    cvd_preference?: string;
+  };
 }
 
 export interface RegistryItem {

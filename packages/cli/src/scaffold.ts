@@ -45,6 +45,10 @@ export interface EssenceFile {
     content_gap: string;
   };
   target: string;
+  accessibility?: {
+    wcag_level?: string;
+    cvd_preference?: string;
+  };
 }
 
 export interface ArchetypeData {
@@ -56,6 +60,10 @@ export interface ArchetypeData {
     default_layout: LayoutItem[];
   }>;
   features?: string[];
+  seo_hints?: {
+    schema_org?: string[];
+    meta_priorities?: string[];
+  };
 }
 
 export interface ScaffoldResult {
@@ -74,6 +82,11 @@ const CLI_VERSION = '1.0.0';
 export interface ThemeData {
   seed?: Record<string, string>;
   palette?: Record<string, string>;
+  cvd_support?: string[];
+  tokens?: {
+    base?: Record<string, string>;
+    cvd?: Record<string, Record<string, string>>;
+  };
 }
 
 /**
@@ -196,7 +209,7 @@ export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData
   // Use resolved archetype (from blueprint's compose or direct selection)
   const archetype = options.archetype || 'custom';
 
-  return {
+  const essence: EssenceFile = {
     version: '2.0.0',
     archetype,
     theme: {
@@ -223,6 +236,13 @@ export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData
     },
     target: options.target,
   };
+
+  // Add accessibility if specified in options
+  if (options.accessibility) {
+    essence.accessibility = options.accessibility;
+  }
+
+  return essence;
 }
 
 /**
