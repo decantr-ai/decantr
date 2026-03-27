@@ -306,6 +306,24 @@ export class RegistryClient {
   }
 
   /**
+   * Fetch a single theme.
+   */
+  async fetchTheme(id: string): Promise<FetchResult<RegistryItem> | null> {
+    if (!this.offline) {
+      const apiResult = await tryApi<RegistryItem>(`themes/${id}`, this.apiUrl);
+      if (apiResult) {
+        saveToCache(this.cacheDir, 'themes', id, apiResult.data);
+        return apiResult;
+      }
+    }
+
+    const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'themes', id);
+    if (cacheResult) return cacheResult;
+
+    return loadFromBundled<RegistryItem>('themes', id);
+  }
+
+  /**
    * Fetch patterns list.
    */
   async fetchPatterns(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
