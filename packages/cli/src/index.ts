@@ -7,6 +7,13 @@ import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
 import { scaffoldProject, type ThemeData, type RecipeData, type LayoutItem } from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
+import {
+  createTheme,
+  listCustomThemes,
+  deleteTheme,
+  importTheme,
+  validateCustomTheme
+} from './theme-commands.js';
 
 // ── Helpers ──
 
@@ -686,6 +693,146 @@ async function cmdAudit() {
   }
 }
 
+// ── Theme subcommand ──
+
+async function cmdTheme(args: string[]) {
+  const subcommand = args[0];
+  const projectRoot = process.cwd();
+
+  if (!subcommand || subcommand === 'help') {
+    console.log(`
+${BOLD}decantr theme${RESET} — Manage custom themes
+
+${BOLD}Commands:${RESET}
+  ${cyan('create')} <name>        Create a new custom theme
+  ${cyan('create')} <name> --guided   Interactive theme creation
+  ${cyan('list')}                 List custom themes
+  ${cyan('validate')} <name>      Validate a custom theme
+  ${cyan('delete')} <name>        Delete a custom theme
+  ${cyan('import')} <path>        Import theme from JSON file
+
+${BOLD}Examples:${RESET}
+  decantr theme create mytheme
+  decantr theme list
+  decantr theme validate mytheme
+  decantr theme import ./external-theme.json
+`);
+    return;
+  }
+
+  switch (subcommand) {
+    case 'create': {
+      const name = args[1];
+      if (!name) {
+        console.error(error('Usage: decantr theme create <name>'));
+        process.exitCode = 1;
+        return;
+      }
+      // Convert to display name (capitalize first letter)
+      const displayName = name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
+      const result = createTheme(projectRoot, name, displayName);
+      if (result.success) {
+        console.log(success(`Created custom theme "${name}"`));
+        console.log(dim(`  Path: ${result.path}`));
+        console.log('');
+        console.log(`Use in essence: ${cyan(`"style": "custom:${name}"`)}`);
+      } else {
+        console.error(error(result.error || 'Failed to create theme'));
+        process.exitCode = 1;
+      }
+      break;
+    }
+
+    case 'list': {
+      const themes = listCustomThemes(projectRoot);
+      if (themes.length === 0) {
+        console.log(dim('No custom themes found.'));
+        console.log(dim('Run "decantr theme create <name>" to create one.'));
+      } else {
+        console.log(heading(`${themes.length} custom theme(s)`));
+        for (const theme of themes) {
+          console.log(`  ${cyan(`custom:${theme.id}`)}  ${dim(theme.description || theme.name)}`);
+        }
+      }
+      break;
+    }
+
+    case 'validate': {
+      const name = args[1];
+      if (!name) {
+        console.error(error('Usage: decantr theme validate <name>'));
+        process.exitCode = 1;
+        return;
+      }
+      const themePath = join(projectRoot, '.decantr', 'custom', 'themes', `${name}.json`);
+      if (!existsSync(themePath)) {
+        console.error(error(`Theme "${name}" not found at ${themePath}`));
+        process.exitCode = 1;
+        return;
+      }
+      try {
+        const theme = JSON.parse(readFileSync(themePath, 'utf-8'));
+        const result = validateCustomTheme(theme);
+        if (result.valid) {
+          console.log(success(`Custom theme "${name}" is valid`));
+        } else {
+          console.error(error('Validation failed:'));
+          for (const err of result.errors) {
+            console.error(`  ${RED}${err}${RESET}`);
+          }
+          process.exitCode = 1;
+        }
+      } catch (e) {
+        console.error(error(`Invalid JSON: ${(e as Error).message}`));
+        process.exitCode = 1;
+      }
+      break;
+    }
+
+    case 'delete': {
+      const name = args[1];
+      if (!name) {
+        console.error(error('Usage: decantr theme delete <name>'));
+        process.exitCode = 1;
+        return;
+      }
+      const result = deleteTheme(projectRoot, name);
+      if (result.success) {
+        console.log(success(`Deleted custom theme "${name}"`));
+      } else {
+        console.error(error(result.error || 'Failed to delete theme'));
+        process.exitCode = 1;
+      }
+      break;
+    }
+
+    case 'import': {
+      const sourcePath = args[1];
+      if (!sourcePath) {
+        console.error(error('Usage: decantr theme import <path>'));
+        process.exitCode = 1;
+        return;
+      }
+      const result = importTheme(projectRoot, sourcePath);
+      if (result.success) {
+        console.log(success('Theme imported successfully'));
+        console.log(dim(`  Path: ${result.path}`));
+      } else {
+        console.error(error('Import failed:'));
+        for (const err of result.errors || []) {
+          console.error(`  ${RED}${err}${RESET}`);
+        }
+        process.exitCode = 1;
+      }
+      break;
+    }
+
+    default:
+      console.error(error(`Unknown theme command: ${subcommand}`));
+      process.exitCode = 1;
+  }
+}
+
 // ── Help ──
 
 function cmdHelp() {
@@ -702,6 +849,7 @@ ${BOLD}Usage:${RESET}
   decantr get <type> <id>
   decantr list <type>
   decantr validate [path]
+  decantr theme <subcommand>
   decantr help
 
 ${BOLD}Init Options:${RESET}
@@ -728,6 +876,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('get')}       Get full details of a registry item
   ${cyan('list')}      List items by type
   ${cyan('validate')}  Validate essence file
+  ${cyan('theme')}     Manage custom themes (create, list, validate, delete, import)
   ${cyan('help')}      Show this help
 
 ${BOLD}Examples:${RESET}
@@ -849,6 +998,11 @@ async function main() {
 
     case 'validate': {
       await cmdValidate(args[1]);
+      break;
+    }
+
+    case 'theme': {
+      await cmdTheme(args.slice(1));
       break;
     }
 
