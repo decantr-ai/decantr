@@ -10,6 +10,22 @@ export interface ContentItem {
   data: Record<string, unknown>;
 }
 
+export interface ApiKey {
+  id: string;
+  name: string;
+  scopes: string[];
+  created_at: string;
+  last_used_at: string | null;
+  revoked: boolean;
+}
+
+export interface OrgMember {
+  user_id: string;
+  email: string;
+  role: string;
+  created_at: string;
+}
+
 interface FetchOptions {
   token?: string;
   apiKey?: string;
@@ -68,6 +84,16 @@ export const api = {
     apiFetch<any>('/billing/checkout', { token, method: 'POST', body: JSON.stringify(body) }),
   createPortal: (token: string, body: any) =>
     apiFetch<any>('/billing/portal', { token, method: 'POST', body: JSON.stringify(body) }),
+
+  // Team / Org
+  getOrgMembers: (token: string, orgSlug: string) =>
+    apiFetch<{ members: OrgMember[] }>(`/orgs/${orgSlug}/members`, { token }),
+  inviteOrgMember: (token: string, orgSlug: string, body: { email: string; role: string }) =>
+    apiFetch<any>(`/orgs/${orgSlug}/members`, { token, method: 'POST', body: JSON.stringify(body) }),
+  removeOrgMember: (token: string, orgSlug: string, userId: string) =>
+    apiFetch<void>(`/orgs/${orgSlug}/members/${userId}`, { token, method: 'DELETE' }),
+  updateOrgMemberRole: (token: string, orgSlug: string, userId: string, body: { role: string }) =>
+    apiFetch<any>(`/orgs/${orgSlug}/members/${userId}`, { token, method: 'PATCH', body: JSON.stringify(body) }),
 };
 
 // Standalone exports for server components
