@@ -65,7 +65,7 @@ Use CSS `@layer` for proper cascade control:
 
 ```html
 <!DOCTYPE html>
-<html lang="en" data-theme="luminarum" data-mode="dark">
+<html lang="en" data-theme="luminarum" data-mode="dark" data-cvd="none">
   <head>
     <meta charset="UTF-8" />
     <!-- color-scheme tells the browser about the page's color scheme -->
@@ -78,12 +78,21 @@ Use CSS `@layer` for proper cascade control:
 </html>
 ```
 
+### Data Attributes
+
+| Attribute | Purpose | Values |
+|-----------|---------|--------|
+| `data-theme` | Active theme identifier | `luminarum`, `auradecantism`, `clean`, etc. |
+| `data-mode` | Light/dark mode | `light`, `dark`, `auto` |
+| `data-cvd` | Color vision deficiency mode | `none`, `deuteranopia`, `protanopia`, `tritanopia` |
+
 ### Why This Matters
 
 1. **Theme switching** - JavaScript can change `data-theme` without reloading CSS
 2. **Multiple themes** - Scoped containers can have different themes
 3. **CSS specificity** - `html[data-theme="x"]` is more specific than `:root`
 4. **OS integration** - `color-scheme` enables native form controls to match
+5. **CVD support** - `data-cvd` enables color-blind-friendly token overrides
 
 ---
 
@@ -335,6 +344,148 @@ html[data-mode="auto"] {
 
 ---
 
+## Color Vision Deficiency (CVD) Support
+
+Themes can optionally provide CVD-friendly token overrides. When a theme declares `cvd_support`, implement the alternate tokens:
+
+### CVD Token Structure
+
+```css
+/* Base semantic tokens */
+html[data-theme="luminarum"] {
+  --d-danger: #EF4444;
+  --d-success: #22C55E;
+  --d-warning: #F59E0B;
+}
+
+/* Deuteranopia overrides (red-green, most common) */
+html[data-theme="luminarum"][data-cvd="deuteranopia"] {
+  --d-danger: #FF8F00;    /* Shifted to orange */
+  --d-success: #2196F3;   /* Shifted to blue */
+}
+
+/* Protanopia overrides (red-green, red-weak) */
+html[data-theme="luminarum"][data-cvd="protanopia"] {
+  --d-danger: #FFC107;    /* Shifted to amber */
+  --d-success: #03A9F4;   /* Shifted to cyan */
+}
+
+/* Tritanopia overrides (blue-yellow, rare) */
+html[data-theme="luminarum"][data-cvd="tritanopia"] {
+  --d-warning: #E91E63;   /* Shifted to pink */
+}
+```
+
+### Graceful Fallback Pattern
+
+Use CSS custom property fallbacks so missing CVD tokens fall back to base:
+
+```css
+:root {
+  --d-danger: var(--d-danger-cvd, var(--d-danger-base));
+  --d-success: var(--d-success-cvd, var(--d-success-base));
+}
+
+html[data-theme="luminarum"] {
+  --d-danger-base: #EF4444;
+  --d-success-base: #22C55E;
+}
+
+html[data-theme="luminarum"][data-cvd="deuteranopia"] {
+  --d-danger-cvd: #FF8F00;
+  --d-success-cvd: #2196F3;
+}
+```
+
+If the theme doesn't provide a CVD variant, it gracefully falls back to the base color.
+
+### CVD Design Guidelines
+
+When creating CVD-friendly palettes:
+
+1. **Don't rely on hue alone** — Use luminance differences, patterns, or icons alongside color
+2. **Red-green is most common** — Deuteranopia and protanopia affect ~8% of males
+3. **Test with simulators** — Use browser DevTools color vision simulation
+4. **Semantic meaning** — Ensure danger/success/warning remain distinguishable
+
+---
+
+## Accessibility CSS
+
+### Focus Indicators
+
+Always provide visible focus indicators:
+
+```css
+@layer decantr.tokens {
+  :root {
+    --d-focus-ring: var(--d-primary);
+    --d-focus-ring-offset: 2px;
+    --d-focus-ring-width: 2px;
+  }
+}
+
+@layer decantr.patterns {
+  /* Visible focus for all interactive elements */
+  :focus-visible {
+    outline: var(--d-focus-ring-width) solid var(--d-focus-ring);
+    outline-offset: var(--d-focus-ring-offset);
+  }
+
+  /* Remove default outline when using focus-visible */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+```
+
+### Reduced Motion
+
+Respect user motion preferences:
+
+```css
+@layer decantr.tokens {
+  :root {
+    --d-transition-fast: 150ms ease;
+    --d-transition-normal: 250ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --d-transition-fast: 0ms;
+      --d-transition-normal: 0ms;
+    }
+  }
+}
+
+@layer decantr.decorators {
+  /* Animations should check reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .lum-orbs::before {
+      animation: none;
+    }
+  }
+}
+```
+
+### Contrast Requirements
+
+For WCAG AA compliance:
+
+| Element | Minimum Contrast Ratio |
+|---------|------------------------|
+| Normal text (< 18px) | 4.5:1 |
+| Large text (>= 18px bold, >= 24px) | 3:1 |
+| UI components, graphics | 3:1 |
+
+When defining theme tokens, verify contrast ratios between:
+- `--d-text` and `--d-bg`
+- `--d-text-muted` and `--d-bg`
+- `--d-primary` (as text) and `--d-bg`
+- `--d-text` and `--d-surface`
+
+---
+
 ## Theme Switching JavaScript
 
 ```javascript
@@ -345,6 +496,9 @@ document.documentElement.dataset.theme = 'auradecantism';
 document.documentElement.dataset.mode = 'light';
 document.querySelector('meta[name="color-scheme"]').content = 'light';
 
+// Switch CVD mode
+document.documentElement.dataset.cvd = 'deuteranopia';
+
 // Toggle mode
 function toggleMode() {
   const html = document.documentElement;
@@ -353,21 +507,30 @@ function toggleMode() {
   document.querySelector('meta[name="color-scheme"]').content = newMode;
 }
 
-// Persist preference
-function setTheme(theme, mode) {
+// Persist all preferences
+function setTheme(theme, mode, cvd = 'none') {
   document.documentElement.dataset.theme = theme;
   document.documentElement.dataset.mode = mode;
+  document.documentElement.dataset.cvd = cvd;
   document.querySelector('meta[name="color-scheme"]').content = mode;
-  localStorage.setItem('decantr-theme', JSON.stringify({ theme, mode }));
+  localStorage.setItem('decantr-theme', JSON.stringify({ theme, mode, cvd }));
 }
 
 // Restore on load
 function restoreTheme() {
   const saved = localStorage.getItem('decantr-theme');
   if (saved) {
-    const { theme, mode } = JSON.parse(saved);
-    setTheme(theme, mode);
+    const { theme, mode, cvd } = JSON.parse(saved);
+    setTheme(theme, mode, cvd || 'none');
   }
+}
+
+// Set CVD mode independently
+function setCvdMode(cvd) {
+  document.documentElement.dataset.cvd = cvd;
+  const saved = JSON.parse(localStorage.getItem('decantr-theme') || '{}');
+  saved.cvd = cvd;
+  localStorage.setItem('decantr-theme', JSON.stringify(saved));
 }
 ```
 
@@ -379,7 +542,7 @@ When scaffolding a new project, generate the HTML with theme attributes:
 
 ```html
 <!DOCTYPE html>
-<html lang="en" data-theme="{{THEME_STYLE}}" data-mode="{{THEME_MODE}}">
+<html lang="en" data-theme="{{THEME_STYLE}}" data-mode="{{THEME_MODE}}" data-cvd="none">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -393,6 +556,16 @@ When scaffolding a new project, generate the HTML with theme attributes:
   </body>
 </html>
 ```
+
+### Attributes Reference
+
+| Placeholder | Source | Example |
+|-------------|--------|---------|
+| `{{THEME_STYLE}}` | `essence.theme.style` | `luminarum` |
+| `{{THEME_MODE}}` | `essence.theme.mode` | `dark` |
+| `{{PROJECT_NAME}}` | Project name | `My App` |
+
+The `data-cvd` attribute defaults to `"none"`. If the theme supports CVD modes and the essence declares `accessibility.cvd_preference`, initialize accordingly.
 
 ---
 
@@ -503,9 +676,12 @@ Here is a complete CSS file following all conventions:
 
 When implementing CSS for a Decantr project:
 
+### Structure
 - [ ] Declare `@layer` order at the top of your CSS
-- [ ] Add `data-theme` and `data-mode` to the `<html>` element
+- [ ] Add `data-theme`, `data-mode`, and `data-cvd` to the `<html>` element
 - [ ] Add `<meta name="color-scheme">` to the `<head>`
+
+### Theming
 - [ ] Use `html[data-theme="x"]` selectors for theme-specific tokens
 - [ ] Set `color-scheme` property within theme selectors
 - [ ] Follow the `--d-` prefix for core tokens
@@ -513,6 +689,17 @@ When implementing CSS for a Decantr project:
 - [ ] Implement decorator classes for recipe decorators
 - [ ] Use spacing tokens (`--gap*`) instead of arbitrary pixel values
 - [ ] Provide `-rgb` variants for colors that need alpha blending
+
+### Accessibility
+- [ ] Implement `:focus-visible` styles for all interactive elements
+- [ ] Define `--d-focus-ring` token for consistent focus indicators
+- [ ] Respect `prefers-reduced-motion` for animations
+- [ ] Verify contrast ratios meet WCAG level (AA = 4.5:1 text, 3:1 UI)
+
+### CVD Support (if theme declares `cvd_support`)
+- [ ] Implement CVD token overrides with `[data-cvd="mode"]` selectors
+- [ ] Use graceful fallback pattern (`var(--cvd, var(--base))`)
+- [ ] Ensure danger/success/warning colors remain distinguishable
 
 ---
 
