@@ -1,0 +1,28 @@
+{
+  "id": "nav-header",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Navigation Header",
+  "description": "Top navigation bar with logo, links, and actions.",
+  "components": ["Button", "Link"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Horizontal nav with logo left, links center, actions right",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcsb _px6 _py3 _borderB"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _jcsb _px6 _py3 _borderB",
+    "slots": {
+      "logo": "Brand logo or name",
+      "links": "Navigation links",
+      "actions": "Action buttons (login, signup)"
+    }
+  }
+}

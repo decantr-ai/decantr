@@ -1,0 +1,27 @@
+{
+  "id": "content-section",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Content Section",
+  "description": "Generic content section with heading and body.",
+  "components": [],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Centered content with max-width",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4 _py8 _px6 _mxauto _maxw[800px]"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4 _py8 _px6 _mxauto _maxw[800px]",
+    "slots": {
+      "heading": "Section heading",
+      "body": "Section content"
+    }
+  }
+}

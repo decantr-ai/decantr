@@ -1,0 +1,20 @@
+{
+  "id": "default",
+  "$schema": "https://decantr.ai/schemas/shell.v1.json",
+  "version": "1.0.0",
+  "name": "Default Shell",
+  "description": "Simple top-nav + main content layout.",
+  "layout": "stack",
+  "atoms": "_flex _col _minh[100vh]",
+  "config": {
+    "regions": ["header", "body"],
+    "header": {
+      "height": "auto",
+      "sticky": true
+    },
+    "body": {
+      "scroll": true,
+      "flex": 1
+    }
+  }
+}

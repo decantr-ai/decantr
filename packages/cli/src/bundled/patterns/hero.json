@@ -1,0 +1,28 @@
+{
+  "id": "hero",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Hero",
+  "description": "Landing page hero section with headline, subheadline, and CTA.",
+  "components": ["Button"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Centered hero with headline and CTA",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _aic _tc _py12 _gap6"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _aic _tc _py12 _gap6",
+    "slots": {
+      "headline": "Main headline text",
+      "subheadline": "Supporting description",
+      "cta": "Call-to-action button(s)"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "default",
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Decantr Default",
+  "description": "Neutral theme that works in light and dark modes. Clean and professional.",
+  "tags": ["neutral", "light", "dark", "minimal"],
+  "personality": "clean + minimal + professional",
+  "seed": {
+    "primary": "#3B82F6",
+    "secondary": "#6B7280",
+    "accent": "#8B5CF6",
+    "background": "#FFFFFF"
+  },
+  "palette": {
+    "background": {
+      "light": "#FFFFFF",
+      "dark": "#18181B"
+    },
+    "surface": {
+      "light": "#F9FAFB",
+      "dark": "#27272A"
+    },
+    "surface-raised": {
+      "light": "#F3F4F6",
+      "dark": "#3F3F46"
+    },
+    "border": {
+      "light": "#E5E7EB",
+      "dark": "#52525B"
+    },
+    "text": {
+      "light": "#111827",
+      "dark": "#FAFAFA"
+    },
+    "text-muted": {
+      "light": "#6B7280",
+      "dark": "#A1A1AA"
+    },
+    "primary": {
+      "light": "#3B82F6",
+      "dark": "#60A5FA"
+    }
+  },
+  "modes": ["light", "dark", "system"],
+  "shapes": ["rounded", "sharp", "pill"]
+}

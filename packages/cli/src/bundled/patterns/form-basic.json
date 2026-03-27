@@ -1,0 +1,27 @@
+{
+  "id": "form-basic",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Basic Form",
+  "description": "Simple form with inputs and submit button.",
+  "components": ["Input", "Button", "Label"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Vertical form with stacked fields",
+      "layout": {
+        "layout": "stack",
+        "atoms": "_flex _col _gap4"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_flex _col _gap4",
+    "slots": {
+      "fields": "Form input fields",
+      "actions": "Submit/cancel buttons"
+    }
+  }
+}

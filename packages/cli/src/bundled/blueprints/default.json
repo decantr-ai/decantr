@@ -1,0 +1,24 @@
+{
+  "id": "default",
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Decantr Default",
+  "description": "Minimal starter blueprint for offline scaffolding. Visit decantr.ai/registry for more options.",
+  "tags": ["starter", "minimal", "offline"],
+  "compose": ["starter"],
+  "theme": {
+    "style": "default",
+    "mode": "system",
+    "recipe": null,
+    "shape": "rounded"
+  },
+  "personality": ["clean", "minimal"],
+  "features": [],
+  "routes": {
+    "/": {
+      "shell": "default",
+      "page": "home"
+    }
+  }
+}

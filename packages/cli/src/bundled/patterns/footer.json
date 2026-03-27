@@ -1,0 +1,27 @@
+{
+  "id": "footer",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Footer",
+  "description": "Page footer with links and copyright.",
+  "components": ["Link"],
+  "default_preset": "standard",
+  "presets": {
+    "standard": {
+      "description": "Simple footer with links and copyright",
+      "layout": {
+        "layout": "row",
+        "atoms": "_flex _aic _jcsb _px6 _py4 _borderT _fgmuted"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "row",
+    "atoms": "_flex _aic _jcsb _px6 _py4 _borderT _fgmuted",
+    "slots": {
+      "links": "Footer links",
+      "copyright": "Copyright notice"
+    }
+  }
+}
