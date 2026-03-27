@@ -24,6 +24,7 @@
         "density": { "$ref": "#/$defs/Density" },
         "guard": { "$ref": "#/$defs/Guard" },
         "target": { "type": "string", "minLength": 1 },
+        "accessibility": { "$ref": "#/$defs/Accessibility" },
         "_impression": { "$ref": "#/$defs/Impression" }
       }
     },
@@ -41,6 +42,7 @@
         "density": { "$ref": "#/$defs/Density" },
         "guard": { "$ref": "#/$defs/Guard" },
         "target": { "type": "string", "minLength": 1 },
+        "accessibility": { "$ref": "#/$defs/Accessibility" },
         "_impression": { "$ref": "#/$defs/Impression" }
       }
     },
@@ -143,6 +145,22 @@
         "theme": { "$ref": "#/$defs/Theme" },
         "structure": { "type": "array", "items": { "$ref": "#/$defs/StructurePage" }, "minItems": 1 },
         "features": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "Accessibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "wcag_level": {
+          "type": "string",
+          "enum": ["none", "A", "AA", "AAA"],
+          "description": "WCAG compliance level requirement"
+        },
+        "cvd_preference": {
+          "type": "string",
+          "enum": ["none", "auto", "deuteranopia", "protanopia", "tritanopia", "achromatopsia"],
+          "description": "Color vision deficiency accommodation preference"
+        }
       }
     }
   }
