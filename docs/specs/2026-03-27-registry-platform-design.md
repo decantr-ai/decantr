@@ -610,10 +610,170 @@ status = 'published'    status = 'pending'
 
 ### Tech Stack
 
-- **Framework:** Next.js 14+ (App Router)
+- **Framework:** Next.js 15+ (App Router), React 19
 - **Hosting:** Vercel
 - **Auth:** Supabase Auth (SSR)
-- **Styling:** Tailwind CSS
+- **Styling:** Tailwind CSS 4
+
+### Dogfooding Decantr
+
+The registry platform UI is built using Decantr's own design system. This means:
+
+1. **Create new registry content** specifically for this platform
+2. **Generate `decantr.essence.json`** for the web app
+3. **Use luminarum theme** (dark mode, pill shape)
+4. **Follow Decantr patterns** throughout the codebase
+
+Reference: See `docs/index.html` for the existing Decantr landing page styling (luminarum theme, particle network, reveal animations).
+
+### New Registry Items to Create
+
+#### Blueprint: `registry-platform`
+
+```json
+{
+  "id": "registry-platform",
+  "name": "Registry Platform",
+  "description": "Content registry with browsing, publishing, and user management",
+  "compose": ["registry-browser", "user-dashboard", "content-editor", "admin-moderation"],
+  "theme": {
+    "style": "luminarum",
+    "mode": "dark",
+    "shape": "pill"
+  },
+  "personality": ["technical", "clean", "professional", "accessible"]
+}
+```
+
+#### Archetypes
+
+| Archetype | Description | Pages |
+|-----------|-------------|-------|
+| `registry-browser` | Public content browsing | `/registry`, `/registry/[type]`, `/registry/[type]/[namespace]/[slug]` |
+| `user-dashboard` | Authenticated user area | `/dashboard`, `/dashboard/content`, `/dashboard/api-keys`, `/dashboard/settings` |
+| `content-editor` | Content creation/editing | `/dashboard/content/new`, `/dashboard/content/[id]/edit` |
+| `admin-moderation` | Admin moderation queue | `/admin/moderation`, `/admin/moderation/[id]` |
+| `team-management` | Team/org management | `/dashboard/team`, `/dashboard/team/members`, `/dashboard/team/content` |
+| `billing-portal` | Subscription management | `/dashboard/billing` |
+
+#### New Patterns
+
+| Pattern | Description | Usage |
+|---------|-------------|-------|
+| `content-card-grid` | Grid of content cards with type badges | Registry browser listing |
+| `content-detail-hero` | Header for content detail pages | Pattern/theme detail view |
+| `namespace-badge` | Colored badge for @official/@community/@org | Content cards, detail pages |
+| `json-viewer` | Collapsible JSON with syntax highlighting | Content detail pages |
+| `moderation-queue-item` | Pending submission with approve/reject | Admin moderation |
+| `api-key-row` | API key display with copy/revoke | API keys management |
+| `team-member-row` | Member with role badge and actions | Team management |
+| `reputation-badge` | User reputation score display | Dashboard, content cards |
+| `tier-upgrade-card` | Pricing tier with upgrade CTA | Billing, landing page |
+| `search-filter-bar` | Search input with type/namespace filters | Registry browser |
+
+### Essence File for Registry Platform (`apps/web/decantr.essence.json`)
+
+```json
+{
+  "version": "2.0.0",
+  "blueprint": "registry-platform",
+  "archetype": "registry-browser",
+  "theme": {
+    "style": "luminarum",
+    "mode": "dark",
+    "recipe": "luminarum",
+    "shape": "pill"
+  },
+  "personality": ["technical", "clean", "professional", "accessible"],
+  "platform": {
+    "type": "spa",
+    "routing": "app-router",
+    "framework": "next"
+  },
+  "structure": [
+    {
+      "id": "landing",
+      "shell": "full-bleed",
+      "layout": [
+        { "pattern": "hero-split", "preset": "standard" },
+        { "pattern": "feature-grid", "preset": "icons" },
+        { "pattern": "before-after", "preset": "browser-frames" },
+        { "pattern": "tier-upgrade-card", "preset": "highlighted" },
+        { "pattern": "quick-start", "preset": "cards" },
+        { "pattern": "cta-banner", "preset": "gradient" }
+      ]
+    },
+    {
+      "id": "registry",
+      "shell": "topbar-main",
+      "layout": [
+        { "pattern": "search-filter-bar", "preset": "standard" },
+        { "pattern": "content-card-grid", "preset": "standard" }
+      ]
+    },
+    {
+      "id": "content-detail",
+      "shell": "topbar-main",
+      "layout": [
+        { "pattern": "content-detail-hero", "preset": "standard" },
+        { "pattern": "json-viewer", "preset": "collapsible" }
+      ]
+    },
+    {
+      "id": "dashboard",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "stats-bar", "preset": "minimal" },
+        { "pattern": "reputation-badge", "preset": "large" },
+        { "pattern": "activity-feed", "preset": "compact" }
+      ]
+    },
+    {
+      "id": "dashboard-content",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "content-card-grid", "preset": "editable" }
+      ]
+    },
+    {
+      "id": "dashboard-api-keys",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "api-key-row", "preset": "standard" }
+      ]
+    },
+    {
+      "id": "dashboard-team",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "team-member-row", "preset": "standard" }
+      ]
+    },
+    {
+      "id": "admin-moderation",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "moderation-queue-item", "preset": "standard" }
+      ]
+    }
+  ],
+  "features": ["auth", "billing"],
+  "guard": {
+    "enforce_style": true,
+    "enforce_recipe": true,
+    "mode": "strict"
+  },
+  "density": {
+    "level": "comfortable",
+    "content_gap": "_gap6"
+  },
+  "target": "react",
+  "_meta": {
+    "project": "Decantr Registry Platform",
+    "description": "The Decantr registry web UI — dogfooding the design intelligence system"
+  }
+}
+```
 
 ### Pages
 
@@ -699,15 +859,18 @@ status = 'published'    status = 'pending'
 | 4 | MCP server + CLI updates (API client, custom content) |
 | 5 | decantr-content rebuild + CI/CD |
 | 6 | Reputation system + moderation |
-| 7 | Web UI (Landing + Registry Browser + Dashboard) |
+| 7 | Registry platform content (new blueprint, archetypes, patterns) |
+| 8 | Web UI (Landing + Registry Browser + Dashboard) — dogfooded with Phase 7 content |
 
 ---
 
 ## Scope Notes
 
-**In scope for Phases 1-7:**
+**In scope for Phases 1-8:**
 - Free, Pro, and Team tiers on shared Supabase infrastructure
 - All features described above for these tiers
+- New registry content: `registry-platform` blueprint, 6 archetypes, 10 patterns
+- Dogfooded Web UI using Decantr's own design system
 
 **Out of scope (future work):**
 - Enterprise tier (dedicated DB, SSO, on-prem) — requires separate infrastructure design
