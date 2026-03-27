@@ -21,5 +21,9 @@
     },
     "recipes": {},
     "styles": {}
+  },
+  "seo_hints": {
+    "schema_org": ["Organization", "WebApplication"],
+    "meta_priorities": ["description", "og:image", "twitter:card"]
   }
 }
