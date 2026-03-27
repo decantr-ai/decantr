@@ -6,7 +6,7 @@ import { RegistryAPIClient } from '@decantr/registry';
 import type { ApiContentType } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
-import { scaffoldProject, type ThemeData, type RecipeData, type LayoutItem } from './scaffold.js';
+import { scaffoldProject, scaffoldMinimal, type ThemeData, type RecipeData, type LayoutItem } from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
   createTheme,
@@ -15,6 +15,9 @@ import {
   importTheme,
   validateCustomTheme
 } from './theme-commands.js';
+import { saveCredentials, clearCredentials, getCredentials } from './auth.js';
+import { cmdPublish } from './commands/publish.js';
+import { cmdCreate } from './commands/create.js';
 
 // ── Helpers ──
 
@@ -423,7 +426,29 @@ async function cmdInit(args: InitArgs) {
     // Non-interactive: use --blueprint flag or default
     selectedBlueprint = args.blueprint || 'default';
   } else if (!apiAvailable) {
-    // Offline mode
+    // Offline mode with no blueprint specified: use minimal scaffold
+    if (!args.blueprint) {
+      console.log(`\n${YELLOW}You're offline. Scaffolding minimal Decantr project.${RESET}`);
+      console.log(dim('Run `decantr sync` or `decantr upgrade` when online to pull full registry content.\n'));
+
+      const result = scaffoldMinimal(projectRoot);
+
+      console.log(success('\nProject scaffolded (minimal/offline)!\n'));
+      console.log('  Files created:');
+      console.log(`    ${cyan('decantr.essence.json')}    Design specification`);
+      console.log(`    ${cyan('DECANTR.md')}              LLM instructions`);
+      console.log(`    ${cyan('.decantr/')}               Project state & custom content dirs`);
+      if (result.gitignoreUpdated) {
+        console.log(`    ${dim('.gitignore updated')}`);
+      }
+      console.log('');
+      console.log('  Next steps:');
+      console.log(`    1. Run ${cyan('decantr sync')} when online`);
+      console.log(`    2. Use ${cyan('decantr create <type> <name>')} to create custom content`);
+      console.log(`    3. Review DECANTR.md for methodology`);
+      return;
+    }
+
     console.log(`\n${YELLOW}You're offline. Scaffolding Decantr default.${RESET}`);
     console.log(dim('Run `decantr upgrade` when online, or visit decantr.ai/registry\n'));
     selectedBlueprint = 'default';
@@ -918,6 +943,10 @@ ${BOLD}Usage:${RESET}
   decantr list <type>
   decantr validate [path]
   decantr theme <subcommand>
+  decantr create <type> <name>
+  decantr publish <type> <name>
+  decantr login
+  decantr logout
   decantr help
 
 ${BOLD}Init Options:${RESET}
@@ -945,6 +974,10 @@ ${BOLD}Commands:${RESET}
   ${cyan('list')}      List items by type
   ${cyan('validate')}  Validate essence file
   ${cyan('theme')}     Manage custom themes (create, list, validate, delete, import)
+  ${cyan('create')}    Create a custom content item (pattern, recipe, theme, etc.)
+  ${cyan('publish')}   Publish a custom content item to the community registry
+  ${cyan('login')}     Authenticate with the Decantr registry
+  ${cyan('logout')}    Remove stored credentials
   ${cyan('help')}      Show this help
 
 ${BOLD}Examples:${RESET}
@@ -957,6 +990,8 @@ ${BOLD}Examples:${RESET}
   decantr suggest leaderboard
   decantr suggest ranking --type pattern
   decantr list patterns
+  decantr create pattern my-card
+  decantr publish pattern my-card
 `);
 }
 
@@ -1083,6 +1118,65 @@ async function main() {
 
     case 'theme': {
       await cmdTheme(args.slice(1));
+      break;
+    }
+
+    case 'login': {
+      const apiKeyArg = args[1];
+      if (apiKeyArg && apiKeyArg.startsWith('--api-key=')) {
+        const key = apiKeyArg.split('=')[1];
+        saveCredentials({ access_token: key, api_key: key });
+        console.log(success('API key saved.'));
+      } else {
+        console.log(heading('Decantr Login'));
+        console.log('  To authenticate, get your API key from the Decantr dashboard:');
+        console.log('');
+        console.log(`    ${cyan('https://decantr.ai/dashboard/api-keys')}`);
+        console.log('');
+        console.log('  Then run:');
+        console.log(`    ${cyan('decantr login --api-key=<your-key>')}`);
+        console.log('');
+        console.log('  Or set the environment variable:');
+        console.log(`    ${cyan('export DECANTR_API_KEY=<your-key>')}`);
+
+        const existingCreds = getCredentials();
+        if (existingCreds) {
+          console.log('');
+          console.log(dim('You are currently authenticated.'));
+        }
+      }
+      break;
+    }
+
+    case 'logout': {
+      clearCredentials();
+      console.log(success('Logged out. Credentials removed.'));
+      break;
+    }
+
+    case 'create': {
+      const type = args[1];
+      const name = args[2];
+      if (!type || !name) {
+        console.error(error('Usage: decantr create <type> <name>'));
+        console.error(dim('Types: pattern, recipe, theme, blueprint, archetype, shell'));
+        process.exitCode = 1;
+        break;
+      }
+      cmdCreate(type, name);
+      break;
+    }
+
+    case 'publish': {
+      const type = args[1];
+      const name = args[2];
+      if (!type || !name) {
+        console.error(error('Usage: decantr publish <type> <name>'));
+        console.error(dim('Types: pattern, recipe, theme, blueprint, archetype, shell'));
+        process.exitCode = 1;
+        break;
+      }
+      await cmdPublish(type, name);
       break;
     }
 
