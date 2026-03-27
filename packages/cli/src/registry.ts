@@ -12,8 +12,9 @@ export interface RegistryItem {
 }
 
 export interface RegistrySource {
-  type: 'api' | 'bundled' | 'cache';
+  type: 'api' | 'bundled' | 'cache' | 'custom';
   url?: string;
+  path?: string;  // For custom: the local file path
 }
 
 export interface FetchResult<T> {
