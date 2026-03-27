@@ -32,6 +32,11 @@ export interface ArchetypePage {
   shell: string;
 }
 
+export interface SeoHints {
+  schema_org?: string[];
+  meta_priorities?: string[];
+}
+
 export interface Archetype {
   id: string;
   version: string;
@@ -41,6 +46,7 @@ export interface Archetype {
   pages: ArchetypePage[];
   features: string[];
   dependencies: { patterns: Record<string, string>; recipes: Record<string, string> };
+  seo_hints?: SeoHints;
 }
 
 // --- Recipe ---
@@ -89,4 +95,28 @@ export interface ResolvedContent<T> {
   item: T;
   source: 'local' | 'installed' | 'core';
   path: string;
+}
+
+// --- Theme ---
+
+export type CvdMode = 'deuteranopia' | 'protanopia' | 'tritanopia' | 'achromatopsia';
+
+export interface ThemeTokens {
+  base?: Record<string, string>;
+  cvd?: Partial<Record<CvdMode, Record<string, string>>>;
+}
+
+export interface Theme {
+  id: string;
+  name: string;
+  description?: string;
+  tags?: string[];
+  personality?: string;
+  seed?: Record<string, string>;
+  modes?: string[];
+  shapes?: string[];
+  cvd_support?: CvdMode[];
+  tokens?: ThemeTokens;
+  decantr_compat?: string;
+  source?: string;
 }
