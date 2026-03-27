@@ -1,13 +1,15 @@
 {
   "name": "decantr-api",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
     "test": "dotenv -e .env.local -- vitest run",
-    "test:watch": "dotenv -e .env.local -- vitest"
+    "test:watch": "dotenv -e .env.local -- vitest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
@@ -18,7 +20,11 @@
     "node": ">=20"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "dotenv-cli": "^11.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
     "vitest": "^3.2.4"
   }
 }
