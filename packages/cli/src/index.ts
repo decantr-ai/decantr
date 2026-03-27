@@ -176,9 +176,24 @@ async function cmdSuggest(query: string, type?: string) {
 }
 
 async function cmdGet(type: string, id: string) {
-  const validTypes = ['pattern', 'archetype', 'recipe', 'theme', 'blueprint'] as const;
+  const validTypes = ['pattern', 'archetype', 'recipe', 'theme', 'blueprint', 'shell'] as const;
   if (!validTypes.includes(type as any)) {
     console.error(error(`Invalid type "${type}". Must be one of: ${validTypes.join(', ')}`));
+    process.exitCode = 1;
+    return;
+  }
+
+  // Handle shells via registry client
+  if (type === 'shell') {
+    const registryClient = new RegistryClient({
+      cacheDir: join(process.cwd(), '.decantr', 'cache')
+    });
+    const shellResult = await registryClient.fetchShell(id);
+    if (shellResult) {
+      console.log(JSON.stringify(shellResult.data, null, 2));
+      return;
+    }
+    console.error(error(`shell "${id}" not found.`));
     process.exitCode = 1;
     return;
   }
@@ -313,10 +328,23 @@ async function cmdValidate(path?: string) {
 }
 
 async function cmdList(type: string) {
-  const validTypes = ['patterns', 'archetypes', 'recipes', 'themes', 'blueprints'] as const;
+  const validTypes = ['patterns', 'archetypes', 'recipes', 'themes', 'blueprints', 'shells'] as const;
   if (!validTypes.includes(type as any)) {
     console.error(error(`Invalid type "${type}". Must be one of: ${validTypes.join(', ')}`));
     process.exitCode = 1;
+    return;
+  }
+
+  // Handle shells via registry client
+  if (type === 'shells') {
+    const registryClient = new RegistryClient({
+      cacheDir: join(process.cwd(), '.decantr', 'cache')
+    });
+    const shellsResult = await registryClient.fetchShells();
+    for (const item of shellsResult.data.items) {
+      console.log(`  ${item.id}${item.description ? ` — ${item.description}` : ''}`);
+    }
+    console.log(`\n${shellsResult.data.total} shells found`);
     return;
   }
 
@@ -1028,6 +1056,18 @@ async function main() {
 
     case 'sync': {
       await cmdSync();
+      break;
+    }
+
+    case 'upgrade': {
+      const { cmdUpgrade } = await import('./commands/upgrade.js');
+      await cmdUpgrade(process.cwd());
+      break;
+    }
+
+    case 'heal': {
+      const { cmdHeal } = await import('./commands/heal.js');
+      await cmdHeal(process.cwd());
       break;
     }
 
