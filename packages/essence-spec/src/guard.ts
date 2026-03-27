@@ -2,7 +2,7 @@ import type { EssenceFile, StructurePage, LayoutItem } from './types.js';
 import { isSimple, isSectioned } from './types.js';
 
 export interface GuardViolation {
-  rule: 'style' | 'structure' | 'layout' | 'recipe' | 'density' | 'theme-mode' | 'pattern-exists';
+  rule: 'style' | 'structure' | 'layout' | 'recipe' | 'density' | 'theme-mode' | 'pattern-exists' | 'accessibility';
   severity: 'error' | 'warning';
   message: string;
   suggestion?: string;
@@ -16,6 +16,7 @@ export interface GuardContext {
   density_gap?: string;
   themeRegistry?: Map<string, { modes: string[] }>;
   patternRegistry?: Map<string, unknown>;
+  a11y_issues?: string[];
 }
 
 /**
@@ -137,6 +138,34 @@ function checkPatternExistence(
   return violations;
 }
 
+/**
+ * Check accessibility compliance based on declared WCAG level.
+ */
+function checkAccessibility(
+  essence: EssenceFile,
+  context: GuardContext
+): GuardViolation | null {
+  const accessibility = 'accessibility' in essence ? essence.accessibility : undefined;
+
+  if (!accessibility?.wcag_level || accessibility.wcag_level === 'none') {
+    return null;
+  }
+
+  if (context.a11y_issues && context.a11y_issues.length > 0) {
+    const issueList = context.a11y_issues.slice(0, 3).join(', ');
+    const moreCount = context.a11y_issues.length > 3 ? ` (+${context.a11y_issues.length - 3} more)` : '';
+
+    return {
+      rule: 'accessibility',
+      severity: 'error',
+      message: `WCAG ${accessibility.wcag_level} compliance required. Issues found: ${issueList}${moreCount}`,
+      suggestion: 'Fix accessibility issues before proceeding. Run an accessibility audit for details.',
+    };
+  }
+
+  return null;
+}
+
 export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}): GuardViolation[] {
   const guard = essence.guard;
 
@@ -225,6 +254,12 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
   // Rule 7: Pattern existence (always checked when registry available)
   const patternViolations = checkPatternExistence(essence, context);
   violations.push(...patternViolations);
+
+  // Rule 8: Accessibility (when wcag_level is set, guided and strict modes)
+  const accessibilityViolation = checkAccessibility(essence, context);
+  if (accessibilityViolation) {
+    violations.push(accessibilityViolation);
+  }
 
   return violations;
 }

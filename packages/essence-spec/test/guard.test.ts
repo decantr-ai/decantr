@@ -289,3 +289,35 @@ describe('evaluateGuard - pattern existence', () => {
     expect(patternViolation?.suggestion).toContain('decantr search');
   });
 });
+
+describe('accessibility guard', () => {
+  it('should return no violations when wcag_level is none', () => {
+    const essence: Essence = {
+      ...makeEssence(),
+      accessibility: { wcag_level: 'none' },
+    };
+    const violations = evaluateGuard(essence, {});
+    const a11yViolations = violations.filter(v => v.rule === 'accessibility');
+    expect(a11yViolations).toHaveLength(0);
+  });
+
+  it('should return no violations when accessibility is not set', () => {
+    const essence: Essence = { ...makeEssence() };
+    const violations = evaluateGuard(essence, {});
+    const a11yViolations = violations.filter(v => v.rule === 'accessibility');
+    expect(a11yViolations).toHaveLength(0);
+  });
+
+  it('should return violation when wcag_level is set and context has a11y_issues', () => {
+    const essence: Essence = {
+      ...makeEssence(),
+      accessibility: { wcag_level: 'AA' },
+    };
+    const violations = evaluateGuard(essence, {
+      a11y_issues: ['missing-alt-text', 'skipped-heading-level'],
+    });
+    const a11yViolations = violations.filter(v => v.rule === 'accessibility');
+    expect(a11yViolations).toHaveLength(1);
+    expect(a11yViolations[0].message).toContain('WCAG AA');
+  });
+});
