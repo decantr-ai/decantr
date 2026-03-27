@@ -233,17 +233,110 @@ Use the same component variants throughout a pattern. If buttons are `primary` s
 
 ## CSS Implementation
 
-For detailed CSS scaffolding guidance including:
-- `@layer` structure for cascade control
-- Variable naming conventions (`--d-*`, `--{recipe}-*`)
-- Theme seed to CSS variable mapping
-- Recipe decorator implementation
-- Theme scoping on HTML tag (`data-theme`, `data-mode`)
-- `color-scheme` meta tag and CSS property
+### HTML Setup
 
-See: [CSS Scaffolding Guide](https://decantr.ai/docs/css-scaffolding)
+Your `index.html` MUST have theme and mode attributes:
 
-Or run: `npx decantr docs css`
+```html
+<!DOCTYPE html>
+<html lang="en" data-theme="{{THEME_STYLE}}" data-mode="{{THEME_MODE}}">
+  <head>
+    <meta name="color-scheme" content="{{THEME_MODE}}">
+    ...
+  </head>
+</html>
+```
+
+**Why this matters:**
+- `data-theme` enables theme switching via JS without reloading CSS
+- `data-mode` enables light/dark toggle
+- `color-scheme` tells the browser to style native controls (scrollbars, inputs) correctly
+
+### CSS Layer Structure
+
+Use `@layer` for proper cascade control:
+
+```css
+@layer decantr.reset, decantr.tokens, decantr.decorators, decantr.patterns, decantr.utilities, app;
+
+@layer decantr.reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+}
+
+@layer decantr.tokens {
+  /* Base spacing (theme-agnostic) */
+  :root {
+    --gap1: 4px;
+    --gap2: 8px;
+    --gap3: 12px;
+    --gap4: 16px;
+    --gap6: 24px;
+    --gap8: 32px;
+    --gap12: 48px;
+  }
+
+  /* Theme-specific tokens */
+  html[data-theme="{{THEME_STYLE}}"] {
+    color-scheme: {{THEME_MODE}};
+
+    /* Seed colors from theme */
+    --d-primary: /* from theme.seed.primary */;
+    --d-secondary: /* from theme.seed.secondary */;
+    --d-accent: /* from theme.seed.accent */;
+    --d-bg: /* from theme.seed.background */;
+
+    /* Surface stack */
+    --d-surface: rgba(255, 255, 255, 0.03);
+    --d-surface-raised: rgba(255, 255, 255, 0.06);
+    --d-border: rgba(255, 255, 255, 0.1);
+
+    /* Text hierarchy */
+    --d-text: #FFFFFF;
+    --d-text-secondary: rgba(255, 255, 255, 0.7);
+    --d-text-muted: rgba(255, 255, 255, 0.4);
+  }
+}
+
+@layer decantr.decorators {
+  /* Recipe-specific classes from {{THEME_RECIPE}} */
+}
+
+@layer decantr.patterns {
+  .pattern-hero { }
+  .pattern-kpi-grid { }
+}
+
+@layer app {
+  /* Your application overrides */
+}
+```
+
+### Variable Naming Convention
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `--d-` | Core Decantr tokens | `--d-primary`, `--d-bg` |
+| `--{recipe}-` | Recipe-specific | `--lum-orb-opacity` |
+| `--gap{N}` | Spacing tokens | `--gap4`, `--gap8` |
+
+### Theme Switching (JavaScript)
+
+```javascript
+// Switch theme
+document.documentElement.dataset.theme = 'newTheme';
+
+// Switch mode
+document.documentElement.dataset.mode = 'light';
+document.querySelector('meta[name="color-scheme"]').content = 'light';
+```
+
+### Get Full Theme/Recipe Specs
+
+```bash
+npx decantr get theme {{THEME_STYLE}}   # See seed colors, palette
+npx decantr get recipe {{THEME_RECIPE}} # See decorators, effects
+```
 
 ---
 
