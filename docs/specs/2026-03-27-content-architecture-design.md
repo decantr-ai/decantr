@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-27
 **Status:** Approved
-**Author:** Claude + David Aimi
+**Author:**  David Aimi
 
 ---
 
@@ -234,18 +234,28 @@ If offline on first run:
 
 ### Command Reference
 
-| Command | Description |
-|---------|-------------|
-| `init` | Scaffold project (simplified two-choice flow) |
-| `status` | Project health check |
-| `search <query>` | Search registry |
-| `get <type> <id>` | Fetch content details |
-| `list <type>` | List available content |
-| `validate` | Validate essence file |
-| `upgrade` | Update patterns/theme to latest |
-| `heal` | Detect and fix drift |
-| `login` | Authenticate for publishing (future) |
-| `publish` | Publish community content (future) |
+| Command | Description | Status |
+|---------|-------------|--------|
+| `init` | Scaffold project (simplified two-choice flow) | Modify |
+| `status` | Project health check | Exists |
+| `search <query>` | Search registry | Exists |
+| `suggest <query>` | Get pattern suggestions | Exists |
+| `get <type> <id>` | Fetch content details | Exists |
+| `list <type>` | List available content | Exists |
+| `validate` | Validate essence file | Exists |
+| `sync` | Sync registry to local cache | Exists |
+| `audit` | Check project for issues | Exists |
+| `theme create/list/delete/import` | Manage custom themes | Exists |
+| `upgrade` | Update patterns/theme to latest | New |
+| `heal` | Detect and fix drift | New |
+| `login` | Authenticate for publishing | Future |
+| `publish` | Publish community content | Future |
+
+**Status key:**
+- **Exists**: Already implemented, may need minor updates
+- **Modify**: Exists but needs significant changes
+- **New**: Must be implemented as part of this work
+- **Future**: Out of scope, documented for later
 
 ### DECANTR.md Template Update
 
@@ -398,6 +408,10 @@ Minimal placeholder page:
 - [ ] Update fallback chain to use bundled content
 - [ ] Update DECANTR.md template (npx @decantr/cli)
 - [ ] Remove recipes from syncRegistry types (registry is source now)
+- [ ] Implement `upgrade` command
+- [ ] Implement `heal` command
+- [ ] Add e2e test suite for all commands
+- [ ] Update `get` command to support shells
 
 ### Content Repo (decantr-content)
 
@@ -421,6 +435,338 @@ Minimal placeholder page:
 
 ---
 
+## Validation & Testing
+
+### End-to-End Test Scenarios
+
+Each scenario should be run in a fresh temp directory.
+
+#### Scenario 1: Offline Init (Bundled Default)
+
+```bash
+# Simulate offline
+export DECANTR_OFFLINE=true
+
+# Init with default
+npx @decantr/cli init --yes
+
+# Verify files created
+test -f decantr.essence.json    # Should exist
+test -f DECANTR.md              # Should exist
+test -d .decantr                # Should exist
+
+# Verify essence references bundled default
+grep '"style": "default"' decantr.essence.json
+
+# Verify DECANTR.md uses correct CLI
+grep 'npx @decantr/cli' DECANTR.md
+! grep 'npx decantr ' DECANTR.md  # Should NOT have old package name
+```
+
+#### Scenario 2: Online Init with Search
+
+```bash
+# Init and search for carbon
+npx @decantr/cli init
+# Select "Search registry..."
+# Type "carbon"
+# Select "carbon-ai-portal"
+
+# Verify essence references carbon
+grep '"style": "carbon"' decantr.essence.json
+grep '"recipe": "carbon"' decantr.essence.json
+
+# Verify cache populated
+test -f .decantr/cache/blueprints/carbon-ai-portal.json
+test -f .decantr/cache/themes/carbon.json
+```
+
+#### Scenario 3: Registry Commands
+
+```bash
+# After init, test registry commands
+
+# Search
+npx @decantr/cli search dashboard
+# Should return results including saas-dashboard, financial-dashboard, etc.
+
+# Get specific item
+npx @decantr/cli get theme carbon
+# Should return full JSON with seed colors, palette, modes
+
+npx @decantr/cli get recipe carbon
+# Should return decorators, animations, compositions
+
+npx @decantr/cli get pattern chat-header
+# Should return presets, components, code examples
+
+npx @decantr/cli get shell chat-portal
+# Should return grid config, regions, code example
+
+# List
+npx @decantr/cli list blueprints
+# Should include carbon-ai-portal, saas-dashboard, etc.
+
+npx @decantr/cli list themes
+# Should include carbon, luminarum, etc.
+```
+
+#### Scenario 4: Validate Command
+
+```bash
+# After init
+npx @decantr/cli validate
+
+# Should output: "Essence is valid." or list violations
+
+# Intentionally break essence
+echo '{"invalid": true}' > decantr.essence.json
+npx @decantr/cli validate
+# Should fail with schema errors
+```
+
+#### Scenario 5: Status Command
+
+```bash
+# After init
+npx @decantr/cli status
+
+# Should show:
+# - Project health
+# - Theme in use
+# - Guard mode
+# - Sync status (API reachable or not)
+```
+
+#### Scenario 6: Fallback Chain Verification
+
+```bash
+# Test each level of fallback
+
+# 1. MCP available (if configured)
+# 2. API available
+npx @decantr/cli get theme carbon  # Should fetch from API
+
+# 3. API down, cache exists
+# (simulate by blocking API)
+npx @decantr/cli get theme carbon  # Should use cache
+
+# 4. API down, no cache, bundled exists
+rm -rf .decantr/cache
+npx @decantr/cli init --yes  # Should use bundled default
+```
+
+#### Scenario 7: Upgrade Command (New)
+
+```bash
+# After init with an older blueprint version
+npx @decantr/cli init --blueprint=carbon-ai-portal
+
+# Simulate newer version available in registry
+# (update content repo, publish)
+
+# Run upgrade
+npx @decantr/cli upgrade
+
+# Should:
+# - Check registry for newer versions of patterns/theme/recipe
+# - Show diff of what would change
+# - Prompt for confirmation
+# - Update essence file with new versions
+# - Update cache
+
+# Verify
+npx @decantr/cli status
+# Should show "Up to date" or list available upgrades
+```
+
+#### Scenario 8: Heal Command (New)
+
+```bash
+# After init, intentionally create drift
+npx @decantr/cli init --blueprint=carbon-ai-portal
+
+# Manually edit essence to introduce issues
+# (wrong theme, missing pattern, etc.)
+
+# Run heal
+npx @decantr/cli heal
+
+# Should:
+# - Detect drift from original blueprint
+# - Show what's wrong
+# - Offer to fix (restore to blueprint spec)
+# - Or suggest updating essence if intentional
+
+# Run audit to verify
+npx @decantr/cli audit
+# Should pass after heal
+```
+
+#### Scenario 9: Content Sync Pipeline
+
+```bash
+# In decantr-content repo
+cd decantr-content
+
+# Validate all content
+npm run validate
+# Should pass with no errors
+
+# Dry run publish
+npm run publish:dry-run
+# Should list all items that would be published
+
+# Actual publish (requires API key)
+REGISTRY_API_KEY=xxx npm run publish
+# Should succeed, log each item published
+
+# Verify in registry
+curl https://decantr-registry.fly.dev/v1/patterns/hero
+# Should return the published content
+```
+
+### Automated Test Suite
+
+Add to `packages/cli/test/`:
+
+```typescript
+// e2e/init.test.ts
+describe('init command', () => {
+  it('scaffolds with bundled default when offline', async () => {
+    // ...
+  });
+
+  it('scaffolds from registry search', async () => {
+    // ...
+  });
+
+  it('creates valid essence file', async () => {
+    // ...
+  });
+
+  it('generates DECANTR.md with correct CLI references', async () => {
+    // ...
+  });
+});
+
+// e2e/registry-commands.test.ts
+describe('registry commands', () => {
+  it('search returns results from API', async () => {
+    // ...
+  });
+
+  it('get theme returns full theme JSON', async () => {
+    // ...
+  });
+
+  it('get pattern returns presets and code', async () => {
+    // ...
+  });
+
+  it('list blueprints returns all available', async () => {
+    // ...
+  });
+
+  it('falls back to cache when API unavailable', async () => {
+    // ...
+  });
+
+  it('falls back to bundled when cache empty', async () => {
+    // ...
+  });
+});
+
+// e2e/validate.test.ts
+describe('validate command', () => {
+  it('passes for valid essence', async () => {
+    // ...
+  });
+
+  it('fails with clear errors for invalid essence', async () => {
+    // ...
+  });
+});
+
+// e2e/upgrade.test.ts
+describe('upgrade command', () => {
+  it('detects when newer versions available', async () => {
+    // ...
+  });
+
+  it('shows no upgrades when up to date', async () => {
+    // ...
+  });
+
+  it('updates essence with new versions', async () => {
+    // ...
+  });
+
+  it('updates cache after upgrade', async () => {
+    // ...
+  });
+});
+
+// e2e/heal.test.ts
+describe('heal command', () => {
+  it('detects drift from blueprint', async () => {
+    // ...
+  });
+
+  it('offers to fix detected issues', async () => {
+    // ...
+  });
+
+  it('restores essence to valid state', async () => {
+    // ...
+  });
+
+  it('passes audit after healing', async () => {
+    // ...
+  });
+});
+```
+
+### Manual Smoke Test Checklist
+
+Run before each release:
+
+**Init & Scaffold:**
+- [ ] Fresh `npx @decantr/cli init` works (no prior install)
+- [ ] Init with search finds carbon-ai-portal
+- [ ] Scaffolded project has correct files
+- [ ] DECANTR.md contains no `npx decantr ` (old package)
+- [ ] Offline init falls back to bundled default
+
+**Registry Commands:**
+- [ ] `decantr search dashboard` returns results
+- [ ] `decantr get theme carbon` returns full JSON
+- [ ] `decantr get recipe carbon` returns decorators
+- [ ] `decantr get pattern chat-header` returns presets
+- [ ] `decantr get shell chat-portal` returns layout config
+- [ ] `decantr list blueprints` shows all available
+- [ ] `decantr list themes` shows all available
+- [ ] Cache is populated after online operations
+
+**Project Commands:**
+- [ ] `decantr validate` works on scaffolded project
+- [ ] `decantr status` shows project health
+- [ ] `decantr audit` detects issues
+- [ ] `decantr sync` refreshes cache from registry
+
+**New Commands:**
+- [ ] `decantr upgrade` detects available updates
+- [ ] `decantr upgrade` updates essence when confirmed
+- [ ] `decantr heal` detects drift
+- [ ] `decantr heal` fixes drift when confirmed
+
+**Fallback Chain:**
+- [ ] Works when API available
+- [ ] Falls back to cache when API down
+- [ ] Falls back to bundled when cache empty
+
+---
+
 ## Success Criteria
 
 1. `npx @decantr/cli init` works offline with bundled default
@@ -428,6 +774,10 @@ Minimal placeholder page:
 3. Content changes in decantr-content auto-publish to registry
 4. No content remains in decantr-monorepo (except bundled minimum)
 5. DECANTR.md references correct CLI package name
+6. All registry commands work (`search`, `get`, `list`, `validate`, `status`)
+7. Fallback chain works: MCP → API → Cache → Bundled
+8. Automated e2e tests pass
+9. Manual smoke test checklist passes
 
 ---
 
