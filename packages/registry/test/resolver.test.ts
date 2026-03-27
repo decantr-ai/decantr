@@ -49,4 +49,28 @@ describe('ContentResolver', () => {
     expect(result!.item.version).toBe('2.0.0-override');
     expect(result!.item.name).toBe('Hero Override');
   });
+
+  it('resolves content from core directory as fallback', async () => {
+    const resolver = createResolver({ contentRoot: fixtureRoot });
+
+    // chart-panel only exists in core/patterns/
+    const result = await resolver.resolve('pattern', 'chart-panel');
+
+    expect(result).not.toBeNull();
+    expect(result!.source).toBe('core');
+    expect(result!.item.id).toBe('chart-panel');
+    expect(result!.path).toContain('core/patterns/chart-panel.json');
+  });
+
+  it('prefers main directory over core directory', async () => {
+    const resolver = createResolver({ contentRoot: fixtureRoot });
+
+    // kpi-grid exists in both main and core, main should win
+    const result = await resolver.resolve('pattern', 'kpi-grid');
+
+    expect(result).not.toBeNull();
+    expect(result!.item.name).toBe('KPI Grid (Main)');
+    expect(result!.item.version).toBe('2.0.0');
+    expect(result!.path).not.toContain('/core/');
+  });
 });

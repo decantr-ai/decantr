@@ -1,0 +1,13 @@
+{
+  "id": "kpi-grid",
+  "name": "KPI Grid (Main)",
+  "version": "2.0.0",
+  "description": "A grid of key performance indicators from main directory",
+  "type": "pattern",
+  "category": "metrics",
+  "layout": {
+    "type": "grid",
+    "columns": 4,
+    "gap": "md"
+  }
+}

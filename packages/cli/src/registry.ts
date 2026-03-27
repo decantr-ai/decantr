@@ -112,38 +112,63 @@ function loadFromBundled<T>(
   const contentRoot = getBundledContentRoot();
 
   if (id) {
-    // Load single item
-    const itemPath = join(contentRoot, contentType, `${id}.json`);
-    if (!existsSync(itemPath)) return null;
-
-    try {
-      const data = JSON.parse(readFileSync(itemPath, 'utf-8')) as T;
-      return {
-        data,
-        source: { type: 'bundled' },
-      };
-    } catch {
-      return null;
+    // Load single item - check main dir first, then core
+    const mainPath = join(contentRoot, contentType, `${id}.json`);
+    if (existsSync(mainPath)) {
+      try {
+        const data = JSON.parse(readFileSync(mainPath, 'utf-8')) as T;
+        return { data, source: { type: 'bundled' } };
+      } catch { /* fall through */ }
     }
+
+    // Check core directory
+    const corePath = join(contentRoot, 'core', contentType, `${id}.json`);
+    if (existsSync(corePath)) {
+      try {
+        const data = JSON.parse(readFileSync(corePath, 'utf-8')) as T;
+        return { data, source: { type: 'bundled' } };
+      } catch { /* fall through */ }
+    }
+
+    return null;
   } else {
-    // Load all items in directory
-    const dir = join(contentRoot, contentType);
-    if (!existsSync(dir)) return null;
+    // Load all items - merge main and core directories
+    const mainDir = join(contentRoot, contentType);
+    const coreDir = join(contentRoot, 'core', contentType);
+    const items: Array<{ id: string; [key: string]: unknown }> = [];
 
-    try {
-      const files = readdirSync(dir).filter(f => f.endsWith('.json'));
-      const items = files.map(f => {
-        const content = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
-        return { id: content.id || f.replace('.json', ''), ...content };
-      });
-
-      return {
-        data: { items, total: items.length } as unknown as T,
-        source: { type: 'bundled' },
-      };
-    } catch {
-      return null;
+    // Load from main directory
+    if (existsSync(mainDir)) {
+      try {
+        const files = readdirSync(mainDir).filter(f => f.endsWith('.json'));
+        for (const f of files) {
+          const content = JSON.parse(readFileSync(join(mainDir, f), 'utf-8'));
+          items.push({ id: content.id || f.replace('.json', ''), ...content });
+        }
+      } catch { /* ignore errors */ }
     }
+
+    // Load from core directory (don't duplicate if id already exists)
+    if (existsSync(coreDir)) {
+      try {
+        const files = readdirSync(coreDir).filter(f => f.endsWith('.json'));
+        const existingIds = new Set(items.map(i => i.id));
+        for (const f of files) {
+          const content = JSON.parse(readFileSync(join(coreDir, f), 'utf-8'));
+          const itemId = content.id || f.replace('.json', '');
+          if (!existingIds.has(itemId)) {
+            items.push({ id: itemId, ...content });
+          }
+        }
+      } catch { /* ignore errors */ }
+    }
+
+    if (items.length === 0) return null;
+
+    return {
+      data: { items, total: items.length } as unknown as T,
+      source: { type: 'bundled' },
+    };
   }
 }
 

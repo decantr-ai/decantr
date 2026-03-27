@@ -47,9 +47,16 @@ export function createResolver(options: ResolverOptions): ContentResolver {
         const item = await tryLoadJson<ContentMap[T]>(filePath);
         if (item) return { item, source: 'local', path: filePath };
       }
-      const corePath = join(contentRoot, dir, fileName);
+      // Check main content directory
+      const mainPath = join(contentRoot, dir, fileName);
+      const mainItem = await tryLoadJson<ContentMap[T]>(mainPath);
+      if (mainItem) return { item: mainItem, source: 'core', path: mainPath };
+
+      // Check content/core/{type}/ as fallback
+      const corePath = join(contentRoot, 'core', dir, fileName);
       const coreItem = await tryLoadJson<ContentMap[T]>(corePath);
       if (coreItem) return { item: coreItem, source: 'core', path: corePath };
+
       return null;
     },
   };

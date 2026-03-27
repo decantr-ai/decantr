@@ -215,36 +215,59 @@ async function cmdList(type: string) {
     return;
   }
 
-  const { readdirSync } = await import('node:fs');
-  const dir = join(getContentRoot(), type);
-  let found = false;
+  const { readdirSync, existsSync } = await import('node:fs');
+  const contentRoot = getContentRoot();
+  const mainDir = join(contentRoot, type);
+  const coreDir = join(contentRoot, 'core', type);
+  const items: Array<{ id: string; description?: string; name?: string }> = [];
 
+  // Load from main directory
   try {
-    const files = readdirSync(dir).filter(f => f.endsWith('.json'));
-    if (files.length > 0) {
-      found = true;
-      console.log(heading(`${files.length} ${type}`));
+    if (existsSync(mainDir)) {
+      const files = readdirSync(mainDir).filter(f => f.endsWith('.json'));
       for (const f of files) {
-        const data = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
-        console.log(`  ${cyan(data.id || f.replace('.json', ''))}  ${dim(data.description || data.name || '')}`);
+        const data = JSON.parse(readFileSync(join(mainDir, f), 'utf-8'));
+        items.push({ id: data.id || f.replace('.json', ''), description: data.description, name: data.name });
       }
     }
   } catch { /* local not available */ }
 
-  if (!found) {
-    try {
-      const res = await fetch(`https://decantr-registry.fly.dev/v1/${type}`);
-      if (res.ok) {
-        const data = await res.json() as { total: number; items: Array<{ id: string; name?: string; description?: string }> };
-        console.log(heading(`${data.total} ${type}`));
-        for (const item of data.items) {
-          console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+  // Load from core directory (don't duplicate if id already exists)
+  try {
+    if (existsSync(coreDir)) {
+      const files = readdirSync(coreDir).filter(f => f.endsWith('.json'));
+      const existingIds = new Set(items.map(i => i.id));
+      for (const f of files) {
+        const data = JSON.parse(readFileSync(join(coreDir, f), 'utf-8'));
+        const itemId = data.id || f.replace('.json', '');
+        if (!existingIds.has(itemId)) {
+          items.push({ id: itemId, description: data.description, name: data.name });
         }
-        return;
       }
-    } catch { /* API unavailable */ }
-    console.log(dim(`No ${type} found.`));
+    }
+  } catch { /* core not available */ }
+
+  if (items.length > 0) {
+    console.log(heading(`${items.length} ${type}`));
+    for (const item of items) {
+      console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+    }
+    return;
   }
+
+  // Fallback to API if no local content found
+  try {
+    const res = await fetch(`https://decantr-registry.fly.dev/v1/${type}`);
+    if (res.ok) {
+      const data = await res.json() as { total: number; items: Array<{ id: string; name?: string; description?: string }> };
+      console.log(heading(`${data.total} ${type}`));
+      for (const item of data.items) {
+        console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+      }
+      return;
+    }
+  } catch { /* API unavailable */ }
+  console.log(dim(`No ${type} found.`));
 }
 
 // ── Init command (updated) ──

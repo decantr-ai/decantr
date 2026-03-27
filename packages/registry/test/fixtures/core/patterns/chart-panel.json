@@ -1,0 +1,13 @@
+{
+  "id": "chart-panel",
+  "name": "Chart Panel",
+  "version": "1.0.0",
+  "description": "A chart panel pattern only in core directory",
+  "type": "pattern",
+  "category": "visualization",
+  "layout": {
+    "type": "stack",
+    "direction": "vertical",
+    "gap": "md"
+  }
+}
