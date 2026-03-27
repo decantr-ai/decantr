@@ -331,6 +331,12 @@ This can be added to v2 schema as optional fields without requiring v3. However,
 
 ---
 
+## Related Documentation
+
+- [CSS Scaffolding Guide](../css-scaffolding-guide.md) — Updated with CVD token implementation, accessibility CSS, focus indicators, and reduced motion handling
+
+---
+
 ## Summary
 
 | Layer | What It Does |
