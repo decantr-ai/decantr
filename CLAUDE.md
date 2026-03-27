@@ -14,6 +14,7 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 | `@decantr/registry` | `packages/registry/` | Content resolver, wiring rules, pattern preset resolution |
 | `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing tools to AI assistants |
+| `decantr` | `packages/cli/` | CLI for project initialization, registry queries, validation |
 
 ## Terminology
 
@@ -48,12 +49,15 @@ Wine metaphors are used in branding only. Code and schema use normalized terms.
 
 ```
 content/
-  archetypes/     # 19 app archetypes (e.g., saas-dashboard.json, ecommerce.json)
-  blueprints/     # 10 composed app templates
-  patterns/       # 9 UI section patterns (e.g., kpi-grid.json, data-table.json)
-  recipes/        # Visual decoration rules (currently empty)
-  themes/         # 10 theme definitions (e.g., clean.json, glassmorphism.json)
-  core/           # Core defaults (shells, base patterns, base recipes)
+  archetypes/     # 20 app archetypes (e.g., saas-dashboard.json, gaming-community.json)
+  blueprints/     # 11 composed app templates
+  patterns/       # 16 UI section patterns (e.g., kpi-grid.json, activity-feed.json)
+  recipes/        # 1 visual decoration rule (luminarum.json)
+  themes/         # 11 theme definitions (e.g., luminarum.json, glassmorphism.json)
+  core/           # Core defaults
+    shells.json   # Shell layout definitions
+    patterns/     # Base patterns (hero.json)
+    recipes/      # Base recipes (auradecantism.json)
 ```
 
 ## Design Pipeline
@@ -108,3 +112,21 @@ The MCP server (`@decantr/mcp-server`) exposes 10 tools:
 | `decantr_suggest_patterns` | Given a page description, suggest matching patterns from the registry |
 | `decantr_check_drift` | Check if code changes violate the Essence spec (guard rule violations) |
 | `decantr_create_essence` | Generate a valid Essence spec skeleton from a project description |
+
+## CLI Commands
+
+```bash
+decantr init              # Initialize a new Decantr project
+decantr status            # Show project status
+decantr validate [path]   # Validate essence file
+decantr search <query>    # Search registry
+decantr get <type> <id>   # Get full item details
+decantr list <type>       # List all items of type
+decantr sync              # Sync registry from API
+decantr audit             # Audit project for issues
+```
+
+## Development Notes
+
+- Do not commit `decantr.essence.json` or `DECANTR.md` files in package directories (these are test artifacts)
+- The `.gitignore` excludes `packages/*/decantr.essence.json` and `packages/*/.decantr/`
