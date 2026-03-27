@@ -120,3 +120,72 @@ export interface Theme {
   decantr_compat?: string;
   source?: string;
 }
+
+// --- API Client Types ---
+
+export type ApiContentType = 'patterns' | 'recipes' | 'themes' | 'blueprints' | 'archetypes' | 'shells';
+
+export interface ContentListResponse<T = Record<string, unknown>> {
+  items: T[];
+  total: number;
+}
+
+export interface ContentItem {
+  id: string;
+  slug: string;
+  namespace: string;
+  type: string;
+  version: string;
+  data: Record<string, unknown>;
+  visibility: 'public' | 'private';
+  status: 'pending' | 'approved' | 'rejected' | 'published';
+  created_at: string;
+  updated_at: string;
+  published_at?: string;
+}
+
+export interface PublishPayload {
+  type: ApiContentType;
+  slug: string;
+  namespace: string;
+  version: string;
+  data: Record<string, unknown>;
+  visibility?: 'public' | 'private';
+}
+
+export interface PublishResponse {
+  id: string;
+  slug: string;
+  namespace: string;
+  type: string;
+  status: string;
+}
+
+export interface SearchParams {
+  q: string;
+  type?: string;
+  namespace?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface SearchResponse {
+  results: Array<{
+    id: string;
+    type: string;
+    slug: string;
+    namespace: string;
+    name: string;
+    description: string;
+    version: string;
+  }>;
+  total: number;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  tier: 'free' | 'pro' | 'team' | 'enterprise';
+  reputation_score: number;
+  trusted: boolean;
+}

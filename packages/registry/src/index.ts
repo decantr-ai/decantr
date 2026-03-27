@@ -10,6 +10,14 @@ export type {
   Recipe,
   ContentType,
   ResolvedContent,
+  ApiContentType,
+  ContentListResponse,
+  ContentItem,
+  PublishPayload,
+  PublishResponse,
+  SearchParams,
+  SearchResponse,
+  UserProfile,
 } from './types.js';
 
 export { createResolver } from './resolver.js';
@@ -23,3 +31,6 @@ export type { HookType, WiringSignal, WiringRule, WiringResult } from './wiring.
 
 export { createRegistryClient } from './client.js';
 export type { RegistryClientOptions, SearchResult, RegistryClient } from './client.js';
+
+export { RegistryAPIClient } from './api-client.js';
+export type { RegistryAPIClientOptions } from './api-client.js';
