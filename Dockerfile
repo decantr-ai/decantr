@@ -1,17 +1,24 @@
+FROM node:22-slim AS builder
+WORKDIR /app
+
+# Copy package manifest and install deps
+COPY package.json ./
+RUN npm install
+
+# Copy build config and source
+COPY tsconfig.json tsup.config.ts ./
+COPY src/ ./src/
+
+# Build with tsup
+RUN npx tsup
+
+# Production
 FROM node:22-slim
 WORKDIR /app
 
-# Copy package files
-COPY apps/api/package.json apps/api/package-lock.json* ./apps/api/
-COPY content/ ./content/
-COPY packages/essence-spec/schema/ ./packages/essence-spec/schema/
-
-# Install deps
-WORKDIR /app/apps/api
-RUN npm install --production
-
-# Copy source
-COPY apps/api/src/ ./src/
+COPY --from=builder /app/dist/ ./dist/
+COPY --from=builder /app/node_modules/ ./node_modules/
+COPY --from=builder /app/package.json ./
 
 EXPOSE 3000
-CMD ["node", "src/index.js"]
+CMD ["node", "dist/index.js"]
