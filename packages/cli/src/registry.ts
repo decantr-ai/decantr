@@ -39,6 +39,48 @@ function getBundledContentRoot(): string {
   return bundled; // Return default, will error if accessed
 }
 
+// Local bundled content root (for CLI distribution)
+function getLocalBundledRoot(): string {
+  return join(__dirname, 'bundled');
+}
+
+/**
+ * Load data from locally bundled content (shipped with CLI package).
+ */
+function loadFromBundledLocal<T>(
+  contentType: string,
+  id?: string
+): FetchResult<T> | null {
+  const bundledRoot = getLocalBundledRoot();
+
+  if (id) {
+    const filePath = join(bundledRoot, contentType, `${id}.json`);
+    if (existsSync(filePath)) {
+      try {
+        const data = JSON.parse(readFileSync(filePath, 'utf-8')) as T;
+        return { data, source: { type: 'bundled' } };
+      } catch { return null; }
+    }
+    return null;
+  }
+
+  // Load all items from bundled directory
+  const dir = join(bundledRoot, contentType);
+  if (!existsSync(dir)) return null;
+
+  try {
+    const files = readdirSync(dir).filter(f => f.endsWith('.json'));
+    const items = files.map(f => {
+      const content = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
+      return { id: content.id || f.replace('.json', ''), ...content };
+    });
+    return {
+      data: { items, total: items.length } as unknown as T,
+      source: { type: 'bundled' }
+    };
+  } catch { return null; }
+}
+
 /**
  * Fetch from API with timeout.
  */
@@ -334,7 +376,11 @@ export class RegistryClient {
     const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'blueprints', id);
     if (cacheResult) return cacheResult;
 
-    return loadFromBundled<RegistryItem>('blueprints', id);
+    const bundledResult = loadFromBundled<RegistryItem>('blueprints', id);
+    if (bundledResult) return bundledResult;
+
+    // Try local bundled (for CLI distribution)
+    return loadFromBundledLocal<RegistryItem>('blueprints', id);
   }
 
   /**
@@ -384,7 +430,11 @@ export class RegistryClient {
     const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'themes', id);
     if (cacheResult) return cacheResult;
 
-    return loadFromBundled<RegistryItem>('themes', id);
+    const bundledResult = loadFromBundled<RegistryItem>('themes', id);
+    if (bundledResult) return bundledResult;
+
+    // Try local bundled (for CLI distribution)
+    return loadFromBundledLocal<RegistryItem>('themes', id);
   }
 
   /**
@@ -412,6 +462,57 @@ export class RegistryClient {
       data: { items: [], total: 0 },
       source: { type: 'bundled' },
     };
+  }
+
+  /**
+   * Fetch shells list.
+   */
+  async fetchShells(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
+    if (!this.offline) {
+      const apiResult = await tryApi<{ items: RegistryItem[]; total: number }>('shells', this.apiUrl);
+      if (apiResult) {
+        saveToCache(this.cacheDir, 'shells', null, apiResult.data);
+        return apiResult;
+      }
+    }
+
+    const cacheResult = loadFromCache<{ items: RegistryItem[]; total: number }>(
+      this.cacheDir,
+      'shells'
+    );
+    if (cacheResult) return cacheResult;
+
+    const bundledResult = loadFromBundled<{ items: RegistryItem[]; total: number }>('shells');
+    if (bundledResult) return bundledResult;
+
+    const localBundled = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('shells');
+    if (localBundled) return localBundled;
+
+    return {
+      data: { items: [], total: 0 },
+      source: { type: 'bundled' },
+    };
+  }
+
+  /**
+   * Fetch a single shell.
+   */
+  async fetchShell(id: string): Promise<FetchResult<RegistryItem> | null> {
+    if (!this.offline) {
+      const apiResult = await tryApi<RegistryItem>(`shells/${id}`, this.apiUrl);
+      if (apiResult) {
+        saveToCache(this.cacheDir, 'shells', id, apiResult.data);
+        return apiResult;
+      }
+    }
+
+    const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'shells', id);
+    if (cacheResult) return cacheResult;
+
+    const bundledResult = loadFromBundled<RegistryItem>('shells', id);
+    if (bundledResult) return bundledResult;
+
+    return loadFromBundledLocal<RegistryItem>('shells', id);
   }
 
   /**
@@ -472,7 +573,7 @@ export async function syncRegistry(
   }
 
   // Sync each content type
-  const types = ['archetypes', 'blueprints', 'themes', 'patterns'] as const;
+  const types = ['archetypes', 'blueprints', 'themes', 'patterns', 'shells'] as const;
 
   for (const type of types) {
     try {
