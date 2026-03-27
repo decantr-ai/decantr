@@ -707,7 +707,7 @@ function generateDecantrMd(
 function generateProjectJson(
   detected: DetectedProject,
   options: InitOptions,
-  registrySource: 'api' | 'bundled'
+  registrySource: 'api' | 'cache'
 ): string {
   const now = new Date().toISOString();
 
@@ -856,7 +856,7 @@ export function scaffoldProject(
   options: InitOptions,
   detected: DetectedProject,
   archetypeData?: ArchetypeData,
-  registrySource: 'api' | 'bundled' = 'bundled',
+  registrySource: 'api' | 'cache' = 'cache',
   themeData?: ThemeData,
   recipeData?: RecipeData
 ): ScaffoldResult {

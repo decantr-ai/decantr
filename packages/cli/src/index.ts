@@ -2,7 +2,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateEssence, evaluateGuard } from '@decantr/essence-spec';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { createResolver, createRegistryClient } from '@decantr/registry';
+import { RegistryAPIClient } from '@decantr/registry';
+import type { ApiContentType } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
 import { scaffoldProject, type ThemeData, type RecipeData, type LayoutItem } from './scaffold.js';
@@ -107,72 +108,80 @@ function boxedPrompt(content: string, title: string): string {
   return `${top}\n${titleLine}\n${sep}\n${body}\n${bottom}`;
 }
 
-function getContentRoot(): string {
-  const bundled = join(import.meta.dirname, '..', '..', '..', 'content');
-  return process.env.DECANTR_CONTENT_ROOT || bundled;
-}
-
-function getResolver() {
-  return createResolver({ contentRoot: getContentRoot() });
+function getAPIClient(): RegistryAPIClient {
+  return new RegistryAPIClient({
+    baseUrl: process.env.DECANTR_API_URL || undefined,
+    apiKey: process.env.DECANTR_API_KEY || undefined,
+  });
 }
 
 // ── Commands ──
 
 async function cmdSearch(query: string, type?: string) {
-  const client = createRegistryClient();
-  const results = await client.search(query, type);
+  const apiClient = getAPIClient();
+  try {
+    const response = await apiClient.search({ q: query, type });
+    const results = response.results;
 
-  if (results.length === 0) {
-    console.log(dim(`No results for "${query}"`));
-    return;
-  }
+    if (results.length === 0) {
+      console.log(dim(`No results for "${query}"`));
+      return;
+    }
 
-  console.log(heading(`${results.length} result(s) for "${query}"`));
-  for (const r of results) {
-    console.log(`  ${cyan(r.type.padEnd(12))} ${BOLD}${r.id}${RESET}`);
-    console.log(`  ${dim(r.description || '')}`);
-    console.log('');
+    console.log(heading(`${results.length} result(s) for "${query}"`));
+    for (const r of results) {
+      console.log(`  ${cyan(r.type.padEnd(12))} ${BOLD}${r.slug}${RESET}`);
+      console.log(`  ${dim(r.description || '')}`);
+      console.log('');
+    }
+  } catch {
+    console.log(dim(`Search failed. API may be unavailable.`));
   }
 }
 
 async function cmdSuggest(query: string, type?: string) {
-  const client = createRegistryClient();
+  const apiClient = getAPIClient();
   const searchType = type || 'pattern';
-  const results = await client.search(query, searchType);
+  try {
+    const response = await apiClient.search({ q: query, type: searchType });
+    const results = response.results;
 
-  if (results.length === 0) {
-    console.log(dim(`No suggestions for "${query}"`));
-    console.log('');
-    console.log('Try:');
-    console.log(`  ${cyan('decantr list patterns')} - see all patterns`);
-    console.log(`  ${cyan('decantr search <broader-term>')} - broaden your search`);
-    return;
-  }
-
-  console.log(heading(`Suggestions for "${query}"`));
-
-  // Group by relevance: exact matches vs related
-  const queryLower = query.toLowerCase();
-  const exact = results.filter(r => r.id.toLowerCase().includes(queryLower));
-  const related = results.filter(r => !r.id.toLowerCase().includes(queryLower));
-
-  if (exact.length > 0) {
-    console.log(`${BOLD}Direct matches:${RESET}`);
-    for (const r of exact.slice(0, 3)) {
-      console.log(`  ${cyan(r.id)} - ${r.description || ''}`);
+    if (results.length === 0) {
+      console.log(dim(`No suggestions for "${query}"`));
+      console.log('');
+      console.log('Try:');
+      console.log(`  ${cyan('decantr list patterns')} - see all patterns`);
+      console.log(`  ${cyan('decantr search <broader-term>')} - broaden your search`);
+      return;
     }
-    console.log('');
-  }
 
-  if (related.length > 0) {
-    console.log(`${BOLD}Related:${RESET}`);
-    for (const r of related.slice(0, 5)) {
-      console.log(`  ${cyan(r.id)} - ${r.description || ''}`);
+    console.log(heading(`Suggestions for "${query}"`));
+
+    // Group by relevance: exact matches vs related
+    const queryLower = query.toLowerCase();
+    const exact = results.filter(r => r.slug.toLowerCase().includes(queryLower));
+    const related = results.filter(r => !r.slug.toLowerCase().includes(queryLower));
+
+    if (exact.length > 0) {
+      console.log(`${BOLD}Direct matches:${RESET}`);
+      for (const r of exact.slice(0, 3)) {
+        console.log(`  ${cyan(r.slug)} - ${r.description || ''}`);
+      }
+      console.log('');
     }
-    console.log('');
-  }
 
-  console.log(dim(`Use "decantr get pattern <id>" for full details`));
+    if (related.length > 0) {
+      console.log(`${BOLD}Related:${RESET}`);
+      for (const r of related.slice(0, 5)) {
+        console.log(`  ${cyan(r.slug)} - ${r.description || ''}`);
+      }
+      console.log('');
+    }
+
+    console.log(dim(`Use "decantr get pattern <id>" for full details`));
+  } catch {
+    console.log(dim(`Suggestion search failed. API may be unavailable.`));
+  }
 }
 
 async function cmdGet(type: string, id: string) {
@@ -183,68 +192,53 @@ async function cmdGet(type: string, id: string) {
     return;
   }
 
-  // Handle shells via registry client
-  if (type === 'shell') {
-    const registryClient = new RegistryClient({
-      cacheDir: join(process.cwd(), '.decantr', 'cache')
-    });
-    const shellResult = await registryClient.fetchShell(id);
-    if (shellResult) {
-      console.log(JSON.stringify(shellResult.data, null, 2));
-      return;
-    }
-    console.error(error(`shell "${id}" not found.`));
-    process.exitCode = 1;
+  // Map singular type names to API plural form
+  const typeMap: Record<string, string> = {
+    pattern: 'patterns',
+    archetype: 'archetypes',
+    recipe: 'recipes',
+    theme: 'themes',
+    blueprint: 'blueprints',
+    shell: 'shells',
+  };
+  const apiType = typeMap[type] as ApiContentType;
+
+  const registryClient = new RegistryClient({
+    cacheDir: join(process.cwd(), '.decantr', 'cache'),
+  });
+  const result = await registryClient.fetchContentItem(apiType, id);
+  if (result) {
+    console.log(JSON.stringify(result.data, null, 2));
     return;
   }
-
-  const resolver = getResolver();
-  let result = await resolver.resolve(type as any, id);
-
-  if (!result) {
-    const apiType = type === 'blueprint' ? 'blueprints' : `${type}s`;
-    try {
-      const res = await fetch(`https://decantr-registry.fly.dev/v1/${apiType}/${id}`);
-      if (res.ok) {
-        const item = await res.json();
-        if (!item.error) {
-          console.log(JSON.stringify(item, null, 2));
-          return;
-        }
-      }
-    } catch { /* API unavailable */ }
-
-    console.error(error(`${type} "${id}" not found.`));
-    process.exitCode = 1;
-    return;
-  }
-
-  console.log(JSON.stringify(result.item, null, 2));
+  console.error(error(`${type} "${id}" not found.`));
+  process.exitCode = 1;
+  return;
 }
 
 function buildRegistryContext(): { themeRegistry: Map<string, { modes: string[] }>; patternRegistry: Map<string, unknown> } {
   const { readdirSync } = require('node:fs');
   const themeRegistry = new Map<string, { modes: string[] }>();
   const patternRegistry = new Map<string, unknown>();
-  const contentRoot = getContentRoot();
+  const projectRoot = process.cwd();
+  const cacheDir = join(projectRoot, '.decantr', 'cache');
+  const customDir = join(projectRoot, '.decantr', 'custom');
 
-  // Load themes from main and core directories
-  const themeDirs = [join(contentRoot, 'themes'), join(contentRoot, 'core', 'themes')];
-  for (const dir of themeDirs) {
-    try {
-      if (existsSync(dir)) {
-        for (const f of readdirSync(dir).filter((f: string) => f.endsWith('.json'))) {
-          const data = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
-          if (data.id && !themeRegistry.has(data.id)) {
-            themeRegistry.set(data.id, { modes: data.modes || ['light', 'dark'] });
-          }
+  // Load themes from cache (organized by namespace)
+  const cachedThemesDir = join(cacheDir, '@official', 'themes');
+  try {
+    if (existsSync(cachedThemesDir)) {
+      for (const f of readdirSync(cachedThemesDir).filter((f: string) => f.endsWith('.json') && f !== 'index.json')) {
+        const data = JSON.parse(readFileSync(join(cachedThemesDir, f), 'utf-8'));
+        if (data.id && !themeRegistry.has(data.id)) {
+          themeRegistry.set(data.id, { modes: data.modes || ['light', 'dark'] });
         }
       }
-    } catch { /* skip if unavailable */ }
-  }
+    }
+  } catch { /* skip if unavailable */ }
 
   // Load custom themes
-  const customThemesDir = join(process.cwd(), '.decantr', 'custom', 'themes');
+  const customThemesDir = join(customDir, 'themes');
   try {
     if (existsSync(customThemesDir)) {
       for (const f of readdirSync(customThemesDir).filter((f: string) => f.endsWith('.json'))) {
@@ -257,20 +251,18 @@ function buildRegistryContext(): { themeRegistry: Map<string, { modes: string[] 
     }
   } catch { /* skip if unavailable */ }
 
-  // Load patterns from main and core directories
-  const patternDirs = [join(contentRoot, 'patterns'), join(contentRoot, 'core', 'patterns')];
-  for (const dir of patternDirs) {
-    try {
-      if (existsSync(dir)) {
-        for (const f of readdirSync(dir).filter((f: string) => f.endsWith('.json'))) {
-          const data = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
-          if (data.id && !patternRegistry.has(data.id)) {
-            patternRegistry.set(data.id, data);
-          }
+  // Load patterns from cache
+  const cachedPatternsDir = join(cacheDir, '@official', 'patterns');
+  try {
+    if (existsSync(cachedPatternsDir)) {
+      for (const f of readdirSync(cachedPatternsDir).filter((f: string) => f.endsWith('.json') && f !== 'index.json')) {
+        const data = JSON.parse(readFileSync(join(cachedPatternsDir, f), 'utf-8'));
+        if (data.id && !patternRegistry.has(data.id)) {
+          patternRegistry.set(data.id, data);
         }
       }
-    } catch { /* skip if unavailable */ }
-  }
+    }
+  } catch { /* skip if unavailable */ }
 
   return { themeRegistry, patternRegistry };
 }
@@ -335,117 +327,45 @@ async function cmdList(type: string) {
     return;
   }
 
-  // Handle shells via registry client
-  if (type === 'shells') {
-    const registryClient = new RegistryClient({
-      cacheDir: join(process.cwd(), '.decantr', 'cache')
-    });
-    const shellsResult = await registryClient.fetchShells();
-    for (const item of shellsResult.data.items) {
-      console.log(`  ${item.id}${item.description ? ` — ${item.description}` : ''}`);
-    }
-    console.log(`\n${shellsResult.data.total} shells found`);
+  const registryClient = new RegistryClient({
+    cacheDir: join(process.cwd(), '.decantr', 'cache'),
+  });
+
+  const result = await registryClient.fetchContentList(type as ApiContentType);
+  const items = result.data.items;
+
+  if (items.length === 0) {
+    console.log(dim(`No ${type} found.`));
     return;
   }
 
-  const { readdirSync, existsSync } = await import('node:fs');
-  const contentRoot = getContentRoot();
-  const mainDir = join(contentRoot, type);
-  const coreDir = join(contentRoot, 'core', type);
-  const items: Array<{ id: string; description?: string; name?: string }> = [];
-
-  // Load from main directory
-  try {
-    if (existsSync(mainDir)) {
-      const files = readdirSync(mainDir).filter(f => f.endsWith('.json'));
-      for (const f of files) {
-        const data = JSON.parse(readFileSync(join(mainDir, f), 'utf-8'));
-        items.push({ id: data.id || f.replace('.json', ''), description: data.description, name: data.name });
-      }
-    }
-  } catch { /* local not available */ }
-
-  // Load from core directory (don't duplicate if id already exists)
-  try {
-    if (existsSync(coreDir)) {
-      const files = readdirSync(coreDir).filter(f => f.endsWith('.json'));
-      const existingIds = new Set(items.map(i => i.id));
-      for (const f of files) {
-        const data = JSON.parse(readFileSync(join(coreDir, f), 'utf-8'));
-        const itemId = data.id || f.replace('.json', '');
-        if (!existingIds.has(itemId)) {
-          items.push({ id: itemId, description: data.description, name: data.name });
-        }
-      }
-    }
-  } catch { /* core not available */ }
-
-  // Load custom themes if listing themes
-  const customItems: Array<{ id: string; description?: string; name?: string; source: 'custom' }> = [];
+  // For themes, show custom items separately
   if (type === 'themes') {
-    try {
-      const custom = listCustomThemes(process.cwd());
-      for (const theme of custom) {
-        customItems.push({
-          id: `custom:${theme.id}`,
-          description: theme.description,
-          name: theme.name,
-          source: 'custom'
-        });
-      }
-    } catch { /* custom themes unavailable */ }
-  }
+    const customItems = registryClient.listCustomContent('themes');
+    const customIds = new Set(customItems.map(c => c.id));
+    const registryItems = items.filter(i => !customIds.has(i.id));
 
-  if (items.length > 0 || customItems.length > 0) {
-    if (type === 'themes') {
-      // Show separate sections for registry and custom themes
-      console.log(heading(`Registry themes (${items.length}):`));
-      for (const item of items) {
-        console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
-      }
-      if (customItems.length > 0) {
-        console.log('');
-        console.log(heading(`Custom themes (${customItems.length}):`));
-        for (const item of customItems) {
-          console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
-        }
-      } else {
-        console.log('');
-        console.log(dim('Custom themes (0):'));
-        console.log(dim('  Run "decantr theme create <name>" to create a custom theme.'));
+    console.log(heading(`Registry themes (${registryItems.length}):`));
+    for (const item of registryItems) {
+      console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+    }
+    if (customItems.length > 0) {
+      console.log('');
+      console.log(heading(`Custom themes (${customItems.length}):`));
+      for (const item of customItems) {
+        console.log(`  ${cyan(`custom:${item.id}`)}  ${dim(item.description || item.name || '')}`);
       }
     } else {
-      console.log(heading(`${items.length} ${type}`));
-      for (const item of items) {
-        console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
-      }
+      console.log('');
+      console.log(dim('Custom themes (0):'));
+      console.log(dim('  Run "decantr theme create <name>" to create a custom theme.'));
     }
-    return;
+  } else {
+    console.log(heading(`${items.length} ${type}`));
+    for (const item of items) {
+      console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+    }
   }
-
-  // Fallback to API if no local content found
-  try {
-    const res = await fetch(`https://decantr-registry.fly.dev/v1/${type}`);
-    if (res.ok) {
-      const data = await res.json() as { total: number; items: Array<{ id: string; name?: string; description?: string }> };
-      if (type === 'themes') {
-        console.log(heading(`Registry themes (${data.total}):`));
-        for (const item of data.items) {
-          console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
-        }
-        console.log('');
-        console.log(dim('Custom themes (0):'));
-        console.log(dim('  Run "decantr theme create <name>" to create a custom theme.'));
-      } else {
-        console.log(heading(`${data.total} ${type}`));
-        for (const item of data.items) {
-          console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
-        }
-      }
-      return;
-    }
-  } catch { /* API unavailable */ }
-  console.log(dim(`No ${type} found.`));
 }
 
 // ── Init command (updated) ──
@@ -497,7 +417,7 @@ async function cmdInit(args: InitArgs) {
   const apiAvailable = await registryClient.checkApiAvailability();
 
   let selectedBlueprint = 'default';
-  let registrySource: 'api' | 'bundled' = 'bundled';
+  let registrySource: 'api' | 'cache' = 'cache';
 
   if (args.yes) {
     // Non-interactive: use --blueprint flag or default
@@ -511,7 +431,7 @@ async function cmdInit(args: InitArgs) {
     // Online: fetch blueprints and show simplified prompt
     console.log(dim('Fetching registry content...'));
     const blueprintsResult = await registryClient.fetchBlueprints();
-    registrySource = blueprintsResult.source.type === 'api' ? 'api' : 'bundled';
+    registrySource = blueprintsResult.source.type === 'api' ? 'api' : 'cache';
 
     const { selectedBlueprint: selected } = await runSimplifiedInit(
       blueprintsResult.data.items
@@ -555,14 +475,34 @@ async function cmdInit(args: InitArgs) {
   } | undefined;
 
   if (options.blueprint) {
-    // Fetch the blueprint to get its primary archetype
+    // Fetch the blueprint to get its primary archetype and theme
     const blueprintResult = await registryClient.fetchBlueprint(options.blueprint);
     if (blueprintResult) {
       const blueprint = blueprintResult.data as {
         id: string;
         compose?: string[];
         features?: string[];
+        theme?: {
+          style?: string;
+          mode?: string;
+          recipe?: string;
+          shape?: string;
+        };
       };
+
+      // Apply blueprint theme settings (unless explicitly overridden by flags)
+      if (blueprint.theme) {
+        if (blueprint.theme.style && options.theme === 'luminarum') {
+          options.theme = blueprint.theme.style;
+        }
+        if (blueprint.theme.mode && options.mode === 'dark') {
+          options.mode = blueprint.theme.mode as 'dark' | 'light' | 'auto';
+        }
+        if (blueprint.theme.shape && options.shape === 'rounded') {
+          options.shape = blueprint.theme.shape as 'rounded' | 'sharp' | 'pill';
+        }
+      }
+
       // Get the primary archetype from compose array
       const primaryArchetype = blueprint.compose?.[0];
       if (primaryArchetype) {
@@ -583,16 +523,27 @@ async function cmdInit(args: InitArgs) {
     }
   }
 
-  // Fetch theme data for DECANTR.md quick reference
+  // Fetch theme data for DECANTR.md quick reference and CSS generation
   let themeData: ThemeData | undefined;
   let recipeData: RecipeData | undefined;
 
   if (options.theme) {
     const themeResult = await registryClient.fetchTheme(options.theme);
     if (themeResult) {
-      const theme = themeResult.data as { seed?: Record<string, string> };
-      if (theme.seed) {
-        themeData = { seed: theme.seed };
+      const theme = themeResult.data as {
+        seed?: Record<string, string>;
+        palette?: Record<string, string>;
+        tokens?: { base?: Record<string, string> };
+        decorators?: Record<string, string>;
+      };
+      themeData = {
+        seed: theme.seed,
+        palette: theme.palette,
+        tokens: theme.tokens,
+      };
+      // Some themes include decorators (recipe data)
+      if (theme.decorators) {
+        recipeData = { decorators: theme.decorators };
       }
     }
   }
@@ -605,7 +556,7 @@ async function cmdInit(args: InitArgs) {
     options,
     detected,
     archetypeData,
-    registrySource as 'api' | 'bundled',
+    registrySource as 'api' | 'cache',
     themeData,
     recipeData
   );
@@ -662,7 +613,7 @@ async function cmdInit(args: InitArgs) {
   console.log(boxedPrompt(curatedPrompt, 'Copy this prompt for your AI assistant'));
   console.log('');
 
-  if (registrySource === 'bundled') {
+  if (registrySource === 'cache') {
     console.log(dim('Run "decantr sync" when online to get the latest registry content.'));
   }
 }
@@ -736,17 +687,17 @@ async function cmdSync() {
 
   const result = await syncRegistry(cacheDir);
 
-  if (result.source === 'api') {
+  if (result.synced.length > 0) {
     console.log(success('Sync completed successfully.'));
-    if (result.synced.length > 0) {
-      console.log(`  Synced: ${result.synced.join(', ')}`);
-    }
+    console.log(`  Synced: ${result.synced.join(', ')}`);
     if (result.failed.length > 0) {
       console.log(`  ${YELLOW}Failed: ${result.failed.join(', ')}${RESET}`);
     }
   } else {
     console.log(`${YELLOW}Could not sync: API unavailable${RESET}`);
-    console.log(dim('Using bundled content.'));
+    if (result.failed.length > 0) {
+      console.log(`  ${YELLOW}Failed: ${result.failed.join(', ')}${RESET}`);
+    }
   }
 }
 

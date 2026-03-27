@@ -1,8 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { join } from 'node:path';
+import { RegistryAPIClient } from '@decantr/registry';
+import type { ApiContentType } from '@decantr/registry';
 
 export interface RegistryItem {
   id: string;
@@ -12,9 +11,9 @@ export interface RegistryItem {
 }
 
 export interface RegistrySource {
-  type: 'api' | 'bundled' | 'cache' | 'custom';
+  type: 'api' | 'cache' | 'custom';
   url?: string;
-  path?: string;  // For custom: the local file path
+  path?: string;
 }
 
 export interface FetchResult<T> {
@@ -22,125 +21,48 @@ export interface FetchResult<T> {
   source: RegistrySource;
 }
 
-// Default API URL
-const DEFAULT_API_URL = 'https://decantr-registry.fly.dev/v1';
-
-// Bundled content root (for CLI distribution)
-function getLocalBundledRoot(): string {
-  return join(__dirname, 'bundled');
-}
+const DEFAULT_API_URL = 'https://api.decantr.ai/v1';
 
 /**
- * Load data from locally bundled content (shipped with CLI package).
+ * Content types that support custom overrides in .decantr/custom/
  */
-function loadFromBundledLocal<T>(
-  contentType: string,
-  id?: string
-): FetchResult<T> | null {
-  const bundledRoot = getLocalBundledRoot();
-
-  if (id) {
-    const filePath = join(bundledRoot, contentType, `${id}.json`);
-    if (existsSync(filePath)) {
-      try {
-        const data = JSON.parse(readFileSync(filePath, 'utf-8')) as T;
-        return { data, source: { type: 'bundled' } };
-      } catch { return null; }
-    }
-    return null;
-  }
-
-  // Load all items from bundled directory
-  const dir = join(bundledRoot, contentType);
-  if (!existsSync(dir)) return null;
-
-  try {
-    const files = readdirSync(dir).filter(f => f.endsWith('.json'));
-    const items = files.map(f => {
-      const content = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
-      return { id: content.id || f.replace('.json', ''), ...content };
-    });
-    return {
-      data: { items, total: items.length } as unknown as T,
-      source: { type: 'bundled' }
-    };
-  } catch { return null; }
-}
+const ALL_CONTENT_TYPES = ['themes', 'patterns', 'recipes', 'blueprints', 'archetypes', 'shells'] as const;
 
 /**
- * Fetch from API with timeout.
- */
-async function fetchWithTimeout(url: string, timeoutMs = 5000): Promise<Response> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(url, { signal: controller.signal });
-    return response;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-/**
- * Try to fetch data from the API.
- */
-async function tryApi<T>(
-  endpoint: string,
-  apiUrl: string = DEFAULT_API_URL
-): Promise<FetchResult<T> | null> {
-  try {
-    const url = `${apiUrl}/${endpoint}`;
-    const response = await fetchWithTimeout(url);
-
-    if (!response.ok) return null;
-
-    const data = await response.json() as T;
-    return {
-      data,
-      source: { type: 'api', url: apiUrl },
-    };
-  } catch {
-    // API unavailable or timeout
-    return null;
-  }
-}
-
-/**
- * Load data from cache.
+ * Load data from cache at .decantr/cache/{namespace}/{type}/
  */
 function loadFromCache<T>(
   cacheDir: string,
   contentType: string,
-  id?: string
+  id?: string,
+  namespace?: string
 ): FetchResult<T> | null {
+  const nsDir = namespace ? join(cacheDir, namespace) : cacheDir;
   const cachePath = id
-    ? join(cacheDir, contentType, `${id}.json`)
-    : join(cacheDir, contentType, 'index.json');
+    ? join(nsDir, contentType, `${id}.json`)
+    : join(nsDir, contentType, 'index.json');
 
   if (!existsSync(cachePath)) return null;
 
   try {
     const data = JSON.parse(readFileSync(cachePath, 'utf-8')) as T;
-    return {
-      data,
-      source: { type: 'cache' },
-    };
+    return { data, source: { type: 'cache' } };
   } catch {
     return null;
   }
 }
 
 /**
- * Save data to cache.
+ * Save data to cache at .decantr/cache/{namespace}/{type}/
  */
 function saveToCache(
   cacheDir: string,
   contentType: string,
   id: string | null,
-  data: unknown
+  data: unknown,
+  namespace: string = '@official'
 ): void {
-  const dir = join(cacheDir, contentType);
+  const dir = join(cacheDir, namespace, contentType);
   mkdirSync(dir, { recursive: true });
 
   const cachePath = id
@@ -151,17 +73,24 @@ function saveToCache(
 }
 
 /**
- * Registry client with fallback chain: API → Cache → Bundled
+ * Registry client with resolution order: Custom -> API -> Cache
+ *
+ * - .decantr/custom/{type}/{id}.json is NEVER auto-synced
+ * - API is the primary source
+ * - .decantr/cache/{namespace}/{type}/ is the offline fallback
+ * - No bundled content
  */
 export class RegistryClient {
   private cacheDir: string;
   private apiUrl: string;
   private offline: boolean;
   private projectRoot: string;
+  private apiClient: RegistryAPIClient;
 
   constructor(options: {
     cacheDir?: string;
     apiUrl?: string;
+    apiKey?: string;
     offline?: boolean;
     projectRoot?: string;
   } = {}) {
@@ -169,10 +98,15 @@ export class RegistryClient {
     this.cacheDir = options.cacheDir || join(this.projectRoot, '.decantr', 'cache');
     this.apiUrl = options.apiUrl || DEFAULT_API_URL;
     this.offline = options.offline || false;
+    this.apiClient = new RegistryAPIClient({
+      baseUrl: this.apiUrl,
+      apiKey: options.apiKey,
+    });
   }
 
   /**
    * Load content from .decantr/custom/{contentType}/{id}.json
+   * Works for ALL content types, not just themes.
    */
   private loadCustomContent<T>(
     contentType: string,
@@ -186,256 +120,163 @@ export class RegistryClient {
       `${id}.json`
     );
 
-    if (!existsSync(customPath)) {
-      return null;
-    }
+    if (!existsSync(customPath)) return null;
 
     try {
       const data = JSON.parse(readFileSync(customPath, 'utf-8')) as T;
-      return {
-        data,
-        source: { type: 'custom', path: customPath }
-      };
+      return { data, source: { type: 'custom', path: customPath } };
     } catch {
       return null;
     }
   }
 
   /**
-   * Fetch archetypes list.
+   * List all custom content of a given type from .decantr/custom/{type}/
    */
+  listCustomContent(contentType: string): RegistryItem[] {
+    const dir = join(this.projectRoot, '.decantr', 'custom', contentType);
+    if (!existsSync(dir)) return [];
+
+    try {
+      return readdirSync(dir)
+        .filter(f => f.endsWith('.json'))
+        .map(f => {
+          const data = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
+          return { id: data.id || f.replace('.json', ''), ...data };
+        });
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Unified fetch for a content list.
+   * Resolution: API -> Cache. Custom items are merged into the list.
+   */
+  async fetchContentList(
+    contentType: ApiContentType,
+    namespace?: string
+  ): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
+    let apiItems: RegistryItem[] = [];
+    let source: RegistrySource = { type: 'cache' };
+
+    // Try API first
+    if (!this.offline) {
+      try {
+        const apiResult = await this.apiClient.listContent<RegistryItem>(contentType, { namespace });
+        apiItems = apiResult.items;
+        source = { type: 'api', url: this.apiUrl };
+        // Cache the result
+        saveToCache(this.cacheDir, contentType, null, apiResult, namespace || '@official');
+      } catch {
+        // API failed, fall through to cache
+      }
+    }
+
+    // If no API result, try cache
+    if (apiItems.length === 0) {
+      const cacheResult = loadFromCache<{ items: RegistryItem[]; total: number }>(
+        this.cacheDir,
+        contentType,
+        undefined,
+        namespace
+      );
+      if (cacheResult) {
+        apiItems = cacheResult.data.items;
+        source = { type: 'cache' };
+      }
+    }
+
+    // Merge custom content (prepended so they appear first)
+    const customItems = this.listCustomContent(contentType);
+    const allItems = [...customItems, ...apiItems];
+
+    return {
+      data: { items: allItems, total: allItems.length },
+      source,
+    };
+  }
+
+  /**
+   * Unified fetch for a single content item.
+   * Resolution: Custom -> API -> Cache
+   */
+  async fetchContentItem(
+    contentType: ApiContentType,
+    id: string,
+    namespace: string = '@official'
+  ): Promise<FetchResult<RegistryItem> | null> {
+    // 1. Check custom content first (strip "custom:" prefix if present)
+    const customId = id.startsWith('custom:') ? id.slice(7) : id;
+    const customResult = this.loadCustomContent<RegistryItem>(contentType, customId);
+    if (customResult) return customResult;
+
+    // If the id had "custom:" prefix and we didn't find it, return null
+    if (id.startsWith('custom:')) return null;
+
+    // 2. Try API
+    if (!this.offline) {
+      try {
+        const data = await this.apiClient.getContent<RegistryItem>(contentType, namespace, id);
+        saveToCache(this.cacheDir, contentType, id, data, namespace);
+        return { data, source: { type: 'api', url: this.apiUrl } };
+      } catch {
+        // API failed, fall through to cache
+      }
+    }
+
+    // 3. Try cache
+    return loadFromCache<RegistryItem>(this.cacheDir, contentType, id, namespace);
+  }
+
+  // ── Convenience methods (delegate to unified fetch) ──
+
   async fetchArchetypes(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
-    // Try API first (unless offline)
-    if (!this.offline) {
-      const apiResult = await tryApi<{ items: RegistryItem[]; total: number }>('archetypes', this.apiUrl);
-      if (apiResult) {
-        saveToCache(this.cacheDir, 'archetypes', null, apiResult.data);
-        return apiResult;
-      }
-    }
-
-    // Try cache
-    const cacheResult = loadFromCache<{ items: RegistryItem[]; total: number }>(
-      this.cacheDir,
-      'archetypes'
-    );
-    if (cacheResult) return cacheResult;
-
-    // Fall back to bundled
-    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('archetypes');
-    if (bundledResult) return bundledResult;
-
-    // Empty fallback
-    return {
-      data: { items: [], total: 0 },
-      source: { type: 'bundled' },
-    };
+    return this.fetchContentList('archetypes');
   }
 
-  /**
-   * Fetch a single archetype.
-   */
   async fetchArchetype(id: string): Promise<FetchResult<RegistryItem> | null> {
-    if (!this.offline) {
-      const apiResult = await tryApi<RegistryItem>(`archetypes/${id}`, this.apiUrl);
-      if (apiResult) {
-        saveToCache(this.cacheDir, 'archetypes', id, apiResult.data);
-        return apiResult;
-      }
-    }
-
-    const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'archetypes', id);
-    if (cacheResult) return cacheResult;
-
-    return loadFromBundledLocal<RegistryItem>('archetypes', id);
+    return this.fetchContentItem('archetypes', id);
   }
 
-  /**
-   * Fetch blueprints list.
-   */
   async fetchBlueprints(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
-    if (!this.offline) {
-      const apiResult = await tryApi<{ items: RegistryItem[]; total: number }>('blueprints', this.apiUrl);
-      if (apiResult) {
-        saveToCache(this.cacheDir, 'blueprints', null, apiResult.data);
-        return apiResult;
-      }
-    }
-
-    const cacheResult = loadFromCache<{ items: RegistryItem[]; total: number }>(
-      this.cacheDir,
-      'blueprints'
-    );
-    if (cacheResult) return cacheResult;
-
-    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('blueprints');
-    if (bundledResult) return bundledResult;
-
-    return {
-      data: { items: [], total: 0 },
-      source: { type: 'bundled' },
-    };
+    return this.fetchContentList('blueprints');
   }
 
-  /**
-   * Fetch a single blueprint.
-   */
   async fetchBlueprint(id: string): Promise<FetchResult<RegistryItem> | null> {
-    if (!this.offline) {
-      const apiResult = await tryApi<RegistryItem>(`blueprints/${id}`, this.apiUrl);
-      if (apiResult) {
-        saveToCache(this.cacheDir, 'blueprints', id, apiResult.data);
-        return apiResult;
-      }
-    }
-
-    const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'blueprints', id);
-    if (cacheResult) return cacheResult;
-
-    const bundledResult = loadFromBundledLocal<RegistryItem>('blueprints', id);
-    if (bundledResult) return bundledResult;
-
-    // Try local bundled (for CLI distribution)
-    return loadFromBundledLocal<RegistryItem>('blueprints', id);
+    return this.fetchContentItem('blueprints', id);
   }
 
-  /**
-   * Fetch themes list.
-   */
   async fetchThemes(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
-    if (!this.offline) {
-      const apiResult = await tryApi<{ items: RegistryItem[]; total: number }>('themes', this.apiUrl);
-      if (apiResult) {
-        saveToCache(this.cacheDir, 'themes', null, apiResult.data);
-        return apiResult;
-      }
-    }
-
-    const cacheResult = loadFromCache<{ items: RegistryItem[]; total: number }>(
-      this.cacheDir,
-      'themes'
-    );
-    if (cacheResult) return cacheResult;
-
-    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('themes');
-    if (bundledResult) return bundledResult;
-
-    return {
-      data: { items: [], total: 0 },
-      source: { type: 'bundled' },
-    };
+    return this.fetchContentList('themes');
   }
 
-  /**
-   * Fetch a single theme.
-   */
   async fetchTheme(id: string): Promise<FetchResult<RegistryItem> | null> {
-    // Check for custom: prefix
-    if (id.startsWith('custom:')) {
-      return this.loadCustomContent<RegistryItem>('themes', id.slice(7));
-    }
-
-    if (!this.offline) {
-      const apiResult = await tryApi<RegistryItem>(`themes/${id}`, this.apiUrl);
-      if (apiResult) {
-        saveToCache(this.cacheDir, 'themes', id, apiResult.data);
-        return apiResult;
-      }
-    }
-
-    const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'themes', id);
-    if (cacheResult) return cacheResult;
-
-    const bundledResult = loadFromBundledLocal<RegistryItem>('themes', id);
-    if (bundledResult) return bundledResult;
-
-    // Try local bundled (for CLI distribution)
-    return loadFromBundledLocal<RegistryItem>('themes', id);
+    return this.fetchContentItem('themes', id);
   }
 
-  /**
-   * Fetch patterns list.
-   */
   async fetchPatterns(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
-    if (!this.offline) {
-      const apiResult = await tryApi<{ items: RegistryItem[]; total: number }>('patterns', this.apiUrl);
-      if (apiResult) {
-        saveToCache(this.cacheDir, 'patterns', null, apiResult.data);
-        return apiResult;
-      }
-    }
-
-    const cacheResult = loadFromCache<{ items: RegistryItem[]; total: number }>(
-      this.cacheDir,
-      'patterns'
-    );
-    if (cacheResult) return cacheResult;
-
-    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('patterns');
-    if (bundledResult) return bundledResult;
-
-    return {
-      data: { items: [], total: 0 },
-      source: { type: 'bundled' },
-    };
+    return this.fetchContentList('patterns');
   }
 
-  /**
-   * Fetch shells list.
-   */
+  async fetchPattern(id: string): Promise<FetchResult<RegistryItem> | null> {
+    return this.fetchContentItem('patterns', id);
+  }
+
   async fetchShells(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
-    if (!this.offline) {
-      const apiResult = await tryApi<{ items: RegistryItem[]; total: number }>('shells', this.apiUrl);
-      if (apiResult) {
-        saveToCache(this.cacheDir, 'shells', null, apiResult.data);
-        return apiResult;
-      }
-    }
-
-    const cacheResult = loadFromCache<{ items: RegistryItem[]; total: number }>(
-      this.cacheDir,
-      'shells'
-    );
-    if (cacheResult) return cacheResult;
-
-    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('shells');
-    if (bundledResult) return bundledResult;
-
-    const localBundled = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('shells');
-    if (localBundled) return localBundled;
-
-    return {
-      data: { items: [], total: 0 },
-      source: { type: 'bundled' },
-    };
+    return this.fetchContentList('shells');
   }
 
-  /**
-   * Fetch a single shell.
-   * Note: API only has /shells list endpoint, not /shells/{id}, so we fetch all and filter.
-   */
   async fetchShell(id: string): Promise<FetchResult<RegistryItem> | null> {
-    // Try API - fetch all shells and find the matching one
-    if (!this.offline) {
-      const apiResult = await tryApi<{ items: RegistryItem[]; total: number }>('shells', this.apiUrl);
-      if (apiResult) {
-        const shell = apiResult.data.items.find(s => s.id === id);
-        if (shell) {
-          saveToCache(this.cacheDir, 'shells', id, shell);
-          return { data: shell, source: apiResult.source };
-        }
-      }
-    }
+    return this.fetchContentItem('shells', id);
+  }
 
-    // Try cache
-    const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'shells', id);
-    if (cacheResult) return cacheResult;
+  async fetchRecipes(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
+    return this.fetchContentList('recipes');
+  }
 
-    // Try bundled
-    const bundledResult = loadFromBundledLocal<RegistryItem>('shells', id);
-    if (bundledResult) return bundledResult;
-
-    return null;
+  async fetchRecipe(id: string): Promise<FetchResult<RegistryItem> | null> {
+    return this.fetchContentItem('recipes', id);
   }
 
   /**
@@ -443,21 +284,7 @@ export class RegistryClient {
    */
   async checkApiAvailability(): Promise<boolean> {
     if (this.offline) return false;
-
-    try {
-      const response = await fetchWithTimeout(`${this.apiUrl.replace('/v1', '')}/health`, 3000);
-      return response.ok;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Get the source used for the last fetch.
-   */
-  getSourceType(): 'api' | 'bundled' | 'cache' {
-    // This would track the last source, but for simplicity we check API availability
-    return this.offline ? 'bundled' : 'api';
+    return this.apiClient.checkHealth();
   }
 }
 
@@ -467,6 +294,7 @@ export class RegistryClient {
 export function createRegistryClient(options?: {
   cacheDir?: string;
   apiUrl?: string;
+  apiKey?: string;
   offline?: boolean;
   projectRoot?: string;
 }): RegistryClient {
@@ -474,7 +302,8 @@ export function createRegistryClient(options?: {
 }
 
 /**
- * Sync registry content to cache.
+ * Sync registry content to .decantr/cache/.
+ * NEVER touches .decantr/custom/.
  */
 export async function syncRegistry(
   cacheDir: string,
@@ -482,37 +311,37 @@ export async function syncRegistry(
 ): Promise<{
   synced: string[];
   failed: string[];
-  source: 'api' | 'bundled';
 }> {
-  const client = new RegistryClient({ cacheDir, apiUrl, offline: false });
+  const apiClient = new RegistryAPIClient({ baseUrl: apiUrl });
   const synced: string[] = [];
   const failed: string[] = [];
 
   // Check if API is available
-  const apiAvailable = await client.checkApiAvailability();
-
-  if (!apiAvailable) {
-    return { synced: [], failed: ['API unavailable'], source: 'bundled' };
+  const healthy = await apiClient.checkHealth();
+  if (!healthy) {
+    return { synced: [], failed: ['API unavailable'] };
   }
 
-  // Sync each content type
-  const types = ['archetypes', 'blueprints', 'themes', 'patterns', 'shells'] as const;
-
-  for (const type of types) {
+  // Sync each content type — only writes to cache, never custom
+  for (const type of ALL_CONTENT_TYPES) {
     try {
-      const fetchMethod = `fetch${type.charAt(0).toUpperCase()}${type.slice(1)}` as keyof RegistryClient;
-      const result = await (client[fetchMethod] as () => Promise<FetchResult<unknown>>)();
-      if (result.source.type === 'api') {
-        synced.push(type);
+      const result = await apiClient.listContent(type, { namespace: '@official' });
+      saveToCache(cacheDir, type, null, result, '@official');
+
+      // Also cache individual items
+      for (const item of result.items) {
+        const id = (item as Record<string, unknown>).id as string
+          || (item as Record<string, unknown>).slug as string;
+        if (id) {
+          saveToCache(cacheDir, type, id, item, '@official');
+        }
       }
+
+      synced.push(type);
     } catch {
       failed.push(type);
     }
   }
 
-  return {
-    synced,
-    failed,
-    source: synced.length > 0 ? 'api' : 'bundled',
-  };
+  return { synced, failed };
 }
