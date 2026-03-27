@@ -199,15 +199,48 @@ export class RegistryClient {
   private cacheDir: string;
   private apiUrl: string;
   private offline: boolean;
+  private projectRoot: string;
 
   constructor(options: {
     cacheDir?: string;
     apiUrl?: string;
     offline?: boolean;
+    projectRoot?: string;
   } = {}) {
-    this.cacheDir = options.cacheDir || join(process.cwd(), '.decantr', 'cache');
+    this.projectRoot = options.projectRoot || process.cwd();
+    this.cacheDir = options.cacheDir || join(this.projectRoot, '.decantr', 'cache');
     this.apiUrl = options.apiUrl || DEFAULT_API_URL;
     this.offline = options.offline || false;
+  }
+
+  /**
+   * Load content from .decantr/custom/{contentType}/{id}.json
+   */
+  private loadCustomContent<T>(
+    contentType: string,
+    id: string
+  ): FetchResult<T> | null {
+    const customPath = join(
+      this.projectRoot,
+      '.decantr',
+      'custom',
+      contentType,
+      `${id}.json`
+    );
+
+    if (!existsSync(customPath)) {
+      return null;
+    }
+
+    try {
+      const data = JSON.parse(readFileSync(customPath, 'utf-8')) as T;
+      return {
+        data,
+        source: { type: 'custom', path: customPath }
+      };
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -335,6 +368,11 @@ export class RegistryClient {
    * Fetch a single theme.
    */
   async fetchTheme(id: string): Promise<FetchResult<RegistryItem> | null> {
+    // Check for custom: prefix
+    if (id.startsWith('custom:')) {
+      return this.loadCustomContent<RegistryItem>('themes', id.slice(7));
+    }
+
     if (!this.offline) {
       const apiResult = await tryApi<RegistryItem>(`themes/${id}`, this.apiUrl);
       if (apiResult) {
