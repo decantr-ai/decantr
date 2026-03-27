@@ -1,0 +1,44 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "timeline",
+  "version": "1.0.0",
+  "name": "Timeline",
+  "description": "Chronological sequence of events with dates, descriptions, and optional media.",
+  "tags": ["history", "events", "chronology", "activity", "milestones"],
+  "classification": {
+    "triggers": ["timeline", "history", "milestones", "event log", "journey"],
+    "tier": "recommended"
+  },
+  "presets": {
+    "default": {
+      "description": "Vertical timeline with alternating sides",
+      "layout": { "orientation": "vertical", "alternating": true }
+    },
+    "compact": {
+      "description": "Single-side vertical timeline",
+      "layout": { "orientation": "vertical", "alternating": false }
+    },
+    "horizontal": {
+      "description": "Horizontal scrolling timeline",
+      "layout": { "orientation": "horizontal" }
+    }
+  },
+  "slots": {
+    "events": {
+      "type": "array",
+      "item": {
+        "date": { "type": "datetime", "required": true },
+        "title": { "type": "text", "required": true },
+        "description": { "type": "text", "required": false },
+        "icon": { "type": "icon", "required": false },
+        "media": { "type": "image", "required": false }
+      }
+    }
+  },
+  "layout": {
+    "container": "section",
+    "header": ["title?"],
+    "body": ["events"],
+    "connector": "line"
+  }
+}
