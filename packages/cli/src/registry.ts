@@ -444,6 +444,7 @@ export function createRegistryClient(options?: {
   cacheDir?: string;
   apiUrl?: string;
   offline?: boolean;
+  projectRoot?: string;
 }): RegistryClient {
   return new RegistryClient(options);
 }
