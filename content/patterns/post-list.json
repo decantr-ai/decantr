@@ -1,0 +1,41 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "post-list",
+  "version": "1.0.0",
+  "name": "Post List",
+  "description": "Chronological list of posts, articles, or news items with author, date, and preview.",
+  "tags": ["content", "news", "blog", "feed", "articles"],
+  "classification": {
+    "triggers": ["news feed", "blog posts", "articles", "announcements", "updates"],
+    "tier": "recommended"
+  },
+  "presets": {
+    "default": {
+      "description": "Standard post list with thumbnails",
+      "layout": { "style": "list", "showThumbnail": true }
+    },
+    "compact": {
+      "description": "Dense list without thumbnails",
+      "layout": { "style": "list", "showThumbnail": false }
+    },
+    "cards": {
+      "description": "Card-based layout for featured posts",
+      "layout": { "style": "cards", "columns": 2 }
+    }
+  },
+  "slots": {
+    "title": { "type": "text", "required": true },
+    "excerpt": { "type": "text", "required": false },
+    "author": { "type": "user", "required": false },
+    "date": { "type": "datetime", "required": true },
+    "thumbnail": { "type": "image", "required": false },
+    "category": { "type": "tag", "required": false },
+    "readTime": { "type": "duration", "required": false }
+  },
+  "layout": {
+    "container": "section",
+    "header": ["title", "filter?"],
+    "body": ["posts"],
+    "footer": ["load-more?", "pagination?"]
+  }
+}

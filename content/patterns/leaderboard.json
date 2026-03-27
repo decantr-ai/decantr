@@ -1,0 +1,40 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "leaderboard",
+  "version": "1.0.0",
+  "name": "Leaderboard",
+  "description": "Ranked list of items with position, avatar, name, and score. Supports spotlight, ranked, and grid presets.",
+  "tags": ["gaming", "ranking", "scores", "competition", "social"],
+  "classification": {
+    "triggers": ["leaderboard", "ranking", "top players", "high scores", "standings"],
+    "tier": "recommended"
+  },
+  "presets": {
+    "spotlight": {
+      "description": "Top 3 highlighted with large cards, rest in compact list",
+      "layout": { "top": "cards", "rest": "list" }
+    },
+    "ranked": {
+      "description": "Full ranked list with position numbers and progress indicators",
+      "layout": { "style": "numbered-list", "showChange": true }
+    },
+    "grid": {
+      "description": "Card grid for achievements or badges display",
+      "layout": { "style": "grid", "columns": 3 }
+    }
+  },
+  "slots": {
+    "position": { "type": "number", "required": true },
+    "avatar": { "type": "image", "required": false },
+    "name": { "type": "text", "required": true },
+    "score": { "type": "number", "required": true },
+    "change": { "type": "delta", "required": false },
+    "badge": { "type": "image", "required": false }
+  },
+  "layout": {
+    "container": "section",
+    "header": ["title", "filter?"],
+    "body": ["items"],
+    "footer": ["pagination?", "view-all?"]
+  }
+}
