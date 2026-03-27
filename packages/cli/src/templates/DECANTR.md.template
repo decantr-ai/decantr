@@ -108,6 +108,10 @@ npx decantr get theme {{THEME_STYLE}}
 npx decantr get recipe {{THEME_RECIPE}}
 ```
 
+{{ACCESSIBILITY_SECTION}}
+
+{{SEO_SECTION}}
+
 ### Pages
 
 {{PAGES_TABLE}}

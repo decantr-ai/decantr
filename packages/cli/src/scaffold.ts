@@ -246,13 +246,131 @@ export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData
 }
 
 /**
+ * Generate the accessibility section for DECANTR.md.
+ */
+function generateAccessibilitySection(
+  essence: EssenceFile,
+  themeData?: ThemeData
+): string {
+  const accessibility = essence.accessibility;
+
+  if (!accessibility?.wcag_level || accessibility.wcag_level === 'none') {
+    return '';
+  }
+
+  const wcagLevel = accessibility.wcag_level;
+  const cvdPreference = accessibility.cvd_preference || 'none';
+  const cvdSupport = themeData?.cvd_support || [];
+
+  let section = `---
+
+## Accessibility
+
+**WCAG Level:** ${wcagLevel}
+`;
+
+  if (cvdSupport.length > 0) {
+    section += `**CVD Support:** Theme supports ${cvdSupport.join(', ')}
+**CVD Preference:** ${cvdPreference}
+`;
+  }
+
+  section += `
+### What This Means
+
+This project requires WCAG 2.1 Level ${wcagLevel} compliance. You already know these rules — apply them:
+
+- Semantic HTML structure
+- Sufficient color contrast (4.5:1 for normal text, 3:1 for large text)
+- Keyboard navigability for all interactive elements
+- Visible focus indicators
+- Meaningful alt text for images
+- Proper heading hierarchy
+`;
+
+  if (cvdSupport.length > 0) {
+    section += `
+### CVD Implementation
+
+The theme provides these data attributes:
+
+\`\`\`html
+<html data-theme="${essence.theme.style}" data-mode="${essence.theme.mode}" data-cvd="none">
+\`\`\`
+
+Valid \`data-cvd\` values for this theme: \`none\`, ${cvdSupport.map(m => `\`${m}\``).join(', ')}
+`;
+
+    if (cvdPreference === 'auto') {
+      section += `
+Detect user preference via \`prefers-contrast\` or user settings and apply accordingly.
+`;
+    }
+  }
+
+  section += `
+---
+`;
+
+  return section;
+}
+
+/**
+ * Generate the SEO guidance section for DECANTR.md.
+ */
+function generateSeoSection(
+  essence: EssenceFile,
+  archetypeData?: ArchetypeData
+): string {
+  const seoHints = archetypeData?.seo_hints;
+
+  if (!seoHints) {
+    return '';
+  }
+
+  const schemaOrg = seoHints.schema_org || [];
+  const metaPriorities = seoHints.meta_priorities || [];
+
+  if (schemaOrg.length === 0 && metaPriorities.length === 0) {
+    return '';
+  }
+
+  let section = `---
+
+## SEO Guidance
+
+This archetype (\`${essence.archetype}\`) typically benefits from:
+
+`;
+
+  if (schemaOrg.length > 0) {
+    section += `- **Schema.org:** ${schemaOrg.join(', ')}
+`;
+  }
+
+  if (metaPriorities.length > 0) {
+    section += `- **Meta priorities:** ${metaPriorities.join(', ')}
+`;
+  }
+
+  section += `
+These are suggestions, not requirements. Apply where appropriate for the page content.
+
+---
+`;
+
+  return section;
+}
+
+/**
  * Generate the DECANTR.md file from template and essence.
  */
 function generateDecantrMd(
   essence: EssenceFile,
   detected: DetectedProject,
   themeData?: ThemeData,
-  recipeData?: RecipeData
+  recipeData?: RecipeData,
+  archetypeData?: ArchetypeData
 ): string {
   const template = loadTemplate('DECANTR.md.template');
 
@@ -316,6 +434,9 @@ function generateDecantrMd(
     themeQuickRef = `See \`decantr get theme ${essence.theme.style}\` for details.`;
   }
 
+  const accessibilitySection = generateAccessibilitySection(essence, themeData);
+  const seoSection = generateSeoSection(essence, archetypeData);
+
   const vars: Record<string, string> = {
     GUARD_MODE: essence.guard.mode,
     PROJECT_SUMMARY: projectSummary,
@@ -334,6 +455,8 @@ function generateDecantrMd(
     AVAILABLE_SHELLS: 'sidebar-main, top-nav-main, centered, full-bleed, minimal-header',
     VERSION: CLI_VERSION,
     THEME_QUICK_REFERENCE: themeQuickRef,
+    ACCESSIBILITY_SECTION: accessibilitySection,
+    SEO_SECTION: seoSection,
   };
 
   return renderTemplate(template, vars);
@@ -515,7 +638,7 @@ export function scaffoldProject(
 
   // Write DECANTR.md
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
-  writeFileSync(decantrMdPath, generateDecantrMd(essence, detected, themeData, recipeData));
+  writeFileSync(decantrMdPath, generateDecantrMd(essence, detected, themeData, recipeData, archetypeData));
 
   // Write project.json
   const projectJsonPath = join(decantrDir, 'project.json');
