@@ -193,17 +193,26 @@ adminRoutes.post('/admin/moderation/:id/reject', async (c) => {
     .update({ status: 'rejected' })
     .eq('id', entry.content_id);
 
-  // Decrease reputation
+  // Decrease reputation and revoke trust if user was trusted
   const { data: submitter } = await client
     .from('users')
-    .select('id, reputation_score')
+    .select('id, reputation_score, trusted')
     .eq('id', entry.submitted_by)
     .single();
 
   if (submitter) {
+    const updates: Record<string, unknown> = {
+      reputation_score: Math.max(0, submitter.reputation_score - 5),
+    };
+
+    // Trusted user submits bad content -> revoke trust
+    if (submitter.trusted) {
+      updates.trusted = false;
+    }
+
     await client
       .from('users')
-      .update({ reputation_score: Math.max(0, submitter.reputation_score - 5) })
+      .update(updates)
       .eq('id', entry.submitted_by);
   }
 

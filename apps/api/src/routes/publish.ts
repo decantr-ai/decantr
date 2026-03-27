@@ -84,6 +84,19 @@ publishRoutes.post('/content', async (c) => {
     return c.json({ error: 'Private content requires Pro tier or higher' }, 403);
   }
 
+  // Spam prevention: max 5 pending submissions per user
+  const client = createAdminClient();
+
+  const { count: pendingCount } = await client
+    .from('content')
+    .select('*', { count: 'exact', head: true })
+    .eq('owner_id', auth.user!.id)
+    .eq('status', 'pending');
+
+  if ((pendingCount ?? 0) >= 5) {
+    return c.json({ error: 'Too many pending submissions. Wait for existing content to be reviewed.' }, 429);
+  }
+
   // Determine namespace and status
   const namespace = body.namespace || '@community';
   let status: 'pending' | 'approved' | 'rejected' | 'published';
@@ -98,8 +111,6 @@ publishRoutes.post('/content', async (c) => {
   } else {
     status = 'pending';
   }
-
-  const client = createAdminClient();
 
   const { data, error } = await client
     .from('content')
@@ -230,4 +241,59 @@ publishRoutes.delete('/content/:id', async (c) => {
   }
 
   return c.json({ message: 'Content deleted' });
+});
+
+// POST /v1/content/:id/flag - Flag content (deducts 2 reputation points from owner)
+publishRoutes.post('/content/:id/flag', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const contentId = c.req.param('id');
+  const body = await c.req.json().catch(() => ({}));
+
+  const client = createAdminClient();
+
+  // Verify content exists and is published
+  const { data: content } = await client
+    .from('content')
+    .select('id, owner_id, status')
+    .eq('id', contentId)
+    .single();
+
+  if (!content) {
+    return c.json({ error: 'Content not found' }, 404);
+  }
+
+  if (content.status !== 'published') {
+    return c.json({ error: 'Can only flag published content' }, 400);
+  }
+
+  // Prevent self-flagging
+  if (content.owner_id === auth.user!.id) {
+    return c.json({ error: 'Cannot flag your own content' }, 400);
+  }
+
+  // Record the flag (re-queue for moderation)
+  await client
+    .from('moderation_queue')
+    .insert({
+      content_id: contentId,
+      submitted_by: content.owner_id,
+      status: 'pending',
+      rejection_reason: body.reason ? `Flagged: ${body.reason}` : 'Flagged by user',
+    });
+
+  // Deduct 2 reputation points from content owner
+  const { data: owner } = await client
+    .from('users')
+    .select('id, reputation_score')
+    .eq('id', content.owner_id)
+    .single();
+
+  if (owner) {
+    await client
+      .from('users')
+      .update({ reputation_score: Math.max(0, owner.reputation_score - 2) })
+      .eq('id', content.owner_id);
+  }
+
+  return c.json({ message: 'Content flagged for review' });
 });
