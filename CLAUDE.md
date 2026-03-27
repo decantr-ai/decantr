@@ -45,18 +45,22 @@ Wine metaphors are used in branding only. Code and schema use normalized terms.
 | Vessel | Platform | SPA/MPA, routing mode |
 | Plumbing | Wiring | Cross-pattern state sharing |
 
-## Content Directory
+## Content Architecture
+
+Content lives in **decantr-content** (separate repository) and is distributed via:
+- **Registry API** -- Primary source for online content resolution
+- **MCP Server** -- Exposes content to AI assistants
+- **CLI Bundled** -- Offline fallback defaults in `packages/cli/src/bundled/`
 
 ```
-content/
-  archetypes/     # 20 app archetypes (e.g., saas-dashboard.json, gaming-community.json)
-  blueprints/     # 11 composed app templates
-  patterns/       # 21 UI section patterns (e.g., kpi-grid.json, hero.json, leaderboard.json)
-  recipes/        # 6 visual decoration rules (luminarum.json, glassmorphism.json, etc.)
-  themes/         # 12 theme definitions (e.g., luminarum.json, auradecantism.json)
-  core/           # Core defaults
-    shells.json   # Shell layout definitions
+packages/cli/src/bundled/    # Offline fallback content
+  blueprints/                # Default blueprint for offline init
+  patterns/                  # Core patterns (hero, nav-header, footer, etc.)
+  themes/                    # Default theme
+  shells/                    # Default shell layout
 ```
+
+The content resolution fallback chain: **MCP → API → Cache → Bundled**
 
 ## Design Pipeline
 
@@ -115,14 +119,16 @@ The MCP server (`@decantr/mcp-server`) exposes 10 tools:
 ## CLI Commands
 
 ```bash
-decantr init              # Initialize a new Decantr project
+decantr init              # Initialize a new Decantr project (simplified flow)
 decantr status            # Show project status
 decantr validate [path]   # Validate essence file
 decantr search <query>    # Search registry
-decantr get <type> <id>   # Get full item details
+decantr get <type> <id>   # Get full item details (patterns, themes, shells, etc.)
 decantr list <type>       # List all items of type
 decantr sync              # Sync registry from API
 decantr audit             # Audit project for issues
+decantr upgrade           # Check for content updates from registry
+decantr heal              # Detect and fix drift issues
 ```
 
 ## Documentation

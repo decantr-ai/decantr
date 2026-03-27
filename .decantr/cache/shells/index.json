@@ -1,0 +1,70 @@
+{
+  "total": 13,
+  "items": [
+    {
+      "id": "sidebar-main",
+      "name": "Sidebar + Main",
+      "description": "Collapsible sidebar with header bar and scrollable main content area. Used by saas-dashboard, financial-dashboard, workbench, ecommerce (account pages)."
+    },
+    {
+      "id": "sidebar-right",
+      "name": "Right Sidebar",
+      "description": "Main content with a right-side navigation panel. Useful for settings, documentation sidebars, or inspector layouts."
+    },
+    {
+      "id": "sidebar-main-footer",
+      "name": "Sidebar + Main + Footer",
+      "description": "Sidebar layout with a persistent footer bar. Used for apps needing status bars or action footers."
+    },
+    {
+      "id": "sidebar-aside",
+      "name": "Sidebar + Aside",
+      "description": "Three-column layout with left navigation and right inspector/detail panel. Used for admin dashboards, email clients, IDE-style apps."
+    },
+    {
+      "id": "top-nav-main",
+      "name": "Top Nav + Main",
+      "description": "Horizontal navigation bar with full-width main content below. Used by ecommerce (storefront), portfolio, content-site."
+    },
+    {
+      "id": "top-nav-footer",
+      "name": "Top Nav + Footer",
+      "description": "Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer."
+    },
+    {
+      "id": "centered",
+      "name": "Centered",
+      "description": "Centered card on a background. Used for auth flows (login, register, forgot password) across all archetypes."
+    },
+    {
+      "id": "full-bleed",
+      "name": "Full Bleed",
+      "description": "No persistent navigation. Scroll-driven hero-first layout. Used by portfolio landing pages."
+    },
+    {
+      "id": "minimal-header",
+      "name": "Minimal Header",
+      "description": "Slim header with centered content below. Used for checkout flows, focused task pages."
+    },
+    {
+      "id": "top-nav-sidebar",
+      "name": "Top Nav + Sidebar",
+      "description": "Full-width header spanning both columns, with left sidebar navigation below. Combines top branding with sidebar navigation depth."
+    },
+    {
+      "id": "workspace-aside",
+      "name": "Workspace Aside",
+      "description": "Three-column layout for collaborative editing with page tree navigation, document editor body, and comment/activity sidebar. Used by document-editor archetype for real-time collaboration."
+    },
+    {
+      "id": "terminal-split",
+      "name": "Terminal Split",
+      "description": "Terminal-style layout with status bar, resizable split panes, and hotkey bar. Optimized for CLI tool interfaces with monospace typography and ASCII borders."
+    },
+    {
+      "id": "chat-portal",
+      "name": "Chat Portal",
+      "description": "AI chatbot layout with collapsible conversation sidebar and anchored input. Used by ai-chatbot archetype for chat-first applications."
+    }
+  ]
+}
