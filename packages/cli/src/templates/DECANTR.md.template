@@ -189,7 +189,7 @@ After generating code, verify:
 Run validation to check for violations:
 
 ```bash
-decantr validate
+npx @decantr/cli validate
 ```
 
 Or use the MCP tool:
