@@ -25,21 +25,7 @@ export interface FetchResult<T> {
 // Default API URL
 const DEFAULT_API_URL = 'https://decantr-registry.fly.dev/v1';
 
-// Bundled content root (relative to this package in monorepo)
-function getBundledContentRoot(): string {
-  // In production, content is bundled with the CLI
-  // In development, it's in the monorepo content directory
-  const bundled = join(__dirname, '..', '..', '..', 'content');
-  if (existsSync(bundled)) return bundled;
-
-  // Fallback for dist
-  const distBundled = join(__dirname, '..', '..', '..', '..', 'content');
-  if (existsSync(distBundled)) return distBundled;
-
-  return bundled; // Return default, will error if accessed
-}
-
-// Local bundled content root (for CLI distribution)
+// Bundled content root (for CLI distribution)
 function getLocalBundledRoot(): string {
   return join(__dirname, 'bundled');
 }
@@ -146,76 +132,6 @@ function loadFromCache<T>(
 }
 
 /**
- * Load data from bundled content.
- */
-function loadFromBundled<T>(
-  contentType: string,
-  id?: string
-): FetchResult<T> | null {
-  const contentRoot = getBundledContentRoot();
-
-  if (id) {
-    // Load single item - check main dir first, then core
-    const mainPath = join(contentRoot, contentType, `${id}.json`);
-    if (existsSync(mainPath)) {
-      try {
-        const data = JSON.parse(readFileSync(mainPath, 'utf-8')) as T;
-        return { data, source: { type: 'bundled' } };
-      } catch { /* fall through */ }
-    }
-
-    // Check core directory
-    const corePath = join(contentRoot, 'core', contentType, `${id}.json`);
-    if (existsSync(corePath)) {
-      try {
-        const data = JSON.parse(readFileSync(corePath, 'utf-8')) as T;
-        return { data, source: { type: 'bundled' } };
-      } catch { /* fall through */ }
-    }
-
-    return null;
-  } else {
-    // Load all items - merge main and core directories
-    const mainDir = join(contentRoot, contentType);
-    const coreDir = join(contentRoot, 'core', contentType);
-    const items: Array<{ id: string; [key: string]: unknown }> = [];
-
-    // Load from main directory
-    if (existsSync(mainDir)) {
-      try {
-        const files = readdirSync(mainDir).filter(f => f.endsWith('.json'));
-        for (const f of files) {
-          const content = JSON.parse(readFileSync(join(mainDir, f), 'utf-8'));
-          items.push({ id: content.id || f.replace('.json', ''), ...content });
-        }
-      } catch { /* ignore errors */ }
-    }
-
-    // Load from core directory (don't duplicate if id already exists)
-    if (existsSync(coreDir)) {
-      try {
-        const files = readdirSync(coreDir).filter(f => f.endsWith('.json'));
-        const existingIds = new Set(items.map(i => i.id));
-        for (const f of files) {
-          const content = JSON.parse(readFileSync(join(coreDir, f), 'utf-8'));
-          const itemId = content.id || f.replace('.json', '');
-          if (!existingIds.has(itemId)) {
-            items.push({ id: itemId, ...content });
-          }
-        }
-      } catch { /* ignore errors */ }
-    }
-
-    if (items.length === 0) return null;
-
-    return {
-      data: { items, total: items.length } as unknown as T,
-      source: { type: 'bundled' },
-    };
-  }
-}
-
-/**
  * Save data to cache.
  */
 function saveToCache(
@@ -306,7 +222,7 @@ export class RegistryClient {
     if (cacheResult) return cacheResult;
 
     // Fall back to bundled
-    const bundledResult = loadFromBundled<{ items: RegistryItem[]; total: number }>('archetypes');
+    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('archetypes');
     if (bundledResult) return bundledResult;
 
     // Empty fallback
@@ -331,7 +247,7 @@ export class RegistryClient {
     const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'archetypes', id);
     if (cacheResult) return cacheResult;
 
-    return loadFromBundled<RegistryItem>('archetypes', id);
+    return loadFromBundledLocal<RegistryItem>('archetypes', id);
   }
 
   /**
@@ -352,7 +268,7 @@ export class RegistryClient {
     );
     if (cacheResult) return cacheResult;
 
-    const bundledResult = loadFromBundled<{ items: RegistryItem[]; total: number }>('blueprints');
+    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('blueprints');
     if (bundledResult) return bundledResult;
 
     return {
@@ -376,7 +292,7 @@ export class RegistryClient {
     const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'blueprints', id);
     if (cacheResult) return cacheResult;
 
-    const bundledResult = loadFromBundled<RegistryItem>('blueprints', id);
+    const bundledResult = loadFromBundledLocal<RegistryItem>('blueprints', id);
     if (bundledResult) return bundledResult;
 
     // Try local bundled (for CLI distribution)
@@ -401,7 +317,7 @@ export class RegistryClient {
     );
     if (cacheResult) return cacheResult;
 
-    const bundledResult = loadFromBundled<{ items: RegistryItem[]; total: number }>('themes');
+    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('themes');
     if (bundledResult) return bundledResult;
 
     return {
@@ -430,7 +346,7 @@ export class RegistryClient {
     const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'themes', id);
     if (cacheResult) return cacheResult;
 
-    const bundledResult = loadFromBundled<RegistryItem>('themes', id);
+    const bundledResult = loadFromBundledLocal<RegistryItem>('themes', id);
     if (bundledResult) return bundledResult;
 
     // Try local bundled (for CLI distribution)
@@ -455,7 +371,7 @@ export class RegistryClient {
     );
     if (cacheResult) return cacheResult;
 
-    const bundledResult = loadFromBundled<{ items: RegistryItem[]; total: number }>('patterns');
+    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('patterns');
     if (bundledResult) return bundledResult;
 
     return {
@@ -482,7 +398,7 @@ export class RegistryClient {
     );
     if (cacheResult) return cacheResult;
 
-    const bundledResult = loadFromBundled<{ items: RegistryItem[]; total: number }>('shells');
+    const bundledResult = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('shells');
     if (bundledResult) return bundledResult;
 
     const localBundled = loadFromBundledLocal<{ items: RegistryItem[]; total: number }>('shells');
@@ -509,7 +425,7 @@ export class RegistryClient {
     const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'shells', id);
     if (cacheResult) return cacheResult;
 
-    const bundledResult = loadFromBundled<RegistryItem>('shells', id);
+    const bundledResult = loadFromBundledLocal<RegistryItem>('shells', id);
     if (bundledResult) return bundledResult;
 
     return loadFromBundledLocal<RegistryItem>('shells', id);
