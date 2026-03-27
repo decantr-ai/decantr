@@ -275,7 +275,8 @@ export async function resolveEssence(
   } : undefined);
 
   // 3. Theme
-  const isAddon = !CORE_STYLES.has(simpleEssence.theme.style);
+  const style = simpleEssence.theme.style;
+  const isAddon = style.startsWith('custom:') || !CORE_STYLES.has(style);
   const theme = buildTheme(simpleEssence, isAddon);
 
   // 4. Resolve each page
