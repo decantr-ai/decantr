@@ -412,23 +412,30 @@ export class RegistryClient {
 
   /**
    * Fetch a single shell.
+   * Note: API only has /shells list endpoint, not /shells/{id}, so we fetch all and filter.
    */
   async fetchShell(id: string): Promise<FetchResult<RegistryItem> | null> {
+    // Try API - fetch all shells and find the matching one
     if (!this.offline) {
-      const apiResult = await tryApi<RegistryItem>(`shells/${id}`, this.apiUrl);
+      const apiResult = await tryApi<{ items: RegistryItem[]; total: number }>('shells', this.apiUrl);
       if (apiResult) {
-        saveToCache(this.cacheDir, 'shells', id, apiResult.data);
-        return apiResult;
+        const shell = apiResult.data.items.find(s => s.id === id);
+        if (shell) {
+          saveToCache(this.cacheDir, 'shells', id, shell);
+          return { data: shell, source: apiResult.source };
+        }
       }
     }
 
+    // Try cache
     const cacheResult = loadFromCache<RegistryItem>(this.cacheDir, 'shells', id);
     if (cacheResult) return cacheResult;
 
+    // Try bundled
     const bundledResult = loadFromBundledLocal<RegistryItem>('shells', id);
     if (bundledResult) return bundledResult;
 
-    return loadFromBundledLocal<RegistryItem>('shells', id);
+    return null;
   }
 
   /**

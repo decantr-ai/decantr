@@ -58,6 +58,11 @@ export interface ArchetypeData {
     id: string;
     shell: string;
     default_layout: LayoutItem[];
+    patterns?: Array<{
+      pattern: string;
+      preset?: string;
+      as?: string;
+    }>;
   }>;
   features?: string[];
   seo_hints?: {
@@ -176,6 +181,47 @@ function renderTemplate(template: string, vars: Record<string, string>): string 
 }
 
 /**
+ * Resolve pattern aliases to actual pattern IDs.
+ * Given a layout item (which may be an alias like "header") and a patterns array,
+ * returns the actual pattern ID (like "chat-header").
+ */
+function resolvePatternAlias(
+  item: LayoutItem,
+  patterns?: Array<{ pattern: string; preset?: string; as?: string }>
+): LayoutItem {
+  if (!patterns) return item;
+
+  // Handle string items (simple pattern names or aliases)
+  if (typeof item === 'string') {
+    // Check if this is an alias that needs resolving
+    const patternDef = patterns.find(p => p.as === item);
+    if (patternDef) {
+      // Return the actual pattern ID, optionally with preset
+      if (patternDef.preset) {
+        return { pattern: patternDef.pattern, preset: patternDef.preset };
+      }
+      return patternDef.pattern;
+    }
+    return item;
+  }
+
+  // Handle object items (pattern with preset, or column layouts)
+  if (typeof item === 'object' && item !== null) {
+    const obj = item as Record<string, unknown>;
+
+    // Column layout: resolve each column item
+    if (Array.isArray(obj.cols)) {
+      return {
+        ...obj,
+        cols: obj.cols.map(col => resolvePatternAlias(col, patterns)),
+      };
+    }
+  }
+
+  return item;
+}
+
+/**
  * Build the essence file from options and blueprint data.
  */
 export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData): EssenceFile {
@@ -187,12 +233,17 @@ export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData
 
   // Use archetype structure if available
   if (archetypeData?.pages) {
-    structure = archetypeData.pages.map(p => ({
-      id: p.id,
-      shell: p.shell || options.shell,
-      // Ensure layout has at least one item (schema requires minItems: 1)
-      layout: p.default_layout?.length ? p.default_layout : ['hero'],
-    }));
+    structure = archetypeData.pages.map(p => {
+      // Resolve aliases to actual pattern IDs
+      const resolvedLayout = (p.default_layout?.length ? p.default_layout : ['hero'])
+        .map(item => resolvePatternAlias(item, p.patterns));
+
+      return {
+        id: p.id,
+        shell: p.shell || options.shell,
+        layout: resolvedLayout,
+      };
+    });
   }
 
   if (archetypeData?.features) {
