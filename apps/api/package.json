@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "test": "node --test test/**/*.test.js"
+    "test": "dotenv -e .env.local -- vitest run",
+    "test:watch": "dotenv -e .env.local -- vitest"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
@@ -15,5 +16,9 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0",
+    "vitest": "^3.2.4"
   }
 }
