@@ -16,3 +16,8 @@ tools/auto-tasks
 tools/auto-tasks/done/*
 tools/auto-tasks/queue/*
 tools/auto
+
+# Environment files
+.env.local
+.env.*.local
+apps/api/.env.local
