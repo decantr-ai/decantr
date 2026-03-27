@@ -1,0 +1,62 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "id": "clean",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Clean",
+  "description": "Minimal, professional aesthetic. Monochrome base with single accent color. Maximum readability.",
+  "dependencies": {
+    "styles": {
+      "clean": ">=1.0.0"
+    }
+  },
+  "schema_version": "2.0",
+  "style": "clean",
+  "mode": "auto",
+  "spatial_hints": {
+    "density_bias": 0,
+    "content_gap_shift": 0,
+    "section_padding": "64px",
+    "card_wrapping": "standard",
+    "surface_override": null
+  },
+  "shell": {
+    "preferred": ["top-nav-main", "sidebar-main"],
+    "avoid": [],
+    "nav_style": "minimal",
+    "default_nav_state": "collapsed",
+    "root": "clean-surface",
+    "nav": "clean-nav",
+    "header": ""
+  },
+  "animation": {
+    "entrance": "none",
+    "micro": "instant"
+  },
+  "visual_effects": {
+    "enabled": false,
+    "intensity": "none"
+  },
+  "card_styles": {
+    "flat": {
+      "description": "Borderless card with subtle background difference",
+      "properties": {
+        "background": "var(--clean-surface-raised)",
+        "border-radius": "8px"
+      }
+    },
+    "bordered": {
+      "description": "Card with thin border, no shadow",
+      "properties": {
+        "background": "var(--clean-surface)",
+        "border": "1px solid var(--clean-border)",
+        "border-radius": "8px"
+      }
+    }
+  },
+  "decorators": {
+    "clean-surface": "Pure white (#FFFFFF) or near-black (#111111) depending on mode.",
+    "clean-nav": "Minimal navigation with text links, no backgrounds.",
+    "clean-surface-raised": "Slightly elevated surface for cards (2% darker/lighter)."
+  }
+}

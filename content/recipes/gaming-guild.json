@@ -1,0 +1,75 @@
+{
+  "$schema": "https://decantr.ai/schemas/recipe.v2.json",
+  "id": "gaming-guild",
+  "version": "1.0.0",
+  "decantr_compat": ">=1.0.0",
+  "name": "Gaming Guild",
+  "description": "High-energy gaming aesthetic with neon accents, dark surfaces, and animated elements.",
+  "dependencies": {
+    "styles": {
+      "gaming-guild": ">=1.0.0"
+    }
+  },
+  "schema_version": "2.0",
+  "style": "gaming-guild",
+  "mode": "dark",
+  "spatial_hints": {
+    "density_bias": -1,
+    "content_gap_shift": 0,
+    "section_padding": "64px",
+    "card_wrapping": "minimal",
+    "surface_override": null
+  },
+  "shell": {
+    "preferred": ["sidebar-main"],
+    "avoid": ["centered", "minimal-header"],
+    "nav_style": "filled",
+    "default_nav_state": "expanded",
+    "root": "gg-dark",
+    "nav": "gg-sidebar",
+    "header": "gg-hero"
+  },
+  "animation": {
+    "entrance": "gg-slide-in",
+    "micro": "bouncy"
+  },
+  "visual_effects": {
+    "enabled": true,
+    "intensity": "strong",
+    "type_mapping": {
+      "hero_section": ["gg-neon-glow"],
+      "stat_display": ["gg-stat-pulse"],
+      "leaderboard": ["gg-rank-badge"],
+      "achievement": ["gg-achievement-shine"]
+    }
+  },
+  "card_styles": {
+    "neon": {
+      "description": "Dark card with neon border glow",
+      "properties": {
+        "background": "rgba(0,0,0,0.6)",
+        "border": "2px solid var(--gg-accent)",
+        "box-shadow": "0 0 20px var(--gg-accent-glow)",
+        "border-radius": "8px"
+      }
+    },
+    "solid": {
+      "description": "Filled card with accent color",
+      "properties": {
+        "background": "var(--gg-accent)",
+        "border-radius": "8px",
+        "color": "#000"
+      }
+    }
+  },
+  "decorators": {
+    "gg-dark": "Near-black background (#0A0A0F) with subtle grid pattern.",
+    "gg-sidebar": "Dark sidebar with accent-colored active states.",
+    "gg-hero": "Hero with animated gradient background.",
+    "gg-neon-glow": "Neon glow effect behind hero elements.",
+    "gg-stat-pulse": "Stats with subtle pulse animation.",
+    "gg-rank-badge": "Rank position with metallic gradient (gold/silver/bronze).",
+    "gg-achievement-shine": "Achievement cards with shine animation on hover.",
+    "gg-slide-in": "Entrance: slide from left with slight bounce."
+  }
+}

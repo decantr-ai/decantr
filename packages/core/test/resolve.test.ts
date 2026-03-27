@@ -6,6 +6,7 @@ import type { Pattern, Recipe } from '@decantr/registry';
 import { join } from 'node:path';
 
 const contentRoot = join(import.meta.dirname, '..', '..', '..', 'content', 'core');
+const recipesRoot = join(import.meta.dirname, '..', '..', '..', 'content');
 
 function makeSaasEssence(): Essence {
   return {
@@ -31,7 +32,7 @@ function makeSaasEssence(): Essence {
 describe('resolveEssence', () => {
   it('loads recipe and computes density from personality traits', async () => {
     const essence = makeSaasEssence();
-    const resolver = createResolver({ contentRoot });
+    const resolver = createResolver({ contentRoot, overridePaths: [recipesRoot] });
     const resolved = await resolveEssence(essence, resolver);
 
     expect(resolved.recipe).not.toBeNull();
