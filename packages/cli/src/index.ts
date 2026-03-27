@@ -4,7 +4,7 @@ import { validateEssence, evaluateGuard } from '@decantr/essence-spec';
 import type { EssenceFile } from '@decantr/essence-spec';
 import { createResolver, createRegistryClient } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
-import { runInteractivePrompts, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
+import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
 import { scaffoldProject, type ThemeData, type RecipeData, type LayoutItem } from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
@@ -465,18 +465,42 @@ async function cmdInit(args: InitArgs) {
     offline: args.offline,
   });
 
-  // Fetch registry content
-  console.log(dim('Fetching registry content...'));
+  // Check connectivity
+  const apiAvailable = await registryClient.checkApiAvailability();
 
+  let selectedBlueprint = 'default';
+  let registrySource: 'api' | 'bundled' = 'bundled';
+
+  if (args.yes) {
+    // Non-interactive: use --blueprint flag or default
+    selectedBlueprint = args.blueprint || 'default';
+  } else if (!apiAvailable) {
+    // Offline mode
+    console.log(`\n${YELLOW}You're offline. Scaffolding Decantr default.${RESET}`);
+    console.log(dim('Run `decantr upgrade` when online, or visit decantr.ai/registry\n'));
+    selectedBlueprint = 'default';
+  } else {
+    // Online: fetch blueprints and show simplified prompt
+    console.log(dim('Fetching registry content...'));
+    const blueprintsResult = await registryClient.fetchBlueprints();
+    registrySource = blueprintsResult.source.type === 'api' ? 'api' : 'bundled';
+
+    const { selectedBlueprint: selected } = await runSimplifiedInit(
+      blueprintsResult.data.items
+    );
+
+    selectedBlueprint = selected || 'default';
+  }
+
+  // Fetch registry content for scaffold
   const [archetypesResult, blueprintsResult, themesResult] = await Promise.all([
     registryClient.fetchArchetypes(),
     registryClient.fetchBlueprints(),
     registryClient.fetchThemes(),
   ]);
 
-  const registrySource = archetypesResult.source.type;
-  if (registrySource === 'bundled') {
-    console.log(dim('Using bundled content (API unavailable)'));
+  if (archetypesResult.source.type === 'api') {
+    registrySource = 'api';
   }
 
   const archetypes = archetypesResult.data.items;
@@ -485,12 +509,13 @@ async function cmdInit(args: InitArgs) {
 
   let options;
 
-  if (args.yes) {
-    // Non-interactive mode: use flags with defaults
+  if (args.yes || selectedBlueprint !== 'default') {
+    // Non-interactive mode or simplified selection: use flags with defaults
     const flags = parseFlags(args as Record<string, unknown>, detected);
+    flags.blueprint = selectedBlueprint !== 'default' ? selectedBlueprint : flags.blueprint;
     options = mergeWithDefaults(flags, detected);
   } else {
-    // Interactive mode
+    // Full interactive mode (default blueprint selected)
     options = await runInteractivePrompts(detected, archetypes, blueprints, themes);
   }
 
@@ -558,33 +583,38 @@ async function cmdInit(args: InitArgs) {
   );
 
   // Output summary
-  console.log(success('\nProject scaffolded successfully!'));
-  console.log('');
-  console.log(`  ${cyan('decantr.essence.json')}  Design specification`);
-  console.log(`  ${cyan('DECANTR.md')}            LLM instructions`);
-  console.log(`  ${cyan('.decantr/project.json')} Project state`);
-  console.log(`  ${cyan('.decantr/context/')}     Task-specific guides`);
+  console.log(success('\nProject scaffolded!\n'));
+  console.log('  Files created:');
+  console.log(`    ${cyan('decantr.essence.json')}    Design specification`);
+  console.log(`    ${cyan('DECANTR.md')}              LLM instructions`);
+  console.log(`    ${cyan('.decantr/')}               Project state & cache`);
 
   if (result.gitignoreUpdated) {
-    console.log(`  ${dim('.gitignore updated to exclude .decantr/cache/')}`);
+    console.log(`    ${dim('.gitignore updated')}`);
   }
+
+  console.log('');
+  console.log('  Next steps:');
+  console.log('    1. Review DECANTR.md for methodology');
+  console.log('    2. Explore more at decantr.ai/registry');
+  console.log('');
+  console.log('  Commands:');
+  console.log(`    ${cyan('decantr status')}     Project health`);
+  console.log(`    ${cyan('decantr search')}     Search registry`);
+  console.log(`    ${cyan('decantr get')}        Fetch content details`);
+  console.log(`    ${cyan('decantr validate')}   Check essence file`);
+  console.log(`    ${cyan('decantr upgrade')}    Update to latest patterns`);
+  console.log(`    ${cyan('decantr heal')}       Fix drift issues`);
 
   // Validate
   const essenceContent = readFileSync(result.essencePath, 'utf-8');
   const essence = JSON.parse(essenceContent);
   const validation = validateEssence(essence);
 
-  if (validation.valid) {
-    console.log(success('\nValidation passed.'));
-  } else {
+  if (!validation.valid) {
     console.log(error(`\nValidation warnings: ${validation.errors.join(', ')}`));
   }
 
-  // Next steps
-  console.log(heading('Next steps'));
-  console.log('1. Review DECANTR.md to understand the methodology');
-  console.log('2. Copy the prompt below and share it with your AI assistant');
-  console.log('3. Start building! The AI will follow the essence spec.');
   console.log('');
 
   // Generate curated prompt

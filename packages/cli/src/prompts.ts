@@ -332,4 +332,59 @@ export function mergeWithDefaults(flags: Partial<InitOptions>, detected: Detecte
   };
 }
 
+/**
+ * Run simplified init prompt with two choices.
+ */
+export async function runSimplifiedInit(
+  blueprints: Array<{ id: string; name?: string; description?: string }>
+): Promise<{ choice: 'default' | 'search'; searchQuery?: string; selectedBlueprint?: string }> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+  const question = (q: string): Promise<string> =>
+    new Promise(resolve => rl.question(q, resolve));
+
+  console.log('\n? What blueprint would you like to scaffold?\n');
+  console.log('  1. Decantr default (recommended)');
+  console.log('  2. Search registry...\n');
+
+  const choice = await question('Enter choice (1 or 2): ');
+
+  if (choice === '1' || choice === '') {
+    rl.close();
+    return { choice: 'default' };
+  }
+
+  // Search flow
+  const searchQuery = await question('Search: ');
+
+  // Filter blueprints by query
+  const matches = blueprints.filter(b =>
+    b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    b.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    b.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  ).slice(0, 10);
+
+  if (matches.length === 0) {
+    console.log('\nNo matches found. Using Decantr default.');
+    rl.close();
+    return { choice: 'default' };
+  }
+
+  console.log('\nResults:');
+  matches.forEach((b, i) => {
+    console.log(`  ${i + 1}. ${b.id} — ${b.description || b.name || ''}`);
+  });
+
+  const selection = await question('\nSelect (number): ');
+  const idx = parseInt(selection, 10) - 1;
+
+  rl.close();
+
+  if (idx >= 0 && idx < matches.length) {
+    return { choice: 'search', selectedBlueprint: matches[idx].id };
+  }
+
+  return { choice: 'default' };
+}
+
 export { ask, select, multiSelect, confirm, warn };
