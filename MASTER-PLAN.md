@@ -893,7 +893,7 @@ Decantr serves three distinct user segments. Each has different pain points, ent
    - Resolves patterns from private registry (not public)
    - Guard rules enforce the company design system
    - Drift reports show violations before code is committed
-3. **CI/CD integration:** GitHub Action runs `decantr validate` on every PR
+3. **CI/CD integration:** GitHub Action runs `npx @decantr/cli validate` on every PR
    - Checks generated code against the Essence spec
    - Blocks PRs that violate guard rules
    - Generates drift reports for design team review

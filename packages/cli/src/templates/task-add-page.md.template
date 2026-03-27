@@ -40,7 +40,7 @@ Before generating code for a new page, add it to the essence:
 Run validation to ensure the essence is valid:
 
 ```bash
-decantr validate
+npx @decantr/cli validate
 ```
 
 ### 3. Then Generate
@@ -54,7 +54,7 @@ Before adding a page:
 - [ ] The page ID is added to `structure[]` in essence
 - [ ] The page has a `shell` defined
 - [ ] The page has a `layout[]` with pattern IDs
-- [ ] Validation passes (`decantr validate`)
+- [ ] Validation passes (`npx @decantr/cli validate`)
 
 During code generation:
 
@@ -65,7 +65,7 @@ During code generation:
 
 After generation:
 
-- [ ] Run `decantr validate`
+- [ ] Run `npx @decantr/cli validate`
 - [ ] Verify the page matches the theme
 - [ ] Check that the recipe styles are applied
 

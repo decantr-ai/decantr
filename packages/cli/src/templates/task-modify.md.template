@@ -102,8 +102,8 @@ During modification:
 
 After modification:
 
-- [ ] Run `decantr validate`
-- [ ] Run `decantr audit` to check drift
+- [ ] Run `npx @decantr/cli validate`
+- [ ] Run `npx @decantr/cli audit` to check drift
 - [ ] Verify no warnings or errors
 
 ## Spacing Enforcement

@@ -41,7 +41,7 @@ During scaffolding:
 
 After scaffolding:
 
-- [ ] Run `decantr validate` to check the essence
+- [ ] Run `npx @decantr/cli validate` to check the essence
 - [ ] Verify each page renders correctly
 - [ ] Check theme consistency across pages
 
@@ -56,7 +56,7 @@ After scaffolding is complete:
 1. Run the development server
 2. Verify all pages load
 3. Check theme consistency
-4. Run `decantr validate`
+4. Run `npx @decantr/cli validate`
 
 Once verified, subsequent changes will use **{{GUARD_MODE}}** enforcement mode.
 

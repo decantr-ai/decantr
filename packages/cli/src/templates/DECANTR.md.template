@@ -480,7 +480,7 @@ These files contain tier-specific rules and checklists.
 **"I don't know which pattern to use"**
 1. Use `decantr_suggest_patterns` with a description
 2. Or check the patterns in `.decantr/cache/patterns/`
-3. Or search the registry with `decantr search <query>`
+3. Or search the registry with `npx @decantr/cli search <query>`
 
 ---
 
@@ -505,7 +505,7 @@ When the user wants to change the design spec:
 
 1. Read the current `decantr.essence.json`
 2. Make the requested changes
-3. Validate with `decantr validate`
+3. Validate with `npx @decantr/cli validate`
 4. Write the updated file
 5. Regenerate `DECANTR.md` if structure changed significantly
 
