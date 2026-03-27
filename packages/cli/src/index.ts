@@ -24,6 +24,82 @@ function error(text: string): string { return `${RED}${text}${RESET}`; }
 function dim(text: string): string { return `${DIM}${text}${RESET}`; }
 function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
 
+interface PromptContext {
+  archetype: string;
+  blueprint?: string;
+  theme: string;
+  mode: string;
+  target: string;
+  pages: Array<{ id: string; shell: string; layout: string[] }>;
+  personality: string[];
+  features: string[];
+  guard: string;
+}
+
+function extractPatternName(item: unknown): string {
+  if (typeof item === 'string') return item;
+  if (typeof item === 'object' && item !== null) {
+    const obj = item as Record<string, unknown>;
+    if (typeof obj.pattern === 'string') return obj.pattern;
+    // Handle column layouts
+    if (Array.isArray(obj.cols)) {
+      return obj.cols.map(extractPatternName).join(' | ');
+    }
+  }
+  return 'custom';
+}
+
+function generateCuratedPrompt(ctx: PromptContext): string {
+  const lines: string[] = [];
+
+  lines.push(`I'm building a ${ctx.archetype} application using ${ctx.target}.`);
+  lines.push('');
+
+  if (ctx.blueprint) {
+    lines.push(`Blueprint: ${ctx.blueprint}`);
+  }
+  lines.push(`Theme: ${ctx.theme} (${ctx.mode} mode)`);
+  lines.push(`Personality: ${ctx.personality.join(', ')}`);
+  lines.push(`Guard mode: ${ctx.guard}`);
+  lines.push('');
+
+  lines.push('Pages to build:');
+  for (const page of ctx.pages) {
+    const patternNames = page.layout.map(extractPatternName);
+    const patterns = patternNames.length > 0 ? patternNames.join(', ') : 'custom';
+    lines.push(`  - ${page.id}: ${page.shell} shell with ${patterns}`);
+  }
+
+  if (ctx.features.length > 0) {
+    lines.push('');
+    lines.push(`Features: ${ctx.features.join(', ')}`);
+  }
+
+  lines.push('');
+  lines.push('Please read DECANTR.md for the full design spec and methodology.');
+  lines.push('Follow the guard rules and use the patterns from decantr.essence.json.');
+
+  return lines.join('\n');
+}
+
+function boxedPrompt(content: string, title: string): string {
+  const lines = content.split('\n');
+  const maxLen = Math.max(...lines.map(l => l.length), title.length + 4);
+  const width = maxLen + 4;
+
+  const top = `┌${'─'.repeat(width - 2)}┐`;
+  const titleLine = `│ ${BOLD}${title}${RESET}${' '.repeat(width - title.length - 4)} │`;
+  const sep = `├${'─'.repeat(width - 2)}┤`;
+  const bottom = `└${'─'.repeat(width - 2)}┘`;
+
+  const body = lines.map(line => {
+    const padding = ' '.repeat(width - line.length - 4);
+    return `│ ${line}${padding} │`;
+  }).join('\n');
+
+  return `${top}\n${titleLine}\n${sep}\n${body}\n${bottom}`;
+}
+
 function getContentRoot(): string {
   const bundled = join(import.meta.dirname, '..', '..', '..', 'content');
   return process.env.DECANTR_CONTENT_ROOT || bundled;
@@ -318,8 +394,25 @@ async function cmdInit(args: InitArgs) {
   // Next steps
   console.log(heading('Next steps'));
   console.log('1. Review DECANTR.md to understand the methodology');
-  console.log('2. Share DECANTR.md with your AI assistant');
+  console.log('2. Copy the prompt below and share it with your AI assistant');
   console.log('3. Start building! The AI will follow the essence spec.');
+  console.log('');
+
+  // Generate curated prompt
+  const promptCtx: PromptContext = {
+    archetype: options.archetype || 'custom',
+    blueprint: options.blueprint,
+    theme: options.theme,
+    mode: options.mode,
+    target: options.target,
+    pages: essence.structure || [{ id: 'home', shell: options.shell, layout: ['hero'] }],
+    personality: options.personality,
+    features: options.features,
+    guard: options.guard,
+  };
+
+  const curatedPrompt = generateCuratedPrompt(promptCtx);
+  console.log(boxedPrompt(curatedPrompt, 'Copy this prompt for your AI assistant'));
   console.log('');
 
   if (registrySource === 'bundled') {

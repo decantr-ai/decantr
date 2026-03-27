@@ -1,0 +1,30 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": true,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-03-27T00:20:29.824Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": [],
+      "recipes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-03-27T00:20:29.824Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=gaming-platform --theme=neon --mode=dark --guard=strict"
+  }
+}

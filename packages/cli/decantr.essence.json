@@ -1,0 +1,97 @@
+{
+  "version": "2.0.0",
+  "archetype": "gaming-community",
+  "theme": {
+    "style": "neon",
+    "mode": "dark",
+    "recipe": "neon",
+    "shape": "rounded"
+  },
+  "personality": [
+    "professional"
+  ],
+  "platform": {
+    "type": "spa",
+    "routing": "hash"
+  },
+  "structure": [
+    {
+      "id": "main",
+      "shell": "sidebar-main",
+      "layout": [
+        {
+          "pattern": "hero",
+          "preset": "landing",
+          "as": "guild-hero"
+        },
+        "kpi-grid",
+        {
+          "cols": [
+            "activity-feed",
+            "top-players"
+          ],
+          "at": "lg"
+        }
+      ]
+    },
+    {
+      "id": "news",
+      "shell": "sidebar-main",
+      "layout": [
+        "filter-bar",
+        "post-list"
+      ]
+    },
+    {
+      "id": "hall-of-fame",
+      "shell": "sidebar-main",
+      "layout": [
+        "stats-bar",
+        {
+          "pattern": "leaderboard",
+          "preset": "ranked",
+          "as": "guild-leaderboard"
+        },
+        "timeline"
+      ]
+    },
+    {
+      "id": "member-profile",
+      "shell": "sidebar-main",
+      "layout": [
+        {
+          "pattern": "detail-header",
+          "preset": "profile",
+          "as": "player-header"
+        },
+        "kpi-grid",
+        {
+          "cols": [
+            "achievements",
+            "activity-feed"
+          ],
+          "span": {
+            "achievements": 2
+          },
+          "at": "lg"
+        },
+        "timeline"
+      ]
+    }
+  ],
+  "features": [
+    "guild-state",
+    "achievements",
+    "realtime-data"
+  ],
+  "guard": {
+    "enforce_style": true,
+    "enforce_recipe": true,
+    "mode": "strict"
+  },
+  "density": {
+    "level": "comfortable",
+    "content_gap": "_gap4"
+  },
+  "target": "react"
+}

@@ -1,0 +1,412 @@
+# DECANTR.md
+
+This project uses **Decantr** for design intelligence. Read this file before generating any UI code.
+
+---
+
+## What is Decantr?
+
+Decantr is a design intelligence layer that sits between you (the AI code generator) and the code you produce. It provides:
+
+- **Structured schemas** — The `decantr.essence.json` file is the source of truth for this project's design
+- **Reusable building blocks** — Patterns, archetypes, blueprints, and themes from the registry
+- **Drift prevention** — Guard rules that validate your code against the spec
+- **Design methodology** — The 7-stage Design Pipeline
+
+**Decantr does NOT generate code.** You generate the code. Decantr ensures it remains coherent and consistent.
+
+### Why Drift Matters
+
+Design drift is the gradual divergence between intended design and actual implementation. It happens when:
+
+- Themes are switched "just this once" without updating the spec
+- New pages are added without declaring them in the structure
+- Layout order is changed because "it looks better this way"
+- Spacing values are tweaked ad-hoc instead of following the density profile
+
+Drift compounds. Small violations accumulate into a codebase where every page looks different, spacing is inconsistent, and the original design intent is lost. Decantr prevents this by making the design spec explicit and enforced.
+
+---
+
+## The Design Pipeline
+
+Every design decision follows these seven stages:
+
+| Stage | Name | What Happens |
+|-------|------|--------------|
+| 1 | **Intent** | User describes what they want to build |
+| 2 | **Interpret** | Parse intent into structured form |
+| 3 | **Decompose** | Split into theme, structure, features |
+| 4 | **Specify** | Write `decantr.essence.json` |
+| 5 | **Compose** | Resolve layouts from patterns and recipes |
+| 6 | **Generate** | You generate code from the composition |
+| 7 | **Guard** | Validate every change against the spec |
+
+The essence file captures stages 1-5. Your code generation is stage 6. The guard rules enforce stage 7.
+
+---
+
+## Guard Rules
+
+The guard system enforces five rules. **These are non-negotiable.**
+
+| # | Rule | What It Checks | Severity |
+|---|------|----------------|----------|
+| 1 | **Style** | Code uses theme specified in essence | Error |
+| 2 | **Structure** | Page exists in essence structure | Error |
+| 3 | **Layout** | Pattern order matches essence layout | Error (strict only) |
+| 4 | **Recipe** | Decorations match essence recipe | Error |
+| 5 | **Density** | Spacing follows density profile | Warning (strict only) |
+
+### Enforcement Tiers
+
+| Tier | When Used | Rules Enforced |
+|------|-----------|----------------|
+| **Creative** | New project scaffolding | Advisory only |
+| **Guided** | Adding pages or features | Rules 1, 2, 4 |
+| **Strict** | Modifying existing code | All 5 rules |
+
+This project uses **strict** mode.
+
+### Violation Response Protocol
+
+When a user request would violate guard rules:
+
+```
+1. STOP   — Do not proceed with code that violates guard rules
+2. EXPLAIN — Tell the user which rule would be violated and why
+3. OFFER  — Ask if they want to update the essence
+4. WAIT   — Only proceed after the essence is updated
+```
+
+**Never make "just this once" exceptions.** If the user insists, update the essence first.
+
+---
+
+## This Project
+
+**Archetype:** gaming-community
+**Target:** react
+**Theme:** neon (dark mode)
+**Guard Mode:** strict
+**Pages:** main, news, hall-of-fame, member-profile
+
+### Essence Overview
+
+```json
+{
+  "theme": "neon",
+  "mode": "dark",
+  "guard": "strict",
+  "target": "react"
+}
+```
+
+### Pages
+
+| Page | Shell | Layout |
+|------|-------|--------|
+| main | sidebar-main | [object Object], kpi-grid, [object Object] |
+| news | sidebar-main | filter-bar, post-list |
+| hall-of-fame | sidebar-main | stats-bar, [object Object], timeline |
+| member-profile | sidebar-main | [object Object], kpi-grid, [object Object], timeline |
+
+### Patterns in Use
+
+- `[object Object]`
+- `kpi-grid`
+- `[object Object]`
+- `filter-bar`
+- `post-list`
+- `stats-bar`
+- `[object Object]`
+- `timeline`
+- `[object Object]`
+- `[object Object]`
+
+---
+
+## Before Writing Code
+
+**Always check these before generating UI code:**
+
+### With MCP Tools (Recommended)
+
+If you have access to Decantr MCP tools:
+
+1. `decantr_read_essence` — Load the current essence
+2. `decantr_check_drift` — Verify your planned changes won't violate rules
+3. `decantr_resolve_pattern` — Get pattern details before implementing
+4. `decantr_suggest_patterns` — Find appropriate patterns for new sections
+
+### Without MCP Tools
+
+1. Read `decantr.essence.json` in the project root
+2. Verify the page you're editing exists in `structure[]`
+3. Check the page's `layout[]` for required pattern order
+4. Follow the `theme.style` and `theme.recipe` specifications
+5. Use spacing tokens from `density.content_gap`
+
+### Checklist
+
+Before writing any UI code:
+
+- [ ] Is this page in the essence structure?
+- [ ] Am I using the correct theme (neon)?
+- [ ] Am I following the correct mode (dark)?
+- [ ] Does my pattern order match the layout spec?
+- [ ] Am I using the correct spacing tokens?
+
+If any answer is "no" — **STOP and ask the user to update the essence.**
+
+---
+
+## After Writing Code
+
+### Self-Check
+
+After generating code, verify:
+
+1. **Theme consistency** — All colors, typography, and effects match the theme
+2. **Pattern structure** — Components follow the pattern's layout spec
+3. **Spacing consistency** — Gap values use tokens, not arbitrary pixels
+4. **Page declaration** — The page exists in the essence structure
+
+### Drift Validation
+
+Run validation to check for violations:
+
+```bash
+decantr validate
+```
+
+Or use the MCP tool:
+
+```
+decantr_check_drift(page_id="{{page}}", theme_used="{{theme}}")
+```
+
+---
+
+## Pattern Quality Rules
+
+When implementing patterns, follow these rules:
+
+### 1. One Elevation
+
+Each pattern section should have a single visual elevation level. Don't nest cards within cards or create competing visual hierarchies.
+
+```
+// Good: Single elevation
+<section class="pattern-section">
+  <h2>Title</h2>
+  <div class="content">...</div>
+</section>
+
+// Bad: Nested elevations
+<Card>
+  <Card>...</Card>
+</Card>
+```
+
+### 2. Containment Decision
+
+Decide upfront whether a pattern is:
+- **Contained** — Has visible boundaries (card, panel)
+- **Inline** — Flows with content, no boundaries
+
+Don't mix containment within a pattern.
+
+### 3. Component Consistency
+
+Use the same component variants throughout a pattern. If buttons are `primary` style in one place, they should be `primary` everywhere in that pattern.
+
+---
+
+## Spatial Guidelines
+
+### Personality to Density Mapping
+
+| Personality | Suggested Density | Content Gap |
+|-------------|-------------------|-------------|
+| professional | comfortable | `_gap4` |
+| playful | spacious | `_gap6` |
+| premium | spacious | `_gap8` |
+| minimal | compact | `_gap2` |
+| bold | comfortable | `_gap4` |
+
+This project uses: **professional** personality with **comfortable** density.
+
+### The 50% Rule
+
+Pattern content should occupy roughly 50% of its container width on desktop. This creates breathing room and prevents wall-of-text layouts.
+
+### Spacing Tokens
+
+Use these tokens instead of arbitrary pixel values:
+
+| Token | Value | Use Case |
+|-------|-------|----------|
+| `_gap1` | 4px | Tight spacing within components |
+| `_gap2` | 8px | Compact layouts |
+| `_gap3` | 12px | Default inline spacing |
+| `_gap4` | 16px | Comfortable content gap |
+| `_gap6` | 24px | Section spacing |
+| `_gap8` | 32px | Major section breaks |
+| `_gap12` | 48px | Page section spacing |
+
+---
+
+## Shells (Page Layouts)
+
+A shell is the page-level layout container. This project uses **sidebar-main** as the default shell.
+
+### Available Shells
+
+| Shell | Description | Use Case |
+|-------|-------------|----------|
+| `sidebar-main` | Collapsible sidebar + main content | Dashboards, admin panels |
+| `top-nav-main` | Horizontal nav + full-width content | Marketing, content sites |
+| `centered` | Centered card on background | Auth flows, focused tasks |
+| `full-bleed` | No persistent nav, scroll-driven | Landing pages, portfolios |
+| `minimal-header` | Slim header + centered content | Checkout, wizards |
+| `sidebar-aside` | Three columns (nav + main + aside) | IDE-style, email clients |
+
+### Shell Structure
+
+```
+nav (left) | header (top) | body (scrollable)
+```
+
+---
+
+## Task-Specific Context
+
+For detailed instructions based on what you're doing, see:
+
+| Task | Context File |
+|------|--------------|
+| Scaffolding new pages | `.decantr/context/task-scaffold.md` |
+| Adding pages/features | `.decantr/context/task-add-page.md` |
+| Modifying existing code | `.decantr/context/task-modify.md` |
+
+These files contain tier-specific rules and checklists.
+
+---
+
+## Quick Reference
+
+### Essence Schema (Simplified)
+
+```json
+{
+  "version": "2.0.0",
+  "theme": {
+    "style": "theme-id",
+    "mode": "dark | light | auto",
+    "recipe": "recipe-id",
+    "shape": "pill | rounded | sharp"
+  },
+  "personality": ["trait1", "trait2"],
+  "structure": [
+    {
+      "id": "page-id",
+      "shell": "shell-id",
+      "layout": ["pattern-1", "pattern-2"]
+    }
+  ],
+  "features": ["auth", "search"],
+  "guard": {
+    "enforce_style": true,
+    "enforce_recipe": true,
+    "mode": "strict | guided | creative"
+  },
+  "density": {
+    "level": "compact | comfortable | spacious",
+    "content_gap": "_gap4"
+  },
+  "target": "react | vue | svelte | html"
+}
+```
+
+### Common Violations
+
+| Violation | Fix |
+|-----------|-----|
+| "Page not in structure" | Add page to `structure[]` in essence |
+| "Theme mismatch" | Use the theme from `theme.style` |
+| "Pattern order wrong" | Reorder to match `layout[]` |
+| "Unknown recipe" | Use recipe from `theme.recipe` |
+| "Spacing inconsistent" | Use tokens from `density.content_gap` |
+
+### Troubleshooting
+
+**"I need to add a new page"**
+1. Update `structure[]` in essence with the new page
+2. Specify the shell and layout patterns
+3. Then generate the code
+
+**"I want to change the theme"**
+1. Update `theme.style` in essence
+2. Update `theme.recipe` if needed
+3. Regenerate affected components
+
+**"The guard is blocking me"**
+1. Check which rule is being violated
+2. Update the essence to reflect the desired change
+3. Then proceed with code generation
+
+**"I don't know which pattern to use"**
+1. Use `decantr_suggest_patterns` with a description
+2. Or check the patterns in `.decantr/cache/patterns/`
+3. Or search the registry with `decantr search <query>`
+
+---
+
+## Registry Content
+
+This project has access to the following content:
+
+### Patterns
+(See registry or .decantr/cache/patterns/)
+
+### Themes
+(See registry or .decantr/cache/themes/)
+
+### Shells
+sidebar-main, top-nav-main, centered, full-bleed, minimal-header
+
+---
+
+## Updating the Essence
+
+When the user wants to change the design spec:
+
+1. Read the current `decantr.essence.json`
+2. Make the requested changes
+3. Validate with `decantr validate`
+4. Write the updated file
+5. Regenerate `DECANTR.md` if structure changed significantly
+
+Or use the MCP tool:
+
+```
+decantr_update_essence(operation="add_page", payload={...})
+```
+
+---
+
+## Summary
+
+1. **Read the essence** before generating code
+2. **Check guard rules** before proceeding
+3. **Never violate** — update the essence instead
+4. **Use patterns** from the layout spec
+5. **Follow the theme** exactly
+6. **Validate after** generating code
+
+The essence is the source of truth. When in doubt, consult it.
+
+---
+
+*Generated by Decantr CLI v1.0.0*
