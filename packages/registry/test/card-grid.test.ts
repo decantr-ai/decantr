@@ -5,7 +5,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const patternPath = join(__dirname, '..', '..', '..', 'content', 'patterns', 'card-grid.json');
+const patternPath = join(__dirname, 'fixtures', 'patterns', 'card-grid.json');
 
 const cardGrid = JSON.parse(readFileSync(patternPath, 'utf-8'));
 

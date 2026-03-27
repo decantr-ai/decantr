@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const contentRoot = join(__dirname, '..', '..', '..', 'content');
+const contentRoot = join(__dirname, 'fixtures');
 
 // AUTO: Load archetype directly to validate JSON structure independently of resolver
 const archetypePath = join(contentRoot, 'archetypes', 'content-site.json');

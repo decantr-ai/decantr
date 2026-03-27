@@ -1,0 +1,107 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "content-site",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "Content Site",
+  "description": "Blog, magazine, or documentation site with article listings, categories, and search",
+  "tags": [
+    "blog",
+    "magazine",
+    "documentation",
+    "articles",
+    "content",
+    "editorial"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "blog",
+        "magazine",
+        "documentation",
+        "content-site",
+        "articles"
+      ],
+      "secondary": [
+        "editorial",
+        "news",
+        "knowledge-base",
+        "wiki",
+        "publishing"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "default_layout": [
+        {
+          "pattern": "hero",
+          "preset": "landing"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "content",
+          "as": "latest-articles"
+        }
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "article",
+      "default_layout": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard"
+        }
+      ],
+      "shell": "top-nav-main",
+      "notes": "Article body content is rendered below the detail-header. Generator should emit a prose content area."
+    },
+    {
+      "id": "categories",
+      "default_layout": [
+        "filter-bar",
+        {
+          "pattern": "card-grid",
+          "preset": "content"
+        }
+      ],
+      "shell": "top-nav-main",
+      "notes": "filter-bar produces search signals consumed by card-grid for category filtering"
+    }
+  ],
+  "features": [
+    "search",
+    "analytics",
+    "rss"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "hero": "^1.0.0",
+      "card-grid": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "filter-bar": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "auradecantism",
+      "editorial",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "auto"
+    ]
+  }
+}

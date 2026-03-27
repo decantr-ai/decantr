@@ -4,8 +4,8 @@ import type { EssenceFile } from '@decantr/essence-spec';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
-const contentRoot = join(import.meta.dirname, '..', '..', '..', 'content', 'core');
-const recipesRoot = join(import.meta.dirname, '..', '..', '..', 'content');
+const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
+const recipesRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
 function loadFixture(name: string): EssenceFile {
   const path = join(import.meta.dirname, 'fixtures', `${name}.json`);

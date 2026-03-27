@@ -7,7 +7,7 @@ import { resolvePatternPreset } from '../src/pattern.js';
 import type { Pattern } from '../src/types.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const contentRoot = join(__dirname, '..', '..', '..', 'content');
+const contentRoot = join(__dirname, 'fixtures');
 
 async function loadPattern(id: string): Promise<Pattern> {
   const raw = await readFile(join(contentRoot, 'patterns', `${id}.json`), 'utf-8');

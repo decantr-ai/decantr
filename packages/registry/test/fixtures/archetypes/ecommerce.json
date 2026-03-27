@@ -1,0 +1,132 @@
+{
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "id": "ecommerce",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.10.0",
+  "name": "E-commerce Store",
+  "description": "Online store with product catalog, search, detail pages, and cart",
+  "tags": [
+    "ecommerce",
+    "store",
+    "catalog",
+    "cart",
+    "products",
+    "retail"
+  ],
+  "classification": {
+    "triggers": {
+      "primary": [
+        "ecommerce",
+        "store",
+        "shop",
+        "catalog",
+        "products"
+      ],
+      "secondary": [
+        "cart",
+        "checkout",
+        "retail",
+        "marketplace",
+        "inventory"
+      ],
+      "negative": []
+    },
+    "implies": [],
+    "weight": 1.0,
+    "tier": "core"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "default_layout": [
+        {
+          "pattern": "card-grid",
+          "preset": "collection",
+          "as": "featured-collections"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "trending-products"
+        },
+        "cta-section"
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "catalog",
+      "default_layout": [
+        "filter-bar",
+        {
+          "pattern": "card-grid",
+          "preset": "product"
+        }
+      ],
+      "shell": "top-nav-main",
+      "notes": "filter-bar produces search+filters signals consumed by card-grid"
+    },
+    {
+      "id": "product-detail",
+      "default_layout": [
+        {
+          "pattern": "detail-header",
+          "preset": "standard"
+        },
+        {
+          "pattern": "form-sections",
+          "preset": "structured",
+          "as": "product-options"
+        },
+        {
+          "pattern": "card-grid",
+          "preset": "product",
+          "as": "related-products"
+        }
+      ],
+      "shell": "top-nav-main"
+    },
+    {
+      "id": "cart",
+      "default_layout": [
+        {
+          "pattern": "data-table",
+          "preset": "standard",
+          "as": "cart-items"
+        },
+        "cta-section"
+      ],
+      "shell": "top-nav-main"
+    }
+  ],
+  "features": [
+    "auth",
+    "payments",
+    "search",
+    "analytics"
+  ],
+  "shells": {
+    "top-nav-main": "Top navigation bar with main content area"
+  },
+  "dependencies": {
+    "patterns": {
+      "card-grid": "^1.0.0",
+      "cta-section": "^1.0.0",
+      "filter-bar": "^1.0.0",
+      "detail-header": "^1.0.0",
+      "form-sections": "^1.0.0",
+      "data-table": "^1.0.0"
+    },
+    "recipes": {},
+    "styles": {}
+  },
+  "suggested_theme": {
+    "styles": [
+      "auradecantism",
+      "clean"
+    ],
+    "modes": [
+      "light",
+      "auto"
+    ]
+  }
+}

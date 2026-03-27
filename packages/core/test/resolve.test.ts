@@ -5,8 +5,8 @@ import type { Essence } from '@decantr/essence-spec';
 import type { Pattern, Recipe } from '@decantr/registry';
 import { join } from 'node:path';
 
-const contentRoot = join(import.meta.dirname, '..', '..', '..', 'content', 'core');
-const recipesRoot = join(import.meta.dirname, '..', '..', '..', 'content');
+const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
+const recipesRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
 function makeSaasEssence(): Essence {
   return {

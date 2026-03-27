@@ -1,0 +1,159 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "card-grid",
+  "version": "1.0.0",
+  "decantr_compat": ">=0.9.0",
+  "name": "Card Grid",
+  "description": "Responsive grid of cards with preset-specific content layouts",
+  "dependencies": {
+    "patterns": {},
+    "recipes": {},
+    "styles": {},
+    "requires_core": {
+      "components": [
+        "Card",
+        "Button",
+        "Badge",
+        "Image",
+        "icon"
+      ],
+      "charts": []
+    }
+  },
+  "contained": false,
+  "components": [
+    "Card",
+    "CardHeader",
+    "CardBody",
+    "CardFooter",
+    "Image",
+    "Button",
+    "Badge"
+  ],
+  "default_preset": "product",
+  "presets": {
+    "product": {
+      "description": "Product cards with image, title, price, rating, add-to-cart button. Grid: 1/2/3/4 cols at sm/md/lg/xl.",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "CardFooter",
+        "Image",
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _sm:gc2 _lg:gc3 _xl:gc4 _gap4",
+        "slots": {
+          "card-image": "Product image with aspect-ratio container",
+          "card-title": "Product name with _textsm _fontmedium",
+          "card-price": "Price with _heading4 styling",
+          "card-rating": "Star rating row with icon stars and count Badge",
+          "card-action": "Add-to-cart Button in CardFooter"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Button, Badge, icon } from 'decantr/components';",
+        "example": "function CardGridProduct({ items }) {\n  const { div, img, span, p } = tags;\n\n  const products = items || [\n    { name: 'Wireless Headphones', price: '$79.99', rating: 4.5, reviews: 128, image: '/images/headphones.jpg' },\n    { name: 'Mechanical Keyboard', price: '$149.99', rating: 4.8, reviews: 256, image: '/images/keyboard.jpg' },\n    { name: 'USB-C Hub', price: '$49.99', rating: 4.2, reviews: 89, image: '/images/hub.jpg' },\n    { name: 'Webcam HD', price: '$69.99', rating: 4.6, reviews: 312, image: '/images/webcam.jpg' },\n  ];\n\n  return div({ class: css('_grid _gc1 _sm:gc2 _lg:gc3 _xl:gc4 _gap4') },\n    ...products.map(product =>\n      Card({ class: css('_flex _col _overflow[hidden]') },\n        div({ class: css('_aspect[4/3] _overflow[hidden]') },\n          img({ src: product.image, alt: product.name, class: css('_wfull _hfull _object[cover]') })\n        ),\n        div({ class: css('_flex _col _gap2 _p4') },\n          p({ class: css('_textsm _fontmedium') }, product.name),\n          p({ class: css('_heading4') }, product.price),\n          div({ class: css('_flex _aic _gap1') },\n            ...Array.from({ length: 5 }, (_, i) =>\n              icon(i < Math.floor(product.rating) ? 'star' : 'star', {\n                size: '0.75rem',\n                class: css(i < Math.floor(product.rating) ? '_fgprimary' : '_fgmuted')\n              })\n            ),\n            Badge({ variant: 'secondary', size: 'sm' }, `${product.reviews}`)\n          )\n        ),\n        div({ class: css('_p4 _pt0') },\n          Button({ variant: 'primary', size: 'sm', class: css('_wfull') }, icon('shopping-cart', { size: '1em' }), ' Add to Cart')\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "content": {
+      "description": "Content/blog cards with thumbnail, title, excerpt, author, date. Grid: 1/2/3 cols.",
+      "components": [
+        "Card",
+        "CardHeader",
+        "CardBody",
+        "Image",
+        "Badge",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc1 _md:gc2 _lg:gc3 _gap6",
+        "slots": {
+          "card-thumbnail": "Blog post thumbnail image",
+          "card-category": "Category Badge above title",
+          "card-title": "Article title with _heading4 styling",
+          "card-excerpt": "Short excerpt with _bodysm _fgmuted",
+          "card-meta": "Author avatar, name, and date row"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge, icon } from 'decantr/components';",
+        "example": "function CardGridContent({ items }) {\n  const { div, img, h3, p, span, time } = tags;\n\n  const posts = items || [\n    { title: 'Getting Started with Decantr', excerpt: 'Learn how to build your first app with the AI-native framework.', category: 'Tutorial', author: 'Jane Doe', date: '2025-03-15', image: '/images/post1.jpg' },\n    { title: 'Advanced Signal Patterns', excerpt: 'Deep dive into reactive signal composition and derived state.', category: 'Guide', author: 'John Smith', date: '2025-03-12', image: '/images/post2.jpg' },\n    { title: 'Registry-Driven UI', excerpt: 'How the content registry powers intelligent code generation.', category: 'Architecture', author: 'Alex Chen', date: '2025-03-10', image: '/images/post3.jpg' },\n  ];\n\n  return div({ class: css('_grid _gc1 _md:gc2 _lg:gc3 _gap6') },\n    ...posts.map(post =>\n      Card({ class: css('_flex _col _overflow[hidden]') },\n        div({ class: css('_aspect[16/9] _overflow[hidden]') },\n          img({ src: post.image, alt: post.title, class: css('_wfull _hfull _object[cover]') })\n        ),\n        div({ class: css('_flex _col _gap3 _p4') },\n          Badge({ variant: 'outline', size: 'sm' }, post.category),\n          h3({ class: css('_heading4') }, post.title),\n          p({ class: css('_bodysm _fgmuted _line-clamp[2]') }, post.excerpt),\n          div({ class: css('_flex _aic _gap2 _textsm _fgmuted') },\n            span({}, post.author),\n            span({}, '·'),\n            time({}, post.date)\n          )\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "collection": {
+      "description": "Collection/category cards with background image, overlay title, item count. Grid: 2/3 cols.",
+      "components": [
+        "Card",
+        "Image",
+        "Badge"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _lg:gc3 _gap4",
+        "slots": {
+          "card-background": "Full-bleed background image with gradient overlay",
+          "card-overlay-title": "Collection name overlaid at bottom with _heading3",
+          "card-count": "Item count Badge overlaid on image"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Badge } from 'decantr/components';",
+        "example": "function CardGridCollection({ items }) {\n  const { div, img, h3 } = tags;\n\n  const collections = items || [\n    { name: 'Electronics', count: 234, image: '/images/electronics.jpg' },\n    { name: 'Clothing', count: 567, image: '/images/clothing.jpg' },\n    { name: 'Home & Garden', count: 189, image: '/images/home.jpg' },\n    { name: 'Sports', count: 312, image: '/images/sports.jpg' },\n    { name: 'Books', count: 445, image: '/images/books.jpg' },\n    { name: 'Toys', count: 178, image: '/images/toys.jpg' },\n  ];\n\n  return div({ class: css('_grid _gc2 _lg:gc3 _gap4') },\n    ...collections.map(col =>\n      Card({ class: css('_relative _aspect[3/2] _overflow[hidden] _cursor[pointer] _group') },\n        img({ src: col.image, alt: col.name, class: css('_absolute _inset0 _wfull _hfull _object[cover] _transition _group-hover:scale[1.05]') }),\n        div({ class: css('_absolute _inset0 _bg[linear-gradient(transparent_40%,rgba(0,0,0,0.7))]') }),\n        div({ class: css('_absolute _bottom0 _left0 _right0 _p4 _flex _jcsb _aic') },\n          h3({ class: css('_heading3 _fgfg') }, col.name),\n          Badge({ variant: 'secondary' }, `${col.count} items`)\n        )\n      )\n    )\n  );\n}"
+      }
+    },
+    "icon": {
+      "description": "Small icon cards with icon, title, short description. Grid: 2/3/4 cols. Compact.",
+      "components": [
+        "Card",
+        "icon"
+      ],
+      "layout": {
+        "layout": "grid",
+        "atoms": "_grid _gc2 _md:gc3 _lg:gc4 _gap3",
+        "slots": {
+          "card-icon": "Icon in a rounded muted background circle",
+          "card-title": "Feature title with _textsm _fontmedium",
+          "card-description": "Short description with _textxs _fgmuted"
+        }
+      },
+      "code": {
+        "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, icon } from 'decantr/components';",
+        "example": "function CardGridIcon({ items }) {\n  const { div, h4, p } = tags;\n\n  const features = items || [\n    { title: 'Fast Build', description: 'Lightning-fast compilation and HMR', ic: 'zap' },\n    { title: 'Type Safe', description: 'Full TypeScript support out of the box', ic: 'shield' },\n    { title: 'Responsive', description: 'Mobile-first responsive design system', ic: 'smartphone' },\n    { title: 'Accessible', description: 'WCAG 2.1 AA compliant components', ic: 'eye' },\n    { title: 'Themeable', description: 'Dark mode and custom theme support', ic: 'palette' },\n    { title: 'Extensible', description: 'Plugin architecture for custom needs', ic: 'puzzle' },\n    { title: 'Tested', description: 'Comprehensive test coverage built in', ic: 'check-circle' },\n    { title: 'Documented', description: 'Detailed docs with live examples', ic: 'book-open' },\n  ];\n\n  return div({ class: css('_grid _gc2 _md:gc3 _lg:gc4 _gap3') },\n    ...features.map(feature =>\n      Card({ class: css('_flex _col _aic _tc _gap2 _p4') },\n        div({ class: css('_w10 _h10 _flex _center _rfull _bgmuted/10') },\n          icon(feature.ic, { size: '1.25rem', class: css('_fgprimary') })\n        ),\n        h4({ class: css('_textsm _fontmedium') }, feature.title),\n        p({ class: css('_textxs _fgmuted') }, feature.description)\n      )\n    )\n  );\n}"
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "grid",
+    "atoms": "_grid _gc1 _sm:gc2 _lg:gc3 _xl:gc4 _gap4",
+    "slots": {
+      "card-image": "Product image with aspect-ratio container",
+      "card-title": "Product name with _textsm _fontmedium",
+      "card-price": "Price with _heading4 styling",
+      "card-rating": "Star rating row with icon stars and count Badge",
+      "card-action": "Add-to-cart Button in CardFooter"
+    }
+  },
+  "code": {
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card, Button, Badge, icon } from 'decantr/components';",
+    "example": "function CardGridProduct({ items }) {\n  const { div, img, span, p } = tags;\n\n  const products = items || [\n    { name: 'Wireless Headphones', price: '$79.99', rating: 4.5, reviews: 128, image: '/images/headphones.jpg' },\n    { name: 'Mechanical Keyboard', price: '$149.99', rating: 4.8, reviews: 256, image: '/images/keyboard.jpg' },\n    { name: 'USB-C Hub', price: '$49.99', rating: 4.2, reviews: 89, image: '/images/hub.jpg' },\n    { name: 'Webcam HD', price: '$69.99', rating: 4.6, reviews: 312, image: '/images/webcam.jpg' },\n  ];\n\n  return div({ class: css('_grid _gc1 _sm:gc2 _lg:gc3 _xl:gc4 _gap4') },\n    ...products.map(product =>\n      Card({ class: css('_flex _col _overflow[hidden]') },\n        div({ class: css('_aspect[4/3] _overflow[hidden]') },\n          img({ src: product.image, alt: product.name, class: css('_wfull _hfull _object[cover]') })\n        ),\n        div({ class: css('_flex _col _gap2 _p4') },\n          p({ class: css('_textsm _fontmedium') }, product.name),\n          p({ class: css('_heading4') }, product.price),\n          div({ class: css('_flex _aic _gap1') },\n            ...Array.from({ length: 5 }, (_, i) =>\n              icon(i < Math.floor(product.rating) ? 'star' : 'star', {\n                size: '0.75rem',\n                class: css(i < Math.floor(product.rating) ? '_fgprimary' : '_fgmuted')\n              })\n            ),\n            Badge({ variant: 'secondary', size: 'sm' }, `${product.reviews}`)\n          )\n        ),\n        div({ class: css('_p4 _pt0') },\n          Button({ variant: 'primary', size: 'sm', class: css('_wfull') }, icon('shopping-cart', { size: '1em' }), ' Add to Cart')\n        )\n      )\n    )\n  );\n}"
+  },
+  "io": {
+    "consumes": [
+      "search",
+      "filters",
+      "data"
+    ],
+    "produces": [
+      "selection"
+    ],
+    "actions": [
+      "load-more"
+    ]
+  }
+}

@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { resolvePatternPreset } from '../src/pattern.js';
 import type { Pattern } from '../src/types.js';
 
-const PATTERN_PATH = resolve(__dirname, '../../../content/patterns/data-table.json');
+const PATTERN_PATH = resolve(__dirname, 'fixtures/patterns/data-table.json');
 const raw = JSON.parse(readFileSync(PATTERN_PATH, 'utf-8'));
 
 // AUTO: Cast to registry Pattern type

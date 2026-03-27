@@ -69,8 +69,9 @@ describe('ContentResolver', () => {
     const result = await resolver.resolve('pattern', 'kpi-grid');
 
     expect(result).not.toBeNull();
-    expect(result!.item.name).toBe('KPI Grid (Main)');
-    expect(result!.item.version).toBe('2.0.0');
+    // Main has full kpi-grid from decantr-content, core has simplified "KPI Grid (Core)"
+    expect(result!.item.name).toBe('KPI Grid');
+    expect(result!.item.version).toBe('1.0.0');
     expect(result!.path).not.toContain('/core/');
   });
 });
