@@ -32,6 +32,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       organizations: {
         Row: {
@@ -64,6 +65,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'organizations_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       org_members: {
         Row: {
@@ -84,6 +94,22 @@ export interface Database {
           role?: 'owner' | 'admin' | 'member';
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'org_members_org_id_fkey';
+            columns: ['org_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'org_members_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       api_keys: {
         Row: {
@@ -119,6 +145,15 @@ export interface Database {
           created_at?: string;
           revoked_at?: string | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'api_keys_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       content: {
         Row: {
@@ -166,6 +201,15 @@ export interface Database {
           updated_at?: string;
           published_at?: string | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'content_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       content_versions: {
         Row: {
@@ -192,6 +236,22 @@ export interface Database {
           created_at?: string;
           created_by?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'content_versions_content_id_fkey';
+            columns: ['content_id'];
+            isOneToOne: false;
+            referencedRelation: 'content';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'content_versions_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       moderation_queue: {
         Row: {
@@ -227,7 +287,41 @@ export interface Database {
           rejection_reason?: string | null;
           notes?: string | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'moderation_queue_content_id_fkey';
+            columns: ['content_id'];
+            isOneToOne: false;
+            referencedRelation: 'content';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'moderation_queue_submitted_by_fkey';
+            columns: ['submitted_by'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      increment_reputation: {
+        Args: {
+          user_id_param: string;
+          amount: number;
+        };
+        Returns: void;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }

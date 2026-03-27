@@ -15,7 +15,7 @@ if (!supabaseAnonKey) {
 
 // Client for authenticated user requests (uses RLS)
 export function createUserClient(accessToken?: string) {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
     global: {
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     },
@@ -27,7 +27,7 @@ export function createAdminClient() {
   if (!supabaseServiceKey) {
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
   }
-  return createClient<Database>(supabaseUrl, supabaseServiceKey, {
+  return createClient<Database>(supabaseUrl!, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
@@ -36,4 +36,4 @@ export function createAdminClient() {
 }
 
 // Default client for public operations
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(supabaseUrl!, supabaseAnonKey!);

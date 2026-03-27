@@ -39,9 +39,9 @@ function getRateLimitKey(c: Context<Env>): string {
 function getMaxRequests(c: Context<Env>): number {
   const auth: AuthContext | undefined = c.get('auth');
   if (!auth?.isAuthenticated || !auth.user) {
-    return TIER_LIMITS.unauthenticated;
+    return TIER_LIMITS['unauthenticated'] ?? 30;
   }
-  return TIER_LIMITS[auth.user.tier] ?? TIER_LIMITS.free;
+  return TIER_LIMITS[auth.user.tier] ?? 60;
 }
 
 export function rateLimiter() {

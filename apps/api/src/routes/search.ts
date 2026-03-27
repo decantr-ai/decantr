@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../types.js';
-import { CONTENT_TYPES, parsePagination } from '../types.js';
+import { parsePagination } from '../types.js';
 import type { ContentType } from '../types.js';
 import { createAdminClient } from '../db/client.js';
 

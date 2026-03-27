@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import type { Env } from '../types.js';
 import { CONTENT_TYPES, parsePagination } from '../types.js';
 import type { ContentType } from '../types.js';
-import { requireAuth, requireTier } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 
@@ -86,7 +86,7 @@ publishRoutes.post('/content', async (c) => {
 
   // Determine namespace and status
   const namespace = body.namespace || '@community';
-  let status: string;
+  let status: 'pending' | 'approved' | 'rejected' | 'published';
 
   if (namespace === '@official') {
     return c.json({ error: 'Cannot publish to @official namespace. Use admin sync.' }, 403);

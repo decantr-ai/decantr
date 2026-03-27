@@ -31,7 +31,7 @@ adminRoutes.use('/admin/*', requireAdmin());
 // GET /v1/admin/moderation/queue
 adminRoutes.get('/admin/moderation/queue', async (c) => {
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
-  const status = c.req.query('status') || 'pending';
+  const status = (c.req.query('status') || 'pending') as 'pending' | 'approved' | 'rejected';
   const client = createAdminClient();
 
   const { data, error, count } = await client
@@ -101,25 +101,26 @@ adminRoutes.post('/admin/moderation/:id/approve', async (c) => {
     .eq('id', entry.content_id);
 
   // Update user reputation
-  await client.rpc('increment_reputation', {
-    user_id_param: entry.submitted_by,
-    amount: 10,
-  }).then(() => {}).catch(() => {
+  try {
+    await client.rpc('increment_reputation', {
+      user_id_param: entry.submitted_by,
+      amount: 10,
+    });
+  } catch {
     // If RPC doesn't exist yet, update directly
-    client
+    const { data: reputationUser } = await client
       .from('users')
       .select('reputation_score')
       .eq('id', entry.submitted_by)
-      .single()
-      .then(({ data: user }) => {
-        if (user) {
-          client
-            .from('users')
-            .update({ reputation_score: user.reputation_score + 10 })
-            .eq('id', entry.submitted_by);
-        }
-      });
-  });
+      .single();
+
+    if (reputationUser) {
+      await client
+        .from('users')
+        .update({ reputation_score: reputationUser.reputation_score + 10 })
+        .eq('id', entry.submitted_by);
+    }
+  }
 
   // Check trust threshold
   const { data: submitter } = await client
