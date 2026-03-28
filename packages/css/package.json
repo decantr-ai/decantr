@@ -2,6 +2,13 @@
   "name": "@decantr/css",
   "version": "1.0.0",
   "description": "Framework-agnostic CSS atoms runtime for Decantr projects",
+  "author": "Decantr",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/decantr/decantr-monorepo",
+    "directory": "packages/css"
+  },
+  "homepage": "https://github.com/decantr/decantr-monorepo/tree/main/packages/css",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
