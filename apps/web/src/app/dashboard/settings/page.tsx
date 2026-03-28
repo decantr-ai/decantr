@@ -1,17 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { createClient } from '@/lib/supabase/client';
+import { api } from '@/lib/api';
 import { updateProfile, signOut } from './actions';
 
 export default function SettingsPage() {
+  const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          const me = await api.getMe(session.access_token);
+          setDisplayName(me.display_name || '');
+          setUsername(me.username || '');
+          setEmail(me.email || '');
+        }
+      } catch {
+        // Failed to load profile
+      } finally {
+        setLoadingProfile(false);
+      }
+    }
+    loadProfile();
+  }, []);
 
   async function handleSubmit(formData: FormData) {
-    setLoading(true);
+    setSaving(true);
     setMessage(null);
     const result = await updateProfile(formData);
     if (result.error) {
@@ -19,7 +45,18 @@ export default function SettingsPage() {
     } else {
       setMessage({ type: 'success', text: 'Profile updated.' });
     }
-    setLoading(false);
+    setSaving(false);
+  }
+
+  if (loadingProfile) {
+    return (
+      <div className="max-w-2xl space-y-6">
+        <h1 className="text-2xl font-bold">Settings</h1>
+        <Card>
+          <p className="text-[var(--fg-muted)]">Loading profile...</p>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -30,15 +67,30 @@ export default function SettingsPage() {
         <h2 className="mb-4 text-lg font-semibold">Profile</h2>
         <form action={handleSubmit} className="space-y-4 max-w-sm">
           <div>
+            <label className="mb-1 block text-xs text-[var(--fg-muted)]">Email</label>
+            <p className="text-sm text-[var(--fg)]">{email}</p>
+          </div>
+
+          <div>
             <label className="mb-1 block text-xs text-[var(--fg-muted)]">Display Name</label>
-            <Input name="display_name" placeholder="Your name" />
+            <Input
+              name="display_name"
+              placeholder="Your name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+            />
           </div>
 
           <div>
             <label className="mb-1 block text-xs text-[var(--fg-muted)]">Username</label>
-            <Input name="username" placeholder="your-username" />
+            <Input
+              name="username"
+              placeholder="your-username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase())}
+            />
             <p className="mt-1 text-xs text-[var(--fg-dim)]">
-              3-30 characters. Lowercase letters, numbers, and hyphens only. This appears as @username on your content.
+              3-30 characters. Lowercase letters, numbers, and hyphens only. Shows as @{username || 'username'} on your content.
             </p>
           </div>
 
@@ -48,8 +100,8 @@ export default function SettingsPage() {
             </p>
           )}
 
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Changes'}
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Saving...' : 'Save Changes'}
           </Button>
         </form>
       </Card>
