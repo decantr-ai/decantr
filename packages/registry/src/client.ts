@@ -19,7 +19,7 @@ export interface RegistryClient {
 }
 
 export function createRegistryClient(options: RegistryClientOptions = {}): RegistryClient {
-  const baseUrl = options.baseUrl ?? 'https://decantr-registry.fly.dev/v1';
+  const baseUrl = options.baseUrl ?? 'https://api.decantr.ai/v1';
   return {
     async search(query: string, type?: string): Promise<SearchResult[]> {
       const params = new URLSearchParams({ q: query });
