@@ -62,6 +62,7 @@ searchRoutes.get('/search', async (c) => {
       namespace: item.namespace,
       name: item.data?.name,
       description: item.data?.description,
+      owner_name: item.owner_display_name || null,
     })),
   });
 });

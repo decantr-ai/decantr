@@ -56,6 +56,9 @@ export default async function ContentDetailPage({ params }: ContentDetailParams)
         {description && (
           <p className="text-[var(--fg-muted)]">{description}</p>
         )}
+        {content.owner_name && content.namespace !== '@official' && (
+          <p className="mt-1 text-sm text-[var(--fg-dim)]">Author: {content.owner_name}</p>
+        )}
 
         <div className="mt-4 flex gap-2">
           <CopyButton

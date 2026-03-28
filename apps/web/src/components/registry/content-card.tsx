@@ -17,6 +17,9 @@ export function ContentCard({ item }: { item: ContentItem }) {
         </div>
         <h3 className="mb-1 text-sm font-semibold text-[var(--fg)]">{name}</h3>
         <p className="mb-3 line-clamp-2 text-xs text-[var(--fg-muted)]">{description}</p>
+        {item.owner_name && item.namespace !== '@official' && (
+          <span className="text-xs text-[var(--fg-dim)]">by {item.owner_name}</span>
+        )}
         <span className="text-xs text-[var(--fg-muted)]">v{item.version}</span>
       </Card>
     </Link>

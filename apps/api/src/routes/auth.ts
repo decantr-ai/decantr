@@ -28,6 +28,7 @@ authRoutes.get('/me', async (c) => {
   return c.json({
     id: user.id,
     email: user.email,
+    display_name: user.display_name,
     tier: user.tier,
     reputation_score: user.reputation_score,
     trusted: user.trusted,
@@ -41,10 +42,13 @@ authRoutes.patch('/me', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const body = await c.req.json();
 
-  // Only allow updating email (tier is managed by billing)
+  // Only allow updating email and display_name (tier is managed by billing)
   const updates: Record<string, unknown> = {};
   if (body.email && typeof body.email === 'string') {
     updates.email = body.email;
+  }
+  if (body.display_name && typeof body.display_name === 'string') {
+    updates.display_name = body.display_name;
   }
 
   if (Object.keys(updates).length === 0) {

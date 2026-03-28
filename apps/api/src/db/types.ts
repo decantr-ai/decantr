@@ -5,6 +5,7 @@ export interface Database {
         Row: {
           id: string;
           email: string;
+          display_name: string | null;
           tier: 'free' | 'pro' | 'team' | 'enterprise';
           stripe_customer_id: string | null;
           reputation_score: number;
@@ -15,6 +16,7 @@ export interface Database {
         Insert: {
           id: string;
           email: string;
+          display_name?: string | null;
           tier?: 'free' | 'pro' | 'team' | 'enterprise';
           stripe_customer_id?: string | null;
           reputation_score?: number;
@@ -25,6 +27,7 @@ export interface Database {
         Update: {
           id?: string;
           email?: string;
+          display_name?: string | null;
           tier?: 'free' | 'pro' | 'team' | 'enterprise';
           stripe_customer_id?: string | null;
           reputation_score?: number;

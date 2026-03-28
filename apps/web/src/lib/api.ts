@@ -10,6 +10,7 @@ export interface ContentItem {
   visibility?: string;
   name?: string;
   description?: string;
+  owner_name?: string;
   published_at?: string;
   data?: Record<string, unknown>;
 }
