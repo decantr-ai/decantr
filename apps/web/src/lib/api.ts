@@ -30,6 +30,32 @@ export interface OrgMember {
   created_at: string;
 }
 
+export interface ModerationQueueItem {
+  id: string;
+  content_id: string;
+  submitted_by: string;
+  submitted_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  content: {
+    id: string;
+    type: string;
+    slug: string;
+    namespace: string;
+    version: string;
+    data: Record<string, unknown>;
+  };
+}
+
+export interface ModerationQueueResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  items: ModerationQueueItem[];
+}
+
 interface FetchOptions {
   token?: string;
   apiKey?: string;
@@ -50,6 +76,33 @@ async function apiFetch<T>(path: string, options?: FetchOptions & RequestInit): 
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: { ...headers, ...options?.headers as Record<string, string> },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(error.error || `API error: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+async function adminFetch<T>(
+  path: string,
+  options: FetchOptions & RequestInit & { adminKey: string }
+): Promise<T> {
+  const { adminKey, ...rest } = options;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'X-Admin-Key': adminKey,
+  };
+
+  if (rest.token) {
+    headers['Authorization'] = `Bearer ${rest.token}`;
+  }
+
+  const res = await fetch(`${API_URL}${path}`, {
+    ...rest,
+    headers: { ...headers, ...(rest.headers as Record<string, string>) },
   });
 
   if (!res.ok) {
@@ -98,6 +151,36 @@ export const api = {
     apiFetch<void>(`/orgs/${orgSlug}/members/${userId}`, { token, method: 'DELETE' }),
   updateOrgMemberRole: (token: string, orgSlug: string, userId: string, body: { role: string }) =>
     apiFetch<any>(`/orgs/${orgSlug}/members/${userId}`, { token, method: 'PATCH', body: JSON.stringify(body) }),
+
+  // Admin
+  getModerationQueue: (
+    token: string,
+    adminKey: string,
+    params?: { status?: string; limit?: number; offset?: number }
+  ) => {
+    const query: Record<string, string> = {};
+    if (params?.status) query.status = params.status;
+    if (params?.limit != null) query.limit = String(params.limit);
+    if (params?.offset != null) query.offset = String(params.offset);
+    const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
+    return adminFetch<ModerationQueueResponse>(`/admin/moderation/queue${qs}`, {
+      token,
+      adminKey,
+    });
+  },
+  approveContent: (token: string, adminKey: string, queueId: string) =>
+    adminFetch<{ message: string }>(`/admin/moderation/${queueId}/approve`, {
+      token,
+      adminKey,
+      method: 'POST',
+    }),
+  rejectContent: (token: string, adminKey: string, queueId: string, reason: string) =>
+    adminFetch<{ message: string }>(`/admin/moderation/${queueId}/reject`, {
+      token,
+      adminKey,
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    }),
 };
 
 // Standalone exports for server components
