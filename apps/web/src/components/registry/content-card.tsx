@@ -5,8 +5,8 @@ import { NamespaceBadge } from './namespace-badge';
 import type { ContentItem } from '@/lib/api';
 
 export function ContentCard({ item }: { item: ContentItem }) {
-  const name = (item.data.name as string) || item.slug;
-  const description = (item.data.description as string) || '';
+  const name = item.name || (item.data?.name as string) || item.slug;
+  const description = item.description || (item.data?.description as string) || '';
 
   return (
     <Link href={`/registry/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`}>

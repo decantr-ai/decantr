@@ -5,9 +5,13 @@ export interface ContentItem {
   type: string;
   namespace: string;
   slug: string;
-  version: number;
-  status: string;
-  data: Record<string, unknown>;
+  version: string;
+  status?: string;
+  visibility?: string;
+  name?: string;
+  description?: string;
+  published_at?: string;
+  data?: Record<string, unknown>;
 }
 
 export interface ApiKey {
@@ -117,9 +121,9 @@ export function searchContent(
   const query: Record<string, string> = { q };
   if (params?.type) query.type = params.type;
   if (params?.namespace) query.namespace = params.namespace;
-  return apiFetch<{ total: number; items: ContentItem[] }>(
+  return apiFetch<{ total: number; results: ContentItem[] }>(
     `/search?${new URLSearchParams(query)}`
-  );
+  ).then(data => ({ total: data.total, items: data.results }));
 }
 
 export function getContent(type: string, namespace: string, slug: string) {

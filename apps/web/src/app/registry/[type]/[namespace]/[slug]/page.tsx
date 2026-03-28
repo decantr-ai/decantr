@@ -36,10 +36,10 @@ export default async function ContentDetailPage({ params }: ContentDetailParams)
     notFound();
   }
 
-  const name = (content.data.name as string) || content.slug;
-  const description = (content.data.description as string) || '';
-  const components = (content.data.components as Array<{ name: string }>) || [];
-  const presets = (content.data.presets as Record<string, unknown>) || {};
+  const name = content.name || (content.data?.name as string) || content.slug;
+  const description = content.description || (content.data?.description as string) || '';
+  const components = (content.data?.components as Array<{ name: string }>) || [];
+  const presets = (content.data?.presets as Record<string, unknown>) || {};
 
   return (
     <section className="mx-auto max-w-[var(--max-w)] px-6 py-12">
@@ -63,7 +63,7 @@ export default async function ContentDetailPage({ params }: ContentDetailParams)
             label="Copy Import Command"
           />
           <CopyButton
-            text={JSON.stringify(content.data, null, 2)}
+            text={JSON.stringify(content.data ?? {}, null, 2)}
             label="Copy JSON"
           />
         </div>
@@ -96,7 +96,7 @@ export default async function ContentDetailPage({ params }: ContentDetailParams)
       {/* JSON Viewer */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Source</h2>
-        <JsonViewer data={content.data} />
+        <JsonViewer data={content.data ?? {}} />
       </div>
     </section>
   );
