@@ -10,10 +10,16 @@ async function getToken() {
   return session!.access_token;
 }
 
-export async function inviteMemberAction(orgSlug: string, email: string, role: string) {
+export async function inviteMemberAction(orgSlug: string, identifier: string, role: string) {
   const token = await getToken();
   try {
-    await api.inviteOrgMember(token, orgSlug, { email, role });
+    const body: Record<string, string> = { role };
+    if (identifier.startsWith('@')) {
+      body.username = identifier;
+    } else {
+      body.email = identifier;
+    }
+    await api.inviteOrgMember(token, orgSlug, body as any);
     revalidatePath('/dashboard/team');
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'Failed to invite member' };

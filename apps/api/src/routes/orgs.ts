@@ -213,24 +213,29 @@ orgRoutes.post('/orgs/:slug/members', async (c) => {
     return c.json({ error: 'Requires admin or owner role' }, 403);
   }
 
-  // Accept either user_id or email
+  // Accept user_id, email, or username (@username)
   let userId = body.user_id;
+  const identifier = body.email || body.username;
 
-  if (!userId && body.email) {
-    const { data: userByEmail } = await client
+  if (!userId && identifier) {
+    const isUsername = identifier.startsWith('@');
+    const lookupValue = isUsername ? identifier.slice(1) : identifier;
+    const lookupField = isUsername ? 'username' : 'email';
+
+    const { data: foundUser } = await client
       .from('users')
       .select('id')
-      .eq('email', body.email)
+      .eq(lookupField, lookupValue)
       .single();
 
-    if (!userByEmail) {
-      return c.json({ error: `No user found with email "${body.email}". They need to sign up first.` }, 404);
+    if (!foundUser) {
+      return c.json({ error: `No user found with ${lookupField} "${identifier}". They need to sign up first.` }, 404);
     }
-    userId = userByEmail.id;
+    userId = foundUser.id;
   }
 
   if (!userId || typeof userId !== 'string') {
-    return c.json({ error: 'user_id or email is required' }, 400);
+    return c.json({ error: 'user_id, email, or username is required' }, 400);
   }
 
   const role = body.role === 'admin' ? 'admin' : 'member';

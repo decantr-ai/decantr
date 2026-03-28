@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { inviteMemberAction } from '@/app/dashboard/team/actions';
 
 export function InviteMemberForm({ orgSlug }: { orgSlug: string }) {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [role, setRole] = useState('member');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,18 +14,18 @@ export function InviteMemberForm({ orgSlug }: { orgSlug: string }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!identifier.trim()) return;
     setLoading(true);
     setError(null);
     setSuccess(false);
 
-    const result = await inviteMemberAction(orgSlug, email.trim(), role);
+    const result = await inviteMemberAction(orgSlug, identifier.trim(), role);
 
     if (result?.error) {
       setError(result.error);
     } else {
       setSuccess(true);
-      setEmail('');
+      setIdentifier('');
       setTimeout(() => setSuccess(false), 3000);
     }
     setLoading(false);
@@ -34,14 +34,17 @@ export function InviteMemberForm({ orgSlug }: { orgSlug: string }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
       <div className="flex-1 min-w-48">
-        <label className="mb-1 block text-xs text-[var(--fg-muted)]">Email</label>
+        <label className="mb-1 block text-xs text-[var(--fg-muted)]">Invite Member</label>
         <Input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="team@company.com"
+          type="text"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          placeholder="email or @username"
           required
         />
+        <p className="mt-1 text-xs text-[var(--fg-dim)]">
+          User must have a Decantr account.
+        </p>
       </div>
       <div>
         <label className="mb-1 block text-xs text-[var(--fg-muted)]">Role</label>
@@ -54,11 +57,11 @@ export function InviteMemberForm({ orgSlug }: { orgSlug: string }) {
           <option value="admin">Admin</option>
         </select>
       </div>
-      <Button type="submit" disabled={loading || !email.trim()}>
+      <Button type="submit" disabled={loading || !identifier.trim()}>
         {loading ? 'Inviting...' : 'Invite'}
       </Button>
       {error && <p className="w-full text-sm text-[var(--error)]">{error}</p>}
-      {success && <p className="w-full text-sm text-[var(--success)]">Invitation sent.</p>}
+      {success && <p className="w-full text-sm text-[var(--success)]">Member added.</p>}
     </form>
   );
 }
