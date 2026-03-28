@@ -8,7 +8,7 @@ import { headers } from 'next/headers';
 async function getToken() {
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('Not authenticated');
+  if (!session) return null;
   return session.access_token;
 }
 
@@ -19,53 +19,57 @@ async function getSiteUrl() {
   return `${proto}://${host}`;
 }
 
-export async function upgradeAction(plan: 'pro' | 'team') {
-  let checkoutUrl: string;
+export async function upgradeAction(plan: 'pro' | 'team'): Promise<{ error?: string }> {
+  const token = await getToken();
+  if (!token) {
+    return { error: 'Not authenticated. Please sign in again.' };
+  }
 
+  const siteUrl = await getSiteUrl();
+
+  let result;
   try {
-    const token = await getToken();
-    const siteUrl = await getSiteUrl();
-
-    const result = await api.createCheckout(token, {
+    result = await api.createCheckout(token, {
       plan,
       success_url: `${siteUrl}/dashboard/billing?upgraded=true`,
       cancel_url: `${siteUrl}/dashboard/billing`,
     });
-
-    checkoutUrl = result.checkout_url || result.url;
-
-    if (!checkoutUrl) {
-      throw new Error(`No checkout URL in response: ${JSON.stringify(result)}`);
-    }
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
+    const message = err instanceof Error ? err.message : 'Failed to create checkout session';
     console.error('Upgrade error:', message);
-    redirect(`/dashboard/billing?error=${encodeURIComponent(message)}`);
+    return { error: message };
+  }
+
+  const checkoutUrl = result.checkout_url || result.url;
+  if (!checkoutUrl) {
+    return { error: 'No checkout URL returned from Stripe' };
   }
 
   redirect(checkoutUrl);
 }
 
-export async function manageBillingAction() {
-  let portalUrl: string;
+export async function manageBillingAction(): Promise<{ error?: string }> {
+  const token = await getToken();
+  if (!token) {
+    return { error: 'Not authenticated. Please sign in again.' };
+  }
 
+  const siteUrl = await getSiteUrl();
+
+  let result;
   try {
-    const token = await getToken();
-    const siteUrl = await getSiteUrl();
-
-    const result = await api.createPortal(token, {
+    result = await api.createPortal(token, {
       return_url: `${siteUrl}/dashboard/billing`,
     });
-
-    portalUrl = result.portal_url || result.url;
-
-    if (!portalUrl) {
-      throw new Error(`No portal URL in response: ${JSON.stringify(result)}`);
-    }
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
+    const message = err instanceof Error ? err.message : 'Failed to open billing portal';
     console.error('Billing portal error:', message);
-    redirect(`/dashboard/billing?error=${encodeURIComponent(message)}`);
+    return { error: message };
+  }
+
+  const portalUrl = result.portal_url || result.url;
+  if (!portalUrl) {
+    return { error: 'No portal URL returned from Stripe' };
   }
 
   redirect(portalUrl);
