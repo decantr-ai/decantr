@@ -7,7 +7,8 @@ import { api } from '@/lib/api';
 async function getToken() {
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
-  return session!.access_token;
+  if (!session) throw new Error('Not authenticated');
+  return session.access_token;
 }
 
 export async function createApiKeyAction(name: string, scopes: string[]) {

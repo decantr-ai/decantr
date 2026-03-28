@@ -20,7 +20,7 @@ export interface ApiKey {
   scopes: string[];
   created_at: string;
   last_used_at: string | null;
-  revoked: boolean;
+  revoked_at: string | null;
 }
 
 export interface OrgMember {
