@@ -28,6 +28,7 @@ authRoutes.get('/me', async (c) => {
   return c.json({
     id: user.id,
     email: user.email,
+    username: user.username,
     display_name: user.display_name,
     tier: user.tier,
     reputation_score: user.reputation_score,
@@ -42,13 +43,40 @@ authRoutes.patch('/me', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const body = await c.req.json();
 
-  // Only allow updating email and display_name (tier is managed by billing)
   const updates: Record<string, unknown> = {};
+
   if (body.email && typeof body.email === 'string') {
     updates.email = body.email;
   }
+
   if (body.display_name && typeof body.display_name === 'string') {
     updates.display_name = body.display_name;
+  }
+
+  if (body.username !== undefined) {
+    const username = String(body.username).toLowerCase().trim();
+
+    // Validate format: 3-30 chars, lowercase alphanumeric + hyphens, no leading/trailing hyphens
+    if (!/^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/.test(username)) {
+      return c.json({
+        error: 'Username must be 3-30 characters, lowercase alphanumeric and hyphens only, cannot start or end with a hyphen',
+      }, 400);
+    }
+
+    // Check uniqueness
+    const client = createAdminClient();
+    const { data: existing } = await client
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .neq('id', auth.user!.id)
+      .maybeSingle();
+
+    if (existing) {
+      return c.json({ error: 'Username is already taken' }, 409);
+    }
+
+    updates.username = username;
   }
 
   if (Object.keys(updates).length === 0) {
@@ -64,6 +92,9 @@ authRoutes.patch('/me', async (c) => {
     .single();
 
   if (error) {
+    if (error.code === '23505' && error.message.includes('username')) {
+      return c.json({ error: 'Username is already taken' }, 409);
+    }
     return c.json({ error: 'Failed to update profile' }, 500);
   }
 

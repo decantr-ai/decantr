@@ -5,6 +5,7 @@ export interface Database {
         Row: {
           id: string;
           email: string;
+          username: string;
           display_name: string | null;
           tier: 'free' | 'pro' | 'team' | 'enterprise';
           stripe_customer_id: string | null;
@@ -16,6 +17,7 @@ export interface Database {
         Insert: {
           id: string;
           email: string;
+          username?: string;
           display_name?: string | null;
           tier?: 'free' | 'pro' | 'team' | 'enterprise';
           stripe_customer_id?: string | null;
@@ -27,6 +29,7 @@ export interface Database {
         Update: {
           id?: string;
           email?: string;
+          username?: string;
           display_name?: string | null;
           tier?: 'free' | 'pro' | 'team' | 'enterprise';
           stripe_customer_id?: string | null;

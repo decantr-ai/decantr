@@ -20,7 +20,7 @@ contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}/
 
   const { data, error } = await client
     .from('content')
-    .select('*, owner:users!owner_id(display_name)')
+    .select('*, owner:users!owner_id(display_name, username)')
     .eq('type', singularType)
     .eq('namespace', namespace)
     .eq('slug', slug)
@@ -45,6 +45,7 @@ contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}/
     updated_at: data.updated_at,
     published_at: data.published_at,
     owner_name: (data as any).owner?.display_name || null,
+    owner_username: (data as any).owner?.username || null,
   });
 });
 
@@ -64,7 +65,7 @@ contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}'
 
   let query = client
     .from('content')
-    .select('id, type, slug, namespace, version, data, created_at, updated_at, published_at, owner:users!owner_id(display_name)', { count: 'exact' })
+    .select('id, type, slug, namespace, version, data, created_at, updated_at, published_at, owner:users!owner_id(display_name, username)', { count: 'exact' })
     .eq('type', singularType)
     .eq('visibility', 'public')
     .eq('status', 'published')
@@ -95,6 +96,7 @@ contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}'
       description: (item.data as Record<string, unknown>)?.description,
       published_at: item.published_at,
       owner_name: (item as any).owner?.display_name || null,
+      owner_username: (item as any).owner?.username || null,
     })),
   });
 });

@@ -9,6 +9,7 @@ import { publishRoutes } from './routes/publish.js';
 import { orgRoutes } from './routes/orgs.js';
 import { adminRoutes } from './routes/admin.js';
 import { billingRoutes } from './routes/billing.js';
+import { userRoutes } from './routes/users.js';
 import { optionalAuth } from './middleware/auth.js';
 import { rateLimiter } from './middleware/rate-limit.js';
 
@@ -39,6 +40,7 @@ export function createApp(): Hono<Env> {
   app.route('/v1', orgRoutes);
   app.route('/v1', adminRoutes);
   app.route('/v1', billingRoutes);
+  app.route('/v1', userRoutes);
 
   return app;
 }

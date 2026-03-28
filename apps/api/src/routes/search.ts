@@ -63,6 +63,7 @@ searchRoutes.get('/search', async (c) => {
       name: item.data?.name,
       description: item.data?.description,
       owner_name: item.owner_display_name || null,
+      owner_username: item.owner_username || null,
     })),
   });
 });
