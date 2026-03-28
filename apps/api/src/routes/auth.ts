@@ -25,6 +25,19 @@ authRoutes.get('/me', async (c) => {
     return c.json({ error: 'User not found' }, 404);
   }
 
+  // Find user's org membership
+  let orgSlug: string | null = null;
+  const { data: membership } = await client
+    .from('org_members')
+    .select('org_id, role, organizations(slug)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single();
+
+  if (membership && (membership as any).organizations) {
+    orgSlug = (membership as any).organizations.slug;
+  }
+
   return c.json({
     id: user.id,
     email: user.email,
@@ -33,6 +46,7 @@ authRoutes.get('/me', async (c) => {
     tier: user.tier,
     reputation_score: user.reputation_score,
     trusted: user.trusted,
+    org_slug: orgSlug,
     created_at: user.created_at,
     updated_at: user.updated_at,
   });
