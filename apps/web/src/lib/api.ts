@@ -227,7 +227,9 @@ export function searchContent(
 }
 
 export function getContent(type: string, namespace: string, slug: string) {
-  return apiFetch<ContentItem>(`/${type}/${namespace}/${slug}`);
+  // API uses plural routes (/patterns, /themes, etc.)
+  const plural = type.endsWith('s') ? type : `${type}s`;
+  return apiFetch<ContentItem>(`/${plural}/${namespace}/${slug}`);
 }
 
 export function getUserProfile(username: string) {
