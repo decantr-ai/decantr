@@ -213,8 +213,24 @@ orgRoutes.post('/orgs/:slug/members', async (c) => {
     return c.json({ error: 'Requires admin or owner role' }, 403);
   }
 
-  if (!body.user_id || typeof body.user_id !== 'string') {
-    return c.json({ error: 'user_id is required' }, 400);
+  // Accept either user_id or email
+  let userId = body.user_id;
+
+  if (!userId && body.email) {
+    const { data: userByEmail } = await client
+      .from('users')
+      .select('id')
+      .eq('email', body.email)
+      .single();
+
+    if (!userByEmail) {
+      return c.json({ error: `No user found with email "${body.email}". They need to sign up first.` }, 404);
+    }
+    userId = userByEmail.id;
+  }
+
+  if (!userId || typeof userId !== 'string') {
+    return c.json({ error: 'user_id or email is required' }, 400);
   }
 
   const role = body.role === 'admin' ? 'admin' : 'member';
@@ -223,7 +239,7 @@ orgRoutes.post('/orgs/:slug/members', async (c) => {
     .from('org_members')
     .insert({
       org_id: org.id,
-      user_id: body.user_id,
+      user_id: userId,
       role,
     })
     .select()
