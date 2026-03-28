@@ -8,7 +8,7 @@ function isAdmin(email: string | undefined): boolean {
   return ADMIN_EMAILS.includes(email.toLowerCase());
 }
 
-export function Nav({ user }: { user?: { email: string } | null }) {
+export function Nav({ user }: { user?: { email: string; display_name?: string | null } | null }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -30,7 +30,9 @@ export function Nav({ user }: { user?: { email: string } | null }) {
                   Admin
                 </Link>
               )}
-              <span className="text-[var(--fg-dim)] text-sm">{user.email}</span>
+              <Link href="/dashboard/settings" className="text-[var(--fg-dim)] hover:text-[var(--fg)] transition-colors text-sm">
+                {user.display_name || user.email}
+              </Link>
             </>
           ) : (
             <>

@@ -26,7 +26,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark">
       <body>
-        <Nav user={user ? { email: user.email ?? '' } : null} />
+        <Nav user={user ? { email: user.email ?? '', display_name: user.user_metadata?.name || user.user_metadata?.full_name || user.user_metadata?.user_name || null } : null} />
         <div className="pt-16">
           {children}
         </div>
