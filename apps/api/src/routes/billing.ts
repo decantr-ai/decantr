@@ -71,7 +71,7 @@ billingRoutes.post('/billing/checkout', requireAuth(), async (c) => {
   }
 
   const priceId = body.plan === 'pro' ? STRIPE_PRO_PRICE_ID : STRIPE_TEAM_PRICE_ID;
-  const quantity = body.plan === 'team' ? (body.quantity ?? 1) : undefined;
+  const quantity = body.plan === 'team' ? (body.quantity ?? 1) : 1;
 
   const session = await stripe.checkout.sessions.create({
     customer: stripeCustomerId,
