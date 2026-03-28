@@ -16,6 +16,7 @@ export default async function BillingPage({
 }) {
   const params = await searchParams;
   const upgraded = params.upgraded === 'true';
+  const errorMsg = params.error as string | undefined;
 
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
@@ -40,6 +41,14 @@ export default async function BillingPage({
         <Card className="border-[var(--success)]/30">
           <p className="text-sm text-[var(--success)]">
             Upgrade successful! Your new plan is now active.
+          </p>
+        </Card>
+      )}
+
+      {errorMsg && (
+        <Card className="border-[var(--error)]/30">
+          <p className="text-sm text-[var(--error)]">
+            {decodeURIComponent(errorMsg)}
           </p>
         </Card>
       )}

@@ -20,23 +20,53 @@ async function getSiteUrl() {
 }
 
 export async function upgradeAction(plan: 'pro' | 'team') {
-  const token = await getToken();
-  const siteUrl = await getSiteUrl();
+  let checkoutUrl: string;
 
-  const result = await api.createCheckout(token, {
-    plan,
-    success_url: `${siteUrl}/dashboard/billing?upgraded=true`,
-    cancel_url: `${siteUrl}/dashboard/billing`,
-  });
-  redirect(result.checkout_url);
+  try {
+    const token = await getToken();
+    const siteUrl = await getSiteUrl();
+
+    const result = await api.createCheckout(token, {
+      plan,
+      success_url: `${siteUrl}/dashboard/billing?upgraded=true`,
+      cancel_url: `${siteUrl}/dashboard/billing`,
+    });
+
+    checkoutUrl = result.checkout_url || result.url;
+
+    if (!checkoutUrl) {
+      throw new Error(`No checkout URL in response: ${JSON.stringify(result)}`);
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('Upgrade error:', message);
+    redirect(`/dashboard/billing?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(checkoutUrl);
 }
 
 export async function manageBillingAction() {
-  const token = await getToken();
-  const siteUrl = await getSiteUrl();
+  let portalUrl: string;
 
-  const result = await api.createPortal(token, {
-    return_url: `${siteUrl}/dashboard/billing`,
-  });
-  redirect(result.portal_url);
+  try {
+    const token = await getToken();
+    const siteUrl = await getSiteUrl();
+
+    const result = await api.createPortal(token, {
+      return_url: `${siteUrl}/dashboard/billing`,
+    });
+
+    portalUrl = result.portal_url || result.url;
+
+    if (!portalUrl) {
+      throw new Error(`No portal URL in response: ${JSON.stringify(result)}`);
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('Billing portal error:', message);
+    redirect(`/dashboard/billing?error=${encodeURIComponent(message)}`);
+  }
+
+  redirect(portalUrl);
 }
