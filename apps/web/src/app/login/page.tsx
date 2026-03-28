@@ -13,10 +13,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
 
-  const supabase = createClient();
+  const getSupabase = () => createClient();
 
   async function handleOAuth(provider: 'github' | 'google') {
-    await supabase.auth.signInWithOAuth({
+    await getSupabase().auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
@@ -28,11 +28,11 @@ export default function LoginPage() {
     setLoading(true);
 
     if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await getSupabase().auth.signInWithPassword({ email, password });
       if (error) setError(error.message);
       else window.location.href = '/dashboard';
     } else {
-      const { error } = await supabase.auth.signUp({
+      const { error } = await getSupabase().auth.signUp({
         email,
         password,
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },

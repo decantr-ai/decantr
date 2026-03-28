@@ -2,13 +2,21 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Sidebar } from '@/components/dashboard/sidebar';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    user = data?.user ?? null;
+  } catch {
+    // Supabase unavailable, treat as unauthenticated
+  }
 
   if (!user) {
     redirect('/login');
