@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { listContent, searchContent } from '@/lib/api';
 import { SearchFilterBar } from '@/components/registry/search-filter-bar';
 import { ContentGrid } from '@/components/registry/content-grid';
@@ -6,10 +7,30 @@ import { Pagination } from '@/components/registry/pagination';
 
 const PAGE_SIZE = 20;
 
-export const metadata = {
-  title: 'Registry — Decantr',
-  description: 'Browse patterns, themes, blueprints, recipes, archetypes, and shells.',
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const type = (params.type as string) || 'all';
+  const q = (params.q as string) || '';
+
+  const title = q
+    ? `Search "${q}" — Decantr Registry`
+    : `${type.charAt(0).toUpperCase() + type.slice(1)} — Decantr Registry`;
+
+  return {
+    title,
+    description:
+      'Browse patterns, themes, blueprints, and more in the Decantr design intelligence registry.',
+    openGraph: {
+      title,
+      description: 'Browse the Decantr design intelligence registry.',
+      type: 'website',
+    },
+  };
+}
 
 export default async function RegistryPage({
   searchParams,

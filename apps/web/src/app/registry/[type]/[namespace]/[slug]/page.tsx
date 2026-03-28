@@ -12,8 +12,16 @@ interface ContentDetailParams {
 export async function generateMetadata({ params }: ContentDetailParams) {
   const { type, namespace, slug } = await params;
   const decodedNamespace = decodeURIComponent(namespace);
+  const title = `${slug} — ${decodedNamespace} ${type} — Decantr`;
+  const description = `View the ${slug} ${type} from ${decodedNamespace} in the Decantr design intelligence registry.`;
   return {
-    title: `${slug} — ${decodedNamespace} ${type} — Decantr`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+    },
   };
 }
 
