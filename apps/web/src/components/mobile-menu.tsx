@@ -69,7 +69,7 @@ export function MobileMenu({ user }: MobileMenuProps) {
       {/* Full-screen overlay */}
       {open && (
         <div
-          className="fixed inset-0 top-16 z-40 bg-[var(--bg)]/95 backdrop-blur-md animate-dropdown-in"
+          className="fixed inset-0 top-16 z-50 bg-[var(--bg)] animate-dropdown-in overflow-y-auto"
         >
           <nav className="flex flex-col px-6 py-8 space-y-1">
             {/* Registry link */}
