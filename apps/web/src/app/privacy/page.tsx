@@ -67,17 +67,10 @@ export default function PrivacyPage() {
               3. Third-Party Services
             </h2>
             <p className="mb-3">
-              We use the following third-party services to operate the platform:
+              We use trusted third-party service providers to operate the platform, including for authentication, payment processing, and hosting. These providers may process your data as necessary to provide their services to us.
             </p>
-            <ul className="list-disc list-inside space-y-2">
-              <li>
-                <strong style={{ color: 'var(--fg)' }}>Supabase</strong> &mdash; Authentication and
-                database. Your account data and content metadata are stored in Supabase-managed
-                infrastructure.
-              </li>
-              <li>
-                <strong style={{ color: 'var(--fg)' }}>Stripe</strong> &mdash; Payment processing.
-                Stripe handles all billing data under its own{' '}
+            <p className="mb-3">
+              Payment processing is handled by Stripe. Decantr does not store your full credit card information. Stripe handles all billing data under its own{' '}
                 <a
                   href="https://stripe.com/privacy"
                   target="_blank"
@@ -87,17 +80,9 @@ export default function PrivacyPage() {
                 >
                   privacy policy
                 </a>.
-              </li>
-              <li>
-                <strong style={{ color: 'var(--fg)' }}>Vercel</strong> &mdash; Web application
-                hosting and edge delivery.
-              </li>
-              <li>
-                <strong style={{ color: 'var(--fg)' }}>Fly.io</strong> &mdash; API server hosting.
-              </li>
-            </ul>
+            </p>
             <p className="mt-3">
-              Each third-party service operates under its own privacy policy. We encourage you to
+              Our service providers operate under their own privacy policies. We encourage you to
               review their policies.
             </p>
           </section>
