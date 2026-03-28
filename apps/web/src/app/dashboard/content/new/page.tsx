@@ -15,7 +15,7 @@ export default function NewContentPage() {
   const router = useRouter();
   const [type, setType] = useState('pattern');
   const [slug, setSlug] = useState('');
-  const [version, setVersion] = useState('1');
+  const [version, setVersion] = useState('1.0.0');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [data, setData] = useState('{\n  \n}');
   const [error, setError] = useState('');
@@ -49,7 +49,7 @@ export default function NewContentPage() {
       await api.publishContent(token, {
         type,
         slug,
-        version: parseInt(version, 10),
+        version,
         visibility,
         data: parsedData,
       });
@@ -106,10 +106,9 @@ export default function NewContentPage() {
             </label>
             <Input
               id="version"
-              type="number"
-              min="1"
               value={version}
               onChange={(e) => setVersion(e.target.value)}
+              placeholder="1.0.0"
               required
             />
           </div>
