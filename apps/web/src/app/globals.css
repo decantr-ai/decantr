@@ -50,3 +50,19 @@ body {
   background: var(--primary);
   color: var(--fg);
 }
+
+/* Dropdown & mobile menu animation */
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-dropdown-in {
+  animation: dropdown-in 0.15s ease-out;
+}

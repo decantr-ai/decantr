@@ -70,8 +70,8 @@ export default async function ContentPage() {
           </Link>
         </Card>
       ) : (
-        <div className="border border-[var(--border)] rounded-[var(--radius-md)] overflow-hidden">
-          <table className="w-full">
+        <div className="border border-[var(--border)] rounded-[var(--radius-md)] overflow-x-auto">
+          <table className="w-full min-w-[640px]">
             <thead>
               <tr className="border-b border-[var(--border)] bg-[var(--bg-elevated)]">
                 <th className="text-left px-4 py-3 text-sm font-medium text-[var(--fg-muted)]">Slug</th>

@@ -1,6 +1,6 @@
 export default function RegistryLoading() {
   return (
-    <section className="mx-auto max-w-[var(--max-w)] px-6 py-12">
+    <section className="mx-auto max-w-[var(--max-w)] px-4 md:px-6 py-8 md:py-12">
       <h1 className="mb-8 text-3xl font-bold">Registry</h1>
       <div className="space-y-4">
         <div className="h-10 animate-pulse rounded-full bg-[var(--bg-surface)]" />

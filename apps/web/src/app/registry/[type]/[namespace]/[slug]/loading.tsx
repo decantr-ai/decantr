@@ -1,6 +1,6 @@
 export default function ContentDetailLoading() {
   return (
-    <section className="mx-auto max-w-[var(--max-w)] px-6 py-12">
+    <section className="mx-auto max-w-[var(--max-w)] px-4 md:px-6 py-8 md:py-12">
       <div className="mb-8 space-y-4">
         <div className="flex gap-2">
           <div className="h-6 w-16 animate-pulse rounded-full bg-[var(--bg-surface)]" />

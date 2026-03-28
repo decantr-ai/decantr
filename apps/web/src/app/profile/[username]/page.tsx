@@ -58,7 +58,7 @@ export default async function ProfilePage({ params }: ProfileParams) {
   const contentTypes = Object.entries(profile.content_counts);
 
   return (
-    <section className="mx-auto max-w-[var(--max-w)] px-6 py-12">
+    <section className="mx-auto max-w-[var(--max-w)] px-4 md:px-6 py-8 md:py-12">
       {/* Profile header */}
       <div className="mb-10">
         <h1 className="mb-1 text-3xl font-bold">

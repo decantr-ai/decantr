@@ -25,7 +25,7 @@ export function Pagination({ total }: { total: number }) {
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center gap-4 pt-8">
+    <div className="flex items-center justify-center gap-2 sm:gap-4 pt-8">
       <Button
         variant="secondary"
         size="sm"
@@ -34,8 +34,8 @@ export function Pagination({ total }: { total: number }) {
       >
         Previous
       </Button>
-      <span className="text-sm text-[var(--fg-muted)]">
-        Page {currentPage} of {totalPages}
+      <span className="text-xs sm:text-sm text-[var(--fg-muted)]">
+        {currentPage}/{totalPages}
       </span>
       <Button
         variant="secondary"

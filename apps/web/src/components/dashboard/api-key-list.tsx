@@ -29,9 +29,9 @@ export function ApiKeyList({ keys }: { keys: ApiKey[] }) {
       {keys.map((key) => (
         <div
           key={key.id}
-          className={`flex items-center justify-between rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 ${key.revoked_at ? 'opacity-50' : ''}`}
+          className={`rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 ${key.revoked_at ? 'opacity-50' : ''}`}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="text-sm font-medium">{key.name}</span>
             <div className="flex gap-1">
               {key.scopes.map((scope) => (
@@ -40,7 +40,7 @@ export function ApiKeyList({ keys }: { keys: ApiKey[] }) {
             </div>
             {key.revoked_at && <Badge variant="error">Revoked</Badge>}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2">
             <span className="text-xs text-[var(--fg-muted)]">
               {key.last_used_at
                 ? `Last used ${new Date(key.last_used_at).toLocaleDateString()}`

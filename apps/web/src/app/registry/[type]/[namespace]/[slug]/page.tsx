@@ -42,7 +42,7 @@ export default async function ContentDetailPage({ params }: ContentDetailParams)
   const presets = (content.data?.presets as Record<string, unknown>) || {};
 
   return (
-    <section className="mx-auto max-w-[var(--max-w)] px-6 py-12">
+    <section className="mx-auto max-w-[var(--max-w)] px-4 md:px-6 py-8 md:py-12">
       {/* Header */}
       <div className="mb-8">
         <div className="mb-4 flex flex-wrap items-center gap-2">

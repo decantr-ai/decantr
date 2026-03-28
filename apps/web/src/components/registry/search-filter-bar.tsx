@@ -42,7 +42,7 @@ export function SearchFilterBar() {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
         <Input
           placeholder="Search content..."
           value={query}

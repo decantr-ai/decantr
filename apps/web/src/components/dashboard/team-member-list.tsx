@@ -50,13 +50,13 @@ export function TeamMemberList({
       {members.map((member) => (
         <div
           key={member.user_id}
-          className="flex items-center justify-between rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3"
+          className="rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="text-sm font-medium">{member.email}</span>
             <Badge variant={roleVariant[member.role] || 'default'}>{member.role}</Badge>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
             <span className="text-xs text-[var(--fg-muted)]">
               Joined {new Date(member.created_at).toLocaleDateString()}
             </span>

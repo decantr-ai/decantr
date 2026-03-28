@@ -160,7 +160,7 @@ export default function HomePage() {
           }}
         />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 py-32 text-center">
+        <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-6 py-20 md:py-32 text-center">
           <div
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[var(--radius-pill)] text-sm mb-8"
             style={{ background: 'var(--bg-elevated)', color: 'var(--secondary)', border: '1px solid var(--border)' }}
@@ -188,7 +188,7 @@ export default function HomePage() {
           </div>
 
           {/* MCP config preview */}
-          <div className="mt-16 max-w-xl mx-auto text-left">
+          <div className="mt-10 md:mt-16 max-w-xl mx-auto text-left">
             <div
               className="rounded-[var(--radius-md)] overflow-hidden border"
               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
@@ -215,14 +215,14 @@ export default function HomePage() {
       </section>
 
       {/* Divider */}
-      <div className="flex items-center justify-center max-w-7xl mx-auto px-6">
+      <div className="flex items-center justify-center max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
         <div className="w-2 h-2 rounded-full mx-5" style={{ background: 'var(--secondary)' }} />
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
       </div>
 
       {/* Features */}
-      <section className="py-24 max-w-7xl mx-auto px-6">
+      <section className="py-16 md:py-24 max-w-7xl mx-auto px-4 md:px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: 'var(--fg)' }}>
             Design intelligence, not code generation
@@ -244,14 +244,14 @@ export default function HomePage() {
       </section>
 
       {/* Divider */}
-      <div className="flex items-center justify-center max-w-7xl mx-auto px-6">
+      <div className="flex items-center justify-center max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
         <div className="w-2 h-2 rounded-full mx-5" style={{ background: 'var(--accent)' }} />
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
       </div>
 
       {/* How It Works */}
-      <section className="py-24 max-w-5xl mx-auto px-6">
+      <section className="py-16 md:py-24 max-w-5xl mx-auto px-4 md:px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: 'var(--fg)' }}>
             How it works
@@ -289,14 +289,14 @@ export default function HomePage() {
       </section>
 
       {/* Divider */}
-      <div className="flex items-center justify-center max-w-7xl mx-auto px-6">
+      <div className="flex items-center justify-center max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
         <div className="w-2 h-2 rounded-full mx-5" style={{ background: 'var(--warning)' }} />
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
       </div>
 
       {/* Pricing */}
-      <section id="pricing" className="py-24 max-w-7xl mx-auto px-6">
+      <section id="pricing" className="py-16 md:py-24 max-w-7xl mx-auto px-4 md:px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: 'var(--fg)' }}>
             Simple, transparent pricing
@@ -348,14 +348,14 @@ export default function HomePage() {
       </section>
 
       {/* Divider */}
-      <div className="flex items-center justify-center max-w-7xl mx-auto px-6">
+      <div className="flex items-center justify-center max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
         <div className="w-2 h-2 rounded-full mx-5" style={{ background: 'var(--success)' }} />
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
       </div>
 
       {/* Setup / MCP Config */}
-      <section className="py-24 max-w-3xl mx-auto px-6">
+      <section className="py-16 md:py-24 max-w-3xl mx-auto px-4 md:px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: 'var(--fg)' }}>
             Set up in 30 seconds
@@ -395,14 +395,14 @@ export default function HomePage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="py-24 relative overflow-hidden">
+      <section className="py-16 md:py-24 relative overflow-hidden">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background: 'radial-gradient(ellipse at center, rgba(101,0,198,0.12) 0%, transparent 70%)',
           }}
         />
-        <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
+        <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-6" style={{ color: 'var(--fg)' }}>
             Ready to make your AI build better?
           </h2>
