@@ -56,8 +56,20 @@ export default async function ContentDetailPage({ params }: ContentDetailParams)
         {description && (
           <p className="text-[var(--fg-muted)]">{description}</p>
         )}
-        {content.owner_name && content.namespace !== '@official' && (
-          <p className="mt-1 text-sm text-[var(--fg-dim)]">Author: {content.owner_name}</p>
+        {content.owner_username && content.namespace !== '@official' && (
+          <p className="mt-1 text-sm text-[var(--fg-dim)]">
+            by{' '}
+            <a
+              href={`/profile/${content.owner_username}`}
+              className="hover:text-[var(--fg)] hover:underline"
+            >
+              @{content.owner_username}
+            </a>
+            {' '}&middot; v{content.version}
+          </p>
+        )}
+        {!content.owner_username && content.owner_name && content.namespace !== '@official' && (
+          <p className="mt-1 text-sm text-[var(--fg-dim)]">by {content.owner_name}</p>
         )}
 
         <div className="mt-4 flex gap-2">

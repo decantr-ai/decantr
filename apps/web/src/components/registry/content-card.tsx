@@ -17,10 +17,22 @@ export function ContentCard({ item }: { item: ContentItem }) {
         </div>
         <h3 className="mb-1 text-sm font-semibold text-[var(--fg)]">{name}</h3>
         <p className="mb-3 line-clamp-2 text-xs text-[var(--fg-muted)]">{description}</p>
-        {item.owner_name && item.namespace !== '@official' && (
-          <span className="text-xs text-[var(--fg-dim)]">by {item.owner_name}</span>
-        )}
-        <span className="text-xs text-[var(--fg-muted)]">v{item.version}</span>
+        <div className="flex items-center gap-2">
+          {item.owner_username && item.namespace !== '@official' && (
+            <span
+              className="text-xs text-[var(--fg-dim)] hover:text-[var(--fg)] hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <a href={`/profile/${item.owner_username}`}>
+                by @{item.owner_username}
+              </a>
+            </span>
+          )}
+          {!item.owner_username && item.owner_name && item.namespace !== '@official' && (
+            <span className="text-xs text-[var(--fg-dim)]">by {item.owner_name}</span>
+          )}
+          <span className="text-xs text-[var(--fg-muted)]">v{item.version}</span>
+        </div>
       </Card>
     </Link>
   );

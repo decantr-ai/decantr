@@ -11,8 +11,19 @@ export interface ContentItem {
   name?: string;
   description?: string;
   owner_name?: string;
+  owner_username?: string;
   published_at?: string;
   data?: Record<string, unknown>;
+}
+
+export interface UserProfile {
+  username: string;
+  display_name: string | null;
+  reputation_score: number;
+  tier: 'free' | 'pro' | 'team' | 'enterprise';
+  created_at: string;
+  content_count: number;
+  content_counts: Record<string, number>;
 }
 
 export interface ApiKey {
@@ -116,6 +127,11 @@ async function adminFetch<T>(
 
 export const api = {
   // Public
+  getUserProfile: (username: string) => apiFetch<UserProfile>(`/users/${username}`),
+  getUserContent: (username: string, params?: Record<string, string>) => {
+    const query = params ? `?${new URLSearchParams(params)}` : '';
+    return apiFetch<{ total: number; items: ContentItem[] }>(`/users/${username}/content${query}`);
+  },
   listContent: (type: string, params?: Record<string, string>) => {
     const query = params ? `?${new URLSearchParams(params)}` : '';
     return apiFetch<{ total: number; items: any[] }>(`/${type}${query}`);
@@ -212,4 +228,21 @@ export function searchContent(
 
 export function getContent(type: string, namespace: string, slug: string) {
   return apiFetch<ContentItem>(`/${type}/${namespace}/${slug}`);
+}
+
+export function getUserProfile(username: string) {
+  return apiFetch<UserProfile>(`/users/${username}`);
+}
+
+export function getUserContent(
+  username: string,
+  params?: { type?: string; limit?: number; offset?: number }
+) {
+  const query: Record<string, string> = {};
+  if (params?.type) query.type = params.type;
+  if (params?.limit != null) query.limit = String(params.limit);
+  if (params?.offset != null) query.offset = String(params.offset);
+  return apiFetch<{ total: number; items: ContentItem[] }>(
+    `/users/${username}/content${Object.keys(query).length ? `?${new URLSearchParams(query)}` : ''}`
+  );
 }

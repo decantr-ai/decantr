@@ -34,6 +34,14 @@ export default function SettingsPage() {
             <Input name="display_name" placeholder="Your name" />
           </div>
 
+          <div>
+            <label className="mb-1 block text-xs text-[var(--fg-muted)]">Username</label>
+            <Input name="username" placeholder="your-username" />
+            <p className="mt-1 text-xs text-[var(--fg-dim)]">
+              3-30 characters. Lowercase letters, numbers, and hyphens only. This appears as @username on your content.
+            </p>
+          </div>
+
           {message && (
             <p className={`text-sm ${message.type === 'error' ? 'text-[var(--error)]' : 'text-[var(--success)]'}`}>
               {message.text}
