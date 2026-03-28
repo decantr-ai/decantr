@@ -20,7 +20,7 @@
       "shell": "full-bleed",
       "layout": [
         { "pattern": "hero-split", "preset": "standard" },
-        { "pattern": "feature-grid", "preset": "icons" },
+        { "pattern": "pipeline-cards", "preset": "outlined" },
         { "pattern": "before-after", "preset": "browser-frames" },
         { "pattern": "tier-upgrade-card", "preset": "highlighted" },
         { "pattern": "quick-start", "preset": "cards" },
@@ -29,7 +29,7 @@
     },
     {
       "id": "registry",
-      "shell": "topbar-main",
+      "shell": "top-nav-main",
       "layout": [
         { "pattern": "search-filter-bar", "preset": "standard" },
         { "pattern": "content-card-grid", "preset": "standard" }
@@ -37,7 +37,7 @@
     },
     {
       "id": "content-detail",
-      "shell": "topbar-main",
+      "shell": "top-nav-main",
       "layout": [
         { "pattern": "content-detail-hero", "preset": "standard" },
         { "pattern": "json-viewer", "preset": "collapsible" }
