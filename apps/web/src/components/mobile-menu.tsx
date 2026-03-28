@@ -69,7 +69,8 @@ export function MobileMenu({ user }: MobileMenuProps) {
       {/* Full-screen overlay */}
       {open && (
         <div
-          className="fixed inset-0 top-16 z-50 bg-[var(--bg)] animate-dropdown-in overflow-y-auto"
+          className="fixed inset-x-0 bottom-0 z-50 animate-dropdown-in overflow-y-auto"
+          style={{ top: '4rem', backgroundColor: '#0D0D1A' }}
         >
           <nav className="flex flex-col px-6 py-8 space-y-1">
             {/* Registry link */}
