@@ -52,7 +52,7 @@ export function MobileMenu({ user }: MobileMenuProps) {
       {/* Hamburger button */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] text-[var(--fg-muted)] hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer"
+        className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] text-[var(--fg)] hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer"
         aria-label={open ? 'Close menu' : 'Open menu'}
       >
         {open ? (

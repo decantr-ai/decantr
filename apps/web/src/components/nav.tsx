@@ -12,7 +12,7 @@ interface NavUser {
 
 export function Nav({ user }: { user?: NavUser | null }) {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md">
+    <nav className="fixed top-0 left-0 right-0 z-[60] border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="text-xl font-bold text-[var(--fg)]">
