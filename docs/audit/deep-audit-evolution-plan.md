@@ -109,9 +109,17 @@ The `decantr-content` repo maintains official registry items. Patterns are detai
 
 `@decantr/css` is a standalone CSS-in-JS atomic runtime (300+ atoms, responsive prefixes, pseudo-classes, container queries, SSR support, CSS layers). It's well-built with solid architecture (microtask batching, `@layer` ordering, color-mix opacity).
 
-**Assessment:** This package is scope creep for the core product. Decantr's value proposition is design intelligence and drift prevention, not a CSS runtime. Most projects using Decantr will already have Tailwind, UnoCSS, or framework CSS. The CSS package adds maintenance burden without serving the core mission.
+**Assessment:** This package is core infrastructure, not scope creep. Atom strings (`_flex`, `_gap4`, `_col`, `_bgprimary`, etc.) are embedded throughout the entire content ecosystem — every pattern in `decantr-content` uses `atoms` fields to describe layout, and the core pipeline generates atom strings for page surfaces. `@decantr/css` is the runtime that resolves those strings into actual CSS. Without it, the pattern content's layout data is unactionable.
 
-**Recommendation:** Keep it as an optional companion package but do not invest further. It should not be part of the critical path for any implementation plan.
+The package serves a dual role:
+1. **Runtime for Decantr-native projects** — atoms are processed at runtime, CSS is injected into the DOM
+2. **Framework-agnostic layout DSL** — for projects using Tailwind or other CSS frameworks, the atom strings serve as a mapping source (e.g., `_flex _col _gap4` → `flex flex-col gap-4`). The AI code generator translates atoms to the target framework's utility classes.
+
+**Recommendation:** This is a load-bearing package. Invest in:
+- Keeping the atom vocabulary aligned with pattern content (new patterns may need new atoms)
+- Documenting the atom-to-Tailwind mapping table for AI code generators
+- SSR improvements (currently depends on DOM for `extractCSS()`, needs a server-side buffer)
+- Adding the missing `2xl` breakpoint and dark mode atom prefix
 
 ### 1.6 Competitive Context: drift-guard
 

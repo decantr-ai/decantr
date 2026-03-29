@@ -141,13 +141,13 @@ All are NOT STARTED. Phase 1 (API Domain + Intelligence) has 2 API patterns alre
 
 ---
 
-### 7. CSS Package
+### 7. CSS Package (Atom Resolution Layer)
 
-**Monorepo audit finding:** `@decantr/css` is well-built but is scope creep for the core product.
+**Monorepo audit finding:** `@decantr/css` is the runtime that resolves atom strings (`_flex`, `_gap4`, `_bgprimary`) embedded throughout all pattern content. It is core infrastructure — without it, pattern layout data is unactionable.
 
-**Where this fits in meta specs:** Not mentioned anywhere in the meta vision or specs. The meta project does not include a CSS package.
+**Where this fits in meta specs:** Not mentioned in the meta vision or specs, but the meta UI registry will inherit patterns that use atom strings. Any domain that produces layout guidance (UI, potentially Observability dashboards) will need atom resolution.
 
-**Decision:** The CSS package stays in the monorepo as an optional companion. It should NOT be migrated to decantr-meta. The meta project's scope is intelligence and coordination, not runtime CSS.
+**Decision:** The CSS package should be migrated to decantr-meta as part of D0.5 (UI Registry Migration), since the migrated patterns depend on it. It belongs under a shared utilities layer, not a specific domain. Additionally, an atom-to-Tailwind mapping table should be produced for AI code generators targeting Tailwind projects.
 
 ---
 
