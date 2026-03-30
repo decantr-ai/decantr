@@ -144,6 +144,8 @@ Options:
 | `@decantr/mcp-server` | [![npm](https://img.shields.io/npm/v/@decantr/mcp-server)](https://www.npmjs.com/package/@decantr/mcp-server) | MCP server exposing design intelligence tools to AI coding assistants |
 | `@decantr/css` | [![npm](https://img.shields.io/npm/v/@decantr/css)](https://www.npmjs.com/package/@decantr/css) | Framework-agnostic CSS atoms runtime for layout utilities |
 | `@decantr/cli` | [![npm](https://img.shields.io/npm/v/@decantr/cli)](https://www.npmjs.com/package/@decantr/cli) | CLI for project initialization, registry queries, and validation |
+| `@decantr/ui` | [![npm](https://img.shields.io/npm/v/@decantr/ui)](https://www.npmjs.com/package/@decantr/ui) | Signal-based UI framework with 100+ components |
+| `@decantr/ui-chart` | [![npm](https://img.shields.io/npm/v/@decantr/ui-chart)](https://www.npmjs.com/package/@decantr/ui-chart) | Chart library with SVG, Canvas, WebGPU renderers |
 
 ### Package Scripts
 
