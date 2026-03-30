@@ -1,0 +1,15 @@
+{
+  "name": "@decantr/workbench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Decantr Workbench - component development, design system explorer, interactive playground",
+  "scripts": {
+    "dev": "echo 'Workbench not yet implemented'",
+    "build": "echo 'Workbench not yet implemented'"
+  },
+  "dependencies": {
+    "@decantr/ui": "workspace:*",
+    "@decantr/ui-chart": "workspace:*",
+    "@decantr/css": "workspace:*"
+  }
+}
