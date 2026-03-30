@@ -860,7 +860,7 @@ export function getSSRCss() {
  *
  * Usage:
  * ```js
- * import { ssrComponent } from 'decantr/ssr';
+ * import { ssrComponent } from '@decantr/ui/ssr';
  *
  * const MyComponent = ssrComponent((h, text, cond, list, css) => {
  *   return (props) => h('div', { class: css('_flex _p4') }, text(() => props.title));
