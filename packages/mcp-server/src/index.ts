@@ -6,7 +6,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { TOOLS, handleTool } from './tools.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 const server = new Server(
   { name: 'decantr', version: VERSION },

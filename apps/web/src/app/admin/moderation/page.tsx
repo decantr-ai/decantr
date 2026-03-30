@@ -48,7 +48,7 @@ export default async function ModerationPage({ searchParams }: PageProps) {
   ];
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[var(--fg)]">Moderation Queue</h1>
         <p className="text-[var(--fg-muted)] mt-1">

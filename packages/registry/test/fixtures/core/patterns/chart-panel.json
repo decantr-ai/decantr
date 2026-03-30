@@ -9,5 +9,6 @@
     "type": "stack",
     "direction": "vertical",
     "gap": "md"
-  }
+  },
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json"
 }

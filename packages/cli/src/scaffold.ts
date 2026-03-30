@@ -1,6 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isV3 } from '@decantr/essence-spec';
+import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta } from '@decantr/essence-spec';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 
@@ -14,6 +16,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 export type LayoutItem = string | Record<string, unknown>;
 
+/**
+ * V2 EssenceFile shape (kept for backward compatibility of buildEssence signature).
+ * New code generates v3 EssenceV3 via buildEssenceV3().
+ */
 export interface EssenceFile {
   version: string;
   archetype: string;
@@ -485,6 +491,120 @@ export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData
 }
 
 /**
+ * Build a v3 essence from options, producing DNA/Blueprint/Meta structure.
+ */
+export function buildEssenceV3(options: InitOptions, archetypeData?: ArchetypeData): EssenceV3 {
+  // Resolve structure from archetype or defaults
+  let pages: EssenceBlueprint['pages'] = [
+    { id: 'home', layout: ['hero'] }
+  ];
+  let features: string[] = options.features;
+  let defaultShell = options.shell || 'sidebar-main';
+
+  if (archetypeData?.pages) {
+    defaultShell = archetypeData.pages[0]?.shell || defaultShell;
+    pages = archetypeData.pages.map(p => {
+      const resolvedLayout = (p.default_layout?.length ? p.default_layout : ['hero'])
+        .map(item => resolvePatternAlias(item, p.patterns));
+      return {
+        id: p.id,
+        ...(p.shell !== defaultShell ? { shell_override: p.shell } : {}),
+        layout: resolvedLayout,
+      };
+    });
+  }
+
+  if (archetypeData?.features) {
+    features = [...new Set([...features, ...archetypeData.features])];
+  }
+
+  const densityLevelMap: Record<string, string> = {
+    compact: '_gap2',
+    comfortable: '_gap4',
+    spacious: '_gap6',
+  };
+
+  const shapeRadiusMap: Record<string, number> = {
+    pill: 12,
+    rounded: 8,
+    sharp: 2,
+  };
+
+  const guardModeMap: Record<string, EssenceMeta['guard']> = {
+    strict: { mode: 'strict' as const, dna_enforcement: 'error' as const, blueprint_enforcement: 'warn' as const },
+    guided: { mode: 'guided' as const, dna_enforcement: 'error' as const, blueprint_enforcement: 'off' as const },
+    creative: { mode: 'creative' as const, dna_enforcement: 'off' as const, blueprint_enforcement: 'off' as const },
+  };
+
+  const dna: EssenceDNA = {
+    theme: {
+      style: options.theme,
+      mode: options.mode,
+      recipe: options.theme,
+      shape: options.shape as 'sharp' | 'rounded' | 'pill',
+    },
+    spacing: {
+      base_unit: 4,
+      scale: 'linear',
+      density: options.density,
+      content_gap: densityLevelMap[options.density] || '_gap4',
+    },
+    typography: {
+      scale: 'modular',
+      heading_weight: 600,
+      body_weight: 400,
+    },
+    color: {
+      palette: 'semantic',
+      accent_count: 1,
+      cvd_preference: options.accessibility?.cvd_preference || 'auto',
+    },
+    radius: {
+      philosophy: options.shape as 'sharp' | 'rounded' | 'pill',
+      base: shapeRadiusMap[options.shape] || 8,
+    },
+    elevation: {
+      system: 'layered',
+      max_levels: 3,
+    },
+    motion: {
+      preference: 'subtle',
+      duration_scale: 1.0,
+      reduce_motion: true,
+    },
+    accessibility: {
+      wcag_level: (options.accessibility?.wcag_level as 'none' | 'A' | 'AA' | 'AAA') || 'AA',
+      focus_visible: true,
+      skip_nav: true,
+    },
+    personality: options.personality,
+  };
+
+  const blueprint: EssenceBlueprint = {
+    shell: defaultShell,
+    pages,
+    features,
+  };
+
+  const meta: EssenceMeta = {
+    archetype: options.archetype || 'custom',
+    target: options.target,
+    platform: {
+      type: 'spa',
+      routing: 'hash',
+    },
+    guard: guardModeMap[options.guard] || guardModeMap.guided,
+  };
+
+  return {
+    version: '3.0.0',
+    dna,
+    blueprint,
+    meta,
+  };
+}
+
+/**
  * Generate the accessibility section for DECANTR.md.
  */
 function generateAccessibilitySection(
@@ -860,7 +980,9 @@ export function scaffoldProject(
   themeData?: ThemeData,
   recipeData?: RecipeData
 ): ScaffoldResult {
-  // Build essence
+  // Build v3 essence by default, but keep a v2-compatible view for template rendering
+  const essenceV3 = buildEssenceV3(options, archetypeData);
+  // Build the v2 shape for backward-compatible template rendering
   const essence = buildEssence(options, archetypeData);
 
   // Create directories
@@ -871,9 +993,9 @@ export function scaffoldProject(
   mkdirSync(contextDir, { recursive: true });
   mkdirSync(cacheDir, { recursive: true });
 
-  // Write essence file
+  // Write v3 essence file
   const essencePath = join(projectRoot, 'decantr.essence.json');
-  writeFileSync(essencePath, JSON.stringify(essence, null, 2) + '\n');
+  writeFileSync(essencePath, JSON.stringify(essenceV3, null, 2) + '\n');
 
   // Write DECANTR.md
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
@@ -907,10 +1029,10 @@ export function scaffoldProject(
   mkdirSync(stylesDir, { recursive: true });
 
   const tokensPath = join(stylesDir, 'tokens.css');
-  writeFileSync(tokensPath, generateTokensCSS(themeData, essence.theme.mode));
+  writeFileSync(tokensPath, generateTokensCSS(themeData, essenceV3.dna.theme.mode));
 
   const decoratorsPath = join(stylesDir, 'decorators.css');
-  writeFileSync(decoratorsPath, generateDecoratorsCSS(recipeData, essence.theme.style));
+  writeFileSync(decoratorsPath, generateDecoratorsCSS(recipeData, essenceV3.dna.theme.style as string));
 
   // Update .gitignore
   const gitignoreUpdated = updateGitignore(projectRoot);
@@ -939,35 +1061,72 @@ export function scaffoldMinimal(projectRoot: string): ScaffoldResult {
     mkdirSync(join(customDir, type), { recursive: true });
   }
 
-  // Create minimal decantr.essence.json
-  const essence: EssenceFile = {
-    version: '2.0.0',
-    archetype: 'custom',
-    theme: {
-      style: 'default',
-      mode: 'dark',
-      recipe: 'default',
-      shape: 'rounded',
+  // Create minimal v3 decantr.essence.json
+  const essence: EssenceV3 = {
+    version: '3.0.0',
+    dna: {
+      theme: {
+        style: 'default',
+        mode: 'dark',
+        recipe: 'default',
+        shape: 'rounded',
+      },
+      spacing: {
+        base_unit: 4,
+        scale: 'linear',
+        density: 'comfortable',
+        content_gap: '_gap4',
+      },
+      typography: {
+        scale: 'modular',
+        heading_weight: 600,
+        body_weight: 400,
+      },
+      color: {
+        palette: 'semantic',
+        accent_count: 1,
+        cvd_preference: 'auto',
+      },
+      radius: {
+        philosophy: 'rounded',
+        base: 8,
+      },
+      elevation: {
+        system: 'layered',
+        max_levels: 3,
+      },
+      motion: {
+        preference: 'subtle',
+        duration_scale: 1.0,
+        reduce_motion: true,
+      },
+      accessibility: {
+        wcag_level: 'AA',
+        focus_visible: true,
+        skip_nav: true,
+      },
+      personality: ['clean', 'modern'],
     },
-    personality: ['clean', 'modern'],
-    platform: {
-      type: 'spa',
-      routing: 'hash',
+    blueprint: {
+      shell: 'sidebar-main',
+      pages: [
+        { id: 'home', layout: ['hero'] },
+      ],
+      features: [],
     },
-    structure: [
-      { id: 'home', shell: 'sidebar-main', layout: ['hero'] },
-    ],
-    features: [],
-    guard: {
-      enforce_style: true,
-      enforce_recipe: true,
-      mode: 'guided',
+    meta: {
+      archetype: 'custom',
+      target: 'react',
+      platform: {
+        type: 'spa',
+        routing: 'hash',
+      },
+      guard: {
+        mode: 'guided',
+        dna_enforcement: 'error',
+        blueprint_enforcement: 'off',
+      },
     },
-    density: {
-      level: 'comfortable',
-      content_gap: '_gap4',
-    },
-    target: 'react',
   };
 
   const essencePath = join(projectRoot, 'decantr.essence.json');
@@ -1016,39 +1175,55 @@ export function scaffoldMinimal(projectRoot: string): ScaffoldResult {
 > This file was generated by \`decantr init\` in offline/minimal mode.
 > Run \`decantr upgrade\` when online to pull full registry content.
 
-## Guard Mode: guided
+## Two-Layer Model
 
-## Project Summary
+This project uses the v3 Essence format with two layers:
 
-**Archetype:** custom
-**Target:** react
-**Theme:** default (dark mode)
-**Guard Mode:** guided
-**Pages:** home
+### DNA (Immutable Design Axioms)
+DNA defines the foundational design rules that must never be violated. DNA violations are **errors**.
 
-## Pages
+- **Theme:** default (dark mode)
+- **Spacing:** comfortable density, _gap4
+- **Radius:** rounded (8px base)
+- **Accessibility:** WCAG AA
+- **Personality:** clean, modern
+
+### Blueprint (Structural Layout)
+Blueprint defines pages, shells, and patterns. Blueprint deviations are **warnings**.
 
 | Page | Shell | Layout |
 |------|-------|--------|
 | home | sidebar-main | hero |
+
+## Guard Mode: guided
+
+- **DNA enforcement:** error (violations block generation)
+- **Blueprint enforcement:** off (deviations are advisory)
+
+## MCP Tools
+
+When available, use these tools:
+- \`decantr_read_essence\` — Read the current essence
+- \`decantr_check_drift\` — Check for guard violations
+- \`decantr_accept_drift\` — Accept a detected drift as intentional
+- \`decantr_update_essence\` — Update the essence spec
 
 ## Quick Start
 
 1. Edit \`decantr.essence.json\` to define your project structure.
 2. Run \`decantr sync\` when online to fetch registry content.
 3. Use \`decantr create <type> <name>\` to create custom content.
-4. Use \`decantr search <query>\` to find patterns and themes.
-5. Use \`decantr validate\` to check your essence file.
+4. Use \`decantr validate\` to check your essence file.
 
 ## Commands
 
-- \`decantr status\` — Project health
-- \`decantr search\` — Search the registry
-- \`decantr get <type> <id>\` — Fetch content details
+- \`decantr status\` — Project health and DNA/Blueprint overview
 - \`decantr validate\` — Validate essence file
+- \`decantr check\` — Detect drift issues
+- \`decantr migrate\` — Migrate v2 essence to v3
+- \`decantr sync-drift\` — Review and resolve drift entries
+- \`decantr search\` — Search the registry
 - \`decantr sync\` — Sync registry content
-- \`decantr create <type> <name>\` — Create custom content
-- \`decantr publish <type> <name>\` — Publish to community registry
 
 ---
 

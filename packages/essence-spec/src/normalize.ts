@@ -1,6 +1,11 @@
-import type { Essence, SectionedEssence, EssenceFile, StructurePage, GuardMode } from './types.js';
+import type { Essence, SectionedEssence, EssenceFile, EssenceV3, StructurePage, GuardMode } from './types.js';
 
 export function normalizeEssence(input: Record<string, unknown>): EssenceFile {
+  // v3: version-based detection only (no structural fallback to avoid false positives)
+  if (input.version === '3.0.0') {
+    return input as unknown as EssenceV3;
+  }
+
   // Detect v2: has 'theme' and 'platform' (normalized terms)
   if (input.theme && input.platform) {
     return input as unknown as EssenceFile;

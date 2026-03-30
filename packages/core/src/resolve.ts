@@ -1,8 +1,9 @@
 import type {
-  EssenceFile, Essence, SectionedEssence, StructurePage,
-  LayoutItem, PatternRef, ColumnLayout,
+  EssenceFile, Essence, SectionedEssence, EssenceV3, StructurePage,
+  LayoutItem, PatternRef, ColumnLayout, BlueprintPage,
 } from '@decantr/essence-spec';
-import { isSimple, isSectioned, computeDensity } from '@decantr/essence-spec';
+import { isSimple, isSectioned, isV3, computeDensity } from '@decantr/essence-spec';
+import { pascalCase } from './utils.js';
 import type { ContentResolver, Pattern, Recipe, ResolvedPreset } from '@decantr/registry';
 import { resolvePatternPreset, detectWirings } from '@decantr/registry';
 import type {
@@ -25,6 +26,8 @@ export interface ResolvedEssence {
   shell: IRShellConfig;
   routes: IRRoute[];
   features: string[];
+  /** True when the source essence was v3 (DNA/Blueprint/Meta) */
+  isV3Source: boolean;
 }
 
 // ─── Icon Mapping ─────────────────────────────────────────────
@@ -117,10 +120,6 @@ function routePath(pageId: string, index: number): string {
   return `/${pageId}`;
 }
 
-function pascalCase(str: string): string {
-  return str.split(/[-_]/).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
-}
-
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -157,6 +156,27 @@ function buildTheme(essence: Essence, isAddon: boolean): IRTheme {
     shape: essence.theme.shape || null,
     recipe: essence.theme.recipe,
     isAddon,
+  };
+}
+
+function buildThemeFromV3(essence: EssenceV3, isAddon: boolean): IRTheme {
+  const dna = essence.dna;
+  return {
+    style: dna.theme.style,
+    mode: dna.theme.mode,
+    shape: dna.radius.philosophy || dna.theme.shape || null,
+    recipe: dna.theme.recipe,
+    isAddon,
+  };
+}
+
+/** Convert v3 BlueprintPage to the StructurePage shape used by the resolver pipeline */
+function blueprintPageToStructurePage(page: BlueprintPage, defaultShell: string): StructurePage {
+  return {
+    id: page.id,
+    shell: page.shell_override ?? defaultShell,
+    layout: page.layout,
+    ...(page.surface ? { surface: page.surface } : {}),
   };
 }
 
@@ -237,12 +257,24 @@ export async function resolveEssence(
   essence: EssenceFile,
   resolver: ContentResolver,
 ): Promise<ResolvedEssence> {
-  // Extract the simple essence (handle sectioned by flattening first section for now)
+  // ─── V3 path: read from dna + blueprint layers ───────────
+  if (isV3(essence)) {
+    return resolveV3Essence(essence, resolver);
+  }
+
+  // ─── V2 path: simple or sectioned ────────────────────────
   let simpleEssence: Essence;
   if (isSimple(essence)) {
     simpleEssence = essence;
   } else if (isSectioned(essence)) {
     const sectioned = essence as SectionedEssence;
+    if (sectioned.sections.length > 1) {
+      throw new Error(
+        `Sectioned essences with ${sectioned.sections.length} sections are not yet supported. ` +
+        `Only single-section sectioned essences can be processed. ` +
+        `Consider migrating to v3 format using migrateV2ToV3().`,
+      );
+    }
     const firstSection = sectioned.sections[0];
     simpleEssence = {
       version: sectioned.version,
@@ -280,30 +312,7 @@ export async function resolveEssence(
   const theme = buildTheme(simpleEssence, isAddon);
 
   // 4. Resolve each page
-  const resolvedPages: ResolvedPage[] = [];
-  for (const page of simpleEssence.structure) {
-    const refs = extractLayoutRefs(page.layout);
-    const patterns = new Map<string, { pattern: Pattern; preset: ResolvedPreset }>();
-
-    for (const ref of refs) {
-      const patternResult = await resolver.resolve('pattern', ref.id);
-      if (patternResult) {
-        const preset = resolvePatternPreset(
-          patternResult.item,
-          ref.explicitPreset,
-          recipe?.pattern_preferences?.default_presets,
-        );
-        const key = ref.alias || ref.id;
-        patterns.set(key, { pattern: patternResult.item, preset });
-      }
-    }
-
-    // Detect wiring (flatten cols so column children are visible)
-    const wiringResults = detectWirings(flattenLayoutForWiring(page.layout));
-    const wiring = convertWiring(wiringResults);
-
-    resolvedPages.push({ page, patterns, wiring });
-  }
+  const resolvedPages = await resolvePages(simpleEssence.structure, resolver, recipe);
 
   // 5. Shell config
   const shellType = simpleEssence.structure[0]?.shell || 'sidebar-main';
@@ -334,5 +343,111 @@ export async function resolveEssence(
     shell,
     routes,
     features: simpleEssence.features ?? [],
+    isV3Source: false,
   };
+}
+
+// ─── V3 Resolution ──────────────────────────────────────────
+
+async function resolveV3Essence(
+  essence: EssenceV3,
+  resolver: ContentResolver,
+): Promise<ResolvedEssence> {
+  const { dna, blueprint, meta } = essence;
+
+  // 1. Recipe resolution (from dna.theme.recipe)
+  let recipe: Recipe | null = null;
+  const recipeResult = await resolver.resolve('recipe', dna.theme.recipe);
+  if (recipeResult) {
+    recipe = recipeResult.item;
+  }
+
+  // 2. Density — v3 carries density directly in dna.spacing
+  const recipeSpatial = recipe?.spatial_hints;
+  const density = computeDensity(dna.personality, recipeSpatial ? {
+    density_bias: recipeSpatial.density_bias,
+    content_gap_shift: recipeSpatial.content_gap_shift,
+  } : undefined);
+  // V3 dna.spacing is authoritative; override computed density with DNA values
+  const densityResult = {
+    gap: dna.spacing.content_gap || density.content_gap,
+    level: dna.spacing.density || density.level,
+  };
+
+  // 3. Theme from DNA layer
+  const style = dna.theme.style;
+  const isAddon = style.startsWith('custom:') || !CORE_STYLES.has(style);
+  const theme = buildThemeFromV3(essence, isAddon);
+
+  // 4. Convert blueprint pages to StructurePage and resolve
+  const structurePages: StructurePage[] = blueprint.pages.map(
+    p => blueprintPageToStructurePage(p, blueprint.shell),
+  );
+  const resolvedPages = await resolvePages(structurePages, resolver, recipe);
+
+  // 5. Shell config from blueprint
+  const shellType = blueprint.shell;
+  const brand = pascalCase(meta.archetype);
+  const nav = buildNavItems(structurePages);
+  const recipeDecoration = recipe ? buildRecipeDecoration(recipe) : null;
+
+  const shell: IRShellConfig = {
+    type: shellType,
+    brand,
+    nav,
+    inset: false,
+    recipe: recipeDecoration,
+  };
+
+  // 6. Routes
+  const routes: IRRoute[] = structurePages.map((page, i) => ({
+    path: routePath(page.id, i),
+    pageId: page.id,
+  }));
+
+  return {
+    essence,
+    pages: resolvedPages,
+    recipe,
+    density: densityResult,
+    theme,
+    shell,
+    routes,
+    features: blueprint.features ?? [],
+    isV3Source: true,
+  };
+}
+
+// ─── Shared page resolution ────────────────────────────────
+
+async function resolvePages(
+  pages: StructurePage[],
+  resolver: ContentResolver,
+  recipe: Recipe | null,
+): Promise<ResolvedPage[]> {
+  const resolvedPages: ResolvedPage[] = [];
+  for (const page of pages) {
+    const refs = extractLayoutRefs(page.layout);
+    const patterns = new Map<string, { pattern: Pattern; preset: ResolvedPreset }>();
+
+    for (const ref of refs) {
+      const patternResult = await resolver.resolve('pattern', ref.id);
+      if (patternResult) {
+        const preset = resolvePatternPreset(
+          patternResult.item,
+          ref.explicitPreset,
+          recipe?.pattern_preferences?.default_presets,
+        );
+        const key = ref.alias || ref.id;
+        patterns.set(key, { pattern: patternResult.item, preset });
+      }
+    }
+
+    // Detect wiring (flatten cols so column children are visible)
+    const wiringResults = detectWirings(flattenLayoutForWiring(page.layout));
+    const wiring = convertWiring(wiringResults);
+
+    resolvedPages.push({ page, patterns, wiring });
+  }
+  return resolvedPages;
 }

@@ -1,0 +1,65 @@
+{
+  "version": "3.0.0",
+  "dna": {
+    "theme": {
+      "style": "auradecantism",
+      "mode": "dark",
+      "recipe": "auradecantism"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "spacious",
+      "content_gap": "6"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1.0,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": ["minimal", "clean"]
+  },
+  "blueprint": {
+    "shell": "full-bleed",
+    "pages": [
+      {
+        "id": "home",
+        "layout": ["hero", { "pattern": "card-grid", "preset": "content", "as": "project-grid" }]
+      }
+    ],
+    "features": []
+  },
+  "meta": {
+    "archetype": "portfolio",
+    "target": "decantr",
+    "platform": { "type": "spa", "routing": "history" },
+    "guard": {
+      "mode": "guided",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "off"
+    }
+  }
+}

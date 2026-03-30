@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-29
 **Status:** Approved
-**Author:** David Aimi + Claude
+**Author:** David Aimi 
 
 ## Overview
 

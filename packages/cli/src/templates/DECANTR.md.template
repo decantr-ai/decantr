@@ -8,23 +8,41 @@ This project uses **Decantr** for design intelligence. Read this file before gen
 
 Decantr is a design intelligence layer that sits between you (the AI code generator) and the code you produce. It provides:
 
-- **Structured schemas** — The `decantr.essence.json` file is the source of truth for this project's design
-- **Reusable building blocks** — Patterns, archetypes, blueprints, and themes from the registry
-- **Drift prevention** — Guard rules that validate your code against the spec
-- **Design methodology** — The 7-stage Design Pipeline
+- **Structured schemas** -- The `decantr.essence.json` file is the source of truth for this project's design
+- **Two-layer model** -- DNA (immutable axioms) and Blueprint (structural layout)
+- **Drift prevention** -- Guard rules that validate your code against the spec
+- **Design methodology** -- The 7-stage Design Pipeline
 
 **Decantr does NOT generate code.** You generate the code. Decantr ensures it remains coherent and consistent.
 
-### Why Drift Matters
+---
 
-Design drift is the gradual divergence between intended design and actual implementation. It happens when:
+## Two-Layer Model
 
-- Themes are switched "just this once" without updating the spec
-- New pages are added without declaring them in the structure
-- Layout order is changed because "it looks better this way"
-- Spacing values are tweaked ad-hoc instead of following the density profile
+### DNA (Design Axioms)
 
-Drift compounds. Small violations accumulate into a codebase where every page looks different, spacing is inconsistent, and the original design intent is lost. Decantr prevents this by making the design spec explicit and enforced.
+DNA defines the foundational design rules. **DNA violations are errors** -- they must never happen without updating the essence first.
+
+DNA axioms include:
+- Theme (style, mode, recipe, shape)
+- Spacing (density, content gap, base unit)
+- Typography (scale, weights)
+- Color (palette, accent count, CVD preference)
+- Radius (philosophy, base value)
+- Elevation (system, max levels)
+- Motion (preference, duration scale, reduce-motion)
+- Accessibility (WCAG level, focus-visible, skip-nav)
+- Personality traits
+
+### Blueprint (Structural Layout)
+
+Blueprint defines pages, shells, features, and pattern layouts. **Blueprint deviations are warnings** -- they should be corrected but do not block generation.
+
+Blueprint includes:
+- Default shell layout
+- Page definitions with layouts
+- Feature declarations
+- Per-page DNA overrides (only density and mode)
 
 ---
 
@@ -48,23 +66,33 @@ The essence file captures stages 1-5. Your code generation is stage 6. The guard
 
 ## Guard Rules
 
-The guard system enforces five rules. **These are non-negotiable.**
+The guard system enforces rules at two levels:
 
-| # | Rule | What It Checks | Severity |
-|---|------|----------------|----------|
-| 1 | **Style** | Code uses theme specified in essence | Error |
-| 2 | **Structure** | Page exists in essence structure | Error |
-| 3 | **Layout** | Pattern order matches essence layout | Error (strict only) |
-| 4 | **Recipe** | Decorations match essence recipe | Error |
-| 5 | **Density** | Spacing follows density profile | Warning (strict only) |
+### DNA Rules (Errors)
+
+| # | Rule | What It Checks |
+|---|------|----------------|
+| 1 | **Style** | Code uses theme specified in DNA |
+| 2 | **Recipe** | Decorations match DNA recipe |
+| 3 | **Density** | Spacing follows DNA density profile |
+| 4 | **Accessibility** | Code meets WCAG level from DNA |
+| 5 | **Theme-mode** | Theme/mode combination is valid |
+
+### Blueprint Rules (Warnings)
+
+| # | Rule | What It Checks |
+|---|------|----------------|
+| 6 | **Structure** | Page exists in blueprint pages |
+| 7 | **Layout** | Pattern order matches blueprint layout |
+| 8 | **Pattern existence** | Patterns exist in the registry |
 
 ### Enforcement Tiers
 
-| Tier | When Used | Rules Enforced |
-|------|-----------|----------------|
-| **Creative** | New project scaffolding | Advisory only |
-| **Guided** | Adding pages or features | Rules 1, 2, 4 |
-| **Strict** | Modifying existing code | All 5 rules |
+| Tier | When Used | DNA Rules | Blueprint Rules |
+|------|-----------|-----------|-----------------|
+| **Creative** | New project scaffolding | Off | Off |
+| **Guided** | Adding pages or features | Error | Off |
+| **Strict** | Modifying existing code | Error | Warn |
 
 This project uses **{{GUARD_MODE}}** mode.
 
@@ -73,13 +101,19 @@ This project uses **{{GUARD_MODE}}** mode.
 When a user request would violate guard rules:
 
 ```
-1. STOP   — Do not proceed with code that violates guard rules
-2. EXPLAIN — Tell the user which rule would be violated and why
-3. OFFER  — Ask if they want to update the essence
-4. WAIT   — Only proceed after the essence is updated
+1. STOP   -- Do not proceed with code that violates DNA rules
+2. EXPLAIN -- Tell the user which rule would be violated and why
+3. OFFER  -- Suggest using decantr_update_essence to update the spec
+4. WAIT   -- Only proceed after the essence is updated
 ```
 
 **Never make "just this once" exceptions.** If the user insists, update the essence first.
+
+### MCP Tools for Drift Management
+
+- `decantr_check_drift` -- Check if planned changes violate rules
+- `decantr_accept_drift` -- Accept a detected drift as intentional (updates the essence)
+- `decantr_update_essence` -- Update the essence spec to match desired changes
 
 ---
 
@@ -140,36 +174,40 @@ npx @decantr/cli get pattern <pattern-name>
 
 # Search for patterns
 npx @decantr/cli search <query>
+
+# Check for drift
+npx @decantr/cli check
 ```
 
 ### With MCP Tools (If Available)
 
 > Note: MCP tools require the `@decantr/mcp-server` to be configured. If these tools are not available, use the CLI commands above.
 
-1. `decantr_read_essence` — Load the current essence
-2. `decantr_check_drift` — Verify your planned changes won't violate rules
-3. `decantr_resolve_pattern` — Get pattern details before implementing
-4. `decantr_suggest_patterns` — Find appropriate patterns for new sections
+1. `decantr_read_essence` -- Load the current essence
+2. `decantr_check_drift` -- Verify your planned changes won't violate rules
+3. `decantr_resolve_pattern` -- Get pattern details before implementing
+4. `decantr_suggest_patterns` -- Find appropriate patterns for new sections
 
 ### Without MCP Tools or CLI
 
 1. Read `decantr.essence.json` in the project root
-2. Verify the page you're editing exists in `structure[]`
-3. Check the page's `layout[]` for required pattern order
-4. Follow the `theme.style` and `theme.recipe` specifications
-5. Use spacing tokens from `density.content_gap`
+2. Check `dna.theme` for the active theme and mode
+3. Check `blueprint.pages` for the page you're editing
+4. Follow the page's `layout[]` for required pattern order
+5. Use spacing tokens from `dna.spacing.content_gap`
 
 ### Checklist
 
 Before writing any UI code:
 
-- [ ] Is this page in the essence structure?
+- [ ] Is this page in the blueprint pages?
 - [ ] Am I using the correct theme ({{THEME_STYLE}})?
 - [ ] Am I following the correct mode ({{THEME_MODE}})?
 - [ ] Does my pattern order match the layout spec?
 - [ ] Am I using the correct spacing tokens?
+- [ ] Does the code meet WCAG requirements from DNA?
 
-If any answer is "no" — **STOP and ask the user to update the essence.**
+If any answer is "no" -- **STOP and ask the user to update the essence.**
 
 ---
 
@@ -179,17 +217,17 @@ If any answer is "no" — **STOP and ask the user to update the essence.**
 
 After generating code, verify:
 
-1. **Theme consistency** — All colors, typography, and effects match the theme
-2. **Pattern structure** — Components follow the pattern's layout spec
-3. **Spacing consistency** — Gap values use tokens, not arbitrary pixels
-4. **Page declaration** — The page exists in the essence structure
+1. **Theme consistency** -- All colors, typography, and effects match the DNA theme
+2. **Pattern structure** -- Components follow the blueprint layout spec
+3. **Spacing consistency** -- Gap values use tokens, not arbitrary pixels
+4. **Page declaration** -- The page exists in blueprint pages
 
 ### Drift Validation
 
 Run validation to check for violations:
 
 ```bash
-npx @decantr/cli validate
+npx @decantr/cli check
 ```
 
 Or use the MCP tool:
@@ -208,24 +246,11 @@ When implementing patterns, follow these rules:
 
 Each pattern section should have a single visual elevation level. Don't nest cards within cards or create competing visual hierarchies.
 
-```
-// Good: Single elevation
-<section class="pattern-section">
-  <h2>Title</h2>
-  <div class="content">...</div>
-</section>
-
-// Bad: Nested elevations
-<Card>
-  <Card>...</Card>
-</Card>
-```
-
 ### 2. Containment Decision
 
 Decide upfront whether a pattern is:
-- **Contained** — Has visible boundaries (card, panel)
-- **Inline** — Flows with content, no boundaries
+- **Contained** -- Has visible boundaries (card, panel)
+- **Inline** -- Flows with content, no boundaries
 
 Don't mix containment within a pattern.
 
@@ -264,11 +289,6 @@ Your `index.html` MUST have theme and mode attributes:
 </html>
 ```
 
-**Why this matters:**
-- `data-theme` enables theme switching via JS without reloading CSS
-- `data-mode` enables light/dark toggle
-- `color-scheme` tells the browser to style native controls (scrollbars, inputs) correctly
-
 ### Using Atoms
 
 The `css()` function processes atom strings and injects CSS at runtime:
@@ -284,11 +304,6 @@ The `css()` function processes atom strings and injects CSS at runtime:
 <div className={css('_gc1 _sm:gc2 _lg:gc4')}>
   {/* 1 col -> 2 cols at 640px -> 4 cols at 1024px */}
 </div>
-
-// Pseudo-class prefixes
-<button className={css('_bgprimary _h:bgprimary/80')}>
-  Hover me
-</button>
 ```
 
 ### Common Atoms
@@ -324,24 +339,6 @@ src/styles/
 | `--d-gap-{n}` | Spacing tokens | `--d-gap-4`, `--d-gap-8` |
 | `--d-radius` | Border radius | `--d-radius`, `--d-radius-lg` |
 
-### Theme Switching (JavaScript)
-
-```javascript
-// Switch theme
-document.documentElement.dataset.theme = 'newTheme';
-
-// Switch mode
-document.documentElement.dataset.mode = 'light';
-document.querySelector('meta[name="color-scheme"]').content = 'light';
-```
-
-### Get Full Theme/Recipe Specs
-
-```bash
-npx @decantr/cli get theme {{THEME_STYLE}}   # See seed colors, palette
-npx @decantr/cli get recipe {{THEME_RECIPE}} # See decorators, effects
-```
-
 ---
 
 ## Spatial Guidelines
@@ -357,10 +354,6 @@ npx @decantr/cli get recipe {{THEME_RECIPE}} # See decorators, effects
 | bold | comfortable | `_gap4` |
 
 This project uses: **{{PERSONALITY}}** personality with **{{DENSITY}}** density.
-
-### The 50% Rule
-
-Pattern content should occupy roughly 50% of its container width on desktop. This creates breathing room and prevents wall-of-text layouts.
 
 ### Spacing Tokens
 
@@ -391,7 +384,6 @@ A shell is the page-level layout container. This project uses **{{DEFAULT_SHELL}
 | `centered` | Centered card on background | Auth flows, focused tasks |
 | `full-bleed` | No persistent nav, scroll-driven | Landing pages, portfolios |
 | `minimal-header` | Slim header + centered content | Checkout, wizards |
-| `sidebar-aside` | Three columns (nav + main + aside) | IDE-style, email clients |
 
 ### Shell Structure
 
@@ -401,101 +393,32 @@ A shell is the page-level layout container. This project uses **{{DEFAULT_SHELL}
 
 ---
 
-## Task-Specific Context
-
-For detailed instructions based on what you're doing, see:
-
-| Task | Context File |
-|------|--------------|
-| Scaffolding new pages | `.decantr/context/task-scaffold.md` |
-| Adding pages/features | `.decantr/context/task-add-page.md` |
-| Modifying existing code | `.decantr/context/task-modify.md` |
-
-These files contain tier-specific rules and checklists.
-
----
-
-## Quick Reference
-
-### Essence Schema (Simplified)
+## Essence Schema (v3)
 
 ```json
 {
-  "version": "2.0.0",
-  "theme": {
-    "style": "theme-id",
-    "mode": "dark | light | auto",
-    "recipe": "recipe-id",
-    "shape": "pill | rounded | sharp"
+  "version": "3.0.0",
+  "dna": {
+    "theme": { "style": "...", "mode": "dark|light|auto", "recipe": "...", "shape": "..." },
+    "spacing": { "density": "compact|comfortable|spacious", "content_gap": "_gap4" },
+    "typography": { "scale": "modular", "heading_weight": 600 },
+    "accessibility": { "wcag_level": "AA", "focus_visible": true },
+    "personality": ["trait1", "trait2"]
   },
-  "personality": ["trait1", "trait2"],
-  "structure": [
-    {
-      "id": "page-id",
-      "shell": "shell-id",
-      "layout": ["pattern-1", "pattern-2"]
-    }
-  ],
-  "features": ["auth", "search"],
-  "guard": {
-    "enforce_style": true,
-    "enforce_recipe": true,
-    "mode": "strict | guided | creative"
+  "blueprint": {
+    "shell": "shell-id",
+    "pages": [
+      { "id": "page-id", "layout": ["pattern-1", "pattern-2"] }
+    ],
+    "features": ["auth", "search"]
   },
-  "density": {
-    "level": "compact | comfortable | spacious",
-    "content_gap": "_gap4"
-  },
-  "target": "react | vue | svelte | html"
+  "meta": {
+    "archetype": "dashboard",
+    "target": "react",
+    "guard": { "mode": "guided", "dna_enforcement": "error", "blueprint_enforcement": "off" }
+  }
 }
 ```
-
-### Common Violations
-
-| Violation | Fix |
-|-----------|-----|
-| "Page not in structure" | Add page to `structure[]` in essence |
-| "Theme mismatch" | Use the theme from `theme.style` |
-| "Pattern order wrong" | Reorder to match `layout[]` |
-| "Unknown recipe" | Use recipe from `theme.recipe` |
-| "Spacing inconsistent" | Use tokens from `density.content_gap` |
-
-### Troubleshooting
-
-**"I need to add a new page"**
-1. Update `structure[]` in essence with the new page
-2. Specify the shell and layout patterns
-3. Then generate the code
-
-**"I want to change the theme"**
-1. Update `theme.style` in essence
-2. Update `theme.recipe` if needed
-3. Regenerate affected components
-
-**"The guard is blocking me"**
-1. Check which rule is being violated
-2. Update the essence to reflect the desired change
-3. Then proceed with code generation
-
-**"I don't know which pattern to use"**
-1. Use `decantr_suggest_patterns` with a description
-2. Or check the patterns in `.decantr/cache/patterns/`
-3. Or search the registry with `npx @decantr/cli search <query>`
-
----
-
-## Registry Content
-
-This project has access to the following content:
-
-### Patterns
-{{AVAILABLE_PATTERNS}}
-
-### Themes
-{{AVAILABLE_THEMES}}
-
-### Shells
-{{AVAILABLE_SHELLS}}
 
 ---
 
@@ -504,15 +427,16 @@ This project has access to the following content:
 When the user wants to change the design spec:
 
 1. Read the current `decantr.essence.json`
-2. Make the requested changes
-3. Validate with `npx @decantr/cli validate`
-4. Write the updated file
-5. Regenerate `DECANTR.md` if structure changed significantly
+2. Determine if the change affects DNA (axioms) or Blueprint (structure)
+3. Make the requested changes
+4. Validate with `npx @decantr/cli validate`
+5. Write the updated file
 
-Or use the MCP tool:
+Or use the MCP tools:
 
 ```
 decantr_update_essence(operation="add_page", payload={...})
+decantr_accept_drift(violation_id="...", reason="User requested change")
 ```
 
 ---
@@ -520,11 +444,11 @@ decantr_update_essence(operation="add_page", payload={...})
 ## Summary
 
 1. **Read the essence** before generating code
-2. **Check guard rules** before proceeding
-3. **Never violate** — update the essence instead
+2. **DNA violations are errors** -- never proceed without updating the essence
+3. **Blueprint deviations are warnings** -- correct them when possible
 4. **Use patterns** from the layout spec
-5. **Follow the theme** exactly
-6. **Validate after** generating code
+5. **Follow the theme** exactly as specified in DNA
+6. **Validate after** generating code with `decantr check`
 
 The essence is the source of truth. When in doubt, consult it.
 

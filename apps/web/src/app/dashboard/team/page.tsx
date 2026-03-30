@@ -34,7 +34,7 @@ export default async function TeamPage() {
 
   if (profile.tier !== 'team' && profile.tier !== 'enterprise') {
     return (
-      <div className="max-w-4xl space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <h1 className="text-2xl font-bold">Team</h1>
         <Card>
           <h2 className="mb-2 text-lg font-semibold">Upgrade to Team</h2>
@@ -66,7 +66,7 @@ export default async function TeamPage() {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Team</h1>
       {orgSlug ? (
         <>

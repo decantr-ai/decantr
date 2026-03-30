@@ -108,6 +108,10 @@
     "d-terminal-chrome": "macOS-style terminal window with traffic light dots and gradient background.",
     "d-icon-glow": "Glowing icon container with gradient background."
   },
+  "radius_hints": {
+    "philosophy": "rounded",
+    "base": 8
+  },
   "compositions": {
     "panel": {
       "description": "Glass panel with subtle border and backdrop blur.",

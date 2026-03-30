@@ -1,13 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Pattern, Archetype, Recipe, ContentType, ResolvedContent } from './types.js';
+import type { Pattern, Archetype, Recipe, Blueprint, ContentType, ResolvedContent } from './types.js';
 
 type ContentMap = {
   pattern: Pattern;
   archetype: Archetype;
   recipe: Recipe;
   theme: Record<string, unknown>;
-  blueprint: Record<string, unknown>;
+  blueprint: Blueprint;
 };
 
 export interface ResolverOptions {

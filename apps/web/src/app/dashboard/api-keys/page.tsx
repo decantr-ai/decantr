@@ -23,7 +23,7 @@ export default async function ApiKeysPage() {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">API Keys</h1>
       <CreateApiKeyForm />
       <ApiKeyList keys={keys} />

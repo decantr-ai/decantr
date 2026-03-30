@@ -3,6 +3,8 @@ import type {
   Archetype,
   Recipe,
   Theme,
+  Blueprint,
+  Shell,
   ApiContentType,
   ContentListResponse,
   ContentItem,
@@ -164,12 +166,12 @@ export class RegistryAPIClient {
     return this.getContent<Theme>('themes', namespace, slug);
   }
 
-  async getBlueprint(namespace: string, slug: string): Promise<Record<string, unknown>> {
-    return this.getContent<Record<string, unknown>>('blueprints', namespace, slug);
+  async getBlueprint(namespace: string, slug: string): Promise<Blueprint> {
+    return this.getContent<Blueprint>('blueprints', namespace, slug);
   }
 
-  async getShell(namespace: string, slug: string): Promise<Record<string, unknown>> {
-    return this.getContent<Record<string, unknown>>('shells', namespace, slug);
+  async getShell(namespace: string, slug: string): Promise<Shell> {
+    return this.getContent<Shell>('shells', namespace, slug);
   }
 
   // ── Search ──
@@ -207,4 +209,46 @@ export class RegistryAPIClient {
   async getSchema(name: string = 'essence.v3.json'): Promise<Record<string, unknown>> {
     return this.request<Record<string, unknown>>(`/schema/${name}`);
   }
+}
+
+// ── Lightweight registry client (merged from client.ts) ──
+
+export interface RegistryClientOptions {
+  baseUrl?: string;
+}
+
+export interface SearchResult {
+  id: string;
+  type: string;
+  name: string;
+  description: string;
+  version: string;
+  tags: string[];
+}
+
+export interface RegistryClient {
+  search(query: string, type?: string): Promise<SearchResult[]>;
+  fetch(type: string, id: string, version?: string): Promise<unknown>;
+}
+
+export function createRegistryClient(options: RegistryClientOptions = {}): RegistryClient {
+  const baseUrl = options.baseUrl ?? 'https://api.decantr.ai/v1';
+  return {
+    async search(query: string, type?: string): Promise<SearchResult[]> {
+      const params = new URLSearchParams({ q: query });
+      if (type) params.set('type', type);
+      const res = await fetch(`${baseUrl}/search?${params}`);
+      if (!res.ok) return [];
+      const data = await res.json() as { results?: SearchResult[]; total?: number } | SearchResult[];
+      // API returns { total, results } wrapper
+      if (Array.isArray(data)) return data;
+      return (data as { results: SearchResult[] }).results ?? [];
+    },
+    async fetch(type: string, id: string, version?: string): Promise<unknown> {
+      const url = version ? `${baseUrl}/content/${type}/${id}/${version}` : `${baseUrl}/content/${type}/${id}`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      return res.json();
+    },
+  };
 }

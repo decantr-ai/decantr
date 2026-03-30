@@ -170,12 +170,105 @@ export interface SectionedEssence {
   _impression?: Impression;
 }
 
-export type EssenceFile = Essence | SectionedEssence;
+// --- Essence v3: DNA/Blueprint/Meta split ---
+
+export interface EssenceDNA {
+  theme: Theme;
+  spacing: {
+    base_unit: number;
+    scale: string;
+    density: DensityLevel;
+    content_gap: string;
+  };
+  typography: {
+    scale: string;
+    heading_weight: number;
+    body_weight: number;
+  };
+  color: {
+    palette: string;
+    accent_count: number;
+    cvd_preference: CvdPreference | string;
+  };
+  radius: {
+    philosophy: ThemeShape | string;
+    base: number;
+  };
+  elevation: {
+    system: string;
+    max_levels: number;
+  };
+  motion: {
+    preference: string;
+    duration_scale: number;
+    reduce_motion: boolean;
+  };
+  accessibility: {
+    wcag_level: WcagLevel;
+    focus_visible: boolean;
+    skip_nav: boolean;
+  };
+  personality: string[];
+}
+
+/** Only density and mode may be overridden per-page. DNA axioms like wcag_level and theme.style are never overrideable. */
+export interface DNAOverrides {
+  density?: DensityLevel;
+  mode?: ThemeMode;
+}
+
+export interface BlueprintPage {
+  id: string;
+  shell_override?: ShellType | null;
+  layout: LayoutItem[];
+  dna_overrides?: DNAOverrides;
+  surface?: string;
+}
+
+export interface EssenceBlueprint {
+  shell: ShellType;
+  pages: BlueprintPage[];
+  features: string[];
+  icon_style?: string;
+  avatar_style?: string;
+}
+
+export interface EssenceV3Guard {
+  mode: GuardMode;
+  dna_enforcement: 'error' | 'warn' | 'off';
+  blueprint_enforcement: 'warn' | 'off';
+}
+
+export interface EssenceMeta {
+  archetype: string;
+  target: GeneratorTarget;
+  platform: Platform;
+  guard: EssenceV3Guard;
+}
+
+export interface EssenceV3 {
+  $schema?: string;
+  version: '3.0.0';
+  dna: EssenceDNA;
+  blueprint: EssenceBlueprint;
+  meta: EssenceMeta;
+  _impression?: Impression;
+}
+
+// --- Discriminated union ---
+
+export type EssenceFile = Essence | SectionedEssence | EssenceV3;
+
+export function isV3(essence: EssenceFile): essence is EssenceV3 {
+  return essence.version === '3.0.0' && 'dna' in essence && 'blueprint' in essence;
+}
 
 export function isSectioned(essence: EssenceFile): essence is SectionedEssence {
+  if (isV3(essence)) return false;
   return 'sections' in essence && Array.isArray((essence as SectionedEssence).sections);
 }
 
 export function isSimple(essence: EssenceFile): essence is Essence {
+  if (isV3(essence)) return false;
   return 'archetype' in essence && !('sections' in essence);
 }

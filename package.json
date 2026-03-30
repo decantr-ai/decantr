@@ -3,7 +3,7 @@
   "private": true,
   "description": "Design intelligence layer for AI-generated web applications",
   "scripts": {
-    "build": "pnpm --filter @decantr/essence-spec --filter @decantr/registry run build && pnpm --filter @decantr/core --filter @decantr/mcp-server --filter @decantr/cli run build",
+    "build": "pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/css run build && pnpm --filter @decantr/core --filter @decantr/mcp-server --filter @decantr/cli --filter @decantr/vite-plugin run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
@@ -13,6 +13,7 @@
   "devDependencies": {
     "@types/node": "^25.5.0",
     "tsup": "^8.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
   },

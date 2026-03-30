@@ -1,5 +1,6 @@
 export type {
   IRNodeType,
+  IRLayer,
   IRSpatial,
   IRHookType,
   IRWiringSignal,
@@ -19,7 +20,6 @@ export type {
   IRPatternNode,
   IRBreakpointEntry,
   IRGridNode,
-  IRNavNode,
   IRStoreNode,
 } from './types.js';
 
@@ -29,3 +29,4 @@ export { buildPageIR } from './ir.js';
 export { resolveEssence, resolveVisualEffects } from './resolve.js';
 export type { ResolvedPage, ResolvedEssence } from './resolve.js';
 export { walkIR, findNodes, countPatterns, validateIR } from './ir-helpers.js';
+export { pascalCase } from './utils.js';

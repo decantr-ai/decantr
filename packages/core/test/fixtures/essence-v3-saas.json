@@ -1,0 +1,70 @@
+{
+  "version": "3.0.0",
+  "dna": {
+    "theme": {
+      "style": "auradecantism",
+      "mode": "dark",
+      "recipe": "auradecantism",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1.0,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": ["professional", "data-rich"]
+  },
+  "blueprint": {
+    "shell": "sidebar-main",
+    "pages": [
+      {
+        "id": "overview",
+        "layout": ["kpi-grid", { "cols": ["filter-bar", "data-table"], "at": "lg" }]
+      },
+      {
+        "id": "settings",
+        "layout": [{ "pattern": "form-sections", "preset": "settings" }]
+      }
+    ],
+    "features": ["auth"]
+  },
+  "meta": {
+    "archetype": "saas-dashboard",
+    "target": "decantr",
+    "platform": { "type": "spa", "routing": "hash" },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    }
+  }
+}

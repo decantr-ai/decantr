@@ -23,7 +23,7 @@ jobs:
       - run: pnpm test
       - name: Publish packages with OIDC provenance
         run: |
-          for pkg in essence-spec registry core mcp-server cli; do
+          for pkg in essence-spec registry css core mcp-server cli; do
             echo "--- Publishing @decantr/$pkg ---"
             cd packages/$pkg
             npm publish --access public --provenance --tag beta 2>&1 || echo "Failed or already published: $pkg"

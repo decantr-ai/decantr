@@ -1,6 +1,13 @@
 export type {
   Essence,
   SectionedEssence,
+  EssenceV3,
+  EssenceDNA,
+  EssenceBlueprint,
+  EssenceMeta,
+  EssenceV3Guard,
+  BlueprintPage,
+  DNAOverrides,
   EssenceFile,
   EssenceSection,
   Theme,
@@ -26,7 +33,7 @@ export type {
   CvdPreference,
 } from './types.js';
 
-export { isSectioned, isSimple } from './types.js';
+export { isSectioned, isSimple, isV3 } from './types.js';
 
 export { validateEssence } from './validate.js';
 export type { ValidationResult } from './validate.js';
@@ -34,6 +41,8 @@ export type { ValidationResult } from './validate.js';
 export { computeDensity } from './density.js';
 
 export { evaluateGuard } from './guard.js';
-export type { GuardViolation, GuardContext } from './guard.js';
+export type { GuardViolation, GuardContext, AutoFix } from './guard.js';
 
 export { normalizeEssence } from './normalize.js';
+
+export { migrateV2ToV3 } from './migrate.js';

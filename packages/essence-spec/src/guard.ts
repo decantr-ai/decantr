@@ -1,11 +1,19 @@
-import type { EssenceFile, StructurePage, LayoutItem } from './types.js';
-import { isSimple, isSectioned } from './types.js';
+import type { EssenceFile, EssenceV3, StructurePage, LayoutItem, DensityLevel } from './types.js';
+import { isSimple, isSectioned, isV3 } from './types.js';
+
+export interface AutoFix {
+  type: 'add_page' | 'update_layout' | 'update_blueprint';
+  patch: Record<string, unknown>;
+}
 
 export interface GuardViolation {
   rule: 'style' | 'structure' | 'layout' | 'recipe' | 'density' | 'theme-mode' | 'pattern-exists' | 'accessibility';
   severity: 'error' | 'warning';
   message: string;
   suggestion?: string;
+  layer?: 'dna' | 'blueprint';
+  autoFixable?: boolean;
+  autoFix?: AutoFix;
 }
 
 export interface GuardContext {
@@ -28,8 +36,15 @@ function checkThemeModeCompatibility(
 ): GuardViolation | null {
   if (!context.themeRegistry) return null;
 
-  const themeId = isSimple(essence) ? essence.theme?.style : null;
-  const mode = isSimple(essence) ? essence.theme?.mode : null;
+  let themeId: string | null;
+  let mode: string | null;
+  if (isV3(essence)) {
+    themeId = essence.dna.theme?.style ?? null;
+    mode = essence.dna.theme?.mode ?? null;
+  } else {
+    themeId = isSimple(essence) ? essence.theme?.style : null;
+    mode = isSimple(essence) ? essence.theme?.mode : null;
+  }
 
   if (!themeId || !mode) return null;
 
@@ -50,6 +65,7 @@ function checkThemeModeCompatibility(
       severity: 'error',
       message: `Theme "${themeId}" does not support "${mode}" mode. Supported modes: ${supportedModes}.`,
       suggestion,
+      ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
     };
   }
 
@@ -128,9 +144,10 @@ function checkPatternExistence(
 
       violations.push({
         rule: 'pattern-exists',
-        severity: 'error',
+        severity: isV3(essence) ? 'warning' : 'error',
         message: `Pattern "${patternId}" is referenced but does not exist in the registry.`,
         suggestion,
+        ...(isV3(essence) ? { layer: 'blueprint' as const, autoFixable: false } : {}),
       });
     }
   }
@@ -145,7 +162,7 @@ function checkAccessibility(
   essence: EssenceFile,
   context: GuardContext
 ): GuardViolation | null {
-  const accessibility = 'accessibility' in essence ? essence.accessibility : undefined;
+  const accessibility = isV3(essence) ? essence.dna.accessibility : ('accessibility' in essence ? essence.accessibility : undefined);
 
   if (!accessibility?.wcag_level || accessibility.wcag_level === 'none') {
     return null;
@@ -160,6 +177,7 @@ function checkAccessibility(
       severity: 'error',
       message: `WCAG ${accessibility.wcag_level} compliance required. Issues found: ${issueList}${moreCount}`,
       suggestion: 'Fix accessibility issues before proceeding. Run an accessibility audit for details.',
+      ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
     };
   }
 
@@ -167,7 +185,7 @@ function checkAccessibility(
 }
 
 export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}): GuardViolation[] {
-  const guard = essence.guard;
+  const guard = isV3(essence) ? essence.meta.guard : essence.guard;
 
   if (guard.mode === 'creative') {
     return [];
@@ -178,12 +196,19 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
 
   // Rule 1: Style guard
   if (context.style) {
-    const essenceStyle = isSimple(essence) ? essence.theme.style : null;
-    if (essenceStyle && context.style !== essenceStyle && guard.enforce_style !== false) {
+    let essenceStyle: string | null;
+    if (isV3(essence)) {
+      essenceStyle = essence.dna.theme.style;
+    } else {
+      essenceStyle = isSimple(essence) ? essence.theme.style : null;
+    }
+    const enforceStyle = isV3(essence) ? true : (guard as import('./types.js').Guard).enforce_style !== false;
+    if (essenceStyle && context.style !== essenceStyle && enforceStyle) {
       violations.push({
         rule: 'style',
         severity: 'error',
         message: `Style "${context.style}" does not match essence theme "${essenceStyle}". Change the essence theme first.`,
+        ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
       });
     }
   }
@@ -195,8 +220,13 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
     if (!pageExists) {
       violations.push({
         rule: 'structure',
-        severity: 'error',
+        severity: isV3(essence) ? 'warning' : 'error',
         message: `Page "${context.pageId}" does not exist in essence structure. Add it to the essence first.`,
+        ...(isV3(essence) ? {
+          layer: 'blueprint' as const,
+          autoFixable: true,
+          autoFix: { type: 'add_page' as const, patch: { id: context.pageId } },
+        } : {}),
       });
     }
   }
@@ -215,32 +245,55 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
       if (!matches) {
         violations.push({
           rule: 'layout',
-          severity: 'error',
+          severity: isV3(essence) ? 'warning' : 'error',
           message: `Layout for page "${context.pageId}" deviates from essence. Expected: [${essenceLayout.join(', ')}].`,
+          ...(isV3(essence) ? {
+            layer: 'blueprint' as const,
+            autoFixable: true,
+            autoFix: { type: 'update_layout' as const, patch: { page: context.pageId, layout: context.layout } },
+          } : {}),
         });
       }
     }
   }
 
   // Rule 4: Recipe guard
-  if (context.recipe && guard.enforce_recipe !== false) {
-    const essenceRecipe = isSimple(essence) ? essence.theme.recipe : null;
-    if (essenceRecipe && context.recipe !== essenceRecipe) {
+  if (context.recipe) {
+    let essenceRecipe: string | null;
+    let enforceRecipe: boolean;
+    if (isV3(essence)) {
+      essenceRecipe = essence.dna.theme.recipe;
+      enforceRecipe = true;
+    } else {
+      essenceRecipe = isSimple(essence) ? essence.theme.recipe : null;
+      enforceRecipe = (guard as import('./types.js').Guard).enforce_recipe !== false;
+    }
+    if (essenceRecipe && context.recipe !== essenceRecipe && enforceRecipe) {
       violations.push({
         rule: 'recipe',
         severity: 'error',
         message: `Recipe "${context.recipe}" does not match essence recipe "${essenceRecipe}".`,
+        ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
       });
     }
   }
 
   // Rule 5: Density guard (strict only)
   if (isStrict && context.density_gap) {
-    if (context.density_gap !== essence.density.content_gap) {
+    let expectedGap: string;
+    if (isV3(essence)) {
+      // Check per-page dna_overrides for density if a pageId is provided
+      const overriddenDensity = getPageDensityOverride(essence, context.pageId);
+      expectedGap = overriddenDensity ?? essence.dna.spacing.content_gap;
+    } else {
+      expectedGap = essence.density.content_gap;
+    }
+    if (context.density_gap !== expectedGap) {
       violations.push({
         rule: 'density',
         severity: 'warning',
-        message: `Content gap "${context.density_gap}" does not match essence density "${essence.density.content_gap}".`,
+        message: `Content gap "${context.density_gap}" does not match essence density "${expectedGap}".`,
+        ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
       });
     }
   }
@@ -265,7 +318,30 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
 }
 
 function getAllPages(essence: EssenceFile): StructurePage[] {
+  if (isV3(essence)) {
+    // Map v3 BlueprintPages to StructurePage shape for guard evaluation
+    return essence.blueprint.pages.map(page => ({
+      id: page.id,
+      shell: page.shell_override ?? essence.blueprint.shell,
+      layout: page.layout,
+      ...(page.surface ? { surface: page.surface } : {}),
+    }));
+  }
   if (isSimple(essence)) return essence.structure;
   if (isSectioned(essence)) return essence.sections.flatMap(s => s.structure);
-  return [];
+  throw new Error('Unknown EssenceFile type');
+}
+
+/** Get per-page density override from v3 blueprint, if set. */
+function getPageDensityOverride(essence: EssenceV3, pageId?: string): string | undefined {
+  if (!pageId) return undefined;
+  const page = essence.blueprint.pages.find(p => p.id === pageId);
+  if (!page?.dna_overrides?.density) return undefined;
+  // Map density level to a content_gap value
+  const densityGapMap: Record<DensityLevel, string> = {
+    compact: '2',
+    comfortable: '4',
+    spacious: '6',
+  };
+  return densityGapMap[page.dna_overrides.density] ?? undefined;
 }

@@ -1,0 +1,38 @@
+{
+  "name": "@decantr/vite-plugin",
+  "version": "0.1.0",
+  "description": "Vite plugin for real-time Decantr design drift detection",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/decantr-ai/decantr.git",
+    "directory": "packages/vite-plugin"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@decantr/essence-spec": "workspace:*"
+  },
+  "peerDependencies": {
+    "vite": "^5.0.0 || ^6.0.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
