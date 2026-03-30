@@ -44,5 +44,14 @@
     }
   },
   "modes": ["light", "dark", "system"],
-  "shapes": ["rounded", "sharp", "pill"]
+  "shapes": ["rounded", "sharp", "pill"],
+  "typography_hints": {
+    "scale": "modular",
+    "heading_weight": 600,
+    "body_weight": 400
+  },
+  "motion_hints": {
+    "preference": "subtle",
+    "reduce_motion_default": true
+  }
 }

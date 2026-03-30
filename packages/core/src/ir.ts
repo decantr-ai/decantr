@@ -1,9 +1,10 @@
 import type {
   IRPageNode, IRPatternNode, IRGridNode, IRWiring,
-  IRCardWrapping, IRPatternMeta, IRVisualEffect, IRNode,
+  IRCardWrapping, IRPatternMeta, IRVisualEffect, IRNode, IRLayer,
 } from './types.js';
 import type { StructurePage, LayoutItem, PatternRef, ColumnLayout } from '@decantr/essence-spec';
 import type { Pattern, Recipe, ResolvedPreset } from '@decantr/registry';
+import { resolveVisualEffects } from './resolve.js';
 
 export interface ResolvedPatternEntry {
   pattern: Pattern;
@@ -16,10 +17,6 @@ function isPatternRef(item: LayoutItem): item is PatternRef {
 
 function isColumnLayout(item: LayoutItem): item is ColumnLayout {
   return typeof item === 'object' && 'cols' in item;
-}
-
-function pascalCase(str: string): string {
-  return str.split(/[-_]/).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
 }
 
 function getPatternAlias(item: LayoutItem): string {
@@ -79,6 +76,7 @@ function buildPatternNode(
   wiring: IRWiring | null,
   recipe: Recipe | null,
   density: { gap: string },
+  layer?: IRLayer,
 ): IRPatternNode {
   const pattern = resolved?.pattern;
   const preset = resolved?.preset;
@@ -105,15 +103,21 @@ function buildPatternNode(
 
   const wireProps = wiring?.props[alias] || wiring?.props[patternId] || null;
 
+  // Resolve visual effects from recipe + pattern when available
+  const visualEffects = recipe && pattern
+    ? resolveVisualEffects(recipe, pattern)
+    : null;
+
   return {
     type: 'pattern',
     id: alias,
     children: [],
     pattern: patternMeta,
     card,
-    visualEffects: null,
+    visualEffects,
     wireProps,
     spatial: { gap: density.gap },
+    ...(layer ? { layer } : {}),
   };
 }
 
@@ -124,6 +128,7 @@ export function buildPageIR(
   wiring: IRWiring | null,
   recipe: Recipe | null,
   density: { gap: string },
+  layer?: IRLayer,
 ): IRPageNode {
   const children: IRNode[] = [];
 
@@ -131,12 +136,12 @@ export function buildPageIR(
     if (typeof item === 'string') {
       // Simple string → full-width pattern
       const resolved = resolvedPatterns.get(item);
-      children.push(buildPatternNode(item, item, resolved, wiring, recipe, density));
+      children.push(buildPatternNode(item, item, resolved, wiring, recipe, density, layer));
     } else if (isPatternRef(item)) {
       // PatternRef → pattern with optional preset/alias
       const alias = item.as || item.pattern;
       const resolved = resolvedPatterns.get(alias) || resolvedPatterns.get(item.pattern);
-      children.push(buildPatternNode(item.pattern, alias, resolved, wiring, recipe, density));
+      children.push(buildPatternNode(item.pattern, alias, resolved, wiring, recipe, density, layer));
     } else if (isColumnLayout(item)) {
       // ColumnLayout → grid with pattern children
       const cols = item.cols;
@@ -155,7 +160,7 @@ export function buildPageIR(
       const gridChildren: IRNode[] = [];
       for (const col of cols) {
         const resolved = resolvedPatterns.get(col);
-        gridChildren.push(buildPatternNode(col, col, resolved, wiring, recipe, density));
+        gridChildren.push(buildPatternNode(col, col, resolved, wiring, recipe, density, layer));
       }
 
       const totalCols = normalizedSpans
@@ -176,6 +181,7 @@ export function buildPageIR(
         breakpoints,
         responsive,
         spatial: { gap: density.gap },
+        ...(layer ? { layer } : {}),
       };
       children.push(gridNode);
     }
@@ -190,5 +196,6 @@ export function buildPageIR(
     pageId: page.id,
     surface,
     wiring,
+    ...(layer ? { layer } : {}),
   };
 }

@@ -17,6 +17,13 @@ const TIER_LIMITS: Record<string, number> = {
   enterprise: Infinity,
 };
 
+// LIMITATION: This rate limiter uses an in-memory Map, which means:
+// - Rate limit state is NOT shared across multiple server instances
+// - Each instance maintains its own independent counters
+// - In a multi-instance deployment (e.g., Fly.io with multiple machines),
+//   a user could get N * limit requests through where N = number of instances
+// - State is lost on server restart
+// If multi-instance consistency is needed, replace with a shared store (e.g., Redis).
 const store = new Map<string, RateLimitEntry>();
 
 setInterval(() => {

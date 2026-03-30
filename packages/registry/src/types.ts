@@ -88,12 +88,44 @@ export interface Recipe {
   animation?: { entrance?: string; micro?: string };
 }
 
+// --- Blueprint ---
+export interface Blueprint {
+  id: string;
+  name: string;
+  description?: string;
+  archetype: string;
+  theme: string;
+  personality?: string;
+  pages: Array<{
+    id: string;
+    layout: string[];
+    shell?: string;
+  }>;
+  features?: string[];
+  version?: string;
+}
+
+// --- Shell ---
+export interface Shell {
+  id: string;
+  name: string;
+  description?: string;
+  root?: string;
+  nav?: string;
+  header?: string;
+  nav_style?: string;
+  dimensions?: {
+    navWidth?: string;
+    headerHeight?: string;
+  };
+}
+
 // --- Content Resolution ---
 export type ContentType = 'pattern' | 'archetype' | 'recipe' | 'theme' | 'blueprint';
 
 export interface ResolvedContent<T> {
   item: T;
-  source: 'local' | 'installed' | 'core';
+  source: 'local' | 'core';
   path: string;
 }
 

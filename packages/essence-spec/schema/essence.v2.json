@@ -101,7 +101,9 @@
       "properties": {
         "cols": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
         "at": { "type": "string", "enum": ["sm", "md", "lg", "xl", "2xl"] },
-        "span": { "type": "object", "additionalProperties": { "type": "number", "minimum": 1 } }
+        "span": { "type": "object", "additionalProperties": { "type": "number", "minimum": 1 } },
+        "breakpoints": { "type": "array", "items": { "type": "object", "required": ["at", "cols"], "properties": { "at": { "type": "string" }, "cols": { "type": "number" } } } },
+        "responsive": { "type": "string", "enum": ["viewport", "container"] }
       }
     },
     "Density": {

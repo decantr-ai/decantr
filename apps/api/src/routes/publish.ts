@@ -5,6 +5,7 @@ import type { ContentType } from '../types.js';
 import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
+import { validateEssence } from '@decantr/essence-spec';
 
 export const publishRoutes = new Hono<Env>();
 
@@ -74,6 +75,19 @@ publishRoutes.post('/content', async (c) => {
   }
   if (!body.data || typeof body.data !== 'object') {
     return c.json({ error: 'data is required and must be an object' }, 400);
+  }
+
+  // Validate essence content data if the type is an essence document
+  // (patterns, recipes, themes, etc. have their own data shapes, but
+  // if the data looks like an essence document, validate it)
+  if (body.data.version && (body.data.platform || body.data.dna)) {
+    const validation = validateEssence(body.data);
+    if (!validation.valid) {
+      return c.json({
+        error: 'Content data failed essence validation',
+        validationErrors: validation.errors,
+      }, 400);
+    }
   }
 
   // Determine visibility

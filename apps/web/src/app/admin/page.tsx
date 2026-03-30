@@ -47,7 +47,7 @@ export default async function AdminPage() {
   const totalContent = approvedCount + pendingCount + rejectedCount;
 
   return (
-    <div className="max-w-4xl space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-[var(--fg)]">Admin Overview</h1>
         <p className="text-[var(--fg-muted)] mt-1">Platform moderation and content management</p>

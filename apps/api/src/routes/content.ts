@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { Env } from '../types.js';
 import { PLURAL_TO_SINGULAR, parsePagination } from '../types.js';
 import { createAdminClient } from '../db/client.js';
+import { validateEssence, isV3 } from '@decantr/essence-spec';
 
 export const contentRoutes = new Hono<Env>();
 
@@ -101,20 +102,27 @@ contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}'
   });
 });
 
-// POST /v1/validate - Validate essence file
+// POST /v1/validate - Validate essence file (supports both v2 and v3)
 contentRoutes.post('/validate', async (c) => {
-  let body: Record<string, unknown>;
+  let body: unknown;
   try {
     body = await c.req.json();
   } catch {
     return c.json({ error: 'Invalid JSON body' }, 400);
   }
 
-  const errors: string[] = [];
+  const result = validateEssence(body);
+  const version = typeof body === 'object' && body !== null && 'version' in body
+    ? (body as Record<string, unknown>).version
+    : undefined;
+  const isV3Doc = typeof body === 'object' && body !== null && 'version' in body && 'dna' in body && 'blueprint' in body
+    ? isV3(body as any)
+    : false;
 
-  if (!body.version) errors.push('Missing required field: version');
-  if (!body.platform) errors.push('Missing required field: platform');
-  if (!body.structure && !body.sections) errors.push('Missing required field: structure');
-
-  return c.json({ valid: errors.length === 0, errors });
+  return c.json({
+    valid: result.valid,
+    errors: result.errors,
+    version: version ?? null,
+    schemaVersion: isV3Doc ? 'v3' : 'v2',
+  });
 });

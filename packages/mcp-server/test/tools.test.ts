@@ -4,8 +4,8 @@ import { validateStringArg, fuzzyScore } from '../src/helpers.js';
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
-    it('should define 10 tools', () => {
-      expect(TOOLS).toHaveLength(10);
+    it('should define 12 tools', () => {
+      expect(TOOLS).toHaveLength(12);
     });
 
     it('should have unique tool names', () => {
@@ -13,10 +13,40 @@ describe('MCP tool handlers', () => {
       expect(new Set(names).size).toBe(names.length);
     });
 
-    it('should have read-only annotations on all tools', () => {
-      for (const tool of TOOLS) {
+    it('should have correct annotations on read-only tools', () => {
+      const readOnlyTools = TOOLS.filter(t => !['decantr_accept_drift', 'decantr_update_essence'].includes(t.name));
+      for (const tool of readOnlyTools) {
         expect(tool.annotations.readOnlyHint).toBe(true);
         expect(tool.annotations.destructiveHint).toBe(false);
+      }
+    });
+
+    it('should have write annotations on write tools', () => {
+      const writeTools = TOOLS.filter(t => ['decantr_accept_drift', 'decantr_update_essence'].includes(t.name));
+      for (const tool of writeTools) {
+        expect(tool.annotations.readOnlyHint).toBe(false);
+        expect(tool.annotations.destructiveHint).toBe(false);
+        expect(tool.annotations.idempotentHint).toBe(false);
+      }
+    });
+
+    it('should have openWorldHint: true on network tools', () => {
+      const networkToolNames = [
+        'decantr_search_registry', 'decantr_resolve_pattern', 'decantr_resolve_archetype',
+        'decantr_resolve_recipe', 'decantr_resolve_blueprint', 'decantr_suggest_patterns',
+        'decantr_create_essence',
+      ];
+      for (const name of networkToolNames) {
+        const tool = TOOLS.find(t => t.name === name);
+        expect(tool?.annotations.openWorldHint).toBe(true);
+      }
+    });
+
+    it('should have openWorldHint: false on local-only tools', () => {
+      const localToolNames = ['decantr_read_essence', 'decantr_validate', 'decantr_check_drift'];
+      for (const name of localToolNames) {
+        const tool = TOOLS.find(t => t.name === name);
+        expect(tool?.annotations.openWorldHint).toBe(false);
       }
     });
   });

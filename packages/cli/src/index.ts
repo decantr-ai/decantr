@@ -1,8 +1,8 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateEssence, evaluateGuard } from '@decantr/essence-spec';
-import type { EssenceFile } from '@decantr/essence-spec';
+import { validateEssence, evaluateGuard, isV3 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
 import { RegistryAPIClient } from '@decantr/registry';
 import type { ApiContentType } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
@@ -19,6 +19,8 @@ import {
 import { saveCredentials, clearCredentials, getCredentials } from './auth.js';
 import { cmdPublish } from './commands/publish.js';
 import { cmdCreate } from './commands/create.js';
+import { cmdMigrate } from './commands/migrate.js';
+import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
 
 // ── Helpers ──
 
@@ -216,11 +218,14 @@ async function cmdGet(type: string, id: string) {
     return;
   }
 
-  // Fallback to bundled content
+  // Fallback to bundled content — check multiple resolution paths
   const currentDir = dirname(fileURLToPath(import.meta.url));
-  const bundledFromDist = join(currentDir, '..', 'src', 'bundled', apiType, `${id}.json`);
-  const bundledFromSrc = join(currentDir, 'bundled', apiType, `${id}.json`);
-  const bundledPath = existsSync(bundledFromDist) ? bundledFromDist : existsSync(bundledFromSrc) ? bundledFromSrc : null;
+  const bundledCandidates = [
+    join(currentDir, 'bundled', apiType, `${id}.json`),         // Running from src/
+    join(currentDir, '..', 'src', 'bundled', apiType, `${id}.json`), // Running from dist/
+    join(currentDir, '..', 'bundled', apiType, `${id}.json`),   // Alternative dist layout
+  ];
+  const bundledPath = bundledCandidates.find(p => existsSync(p)) || null;
   if (bundledPath) {
     const data = JSON.parse(readFileSync(bundledPath, 'utf-8'));
     console.log(JSON.stringify(data, null, 2));
@@ -233,7 +238,6 @@ async function cmdGet(type: string, id: string) {
 }
 
 function buildRegistryContext(): { themeRegistry: Map<string, { modes: string[] }>; patternRegistry: Map<string, unknown> } {
-  const { readdirSync } = require('node:fs');
   const themeRegistry = new Map<string, { modes: string[] }>();
   const patternRegistry = new Map<string, unknown>();
   const projectRoot = process.cwd();
@@ -304,16 +308,25 @@ async function cmdValidate(path?: string) {
     return;
   }
 
+  // Detect and report version
+  const detectedVersion = isV3(essence) ? 'v3' : 'v2';
+  console.log(`${DIM}Detected essence version: ${detectedVersion}${RESET}`);
+
   const result = validateEssence(essence);
 
   if (result.valid) {
-    console.log(success('Essence is valid.'));
+    console.log(success(`Essence is valid (${detectedVersion}).`));
   } else {
     console.error(error('Validation failed:'));
     for (const err of result.errors) {
       console.error(`  ${RED}${err}${RESET}`);
     }
     process.exitCode = 1;
+  }
+
+  // For v2 essences, suggest migration
+  if (detectedVersion === 'v2' && result.valid) {
+    console.log(`${YELLOW}Tip: Run \`decantr migrate\` to upgrade to v3 format.${RESET}`);
   }
 
   try {
@@ -377,7 +390,7 @@ async function cmdList(type: string) {
       console.log(dim('  Run "decantr theme create <name>" to create a custom theme.'));
     }
   } else {
-    console.log(heading(`${items.length} ${type}`));
+    console.log(heading(`${items.length} ${type} found`));
     for (const item of items) {
       console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
     }
@@ -621,7 +634,8 @@ async function cmdInit(args: InitArgs) {
   console.log(`    ${cyan('decantr get')}        Fetch content details`);
   console.log(`    ${cyan('decantr validate')}   Check essence file`);
   console.log(`    ${cyan('decantr upgrade')}    Update to latest patterns`);
-  console.log(`    ${cyan('decantr heal')}       Fix drift issues`);
+  console.log(`    ${cyan('decantr check')}      Detect drift issues`);
+  console.log(`    ${cyan('decantr migrate')}    Migrate v2 essence to v3`);
 
   // Validate
   const essenceContent = readFileSync(result.essencePath, 'utf-8');
@@ -674,19 +688,49 @@ async function cmdStatus() {
 
   // Validate essence
   try {
-    const essence = JSON.parse(readFileSync(essencePath, 'utf-8'));
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
     const validation = validateEssence(essence);
 
+    const essenceVersion = isV3(essence) ? 'v3' : 'v2';
     console.log(`${BOLD}Essence:${RESET}`);
     if (validation.valid) {
-      console.log(`  ${GREEN}Valid${RESET}`);
+      console.log(`  ${GREEN}Valid${RESET} (${essenceVersion})`);
     } else {
       console.log(`  ${RED}Invalid: ${validation.errors.join(', ')}${RESET}`);
     }
 
-    console.log(`  Theme: ${essence.theme?.style || 'unknown'} (${essence.theme?.mode || 'unknown'})`);
-    console.log(`  Guard: ${essence.guard?.mode || 'unknown'}`);
-    console.log(`  Pages: ${(essence.structure || []).length}`);
+    if (isV3(essence)) {
+      const v3 = essence as EssenceV3;
+      // DNA axioms
+      console.log(`  ${BOLD}DNA:${RESET}`);
+      console.log(`    Theme: ${v3.dna.theme.style} (${v3.dna.theme.mode})`);
+      console.log(`    Spacing: ${v3.dna.spacing.density} density, ${v3.dna.spacing.content_gap} gap`);
+      console.log(`    Typography: ${v3.dna.typography.scale} scale`);
+      console.log(`    Radius: ${v3.dna.radius.philosophy} (base ${v3.dna.radius.base}px)`);
+      console.log(`    Motion: ${v3.dna.motion.preference} (reduce: ${v3.dna.motion.reduce_motion})`);
+      console.log(`    Accessibility: WCAG ${v3.dna.accessibility.wcag_level}`);
+      console.log(`    Personality: ${v3.dna.personality.join(', ')}`);
+      // Blueprint
+      console.log(`  ${BOLD}Blueprint:${RESET}`);
+      console.log(`    Shell: ${v3.blueprint.shell}`);
+      console.log(`    Pages: ${v3.blueprint.pages.length}`);
+      console.log(`    Features: ${v3.blueprint.features.length > 0 ? v3.blueprint.features.join(', ') : 'none'}`);
+      // Meta
+      console.log(`  ${BOLD}Meta:${RESET}`);
+      console.log(`    Archetype: ${v3.meta.archetype}`);
+      console.log(`    Target: ${v3.meta.target}`);
+      console.log(`    Guard: ${v3.meta.guard.mode} (DNA: ${v3.meta.guard.dna_enforcement}, Blueprint: ${v3.meta.guard.blueprint_enforcement})`);
+    } else {
+      // v2 display
+      const e = essence as Record<string, unknown>;
+      const theme = e.theme as Record<string, string> | undefined;
+      const guard = e.guard as Record<string, string> | undefined;
+      const structure = e.structure as unknown[] | undefined;
+      console.log(`  Theme: ${theme?.style || 'unknown'} (${theme?.mode || 'unknown'})`);
+      console.log(`  Guard: ${guard?.mode || 'unknown'}`);
+      console.log(`  Pages: ${(structure || []).length}`);
+      console.log(`  ${YELLOW}Tip: Run \`decantr migrate\` to upgrade to v3.${RESET}`);
+    }
   } catch (e) {
     console.log(`  ${RED}Error reading essence: ${(e as Error).message}${RESET}`);
   }
@@ -950,6 +994,9 @@ ${BOLD}Usage:${RESET}
   decantr status
   decantr sync
   decantr audit
+  decantr migrate
+  decantr check
+  decantr sync-drift
   decantr search <query> [--type <type>]
   decantr suggest <query> [--type <type>]
   decantr get <type> <id>
@@ -977,34 +1024,36 @@ ${BOLD}Init Options:${RESET}
   --registry         Custom registry URL
 
 ${BOLD}Commands:${RESET}
-  ${cyan('init')}      Initialize a new Decantr project with full scaffolding
-  ${cyan('status')}    Show project status and sync state
-  ${cyan('sync')}      Sync registry content from API
-  ${cyan('audit')}     Validate essence and check for drift
-  ${cyan('search')}    Search the registry
-  ${cyan('suggest')}   Suggest patterns or alternatives for a query
-  ${cyan('get')}       Get full details of a registry item
-  ${cyan('list')}      List items by type
-  ${cyan('validate')}  Validate essence file
-  ${cyan('theme')}     Manage custom themes (create, list, validate, delete, import)
-  ${cyan('create')}    Create a custom content item (pattern, recipe, theme, etc.)
-  ${cyan('publish')}   Publish a custom content item to the community registry
-  ${cyan('login')}     Authenticate with the Decantr registry
-  ${cyan('logout')}    Remove stored credentials
-  ${cyan('help')}      Show this help
+  ${cyan('init')}        Initialize a new Decantr project (v3 essence by default)
+  ${cyan('status')}      Show project status, DNA axioms, and blueprint info
+  ${cyan('sync')}        Sync registry content from API
+  ${cyan('audit')}       Validate essence and check for drift
+  ${cyan('migrate')}     Migrate v2 essence to v3 format (with .v2.backup.json backup)
+  ${cyan('check')}       Detect drift issues (validate + guard rules)
+  ${cyan('sync-drift')}  Review and resolve drift log entries
+  ${cyan('search')}      Search the registry
+  ${cyan('suggest')}     Suggest patterns or alternatives for a query
+  ${cyan('get')}         Get full details of a registry item
+  ${cyan('list')}        List items by type
+  ${cyan('validate')}    Validate essence file (v2 and v3)
+  ${cyan('theme')}       Manage custom themes (create, list, validate, delete, import)
+  ${cyan('create')}      Create a custom content item (pattern, recipe, theme, etc.)
+  ${cyan('publish')}     Publish a custom content item to the community registry
+  ${cyan('login')}       Authenticate with the Decantr registry
+  ${cyan('logout')}      Remove stored credentials
+  ${cyan('help')}        Show this help
 
 ${BOLD}Examples:${RESET}
   decantr init
   decantr init --blueprint=saas-dashboard --theme=luminarum --yes
   decantr status
-  decantr sync
-  decantr audit
+  decantr migrate
+  decantr check
+  decantr sync-drift
   decantr search dashboard
   decantr suggest leaderboard
-  decantr suggest ranking --type pattern
   decantr list patterns
   decantr create pattern my-card
-  decantr publish pattern my-card
 `);
 }
 
@@ -1064,9 +1113,44 @@ async function main() {
       break;
     }
 
+    case 'check':
     case 'heal': {
+      // `heal` is deprecated, aliased to `check`
+      if (command === 'heal') {
+        console.log(`${YELLOW}Note: \`decantr heal\` is deprecated. Use \`decantr check\` instead.${RESET}`);
+      }
       const { cmdHeal } = await import('./commands/heal.js');
       await cmdHeal(process.cwd());
+      break;
+    }
+
+    case 'migrate': {
+      await cmdMigrate(process.cwd());
+      break;
+    }
+
+    case 'sync-drift': {
+      // Handle flags
+      const resolveAllFlag = args.includes('--resolve-all');
+      const clearFlag = args.includes('--clear');
+      const resolveIdx = args.indexOf('--resolve');
+      const resolveNum = resolveIdx !== -1 ? parseInt(args[resolveIdx + 1], 10) : undefined;
+
+      if (resolveAllFlag || clearFlag || resolveNum !== undefined) {
+        const result = resolveDriftEntries(process.cwd(), {
+          resolveAll: resolveAllFlag,
+          clear: clearFlag,
+          resolveIndex: resolveNum,
+        });
+        if (result.success) {
+          console.log(success(clearFlag ? 'Drift log cleared.' : 'Entries resolved.'));
+        } else {
+          console.error(error(result.error || 'Failed'));
+          process.exitCode = 1;
+        }
+      } else {
+        await cmdSyncDrift(process.cwd());
+      }
       break;
     }
 

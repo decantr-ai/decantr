@@ -1,0 +1,27 @@
+{
+  "name": "@decantr/ui-chart",
+  "version": "0.1.0",
+  "description": "Decantr Chart Library - SVG, Canvas, and WebGPU chart renderers",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./types/*": "./src/types/*.js",
+    "./renderers/*": "./src/renderers/*.js",
+    "./layouts/*": "./src/layouts/*.js"
+  },
+  "files": ["src/", "README.md"],
+  "keywords": ["charts", "visualization", "svg", "canvas", "webgpu", "decantr"],
+  "author": "David Aimi",
+  "license": "MIT",
+  "peerDependencies": {
+    "@decantr/ui": "workspace:*",
+    "@decantr/css": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

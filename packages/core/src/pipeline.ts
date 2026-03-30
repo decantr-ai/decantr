@@ -1,12 +1,16 @@
-import type { IRAppNode, IRShellNode, IRStoreNode, IRPageNode } from './types.js';
+import type { IRAppNode, IRShellNode, IRStoreNode, IRPageNode, IRLayer } from './types.js';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { validateEssence } from '@decantr/essence-spec';
+import { validateEssence, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import { createResolver } from '@decantr/registry';
 import { resolveEssence } from './resolve.js';
 import { buildPageIR } from './ir.js';
+import { pascalCase } from './utils.js';
 
-function pascalCase(str: string): string {
-  return str.split(/[-_]/).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+function extractRouting(essence: EssenceFile): 'hash' | 'history' {
+  if (isV3(essence)) {
+    return essence.meta.platform.routing || 'hash';
+  }
+  return (essence as { platform?: { routing?: string } }).platform?.routing as 'hash' | 'history' || 'hash';
 }
 
 export interface PipelineOptions {
@@ -42,15 +46,19 @@ export async function runPipeline(
     throw new Error(`Invalid essence: ${validation.errors.join(', ')}`);
   }
 
-  // 2. Create resolver and resolve
+  // 2. Auto-migrate v2 → v3 before processing
+  const effectiveEssence = isV3(essence) ? essence : migrateV2ToV3(essence);
+
+  // 3. Create resolver and resolve
   const resolver = createResolver({
     contentRoot: options.contentRoot,
     overridePaths: options.overridePaths,
   });
 
-  const resolved = await resolveEssence(essence, resolver);
+  const resolved = await resolveEssence(effectiveEssence, resolver);
 
-  // 3. Build IR pages
+  // 4. Build IR pages (v3 sources get layer metadata)
+  const layer: IRLayer | undefined = resolved.isV3Source ? 'blueprint' : undefined;
   const pageNodes: IRPageNode[] = [];
   for (const rp of resolved.pages) {
     const pageIR = buildPageIR(
@@ -59,6 +67,7 @@ export async function runPipeline(
       rp.wiring,
       resolved.recipe,
       { gap: resolved.density.gap },
+      layer,
     );
     pageNodes.push(pageIR);
   }
@@ -95,7 +104,7 @@ export async function runPipeline(
     children: filteredPages,
     theme: resolved.theme,
     routes: resolved.routes,
-    routing: (resolved.essence as { platform?: { routing?: string } }).platform?.routing as 'hash' | 'history' || 'hash',
+    routing: extractRouting(resolved.essence),
     shell: shellNode,
     store: storeNode,
     features: resolved.features,

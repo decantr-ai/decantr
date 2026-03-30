@@ -77,16 +77,18 @@ The seven stages of the Design Pipeline:
 
 ## Guard Rules
 
-The guard system (`packages/essence-spec/src/guard.ts`) enforces six rules:
+The guard system (`packages/essence-spec/src/guard.ts`) enforces eight rules:
 
 1. **Style guard** -- Code must use the theme specified in the Essence. Changing themes without updating the Essence is a violation (error severity).
 2. **Structure guard** -- Pages referenced in code must exist in the Essence structure. Generating code for an undefined page is a violation (error severity). Enforced in both `guided` and `strict` modes.
 3. **Layout guard** -- Pattern order in a page must match the Essence layout spec. Strict mode only (error severity).
 4. **Recipe guard** -- Visual recipe used in code must match the Essence recipe. Switching recipes without updating the Essence is a violation (error severity).
-5. **Density guard** -- Content gap values must match the Essence density setting. Strict mode only (warning severity).
-6. **Accessibility guard** -- Code must meet the WCAG level specified in the Essence. Enforced in both `guided` and `strict` modes (error severity).
+5. **Density guard** -- Content gap values must match the Essence density setting. Strict mode only (warning severity). In v3 essences, per-page `dna_overrides.density` is respected.
+6. **Theme-mode compatibility** -- The theme/mode combination must be compatible (e.g., a dark-only theme rejects `mode: "light"`). Checked when `themeRegistry` is provided. Always enforced in `guided` and `strict` modes (error severity).
+7. **Pattern existence** -- All patterns referenced in layouts must exist in the registry. Checked when `patternRegistry` is provided. Includes fuzzy "did you mean?" suggestions. Always enforced in `guided` and `strict` modes (error severity).
+8. **Accessibility guard** -- Code must meet the WCAG level specified in the Essence. Enforced in both `guided` and `strict` modes (error severity).
 
-Guard modes: `creative` (no enforcement), `guided` (rules 1, 2, 4, 6), `strict` (all rules).
+Guard modes: `creative` (no enforcement), `guided` (rules 1, 2, 4, 6, 7, 8), `strict` (all rules).
 
 ## Build and Test
 

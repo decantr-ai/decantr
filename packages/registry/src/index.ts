@@ -8,6 +8,8 @@ export type {
   RecipeVisualEffects,
   RecipeShell,
   Recipe,
+  Blueprint,
+  Shell,
   ContentType,
   ResolvedContent,
   ApiContentType,
@@ -26,11 +28,8 @@ export type { ResolverOptions, ContentResolver } from './resolver.js';
 export { resolvePatternPreset } from './pattern.js';
 export type { ResolvedPreset } from './pattern.js';
 
-export { detectWirings, WIRING_RULES } from './wiring.js';
-export type { HookType, WiringSignal, WiringRule, WiringResult } from './wiring.js';
+export { detectWirings, deriveIOWirings, buildIOMap, WIRING_RULES } from './wiring.js';
+export type { HookType, WiringSignal, WiringRule, WiringResult, PatternIOEntry, IOWiringEdge } from './wiring.js';
 
-export { createRegistryClient } from './client.js';
-export type { RegistryClientOptions, SearchResult, RegistryClient } from './client.js';
-
-export { RegistryAPIClient } from './api-client.js';
-export type { RegistryAPIClientOptions } from './api-client.js';
+export { RegistryAPIClient, createRegistryClient } from './api-client.js';
+export type { RegistryAPIClientOptions, RegistryClientOptions, SearchResult, RegistryClient } from './api-client.js';

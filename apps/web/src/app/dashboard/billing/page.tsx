@@ -66,7 +66,7 @@ export default function BillingPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <h1 className="text-2xl font-bold">Billing</h1>
         <Card><p className="text-[var(--fg-muted)]">Loading...</p></Card>
       </div>
@@ -74,7 +74,7 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Billing</h1>
 
       {error && (

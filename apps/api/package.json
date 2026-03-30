@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@decantr/essence-spec": "workspace:*",
     "@hono/node-server": "^1.13.0",
     "@supabase/supabase-js": "^2.100.1",
     "hono": "^4.6.0",

@@ -6,7 +6,6 @@ export type IRNodeType =
   | 'page'      // A route page
   | 'pattern'   // A resolved pattern instance
   | 'grid'      // Grid layout wrapper (equal or weighted columns)
-  | 'slot'      // Named content slot within a pattern
   | 'nav'       // Navigation item list
   | 'store';    // Global state signals
 
@@ -103,12 +102,17 @@ export interface IRRoute {
 
 // ─── IR Nodes ────────────────────────────────────────────────
 
+/** Which v3 essence layer sourced this node */
+export type IRLayer = 'dna' | 'blueprint' | 'meta';
+
 export interface IRNode {
   type: IRNodeType;
   id: string;
   children: IRNode[];
   spatial?: IRSpatial;
   meta?: Record<string, unknown>;
+  /** When built from a v3 essence, indicates the originating layer */
+  layer?: IRLayer;
 }
 
 export interface IRAppNode extends IRNode {
@@ -156,11 +160,6 @@ export interface IRGridNode extends IRNode {
   breakpoints?: IRBreakpointEntry[] | null;
   // AUTO: "container" enables container query atoms instead of viewport breakpoints
   responsive?: 'viewport' | 'container' | null;
-}
-
-export interface IRNavNode extends IRNode {
-  type: 'nav';
-  items: IRNavItem[];
 }
 
 export interface IRStoreNode extends IRNode {
