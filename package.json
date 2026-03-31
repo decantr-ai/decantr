@@ -8,7 +8,10 @@
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
     "clean": "pnpm -r exec rm -rf dist",
-    "mcp": "node packages/mcp-server/dist/index.js"
+    "mcp": "node packages/mcp-server/dist/index.js",
+    "showcase:build": "pnpm --filter './apps/showcase/*' build",
+    "showcase:copy": "node scripts/copy-showcase-dist.js",
+    "showcase": "pnpm run showcase:build && pnpm run showcase:copy"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
