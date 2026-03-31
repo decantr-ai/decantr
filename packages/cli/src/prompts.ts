@@ -203,7 +203,7 @@ export async function runInteractivePrompts(
       { value: 'rounded', label: 'rounded', description: 'Moderately rounded' },
       { value: 'sharp', label: 'sharp', description: 'No border radius' },
     ],
-    0,
+    1,
     true
   );
 

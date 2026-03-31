@@ -521,7 +521,7 @@ async function cmdInit(args: InitArgs) {
   // Fetch blueprint/archetype data
   let archetypeData: {
     id: string;
-    pages?: Array<{ id: string; shell: string; default_layout: LayoutItem[] }>;
+    pages?: Array<{ id: string; shell: string; default_layout: LayoutItem[]; patterns?: Array<{ pattern: string; preset?: string; as?: string }> }>;
     features?: string[];
   } | undefined;
 
@@ -563,14 +563,20 @@ async function cmdInit(args: InitArgs) {
           archetypeData = archetypeResult.data as typeof archetypeData;
           // Override archetype in options with the resolved one
           options.archetype = primaryArchetype;
+        } else {
+          console.log(`${YELLOW}  Warning: Could not fetch archetype "${primaryArchetype}". Using defaults.${RESET}`);
         }
       }
+    } else {
+      console.log(`${YELLOW}  Warning: Could not fetch blueprint "${options.blueprint}". Using defaults.${RESET}`);
     }
   } else if (options.archetype) {
     // Direct archetype selection
     const archetypeResult = await registryClient.fetchArchetype(options.archetype);
     if (archetypeResult) {
       archetypeData = archetypeResult.data as typeof archetypeData;
+    } else {
+      console.log(`${YELLOW}  Warning: Could not fetch archetype "${options.archetype}". Using defaults.${RESET}`);
     }
   }
 
@@ -583,7 +589,7 @@ async function cmdInit(args: InitArgs) {
     if (themeResult) {
       const theme = themeResult.data as {
         seed?: Record<string, string>;
-        palette?: Record<string, string>;
+        palette?: Record<string, Record<string, string>>;
         tokens?: { base?: Record<string, string> };
         decorators?: Record<string, string>;
       };
@@ -596,6 +602,8 @@ async function cmdInit(args: InitArgs) {
       if (theme.decorators) {
         recipeData = { decorators: theme.decorators };
       }
+    } else {
+      console.log(`${YELLOW}  Warning: Could not fetch theme "${options.theme}". Using defaults.${RESET}`);
     }
   }
 
@@ -649,13 +657,24 @@ async function cmdInit(args: InitArgs) {
   console.log('');
 
   // Generate curated prompt
+  let promptPages: PromptContext['pages'];
+  if (isV3(essence)) {
+    promptPages = essence.blueprint.pages.map((p: { id: string; shell_override?: string | null; layout: unknown[] }) => ({
+      id: p.id,
+      shell: p.shell_override ?? essence.blueprint.shell,
+      layout: p.layout.map((item: unknown) => typeof item === 'string' ? item : extractPatternName(item)),
+    }));
+  } else {
+    promptPages = essence.structure || [{ id: 'home', shell: options.shell, layout: ['hero'] }];
+  }
+
   const promptCtx: PromptContext = {
     archetype: options.archetype || 'custom',
     blueprint: options.blueprint,
     theme: options.theme,
     mode: options.mode,
     target: options.target,
-    pages: essence.structure || [{ id: 'home', shell: options.shell, layout: ['hero'] }],
+    pages: promptPages,
     personality: options.personality,
     features: options.features,
     guard: options.guard,

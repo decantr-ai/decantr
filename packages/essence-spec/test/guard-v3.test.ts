@@ -152,6 +152,37 @@ describe('evaluateGuard - v3 dna_overrides', () => {
   });
 });
 
+describe('evaluateGuard - v3 enforcement levels', () => {
+  it('dna_enforcement off removes all DNA violations', () => {
+    const v3 = makeV3({
+      meta: { ...VALID_V3.meta, guard: { mode: 'strict', dna_enforcement: 'off', blueprint_enforcement: 'warn' } },
+    });
+    // style and recipe are DNA-layer violations
+    const violations = evaluateGuard(v3, { style: 'wrong', recipe: 'wrong', density_gap: '99' });
+    const dnaViolations = violations.filter(v => v.layer === 'dna');
+    expect(dnaViolations).toHaveLength(0);
+  });
+
+  it('blueprint_enforcement off removes all blueprint violations', () => {
+    const v3 = makeV3({
+      meta: { ...VALID_V3.meta, guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'off' } },
+    });
+    const violations = evaluateGuard(v3, { pageId: 'nonexistent', layout: ['wrong'] });
+    const blueprintViolations = violations.filter(v => v.layer === 'blueprint');
+    expect(blueprintViolations).toHaveLength(0);
+  });
+
+  it('dna_enforcement warn downgrades DNA violation severity', () => {
+    const v3 = makeV3({
+      meta: { ...VALID_V3.meta, guard: { mode: 'strict', dna_enforcement: 'warn', blueprint_enforcement: 'warn' } },
+    });
+    const violations = evaluateGuard(v3, { style: 'wrong', recipe: 'wrong' });
+    const dnaViolations = violations.filter(v => v.layer === 'dna');
+    expect(dnaViolations.length).toBeGreaterThan(0);
+    expect(dnaViolations.every(v => v.severity === 'warning')).toBe(true);
+  });
+});
+
 describe('evaluateGuard - v2 backward compatibility', () => {
   it('v2 violations do not have layer metadata', () => {
     const v2 = {

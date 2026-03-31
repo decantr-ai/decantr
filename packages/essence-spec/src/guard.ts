@@ -1,4 +1,4 @@
-import type { EssenceFile, EssenceV3, StructurePage, LayoutItem, DensityLevel } from './types.js';
+import type { EssenceFile, EssenceV3, EssenceV3Guard, StructurePage, LayoutItem, DensityLevel } from './types.js';
 import { isSimple, isSectioned, isV3 } from './types.js';
 
 export interface AutoFix {
@@ -312,6 +312,31 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
   const accessibilityViolation = checkAccessibility(essence, context);
   if (accessibilityViolation) {
     violations.push(accessibilityViolation);
+  }
+
+  // Apply v3 enforcement level filtering
+  if (isV3(essence)) {
+    const v3Guard = guard as EssenceV3Guard;
+
+    // DNA enforcement
+    if (v3Guard.dna_enforcement === 'off') {
+      // Remove all DNA-layer violations
+      return violations.filter(v => v.layer !== 'dna');
+    }
+    if (v3Guard.dna_enforcement === 'warn') {
+      // Downgrade DNA-layer violations to warning severity
+      for (const v of violations) {
+        if (v.layer === 'dna') {
+          v.severity = 'warning';
+        }
+      }
+    }
+
+    // Blueprint enforcement
+    if (v3Guard.blueprint_enforcement === 'off') {
+      // Remove all blueprint-layer violations
+      return violations.filter(v => v.layer !== 'blueprint');
+    }
   }
 
   return violations;
