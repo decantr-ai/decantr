@@ -89,12 +89,15 @@ export interface Recipe {
 }
 
 // --- Blueprint ---
+export type ComposeEntry = string | { archetype: string; prefix: string };
+
 export interface Blueprint {
   id: string;
   name: string;
   description?: string;
   archetype: string;
-  theme: string;
+  compose?: ComposeEntry[];
+  theme: { style: string; recipe?: string; mode?: string; shape?: string };
   personality?: string;
   pages: Array<{
     id: string;

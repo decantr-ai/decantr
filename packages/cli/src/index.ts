@@ -4,10 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { validateEssence, evaluateGuard, isV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
 import { RegistryAPIClient } from '@decantr/registry';
-import type { ApiContentType } from '@decantr/registry';
+import type { ApiContentType, ComposeEntry } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
-import { scaffoldProject, scaffoldMinimal, type ThemeData, type RecipeData, type LayoutItem } from './scaffold.js';
+import { scaffoldProject, scaffoldMinimal, composeArchetypes, type ThemeData, type RecipeData, type LayoutItem } from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
   createTheme,
@@ -534,7 +534,7 @@ async function cmdInit(args: InitArgs) {
     if (blueprintResult) {
       const blueprint = blueprintResult.data as {
         id: string;
-        compose?: string[];
+        compose?: ComposeEntry[];
         features?: string[];
         theme?: {
           style?: string;
@@ -560,18 +560,30 @@ async function cmdInit(args: InitArgs) {
       // Remember the blueprint recipe name for recipe fetch
       blueprintRecipeName = blueprint.theme?.recipe;
 
-      // Get the primary archetype from compose array
-      const primaryArchetype = blueprint.compose?.[0];
-      if (primaryArchetype) {
-        // Fetch the archetype to get its pages
-        const archetypeResult = await registryClient.fetchArchetype(primaryArchetype);
-        if (archetypeResult) {
-          archetypeData = archetypeResult.data as typeof archetypeData;
-          // Override archetype in options with the resolved one
-          options.archetype = primaryArchetype;
-        } else {
-          console.log(`${YELLOW}  Warning: Could not fetch archetype "${primaryArchetype}". Using defaults.${RESET}`);
-        }
+      if (blueprint.compose && blueprint.compose.length > 0) {
+        // Fetch all archetypes in parallel
+        const entries = blueprint.compose;
+        const fetchPromises = entries.map(entry => {
+          const id = typeof entry === 'string' ? entry : entry.archetype;
+          return registryClient.fetchArchetype(id).then(r => [id, r?.data] as const);
+        });
+        const results = await Promise.all(fetchPromises);
+        const archetypeMap = new Map(results.map(([id, data]) => [id, (data || null) as any]));
+
+        // Compose pages from all archetypes
+        const composed = composeArchetypes(entries, archetypeMap);
+        const primaryId = typeof entries[0] === 'string' ? entries[0] : entries[0].archetype;
+        archetypeData = {
+          id: primaryId,
+          pages: composed.pages.map(p => ({
+            id: p.id,
+            shell: p.shell_override || composed.defaultShell,
+            default_layout: p.layout,
+          })),
+          features: composed.features,
+        };
+        options.archetype = primaryId;
+        options.shell = composed.defaultShell;
       }
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch blueprint "${options.blueprint}". Using defaults.${RESET}`);

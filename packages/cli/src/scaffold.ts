@@ -2,7 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } fr
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3 } from '@decantr/essence-spec';
-import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta } from '@decantr/essence-spec';
+import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage } from '@decantr/essence-spec';
+import type { ComposeEntry } from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 
@@ -74,6 +75,79 @@ export interface ArchetypeData {
   seo_hints?: {
     schema_org?: string[];
     meta_priorities?: string[];
+  };
+}
+
+/**
+ * Compose pages and features from multiple archetypes.
+ *
+ * compose[0] is the primary archetype -- its pages get NO prefix, and its
+ * first page's shell becomes the defaultShell.
+ *
+ * compose[1+] are secondary archetypes -- their pages get prefixed:
+ *   - plain string entry: prefix = archetype ID
+ *   - object entry: prefix = entry.prefix
+ *
+ * Features from all archetypes are merged and deduplicated.
+ */
+export function composeArchetypes(
+  composeEntries: ComposeEntry[],
+  archetypeResults: Map<string, ArchetypeData | null>,
+): { pages: BlueprintPage[]; features: string[]; defaultShell: string } {
+  if (composeEntries.length === 0) {
+    return {
+      pages: [{ id: 'home', layout: ['hero'] }],
+      features: [],
+      defaultShell: 'sidebar-main',
+    };
+  }
+
+  const allPages: BlueprintPage[] = [];
+  const allFeatures: string[] = [];
+  let defaultShell = 'sidebar-main';
+
+  for (let i = 0; i < composeEntries.length; i++) {
+    const entry = composeEntries[i];
+    const archetypeId = typeof entry === 'string' ? entry : entry.archetype;
+    const data = archetypeResults.get(archetypeId);
+    if (!data?.pages) continue;
+
+    const isPrimary = i === 0;
+
+    if (isPrimary) {
+      defaultShell = data.pages[0]?.shell || defaultShell;
+      for (const page of data.pages) {
+        allPages.push({
+          id: page.id,
+          layout: (page.default_layout?.length ? page.default_layout : ['hero']) as LayoutItem[],
+          ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
+        });
+      }
+    } else {
+      const prefix = typeof entry === 'string' ? entry : entry.prefix;
+      for (const page of data.pages) {
+        allPages.push({
+          id: `${prefix}-${page.id}`,
+          layout: (page.default_layout?.length ? page.default_layout : ['hero']) as LayoutItem[],
+          ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
+        });
+      }
+    }
+
+    if (data.features) {
+      allFeatures.push(...data.features);
+    }
+  }
+
+  // If no pages were added (all archetypes missing), fall back to default
+  if (allPages.length === 0) {
+    allPages.push({ id: 'home', layout: ['hero'] });
+  }
+
+  return {
+    pages: allPages,
+    features: [...new Set(allFeatures)],
+    defaultShell,
   };
 }
 
