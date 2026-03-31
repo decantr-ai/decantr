@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { NamespaceBadge } from '@/components/registry/namespace-badge';
 import { JsonViewer } from '@/components/registry/json-viewer';
 import { CopyButton } from '@/components/registry/copy-button';
+import { hasShowcase, getShowcaseUrl } from '@/lib/showcase';
 
 interface ContentDetailParams {
   params: Promise<{ type: string; namespace: string; slug: string }>;
@@ -82,6 +83,23 @@ export default async function ContentDetailPage({ params }: ContentDetailParams)
             label="Copy JSON"
           />
         </div>
+        {content.type === 'blueprint' && hasShowcase(content.slug) && (
+          <div className="mt-4">
+            <a
+              href={getShowcaseUrl(content.slug)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--fg)] transition-colors hover:opacity-90"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              View Demo
+            </a>
+          </div>
+        )}
       </div>
 
       {/* Components list (if present) */}
