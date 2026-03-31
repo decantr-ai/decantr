@@ -1,0 +1,249 @@
+{
+  "version": "3.0.0",
+  "dna": {
+    "theme": {
+      "style": "carbon",
+      "mode": "dark",
+      "recipe": "carbon",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "professional"
+    ]
+  },
+  "blueprint": {
+    "shell": "chat-portal",
+    "pages": [
+      {
+        "id": "chat",
+        "layout": [
+          "header",
+          "messages",
+          "input"
+        ]
+      },
+      {
+        "id": "new",
+        "layout": [
+          "empty-thread",
+          "input"
+        ]
+      },
+      {
+        "id": "auth-full-login",
+        "shell_override": "centered",
+        "layout": [
+          "form"
+        ]
+      },
+      {
+        "id": "auth-full-register",
+        "shell_override": "centered",
+        "layout": [
+          "form"
+        ]
+      },
+      {
+        "id": "auth-full-forgot-password",
+        "shell_override": "centered",
+        "layout": [
+          "form"
+        ]
+      },
+      {
+        "id": "auth-full-reset-password",
+        "shell_override": "centered",
+        "layout": [
+          "form"
+        ]
+      },
+      {
+        "id": "auth-full-verify-email",
+        "shell_override": "centered",
+        "layout": [
+          "form"
+        ]
+      },
+      {
+        "id": "auth-full-mfa-setup",
+        "shell_override": "centered",
+        "layout": [
+          "form"
+        ]
+      },
+      {
+        "id": "auth-full-mfa-verify",
+        "shell_override": "centered",
+        "layout": [
+          "form"
+        ]
+      },
+      {
+        "id": "auth-full-phone-verify",
+        "shell_override": "centered",
+        "layout": [
+          "form"
+        ]
+      },
+      {
+        "id": "settings-full-profile",
+        "shell_override": "inherit",
+        "layout": [
+          "settings"
+        ]
+      },
+      {
+        "id": "settings-full-security",
+        "shell_override": "inherit",
+        "layout": [
+          "security-settings",
+          "sessions"
+        ]
+      },
+      {
+        "id": "settings-full-preferences",
+        "shell_override": "inherit",
+        "layout": [
+          "settings"
+        ]
+      },
+      {
+        "id": "settings-full-danger",
+        "shell_override": "inherit",
+        "layout": [
+          "settings"
+        ]
+      },
+      {
+        "id": "marketing-saas-home",
+        "shell_override": "top-nav-footer",
+        "layout": [
+          "hero",
+          "features",
+          "how-it-works",
+          "pricing",
+          "testimonials",
+          "cta"
+        ]
+      },
+      {
+        "id": "about-hybrid-about",
+        "shell_override": "top-nav-footer",
+        "layout": [
+          "hero",
+          "story",
+          "team",
+          "values",
+          "cta"
+        ]
+      },
+      {
+        "id": "contact-contact",
+        "shell_override": "top-nav-footer",
+        "layout": [
+          "hero",
+          "form"
+        ]
+      },
+      {
+        "id": "legal-privacy",
+        "shell_override": "top-nav-footer",
+        "layout": [
+          "content"
+        ]
+      },
+      {
+        "id": "legal-terms",
+        "shell_override": "top-nav-footer",
+        "layout": [
+          "content"
+        ]
+      },
+      {
+        "id": "legal-cookies",
+        "shell_override": "top-nav-footer",
+        "layout": [
+          "content"
+        ]
+      }
+    ],
+    "features": [
+      "chat",
+      "markdown",
+      "code-highlight",
+      "file-upload",
+      "mentions",
+      "reactions",
+      "export",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "pricing-toggle",
+      "testimonials",
+      "feature-grid",
+      "team-grid",
+      "values-display",
+      "form-validation",
+      "spam-protection",
+      "file-attachment",
+      "toc-navigation",
+      "print-friendly",
+      "smooth-scroll"
+    ]
+  },
+  "meta": {
+    "archetype": "ai-chatbot",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    }
+  }
+}
