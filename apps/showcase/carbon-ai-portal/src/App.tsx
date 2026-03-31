@@ -1,33 +1,54 @@
 import { Routes, Route } from 'react-router-dom';
 import { ShowcaseChrome } from './showcase-chrome';
-
-function Placeholder({ name }: { name: string }) {
-  return (
-    <div style={{ padding: '48px', textAlign: 'center', color: 'var(--d-text-muted, #999)' }}>
-      <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>{name}</h2>
-      <p>Page coming soon</p>
-    </div>
-  );
-}
+import { LandingPage } from './pages/landing';
+import { ChatPage } from './pages/chat';
+import { NewChatPage } from './pages/new-chat';
+import { DashboardPage } from './pages/dashboard';
+import { SettingsPage } from './pages/settings';
+import { LoginPage } from './pages/login';
+import { RegisterPage } from './pages/register';
+import {
+  AboutPage,
+  ContactPage,
+  PrivacyPage,
+  TermsPage,
+  CookiesPage,
+} from './pages/stubs';
 
 export function App() {
   return (
     <ShowcaseChrome>
       <Routes>
-        <Route path="/" element={<Placeholder name="Landing" />} />
-        <Route path="/chat" element={<Placeholder name="Chat" />} />
-        <Route path="/chat/new" element={<Placeholder name="New Chat" />} />
-        <Route path="/dashboard" element={<Placeholder name="Dashboard" />} />
-        <Route path="/settings" element={<Placeholder name="Settings" />} />
-        <Route path="/settings/:section" element={<Placeholder name="Settings" />} />
-        <Route path="/login" element={<Placeholder name="Login" />} />
-        <Route path="/register" element={<Placeholder name="Register" />} />
-        <Route path="/about" element={<Placeholder name="About" />} />
-        <Route path="/contact" element={<Placeholder name="Contact" />} />
-        <Route path="/privacy" element={<Placeholder name="Privacy" />} />
-        <Route path="/terms" element={<Placeholder name="Terms" />} />
-        <Route path="/cookies" element={<Placeholder name="Cookies" />} />
-        <Route path="*" element={<Placeholder name="Not Found" />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/chat/new" element={<NewChatPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings/:section" element={<SettingsPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/cookies" element={<CookiesPage />} />
+        <Route
+          path="*"
+          element={
+            <div
+              style={{
+                padding: '48px',
+                textAlign: 'center',
+                color: 'var(--d-text-muted)',
+              }}
+            >
+              <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>
+                Not Found
+              </h2>
+              <p>The page you are looking for does not exist.</p>
+            </div>
+          }
+        />
       </Routes>
     </ShowcaseChrome>
   );
