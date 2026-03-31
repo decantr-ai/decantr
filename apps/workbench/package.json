@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "description": "Decantr Workbench - component development, design system explorer, interactive playground",
+  "type": "module",
   "scripts": {
-    "dev": "echo 'Workbench not yet implemented'",
-    "build": "echo 'Workbench not yet implemented'"
+    "dev": "node dev-server.js",
+    "build": "echo 'Workbench is local-only, no build needed'"
   },
   "dependencies": {
     "@decantr/ui": "workspace:*",
     "@decantr/ui-chart": "workspace:*",
+    "@decantr/ui-catalog": "workspace:*",
     "@decantr/css": "workspace:*"
   }
 }

@@ -146,6 +146,9 @@ importers:
       '@decantr/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@decantr/ui-catalog':
+        specifier: workspace:*
+        version: link:../../packages/ui-catalog
       '@decantr/ui-chart':
         specifier: workspace:*
         version: link:../../packages/ui-chart
