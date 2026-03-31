@@ -22,4 +22,6 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - run: pnpm run showcase:build
+      - run: pnpm run showcase:copy
       - run: pnpm test
