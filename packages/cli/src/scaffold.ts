@@ -99,6 +99,8 @@ export interface ThemeData {
     base?: Record<string, string>;
     cvd?: Record<string, Record<string, string>>;
   };
+  typography_hints?: { scale?: string; heading_weight?: number; body_weight?: number };
+  motion_hints?: { preference?: string; reduce_motion_default?: boolean };
 }
 
 /**
@@ -106,6 +108,8 @@ export interface ThemeData {
  */
 export interface RecipeData {
   decorators?: Record<string, string>;
+  spatial_hints?: { density_bias?: string; content_gap_shift?: number; section_padding?: string | null; card_wrapping?: string; surface_override?: string };
+  radius_hints?: { philosophy: string; base: number };
 }
 
 /**
@@ -520,7 +524,12 @@ export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData
 /**
  * Build a v3 essence from options, producing DNA/Blueprint/Meta structure.
  */
-export function buildEssenceV3(options: InitOptions, archetypeData?: ArchetypeData): EssenceV3 {
+export function buildEssenceV3(
+  options: InitOptions,
+  archetypeData?: ArchetypeData,
+  themeHints?: ThemeData,
+  recipeHints?: RecipeData & { animation?: { preference?: string } }
+): EssenceV3 {
   // Resolve structure from archetype or defaults
   let pages: EssenceBlueprint['pages'] = [
     { id: 'home', layout: ['hero'] }
@@ -577,9 +586,9 @@ export function buildEssenceV3(options: InitOptions, archetypeData?: ArchetypeDa
       content_gap: densityLevelMap[options.density] || '_gap4',
     },
     typography: {
-      scale: 'modular',
-      heading_weight: 600,
-      body_weight: 400,
+      scale: themeHints?.typography_hints?.scale || 'modular',
+      heading_weight: themeHints?.typography_hints?.heading_weight || 600,
+      body_weight: themeHints?.typography_hints?.body_weight || 400,
     },
     color: {
       palette: 'semantic',
@@ -587,17 +596,17 @@ export function buildEssenceV3(options: InitOptions, archetypeData?: ArchetypeDa
       cvd_preference: options.accessibility?.cvd_preference || 'auto',
     },
     radius: {
-      philosophy: options.shape as 'sharp' | 'rounded' | 'pill',
-      base: shapeRadiusMap[options.shape] || 8,
+      philosophy: (recipeHints?.radius_hints?.philosophy || options.shape) as 'sharp' | 'rounded' | 'pill',
+      base: recipeHints?.radius_hints?.base || shapeRadiusMap[options.shape] || 8,
     },
     elevation: {
       system: 'layered',
       max_levels: 3,
     },
     motion: {
-      preference: 'subtle',
+      preference: (recipeHints?.animation?.preference || themeHints?.motion_hints?.preference || 'subtle') as 'none' | 'subtle' | 'expressive',
       duration_scale: 1.0,
-      reduce_motion: true,
+      reduce_motion: themeHints?.motion_hints?.reduce_motion_default ?? true,
     },
     accessibility: {
       wcag_level: (options.accessibility?.wcag_level as 'none' | 'A' | 'AA' | 'AAA') || 'AA',
@@ -1008,7 +1017,7 @@ export function scaffoldProject(
   recipeData?: RecipeData
 ): ScaffoldResult {
   // Build v3 essence by default, but keep a v2-compatible view for template rendering
-  const essenceV3 = buildEssenceV3(options, archetypeData);
+  const essenceV3 = buildEssenceV3(options, archetypeData, themeData, recipeData);
   // Build the v2 shape for backward-compatible template rendering
   const essence = buildEssence(options, archetypeData);
 

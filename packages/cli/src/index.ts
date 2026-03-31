@@ -518,6 +518,9 @@ async function cmdInit(args: InitArgs) {
     options = await runInteractivePrompts(detected, archetypes, blueprints, themes);
   }
 
+  // Track blueprint recipe name if specified
+  let blueprintRecipeName: string | undefined;
+
   // Fetch blueprint/archetype data
   let archetypeData: {
     id: string;
@@ -553,6 +556,9 @@ async function cmdInit(args: InitArgs) {
           options.shape = blueprint.theme.shape as 'rounded' | 'sharp' | 'pill';
         }
       }
+
+      // Remember the blueprint recipe name for recipe fetch
+      blueprintRecipeName = blueprint.theme?.recipe;
 
       // Get the primary archetype from compose array
       const primaryArchetype = blueprint.compose?.[0];
@@ -592,11 +598,17 @@ async function cmdInit(args: InitArgs) {
         palette?: Record<string, Record<string, string>>;
         tokens?: { base?: Record<string, string> };
         decorators?: Record<string, string>;
+        cvd_support?: string[];
+        typography_hints?: { scale?: string; heading_weight?: number; body_weight?: number };
+        motion_hints?: { preference?: string; reduce_motion_default?: boolean };
       };
       themeData = {
         seed: theme.seed,
         palette: theme.palette,
         tokens: theme.tokens,
+        cvd_support: theme.cvd_support,
+        typography_hints: theme.typography_hints,
+        motion_hints: theme.motion_hints,
       };
       // Some themes include decorators (recipe data)
       if (theme.decorators) {
@@ -604,6 +616,22 @@ async function cmdInit(args: InitArgs) {
       }
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch theme "${options.theme}". Using defaults.${RESET}`);
+    }
+
+    // Fetch recipe data (recipe is authoritative for decorators, spatial_hints, radius_hints)
+    const recipeName = blueprintRecipeName || options.theme;
+    const recipeResult = await registryClient.fetchRecipe(recipeName);
+    if (recipeResult) {
+      const recipe = recipeResult.data as {
+        decorators?: Record<string, string>;
+        spatial_hints?: { density_bias?: string; content_gap_shift?: number; section_padding?: string | null; card_wrapping?: string; surface_override?: string };
+        radius_hints?: { philosophy: string; base: number };
+      };
+      recipeData = {
+        decorators: recipe.decorators || recipeData?.decorators,
+        spatial_hints: recipe.spatial_hints,
+        radius_hints: recipe.radius_hints,
+      };
     }
   }
 

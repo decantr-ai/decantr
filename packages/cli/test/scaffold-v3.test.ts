@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { scaffoldProject, scaffoldMinimal, buildEssenceV3 } from '../src/scaffold.js';
+import type { ThemeData, RecipeData } from '../src/scaffold.js';
 import type { InitOptions } from '../src/prompts.js';
 import type { DetectedProject } from '../src/detect.js';
 
@@ -138,5 +139,59 @@ describe('v3 scaffold', () => {
     const creative = buildEssenceV3({ ...defaultOptions, guard: 'creative' });
     expect(creative.meta.guard.dna_enforcement).toBe('off');
     expect(creative.meta.guard.blueprint_enforcement).toBe('off');
+  });
+
+  it('buildEssenceV3 with theme hints produces matching dna.typography values', () => {
+    const themeHints: ThemeData = {
+      typography_hints: { scale: 'linear', heading_weight: 700, body_weight: 350 },
+    };
+    const v3 = buildEssenceV3(defaultOptions, undefined, themeHints);
+
+    expect(v3.dna.typography.scale).toBe('linear');
+    expect(v3.dna.typography.heading_weight).toBe(700);
+    expect(v3.dna.typography.body_weight).toBe(350);
+  });
+
+  it('buildEssenceV3 with recipe radius_hints overrides shape-based defaults', () => {
+    const recipeHints: RecipeData = {
+      radius_hints: { philosophy: 'pill', base: 16 },
+    };
+    // Options say 'rounded' (base 8), but recipe overrides to pill/16
+    const v3 = buildEssenceV3(defaultOptions, undefined, undefined, recipeHints);
+
+    expect(v3.dna.radius.philosophy).toBe('pill');
+    expect(v3.dna.radius.base).toBe(16);
+  });
+
+  it('buildEssenceV3 with recipe animation overrides theme motion hints', () => {
+    const themeHints: ThemeData = {
+      motion_hints: { preference: 'expressive', reduce_motion_default: false },
+    };
+    const recipeHints: RecipeData & { animation?: { preference?: string } } = {
+      animation: { preference: 'none' },
+    };
+    // Recipe animation.preference > theme motion_hints.preference
+    const v3 = buildEssenceV3(defaultOptions, undefined, themeHints, recipeHints);
+
+    expect(v3.dna.motion.preference).toBe('none');
+    // reduce_motion comes from theme hints
+    expect(v3.dna.motion.reduce_motion).toBe(false);
+  });
+
+  it('buildEssenceV3 with NO hints falls back to hardcoded defaults', () => {
+    const v3 = buildEssenceV3(defaultOptions);
+
+    // Typography defaults
+    expect(v3.dna.typography.scale).toBe('modular');
+    expect(v3.dna.typography.heading_weight).toBe(600);
+    expect(v3.dna.typography.body_weight).toBe(400);
+
+    // Motion defaults
+    expect(v3.dna.motion.preference).toBe('subtle');
+    expect(v3.dna.motion.reduce_motion).toBe(true);
+
+    // Radius defaults from shape ('rounded')
+    expect(v3.dna.radius.philosophy).toBe('rounded');
+    expect(v3.dna.radius.base).toBe(8);
   });
 });
