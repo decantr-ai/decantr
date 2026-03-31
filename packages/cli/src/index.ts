@@ -532,7 +532,10 @@ async function cmdInit(args: InitArgs) {
     // Fetch the blueprint to get its primary archetype and theme
     const blueprintResult = await registryClient.fetchBlueprint(options.blueprint);
     if (blueprintResult) {
-      const blueprint = blueprintResult.data as {
+      // API/cache returns wrapper {id, type, slug, data: {...actual content...}}
+      // Unwrap: use inner .data if present, otherwise treat as direct content
+      const rawBlueprint = blueprintResult.data as Record<string, unknown>;
+      const blueprint = (rawBlueprint.data ?? rawBlueprint) as {
         id: string;
         compose?: ComposeEntry[];
         features?: string[];
@@ -565,7 +568,12 @@ async function cmdInit(args: InitArgs) {
         const entries = blueprint.compose;
         const fetchPromises = entries.map(entry => {
           const id = typeof entry === 'string' ? entry : entry.archetype;
-          return registryClient.fetchArchetype(id).then(r => [id, r?.data] as const);
+          return registryClient.fetchArchetype(id).then(r => {
+            // Unwrap API wrapper: actual archetype content is in .data
+            const raw = r?.data as Record<string, unknown> | undefined;
+            const inner = raw?.data ?? raw;
+            return [id, inner] as const;
+          });
         });
         const results = await Promise.all(fetchPromises);
         const archetypeMap = new Map(results.map(([id, data]) => [id, (data || null) as any]));
@@ -592,7 +600,8 @@ async function cmdInit(args: InitArgs) {
     // Direct archetype selection
     const archetypeResult = await registryClient.fetchArchetype(options.archetype);
     if (archetypeResult) {
-      archetypeData = archetypeResult.data as typeof archetypeData;
+      const rawArch = archetypeResult.data as Record<string, unknown>;
+      archetypeData = (rawArch.data ?? rawArch) as typeof archetypeData;
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch archetype "${options.archetype}". Using defaults.${RESET}`);
     }
@@ -605,7 +614,8 @@ async function cmdInit(args: InitArgs) {
   if (options.theme) {
     const themeResult = await registryClient.fetchTheme(options.theme);
     if (themeResult) {
-      const theme = themeResult.data as {
+      const rawTheme = themeResult.data as Record<string, unknown>;
+      const theme = (rawTheme.data ?? rawTheme) as {
         seed?: Record<string, string>;
         palette?: Record<string, Record<string, string>>;
         tokens?: { base?: Record<string, string> };
@@ -634,7 +644,8 @@ async function cmdInit(args: InitArgs) {
     const recipeName = blueprintRecipeName || options.theme;
     const recipeResult = await registryClient.fetchRecipe(recipeName);
     if (recipeResult) {
-      const recipe = recipeResult.data as {
+      const rawRecipe = recipeResult.data as Record<string, unknown>;
+      const recipe = (rawRecipe.data ?? rawRecipe) as {
         decorators?: Record<string, string>;
         spatial_hints?: { density_bias?: string; content_gap_shift?: number; section_padding?: string | null; card_wrapping?: string; surface_override?: string };
         radius_hints?: { philosophy: string; base: number };
