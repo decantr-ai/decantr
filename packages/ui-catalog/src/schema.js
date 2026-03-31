@@ -21,6 +21,10 @@ export const CONTROL_TYPES = ['select', 'boolean', 'text', 'number', 'color'];
  * @returns {{ valid: boolean, errors: string[] }}
  */
 export function validateStory(story) {
+  if (!story || typeof story !== 'object') {
+    return { valid: false, errors: ['story must be an object'] };
+  }
+
   const errors = [];
 
   if (typeof story.component !== 'function') {

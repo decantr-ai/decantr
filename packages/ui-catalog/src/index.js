@@ -77,7 +77,7 @@ export function searchStories(query) {
  * "Button.story.js" → "button"
  * "DatePicker.story.js" → "date-picker"
  */
-function filenameToSlug(filename) {
+export function filenameToSlug(filename) {
   const base = filename.replace(/\.story\.js$/, '');
   return base
     .replace(/([a-z])([A-Z])/g, '$1-$2')
@@ -87,9 +87,13 @@ function filenameToSlug(filename) {
 // Auto-register all story files found via import.meta.glob
 const storyModules = import.meta.glob('./stories/**/*.story.js', { eager: true });
 for (const [path, mod] of Object.entries(storyModules)) {
-  const filename = path.split('/').pop();
-  const slug = filenameToSlug(filename);
-  if (mod.default) {
-    _register(slug, mod.default);
+  try {
+    const filename = path.split('/').pop();
+    const slug = filenameToSlug(filename);
+    if (mod.default) {
+      _register(slug, mod.default);
+    }
+  } catch (e) {
+    console.warn(`[ui-catalog] Failed to register story from ${path}:`, e.message);
   }
 }

@@ -13,6 +13,24 @@ function makeValidStory(overrides = {}) {
 }
 
 describe('validateStory', () => {
+  it('rejects null', () => {
+    const result = validateStory(null);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toEqual(['story must be an object']);
+  });
+
+  it('rejects undefined', () => {
+    const result = validateStory(undefined);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toEqual(['story must be an object']);
+  });
+
+  it('rejects a primitive', () => {
+    const result = validateStory('not an object');
+    expect(result.valid).toBe(false);
+    expect(result.errors).toEqual(['story must be an object']);
+  });
+
   it('accepts a valid story', () => {
     const result = validateStory(makeValidStory());
     expect(result.valid).toBe(true);

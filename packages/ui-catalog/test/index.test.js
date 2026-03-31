@@ -6,6 +6,7 @@ import {
   getStory,
   getCategories,
   searchStories,
+  filenameToSlug,
 } from '../src/index.js';
 
 function makeStory(overrides = {}) {
@@ -82,5 +83,23 @@ describe('Query API', () => {
     _register('button', makeStory({ title: 'Button', description: 'Click me' }));
     const results = searchStories('zzzzz');
     expect(results).toHaveLength(0);
+  });
+});
+
+describe('filenameToSlug', () => {
+  it('converts simple PascalCase to lowercase', () => {
+    expect(filenameToSlug('Button.story.js')).toBe('button');
+  });
+
+  it('converts multi-word PascalCase to kebab-case', () => {
+    expect(filenameToSlug('DatePicker.story.js')).toBe('date-picker');
+  });
+
+  it('handles single-word with no camelCase boundary', () => {
+    expect(filenameToSlug('Checkbox.story.js')).toBe('checkbox');
+  });
+
+  it('converts DataTable to data-table', () => {
+    expect(filenameToSlug('DataTable.story.js')).toBe('data-table');
   });
 });
