@@ -18,6 +18,7 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 | `@decantr/ui` | `packages/ui/` | UI framework — signal-based reactivity, atomic CSS, components |
 | `@decantr/ui-chart` | `packages/ui-chart/` | Charting library — SVG, Canvas, WebGPU renderers |
 | `@decantr/vite-plugin` | `packages/vite-plugin/` | Vite plugin for real-time design drift detection |
+| `@decantr/ui-catalog` | `packages/ui-catalog/` | Component stories, demo definitions, and metadata |
 | `decantr` | `packages/cli/` | CLI for project initialization, registry queries, validation |
 
 ## Apps
@@ -26,6 +27,7 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 |-----|------|-------------|
 | `decantr-api` | `apps/api/` | Registry API (Hono + Supabase + Stripe) |
 | `decantr-web` | `apps/web/` | Registry web app (Next.js + Supabase) |
+| `decantr-workbench` | `apps/workbench/` | Component dev workbench (Decantr-native SPA) |
 
 ## Terminology
 
