@@ -27,7 +27,7 @@ export function App() {
   return h('div', { style: 'display: flex; flex-direction: column; height: 100%' },
     Toolbar({ searchQuery, setSearchQuery }),
     h('div', { style: 'display: flex; flex: 1; overflow: hidden' },
-      Sidebar({ selectedSlug, setSelectedSlug, searchQuery }),
+      Sidebar({ onSelect: setSelectedSlug, selectedSlug, searchQuery, onSearch: setSearchQuery }),
       mainPanel
     )
   );
