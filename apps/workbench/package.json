@@ -5,8 +5,11 @@
   "description": "Decantr Workbench - component development, design system explorer, interactive playground",
   "type": "module",
   "scripts": {
-    "dev": "node dev-server.js",
+    "dev": "vite",
     "build": "echo 'Workbench is local-only, no build needed'"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
   },
   "dependencies": {
     "@decantr/ui": "workspace:*",
