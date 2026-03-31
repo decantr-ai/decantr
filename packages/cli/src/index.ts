@@ -1100,6 +1100,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('publish')}     Publish a custom content item to the community registry
   ${cyan('login')}       Authenticate with the Decantr registry
   ${cyan('logout')}      Remove stored credentials
+  ${cyan('upgrade')}     Check for content updates from registry
   ${cyan('help')}        Show this help
 
 ${BOLD}Examples:${RESET}

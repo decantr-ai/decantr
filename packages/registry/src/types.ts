@@ -28,7 +28,7 @@ export interface Pattern {
 // --- Archetype ---
 export interface ArchetypePage {
   id: string;
-  default_layout: string[];
+  default_layout: (string | { pattern: string; preset?: string; as?: string })[];
   shell: string;
 }
 

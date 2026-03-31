@@ -6,7 +6,7 @@
   "name": "Decantr Default",
   "description": "Minimal starter blueprint for offline scaffolding. Visit decantr.ai/registry for more options.",
   "tags": ["starter", "minimal", "offline"],
-  "compose": ["starter"],
+  "compose": [],
   "theme": {
     "style": "default",
     "mode": "system",

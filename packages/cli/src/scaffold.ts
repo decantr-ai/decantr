@@ -1327,13 +1327,24 @@ When available, use these tools:
 
 ## Commands
 
+- \`decantr init\` — Initialize a new Decantr project
 - \`decantr status\` — Project health and DNA/Blueprint overview
-- \`decantr validate\` — Validate essence file
-- \`decantr check\` — Detect drift issues
-- \`decantr migrate\` — Migrate v2 essence to v3
-- \`decantr sync-drift\` — Review and resolve drift entries
-- \`decantr search\` — Search the registry
 - \`decantr sync\` — Sync registry content
+- \`decantr audit\` — Audit project for issues
+- \`decantr migrate\` — Migrate v2 essence to v3
+- \`decantr check\` — Detect drift issues
+- \`decantr sync-drift\` — Review and resolve drift entries
+- \`decantr validate\` — Validate essence file
+- \`decantr search\` — Search the registry
+- \`decantr suggest\` — Suggest patterns or alternatives
+- \`decantr get\` — Get full details of a registry item
+- \`decantr list\` — List items by type
+- \`decantr theme\` — Manage custom themes
+- \`decantr create\` — Create custom content items
+- \`decantr publish\` — Publish custom content to registry
+- \`decantr login\` — Authenticate with registry
+- \`decantr logout\` — Remove stored credentials
+- \`decantr upgrade\` — Check for content updates
 
 ---
 

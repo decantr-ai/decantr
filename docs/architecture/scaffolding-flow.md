@@ -17,28 +17,37 @@
 │  • TypeScript presence                                              │
 │  • Tailwind presence                                                │
 │  • Existing decantr.essence.json                                    │
+│  • Existing AI rule files (CLAUDE.md, .cursorrules, AGENTS.md, etc.)│
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                   BLUEPRINT SELECTION                               │
 │                                                                     │
-│  Online + Interactive:                                              │
+│  Two-phase interactive flow:                                        │
+│                                                                     │
+│  Phase A: runSimplifiedInit()                                       │
 │  ┌────────────────────────────┐                                     │
 │  │  "What blueprint?"         │                                     │
-│  │  1. Default (recommended)  │──→ Full interactive prompts         │
-│  │  2. Search registry...     │──→ Select from results              │
+│  │  1. Default (recommended)  │──→ Phase B: runInteractivePrompts() │
+│  │  2. Search registry...     │──→ Select from results, use defaults│
 │  └────────────────────────────┘                                     │
 │                                                                     │
+│  Phase B (only if "Default" selected):                              │
+│    Theme, mode, shape, target, guard, density, shell prompts        │
+│                                                                     │
 │  --yes / --blueprint <id>:  Skip prompts, use defaults/flags        │
-│  --offline:                 scaffoldMinimal() → exit early           │
+│  --offline (no --blueprint): scaffoldMinimal() → exit early          │
+│  --offline + --blueprint:    Normal flow using cache                 │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                  CONTENT RESOLUTION                                 │
 │                                                                     │
-│  Resolution chain per item: Custom → API → Cache                    │
+│  Single items: Custom → API → Cache                                 │
+│  Lists:        API → Cache → merge Custom on top                    │
+│  cmdGet:       API → Cache → Bundled (packages/cli/src/bundled/)    │
 │                                                                     │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐          │
 │  │  1. BLUEPRINT │    │  2. THEMES   │    │  3. RECIPE   │          │
@@ -77,7 +86,7 @@
           │                   │                   │
           ▼                   ▼                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│              composeArchetypes() + buildEssenceV3()                 │
+│     composeArchetypes() + resolvePatternAlias() + buildEssenceV3()  │
 │                                                                     │
 │  INPUTS:                                                            │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                │
@@ -157,14 +166,15 @@
 │                                                                     │
 │  src/styles/tokens.css ◄── Theme seed + palette → CSS variables     │
 │    :root        { --d-primary, --d-bg, --d-text, ... }              │
-│    @media light { --d-bg: light, --d-text: dark, ... }  (if auto)   │
+│    @media (prefers-color-scheme: light) { ... }          (if auto)   │
 │                                                                     │
 │  src/styles/decorators.css ◄── Recipe decorators → CSS rules        │
 │    .d-glass  { backdrop-filter: blur(8px); ... }                    │
 │    .d-card   { border: 1px solid var(--d-border); ... }             │
 │                                                                     │
 │  .decantr/project.json ◄── Detection results + init metadata        │
-│  .decantr/context/*.md ◄── 4 task context files for AI assistants   │
+│  .decantr/context/*.md ◄── 3 task files + 1 essence summary         │
+│  .gitignore            ◄── Adds .decantr/cache/ if not present      │
 │                                                                     │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
@@ -193,10 +203,10 @@
 │  │  DNA Rules (enforce design axioms)                          │    │
 │  │                                                             │    │
 │  │  Rule 1: Style    — code theme matches dna.theme.style      │    │
-│  │  Rule 4: Recipe   — decorations match dna.theme.recipe      │    │
-│  │  Rule 5: Density  — spacing matches dna.spacing.content_gap │    │
-│  │  Rule 6: Mode     — theme/mode combo is compatible          │    │
-│  │  Rule 8: A11y     — meets dna.accessibility.wcag_level      │    │
+│  │  Rule 2: Recipe   — decorations match dna.theme.recipe      │    │
+│  │  Rule 3: Density  — spacing matches dna.spacing.content_gap │    │
+│  │  Rule 4: A11y     — meets dna.accessibility.wcag_level      │    │
+│  │  Rule 5: Mode     — theme/mode combo is compatible          │    │
 │  │                                                             │    │
 │  │  Severity: controlled by meta.guard.dna_enforcement         │    │
 │  │    'error' → violations are errors                          │    │
@@ -207,9 +217,9 @@
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │  Blueprint Rules (track structural evolution)               │    │
 │  │                                                             │    │
-│  │  Rule 2: Page exists — code pages in blueprint.pages        │    │
-│  │  Rule 3: Layout      — pattern order matches (strict only)  │    │
-│  │  Rule 7: Patterns    — referenced patterns exist in registry│    │
+│  │  Rule 6: Page exists — code pages in blueprint.pages        │    │
+│  │  Rule 7: Layout      — pattern order matches (strict only)  │    │
+│  │  Rule 8: Patterns    — referenced patterns exist in registry│    │
 │  │                                                             │    │
 │  │  Severity: controlled by meta.guard.blueprint_enforcement   │    │
 │  │    'warn'  → violations are warnings (default)              │    │
@@ -218,8 +228,8 @@
 │  │  autoFixable: true (can be resolved via decantr_accept_drift)│   │
 │  └─────────────────────────────────────────────────────────────┘    │
 │                                                                     │
-│  Guard Modes: creative (skip all) | guided (1,2,4,6,7,8) |         │
-│               strict (all rules)                                    │
+│  Guard Modes: creative (skip all) | guided (1,2,4,5,6,8) |         │
+│               strict (all rules including 3 + 7)                   │
 └─────────────────────────────────────────────────────────────────────┘
 
 

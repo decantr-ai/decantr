@@ -14,13 +14,16 @@ Generate the initial project structure based on the essence specification.
 
 During scaffolding, the following rules are recommendations, not requirements:
 
-| Rule | Status | Guidance |
-|------|--------|----------|
-| Style | Advisory | Use the theme from essence, but creative variations are acceptable |
-| Structure | Advisory | Follow the page structure, add placeholder content |
-| Layout | Advisory | Use suggested patterns, order can be adjusted |
-| Recipe | Advisory | Apply recipe styles where possible |
-| Density | Advisory | Follow spacing guidelines loosely |
+| # | Layer | Rule | Status | Guidance |
+|---|-------|------|--------|----------|
+| 1 | DNA | Style | Advisory | Use the theme from essence, but creative variations are acceptable |
+| 2 | DNA | Recipe | Advisory | Apply recipe styles where possible |
+| 3 | DNA | Density | Advisory | Follow spacing guidelines loosely |
+| 4 | DNA | Accessibility | Advisory | Meet WCAG level from essence where possible |
+| 5 | DNA | Theme-mode | Advisory | Use the specified theme/mode combination |
+| 6 | Blueprint | Structure | Advisory | Follow the page structure, add placeholder content |
+| 7 | Blueprint | Layout | Advisory | Use suggested patterns, order can be adjusted |
+| 8 | Blueprint | Pattern-exists | Advisory | Use patterns that exist in the registry |
 
 ## Checklist
 
@@ -34,7 +37,7 @@ Before scaffolding:
 During scaffolding:
 
 - [ ] Create the shell layout ({{DEFAULT_SHELL}})
-- [ ] Generate pages from `structure[]`
+- [ ] Generate pages from `blueprint.pages[]`
 - [ ] Add pattern placeholders for each page's `layout[]`
 - [ ] Apply theme colors and typography
 - [ ] Set up routing based on page IDs

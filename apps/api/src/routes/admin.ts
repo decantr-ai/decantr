@@ -7,8 +7,7 @@ import { createAdminClient } from '../db/client.js';
 
 export const adminRoutes = new Hono<Env>();
 
-// Admin check middleware - for now uses a simple env var check
-// In production, add an is_admin column to users table
+// Admin check middleware — requires both user auth AND admin key
 function requireAdmin() {
   return async (c: any, next: any) => {
     const auth = c.get('auth') as AuthContext;
@@ -25,8 +24,24 @@ function requireAdmin() {
   };
 }
 
-adminRoutes.use('/admin/*', requireAuth());
-adminRoutes.use('/admin/*', requireAdmin());
+// Admin key-only middleware — for CI/CD sync (no user auth required)
+function requireAdminKeyOnly() {
+  return async (c: any, next: any) => {
+    const adminKey = c.req.header('X-Admin-Key');
+    if (!adminKey || adminKey !== process.env.DECANTR_ADMIN_KEY) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    await next();
+  };
+}
+
+// Admin sync endpoint uses admin-key-only auth (no user required, for CI/CD)
+adminRoutes.use('/admin/sync', requireAdminKeyOnly());
+
+// All other admin endpoints require both user auth + admin key
+adminRoutes.use('/admin/moderation/*', requireAuth());
+adminRoutes.use('/admin/moderation/*', requireAdmin());
 
 // GET /v1/admin/moderation/queue
 adminRoutes.get('/admin/moderation/queue', async (c) => {
@@ -247,7 +262,7 @@ adminRoutes.post('/admin/sync', async (c) => {
         type: body.type,
         slug,
         namespace: '@official',
-        owner_id: '00000000-0000-0000-0000-000000000000', // System user
+        owner_id: 'dd68f50d-fda3-4223-b250-43f2a0d29210', // system@decantr.ai
         visibility: 'public',
         status: 'published',
         version: item.version || '1.0.0',

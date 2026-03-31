@@ -2,19 +2,22 @@
 
 **Enforcement Tier: Strict**
 
-You are modifying existing code in a Decantr project. ALL 5 guard rules are enforced exactly.
+You are modifying existing code in a Decantr project. ALL 8 guard rules are enforced exactly.
 
 ---
 
 ## Enforced Rules
 
-| # | Rule | Enforcement | Consequence of Violation |
-|---|------|-------------|--------------------------|
-| 1 | **Style** | STRICT | ERROR — Code rejected |
-| 2 | **Structure** | STRICT | ERROR — Code rejected |
-| 3 | **Layout** | STRICT | ERROR — Pattern order must match exactly |
-| 4 | **Recipe** | STRICT | ERROR — Code rejected |
-| 5 | **Density** | STRICT | WARNING — Flagged for review |
+| # | Layer | Rule | Enforcement | Consequence of Violation |
+|---|-------|------|-------------|--------------------------|
+| 1 | DNA | **Style** | STRICT | ERROR — Code rejected |
+| 2 | DNA | **Recipe** | STRICT | ERROR — Code rejected |
+| 3 | DNA | **Density** | STRICT | WARNING — Flagged for review |
+| 4 | DNA | **Accessibility** | STRICT | ERROR — Code rejected |
+| 5 | DNA | **Theme-mode** | STRICT | ERROR — Code rejected |
+| 6 | Blueprint | **Structure** | STRICT | ERROR — Code rejected |
+| 7 | Blueprint | **Layout** | STRICT | ERROR — Pattern order must match exactly |
+| 8 | Blueprint | **Pattern-exists** | STRICT | ERROR — Code rejected |
 
 ## Violation Response Protocol
 
@@ -68,7 +71,7 @@ decantr_read_essence()
 
 For the page you're modifying, verify:
 
-- Page ID exists in `structure[]`
+- Page ID exists in `blueprint.pages[]`
 - Shell matches the page's `shell` property
 - Patterns match the page's `layout[]` in order
 - Theme matches `theme.style`

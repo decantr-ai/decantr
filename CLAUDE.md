@@ -15,7 +15,17 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 | `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing tools to AI assistants |
 | `@decantr/css` | `packages/css/` | Framework-agnostic CSS atoms runtime for layout utilities |
+| `@decantr/ui` | `packages/ui/` | UI framework — signal-based reactivity, atomic CSS, components |
+| `@decantr/ui-chart` | `packages/ui-chart/` | Charting library — SVG, Canvas, WebGPU renderers |
+| `@decantr/vite-plugin` | `packages/vite-plugin/` | Vite plugin for real-time design drift detection |
 | `decantr` | `packages/cli/` | CLI for project initialization, registry queries, validation |
+
+## Apps
+
+| App | Path | Description |
+|-----|------|-------------|
+| `decantr-api` | `apps/api/` | Registry API (Hono + Supabase + Stripe) |
+| `decantr-web` | `apps/web/` | Registry web app (Next.js + Supabase) |
 
 ## Terminology
 
@@ -48,20 +58,32 @@ Wine metaphors are used in branding only. Code and schema use normalized terms.
 
 ## Content Architecture
 
-Content lives in **decantr-content** (separate repository) and is distributed via:
-- **Registry API** -- Primary source for online content resolution
-- **MCP Server** -- Exposes content to AI assistants
-- **CLI Bundled** -- Offline fallback defaults in `packages/cli/src/bundled/`
+Content lives in **decantr-content** (separate repository) and is the source of truth for all `@official` registry content.
+
+**Publishing pipeline:**
+```
+decantr-content repo (JSON files)
+    → push to main triggers GitHub Actions
+    → validate.js checks all files
+    → scripts/sync-to-registry.js POSTs each item to POST /v1/admin/sync
+    → Supabase content table (namespace=@official, status=published)
+    → API serves via GET /v1/:type/:namespace/:slug
+```
+
+**Content resolution fallback chains:**
+- **CLI single items** (`get`): Custom → API → Cache
+- **CLI lists** (`list`): API → Cache → merge Custom
+- **CLI `get` fallback**: API → Cache → Bundled
+- **MCP Server**: API only (via `RegistryAPIClient`)
+- **CLI Bundled**: Offline fallback defaults in `packages/cli/src/bundled/`
 
 ```
-packages/cli/src/bundled/    # Offline fallback content
+packages/cli/src/bundled/    # Offline fallback content (not from RegistryClient)
   blueprints/                # Default blueprint for offline init
   patterns/                  # Core patterns (hero, nav-header, footer, etc.)
   themes/                    # Default theme
   shells/                    # Default shell layout
 ```
-
-The content resolution fallback chain: **MCP → API → Cache → Bundled**
 
 ## Design Pipeline
 
@@ -77,18 +99,25 @@ The seven stages of the Design Pipeline:
 
 ## Guard Rules
 
-The guard system (`packages/essence-spec/src/guard.ts`) enforces eight rules:
+The guard system (`packages/essence-spec/src/guard.ts`) enforces eight rules, ordered by DNA-first (matching the DECANTR.md template):
 
-1. **Style guard** -- Code must use the theme specified in the Essence. Changing themes without updating the Essence is a violation (error severity).
-2. **Structure guard** -- Pages referenced in code must exist in the Essence structure. Generating code for an undefined page is a violation (error severity). Enforced in both `guided` and `strict` modes.
-3. **Layout guard** -- Pattern order in a page must match the Essence layout spec. Strict mode only (error severity).
-4. **Recipe guard** -- Visual recipe used in code must match the Essence recipe. Switching recipes without updating the Essence is a violation (error severity).
-5. **Density guard** -- Content gap values must match the Essence density setting. Strict mode only (warning severity). In v3 essences, per-page `dna_overrides.density` is respected.
-6. **Theme-mode compatibility** -- The theme/mode combination must be compatible (e.g., a dark-only theme rejects `mode: "light"`). Checked when `themeRegistry` is provided. Always enforced in `guided` and `strict` modes (error severity).
-7. **Pattern existence** -- All patterns referenced in layouts must exist in the registry. Checked when `patternRegistry` is provided. Includes fuzzy "did you mean?" suggestions. Always enforced in `guided` and `strict` modes (error severity).
-8. **Accessibility guard** -- Code must meet the WCAG level specified in the Essence. Enforced in both `guided` and `strict` modes (error severity).
+**DNA guards (errors):**
 
-Guard modes: `creative` (no enforcement), `guided` (rules 1, 2, 4, 6, 7, 8), `strict` (all rules).
+1. **Style guard** -- Code must use the theme specified in the Essence. Changing themes without updating the Essence is a violation.
+2. **Recipe guard** -- Visual recipe used in code must match the Essence recipe. Switching recipes without updating the Essence is a violation.
+3. **Density guard** -- Content gap values must match the Essence density setting. Strict mode only (warning severity). In v3 essences, per-page `dna_overrides.density` is respected.
+4. **Accessibility guard** -- Code must meet the WCAG level specified in the Essence. Enforced in both `guided` and `strict` modes.
+5. **Theme-mode compatibility** -- The theme/mode combination must be compatible (e.g., a dark-only theme rejects `mode: "light"`). Checked when `themeRegistry` is provided.
+
+**Blueprint guards (warnings in v3, auto-fixable):**
+
+6. **Structure guard** -- Pages referenced in code must exist in the Essence structure. Generating code for an undefined page is a violation.
+7. **Layout guard** -- Pattern order in a page must match the Essence layout spec. Strict mode only.
+8. **Pattern existence** -- All patterns referenced in layouts must exist in the registry. Checked when `patternRegistry` is provided. Includes fuzzy "did you mean?" suggestions.
+
+Guard modes: `creative` (no enforcement), `guided` (rules 1, 2, 4, 5, 6, 8), `strict` (all rules).
+
+**v3 enforcement fields:** DNA violations are controlled by `dna_enforcement` (`'error'` | `'warn'` | `'off'`). Blueprint violations are controlled by `blueprint_enforcement` (`'warn'` | `'off'`). In v3, Blueprint violations are warnings (not errors) and are auto-fixable.
 
 ## Build and Test
 
@@ -104,7 +133,7 @@ Requires Node.js >= 20 and pnpm >= 9.
 
 ## MCP Server Tools
 
-The MCP server (`@decantr/mcp-server`) exposes 10 tools:
+The MCP server (`@decantr/mcp-server`) exposes 12 tools:
 
 | Tool | Description |
 |------|-------------|
@@ -118,20 +147,31 @@ The MCP server (`@decantr/mcp-server`) exposes 10 tools:
 | `decantr_suggest_patterns` | Given a page description, suggest matching patterns from the registry |
 | `decantr_check_drift` | Check if code changes violate the Essence spec (guard rule violations) |
 | `decantr_create_essence` | Generate a valid Essence spec skeleton from a project description |
+| `decantr_accept_drift` | Resolve drift violations by accepting, scoping, rejecting, or deferring |
+| `decantr_update_essence` | Apply structured updates to DNA or Blueprint layers |
 
 ## CLI Commands
 
 ```bash
-decantr init              # Initialize a new Decantr project (simplified flow)
+decantr init              # Initialize a new Decantr project
 decantr status            # Show project status
-decantr validate [path]   # Validate essence file
-decantr search <query>    # Search registry
-decantr get <type> <id>   # Get full item details (patterns, themes, shells, etc.)
-decantr list <type>       # List all items of type
 decantr sync              # Sync registry from API
 decantr audit             # Audit project for issues
+decantr migrate           # Migrate essence file to latest schema version
+decantr check             # Detect and fix drift issues
+decantr sync-drift        # Sync drift resolutions to essence
+decantr validate [path]   # Validate essence file
+decantr search <query>    # Search registry
+decantr suggest           # Suggest patterns for a page
+decantr get <type> <id>   # Get full item details (patterns, themes, shells, etc.)
+decantr list <type>       # List all items of type
+decantr theme             # Theme management
+decantr create            # Create a new content item
+decantr publish           # Publish content to the registry
+decantr login             # Authenticate with the registry
+decantr logout            # Log out of the registry
 decantr upgrade           # Check for content updates from registry
-decantr heal              # Detect and fix drift issues
+decantr help              # Show help
 ```
 
 ## Documentation
@@ -140,6 +180,9 @@ decantr heal              # Detect and fix drift issues
 |------|---------|
 | `docs/css-scaffolding-guide.md` | Full CSS implementation spec (@layer structure, theme scoping, color-scheme, variable naming). Generated DECANTR.md includes a condensed version; this is the expanded reference. |
 | `docs/plans/` | Implementation plans and specs for major features |
+| `docs/architecture/` | Architecture diagrams and flow documentation |
+| `docs/audit/` | Audit reports (archived after implementation) |
+| `docs/specs/` | Design specifications for major features |
 
 ## Development Notes
 
