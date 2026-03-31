@@ -21,3 +21,6 @@ tools/auto
 .env.local
 .env.*.local
 apps/api/.env.local
+
+# Generated showcase build output (copied by scripts/copy-showcase-dist.js)
+apps/web/public/showcase/
