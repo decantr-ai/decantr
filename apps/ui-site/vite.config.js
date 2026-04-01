@@ -10,6 +10,10 @@ export default defineConfig({
       '@decantr/css': resolve(__dirname, '../../packages/css/src'),
     },
   },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
   server: {
     port: 4000,
     open: false,
