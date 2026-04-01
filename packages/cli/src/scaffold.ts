@@ -1968,7 +1968,6 @@ export async function refreshDerivedFiles(
                     description: (inner.description as string) || '',
                     components: (inner.components as string[]) || [],
                     slots: preset?.layout?.slots || {},
-                    code: preset?.code?.example || inner.code?.example || '',
                   };
                 }
               } catch { /* skip unavailable patterns */ }
@@ -2124,7 +2123,6 @@ export async function refreshDerivedFiles(
                   description: (inner.description as string) || '',
                   components: (inner.components as string[]) || [],
                   slots: preset?.layout?.slots || {},
-                  code: preset?.code?.example || inner.code?.example || '',
                 };
               }
             } catch { /* skip unavailable patterns */ }
@@ -2186,7 +2184,7 @@ export interface PatternSpecSummary {
   description: string;
   components: string[];
   slots: Record<string, string>;
-  code: string;
+  // code field removed — patterns are framework-agnostic
 }
 
 export interface SectionContextInput {
@@ -2363,13 +2361,6 @@ export function generateSectionContext(input: SectionContextInput): string {
         lines.push(`- \`${slot}\`: ${desc}`);
       }
       lines.push('');
-      if (spec.code) {
-        lines.push('**Code example:**');
-        lines.push('```');
-        lines.push(spec.code);
-        lines.push('```');
-        lines.push('');
-      }
     }
   }
 

@@ -104,7 +104,6 @@ describe('generateSectionContext', () => {
           header: 'Section title and period selector',
           grid: 'Responsive grid of KPI cards',
         },
-        code: '<KpiGrid>\n  <KpiCard label="Revenue" value="$12k" />\n</KpiGrid>',
       },
     };
 
@@ -116,8 +115,7 @@ describe('generateSectionContext', () => {
     expect(result).toContain('**Layout slots:**');
     expect(result).toContain('`header`: Section title and period selector');
     expect(result).toContain('`grid`: Responsive grid of KPI cards');
-    expect(result).toContain('<KpiGrid>');
-    expect(result).toContain('<KpiCard label="Revenue" value="$12k" />');
+    expect(result).not.toContain('**Code example:**');
   });
 
   it('omits empty optional sections', () => {
