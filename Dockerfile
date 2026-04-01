@@ -1,4 +1,4 @@
-FROM node:22-slim AS builder
+FROM node:24-slim AS builder
 WORKDIR /app
 
 # Copy API package manifest — replace workspace dep with local path
@@ -21,7 +21,7 @@ COPY apps/api/src/ ./src/
 RUN npx tsup
 
 # Production
-FROM node:22-slim
+FROM node:24-slim
 WORKDIR /app
 
 COPY --from=builder /app/dist/ ./dist/
