@@ -24,6 +24,7 @@ import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
 import { cmdRefresh } from './commands/refresh.js';
 import { cmdAddSection, cmdAddPage, cmdAddFeature } from './commands/add.js';
 import { cmdRemoveSection, cmdRemovePage, cmdRemoveFeature } from './commands/remove.js';
+import { cmdThemeSwitch } from './commands/theme-switch.js';
 
 // ── Helpers ──
 
@@ -1171,6 +1172,17 @@ ${BOLD}Examples:${RESET}
         }
         process.exitCode = 1;
       }
+      break;
+    }
+
+    case 'switch': {
+      const name = args[1];
+      if (!name) {
+        console.error(error('Usage: decantr theme switch <themeName> [--recipe <r>] [--shape <s>] [--mode <m>]'));
+        process.exitCode = 1;
+        return;
+      }
+      await cmdThemeSwitch(name, args.slice(1), projectRoot);
       break;
     }
 
