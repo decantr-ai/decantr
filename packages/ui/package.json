@@ -25,7 +25,8 @@
     "./tannins/auth-enterprise": "./src/tannins/auth-enterprise.js",
     "./css": "./src/css/index.js",
     "./essence": "./src/essence/index.ts",
-    "./compose": "./src/compose/index.ts"
+    "./compose": "./src/compose/index.ts",
+    "./build": "./src/build/index.ts"
   },
   "scripts": {
     "build": "tsup",
@@ -47,7 +48,8 @@
   "author": "David Aimi",
   "license": "MIT",
   "dependencies": {
-    "@decantr/essence-spec": "workspace:*"
+    "@decantr/essence-spec": "workspace:*",
+    "@decantr/core": "workspace:*"
   },
   "peerDependencies": {
     "@decantr/css": "workspace:*"
