@@ -2047,7 +2047,9 @@ export async function refreshDerivedFiles(
   try {
     const themeResult = await registry.fetchTheme(themeName);
     if (themeResult?.data) {
-      const t = themeResult.data as Record<string, unknown>;
+      // Unwrap API wrapper: actual theme content is in .data
+      const raw = themeResult.data as Record<string, unknown>;
+      const t = (raw.data ?? raw) as Record<string, unknown>;
       themeData = {
         seed: t.seed as ThemeData['seed'],
         palette: t.palette as ThemeData['palette'],
@@ -2062,7 +2064,9 @@ export async function refreshDerivedFiles(
   try {
     const recipeResult = await registry.fetchRecipe(recipeName);
     if (recipeResult?.data) {
-      const r = recipeResult.data as Record<string, unknown>;
+      // Unwrap API wrapper: actual recipe content is in .data
+      const raw = recipeResult.data as Record<string, unknown>;
+      const r = (raw.data ?? raw) as Record<string, unknown>;
       recipeData = {
         decorators: r.decorators as RecipeData['decorators'],
         spatial_hints: r.spatial_hints as RecipeData['spatial_hints'],

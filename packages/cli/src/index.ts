@@ -839,10 +839,13 @@ async function cmdInit(args: InitArgs) {
   // Generate curated prompt
   let promptPages: PromptContext['pages'];
   if (isV3(essence)) {
-    promptPages = essence.blueprint.pages.map((p: { id: string; shell_override?: string | null; layout: unknown[] }) => ({
+    const allPages = essence.blueprint.sections
+      ? essence.blueprint.sections.flatMap((s: any) => s.pages.map((p: any) => ({ ...p, _shell: s.shell })))
+      : essence.blueprint.pages || [];
+    promptPages = allPages.map((p: { id: string; shell_override?: string | null; layout: unknown[]; _shell?: string }) => ({
       id: p.id,
-      shell: p.shell_override ?? essence.blueprint.shell,
-      layout: p.layout.map((item: unknown) => typeof item === 'string' ? item : extractPatternName(item)),
+      shell: p.shell_override ?? p._shell ?? essence.blueprint.shell,
+      layout: (p.layout || []).map((item: unknown) => typeof item === 'string' ? item : extractPatternName(item)),
     }));
   } else {
     promptPages = essence.structure || [{ id: 'home', shell: options.shell, layout: ['hero'] }];
@@ -1600,5 +1603,6 @@ async function main() {
 
 main().catch((e) => {
   console.error(error((e as Error).message));
+  if ((e as Error).stack) console.error((e as Error).stack);
   process.exitCode = 1;
 });

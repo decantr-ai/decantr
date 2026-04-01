@@ -328,12 +328,15 @@ export async function syncRegistry(
       const result = await apiClient.listContent(type, { namespace: '@official' });
       saveToCache(cacheDir, type, null, result, '@official');
 
-      // Also cache individual items
+      // Also cache individual items — use slug (not UUID) as cache key
+      // because fetchContentItem looks up by slug
       for (const item of result.items) {
-        const id = (item as Record<string, unknown>).id as string
-          || (item as Record<string, unknown>).slug as string;
-        if (id) {
-          saveToCache(cacheDir, type, id, item, '@official');
+        const slug = (item as Record<string, unknown>).slug as string;
+        const data = (item as Record<string, unknown>).data as Record<string, unknown> | undefined;
+        const innerSlug = data?.id as string || data?.slug as string;
+        const cacheKey = slug || innerSlug || (item as Record<string, unknown>).id as string;
+        if (cacheKey) {
+          saveToCache(cacheDir, type, cacheKey, item, '@official');
         }
       }
 
