@@ -8,30 +8,31 @@ export const contentRoutes = new Hono<Env>();
 
 // GET /v1/:type/:namespace/:slug - Get single item (must be before list route)
 contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}/:namespace/:slug', async (c) => {
-  const pluralType = c.req.param('type');
-  const namespace = c.req.param('namespace');
-  const slug = c.req.param('slug');
-  const singularType = PLURAL_TO_SINGULAR[pluralType];
+  try {
+    const pluralType = c.req.param('type');
+    const namespace = c.req.param('namespace');
+    const slug = c.req.param('slug');
+    const singularType = PLURAL_TO_SINGULAR[pluralType];
 
-  if (!singularType) {
-    return c.json({ error: `Unknown content type: ${pluralType}` }, 400);
-  }
+    if (!singularType) {
+      return c.json({ error: `Unknown content type: ${pluralType}` }, 400);
+    }
 
-  const client = createAdminClient();
+    const client = createAdminClient();
 
-  const { data, error } = await client
-    .from('content')
-    .select('*, owner:users!owner_id(display_name, username)')
-    .eq('type', singularType)
-    .eq('namespace', namespace)
-    .eq('slug', slug)
-    .eq('visibility', 'public')
-    .eq('status', 'published')
-    .single();
+    const { data, error } = await client
+      .from('content')
+      .select('*, owner:users!owner_id(display_name, username)')
+      .eq('type', singularType)
+      .eq('namespace', namespace)
+      .eq('slug', slug)
+      .eq('visibility', 'public')
+      .eq('status', 'published')
+      .single();
 
-  if (error || !data) {
-    return c.json({ error: `${singularType} "${namespace}/${slug}" not found` }, 404);
-  }
+    if (error || !data) {
+      return c.json({ error: `${singularType} "${namespace}/${slug}" not found` }, 404);
+    }
 
   return c.json({
     id: data.id,
@@ -48,10 +49,15 @@ contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}/
     owner_name: (data as any).owner?.display_name || null,
     owner_username: (data as any).owner?.username || null,
   });
+  } catch (e) {
+    console.error('Content route error:', (e as Error).message);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
 });
 
 // GET /v1/:type - List content (e.g., /v1/patterns, /v1/themes)
 contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}', async (c) => {
+  try {
   const pluralType = c.req.param('type');
   const singularType = PLURAL_TO_SINGULAR[pluralType];
 
@@ -100,6 +106,10 @@ contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}'
       owner_username: (item as any).owner?.username || null,
     })),
   });
+  } catch (e) {
+    console.error('Content list error:', (e as Error).message);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
 });
 
 // POST /v1/validate - Validate essence file (supports both v2 and v3)
