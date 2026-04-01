@@ -9,6 +9,9 @@
     "./renderer": "./src/renderer.js",
     "./schema": "./src/schema.js"
   },
+  "scripts": {
+    "test": "vitest run"
+  },
   "files": ["src/"],
   "keywords": ["decantr", "ui", "catalog", "stories", "components"],
   "author": "David Aimi",
