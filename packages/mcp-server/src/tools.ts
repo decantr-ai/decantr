@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
@@ -352,6 +353,20 @@ export const TOOLS = [
       required: ['operation', 'payload'],
     },
     annotations: WRITE_TOOL,
+  },
+  // 13. decantr_get_section_context — local read
+  {
+    name: 'decantr_get_section_context',
+    title: 'Get Section Context',
+    description: 'Get the self-contained context for a specific section of the project. Returns guard rules, theme tokens, decorators, pattern specs, zone context, and pages — everything an AI needs to work on that section.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        section_id: { type: 'string', description: 'Section ID (archetype ID, e.g., "ai-chatbot", "auth-full", "settings-full")' },
+      },
+      required: ['section_id'],
+    },
+    annotations: READ_ONLY,
   },
 ];
 
@@ -975,6 +990,59 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       } catch (e) {
         return { error: `Failed to update essence: ${(e as Error).message}` };
       }
+    }
+
+    case 'decantr_get_section_context': {
+      const err = validateStringArg(args, 'section_id');
+      if (err) return { error: err };
+      const sectionId = args.section_id as string;
+
+      // Read the essence
+      let essence: EssenceFile;
+      try {
+        const result = await readEssenceFile();
+        essence = result.essence;
+      } catch {
+        return { error: 'No valid essence file found. Run decantr init first.' };
+      }
+
+      if (!isV3(essence)) {
+        return { error: 'Section context requires a v3 essence file. Run decantr migrate first.' };
+      }
+
+      // Find the section
+      const sections = essence.blueprint.sections || [];
+      const section = sections.find(s => s.id === sectionId);
+      if (!section) {
+        return {
+          error: `Section "${sectionId}" not found.`,
+          available_sections: sections.map(s => ({ id: s.id, role: s.role, pages: s.pages.length })),
+        };
+      }
+
+      // Read the section context file if it exists
+      const contextPath = join(process.cwd(), '.decantr', 'context', `section-${sectionId}.md`);
+      if (existsSync(contextPath)) {
+        return {
+          section_id: sectionId,
+          role: section.role,
+          shell: section.shell,
+          features: section.features,
+          pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
+          context: readFileSync(contextPath, 'utf-8'),
+        };
+      }
+
+      // Fallback: return structured section data
+      return {
+        section_id: sectionId,
+        role: section.role,
+        shell: section.shell,
+        features: section.features,
+        description: section.description,
+        pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
+        note: 'Section context file not found. Run decantr refresh to generate it.',
+      };
     }
 
     default:

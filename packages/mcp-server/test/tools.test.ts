@@ -4,8 +4,8 @@ import { validateStringArg, fuzzyScore } from '../src/helpers.js';
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
-    it('should define 12 tools', () => {
-      expect(TOOLS).toHaveLength(12);
+    it('should define 13 tools', () => {
+      expect(TOOLS).toHaveLength(13);
     });
 
     it('should have unique tool names', () => {
