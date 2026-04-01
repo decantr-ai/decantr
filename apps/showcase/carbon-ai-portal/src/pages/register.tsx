@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CenteredShell } from '../shells/centered';
 
 export function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   return (
     <CenteredShell>
@@ -58,7 +59,7 @@ export function RegisterPage() {
       </p>
 
       <form
-        onSubmit={(e) => e.preventDefault()}
+        onSubmit={(e) => { e.preventDefault(); navigate('/chat'); }}
         style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
       >
         <div>

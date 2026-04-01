@@ -79,6 +79,21 @@ export function SidebarSettingsShell({
             );
           })}
         </nav>
+
+        {/* Sign out — app → gateway transition */}
+        <div style={{ marginTop: 'auto', padding: '1rem 1.25rem', borderTop: '1px solid var(--d-border)' }}>
+          <Link
+            to="/login"
+            style={{
+              display: 'block',
+              fontSize: 13,
+              color: 'var(--d-text-muted)',
+              padding: '0.5rem 0',
+            }}
+          >
+            Sign out
+          </Link>
+        </div>
       </aside>
 
       {/* Main settings content */}

@@ -118,7 +118,7 @@ function ChatSidebar() {
         >
           U
         </div>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--d-text)' }}>
             User
           </div>
@@ -126,6 +126,18 @@ function ChatSidebar() {
             Free Plan
           </div>
         </div>
+        <Link
+          to="/login"
+          style={{
+            fontSize: 11,
+            color: 'var(--d-text-muted)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: 'var(--d-radius-sm)',
+            border: '1px solid var(--d-border)',
+          }}
+        >
+          Sign out
+        </Link>
       </div>
     </div>
   );

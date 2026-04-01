@@ -51,7 +51,7 @@ export function LandingPage() {
           }}
         >
           <Link
-            to="/chat"
+            to="/register"
             style={{
               padding: '0.75rem 2rem',
               fontSize: 15,
@@ -65,7 +65,7 @@ export function LandingPage() {
             Get Started Free
           </Link>
           <Link
-            to="/about"
+            to="/login"
             style={{
               padding: '0.75rem 2rem',
               fontSize: 15,
@@ -76,7 +76,7 @@ export function LandingPage() {
               border: '1px solid var(--d-border)',
             }}
           >
-            Learn More
+            Sign In
           </Link>
         </div>
       </section>
