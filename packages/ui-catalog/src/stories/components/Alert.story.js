@@ -31,5 +31,18 @@ export default {
 const alert = Alert({ variant: 'success', dismissible: true }, 'File uploaded!');
 document.body.appendChild(alert);`,
     },
+    {
+      title: 'With EssenceProvider',
+      code: `import { mount } from '@decantr/ui/runtime'
+import { EssenceProvider } from '@decantr/ui/essence'
+import { Alert } from '@decantr/ui/components'
+import essence from './essence.json'
+
+mount(root, () =>
+  EssenceProvider({ essence },
+    Alert({ variant: 'success' }, 'Themed Alert')
+  )
+)`,
+    },
   ],
 };

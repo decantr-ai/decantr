@@ -103,5 +103,24 @@ const tabs = Tabs({
 });
 document.body.appendChild(tabs);`,
     },
+    {
+      title: 'With EssenceProvider',
+      code: `import { mount } from '@decantr/ui/runtime'
+import { EssenceProvider } from '@decantr/ui/essence'
+import { Tabs } from '@decantr/ui/components'
+import essence from './essence.json'
+
+mount(root, () =>
+  EssenceProvider({ essence },
+    Tabs({
+      tabs: [
+        { id: 'overview', label: 'Overview', content: () => 'Overview...' },
+        { id: 'details', label: 'Details', content: () => 'Details...' },
+      ],
+      active: 'overview',
+    })
+  )
+)`,
+    },
   ],
 };
