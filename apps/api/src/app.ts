@@ -22,24 +22,16 @@ export function createApp(): Hono<Env> {
     return c.json({ error: 'Internal server error' }, 500);
   });
 
-  // Manual CORS — Hono's cors() middleware has a bug causing
-  // "Context is not finalized" crashes on @hono/node-server
-  app.use('*', async (c, next) => {
-    // Handle preflight
-    if (c.req.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key, X-Admin-Key',
-        },
-      });
-    }
-    // Process request
-    await next();
-    // Add CORS headers to response
-    c.res.headers.set('Access-Control-Allow-Origin', '*');
+  // Preflight handler only — no response modification after next()
+  app.options('*', (c) => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key, X-Admin-Key',
+      },
+    });
   });
 
   // Optional auth on v1 routes — skip for public read-only endpoints and admin sync
