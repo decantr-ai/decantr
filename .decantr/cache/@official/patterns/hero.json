@@ -8,18 +8,10 @@
   "status": "published",
   "data": {
     "id": "hero",
-    "code": {
-      "example": "function Hero() {\n  const { div, h1, p } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap6 _py16 _px6') },\n    h1({ class: css('_heading1') }, 'Build Faster, Ship Smarter'),\n    p({ class: css('_body _fgmuted _mw[640px]') }, 'The AI-first framework that turns your ideas into production-ready applications in minutes, not months.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg' }, 'Get Started'),\n      Button({ variant: 'outline', size: 'lg' }, icon('github'), 'View Source')\n    )\n  );\n}",
-      "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';"
-    },
     "name": "Hero Section",
     "$schema": "https://decantr.ai/schemas/pattern.v2.json",
     "presets": {
       "brand": {
-        "code": {
-          "example": "function BrandHero() {\n  const { div, h1, p, span } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative d-mesh') },\n    // Decorative orbs\n    span({ class: css('aura-orb _w[400px] _h[400px] _top[-10%] _left[-5%] _bg[rgba(254,68,116,0.15)]') }),\n    span({ class: css('aura-orb _w[300px] _h[300px] _bottom[10%] _right[-5%] _bg[rgba(10,243,235,0.1)]') }),\n    // Content\n    Badge({ variant: 'outline', icon: 'sparkles', class: css('aura-shimmer') }, 'Now in Beta'),\n    h1({ class: css('d-heading-display d-gradient-text') }, 'Build stunning apps in minutes'),\n    p({ class: css('_body _fgmuted _mw[640px] _textlg') }, 'The AI-first web framework that transforms your ideas into production-ready applications.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg', class: css('aura-glow') }, 'Get Started'),\n      Button({ variant: 'outline', size: 'lg' }, icon('github'), 'View Source')\n    )\n  );\n}",
-          "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Badge, icon } from 'decantr/components';"
-        },
         "layout": {
           "atoms": "_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative",
           "slots": {
@@ -42,10 +34,6 @@
         "description": "Full-viewport centered hero with massive headline, animated decorations, and dual CTAs. Entry point for brand landing pages."
       },
       "split": {
-        "code": {
-          "example": "function SplitHero() {\n  const { div, section, h1, p, img } = tags;\n\n  return section({ class: css('_minh[100vh] _relative _flex _aic _jcc _px6 _py24') },\n    div({ class: css('_grid _gc1 _lg:gc2 _gap8 _mw[1100px] _wfull _aic') },\n      div({ class: css('_flex _aic _jcc') },\n        img({ src: './images/logo.svg', alt: 'Logo', class: css('_w[280px]') })\n      ),\n      div({ class: css('_flex _col _gap6 _tc _lg:tl') },\n        h1({ class: css('_heading1') }, 'Your headline here'),\n        p({ class: css('_body _fgmuted _mw[540px]') }, 'Supporting description text for the hero section.'),\n        div({ class: css('_flex _gap3 _jcc _lg:jcfs') },\n          Button({ variant: 'primary', size: 'lg' }, 'Get Started'),\n          Button({ variant: 'outline', size: 'lg' }, icon('github'), 'View Source')\n        )\n      )\n    )\n  );\n}",
-          "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Badge, icon } from 'decantr/components';"
-        },
         "layout": {
           "atoms": "_grid _gc1 _lg:gc2 _gap8 _py24 _px6 _minh[100vh] _aic _relative",
           "slots": {
@@ -67,10 +55,6 @@
         "description": "Two-column hero: media/logo on one side, headline + description + CTAs on the other. Stacks vertically on mobile."
       },
       "vision": {
-        "code": {
-          "example": "function VisionHero() {\n  const { div, section, h1, p, span } = tags;\n\n  return section({ class: css('_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative d-mesh') },\n    // Decorative orbs\n    span({ class: css('aura-orb _w[400px] _h[400px] _top[-10%] _left[-5%] _bg[rgba(254,68,116,0.15)]') }),\n    span({ class: css('aura-orb _w[300px] _h[300px] _bottom[10%] _right[-5%] _bg[rgba(10,243,235,0.1)]') }),\n    // Content\n    h1({ class: css('d-heading-hero') }, 'Frameworks were built for humans. Decantr is built for AI.'),\n    p({ class: css('_textlg _fgmuted _mw[640px] _lh[1.6]') }, 'The AI-native web framework. Registry-driven generation, signal reactivity, and 100+ components — all designed for LLMs to generate, read, and maintain.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg', class: css('aura-glow') }, icon('terminal'), 'npx decantr init'),\n      Button({ variant: 'outline', size: 'lg' }, 'View Showcase')\n    )\n  );\n}",
-          "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';"
-        },
         "layout": {
           "atoms": "_flex _col _aic _tc _gap8 _py24 _px6 _minh[100vh] _jcc _relative",
           "slots": {
@@ -88,10 +72,6 @@
         "description": "AI-native vision statement hero with gradient headline, value prop, and dual CTAs. Hero-only gradient treatment."
       },
       "landing": {
-        "code": {
-          "example": "function Hero() {\n  const { div, h1, p } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap6 _py16 _px6') },\n    h1({ class: css('_heading1') }, 'Build Faster, Ship Smarter'),\n    p({ class: css('_body _fgmuted _mw[640px]') }, 'The AI-first framework that turns your ideas into production-ready applications in minutes, not months.'),\n    div({ class: css('_flex _gap3') },\n      Button({ variant: 'primary', size: 'lg' }, 'Get Started'),\n      Button({ variant: 'outline', size: 'lg' }, icon('github'), 'View Source')\n    )\n  );\n}",
-          "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';"
-        },
         "layout": {
           "atoms": "_flex _flexCol _itemsCenter _textCenter _gap6 _py16 _px6",
           "slots": {
@@ -109,10 +89,6 @@
         "description": "Centered headline + CTA + optional media"
       },
       "empty-state": {
-        "code": {
-          "example": "function EmptyState({ icon: ic, title, description, actionLabel, onAction }) {\n  const { div, h3, p } = tags;\n\n  return div({ class: css('_flex _col _aic _tc _gap4 _py12 _px6') },\n    div({ class: css('_w16 _h16 _flex _center _rfull _bgmuted/10') },\n      icon(ic, { size: '2rem', class: css('_fgmuted') })\n    ),\n    h3({ class: css('_heading4') }, title),\n    p({ class: css('_body _fgmuted _mw[480px]') }, description),\n    actionLabel ? Button({ variant: 'primary', onclick: onAction }, icon('plus', { size: '1em' }), ` ${actionLabel}`) : null\n  );\n}",
-          "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, icon } from 'decantr/components';"
-        },
         "layout": {
           "atoms": "_flex _col _aic _tc _gap4 _py12 _px6",
           "slots": {
@@ -130,10 +106,6 @@
         "description": "Empty state placeholder with illustration slot, message, and action CTA. Used when a list or page has no data yet."
       },
       "image-overlay": {
-        "code": {
-          "example": "function ImageOverlayHero({ item }) {\n  const { div, h1, p, img } = tags;\n\n  return div({ class: css('_relative _wfull _h[400px] _overflow[hidden] _r4') },\n    img({ src: item.image, alt: item.title, class: css('_absolute _inset0 _wfull _hfull _object[cover]') }),\n    div({ class: css('_absolute _inset0 _bg[linear-gradient(transparent_50%,rgba(0,0,0,0.8))]') }),\n    div({ class: css('_absolute _top0 _left0 _right0 _flex _jcsb _p4') },\n      Button({ variant: 'ghost', size: 'sm', onclick: () => navigate(-1) }, icon('arrow-left'), 'Back'),\n      Button({ variant: 'ghost', size: 'sm' }, icon('edit'), 'Edit')\n    ),\n    div({ class: css('_absolute _bottom0 _left0 _right0 _p6 _flex _col _gap2') },\n      div({ class: css('_flex _gap2') },\n        ...(item.tags || []).map(t => Chip({ size: 'sm', variant: 'outline' }, t))\n      ),\n      h1({ class: css('_heading2 _fgfg') }, item.title),\n      p({ class: css('_body _fgmuted') }, item.description)\n    )\n  );\n}",
-          "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Chip, icon } from 'decantr/components';\nimport { navigate } from 'decantr/router';"
-        },
         "layout": {
           "atoms": "_relative _wfull _h[400px] _overflow[hidden] _r4",
           "slots": {
@@ -153,10 +125,6 @@
         "description": "Full-bleed image with gradient overlay, content at bottom. Used for recipe/cookbook detail headers."
       },
       "image-overlay-compact": {
-        "code": {
-          "example": "function CompactOverlayHero({ item }) {\n  const { div, h1, span, img } = tags;\n\n  return div({ class: css('_relative _wfull _h[300px] _overflow[hidden] _r4') },\n    img({ src: item.cover, alt: item.title, class: css('_absolute _inset0 _wfull _hfull _object[cover]') }),\n    div({ class: css('_absolute _inset0 _bg[linear-gradient(transparent_50%,rgba(0,0,0,0.8))]') }),\n    div({ class: css('_absolute _top0 _right0 _p4 _flex _gap2') },\n      Button({ variant: 'ghost', size: 'sm' }, icon('edit'), 'Edit'),\n      Button({ variant: 'ghost', size: 'sm' }, icon('trash'), 'Delete')\n    ),\n    div({ class: css('_absolute _bottom0 _left0 _right0 _p6 _flex _col _gap2') },\n      h1({ class: css('_heading2 _fgfg') }, item.title),\n      div({ class: css('_flex _aic _gap3') },\n        Badge({ variant: 'outline' }, `${item.count} items`),\n        div({ class: css('_flex _aic _gap2') },\n          Avatar({ src: item.author?.avatar, size: 'xs' }),\n          span({ class: css('_textsm') }, item.author?.name)\n        )\n      )\n    )\n  );\n}",
-          "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Button, Badge, Avatar, icon } from 'decantr/components';"
-        },
         "layout": {
           "atoms": "_relative _wfull _h[300px] _overflow[hidden] _r4",
           "slots": {
@@ -211,8 +179,8 @@
     "default_preset": "landing"
   },
   "created_at": "2026-03-28T15:26:39.648381+00:00",
-  "updated_at": "2026-03-28T15:26:39.648381+00:00",
-  "published_at": "2026-03-28T15:26:39.595+00:00",
+  "updated_at": "2026-04-01T17:25:58.223269+00:00",
+  "published_at": "2026-04-01T17:25:58.166+00:00",
   "owner_name": "system",
   "owner_username": "system-1bf7"
 }

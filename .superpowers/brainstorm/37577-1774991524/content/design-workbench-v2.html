@@ -1,0 +1,104 @@
+<h2>Design Section 3 (updated): apps/workbench</h2>
+<p class="subtitle">Fully dog-fooded Decantr app — essence, blueprints, shells, themes, the works</p>
+
+<div class="section">
+  <h3>Updated Structure</h3>
+  <div class="mockup">
+    <div class="mockup-header">apps/workbench/</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.9; padding: 20px;">
+      <div style="color: #fb923c; font-weight: bold;">essence.json                  ← real essence v3 — archetype, theme, blueprint, guard</div>
+      <div>package.json</div>
+      <div>src/</div>
+      <div>  index.js                    ← entry point, mounts via @decantr/ui runtime</div>
+      <div>  app.js                      ← root component using shell from essence blueprint</div>
+      <div style="opacity: 0.5;">  </div>
+      <div>  shell/</div>
+      <div>    sidebar.js                ← component tree nav</div>
+      <div>    toolbar.js                ← theme/density/a11y controls</div>
+      <div>    search.js                 ← fuzzy search</div>
+      <div style="opacity: 0.5;">  </div>
+      <div>  views/</div>
+      <div style="color: #4ade80;">    isolation.js              ← Phase 1</div>
+      <div style="color: #60a5fa;">    playground.js             ← Phase 2</div>
+      <div style="color: #c084fc;">    explorer.js               ← Phase 3</div>
+      <div style="opacity: 0.5;">  </div>
+      <div>  panels/</div>
+      <div>    props-panel.js</div>
+      <div>    source-panel.js</div>
+      <div>    css-panel.js</div>
+      <div>    state-panel.js</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Essence File</h3>
+  <div class="mockup">
+    <div class="mockup-header">apps/workbench/essence.json</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 12px; line-height: 1.7; padding: 20px; white-space: pre; overflow-x: auto;">{
+  "version": "3",
+  "dna": {
+    "archetype": "developer-tool",
+    "theme": {
+      "style": "auradecantism",
+      "mode": "dark",
+      "recipe": "clean",
+      "shape": "rounded"
+    },
+    "personality": ["technical", "minimal", "focused"],
+    "platform": { "type": "spa", "routing": "hash" },
+    "density": { "level": "comfortable", "content_gap": "md" },
+    "accessibility": { "wcag_level": "AA" }
+  },
+  "blueprint": {
+    "pages": [
+      {
+        "id": "main",
+        "shell": "sidebar-detail",
+        "layout": [
+          { "zone": "sidebar", "pattern": "component-tree" },
+          { "zone": "main", "pattern": "story-renderer" },
+          { "zone": "aside", "pattern": "inspector-panels" }
+        ]
+      }
+    ],
+    "features": ["theme-switching", "search", "hot-reload"]
+  },
+  "dna_enforcement": "error",
+  "blueprint_enforcement": "warn",
+  "guard": { "mode": "guided" }
+}</div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>What "fully dog-fooded" means</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div style="padding: 16px; border: 1px solid rgba(251, 146, 60, 0.3); border-radius: 8px; background: rgba(251, 146, 60, 0.05);">
+      <h4 style="color: #fb923c; margin-bottom: 8px;">Design Intelligence Layer</h4>
+      <ul style="font-size: 13px; opacity: 0.8; line-height: 1.7;">
+        <li><strong>essence.json</strong> — real v3 essence with archetype, theme DNA, guard mode</li>
+        <li><strong>Blueprint</strong> — pages use real shells and layout zones</li>
+        <li><strong>Theme</strong> — auradecantism style, resolves through theme registry</li>
+        <li><strong>Guard rules</strong> — DNA and blueprint enforcement active</li>
+        <li><strong>Drift detection</strong> — @decantr/vite-plugin watches for deviations</li>
+      </ul>
+    </div>
+    <div style="padding: 16px; border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px; background: rgba(74, 222, 128, 0.05);">
+      <h4 style="color: #4ade80; margin-bottom: 8px;">UI Framework Layer</h4>
+      <ul style="font-size: 13px; opacity: 0.8; line-height: 1.7;">
+        <li><strong>@decantr/ui runtime</strong> — h(), mount(), signal reactivity</li>
+        <li><strong>@decantr/ui components</strong> — sidebar, tabs, search all use real components</li>
+        <li><strong>@decantr/css atoms</strong> — _flex, _col, _gap4, theme tokens</li>
+        <li><strong>@decantr/ui router</strong> — hash-based routing for SPA</li>
+        <li><strong>Compiler dev mode</strong> — hot-reload via compiler/dev.js</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px; padding: 16px; border: 1px solid rgba(96, 165, 250, 0.3); border-radius: 8px; background: rgba(96, 165, 250, 0.05);">
+  <h3 style="color: #60a5fa;">Why this matters</h3>
+  <p style="font-size: 14px; opacity: 0.85; line-height: 1.7;">The workbench becomes a <strong>proof of the full Decantr stack</strong>. If the workbench works — essence → blueprint → shell → components → CSS atoms → guard rules — then the entire system works. Every bug you hit while building the workbench is a bug your users would have hit. Every rough edge you smooth is a rough edge removed for everyone.</p>
+  <p style="font-size: 14px; opacity: 0.85; line-height: 1.7; margin-top: 8px;">It's also a <strong>reference implementation</strong>. When users ask "what does a real Decantr app look like?", you point them at the workbench source code.</p>
+</div>

@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } fr
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3 } from '@decantr/essence-spec';
-import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry } from '@decantr/essence-spec';
+import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
 import type { ComposeEntry, ArchetypeRole } from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
@@ -161,6 +161,7 @@ export interface BlueprintOverrides {
   features_remove?: string[];
   pages_remove?: string[];
   pages?: Record<string, Partial<BlueprintPage>>;
+  section_dna_overrides?: Record<string, DNAOverrides>;
 }
 
 export interface ComposeSectionsResult {
@@ -256,6 +257,16 @@ export function composeSections(
       description: 'Default section',
       pages: [{ id: 'home', layout: ['hero'] }],
     });
+  }
+
+  // Apply per-section DNA overrides from blueprint overrides
+  if (overrides?.section_dna_overrides) {
+    for (const section of sections) {
+      const sectionOverrides = overrides.section_dna_overrides[section.id];
+      if (sectionOverrides) {
+        section.dna_overrides = { ...section.dna_overrides, ...sectionOverrides };
+      }
+    }
   }
 
   // Deduplicate features then apply overrides
@@ -1263,17 +1274,171 @@ The \`css()\` function processes atom strings and injects CSS at runtime:
 </div>
 \`\`\`
 
-### Common Atoms
+### Atom Reference
 
-| Category | Atoms | Description |
-|----------|-------|-------------|
-| Display | \`_flex\`, \`_grid\`, \`_block\`, \`_none\` | Display types |
-| Flexbox | \`_col\`, \`_row\`, \`_wrap\`, \`_flex1\` | Flex direction/behavior |
-| Alignment | \`_aic\`, \`_jcc\`, \`_jcsb\` | Align/justify content |
-| Spacing | \`_gap{n}\`, \`_p{n}\`, \`_m{n}\`, \`_px{n}\` | Gap, padding, margin |
-| Sizing | \`_wfull\`, \`_hfull\`, \`_w{n}\`, \`_h{n}\` | Width, height |
-| Typography | \`_textsm\`, \`_textlg\`, \`_heading1\`-\`_heading6\` | Font sizes |
-| Colors | \`_bgprimary\`, \`_bgsurface\`, \`_fgmuted\` | Background, foreground |
+#### Display
+| Atom | CSS |
+|------|-----|
+| \`_flex\` | \`display:flex\` |
+| \`_grid\` | \`display:grid\` |
+| \`_block\` | \`display:block\` |
+| \`_inline\` | \`display:inline\` |
+| \`_inlineflex\` | \`display:inline-flex\` |
+| \`_none\` | \`display:none\` |
+| \`_contents\` | \`display:contents\` |
+
+#### Flexbox
+| Atom | CSS |
+|------|-----|
+| \`_col\` | \`flex-direction:column\` |
+| \`_row\` | \`flex-direction:row\` |
+| \`_colrev\` | \`flex-direction:column-reverse\` |
+| \`_wrap\` | \`flex-wrap:wrap\` |
+| \`_nowrap\` | \`flex-wrap:nowrap\` |
+| \`_flex1\` | \`flex:1\` |
+| \`_flex0\` | \`flex:none\` |
+| \`_flexauto\` | \`flex:auto\` |
+| \`_grow\` | \`flex-grow:1\` |
+| \`_grow0\` | \`flex-grow:0\` |
+| \`_shrink0\` | \`flex-shrink:0\` |
+
+#### Alignment
+| Atom | CSS |
+|------|-----|
+| \`_aic\` | \`align-items:center\` |
+| \`_aifs\` | \`align-items:flex-start\` |
+| \`_aife\` | \`align-items:flex-end\` |
+| \`_aist\` | \`align-items:stretch\` |
+| \`_aibl\` | \`align-items:baseline\` |
+| \`_jcc\` | \`justify-content:center\` |
+| \`_jcfs\` | \`justify-content:flex-start\` |
+| \`_jcfe\` | \`justify-content:flex-end\` |
+| \`_jcsb\` | \`justify-content:space-between\` |
+| \`_jcsa\` | \`justify-content:space-around\` |
+| \`_jcse\` | \`justify-content:space-evenly\` |
+| \`_pic\` | \`place-items:center\` |
+| \`_pcc\` | \`place-content:center\` |
+
+#### Spacing (scale: 0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, ...)
+| Atom | CSS | Notes |
+|------|-----|-------|
+| \`_gap{n}\` | \`gap:{scale}\` | e.g. \`_gap4\` = \`gap:1rem\` |
+| \`_gx{n}\` | \`column-gap:{scale}\` | horizontal gap |
+| \`_gy{n}\` | \`row-gap:{scale}\` | vertical gap |
+| \`_p{n}\` | \`padding:{scale}\` | all sides |
+| \`_pt{n}\`, \`_pr{n}\`, \`_pb{n}\`, \`_pl{n}\` | directional padding | top/right/bottom/left |
+| \`_px{n}\` | \`padding-inline:{scale}\` | horizontal |
+| \`_py{n}\` | \`padding-block:{scale}\` | vertical |
+| \`_m{n}\` | \`margin:{scale}\` | same as padding variants |
+| \`_mx{n}\`, \`_my{n}\` | inline/block margin | horizontal/vertical |
+
+#### Sizing
+| Atom | CSS |
+|------|-----|
+| \`_wfull\` / \`_w100\` | \`width:100%\` |
+| \`_hfull\` / \`_h100\` | \`height:100%\` |
+| \`_wscreen\` | \`width:100vw\` |
+| \`_hscreen\` | \`height:100vh\` |
+| \`_wfit\` | \`width:fit-content\` |
+| \`_hfit\` | \`height:fit-content\` |
+| \`_wauto\` | \`width:auto\` |
+| \`_minw0\` | \`min-width:0\` |
+| \`_minh0\` | \`min-height:0\` |
+| \`_w{n}\`, \`_h{n}\` | width/height from spacing scale |
+| \`_minw{n}\`, \`_maxw{n}\` | min/max width from scale |
+
+#### Text Size
+| Atom | Size | Line-height |
+|------|------|-------------|
+| \`_textxs\` | 0.75rem | 1rem |
+| \`_textsm\` | 0.875rem | 1.25rem |
+| \`_textbase\` | 1rem | 1.5rem |
+| \`_textlg\` | 1.125rem | 1.75rem |
+| \`_textxl\` | 1.25rem | 1.75rem |
+| \`_text2xl\` | 1.5rem | 2rem |
+| \`_text3xl\` | 1.875rem | 2.25rem |
+| \`_heading1\`-\`_heading6\` | Heading presets (size + weight) |
+
+#### Text Style
+| Atom | CSS |
+|------|-----|
+| \`_fontbold\` | \`font-weight:700\` |
+| \`_fontsemi\` | \`font-weight:600\` |
+| \`_fontmedium\` | \`font-weight:500\` |
+| \`_fontlight\` | \`font-weight:300\` |
+| \`_italic\` | \`font-style:italic\` |
+| \`_underline\` | \`text-decoration:underline\` |
+| \`_uppercase\` | \`text-transform:uppercase\` |
+| \`_truncate\` | overflow ellipsis + nowrap |
+| \`_textl\`, \`_textc\`, \`_textr\` | text-align left/center/right |
+
+#### Color (theme variable based)
+| Atom | CSS |
+|------|-----|
+| \`_bgprimary\` | \`background:var(--d-primary)\` |
+| \`_bgsurface\` | \`background:var(--d-surface)\` |
+| \`_bgsurface0\`-\`_bgsurface2\` | surface elevation layers |
+| \`_bgmuted\` | \`background:var(--d-muted)\` |
+| \`_bgbg\` | \`background:var(--d-bg)\` |
+| \`_bgsuccess\`, \`_bgerror\`, \`_bgwarning\`, \`_bginfo\` | status backgrounds |
+| \`_fgprimary\` | \`color:var(--d-primary)\` |
+| \`_fgtext\` | \`color:var(--d-text)\` |
+| \`_fgmuted\` | \`color:var(--d-text-muted)\` |
+| \`_fgsuccess\`, \`_fgerror\`, \`_fgwarning\`, \`_fginfo\` | status text |
+| \`_bcborder\` | \`border-color:var(--d-border)\` |
+
+#### Overflow & Whitespace
+| Atom | CSS |
+|------|-----|
+| \`_overhidden\` | \`overflow:hidden\` |
+| \`_overauto\` | \`overflow:auto\` |
+| \`_overscroll\` | \`overflow:scroll\` |
+| \`_overxauto\`, \`_overyauto\` | axis-specific overflow |
+| \`_nowraptext\` | \`white-space:nowrap\` |
+| \`_prewrap\` | \`white-space:pre-wrap\` |
+| \`_breakword\` | \`overflow-wrap:break-word\` |
+
+#### Cursor & Interaction
+| Atom | CSS |
+|------|-----|
+| \`_pointer\` | \`cursor:pointer\` |
+| \`_cursordefault\` | \`cursor:default\` |
+| \`_notallowed\` | \`cursor:not-allowed\` |
+| \`_grab\` | \`cursor:grab\` |
+| \`_selectnone\` | \`user-select:none\` |
+| \`_ptrnone\` | \`pointer-events:none\` |
+
+#### Position & Layout
+| Atom | CSS |
+|------|-----|
+| \`_rel\` | \`position:relative\` |
+| \`_abs\` | \`position:absolute\` |
+| \`_fixed\` | \`position:fixed\` |
+| \`_sticky\` | \`position:sticky\` |
+| \`_inset0\` | \`inset:0\` |
+| \`_top0\`, \`_right0\`, \`_bottom0\`, \`_left0\` | edge positioning |
+| \`_z10\`-\`_z50\` | z-index scale |
+
+#### Grid
+| Atom | CSS |
+|------|-----|
+| \`_gc1\`-\`_gc12\` | \`grid-template-columns:repeat(N,...)\` |
+| \`_gr1\`-\`_gr6\` | \`grid-template-rows:repeat(N,...)\` |
+| \`_span1\`-\`_span12\`, \`_spanfull\` | column span |
+| \`_rowspan1\`-\`_rowspan6\` | row span |
+
+#### Visual
+| Atom | CSS |
+|------|-----|
+| \`_rounded\` | \`border-radius:var(--d-radius)\` |
+| \`_roundedfull\` | \`border-radius:9999px\` |
+| \`_roundedsm\`, \`_roundedlg\`, \`_roundedxl\` | radius variants |
+| \`_shadow\`, \`_shadowmd\`, \`_shadowlg\` | box-shadow presets |
+| \`_bordernone\` | \`border:none\` |
+| \`_bw{n}\` | \`border-width:{n}px\` |
+| \`_op0\`-\`_op100\` | opacity (0, 25, 50, 75, 100) |
+| \`_trans\` | \`transition:all 0.15s ease\` |
+| \`_visible\`, \`_invisible\` | visibility |
 
 ### CSS Architecture
 
@@ -2030,6 +2195,28 @@ export async function refreshDerivedFiles(
       }
     }
 
+    // ── Fetch shell specs for structural info ──
+    const shellInfoCache: Record<string, ShellInfo> = {};
+    const seenShells = new Set<string>();
+    for (const section of sections) {
+      const shellId = section.shell as string;
+      if (!seenShells.has(shellId)) {
+        seenShells.add(shellId);
+        try {
+          const shellResult = await registry.fetchShell(shellId);
+          if (shellResult?.data) {
+            const raw = shellResult.data as Record<string, unknown>;
+            const inner = ((raw.data ?? raw) as Record<string, any>);
+            shellInfoCache[shellId] = {
+              description: (inner.description as string) || '',
+              regions: (inner.config?.regions as string[]) || [],
+              layout: (inner.layout as string) || undefined,
+            };
+          }
+        } catch { /* continue without shell info */ }
+      }
+    }
+
     // ── Generate section context files ──
     for (const section of sections) {
       const zoneLabel = section.role === 'primary' || section.role === 'auxiliary'
@@ -2061,6 +2248,7 @@ export async function refreshDerivedFiles(
         zoneContext,
         patternSpecs: sectionPatterns,
         constraints: essence.dna.constraints as Record<string, unknown> | undefined,
+        shellInfo: shellInfoCache[section.shell as string],
       });
 
       const sectionContextPath = join(contextDir, `section-${section.id}.md`);
@@ -2153,6 +2341,21 @@ export async function refreshDerivedFiles(
       }
     }
 
+    // Fetch shell info for V3.0 flat pages
+    let v30ShellInfo: ShellInfo | undefined;
+    try {
+      const shellResult = await registry.fetchShell(shell);
+      if (shellResult?.data) {
+        const raw = shellResult.data as Record<string, unknown>;
+        const inner = ((raw.data ?? raw) as Record<string, any>);
+        v30ShellInfo = {
+          description: (inner.description as string) || '',
+          regions: (inner.config?.regions as string[]) || [],
+          layout: (inner.layout as string) || undefined,
+        };
+      }
+    } catch { /* continue without shell info */ }
+
     const contextContent = generateSectionContext({
       section: syntheticSection,
       themeTokens: themeTokensCss,
@@ -2164,6 +2367,7 @@ export async function refreshDerivedFiles(
       zoneContext: `This is the primary section (${shell} shell).`,
       patternSpecs,
       constraints: essence.dna.constraints as Record<string, unknown> | undefined,
+      shellInfo: v30ShellInfo,
     });
 
     const sectionContextPath = join(contextDir, `section-${syntheticSection.id}.md`);
@@ -2187,6 +2391,12 @@ export interface PatternSpecSummary {
   // code field removed — patterns are framework-agnostic
 }
 
+export interface ShellInfo {
+  description: string;
+  regions: string[];
+  layout?: string;
+}
+
 export interface SectionContextInput {
   section: EssenceV31Section;
   themeTokens: string;
@@ -2199,6 +2409,7 @@ export interface SectionContextInput {
   patternSpecs: Record<string, PatternSpecSummary>;
   recipeHints?: { preferred?: string[]; compositions?: string; spatialHints?: string };
   constraints?: Record<string, unknown>;
+  shellInfo?: ShellInfo;
 }
 
 export interface ScaffoldContextInput {
@@ -2222,7 +2433,7 @@ export interface ScaffoldContextInput {
  * needs to generate code for this section.
  */
 export function generateSectionContext(input: SectionContextInput): string {
-  const { section, themeTokens, decorators, guardConfig, personality, themeName, recipeName, zoneContext, patternSpecs, recipeHints, constraints } = input;
+  const { section, themeTokens, decorators, guardConfig, personality, themeName, recipeName, zoneContext, patternSpecs, recipeHints, constraints, shellInfo } = input;
   const lines: string[] = [];
 
   // Header
@@ -2230,6 +2441,18 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push('');
   lines.push(`**Role:** ${section.role} | **Shell:** ${section.shell} | **Archetype:** ${section.id}`);
   lines.push(`**Description:** ${section.description}`);
+  if (shellInfo) {
+    lines.push(`**Shell structure:** ${shellInfo.description}`);
+    lines.push(`**Regions:** ${shellInfo.regions.join(', ')}`);
+  }
+  if (section.dna_overrides) {
+    const parts: string[] = [];
+    if (section.dna_overrides.density) parts.push(`density: ${section.dna_overrides.density}`);
+    if (section.dna_overrides.mode) parts.push(`mode: ${section.dna_overrides.mode}`);
+    if (parts.length > 0) {
+      lines.push(`**DNA Overrides:** ${parts.join(', ')}`);
+    }
+  }
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -2337,11 +2560,24 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push('');
   for (const page of section.pages) {
     const route = page.route || `/${section.id}/${page.id}`;
-    const layoutStr = page.layout.map(serializeLayoutItem).join(' → ');
+    const layoutStr = page.layout.map(serializeLayoutItem).join(' \u2192 ');
     lines.push(`### ${page.id} (${route})`);
     lines.push('');
     lines.push(`Layout: ${layoutStr}`);
     lines.push('');
+
+    // Pattern mapping table: show alias → pattern ID → preset
+    if (page.patterns && page.patterns.length > 0) {
+      lines.push('**Pattern mapping:**');
+      lines.push('| Alias | Pattern | Preset |');
+      lines.push('|-------|---------|--------|');
+      for (const ref of page.patterns) {
+        const alias = ref.as || ref.pattern;
+        const preset = ref.preset || 'standard';
+        lines.push(`| ${alias} | ${ref.pattern} | ${preset} |`);
+      }
+      lines.push('');
+    }
 
     // Collect pattern names from layout items
     const patternNames = page.layout.flatMap(extractPatternNames);
@@ -2421,6 +2657,32 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
     lines.push(`- .decantr/context/section-${section.id}.md`);
   }
   lines.push('');
+
+  // Shared Components — patterns appearing on 2+ pages
+  const patternUsage: Record<string, string[]> = {};
+  for (const section of sections) {
+    for (const page of section.pages) {
+      const names = page.layout.flatMap(extractPatternNames);
+      for (const name of names) {
+        if (!patternUsage[name]) patternUsage[name] = [];
+        const pageLabel = sections.length > 1 ? `${section.id}/${page.id}` : page.id;
+        patternUsage[name].push(pageLabel);
+      }
+    }
+  }
+  const sharedPatterns = Object.entries(patternUsage).filter(([, pages]) => pages.length >= 2);
+  if (sharedPatterns.length > 0) {
+    lines.push('## Shared Components');
+    lines.push('');
+    lines.push('These patterns appear on multiple pages. Consider creating shared components:');
+    lines.push('');
+    lines.push('| Pattern | Used by |');
+    lines.push('|---------|---------|');
+    for (const [pattern, pages] of sharedPatterns) {
+      lines.push(`| ${pattern} | ${pages.join(', ')} |`);
+    }
+    lines.push('');
+  }
 
   // Design Constraints
   if (constraints && Object.keys(constraints).length > 0) {

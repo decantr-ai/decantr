@@ -1,0 +1,151 @@
+<h2>Design Summary: Complete Picture</h2>
+<p class="subtitle">Everything together — what gets built, in what order</p>
+
+<div class="section">
+  <h3>Architecture Recap</h3>
+  <div class="mockup">
+    <div class="mockup-header">The full dependency graph</div>
+    <div class="mockup-body" style="padding: 24px; font-size: 13px; font-family: monospace; line-height: 2.2; text-align: center;">
+      <div style="display: flex; justify-content: center; gap: 24px; margin-bottom: 4px;">
+        <span style="background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.4); padding: 8px 16px; border-radius: 6px;">apps/ui-site/<br><span style="font-size: 10px; opacity: 0.5;">public showcase</span></span>
+        <span style="background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.4); padding: 8px 16px; border-radius: 6px;">apps/workbench/<br><span style="font-size: 10px; opacity: 0.5;">local dev tool</span></span>
+      </div>
+      <div style="opacity: 0.3; font-size: 16px;">↓ import ↓</div>
+      <div style="margin: 4px 0;">
+        <span style="background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.4); padding: 8px 16px; border-radius: 6px;">packages/ui-catalog/<br><span style="font-size: 10px; opacity: 0.5;">stories + renderer</span></span>
+      </div>
+      <div style="opacity: 0.3; font-size: 16px;">↓ import ↓</div>
+      <div style="display: flex; justify-content: center; gap: 16px; margin: 4px 0;">
+        <span style="background: rgba(96, 165, 250, 0.15); border: 1px solid rgba(96, 165, 250, 0.4); padding: 8px 16px; border-radius: 6px;">@decantr/ui<br><span style="font-size: 10px; opacity: 0.5;">107 components</span></span>
+        <span style="background: rgba(96, 165, 250, 0.15); border: 1px solid rgba(96, 165, 250, 0.4); padding: 8px 16px; border-radius: 6px;">@decantr/ui-chart<br><span style="font-size: 10px; opacity: 0.5;">25 charts</span></span>
+        <span style="background: rgba(96, 165, 250, 0.15); border: 1px solid rgba(96, 165, 250, 0.4); padding: 8px 16px; border-radius: 6px;">@decantr/css<br><span style="font-size: 10px; opacity: 0.5;">atomic runtime</span></span>
+      </div>
+      <div style="opacity: 0.3; margin-top: 12px; font-size: 16px;">↕ validated by ↕</div>
+      <div style="display: flex; justify-content: center; gap: 16px; margin-top: 4px;">
+        <span style="background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.4); padding: 8px 16px; border-radius: 6px;">@decantr/essence-spec<br><span style="font-size: 10px; opacity: 0.5;">schema + guards</span></span>
+        <span style="background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.4); padding: 8px 16px; border-radius: 6px;">decantr-content<br><span style="font-size: 10px; opacity: 0.5;">archetypes, themes, shells, patterns</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Delivery Phases</h3>
+  <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+
+    <div style="padding: 16px; border: 1px solid rgba(74, 222, 128, 0.4); border-radius: 8px; background: rgba(74, 222, 128, 0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="color: #4ade80;">Phase 1: Foundation</h4>
+        <span style="font-size: 11px; opacity: 0.5;">Unblocks everything else</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; font-size: 13px;">
+        <div>
+          <div style="font-weight: bold; margin-bottom: 4px;">1a. packages/ui-catalog</div>
+          <ul style="opacity: 0.8;">
+            <li>Story schema + validation</li>
+            <li>Story renderer</li>
+            <li>Query API (getAll, getByCategory, search)</li>
+            <li>First 10-15 component stories (core components)</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-weight: bold; margin-bottom: 4px;">1b. apps/workbench — Isolation View</div>
+          <ul style="opacity: 0.8;">
+            <li>Real essence.json + full Decantr stack</li>
+            <li>Sidebar nav with category tree</li>
+            <li>Variant grid rendering from catalog</li>
+            <li>Theme/density/mode toolbar</li>
+            <li>Hot-reload via compiler dev mode</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 16px; border: 1px solid rgba(96, 165, 250, 0.4); border-radius: 8px; background: rgba(96, 165, 250, 0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="color: #60a5fa;">Phase 2: Depth</h4>
+        <span style="font-size: 11px; opacity: 0.5;">Rich developer experience</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; font-size: 13px;">
+        <div>
+          <div style="font-weight: bold; margin-bottom: 4px;">2a. Workbench — Playground View</div>
+          <ul style="opacity: 0.8;">
+            <li>Interactive prop editor from story controls</li>
+            <li>Live preview + code output panel</li>
+            <li>Signal state inspector</li>
+            <li>CSS atoms panel</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-weight: bold; margin-bottom: 4px;">2b. Remaining catalog stories</div>
+          <ul style="opacity: 0.8;">
+            <li>All 107 component stories</li>
+            <li>All 25 chart stories</li>
+            <li>Icon gallery story</li>
+            <li>CSS/theme stories</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 16px; border: 1px solid rgba(192, 132, 252, 0.4); border-radius: 8px; background: rgba(192, 132, 252, 0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h4 style="color: #c084fc;">Phase 3: Polish & Public</h4>
+        <span style="font-size: 11px; opacity: 0.5;">Ship the showcase</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; font-size: 13px;">
+        <div>
+          <div style="font-weight: bold; margin-bottom: 4px;">3a. apps/ui-site — Showcase</div>
+          <ul style="opacity: 0.8;">
+            <li>Landing page + marketing pages</li>
+            <li>Component/chart/icon reference pages</li>
+            <li>Getting started guide</li>
+            <li>SSG build → GitHub Pages</li>
+            <li>ui.decantr.ai domain</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-weight: bold; margin-bottom: 4px;">3b. Workbench — Explorer View</div>
+          <ul style="opacity: 0.8;">
+            <li>Design system dashboard</li>
+            <li>Theme gallery (all themes side-by-side)</li>
+            <li>Density comparison</li>
+            <li>Accessibility audit (WCAG, colorblind)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Content Evolution</h3>
+  <p style="font-size: 14px; opacity: 0.85; line-height: 1.7;">Building these apps will naturally reveal gaps in the existing content types. New archetypes, patterns, and shells will be created as needed — the content in <code>decantr-content</code> grows to match what the framework demands. This is the intended feedback loop:</p>
+  <div class="mockup" style="margin-top: 12px;">
+    <div class="mockup-body" style="padding: 16px; font-size: 13px; text-align: center; font-family: monospace;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <span style="background: rgba(74,222,128,0.1); padding: 6px 12px; border-radius: 4px;">Build real app</span>
+        <span style="opacity: 0.3;">→</span>
+        <span style="background: rgba(251,146,60,0.1); padding: 6px 12px; border-radius: 4px;">Discover missing content</span>
+        <span style="opacity: 0.3;">→</span>
+        <span style="background: rgba(192,132,252,0.1); padding: 6px 12px; border-radius: 4px;">Create archetype/pattern/shell</span>
+        <span style="opacity: 0.3;">→</span>
+        <span style="background: rgba(96,165,250,0.1); padding: 6px 12px; border-radius: 4px;">Publish to registry</span>
+        <span style="opacity: 0.3;">→</span>
+        <span style="background: rgba(74,222,128,0.1); padding: 6px 12px; border-radius: 4px;">Use in app</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>What stays the same</h3>
+  <ul style="font-size: 14px; line-height: 1.8; opacity: 0.8;">
+    <li><strong>packages/ui, ui-chart, css</strong> — no moves, no restructuring. They're the source of truth.</li>
+    <li><strong>apps/web</strong> — registry.decantr.ai stays as-is (Next.js, Supabase)</li>
+    <li><strong>apps/api</strong> — Hono API stays as-is (Fly.io)</li>
+    <li><strong>decantr-content</strong> — stays as separate repo, grows with new content types</li>
+    <li><strong>All other packages</strong> — essence-spec, registry, core, mcp-server, cli, vite-plugin unchanged</li>
+  </ul>
+</div>

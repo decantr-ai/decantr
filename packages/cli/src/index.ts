@@ -1322,7 +1322,8 @@ async function main() {
 
     case 'upgrade': {
       const { cmdUpgrade } = await import('./commands/upgrade.js');
-      await cmdUpgrade(process.cwd());
+      const applyFlag = args.includes('--apply');
+      await cmdUpgrade(process.cwd(), { apply: applyFlag });
       break;
     }
 
