@@ -1013,7 +1013,8 @@ function generateDecantrMd(
   detected: DetectedProject,
   themeData?: ThemeData,
   recipeData?: RecipeData,
-  archetypeData?: ArchetypeData
+  archetypeData?: ArchetypeData,
+  topologyMarkdown?: string
 ): string {
   const template = loadTemplate('DECANTR.md.template');
 
@@ -1100,6 +1101,7 @@ function generateDecantrMd(
     THEME_QUICK_REFERENCE: themeQuickRef,
     ACCESSIBILITY_SECTION: accessibilitySection,
     SEO_SECTION: seoSection,
+    COMPOSITION_TOPOLOGY: topologyMarkdown || '',
   };
 
   return renderTemplate(template, vars);
@@ -1262,7 +1264,8 @@ export function scaffoldProject(
   archetypeData?: ArchetypeData,
   registrySource: 'api' | 'cache' = 'cache',
   themeData?: ThemeData,
-  recipeData?: RecipeData
+  recipeData?: RecipeData,
+  topologyMarkdown?: string
 ): ScaffoldResult {
   // Build v3 essence by default, but keep a v2-compatible view for template rendering
   const essenceV3 = buildEssenceV3(options, archetypeData, themeData, recipeData);
@@ -1283,7 +1286,7 @@ export function scaffoldProject(
 
   // Write DECANTR.md
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
-  writeFileSync(decantrMdPath, generateDecantrMd(essence, detected, themeData, recipeData, archetypeData));
+  writeFileSync(decantrMdPath, generateDecantrMd(essence, detected, themeData, recipeData, archetypeData, topologyMarkdown));
 
   // Write project.json
   const projectJsonPath = join(decantrDir, 'project.json');
