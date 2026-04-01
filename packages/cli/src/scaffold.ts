@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } fr
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3 } from '@decantr/essence-spec';
-import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section } from '@decantr/essence-spec';
+import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry } from '@decantr/essence-spec';
 import type { ComposeEntry, ArchetypeRole } from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
@@ -1659,6 +1659,296 @@ When available, use these tools:
     cssFiles: [],
     gitignoreUpdated,
   };
+}
+
+// ── Context Generation ──
+
+export interface PatternSpecSummary {
+  description: string;
+  components: string[];
+  slots: Record<string, string>;
+  code: string;
+}
+
+export interface SectionContextInput {
+  section: EssenceV31Section;
+  themeTokens: string;
+  decorators: Array<{ name: string; description: string }>;
+  guardConfig: { mode: string; dna_enforcement: string; blueprint_enforcement: string };
+  personality: string[];
+  themeName: string;
+  recipeName: string;
+  zoneContext: string;
+  patternSpecs: Record<string, PatternSpecSummary>;
+  recipeHints?: { preferred?: string[]; compositions?: string; spatialHints?: string };
+  constraints?: Record<string, string>;
+}
+
+export interface ScaffoldContextInput {
+  appName: string;
+  blueprintId: string;
+  themeName: string;
+  recipeName: string;
+  personality: string[];
+  topologyMarkdown: string;
+  sections: EssenceV31Section[];
+  routes: Record<string, RouteEntry>;
+  constraints?: Record<string, string>;
+  seo?: { schema_org?: string[]; meta_priorities?: string[] };
+  navigation?: { hotkeys?: unknown[]; command_palette?: boolean };
+}
+
+/**
+ * Generate a self-contained markdown context file for a single section.
+ * Includes all guard rules, theme tokens, decorators, pattern specs,
+ * zone context, features, and personality — everything an AI assistant
+ * needs to generate code for this section.
+ */
+export function generateSectionContext(input: SectionContextInput): string {
+  const { section, themeTokens, decorators, guardConfig, personality, themeName, recipeName, zoneContext, patternSpecs, recipeHints, constraints } = input;
+  const lines: string[] = [];
+
+  // Header
+  lines.push(`# Section: ${section.id}`);
+  lines.push('');
+  lines.push(`**Role:** ${section.role} | **Shell:** ${section.shell} | **Archetype:** ${section.id}`);
+  lines.push(`**Description:** ${section.description}`);
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+
+  // Guard Rules
+  lines.push('## Guard Rules');
+  lines.push('');
+  lines.push(`| Rule | Scope | Severity | Description |`);
+  lines.push(`|------|-------|----------|-------------|`);
+  lines.push(`| Style guard | DNA | ${guardConfig.dna_enforcement} | Code must use the ${themeName} theme |`);
+  lines.push(`| Recipe guard | DNA | ${guardConfig.dna_enforcement} | Visual recipe must match ${recipeName} |`);
+  lines.push(`| Density guard | DNA | ${guardConfig.dna_enforcement} | Content gap must match essence density |`);
+  lines.push(`| Accessibility guard | DNA | ${guardConfig.dna_enforcement} | Must meet WCAG level from essence |`);
+  lines.push(`| Structure guard | Blueprint | ${guardConfig.blueprint_enforcement} | Pages must exist in essence structure |`);
+  lines.push(`| Layout guard | Blueprint | ${guardConfig.blueprint_enforcement} | Pattern order must match essence layout |`);
+  lines.push(`| Pattern existence | Blueprint | ${guardConfig.blueprint_enforcement} | All patterns must exist in registry |`);
+  lines.push('');
+  lines.push(`**Guard mode:** ${guardConfig.mode}`);
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+
+  // Theme
+  lines.push(`## Theme: ${themeName}`);
+  lines.push('');
+  lines.push('```css');
+  lines.push(themeTokens);
+  lines.push('```');
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+
+  // Decorators
+  lines.push(`## Decorators (${recipeName} recipe)`);
+  lines.push('');
+  if (decorators.length > 0) {
+    lines.push('| Decorator | Description |');
+    lines.push('|-----------|-------------|');
+    for (const dec of decorators) {
+      lines.push(`| ${dec.name} | ${dec.description} |`);
+    }
+  } else {
+    lines.push('No decorators defined.');
+  }
+  lines.push('');
+  if (recipeHints) {
+    if (recipeHints.preferred && recipeHints.preferred.length > 0) {
+      lines.push(`**Preferred:** ${recipeHints.preferred.join(', ')}`);
+    }
+    if (recipeHints.compositions) {
+      lines.push(`**Compositions:** ${recipeHints.compositions}`);
+    }
+    if (recipeHints.spatialHints) {
+      lines.push(`**Spatial hints:** ${recipeHints.spatialHints}`);
+    }
+    lines.push('');
+  }
+  lines.push('---');
+  lines.push('');
+
+  // Zone Context
+  if (zoneContext) {
+    lines.push('## Zone Context');
+    lines.push('');
+    lines.push(zoneContext);
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  }
+
+  // Features
+  if (section.features.length > 0) {
+    lines.push('## Features');
+    lines.push('');
+    lines.push(section.features.join(', '));
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  }
+
+  // Personality
+  if (personality.length > 0) {
+    lines.push('## Personality');
+    lines.push('');
+    lines.push(personality.join(', '));
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  }
+
+  // Constraints
+  if (constraints && Object.keys(constraints).length > 0) {
+    lines.push('## Constraints');
+    lines.push('');
+    for (const [key, value] of Object.entries(constraints)) {
+      lines.push(`- **${key}:** ${value}`);
+    }
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  }
+
+  // Pages
+  lines.push('## Pages');
+  lines.push('');
+  for (const page of section.pages) {
+    const route = page.route || `/${section.id}/${page.id}`;
+    const layoutStr = page.layout.map(serializeLayoutItem).join(' → ');
+    lines.push(`### ${page.id} (${route})`);
+    lines.push('');
+    lines.push(`Layout: ${layoutStr}`);
+    lines.push('');
+
+    // Collect pattern names from layout items
+    const patternNames = page.layout.flatMap(extractPatternNames);
+
+    for (const patternName of patternNames) {
+      const spec = patternSpecs[patternName];
+      if (!spec) continue;
+
+      lines.push(`#### Pattern: ${patternName}`);
+      lines.push('');
+      lines.push(spec.description);
+      lines.push('');
+      lines.push(`**Components:** ${spec.components.join(', ')}`);
+      lines.push('');
+      lines.push('**Layout slots:**');
+      for (const [slot, desc] of Object.entries(spec.slots)) {
+        lines.push(`- \`${slot}\`: ${desc}`);
+      }
+      lines.push('');
+      if (spec.code) {
+        lines.push('**Code example:**');
+        lines.push('```');
+        lines.push(spec.code);
+        lines.push('```');
+        lines.push('');
+      }
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate a scaffold overview markdown for the full application.
+ * Provides a high-level view of all sections, routes, and topology
+ * for the initial scaffolding task.
+ */
+export function generateScaffoldContext(input: ScaffoldContextInput): string {
+  const { appName, blueprintId, themeName, recipeName, personality, topologyMarkdown, sections, routes, constraints, seo, navigation } = input;
+  const lines: string[] = [];
+
+  // Header
+  lines.push(`# Scaffold: ${appName}`);
+  lines.push('');
+  lines.push(`**Blueprint:** ${blueprintId}`);
+  lines.push(`**Theme:** ${themeName} | **Recipe:** ${recipeName}`);
+  lines.push(`**Personality:** ${personality.join(', ')}`);
+  lines.push('**Guard mode:** creative (no enforcement during initial scaffolding)');
+  lines.push('');
+
+  // Topology
+  lines.push('## App Topology');
+  lines.push('');
+  lines.push(topologyMarkdown);
+  lines.push('');
+
+  // Sections Overview
+  lines.push('## Sections Overview');
+  lines.push('');
+  lines.push('| Section | Role | Shell | Pages | Features |');
+  lines.push('|---------|------|-------|-------|----------|');
+  for (const section of sections) {
+    const pageIds = section.pages.map(p => p.id).join(', ');
+    const feats = section.features.join(', ') || 'none';
+    lines.push(`| ${section.id} | ${section.role} | ${section.shell} | ${pageIds} | ${feats} |`);
+  }
+  lines.push('');
+
+  // Route Map
+  lines.push('## Route Map');
+  lines.push('');
+  lines.push('| Route | Section | Page |');
+  lines.push('|-------|---------|------|');
+  for (const [route, entry] of Object.entries(routes)) {
+    lines.push(`| ${route} | ${entry.section} | ${entry.page} |`);
+  }
+  lines.push('');
+
+  // Section Context references
+  lines.push('## Section Contexts');
+  lines.push('');
+  lines.push('For detailed pattern specs per section, read:');
+  for (const section of sections) {
+    lines.push(`- .decantr/context/section-${section.id}.md`);
+  }
+  lines.push('');
+
+  // Design Constraints
+  if (constraints && Object.keys(constraints).length > 0) {
+    lines.push('## Design Constraints');
+    lines.push('');
+    for (const [key, value] of Object.entries(constraints)) {
+      lines.push(`- **${key}:** ${value}`);
+    }
+    lines.push('');
+  }
+
+  // SEO Hints
+  if (seo && (seo.schema_org?.length || seo.meta_priorities?.length)) {
+    lines.push('## SEO Hints');
+    lines.push('');
+    if (seo.schema_org && seo.schema_org.length > 0) {
+      lines.push(`**Schema.org types:** ${seo.schema_org.join(', ')}`);
+    }
+    if (seo.meta_priorities && seo.meta_priorities.length > 0) {
+      lines.push(`**Meta priorities:** ${seo.meta_priorities.join(', ')}`);
+    }
+    lines.push('');
+  }
+
+  // Navigation
+  if (navigation && (navigation.hotkeys?.length || navigation.command_palette)) {
+    lines.push('## Navigation');
+    lines.push('');
+    if (navigation.command_palette) {
+      lines.push('- Command palette: enabled');
+    }
+    if (navigation.hotkeys && navigation.hotkeys.length > 0) {
+      lines.push(`- Hotkeys: ${navigation.hotkeys.length} configured`);
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
 }
 
 export { loadTemplate, renderTemplate };
