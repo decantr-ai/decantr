@@ -6,8 +6,20 @@
  *
  * Naming: .d-{component} root, .d-{component}-{variant|part|state} for sub-parts.
  * All sizing uses design tokens: var(--d-*) with fallbacks.
+ *
+ * MIGRATION NOTE: Shared CSS (reset, utilities, field base, animations) has been
+ * extracted to _shared-css.ts. This file still works as before via injectBase(),
+ * but components can gradually switch to injectCSS() + injectSharedCSS() for
+ * per-component CSS tree-shaking.
+ *
+ * Re-exports cx, reactiveAttr, reactiveClass, reactiveProp, resolve from _shared-css.ts
+ * so existing imports from './_base.js' continue to work.
  */
 import { createEffect } from '../state/index.js';
+import { injectSharedCSS } from './_shared-css.js';
+
+// Re-export shared utilities so existing `import { cx } from './_base.js'` keeps working
+export { cx, reactiveAttr, reactiveClass, reactiveProp, resolve } from './_shared-css.js';
 
 let injected = false;
 
@@ -1719,6 +1731,8 @@ export function injectBase() {
   if (injected) return;
   if (typeof document === 'undefined') return;
   injected = true;
+  // Ensure shared CSS is injected via the new per-component system
+  injectSharedCSS();
   let el = document.querySelector('[data-decantr-base]');
   if (!el) {
     el = document.createElement('style');
@@ -1728,67 +1742,6 @@ export function injectBase() {
   el.textContent = `@layer d.base{${BASE_CSS}}`;
 }
 
-/**
- * Merge class names, filtering falsy values.
- * @param {...(string|false|null|undefined)} classes
- * @returns {string}
- */
-export function cx(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
-
 export function resetBase() {
   injected = false;
-}
-
-/**
- * Toggle a boolean attribute reactively.
- * @param {HTMLElement} el
- * @param {boolean|Function} prop
- * @param {string} attr
- */
-export function reactiveAttr(el, prop, attr) {
-  if (typeof prop === 'function') {
-    createEffect(() => { prop() ? el.setAttribute(attr, '') : el.removeAttribute(attr); });
-  } else if (prop) {
-    el.setAttribute(attr, '');
-  }
-}
-
-/**
- * Toggle a CSS class reactively.
- * @param {HTMLElement} el
- * @param {boolean|Function} prop
- * @param {string} baseClass
- * @param {string} activeClass
- */
-export function reactiveClass(el, prop, baseClass, activeClass) {
-  if (typeof prop === 'function') {
-    createEffect(() => { el.className = prop() ? cx(baseClass, activeClass) : baseClass; });
-  } else if (prop) {
-    el.className = cx(baseClass, activeClass);
-  }
-}
-
-/**
- * Sync a DOM property reactively.
- * @param {HTMLElement} el
- * @param {*|Function} prop
- * @param {string} domProp
- */
-export function reactiveProp(el, prop, domProp) {
-  if (typeof prop === 'function') {
-    createEffect(() => { el[domProp] = prop(); });
-  } else if (prop !== undefined) {
-    el[domProp] = prop;
-  }
-}
-
-/**
- * Resolve a prop that may be a static value or signal getter.
- * @param {*|Function} prop
- * @returns {*}
- */
-export function resolve(prop) {
-  return typeof prop === 'function' ? prop() : prop;
 }

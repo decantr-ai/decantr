@@ -6,8 +6,8 @@
  */
 import { createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
-import { cx } from './_base.js';
-import { caret, createOverlay, positionPanel } from './_behaviors.js';
+import { cx } from './_shared-css.js';
+import { caret, createOverlay } from './_behaviors.js';
 import { icon as renderIcon } from './icon.js';
 
 const { div, button, span } = tags;
@@ -20,27 +20,27 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 export { MONTHS };
 
-function sameDay(a, b) {
-  return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+function sameDay(a: Date | null | undefined, b: Date | null | undefined): boolean {
+  return !!(a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate());
+}
+
+export interface CalendarOptions {
+  viewDate: Date;
+  selected?: Date | null;
+  rangeStart?: Date | null;
+  rangeEnd?: Date | null;
+  hoverDate?: Date | null;
+  isDisabled?: (date: Date) => boolean;
+  onSelect: (date: Date) => void;
+  onHover?: (date: Date) => void;
+  onNav: (delta: number) => void;
+  onTitleClick?: () => void;
 }
 
 /**
  * Render a calendar month grid with navigation header.
- *
- * @param {Object} opts
- * @param {Date} opts.viewDate - Month/year to display
- * @param {Date} [opts.selected] - Selected date (highlight)
- * @param {Date} [opts.rangeStart] - Range start for range pickers
- * @param {Date} [opts.rangeEnd] - Range end for range pickers
- * @param {Date} [opts.hoverDate] - Hover date for range preview
- * @param {Function} [opts.isDisabled] - (date) => boolean
- * @param {Function} opts.onSelect - (date) => void
- * @param {Function} [opts.onHover] - (date) => void
- * @param {Function} opts.onNav - (delta) => void  — called with -1/+1 for month nav
- * @param {Function} [opts.onTitleClick] - () => void — switch to month view
- * @returns {HTMLElement}
  */
-export function renderCalendar(opts) {
+export function renderCalendar(opts: CalendarOptions): HTMLElement {
   const { viewDate, selected, rangeStart, rangeEnd, hoverDate, isDisabled, onSelect, onHover, onNav, onTitleClick } = opts;
   const container = div({ class: 'd-datepicker-calendar' });
   const year = viewDate.getFullYear();
@@ -78,7 +78,7 @@ export function renderCalendar(opts) {
   const effMin = effStart && effEnd && effEnd < effStart ? effEnd : effStart;
   const effMax = effStart && effEnd && effEnd < effStart ? effStart : effEnd;
 
-  function dayClasses(d, outside) {
+  function dayClasses(d: Date, outside: boolean): string {
     const c = ['d-datepicker-day'];
     if (outside) c.push('d-datepicker-day-outside');
     if (sameDay(d, today)) c.push('d-datepicker-day-today');
@@ -136,27 +136,27 @@ export function renderCalendar(opts) {
 // ─── TIME COLUMNS ────────────────────────────────────────────
 // Used by: TimePicker, TimeRangePicker
 
+export interface TimeColumnOptions {
+  hours: number;
+  minutes: number;
+  seconds?: number;
+  hourStep?: number;
+  minuteStep?: number;
+  secondStep?: number;
+  use12h?: boolean;
+  period?: string;
+  onChange: (value: { hours: number; minutes: number; seconds?: number; period?: string }) => void;
+}
+
 /**
  * Render scrollable time selection columns.
- *
- * @param {Object} opts
- * @param {number} opts.hours - Selected hour
- * @param {number} opts.minutes - Selected minute
- * @param {number} [opts.seconds] - Selected second (omit to hide seconds column)
- * @param {number} [opts.hourStep=1]
- * @param {number} [opts.minuteStep=1]
- * @param {number} [opts.secondStep=1]
- * @param {boolean} [opts.use12h=false]
- * @param {string} [opts.period='AM'] - AM/PM for 12h mode
- * @param {Function} opts.onChange - ({ hours, minutes, seconds?, period? }) => void
- * @returns {HTMLElement}
  */
-export function renderTimeColumns(opts) {
+export function renderTimeColumns(opts: TimeColumnOptions): HTMLElement {
   const { hours, minutes, seconds, hourStep = 1, minuteStep = 1, secondStep = 1, use12h = false, period = 'AM', onChange } = opts;
 
   const container = div({ class: 'd-timepicker-columns' });
 
-  function createColumn(count, step, selected, startAt, onSelect) {
+  function createColumn(count: number, step: number, selected: number, startAt: number, onSelect: (value: number) => void): HTMLElement {
     const col = div({ class: 'd-timepicker-column' });
     for (let i = startAt; i < count; i += step) {
       const cell = button({
@@ -200,7 +200,7 @@ export function renderTimeColumns(opts) {
   // AM/PM column (12h mode)
   if (use12h) {
     const periodCol = div({ class: 'd-timepicker-column' });
-    ['AM', 'PM'].forEach(p => {
+    (['AM', 'PM'] as const).forEach(p => {
       const cell = button({
         type: 'button',
         class: cx('d-timepicker-cell', p === period && 'd-timepicker-cell-selected'),
@@ -223,17 +223,25 @@ export function renderTimeColumns(opts) {
 // ─── MENU ITEMS ──────────────────────────────────────────────
 // Used by: ContextMenu, Dropdown
 
+export interface MenuItem {
+  label: string;
+  value?: string;
+  icon?: string | Node;
+  shortcut?: string;
+  disabled?: boolean;
+  separator?: boolean;
+  onclick?: (value: string) => void;
+}
+
+export interface MenuRenderOptions {
+  onSelect?: (value: string) => void;
+  onClose?: () => void;
+}
+
 /**
  * Render menu items into a container.
- *
- * @param {HTMLElement} container
- * @param {{ label: string, value?: string, icon?: string|Node, shortcut?: string, disabled?: boolean, separator?: boolean, onclick?: Function }[]} items
- * @param {Object} [opts]
- * @param {Function} [opts.onSelect] - (value|label) => void
- * @param {Function} [opts.onClose] - () => void — close menu after selection
- * @returns {void}
  */
-export function renderMenuItems(container, items, opts = {}) {
+export function renderMenuItems(container: HTMLElement, items: MenuItem[], opts: MenuRenderOptions = {}): void {
   const { onSelect, onClose } = opts;
   container.replaceChildren();
 
@@ -242,7 +250,7 @@ export function renderMenuItems(container, items, opts = {}) {
       container.appendChild(div({ class: 'd-dropdown-separator', role: 'separator' }));
       return;
     }
-    const children = [];
+    const children: (string | Node)[] = [];
     if (item.icon) {
       children.push(typeof item.icon === 'string'
         ? renderIcon(item.icon, { size: '1em', class: 'd-dropdown-item-icon' })
@@ -253,8 +261,8 @@ export function renderMenuItems(container, items, opts = {}) {
       children.push(span({ class: 'd-dropdown-item-shortcut' }, item.shortcut));
     }
 
-    const itemAttrs = {
-      class: cx('d-dropdown-item', item.disabled && 'd-dropdown-item-disabled'),
+    const itemAttrs: Record<string, string> = {
+      class: cx('d-dropdown-item', item.disabled && 'd-dropdown-item-disabled') as string,
       role: 'menuitem',
       tabindex: '-1'
     };
@@ -262,7 +270,7 @@ export function renderMenuItems(container, items, opts = {}) {
     const el = div(itemAttrs, ...children);
 
     if (!item.disabled) {
-      el.addEventListener('click', (e) => {
+      el.addEventListener('click', (e: Event) => {
         e.stopPropagation();
         if (onClose) onClose();
         if (item.onclick) item.onclick(item.value || item.label);
@@ -277,23 +285,22 @@ export function renderMenuItems(container, items, opts = {}) {
 // ─── FIELD STATE ─────────────────────────────────────────────
 // Used by: ALL 14 field components
 
+export interface FieldStateProps {
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  disabled?: boolean | (() => boolean);
+  readonly?: boolean | (() => boolean);
+  loading?: boolean | (() => boolean);
+  variant?: 'outlined' | 'filled' | 'ghost';
+  size?: 'xs' | 'sm' | 'lg';
+}
+
 /**
  * Apply reactive field state (error, success, disabled, readonly, variant, size, loading)
  * to a .d-field element. Single source of truth for all field components.
- *
- * @param {HTMLElement} el - The .d-field container element
- * @param {Object} props
- * @param {boolean|string|Function} [props.error]
- * @param {boolean|string|Function} [props.success]
- * @param {boolean|Function} [props.disabled]
- * @param {boolean|Function} [props.readonly]
- * @param {boolean|Function} [props.loading]
- * @param {string} [props.variant='outlined'] - 'outlined'|'filled'|'ghost'
- * @param {string} [props.size] - 'xs'|'sm'|'lg'
- * @returns {{ destroy: Function }}
  */
-export function applyFieldState(el, props = {}) {
-  const { error, success, disabled, readonly, loading, variant, size } = props;
+export function applyFieldState(el: HTMLElement, props: FieldStateProps = {}): { destroy: () => void } {
+  const { error, success, disabled, readonly: readonlyProp, loading, variant, size } = props;
 
   // Static class setup
   el.classList.add('d-field');
@@ -334,13 +341,13 @@ export function applyFieldState(el, props = {}) {
   }
 
   // Reactive readonly
-  if (typeof readonly === 'function') {
+  if (typeof readonlyProp === 'function') {
     createEffect(() => {
-      const v = readonly();
+      const v = readonlyProp();
       if (v) el.setAttribute('readonly', '');
       else el.removeAttribute('readonly');
     });
-  } else if (readonly) {
+  } else if (readonlyProp) {
     el.setAttribute('readonly', '');
   }
 
@@ -351,17 +358,24 @@ export function applyFieldState(el, props = {}) {
 // ─── FIELD OVERLAY ───────────────────────────────────────────
 // Used by: Select, Combobox, DatePicker, TimePicker, Cascader, TreeSelect, ColorPicker, Mentions
 
+export interface FieldOverlayOptions {
+  trigger?: 'click' | 'hover' | 'manual';
+  portal?: boolean;
+  matchWidth?: boolean;
+  closeOnEscape?: boolean;
+  closeOnOutside?: boolean;
+  placement?: 'bottom' | 'top' | 'left' | 'right';
+  align?: 'start' | 'center' | 'end';
+  offset?: number;
+  onOpen?: () => void;
+  onClose?: () => void;
+}
+
 /**
  * Create an overlay with field-standard defaults (matchWidth, portal, placement).
  * Thin wrapper around createOverlay + positionPanel.
- *
- * @param {HTMLElement} triggerEl
- * @param {HTMLElement} panelEl
- * @param {Object} [opts] - Passed to createOverlay, with these defaults:
- *   trigger: 'manual', portal: true, matchWidth: true, closeOnEscape: true, closeOnOutside: true
- * @returns {{ open, close, toggle, isOpen, destroy }}
  */
-export function createFieldOverlay(triggerEl, panelEl, opts = {}) {
+export function createFieldOverlay(triggerEl: HTMLElement, panelEl: HTMLElement, opts: FieldOverlayOptions = {}) {
   return createOverlay(triggerEl, panelEl, {
     trigger: 'manual',
     portal: true,
@@ -376,12 +390,19 @@ export function createFieldOverlay(triggerEl, panelEl, opts = {}) {
 // ─── OKLCH COLOR MATH ────────────────────────────────────────
 // Used by: ColorPicker
 
+export interface OklchColor {
+  l: number;
+  c: number;
+  h: number;
+  a: number;
+}
+
 /**
  * Convert hex color to OKLCH components.
- * @param {string} hex - 3, 4, 6, or 8 digit hex color
- * @returns {{ l: number, c: number, h: number, a: number }} l: 0-1, c: 0-0.4, h: 0-360, a: 0-1
+ * @param hex - 3, 4, 6, or 8 digit hex color
+ * @returns l: 0-1, c: 0-0.4, h: 0-360, a: 0-1
  */
-export function hexToOklch(hex) {
+export function hexToOklch(hex: string): OklchColor {
   hex = hex.replace('#', '');
   if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
   if (hex.length === 4) hex = hex.split('').map(c => c + c).join('');
@@ -390,11 +411,11 @@ export function hexToOklch(hex) {
   const b = parseInt(hex.substr(4, 2), 16) / 255;
   const alpha = hex.length === 8 ? parseInt(hex.substr(6, 2), 16) / 255 : 1;
 
-  // sRGB → linear RGB
-  const toLinear = (c) => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  // sRGB -> linear RGB
+  const toLinear = (c: number): number => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
   const lr = toLinear(r), lg = toLinear(g), lb = toLinear(b);
 
-  // Linear RGB → OKLab
+  // Linear RGB -> OKLab
   const l_ = 0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb;
   const m_ = 0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb;
   const s_ = 0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb;
@@ -414,18 +435,18 @@ export function hexToOklch(hex) {
 
 /**
  * Convert OKLCH to hex color.
- * @param {number} L - Lightness 0-1
- * @param {number} C - Chroma 0-0.4
- * @param {number} H - Hue 0-360
- * @param {number} [A=1] - Alpha 0-1
- * @returns {string} hex color (6-digit or 8-digit when A < 1)
+ * @param L - Lightness 0-1
+ * @param C - Chroma 0-0.4
+ * @param H - Hue 0-360
+ * @param A - Alpha 0-1
+ * @returns hex color (6-digit or 8-digit when A < 1)
  */
-export function oklchToHex(L, C, H, A = 1) {
+export function oklchToHex(L: number, C: number, H: number, A: number = 1): string {
   const hRad = H * (Math.PI / 180);
   const a = C * Math.cos(hRad);
   const b = C * Math.sin(hRad);
 
-  // OKLab → linear RGB via LMS
+  // OKLab -> linear RGB via LMS
   const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
   const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
   const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
@@ -441,9 +462,9 @@ export function oklchToHex(L, C, H, A = 1) {
   lg = Math.max(0, Math.min(1, lg));
   lb = Math.max(0, Math.min(1, lb));
 
-  // Linear → sRGB
-  const toSrgb = (c) => c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-  const toHex = (c) => Math.round(Math.max(0, Math.min(255, toSrgb(c) * 255))).toString(16).padStart(2, '0');
+  // Linear -> sRGB
+  const toSrgb = (c: number): number => c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  const toHex = (c: number): string => Math.round(Math.max(0, Math.min(255, toSrgb(c) * 255))).toString(16).padStart(2, '0');
 
   const rgb = `#${toHex(lr)}${toHex(lg)}${toHex(lb)}`;
   if (A < 1) {
@@ -457,20 +478,22 @@ export function oklchToHex(L, C, H, A = 1) {
 // ─── COLOR HARMONY GENERATION ───────────────────────────────
 // Used by: ColorPalette, Theme Studio
 
+type HarmonyType = 'monochromatic' | 'analogous' | 'complementary' | 'split-complementary' | 'triadic' | 'tetradic' | 'square' | 'custom';
+
 /**
  * Generate harmonious colors from a base hex using OKLCH color math.
- * @param {string} baseHex - Base color as hex string
- * @param {string} type - Harmony type
- * @param {number} count - Desired number of colors (2-12)
- * @returns {string[]} Array of hex colors
+ * @param baseHex - Base color as hex string
+ * @param type - Harmony type
+ * @param count - Desired number of colors (2-12)
+ * @returns Array of hex colors
  */
-export function generateHarmony(baseHex, type, count) {
+export function generateHarmony(baseHex: string, type: HarmonyType | string, count: number): string[] {
   if (type === 'custom' || !baseHex) return [];
   const base = hexToOklch(baseHex);
   const H = base.h, L = base.l, C = base.c;
 
   // Anchor hues per harmony type
-  const anchors = {
+  const anchors: Record<string, number[]> = {
     monochromatic: [0],
     analogous: [0, 30, -30],
     complementary: [0, 180],
@@ -483,13 +506,13 @@ export function generateHarmony(baseHex, type, count) {
   const hueOffsets = anchors[type] || anchors.complementary;
 
   // Distribute count across anchor hues with L/C variation
-  const colors = [];
+  const colors: string[] = [];
   for (let i = 0; i < count; i++) {
     const anchorIdx = i % hueOffsets.length;
     const hue = (H + hueOffsets[anchorIdx] + 360) % 360;
     // Vary lightness and chroma for visual interest
     const variation = Math.floor(i / hueOffsets.length);
-    let lShift, cScale;
+    let lShift: number, cScale: number;
     if (type === 'monochromatic') {
       // Spread L from 0.2 to 0.85 evenly
       const t = count > 1 ? i / (count - 1) : 0.5;
@@ -508,17 +531,17 @@ export function generateHarmony(baseHex, type, count) {
 
 /**
  * Generate shade strip for a color.
- * @param {string} hex - Base hex color
- * @param {number} [steps=5] - Number of shades
- * @returns {string[]} Array of hex shade strings
+ * @param hex - Base hex color
+ * @param steps - Number of shades
+ * @returns Array of hex shade strings
  */
-export function generateShades(hex, steps = 5) {
+export function generateShades(hex: string, steps: number = 5): string[] {
   const base = hexToOklch(hex);
-  const shades = [];
+  const shades: string[] = [];
   for (let i = 0; i < steps; i++) {
     const t = steps > 1 ? i / (steps - 1) : 0.5;
     const L = 0.15 + t * 0.70;
-    // Bell curve chroma modulation — max chroma at midpoint
+    // Bell curve chroma modulation -- max chroma at midpoint
     const cMod = 0.5 + 0.5 * Math.sin(t * Math.PI);
     const C = Math.max(0.01, base.c * cMod);
     shades.push(oklchToHex(L, C, base.h));
@@ -528,10 +551,10 @@ export function generateShades(hex, steps = 5) {
 
 /**
  * Pick accessible foreground color for a swatch.
- * @param {string} hex - Background hex color
- * @returns {string} Black or white hex
+ * @param hex - Background hex color
+ * @returns Black or white hex
  */
-export function pickSwatchForeground(hex) {
+export function pickSwatchForeground(hex: string): string {
   const { l } = hexToOklch(hex);
   return l > 0.6 ? '#09090b' : '#ffffff';
 }

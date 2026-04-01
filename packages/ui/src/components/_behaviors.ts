@@ -8,41 +8,52 @@ import { createEffect, createSignal } from '../state/index.js';
 import { h } from '../runtime/index.js';
 import { icon } from './icon.js';
 
+// ─── CARET ──────────────────────────────────────────────────────
+
+type CaretDirection = 'down' | 'up' | 'right' | 'left';
+
 /**
  * Shared caret (chevron arrow) using the icon system.
  * Replaces inconsistent Unicode arrows across all components.
- * @param {'down'|'up'|'right'|'left'} [direction='down']
- * @param {Object} [opts] - Passed to icon(), plus optional `class`
- * @returns {HTMLElement}
  */
-export function caret(direction = 'down', opts = {}) {
+export function caret(direction: CaretDirection = 'down', opts: Record<string, unknown> = {}): HTMLElement {
   const cls = opts.class ? `d-caret ${opts.class}` : 'd-caret';
   return icon(`chevron-${direction}`, { size: '1em', ...opts, class: cls });
 }
 
 // ─── OVERLAY SYSTEM ──────────────────────────────────────────────
-// Used by: Tooltip, Popover, HoverCard, Dropdown, Select, Combobox,
-// DatePicker, TimePicker, ColorPicker, Cascader, TreeSelect,
-// Mentions, Command, NavigationMenu, ContextMenu, Popconfirm, Tour
+
+export interface OverlayOptions {
+  trigger?: 'click' | 'hover' | 'manual';
+  closeOnEscape?: boolean;
+  closeOnOutside?: boolean;
+  hoverDelay?: number;
+  hoverCloseDelay?: number;
+  onOpen?: () => void;
+  onClose?: () => void;
+  usePopover?: boolean;
+  portal?: boolean;
+  placement?: 'bottom' | 'top' | 'left' | 'right';
+  align?: 'start' | 'center' | 'end';
+  offset?: number;
+  matchWidth?: boolean;
+  exitAnimation?: boolean;
+  exitDuration?: number;
+}
+
+export interface OverlayHandle {
+  open: () => void;
+  close: () => void;
+  toggle: () => void;
+  isOpen: () => boolean;
+  destroy: () => void;
+}
 
 /**
  * Creates a managed overlay (floating layer) attached to a trigger element.
  * Handles show/hide, click-outside, escape, and ARIA state.
- *
- * @param {HTMLElement} triggerEl - The element that triggers the overlay
- * @param {HTMLElement} contentEl - The floating content element
- * @param {Object} opts
- * @param {'click'|'hover'|'manual'} [opts.trigger='click']
- * @param {boolean} [opts.closeOnEscape=true]
- * @param {boolean} [opts.closeOnOutside=true]
- * @param {number} [opts.hoverDelay=200]
- * @param {number} [opts.hoverCloseDelay=150]
- * @param {Function} [opts.onOpen]
- * @param {Function} [opts.onClose]
- * @param {boolean} [opts.usePopover=false] - Use Popover API
- * @returns {{ open: Function, close: Function, toggle: Function, isOpen: () => boolean, destroy: Function }}
  */
-export function createOverlay(triggerEl, contentEl, opts = {}) {
+export function createOverlay(triggerEl: HTMLElement, contentEl: HTMLElement, opts: OverlayOptions = {}): OverlayHandle {
   const {
     trigger = 'click',
     closeOnEscape = true,
@@ -63,26 +74,24 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
 
   let _open = false;
   let _closing = false;
-  let _hoverTimer = null;
-  let _closeTimer = null;
-  const _cleanups = [];
-  let _posHandle = null;
+  let _hoverTimer: ReturnType<typeof setTimeout> | null = null;
+  let _closeTimer: ReturnType<typeof setTimeout> | null = null;
+  const _cleanups: Array<() => void> = [];
+  let _posHandle: { reposition: () => void; destroy: () => void } | null = null;
 
   if (portal) {
     _posHandle = positionPanel(triggerEl, contentEl, { placement, align, offset, matchWidth });
   }
 
-  function isOpen() { return _open; }
+  function isOpen(): boolean { return _open; }
 
-  // Resolve portal target at open time — if the trigger lives inside a
-  // <dialog> shown via showModal() (top-layer), portal into that dialog
-  // so the dropdown isn't hidden behind the top-layer backdrop.
-  function portalTarget() {
+  // Resolve portal target at open time
+  function portalTarget(): HTMLElement {
     const dlg = triggerEl.closest('dialog');
-    return dlg || document.body;
+    return (dlg as HTMLElement) || document.body;
   }
 
-  function open() {
+  function open(): void {
     if (_open) return;
     if (_closing) { _closing = false; }
     _open = true;
@@ -90,8 +99,8 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
       const target = portalTarget();
       if (contentEl.parentNode !== target) target.appendChild(contentEl);
     }
-    if (usePopover && contentEl.showPopover) {
-      contentEl.showPopover();
+    if (usePopover && (contentEl as any).showPopover) {
+      (contentEl as any).showPopover();
     } else {
       contentEl.style.display = '';
     }
@@ -101,7 +110,7 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
     if (onOpen) onOpen();
   }
 
-  function close() {
+  function close(): void {
     if (!_open) return;
     _open = false;
 
@@ -119,8 +128,8 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
       return;
     }
 
-    if (usePopover && contentEl.hidePopover) {
-      try { contentEl.hidePopover(); } catch (_) {}
+    if (usePopover && (contentEl as any).hidePopover) {
+      try { (contentEl as any).hidePopover(); } catch (_) {}
     } else {
       contentEl.style.display = 'none';
     }
@@ -128,27 +137,27 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
     if (onClose) onClose();
   }
 
-  function toggle() { _open ? close() : open(); }
+  function toggle(): void { _open ? close() : open(); }
 
   // --- Wire up triggers ---
   if (trigger === 'click') {
-    const onClick = (e) => { e.stopPropagation(); toggle(); };
+    const onClick = (e: Event): void => { e.stopPropagation(); toggle(); };
     triggerEl.addEventListener('click', onClick);
     _cleanups.push(() => triggerEl.removeEventListener('click', onClick));
   }
 
   if (trigger === 'hover') {
-    const onEnter = () => {
-      clearTimeout(_closeTimer);
+    const onEnter = (): void => {
+      if (_closeTimer) clearTimeout(_closeTimer);
       _hoverTimer = setTimeout(open, hoverDelay);
     };
-    const onLeave = () => {
-      clearTimeout(_hoverTimer);
+    const onLeave = (): void => {
+      if (_hoverTimer) clearTimeout(_hoverTimer);
       _closeTimer = setTimeout(close, hoverCloseDelay);
     };
     triggerEl.addEventListener('mouseenter', onEnter);
     triggerEl.addEventListener('mouseleave', onLeave);
-    contentEl.addEventListener('mouseenter', () => clearTimeout(_closeTimer));
+    contentEl.addEventListener('mouseenter', () => { if (_closeTimer) clearTimeout(_closeTimer); });
     contentEl.addEventListener('mouseleave', onLeave);
     _cleanups.push(
       () => triggerEl.removeEventListener('mouseenter', onEnter),
@@ -158,15 +167,15 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
 
   // Escape to close
   if (closeOnEscape) {
-    const onKey = (e) => { if (e.key === 'Escape' && _open) { close(); triggerEl.focus(); } };
+    const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape' && _open) { close(); triggerEl.focus(); } };
     document.addEventListener('keydown', onKey, true);
     _cleanups.push(() => document.removeEventListener('keydown', onKey, true));
   }
 
   // Click outside to close
   if (closeOnOutside && trigger !== 'hover') {
-    const onDoc = (e) => {
-      if (_open && !triggerEl.contains(e.target) && !contentEl.contains(e.target)) close();
+    const onDoc = (e: MouseEvent): void => {
+      if (_open && !triggerEl.contains(e.target as Node) && !contentEl.contains(e.target as Node)) close();
     };
     document.addEventListener('mousedown', onDoc);
     _cleanups.push(() => document.removeEventListener('mousedown', onDoc));
@@ -174,7 +183,7 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
 
   // Popover API toggle sync
   if (usePopover) {
-    const onToggle = (e) => {
+    const onToggle = (e: any): void => {
       _open = e.newState === 'open';
       triggerEl.setAttribute('aria-expanded', String(_open));
       if (!_open && onClose) onClose();
@@ -186,7 +195,7 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
   // Initial state: hidden
   if (!usePopover) contentEl.style.display = 'none';
 
-  function destroy() {
+  function destroy(): void {
     _cleanups.forEach(fn => fn());
     if (_posHandle) _posHandle.destroy();
     if (portal && contentEl.parentNode) {
@@ -199,25 +208,26 @@ export function createOverlay(triggerEl, contentEl, opts = {}) {
 
 
 // ─── PANEL POSITIONING ──────────────────────────────────────────
-// Used by: Select, Combobox, DatePicker, Cascader, TreeSelect,
-// Mentions — any dropdown that must escape overflow/stacking contexts
+
+export interface PositionPanelOptions {
+  placement?: 'bottom' | 'top' | 'left' | 'right';
+  align?: 'start' | 'center' | 'end';
+  offset?: number;
+  matchWidth?: boolean;
+  flip?: boolean;
+}
+
+export interface PositionHandle {
+  reposition: () => void;
+  destroy: () => void;
+}
 
 /**
  * Positions a panel element relative to a trigger using position:fixed
  * + getBoundingClientRect(). Escapes all overflow containers and
  * stacking contexts by computing coordinates in viewport space.
- *
- * @param {HTMLElement} triggerEl
- * @param {HTMLElement} panelEl
- * @param {Object} [opts]
- * @param {'bottom'|'top'|'left'|'right'} [opts.placement='bottom']
- * @param {'start'|'center'|'end'} [opts.align='start']
- * @param {number} [opts.offset=2] - Gap in px between trigger and panel
- * @param {boolean} [opts.matchWidth=false] - Set panel width to trigger width
- * @param {boolean} [opts.flip=true] - Flip placement if panel overflows viewport
- * @returns {{ reposition: Function, destroy: Function }}
  */
-export function positionPanel(triggerEl, panelEl, opts = {}) {
+export function positionPanel(triggerEl: HTMLElement, panelEl: HTMLElement, opts: PositionPanelOptions = {}): PositionHandle {
   const {
     placement = 'bottom',
     align = 'start',
@@ -226,11 +236,11 @@ export function positionPanel(triggerEl, panelEl, opts = {}) {
     flip = true,
   } = opts;
 
-  let _rafId = null;
+  let _rafId: number | null = null;
   let _listening = false;
   const EDGE_PAD = 8;
 
-  function reposition() {
+  function reposition(): void {
     if (!triggerEl.isConnected) {
       panelEl.style.display = 'none';
       return;
@@ -272,21 +282,15 @@ export function positionPanel(triggerEl, panelEl, opts = {}) {
       }
     }
 
-    let top, left;
+    let top: number, left: number;
 
     if (usePlacement === 'left' || usePlacement === 'right') {
-      // Horizontal placement
       left = usePlacement === 'right' ? tr.right + offset : tr.left - pr.width - offset;
-
-      // Vertical alignment
       if (align === 'start') top = tr.top;
       else if (align === 'end') top = tr.bottom - pr.height;
       else top = tr.top + (tr.height - pr.height) / 2;
     } else {
-      // Vertical placement (top/bottom)
       top = usePlacement === 'bottom' ? tr.bottom + offset : tr.top - pr.height - offset;
-
-      // Horizontal alignment
       if (align === 'start') left = tr.left;
       else if (align === 'end') left = tr.right - pr.width;
       else left = tr.left + (tr.width - pr.width) / 2;
@@ -303,7 +307,7 @@ export function positionPanel(triggerEl, panelEl, opts = {}) {
     panelEl.style.left = `${left}px`;
   }
 
-  function onScrollOrResize() {
+  function onScrollOrResize(): void {
     if (_rafId) return;
     _rafId = requestAnimationFrame(() => {
       _rafId = null;
@@ -311,14 +315,14 @@ export function positionPanel(triggerEl, panelEl, opts = {}) {
     });
   }
 
-  function startListening() {
+  function startListening(): void {
     if (_listening) return;
     _listening = true;
     window.addEventListener('scroll', onScrollOrResize, true);
     window.addEventListener('resize', onScrollOrResize);
   }
 
-  function stopListening() {
+  function stopListening(): void {
     if (!_listening) return;
     _listening = false;
     window.removeEventListener('scroll', onScrollOrResize, true);
@@ -328,7 +332,7 @@ export function positionPanel(triggerEl, panelEl, opts = {}) {
 
   startListening();
 
-  function destroy() {
+  function destroy(): void {
     stopListening();
   }
 
@@ -337,29 +341,36 @@ export function positionPanel(triggerEl, panelEl, opts = {}) {
 
 
 // ─── LISTBOX SYSTEM ──────────────────────────────────────────────
-// Used by: Select, Combobox, Command, Cascader, TreeSelect,
-// Transfer, Mentions, AutoComplete, ContextMenu, Dropdown
+
+export interface ListboxOptions {
+  itemSelector?: string;
+  activeClass?: string;
+  disabledSelector?: string;
+  loop?: boolean;
+  orientation?: 'vertical' | 'horizontal';
+  typeAhead?: boolean;
+  owner?: HTMLElement | null;
+  onSelect?: (element: Element, index: number) => void;
+  onHighlight?: (element: Element, index: number) => void;
+}
+
+export interface ListboxHandle {
+  highlight: (index: number) => void;
+  highlightNext: () => void;
+  highlightPrev: () => void;
+  selectCurrent: () => void;
+  getActiveIndex: () => number;
+  reset: () => void;
+  handleKeydown: (e: KeyboardEvent) => void;
+  destroy: () => void;
+}
+
+let _listboxOptionId = 0;
 
 /**
  * Keyboard navigation + selection for a list of options.
- * Manages active-descendant, arrow keys, enter/space selection,
- * type-ahead search, and multi-select.
- *
- * @param {HTMLElement} containerEl - The listbox container element
- * @param {Object} opts
- * @param {string} [opts.itemSelector='.d-option'] - CSS selector for option elements
- * @param {string} [opts.activeClass='d-option-active'] - Class for highlighted item
- * @param {string} [opts.disabledSelector='.d-option-disabled']
- * @param {boolean} [opts.loop=true] - Loop navigation
- * @param {'vertical'|'horizontal'} [opts.orientation='vertical']
- * @param {boolean} [opts.typeAhead=false]
- * @param {Function} [opts.onSelect] - Called with (element, index) on selection
- * @param {Function} [opts.onHighlight] - Called with (element, index) when highlight changes
- * @returns {{ highlight: Function, getActiveIndex: () => number, reset: Function, handleKeydown: Function, destroy: Function }}
  */
-let _listboxOptionId = 0;
-
-export function createListbox(containerEl, opts = {}) {
+export function createListbox(containerEl: HTMLElement, opts: ListboxOptions = {}): ListboxHandle {
   const {
     itemSelector = '.d-option',
     activeClass = 'd-option-active',
@@ -374,42 +385,39 @@ export function createListbox(containerEl, opts = {}) {
 
   let activeIndex = -1;
   let _typeBuffer = '';
-  let _typeTimer = null;
+  let _typeTimer: ReturnType<typeof setTimeout> | null = null;
 
-  function getItems() {
+  function getItems(): Element[] {
     return [...containerEl.querySelectorAll(itemSelector)];
   }
 
-  function highlight(index) {
+  function highlight(index: number): void {
     const items = getItems();
     items.forEach((el, i) => {
       el.classList.toggle(activeClass, i === index);
       el.setAttribute('aria-selected', i === index ? 'true' : 'false');
     });
     activeIndex = index;
-    // Assign IDs and set aria-activedescendant on owner
     if (owner && items[index]) {
       if (!items[index].id) items[index].id = 'd-lo-' + (_listboxOptionId++);
       owner.setAttribute('aria-activedescendant', items[index].id);
     } else if (owner) {
       owner.removeAttribute('aria-activedescendant');
     }
-    // Scroll into view
-    if (items[index]) items[index].scrollIntoView?.({ block: 'nearest' });
+    if (items[index]) (items[index] as HTMLElement).scrollIntoView?.({ block: 'nearest' });
     if (onHighlight && items[index]) onHighlight(items[index], index);
   }
 
-  function highlightNext() {
+  function highlightNext(): void {
     const items = getItems();
     if (!items.length) return;
     let next = activeIndex + 1;
-    // Skip disabled
     while (next < items.length && items[next]?.matches(disabledSelector)) next++;
     if (next >= items.length) next = loop ? 0 : items.length - 1;
     highlight(next);
   }
 
-  function highlightPrev() {
+  function highlightPrev(): void {
     const items = getItems();
     if (!items.length) return;
     let prev = activeIndex - 1;
@@ -418,21 +426,21 @@ export function createListbox(containerEl, opts = {}) {
     highlight(prev);
   }
 
-  function selectCurrent() {
+  function selectCurrent(): void {
     const items = getItems();
     if (activeIndex >= 0 && items[activeIndex] && !items[activeIndex].matches(disabledSelector)) {
       if (onSelect) onSelect(items[activeIndex], activeIndex);
     }
   }
 
-  function handleTypeAhead(char) {
+  function handleTypeAhead(char: string): void {
     if (!typeAhead) return;
-    clearTimeout(_typeTimer);
+    if (_typeTimer) clearTimeout(_typeTimer);
     _typeBuffer += char.toLowerCase();
     _typeTimer = setTimeout(() => { _typeBuffer = ''; }, 500);
     const items = getItems();
     const idx = items.findIndex(el =>
-      el.textContent.trim().toLowerCase().startsWith(_typeBuffer) && !el.matches(disabledSelector)
+      (el.textContent || '').trim().toLowerCase().startsWith(_typeBuffer) && !el.matches(disabledSelector)
     );
     if (idx >= 0) highlight(idx);
   }
@@ -440,7 +448,7 @@ export function createListbox(containerEl, opts = {}) {
   const downKey = orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight';
   const upKey = orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft';
 
-  function handleKeydown(e) {
+  function handleKeydown(e: KeyboardEvent): void {
     if (e.key === downKey) { e.preventDefault(); highlightNext(); }
     else if (e.key === upKey) { e.preventDefault(); highlightPrev(); }
     else if (e.key === 'Home') { e.preventDefault(); highlight(0); }
@@ -451,83 +459,86 @@ export function createListbox(containerEl, opts = {}) {
 
   containerEl.addEventListener('keydown', handleKeydown);
 
-  function reset() {
+  function reset(): void {
     activeIndex = -1;
     highlight(-1);
     if (owner) owner.removeAttribute('aria-activedescendant');
   }
-  function getActiveIndex() { return activeIndex; }
-  function destroy() { containerEl.removeEventListener('keydown', handleKeydown); }
+  function getActiveIndex(): number { return activeIndex; }
+  function destroy(): void { containerEl.removeEventListener('keydown', handleKeydown); }
 
   return { highlight, highlightNext, highlightPrev, selectCurrent, getActiveIndex, reset, handleKeydown, destroy };
 }
 
 
 // ─── DISCLOSURE SYSTEM ───────────────────────────────────────────
-// Used by: Accordion, Collapsible, Tree, NavigationMenu sections
+
+export interface DisclosureOptions {
+  defaultOpen?: boolean;
+  animate?: boolean;
+  onToggle?: (open: boolean) => void;
+}
+
+export interface DisclosureHandle {
+  open: () => void;
+  close: () => void;
+  toggle: () => void;
+  isOpen: () => boolean;
+}
 
 /**
  * Expand/collapse with smooth height animation.
- *
- * @param {HTMLElement} triggerEl
- * @param {HTMLElement} contentEl
- * @param {Object} opts
- * @param {boolean} [opts.defaultOpen=false]
- * @param {boolean} [opts.animate=true]
- * @param {Function} [opts.onToggle]
- * @returns {{ open: Function, close: Function, toggle: Function, isOpen: () => boolean }}
  */
-export function createDisclosure(triggerEl, contentEl, opts = {}) {
+export function createDisclosure(triggerEl: HTMLElement, contentEl: HTMLElement, opts: DisclosureOptions = {}): DisclosureHandle {
   const { defaultOpen = false, animate = true, onToggle } = opts;
   let _open = defaultOpen;
 
-  // Wrapper for height animation
   const region = contentEl.parentElement?.classList.contains('d-disclosure-region')
     ? contentEl.parentElement
     : contentEl;
 
-  function syncState() {
+  function syncState(): void {
     triggerEl.setAttribute('aria-expanded', String(_open));
     if (_open) {
       if (animate && region !== contentEl) {
-        region.style.height = '0';
-        region.style.overflow = 'hidden';
-        region.style.display = '';
+        region!.style.height = '0';
+        region!.style.overflow = 'hidden';
+        region!.style.display = '';
         const h = contentEl.scrollHeight;
-        region.style.height = h + 'px';
-        const onEnd = () => { region.style.height = 'auto'; region.style.overflow = ''; region.removeEventListener('transitionend', onEnd); };
-        region.addEventListener('transitionend', onEnd);
+        region!.style.height = h + 'px';
+        const onEnd = (): void => { region!.style.height = 'auto'; region!.style.overflow = ''; region!.removeEventListener('transitionend', onEnd); };
+        region!.addEventListener('transitionend', onEnd);
       } else {
-        region.style.display = '';
-        region.style.height = 'auto';
+        region!.style.display = '';
+        region!.style.height = 'auto';
       }
     } else {
       if (animate && region !== contentEl) {
-        region.style.height = region.scrollHeight + 'px';
-        region.offsetHeight; // force reflow
-        region.style.overflow = 'hidden';
-        region.style.height = '0';
-        const onEnd = () => { region.style.display = 'none'; region.removeEventListener('transitionend', onEnd); };
-        region.addEventListener('transitionend', onEnd);
+        region!.style.height = region!.scrollHeight + 'px';
+        (region as HTMLElement).offsetHeight; // force reflow
+        region!.style.overflow = 'hidden';
+        region!.style.height = '0';
+        const onEnd = (): void => { region!.style.display = 'none'; region!.removeEventListener('transitionend', onEnd); };
+        region!.addEventListener('transitionend', onEnd);
       } else {
-        region.style.display = 'none';
+        region!.style.display = 'none';
       }
     }
     if (onToggle) onToggle(_open);
   }
 
-  function open() { _open = true; syncState(); }
-  function close() { _open = false; syncState(); }
-  function toggle() { _open = !_open; syncState(); }
-  function isOpen() { return _open; }
+  function open(): void { _open = true; syncState(); }
+  function close(): void { _open = false; syncState(); }
+  function toggle(): void { _open = !_open; syncState(); }
+  function isOpen(): boolean { return _open; }
 
   triggerEl.addEventListener('click', toggle);
-  triggerEl.addEventListener('keydown', (e) => {
+  triggerEl.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
   });
 
   // Initial state
-  if (!_open) { region.style.display = 'none'; region.style.height = '0'; }
+  if (!_open) { region!.style.display = 'none'; region!.style.height = '0'; }
   triggerEl.setAttribute('aria-expanded', String(_open));
 
   return { open, close, toggle, isOpen };
@@ -535,22 +546,25 @@ export function createDisclosure(triggerEl, contentEl, opts = {}) {
 
 
 // ─── ROVING TABINDEX ─────────────────────────────────────────────
-// Used by: Tabs, RadioGroup, ToggleGroup, Segmented, Menu, Menubar,
-// ButtonGroup, Toolbar
+
+export interface RovingTabindexOptions {
+  itemSelector?: string;
+  orientation?: 'horizontal' | 'vertical' | 'both';
+  loop?: boolean;
+  onFocus?: (element: Element, index: number) => void;
+}
+
+export interface RovingTabindexHandle {
+  focus: (index: number) => void;
+  setActive: (index: number) => void;
+  getActive: () => number;
+  destroy: () => void;
+}
 
 /**
  * Manages keyboard navigation within a group via roving tabindex pattern.
- * Only one element in the group has tabindex=0; the rest have tabindex=-1.
- *
- * @param {HTMLElement} containerEl
- * @param {Object} opts
- * @param {string} [opts.itemSelector='[role="tab"]'] - Selector for navigable items
- * @param {'horizontal'|'vertical'|'both'} [opts.orientation='horizontal']
- * @param {boolean} [opts.loop=true]
- * @param {Function} [opts.onFocus] - Called with (element, index) when focus changes
- * @returns {{ focus: Function, setActive: Function, getActive: () => number, destroy: Function }}
  */
-export function createRovingTabindex(containerEl, opts = {}) {
+export function createRovingTabindex(containerEl: HTMLElement, opts: RovingTabindexOptions = {}): RovingTabindexHandle {
   const {
     itemSelector = '[role="tab"]',
     orientation = 'horizontal',
@@ -560,11 +574,11 @@ export function createRovingTabindex(containerEl, opts = {}) {
 
   let activeIdx = 0;
 
-  function getItems() {
+  function getItems(): Element[] {
     return [...containerEl.querySelectorAll(itemSelector)];
   }
 
-  function setActive(index) {
+  function setActive(index: number): void {
     const items = getItems();
     items.forEach((el, i) => {
       el.setAttribute('tabindex', i === index ? '0' : '-1');
@@ -572,15 +586,15 @@ export function createRovingTabindex(containerEl, opts = {}) {
     activeIdx = index;
   }
 
-  function focus(index) {
+  function focus(index: number): void {
     const items = getItems();
     if (index < 0 || index >= items.length) return;
     setActive(index);
-    items[index].focus();
+    (items[index] as HTMLElement).focus();
     if (onFocus) onFocus(items[index], index);
   }
 
-  function move(delta) {
+  function move(delta: number): void {
     const items = getItems();
     if (!items.length) return;
     let next = activeIdx + delta;
@@ -595,7 +609,7 @@ export function createRovingTabindex(containerEl, opts = {}) {
   const hKeys = { next: 'ArrowRight', prev: 'ArrowLeft' };
   const vKeys = { next: 'ArrowDown', prev: 'ArrowUp' };
 
-  function onKeydown(e) {
+  function onKeydown(e: KeyboardEvent): void {
     const horiz = orientation === 'horizontal' || orientation === 'both';
     const vert = orientation === 'vertical' || orientation === 'both';
 
@@ -612,31 +626,32 @@ export function createRovingTabindex(containerEl, opts = {}) {
   // Initialize tabindex
   setActive(activeIdx);
 
-  function destroy() { containerEl.removeEventListener('keydown', onKeydown); }
-  function getActive() { return activeIdx; }
+  function destroy(): void { containerEl.removeEventListener('keydown', onKeydown); }
+  function getActive(): number { return activeIdx; }
 
   return { focus, setActive, getActive, destroy };
 }
 
 
 // ─── FOCUS TRAP ──────────────────────────────────────────────────
-// Used by: Modal, Drawer, AlertDialog, Command
+
+export interface FocusTrapHandle {
+  activate: () => void;
+  deactivate: () => void;
+}
 
 /**
  * Traps focus within a container. Tab/Shift+Tab cycle within focusable elements.
- *
- * @param {HTMLElement} containerEl
- * @returns {{ activate: Function, deactivate: Function }}
  */
-export function createFocusTrap(containerEl) {
+export function createFocusTrap(containerEl: HTMLElement): FocusTrapHandle {
   const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
   let _active = false;
 
-  function getFocusable() {
-    return [...containerEl.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null);
+  function getFocusable(): HTMLElement[] {
+    return [...containerEl.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(el => el.offsetParent !== null);
   }
 
-  function onKeydown(e) {
+  function onKeydown(e: KeyboardEvent): void {
     if (!_active || e.key !== 'Tab') return;
     const focusable = getFocusable();
     if (!focusable.length) return;
@@ -649,15 +664,14 @@ export function createFocusTrap(containerEl) {
     }
   }
 
-  function activate() {
+  function activate(): void {
     _active = true;
     containerEl.addEventListener('keydown', onKeydown);
-    // Focus first focusable element
     const first = getFocusable()[0];
     if (first) requestAnimationFrame(() => first.focus());
   }
 
-  function deactivate() {
+  function deactivate(): void {
     _active = false;
     containerEl.removeEventListener('keydown', onKeydown);
   }
@@ -667,22 +681,31 @@ export function createFocusTrap(containerEl) {
 
 
 // ─── FORM FIELD WRAPPER ──────────────────────────────────────────
-// Used by: ALL form inputs (Input, Select, Checkbox, etc.)
+
+export interface FormFieldOptions {
+  label?: string;
+  error?: string | (() => string);
+  success?: boolean | string | (() => boolean | string);
+  help?: string;
+  required?: boolean;
+  variant?: string;
+  size?: string;
+  class?: string;
+}
+
+export interface FormFieldHandle {
+  wrapper: HTMLElement;
+  setError: (msg: string) => void;
+  setSuccess: (v: boolean | string) => void;
+  destroy: () => void;
+}
+
+let _fieldId = 0;
 
 /**
  * Wraps a form control with label, help text, error message, and required indicator.
- * Returns the wrapper element; the control is placed inside.
- *
- * @param {HTMLElement} controlEl - The actual input/select/textarea element
- * @param {Object} opts
- * @param {string} [opts.label]
- * @param {string|Function} [opts.error]
- * @param {string} [opts.help]
- * @param {boolean} [opts.required]
- * @param {string} [opts.class]
- * @returns {HTMLElement}
  */
-export function createFormField(controlEl, opts = {}) {
+export function createFormField(controlEl: HTMLElement, opts: FormFieldOptions = {}): FormFieldHandle {
   const { label, error, success, help, required, variant, size, class: cls } = opts;
 
   const id = controlEl.id || `d-form-field-${_fieldId++}`;
@@ -750,7 +773,7 @@ export function createFormField(controlEl, opts = {}) {
     }
   }
 
-  function setError(msg) {
+  function setError(msg: string): void {
     errEl.textContent = msg || '';
     errEl.style.display = msg ? '' : 'none';
     controlEl.setAttribute('aria-invalid', msg ? 'true' : 'false');
@@ -759,36 +782,32 @@ export function createFormField(controlEl, opts = {}) {
     else controlEl.removeAttribute('aria-errormessage');
   }
 
-  function setSuccess(v) {
+  function setSuccess(v: boolean | string): void {
     wrapper.toggleAttribute('data-success', !!v);
   }
 
-  function destroy() {}
+  function destroy(): void {}
 
   return { wrapper, setError, setSuccess, destroy };
 }
 
-let _fieldId = 0;
-
 
 // ─── DRAG SYSTEM ─────────────────────────────────────────────────
-// Used by: Slider, Resizable, Transfer, DnD sorting
+
+export interface DragOptions {
+  onMove: (x: number, y: number, dx: number, dy: number, event?: PointerEvent) => void;
+  onStart?: () => void;
+  onEnd?: () => void;
+}
 
 /**
  * Lightweight drag handler for pointer-based interactions.
- *
- * @param {HTMLElement} el - The element to make draggable
- * @param {Object} opts
- * @param {Function} opts.onMove - Called with (x, y, dx, dy, event)
- * @param {Function} [opts.onStart]
- * @param {Function} [opts.onEnd]
- * @returns {{ destroy: Function }}
  */
-export function createDrag(el, opts) {
+export function createDrag(el: HTMLElement, opts: DragOptions): { destroy: () => void } {
   const { onMove, onStart, onEnd } = opts;
-  let startX, startY;
+  let startX: number, startY: number;
 
-  function onPointerDown(e) {
+  function onPointerDown(e: PointerEvent): void {
     if (e.button !== 0) return;
     startX = e.clientX;
     startY = e.clientY;
@@ -798,11 +817,11 @@ export function createDrag(el, opts) {
     document.addEventListener('pointerup', onPointerUp);
   }
 
-  function onPointerMove(e) {
+  function onPointerMove(e: PointerEvent): void {
     onMove(e.clientX, e.clientY, e.clientX - startX, e.clientY - startY);
   }
 
-  function onPointerUp(e) {
+  function onPointerUp(e: PointerEvent): void {
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
     if (onEnd) onEnd();
@@ -814,22 +833,25 @@ export function createDrag(el, opts) {
 }
 
 
-// ─── VIRTUAL SCROLL (Large lists) ────────────────────────────────
-// Used by: DataTable, Tree (large), Transfer, Select (many options)
+// ─── VIRTUAL SCROLL ────────────────────────────────────────────
+
+export interface VirtualScrollOptions {
+  itemHeight: number;
+  totalItems: number;
+  buffer?: number;
+  renderItem: (index: number) => HTMLElement;
+}
+
+export interface VirtualScrollHandle {
+  refresh: () => void;
+  setTotal: (n: number) => void;
+  destroy: () => void;
+}
 
 /**
  * Simple virtual scroller for rendering large lists efficiently.
- * Only renders items visible in the viewport + buffer.
- *
- * @param {HTMLElement} containerEl - The scrollable container
- * @param {Object} opts
- * @param {number} opts.itemHeight - Fixed item height in px
- * @param {number} opts.totalItems - Total number of items
- * @param {number} [opts.buffer=5] - Extra items to render above/below
- * @param {Function} opts.renderItem - (index) => HTMLElement
- * @returns {{ refresh: Function, setTotal: Function, destroy: Function }}
  */
-export function createVirtualScroll(containerEl, opts) {
+export function createVirtualScroll(containerEl: HTMLElement, opts: VirtualScrollOptions): VirtualScrollHandle {
   let { itemHeight, totalItems, buffer = 5, renderItem } = opts;
 
   const spacer = h('div', { style: { height: `${totalItems * itemHeight}px`, position: 'relative' } });
@@ -839,7 +861,7 @@ export function createVirtualScroll(containerEl, opts) {
 
   let _lastStart = -1, _lastEnd = -1;
 
-  function render() {
+  function render(): void {
     const scrollTop = containerEl.scrollTop;
     const viewportH = containerEl.clientHeight;
     const start = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
@@ -859,36 +881,34 @@ export function createVirtualScroll(containerEl, opts) {
   containerEl.addEventListener('scroll', render, { passive: true });
   render();
 
-  function refresh() { _lastStart = -1; render(); }
-  function setTotal(n) { totalItems = n; spacer.style.height = `${n * itemHeight}px`; refresh(); }
-  function destroy() { containerEl.removeEventListener('scroll', render); }
+  function refresh(): void { _lastStart = -1; render(); }
+  function setTotal(n: number): void { totalItems = n; spacer.style.height = `${n * itemHeight}px`; refresh(); }
+  function destroy(): void { containerEl.removeEventListener('scroll', render); }
 
   return { refresh, setTotal, destroy };
 }
 
 
 // ─── HOTKEY SYSTEM ────────────────────────────────────────────────
-// Used by: Command, Modal, custom app shortcuts
+
+export interface HotkeyHandle {
+  destroy: () => void;
+  update: (newBindings: Record<string, (e: KeyboardEvent) => void>) => void;
+}
 
 /**
  * Registers keyboard shortcuts on an element (or document).
- * Handles modifier normalization (Meta=Ctrl on Mac), chord sequences,
- * and cleanup on destroy.
- *
- * @param {HTMLElement|Document} el - Scope element for key events
- * @param {Object<string, Function>} bindings - Map of shortcut string to handler.
- *   Shortcut format: 'ctrl+k', 'shift+alt+n', 'meta+enter', 'g g' (chord).
- *   Modifiers: ctrl, shift, alt, meta. On Mac, 'ctrl' matches both Ctrl and Meta.
- * @returns {{ destroy: Function, update: Function }}
  */
-export function createHotkey(el, bindings) {
-  const isMac = typeof navigator !== 'undefined' && /mac|ipod|iphone|ipad/i.test(navigator.userAgentData?.platform || navigator.userAgent || '');
-  let _chordKey = null;
-  let _chordTimer = null;
+export function createHotkey(el: HTMLElement | Document, bindings: Record<string, (e: KeyboardEvent) => void>): HotkeyHandle {
+  const isMac = typeof navigator !== 'undefined' && /mac|ipod|iphone|ipad/i.test((navigator as any).userAgentData?.platform || navigator.userAgent || '');
+  let _chordKey: string | null = null;
+  let _chordTimer: ReturnType<typeof setTimeout> | null = null;
 
-  function parseCombo(str) {
+  interface ParsedCombo { key: string; mods: { ctrl: boolean; shift: boolean; alt: boolean; meta: boolean } }
+
+  function parseCombo(str: string): ParsedCombo {
     const parts = str.toLowerCase().trim().split('+');
-    const key = parts.pop();
+    const key = parts.pop()!;
     const mods = { ctrl: false, shift: false, alt: false, meta: false };
     for (const p of parts) {
       if (p === 'ctrl' || p === 'control') mods.ctrl = true;
@@ -899,16 +919,15 @@ export function createHotkey(el, bindings) {
     return { key, mods };
   }
 
-  function matchMods(e, mods) {
+  function matchMods(e: KeyboardEvent, mods: ParsedCombo['mods']): boolean {
     const ctrl = mods.ctrl ? (isMac ? (e.ctrlKey || e.metaKey) : e.ctrlKey) : (!e.ctrlKey && !e.metaKey);
     const shift = mods.shift ? e.shiftKey : !e.shiftKey;
     const alt = mods.alt ? e.altKey : !e.altKey;
-    // If meta was explicitly required but we already matched via ctrl on Mac, skip separate meta check
     if (mods.meta && !isMac) return ctrl && shift && alt && e.metaKey;
     return ctrl && shift && alt;
   }
 
-  function matchKey(e, key) {
+  function matchKey(e: KeyboardEvent, key: string): boolean {
     if (key === 'enter') return e.key === 'Enter';
     if (key === 'escape' || key === 'esc') return e.key === 'Escape';
     if (key === 'space') return e.key === ' ';
@@ -922,10 +941,13 @@ export function createHotkey(el, bindings) {
     return e.key.toLowerCase() === key;
   }
 
-  const parsed = [];
+  type ParsedEntry = { type: 'single'; combo: ParsedCombo; handler: (e: KeyboardEvent) => void }
+    | { type: 'chord'; first: ParsedCombo; second: ParsedCombo; handler: (e: KeyboardEvent) => void };
+
+  const parsed: ParsedEntry[] = [];
   let _bindings = bindings;
 
-  function rebuild() {
+  function rebuild(): void {
     parsed.length = 0;
     for (const [shortcut, handler] of Object.entries(_bindings)) {
       const chordParts = shortcut.split(/\s+/);
@@ -938,12 +960,11 @@ export function createHotkey(el, bindings) {
   }
   rebuild();
 
-  function onKeydown(e) {
-    // Check chords first
+  function onKeydown(e: KeyboardEvent): void {
     if (_chordKey) {
       const chord = _chordKey;
       _chordKey = null;
-      clearTimeout(_chordTimer);
+      if (_chordTimer) clearTimeout(_chordTimer);
       for (const entry of parsed) {
         if (entry.type === 'chord' && entry.first.key === chord && matchKey(e, entry.second.key) && matchMods(e, entry.second.mods)) {
           e.preventDefault();
@@ -953,7 +974,6 @@ export function createHotkey(el, bindings) {
       }
     }
 
-    // Check chord starters
     for (const entry of parsed) {
       if (entry.type === 'chord' && matchKey(e, entry.first.key) && matchMods(e, entry.first.mods)) {
         e.preventDefault();
@@ -963,7 +983,6 @@ export function createHotkey(el, bindings) {
       }
     }
 
-    // Check single shortcuts
     for (const entry of parsed) {
       if (entry.type === 'single' && matchKey(e, entry.combo.key) && matchMods(e, entry.combo.mods)) {
         e.preventDefault();
@@ -973,14 +992,14 @@ export function createHotkey(el, bindings) {
     }
   }
 
-  el.addEventListener('keydown', onKeydown, true);
+  el.addEventListener('keydown', onKeydown as EventListener, true);
 
-  function destroy() {
-    el.removeEventListener('keydown', onKeydown, true);
-    clearTimeout(_chordTimer);
+  function destroy(): void {
+    el.removeEventListener('keydown', onKeydown as EventListener, true);
+    if (_chordTimer) clearTimeout(_chordTimer);
   }
 
-  function update(newBindings) {
+  function update(newBindings: Record<string, (e: KeyboardEvent) => void>): void {
     _bindings = newBindings;
     rebuild();
   }
@@ -990,20 +1009,17 @@ export function createHotkey(el, bindings) {
 
 
 // ─── INFINITE SCROLL ──────────────────────────────────────────────
-// Used by: List (infinite mode), feeds, search results
+
+export interface InfiniteScrollOptions {
+  loadMore: () => void | Promise<void>;
+  threshold?: number;
+  sentinel?: HTMLElement;
+}
 
 /**
- * Triggers a callback when a sentinel element enters the viewport,
- * enabling infinite scroll / load-more patterns.
- *
- * @param {HTMLElement} containerEl - The scrollable container
- * @param {Object} opts
- * @param {Function} opts.loadMore - Called when more data is needed. Can return a Promise.
- * @param {number} [opts.threshold=200] - Distance in px from bottom to trigger
- * @param {HTMLElement} [opts.sentinel] - Custom sentinel element (auto-created if omitted)
- * @returns {{ destroy: Function, loading: () => boolean }}
+ * Triggers a callback when a sentinel element enters the viewport.
  */
-export function createInfiniteScroll(containerEl, opts) {
+export function createInfiniteScroll(containerEl: HTMLElement, opts: InfiniteScrollOptions): { destroy: () => void; loading: () => boolean } {
   const { loadMore, threshold = 200, sentinel: customSentinel } = opts;
   let _loading = false;
   let _destroyed = false;
@@ -1027,38 +1043,41 @@ export function createInfiniteScroll(containerEl, opts) {
 
   observer.observe(sentinel);
 
-  function destroy() {
+  function destroy(): void {
     _destroyed = true;
     observer.disconnect();
     if (!customSentinel && sentinel.parentNode) sentinel.remove();
   }
 
-  function loading() { return _loading; }
+  function loading(): boolean { return _loading; }
 
   return { destroy, loading };
 }
 
 
 // ─── MASONRY LAYOUT ───────────────────────────────────────────────
-// Used by: Image galleries, card grids, Pinterest-style layouts
+
+export interface MasonryOptions {
+  columns?: number;
+  gap?: number;
+}
+
+export interface MasonryHandle {
+  refresh: () => void;
+  setColumns: (n: number) => void;
+  destroy: () => void;
+}
 
 /**
  * Applies masonry layout to child elements of a container.
- * Calculates shortest-column placement. Responsive via ResizeObserver.
- *
- * @param {HTMLElement} containerEl - The container whose children are laid out
- * @param {Object} [opts]
- * @param {number} [opts.columns=3] - Number of columns
- * @param {number} [opts.gap=16] - Gap between items in px
- * @returns {{ refresh: Function, setColumns: Function, destroy: Function }}
  */
-export function createMasonry(containerEl, opts = {}) {
+export function createMasonry(containerEl: HTMLElement, opts: MasonryOptions = {}): MasonryHandle {
   let { columns = 3, gap = 16 } = opts;
 
   containerEl.style.position = 'relative';
 
-  function layout() {
-    const children = [...containerEl.children];
+  function layout(): void {
+    const children = [...containerEl.children] as HTMLElement[];
     if (!children.length) { containerEl.style.height = '0'; return; }
 
     const containerWidth = containerEl.clientWidth;
@@ -1066,7 +1085,6 @@ export function createMasonry(containerEl, opts = {}) {
     const colHeights = new Array(columns).fill(0);
 
     for (const child of children) {
-      // Find shortest column
       const minCol = colHeights.indexOf(Math.min(...colHeights));
       const x = minCol * (colWidth + gap);
       const y = colHeights[minCol];
@@ -1076,7 +1094,6 @@ export function createMasonry(containerEl, opts = {}) {
       child.style.top = `${y}px`;
       child.style.width = `${colWidth}px`;
 
-      // Measure after positioning to get correct height
       colHeights[minCol] += child.offsetHeight + gap;
     }
 
@@ -1085,43 +1102,39 @@ export function createMasonry(containerEl, opts = {}) {
 
   const ro = new ResizeObserver(() => layout());
   ro.observe(containerEl);
-
-  // Initial layout
   layout();
 
-  function refresh() { layout(); }
-  function setColumns(n) { columns = n; layout(); }
-  function destroy() { ro.disconnect(); }
+  function refresh(): void { layout(); }
+  function setColumns(n: number): void { columns = n; layout(); }
+  function destroy(): void { ro.disconnect(); }
 
   return { refresh, setColumns, destroy };
 }
 
+
 // ─── SCROLL SPY ─────────────────────────────────────────────────
-// Used by: TableOfContents, workbench navigation, documentation layouts
+
+export interface ScrollSpyOptions {
+  rootMargin?: string;
+  threshold?: number;
+  onActiveChange: (element: Element) => void;
+}
 
 /**
  * Tracks which observed elements are visible in a scroll container.
- * Calls onActiveChange when the topmost visible section changes.
- *
- * @param {HTMLElement|null} root - Scroll container (null = viewport)
- * @param {Object} opts
- * @param {string} [opts.rootMargin='-20% 0px -60% 0px'] - IntersectionObserver margin
- * @param {number} [opts.threshold=0]
- * @param {Function} opts.onActiveChange - Called with (element) when active section changes
- * @returns {{ observe: Function, unobserve: Function, disconnect: Function }}
  */
-export function createScrollSpy(root, opts = {}) {
+export function createScrollSpy(root: HTMLElement | null, opts: ScrollSpyOptions): { observe: (el: Element) => void; unobserve: (el: Element) => void; disconnect: () => void } {
   const {
     rootMargin = '-20% 0px -60% 0px',
     threshold = 0,
     onActiveChange
   } = opts;
 
-  let currentEl = null;
+  let currentEl: Element | null = null;
 
   const observer = new IntersectionObserver(
     (entries) => {
-      let topEntry = null;
+      let topEntry: IntersectionObserverEntry | null = null;
       for (const entry of entries) {
         if (entry.isIntersecting) {
           if (!topEntry || entry.boundingClientRect.top < topEntry.boundingClientRect.top) {
@@ -1137,50 +1150,40 @@ export function createScrollSpy(root, opts = {}) {
     { root, rootMargin, threshold }
   );
 
-  function observe(el) { observer.observe(el); }
-  function unobserve(el) { observer.unobserve(el); }
-  function disconnect() { observer.disconnect(); currentEl = null; }
+  function observe(el: Element): void { observer.observe(el); }
+  function unobserve(el: Element): void { observer.unobserve(el); }
+  function disconnect(): void { observer.disconnect(); currentEl = null; }
 
   return { observe, unobserve, disconnect };
 }
 
+
+// ─── CHECKBOX CONTROL ────────────────────────────────────────────
+
 /**
  * Shared checkbox control for embedding styled checkboxes inside
  * compound components (Transfer, Tree, TreeSelect, DataTable).
- * Returns the same d-checkbox-native + d-checkbox-check structure
- * used by the Checkbox component, wrapped in d-checkbox-inline.
- * @param {Object} [opts] - Attributes for the <input type="checkbox">
- * @returns {{ wrap: HTMLElement, input: HTMLInputElement }}
  */
-export function createCheckControl(opts = {}) {
-  const input = h('input', { type: 'checkbox', class: 'd-checkbox-native', ...opts });
+export function createCheckControl(opts: Record<string, unknown> = {}): { wrap: HTMLElement; input: HTMLInputElement } {
+  const input = h('input', { type: 'checkbox', class: 'd-checkbox-native', ...opts }) as HTMLInputElement;
   const check = h('span', { class: 'd-checkbox-check' });
   const wrap = h('span', { class: 'd-checkbox-inline' }, input, check);
   return { wrap, input };
 }
 
-/**
- * Scroll-reveal — adds 'd-visible' class when element enters viewport.
- * @param {HTMLElement} el - Element to observe
- * @param {Object} [options]
- * @param {number} [options.threshold=0.1] - Intersection threshold (0-1)
- * @param {string} [options.rootMargin='0px 0px -50px 0px'] - Observer root margin
- * @param {boolean} [options.once=true] - Unobserve after first intersection
- * @returns {Function} Cleanup function for onDestroy
- */
+
 // ─── LIVE REGION ─────────────────────────────────────────────
-// Used by: Router, DataTable, Toast — dynamic announcements for screen readers
+
+export interface LiveRegionOptions {
+  politeness?: 'polite' | 'assertive';
+}
 
 /**
  * Creates a persistent live region for announcing dynamic changes to screen readers.
- *
- * @param {Object} [opts]
- * @param {'polite'|'assertive'} [opts.politeness='polite']
- * @returns {{ announce: (msg: string) => void, destroy: () => void }}
  */
-export function createLiveRegion(opts = {}) {
+export function createLiveRegion(opts: LiveRegionOptions = {}): { announce: (msg: string) => void; destroy: () => void } {
   const { politeness = 'polite' } = opts;
-  let _timer = null;
+  let _timer: ReturnType<typeof setTimeout> | null = null;
 
   const el = h('div', {
     class: 'd-sr-only',
@@ -1192,15 +1195,14 @@ export function createLiveRegion(opts = {}) {
 
   if (typeof document !== 'undefined') document.body.appendChild(el);
 
-  function announce(msg) {
+  function announce(msg: string): void {
     if (_timer) clearTimeout(_timer);
-    // Clear then set after a microtask so AT picks up the change
     el.textContent = '';
     setTimeout(() => { el.textContent = msg; }, 50);
     _timer = setTimeout(() => { el.textContent = ''; _timer = null; }, 1000);
   }
 
-  function destroy() {
+  function destroy(): void {
     if (_timer) clearTimeout(_timer);
     if (el.parentNode) el.parentNode.removeChild(el);
   }
@@ -1209,7 +1211,18 @@ export function createLiveRegion(opts = {}) {
 }
 
 
-export function createScrollReveal(el, options = {}) {
+// ─── SCROLL REVEAL ───────────────────────────────────────────────
+
+export interface ScrollRevealOptions {
+  threshold?: number;
+  rootMargin?: string;
+  once?: boolean;
+}
+
+/**
+ * Scroll-reveal -- adds 'd-visible' class when element enters viewport.
+ */
+export function createScrollReveal(el: HTMLElement, options: ScrollRevealOptions = {}): () => void {
   const { threshold = 0.1, rootMargin = '0px 0px -50px 0px', once = true } = options;
   if (typeof IntersectionObserver === 'undefined') return () => {};
   const observer = new IntersectionObserver((entries) => {
