@@ -139,7 +139,7 @@ Requires Node.js >= 20 and pnpm >= 9.
 
 ## MCP Server Tools
 
-The MCP server (`@decantr/mcp-server`) exposes 12 tools:
+The MCP server (`@decantr/mcp-server`) exposes 14 tools:
 
 | Tool | Description |
 |------|-------------|
@@ -155,6 +155,8 @@ The MCP server (`@decantr/mcp-server`) exposes 12 tools:
 | `decantr_create_essence` | Generate a valid Essence spec skeleton from a project description |
 | `decantr_accept_drift` | Resolve drift violations by accepting, scoping, rejecting, or deferring |
 | `decantr_update_essence` | Apply structured updates to DNA or Blueprint layers |
+| `decantr_get_section_context` | Get self-contained context for a specific blueprint section |
+| `decantr_component_api` | Query @decantr/ui component API (props, usage, examples) |
 
 ## CLI Commands
 
