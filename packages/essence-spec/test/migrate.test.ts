@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { migrateV2ToV3 } from '../src/migrate.js';
+import { migrateV2ToV3, migrateV30ToV31 } from '../src/migrate.js';
 import { isV3 } from '../src/types.js';
+import type { EssenceV3 } from '../src/types.js';
 import { validateEssence } from '../src/validate.js';
 import { VALID_V2_SIMPLE, VALID_V2_SECTIONED, VALID_V3 } from './fixtures.js';
 
@@ -148,5 +149,73 @@ describe('migrateV2ToV3', () => {
     expect(v3.blueprint.shell).toBe('sidebar-main');
     expect(v3.blueprint.pages[0].shell_override).toBeUndefined();
     expect(v3.blueprint.pages[1].shell_override).toBe('full-bleed');
+  });
+});
+
+describe('migrateV30ToV31', () => {
+  it('wraps flat pages into a single section', () => {
+    const v30: EssenceV3 = {
+      version: '3.0.0',
+      dna: VALID_V3.dna,
+      blueprint: {
+        shell: 'sidebar-main',
+        pages: [
+          { id: 'main', layout: ['kpi-grid', 'chart-grid'] },
+          { id: 'news', layout: ['filter-bar', 'post-list'] },
+        ],
+        features: ['auth', 'realtime-data'],
+      },
+      meta: {
+        archetype: 'saas-dashboard',
+        target: 'react',
+        platform: { type: 'spa', routing: 'hash' },
+        guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+      },
+    };
+
+    const v31 = migrateV30ToV31(v30);
+
+    expect(v31.version).toBe('3.1.0');
+    expect(v31.blueprint.sections).toHaveLength(1);
+    expect(v31.blueprint.sections![0].id).toBe('saas-dashboard');
+    expect(v31.blueprint.sections![0].role).toBe('primary');
+    expect(v31.blueprint.sections![0].shell).toBe('sidebar-main');
+    expect(v31.blueprint.sections![0].features).toEqual(['auth', 'realtime-data']);
+    expect(v31.blueprint.sections![0].pages).toEqual([
+      { id: 'main', layout: ['kpi-grid', 'chart-grid'] },
+      { id: 'news', layout: ['filter-bar', 'post-list'] },
+    ]);
+    expect(v31.blueprint.pages).toBeUndefined();
+    expect(v31.blueprint.routes).toEqual({});
+  });
+
+  it('preserves existing V3.1 essence unchanged', () => {
+    const v31: EssenceV3 = {
+      version: '3.1.0',
+      dna: VALID_V3.dna,
+      blueprint: {
+        sections: [
+          {
+            id: 'dashboard',
+            role: 'primary',
+            shell: 'sidebar-main',
+            features: ['auth'],
+            description: 'Main dashboard section',
+            pages: [{ id: 'overview', layout: ['kpi-grid'] }],
+          },
+        ],
+        features: ['auth'],
+        routes: { '/overview': { section: 'dashboard', page: 'overview' } },
+      },
+      meta: {
+        archetype: 'saas-dashboard',
+        target: 'react',
+        platform: { type: 'spa', routing: 'hash' },
+        guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+      },
+    };
+
+    const result = migrateV30ToV31(v31);
+    expect(result).toEqual(v31);
   });
 });

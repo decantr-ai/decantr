@@ -48,4 +48,4 @@ export type { GuardViolation, GuardContext, AutoFix } from './guard.js';
 
 export { normalizeEssence } from './normalize.js';
 
-export { migrateV2ToV3 } from './migrate.js';
+export { migrateV2ToV3, migrateV30ToV31 } from './migrate.js';

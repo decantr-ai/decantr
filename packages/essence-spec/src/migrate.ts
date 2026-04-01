@@ -6,6 +6,7 @@ import type {
   EssenceDNA,
   EssenceBlueprint,
   EssenceMeta,
+  EssenceV31Section,
   ThemeShape,
   DensityLevel,
   GuardMode,
@@ -187,4 +188,34 @@ function inferRadiusBase(shape: ThemeShape | string): number {
     case 'sharp': return 2;
     default: return 8;
   }
+}
+
+/**
+ * Migrate a v3.0 flat-page EssenceV3 to v3.1 sectioned format.
+ * If already v3.1 or has blueprint.sections, returns unchanged.
+ */
+export function migrateV30ToV31(essence: EssenceV3): EssenceV3 {
+  if (essence.version === '3.1.0' || essence.blueprint.sections) {
+    return essence;
+  }
+
+  const section: EssenceV31Section = {
+    id: essence.meta.archetype,
+    role: 'primary',
+    shell: essence.blueprint.shell ?? 'top-nav-main',
+    features: essence.blueprint.features,
+    description: '',
+    pages: essence.blueprint.pages ?? [],
+  };
+
+  return {
+    ...essence,
+    version: '3.1.0',
+    blueprint: {
+      ...essence.blueprint,
+      sections: [section],
+      pages: undefined,
+      routes: {},
+    },
+  };
 }
