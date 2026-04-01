@@ -1,4 +1,5 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 import { createRouter } from '@decantr/ui/router';
 import { Nav } from './shell/nav.js';
 import { Footer } from './shell/footer.js';
@@ -19,10 +20,10 @@ export function App() {
     ],
   });
 
-  const container = h('div', { style: 'display: flex; flex-direction: column; min-height: 100vh' });
+  const container = h('div', { class: css('flex', 'col', 'minh100vh') });
   container.appendChild(Nav());
 
-  const main = h('main', { style: 'flex: 1' });
+  const main = h('main', { class: css('flex1') });
   main.appendChild(router.outlet());
   container.appendChild(main);
   container.appendChild(Footer());

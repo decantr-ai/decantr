@@ -1,4 +1,5 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 
 const FOOTER_LINKS = [
   { href: 'https://github.com/decantr/decantr-monorepo', label: 'GitHub' },
@@ -8,11 +9,12 @@ const FOOTER_LINKS = [
 
 export function Footer() {
   const footer = h('footer', {
-    style: 'padding: 32px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.4)',
+    class: css('flex', 'aic', 'jcsb', 'textsm', 'fgmuted'),
+    style: 'padding: 32px 24px; border-top: 1px solid rgba(255,255,255,0.1)',
   });
 
   // Links
-  const links = h('div', { style: 'display: flex; gap: 20px' });
+  const links = h('div', { class: css('flex', 'gap5') });
   for (const { href, label } of FOOTER_LINKS) {
     const a = h('a', {
       href,
