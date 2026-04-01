@@ -24,7 +24,8 @@
     "./tannins/telemetry": "./src/tannins/telemetry.js",
     "./tannins/auth-enterprise": "./src/tannins/auth-enterprise.js",
     "./css": "./src/css/index.js",
-    "./essence": "./src/essence/index.ts"
+    "./essence": "./src/essence/index.ts",
+    "./compose": "./src/compose/index.ts"
   },
   "scripts": {
     "build": "tsup",
