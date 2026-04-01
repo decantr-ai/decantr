@@ -328,8 +328,9 @@ export async function syncRegistry(
       const result = await apiClient.listContent(type, { namespace: '@official' });
       saveToCache(cacheDir, type, null, result, '@official');
 
-      // Also cache individual items — use slug (not UUID) as cache key
-      // because fetchContentItem looks up by slug
+      // Cache individual items by slug.
+      // The list endpoint returns abbreviated items (no inner 'data' field),
+      // but that's OK — fetchContentItem will hit the API for full data when needed.
       for (const item of result.items) {
         const slug = (item as Record<string, unknown>).slug as string;
         const data = (item as Record<string, unknown>).data as Record<string, unknown> | undefined;

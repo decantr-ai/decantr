@@ -2098,6 +2098,17 @@ export async function refreshDerivedFiles(
         spatial_hints: r.spatial_hints as RecipeData['spatial_hints'],
         radius_hints: r.radius_hints as RecipeData['radius_hints'],
       };
+
+      // If cache had abbreviated data (no decorators), the recipe content
+      // might be in the outer data field from the single-item API response
+      if (!recipeData.decorators && raw.data) {
+        const inner = raw.data as Record<string, unknown>;
+        if (inner.decorators) {
+          recipeData.decorators = inner.decorators as RecipeData['decorators'];
+          recipeData.spatial_hints = inner.spatial_hints as RecipeData['spatial_hints'];
+          recipeData.radius_hints = inner.radius_hints as RecipeData['radius_hints'];
+        }
+      }
     }
   } catch { /* continue without recipe data */ }
 
