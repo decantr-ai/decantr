@@ -1,12 +1,8 @@
 import { mount } from '@decantr/ui/runtime';
-import { setStyle, setMode, setShape } from '@decantr/ui/css';
+import { EssenceProvider } from '@decantr/ui/essence';
 import { App } from './app.js';
+import essence from '../essence.json' with { type: 'json' };
 
-// Initialize theme from essence DNA
-setStyle('auradecantism');
-setMode('dark');
-setShape('rounded');
-
-// Mount the workbench
+// Mount the workbench with EssenceProvider (reads DNA from essence.json)
 const root = document.getElementById('app');
-mount(root, App);
+mount(root, () => EssenceProvider({ essence }, App()));

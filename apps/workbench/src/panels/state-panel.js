@@ -1,4 +1,5 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 import { createEffect } from '@decantr/ui/state';
 
 /**
@@ -17,7 +18,7 @@ export function StatePanel({ currentProps }) {
 
   return h(
     'div',
-    { style: 'padding: 12px' },
+    { class: css('_p-3') },
     h('h3', { style: 'margin: 0 0 8px; font-size: 14px' }, 'Signal State'),
     pre,
   );

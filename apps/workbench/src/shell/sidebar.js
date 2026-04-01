@@ -1,4 +1,5 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 import { createSignal, createEffect } from '@decantr/ui/state';
 import { Input } from '@decantr/ui/components';
 import { getCategories, searchStories } from '@decantr/ui-catalog';
@@ -15,13 +16,14 @@ export function Sidebar({ onSelect, selectedSlug, searchQuery, onSearch }) {
   const [expanded, setExpanded] = createSignal(new Set());
 
   const container = h('div', {
-    style: 'width: 220px; border-right: 1px solid var(--color-border, rgba(255,255,255,0.1)); background: var(--color-surface, #1a1a1a); overflow: auto; display: flex; flex-direction: column',
+    class: css('_flex _col _overflow-auto _border-r _border-subtle _bg-surface'),
+    style: 'width: 220px',
   });
 
-  const searchBox = h('div', { style: 'padding: 8px' }, Search({ onSearch }));
+  const searchBox = h('div', { class: css('_p-2') }, Search({ onSearch }));
   container.appendChild(searchBox);
 
-  const content = h('div', { style: 'flex: 1; overflow: auto' });
+  const content = h('div', { class: css('_flex-1 _overflow-auto') });
   container.appendChild(content);
 
   createEffect(() => {

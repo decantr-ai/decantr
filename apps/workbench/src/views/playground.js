@@ -1,4 +1,5 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 import { createSignal, createEffect } from '@decantr/ui/state';
 import { PropsPanel } from '../panels/props-panel.js';
 import { StatePanel } from '../panels/state-panel.js';
@@ -13,7 +14,7 @@ export function PlaygroundView({ story }) {
   if (!playground) {
     return h(
       'div',
-      { style: 'padding: 24px; opacity: 0.5' },
+      { class: css('_p-6'), style: 'opacity: 0.5' },
       'No playground controls defined.',
     );
   }
@@ -35,8 +36,8 @@ export function PlaygroundView({ story }) {
 
   // Live preview container
   const previewContainer = h('div', {
-    style:
-      'flex: 1; min-height: 120px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.15); border-radius: 6px; padding: 24px; overflow: auto',
+    class: css('_flex-1 _flex _items-center _justify-center _overflow-auto _rounded-md _p-6'),
+    style: 'min-height: 120px; background: rgba(0,0,0,0.15)',
   });
 
   createEffect(() => {
@@ -83,8 +84,8 @@ export function PlaygroundView({ story }) {
   const sidePanel = h(
     'div',
     {
-      style:
-        'width: 260px; min-width: 260px; border-left: 1px solid rgba(255,255,255,0.1); overflow: auto; display: flex; flex-direction: column',
+      class: css('_border-l _border-subtle _overflow-auto _flex _col'),
+      style: 'width: 260px; min-width: 260px',
     },
     PropsPanel({ playground, currentProps, onChange }),
     StatePanel({ currentProps }),
@@ -92,17 +93,11 @@ export function PlaygroundView({ story }) {
 
   return h(
     'div',
-    {
-      style:
-        'display: flex; height: 100%; overflow: hidden',
-    },
+    { class: css('_flex _h-full _overflow-hidden') },
     // Main area: preview + code
     h(
       'div',
-      {
-        style:
-          'flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 16px; overflow: auto',
-      },
+      { class: css('_flex-1 _p-6 _flex _col _gap-4 _overflow-auto') },
       h('h2', { style: 'margin: 0 0 4px' }, story.title + ' — Playground'),
       previewContainer,
       h(
