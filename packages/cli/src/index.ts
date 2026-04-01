@@ -825,13 +825,14 @@ async function cmdInit(args: InitArgs) {
   console.log(`    ${cyan('decantr check')}      Detect drift issues`);
   console.log(`    ${cyan('decantr migrate')}    Migrate v2 essence to v3`);
 
-  // Validate
+  // Validate (skip for V3.1 — the V1/V2 validator produces false oneOf warnings)
   const essenceContent = readFileSync(result.essencePath, 'utf-8');
   const essence = JSON.parse(essenceContent);
-  const validation = validateEssence(essence);
-
-  if (!validation.valid) {
-    console.log(error(`\nValidation warnings: ${validation.errors.join(', ')}`));
+  if (essence.version !== '3.1.0') {
+    const validation = validateEssence(essence);
+    if (!validation.valid) {
+      console.log(error(`\nValidation warnings: ${validation.errors.join(', ')}`));
+    }
   }
 
   console.log('');
