@@ -7,7 +7,7 @@ import { RegistryAPIClient } from '@decantr/registry';
 import type { ApiContentType, ComposeEntry } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
-import { scaffoldProject, scaffoldMinimal, composeArchetypes, type ThemeData, type RecipeData, type LayoutItem } from './scaffold.js';
+import { scaffoldProject, scaffoldMinimal, composeArchetypes, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type RecipeData, type LayoutItem, type ZoneInput, type TopologyData } from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
   createTheme,
@@ -521,6 +521,9 @@ async function cmdInit(args: InitArgs) {
   // Track blueprint recipe name if specified
   let blueprintRecipeName: string | undefined;
 
+  // Topology markdown (populated when blueprint has composition)
+  let topologyMarkdown = '';
+
   // Fetch blueprint/archetype data
   let archetypeData: {
     id: string;
@@ -592,6 +595,44 @@ async function cmdInit(args: InitArgs) {
         };
         options.archetype = primaryId;
         options.shell = composed.defaultShell;
+
+        // Collect zone inputs for topology
+        const zoneInputs: ZoneInput[] = [];
+        for (const entry of entries) {
+          const arcId = typeof entry === 'string' ? entry : entry.archetype;
+          const explicitRole = typeof entry === 'object' && 'role' in entry ? (entry as any).role : undefined;
+          const archData = archetypeMap.get(arcId) as Record<string, unknown> | null;
+          if (archData) {
+            zoneInputs.push({
+              archetypeId: arcId,
+              role: explicitRole || (archData.role as string) || 'auxiliary',
+              shell: ((archData.pages as any[])?.[0]?.shell) || options.shell || 'sidebar-main',
+              features: (archData.features as string[]) || [],
+              description: (archData.description as string) || '',
+            });
+          }
+        }
+
+        // Derive topology
+        const zones = deriveZones(zoneInputs);
+        const transitions = deriveTransitions(zones);
+        const primaryZonePages = archetypeData?.pages?.filter(p =>
+          !p.shell || p.shell === composed.defaultShell
+        ) || [];
+        topologyMarkdown = zones.length > 0
+          ? generateTopologySection(
+              {
+                intent: (archetypeMap.get(primaryId) as any)?.description || options.blueprint || 'Application',
+                zones,
+                transitions,
+                entryPoints: {
+                  anonymous: '/',
+                  authenticated: `/${primaryZonePages[0]?.id || archetypeData?.pages?.[0]?.id || 'home'}`,
+                },
+              },
+              options.personality || [],
+            )
+          : '';
       }
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch blueprint "${options.blueprint}". Using defaults.${RESET}`);
@@ -668,7 +709,8 @@ async function cmdInit(args: InitArgs) {
     archetypeData,
     registrySource as 'api' | 'cache',
     themeData,
-    recipeData
+    recipeData,
+    topologyMarkdown
   );
 
   // Output summary

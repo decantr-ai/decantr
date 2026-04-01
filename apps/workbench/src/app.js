@@ -5,6 +5,7 @@ import { Sidebar } from './shell/sidebar.js';
 import { Toolbar } from './shell/toolbar.js';
 import { IsolationView } from './views/isolation.js';
 import { PlaygroundView } from './views/playground.js';
+import { ExplorerView } from './views/explorer.js';
 import { CSSPanel } from './panels/css-panel.js';
 
 export function App() {
@@ -19,14 +20,17 @@ export function App() {
 
   const isolationBtn = h('button', { style: tabBtnStyle(true) }, 'Isolation');
   const playgroundBtn = h('button', { style: tabBtnStyle(false) }, 'Playground');
+  const explorerBtn = h('button', { style: tabBtnStyle(false) }, 'Explorer');
 
   isolationBtn.addEventListener('click', () => setViewMode('isolation'));
   playgroundBtn.addEventListener('click', () => setViewMode('playground'));
+  explorerBtn.addEventListener('click', () => setViewMode('explorer'));
 
   createEffect(() => {
     const mode = viewMode();
     isolationBtn.style.cssText = tabBtnStyle(mode === 'isolation');
     playgroundBtn.style.cssText = tabBtnStyle(mode === 'playground');
+    explorerBtn.style.cssText = tabBtnStyle(mode === 'explorer');
   });
 
   const tabBar = h(
@@ -34,6 +38,7 @@ export function App() {
     { style: 'display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 16px' },
     isolationBtn,
     playgroundBtn,
+    explorerBtn,
   );
 
   // Main content area that re-renders when selection or view mode changes
@@ -43,7 +48,9 @@ export function App() {
     const slug = selectedSlug();
     const mode = viewMode();
     mainContent.innerHTML = '';
-    if (slug) {
+    if (mode === 'explorer') {
+      mainContent.appendChild(ExplorerView());
+    } else if (slug) {
       const story = getStory(slug);
       if (story) {
         if (mode === 'playground') {

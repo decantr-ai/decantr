@@ -15,3 +15,8 @@ export {
   CQ_WIDTHS,
 } from './runtime.js';
 export { resolveAtomDecl } from './atoms.js';
+
+// Animation preference helper — returns true if animations are enabled
+let _animations = true;
+export function getAnimations(): boolean { return _animations; }
+export function setAnimations(v: boolean): void { _animations = v; }

@@ -154,6 +154,8 @@ npx @decantr/cli get recipe {{THEME_RECIPE}}
 
 {{PATTERNS_LIST}}
 
+{{COMPOSITION_TOPOLOGY}}
+
 ---
 
 ## Before Writing Code
