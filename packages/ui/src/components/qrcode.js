@@ -3,9 +3,9 @@
  *
  * @module decantr/components/qrcode
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
-import { onMount, onDestroy } from '../core/index.js';
+import { onMount, onDestroy } from '../runtime/index.js';
 import { injectBase, cx, resolve } from './_base.js';
 import { encodeQR } from './_qr-encoder.js';
 import { Spinner } from './spinner.js';

@@ -5,7 +5,7 @@
  * so individual components stay thin and focused.
  */
 import { createEffect, createSignal } from '../state/index.js';
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { icon } from './icon.js';
 
 /**

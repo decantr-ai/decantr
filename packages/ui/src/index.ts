@@ -3,7 +3,12 @@
  * Signal-based reactivity, atomic CSS, 100+ components
  */
 
-export const VERSION = '0.1.0';
+export { VERSION } from './version.js';
+
+export type {
+  Accessor, Setter, Signal, Child, Component, BaseProps,
+  ReactiveNode, Owner, Context,
+} from './types.js';
 
 // Re-export core APIs for bare '@decantr/ui' imports
 export { h, mount, component, Show, For, onMount, onDestroy, onCleanup } from './runtime/index.js';

@@ -4,7 +4,7 @@
  *
  * @module decantr/components/alert-dialog
  */
-import { h, onDestroy } from '../core/index.js';
+import { h, onDestroy } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFocusTrap } from './_behaviors.js';

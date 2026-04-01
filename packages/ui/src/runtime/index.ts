@@ -1,4 +1,5 @@
-import { createEffect } from '../state/index.js';
+import type { Child } from '../types.js';
+import { createEffect, createSignal } from '../state/index.js';
 import { disposeNode } from './component.js';
 export { onMount, onDestroy, onCleanup } from './lifecycle.js';
 export { component } from './component.js';
@@ -7,35 +8,44 @@ export { Show } from './show.js';
 export { For } from './for.js';
 import { drainMountQueue, drainDestroyQueue, pushScope, popScope, runDestroyFns } from './lifecycle.js';
 
-/**
- * @param {string} tag
- * @param {Object|null} props
- * @param {...(string|number|Node|Function)} children
- * @returns {HTMLElement}
- */
-export function h(tag, props, ...children) {
+// Augment HTMLElement for internal __d_destroy storage
+declare global {
+  interface HTMLElement {
+    __d_destroy?: Array<() => void> | null;
+    __d_owner?: any;
+  }
+  interface Comment {
+    __d_portal_cleanup?: () => void;
+  }
+  // eslint-disable-next-line no-var
+  var __DECANTR_DEV__: boolean | undefined;
+  var __d_hmr_remount: ((modulePath: string, newModule: { default?: () => HTMLElement }) => void) | undefined;
+  var __d_hmr_register: ((modulePath: string, root: HTMLElement) => void) | undefined;
+}
+
+export function h(tag: string, props?: Record<string, unknown> | null, ...children: Child[]): HTMLElement {
   const el = document.createElement(tag);
 
   if (props) {
     for (const key in props) {
       const val = props[key];
       if (key.startsWith('on') && typeof val === 'function') {
-        el.addEventListener(key.slice(2).toLowerCase(), val);
+        el.addEventListener(key.slice(2).toLowerCase(), val as EventListener);
       } else if (typeof val === 'function' && key !== 'ref') {
         createEffect(() => {
-          const v = val();
+          const v = (val as () => unknown)();
           if (key === 'class' || key === 'className') {
-            el.className = v;
+            el.className = v as string;
           } else if (key === 'style' && typeof v === 'object') {
             Object.assign(el.style, v);
           } else {
-            el.setAttribute(key, v);
+            el.setAttribute(key, v as string);
           }
         });
       } else if (key === 'ref' && typeof val === 'function') {
-        val(el);
+        (val as (el: HTMLElement) => void)(el);
       } else if (key === 'class' || key === 'className') {
-        el.className = val;
+        el.className = val as string;
       } else if (key === 'style' && typeof val === 'object') {
         Object.assign(el.style, val);
       } else if (val !== false && val != null) {
@@ -48,11 +58,7 @@ export function h(tag, props, ...children) {
   return el;
 }
 
-/**
- * @param {Function|string} getter - A function returning the text value, or a static string
- * @returns {Text}
- */
-export function text(getter) {
+export function text(getter: string | (() => string)): Text {
   const fn = typeof getter === 'function' ? getter : () => getter;
   const node = document.createTextNode('');
   createEffect(() => {
@@ -61,92 +67,7 @@ export function text(getter) {
   return node;
 }
 
-/**
- * @param {Function} condition
- * @param {Function} thenFn
- * @param {Function} [elseFn]
- * @returns {HTMLElement}
- */
-export function cond(condition, thenFn, elseFn) {
-  const container = document.createElement('d-cond');
-  let currentNode = null;
-
-  createEffect(() => {
-    const result = condition();
-    if (currentNode) {
-      disposeNode(currentNode);
-      container.removeChild(currentNode);
-      currentNode = null;
-    }
-    const fn = result ? thenFn : elseFn;
-    if (fn) {
-      currentNode = fn();
-      if (currentNode) container.appendChild(currentNode);
-    }
-  });
-
-  return container;
-}
-
-/**
- * @param {Function} itemsGetter
- * @param {Function} keyFn
- * @param {Function} renderFn
- * @returns {HTMLElement}
- */
-export function list(itemsGetter, keyFn, renderFn) {
-  const container = document.createElement('d-list');
-  /** @type {Map<*, {node: Node}>} */
-  let currentMap = new Map();
-
-  createEffect(() => {
-    const items = itemsGetter();
-    const newMap = new Map();
-    const newNodes = [];
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const key = keyFn(item, i);
-      const existing = currentMap.get(key);
-
-      if (existing) {
-        newMap.set(key, existing);
-        newNodes.push(existing.node);
-      } else {
-        const node = renderFn(item, i);
-        newMap.set(key, { node });
-        newNodes.push(node);
-      }
-    }
-
-    // Remove nodes no longer in list — dispose reactive trees
-    for (const [key, entry] of currentMap) {
-      if (!newMap.has(key) && entry.node.parentNode === container) {
-        disposeNode(entry.node);
-        container.removeChild(entry.node);
-      }
-    }
-
-    // Append/reorder
-    for (let i = 0; i < newNodes.length; i++) {
-      const node = newNodes[i];
-      const current = container.childNodes[i];
-      if (node !== current) {
-        container.insertBefore(node, current || null);
-      }
-    }
-
-    currentMap = newMap;
-  });
-
-  return container;
-}
-
-/**
- * @param {HTMLElement} root
- * @param {Function} component
- */
-export function mount(root, component) {
+export function mount(root: HTMLElement, component: () => HTMLElement): void {
   pushScope();
   const result = component();
   const destroyFns = popScope();
@@ -163,11 +84,8 @@ export function mount(root, component) {
   root.__d_destroy = destroyFns;
 }
 
-/**
- * Unmount a previously mounted component tree.
- * @param {HTMLElement} root
- */
-export function unmount(root) {
+/** Unmount a previously mounted component tree. */
+export function unmount(root: HTMLElement): void {
   if (root.__d_destroy) {
     runDestroyFns(root.__d_destroy);
     root.__d_destroy = null;
@@ -179,18 +97,15 @@ export function unmount(root) {
 // Zero cost in production — entire block gated behind __DECANTR_DEV__
 
 if (typeof globalThis !== 'undefined' && globalThis.__DECANTR_DEV__) {
-  // Map to track mounted roots by module path
-  const _hmrRoots = new Map();
+  const _hmrRoots = new Map<string, HTMLElement>();
 
-  globalThis.__d_hmr_remount = function(modulePath, newModule) {
-    // Find the mount root for this module
+  globalThis.__d_hmr_remount = function(modulePath: string, newModule: { default?: () => HTMLElement }) {
     const root = _hmrRoots.get(modulePath);
     if (root && newModule.default) {
       unmount(root);
       mount(root, newModule.default);
       console.log('[decantr hmr] Updated:', modulePath);
     } else if (newModule.default) {
-      // Try the main app root as fallback
       const appRoot = document.getElementById('app');
       if (appRoot) {
         unmount(appRoot);
@@ -200,62 +115,61 @@ if (typeof globalThis !== 'undefined' && globalThis.__DECANTR_DEV__) {
     }
   };
 
-  // Allow pages/components to register their mount root
-  globalThis.__d_hmr_register = function(modulePath, root) {
+  globalThis.__d_hmr_register = function(modulePath: string, root: HTMLElement) {
     _hmrRoots.set(modulePath, root);
   };
 }
 
 // ─── Error Telemetry ────────────────────────────────────────────
 
-/** @type {Function|null} */
-let _errorHandler = null;
+interface ErrorInfo {
+  error: Error;
+  component: string | null;
+  stack: string | null;
+  context: Record<string, unknown>;
+}
+
+let _errorHandler: ((info: ErrorInfo) => void) | null = null;
 
 /**
  * Set a global error telemetry handler.
  * Called whenever an ErrorBoundary catches an error.
- * @param {(info: { error: Error, component: string|null, stack: string|null, context: Object }) => void} fn
  */
-export function setErrorHandler(fn) {
+export function setErrorHandler(fn: ((info: ErrorInfo) => void) | null): void {
   _errorHandler = typeof fn === 'function' ? fn : null;
 }
 
-/**
- * Get the current error telemetry handler (for testing/internal use).
- * @returns {Function|null}
- */
-export function _getErrorHandler() { return _errorHandler; }
+/** Get the current error telemetry handler (for testing/internal use). */
+export function _getErrorHandler(): ((info: ErrorInfo) => void) | null { return _errorHandler; }
 
 // ─── ErrorBoundary ──────────────────────────────────────────────
 
-/** @type {Function|null} */
-let _boundaryHandler = null;
+let _boundaryHandler: ((err: unknown) => void) | null = null;
 
-/**
- * Get the current boundary error handler (used by effect patching).
- * @returns {Function|null}
- */
-export function _getBoundaryHandler() { return _boundaryHandler; }
+/** Get the current boundary error handler (used by effect patching). */
+export function _getBoundaryHandler(): ((err: unknown) => void) | null { return _boundaryHandler; }
+
+interface ErrorBoundaryProps {
+  fallback: (error: unknown, retry: () => void) => Node;
+  name?: string;
+  context?: Record<string, unknown>;
+}
 
 /**
  * Error catching component. Wraps children in try/catch during render.
  * Also catches errors thrown inside createEffect within its subtree.
- * @param {Object} props
- * @param {Function} props.fallback — (error, retry) => Node
- * @param {...Node} children
- * @returns {HTMLElement}
  */
-export function ErrorBoundary(props, ...children) {
-  const container = document.createElement('d-boundary');
-  let caught = null;
+export function ErrorBoundary(props: ErrorBoundaryProps, ...children: Child[]): HTMLElement {
+  const container = document.createElement('div');
+  container.style.display = 'contents';
+  let caught: unknown = null;
 
-  function clear() {
+  function clear(): void {
     while (container.firstChild) container.removeChild(container.firstChild);
   }
 
-  function showFallback(err) {
+  function showFallback(err: unknown): void {
     caught = err;
-    // Notify the global error telemetry handler
     if (_errorHandler) {
       try {
         _errorHandler({
@@ -273,13 +187,13 @@ export function ErrorBoundary(props, ...children) {
     if (fb) container.appendChild(fb);
   }
 
-  function retry() {
+  function retry(): void {
     caught = null;
     clear();
     renderChildren();
   }
 
-  function renderChildren() {
+  function renderChildren(): void {
     const prev = _boundaryHandler;
     _boundaryHandler = showFallback;
     try {
@@ -296,16 +210,9 @@ export function ErrorBoundary(props, ...children) {
 }
 
 // Patch createEffect to respect ErrorBoundary.
-// We wrap the original effect factory so errors inside effects bubble to the nearest boundary.
 const _origCreateEffect = createEffect;
 
-/**
- * Wrapped createEffect that routes errors to the nearest ErrorBoundary.
- * Falls back to rethrowing if no boundary is active.
- * @param {Function} fn
- * @returns {Function} dispose
- */
-function boundaryAwareEffect(fn) {
+function boundaryAwareEffect(fn: () => void | (() => void)): () => void {
   const handler = _boundaryHandler;
   return _origCreateEffect(() => {
     try {
@@ -318,30 +225,28 @@ function boundaryAwareEffect(fn) {
 }
 
 // Re-export the patched version for internal use in this module.
-// External callers import createEffect from state/index.js directly;
-// h() and text() in this file use the module-level import which we shadow below.
 const _createEffect = boundaryAwareEffect;
 
 // ─── Portal ─────────────────────────────────────────────────────
 
+interface PortalProps {
+  target?: HTMLElement | string;
+}
+
 /**
  * Render children outside the component tree into a target element.
- * @param {Object} props
- * @param {HTMLElement|string} [props.target] — Target element or CSS selector (defaults to document.body)
- * @param {...Node} children
- * @returns {Comment} — Placeholder comment node in the original tree
  */
-export function Portal(props, ...children) {
+export function Portal(props: PortalProps, ...children: Child[]): Comment {
   const placeholder = document.createComment('d-portal');
   const target = resolveTarget(props.target);
-  const nodes = [];
+  const nodes: Node[] = [];
 
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
     if (child == null || child === false) continue;
-    if (child && typeof child === 'object' && child.nodeType) {
-      target.appendChild(child);
-      nodes.push(child);
+    if (child && typeof child === 'object' && (child as Node).nodeType) {
+      target.appendChild(child as Node);
+      nodes.push(child as Node);
     } else if (typeof child === 'string' || typeof child === 'number') {
       const tn = document.createTextNode(String(child));
       target.appendChild(tn);
@@ -359,38 +264,42 @@ export function Portal(props, ...children) {
   return placeholder;
 }
 
-/**
- * @param {HTMLElement|string|undefined} target
- * @returns {HTMLElement}
- */
-function resolveTarget(target) {
+function resolveTarget(target: HTMLElement | string | undefined): HTMLElement {
   if (!target) return document.body;
   if (typeof target === 'string') {
     const el = document.querySelector(target);
     if (!el) throw new Error(`Portal target "${target}" not found`);
-    return el;
+    return el as HTMLElement;
   }
   return target;
 }
 
 // ─── Suspense ───────────────────────────────────────────────────
 
-/** @type {Set<Promise>} */
-export const _pendingQueries = new Set();
+const [_pendingCount, _setPendingCount] = createSignal(0);
+
+/**
+ * Track an async operation for Suspense boundaries.
+ * Call this when starting an async operation that Suspense should wait for.
+ */
+export function trackPending(promise: Promise<unknown>): void {
+  _setPendingCount(c => c + 1);
+  promise.finally(() => _setPendingCount(c => c - 1));
+}
+
+interface SuspenseProps {
+  fallback: () => Node;
+}
 
 /**
  * Async boundary. Shows fallback while any createQuery() in children is loading.
- * @param {Object} props
- * @param {Function} props.fallback — () => Node (loading state)
- * @param {...Node} children
- * @returns {HTMLElement}
  */
-export function Suspense(props, ...children) {
-  const container = document.createElement('d-suspense');
-  /** @type {Node[]} */
-  const childNodes = [];
-  let fallbackNode = null;
-  let showing = 'children'; // 'children' | 'fallback'
+export function Suspense(props: SuspenseProps, ...children: Child[]): HTMLElement {
+  const container = document.createElement('div');
+  container.style.display = 'contents';
+  const childNodes: Node[] = [];
+  let fallbackNode: Node | null = null;
+  let showing: 'children' | 'fallback' = 'children';
 
   // Collect child nodes
   const frag = document.createDocumentFragment();
@@ -400,7 +309,7 @@ export function Suspense(props, ...children) {
     frag.removeChild(frag.firstChild);
   }
 
-  function showChildren() {
+  function showChildren(): void {
     if (showing === 'children') return;
     showing = 'children';
     container.removeAttribute('aria-busy');
@@ -409,7 +318,7 @@ export function Suspense(props, ...children) {
     fallbackNode = null;
   }
 
-  function showFallback() {
+  function showFallback(): void {
     if (showing === 'fallback') return;
     showing = 'fallback';
     container.setAttribute('aria-busy', 'true');
@@ -418,24 +327,17 @@ export function Suspense(props, ...children) {
     if (fallbackNode) container.appendChild(fallbackNode);
   }
 
-  // Check pending queries and react
+  // React to pending count changes via signal
   createEffect(() => {
-    if (_pendingQueries.size > 0) {
+    if (_pendingCount() > 0) {
       showFallback();
-      // Poll until resolved — queries are promise-based, so we check periodically
-      const iv = setInterval(() => {
-        if (_pendingQueries.size === 0) {
-          clearInterval(iv);
-          showChildren();
-        }
-      }, 16);
     } else {
       showChildren();
     }
   });
 
   // Initial render: if nothing pending, show children right away
-  if (_pendingQueries.size === 0) {
+  if (_pendingCount() === 0) {
     for (let i = 0; i < childNodes.length; i++) container.appendChild(childNodes[i]);
     showing = 'children';
   }
@@ -445,22 +347,23 @@ export function Suspense(props, ...children) {
 
 // ─── Transition ─────────────────────────────────────────────────
 
+interface TransitionProps {
+  enter?: string;
+  exit?: string;
+  duration?: number;
+}
+
 /**
  * Enter/exit animation wrapper for conditional content.
- * @param {Object} props
- * @param {string} [props.enter] — CSS class to add on enter (e.g., 'd-fadein')
- * @param {string} [props.exit] — CSS class to add on exit
- * @param {number} [props.duration=200] — ms to wait before removing exit node
- * @param {Function} child — getter function returning a Node or null
- * @returns {HTMLElement}
  */
-export function Transition(props, child) {
-  const container = document.createElement('d-transition');
+export function Transition(props: TransitionProps, child: () => HTMLElement | null): HTMLElement {
+  const container = document.createElement('div');
+  container.style.display = 'contents';
   const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const duration = reducedMotion ? 0 : (props.duration != null ? props.duration : 200);
-  let currentNode = null;
-  let exitTimer = null;
+  let currentNode: HTMLElement | null = null;
+  let exitTimer: ReturnType<typeof setTimeout> | null = null;
 
   createEffect(() => {
     const next = child();
@@ -489,11 +392,10 @@ export function Transition(props, child) {
 
       if (props.enter && !reducedMotion) {
         next.classList.add(props.enter);
-        // Remove enter class after animation completes
         const entering = next;
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            if (entering.parentNode === container) entering.classList.remove(props.enter);
+            if (entering.parentNode === container) entering.classList.remove(props.enter!);
           });
         });
       }
@@ -507,17 +409,17 @@ export function Transition(props, child) {
 
 /**
  * Extract ref from props and pass it as second argument to a component.
- * @param {Function} component — (props, ref) => Node
- * @returns {Function} — (props) => Node
  */
-export function forwardRef(component) {
-  return function (props, ...children) {
+export function forwardRef<P extends Record<string, unknown>>(
+  component: (props: P, ref: ((el: HTMLElement) => void) | undefined, ...children: Child[]) => HTMLElement
+): (props: P & { ref?: (el: HTMLElement) => void }, ...children: Child[]) => HTMLElement {
+  return function (props: P & { ref?: (el: HTMLElement) => void }, ...children: Child[]): HTMLElement {
     const ref = props && props.ref;
-    let cleaned = props;
+    let cleaned: any = props;
     if (ref !== undefined) {
-      cleaned = {};
+      cleaned = {} as P;
       for (const k in props) {
-        if (k !== 'ref') cleaned[k] = props[k];
+        if (k !== 'ref') (cleaned as any)[k] = (props as any)[k];
       }
     }
     return component(cleaned, ref, ...children);
@@ -526,36 +428,32 @@ export function forwardRef(component) {
 
 // ─── Internal helpers ───────────────────────────────────────────
 
-/**
- * @param {HTMLElement} el
- * @param {Array} children
- */
-function appendChildren(el, children) {
+function appendChildren(el: Node, children: Child[]): void {
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
     if (child == null || child === false) continue;
     if (Array.isArray(child)) {
       appendChildren(el, child);
-    } else if (child && typeof child === 'object' && child.nodeType) {
-      el.appendChild(child);
+    } else if (child && typeof child === 'object' && (child as Node).nodeType) {
+      el.appendChild(child as Node);
     } else if (typeof child === 'function') {
       const anchor = document.createComment('');
       el.appendChild(anchor);
-      let currentNode = null;
+      let currentNode: Node | null = null;
       createEffect(() => {
-        const result = child();
+        const result = (child as () => Child)();
         if (currentNode) {
           disposeNode(currentNode);
           if (currentNode.parentNode) currentNode.parentNode.removeChild(currentNode);
           currentNode = null;
         }
         if (result != null && result !== false) {
-          if (typeof result === 'object' && result.nodeType) {
-            currentNode = result;
+          if (typeof result === 'object' && (result as Node).nodeType) {
+            currentNode = result as Node;
           } else {
             currentNode = document.createTextNode(String(result));
           }
-          anchor.parentNode.insertBefore(currentNode, anchor);
+          anchor.parentNode!.insertBefore(currentNode, anchor);
         }
       });
     } else {

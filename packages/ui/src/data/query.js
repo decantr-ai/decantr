@@ -8,7 +8,7 @@
  */
 
 import { createSignal, createEffect, createMemo, batch, untrack } from '../state/index.js';
-import { _pendingQueries } from '../core/index.js';
+import { trackPending } from '../runtime/index.js';
 
 // ─── Request Middleware ──────────────────────────────────────────
 
@@ -292,14 +292,13 @@ export function createQuery(key, fetcher, options = {}) {
     })();
 
     entry.fetchPromise = promise;
-    _pendingQueries.add(promise);
+    trackPending(promise);
 
     try {
       await promise;
     } finally {
       if (entry.fetchPromise === promise) entry.fetchPromise = null;
       if (entry.abortController === ac) entry.abortController = null;
-      _pendingQueries.delete(promise);
     }
   }
 
@@ -557,8 +556,8 @@ export function createInfiniteQuery(key, fetcher, options = {}) {
       }
     })();
 
-    _pendingQueries.add(promise);
-    try { await promise; } finally { _pendingQueries.delete(promise); }
+    trackPending(promise);
+    await promise;
   }
 
   /**

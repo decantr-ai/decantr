@@ -5,7 +5,7 @@
  *
  * @module decantr/components/color-picker
  */
-import { onDestroy } from '../core/index.js';
+import { onDestroy } from '../runtime/index.js';
 import { createEffect, untrack } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';

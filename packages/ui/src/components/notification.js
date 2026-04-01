@@ -5,7 +5,7 @@
  *
  * @module decantr/components/notification
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
 let _containers = {};

@@ -1418,6 +1418,11 @@ ${essence.structure.map(p => `| ${p.id} | ${p.shell} | ${p.layout.map(serializeL
     ? essence.features.map(f => `- ${f}`).join('\n')
     : '- No features specified';
 
+  // Derive enforcement levels from guard config
+  // V2 essences have enforce_style/enforce_recipe booleans, map to v3 enforcement strings
+  const dnaEnforcement = essence.guard.enforce_style ? 'error' : 'off';
+  const blueprintEnforcement = essence.guard.enforce_recipe ? 'warn' : 'off';
+
   const vars: Record<string, string> = {
     ARCHETYPE: essence.archetype || 'custom',
     BLUEPRINT: essence.blueprint || 'none',
@@ -1432,8 +1437,64 @@ ${essence.structure.map(p => `| ${p.id} | ${p.shell} | ${p.layout.map(serializeL
     GUARD_MODE: essence.guard.mode,
     ENFORCE_STYLE: String(essence.guard.enforce_style),
     ENFORCE_RECIPE: String(essence.guard.enforce_recipe),
+    DNA_ENFORCEMENT: dnaEnforcement,
+    BLUEPRINT_ENFORCEMENT: blueprintEnforcement,
     DENSITY: essence.density.level,
     CONTENT_GAP: essence.density.content_gap,
+    LAST_UPDATED: new Date().toISOString(),
+  };
+
+  return renderTemplate(template, vars);
+}
+
+/**
+ * Generate essence summary markdown from a V3 essence.
+ * Used by refreshDerivedFiles to keep the summary in sync.
+ */
+function generateEssenceSummaryV3(essence: EssenceV3): string {
+  const template = loadTemplate('essence-summary.md.template');
+
+  const blueprint = essence.blueprint;
+  const sections = blueprint.sections || [];
+  const flatPages = blueprint.pages || [];
+
+  // Build pages table
+  let pagesTable: string;
+  if (sections.length > 0) {
+    const rows = sections.flatMap(s =>
+      s.pages.map(p => `| ${p.id} | ${s.shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`)
+    );
+    pagesTable = `| Page | Shell | Layout |\n|------|-------|--------|\n${rows.join('\n')}`;
+  } else {
+    const shell = (blueprint.shell ?? 'sidebar-main') as string;
+    const rows = flatPages.map(p => `| ${p.id} | ${shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`);
+    pagesTable = `| Page | Shell | Layout |\n|------|-------|--------|\n${rows.join('\n')}`;
+  }
+
+  // Build features list
+  const features = blueprint.features || [];
+  const featuresList = features.length > 0
+    ? features.map(f => `- ${f}`).join('\n')
+    : '- No features specified';
+
+  const vars: Record<string, string> = {
+    ARCHETYPE: essence.meta.archetype || 'custom',
+    BLUEPRINT: '',
+    PERSONALITY: (essence.dna.personality || []).join(', '),
+    TARGET: (essence.meta.target ?? '') as string,
+    THEME_STYLE: essence.dna.theme.style as string,
+    THEME_MODE: essence.dna.theme.mode as string,
+    THEME_RECIPE: (essence.dna.theme.recipe ?? '') as string,
+    SHAPE: (essence.dna.theme.shape ?? '') as string,
+    PAGES_TABLE: pagesTable,
+    FEATURES_LIST: featuresList,
+    GUARD_MODE: essence.meta.guard.mode,
+    ENFORCE_STYLE: essence.meta.guard.dna_enforcement || 'error',
+    ENFORCE_RECIPE: essence.meta.guard.blueprint_enforcement || 'warn',
+    DNA_ENFORCEMENT: essence.meta.guard.dna_enforcement || 'error',
+    BLUEPRINT_ENFORCEMENT: essence.meta.guard.blueprint_enforcement || 'warn',
+    DENSITY: (essence.dna.spacing?.density as string) || 'comfortable',
+    CONTENT_GAP: (essence.dna.spacing?.content_gap as string) || '_gap4',
     LAST_UPDATED: new Date().toISOString(),
   };
 
@@ -1850,10 +1911,20 @@ export async function refreshDerivedFiles(
   mkdirSync(stylesDir, { recursive: true });
 
   const tokensPath = join(stylesDir, 'tokens.css');
-  writeFileSync(tokensPath, generateTokensCSS(themeData, mode));
+  // Only overwrite tokens.css if we have meaningful theme data (seed colors present);
+  // preserve existing file if theme fetch returned empty/incomplete data
+  const hasRealThemeData = themeData?.seed?.primary || themeData?.palette?.background;
+  if (hasRealThemeData || !existsSync(tokensPath)) {
+    writeFileSync(tokensPath, generateTokensCSS(themeData, mode));
+  }
 
   const decoratorsPath = join(stylesDir, 'decorators.css');
-  writeFileSync(decoratorsPath, generateDecoratorsCSS(recipeData, themeName));
+  // Only overwrite decorators.css if we have real recipe decorators;
+  // preserve existing file if recipe fetch returned empty data
+  const hasRealRecipeData = recipeData?.decorators && Object.keys(recipeData.decorators).length > 0;
+  if (hasRealRecipeData || !existsSync(decoratorsPath)) {
+    writeFileSync(decoratorsPath, generateDecoratorsCSS(recipeData, themeName));
+  }
 
   const cssFiles = [tokensPath, decoratorsPath];
 
@@ -1861,8 +1932,12 @@ export async function refreshDerivedFiles(
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
   writeFileSync(decantrMdPath, generateDecantrMdV31(guardMode, CSS_APPROACH_CONTENT));
 
+  // ── Generate essence-summary.md from V3 data ──
+  const summaryPath = join(contextDir, 'essence-summary.md');
+  writeFileSync(summaryPath, generateEssenceSummaryV3(essence));
+
   // ── Determine sections (V3.1 sectioned or V3.0 flat) ──
-  const contextFiles: string[] = [];
+  const contextFiles: string[] = [summaryPath];
   const blueprint = essence.blueprint;
 
   // V3.1: has sections array
@@ -1885,12 +1960,14 @@ export async function refreshDerivedFiles(
               try {
                 const patResult = await registry.fetchPattern(name);
                 if (patResult?.data) {
-                  const p = patResult.data as Record<string, unknown>;
+                  const raw = patResult.data as Record<string, unknown>;
+                  const inner = ((raw.data ?? raw) as Record<string, any>);
+                  const defaultPreset = inner.default_preset || 'standard';
+                  const preset = inner.presets?.[defaultPreset];
                   patternSpecs[name] = {
-                    description: (p.description as string) || '',
-                    components: (p.components as string[]) || [],
-                    slots: (p.slots as Record<string, string>) || {},
-                    code: (p.code as string) || '',
+                    description: (inner.description as string) || '',
+                    components: (inner.components as string[]) || [],
+                    slots: preset?.layout?.slots || {},
                   };
                 }
               } catch { /* skip unavailable patterns */ }
@@ -1930,11 +2007,26 @@ export async function refreshDerivedFiles(
     // ── Read generated tokens.css for inlining in section contexts ──
     const themeTokensCss = existsSync(tokensPath) ? readFileSync(tokensPath, 'utf-8') : '';
 
-    // ── Build decorator list from recipe data ──
+    // ── Build decorator list from recipe data or existing CSS ──
     const decoratorList: Array<{ name: string; description: string }> = [];
     if (recipeData?.decorators) {
       for (const [name, desc] of Object.entries(recipeData.decorators)) {
         decoratorList.push({ name, description: desc as string });
+      }
+    } else if (existsSync(decoratorsPath)) {
+      // Fallback: parse decorator class names from existing decorators.css
+      const decoratorsCss = readFileSync(decoratorsPath, 'utf-8');
+      const classRegex = /\/\*\s*(.+?)\s*\*\/\s*\n\s*\.([\w-]+)\s*\{/g;
+      let match: RegExpExecArray | null;
+      while ((match = classRegex.exec(decoratorsCss)) !== null) {
+        decoratorList.push({ name: match[2], description: match[1] });
+      }
+      // Also catch classes without preceding comments
+      if (decoratorList.length === 0) {
+        const simpleClassRegex = /^\.([\w-]+)\s*\{/gm;
+        while ((match = simpleClassRegex.exec(decoratorsCss)) !== null) {
+          decoratorList.push({ name: match[1], description: '' });
+        }
       }
     }
 
@@ -1949,9 +2041,11 @@ export async function refreshDerivedFiles(
       const sectionPatterns: Record<string, PatternSpecSummary> = {};
       for (const page of section.pages) {
         for (const item of page.layout) {
-          const pid = typeof item === 'string' ? item : '';
-          if (pid && patternSpecs[pid]) {
-            sectionPatterns[pid] = patternSpecs[pid];
+          const names = extractPatternNames(item);
+          for (const name of names) {
+            if (patternSpecs[name]) {
+              sectionPatterns[name] = patternSpecs[name];
+            }
           }
         }
       }
@@ -1966,7 +2060,7 @@ export async function refreshDerivedFiles(
         recipeName,
         zoneContext,
         patternSpecs: sectionPatterns,
-        constraints: essence.dna.constraints as Record<string, string> | undefined,
+        constraints: essence.dna.constraints as Record<string, unknown> | undefined,
       });
 
       const sectionContextPath = join(contextDir, `section-${section.id}.md`);
@@ -1985,7 +2079,7 @@ export async function refreshDerivedFiles(
       topologyMarkdown,
       sections,
       routes,
-      constraints: essence.dna.constraints as Record<string, string> | undefined,
+      constraints: essence.dna.constraints as Record<string, unknown> | undefined,
       seo: essence.meta.seo as { schema_org?: string[]; meta_priorities?: string[] } | undefined,
       navigation: essence.meta.navigation as { hotkeys?: unknown[]; command_palette?: boolean } | undefined,
     });
@@ -2021,12 +2115,14 @@ export async function refreshDerivedFiles(
             try {
               const patResult = await registry.fetchPattern(name);
               if (patResult?.data) {
-                const p = patResult.data as Record<string, unknown>;
+                const raw = patResult.data as Record<string, unknown>;
+                const inner = ((raw.data ?? raw) as Record<string, any>);
+                const defaultPreset = inner.default_preset || 'standard';
+                const preset = inner.presets?.[defaultPreset];
                 patternSpecs[name] = {
-                  description: (p.description as string) || '',
-                  components: (p.components as string[]) || [],
-                  slots: (p.slots as Record<string, string>) || {},
-                  code: (p.code as string) || '',
+                  description: (inner.description as string) || '',
+                  components: (inner.components as string[]) || [],
+                  slots: preset?.layout?.slots || {},
                 };
               }
             } catch { /* skip unavailable patterns */ }
@@ -2041,6 +2137,20 @@ export async function refreshDerivedFiles(
       for (const [name, desc] of Object.entries(recipeData.decorators)) {
         decoratorList.push({ name, description: desc as string });
       }
+    } else if (existsSync(decoratorsPath)) {
+      // Fallback: parse decorator class names from existing decorators.css
+      const decoratorsCss = readFileSync(decoratorsPath, 'utf-8');
+      const classRegex = /\/\*\s*(.+?)\s*\*\/\s*\n\s*\.([\w-]+)\s*\{/g;
+      let match: RegExpExecArray | null;
+      while ((match = classRegex.exec(decoratorsCss)) !== null) {
+        decoratorList.push({ name: match[2], description: match[1] });
+      }
+      if (decoratorList.length === 0) {
+        const simpleClassRegex = /^\.([\w-]+)\s*\{/gm;
+        while ((match = simpleClassRegex.exec(decoratorsCss)) !== null) {
+          decoratorList.push({ name: match[1], description: '' });
+        }
+      }
     }
 
     const contextContent = generateSectionContext({
@@ -2053,7 +2163,7 @@ export async function refreshDerivedFiles(
       recipeName,
       zoneContext: `This is the primary section (${shell} shell).`,
       patternSpecs,
-      constraints: essence.dna.constraints as Record<string, string> | undefined,
+      constraints: essence.dna.constraints as Record<string, unknown> | undefined,
     });
 
     const sectionContextPath = join(contextDir, `section-${syntheticSection.id}.md`);
@@ -2074,7 +2184,7 @@ export interface PatternSpecSummary {
   description: string;
   components: string[];
   slots: Record<string, string>;
-  code: string;
+  // code field removed — patterns are framework-agnostic
 }
 
 export interface SectionContextInput {
@@ -2088,7 +2198,7 @@ export interface SectionContextInput {
   zoneContext: string;
   patternSpecs: Record<string, PatternSpecSummary>;
   recipeHints?: { preferred?: string[]; compositions?: string; spatialHints?: string };
-  constraints?: Record<string, string>;
+  constraints?: Record<string, unknown>;
 }
 
 export interface ScaffoldContextInput {
@@ -2100,7 +2210,7 @@ export interface ScaffoldContextInput {
   topologyMarkdown: string;
   sections: EssenceV31Section[];
   routes: Record<string, RouteEntry>;
-  constraints?: Record<string, string>;
+  constraints?: Record<string, unknown>;
   seo?: { schema_org?: string[]; meta_priorities?: string[] };
   navigation?: { hotkeys?: unknown[]; command_palette?: boolean };
 }
@@ -2215,7 +2325,7 @@ export function generateSectionContext(input: SectionContextInput): string {
     lines.push('## Constraints');
     lines.push('');
     for (const [key, value] of Object.entries(constraints)) {
-      lines.push(`- **${key}:** ${value}`);
+      lines.push(`- **${key}:** ${typeof value === 'object' && value !== null ? JSON.stringify(value) : value}`);
     }
     lines.push('');
     lines.push('---');
@@ -2251,13 +2361,6 @@ export function generateSectionContext(input: SectionContextInput): string {
         lines.push(`- \`${slot}\`: ${desc}`);
       }
       lines.push('');
-      if (spec.code) {
-        lines.push('**Code example:**');
-        lines.push('```');
-        lines.push(spec.code);
-        lines.push('```');
-        lines.push('');
-      }
     }
   }
 
@@ -2324,7 +2427,7 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
     lines.push('## Design Constraints');
     lines.push('');
     for (const [key, value] of Object.entries(constraints)) {
-      lines.push(`- **${key}:** ${value}`);
+      lines.push(`- **${key}:** ${typeof value === 'object' && value !== null ? JSON.stringify(value) : value}`);
     }
     lines.push('');
   }

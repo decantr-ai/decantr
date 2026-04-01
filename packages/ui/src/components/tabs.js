@@ -4,7 +4,7 @@
  *
  * @module decantr/components/tabs
  */
-import { onDestroy } from '../core/index.js';
+import { onDestroy } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';

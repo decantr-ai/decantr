@@ -5,7 +5,7 @@
  *
  * @module decantr/components/color-palette
  */
-import { onDestroy } from '../core/index.js';
+import { onDestroy } from '../runtime/index.js';
 import { createSignal, createEffect, batch } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';

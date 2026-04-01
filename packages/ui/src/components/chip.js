@@ -1,4 +1,4 @@
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon as iconHelper } from './icon.js';
 

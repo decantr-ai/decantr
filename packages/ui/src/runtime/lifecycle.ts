@@ -1,16 +1,10 @@
 import { getOwner, registerCleanup } from '../state/scheduler.js';
 
-/** @type {Function[]} */
-let mountQueue = [];
-/** @type {Function[]} */
-let destroyQueue = [];
-/** @type {Function[][]} */
-let scopeStack = [];
+let mountQueue: Array<() => void | (() => void)> = [];
+let destroyQueue: Array<() => void> = [];
+let scopeStack: Array<Array<() => void>> = [];
 
-/**
- * @param {Function} fn
- */
-export function onMount(fn) {
+export function onMount(fn: () => void | (() => void)): void {
   mountQueue.push(fn);
 }
 
@@ -18,12 +12,10 @@ export function onMount(fn) {
  * Register a cleanup function. Prefers ownership tree when inside a
  * component()/createRoot() scope, falls back to scope stack otherwise.
  * Guarded against double execution.
- *
- * @param {Function} fn - Cleanup callback
  */
-export function onCleanup(fn) {
+export function onCleanup(fn: () => void): void {
   let disposed = false;
-  const guarded = () => {
+  const guarded = (): void => {
     if (disposed) return;
     disposed = true;
     fn();
@@ -38,25 +30,16 @@ export function onCleanup(fn) {
   }
 }
 
-/**
- * Backward-compatible alias for onCleanup.
- * @param {Function} fn
- */
-export const onDestroy = onCleanup;
+/** Backward-compatible alias for onCleanup. */
+export const onDestroy: (fn: () => void) => void = onCleanup;
 
-/**
- * @returns {Function[]}
- */
-export function drainMountQueue() {
+export function drainMountQueue(): Array<() => void | (() => void)> {
   const fns = mountQueue;
   mountQueue = [];
   return fns;
 }
 
-/**
- * @returns {Function[]}
- */
-export function drainDestroyQueue() {
+export function drainDestroyQueue(): Array<() => void> {
   const fns = destroyQueue;
   destroyQueue = [];
   return fns;
@@ -65,25 +48,18 @@ export function drainDestroyQueue() {
 /**
  * Push a new destroy scope. Callbacks registered via onDestroy() within this
  * scope are collected separately and returned by popScope().
- * @returns {void}
  */
-export function pushScope() {
+export function pushScope(): void {
   scopeStack.push([]);
 }
 
-/**
- * Pop the current destroy scope and return its callbacks.
- * @returns {Function[]}
- */
-export function popScope() {
+/** Pop the current destroy scope and return its callbacks. */
+export function popScope(): Array<() => void> {
   return scopeStack.pop() || [];
 }
 
-/**
- * Run all destroy callbacks in an array.
- * @param {Function[]} fns
- */
-export function runDestroyFns(fns) {
+/** Run all destroy callbacks in an array. */
+export function runDestroyFns(fns: Array<() => void>): void {
   for (let i = 0; i < fns.length; i++) {
     try { fns[i](); } catch (_) { /* swallow destroy errors */ }
   }

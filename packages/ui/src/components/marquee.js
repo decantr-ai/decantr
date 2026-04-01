@@ -4,8 +4,8 @@
  *
  * @module decantr/components/marquee
  */
-import { h } from '../core/index.js';
-import { onDestroy } from '../core/index.js';
+import { h } from '../runtime/index.js';
+import { onDestroy } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
 /**

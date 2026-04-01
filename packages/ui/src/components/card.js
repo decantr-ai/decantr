@@ -1,4 +1,4 @@
-import { h, cond } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { Skeleton } from './skeleton.js';

@@ -4,7 +4,7 @@
  *
  * @module decantr/components/resizable
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { createDrag } from './_behaviors.js';
 

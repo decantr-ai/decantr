@@ -4,7 +4,7 @@
  *
  * @module decantr/components/space
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
 /**

@@ -15,7 +15,7 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 | `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing tools to AI assistants |
 | `@decantr/css` | `packages/css/` | Framework-agnostic CSS atoms runtime for layout utilities |
-| `@decantr/ui` | `packages/ui/` | UI framework — signal-based reactivity, atomic CSS, components |
+| `@decantr/ui` | `packages/ui/` | UI framework — signal-based reactivity, atomic CSS, components (TypeScript, tree-scoped context) |
 | `@decantr/ui-chart` | `packages/ui-chart/` | Charting library — SVG, Canvas, WebGPU renderers |
 | `@decantr/vite-plugin` | `packages/vite-plugin/` | Vite plugin for real-time design drift detection |
 | `@decantr/ui-catalog` | `packages/ui-catalog/` | Component stories, demo definitions, and metadata |
@@ -129,6 +129,10 @@ pnpm build          # Build all packages (essence-spec and registry first, then 
 pnpm test           # Run all tests via vitest
 pnpm lint           # Type-check with tsc --noEmit
 pnpm clean          # Remove all dist/ directories
+
+pnpm --filter @decantr/ui build    # Build @decantr/ui (TypeScript → JS + .d.ts)
+pnpm --filter @decantr/ui test     # Run @decantr/ui tests
+pnpm --filter @decantr/ui typecheck # Type-check without emit
 ```
 
 Requires Node.js >= 20 and pnpm >= 9.

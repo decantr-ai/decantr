@@ -4,7 +4,7 @@
  *
  * @module decantr/components/input-group
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx, reactiveClass, reactiveAttr, resolve } from './_base.js';
 

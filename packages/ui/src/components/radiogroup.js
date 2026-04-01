@@ -1,5 +1,5 @@
 import { createEffect } from '../state/index.js';
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createRovingTabindex } from './_behaviors.js';
