@@ -23,6 +23,7 @@ import { cmdMigrate } from './commands/migrate.js';
 import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
 import { cmdRefresh } from './commands/refresh.js';
 import { cmdAddSection, cmdAddPage, cmdAddFeature } from './commands/add.js';
+import { cmdRemoveSection, cmdRemovePage, cmdRemoveFeature } from './commands/remove.js';
 
 // ── Helpers ──
 
@@ -1519,6 +1520,51 @@ async function main() {
         }
         default:
           console.error(error(`Unknown add subcommand: ${subcommand}. Use section, page, or feature.`));
+          process.exitCode = 1;
+      }
+      break;
+    }
+
+    case 'remove': {
+      const subcommand = args[1];
+      if (!subcommand) {
+        console.error(error('Usage: decantr remove <section|page|feature> <target>'));
+        process.exitCode = 1;
+        break;
+      }
+      switch (subcommand) {
+        case 'section': {
+          const id = args[2];
+          if (!id) {
+            console.error(error('Usage: decantr remove section <sectionId>'));
+            process.exitCode = 1;
+            break;
+          }
+          await cmdRemoveSection(id, args, process.cwd());
+          break;
+        }
+        case 'page': {
+          const pagePath = args[2];
+          if (!pagePath) {
+            console.error(error('Usage: decantr remove page <section>/<page>'));
+            process.exitCode = 1;
+            break;
+          }
+          await cmdRemovePage(pagePath, args, process.cwd());
+          break;
+        }
+        case 'feature': {
+          const feature = args[2];
+          if (!feature) {
+            console.error(error('Usage: decantr remove feature <feature> [--section <id>]'));
+            process.exitCode = 1;
+            break;
+          }
+          await cmdRemoveFeature(feature, args, process.cwd());
+          break;
+        }
+        default:
+          console.error(error(`Unknown remove subcommand: ${subcommand}. Use section, page, or feature.`));
           process.exitCode = 1;
       }
       break;
