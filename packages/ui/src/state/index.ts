@@ -1,3 +1,4 @@
+import type { ReactiveNode, Signal, Accessor, Setter, Context, Owner } from '../types.js';
 import {
   getCurrentEffect, setCurrentEffect, scheduleEffect, isBatching, flush,
   getOwner, runWithOwner, createRoot, registerCleanup, createChildOwner,
@@ -7,17 +8,16 @@ import {
 export { batch } from './scheduler.js';
 export { createRoot, getOwner, runWithOwner, onError } from './scheduler.js';
 
-/**
- * @template T
- * @param {T} initialValue
- * @returns {[() => T, (v: T | ((prev: T) => T)) => void]}
- */
-export function createSignal(initialValue) {
-  let value = initialValue;
-  /** @type {Set<{run: Function, sources?: Set}>} */
-  const subscribers = new Set();
+// Extend the subscriber sets with an optional _ownerLevel for memo leveling
+interface SubscriberSet extends Set<ReactiveNode> {
+  _ownerLevel?: number;
+}
 
-  function getter() {
+export function createSignal<T>(initialValue: T): Signal<T> {
+  let value = initialValue;
+  const subscribers: SubscriberSet = new Set();
+
+  function getter(): T {
     const eff = getCurrentEffect();
     if (eff) {
       subscribers.add(eff);
@@ -27,9 +27,9 @@ export function createSignal(initialValue) {
     return value;
   }
 
-  function setter(next) {
+  function setter(next: T | ((prev: T) => T)): void {
     const prev = value;
-    value = typeof next === 'function' ? next(prev) : next;
+    value = typeof next === 'function' ? (next as (prev: T) => T)(prev) : next;
     if (!Object.is(prev, value)) {
       if (isBatching()) {
         for (const sub of subscribers) scheduleEffect(sub);
@@ -44,16 +44,13 @@ export function createSignal(initialValue) {
   }
 
   // Expose subscribers set for dependency cleanup
-  getter._subscribers = subscribers;
+  (getter as any)._subscribers = subscribers;
 
   return [getter, setter];
 }
 
-/**
- * Remove effect from all its tracked signal subscriber sets.
- * @param {{sources?: Set}} effect
- */
-function cleanupSources(effect) {
+/** Remove effect from all its tracked signal subscriber sets. */
+function cleanupSources(effect: ReactiveNode): void {
   if (effect.sources) {
     for (const subscriberSet of effect.sources) {
       subscriberSet.delete(effect);
@@ -62,19 +59,14 @@ function cleanupSources(effect) {
   }
 }
 
-/**
- * @param {Function} fn
- * @returns {Function} dispose
- */
-export function createEffect(fn) {
-  let cleanup = null;
+export function createEffect(fn: () => void | (() => void)): () => void {
+  let cleanup: (() => void) | null | void = null;
   let disposed = false;
   const owner = getOwner();
 
-  const effect = {
+  const effect: ReactiveNode = {
     disposed: false,
     level: 0,
-    /** @type {Set} */
     sources: new Set(),
     run() {
       if (disposed || effect.disposed) return;
@@ -102,7 +94,7 @@ export function createEffect(fn) {
   };
 
   // Register with owner for disposal
-  const dispose = function dispose() {
+  const dispose = function dispose(): void {
     if (disposed) return;
     disposed = true;
     effect.disposed = true;
@@ -120,22 +112,14 @@ export function createEffect(fn) {
   return dispose;
 }
 
-/**
- * @template T
- * @param {() => T} fn
- * @returns {() => T}
- */
-export function createMemo(fn) {
-  /** @type {T} */
-  let cached;
+export function createMemo<T>(fn: () => T): Accessor<T> {
+  let cached: T;
   let dirty = true;
-  /** @type {Set<{run: Function, sources?: Set}>} */
-  const subscribers = new Set();
+  const subscribers: SubscriberSet = new Set();
 
-  const effect = {
+  const effect: ReactiveNode = {
     disposed: false,
     level: 0,
-    /** @type {Set} */
     sources: new Set(),
     run() {
       dirty = true;
@@ -151,7 +135,7 @@ export function createMemo(fn) {
     }
   };
 
-  function recompute() {
+  function recompute(): void {
     // Clean up old sources before re-tracking
     cleanupSources(effect);
     const prev = getCurrentEffect();
@@ -168,10 +152,10 @@ export function createMemo(fn) {
     }
     // Update level based on sources
     let maxLevel = 0;
-    for (const src of effect.sources) {
+    for (const src of effect.sources!) {
       // Look for the parent signal/memo's level
-      if (src._ownerLevel !== undefined) {
-        maxLevel = Math.max(maxLevel, src._ownerLevel);
+      if ((src as SubscriberSet)._ownerLevel !== undefined) {
+        maxLevel = Math.max(maxLevel, (src as SubscriberSet)._ownerLevel!);
       }
     }
     effect.level = maxLevel + 1;
@@ -187,7 +171,7 @@ export function createMemo(fn) {
     cleanupSources(effect);
   });
 
-  return function getter() {
+  return function getter(): T {
     const eff = getCurrentEffect();
     if (eff) {
       subscribers.add(eff);
@@ -200,12 +184,7 @@ export function createMemo(fn) {
   };
 }
 
-/**
- * @template T
- * @param {T} initialValue
- * @returns {T}
- */
-export function untrack(fn) {
+export function untrack<T>(fn: () => T): T {
   const prev = getCurrentEffect();
   setCurrentEffect(null);
   try {
@@ -218,23 +197,17 @@ export function untrack(fn) {
 /**
  * Read a signal getter without subscribing. Alias for untrack().
  * Aligns with TC39 Signals proposal terminology.
- * @template T
- * @param {() => T} getter
- * @returns {T}
  */
-export function peek(getter) {
+export function peek<T>(getter: () => T): T {
   return untrack(getter);
 }
 
-/**
- * Explicit dependency tracking.
- * @template T, U
- * @param {Array<() => T>|(() => T)} deps
- * @param {(value: T|T[], prev: T|T[]) => U} fn
- * @param {{ defer?: boolean }} [options]
- * @returns {Function} dispose
- */
-export function on(deps, fn, options = {}) {
+/** Explicit dependency tracking. */
+export function on<T, U>(
+  deps: Array<() => T> | (() => T),
+  fn: (value: T | T[], prev: T | T[]) => U,
+  options: { defer?: boolean } = {}
+): () => void {
   const depsArray = Array.isArray(deps) ? deps : [deps];
   const single = !Array.isArray(deps);
   let prevValues = depsArray.map(d => d());
@@ -256,18 +229,17 @@ export function on(deps, fn, options = {}) {
     const p = single ? prevValues[0] : prevValues;
     prevValues = values;
 
-    return untrack(() => fn(v, p));
+    return untrack(() => fn(v, p)) as void | (() => void);
   });
 }
 
-export function createStore(initialValue) {
-  /** @type {Map<string|symbol, Set<{run: Function}>>} */
-  const subscribers = new Map();
+export function createStore<T extends Record<string | symbol, unknown>>(initialValue: T): T {
+  const subscribers = new Map<string | symbol, SubscriberSet>();
 
-  function getSubscribers(prop) {
+  function getSubscribers(prop: string | symbol): SubscriberSet {
     let subs = subscribers.get(prop);
     if (!subs) {
-      subs = new Set();
+      subs = new Set() as SubscriberSet;
       subscribers.set(prop, subs);
     }
     return subs;
@@ -284,7 +256,7 @@ export function createStore(initialValue) {
       return Reflect.get(target, prop, receiver);
     },
     set(target, prop, value, receiver) {
-      const prev = target[prop];
+      const prev = (target as any)[prop];
       const result = Reflect.set(target, prop, value, receiver);
       if (!Object.is(prev, value)) {
         const subs = subscribers.get(prop);
@@ -304,36 +276,23 @@ export function createStore(initialValue) {
   });
 }
 
-/**
- * @template T
- * @param {string} key - localStorage key
- * @param {T} initialValue - fallback if no stored value
- * @returns {[() => T, (v: T | ((prev: T) => T)) => void]}
- */
-export function useLocalStorage(key, initialValue) {
+export function useLocalStorage<T>(key: string, initialValue: T): Signal<T> {
   const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
-  const [get, set] = createSignal(stored !== null ? JSON.parse(stored) : initialValue);
-  return [get, (v) => {
-    const next = typeof v === 'function' ? v(get()) : v;
+  const [get, set] = createSignal<T>(stored !== null ? JSON.parse(stored) : initialValue);
+  return [get, (v: T | ((prev: T) => T)) => {
+    const next = typeof v === 'function' ? (v as (prev: T) => T)(get()) : v;
     set(next);
     if (typeof localStorage !== 'undefined') localStorage.setItem(key, JSON.stringify(next));
   }];
 }
 
-/** @type {number} */
 let _ctxId = 0;
-/** @type {Map<number, any>} */
-const _ctxMap = new Map();
+const _ctxMap = new Map<number, unknown>();
 
-/**
- * @template T
- * @param {T} [defaultValue]
- * @returns {{ Provider: (value: T) => (() => void), consume: () => T }}
- */
-export function createContext(defaultValue) {
+export function createContext<T>(defaultValue: T): { Provider: (value: T) => () => void; consume: () => T } {
   const id = _ctxId++;
   return {
-    Provider(value) {
+    Provider(value: T): () => void {
       const prev = _ctxMap.get(id);
       const hadPrev = _ctxMap.has(id);
       _ctxMap.set(id, value);
@@ -342,26 +301,20 @@ export function createContext(defaultValue) {
         else _ctxMap.delete(id);
       };
     },
-    consume() {
-      return _ctxMap.has(id) ? _ctxMap.get(id) : defaultValue;
+    consume(): T {
+      return (_ctxMap.has(id) ? _ctxMap.get(id) : defaultValue) as T;
     }
   };
 }
 
-/**
- * @template T, U
- * @param {() => T} source — signal getter returning current selected key
- * @returns {(key: U) => boolean} — returns a signal-like getter that's true only when key matches source
- */
-export function createSelector(source) {
-  /** @type {Map<any, Set<{run: Function}>>} */
-  const subs = new Map();
-  let prev;
+export function createSelector<T>(source: Accessor<T>): (key: T) => boolean {
+  const subs = new Map<T, Set<ReactiveNode>>();
+  let prev: T | undefined;
 
   createEffect(() => {
     const next = source();
     if (!Object.is(prev, next)) {
-      const prevSubs = subs.get(prev);
+      const prevSubs = subs.get(prev as T);
       const nextSubs = subs.get(next);
       prev = next;
       if (prevSubs) {
@@ -375,7 +328,7 @@ export function createSelector(source) {
     }
   });
 
-  return function isSelected(key) {
+  return function isSelected(key: T): boolean {
     const eff = getCurrentEffect();
     if (eff) {
       let set = subs.get(key);
@@ -386,20 +339,13 @@ export function createSelector(source) {
   };
 }
 
-/**
- * @template T
- * @param {() => T} fn
- * @returns {() => T}
- */
-export function createDeferred(fn) {
-  /** @type {T} */
-  let cached;
+export function createDeferred<T>(fn: () => T): Accessor<T> {
+  let cached: T;
   let dirty = true;
   let initialized = false;
-  /** @type {Set<{run: Function}>} */
-  const subscribers = new Set();
+  const subscribers: SubscriberSet = new Set();
 
-  const effect = {
+  const effect: ReactiveNode = {
     disposed: false,
     level: 0,
     sources: new Set(),
@@ -416,7 +362,7 @@ export function createDeferred(fn) {
     }
   };
 
-  return function getter() {
+  return function getter(): T {
     const eff = getCurrentEffect();
     if (eff) {
       subscribers.add(eff);
@@ -438,19 +384,20 @@ export function createDeferred(fn) {
   };
 }
 
-/**
- * @template T
- * @param {[() => T, (v: T) => void]} signal — [getter, setter] tuple from createSignal
- * @param {{ maxLength?: number }} [options]
- * @returns {{ undo: () => void, redo: () => void, canUndo: () => boolean, canRedo: () => boolean, clear: () => void }}
- */
-export function createHistory(signal, options = {}) {
+export function createHistory<T>(
+  signal: Signal<T>,
+  options: { maxLength?: number } = {}
+): {
+  undo: () => void;
+  redo: () => void;
+  canUndo: Accessor<boolean>;
+  canRedo: Accessor<boolean>;
+  clear: () => void;
+} {
   const maxLength = options.maxLength || 100;
   const [get, set] = signal;
-  /** @type {T[]} */
-  const undoStack = [];
-  /** @type {T[]} */
-  const redoStack = [];
+  const undoStack: T[] = [];
+  const redoStack: T[] = [];
   const [canUndo, setCanUndo] = createSignal(false);
   const [canRedo, setCanRedo] = createSignal(false);
   let skipTrack = false;
@@ -473,7 +420,7 @@ export function createHistory(signal, options = {}) {
     canRedo,
     undo() {
       if (undoStack.length <= 1) return;
-      const current = undoStack.pop();
+      const current = undoStack.pop()!;
       redoStack.push(current);
       skipTrack = true;
       set(undoStack[undoStack.length - 1]);
@@ -483,7 +430,7 @@ export function createHistory(signal, options = {}) {
     },
     redo() {
       if (redoStack.length === 0) return;
-      const v = redoStack.pop();
+      const v = redoStack.pop()!;
       undoStack.push(v);
       skipTrack = true;
       set(v);

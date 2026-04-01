@@ -7,6 +7,12 @@ import {
   disposeOwner,
   createChildOwner,
 } from '../src/state/scheduler.js';
+import {
+  createSignal,
+  createEffect,
+  createMemo,
+  createContext,
+} from '../src/state/index.js';
 
 // ─── scheduler.ts ────────────────────────────────────────────
 
@@ -132,5 +138,119 @@ describe('disposeOwner', () => {
     });
     expect(capturedOwner.children.size).toBe(0);
     expect(capturedOwner.cleanups.length).toBe(0);
+  });
+});
+
+// ─── state/index.ts ──────────────────────────────────────────
+
+describe('createSignal', () => {
+  it('reads and writes a value', () => {
+    const [get, set] = createSignal(10);
+    expect(get()).toBe(10);
+    set(20);
+    expect(get()).toBe(20);
+  });
+
+  it('accepts an updater function', () => {
+    const [get, set] = createSignal(5);
+    set((prev) => prev + 3);
+    expect(get()).toBe(8);
+  });
+
+  it('does not notify on same value (Object.is)', () => {
+    let runs = 0;
+    const [get, set] = createSignal(1);
+    createRoot(() => {
+      createEffect(() => {
+        get();
+        runs++;
+      });
+    });
+    expect(runs).toBe(1);
+    set(1); // same value
+    expect(runs).toBe(1);
+  });
+});
+
+describe('createEffect', () => {
+  it('runs immediately', () => {
+    let ran = false;
+    createRoot(() => {
+      createEffect(() => {
+        ran = true;
+      });
+    });
+    expect(ran).toBe(true);
+  });
+
+  it('re-runs when a tracked signal changes', () => {
+    let value = 0;
+    createRoot(() => {
+      const [get, set] = createSignal(1);
+      createEffect(() => {
+        value = get();
+      });
+      expect(value).toBe(1);
+      set(2);
+      expect(value).toBe(2);
+    });
+  });
+
+  it('cleans up via returned function', () => {
+    const cleanup = vi.fn();
+    createRoot(() => {
+      const [, set] = createSignal(0);
+      const [get2, set2] = createSignal('a');
+      createEffect(() => {
+        get2(); // track
+        return cleanup;
+      });
+      expect(cleanup).not.toHaveBeenCalled();
+      set2('b'); // triggers re-run, which calls cleanup first
+      expect(cleanup).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+
+describe('createMemo', () => {
+  it('derives value from signals', () => {
+    createRoot(() => {
+      const [a, setA] = createSignal(2);
+      const [b, setB] = createSignal(3);
+      const sum = createMemo(() => a() + b());
+      expect(sum()).toBe(5);
+      setA(10);
+      expect(sum()).toBe(13);
+      setB(7);
+      expect(sum()).toBe(17);
+    });
+  });
+
+  it('caches value when dependencies have not changed', () => {
+    let computeCount = 0;
+    createRoot(() => {
+      const [get] = createSignal(42);
+      const memo = createMemo(() => {
+        computeCount++;
+        return get() * 2;
+      });
+      expect(memo()).toBe(84);
+      expect(memo()).toBe(84);
+      // Should only have computed once (initial) + reads reuse cache
+      expect(computeCount).toBe(1);
+    });
+  });
+});
+
+describe('createContext', () => {
+  it('provides and consumes a value (global behavior)', () => {
+    const ctx = createContext('default');
+    expect(ctx.consume()).toBe('default');
+
+    const restore = ctx.Provider('hello');
+    expect(ctx.consume()).toBe('hello');
+
+    restore();
+    expect(ctx.consume()).toBe('default');
   });
 });
