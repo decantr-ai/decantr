@@ -1,20 +1,23 @@
 import { createSignal, createEffect, batch } from './index.js';
 
-/**
- * Apply a middleware chain to a signal [getter, setter] tuple.
- * Each middleware factory returns `{ onGet?, onSet? }`.
- * - `onGet(value)` — intercept reads, return transformed value.
- * - `onSet(newValue, prevValue)` — intercept writes, return value to set
- *   or `undefined` to reject the write.
- * Middlewares run in order: first middleware's onSet executes first (pipeline).
- *
- * @template T
- * @param {[() => T, (v: T | ((prev: T) => T)) => void]} signal
- * @param {Array<() => { onGet?: (v: T) => T, onSet?: (next: T, prev: T) => T | undefined }>} middlewares
- * @param {{ name?: string }} [options]
- * @returns {[() => T, (v: T | ((prev: T) => T)) => void]}
- */
-export function withMiddleware(signal, middlewares, options) {
+export interface MiddlewareHooks<T = any> {
+  onGet?: (value: T) => T;
+  onSet?: (next: T, prev: T) => T | undefined;
+  _attach?: (setter: Function) => void;
+  _hasHydrated?: boolean;
+  _hydrated?: T;
+}
+
+export interface StoreMiddlewareHooks {
+  onGet?: (value: any, prop: string | symbol) => any;
+  onSet?: (next: any, prev: any, prop: string | symbol) => any;
+}
+
+export function withMiddleware<T>(
+  signal: [() => T, (v: T | ((prev: T) => T)) => void],
+  middlewares: Array<() => MiddlewareHooks<T>>,
+  options?: { name?: string }
+): [() => T, (v: T | ((prev: T) => T)) => void] {
   const [rawGet, rawSet] = signal;
   const chain = middlewares.map(m => m());
 
@@ -63,7 +66,7 @@ export function withMiddleware(signal, middlewares, options) {
  * @param {Array<() => { onGet?: (v: any, prop: string|symbol) => any, onSet?: (next: any, prev: any, prop: string|symbol) => any }>} middlewares
  * @returns {T}
  */
-export function withStoreMiddleware(store, middlewares) {
+export function withStoreMiddleware<T extends object>(store: T, middlewares: Array<() => StoreMiddlewareHooks>): T {
   const chain = middlewares.map(m => m());
 
   return new Proxy(store, {
@@ -95,7 +98,7 @@ export function withStoreMiddleware(store, middlewares) {
  * @param {{ label?: string, collapsed?: boolean }} [options]
  * @returns {() => { onSet: (next: any, prev: any) => any }}
  */
-export function loggerMiddleware(options) {
+export function loggerMiddleware(options?: { label?: string; collapsed?: boolean }): () => { onSet: (next: any, prev: any) => any } {
   const label = (options && options.label) || 'signal';
   const collapsed = (options && options.collapsed) || false;
 
@@ -121,7 +124,7 @@ export function loggerMiddleware(options) {
  * @param {{ key: string, storage?: 'local' | 'session', debounce?: number }} options
  * @returns {() => { _hasHydrated: boolean, _hydrated: any, onSet: (next: any, prev: any) => any }}
  */
-export function persistMiddleware(options) {
+export function persistMiddleware(options: { key: string; storage?: 'local' | 'session'; debounce?: number }): () => MiddlewareHooks {
   const key = options.key;
   const storageType = options.storage || 'local';
   const debounceMs = options.debounce || 0;
@@ -185,7 +188,7 @@ export function persistMiddleware(options) {
  * @param {{ onError?: (error: string | Error, value: T) => void }} [options]
  * @returns {() => { onSet: (next: T, prev: T) => T | undefined }}
  */
-export function validationMiddleware(validator, options) {
+export function validationMiddleware<T>(validator: (value: T) => true | string | Error, options?: { onError?: (error: string | Error, value: T) => void }): () => { onSet: (next: T, prev: T) => T | undefined } {
   const onError = options && options.onError;
 
   return () => ({
@@ -217,7 +220,16 @@ export function validationMiddleware(validator, options) {
  *   history: () => any[]
  * }}
  */
-export function undoMiddleware(options) {
+export interface UndoMiddlewareResult {
+  middleware: () => MiddlewareHooks;
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  history: () => any[];
+}
+
+export function undoMiddleware(options?: { maxLength?: number }): UndoMiddlewareResult {
   const maxLength = (options && options.maxLength) || 100;
 
   /** @type {any[]} */

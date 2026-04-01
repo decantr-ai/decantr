@@ -7,8 +7,57 @@ import { hashStrategy } from './hash.js';
 import { historyStrategy } from './history.js';
 import { createLiveRegion } from '../components/_behaviors.js';
 
-/** @type {ReturnType<typeof createRouter>|null} */
-let activeRouter = null;
+// ─── Public Interfaces ──────────────────────────────────────────
+
+export interface RouteDefinition {
+  path: string;
+  component?: Function;
+  children?: RouteDefinition[];
+  name?: string;
+  meta?: Record<string, any>;
+}
+
+export interface RouterConfig {
+  mode?: 'hash' | 'history';
+  base?: string;
+  routes: RouteDefinition[];
+  transitions?: boolean;
+  scrollBehavior?: 'top' | 'restore' | false;
+  beforeEach?: (to: RouteMatch, from: RouteMatch) => undefined | false | string;
+  afterEach?: (to: RouteMatch, from: RouteMatch) => void;
+}
+
+export interface RouteMatch {
+  path: string;
+  params: Record<string, string>;
+  query: Record<string, string>;
+  component: Function | null;
+  components: Function[];
+  matched: boolean;
+  name?: string;
+  meta: Record<string, any>;
+}
+
+export interface NavigateTarget {
+  name: string;
+  params?: Record<string, string>;
+}
+
+export interface RouterInstance {
+  navigate: (to: string | NavigateTarget, opts?: { replace?: boolean }) => void;
+  outlet: (depth?: number) => HTMLElement;
+  current: () => RouteMatch;
+  path: () => string;
+  destroy: () => void;
+  onNavigate: (callback: (to: RouteMatch, from: RouteMatch) => void) => () => void;
+  nameMap: Map<string, string>;
+  back: () => void;
+  forward: () => void;
+  isNavigating: () => boolean;
+  _base: string;
+}
+
+let activeRouter: RouterInstance | null = null;
 
 /** @type {RegExp} */
 const UNSAFE_URL = /^(javascript|data):|^https?:\/\//i;
@@ -18,7 +67,7 @@ const UNSAFE_URL = /^(javascript|data):|^https?:\/\//i;
  * @param {string} path
  * @returns {string} validated path
  */
-function validatePath(path) {
+function validatePath(path: string): string {
   if (typeof path !== 'string' || UNSAFE_URL.test(path.trim())) {
     throw new Error(`Invalid route path: ${path}`);
   }
@@ -31,12 +80,12 @@ function validatePath(path) {
  * @param {string} fullPath
  * @returns {{ pathname: string, search: string, query: Object<string, string> }}
  */
-function parsePath(fullPath) {
+function parsePath(fullPath: string): { pathname: string; search: string; query: Record<string, string> } {
   const qIdx = fullPath.indexOf('?');
   if (qIdx === -1) return { pathname: fullPath, search: '', query: {} };
   const pathname = fullPath.slice(0, qIdx);
   const search = fullPath.slice(qIdx);
-  const query = {};
+  const query: Record<string, string> = {};
   const sp = new URLSearchParams(search);
   sp.forEach((v, k) => { query[k] = v; });
   return { pathname, search, query };
@@ -47,8 +96,8 @@ function parsePath(fullPath) {
  * @param {string} path
  * @returns {{ regex: RegExp, keys: string[] }}
  */
-function compilePath(path) {
-  const keys = [];
+function compilePath(path: string): { regex: RegExp; keys: string[] } {
+  const keys: string[] = [];
   const pattern = path
     .replace(/:([^/]+)/g, (_, key) => { keys.push(key); return '([^/]+)'; })
     .replace(/\*/g, '([^]*?)');
@@ -65,9 +114,8 @@ function compilePath(path) {
  * @param {Object} parentMeta
  * @returns {Array<{ fullPath: string, regex: RegExp, keys: string[], components: Function[], name?: string, meta: Object }>}
  */
-function flattenRoutes(routes, parentPath = '', parentComponents = [], parentMeta = {}) {
-  /** @type {Array} */
-  const result = [];
+function flattenRoutes(routes: RouteDefinition[], parentPath = '', parentComponents: Function[] = [], parentMeta: Record<string, any> = {}): any[] {
+  const result: any[] = [];
   for (const r of routes) {
     const seg = r.path === '*' ? '*' : r.path;
     const full = seg === '*' ? parentPath + '/*' :
@@ -92,8 +140,8 @@ function flattenRoutes(routes, parentPath = '', parentComponents = [], parentMet
  * @param {string} parentPath
  * @returns {Map<string, string>}
  */
-function buildNameMap(routes, parentPath = '') {
-  const map = new Map();
+function buildNameMap(routes: RouteDefinition[], parentPath = ''): Map<string, string> {
+  const map = new Map<string, string>();
   for (const r of routes) {
     const seg = r.path === '*' ? '*' : r.path;
     const full = seg === '*' ? parentPath + '/*' :
@@ -113,7 +161,7 @@ function buildNameMap(routes, parentPath = '') {
  * @param {{ name: string, params?: Object }} to
  * @returns {string}
  */
-function resolveNamedRoute(nameMap, to) {
+function resolveNamedRoute(nameMap: Map<string, string>, to: NavigateTarget): string {
   const pattern = nameMap.get(to.name);
   if (!pattern) throw new Error(`Unknown route name: ${to.name}`);
   let path = pattern;
@@ -125,15 +173,14 @@ function resolveNamedRoute(nameMap, to) {
   return path;
 }
 
-/** @type {Map<Function, Function>} Cache for lazy-loaded components */
-const lazyCache = new Map();
+const lazyCache = new Map<Function, any>();
 
 /**
  * Resolve a component — handles lazy (async) components with caching.
  * @param {Function} component
  * @returns {Promise<Function>|Function}
  */
-function resolveComponent(component) {
+function resolveComponent(component: any): any {
   if (lazyCache.has(component)) return lazyCache.get(component);
   let result;
   try {
@@ -159,7 +206,7 @@ function resolveComponent(component) {
  * @param {Function} fn
  * @returns {boolean}
  */
-function isLazyComponent(fn) {
+function isLazyComponent(fn: any): boolean {
   if (!fn || typeof fn !== 'function') return false;
   // Heuristic: function body contains import() or returns Promise
   // More reliable: try calling it and check for .then
@@ -186,24 +233,7 @@ function isLazyComponent(fn) {
   return false;
 }
 
-/**
- * @typedef {{
- *   mode?: 'hash'|'history',
- *   base?: string,
- *   routes: Array<{path: string, component?: Function, children?: Array, name?: string, meta?: Object}>,
- *   transitions?: boolean,
- *   scrollBehavior?: 'top'|'restore'|false,
- *   beforeEach?: (to: Object, from: Object) => undefined|false|string,
- *   afterEach?: (to: Object, from: Object) => void
- * }} RouterConfig
- */
-
-/**
- * Create a router instance.
- * @param {RouterConfig} config
- * @returns {{ navigate: Function, outlet: Function, current: Function, path: Function, destroy: Function, onNavigate: Function }}
- */
-export function createRouter(config) {
+export function createRouter(config: RouterConfig): RouterInstance {
   const strategy = config.mode === 'history' ? historyStrategy : hashStrategy;
   const base = (config.base || '').replace(/\/+$/, '');
   const useTransitions = !!config.transitions;
@@ -211,8 +241,7 @@ export function createRouter(config) {
   const beforeEach = config.beforeEach || null;
   const afterEach = config.afterEach || null;
 
-  /** @type {Array<(to: Object, from: Object) => void>} */
-  const listeners = [];
+  const listeners: Array<(to: RouteMatch, from: RouteMatch) => void> = [];
 
   // Compile routes
   const compiled = flattenRoutes(config.routes);
@@ -230,7 +259,7 @@ export function createRouter(config) {
    * @param {string} path
    * @returns {string}
    */
-  function stripBase(path) {
+  function stripBase(path: string): string {
     if (!base) return path;
     if (path.startsWith(base)) return path.slice(base.length) || '/';
     return path;
@@ -239,20 +268,19 @@ export function createRouter(config) {
   const [navigating, setNavigating] = createSignal(false);
 
   // Persistent live region for route change announcements
-  let _liveRegion = null;
+  let _liveRegion: any = null;
   if (typeof document !== 'undefined') {
     _liveRegion = createLiveRegion({ politeness: 'polite' });
   }
 
-  /** @type {Map<string, number>} scroll position cache */
-  const scrollPositions = new Map();
+  const scrollPositions = new Map<string, number>();
 
   const initialFull = stripBase(strategy.current());
   const { pathname: initPath, query: initQuery } = parsePath(initialFull);
 
   // Start with empty components — handleNavigation (async) will resolve lazy components
   // and set the real route. This prevents the outlet from rendering unresolved components.
-  const [route, setRoute] = createSignal({ path: initPath, params: {}, query: initQuery, component: null, components: [], matched: false, meta: {} });
+  const [route, setRoute] = createSignal<RouteMatch>({ path: initPath, params: {}, query: initQuery, component: null, components: [], matched: false, meta: {} });
 
   /**
    * Match a pathname against compiled routes.
@@ -260,7 +288,7 @@ export function createRouter(config) {
    * @param {Object} query
    * @returns {{ path: string, params: Object, query: Object, component: Function|null, components: Function[], matched: boolean, name?: string }}
    */
-  function matchRoute(pathname, query) {
+  function matchRoute(pathname: string, query: Record<string, string>): RouteMatch {
     for (const entry of compiled) {
       const match = pathname.match(entry.regex);
       if (match) {
@@ -282,7 +310,7 @@ export function createRouter(config) {
    * @param {string} newPath
    * @param {{ replace?: boolean, skipGuards?: boolean }} [opts]
    */
-  async function handleNavigation(newPath, opts = {}) {
+  async function handleNavigation(newPath: string, opts: { replace?: boolean; skipGuards?: boolean } = {}) {
     const { pathname, query } = parsePath(newPath);
     const to = matchRoute(pathname, query);
     const from = route();
@@ -378,12 +406,12 @@ export function createRouter(config) {
    * @param {string|{ name: string, params?: Object }} to
    * @param {{ replace?: boolean }} [opts]
    */
-  function nav(to, opts = {}) {
-    let path;
+  function nav(to: string | NavigateTarget, opts: { replace?: boolean } = {}) {
+    let path: string;
     if (typeof to === 'object' && to.name) {
       path = resolveNamedRoute(nameMap, to);
     } else {
-      path = /** @type {string} */ (to);
+      path = to as string;
     }
     validatePath(path);
     const fullPath = base + path;
@@ -404,11 +432,11 @@ export function createRouter(config) {
    * @param {number} [depth=0] — nesting depth (0 = root outlet)
    * @returns {HTMLElement}
    */
-  function outlet(depth = 0) {
+  function outlet(depth = 0): HTMLElement {
     const container = document.createElement('d-route');
-    let currentNode = null;
-    let currentComp = null;
-    let currentDestroyFns = [];
+    let currentNode: any = null;
+    let currentComp: any = null;
+    let currentDestroyFns: Function[] = [];
 
     createEffect(() => {
       const r = route();
@@ -483,7 +511,7 @@ export function createRouter(config) {
    * @param {(to: Object, from: Object) => void} callback
    * @returns {() => void}
    */
-  function onNavigate(callback) {
+  function onNavigate(callback: (to: RouteMatch, from: RouteMatch) => void): () => void {
     listeners.push(callback);
     return () => {
       const idx = listeners.indexOf(callback);
@@ -497,7 +525,7 @@ export function createRouter(config) {
     if (activeRouter === router) activeRouter = null;
   }
 
-  const router = { navigate: nav, outlet, current: route, path: () => route().path, destroy, onNavigate, nameMap, back, forward, isNavigating: navigating, _base: base };
+  const router: RouterInstance = { navigate: nav, outlet, current: route, path: () => route().path, destroy, onNavigate, nameMap, back, forward, isNavigating: navigating, _base: base };
   activeRouter = router;
 
   // Run initial navigation to apply guards on first load
@@ -511,7 +539,7 @@ export function createRouter(config) {
  * @param {string|{ name: string, params?: Object }} to
  * @param {{ replace?: boolean }} [opts]
  */
-export function navigate(to, opts) {
+export function navigate(to: string | NavigateTarget, opts?: { replace?: boolean }): void {
   if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
   activeRouter.navigate(to, opts);
 }
@@ -522,7 +550,7 @@ export function navigate(to, opts) {
  * @param {...any} children
  * @returns {HTMLAnchorElement}
  */
-export function link(props, ...children) {
+export function link(props: { href: string; activeClass?: string; exact?: boolean; class?: string; [key: string]: any }, ...children: any[]): HTMLAnchorElement {
   const { href, activeClass, exact, ...rest } = props;
   validatePath(href);
 
@@ -565,7 +593,7 @@ export function link(props, ...children) {
  * overrides. Example: `{ path: '/admin', meta: { requiresAuth: true, breadcrumb: 'Admin' }, component: AdminPage }`
  * @returns {() => { path: string, params: Object, query: Object, component: Function|null, components: Function[], matched: boolean, name?: string, meta: Object }}
  */
-export function useRoute() {
+export function useRoute(): () => RouteMatch {
   if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
   return activeRouter.current;
 }
@@ -576,7 +604,7 @@ export function useRoute() {
  * Setter updates query params without triggering full navigation.
  * @returns {[() => URLSearchParams, (params: Object|URLSearchParams) => void]}
  */
-export function useSearchParams() {
+export function useSearchParams(): [() => URLSearchParams, (params: Record<string, string> | URLSearchParams) => void] {
   if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
 
   const [params, setParams] = createSignal(new URLSearchParams(window.location.search || window.location.hash.split('?')[1] || ''));
@@ -595,7 +623,7 @@ export function useSearchParams() {
    * Update search params in URL without navigation.
    * @param {Object|URLSearchParams} newParams
    */
-  function setter(newParams) {
+  function setter(newParams: Record<string, string> | URLSearchParams) {
     const sp = newParams instanceof URLSearchParams ? newParams : new URLSearchParams();
     if (!(newParams instanceof URLSearchParams)) {
       for (const [k, v] of Object.entries(newParams)) sp.set(k, String(v));
@@ -625,7 +653,7 @@ export function useSearchParams() {
  * @param {(to: Object, from: Object) => void} callback
  * @returns {() => void}
  */
-export function onNavigate(callback) {
+export function onNavigate(callback: (to: RouteMatch, from: RouteMatch) => void): () => void {
   if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
   return activeRouter.onNavigate(callback);
 }
@@ -633,7 +661,7 @@ export function onNavigate(callback) {
 /**
  * Navigate back in history. Delegates to active router.
  */
-export function back() {
+export function back(): void {
   if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
   activeRouter.back();
 }
@@ -641,7 +669,7 @@ export function back() {
 /**
  * Navigate forward in history. Delegates to active router.
  */
-export function forward() {
+export function forward(): void {
   if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
   activeRouter.forward();
 }
@@ -650,7 +678,7 @@ export function forward() {
  * Reactive boolean signal — true while lazy routes are resolving.
  * @returns {boolean}
  */
-export function isNavigating() {
+export function isNavigating(): boolean {
   if (!activeRouter) throw new Error('No active router. Call createRouter() first.');
   return activeRouter.isNavigating();
 }

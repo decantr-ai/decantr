@@ -18,52 +18,56 @@
 
 import { createSignal, createEffect, createMemo } from './index.js';
 
+// ─── Public Types ────────────────────────────────────────────────────────────
+
+export interface TraceEntry {
+  id: number;
+  label: string;
+  type: string;
+  timestamp: number;
+  duration: number;
+  trigger: string | null;
+}
+
+export interface SignalInfo {
+  value: any;
+  subscriberCount: number;
+  id: number;
+  label: string;
+}
+
+export interface ReactiveGraph {
+  nodes: Array<{ id: number; type: string; label: string; value: any; level: number }>;
+  edges: Array<{ from: number; to: number }>;
+}
+
+export interface SnapshotData {
+  id: string;
+  timestamp: number;
+  values: Map<string, any>;
+}
+
+export interface LeakReport {
+  orphanedEffects: number;
+  growingSubscribers: Array<{ label: string; count: number }>;
+}
+
 // ─── Internal State ─────────────────────────────────────────────────────────
 
-/**
- * Metadata for reactive nodes (signal getters, effect disposers, memo getters).
- * WeakMap keyed on the public-facing function so entries don't prevent GC.
- * @type {WeakMap<Function, { id: number, label: string, type: string }>}
- */
-const _meta = new WeakMap();
+interface NodeMeta { id: number; label: string; type: string; }
 
-/**
- * Strong references for iteration (WeakMap is not enumerable).
- * @type {Map<number, { ref: Function, type: string, effectObj?: object }>}
- */
-const _nodes = new Map();
+const _meta = new WeakMap<Function, NodeMeta>();
 
-/**
- * Reverse lookup: internal effect/memo object -> node id.
- * Used by getReactiveGraph() to resolve subscriber-set members back to nodes.
- * @type {WeakMap<object, number>}
- */
-const _effectToNodeId = new WeakMap();
+const _nodes = new Map<number, { ref: Function; type: string; effectObj?: any }>();
 
-/**
- * Signal getter -> setter, so restore() can write values back.
- * @type {WeakMap<Function, Function>}
- */
-const _setters = new WeakMap();
-
-/**
- * Stored snapshots keyed by string id.
- * @type {Map<string, { id: string, timestamp: number, values: Map<string, any> }>}
- */
-const _snapshots = new Map();
+const _effectToNodeId = new WeakMap<object, number>();
+const _setters = new WeakMap<Function, Function>();
+const _snapshots = new Map<string, SnapshotData>();
 
 /** Auto-incrementing node id counter. */
 let _nextId = 1;
 
-/**
- * Circular buffer for execution traces.
- * @type {Array<TraceEntry>}
- */
-let _traceBuffer = [];
-
-/**
- * @typedef {{ id: number, label: string, type: string, timestamp: number, duration: number, trigger: string|null }} TraceEntry
- */
+let _traceBuffer: TraceEntry[] = [];
 
 /** Write cursor in the circular buffer. */
 let _traceIndex = 0;
@@ -77,11 +81,7 @@ let _maxTraceEntries = 1000;
 /** Maximum stored snapshots. */
 let _maxSnapshots = 50;
 
-/**
- * The most recent signal setter that fired, used to attribute effect triggers.
- * @type {{ label: string, id: number }|null}
- */
-let _lastTrigger = null;
+let _lastTrigger: NodeMeta | null = null;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -101,7 +101,7 @@ function isActive() {
  * @param {object} [effectObj] - Internal effect object (for graph edge resolution).
  * @returns {number} Assigned id.
  */
-function registerNode(target, type, name, effectObj) {
+function registerNode(target: Function, type: string, name?: string, effectObj?: any): number {
   const id = _nextId++;
   const entry = { id, label: name || `${type}#${id}`, type };
   _meta.set(target, entry);
@@ -122,9 +122,8 @@ function registerNode(target, type, name, effectObj) {
  * @param {number} duration - Execution time in ms.
  * @param {string|null} trigger - Label of the triggering signal.
  */
-function recordTrace(id, lbl, type, duration, trigger) {
-  /** @type {TraceEntry} */
-  const entry = { id, label: lbl, type, timestamp: Date.now(), duration, trigger };
+function recordTrace(id: number, lbl: string, type: string, duration: number, trigger: string | null) {
+  const entry: TraceEntry = { id, label: lbl, type, timestamp: Date.now(), duration, trigger };
 
   if (_traceBuffer.length < _maxTraceEntries) {
     _traceBuffer.push(entry);
@@ -140,7 +139,7 @@ function recordTrace(id, lbl, type, duration, trigger) {
  * @param {number} limit - Max entries to return.
  * @returns {TraceEntry[]}
  */
-function readTrace(limit) {
+function readTrace(limit: number): TraceEntry[] {
   const len = _traceBuffer.length;
   const count = Math.min(len, limit);
   if (count === 0) return [];
@@ -175,7 +174,7 @@ function readTrace(limit) {
  * @param {{ maxTraceEntries?: number, maxSnapshots?: number }} [options]
  * @returns {void}
  */
-export function enableDevTools(options) {
+export function enableDevTools(options?: { maxTraceEntries?: number; maxSnapshots?: number }): void {
   globalThis.__DECANTR_DEVTOOLS__ = true;
 
   if (options) {
@@ -204,7 +203,7 @@ export function enableDevTools(options) {
  * @param {Function} getter - A signal or memo getter.
  * @returns {{ value: any, subscriberCount: number, id: number, label: string }|null}
  */
-export function inspectSignal(getter) {
+export function inspectSignal(getter: any): SignalInfo | null {
   if (!isActive()) return null;
   if (typeof getter !== 'function') return null;
 
@@ -245,7 +244,7 @@ export function inspectSignal(getter) {
  * @param {string} name - Debug label.
  * @returns {void}
  */
-export function label(target, name) {
+export function label(target: Function, name: string): void {
   if (!isActive()) return;
   if (typeof target !== 'function' || typeof name !== 'string') return;
 
@@ -278,7 +277,7 @@ export function label(target, name) {
  * @param {Function} setter - Signal setter from `createSignal`.
  * @returns {void}
  */
-export function registerSignalSetter(getter, setter) {
+export function registerSignalSetter(getter: Function, setter: Function): void {
   if (!isActive()) return;
   _setters.set(getter, setter);
   // Ensure the getter is registered as a node
@@ -299,7 +298,7 @@ export function registerSignalSetter(getter, setter) {
  *
  * @returns {{ nodes: Array<{ id: number, type: string, label: string, value: any, level: number }>, edges: Array<{ from: number, to: number }> }|null}
  */
-export function getReactiveGraph() {
+export function getReactiveGraph(): ReactiveGraph | null {
   if (!isActive()) return null;
 
   /** @type {Array<{ id: number, type: string, label: string, value: any, level: number }>} */
@@ -359,7 +358,7 @@ export function getReactiveGraph() {
  * @param {{ limit?: number }} [options]
  * @returns {TraceEntry[]|null} Returns `null` if devtools are not enabled.
  */
-export function getTrace(options) {
+export function getTrace(options?: { limit?: number }): TraceEntry[] | null {
   if (!isActive()) return null;
 
   const limit = (options && typeof options.limit === 'number')
@@ -376,7 +375,7 @@ export function getTrace(options) {
  *
  * @returns {{ id: string, timestamp: number, values: Map<string, any> }|null}
  */
-export function snapshot() {
+export function snapshot(): SnapshotData | null {
   if (!isActive()) return null;
 
   /** @type {Map<string, any>} */
@@ -417,7 +416,7 @@ export function snapshot() {
  * @param {string} snapshotId - The `id` from a previous `snapshot()` call.
  * @returns {boolean} `true` if at least one signal was restored.
  */
-export function restore(snapshotId) {
+export function restore(snapshotId: string): boolean {
   if (!isActive()) return false;
   if (typeof snapshotId !== 'string') return false;
 
@@ -459,7 +458,7 @@ export function restore(snapshotId) {
  * @param {{ subscriberThreshold?: number }} [options]
  * @returns {{ orphanedEffects: number, growingSubscribers: Array<{ label: string, count: number }> }|null}
  */
-export function detectLeaks(options) {
+export function detectLeaks(options?: { subscriberThreshold?: number }): LeakReport | null {
   if (!isActive()) return null;
 
   const threshold = (options && typeof options.subscriberThreshold === 'number')
@@ -515,7 +514,7 @@ export function detectLeaks(options) {
  * @param {{ label?: string }} [options]
  * @returns {[() => T, (v: T | ((prev: T) => T)) => void]}
  */
-export function createSignalTracked(initialValue, options) {
+export function createSignalTracked<T>(initialValue: T, options?: { label?: string }): [() => T, (v: T | ((prev: T) => T)) => void] {
   const [getter, setter] = createSignal(initialValue);
   if (!isActive()) return [getter, setter];
 
@@ -551,7 +550,7 @@ export function createSignalTracked(initialValue, options) {
  * @param {{ label?: string }} [options]
  * @returns {Function} dispose
  */
-export function createEffectTracked(fn, options) {
+export function createEffectTracked(fn: Function, options?: { label?: string }): Function {
   if (!isActive()) return createEffect(fn);
 
   /** @type {{ id: number, label: string, type: string }|null} */
@@ -592,7 +591,7 @@ export function createEffectTracked(fn, options) {
  * @param {{ label?: string }} [options]
  * @returns {() => T}
  */
-export function createMemoTracked(fn, options) {
+export function createMemoTracked<T>(fn: () => T, options?: { label?: string }): () => T {
   if (!isActive()) return createMemo(fn);
 
   /** @type {{ id: number, label: string, type: string }|null} */
@@ -627,7 +626,7 @@ export function createMemoTracked(fn, options) {
  * Does not clear `globalThis.__DECANTR_DEVTOOLS__`.
  * @returns {void}
  */
-export function _reset() {
+export function _reset(): void {
   _nodes.clear();
   _snapshots.clear();
   _traceBuffer = [];
@@ -641,7 +640,7 @@ export function _reset() {
  * Disable devtools and clear all state.
  * @returns {void}
  */
-export function disableDevTools() {
+export function disableDevTools(): void {
   globalThis.__DECANTR_DEVTOOLS__ = false;
   _reset();
 }

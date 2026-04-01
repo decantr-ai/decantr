@@ -126,11 +126,11 @@ function wrap(target) {
  * @param {T} init - Plain object or array
  * @returns {T} Deep reactive proxy
  */
-export function createDeepStore(init) {
+export function createDeepStore<T extends object>(init: T): T {
   if (!isProxyable(init)) {
     throw new Error('createDeepStore requires a plain object or array');
   }
-  return /** @type {T} */ (wrap(init));
+  return wrap(init) as T;
 }
 
 // ─── produce ─────────────────────────────────────────────────
@@ -142,7 +142,7 @@ export function createDeepStore(init) {
  * @param {T} store - Deep reactive store
  * @param {(draft: T) => void} recipe - Mutation function
  */
-export function produce(store, recipe) {
+export function produce<T extends object>(store: T, recipe: (draft: T) => void): void {
   /** @type {Array<{target: object, prop: string|symbol, value: *, type: string}>} */
   const patches = [];
   const drafts = new WeakMap();
@@ -215,7 +215,7 @@ export function produce(store, recipe) {
  * @param {T} store - Deep reactive store
  * @param {T} data - New plain data to reconcile against
  */
-export function reconcile(store, data) {
+export function reconcile<T extends object>(store: T, data: T): void {
   const raw = toRaw(store);
   if (!isProxyable(raw) || !isProxyable(data)) return;
   batch(() => { _reconcile(raw, data); });

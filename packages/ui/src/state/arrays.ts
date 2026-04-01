@@ -10,7 +10,7 @@ import { createSignal, createEffect, createMemo, untrack, batch, createRoot } fr
  * @param {(item: T, index: () => number) => U} mapFn - Mapping function per item
  * @returns {() => U[]}
  */
-export function mapArray(list, mapFn) {
+export function mapArray<T, U>(list: () => T[], mapFn: (item: T, index: () => number) => U): () => U[] {
   /** @type {Map<T, { result: U, dispose: Function, idx: [() => number, (v: number) => void] }>} */
   let cache = new Map();
   /** @type {U[]} */
@@ -85,7 +85,7 @@ export function mapArray(list, mapFn) {
  * @param {(item: () => T, index: number) => U} mapFn - Mapping function per index
  * @returns {() => U[]}
  */
-export function indexArray(list, mapFn) {
+export function indexArray<T, U>(list: () => T[], mapFn: (item: () => T, index: number) => U): () => U[] {
   /** @type {{ result: U, dispose: Function, setItem: (v: T) => void }[]} */
   let rows = [];
   /** @type {U[]} */
@@ -144,7 +144,7 @@ export function indexArray(list, mapFn) {
  * @param {(item: T) => U} projectFn - Transforms item into projected value
  * @returns {() => U[]}
  */
-export function createProjection(source, keyFn, projectFn) {
+export function createProjection<T, K, U>(source: () => T[], keyFn: (item: T) => K, projectFn: (item: T) => U): () => U[] {
   /** @type {Map<K, { value: U, item: T }>} */
   let cache = new Map();
 

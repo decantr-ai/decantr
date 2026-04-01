@@ -11,6 +11,71 @@
  */
 import { createSignal, createEffect, createMemo, batch } from '../state/index.js';
 
+// ─── Public Interfaces ───────────────────────────────────────────
+
+export type ValidatorFn = (value: any, allValues?: Record<string, any>) => string | null;
+export type AsyncValidatorFn = (value: any, allValues?: Record<string, any>) => Promise<string | null>;
+
+export interface FieldConfig {
+  value?: any;
+  validators?: Array<ValidatorFn | AsyncValidatorFn>;
+  transform?: (rawValue: any) => any;
+}
+
+export interface FieldInstance {
+  name: string;
+  value: () => any;
+  error: () => string | null;
+  errors: () => string[];
+  touched: () => boolean;
+  dirty: () => boolean;
+  valid: () => boolean;
+  setValue: (v: any) => void;
+  setTouched: () => void;
+  setError: (msg: string) => void;
+  reset: (val?: any) => void;
+  validate: () => Promise<boolean>;
+  bind: () => { value: () => any; onchange: (v: any) => void; onblur: () => void; error: () => string | null };
+}
+
+export interface FieldArrayInstance {
+  items: () => any[];
+  length: () => number;
+  append: (value: any) => void;
+  prepend: (value: any) => void;
+  remove: (index: number) => void;
+  move: (from: number, to: number) => void;
+  swap: (a: number, b: number) => void;
+  replace: (index: number, value: any) => void;
+}
+
+export interface FormConfig {
+  fields?: Record<string, FieldConfig>;
+  onSubmit?: (values: Record<string, any>, form: FormInstance) => Promise<void>;
+  validate?: (values: Record<string, any>) => Record<string, string[]> | null;
+  validateOn?: 'onChange' | 'onBlur' | 'onSubmit';
+}
+
+export interface FormInstance {
+  field: (name: string) => FieldInstance;
+  fields: Record<string, FieldInstance>;
+  values: () => Record<string, any>;
+  errors: () => Record<string, string[]>;
+  isValid: () => boolean;
+  isDirty: () => boolean;
+  isSubmitting: () => boolean;
+  isSubmitted: () => boolean;
+  submitCount: () => number;
+  submit: () => Promise<void>;
+  reset: (values?: Record<string, any>) => void;
+  setValues: (partial: Record<string, any>) => void;
+  setErrors: (errors: Record<string, string | string[]>) => void;
+  validate: () => Promise<boolean>;
+  fieldArray: (name: string) => FieldArrayInstance;
+  watch: (fieldName: string, callback: (value: any, prevValue: any) => void) => () => void;
+  watchAll: (callback: (values: Record<string, any>) => void) => () => void;
+}
+
 // ─── HELPERS ─────────────────────────────────────────────────────
 
 /** @param {any} v @returns {boolean} */
@@ -443,7 +508,7 @@ function _createFieldArray(name, initial) {
  * Input({ type: 'password', ...form.field('password').bind() })
  * Button({ onclick: () => form.submit() }, 'Login')
  */
-export function createForm(config) {
+export function createForm(config: FormConfig): FormInstance {
   const { fields: fieldConfigs = {}, onSubmit, validate: crossValidate, validateOn = 'onBlur' } = config;
 
   const [isSubmitting, setIsSubmitting] = createSignal(false);
@@ -736,7 +801,7 @@ export function createForm(config) {
  *   return input;
  * }
  */
-export function useFormField(form, fieldName) {
+export function useFormField(form: FormInstance, fieldName: string): { value: () => any; setValue: (v: any) => void; error: () => string | null; errors: () => string[]; touched: () => boolean; dirty: () => boolean; valid: () => boolean; onBlur: () => void; bind: FieldInstance['bind'] } {
   const f = form.field(fieldName);
   return {
     value: f.value,
@@ -751,54 +816,4 @@ export function useFormField(form, fieldName) {
   };
 }
 
-// ─── TYPE DEFINITIONS (JSDoc) ────────────────────────────────────
-
-/**
- * @typedef {Object} FieldInstance
- * @property {string} name
- * @property {() => any} value — Signal getter for current value
- * @property {() => string|null} error — First error or null
- * @property {() => string[]} errors — All error messages
- * @property {() => boolean} touched — Whether field has been blurred
- * @property {() => boolean} dirty — Whether value differs from initial
- * @property {() => boolean} valid — Whether field has no errors
- * @property {(v: any) => void} setValue
- * @property {() => void} setTouched
- * @property {(msg: string) => void} setError
- * @property {(val?: any) => void} reset
- * @property {() => Promise<boolean>} validate
- * @property {() => {value: Function, onchange: Function, onblur: Function, error: Function}} bind
- */
-
-/**
- * @typedef {Object} FieldArrayInstance
- * @property {() => any[]} items — Signal getter for array of items
- * @property {() => number} length — Reactive item count
- * @property {(value: any) => void} append
- * @property {(value: any) => void} prepend
- * @property {(index: number) => void} remove
- * @property {(from: number, to: number) => void} move
- * @property {(a: number, b: number) => void} swap
- * @property {(index: number, value: any) => void} replace
- */
-
-/**
- * @typedef {Object} FormInstance
- * @property {(name: string) => FieldInstance} field
- * @property {Object} fields — Proxy for field access via dot notation
- * @property {() => Object} values — All current values
- * @property {() => Object} errors — All errors `{ fieldName: string[] }`
- * @property {() => boolean} isValid
- * @property {() => boolean} isDirty
- * @property {() => boolean} isSubmitting
- * @property {() => boolean} isSubmitted
- * @property {() => number} submitCount
- * @property {() => Promise<void>} submit
- * @property {(values?: Object) => void} reset
- * @property {(partial: Object) => void} setValues
- * @property {(errors: Object) => void} setErrors
- * @property {() => Promise<boolean>} validate
- * @property {(name: string) => FieldArrayInstance} fieldArray
- * @property {(fieldName: string, callback: Function) => Function} watch
- * @property {(callback: Function) => Function} watchAll
- */
+// Type definitions are now TypeScript interfaces at the top of this file.
