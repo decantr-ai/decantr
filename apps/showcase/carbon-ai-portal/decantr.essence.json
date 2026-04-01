@@ -1,5 +1,5 @@
 {
-  "version": "3.0.0",
+  "version": "3.1.0",
   "dna": {
     "theme": {
       "style": "carbon",
@@ -42,162 +42,264 @@
       "skip_nav": true
     },
     "personality": [
-      "professional"
+      "professional",
+      "minimal",
+      "developer-focused",
+      "polished"
     ]
   },
   "blueprint": {
-    "shell": "chat-portal",
-    "pages": [
+    "sections": [
       {
-        "id": "chat",
-        "layout": [
-          "header",
-          "messages",
-          "input"
+        "id": "ai-chatbot",
+        "role": "primary",
+        "shell": "chat-portal",
+        "features": [
+          "chat",
+          "markdown",
+          "code-highlight",
+          "file-upload",
+          "mentions",
+          "reactions",
+          "export"
+        ],
+        "description": "AI chatbot interface with conversation sidebar, message thread, and anchored input. Core interface for chat-first AI applications.",
+        "pages": [
+          {
+            "id": "chat",
+            "layout": [
+              "header",
+              "messages",
+              "input"
+            ],
+            "route": "/chat/:id"
+          },
+          {
+            "id": "new",
+            "layout": [
+              "empty-thread",
+              "input"
+            ],
+            "route": "/chat"
+          }
         ]
       },
       {
-        "id": "new",
-        "layout": [
-          "empty-thread",
-          "input"
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ]
+          }
         ]
       },
       {
-        "id": "auth-full-login",
-        "shell_override": "centered",
-        "layout": [
-          "form"
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "inherit",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "security-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "settings"
+            ],
+            "route": "/settings/account"
+          }
         ]
       },
       {
-        "id": "auth-full-register",
-        "shell_override": "centered",
-        "layout": [
-          "form"
-        ]
-      },
-      {
-        "id": "auth-full-forgot-password",
-        "shell_override": "centered",
-        "layout": [
-          "form"
-        ]
-      },
-      {
-        "id": "auth-full-reset-password",
-        "shell_override": "centered",
-        "layout": [
-          "form"
-        ]
-      },
-      {
-        "id": "auth-full-verify-email",
-        "shell_override": "centered",
-        "layout": [
-          "form"
-        ]
-      },
-      {
-        "id": "auth-full-mfa-setup",
-        "shell_override": "centered",
-        "layout": [
-          "form"
-        ]
-      },
-      {
-        "id": "auth-full-mfa-verify",
-        "shell_override": "centered",
-        "layout": [
-          "form"
-        ]
-      },
-      {
-        "id": "auth-full-phone-verify",
-        "shell_override": "centered",
-        "layout": [
-          "form"
-        ]
-      },
-      {
-        "id": "settings-full-profile",
-        "shell_override": "inherit",
-        "layout": [
-          "settings"
-        ]
-      },
-      {
-        "id": "settings-full-security",
-        "shell_override": "inherit",
-        "layout": [
-          "security-settings",
-          "sessions"
-        ]
-      },
-      {
-        "id": "settings-full-preferences",
-        "shell_override": "inherit",
-        "layout": [
-          "settings"
-        ]
-      },
-      {
-        "id": "settings-full-danger",
-        "shell_override": "inherit",
-        "layout": [
-          "settings"
-        ]
-      },
-      {
-        "id": "marketing-saas-home",
-        "shell_override": "top-nav-footer",
-        "layout": [
-          "hero",
-          "features",
-          "how-it-works",
-          "pricing",
+        "id": "marketing-saas",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "pricing-toggle",
           "testimonials",
-          "cta"
+          "feature-grid"
+        ],
+        "description": "SaaS marketing landing page with hero, features, how-it-works timeline, pricing, testimonials, and CTA sections.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "features",
+              "how-it-works",
+              "pricing",
+              "testimonials",
+              "cta"
+            ],
+            "route": "/"
+          }
         ]
       },
       {
-        "id": "about-hybrid-about",
-        "shell_override": "top-nav-footer",
-        "layout": [
-          "hero",
-          "story",
-          "team",
-          "values",
-          "cta"
+        "id": "about-hybrid",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "team-grid",
+          "values-display"
+        ],
+        "description": "About page combining hero, company story, team grid, values, and call-to-action sections.",
+        "pages": [
+          {
+            "id": "about",
+            "layout": [
+              "hero",
+              "story",
+              "team",
+              "values",
+              "cta"
+            ],
+            "route": "/about"
+          }
         ]
       },
       {
-        "id": "contact-contact",
-        "shell_override": "top-nav-footer",
-        "layout": [
-          "hero",
-          "form"
+        "id": "contact",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "form-validation",
+          "spam-protection",
+          "file-attachment"
+        ],
+        "description": "Contact page with hero header and working contact form with validation and spam protection.",
+        "pages": [
+          {
+            "id": "contact",
+            "layout": [
+              "hero",
+              "form"
+            ],
+            "route": "/contact"
+          }
         ]
       },
       {
-        "id": "legal-privacy",
-        "shell_override": "top-nav-footer",
-        "layout": [
-          "content"
-        ]
-      },
-      {
-        "id": "legal-terms",
-        "shell_override": "top-nav-footer",
-        "layout": [
-          "content"
-        ]
-      },
-      {
-        "id": "legal-cookies",
-        "shell_override": "top-nav-footer",
-        "layout": [
-          "content"
+        "id": "legal",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "toc-navigation",
+          "print-friendly",
+          "smooth-scroll"
+        ],
+        "description": "Legal pages including privacy policy, terms of service, and cookie policy with sticky TOC and print-friendly layout.",
+        "pages": [
+          {
+            "id": "privacy",
+            "layout": [
+              "content"
+            ],
+            "route": "/privacy"
+          },
+          {
+            "id": "terms",
+            "layout": [
+              "content"
+            ],
+            "route": "/terms"
+          },
+          {
+            "id": "cookies",
+            "layout": [
+              "content"
+            ],
+            "route": "/cookies"
+          }
         ]
       }
     ],
@@ -231,7 +333,85 @@
       "toc-navigation",
       "print-friendly",
       "smooth-scroll"
-    ]
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-saas",
+        "page": "home"
+      },
+      "/chat": {
+        "section": "ai-chatbot",
+        "page": "new"
+      },
+      "/about": {
+        "section": "about-hybrid",
+        "page": "about"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/terms": {
+        "section": "legal",
+        "page": "terms"
+      },
+      "/contact": {
+        "section": "contact",
+        "page": "contact"
+      },
+      "/cookies": {
+        "section": "legal",
+        "page": "cookies"
+      },
+      "/privacy": {
+        "section": "legal",
+        "page": "privacy"
+      },
+      "/chat/:id": {
+        "section": "ai-chatbot",
+        "page": "chat"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/account": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
   },
   "meta": {
     "archetype": "ai-chatbot",
@@ -244,6 +424,18 @@
       "mode": "strict",
       "dna_enforcement": "error",
       "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
     }
   }
 }

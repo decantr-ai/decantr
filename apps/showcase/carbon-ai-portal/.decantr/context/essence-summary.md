@@ -10,7 +10,7 @@ Auto-generated summary of `decantr.essence.json`.
 |----------|-------|
 | Archetype | ai-chatbot |
 | Blueprint | none |
-| Personality | professional |
+| Personality | professional, minimal, developer-focused, polished |
 | Target | react |
 
 ## Visual Identity
@@ -96,4 +96,4 @@ Auto-generated summary of `decantr.essence.json`.
 
 ---
 
-*Last updated: 2026-04-01T01:17:46.246Z*
+*Last updated: 2026-04-01T15:16:36.069Z*

@@ -1,0 +1,104 @@
+# Scaffold: carbon-ai-portal
+
+**Blueprint:** carbon-ai-portal
+**Theme:** carbon | **Recipe:** carbon
+**Personality:** professional, minimal, developer-focused, polished
+**Guard mode:** creative (no enforcement during initial scaffolding)
+
+## App Topology
+
+## Composition Topology
+
+**Intent:** AI chatbot interface with conversation sidebar, message thread, and anchored input. Core interface for chat-first AI applications.
+
+### Zones
+
+**Public** — top-nav-footer shell
+  Archetypes: marketing-saas, about-hybrid, contact, legal
+  Purpose: SaaS marketing landing page with hero, features, how-it-works timeline, pricing, testimonials, and CTA sections. About page combining hero, company story, team grid, values, and call-to-action sections. Contact page with hero header and working contact form with validation and spam protection. Legal pages including privacy policy, terms of service, and cookie policy with sticky TOC and print-friendly layout.
+  Tone: professional, minimal, developer-focused, polished
+  Features: pricing-toggle, testimonials, feature-grid, team-grid, values-display, form-validation, spam-protection, file-attachment, toc-navigation, print-friendly, smooth-scroll
+
+**Gateway** — centered shell
+  Archetypes: auth-full
+  Purpose: Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.
+  Tone: professional, minimal, developer-focused, polished
+  Features: auth, mfa, oauth, email-verification, password-reset
+
+**App** — chat-portal shell
+  Archetypes: ai-chatbot
+  Purpose: AI chatbot interface with conversation sidebar, message thread, and anchored input. Core interface for chat-first AI applications.
+  Tone: professional, minimal, developer-focused, polished
+  Features: chat, markdown, code-highlight, file-upload, mentions, reactions, export
+
+**App (auxiliary)** — inherit shell
+  Archetypes: settings-full
+  Purpose: Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.
+  Tone: professional, minimal, developer-focused, polished
+  Features: profile-edit, password-change, mfa-management, session-management, theme-toggle, account-deletion
+
+### Zone Transitions
+
+  Public → Gateway: conversion (authentication)
+  Gateway → App: gate-pass (authentication)
+  App → Gateway: gate-return (authentication)
+  App → Public: navigation (external)
+
+### Default Entry Points
+
+  Anonymous users enter: /
+  Authenticated users enter: /chat
+  Auth redirect target: /chat
+
+
+## Sections Overview
+
+| Section | Role | Shell | Pages | Features |
+|---------|------|-------|-------|----------|
+| ai-chatbot | primary | chat-portal | chat, new | chat, markdown, code-highlight, file-upload, mentions, reactions, export |
+| auth-full | gateway | centered | login, register, forgot-password, reset-password, verify-email, mfa-setup, mfa-verify, phone-verify | auth, mfa, oauth, email-verification, password-reset |
+| settings-full | auxiliary | inherit | profile, security, preferences, danger | profile-edit, password-change, mfa-management, session-management, theme-toggle, account-deletion |
+| marketing-saas | public | top-nav-footer | home | pricing-toggle, testimonials, feature-grid |
+| about-hybrid | public | top-nav-footer | about | team-grid, values-display |
+| contact | public | top-nav-footer | contact | form-validation, spam-protection, file-attachment |
+| legal | public | top-nav-footer | privacy, terms, cookies | toc-navigation, print-friendly, smooth-scroll |
+
+## Route Map
+
+| Route | Section | Page |
+|-------|---------|------|
+| / | marketing-saas | home |
+| /chat | ai-chatbot | new |
+| /about | about-hybrid | about |
+| /login | auth-full | login |
+| /terms | legal | terms |
+| /contact | contact | contact |
+| /cookies | legal | cookies |
+| /privacy | legal | privacy |
+| /chat/:id | ai-chatbot | chat |
+| /register | auth-full | register |
+| /mfa-setup | auth-full | mfa-setup |
+| /mfa-verify | auth-full | mfa-verify |
+| /verify-email | auth-full | verify-email |
+| /reset-password | auth-full | reset-password |
+| /forgot-password | auth-full | forgot-password |
+| /settings/account | settings-full | danger |
+| /settings/profile | settings-full | profile |
+| /settings/security | settings-full | security |
+| /settings/preferences | settings-full | preferences |
+
+## Section Contexts
+
+For detailed pattern specs per section, read:
+- .decantr/context/section-ai-chatbot.md
+- .decantr/context/section-auth-full.md
+- .decantr/context/section-settings-full.md
+- .decantr/context/section-marketing-saas.md
+- .decantr/context/section-about-hybrid.md
+- .decantr/context/section-contact.md
+- .decantr/context/section-legal.md
+
+## SEO Hints
+
+**Schema.org types:** Organization, WebApplication, SoftwareApplication
+**Meta priorities:** description, og:image, twitter:card
