@@ -3,7 +3,7 @@ import { join, dirname } from 'node:path';
 import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import { resolvePatternPreset } from '@decantr/registry';
-import type { Pattern } from '@decantr/registry';
+import type { Pattern, ArchetypeRole } from '@decantr/registry';
 import {
   validateStringArg,
   fuzzyScore,
@@ -14,6 +14,111 @@ import {
   writeDriftLog,
 } from './helpers.js';
 import type { DriftLogEntry } from './helpers.js';
+
+// ── Inline topology derivation (lightweight version of cli/scaffold.ts) ──
+
+interface ZoneInput {
+  archetypeId: string;
+  role: ArchetypeRole;
+  shell: string;
+  features: string[];
+  description: string;
+}
+
+interface ComposedZone {
+  role: ArchetypeRole;
+  archetypes: string[];
+  shell: string;
+  features: string[];
+  descriptions: string[];
+}
+
+interface ZoneTransition {
+  from: string;
+  to: string;
+  type: string;
+  trigger: string;
+}
+
+const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
+
+function deriveZones(inputs: ZoneInput[]): ComposedZone[] {
+  const zoneMap = new Map<ArchetypeRole, ComposedZone>();
+
+  for (const input of inputs) {
+    const existing = zoneMap.get(input.role);
+    if (existing) {
+      existing.archetypes.push(input.archetypeId);
+      existing.features.push(...input.features);
+      existing.descriptions.push(input.description);
+    } else {
+      zoneMap.set(input.role, {
+        role: input.role,
+        archetypes: [input.archetypeId],
+        shell: input.shell,
+        features: [...input.features],
+        descriptions: [input.description],
+      });
+    }
+  }
+
+  for (const zone of zoneMap.values()) {
+    zone.features = [...new Set(zone.features)];
+  }
+
+  return ZONE_ORDER
+    .filter(role => zoneMap.has(role))
+    .map(role => zoneMap.get(role)!);
+}
+
+const GATEWAY_TRIGGER_MAP: Record<string, string> = {
+  auth: 'authentication',
+  login: 'authentication',
+  mfa: 'authentication',
+  payment: 'payment',
+  subscription: 'payment',
+  checkout: 'payment',
+  onboarding: 'onboarding',
+  'setup-wizard': 'onboarding',
+  welcome: 'onboarding',
+  invite: 'invitation',
+  'access-code': 'invitation',
+};
+
+function resolveGatewayTrigger(features: string[]): string {
+  for (const feature of features) {
+    const trigger = GATEWAY_TRIGGER_MAP[feature];
+    if (trigger) return trigger;
+  }
+  return 'authentication';
+}
+
+function deriveTransitions(zones: ComposedZone[]): ZoneTransition[] {
+  const transitions: ZoneTransition[] = [];
+  const roles = new Set(zones.map(z => z.role));
+  const gateway = zones.find(z => z.role === 'gateway');
+  const gatewayTrigger = gateway ? resolveGatewayTrigger(gateway.features) : 'authentication';
+
+  const hasApp = roles.has('primary') || roles.has('auxiliary');
+  const hasGateway = roles.has('gateway');
+  const hasPublic = roles.has('public');
+
+  if (hasPublic && hasGateway) {
+    transitions.push({ from: 'public', to: 'gateway', type: 'conversion', trigger: gatewayTrigger });
+  }
+  if (hasPublic && hasApp && !hasGateway) {
+    transitions.push({ from: 'public', to: 'app', type: 'conversion', trigger: 'navigation' });
+  }
+  if (hasGateway && hasApp) {
+    transitions.push({ from: 'gateway', to: 'app', type: 'gate-pass', trigger: gatewayTrigger });
+    transitions.push({ from: 'app', to: 'gateway', type: 'gate-return', trigger: gatewayTrigger });
+  }
+  if (hasApp && hasPublic) {
+    transitions.push({ from: 'app', to: 'public', type: 'navigation', trigger: 'external' });
+  }
+
+  return transitions;
+}
 
 const READ_ONLY = {
   readOnlyHint: true,
@@ -375,7 +480,53 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const namespace = (args.namespace as string) || '@official';
       try {
         const blueprint = await apiClient.getBlueprint(namespace, args.id as string);
-        return { found: true, ...blueprint };
+
+        // Derive topology from composed archetypes
+        let topology = null;
+        const composeEntries = (blueprint as any).compose || (blueprint as any).data?.compose;
+        if (composeEntries && Array.isArray(composeEntries) && composeEntries.length > 0) {
+          const zoneInputs: ZoneInput[] = [];
+          const archetypePromises = composeEntries.map(async (entry: any) => {
+            const arcId = typeof entry === 'string' ? entry : entry.archetype;
+            try {
+              const arch = await apiClient.getContent('archetypes', namespace, arcId);
+              const archData = (arch as any).data || arch;
+              const explicitRole = typeof entry === 'object' ? entry.role : undefined;
+              zoneInputs.push({
+                archetypeId: arcId,
+                role: explicitRole || archData.role || 'auxiliary',
+                shell: archData.pages?.[0]?.shell || 'sidebar-main',
+                features: archData.features || [],
+                description: archData.description || '',
+              });
+            } catch {
+              // Archetype not found — skip
+            }
+          });
+          await Promise.all(archetypePromises);
+
+          if (zoneInputs.length > 0) {
+            const zones = deriveZones(zoneInputs);
+            const transitions = deriveTransitions(zones);
+            const primaryArchetype = zoneInputs.find(z => z.role === 'primary');
+            topology = {
+              zones: zones.map(z => ({
+                role: z.role,
+                archetypes: z.archetypes,
+                shell: z.shell,
+                features: z.features,
+                purpose: z.descriptions.join(' '),
+              })),
+              transitions,
+              entryPoints: {
+                anonymous: '/',
+                authenticated: primaryArchetype ? `/${primaryArchetype.archetypeId}` : '/home',
+              },
+            };
+          }
+        }
+
+        return { found: true, ...blueprint, ...(topology ? { topology } : {}) };
       } catch {
         return { found: false, message: `Blueprint "${args.id}" not found in ${namespace}.` };
       }
