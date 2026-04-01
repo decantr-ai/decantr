@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { deriveZones, deriveTransitions } from '../src/scaffold.js';
-import type { ZoneInput, ComposedZone } from '../src/scaffold.js';
+import { deriveZones, deriveTransitions, generateTopologySection } from '../src/scaffold.js';
+import type { ZoneInput, ComposedZone, TopologyData } from '../src/scaffold.js';
 
 describe('deriveZones', () => {
   it('groups archetypes by role', () => {
@@ -117,5 +117,71 @@ describe('deriveTransitions', () => {
     const transitions = deriveTransitions(zones);
 
     expect(transitions).toContainEqual({ from: 'app', to: 'public', type: 'navigation', trigger: 'external' });
+  });
+});
+
+describe('generateTopologySection', () => {
+  it('generates markdown with zones, transitions, and entry points', () => {
+    const data: TopologyData = {
+      intent: 'AI chatbot platform for developers',
+      zones: [
+        { role: 'public', archetypes: ['marketing-saas'], shell: 'top-nav-footer', features: ['pricing'], descriptions: ['SaaS marketing landing page.'] },
+        { role: 'gateway', archetypes: ['auth-full'], shell: 'centered', features: ['auth', 'mfa'], descriptions: ['Authentication flow.'] },
+        { role: 'primary', archetypes: ['ai-chatbot'], shell: 'chat-portal', features: ['chat'], descriptions: ['AI chatbot interface.'] },
+      ],
+      transitions: [
+        { from: 'public', to: 'gateway', type: 'conversion', trigger: 'authentication' },
+        { from: 'gateway', to: 'app', type: 'gate-pass', trigger: 'authentication' },
+      ],
+      entryPoints: { anonymous: '/', authenticated: '/chat' },
+    };
+
+    const result = generateTopologySection(data, ['professional']);
+
+    expect(result).toContain('## Composition Topology');
+    expect(result).toContain('**Intent:** AI chatbot platform for developers');
+    expect(result).toContain('**Public** — top-nav-footer shell');
+    expect(result).toContain('**Gateway** — centered shell');
+    expect(result).toContain('**App** — chat-portal shell');
+    expect(result).toContain('### Zone Transitions');
+    expect(result).toContain('Public → Gateway');
+    expect(result).toContain('Gateway → App');
+    expect(result).toContain('Anonymous users enter: /');
+    expect(result).toContain('Authenticated users enter: /chat');
+    expect(result).toContain('Tone: professional');
+  });
+
+  it('omits transitions section when no transitions', () => {
+    const data: TopologyData = {
+      intent: 'Simple app',
+      zones: [
+        { role: 'primary', archetypes: ['dashboard'], shell: 'sidebar-main', features: [], descriptions: ['Dashboard.'] },
+      ],
+      transitions: [],
+      entryPoints: { anonymous: '/', authenticated: '/' },
+    };
+
+    const result = generateTopologySection(data, []);
+
+    expect(result).toContain('## Composition Topology');
+    expect(result).not.toContain('### Zone Transitions');
+    expect(result).not.toContain('Tone:');
+  });
+
+  it('merges primary and auxiliary under App label', () => {
+    const data: TopologyData = {
+      intent: 'Full app',
+      zones: [
+        { role: 'primary', archetypes: ['chatbot'], shell: 'chat-portal', features: ['chat'], descriptions: ['Chat.'] },
+        { role: 'auxiliary', archetypes: ['settings'], shell: 'sidebar-settings', features: ['profile-edit'], descriptions: ['Settings.'] },
+      ],
+      transitions: [],
+      entryPoints: { anonymous: '/', authenticated: '/chat' },
+    };
+
+    const result = generateTopologySection(data, []);
+
+    expect(result).toContain('**App** — chat-portal shell');
+    expect(result).toContain('**App (auxiliary)** — sidebar-settings shell');
   });
 });

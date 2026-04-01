@@ -258,6 +258,73 @@ export function deriveTransitions(zones: ComposedZone[]): ZoneTransition[] {
   return transitions;
 }
 
+export interface TopologyData {
+  intent: string;
+  zones: ComposedZone[];
+  transitions: ZoneTransition[];
+  entryPoints: {
+    anonymous: string;
+    authenticated: string;
+  };
+}
+
+const ZONE_LABELS: Record<string, string> = {
+  public: 'Public',
+  gateway: 'Gateway',
+  primary: 'App',
+  auxiliary: 'App (auxiliary)',
+};
+
+export function generateTopologySection(data: TopologyData, personality: string[]): string {
+  const lines: string[] = [];
+
+  lines.push('## Composition Topology');
+  lines.push('');
+  lines.push(`**Intent:** ${data.intent}`);
+  lines.push('');
+  lines.push('### Zones');
+  lines.push('');
+
+  for (const zone of data.zones) {
+    const label = ZONE_LABELS[zone.role] || zone.role;
+    lines.push(`**${label}** — ${zone.shell} shell`);
+    lines.push(`  Archetypes: ${zone.archetypes.join(', ')}`);
+    lines.push(`  Purpose: ${zone.descriptions.join(' ')}`);
+
+    if (personality.length > 0) {
+      lines.push(`  Tone: ${personality.join(', ')}`);
+    }
+
+    if (zone.features.length > 0) {
+      lines.push(`  Features: ${zone.features.join(', ')}`);
+    }
+
+    lines.push('');
+  }
+
+  if (data.transitions.length > 0) {
+    lines.push('### Zone Transitions');
+    lines.push('');
+
+    for (const t of data.transitions) {
+      const fromLabel = t.from.charAt(0).toUpperCase() + t.from.slice(1);
+      const toLabel = t.to.charAt(0).toUpperCase() + t.to.slice(1);
+      lines.push(`  ${fromLabel} → ${toLabel}: ${t.type} (${t.trigger})`);
+    }
+
+    lines.push('');
+  }
+
+  lines.push('### Default Entry Points');
+  lines.push('');
+  lines.push(`  Anonymous users enter: ${data.entryPoints.anonymous}`);
+  lines.push(`  Authenticated users enter: ${data.entryPoints.authenticated}`);
+  lines.push(`  Auth redirect target: ${data.entryPoints.authenticated}`);
+  lines.push('');
+
+  return lines.join('\n');
+}
+
 export interface ScaffoldResult {
   essencePath: string;
   decantrMdPath: string;
