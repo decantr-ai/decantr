@@ -55,8 +55,14 @@ export function createApp(): Hono<Env> {
   });
 
   // Rate limiting (after auth so it can read the auth context)
+  // Skip for public GET endpoints and admin sync
   app.use('/v1/*', async (c, next) => {
-    if (c.req.path === '/v1/admin/sync' && c.req.method === 'POST') {
+    const path = c.req.path;
+    const method = c.req.method;
+    if (path === '/v1/admin/sync' && method === 'POST') {
+      return next();
+    }
+    if (method === 'GET' && /^\/v1\/(patterns|recipes|themes|blueprints|archetypes|shells|search|health)/.test(path)) {
       return next();
     }
     await rateLimiter()(c, next);
