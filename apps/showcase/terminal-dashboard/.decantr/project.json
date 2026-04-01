@@ -1,0 +1,30 @@
+{
+  "detected": {
+    "framework": "react",
+    "version": "19.0.0",
+    "packageManager": "unknown",
+    "hasTypeScript": true,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": null
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-01T16:47:54.246Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": [],
+      "recipes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-01T16:47:54.246Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=terminal-dashboard --theme=terminal --mode=dark --guard=strict"
+  }
+}

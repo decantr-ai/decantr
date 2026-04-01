@@ -1,5 +1,6 @@
 const AVAILABLE_SHOWCASES = new Set([
   'carbon-ai-portal',
+  'terminal-dashboard',
 ]);
 
 export function hasShowcase(blueprintSlug: string): boolean {
