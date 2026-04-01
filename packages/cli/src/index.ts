@@ -25,6 +25,7 @@ import { cmdRefresh } from './commands/refresh.js';
 import { cmdAddSection, cmdAddPage, cmdAddFeature } from './commands/add.js';
 import { cmdRemoveSection, cmdRemovePage, cmdRemoveFeature } from './commands/remove.js';
 import { cmdThemeSwitch } from './commands/theme-switch.js';
+import { cmdAnalyze } from './commands/analyze.js';
 
 // ── Helpers ──
 
@@ -1214,6 +1215,7 @@ ${BOLD}Usage:${RESET}
   decantr theme <subcommand>
   decantr create <type> <name>
   decantr publish <type> <name>
+  decantr analyze
   decantr login
   decantr logout
   decantr help
@@ -1250,6 +1252,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('publish')}     Publish a custom content item to the community registry
   ${cyan('login')}       Authenticate with the Decantr registry
   ${cyan('logout')}      Remove stored credentials
+  ${cyan('analyze')}     Scan existing project and produce analysis report
   ${cyan('upgrade')}     Check for content updates from registry
   ${cyan('help')}        Show this help
 
@@ -1579,6 +1582,11 @@ async function main() {
           console.error(error(`Unknown remove subcommand: ${subcommand}. Use section, page, or feature.`));
           process.exitCode = 1;
       }
+      break;
+    }
+
+    case 'analyze': {
+      cmdAnalyze(process.cwd());
       break;
     }
 
