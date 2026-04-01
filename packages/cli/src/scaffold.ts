@@ -269,6 +269,14 @@ export function composeSections(
     }
   }
 
+  // After all sections are built, resolve "inherit" shell
+  const primaryShell = sections.find(s => s.role === 'primary')?.shell || defaultShell;
+  for (const section of sections) {
+    if (section.shell === 'inherit') {
+      section.shell = primaryShell;
+    }
+  }
+
   // Deduplicate features then apply overrides
   let features = [...new Set(allFeatures)];
   if (overrides?.features_add) {
@@ -1440,6 +1448,24 @@ The \`css()\` function processes atom strings and injects CSS at runtime:
 | \`_trans\` | \`transition:all 0.15s ease\` |
 | \`_visible\`, \`_invisible\` | visibility |
 
+### Using Recipe Decorators
+
+Recipe decorators (from \`src/styles/decorators.css\`) are regular CSS class names, NOT atoms. They are applied directly as class names and combined with atoms using string concatenation:
+
+\`\`\`tsx
+// Atoms use css() function, decorators are plain class names
+<div className={css('_flex _col _gap4') + ' carbon-card'}>
+  <div className={css('_p4') + ' carbon-glass'}>
+    <pre className={css('_p3') + ' carbon-code'}>{code}</pre>
+  </div>
+</div>
+\`\`\`
+
+**Key difference:**
+- Atoms: \`css('_flex _col _gap4')\` — processed by @decantr/css runtime
+- Decorators: \`'carbon-card'\`, \`'carbon-glass'\` — plain CSS classes from decorators.css
+- Combined: \`css('_flex _col') + ' carbon-card'\`
+
 ### CSS Architecture
 
 The CSS is organized into two parts:
@@ -2115,6 +2141,14 @@ export async function refreshDerivedFiles(
     : [];
 
   if (sections.length > 0) {
+    // ── Resolve "inherit" shell to actual primary shell ──
+    const primarySectionShell = sections.find(s => s.role === 'primary')?.shell || 'sidebar-main';
+    for (const section of sections) {
+      if (section.shell === 'inherit') {
+        section.shell = primarySectionShell;
+      }
+    }
+
     // ── Fetch pattern specs for all patterns in all sections ──
     const patternSpecs: Record<string, PatternSpecSummary> = {};
     const seenPatterns = new Set<string>();
@@ -2133,13 +2167,35 @@ export async function refreshDerivedFiles(
                   const inner = ((raw.data ?? raw) as Record<string, any>);
                   const defaultPreset = inner.default_preset || 'standard';
                   const preset = inner.presets?.[defaultPreset];
+                  let slots = preset?.layout?.slots || {};
+
+                  // If no slots defined, generate synthetic ones from the pattern name and description
+                  if (Object.keys(slots).length === 0) {
+                    const synthetic = generateSyntheticSlots(name, (inner.description as string) || '');
+                    if (Object.keys(synthetic).length > 0) {
+                      slots = synthetic;
+                    }
+                  }
+
                   patternSpecs[name] = {
                     description: (inner.description as string) || '',
                     components: (inner.components as string[]) || [],
-                    slots: preset?.layout?.slots || {},
+                    slots,
                   };
+                } else {
+                  // Pattern not in registry — generate synthetic spec from name alone
+                  const synthetic = generateSyntheticSlots(name, '');
+                  if (Object.keys(synthetic).length > 0) {
+                    patternSpecs[name] = { description: '', components: [], slots: synthetic };
+                  }
                 }
-              } catch { /* skip unavailable patterns */ }
+              } catch {
+                // Pattern fetch failed — generate synthetic spec from name alone
+                const synthetic = generateSyntheticSlots(name, '');
+                if (Object.keys(synthetic).length > 0) {
+                  patternSpecs[name] = { description: '', components: [], slots: synthetic };
+                }
+              }
             }
           }
         }
@@ -2319,13 +2375,35 @@ export async function refreshDerivedFiles(
                 const inner = ((raw.data ?? raw) as Record<string, any>);
                 const defaultPreset = inner.default_preset || 'standard';
                 const preset = inner.presets?.[defaultPreset];
+                let slots = preset?.layout?.slots || {};
+
+                // If no slots defined, generate synthetic ones from the pattern name and description
+                if (Object.keys(slots).length === 0) {
+                  const synthetic = generateSyntheticSlots(name, (inner.description as string) || '');
+                  if (Object.keys(synthetic).length > 0) {
+                    slots = synthetic;
+                  }
+                }
+
                 patternSpecs[name] = {
                   description: (inner.description as string) || '',
                   components: (inner.components as string[]) || [],
-                  slots: preset?.layout?.slots || {},
+                  slots,
                 };
+              } else {
+                // Pattern not in registry — generate synthetic spec from name alone
+                const synthetic = generateSyntheticSlots(name, '');
+                if (Object.keys(synthetic).length > 0) {
+                  patternSpecs[name] = { description: '', components: [], slots: synthetic };
+                }
               }
-            } catch { /* skip unavailable patterns */ }
+            } catch {
+              // Pattern fetch failed — generate synthetic spec from name alone
+              const synthetic = generateSyntheticSlots(name, '');
+              if (Object.keys(synthetic).length > 0) {
+                patternSpecs[name] = { description: '', components: [], slots: synthetic };
+              }
+            }
           }
         }
       }
@@ -2392,6 +2470,81 @@ export async function refreshDerivedFiles(
     contextFiles,
     cssFiles,
   };
+}
+
+// ── Synthetic Slot Generation ──
+
+/**
+ * Generate synthetic slot descriptions for patterns that lack explicit slot definitions.
+ * Uses the pattern ID and description to infer common slot structures.
+ */
+function generateSyntheticSlots(patternId: string, description: string): Record<string, string> {
+  const desc = description.toLowerCase();
+  const syntheticSlots: Record<string, string> = {};
+
+  if (patternId.includes('feature') || desc.includes('feature')) {
+    syntheticSlots['grid'] = 'Grid of feature cards (icon + title + description)';
+    syntheticSlots['feature-card'] = 'Individual feature with icon, heading, and description text';
+  }
+  if (patternId.includes('pricing') || desc.includes('pricing')) {
+    syntheticSlots['tiers'] = 'Pricing tier cards (name, price, features list, CTA button)';
+    syntheticSlots['toggle'] = 'Monthly/annual billing toggle (optional)';
+  }
+  if (patternId.includes('testimonial') || desc.includes('testimonial')) {
+    syntheticSlots['quotes'] = 'Testimonial cards (quote text, author name, role, avatar)';
+  }
+  if (patternId.includes('cta') || desc.includes('call-to-action') || desc.includes('call to action')) {
+    syntheticSlots['headline'] = 'CTA headline text';
+    syntheticSlots['description'] = 'Supporting description text';
+    syntheticSlots['actions'] = 'CTA button(s)';
+  }
+  if (patternId.includes('how-it-works') || desc.includes('how it works') || desc.includes('timeline') || desc.includes('steps')) {
+    syntheticSlots['steps'] = 'Numbered steps (step number, title, description)';
+  }
+  if (patternId.includes('team') || desc.includes('team')) {
+    syntheticSlots['members'] = 'Team member cards (avatar, name, role)';
+  }
+  if (patternId.includes('story') || desc.includes('story') || desc.includes('about')) {
+    syntheticSlots['content'] = 'Story/about narrative text content';
+  }
+  if (patternId.includes('values') || desc.includes('values')) {
+    syntheticSlots['values'] = 'Value cards (icon/emoji, title, description)';
+  }
+  if (patternId.includes('form') || desc.includes('form') || desc.includes('contact')) {
+    syntheticSlots['fields'] = 'Form fields (name, email, message, etc.)';
+    syntheticSlots['submit'] = 'Submit button';
+  }
+  if (patternId.includes('content') || desc.includes('legal') || desc.includes('privacy') || desc.includes('policy')) {
+    syntheticSlots['body'] = 'Long-form text content with headings and paragraphs';
+    syntheticSlots['toc'] = 'Table of contents sidebar (optional)';
+  }
+  if (patternId.includes('settings') || desc.includes('settings') || desc.includes('preferences')) {
+    syntheticSlots['sections'] = 'Settings sections (label, description, input/toggle)';
+  }
+  if (patternId.includes('security') || desc.includes('security') || desc.includes('password')) {
+    syntheticSlots['sections'] = 'Security sections (password change, MFA toggle, session list)';
+  }
+  if (patternId.includes('session') || desc.includes('session')) {
+    syntheticSlots['list'] = 'Active sessions list (device, location, last active, revoke button)';
+  }
+  if (patternId.includes('message') || desc.includes('message') || desc.includes('chat')) {
+    syntheticSlots['messages'] = 'Message bubbles (user/assistant, content, timestamp)';
+  }
+  if (patternId.includes('input') && desc.includes('chat')) {
+    syntheticSlots['textarea'] = 'Auto-expanding message input';
+    syntheticSlots['actions'] = 'Attach file button, send button';
+  }
+  if (patternId.includes('empty') || desc.includes('empty')) {
+    syntheticSlots['illustration'] = 'Empty state illustration or icon';
+    syntheticSlots['message'] = 'Welcome/empty state message';
+    syntheticSlots['suggestions'] = 'Suggested actions or prompts';
+  }
+  if (patternId.includes('header') && desc.includes('chat')) {
+    syntheticSlots['title'] = 'Conversation title or model name';
+    syntheticSlots['actions'] = 'Header action buttons (new chat, settings)';
+  }
+
+  return syntheticSlots;
 }
 
 // ── Context Generation ──
