@@ -202,6 +202,8 @@ export interface EssenceDNA {
     preference: string;
     duration_scale: number;
     reduce_motion: boolean;
+    timing?: string;
+    durations?: Record<string, string>;
   };
   accessibility: {
     wcag_level: WcagLevel;
@@ -209,6 +211,14 @@ export interface EssenceDNA {
     skip_nav: boolean;
   };
   personality: string[];
+  constraints?: {
+    mode?: string;
+    typography?: string;
+    borders?: string;
+    corners?: string;
+    shadows?: string;
+    effects?: Record<string, string>;
+  };
 }
 
 /** Only density and mode may be overridden per-page. DNA axioms like wcag_level and theme.style are never overrideable. */
@@ -219,16 +229,36 @@ export interface DNAOverrides {
 
 export interface BlueprintPage {
   id: string;
+  route?: string;
   shell_override?: ShellType | null;
   layout: LayoutItem[];
+  patterns?: PatternRef[];
   dna_overrides?: DNAOverrides;
   surface?: string;
 }
 
-export interface EssenceBlueprint {
-  shell: ShellType;
-  pages: BlueprintPage[];
+export type ArchetypeRole = 'primary' | 'gateway' | 'public' | 'auxiliary';
+
+export interface EssenceV31Section {
+  id: string;
+  role: ArchetypeRole;
+  shell: ShellType | string;
   features: string[];
+  description: string;
+  pages: BlueprintPage[];
+}
+
+export interface RouteEntry {
+  section: string;
+  page: string;
+}
+
+export interface EssenceBlueprint {
+  shell?: ShellType | string;
+  sections?: EssenceV31Section[];
+  pages?: BlueprintPage[];
+  features: string[];
+  routes?: Record<string, RouteEntry>;
   icon_style?: string;
   avatar_style?: string;
 }
@@ -244,11 +274,19 @@ export interface EssenceMeta {
   target: GeneratorTarget;
   platform: Platform;
   guard: EssenceV3Guard;
+  seo?: {
+    schema_org?: string[];
+    meta_priorities?: string[];
+  };
+  navigation?: {
+    hotkeys?: Array<{ key: string; route?: string; action?: string; label: string }>;
+    command_palette?: boolean;
+  };
 }
 
 export interface EssenceV3 {
   $schema?: string;
-  version: '3.0.0';
+  version: '3.0.0' | '3.1.0';
   dna: EssenceDNA;
   blueprint: EssenceBlueprint;
   meta: EssenceMeta;
@@ -260,7 +298,20 @@ export interface EssenceV3 {
 export type EssenceFile = Essence | SectionedEssence | EssenceV3;
 
 export function isV3(essence: EssenceFile): essence is EssenceV3 {
-  return essence.version === '3.0.0' && 'dna' in essence && 'blueprint' in essence;
+  return (essence.version === '3.0.0' || essence.version === '3.1.0') && 'dna' in essence && 'blueprint' in essence;
+}
+
+/** Flatten sections into a flat page list (for guards and backward compat). */
+export function flattenPages(blueprint: EssenceBlueprint): BlueprintPage[] {
+  if (blueprint.sections && blueprint.sections.length > 0) {
+    return blueprint.sections.flatMap(s =>
+      s.pages.map(p => ({
+        ...p,
+        shell_override: p.shell_override ?? (s.shell !== blueprint.shell ? (s.shell as ShellType) : undefined),
+      }))
+    );
+  }
+  return blueprint.pages ?? [];
 }
 
 export function isSectioned(essence: EssenceFile): essence is SectionedEssence {

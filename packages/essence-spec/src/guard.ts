@@ -1,5 +1,5 @@
 import type { EssenceFile, EssenceV3, EssenceV3Guard, StructurePage, LayoutItem, DensityLevel } from './types.js';
-import { isSimple, isSectioned, isV3 } from './types.js';
+import { isSimple, isSectioned, isV3, flattenPages } from './types.js';
 
 export interface AutoFix {
   type: 'add_page' | 'update_layout' | 'update_blueprint';
@@ -345,9 +345,10 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
 function getAllPages(essence: EssenceFile): StructurePage[] {
   if (isV3(essence)) {
     // Map v3 BlueprintPages to StructurePage shape for guard evaluation
-    return essence.blueprint.pages.map(page => ({
+    const pages = flattenPages(essence.blueprint);
+    return pages.map(page => ({
       id: page.id,
-      shell: page.shell_override ?? essence.blueprint.shell,
+      shell: page.shell_override ?? essence.blueprint.shell ?? '',
       layout: page.layout,
       ...(page.surface ? { surface: page.surface } : {}),
     }));
@@ -360,7 +361,8 @@ function getAllPages(essence: EssenceFile): StructurePage[] {
 /** Get per-page density override from v3 blueprint, if set. */
 function getPageDensityOverride(essence: EssenceV3, pageId?: string): string | undefined {
   if (!pageId) return undefined;
-  const page = essence.blueprint.pages.find(p => p.id === pageId);
+  const pages = flattenPages(essence.blueprint);
+  const page = pages.find(p => p.id === pageId);
   if (!page?.dna_overrides?.density) return undefined;
   // Map density level to a content_gap value
   const densityGapMap: Record<DensityLevel, string> = {

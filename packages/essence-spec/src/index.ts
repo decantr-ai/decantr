@@ -31,9 +31,12 @@ export type {
   Accessibility,
   WcagLevel,
   CvdPreference,
+  ArchetypeRole,
+  EssenceV31Section,
+  RouteEntry,
 } from './types.js';
 
-export { isSectioned, isSimple, isV3 } from './types.js';
+export { isSectioned, isSimple, isV3, flattenPages } from './types.js';
 
 export { validateEssence } from './validate.js';
 export type { ValidationResult } from './validate.js';
