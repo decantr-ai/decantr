@@ -6,6 +6,7 @@ export { component } from './component.js';
 export { disposeNode };
 export { Show } from './show.js';
 export { For } from './for.js';
+export { injectCSS, isInjected, resetCSS } from './css-inject.js';
 import { drainMountQueue, drainDestroyQueue, pushScope, popScope, runDestroyFns } from './lifecycle.js';
 
 // Augment HTMLElement for internal __d_destroy storage
