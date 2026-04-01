@@ -22,14 +22,17 @@ export function createApp(): Hono<Env> {
     return c.json({ error: 'Internal server error' }, 500);
   });
 
-  app.use(
-    '*',
-    cors({
-      origin: '*',
-      allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Admin-Key'],
-    })
-  );
+  // Simple CORS headers — set directly instead of using Hono CORS middleware
+  // (the middleware has intermittent "Context is not finalized" bugs)
+  app.use('*', async (c, next) => {
+    c.header('Access-Control-Allow-Origin', '*');
+    c.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+    c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key, X-Admin-Key');
+    if (c.req.method === 'OPTIONS') {
+      return c.text('', 204);
+    }
+    await next();
+  });
 
   // Optional auth on v1 routes — skip for public read-only endpoints and admin sync
   app.use('/v1/*', async (c, next) => {

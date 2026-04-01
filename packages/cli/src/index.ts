@@ -496,12 +496,10 @@ async function cmdInit(args: InitArgs) {
     selectedBlueprint = selected || 'default';
   }
 
-  // Fetch registry content for scaffold
-  const [archetypesResult, blueprintsResult, themesResult] = await Promise.all([
-    registryClient.fetchArchetypes(),
-    registryClient.fetchBlueprints(),
-    registryClient.fetchThemes(),
-  ]);
+  // Fetch registry content for scaffold (sequential to avoid overwhelming the API)
+  const archetypesResult = await registryClient.fetchArchetypes();
+  const blueprintsResult = await registryClient.fetchBlueprints();
+  const themesResult = await registryClient.fetchThemes();
 
   if (archetypesResult.source.type === 'api') {
     registrySource = 'api';
@@ -592,16 +590,15 @@ async function cmdInit(args: InitArgs) {
       if (blueprint.compose && blueprint.compose.length > 0) {
         // Fetch all archetypes in parallel
         const entries = blueprint.compose;
-        const fetchPromises = entries.map(entry => {
+        // Fetch archetypes sequentially to avoid overwhelming the API
+        const results: (readonly [string, unknown])[] = [];
+        for (const entry of entries) {
           const id = typeof entry === 'string' ? entry : entry.archetype;
-          return registryClient.fetchArchetype(id).then(r => {
-            // Unwrap API wrapper: actual archetype content is in .data
-            const raw = r?.data as Record<string, unknown> | undefined;
-            const inner = raw?.data ?? raw;
-            return [id, inner] as const;
-          });
-        });
-        const results = await Promise.all(fetchPromises);
+          const r = await registryClient.fetchArchetype(id);
+          const raw = r?.data as Record<string, unknown> | undefined;
+          const inner = raw?.data ?? raw;
+          results.push([id, inner] as const);
+        }
         const archetypeMap = new Map(results.map(([id, data]) => [id, (data || null) as any]));
 
         // Compose pages from all archetypes
@@ -656,8 +653,8 @@ async function cmdInit(args: InitArgs) {
 
         patternSpecs = {};
         if (allPatternIds.size > 0) {
-          const pSpecs = patternSpecs;
-          const fetches = [...allPatternIds].map(async (pid) => {
+          // Fetch patterns sequentially to avoid overwhelming the API
+          for (const pid of allPatternIds) {
             try {
               const result = await registryClient.fetchPattern(pid);
               if (result) {
@@ -665,16 +662,14 @@ async function cmdInit(args: InitArgs) {
                 const inner = (raw.data ?? raw) as Record<string, any>;
                 const defaultPreset = inner.default_preset || 'standard';
                 const preset = inner.presets?.[defaultPreset];
-                pSpecs[pid] = {
+                patternSpecs[pid] = {
                   description: (inner.description as string) || '',
                   components: (inner.components as string[]) || [],
                   slots: preset?.layout?.slots || {},
-                  code: preset?.code?.example || inner.code?.example || '',
                 };
               }
             } catch { /* pattern not found — skip */ }
-          });
-          await Promise.all(fetches);
+          }
         }
 
         // Collect zone inputs for topology
@@ -765,6 +760,10 @@ async function cmdInit(args: InitArgs) {
     // Fetch recipe data (recipe is authoritative for decorators, spatial_hints, radius_hints)
     const recipeName = blueprintRecipeName || options.theme;
     const recipeResult = await registryClient.fetchRecipe(recipeName);
+    if (process.env.DECANTR_DEBUG && recipeResult) {
+      const dbg = recipeResult.data as Record<string, unknown>;
+      console.error(`  [debug] recipe source: ${recipeResult.source.type}, keys: ${Object.keys(dbg).join(',')}, has .data: ${'data' in dbg}, has .decorators: ${'decorators' in dbg}, inner.decorators: ${!!(dbg.data as any)?.decorators}`);
+    }
     if (recipeResult) {
       const rawRecipe = recipeResult.data as Record<string, unknown>;
       const recipe = (rawRecipe.data ?? rawRecipe) as {
