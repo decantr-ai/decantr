@@ -25,6 +25,11 @@
     "./tannins/auth-enterprise": "./src/tannins/auth-enterprise.js",
     "./css": "./src/css/index.js"
   },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
   "files": ["src/", "compiler/", "README.md"],
   "keywords": ["ui-framework", "signals", "reactive", "components", "decantr"],
   "author": "David Aimi",
@@ -33,7 +38,9 @@
     "@decantr/css": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"

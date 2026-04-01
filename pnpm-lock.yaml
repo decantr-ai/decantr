@@ -95,6 +95,59 @@ importers:
         specifier: ^6.0.0
         version: 6.4.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)
 
+  apps/showcase/terminal-dashboard:
+    dependencies:
+      '@decantr/css':
+        specifier: workspace:*
+        version: link:../../../packages/css
+      react:
+        specifier: ^19.0.0
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.4(react@19.2.4)
+      react-router-dom:
+        specifier: ^7.0.0
+        version: 7.13.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+    devDependencies:
+      '@decantr/vite-plugin':
+        specifier: workspace:*
+        version: link:../../../packages/vite-plugin
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+      '@vitejs/plugin-react':
+        specifier: ^4.0.0
+        version: 4.7.0(vite@6.4.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0))
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)
+
+  apps/ui-site:
+    dependencies:
+      '@decantr/css':
+        specifier: workspace:*
+        version: link:../../packages/css
+      '@decantr/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@decantr/ui-catalog':
+        specifier: workspace:*
+        version: link:../../packages/ui-catalog
+      '@decantr/ui-chart':
+        specifier: workspace:*
+        version: link:../../packages/ui-chart
+    devDependencies:
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)
+
   apps/web:
     dependencies:
       '@supabase/ssr':
@@ -152,6 +205,10 @@ importers:
       '@decantr/ui-chart':
         specifier: workspace:*
         version: link:../../packages/ui-chart
+    devDependencies:
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)
 
   packages/cli:
     dependencies:
@@ -216,9 +273,15 @@ importers:
         specifier: workspace:*
         version: link:../css
     devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.8)(tsx@4.21.0)(typescript@5.9.3)
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@25.5.0)(jiti@2.6.1)(jsdom@26.1.0)(lightningcss@1.32.0)(tsx@4.21.0)
 
   packages/ui-catalog:
     dependencies:
