@@ -2224,9 +2224,17 @@ export async function refreshDerivedFiles(
     // ── Generate section context files ──
     for (const section of sections) {
       const zoneLabel = section.role === 'primary' || section.role === 'auxiliary'
-        ? 'App' : section.role.charAt(0).toUpperCase() + section.role.slice(1);
-      const zoneContext = `This section is in the **${zoneLabel}** zone (${section.shell} shell).`
-        + (topologyMarkdown ? '\n\n' + topologyMarkdown : '');
+        ? 'App' : section.role === 'gateway' ? 'Gateway' : 'Public';
+      let zoneContext = `**Zone:** ${zoneLabel} (${section.role}) — ${section.shell} shell`;
+      if (section.role === 'gateway') {
+        zoneContext += '\nAuth success → enters App zone. Sign out returns here.';
+      } else if (section.role === 'primary') {
+        zoneContext += '\nAuthenticated users land here. Sign out → Gateway (/login).';
+      } else if (section.role === 'public') {
+        zoneContext += '\nAnonymous visitors. CTAs lead to Gateway (/login, /register).';
+      } else if (section.role === 'auxiliary') {
+        zoneContext += '\nSupporting section within App zone. Shares navigation with primary.';
+      }
 
       // Collect pattern specs for this section
       const sectionPatterns: Record<string, PatternSpecSummary> = {};
@@ -2431,13 +2439,13 @@ export interface ScaffoldContextInput {
 }
 
 /**
- * Generate a self-contained markdown context file for a single section.
- * Includes all guard rules, theme tokens, decorators, pattern specs,
- * zone context, features, and personality — everything an AI assistant
- * needs to generate code for this section.
+ * Generate a compact markdown context file for a single section.
+ * Includes guard mode, zone context, decorators, pattern specs,
+ * features, and personality. Topology and theme tokens are referenced
+ * from scaffold.md and src/styles/tokens.css respectively.
  */
 export function generateSectionContext(input: SectionContextInput): string {
-  const { section, themeTokens, decorators, guardConfig, personality, themeName, recipeName, zoneContext, patternSpecs, recipeHints, constraints, shellInfo } = input;
+  const { section, decorators, guardConfig, personality, themeName, recipeName, zoneContext, patternSpecs, recipeHints, constraints, shellInfo } = input;
   const lines: string[] = [];
 
   // Header
@@ -2461,32 +2469,12 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push('---');
   lines.push('');
 
-  // Guard Rules
-  lines.push('## Guard Rules');
-  lines.push('');
-  lines.push(`| Rule | Scope | Severity | Description |`);
-  lines.push(`|------|-------|----------|-------------|`);
-  lines.push(`| Style guard | DNA | ${guardConfig.dna_enforcement} | Code must use the ${themeName} theme |`);
-  lines.push(`| Recipe guard | DNA | ${guardConfig.dna_enforcement} | Visual recipe must match ${recipeName} |`);
-  lines.push(`| Density guard | DNA | ${guardConfig.dna_enforcement} | Content gap must match essence density |`);
-  lines.push(`| Accessibility guard | DNA | ${guardConfig.dna_enforcement} | Must meet WCAG level from essence |`);
-  lines.push(`| Structure guard | Blueprint | ${guardConfig.blueprint_enforcement} | Pages must exist in essence structure |`);
-  lines.push(`| Layout guard | Blueprint | ${guardConfig.blueprint_enforcement} | Pattern order must match essence layout |`);
-  lines.push(`| Pattern existence | Blueprint | ${guardConfig.blueprint_enforcement} | All patterns must exist in registry |`);
-  lines.push('');
-  lines.push(`**Guard mode:** ${guardConfig.mode}`);
-  lines.push('');
-  lines.push('---');
+  // Guard Rules (compact — full rules in scaffold.md)
+  lines.push(`**Guard:** ${guardConfig.mode} mode | DNA violations = ${guardConfig.dna_enforcement} | Blueprint violations = ${guardConfig.blueprint_enforcement}`);
   lines.push('');
 
-  // Theme
-  lines.push(`## Theme: ${themeName}`);
-  lines.push('');
-  lines.push('```css');
-  lines.push(themeTokens);
-  lines.push('```');
-  lines.push('');
-  lines.push('---');
+  // Theme (reference only — full tokens in src/styles/tokens.css)
+  lines.push(`**Theme tokens:** see \`src/styles/tokens.css\` — use \`var(--d-primary)\`, \`var(--d-bg)\`, etc.`);
   lines.push('');
 
   // Decorators
@@ -2519,11 +2507,8 @@ export function generateSectionContext(input: SectionContextInput): string {
 
   // Zone Context
   if (zoneContext) {
-    lines.push('## Zone Context');
-    lines.push('');
     lines.push(zoneContext);
-    lines.push('');
-    lines.push('---');
+    lines.push('For full app topology, see `.decantr/context/scaffold.md`');
     lines.push('');
   }
 

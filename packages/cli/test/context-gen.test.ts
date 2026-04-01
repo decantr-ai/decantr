@@ -47,25 +47,23 @@ describe('generateSectionContext', () => {
     expect(result).toContain('**Description:** Main dashboard section');
   });
 
-  it('inlines guard rules', () => {
+  it('includes compact guard line', () => {
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('## Guard Rules');
-    expect(result).toContain('| Style guard | DNA | error |');
-    expect(result).toContain('midnight theme');
-    expect(result).toContain('| Recipe guard | DNA | error |');
-    expect(result).toContain('sharp-edge');
-    expect(result).toContain('| Structure guard | Blueprint | warn |');
-    expect(result).toContain('**Guard mode:** guided');
+    expect(result).toContain('**Guard:** guided mode | DNA violations = error | Blueprint violations = warn');
+    // Should NOT contain the full guard rules table
+    expect(result).not.toContain('## Guard Rules');
+    expect(result).not.toContain('| Style guard |');
   });
 
-  it('inlines theme tokens', () => {
+  it('references theme tokens file instead of inlining', () => {
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('## Theme: midnight');
-    expect(result).toContain('```css');
-    expect(result).toContain('--d-primary: #6366f1');
-    expect(result).toContain('--d-bg: #18181b');
+    expect(result).toContain('**Theme tokens:** see `src/styles/tokens.css`');
+    // Should NOT contain inlined CSS
+    expect(result).not.toContain('## Theme: midnight');
+    expect(result).not.toContain('```css');
+    expect(result).not.toContain('--d-primary: #6366f1');
   });
 
   it('inlines decorators', () => {
@@ -76,12 +74,14 @@ describe('generateSectionContext', () => {
     expect(result).toContain('| glass-panel | Backdrop blur glass effect |');
   });
 
-  it('inlines zone context', () => {
+  it('includes zone context inline without heading', () => {
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('## Zone Context');
     expect(result).toContain('Primary app zone');
     expect(result).toContain('authenticated users with sidebar navigation');
+    expect(result).toContain('For full app topology, see `.decantr/context/scaffold.md`');
+    // Should NOT use a separate heading for zone context
+    expect(result).not.toContain('## Zone Context');
   });
 
   it('lists pages with routes and layouts', () => {
