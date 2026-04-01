@@ -16,6 +16,12 @@ import { rateLimiter } from './middleware/rate-limit.js';
 export function createApp(): Hono<Env> {
   const app = new Hono<Env>();
 
+  // Global error handler — prevents "Context is not finalized" crashes
+  app.onError((err, c) => {
+    console.error('Unhandled error:', err.message, err.stack);
+    return c.json({ error: 'Internal server error' }, 500);
+  });
+
   app.use(
     '*',
     cors({
