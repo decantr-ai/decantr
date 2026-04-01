@@ -220,9 +220,14 @@ export class RegistryClient {
         const data = await this.apiClient.getContent<RegistryItem>(contentType, namespace, id);
         saveToCache(this.cacheDir, contentType, id, data, namespace);
         return { data, source: { type: 'api', url: this.apiUrl } };
-      } catch {
+      } catch (e) {
         // API failed, fall through to cache
+        if (process.env.DECANTR_DEBUG) {
+          console.error(`  [debug] API fetch failed for ${contentType}/${namespace}/${id}: ${(e as Error).message}`);
+        }
       }
+    } else if (process.env.DECANTR_DEBUG) {
+      console.error(`  [debug] Skipping API (offline mode) for ${contentType}/${namespace}/${id}`);
     }
 
     // 3. Try cache
