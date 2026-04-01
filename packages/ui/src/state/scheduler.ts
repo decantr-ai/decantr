@@ -1,48 +1,29 @@
-/** @typedef {{ run: Function, level: number, sources?: Set, disposed?: boolean }} ReactiveNode */
+import type { ReactiveNode, Owner } from '../types.js';
 
-/** @type {Set<ReactiveNode>} */
-const pending = new Set();
+const pending: Set<ReactiveNode> = new Set();
 let flushing = false;
 let scheduled = false;
 
-/** @type {ReactiveNode|null} */
-let _currentEffect = null;
+let _currentEffect: ReactiveNode | null = null;
 
-/**
- * Get the current effect (needed for live binding in bundled code)
- * @returns {ReactiveNode|null}
- */
-export function getCurrentEffect() {
+/** Get the current effect (needed for live binding in bundled code). */
+export function getCurrentEffect(): ReactiveNode | null {
   return _currentEffect;
 }
 
-/**
- * @param {ReactiveNode|null} effect
- */
-export function setCurrentEffect(effect) {
+export function setCurrentEffect(effect: ReactiveNode | null): void {
   _currentEffect = effect;
 }
 
 // ─── Ownership Tree ─────────────────────────────────────────
 
-/** @typedef {{ children: Set<Owner>, cleanups: Function[], onError?: Function, context?: Map }} Owner */
+let currentOwner: Owner | null = null;
 
-/** @type {Owner|null} */
-let currentOwner = null;
-
-/**
- * @returns {Owner|null}
- */
-export function getOwner() {
+export function getOwner(): Owner | null {
   return currentOwner;
 }
 
-/**
- * @param {Owner|null} owner
- * @param {Function} fn
- * @returns {*}
- */
-export function runWithOwner(owner, fn) {
+export function runWithOwner<T>(owner: Owner | null, fn: () => T): T {
   const prev = currentOwner;
   currentOwner = owner;
   try {
@@ -52,17 +33,13 @@ export function runWithOwner(owner, fn) {
   }
 }
 
-/**
- * Create an independent reactive scope.
- * @param {Function} fn
- * @returns {*}
- */
-export function createRoot(fn) {
-  /** @type {Owner} */
-  const owner = { children: new Set(), cleanups: [] };
+/** Create an independent reactive scope. */
+export function createRoot<T>(fn: (dispose: () => void) => T): T {
+  const owner: Owner = { children: new Set(), cleanups: [], _parent: currentOwner };
+  if (currentOwner) currentOwner.children.add(owner);
   const prev = currentOwner;
   currentOwner = owner;
-  let result;
+  let result: T;
   try {
     result = fn(() => disposeOwner(owner));
   } finally {
@@ -71,35 +48,24 @@ export function createRoot(fn) {
   return result;
 }
 
-/**
- * Register current node with owner tree.
- * @param {Function} cleanup
- */
-export function registerCleanup(cleanup) {
+/** Register a cleanup with the current owner. */
+export function registerCleanup(cleanup: () => void): void {
   if (currentOwner) {
     currentOwner.cleanups.push(cleanup);
   }
 }
 
-/**
- * Create a child owner under the current owner.
- * @returns {Owner}
- */
-export function createChildOwner() {
-  /** @type {Owner} */
-  const child = { children: new Set(), cleanups: [] };
+/** Create a child owner under the current owner. */
+export function createChildOwner(): Owner {
+  const child: Owner = { children: new Set(), cleanups: [], _parent: currentOwner };
   if (currentOwner) {
     currentOwner.children.add(child);
-    child._parent = currentOwner;
   }
   return child;
 }
 
-/**
- * Dispose an owner and all its descendants.
- * @param {Owner} owner
- */
-export function disposeOwner(owner) {
+/** Dispose an owner and all its descendants. */
+export function disposeOwner(owner: Owner): void {
   // Dispose children first (depth-first)
   for (const child of owner.children) {
     disposeOwner(child);
@@ -119,22 +85,15 @@ export function disposeOwner(owner) {
 
 // ─── Error Boundaries ───────────────────────────────────────
 
-/**
- * Set error handler on current owner.
- * @param {Function} handler — (error) => void
- */
-export function onError(handler) {
+/** Set error handler on current owner. */
+export function onError(handler: (err: unknown) => void): void {
   if (currentOwner) {
     currentOwner.onError = handler;
   }
 }
 
-/**
- * Walk up owner tree to find error handler.
- * @param {Error} error
- * @param {Owner|null} owner
- */
-export function handleError(error, owner) {
+/** Walk up owner tree to find error handler. */
+export function handleError(error: unknown, owner: Owner | null): void {
   let current = owner;
   while (current) {
     if (current.onError) {
@@ -154,10 +113,7 @@ export function handleError(error, owner) {
 
 // ─── Scheduling & Flush ─────────────────────────────────────
 
-/**
- * @param {ReactiveNode} effect
- */
-export function scheduleEffect(effect) {
+export function scheduleEffect(effect: ReactiveNode): void {
   if (effect.disposed) return;
   pending.add(effect);
   if (!scheduled) {
@@ -171,13 +127,12 @@ export function scheduleEffect(effect) {
  * Effects with lower levels (closer to signals) run first,
  * preventing diamond-problem double-firing.
  */
-export function flush() {
+export function flush(): void {
   if (flushing) return;
   flushing = true;
   scheduled = false;
 
   while (pending.size > 0) {
-    // Sort by level for topological ordering
     const effects = [...pending].sort((a, b) => (a.level || 0) - (b.level || 0));
     pending.clear();
     for (let i = 0; i < effects.length; i++) {
@@ -193,10 +148,7 @@ export function flush() {
 
 let batchDepth = 0;
 
-/**
- * @param {Function} fn
- */
-export function batch(fn) {
+export function batch(fn: () => void): void {
   batchDepth++;
   try {
     fn();
@@ -206,9 +158,6 @@ export function batch(fn) {
   }
 }
 
-/**
- * @returns {boolean}
- */
-export function isBatching() {
+export function isBatching(): boolean {
   return batchDepth > 0;
 }

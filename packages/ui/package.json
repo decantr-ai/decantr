@@ -30,14 +30,26 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "files": ["src/", "compiler/", "README.md"],
-  "keywords": ["ui-framework", "signals", "reactive", "components", "decantr"],
+  "files": [
+    "src/",
+    "compiler/",
+    "README.md"
+  ],
+  "keywords": [
+    "ui-framework",
+    "signals",
+    "reactive",
+    "components",
+    "decantr"
+  ],
   "author": "David Aimi",
   "license": "MIT",
   "peerDependencies": {
     "@decantr/css": "workspace:*"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.2",
+    "jsdom": "^26.1.0",
     "tsup": "^8.0.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
