@@ -35,5 +35,18 @@ export default {
 const card = Card({ title: 'Welcome' }, 'Hello, world!');
 document.body.appendChild(card);`,
     },
+    {
+      title: 'With EssenceProvider',
+      code: `import { mount } from '@decantr/ui/runtime'
+import { EssenceProvider } from '@decantr/ui/essence'
+import { Card } from '@decantr/ui/components'
+import essence from './essence.json'
+
+mount(root, () =>
+  EssenceProvider({ essence },
+    Card({ title: 'Themed Card' }, 'Density-aware card via useDNA()')
+  )
+)`,
+    },
   ],
 };

@@ -51,5 +51,18 @@ document.body.appendChild(btn);`,
 
 const btn = Button({ variant: 'primary', loading: true }, 'Saving...');`,
     },
+    {
+      title: 'With EssenceProvider',
+      code: `import { mount } from '@decantr/ui/runtime'
+import { EssenceProvider } from '@decantr/ui/essence'
+import { Button } from '@decantr/ui/components'
+import essence from './essence.json'
+
+mount(root, () =>
+  EssenceProvider({ essence },
+    Button({ variant: 'primary' }, 'Themed Button')
+  )
+)`,
+    },
   ],
 };

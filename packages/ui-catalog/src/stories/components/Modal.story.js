@@ -35,5 +35,18 @@ const modal = Modal({ title: 'Confirm', visible, onClose: () => setVisible(false
 document.body.appendChild(modal);
 setVisible(true);`,
     },
+    {
+      title: 'With EssenceProvider',
+      code: `import { mount } from '@decantr/ui/runtime'
+import { EssenceProvider } from '@decantr/ui/essence'
+import { Modal } from '@decantr/ui/components'
+import essence from './essence.json'
+
+mount(root, () =>
+  EssenceProvider({ essence },
+    Modal({ title: 'Themed Dialog' }, 'Themed modal content')
+  )
+)`,
+    },
   ],
 };
