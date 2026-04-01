@@ -9,6 +9,7 @@ export type {
   RecipeShell,
   Recipe,
   Blueprint,
+  ArchetypeRole,
   ComposeEntry,
   Shell,
   ContentType,

@@ -89,7 +89,9 @@ export interface Recipe {
 }
 
 // --- Blueprint ---
-export type ComposeEntry = string | { archetype: string; prefix: string };
+export type ArchetypeRole = 'primary' | 'gateway' | 'public' | 'auxiliary';
+
+export type ComposeEntry = string | { archetype: string; prefix: string; role?: ArchetypeRole };
 
 export interface Blueprint {
   id: string;
