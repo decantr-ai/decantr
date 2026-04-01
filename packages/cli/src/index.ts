@@ -22,6 +22,7 @@ import { cmdCreate } from './commands/create.js';
 import { cmdMigrate } from './commands/migrate.js';
 import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
 import { cmdRefresh } from './commands/refresh.js';
+import { cmdAddSection, cmdAddPage, cmdAddFeature } from './commands/add.js';
 
 // ── Helpers ──
 
@@ -1475,6 +1476,51 @@ async function main() {
 
     case 'refresh': {
       await cmdRefresh(process.cwd());
+      break;
+    }
+
+    case 'add': {
+      const subcommand = args[1];
+      if (!subcommand) {
+        console.error(error('Usage: decantr add <section|page|feature> <target>'));
+        process.exitCode = 1;
+        break;
+      }
+      switch (subcommand) {
+        case 'section': {
+          const id = args[2];
+          if (!id) {
+            console.error(error('Usage: decantr add section <archetypeId>'));
+            process.exitCode = 1;
+            break;
+          }
+          await cmdAddSection(id, args, process.cwd());
+          break;
+        }
+        case 'page': {
+          const pagePath = args[2];
+          if (!pagePath) {
+            console.error(error('Usage: decantr add page <section>/<page>'));
+            process.exitCode = 1;
+            break;
+          }
+          await cmdAddPage(pagePath, args, process.cwd());
+          break;
+        }
+        case 'feature': {
+          const feature = args[2];
+          if (!feature) {
+            console.error(error('Usage: decantr add feature <feature> [--section <id>]'));
+            process.exitCode = 1;
+            break;
+          }
+          await cmdAddFeature(feature, args, process.cwd());
+          break;
+        }
+        default:
+          console.error(error(`Unknown add subcommand: ${subcommand}. Use section, page, or feature.`));
+          process.exitCode = 1;
+      }
       break;
     }
 
