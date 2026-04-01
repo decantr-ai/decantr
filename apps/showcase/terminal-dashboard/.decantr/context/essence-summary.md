@@ -9,7 +9,7 @@ Auto-generated summary of `decantr.essence.json`.
 | Property | Value |
 |----------|-------|
 | Archetype | terminal-home |
-| Blueprint | none |
+| Blueprint |  |
 | Personality | technical, retro, focused, immersive |
 | Target | react |
 
@@ -27,25 +27,25 @@ Auto-generated summary of `decantr.essence.json`.
 | Page | Shell | Layout |
 |------|-------|--------|
 | home | terminal-split | status, main-split, hotkeys |
-| log-viewer-logs | terminal-split | status, log-stream, hotkeys |
-| log-viewer-grouped | terminal-split | status, grouped-logs, hotkeys |
-| metrics-monitor-metrics | terminal-split | status, quad-split, hotkeys |
-| metrics-monitor-detail | terminal-split | status, detailed-chart, metric-detail, hotkeys |
-| config-editor-config | terminal-split | main-split, status, hotkeys |
-| config-editor-diff | terminal-split | status, diff, hotkeys |
-| marketing-devtool-home | top-nav-footer | hero, features, demo-terminal, demo-chart, cta |
-| marketing-devtool-docs | top-nav-footer | documentation, code-examples |
-| auth-full-login | centered | form |
-| auth-full-register | centered | form |
-| auth-full-forgot-password | centered | form |
-| auth-full-reset-password | centered | form |
-| auth-full-verify-email | centered | form |
-| auth-full-mfa-setup | centered | form |
-| auth-full-mfa-verify | centered | form |
-| auth-full-phone-verify | centered | form |
-| legal-privacy | top-nav-footer | content |
-| legal-terms | top-nav-footer | content |
-| legal-cookies | top-nav-footer | content |
+| logs | terminal-split | status, log-stream, hotkeys |
+| grouped | terminal-split | status, grouped-logs, hotkeys |
+| metrics | terminal-split | status, quad-split, hotkeys |
+| detail | terminal-split | status, detailed-chart, metric-detail, hotkeys |
+| config | terminal-split | main-split, status, hotkeys |
+| diff | terminal-split | status, diff, hotkeys |
+| home | top-nav-footer | hero, features, demo-terminal, demo-chart, cta |
+| docs | top-nav-footer | documentation, code-examples |
+| login | centered | form |
+| register | centered | form |
+| forgot-password | centered | form |
+| reset-password | centered | form |
+| verify-email | centered | form |
+| mfa-setup | centered | form |
+| mfa-verify | centered | form |
+| phone-verify | centered | form |
+| privacy | top-nav-footer | content |
+| terms | top-nav-footer | content |
+| cookies | top-nav-footer | content |
 
 ## Features
 
@@ -89,8 +89,8 @@ Auto-generated summary of `decantr.essence.json`.
 | Property | Value |
 |----------|-------|
 | Mode | strict |
-| DNA Enforcement | {{DNA_ENFORCEMENT}} |
-| Blueprint Enforcement | {{BLUEPRINT_ENFORCEMENT}} |
+| DNA Enforcement | error |
+| Blueprint Enforcement | warn |
 
 ## Density
 
@@ -101,4 +101,4 @@ Auto-generated summary of `decantr.essence.json`.
 
 ---
 
-*Last updated: 2026-04-01T16:47:54.248Z*
+*Last updated: 2026-04-01T17:31:38.270Z*

@@ -1,0 +1,116 @@
+<h2>Design Section 2: packages/ui-catalog</h2>
+<p class="subtitle">The shared component story format — single source of truth for all demos</p>
+
+<div class="section">
+  <h3>Package Structure</h3>
+  <div class="mockup">
+    <div class="mockup-header">packages/ui-catalog/</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.9; padding: 20px;">
+      <div>package.json</div>
+      <div>src/</div>
+      <div>  index.js                    ← exports: getAllStories, getStory, getCategories</div>
+      <div>  schema.js                   ← story format definition + validation</div>
+      <div>  renderer.js                 ← renders a story → live Decantr component</div>
+      <div style="opacity: 0.5;">  </div>
+      <div>  stories/</div>
+      <div>    components/</div>
+      <div style="color: #4ade80;">      Button.story.js</div>
+      <div style="color: #4ade80;">      Modal.story.js</div>
+      <div style="color: #4ade80;">      DataTable.story.js</div>
+      <div style="color: #4ade80;">      ...107 component stories</div>
+      <div>    charts/</div>
+      <div style="color: #60a5fa;">      BarChart.story.js</div>
+      <div style="color: #60a5fa;">      LineChart.story.js</div>
+      <div style="color: #60a5fa;">      ...25 chart stories</div>
+      <div>    icons/</div>
+      <div style="color: #c084fc;">      IconGallery.story.js         ← icon browser/search</div>
+      <div>    css/</div>
+      <div style="color: #fb923c;">      Atoms.story.js               ← atomic class showcase</div>
+      <div style="color: #fb923c;">      ThemeSwitcher.story.js       ← theme/mode/density demos</div>
+      <div style="color: #fb923c;">      Styles.story.js              ← style presets (auradecantism, etc.)</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Story Format</h3>
+  <div class="mockup">
+    <div class="mockup-header">Example: Button.story.js</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 12px; line-height: 1.7; padding: 20px; white-space: pre; overflow-x: auto;">import { Button } from '@decantr/ui/components'
+
+export default {
+  // ─── Identity ───
+  component: Button,
+  title: 'Button',
+  category: 'components/original',
+  description: 'Primary action trigger with multiple variants and sizes.',
+
+  // ─── Variants (rendered as a grid) ───
+  variants: [
+    { name: 'Primary',     props: { variant: 'primary', children: 'Click me' } },
+    { name: 'Secondary',   props: { variant: 'secondary', children: 'Click me' } },
+    { name: 'Ghost',       props: { variant: 'ghost', children: 'Click me' } },
+    { name: 'Destructive', props: { variant: 'destructive', children: 'Delete' } },
+    { name: 'Disabled',    props: { variant: 'primary', disabled: true, children: 'Disabled' } },
+  ],
+
+  // ─── Playground (interactive prop editor) ───
+  playground: {
+    defaults: { variant: 'primary', size: 'md', children: 'Click me' },
+    controls: {
+      variant:  { type: 'select', options: ['primary','secondary','ghost','destructive'] },
+      size:     { type: 'select', options: ['sm','md','lg'] },
+      disabled: { type: 'boolean' },
+      children: { type: 'text' },
+    },
+  },
+
+  // ─── Code Examples ───
+  usage: [
+    {
+      title: 'Basic',
+      code: "import { Button } from '@decantr/ui/components'\n\nButton({ variant: 'primary', children: 'Save' })",
+    },
+    {
+      title: 'With Icon',
+      code: "Button({ variant: 'ghost', children: [Icon({ name: 'trash' }), 'Delete'] })",
+    },
+  ],
+}</div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>What the catalog does NOT contain</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div style="padding: 16px; border: 1px solid rgba(248, 113, 113, 0.3); border-radius: 8px; background: rgba(248, 113, 113, 0.05);">
+      <h4 style="color: #f87171; margin-bottom: 8px;">NOT in catalog</h4>
+      <ul style="opacity: 0.8; font-size: 14px;">
+        <li>Component source code (stays in @decantr/ui)</li>
+        <li>Marketing copy, SEO, branding (that's the showcase site's job)</li>
+        <li>Dev tools, hot-reload, debug panels (that's the workbench's job)</li>
+        <li>Build tooling or bundling config</li>
+      </ul>
+    </div>
+    <div style="padding: 16px; border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px; background: rgba(74, 222, 128, 0.05);">
+      <h4 style="color: #4ade80; margin-bottom: 8px;">IN the catalog</h4>
+      <ul style="opacity: 0.8; font-size: 14px;">
+        <li>Story definitions (props, variants, categories)</li>
+        <li>Playground control schemas</li>
+        <li>Code usage examples</li>
+        <li>Story renderer (turns a story → live component)</li>
+        <li>Query API (getAllStories, getByCategory, search)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Key Design Decisions</h3>
+  <ul style="font-size: 14px; line-height: 1.8;">
+    <li><strong>Plain JS, no build step</strong> — stories are just ES modules that export objects. No special compiler, no MDX, no magic. The catalog package exports query functions.</li>
+    <li><strong>Co-located renderer</strong> — the catalog includes a <code>renderer.js</code> that takes a story definition and produces a live Decantr component tree. Both apps use this renderer.</li>
+    <li><strong>Category hierarchy</strong> — mirrors the existing component organization in @decantr/ui (original, general, layout, navigation, form, data-display, feedback, media, utility).</li>
+    <li><strong>Extensible</strong> — third-party developers could write stories for their own @decantr/ui components using the same format.</li>
+  </ul>
+</div>

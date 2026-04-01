@@ -92,12 +92,24 @@ For detailed pattern specs per section, read:
 - .decantr/context/section-auth-full.md
 - .decantr/context/section-legal.md
 
+## Shared Components
+
+These patterns appear on multiple pages. Consider creating shared components:
+
+| Pattern | Used by |
+|---------|---------|
+| status | terminal-home/home, log-viewer/logs, log-viewer/grouped, metrics-monitor/metrics, metrics-monitor/detail, config-editor/config, config-editor/diff |
+| main-split | terminal-home/home, config-editor/config |
+| hotkeys | terminal-home/home, log-viewer/logs, log-viewer/grouped, metrics-monitor/metrics, metrics-monitor/detail, config-editor/config, config-editor/diff |
+| form | auth-full/login, auth-full/register, auth-full/forgot-password, auth-full/reset-password, auth-full/verify-email, auth-full/mfa-setup, auth-full/mfa-verify, auth-full/phone-verify |
+| content | legal/privacy, legal/terms, legal/cookies |
+
 ## Design Constraints
 
 - **mode:** dark_only
 - **borders:** ascii_box_drawing
 - **corners:** sharp_only
-- **effects:** [object Object]
+- **effects:** {"glow":"optional","flicker":"disabled","scanlines":"optional"}
 - **shadows:** none
 - **typography:** monospace_only
 

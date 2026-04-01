@@ -1,0 +1,188 @@
+<h2>Design Section 3: apps/workbench</h2>
+<p class="subtitle">Local dev tool for building, testing, and exploring @decantr/ui components</p>
+
+<div class="section">
+  <h3>App Structure</h3>
+  <div class="mockup">
+    <div class="mockup-header">apps/workbench/</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.9; padding: 20px;">
+      <div>package.json</div>
+      <div>src/</div>
+      <div>  index.js                    ← entry point, mounts the workbench app</div>
+      <div>  app.js                      ← root component: sidebar + main panel router</div>
+      <div style="opacity: 0.5;">  </div>
+      <div>  shell/</div>
+      <div>    sidebar.js                ← component tree nav (category → component → variant)</div>
+      <div>    toolbar.js                ← theme picker, density toggle, a11y mode, dark/light</div>
+      <div>    search.js                 ← fuzzy search across all stories</div>
+      <div style="opacity: 0.5;">  </div>
+      <div>  views/</div>
+      <div style="color: #4ade80;">    isolation.js              ← Phase 1: single component + variants grid</div>
+      <div style="color: #60a5fa;">    playground.js             ← Phase 2: live prop editor + code preview</div>
+      <div style="color: #c084fc;">    explorer.js               ← Phase 3: design system dashboard</div>
+      <div style="opacity: 0.5;">  </div>
+      <div>  panels/</div>
+      <div>    props-panel.js            ← live prop inspector (reads playground controls)</div>
+      <div>    source-panel.js           ← shows component source from @decantr/ui</div>
+      <div>    css-panel.js              ← shows computed atoms + injected CSS</div>
+      <div>    state-panel.js            ← signal inspector (reactive state debugger)</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Three Views (phased delivery)</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+
+    <div style="padding: 16px; border: 1px solid rgba(74, 222, 128, 0.4); border-radius: 8px; background: rgba(74, 222, 128, 0.05);">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #4ade80; margin-bottom: 8px;">Phase 1 — Priority</div>
+      <h4>Component Isolation</h4>
+      <p style="font-size: 13px; opacity: 0.8; margin-top: 8px;">Select a component from the sidebar. See all its variants rendered in a grid. Switch themes, density, and mode. Components live-reload as you edit source files.</p>
+      <ul style="font-size: 12px; opacity: 0.7; margin-top: 8px;">
+        <li>Variant grid from story definitions</li>
+        <li>Theme/density/mode toolbar</li>
+        <li>Hot-reload via the Decantr compiler dev mode</li>
+        <li>CSS inspector panel</li>
+      </ul>
+    </div>
+
+    <div style="padding: 16px; border: 1px solid rgba(96, 165, 250, 0.4); border-radius: 8px; background: rgba(96, 165, 250, 0.05);">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #60a5fa; margin-bottom: 8px;">Phase 2</div>
+      <h4>Playground</h4>
+      <p style="font-size: 13px; opacity: 0.8; margin-top: 8px;">Interactive prop editor driven by the story's playground controls. Tweak every prop, see the component update live. Copy the resulting code snippet.</p>
+      <ul style="font-size: 12px; opacity: 0.7; margin-top: 8px;">
+        <li>Auto-generated controls from story schema</li>
+        <li>Live component preview</li>
+        <li>Code output panel (copy-paste ready)</li>
+        <li>Signal state inspector</li>
+      </ul>
+    </div>
+
+    <div style="padding: 16px; border: 1px solid rgba(192, 132, 252, 0.4); border-radius: 8px; background: rgba(192, 132, 252, 0.05);">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #c084fc; margin-bottom: 8px;">Phase 3</div>
+      <h4>Design System Explorer</h4>
+      <p style="font-size: 13px; opacity: 0.8; margin-top: 8px;">Bird's-eye view of the full system. Theme gallery, density comparison, accessibility audit, color palette visualization, typography scale, spacing scale.</p>
+      <ul style="font-size: 12px; opacity: 0.7; margin-top: 8px;">
+        <li>All themes side-by-side</li>
+        <li>Density level comparison (same component, 3 densities)</li>
+        <li>Colorblind simulation modes</li>
+        <li>WCAG contrast checker per theme</li>
+        <li>Full icon gallery with search</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Workbench Layout Wireframe</h3>
+  <div class="mockup">
+    <div class="mockup-header">localhost:3000 — Workbench</div>
+    <div class="mockup-body" style="padding: 0; min-height: 300px; display: grid; grid-template-columns: 220px 1fr 280px; grid-template-rows: 48px 1fr; font-size: 12px;">
+
+      <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; padding: 0 16px; gap: 16px;">
+        <span style="font-weight: bold; font-size: 13px;">⬡ Workbench</span>
+        <span style="opacity: 0.4;">|</span>
+        <span style="background: rgba(255,255,255,0.06); padding: 4px 12px; border-radius: 4px; font-size: 11px;">🔍 Search components...</span>
+        <span style="margin-left: auto; display: flex; gap: 12px; opacity: 0.6; font-size: 11px;">
+          <span>Theme: auradecantism</span>
+          <span>Mode: dark</span>
+          <span>Density: normal</span>
+        </span>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.02); border-right: 1px solid rgba(255,255,255,0.08); padding: 12px; overflow-y: auto;">
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 8px;">Components</div>
+        <div style="opacity: 0.5; padding: 4px 0;">▸ Original (30)</div>
+        <div style="opacity: 0.5; padding: 4px 0;">▸ General (8)</div>
+        <div style="opacity: 0.5; padding: 4px 0;">▸ Layout (7)</div>
+        <div style="opacity: 0.5; padding: 4px 0;">▸ Navigation (6)</div>
+        <div style="padding: 4px 0;">▾ Form (22)</div>
+        <div style="padding: 2px 0 2px 16px; opacity: 0.6;">InputGroup</div>
+        <div style="padding: 2px 0 2px 16px; opacity: 0.6;">InputNumber</div>
+        <div style="padding: 2px 0 2px 16px; background: rgba(74,222,128,0.1); border-radius: 4px; color: #4ade80;">DatePicker ●</div>
+        <div style="padding: 2px 0 2px 16px; opacity: 0.6;">ColorPicker</div>
+        <div style="opacity: 0.5; padding: 4px 0;">▸ Data Display (14)</div>
+        <div style="opacity: 0.5; padding: 4px 0;">▸ Feedback (9)</div>
+        <div style="opacity: 0.5; padding: 4px 0; margin-top: 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">Charts (25)</div>
+        <div style="opacity: 0.5; padding: 4px 0; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">Icons</div>
+        <div style="opacity: 0.5; padding: 4px 0; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">CSS</div>
+      </div>
+
+      <div style="padding: 24px; overflow-y: auto;">
+        <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">DatePicker</div>
+        <div style="font-size: 12px; opacity: 0.5; margin-bottom: 20px;">Form / Date selection with calendar dropdown</div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; text-align: center;">
+            <div style="background: rgba(255,255,255,0.05); border-radius: 4px; padding: 12px; margin-bottom: 8px;">[ date picker mock ]</div>
+            <div style="font-size: 11px; opacity: 0.6;">Default</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; text-align: center;">
+            <div style="background: rgba(255,255,255,0.05); border-radius: 4px; padding: 12px; margin-bottom: 8px;">[ date picker mock ]</div>
+            <div style="font-size: 11px; opacity: 0.6;">Range Mode</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; text-align: center;">
+            <div style="background: rgba(255,255,255,0.05); border-radius: 4px; padding: 12px; margin-bottom: 8px;">[ date picker mock ]</div>
+            <div style="font-size: 11px; opacity: 0.6;">With Time</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; text-align: center;">
+            <div style="background: rgba(255,255,255,0.05); border-radius: 4px; padding: 12px; margin-bottom: 8px;">[ date picker mock ]</div>
+            <div style="font-size: 11px; opacity: 0.6;">Disabled</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.02); border-left: 1px solid rgba(255,255,255,0.08); padding: 12px; overflow-y: auto;">
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 12px;">Inspector</div>
+
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 11px; opacity: 0.5; margin-bottom: 4px;">Props</div>
+          <div style="font-size: 11px; padding: 4px 0; display: flex; justify-content: space-between;">
+            <span style="opacity: 0.7;">mode</span>
+            <span style="color: #4ade80;">single</span>
+          </div>
+          <div style="font-size: 11px; padding: 4px 0; display: flex; justify-content: space-between;">
+            <span style="opacity: 0.7;">format</span>
+            <span style="color: #4ade80;">YYYY-MM-DD</span>
+          </div>
+          <div style="font-size: 11px; padding: 4px 0; display: flex; justify-content: space-between;">
+            <span style="opacity: 0.7;">disabled</span>
+            <span style="color: #f87171;">false</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 11px; opacity: 0.5; margin-bottom: 4px;">CSS Atoms</div>
+          <div style="font-size: 10px; font-family: monospace; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px; line-height: 1.6;">
+            _flex _col _gap2<br>
+            _p3 _rounded<br>
+            _border _border-subtle<br>
+            _bg-surface
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size: 11px; opacity: 0.5; margin-bottom: 4px;">Signals</div>
+          <div style="font-size: 10px; font-family: monospace; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px; line-height: 1.6;">
+            isOpen: <span style="color: #f87171;">false</span><br>
+            selected: <span style="color: #60a5fa;">null</span><br>
+            month: <span style="color: #4ade80;">2026-03</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Technical Details</h3>
+  <ul style="font-size: 14px; line-height: 1.8;">
+    <li><strong>Built with @decantr/ui</strong> — the workbench itself is a Decantr-native app (dog-fooding the framework's router, SSR, state management)</li>
+    <li><strong>Dev server</strong> — uses the Decantr compiler's dev mode (<code>compiler/dev.js</code>) for file watching + hot-reload</li>
+    <li><strong>Local only</strong> — runs on localhost, no deployment needed. <code>pnpm --filter workbench dev</code></li>
+    <li><strong>Reads catalog</strong> — imports <code>@decantr/ui-catalog</code> to get story definitions, renders them with its own chrome</li>
+    <li><strong>No persistence needed</strong> — the workbench is stateless. Components render from source, stories define what to show</li>
+  </ul>
+</div>
