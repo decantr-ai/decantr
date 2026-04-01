@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { composeArchetypes } from '../src/scaffold.js';
-import type { ArchetypeData } from '../src/scaffold.js';
+import { composeArchetypes, composeSections } from '../src/scaffold.js';
+import type { ArchetypeData, BlueprintOverrides } from '../src/scaffold.js';
 
 function makeArchetype(overrides: Partial<ArchetypeData> & { pages: ArchetypeData['pages'] }): ArchetypeData {
   return {
@@ -211,5 +211,180 @@ describe('composeArchetypes', () => {
     );
 
     expect(result.pages[0].layout).toEqual(['hero']);
+  });
+});
+
+describe('composeSections', () => {
+  it('groups archetypes into sections with role, shell, features, description', () => {
+    const dashboard = makeArchetype({
+      id: 'dashboard',
+      role: 'primary',
+      description: 'Main dashboard area',
+      pages: [
+        { id: 'overview', shell: 'sidebar-main', default_layout: ['kpi-grid', 'chart-grid'] },
+        { id: 'analytics', shell: 'sidebar-main', default_layout: ['chart-grid'] },
+      ],
+      features: ['auth', 'notifications'],
+    });
+    const landing = makeArchetype({
+      id: 'landing',
+      role: 'public',
+      description: 'Public landing page',
+      pages: [
+        { id: 'home', shell: 'top-nav-main', default_layout: ['hero'] },
+      ],
+      features: ['analytics'],
+    });
+
+    const result = composeSections(
+      ['dashboard', 'landing'],
+      new Map([['dashboard', dashboard], ['landing', landing]]),
+    );
+
+    expect(result.sections).toHaveLength(2);
+
+    expect(result.sections[0].id).toBe('dashboard');
+    expect(result.sections[0].role).toBe('primary');
+    expect(result.sections[0].shell).toBe('sidebar-main');
+    expect(result.sections[0].features).toEqual(['auth', 'notifications']);
+    expect(result.sections[0].description).toBe('Main dashboard area');
+    expect(result.sections[0].pages).toHaveLength(2);
+
+    expect(result.sections[1].id).toBe('landing');
+    expect(result.sections[1].role).toBe('public');
+    expect(result.sections[1].shell).toBe('top-nav-main');
+    expect(result.sections[1].features).toEqual(['analytics']);
+    expect(result.sections[1].description).toBe('Public landing page');
+    expect(result.sections[1].pages).toHaveLength(1);
+  });
+
+  it('applies features_add and features_remove', () => {
+    const data = makeArchetype({
+      id: 'dashboard',
+      role: 'primary',
+      description: 'Dashboard',
+      pages: [
+        { id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
+      ],
+      features: ['auth', 'notifications'],
+    });
+
+    const overrides: BlueprintOverrides = {
+      features_add: ['payments', 'search'],
+      features_remove: ['notifications'],
+    };
+
+    const result = composeSections(
+      ['dashboard'],
+      new Map([['dashboard', data]]),
+      overrides,
+    );
+
+    expect(result.features).toContain('auth');
+    expect(result.features).toContain('payments');
+    expect(result.features).toContain('search');
+    expect(result.features).not.toContain('notifications');
+  });
+
+  it('applies pages_remove', () => {
+    const data = makeArchetype({
+      id: 'dashboard',
+      role: 'primary',
+      description: 'Dashboard',
+      pages: [
+        { id: 'overview', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
+        { id: 'analytics', shell: 'sidebar-main', default_layout: ['chart-grid'] },
+        { id: 'settings', shell: 'sidebar-main', default_layout: ['form-sections'] },
+      ],
+      features: [],
+    });
+
+    const overrides: BlueprintOverrides = {
+      pages_remove: ['analytics'],
+    };
+
+    const result = composeSections(
+      ['dashboard'],
+      new Map([['dashboard', data]]),
+      overrides,
+    );
+
+    expect(result.sections[0].pages).toHaveLength(2);
+    expect(result.sections[0].pages.map(p => p.id)).toEqual(['overview', 'settings']);
+  });
+
+  it('returns default section for empty compose', () => {
+    const result = composeSections([], new Map());
+
+    expect(result.sections).toHaveLength(1);
+    expect(result.sections[0].id).toBe('default');
+    expect(result.sections[0].role).toBe('primary');
+    expect(result.sections[0].shell).toBe('sidebar-main');
+    expect(result.sections[0].pages).toHaveLength(1);
+    expect(result.sections[0].pages[0].id).toBe('home');
+    expect(result.features).toEqual([]);
+    expect(result.defaultShell).toBe('sidebar-main');
+  });
+
+  it('primary archetype sets defaultShell', () => {
+    const primary = makeArchetype({
+      id: 'landing',
+      role: 'public',
+      description: 'Landing',
+      pages: [
+        { id: 'home', shell: 'top-nav-main', default_layout: ['hero'] },
+      ],
+      features: [],
+    });
+    const secondary = makeArchetype({
+      id: 'dashboard',
+      role: 'primary',
+      description: 'Dashboard',
+      pages: [
+        { id: 'overview', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
+      ],
+      features: [],
+    });
+
+    const result = composeSections(
+      ['landing', 'dashboard'],
+      new Map([['landing', primary], ['dashboard', secondary]]),
+    );
+
+    expect(result.defaultShell).toBe('top-nav-main');
+  });
+
+  it('pages keep original IDs (no prefixing)', () => {
+    const dashboard = makeArchetype({
+      id: 'dashboard',
+      role: 'primary',
+      description: 'Dashboard',
+      pages: [
+        { id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
+      ],
+      features: [],
+    });
+    const chatbot = makeArchetype({
+      id: 'ai-chatbot',
+      role: 'auxiliary',
+      description: 'AI chatbot',
+      pages: [
+        { id: 'home', shell: 'top-nav-main', default_layout: ['chat-window'] },
+        { id: 'history', shell: 'top-nav-main', default_layout: ['data-table'] },
+      ],
+      features: [],
+    });
+
+    const result = composeSections(
+      ['dashboard', 'ai-chatbot'],
+      new Map([['dashboard', dashboard], ['ai-chatbot', chatbot]]),
+    );
+
+    // Secondary archetype pages keep original IDs (no prefixing)
+    expect(result.sections[1].pages[0].id).toBe('home');
+    expect(result.sections[1].pages[1].id).toBe('history');
+
+    // Primary archetype pages also keep original IDs
+    expect(result.sections[0].pages[0].id).toBe('home');
   });
 });

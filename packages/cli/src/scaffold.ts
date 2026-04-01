@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } fr
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3 } from '@decantr/essence-spec';
-import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage } from '@decantr/essence-spec';
+import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section } from '@decantr/essence-spec';
 import type { ComposeEntry, ArchetypeRole } from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
@@ -151,6 +151,125 @@ export function composeArchetypes(
     features: [...new Set(allFeatures)],
     defaultShell,
   };
+}
+
+// ── Section-based Composition ──
+
+export interface BlueprintOverrides {
+  features_add?: string[];
+  features_remove?: string[];
+  pages_remove?: string[];
+  pages?: Record<string, Partial<BlueprintPage>>;
+}
+
+export interface ComposeSectionsResult {
+  sections: EssenceV31Section[];
+  features: string[];
+  defaultShell: string;
+}
+
+/**
+ * Compose archetypes into section-based grouping (v3.1 style).
+ *
+ * Unlike `composeArchetypes` which flattens all pages into one array with
+ * prefixed IDs, this keeps pages grouped within their archetype's section,
+ * preserving original page IDs.
+ *
+ * The FIRST archetype is the primary — its first page's shell becomes
+ * `defaultShell`.
+ *
+ * Each archetype becomes a section with: id, role, shell, features,
+ * description, pages.
+ *
+ * Optional `overrides` allow adding/removing features and removing pages.
+ */
+export function composeSections(
+  composeEntries: ComposeEntry[],
+  archetypeResults: Map<string, ArchetypeData | null>,
+  overrides?: BlueprintOverrides,
+): ComposeSectionsResult {
+  if (composeEntries.length === 0) {
+    return {
+      sections: [{
+        id: 'default',
+        role: 'primary',
+        shell: 'sidebar-main',
+        features: [],
+        description: 'Default section',
+        pages: [{ id: 'home', layout: ['hero'] }],
+      }],
+      features: [],
+      defaultShell: 'sidebar-main',
+    };
+  }
+
+  const sections: EssenceV31Section[] = [];
+  const allFeatures: string[] = [];
+  let defaultShell = 'sidebar-main';
+  const pagesRemoveSet = new Set(overrides?.pages_remove ?? []);
+
+  for (let i = 0; i < composeEntries.length; i++) {
+    const entry = composeEntries[i];
+    const archetypeId = typeof entry === 'string' ? entry : entry.archetype;
+    const data = archetypeResults.get(archetypeId);
+    if (!data?.pages) continue;
+
+    const isPrimary = i === 0;
+    if (isPrimary) {
+      defaultShell = data.pages[0]?.shell || defaultShell;
+    }
+
+    const pages: BlueprintPage[] = [];
+    for (const page of data.pages) {
+      if (pagesRemoveSet.has(page.id)) continue;
+
+      const overriddenPage = overrides?.pages?.[page.id];
+      pages.push({
+        id: page.id,
+        layout: (page.default_layout?.length ? page.default_layout : ['hero']) as LayoutItem[],
+        ...overriddenPage,
+      });
+    }
+
+    sections.push({
+      id: archetypeId,
+      role: data.role ?? 'primary',
+      shell: data.pages[0]?.shell || 'sidebar-main',
+      features: data.features ?? [],
+      description: data.description ?? '',
+      pages,
+    });
+
+    if (data.features) {
+      allFeatures.push(...data.features);
+    }
+  }
+
+  // If no sections were added (all archetypes missing), fall back to default
+  if (sections.length === 0) {
+    sections.push({
+      id: 'default',
+      role: 'primary',
+      shell: 'sidebar-main',
+      features: [],
+      description: 'Default section',
+      pages: [{ id: 'home', layout: ['hero'] }],
+    });
+  }
+
+  // Deduplicate features then apply overrides
+  let features = [...new Set(allFeatures)];
+  if (overrides?.features_add) {
+    for (const f of overrides.features_add) {
+      if (!features.includes(f)) features.push(f);
+    }
+  }
+  if (overrides?.features_remove) {
+    const removeSet = new Set(overrides.features_remove);
+    features = features.filter(f => !removeSet.has(f));
+  }
+
+  return { sections, features, defaultShell };
 }
 
 // ── Topology Derivation ──
