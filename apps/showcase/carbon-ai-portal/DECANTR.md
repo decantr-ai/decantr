@@ -318,6 +318,14 @@ Recipe decorators (from `src/styles/decorators.css`) are regular CSS class names
 - Decorators: `'carbon-card'`, `'carbon-glass'` — plain CSS classes from decorators.css
 - Combined: `css('_flex _col') + ' carbon-card'`
 
+### Routing
+
+Check `decantr.essence.json` → `meta.platform.routing` for the routing strategy:
+- `"hash"` → use `HashRouter` (e.g., for static hosting, GitHub Pages)
+- `"history"` → use `BrowserRouter` (e.g., for server-rendered apps)
+
+Routes are defined in `decantr.essence.json` → `blueprint.routes` and listed in `.decantr/context/scaffold.md`.
+
 ### CSS Architecture
 
 The CSS is organized into two parts:

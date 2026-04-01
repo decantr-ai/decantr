@@ -2,6 +2,8 @@
 
 **Role:** public | **Shell:** top-nav-footer | **Archetype:** marketing-saas
 **Description:** SaaS marketing landing page with hero, features, how-it-works timeline, pricing, testimonials, and CTA sections.
+**Shell structure:** Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer.
+**Regions:** header, body, footer
 
 ---
 
@@ -9,9 +11,7 @@
 
 **Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
 
-## Decorators (carbon recipe)
-
-No decorators defined.
+**Decorators:** see `src/styles/decorators.css` — available classes: carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
 
 ---
 

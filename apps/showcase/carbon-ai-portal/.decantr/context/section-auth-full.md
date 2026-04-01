@@ -2,6 +2,8 @@
 
 **Role:** gateway | **Shell:** centered | **Archetype:** auth-full
 **Description:** Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.
+**Shell structure:** Centered card on a background. Used for auth flows (login, register, forgot password) across all archetypes.
+**Regions:** body
 
 ---
 
@@ -9,9 +11,7 @@
 
 **Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
 
-## Decorators (carbon recipe)
-
-No decorators defined.
+**Decorators:** see `src/styles/decorators.css` — available classes: carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
 
 ---
 

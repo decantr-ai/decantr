@@ -2,6 +2,8 @@
 
 **Role:** public | **Shell:** top-nav-footer | **Archetype:** legal
 **Description:** Legal pages including privacy policy, terms of service, and cookie policy with sticky TOC and print-friendly layout.
+**Shell structure:** Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer.
+**Regions:** header, body, footer
 
 ---
 
@@ -9,9 +11,7 @@
 
 **Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
 
-## Decorators (carbon recipe)
-
-No decorators defined.
+**Decorators:** see `src/styles/decorators.css` — available classes: carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
 
 ---
 

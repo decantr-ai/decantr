@@ -2,6 +2,8 @@
 
 **Role:** auxiliary | **Shell:** chat-portal | **Archetype:** settings-full
 **Description:** Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.
+**Shell structure:** AI chatbot layout with collapsible conversation sidebar and anchored input. Used by ai-chatbot archetype for chat-first applications.
+**Regions:** header, nav, body
 
 ---
 
@@ -9,9 +11,7 @@
 
 **Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
 
-## Decorators (carbon recipe)
-
-No decorators defined.
+**Decorators:** see `src/styles/decorators.css` — available classes: carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
 
 ---
 
