@@ -1,20 +1,25 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { isV3 } from '@decantr/essence-spec';
+import type { EssenceV3 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
+import { refreshDerivedFiles } from '../scaffold.js';
 
 const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
 const RESET = '\x1b[0m';
 const DIM = '\x1b[2m';
+const CYAN = '\x1b[36m';
 
 interface Upgrade {
   type: string;
   id: string;
   currentVersion: string;
   latestVersion: string;
+  data?: Record<string, unknown>;
 }
 
-export async function cmdUpgrade(projectRoot: string = process.cwd()): Promise<void> {
+export async function cmdUpgrade(projectRoot: string = process.cwd(), options: { apply?: boolean } = {}): Promise<void> {
   const essencePath = join(projectRoot, 'decantr.essence.json');
 
   if (!existsSync(essencePath)) {
@@ -25,42 +30,55 @@ export async function cmdUpgrade(projectRoot: string = process.cwd()): Promise<v
 
   const essence = JSON.parse(readFileSync(essencePath, 'utf-8'));
   const client = new RegistryClient({
-    cacheDir: join(projectRoot, '.decantr', 'cache')
+    cacheDir: join(projectRoot, '.decantr', 'cache'),
+    projectRoot,
   });
 
   console.log('Checking for updates...\n');
 
   const upgrades: Upgrade[] = [];
 
-  // Check theme
-  if (essence.theme?.style) {
-    const theme = await client.fetchTheme(essence.theme.style);
-    if (theme && theme.data.version) {
-      // Compare versions (simplified)
-      const current = essence.theme.version || '0.0.0';
-      if (theme.data.version !== current) {
-        upgrades.push({
-          type: 'theme',
-          id: essence.theme.style,
-          currentVersion: current,
-          latestVersion: theme.data.version as string
-        });
+  // Check theme (v3 uses dna.theme.style, v2 uses theme.style)
+  const themeStyle = essence.dna?.theme?.style || essence.theme?.style;
+  if (themeStyle) {
+    const theme = await client.fetchTheme(themeStyle);
+    if (theme) {
+      const themeData = theme.data as Record<string, unknown>;
+      const inner = ((themeData.data ?? themeData) as Record<string, unknown>);
+      const latestVersion = (inner.version as string) || (themeData.version as string);
+      if (latestVersion) {
+        const current = essence.dna?.theme?.version || essence.theme?.version || '0.0.0';
+        if (latestVersion !== current) {
+          upgrades.push({
+            type: 'theme',
+            id: themeStyle,
+            currentVersion: current,
+            latestVersion,
+            data: themeData,
+          });
+        }
       }
     }
   }
 
-  // Check blueprint
-  if (essence.blueprint) {
+  // Check blueprint (v2-only field; v3 has inline blueprint)
+  if (essence.blueprint && typeof essence.blueprint === 'string') {
     const blueprint = await client.fetchBlueprint(essence.blueprint);
-    if (blueprint && blueprint.data.version) {
-      const current = essence.blueprintVersion || '0.0.0';
-      if (blueprint.data.version !== current) {
-        upgrades.push({
-          type: 'blueprint',
-          id: essence.blueprint,
-          currentVersion: current,
-          latestVersion: blueprint.data.version as string
-        });
+    if (blueprint) {
+      const bpData = blueprint.data as Record<string, unknown>;
+      const inner = ((bpData.data ?? bpData) as Record<string, unknown>);
+      const latestVersion = (inner.version as string) || (bpData.version as string);
+      if (latestVersion) {
+        const current = essence.blueprintVersion || '0.0.0';
+        if (latestVersion !== current) {
+          upgrades.push({
+            type: 'blueprint',
+            id: essence.blueprint,
+            currentVersion: current,
+            latestVersion,
+            data: bpData,
+          });
+        }
       }
     }
   }
@@ -75,5 +93,67 @@ export async function cmdUpgrade(projectRoot: string = process.cwd()): Promise<v
     console.log(`  ${u.type}/${u.id}: ${DIM}${u.currentVersion}${RESET} -> ${GREEN}${u.latestVersion}${RESET}`);
   }
 
-  console.log(`\n${YELLOW}Run with --apply to apply upgrades.${RESET}`);
+  if (!options.apply) {
+    console.log(`\n${YELLOW}Run with --apply to apply upgrades.${RESET}`);
+    return;
+  }
+
+  // ── Apply upgrades ──
+  console.log(`\n${CYAN}Applying upgrades...${RESET}\n`);
+
+  let essenceModified = false;
+
+  for (const upgrade of upgrades) {
+    console.log(`  Updating ${upgrade.type}/${upgrade.id} to ${upgrade.latestVersion}...`);
+
+    switch (upgrade.type) {
+      case 'theme': {
+        // Re-fetch theme to ensure cache is updated (fetchTheme saves to cache)
+        await client.fetchTheme(upgrade.id);
+
+        // Update version in essence if tracked
+        if (essence.dna?.theme) {
+          // v3 essence
+          essence.dna.theme.version = upgrade.latestVersion;
+          essenceModified = true;
+        } else if (essence.theme) {
+          // v2 essence
+          essence.theme.version = upgrade.latestVersion;
+          essenceModified = true;
+        }
+        console.log(`    ${GREEN}Theme cache updated.${RESET}`);
+        break;
+      }
+
+      case 'blueprint': {
+        // Re-fetch blueprint to ensure cache is updated
+        await client.fetchBlueprint(upgrade.id);
+
+        // Update version in essence
+        essence.blueprintVersion = upgrade.latestVersion;
+        essenceModified = true;
+        console.log(`    ${GREEN}Blueprint cache updated.${RESET}`);
+        break;
+      }
+    }
+  }
+
+  // Save updated essence if modified
+  if (essenceModified) {
+    writeFileSync(essencePath, JSON.stringify(essence, null, 2) + '\n');
+    console.log(`\n  ${GREEN}Essence file updated.${RESET}`);
+  }
+
+  // Regenerate context files for v3 essences
+  if (isV3(essence)) {
+    console.log(`\n  Regenerating context files...`);
+    try {
+      const result = await refreshDerivedFiles(projectRoot, essence as EssenceV3, client);
+      console.log(`    ${GREEN}Updated ${result.contextFiles.length} context file(s) and ${result.cssFiles.length} CSS file(s).${RESET}`);
+    } catch (e) {
+      console.log(`    ${YELLOW}Warning: Could not regenerate context files: ${(e as Error).message}${RESET}`);
+    }
+  }
+
+  console.log(`\n${GREEN}All upgrades applied.${RESET}`);
 }
