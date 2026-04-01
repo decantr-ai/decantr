@@ -31,12 +31,23 @@ export function createApp(): Hono<Env> {
     })
   );
 
-  // Optional auth on all v1 routes (skip for admin sync — uses its own auth)
+  // Optional auth on v1 routes — skip for public read-only endpoints and admin sync
   app.use('/v1/*', async (c, next) => {
-    // Skip optionalAuth and rate limiting for admin sync (authenticated via X-Admin-Key)
-    if (c.req.path === '/v1/admin/sync' && c.req.method === 'POST') {
+    const path = c.req.path;
+    const method = c.req.method;
+
+    // Skip auth for admin sync (uses X-Admin-Key)
+    if (path === '/v1/admin/sync' && method === 'POST') {
       return next();
     }
+
+    // Skip auth for public read-only content endpoints (GET only)
+    // These don't need auth — auth is only for publishing, moderation, billing
+    if (method === 'GET' && /^\/v1\/(patterns|recipes|themes|blueprints|archetypes|shells|search|health)/.test(path)) {
+      c.set('auth', { user: null, isAuthenticated: false, isAdmin: false });
+      return next();
+    }
+
     await optionalAuth()(c, next);
   });
 
