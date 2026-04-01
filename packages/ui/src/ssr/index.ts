@@ -1,5 +1,5 @@
 /**
- * Decantr SSR — Server-Side Rendering + Hydration
+ * Decantr SSR -- Server-Side Rendering + Hydration
  *
  * Separate entry point that works in Node.js without DOM globals.
  * renderToString/renderToStream build a VNode tree and serialize to HTML.
@@ -9,6 +9,20 @@
  * renderToString and renderToStream work in pure Node.js.
  * hydrate() requires a browser environment (it operates on existing DOM).
  */
+
+export interface VNode {
+  tag: string;
+  props: Record<string, any> | null;
+  children: Array<VNode | TextVNode | string>;
+  _handlers?: Record<string, Function>;
+  _id: number;
+}
+
+export interface TextVNode {
+  text: string;
+  _id: number;
+  _reactive?: boolean;
+}
 
 // ─── SSR Atom Resolution (no DOM injection) ────────────────────
 
@@ -476,7 +490,7 @@ function runInSSRContext(componentFn) {
  * @param {Function} component — component function that returns a VNode tree
  * @returns {string} HTML string
  */
-export function renderToString(component) {
+export function renderToString(component: Function): string {
   const vnode = runInSSRContext(component);
   return serializeVNode(vnode);
 }
@@ -492,7 +506,7 @@ export function renderToString(component) {
  * @param {Function} component — component function that returns a VNode tree
  * @returns {ReadableStream}
  */
-export function renderToStream(component) {
+export function renderToStream(component: Function): ReadableStream {
   // Build VNode tree synchronously (same as renderToString)
   const vnode = runInSSRContext(component);
 
@@ -528,7 +542,7 @@ export function renderToStream(component) {
  * @param {HTMLElement} root — the DOM root containing SSR HTML
  * @param {Function} component — the same component function used for SSR
  */
-export function hydrate(root, component) {
+export function hydrate(root: HTMLElement, component: Function): void {
   // Dynamically import core/state to avoid loading DOM globals at module level
   // These must be available in the browser environment when hydrate() is called
   const { createEffect } = _requireState();
@@ -786,7 +800,7 @@ function _requireLifecycle() {
  * @param {{ createEffect: Function }} stateMod — the state module
  * @param {{ pushScope: Function, popScope: Function, drainMountQueue: Function, runDestroyFns: Function }} lifecycleMod — lifecycle module
  */
-export function installHydrationRuntime(stateMod, lifecycleMod) {
+export function installHydrationRuntime(stateMod: { createEffect: Function }, lifecycleMod: { pushScope: Function; popScope: Function; drainMountQueue: Function; runDestroyFns: Function }): void {
   _stateModule = stateMod;
   _lifecycleModule = lifecycleMod;
 
@@ -805,7 +819,7 @@ export function installHydrationRuntime(stateMod, lifecycleMod) {
  * Components can use this to branch between SSR and client rendering.
  * @returns {boolean}
  */
-export function isSSR() {
+export function isSSR(): boolean {
   return _ssrActive || !!globalThis.__d_ssr_active;
 }
 
@@ -814,7 +828,7 @@ export function isSSR() {
  * Returns ssrH during SSR, null otherwise.
  * @returns {Function|null}
  */
-export function getSSRH() {
+export function getSSRH(): Function | null {
   return _ssrActive ? ssrH : (globalThis.__d_ssr_h || null);
 }
 
@@ -823,7 +837,7 @@ export function getSSRH() {
  * Returns ssrText during SSR, null otherwise.
  * @returns {Function|null}
  */
-export function getSSRText() {
+export function getSSRText(): Function | null {
   return _ssrActive ? ssrText : (globalThis.__d_ssr_text || null);
 }
 
@@ -831,7 +845,7 @@ export function getSSRText() {
  * Get the SSR-safe cond() function.
  * @returns {Function|null}
  */
-export function getSSRCond() {
+export function getSSRCond(): Function | null {
   return _ssrActive ? ssrCond : (globalThis.__d_ssr_cond || null);
 }
 
@@ -839,7 +853,7 @@ export function getSSRCond() {
  * Get the SSR-safe list() function.
  * @returns {Function|null}
  */
-export function getSSRList() {
+export function getSSRList(): Function | null {
   return _ssrActive ? ssrList : (globalThis.__d_ssr_list || null);
 }
 
@@ -847,7 +861,7 @@ export function getSSRList() {
  * Get the SSR-safe css() function.
  * @returns {Function|null}
  */
-export function getSSRCss() {
+export function getSSRCss(): Function | null {
   return _ssrActive ? ssrCss : (globalThis.__d_ssr_css || null);
 }
 
@@ -870,7 +884,7 @@ export function getSSRCss() {
  * @param {Function} factory — (h, text, cond, list, css) => componentFn
  * @returns {Function}
  */
-export function ssrComponent(factory) {
+export function ssrComponent(factory: (h: Function, text: Function, cond: Function, list: Function, css: Function) => Function): Function {
   return function(...args) {
     if (isSSR()) {
       const impl = factory(ssrH, ssrText, ssrCond, ssrList, ssrCss);

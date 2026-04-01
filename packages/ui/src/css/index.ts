@@ -10,8 +10,7 @@ export {
   setColorblindMode, getColorblindMode
 } from './theme-registry.js';
 
-/** @type {Map<string, string>} */
-const customAtoms = new Map();
+const customAtoms = new Map<string, string>();
 
 /** Regex to detect responsive prefix: _sm:, _md:, _lg:, _xl: */
 const BP_RE = /^_(sm|md|lg|xl):(.+)$/;
@@ -84,7 +83,7 @@ const ARB_PROPS = {
  * @param {string} atomPart — e.g. '_p4', '_bgprimary/50', '_w[512px]'
  * @returns {{ className: string, decl: string }|null}
  */
-function resolveAtom(atomPart) {
+function resolveAtom(atomPart: string): { className: string; decl: string } | null {
   // 1. Custom atoms first (user-defined via define())
   const custom = customAtoms.get(atomPart);
   if (custom) return { className: atomPart, decl: custom };
@@ -143,15 +142,11 @@ function resolveAtom(atomPart) {
  * @param {string} cls
  * @returns {string}
  */
-function escapeClass(cls) {
+function escapeClass(cls: string): string {
   return cls.replace(/:/g, '\\:').replace(/\//g, '\\/').replace(/\[/g, '\\[').replace(/\]/g, '\\]').replace(/#/g, '\\#').replace(/%/g, '\\%').replace(/\(/g, '\\(').replace(/\)/g, '\\)').replace(/,/g, '\\,').replace(/\+/g, '\\+');
 }
 
-/**
- * @param {...string} classes
- * @returns {string}
- */
-export function css(...classes) {
+export function css(...classes: string[]): string {
   const result = [];
   for (let i = 0; i < classes.length; i++) {
     const cls = classes[i];
@@ -281,11 +276,7 @@ export function css(...classes) {
   return result.join(' ');
 }
 
-/**
- * @param {string} name
- * @param {string} declaration
- */
-export function define(name, declaration) {
+export function define(name: string, declaration: string): void {
   customAtoms.set(name, declaration);
 }
 
@@ -295,7 +286,7 @@ export function define(name, declaration) {
  * @param {string} str
  * @returns {string}
  */
-export function sanitize(str) {
+export function sanitize(str: string): string {
   if (typeof str !== 'string') return '';
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
 }

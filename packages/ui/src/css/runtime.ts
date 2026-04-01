@@ -1,24 +1,17 @@
-/** @type {Set<string>} */
-const injected = new Set();
+const injected = new Set<string>();
 
-/** @type {HTMLStyleElement|null} */
-let styleEl = null;
-
-/** @type {HTMLStyleElement|null} */
-let layerEl = null;
+let styleEl: HTMLStyleElement | null = null;
+let layerEl: HTMLStyleElement | null = null;
 
 /** Responsive breakpoints (mobile-first, min-width) */
-export const BREAKPOINTS = { sm: 640, md: 768, lg: 1024, xl: 1280 };
+export const BREAKPOINTS: Record<string, number> = { sm: 640, md: 768, lg: 1024, xl: 1280 };
 const BP_ORDER = ['sm', 'md', 'lg', 'xl'];
 
 /** Container query breakpoints */
-export const CQ_WIDTHS = [320, 480, 640, 768, 1024];
+export const CQ_WIDTHS: number[] = [320, 480, 640, 768, 1024];
 
-/** @type {Record<string, HTMLStyleElement>|null} */
-let bpEls = null;
-
-/** @type {HTMLStyleElement|null} */
-let cqEl = null;
+let bpEls: Record<string, HTMLStyleElement> | null = null;
+let cqEl: HTMLStyleElement | null = null;
 
 /** CSS cascade layer order declaration */
 const LAYER_ORDER = '@layer d.base,d.theme,d.atoms,d.user;';
@@ -27,13 +20,9 @@ const LAYER_ORDER = '@layer d.base,d.theme,d.atoms,d.user;';
 // Rules are buffered in arrays and flushed to DOM in batches via
 // microtask, avoiding O(n²) string concatenation on textContent.
 
-/** @type {string[]} */
-let atomBuffer = [];
-/** @type {Record<string, string[]>} */
-let bpBuffers = {};
-/** @type {string[]} */
-let cqBuffer = [];
-/** @type {boolean} */
+let atomBuffer: string[] = [];
+let bpBuffers: Record<string, string[]> = {};
+let cqBuffer: string[] = [];
 let flushScheduled = false;
 
 function scheduleFlush() {
@@ -111,7 +100,7 @@ function ensureBpElements() {
  * @param {string} declaration
  * @param {string} [escapedName] — pre-escaped class name for special chars (/, [, ], etc.)
  */
-export function inject(className, declaration, escapedName) {
+export function inject(className: string, declaration: string, escapedName?: string): void {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
@@ -126,7 +115,7 @@ export function inject(className, declaration, escapedName) {
  * @param {string} declaration — CSS declaration(s)
  * @param {string} bp — breakpoint key (sm|md|lg|xl)
  */
-export function injectResponsive(className, declaration, bp) {
+export function injectResponsive(className: string, declaration: string, bp: string): void {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
@@ -142,7 +131,7 @@ export function injectResponsive(className, declaration, bp) {
  * @param {string} declaration — CSS declaration(s)
  * @param {string} query — media query string (e.g. '(prefers-reduced-motion: no-preference)')
  */
-export function injectMediaQuery(className, declaration, query) {
+export function injectMediaQuery(className: string, declaration: string, query: string): void {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
@@ -167,7 +156,7 @@ function ensureCqElement() {
  * @param {string} declaration — CSS declaration(s)
  * @param {number} width — container min-width in px
  */
-export function injectContainer(className, declaration, width) {
+export function injectContainer(className: string, declaration: string, width: number): void {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
@@ -188,7 +177,7 @@ const GP_STATE = {
  * @param {string} declaration — CSS declaration(s)
  * @param {string} prefix — 'gh'|'gf'|'ga'|'ph'|'pf'|'pa'
  */
-export function injectGroupPeer(className, declaration, prefix) {
+export function injectGroupPeer(className: string, declaration: string, prefix: string): void {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
@@ -210,7 +199,7 @@ const PSEUDO_MAP = {
  * @param {string} declaration — CSS declaration(s)
  * @param {string} prefix — 'h'|'f'|'fv'|'a'|'fw'
  */
-export function injectPseudo(className, declaration, prefix) {
+export function injectPseudo(className: string, declaration: string, prefix: string): void {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
@@ -227,7 +216,7 @@ export function injectPseudo(className, declaration, prefix) {
  * @param {string} bp — breakpoint key (sm|md|lg|xl)
  * @param {string} pseudo — pseudo-class name (hover|focus|focus-visible|active|focus-within)
  */
-export function injectResponsivePseudo(className, declaration, bp, pseudo) {
+export function injectResponsivePseudo(className: string, declaration: string, bp: string, pseudo: string): void {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
@@ -237,10 +226,7 @@ export function injectResponsivePseudo(className, declaration, bp, pseudo) {
   scheduleFlush();
 }
 
-/**
- * @returns {string}
- */
-export function extractCSS() {
+export function extractCSS(): string {
   flushBuffers();
   let css = layerEl ? layerEl.textContent || '' : '';
   css += styleEl ? styleEl.textContent || '' : '';
@@ -253,14 +239,11 @@ export function extractCSS() {
   return css;
 }
 
-/**
- * @returns {Set<string>}
- */
-export function getInjectedClasses() {
+export function getInjectedClasses(): Set<string> {
   return new Set(injected);
 }
 
-export function reset() {
+export function reset(): void {
   injected.clear();
   atomBuffer.length = 0;
   bpBuffers = {};

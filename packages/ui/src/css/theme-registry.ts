@@ -10,12 +10,28 @@ import { derive, densityCSS, getShapeTokens } from './derive.js';
 import { componentCSS } from './components.js';
 import { auradecantism } from './styles/auradecantism.js';
 
+export interface StyleDefinition {
+  id: string;
+  name: string;
+  seed: Record<string, any>;
+  personality: Record<string, any>;
+  typography?: Record<string, any>;
+  overrides?: Record<string, Record<string, any>>;
+  components?: string;
+}
+
+export interface ThemeMeta {
+  isDark: boolean;
+  style: string;
+  mode: string;
+  resolvedMode: string;
+}
+
 // ============================================================
 // State
 // ============================================================
 
-/** @type {Map<string, Object>} Registered styles */
-const styles = new Map();
+const styles = new Map<string, StyleDefinition>();
 
 const [_getStyleId, _setStyleId] = createSignal('auradecantism');
 const [_getMode, _setMode] = createSignal('dark');
@@ -26,15 +42,13 @@ const [_getColorblind, _setColorblind] = createSignal('off');
 
 const SHAPES = ['sharp', 'rounded', 'pill'];
 
-/** @type {HTMLStyleElement|null} */
-let styleEl = null;
-let densityEl = null;
-let animEl = null;
-let mediaQuery = null;
-let mediaHandler = null;
+let styleEl: HTMLStyleElement | null = null;
+let densityEl: HTMLStyleElement | null = null;
+let animEl: HTMLStyleElement | null = null;
+let mediaQuery: MediaQueryList | null = null;
+let mediaHandler: (() => void) | null = null;
 
-/** @type {Set<Function>} Mode change listeners */
-const modeListeners = new Set();
+const modeListeners = new Set<(mode: string) => void>();
 
 const ANIM_OFF_CSS = '*{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}';
 
@@ -202,17 +216,16 @@ function updateMediaListener() {
  * Set the visual style (personality).
  * @param {string} id - Style ID ('clean', 'retro', or custom registered style)
  */
-export function setStyle(id) {
+export function setStyle(id: string): void {
   if (!styles.has(id)) throw new Error(`[decantr] Unknown style: "${id}". Available: ${[...styles.keys()].join(', ')}`);
   _setStyleId(id);
   applyCurrentState();
 }
 
 /** @returns {() => string} Signal getter for current style ID */
-export function getStyle() { return _getStyleId; }
+export function getStyle(): () => string { return _getStyleId; }
 
-/** @returns {{ id: string, name: string }[]} List of registered styles */
-export function getStyleList() {
+export function getStyleList(): { id: string; name: string }[] {
   return [...styles.values()].map(s => ({ id: s.id, name: s.name }));
 }
 
@@ -220,7 +233,7 @@ export function getStyleList() {
  * Register a custom style.
  * @param {Object} style - Style definition { id, name, seed, personality, typography?, overrides?, components? }
  */
-export function registerStyle(style) {
+export function registerStyle(style: StyleDefinition): void {
   if (!style.id || !style.name) throw new Error('[decantr] Style must have id and name');
   if (!style.seed) throw new Error('[decantr] Style must have seed colors');
   if (!style.personality) style.personality = {};
@@ -233,7 +246,7 @@ export function registerStyle(style) {
  * Used by the plugin system to wire addon styles without individual registerStyle calls.
  * @param {Map<string, Object>} pluginStyles - Map of style id -> style definition
  */
-export function mergePluginStyles(pluginStyles) {
+export function mergePluginStyles(pluginStyles: Map<string, StyleDefinition>): void {
   for (const [id, style] of pluginStyles) {
     if (!style.id || !style.name) throw new Error(`[decantr] Plugin style must have id and name (got id="${id}")`);
     if (!style.seed) throw new Error(`[decantr] Plugin style "${id}" must have seed colors`);
@@ -251,7 +264,7 @@ export function mergePluginStyles(pluginStyles) {
  * Set color mode.
  * @param {'light'|'dark'|'auto'} mode
  */
-export function setMode(mode) {
+export function setMode(mode: 'light' | 'dark' | 'auto'): void {
   if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') {
     throw new Error(`[decantr] Invalid mode: "${mode}". Use 'light', 'dark', or 'auto'.`);
   }
@@ -267,17 +280,16 @@ export function setMode(mode) {
 }
 
 /** @returns {() => string} Signal getter for current mode setting ('light'|'dark'|'auto') */
-export function getMode() { return _getMode; }
+export function getMode(): () => string { return _getMode; }
 
-/** @returns {'light'|'dark'} Resolved mode (never 'auto') */
-export function getResolvedMode() { return _getResolvedMode(); }
+export function getResolvedMode(): string { return _getResolvedMode(); }
 
 /**
  * Register a callback for mode changes (fires when resolved mode changes).
  * @param {Function} fn - Callback receiving the new resolved mode ('light'|'dark')
  * @returns {Function} Unsubscribe function
  */
-export function onModeChange(fn) {
+export function onModeChange(fn: (mode: string) => void): () => void {
   modeListeners.add(fn);
   return () => modeListeners.delete(fn);
 }
@@ -291,7 +303,7 @@ export function onModeChange(fn) {
  * @param {string} id - Style ID or legacy theme ID
  * @param {'light'|'dark'|'auto'} [mode='auto'] - Color mode
  */
-export function setTheme(id, mode) {
+export function setTheme(id: string, mode?: 'light' | 'dark' | 'auto'): void {
   // Handle legacy theme IDs
   const legacy = LEGACY_THEME_MAP[id];
   if (legacy && !styles.has(id)) {
@@ -312,13 +324,9 @@ export function setTheme(id, mode) {
 }
 
 /** @returns {() => string} Signal getter for current style ID (backward compat alias) */
-export function getTheme() { return _getStyleId; }
+export function getTheme(): () => string { return _getStyleId; }
 
-/**
- * Get metadata about current style + mode.
- * @returns {{ isDark: boolean, style: string, mode: string, resolvedMode: string }}
- */
-export function getThemeMeta() {
+export function getThemeMeta(): ThemeMeta {
   return {
     isDark: _getResolvedMode() === 'dark',
     style: _getStyleId(),
@@ -328,13 +336,9 @@ export function getThemeMeta() {
 }
 
 /** @returns {{ id: string, name: string }[]} List of registered styles */
-export function getThemeList() { return getStyleList(); }
+export function getThemeList(): { id: string; name: string }[] { return getStyleList(); }
 
-/**
- * Legacy registerTheme — wraps registerStyle.
- * @param {Object} theme - Old theme object or new style object
- */
-export function registerTheme(theme) {
+export function registerTheme(theme: any): void {
   // If it has seed + personality, it's a new-style definition
   if (theme.seed) {
     registerStyle(theme);
@@ -355,7 +359,7 @@ export function registerTheme(theme) {
 // Public API: Animations
 // ============================================================
 
-export function setAnimations(enabled) {
+export function setAnimations(enabled: boolean): void {
   _setAnimations(!!enabled);
   if (typeof document === 'undefined') return;
   if (!enabled) {
@@ -370,7 +374,7 @@ export function setAnimations(enabled) {
   }
 }
 
-export function getAnimations() { return _getAnimations; }
+export function getAnimations(): () => boolean { return _getAnimations; }
 
 // ============================================================
 // Public API: Shape
@@ -380,7 +384,7 @@ export function getAnimations() { return _getAnimations; }
  * Set the shape (border-radius preset), independent of style.
  * @param {string|null} shape - 'sharp', 'rounded', 'pill', or null for style default
  */
-export function setShape(shape) {
+export function setShape(shape: string | null): void {
   if (shape !== null && !SHAPES.includes(shape)) {
     throw new Error(`[decantr] Invalid shape: "${shape}". Use 'sharp', 'rounded', 'pill', or null for style default.`);
   }
@@ -390,10 +394,9 @@ export function setShape(shape) {
 }
 
 /** @returns {() => string|null} Signal getter for current shape (null = style default) */
-export function getShape() { return _getShape; }
+export function getShape(): () => string | null { return _getShape; }
 
-/** @returns {{ id: string, label: string }[]} List of available shape presets */
-export function getShapeList() {
+export function getShapeList(): { id: string; label: string }[] {
   return SHAPES.map(s => ({ id: s, label: s.charAt(0).toUpperCase() + s.slice(1) }));
 }
 
@@ -417,7 +420,7 @@ const CB_MODES = ['off', 'protanopia', 'deuteranopia', 'tritanopia'];
  * Orthogonal to style × mode × shape — all four axes are independent.
  * @param {'off'|'protanopia'|'deuteranopia'|'tritanopia'} type
  */
-export function setColorblindMode(type) {
+export function setColorblindMode(type: 'off' | 'protanopia' | 'deuteranopia' | 'tritanopia'): void {
   if (!CB_MODES.includes(type)) {
     throw new Error(`[decantr] Invalid colorblind mode: "${type}". Use ${CB_MODES.map(m => `'${m}'`).join(', ')}.`);
   }
@@ -426,19 +429,18 @@ export function setColorblindMode(type) {
 }
 
 /** @returns {() => string} Signal getter for current colorblind mode */
-export function getColorblindMode() { return _getColorblind; }
+export function getColorblindMode(): () => string { return _getColorblind; }
 
 // ============================================================
 // Public API: CSS Extraction & Reset
 // ============================================================
 
-/** @returns {string} Active theme layer CSS */
-export function getActiveCSS() {
+export function getActiveCSS(): string {
   const style = styles.get(_getStyleId());
   return style ? `@layer d.theme{${componentCSS}${style.components || ''}}` : '';
 }
 
-export function resetStyles() {
+export function resetStyles(): void {
   if (styleEl && styleEl.parentNode) styleEl.parentNode.removeChild(styleEl);
   styleEl = null;
   if (densityEl && densityEl.parentNode) densityEl.parentNode.removeChild(densityEl);
