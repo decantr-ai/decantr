@@ -7,7 +7,7 @@ import { RegistryAPIClient } from '@decantr/registry';
 import type { ApiContentType, ComposeEntry } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
-import { scaffoldProject, scaffoldMinimal, composeArchetypes, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type RecipeData, type LayoutItem, type ZoneInput, type TopologyData } from './scaffold.js';
+import { scaffoldProject, scaffoldMinimal, composeArchetypes, composeSections, generateSectionContext, generateScaffoldContext, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type RecipeData, type LayoutItem, type ZoneInput, type TopologyData, type ComposeSectionsResult, type PatternSpecSummary, type BlueprintOverrides } from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
   createTheme,
@@ -531,6 +531,12 @@ async function cmdInit(args: InitArgs) {
     features?: string[];
   } | undefined;
 
+  // V3.1 composition data (populated when blueprint has compose entries)
+  let composedSections: ComposeSectionsResult | undefined;
+  let routeMap: Record<string, { section: string; page: string }> | undefined;
+  let patternSpecs: Record<string, PatternSpecSummary> | undefined;
+  let blueprintData: Record<string, any> | undefined;
+
   if (options.blueprint) {
     // Fetch the blueprint to get its primary archetype and theme
     const blueprintResult = await registryClient.fetchBlueprint(options.blueprint);
@@ -540,14 +546,21 @@ async function cmdInit(args: InitArgs) {
       const rawBlueprint = blueprintResult.data as Record<string, unknown>;
       const blueprint = (rawBlueprint.data ?? rawBlueprint) as {
         id: string;
+        description?: string;
         compose?: ComposeEntry[];
         features?: string[];
-        theme?: {
-          style?: string;
-          mode?: string;
-          recipe?: string;
-          shape?: string;
+        theme?: { style?: string; mode?: string; recipe?: string; shape?: string };
+        personality?: string[];
+        routes?: Record<string, { shell?: string; archetype?: string; page?: string }>;
+        overrides?: {
+          features_add?: string[];
+          features_remove?: string[];
+          pages_remove?: string[];
+          pages?: Record<string, any>;
         };
+        seo_hints?: { schema_org?: string[]; meta_priorities?: string[] };
+        navigation?: { hotkeys?: any[]; command_palette?: boolean };
+        design_constraints?: Record<string, string>;
       };
 
       // Apply blueprint theme settings (unless explicitly overridden by flags)
@@ -561,6 +574,11 @@ async function cmdInit(args: InitArgs) {
         if (blueprint.theme.shape && options.shape === 'rounded') {
           options.shape = blueprint.theme.shape as 'rounded' | 'sharp' | 'pill';
         }
+      }
+
+      // Apply blueprint personality (unless explicitly overridden by flags)
+      if (blueprint.personality?.length && (!options.personality || options.personality.length === 0 || (options.personality.length === 1 && options.personality[0] === 'professional'))) {
+        options.personality = blueprint.personality;
       }
 
       // Remember the blueprint recipe name for recipe fetch
@@ -595,6 +613,64 @@ async function cmdInit(args: InitArgs) {
         };
         options.archetype = primaryId;
         options.shell = composed.defaultShell;
+
+        // Compose sections (v3.1 style — keeps pages grouped by archetype)
+        composedSections = composeSections(entries, archetypeMap, blueprint.overrides);
+
+        // Store blueprint data for V3.1 essence enrichment
+        blueprintData = blueprint as Record<string, any>;
+
+        // Map blueprint routes to section pages
+        routeMap = {};
+        if (blueprint.routes) {
+          for (const [path, entry] of Object.entries(blueprint.routes)) {
+            const archId = entry.archetype;
+            const pageId = entry.page;
+            if (archId && pageId) {
+              routeMap[path] = { section: archId, page: pageId };
+              // Set route on the page in the composed section
+              const section = composedSections.sections.find(s => s.id === archId);
+              const page = section?.pages.find(p => p.id === pageId);
+              if (page) page.route = path;
+            }
+          }
+        }
+
+        // Fetch pattern specs for inlining in section contexts
+        const allPatternIds = new Set<string>();
+        for (const section of composedSections.sections) {
+          for (const page of section.pages) {
+            if (page.patterns) {
+              for (const ref of page.patterns) allPatternIds.add(ref.pattern);
+            }
+            for (const item of page.layout) {
+              if (typeof item === 'string') allPatternIds.add(item);
+            }
+          }
+        }
+
+        patternSpecs = {};
+        if (allPatternIds.size > 0) {
+          const pSpecs = patternSpecs;
+          const fetches = [...allPatternIds].map(async (pid) => {
+            try {
+              const result = await registryClient.fetchPattern(pid);
+              if (result) {
+                const raw = result.data as Record<string, unknown>;
+                const inner = (raw.data ?? raw) as Record<string, any>;
+                const defaultPreset = inner.default_preset || 'standard';
+                const preset = inner.presets?.[defaultPreset];
+                pSpecs[pid] = {
+                  description: (inner.description as string) || '',
+                  components: (inner.components as string[]) || [],
+                  slots: preset?.layout?.slots || {},
+                  code: preset?.code?.example || inner.code?.example || '',
+                };
+              }
+            } catch { /* pattern not found — skip */ }
+          });
+          await Promise.all(fetches);
+        }
 
         // Collect zone inputs for topology
         const zoneInputs: ZoneInput[] = [];
@@ -710,7 +786,12 @@ async function cmdInit(args: InitArgs) {
     registrySource as 'api' | 'cache',
     themeData,
     recipeData,
-    topologyMarkdown
+    topologyMarkdown,
+    // V3.1 composition data:
+    composedSections,
+    routeMap,
+    patternSpecs,
+    blueprintData,
   );
 
   // Output summary

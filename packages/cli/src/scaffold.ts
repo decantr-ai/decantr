@@ -1470,7 +1470,11 @@ export function scaffoldProject(
   registrySource: 'api' | 'cache' = 'cache',
   themeData?: ThemeData,
   recipeData?: RecipeData,
-  topologyMarkdown?: string
+  topologyMarkdown?: string,
+  composedSections?: ComposeSectionsResult,
+  routeMap?: Record<string, { section: string; page: string }>,
+  patternSpecs?: Record<string, PatternSpecSummary>,
+  blueprintData?: Record<string, any>,
 ): ScaffoldResult {
   // Build v3 essence by default, but keep a v2-compatible view for template rendering
   const essenceV3 = buildEssenceV3(options, archetypeData, themeData, recipeData);
@@ -1527,6 +1531,103 @@ export function scaffoldProject(
 
   const decoratorsPath = join(stylesDir, 'decorators.css');
   writeFileSync(decoratorsPath, generateDecoratorsCSS(recipeData, essenceV3.dna.theme.style as string));
+
+  // V3.1 upgrade: if composedSections is provided, upgrade the essence and generate context files
+  if (composedSections) {
+    // Upgrade essence to V3.1 with sections + routes
+    essenceV3.version = '3.1.0' as any;
+    essenceV3.blueprint = {
+      sections: composedSections.sections,
+      features: composedSections.features,
+      routes: routeMap || {},
+    };
+    if (blueprintData?.personality?.length) {
+      essenceV3.dna.personality = blueprintData.personality;
+    }
+    if (blueprintData?.design_constraints) {
+      essenceV3.dna.constraints = blueprintData.design_constraints;
+    }
+    if (blueprintData?.seo_hints) {
+      essenceV3.meta.seo = blueprintData.seo_hints;
+    }
+    if (blueprintData?.navigation) {
+      essenceV3.meta.navigation = blueprintData.navigation;
+    }
+
+    // Re-write the essence file with V3.1 data
+    writeFileSync(essencePath, JSON.stringify(essenceV3, null, 2) + '\n');
+
+    // Read generated tokens.css for inlining in section contexts
+    const themeTokensCss = existsSync(tokensPath) ? readFileSync(tokensPath, 'utf-8') : '';
+
+    // Build decorator list from recipe data
+    const decoratorList: Array<{ name: string; description: string }> = [];
+    if (recipeData?.decorators) {
+      for (const [name, desc] of Object.entries(recipeData.decorators)) {
+        decoratorList.push({ name, description: desc as string });
+      }
+    }
+
+    // Generate section context files
+    for (const section of composedSections.sections) {
+      // Build zone context for this section from topology
+      const zoneLabel = section.role === 'primary' || section.role === 'auxiliary' ? 'App' : section.role.charAt(0).toUpperCase() + section.role.slice(1);
+      const zoneContext = `This section is in the **${zoneLabel}** zone (${section.shell} shell).` + (topologyMarkdown ? '\n\n' + topologyMarkdown : '');
+
+      // Collect pattern specs for this section's pages
+      const sectionPatterns: Record<string, PatternSpecSummary> = {};
+      if (patternSpecs) {
+        for (const page of section.pages) {
+          for (const item of page.layout) {
+            const pid = typeof item === 'string' ? item : '';
+            if (pid && patternSpecs[pid]) {
+              sectionPatterns[pid] = patternSpecs[pid];
+            }
+          }
+        }
+      }
+
+      const contextContent = generateSectionContext({
+        section,
+        themeTokens: themeTokensCss,
+        decorators: decoratorList,
+        guardConfig: {
+          mode: options.guard || 'strict',
+          dna_enforcement: 'error',
+          blueprint_enforcement: 'warn',
+        },
+        personality: options.personality || [],
+        themeName: options.theme,
+        recipeName: options.theme,
+        zoneContext,
+        patternSpecs: sectionPatterns,
+        constraints: blueprintData?.design_constraints,
+      });
+
+      const sectionContextPath = join(contextDir, `section-${section.id}.md`);
+      writeFileSync(sectionContextPath, contextContent);
+      contextFiles.push(sectionContextPath);
+    }
+
+    // Generate scaffold.md
+    const scaffoldContent = generateScaffoldContext({
+      appName: options.blueprint || options.archetype || 'Application',
+      blueprintId: options.blueprint || '',
+      themeName: options.theme,
+      recipeName: options.theme,
+      personality: options.personality || [],
+      topologyMarkdown: topologyMarkdown || '',
+      sections: composedSections.sections,
+      routes: routeMap || {},
+      constraints: blueprintData?.design_constraints,
+      seo: blueprintData?.seo_hints,
+      navigation: blueprintData?.navigation,
+    });
+
+    const scaffoldMdPath = join(contextDir, 'scaffold.md');
+    writeFileSync(scaffoldMdPath, scaffoldContent);
+    contextFiles.push(scaffoldMdPath);
+  }
 
   // Update .gitignore
   const gitignoreUpdated = updateGitignore(projectRoot);

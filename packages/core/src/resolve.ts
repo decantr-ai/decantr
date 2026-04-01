@@ -380,13 +380,22 @@ async function resolveV3Essence(
   const theme = buildThemeFromV3(essence, isAddon);
 
   // 4. Convert blueprint pages to StructurePage and resolve
-  const structurePages: StructurePage[] = blueprint.pages.map(
-    p => blueprintPageToStructurePage(p, blueprint.shell),
+  // V3.1 essences may use sections instead of pages; flatten sections into pages
+  const blueprintPages = blueprint.pages ?? (
+    blueprint.sections
+      ? blueprint.sections.flatMap(s => s.pages)
+      : [{ id: 'home', layout: ['hero'] as LayoutItem[] }]
+  );
+  const defaultShell = blueprint.shell ?? (
+    blueprint.sections?.[0]?.shell ?? 'sidebar-main'
+  );
+  const structurePages: StructurePage[] = blueprintPages.map(
+    p => blueprintPageToStructurePage(p, defaultShell),
   );
   const resolvedPages = await resolvePages(structurePages, resolver, recipe);
 
   // 5. Shell config from blueprint
-  const shellType = blueprint.shell;
+  const shellType = defaultShell;
   const brand = pascalCase(meta.archetype);
   const nav = buildNavItems(structurePages);
   const recipeDecoration = recipe ? buildRecipeDecoration(recipe) : null;
