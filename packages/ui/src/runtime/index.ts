@@ -327,23 +327,17 @@ export function Suspense(props: SuspenseProps, ...children: Child[]): HTMLElemen
     if (fallbackNode) container.appendChild(fallbackNode);
   }
 
-  // Check pending queries and react
+  // React to pending count changes via signal
   createEffect(() => {
-    if (_pendingQueries.size > 0) {
+    if (_pendingCount() > 0) {
       showFallback();
-      const iv = setInterval(() => {
-        if (_pendingQueries.size === 0) {
-          clearInterval(iv);
-          showChildren();
-        }
-      }, 16);
     } else {
       showChildren();
     }
   });
 
   // Initial render: if nothing pending, show children right away
-  if (_pendingQueries.size === 0) {
+  if (_pendingCount() === 0) {
     for (let i = 0; i < childNodes.length; i++) container.appendChild(childNodes[i]);
     showing = 'children';
   }
