@@ -23,20 +23,24 @@ export function createUserClient(accessToken?: string) {
   });
 }
 
-// Admin client that bypasses RLS (for server-side operations)
+// Singleton admin client — reuse across requests to avoid connection churn
+let _adminClient: ReturnType<typeof createClient<Database>> | null = null;
+
 export function createAdminClient() {
+  if (_adminClient) return _adminClient;
   if (!supabaseServiceKey) {
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
   }
-  return createClient<Database>(supabaseUrl!, supabaseServiceKey, {
+  _adminClient = createClient<Database>(supabaseUrl!, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
     global: {
-      fetch: globalThis.fetch,  // Use Node.js native fetch (fixes getReader compatibility)
+      fetch: globalThis.fetch,
     },
   });
+  return _adminClient;
 }
 
 // Default client for public operations
