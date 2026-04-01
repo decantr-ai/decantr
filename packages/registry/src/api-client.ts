@@ -16,7 +16,7 @@ import type {
 } from './types.js';
 
 const DEFAULT_BASE_URL = 'https://api.decantr.ai/v1';
-const DEFAULT_TIMEOUT_MS = 8000;
+const DEFAULT_TIMEOUT_MS = 30000;
 const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 interface CacheEntry<T> {

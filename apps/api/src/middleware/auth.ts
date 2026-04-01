@@ -110,8 +110,13 @@ export function requireAuth() {
 
 export function optionalAuth() {
   return async (c: Context, next: Next) => {
-    const auth = await getAuthContext(c);
-    c.set('auth', auth);
+    try {
+      const auth = await getAuthContext(c);
+      c.set('auth', auth);
+    } catch {
+      // Auth failed (Supabase unavailable, etc.) — continue as unauthenticated
+      c.set('auth', { user: null, isAuthenticated: false, isAdmin: false });
+    }
     await next();
   };
 }
