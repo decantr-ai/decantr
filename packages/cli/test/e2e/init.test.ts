@@ -34,15 +34,18 @@ describe('init command', () => {
     expect(existsSync(join(testDir, 'DECANTR.md'))).toBe(true);
   });
 
-  it('DECANTR.md uses @decantr/cli not decantr', () => {
+  it('DECANTR.md contains methodology primer content', () => {
     execSync(`node ${cliPath} init --yes`, {
       cwd: testDir,
       env: { ...process.env, DECANTR_OFFLINE: 'true' }
     });
 
     const content = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
-    expect(content).toContain('npx @decantr/cli');
-    expect(content).not.toMatch(/npx decantr /);
+    // V3.1 simplified template: methodology primer with guard rules and CSS approach
+    expect(content).toContain('## Guard Rules');
+    expect(content).toContain('## How To Use This Project');
+    expect(content).toContain('## CSS Implementation');
+    expect(content).toContain('@decantr/css');
   });
 
   it('creates .decantr directory', () => {

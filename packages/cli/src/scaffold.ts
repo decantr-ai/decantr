@@ -1227,6 +1227,92 @@ function generateDecantrMd(
 }
 
 /**
+ * CSS methodology section for DECANTR.md (extracted from the v3.0 template).
+ * This content is passed as {{CSS_APPROACH}} in the v3.1 simplified template.
+ */
+const CSS_APPROACH_CONTENT = `## CSS Implementation
+
+This project uses **@decantr/css** for layout atoms and the generated CSS files for theme tokens and recipe decorators.
+
+### Setup
+
+\`\`\`javascript
+// 1. Import the atoms runtime
+import { css } from '@decantr/css';
+
+// 2. Import generated CSS files (created by decantr init)
+import './styles/tokens.css';      // Theme tokens (--d-primary, --d-surface, etc.)
+import './styles/decorators.css';  // Recipe decorators
+\`\`\`
+
+### Using Atoms
+
+The \`css()\` function processes atom strings and injects CSS at runtime:
+
+\`\`\`jsx
+// Layout atoms
+<div className={css('_flex _col _gap4 _p4')}>
+  <h1 className={css('_heading1')}>Title</h1>
+  <p className={css('_textsm _fgmuted')}>Description</p>
+</div>
+
+// Responsive prefixes (mobile-first)
+<div className={css('_gc1 _sm:gc2 _lg:gc4')}>
+  {/* 1 col -> 2 cols at 640px -> 4 cols at 1024px */}
+</div>
+\`\`\`
+
+### Common Atoms
+
+| Category | Atoms | Description |
+|----------|-------|-------------|
+| Display | \`_flex\`, \`_grid\`, \`_block\`, \`_none\` | Display types |
+| Flexbox | \`_col\`, \`_row\`, \`_wrap\`, \`_flex1\` | Flex direction/behavior |
+| Alignment | \`_aic\`, \`_jcc\`, \`_jcsb\` | Align/justify content |
+| Spacing | \`_gap{n}\`, \`_p{n}\`, \`_m{n}\`, \`_px{n}\` | Gap, padding, margin |
+| Sizing | \`_wfull\`, \`_hfull\`, \`_w{n}\`, \`_h{n}\` | Width, height |
+| Typography | \`_textsm\`, \`_textlg\`, \`_heading1\`-\`_heading6\` | Font sizes |
+| Colors | \`_bgprimary\`, \`_bgsurface\`, \`_fgmuted\` | Background, foreground |
+
+### CSS Architecture
+
+The CSS is organized into two parts:
+
+1. **Atoms (@decantr/css)** - Layout utilities injected at runtime into \`@layer d.atoms\`
+2. **Generated CSS files** - Theme tokens and recipe decorators created during scaffold
+
+\`\`\`
+src/styles/
+  tokens.css      # :root { --d-primary: #...; --d-surface: #...; }
+  decorators.css  # .recipe-card { ... }
+\`\`\`
+
+### Variable Naming Convention
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| \`--d-\` | Core Decantr tokens | \`--d-primary\`, \`--d-bg\` |
+| \`--d-gap-{n}\` | Spacing tokens | \`--d-gap-4\`, \`--d-gap-8\` |
+| \`--d-radius\` | Border radius | \`--d-radius\`, \`--d-radius-lg\` |`;
+
+/**
+ * Generate DECANTR.md for v3.1 essences.
+ *
+ * The v3.1 template is a simplified ~200-line methodology primer that contains
+ * NO project-specific data. All project-specific content lives in section
+ * context files (.decantr/context/section-{name}.md).
+ *
+ * Only two template variables: GUARD_MODE and CSS_APPROACH.
+ */
+function generateDecantrMdV31(guardMode: string, cssApproach: string): string {
+  const template = loadTemplate('DECANTR.md.template');
+  return renderTemplate(template, {
+    GUARD_MODE: guardMode,
+    CSS_APPROACH: cssApproach,
+  });
+}
+
+/**
  * Generate project.json from detection results.
  */
 function generateProjectJson(
@@ -1403,9 +1489,11 @@ export function scaffoldProject(
   const essencePath = join(projectRoot, 'decantr.essence.json');
   writeFileSync(essencePath, JSON.stringify(essenceV3, null, 2) + '\n');
 
-  // Write DECANTR.md
+  // Write DECANTR.md — use the simplified v3.1 template (methodology primer only,
+  // project-specific data lives in section context files)
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
-  writeFileSync(decantrMdPath, generateDecantrMd(essence, detected, themeData, recipeData, archetypeData, topologyMarkdown));
+  const guardMode = essenceV3.meta.guard.mode;
+  writeFileSync(decantrMdPath, generateDecantrMdV31(guardMode, CSS_APPROACH_CONTENT));
 
   // Write project.json
   const projectJsonPath = join(decantrDir, 'project.json');
