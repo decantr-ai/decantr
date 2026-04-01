@@ -1,13 +1,15 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import { App } from './App';
-import './global.css';
+import './styles/tokens.css';
+import './styles/decorators.css';
+import './styles/global.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter basename="/showcase/carbon-ai-portal">
+    <HashRouter>
       <App />
-    </BrowserRouter>
-  </StrictMode>
+    </HashRouter>
+  </StrictMode>,
 );

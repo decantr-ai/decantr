@@ -1,6 +1,6 @@
-# Scaffold: carbon-ai-portal
+# Scaffold: ai-chatbot
 
-**Blueprint:** carbon-ai-portal
+**Blueprint:** 
 **Theme:** carbon | **Recipe:** carbon
 **Personality:** professional, minimal, developer-focused, polished
 **Guard mode:** creative (no enforcement during initial scaffolding)
@@ -9,7 +9,7 @@
 
 ## Composition Topology
 
-**Intent:** AI chatbot interface with conversation sidebar, message thread, and anchored input. Core interface for chat-first AI applications.
+**Intent:** ai-chatbot + auth-full + settings-full + marketing-saas + about-hybrid + contact + legal
 
 ### Zones
 
@@ -31,7 +31,7 @@
   Tone: professional, minimal, developer-focused, polished
   Features: chat, markdown, code-highlight, file-upload, mentions, reactions, export
 
-**App (auxiliary)** — inherit shell
+**App (auxiliary)** — chat-portal shell
   Archetypes: settings-full
   Purpose: Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.
   Tone: professional, minimal, developer-focused, polished
@@ -46,9 +46,9 @@
 
 ### Default Entry Points
 
-  Anonymous users enter: /
-  Authenticated users enter: /chat
-  Auth redirect target: /chat
+  Anonymous users enter: public zone
+  Authenticated users enter: primary zone
+  Auth redirect target: primary zone
 
 
 ## Sections Overview
@@ -57,7 +57,7 @@
 |---------|------|-------|-------|----------|
 | ai-chatbot | primary | chat-portal | chat, new | chat, markdown, code-highlight, file-upload, mentions, reactions, export |
 | auth-full | gateway | centered | login, register, forgot-password, reset-password, verify-email, mfa-setup, mfa-verify, phone-verify | auth, mfa, oauth, email-verification, password-reset |
-| settings-full | auxiliary | inherit | profile, security, preferences, danger | profile-edit, password-change, mfa-management, session-management, theme-toggle, account-deletion |
+| settings-full | auxiliary | chat-portal | profile, security, preferences, danger | profile-edit, password-change, mfa-management, session-management, theme-toggle, account-deletion |
 | marketing-saas | public | top-nav-footer | home | pricing-toggle, testimonials, feature-grid |
 | about-hybrid | public | top-nav-footer | about | team-grid, values-display |
 | contact | public | top-nav-footer | contact | form-validation, spam-protection, file-attachment |
@@ -97,6 +97,19 @@ For detailed pattern specs per section, read:
 - .decantr/context/section-about-hybrid.md
 - .decantr/context/section-contact.md
 - .decantr/context/section-legal.md
+
+## Shared Components
+
+These patterns appear on multiple pages. Consider creating shared components:
+
+| Pattern | Used by |
+|---------|---------|
+| input | ai-chatbot/chat, ai-chatbot/new |
+| form | auth-full/login, auth-full/register, auth-full/forgot-password, auth-full/reset-password, auth-full/verify-email, auth-full/mfa-setup, auth-full/mfa-verify, auth-full/phone-verify, contact/contact |
+| settings | settings-full/profile, settings-full/preferences, settings-full/danger |
+| hero | marketing-saas/home, about-hybrid/about, contact/contact |
+| cta | marketing-saas/home, about-hybrid/about |
+| content | legal/privacy, legal/terms, legal/cookies |
 
 ## SEO Hints
 

@@ -9,7 +9,7 @@ Auto-generated summary of `decantr.essence.json`.
 | Property | Value |
 |----------|-------|
 | Archetype | ai-chatbot |
-| Blueprint | none |
+| Blueprint |  |
 | Personality | professional, minimal, developer-focused, polished |
 | Target | react |
 
@@ -28,24 +28,24 @@ Auto-generated summary of `decantr.essence.json`.
 |------|-------|--------|
 | chat | chat-portal | header, messages, input |
 | new | chat-portal | empty-thread, input |
-| auth-full-login | centered | form |
-| auth-full-register | centered | form |
-| auth-full-forgot-password | centered | form |
-| auth-full-reset-password | centered | form |
-| auth-full-verify-email | centered | form |
-| auth-full-mfa-setup | centered | form |
-| auth-full-mfa-verify | centered | form |
-| auth-full-phone-verify | centered | form |
-| settings-full-profile | inherit | settings |
-| settings-full-security | inherit | security-settings, sessions |
-| settings-full-preferences | inherit | settings |
-| settings-full-danger | inherit | settings |
-| marketing-saas-home | top-nav-footer | hero, features, how-it-works, pricing, testimonials, cta |
-| about-hybrid-about | top-nav-footer | hero, story, team, values, cta |
-| contact-contact | top-nav-footer | hero, form |
-| legal-privacy | top-nav-footer | content |
-| legal-terms | top-nav-footer | content |
-| legal-cookies | top-nav-footer | content |
+| login | centered | form |
+| register | centered | form |
+| forgot-password | centered | form |
+| reset-password | centered | form |
+| verify-email | centered | form |
+| mfa-setup | centered | form |
+| mfa-verify | centered | form |
+| phone-verify | centered | form |
+| profile | chat-portal | settings |
+| security | chat-portal | security-settings, sessions |
+| preferences | chat-portal | settings |
+| danger | chat-portal | settings |
+| home | top-nav-footer | hero, features, how-it-works, pricing, testimonials, cta |
+| about | top-nav-footer | hero, story, team, values, cta |
+| contact | top-nav-footer | hero, form |
+| privacy | top-nav-footer | content |
+| terms | top-nav-footer | content |
+| cookies | top-nav-footer | content |
 
 ## Features
 
@@ -84,8 +84,8 @@ Auto-generated summary of `decantr.essence.json`.
 | Property | Value |
 |----------|-------|
 | Mode | strict |
-| DNA Enforcement | {{DNA_ENFORCEMENT}} |
-| Blueprint Enforcement | {{BLUEPRINT_ENFORCEMENT}} |
+| DNA Enforcement | error |
+| Blueprint Enforcement | warn |
 
 ## Density
 
@@ -96,4 +96,4 @@ Auto-generated summary of `decantr.essence.json`.
 
 ---
 
-*Last updated: 2026-04-01T15:16:36.069Z*
+*Last updated: 2026-04-01T21:55:40.256Z*

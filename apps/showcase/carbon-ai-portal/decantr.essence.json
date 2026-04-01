@@ -157,7 +157,7 @@
       {
         "id": "settings-full",
         "role": "auxiliary",
-        "shell": "inherit",
+        "shell": "chat-portal",
         "features": [
           "profile-edit",
           "password-change",
