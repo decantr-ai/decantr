@@ -1851,7 +1851,9 @@ export async function scaffoldProject(
       routes: routeMap || {},
     };
     if (blueprintData?.personality?.length) {
-      essenceV3.dna.personality = blueprintData.personality;
+      essenceV3.dna.personality = typeof blueprintData.personality === 'string'
+        ? [blueprintData.personality]
+        : blueprintData.personality;
     }
     if (blueprintData?.design_constraints) {
       essenceV3.dna.constraints = blueprintData.design_constraints;

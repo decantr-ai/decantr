@@ -553,7 +553,7 @@ async function cmdInit(args: InitArgs) {
         compose?: ComposeEntry[];
         features?: string[];
         theme?: { style?: string; mode?: string; recipe?: string; shape?: string };
-        personality?: string[];
+        personality?: string | string[];
         routes?: Record<string, { shell?: string; archetype?: string; page?: string }>;
         overrides?: {
           features_add?: string[];
@@ -580,8 +580,11 @@ async function cmdInit(args: InitArgs) {
       }
 
       // Apply blueprint personality (unless explicitly overridden by flags)
-      if (blueprint.personality?.length && (!options.personality || options.personality.length === 0 || (options.personality.length === 1 && options.personality[0] === 'professional'))) {
-        options.personality = blueprint.personality;
+      // Personality can be a string (narrative) or string[] (traits) — normalize to string[]
+      if (blueprint.personality && (!options.personality || options.personality.length === 0 || (options.personality.length === 1 && options.personality[0] === 'professional'))) {
+        options.personality = typeof blueprint.personality === 'string'
+          ? [blueprint.personality]
+          : blueprint.personality;
       }
 
       // Remember the blueprint recipe name for recipe fetch
