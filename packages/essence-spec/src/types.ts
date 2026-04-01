@@ -246,6 +246,7 @@ export interface EssenceV31Section {
   features: string[];
   description: string;
   pages: BlueprintPage[];
+  dna_overrides?: DNAOverrides;
 }
 
 export interface RouteEntry {

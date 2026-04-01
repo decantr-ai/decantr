@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } fr
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3 } from '@decantr/essence-spec';
-import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry } from '@decantr/essence-spec';
+import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
 import type { ComposeEntry, ArchetypeRole } from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
@@ -161,6 +161,7 @@ export interface BlueprintOverrides {
   features_remove?: string[];
   pages_remove?: string[];
   pages?: Record<string, Partial<BlueprintPage>>;
+  section_dna_overrides?: Record<string, DNAOverrides>;
 }
 
 export interface ComposeSectionsResult {
@@ -256,6 +257,16 @@ export function composeSections(
       description: 'Default section',
       pages: [{ id: 'home', layout: ['hero'] }],
     });
+  }
+
+  // Apply per-section DNA overrides from blueprint overrides
+  if (overrides?.section_dna_overrides) {
+    for (const section of sections) {
+      const sectionOverrides = overrides.section_dna_overrides[section.id];
+      if (sectionOverrides) {
+        section.dna_overrides = { ...section.dna_overrides, ...sectionOverrides };
+      }
+    }
   }
 
   // Deduplicate features then apply overrides
@@ -2433,6 +2444,14 @@ export function generateSectionContext(input: SectionContextInput): string {
   if (shellInfo) {
     lines.push(`**Shell structure:** ${shellInfo.description}`);
     lines.push(`**Regions:** ${shellInfo.regions.join(', ')}`);
+  }
+  if (section.dna_overrides) {
+    const parts: string[] = [];
+    if (section.dna_overrides.density) parts.push(`density: ${section.dna_overrides.density}`);
+    if (section.dna_overrides.mode) parts.push(`mode: ${section.dna_overrides.mode}`);
+    if (parts.length > 0) {
+      lines.push(`**DNA Overrides:** ${parts.join(', ')}`);
+    }
   }
   lines.push('');
   lines.push('---');
