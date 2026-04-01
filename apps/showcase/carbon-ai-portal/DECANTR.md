@@ -207,6 +207,50 @@ npx @decantr/cli get recipe carbon
 - `values`
 - `content`
 
+## Composition Topology
+
+**Intent:** AI chatbot interface with conversation sidebar, message thread, and anchored input. Core interface for chat-first AI applications.
+
+### Zones
+
+**Public** — top-nav-footer shell
+  Archetypes: marketing-saas, about-hybrid, contact, legal
+  Purpose: SaaS marketing landing page with hero, features, how-it-works timeline, pricing, testimonials, and CTA sections. About page combining hero, company story, team grid, values, and call-to-action sections. Contact page with hero header and working contact form with validation and spam protection. Legal pages including privacy policy, terms of service, and cookie policy with sticky TOC and print-friendly layout.
+  Tone: professional
+  Features: pricing-toggle, testimonials, feature-grid, team-grid, values-display, form-validation, spam-protection, file-attachment, toc-navigation, print-friendly, smooth-scroll
+
+**Gateway** — centered shell
+  Archetypes: auth-full
+  Purpose: Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.
+  Tone: professional
+  Features: auth, mfa, oauth, email-verification, password-reset
+
+**App** — chat-portal shell
+  Archetypes: ai-chatbot
+  Purpose: AI chatbot interface with conversation sidebar, message thread, and anchored input. Core interface for chat-first AI applications.
+  Tone: professional
+  Features: chat, markdown, code-highlight, file-upload, mentions, reactions, export
+
+**App (auxiliary)** — inherit shell
+  Archetypes: settings-full
+  Purpose: Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.
+  Tone: professional
+  Features: profile-edit, password-change, mfa-management, session-management, theme-toggle, account-deletion
+
+### Zone Transitions
+
+  Public → Gateway: conversion (authentication)
+  Gateway → App: gate-pass (authentication)
+  App → Gateway: gate-return (authentication)
+  App → Public: navigation (external)
+
+### Default Entry Points
+
+  Anonymous users enter: /
+  Authenticated users enter: /chat
+  Auth redirect target: /chat
+
+
 ---
 
 ## Before Writing Code

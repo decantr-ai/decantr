@@ -12,7 +12,7 @@
   },
   "sync": {
     "status": "synced",
-    "lastSync": "2026-03-31T21:36:17.914Z",
+    "lastSync": "2026-04-01T01:17:46.243Z",
     "registrySource": "api",
     "cachedContent": {
       "archetypes": [],
@@ -22,7 +22,7 @@
     }
   },
   "initialized": {
-    "at": "2026-03-31T21:36:17.914Z",
+    "at": "2026-04-01T01:17:46.243Z",
     "via": "cli",
     "version": "1.0.0",
     "flags": "--blueprint=carbon-ai-portal --theme=carbon --mode=dark --guard=strict"
