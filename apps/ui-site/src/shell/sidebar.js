@@ -1,4 +1,5 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 import { createSignal, createEffect } from '@decantr/ui/state';
 import { navigate, useRoute } from '@decantr/ui/router';
 import { getCategories, searchStories } from '@decantr/ui-catalog';
@@ -15,7 +16,8 @@ export function Sidebar({ baseUrl = '/components' } = {}) {
   const route = useRoute();
 
   const container = h('aside', {
-    style: 'width: 240px; min-width: 240px; border-right: 1px solid rgba(255,255,255,0.1); background: var(--color-surface, #111); overflow-y: auto; display: flex; flex-direction: column; height: 100%',
+    class: css('flex', 'col'),
+    style: 'width: 240px; min-width: 240px; border-right: 1px solid rgba(255,255,255,0.1); background: var(--color-surface, #111); overflow-y: auto; height: 100%',
   });
 
   // Search box
@@ -28,7 +30,7 @@ export function Sidebar({ baseUrl = '/components' } = {}) {
   container.appendChild(searchBox);
 
   // Scrollable content
-  const content = h('div', { style: 'flex: 1; overflow-y: auto; padding-bottom: 16px' });
+  const content = h('div', { class: css('flex1'), style: 'overflow-y: auto; padding-bottom: 16px' });
   container.appendChild(content);
 
   createEffect(() => {

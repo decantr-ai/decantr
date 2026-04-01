@@ -1,4 +1,5 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 import { createEffect } from '@decantr/ui/state';
 
 /**
@@ -7,7 +8,7 @@ import { createEffect } from '@decantr/ui/state';
  */
 export function PropsPanel({ playground, currentProps, onChange }) {
   if (!playground || !playground.controls) {
-    return h('div', { style: 'padding: 12px; opacity: 0.5' }, 'No playground controls defined.');
+    return h('div', { class: css('_p-3'), style: 'opacity: 0.5' }, 'No playground controls defined.');
   }
 
   // Normalize controls — handle both array and object formats
@@ -18,16 +19,16 @@ export function PropsPanel({ playground, currentProps, onChange }) {
         name: ctrl.name || key,
       }));
 
+  const inputStyle =
+    'padding: 4px 6px; font-size: 12px; background: rgba(0,0,0,0.2); color: inherit; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; width: 100%';
+
   const controlEls = controls.map((ctrl) => {
     const key = ctrl.name || ctrl.key;
     const label = ctrl.label || key;
 
     const labelEl = h(
       'label',
-      {
-        style:
-          'display: flex; flex-direction: column; gap: 4px; font-size: 12px',
-      },
+      { class: css('_flex _col _gap-1 _text-xs') },
       h('span', { style: 'opacity: 0.7; text-transform: capitalize' }, label),
     );
 
@@ -36,10 +37,7 @@ export function PropsPanel({ playground, currentProps, onChange }) {
     if (ctrl.type === 'select') {
       input = h(
         'select',
-        {
-          style:
-            'padding: 4px 6px; font-size: 12px; background: rgba(0,0,0,0.2); color: inherit; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px',
-        },
+        { style: inputStyle },
         ...(ctrl.options || []).map((opt) =>
           h('option', { value: opt }, String(opt)),
         ),
@@ -65,8 +63,7 @@ export function PropsPanel({ playground, currentProps, onChange }) {
     } else if (ctrl.type === 'number') {
       input = h('input', {
         type: 'number',
-        style:
-          'padding: 4px 6px; font-size: 12px; background: rgba(0,0,0,0.2); color: inherit; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; width: 100%',
+        style: inputStyle,
       });
       createEffect(() => {
         const val = currentProps()[key];
@@ -92,8 +89,7 @@ export function PropsPanel({ playground, currentProps, onChange }) {
       // Default: text
       input = h('input', {
         type: 'text',
-        style:
-          'padding: 4px 6px; font-size: 12px; background: rgba(0,0,0,0.2); color: inherit; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; width: 100%',
+        style: inputStyle,
       });
       createEffect(() => {
         const val = currentProps()[key];
@@ -110,7 +106,7 @@ export function PropsPanel({ playground, currentProps, onChange }) {
 
   return h(
     'div',
-    { style: 'padding: 12px; display: flex; flex-direction: column; gap: 10px' },
+    { class: css('_p-3 _flex _col _gap-2') },
     h('h3', { style: 'margin: 0 0 4px; font-size: 14px' }, 'Props'),
     ...controlEls,
   );

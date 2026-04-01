@@ -1,10 +1,7 @@
 import { mount } from '@decantr/ui/runtime';
-import { setStyle, setMode, setShape } from '@decantr/ui/css';
+import { EssenceProvider } from '@decantr/ui/essence';
 import { App } from './app.js';
-
-setStyle('auradecantism');
-setMode('dark');
-setShape('rounded');
+import essence from '../essence.json' assert { type: 'json' };
 
 const root = document.getElementById('app');
-mount(root, App);
+mount(root, () => EssenceProvider({ essence }, App()));

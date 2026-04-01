@@ -1,11 +1,14 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 import { setStyle, setMode, setShape, getStyleList, setAnimations, getAnimations } from '@decantr/ui/css';
 
 export function Toolbar() {
   const styles = getStyleList();
 
+  const selectStyle = 'margin-left: 8px; padding: 2px 4px; font-size: 13px';
+
   const styleSelect = h('select', {
-    style: 'margin-left: 8px; padding: 2px 4px; font-size: 13px',
+    style: selectStyle,
     onchange: (e) => setStyle(e.target.value),
   });
   for (const s of styles) {
@@ -13,7 +16,7 @@ export function Toolbar() {
   }
 
   const modeSelect = h('select', {
-    style: 'margin-left: 8px; padding: 2px 4px; font-size: 13px',
+    style: selectStyle,
     onchange: (e) => setMode(e.target.value),
   });
   for (const [label, value] of [['Dark', 'dark'], ['Light', 'light'], ['Auto', 'auto']]) {
@@ -21,7 +24,7 @@ export function Toolbar() {
   }
 
   const shapeSelect = h('select', {
-    style: 'margin-left: 8px; padding: 2px 4px; font-size: 13px',
+    style: selectStyle,
     onchange: (e) => setShape(e.target.value || null),
   });
   for (const [label, value] of [['Default', ''], ['Sharp', 'sharp'], ['Rounded', 'rounded'], ['Pill', 'pill']]) {
@@ -35,13 +38,16 @@ export function Toolbar() {
     onchange: (e) => setAnimations(e.target.checked),
   });
 
+  const labelClass = css('_text-xs _flex _items-center');
+
   return h('div', {
-    style: 'height: 48px; padding: 0 16px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border, rgba(255,255,255,0.1)); background: var(--color-surface, #1a1a1a); gap: 12px',
+    class: css('_flex _items-center _border-b _border-subtle _bg-surface _gap-3 _px-4'),
+    style: 'height: 48px',
   },
     h('span', { style: 'font-weight: bold; margin-right: auto' }, '\u2B21 Workbench'),
-    h('label', { style: 'font-size: 12px; display: flex; align-items: center' }, 'Style', styleSelect),
-    h('label', { style: 'font-size: 12px; display: flex; align-items: center' }, 'Mode', modeSelect),
-    h('label', { style: 'font-size: 12px; display: flex; align-items: center' }, 'Shape', shapeSelect),
-    h('label', { style: 'font-size: 12px; display: flex; align-items: center; cursor: pointer' }, animCheckbox, ' Animations'),
+    h('label', { class: labelClass }, 'Style', styleSelect),
+    h('label', { class: labelClass }, 'Mode', modeSelect),
+    h('label', { class: labelClass }, 'Shape', shapeSelect),
+    h('label', { class: labelClass, style: 'cursor: pointer' }, animCheckbox, ' Animations'),
   );
 }

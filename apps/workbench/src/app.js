@@ -1,4 +1,5 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 import { createSignal, createEffect } from '@decantr/ui/state';
 import { getAllStories, getStory } from '@decantr/ui-catalog';
 import { Sidebar } from './shell/sidebar.js';
@@ -14,7 +15,7 @@ export function App() {
   const [searchQuery, setSearchQuery] = createSignal('');
   const [viewMode, setViewMode] = createSignal('isolation');
 
-  // Tab buttons for view switching
+  // Tab buttons for view switching — dynamic border/color stays inline
   const tabBtnStyle = (active) =>
     `padding: 6px 14px; font-size: 13px; cursor: pointer; border: none; border-bottom: 2px solid ${active ? 'var(--color-primary, #3b82f6)' : 'transparent'}; background: none; color: ${active ? 'inherit' : 'rgba(255,255,255,0.5)'}`;
 
@@ -35,14 +36,14 @@ export function App() {
 
   const tabBar = h(
     'div',
-    { style: 'display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 16px' },
+    { class: css('_flex _border-b _border-subtle _px-4') },
     isolationBtn,
     playgroundBtn,
     explorerBtn,
   );
 
   // Main content area that re-renders when selection or view mode changes
-  const mainContent = h('div', { style: 'flex: 1; overflow: auto' });
+  const mainContent = h('div', { class: css('_flex-1 _overflow-auto') });
 
   createEffect(() => {
     const slug = selectedSlug();
@@ -62,17 +63,17 @@ export function App() {
     }
   });
 
-  const mainPanel = h('div', { style: 'flex: 1; display: flex; flex-direction: column; overflow: hidden' },
+  const mainPanel = h('div', { class: css('_flex-1 _flex _col _overflow-hidden') },
     tabBar,
     mainContent,
   );
 
-  return h('div', { style: 'display: flex; flex-direction: column; height: 100%' },
+  return h('div', { class: css('_flex _col _h-screen') },
     Toolbar({ searchQuery, setSearchQuery }),
-    h('div', { style: 'display: flex; flex: 1; overflow: hidden' },
+    h('div', { class: css('_flex _flex-1 _overflow-hidden') },
       Sidebar({ onSelect: setSelectedSlug, selectedSlug, searchQuery, onSearch: setSearchQuery }),
       mainPanel,
-      h('aside', { style: 'width: 260px; border-left: 1px solid var(--color-border, rgba(255,255,255,0.1)); background: var(--color-surface, #1a1a1a); overflow: auto' },
+      h('aside', { class: css('_w-64 _border-l _border-subtle _bg-surface _overflow-auto') },
         CSSPanel()
       )
     )

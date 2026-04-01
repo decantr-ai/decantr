@@ -1,10 +1,11 @@
 import { h } from '@decantr/ui/runtime';
+import { css } from '@decantr/css';
 import { renderVariants, renderUsage } from '@decantr/ui-catalog/renderer';
 
 export function IsolationView({ story }) {
   const children = [
     // Header
-    h('div', { style: 'margin-bottom: 16px' },
+    h('div', { class: css('_mb-4') },
       h('h2', { style: 'margin: 0 0 4px' }, story.title),
       story.description ? h('p', { style: 'margin: 0 0 4px; opacity: 0.8' }, story.description) : null,
       h('span', { style: 'font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.5' }, story.category),
@@ -28,5 +29,5 @@ export function IsolationView({ story }) {
     );
   }
 
-  return h('div', { style: 'padding: 24px; display: flex; flex-direction: column; gap: 24px' }, ...children);
+  return h('div', { class: css('_p-6 _flex _col _gap-6') }, ...children);
 }
