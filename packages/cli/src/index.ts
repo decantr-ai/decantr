@@ -7,7 +7,7 @@ import { RegistryAPIClient } from '@decantr/registry';
 import type { ApiContentType, ComposeEntry } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
-import { scaffoldProject, scaffoldMinimal, composeArchetypes, composeSections, generateSectionContext, generateScaffoldContext, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type RecipeData, type LayoutItem, type ZoneInput, type TopologyData, type ComposeSectionsResult, type PatternSpecSummary, type BlueprintOverrides } from './scaffold.js';
+import { scaffoldProject, scaffoldMinimal, refreshDerivedFiles, composeArchetypes, composeSections, generateSectionContext, generateScaffoldContext, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type RecipeData, type LayoutItem, type ZoneInput, type TopologyData, type ComposeSectionsResult, type PatternSpecSummary, type BlueprintOverrides, type RefreshResult } from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
   createTheme,
@@ -778,10 +778,11 @@ async function cmdInit(args: InitArgs) {
   // Scaffold the project
   console.log(heading('Scaffolding project...'));
 
-  const result = scaffoldProject(
+  const result = await scaffoldProject(
     projectRoot,
     options,
     detected,
+    registryClient,
     archetypeData,
     registrySource as 'api' | 'cache',
     themeData,

@@ -6,6 +6,7 @@ import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPag
 import type { ComposeEntry, ArchetypeRole } from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
+import type { RegistryClient } from './registry.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -1461,11 +1462,16 @@ function updateGitignore(projectRoot: string): boolean {
 
 /**
  * Scaffold a new Decantr project.
+ *
+ * Builds the essence file, writes project metadata, then delegates
+ * derived file generation (DECANTR.md, section contexts, scaffold.md,
+ * CSS) to `refreshDerivedFiles`.
  */
-export function scaffoldProject(
+export async function scaffoldProject(
   projectRoot: string,
   options: InitOptions,
   detected: DetectedProject,
+  registry: RegistryClient,
   archetypeData?: ArchetypeData,
   registrySource: 'api' | 'cache' = 'cache',
   themeData?: ThemeData,
@@ -1475,7 +1481,7 @@ export function scaffoldProject(
   routeMap?: Record<string, { section: string; page: string }>,
   patternSpecs?: Record<string, PatternSpecSummary>,
   blueprintData?: Record<string, any>,
-): ScaffoldResult {
+): Promise<ScaffoldResult> {
   // Build v3 essence by default, but keep a v2-compatible view for template rendering
   const essenceV3 = buildEssenceV3(options, archetypeData, themeData, recipeData);
   // Build the v2 shape for backward-compatible template rendering
@@ -1493,17 +1499,11 @@ export function scaffoldProject(
   const essencePath = join(projectRoot, 'decantr.essence.json');
   writeFileSync(essencePath, JSON.stringify(essenceV3, null, 2) + '\n');
 
-  // Write DECANTR.md — use the simplified v3.1 template (methodology primer only,
-  // project-specific data lives in section context files)
-  const decantrMdPath = join(projectRoot, 'DECANTR.md');
-  const guardMode = essenceV3.meta.guard.mode;
-  writeFileSync(decantrMdPath, generateDecantrMdV31(guardMode, CSS_APPROACH_CONTENT));
-
   // Write project.json
   const projectJsonPath = join(decantrDir, 'project.json');
   writeFileSync(projectJsonPath, generateProjectJson(detected, options, registrySource));
 
-  // Write context files
+  // Write legacy task context files (v2-compatible)
   const contextFiles: string[] = [];
 
   const scaffoldPath = join(contextDir, 'task-scaffold.md');
@@ -1522,19 +1522,8 @@ export function scaffoldProject(
   writeFileSync(summaryPath, generateEssenceSummary(essence));
   contextFiles.push(summaryPath);
 
-  // Generate CSS files
-  const stylesDir = join(projectRoot, 'src', 'styles');
-  mkdirSync(stylesDir, { recursive: true });
-
-  const tokensPath = join(stylesDir, 'tokens.css');
-  writeFileSync(tokensPath, generateTokensCSS(themeData, essenceV3.dna.theme.mode));
-
-  const decoratorsPath = join(stylesDir, 'decorators.css');
-  writeFileSync(decoratorsPath, generateDecoratorsCSS(recipeData, essenceV3.dna.theme.style as string));
-
-  // V3.1 upgrade: if composedSections is provided, upgrade the essence and generate context files
+  // V3.1 upgrade: if composedSections is provided, upgrade the essence
   if (composedSections) {
-    // Upgrade essence to V3.1 with sections + routes
     essenceV3.version = '3.1.0' as any;
     essenceV3.blueprint = {
       sections: composedSections.sections,
@@ -1556,88 +1545,23 @@ export function scaffoldProject(
 
     // Re-write the essence file with V3.1 data
     writeFileSync(essencePath, JSON.stringify(essenceV3, null, 2) + '\n');
-
-    // Read generated tokens.css for inlining in section contexts
-    const themeTokensCss = existsSync(tokensPath) ? readFileSync(tokensPath, 'utf-8') : '';
-
-    // Build decorator list from recipe data
-    const decoratorList: Array<{ name: string; description: string }> = [];
-    if (recipeData?.decorators) {
-      for (const [name, desc] of Object.entries(recipeData.decorators)) {
-        decoratorList.push({ name, description: desc as string });
-      }
-    }
-
-    // Generate section context files
-    for (const section of composedSections.sections) {
-      // Build zone context for this section from topology
-      const zoneLabel = section.role === 'primary' || section.role === 'auxiliary' ? 'App' : section.role.charAt(0).toUpperCase() + section.role.slice(1);
-      const zoneContext = `This section is in the **${zoneLabel}** zone (${section.shell} shell).` + (topologyMarkdown ? '\n\n' + topologyMarkdown : '');
-
-      // Collect pattern specs for this section's pages
-      const sectionPatterns: Record<string, PatternSpecSummary> = {};
-      if (patternSpecs) {
-        for (const page of section.pages) {
-          for (const item of page.layout) {
-            const pid = typeof item === 'string' ? item : '';
-            if (pid && patternSpecs[pid]) {
-              sectionPatterns[pid] = patternSpecs[pid];
-            }
-          }
-        }
-      }
-
-      const contextContent = generateSectionContext({
-        section,
-        themeTokens: themeTokensCss,
-        decorators: decoratorList,
-        guardConfig: {
-          mode: options.guard || 'strict',
-          dna_enforcement: 'error',
-          blueprint_enforcement: 'warn',
-        },
-        personality: options.personality || [],
-        themeName: options.theme,
-        recipeName: options.theme,
-        zoneContext,
-        patternSpecs: sectionPatterns,
-        constraints: blueprintData?.design_constraints,
-      });
-
-      const sectionContextPath = join(contextDir, `section-${section.id}.md`);
-      writeFileSync(sectionContextPath, contextContent);
-      contextFiles.push(sectionContextPath);
-    }
-
-    // Generate scaffold.md
-    const scaffoldContent = generateScaffoldContext({
-      appName: options.blueprint || options.archetype || 'Application',
-      blueprintId: options.blueprint || '',
-      themeName: options.theme,
-      recipeName: options.theme,
-      personality: options.personality || [],
-      topologyMarkdown: topologyMarkdown || '',
-      sections: composedSections.sections,
-      routes: routeMap || {},
-      constraints: blueprintData?.design_constraints,
-      seo: blueprintData?.seo_hints,
-      navigation: blueprintData?.navigation,
-    });
-
-    const scaffoldMdPath = join(contextDir, 'scaffold.md');
-    writeFileSync(scaffoldMdPath, scaffoldContent);
-    contextFiles.push(scaffoldMdPath);
   }
+
+  // Delegate derived file generation to refreshDerivedFiles
+  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry);
+
+  // Merge context files from refresh into our list
+  contextFiles.push(...refreshResult.contextFiles);
 
   // Update .gitignore
   const gitignoreUpdated = updateGitignore(projectRoot);
 
   return {
     essencePath,
-    decantrMdPath,
+    decantrMdPath: refreshResult.decantrMdPath,
     projectJsonPath,
     contextFiles,
-    cssFiles: [tokensPath, decoratorsPath],
+    cssFiles: refreshResult.cssFiles,
     gitignoreUpdated,
   };
 }
@@ -1847,6 +1771,300 @@ When available, use these tools:
     contextFiles: [],
     cssFiles: [],
     gitignoreUpdated,
+  };
+}
+
+// ── Refresh Derived Files ──
+
+export interface RefreshResult {
+  decantrMdPath: string;
+  contextFiles: string[];
+  cssFiles: string[];
+}
+
+/**
+ * Regenerate all derived files from an existing essence + registry.
+ *
+ * This is the standalone function that `decantr refresh` will call.
+ * It reads everything it needs from the essence JSON (theme name from
+ * dna.theme.style, recipe from dna.theme.recipe, sections from
+ * blueprint.sections, etc.) and fetches theme/recipe/pattern data
+ * from the RegistryClient.
+ *
+ * Works with both V3.0 (flat pages, no sections) and V3.1 (sectioned).
+ */
+export async function refreshDerivedFiles(
+  projectRoot: string,
+  essence: EssenceV3,
+  registry: RegistryClient,
+): Promise<RefreshResult> {
+  const decantrDir = join(projectRoot, '.decantr');
+  const contextDir = join(decantrDir, 'context');
+  mkdirSync(contextDir, { recursive: true });
+
+  // ── Extract info from essence ──
+  const themeName = essence.dna.theme.style as string;
+  const recipeName = (essence.dna.theme.recipe ?? themeName) as string;
+  const mode = essence.dna.theme.mode as string;
+  const guardMode = essence.meta.guard.mode;
+  const guardConfig = {
+    mode: guardMode,
+    dna_enforcement: essence.meta.guard.dna_enforcement || 'error',
+    blueprint_enforcement: essence.meta.guard.blueprint_enforcement || 'warn',
+  };
+  const personality = essence.dna.personality || [];
+
+  // ── Fetch theme & recipe from registry ──
+  let themeData: ThemeData | undefined;
+  let recipeData: RecipeData | undefined;
+
+  try {
+    const themeResult = await registry.fetchTheme(themeName);
+    if (themeResult?.data) {
+      const t = themeResult.data as Record<string, unknown>;
+      themeData = {
+        seed: t.seed as ThemeData['seed'],
+        palette: t.palette as ThemeData['palette'],
+        cvd_support: t.cvd_support as ThemeData['cvd_support'],
+        tokens: t.tokens as ThemeData['tokens'],
+        typography_hints: t.typography_hints as ThemeData['typography_hints'],
+        motion_hints: t.motion_hints as ThemeData['motion_hints'],
+      };
+    }
+  } catch { /* continue without theme data */ }
+
+  try {
+    const recipeResult = await registry.fetchRecipe(recipeName);
+    if (recipeResult?.data) {
+      const r = recipeResult.data as Record<string, unknown>;
+      recipeData = {
+        decorators: r.decorators as RecipeData['decorators'],
+        spatial_hints: r.spatial_hints as RecipeData['spatial_hints'],
+        radius_hints: r.radius_hints as RecipeData['radius_hints'],
+      };
+    }
+  } catch { /* continue without recipe data */ }
+
+  // ── Generate CSS files ──
+  const stylesDir = join(projectRoot, 'src', 'styles');
+  mkdirSync(stylesDir, { recursive: true });
+
+  const tokensPath = join(stylesDir, 'tokens.css');
+  writeFileSync(tokensPath, generateTokensCSS(themeData, mode));
+
+  const decoratorsPath = join(stylesDir, 'decorators.css');
+  writeFileSync(decoratorsPath, generateDecoratorsCSS(recipeData, themeName));
+
+  const cssFiles = [tokensPath, decoratorsPath];
+
+  // ── Generate DECANTR.md ──
+  const decantrMdPath = join(projectRoot, 'DECANTR.md');
+  writeFileSync(decantrMdPath, generateDecantrMdV31(guardMode, CSS_APPROACH_CONTENT));
+
+  // ── Determine sections (V3.1 sectioned or V3.0 flat) ──
+  const contextFiles: string[] = [];
+  const blueprint = essence.blueprint;
+
+  // V3.1: has sections array
+  const sections: EssenceV31Section[] = blueprint.sections && blueprint.sections.length > 0
+    ? blueprint.sections
+    : [];
+
+  if (sections.length > 0) {
+    // ── Fetch pattern specs for all patterns in all sections ──
+    const patternSpecs: Record<string, PatternSpecSummary> = {};
+    const seenPatterns = new Set<string>();
+
+    for (const section of sections) {
+      for (const page of section.pages) {
+        for (const item of page.layout) {
+          const names = extractPatternNames(item);
+          for (const name of names) {
+            if (!seenPatterns.has(name)) {
+              seenPatterns.add(name);
+              try {
+                const patResult = await registry.fetchPattern(name);
+                if (patResult?.data) {
+                  const p = patResult.data as Record<string, unknown>;
+                  patternSpecs[name] = {
+                    description: (p.description as string) || '',
+                    components: (p.components as string[]) || [],
+                    slots: (p.slots as Record<string, string>) || {},
+                    code: (p.code as string) || '',
+                  };
+                }
+              } catch { /* skip unavailable patterns */ }
+            }
+          }
+        }
+      }
+    }
+
+    // ── Derive topology ──
+    const zoneInputs: ZoneInput[] = sections.map(s => ({
+      archetypeId: s.id,
+      role: s.role,
+      shell: s.shell as string,
+      features: s.features,
+      description: s.description,
+    }));
+
+    const zones = deriveZones(zoneInputs);
+    const transitions = deriveTransitions(zones);
+
+    const hasPublic = zones.some(z => z.role === 'public');
+    const hasPrimary = zones.some(z => z.role === 'primary');
+
+    const topologyData: TopologyData = {
+      intent: sections.map(s => s.id).join(' + '),
+      zones,
+      transitions,
+      entryPoints: {
+        anonymous: hasPublic ? 'public zone' : 'gateway',
+        authenticated: hasPrimary ? 'primary zone' : 'first section',
+      },
+    };
+
+    const topologyMarkdown = generateTopologySection(topologyData, personality);
+
+    // ── Read generated tokens.css for inlining in section contexts ──
+    const themeTokensCss = existsSync(tokensPath) ? readFileSync(tokensPath, 'utf-8') : '';
+
+    // ── Build decorator list from recipe data ──
+    const decoratorList: Array<{ name: string; description: string }> = [];
+    if (recipeData?.decorators) {
+      for (const [name, desc] of Object.entries(recipeData.decorators)) {
+        decoratorList.push({ name, description: desc as string });
+      }
+    }
+
+    // ── Generate section context files ──
+    for (const section of sections) {
+      const zoneLabel = section.role === 'primary' || section.role === 'auxiliary'
+        ? 'App' : section.role.charAt(0).toUpperCase() + section.role.slice(1);
+      const zoneContext = `This section is in the **${zoneLabel}** zone (${section.shell} shell).`
+        + (topologyMarkdown ? '\n\n' + topologyMarkdown : '');
+
+      // Collect pattern specs for this section
+      const sectionPatterns: Record<string, PatternSpecSummary> = {};
+      for (const page of section.pages) {
+        for (const item of page.layout) {
+          const pid = typeof item === 'string' ? item : '';
+          if (pid && patternSpecs[pid]) {
+            sectionPatterns[pid] = patternSpecs[pid];
+          }
+        }
+      }
+
+      const contextContent = generateSectionContext({
+        section,
+        themeTokens: themeTokensCss,
+        decorators: decoratorList,
+        guardConfig,
+        personality,
+        themeName,
+        recipeName,
+        zoneContext,
+        patternSpecs: sectionPatterns,
+        constraints: essence.dna.constraints as Record<string, string> | undefined,
+      });
+
+      const sectionContextPath = join(contextDir, `section-${section.id}.md`);
+      writeFileSync(sectionContextPath, contextContent);
+      contextFiles.push(sectionContextPath);
+    }
+
+    // ── Generate scaffold.md ──
+    const routes = blueprint.routes || {};
+    const scaffoldContent = generateScaffoldContext({
+      appName: essence.meta.archetype || 'Application',
+      blueprintId: '',
+      themeName,
+      recipeName,
+      personality,
+      topologyMarkdown,
+      sections,
+      routes,
+      constraints: essence.dna.constraints as Record<string, string> | undefined,
+      seo: essence.meta.seo as { schema_org?: string[]; meta_priorities?: string[] } | undefined,
+      navigation: essence.meta.navigation as { hotkeys?: unknown[]; command_palette?: boolean } | undefined,
+    });
+
+    const scaffoldMdPath = join(contextDir, 'scaffold.md');
+    writeFileSync(scaffoldMdPath, scaffoldContent);
+    contextFiles.push(scaffoldMdPath);
+
+  } else {
+    // ── V3.0 flat pages: generate a single section context ──
+    const pages = blueprint.pages || [{ id: 'home', layout: ['hero'] }];
+    const shell = (blueprint.shell ?? 'sidebar-main') as string;
+
+    // Build a synthetic section from the flat pages
+    const syntheticSection: EssenceV31Section = {
+      id: essence.meta.archetype || 'default',
+      role: 'primary',
+      shell,
+      features: blueprint.features || [],
+      description: `${essence.meta.archetype || 'Application'} section`,
+      pages,
+    };
+
+    // Fetch pattern specs
+    const patternSpecs: Record<string, PatternSpecSummary> = {};
+    const seenPatterns = new Set<string>();
+    for (const page of pages) {
+      for (const item of page.layout) {
+        const names = extractPatternNames(item);
+        for (const name of names) {
+          if (!seenPatterns.has(name)) {
+            seenPatterns.add(name);
+            try {
+              const patResult = await registry.fetchPattern(name);
+              if (patResult?.data) {
+                const p = patResult.data as Record<string, unknown>;
+                patternSpecs[name] = {
+                  description: (p.description as string) || '',
+                  components: (p.components as string[]) || [],
+                  slots: (p.slots as Record<string, string>) || {},
+                  code: (p.code as string) || '',
+                };
+              }
+            } catch { /* skip unavailable patterns */ }
+          }
+        }
+      }
+    }
+
+    const themeTokensCss = existsSync(tokensPath) ? readFileSync(tokensPath, 'utf-8') : '';
+    const decoratorList: Array<{ name: string; description: string }> = [];
+    if (recipeData?.decorators) {
+      for (const [name, desc] of Object.entries(recipeData.decorators)) {
+        decoratorList.push({ name, description: desc as string });
+      }
+    }
+
+    const contextContent = generateSectionContext({
+      section: syntheticSection,
+      themeTokens: themeTokensCss,
+      decorators: decoratorList,
+      guardConfig,
+      personality,
+      themeName,
+      recipeName,
+      zoneContext: `This is the primary section (${shell} shell).`,
+      patternSpecs,
+      constraints: essence.dna.constraints as Record<string, string> | undefined,
+    });
+
+    const sectionContextPath = join(contextDir, `section-${syntheticSection.id}.md`);
+    writeFileSync(sectionContextPath, contextContent);
+    contextFiles.push(sectionContextPath);
+  }
+
+  return {
+    decantrMdPath,
+    contextFiles,
+    cssFiles,
   };
 }
 

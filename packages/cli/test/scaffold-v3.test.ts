@@ -5,6 +5,16 @@ import { scaffoldProject, scaffoldMinimal, buildEssenceV3 } from '../src/scaffol
 import type { ThemeData, RecipeData } from '../src/scaffold.js';
 import type { InitOptions } from '../src/prompts.js';
 import type { DetectedProject } from '../src/detect.js';
+import type { RegistryClient } from '../src/registry.js';
+
+/** Minimal mock RegistryClient that returns null for all fetches. */
+function createMockRegistry(): RegistryClient {
+  return {
+    fetchTheme: async () => null,
+    fetchRecipe: async () => null,
+    fetchPattern: async () => null,
+  } as unknown as RegistryClient;
+}
 
 describe('v3 scaffold', () => {
   const testDir = join(process.cwd(), 'test-scaffold-v3-project');
@@ -69,8 +79,8 @@ describe('v3 scaffold', () => {
     expect(v3.meta.guard.dna_enforcement).toBe('error');
   });
 
-  it('scaffoldProject generates v3 essence file', () => {
-    const result = scaffoldProject(testDir, defaultOptions, detected);
+  it('scaffoldProject generates v3 essence file', async () => {
+    const result = await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
 
     expect(existsSync(result.essencePath)).toBe(true);
 
@@ -96,7 +106,7 @@ describe('v3 scaffold', () => {
     expect(essence.meta.guard.mode).toBe('guided');
   });
 
-  it('scaffoldMinimal and scaffoldProject both produce v3', () => {
+  it('scaffoldMinimal and scaffoldProject both produce v3', async () => {
     // Test that both paths produce consistent v3 output
     const minimalResult = scaffoldMinimal(testDir);
     const minimalEssence = JSON.parse(readFileSync(minimalResult.essencePath, 'utf-8'));
@@ -105,7 +115,7 @@ describe('v3 scaffold', () => {
     rmSync(testDir, { recursive: true, force: true });
     mkdirSync(join(testDir, 'src'), { recursive: true });
 
-    const fullResult = scaffoldProject(testDir, defaultOptions, detected);
+    const fullResult = await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
     const fullEssence = JSON.parse(readFileSync(fullResult.essencePath, 'utf-8'));
 
     // Both should be v3
