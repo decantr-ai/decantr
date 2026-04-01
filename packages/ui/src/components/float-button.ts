@@ -9,6 +9,18 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createOverlay } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface FloatButtonProps {
+  icon?: string | Node;
+  tooltip?: string;
+  shape?: 'circle'|'square';
+  type?: 'default'|'primary';
+  onClick?: (...args: unknown[]) => unknown;
+  position?: 'right-bottom'|'right-top'|'left-bottom'|'left-top';
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, span, button: buttonTag } = tags;
 
 /**
@@ -22,7 +34,7 @@ const { div, span, button: buttonTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function FloatButton(props = {}) {
+export const FloatButton = component<FloatButtonProps>((props: FloatButtonProps = {} as FloatButtonProps) => {
   injectBase();
   const { icon = '+', tooltip, shape = 'circle', type = 'default', onClick, position = 'right-bottom', class: cls } = props;
 
@@ -43,7 +55,7 @@ export function FloatButton(props = {}) {
   const wrap = div({ class: cx('d-float-btn-wrap', `d-float-btn-${position}`) }, btn);
 
   return wrap;
-}
+})
 
 /**
  * FloatButton.Group — Expandable group of float buttons.
@@ -56,7 +68,13 @@ export function FloatButton(props = {}) {
  * @param {...Node} children - FloatButton elements
  * @returns {HTMLElement}
  */
-FloatButton.Group = function FloatButtonGroup(props = {}, ...children) {
+
+export interface FloatButtonGroupProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+FloatButton.Group = function FloatButtonGroup(props: FloatButtonGroupProps = {} as FloatButtonGroupProps, ...children: (string | Node)[]) {
   injectBase();
   const { icon = '+', shape = 'circle', direction = 'top', position = 'right-bottom', class: cls } = props;
 

@@ -7,6 +7,14 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface KbdProps {
+  keys?: string|string[];
+  separator?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string|string[]} [props.keys] - Key(s) to display. Array = combination (e.g. ['Ctrl', 'S'])
@@ -15,7 +23,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...(string|Node)} children - Alternative: pass key text as children
  * @returns {HTMLElement}
  */
-export function Kbd(props = {}, ...children) {
+export const Kbd = component<KbdProps>((props: KbdProps = {} as KbdProps, ...children: (string | Node)[]) => {
   injectBase();
   const { keys, separator = '+', class: cls, ...rest } = props;
 
@@ -33,4 +41,4 @@ export function Kbd(props = {}, ...children) {
   }
 
   return h('kbd', { class: cx('d-kbd', cls), ...rest }, ...children);
-}
+})

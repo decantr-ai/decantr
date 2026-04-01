@@ -7,6 +7,22 @@ import { createEffect } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface SwitchProps {
+  checked?: boolean | (() => boolean);
+  disabled?: boolean | (() => boolean);
+  label?: string;
+  error?: boolean | string | (() => boolean | string);
+  size?: string;
+  name?: string;
+  required?: boolean;
+  onchange?: (value: unknown) => void;
+  ref?: (el: HTMLElement) => void;
+  'aria-label'?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { label: labelTag, input: inputTag, span } = tags;
 
 /**
@@ -24,7 +40,7 @@ const { label: labelTag, input: inputTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Switch(props = {}) {
+export const Switch = component<SwitchProps>((props: SwitchProps = {} as SwitchProps) => {
   injectBase();
 
   const {
@@ -92,4 +108,4 @@ export function Switch(props = {}) {
   }
 
   return wrapper;
-}
+})

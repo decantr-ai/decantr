@@ -7,6 +7,18 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface BannerProps {
+  variant?: 'info'|'success'|'warning'|'error';
+  dismissible?: boolean;
+  onDismiss?: () => void;
+  sticky?: 'top'|'bottom'|false;
+  icon?: string | Node;
+  action?: string | Node;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {'info'|'success'|'warning'|'error'} [props.variant='info']
@@ -19,7 +31,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Banner(props = {}, ...children) {
+export const Banner = component<BannerProps>((props: BannerProps = {} as BannerProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { variant = 'info', dismissible = false, onDismiss, sticky = false, icon, action, class: cls } = props;
@@ -65,4 +77,4 @@ export function Banner(props = {}, ...children) {
   }
 
   return el;
-}
+})

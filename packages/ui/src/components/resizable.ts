@@ -8,6 +8,17 @@ import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { createDrag } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface ResizableProps {
+  direction?: 'horizontal'|'vertical';
+  defaultSize?: number;
+  minSize?: number;
+  maxSize?: number;
+  onResize?: (...args: unknown[]) => unknown;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {'horizontal'|'vertical'} [props.direction='horizontal']
@@ -19,7 +30,7 @@ import { createDrag } from './_behaviors.js';
  * @param {...Node} children - Exactly 2 children (panels)
  * @returns {HTMLElement}
  */
-export function Resizable(props = {}, ...children) {
+export const Resizable = component<ResizableProps>((props: ResizableProps = {} as ResizableProps, ...children: (string | Node)[]) => {
   injectBase();
   const { direction = 'horizontal', defaultSize = 50, minSize = 10, maxSize = 90, onResize, class: cls, ...rest } = props;
 
@@ -80,4 +91,4 @@ export function Resizable(props = {}, ...children) {
 
   applySize();
   return container;
-}
+})

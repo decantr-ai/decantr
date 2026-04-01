@@ -7,6 +7,14 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface AvatarGroupProps {
+  max?: number;
+  size?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {number} [props.max=5] - Max visible avatars
@@ -15,7 +23,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...Node} children - Avatar components
  * @returns {HTMLElement}
  */
-export function AvatarGroup(props = {}, ...children) {
+export const AvatarGroup = component<AvatarGroupProps>((props: AvatarGroupProps = {} as AvatarGroupProps, ...children: (string | Node)[]) => {
   injectBase();
   const { max = 5, size, class: cls } = props;
 
@@ -52,4 +60,4 @@ export function AvatarGroup(props = {}, ...children) {
   }
 
   return group;
-}
+})

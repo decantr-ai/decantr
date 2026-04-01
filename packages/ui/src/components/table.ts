@@ -1,6 +1,17 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface TableProps {
+  data?: Object[];
+  striped?: boolean;
+  hoverable?: boolean;
+  compact?: boolean;
+  class?: string;
+  columns?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {{ key: string, label: string, width?: string, render?: Function }[]} props.columns
@@ -11,7 +22,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Table(props = {}) {
+export const Table = component<TableProps>((props: TableProps = {} as TableProps) => {
   injectBase();
 
   const { columns = [], data = [], striped, hoverable, compact, class: cls } = props;
@@ -41,4 +52,4 @@ export function Table(props = {}) {
   return h('div', { class: 'd-table-wrap' },
     h('table', { class: tableClass }, thead, tbody)
   );
-}
+})

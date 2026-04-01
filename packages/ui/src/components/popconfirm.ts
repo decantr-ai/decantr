@@ -9,6 +9,21 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createOverlay } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface PopconfirmProps {
+  title?: string;
+  description?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  confirmText?: string;
+  cancelText?: string;
+  icon?: Node;
+  position?: 'top'|'bottom'|'left'|'right';
+  trigger?: (...args: unknown[]) => unknown;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, span, button: buttonTag } = tags;
 
 /**
@@ -25,7 +40,7 @@ const { div, span, button: buttonTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Popconfirm(props = {}) {
+export const Popconfirm = component<PopconfirmProps>((props: PopconfirmProps = {} as PopconfirmProps) => {
   injectBase();
   const {
     title = 'Are you sure?', description, onConfirm, onCancel,
@@ -67,4 +82,4 @@ export function Popconfirm(props = {}) {
   });
 
   return wrap;
-}
+})

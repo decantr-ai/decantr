@@ -1,6 +1,14 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface SeparatorProps {
+  vertical?: boolean;
+  label?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {boolean} [props.vertical]
@@ -8,7 +16,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Separator(props = {}) {
+export const Separator = component<SeparatorProps>((props: SeparatorProps = {} as SeparatorProps) => {
   injectBase();
 
   const { vertical, label, class: cls } = props;
@@ -28,4 +36,4 @@ export function Separator(props = {}) {
     class: cx('d-separator', vertical && 'd-separator-vertical', cls),
     role: 'separator'
   });
-}
+})

@@ -12,6 +12,25 @@ import { createFormField } from './_behaviors.js';
 import { icon as iconHelper } from './icon.js';
 import { applyFieldState, createFieldOverlay, renderCalendar } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface DateRangePickerProps {
+  value?: Array<Date>|Function;
+  placeholder?: string;
+  min?: Date;
+  max?: Date;
+  onchange?: (value: unknown) => void;
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag, span } = tags;
 
 /**
@@ -32,7 +51,7 @@ const { div, button: buttonTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function DateRangePicker(props = {}) {
+export const DateRangePicker = component<DateRangePickerProps>((props: DateRangePickerProps = {} as DateRangePickerProps) => {
   injectBase();
   const {
     value, placeholder = 'Select range', min, max, onchange,
@@ -241,4 +260,4 @@ export function DateRangePicker(props = {}) {
   }
 
   return wrap;
-}
+})

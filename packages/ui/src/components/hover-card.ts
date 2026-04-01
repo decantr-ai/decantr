@@ -9,6 +9,16 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createOverlay } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface HoverCardProps {
+  trigger?: (...args: unknown[]) => unknown;
+  position?: 'top'|'bottom'|'left'|'right';
+  openDelay?: number;
+  closeDelay?: number;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, span } = tags;
 
 /**
@@ -21,7 +31,7 @@ const { div, span } = tags;
  * @param {...Node} children - Card content
  * @returns {HTMLElement}
  */
-export function HoverCard(props = {}, ...children) {
+export const HoverCard = component<HoverCardProps>((props: HoverCardProps = {} as HoverCardProps, ...children: (string | Node)[]) => {
   injectBase();
   const { trigger, position = 'bottom', openDelay = 300, closeDelay = 200, class: cls, ...rest } = props;
 
@@ -46,4 +56,4 @@ export function HoverCard(props = {}, ...children) {
   });
 
   return wrap;
-}
+})

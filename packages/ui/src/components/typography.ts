@@ -7,6 +7,54 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface TitleProps {
+  level?: 1|2|3|4|5;
+  type?: string;
+  mark?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  disabled?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+export interface TextProps {
+  type?: string;
+  strong?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  code?: boolean;
+  keyboard?: boolean;
+  mark?: boolean;
+  disabled?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+export interface ParagraphProps {
+  type?: string;
+  strong?: boolean;
+  italic?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+export interface LinkProps {
+  href?: string;
+  target?: string;
+  type?: string;
+  disabled?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+export interface BlockquoteProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * Title — Heading element (h1-h5) with consistent styling.
  * @param {Object} [props]
@@ -20,7 +68,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Title(props = {}, ...children) {
+export const Title = component<TitleProps>((props: TitleProps = {} as TitleProps, ...children: (string | Node)[]) => {
   injectBase();
   const { level = 3, type, mark, underline, strikethrough, disabled, class: cls, ...rest } = props;
   const tag = `h${Math.max(1, Math.min(5, level))}`;
@@ -36,7 +84,7 @@ export function Title(props = {}, ...children) {
   if (underline) content = [h('u', null, ...content)];
   if (strikethrough) content = [h('s', null, ...content)];
   return h(tag, { class: className, ...rest }, ...content);
-}
+})
 
 /**
  * Text — Inline text with semantic variants.
@@ -54,7 +102,7 @@ export function Title(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Text(props = {}, ...children) {
+export const Text = component<TextProps>((props: TextProps = {} as TextProps, ...children: (string | Node)[]) => {
   injectBase();
   const { type, strong, italic, underline, strikethrough, code, keyboard, mark, disabled, class: cls, ...rest } = props;
 
@@ -76,7 +124,7 @@ export function Text(props = {}, ...children) {
   if (mark) content = [h('mark', { class: 'd-text-mark' }, ...content)];
 
   return h('span', { class: className, ...rest }, ...content);
-}
+})
 
 /**
  * Paragraph — Block-level text with relaxed line-height.
@@ -88,7 +136,7 @@ export function Text(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Paragraph(props = {}, ...children) {
+export const Paragraph = component<ParagraphProps>((props: ParagraphProps = {} as ParagraphProps, ...children: (string | Node)[]) => {
   injectBase();
   const { type, strong, italic, class: cls, ...rest } = props;
   const className = cx(
@@ -99,7 +147,7 @@ export function Paragraph(props = {}, ...children) {
     cls
   );
   return h('p', { class: className, ...rest }, ...children);
-}
+})
 
 /**
  * Link — Anchor element with consistent styling.
@@ -112,7 +160,7 @@ export function Paragraph(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Link(props = {}, ...children) {
+export const Link = component<LinkProps>((props: LinkProps = {} as LinkProps, ...children: (string | Node)[]) => {
   injectBase();
   const { href, target, type, disabled, class: cls, ...rest } = props;
   const className = cx('d-link', type && `d-text-${type}`, disabled && 'd-text-disabled', cls);
@@ -120,7 +168,7 @@ export function Link(props = {}, ...children) {
   if (target === '_blank') el.setAttribute('rel', 'noopener noreferrer');
   if (disabled) { el.setAttribute('aria-disabled', 'true'); el.setAttribute('tabindex', '-1'); }
   return el;
-}
+})
 
 /**
  * Blockquote — Styled quotation block.
@@ -129,8 +177,8 @@ export function Link(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Blockquote(props = {}, ...children) {
+export const Blockquote = component<BlockquoteProps>((props: BlockquoteProps = {} as BlockquoteProps, ...children: (string | Node)[]) => {
   injectBase();
   const { class: cls, ...rest } = props;
   return h('blockquote', { class: cx('d-blockquote', cls), ...rest }, ...children);
-}
+})

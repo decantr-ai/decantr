@@ -2,6 +2,17 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface SpinnerProps {
+  variant?: 'ring'|'dots'|'pulse'|'bars'|'orbit';
+  size?: string;
+  color?: 'primary'|'success'|'warning'|'destructive'|'info'|'muted';
+  icon?: string;
+  label?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const SIZE_CLS = { xs: 'd-spinner-xs', sm: 'd-spinner-sm', lg: 'd-spinner-lg', xl: 'd-spinner-xl' };
 const COLOR_CLS = { primary: 'd-spinner-primary', success: 'd-spinner-success', warning: 'd-spinner-warning', destructive: 'd-spinner-destructive', info: 'd-spinner-info', muted: 'd-spinner-muted' };
 const NS = 'http://www.w3.org/2000/svg';
@@ -74,7 +85,7 @@ function createOrbit() {
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Spinner(props = {}) {
+export const Spinner = component<SpinnerProps>((props: SpinnerProps = {} as SpinnerProps) => {
   injectBase();
 
   const { variant = 'ring', size, color, icon: iconName, label = 'Loading', class: cls, ...rest } = props;
@@ -109,4 +120,4 @@ export function Spinner(props = {}) {
   wrap.appendChild(srText);
 
   return wrap;
-}
+})

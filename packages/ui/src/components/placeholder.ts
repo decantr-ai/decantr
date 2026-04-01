@@ -6,6 +6,19 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface PlaceholderProps {
+  variant?: 'image'|'avatar'|'icon';
+  aspectRatio?: string;
+  width?: string;
+  height?: string;
+  label?: string;
+  icon?: Node;
+  animate?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const NS = 'http://www.w3.org/2000/svg';
 
 // Logo paths from logo.svg (decantr potion bottle — 27 paths)
@@ -77,7 +90,7 @@ function createWatermark() {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-export function Placeholder(props = {}, ...children) {
+export const Placeholder = component<PlaceholderProps>((props: PlaceholderProps = {} as PlaceholderProps, ...children: (string | Node)[]) => {
   injectBase();
   const {
     variant = 'image',
@@ -129,4 +142,4 @@ export function Placeholder(props = {}, ...children) {
   }
 
   return container;
-}
+})

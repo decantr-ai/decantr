@@ -8,6 +8,19 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+export interface notificationProps {
+  title?: string;
+  description?: string;
+  type?: 'info'|'success'|'warning'|'error';
+  duration?: number;
+  placement?: 'top-right'|'top-left'|'bottom-right'|'bottom-left';
+  icon?: Node;
+  action?: Node;
+  onClose?: () => void;
+  class?: string;
+  [key: string]: unknown;
+}
+
 let _containers = {};
 
 function getContainer(placement) {
@@ -32,7 +45,7 @@ function getContainer(placement) {
  * @param {string} [props.class]
  * @returns {{ close: Function }}
  */
-export function notification(props = {}) {
+export function notification(props: notificationProps = {} as notificationProps) {
   injectBase();
   const { title, description, type = 'info', duration = 4500, placement = 'top-right', icon, action, onClose, class: cls } = props;
 

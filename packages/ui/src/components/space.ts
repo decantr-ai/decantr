@@ -7,6 +7,16 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface SpaceProps {
+  direction?: 'horizontal'|'vertical';
+  align?: 'start'|'center'|'end'|'between'|'around'|'evenly';
+  gap?: number|string;
+  wrap?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {'horizontal'|'vertical'} [props.direction='horizontal']
@@ -17,7 +27,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-export function Space(props = {}, ...children) {
+export const Space = component<SpaceProps>((props: SpaceProps = {} as SpaceProps, ...children: (string | Node)[]) => {
   injectBase();
   const { direction = 'horizontal', align, gap, wrap, class: cls, ...rest } = props;
 
@@ -39,4 +49,4 @@ export function Space(props = {}, ...children) {
   }
 
   return h('div', { class: className, style: Object.keys(style).length ? style : undefined, ...rest }, ...children);
-}
+})

@@ -16,6 +16,20 @@ import { Segmented } from './segmented.js';
 import { InputNumber } from './input-number.js';
 import { ColorPicker } from './color-picker.js';
 
+import { component } from '../runtime/component.js';
+export interface ColorPaletteProps {
+  colors?: string[]|Function;
+  harmony?: string | (() => string);
+  count?: number | (() => number);
+  locked?: number[]|Function;
+  shades?: boolean | (() => boolean);
+  onchange?: (value: unknown) => void;
+  size?: string;
+  class?: string;
+  'aria-label'?: string;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag, span } = tags;
 
 const HARMONY_TYPES = [
@@ -62,7 +76,7 @@ function contrastBadge(hex) {
  * @param {string} [props['aria-label']]
  * @returns {HTMLElement}
  */
-export function ColorPalette(props = {}) {
+export const ColorPalette = component<ColorPaletteProps>((props: ColorPaletteProps = {} as ColorPaletteProps) => {
   injectBase();
   const {
     colors: initColors,
@@ -435,4 +449,4 @@ export function ColorPalette(props = {}) {
   });
 
   return root;
-}
+})

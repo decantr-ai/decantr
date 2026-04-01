@@ -6,6 +6,20 @@
 import { h, onDestroy } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface ImageProps {
+  src?: string;
+  alt?: string;
+  width?: string;
+  height?: string;
+  fit?: 'cover'|'contain'|'fill'|'none';
+  preview?: boolean;
+  fallback?: string;
+  placeholder?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.src] - Image URL
@@ -19,7 +33,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Image(props = {}) {
+export const Image = component<ImageProps>((props: ImageProps = {} as ImageProps) => {
   injectBase();
   const { src, alt = '', width, height, fit = 'cover', preview = false, fallback = 'Image not available', placeholder, class: cls, ...rest } = props;
 
@@ -81,7 +95,7 @@ export function Image(props = {}) {
   }
 
   return container;
-}
+})
 
 /**
  * Image.Group — Wraps multiple images for grouped preview navigation.
@@ -90,7 +104,13 @@ export function Image(props = {}) {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-Image.Group = function Group(props = {}, ...children) {
+
+export interface ImageGroupProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Image.Group = function Group(props: ImageGroupProps = {} as ImageGroupProps, ...children: (string | Node)[]) {
   injectBase();
   const { class: cls, ...rest } = props;
   return h('div', { class: cx('d-space d-space-wrap', cls), ...rest }, ...children);

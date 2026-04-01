@@ -5,6 +5,26 @@ import { injectBase, cx } from './_base.js';
 import { caret, createListbox, createFormField } from './_behaviors.js';
 import { applyFieldState, createFieldOverlay } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface ComboboxProps {
+  value?: string | (() => string);
+  placeholder?: string;
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  onchange?: (value: unknown) => void;
+  onfilter?: (...args: unknown[]) => unknown;
+  'aria-label'?: string;
+  class?: string;
+  options?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, input: inputTag } = tags;
 
 /**
@@ -26,7 +46,7 @@ const { div, input: inputTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Combobox(props = {}) {
+export const Combobox = component<ComboboxProps>((props: ComboboxProps = {} as ComboboxProps) => {
   injectBase();
 
   const {
@@ -183,4 +203,4 @@ export function Combobox(props = {}) {
   }
 
   return wrap;
-}
+})

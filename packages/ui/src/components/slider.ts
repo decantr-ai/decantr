@@ -4,6 +4,21 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createDrag } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface SliderProps {
+  value?: number | (() => number);
+  min?: number;
+  max?: number;
+  step?: number;
+  disabled?: boolean | (() => boolean);
+  onchange?: (value: unknown) => void;
+  oninput?: (e: Event) => void;
+  showValue?: boolean;
+  'aria-label'?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, span } = tags;
 
 /**
@@ -20,7 +35,7 @@ const { div, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Slider(props = {}) {
+export const Slider = component<SliderProps>((props: SliderProps = {} as SliderProps) => {
   injectBase();
 
   const {
@@ -138,4 +153,4 @@ export function Slider(props = {}) {
   }
 
   return wrap;
-}
+})

@@ -9,6 +9,21 @@ import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface StatisticProps {
+  label?: string;
+  value?: number|string|Function;
+  precision?: number;
+  prefix?: string | Node;
+  suffix?: string | Node;
+  trend?: 'up'|'down';
+  trendValue?: string;
+  groupSeparator?: boolean;
+  animate?: boolean|number;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.label] - Description label
@@ -23,7 +38,7 @@ import { icon } from './icon.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Statistic(props = {}) {
+export const Statistic = component<StatisticProps>((props: StatisticProps = {} as StatisticProps) => {
   injectBase();
   const { label, value, precision, prefix, suffix, trend, trendValue, groupSeparator = true, animate = false, class: cls } = props;
 
@@ -137,7 +152,7 @@ export function Statistic(props = {}) {
   }
 
   return container;
-}
+})
 
 /**
  * Statistic.Countdown — Countdown timer.
@@ -149,7 +164,13 @@ export function Statistic(props = {}) {
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-Statistic.Countdown = function Countdown(props = {}) {
+
+export interface StatisticCountdownProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Statistic.Countdown = function Countdown(props: StatisticCountdownProps = {} as StatisticCountdownProps) {
   injectBase();
   const { label, target, format = 'HH:mm:ss', onFinish, class: cls } = props;
 

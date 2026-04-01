@@ -13,6 +13,16 @@ import { injectBase, cx } from './_base.js';
 import { createListbox, createOverlay, caret } from './_behaviors.js';
 import { icon as iconFn } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface MenuProps {
+  items?: MenuItem[];
+  selected?: string | (() => string);
+  onSelect?: (value: unknown) => void;
+  collapsed?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, span, button: buttonTag, nav } = tags;
 
 /**
@@ -36,7 +46,7 @@ const { div, span, button: buttonTag, nav } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Menu(props = {}) {
+export const Menu = component<MenuProps>((props: MenuProps = {} as MenuProps) => {
   injectBase();
   const { items = [], selected, onSelect, collapsed = false, class: cls } = props;
 
@@ -160,7 +170,7 @@ export function Menu(props = {}) {
   });
 
   return menu;
-}
+})
 
 /**
  * Menubar — Horizontal menu bar.
@@ -170,7 +180,13 @@ export function Menu(props = {}) {
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-Menu.Bar = function Menubar(props = {}) {
+
+export interface MenuBarProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Menu.Bar = function Menubar(props: MenuBarProps = {} as MenuBarProps) {
   injectBase();
   const { menus = [], class: cls } = props;
 

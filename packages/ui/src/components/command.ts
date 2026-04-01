@@ -11,6 +11,18 @@ import { injectBase, cx } from './_base.js';
 import { createListbox, createFocusTrap } from './_behaviors.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface CommandProps {
+  visible?: () => boolean;
+  onSelect?: (value: unknown) => void;
+  onClose?: () => void;
+  placeholder?: string;
+  filter?: (...args: unknown[]) => unknown;
+  class?: string;
+  items?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {Function} props.visible - Signal getter for visibility
@@ -22,7 +34,7 @@ import { icon } from './icon.js';
  * @param {string} [props.class]
  * @returns {HTMLDialogElement}
  */
-export function Command(props = {}) {
+export const Command = component<CommandProps>((props: CommandProps = {} as CommandProps) => {
   injectBase();
   const { visible, items = [], onSelect, onClose, placeholder = 'Type a command or search...', filter, class: cls } = props;
 
@@ -171,4 +183,4 @@ export function Command(props = {}) {
   }
 
   return dialog;
-}
+})

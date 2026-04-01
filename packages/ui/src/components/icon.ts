@@ -1,6 +1,12 @@
 import { h } from '../runtime/index.js';
 import { getIconPath } from '../icons/index.js';
 
+import { component } from '../runtime/component.js';
+export interface iconProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
 let styleEl = null;
 const injectedIcons = new Set();
 
@@ -65,7 +71,7 @@ function injectIconCSS(name, inner, weight, filled) {
  * @param {string} [opts.class]
  * @returns {HTMLElement}
  */
-export function icon(name, opts = {}) {
+export const icon = component<iconProps>((name, opts = {}) => {
   const { size = '1.25em', weight: rawWeight, filled = false, class: cls, ...rest } = opts;
   const cssSize = typeof size === 'number' ? `${size}px` : size;
   const weight = resolveWeight(rawWeight);
@@ -89,4 +95,4 @@ export function icon(name, opts = {}) {
   });
 
   return el;
-}
+})

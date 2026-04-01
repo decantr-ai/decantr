@@ -7,6 +7,19 @@ import { h, onCleanup } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface CarouselProps {
+  slides?: Node[];
+  autoplay?: boolean;
+  interval?: number;
+  arrows?: boolean;
+  dots?: boolean;
+  loop?: boolean;
+  onChange?: (...args: unknown[]) => unknown;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {Node[]} [props.slides] - Array of slide elements
@@ -19,7 +32,7 @@ import { caret } from './_behaviors.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Carousel(props = {}) {
+export const Carousel = component<CarouselProps>((props: CarouselProps = {} as CarouselProps) => {
   injectBase();
   const { slides = [], autoplay = false, interval = 3000, arrows = true, dots = true, loop = true, onChange, class: cls } = props;
 
@@ -96,4 +109,4 @@ export function Carousel(props = {}) {
   });
 
   return container;
-}
+})

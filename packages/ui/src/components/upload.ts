@@ -6,6 +6,21 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface UploadProps {
+  multiple?: boolean;
+  accept?: string;
+  drag?: boolean;
+  maxSize?: number;
+  maxCount?: number;
+  onchange?: (value: unknown) => void;
+  onRemove?: (...args: unknown[]) => unknown;
+  customRequest?: (...args: unknown[]) => unknown;
+  disabled?: boolean | (() => boolean);
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {boolean} [props.multiple=false]
@@ -21,7 +36,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...Node} children - Custom trigger content (for drag mode, shown inside drop zone)
  * @returns {HTMLElement}
  */
-export function Upload(props = {}, ...children) {
+export const Upload = component<UploadProps>((props: UploadProps = {} as UploadProps, ...children: (string | Node)[]) => {
   injectBase();
   const { multiple = false, accept, drag = false, maxSize, maxCount, onchange, onRemove, customRequest, disabled, class: cls } = props;
 
@@ -115,4 +130,4 @@ export function Upload(props = {}, ...children) {
 
   container.appendChild(fileList);
   return container;
-}
+})

@@ -10,6 +10,18 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createRovingTabindex } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface SegmentedProps {
+  value?: string | (() => string);
+  onchange?: (value: unknown) => void;
+  block?: boolean;
+  disabled?: boolean | (() => boolean);
+  size?: string;
+  class?: string;
+  options?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag } = tags;
 
 /**
@@ -23,7 +35,7 @@ const { div, button: buttonTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Segmented(props = {}) {
+export const Segmented = component<SegmentedProps>((props: SegmentedProps = {} as SegmentedProps) => {
   injectBase();
   const { options = [], value, onchange, block, disabled, size, class: cls } = props;
 
@@ -96,4 +108,4 @@ export function Segmented(props = {}) {
   onDestroy(() => { roving.destroy(); });
 
   return container;
-}
+})

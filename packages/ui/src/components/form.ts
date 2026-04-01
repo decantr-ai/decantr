@@ -10,6 +10,23 @@ import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFormField } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface FormProps {
+  layout?: 'vertical'|'horizontal'|'inline';
+  onSubmit?: (...args: unknown[]) => unknown;
+  class?: string;
+  [key: string]: unknown;
+}
+
+export interface FieldProps {
+  label?: string;
+  error?: string | (() => string);
+  help?: string;
+  required?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * Form — Container for form fields.
  * @param {Object} [props]
@@ -19,7 +36,7 @@ import { createFormField } from './_behaviors.js';
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-export function Form(props = {}, ...children) {
+export const Form = component<FormProps>((props: FormProps = {} as FormProps, ...children: (string | Node)[]) => {
   injectBase();
   const { layout = 'vertical', onSubmit, class: cls, ...rest } = props;
 
@@ -34,7 +51,7 @@ export function Form(props = {}, ...children) {
   });
 
   return form;
-}
+})
 
 /**
  * Form.Actions — Button row at bottom of form.
@@ -43,7 +60,13 @@ export function Form(props = {}, ...children) {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-Form.Actions = function Actions(props = {}, ...children) {
+
+export interface FormActionsProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Form.Actions = function Actions(props: FormActionsProps = {} as FormActionsProps, ...children: (string | Node)[]) {
   injectBase();
   const { class: cls, ...rest } = props;
   return h('div', { class: cx('d-form-actions', cls), ...rest }, ...children);
@@ -62,7 +85,7 @@ Form.Actions = function Actions(props = {}, ...children) {
  * @param {...Node} children - The form control(s)
  * @returns {HTMLElement}
  */
-export function Field(props = {}, ...children) {
+export const Field = component<FieldProps>((props: FieldProps = {} as FieldProps, ...children: (string | Node)[]) => {
   injectBase();
   const { label, error, help, required, class: cls, ...rest } = props;
 
@@ -113,7 +136,7 @@ export function Field(props = {}, ...children) {
   }
 
   return wrapper;
-}
+})
 
 // Re-export for imperative wrapping
 export { createFormField };

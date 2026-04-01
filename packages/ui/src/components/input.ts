@@ -5,6 +5,31 @@ import { injectBase, cx } from './_base.js';
 import { createFormField } from './_behaviors.js';
 import { applyFieldState } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface InputProps {
+  type?: string;
+  placeholder?: string;
+  value?: string | (() => string);
+  disabled?: boolean | (() => boolean);
+  readonly?: boolean | (() => boolean);
+  prefix?: string | Node;
+  suffix?: string | Node;
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  loading?: boolean | (() => boolean);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  oninput?: (e: Event) => void;
+  onchange?: (value: unknown) => void;
+  ref?: (el: HTMLElement) => void;
+  'aria-label'?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, input: inputTag, span } = tags;
 
 /**
@@ -31,7 +56,7 @@ const { div, input: inputTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Input(props = {}) {
+export const Input = component<InputProps>((props: InputProps = {} as InputProps) => {
   injectBase();
 
   const {
@@ -88,4 +113,4 @@ export function Input(props = {}) {
   }
 
   return wrap;
-}
+})

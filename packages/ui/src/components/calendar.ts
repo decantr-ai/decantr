@@ -8,6 +8,18 @@ import { createEffect, createSignal } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface CalendarProps {
+  value?: Date|Function;
+  mode?: 'month'|'year';
+  mini?: boolean;
+  dateCellRender?: (...args: unknown[]) => unknown;
+  onSelect?: (value: unknown) => void;
+  onPanelChange?: (...args: unknown[]) => unknown;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -22,7 +34,7 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Calendar(props = {}) {
+export const Calendar = component<CalendarProps>((props: CalendarProps = {} as CalendarProps) => {
   injectBase();
   const { value, mode: initMode = 'month', mini = false, dateCellRender, onSelect, onPanelChange, class: cls } = props;
 
@@ -128,4 +140,4 @@ export function Calendar(props = {}) {
 
   createEffect(render);
   return container;
-}
+})

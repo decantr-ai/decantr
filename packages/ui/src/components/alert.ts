@@ -1,6 +1,16 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface AlertProps {
+  variant?: string;
+  dismissible?: boolean;
+  onDismiss?: () => void;
+  icon?: string | Node;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.variant] - info|success|warning|error (default: info)
@@ -11,7 +21,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Alert(props = {}, ...children) {
+export const Alert = component<AlertProps>((props: AlertProps = {} as AlertProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { variant = 'info', dismissible, onDismiss, icon, class: cls } = props;
@@ -44,4 +54,4 @@ export function Alert(props = {}, ...children) {
   }
 
   return el;
-}
+})

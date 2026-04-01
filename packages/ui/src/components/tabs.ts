@@ -11,6 +11,20 @@ import { injectBase, cx } from './_base.js';
 import { createRovingTabindex } from './_behaviors.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface TabsProps {
+  active?: string | (() => string);
+  onchange?: (value: unknown) => void;
+  onclose?: (...args: unknown[]) => unknown;
+  orientation?: 'horizontal'|'vertical';
+  size?: string;
+  disabled?: boolean | (() => boolean);
+  destroyInactive?: boolean;
+  class?: string;
+  tabs?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag } = tags;
 
 let _tabId = 0;
@@ -28,7 +42,7 @@ let _tabId = 0;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Tabs(props = {}) {
+export const Tabs = component<TabsProps>((props: TabsProps = {} as TabsProps) => {
   injectBase();
 
   const {
@@ -246,4 +260,4 @@ export function Tabs(props = {}) {
   onDestroy(() => { roving.destroy(); });
 
   return container;
-}
+})

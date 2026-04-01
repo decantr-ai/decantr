@@ -11,6 +11,24 @@ import { encodeQR } from './_qr-encoder.js';
 import { Spinner } from './spinner.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface QRCodeProps {
+  value?: string | (() => string);
+  size?: number;
+  color?: string;
+  bgColor?: string;
+  type?: 'canvas'|'svg';
+  level?: 'L'|'M'|'Q'|'H';
+  icon?: string;
+  iconSize?: number;
+  bordered?: boolean;
+  status?: string | (() => string);
+  onRefresh?: (...args: unknown[]) => unknown;
+  padding?: number;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string|Function} [props.value=''] - Text to encode (reactive)
@@ -28,7 +46,7 @@ import { icon } from './icon.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function QRCode(props = {}) {
+export const QRCode = component<QRCodeProps>((props: QRCodeProps = {} as QRCodeProps) => {
   injectBase();
   const {
     value = '', size = 160, color, bgColor,
@@ -169,7 +187,7 @@ export function QRCode(props = {}) {
   }
 
   return container;
-}
+})
 
 /**
  * Render QR code to a canvas element.

@@ -8,6 +8,20 @@ import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { getResolvedMode } from '../css/index.js';
 
+import { component } from '../runtime/component.js';
+export interface WatermarkProps {
+  content?: string | string[];
+  image?: string;
+  rotate?: number;
+  fontSize?: number;
+  fontColor?: string;
+  gap?: number[];
+  offset?: number[];
+  zIndex?: number;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.content] - Watermark text
@@ -23,7 +37,7 @@ import { getResolvedMode } from '../css/index.js';
  * @param {...Node} children - Content to watermark over
  * @returns {HTMLElement}
  */
-export function Watermark(props = {}, ...children) {
+export const Watermark = component<WatermarkProps>((props: WatermarkProps = {} as WatermarkProps, ...children: (string | Node)[]) => {
   injectBase();
   const {
     content, image, rotate = -22, fontSize = 14,
@@ -121,4 +135,4 @@ export function Watermark(props = {}, ...children) {
   requestAnimationFrame(render);
 
   return container;
-}
+})

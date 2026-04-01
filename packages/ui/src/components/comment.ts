@@ -9,6 +9,19 @@ import { injectBase, cx } from './_base.js';
 import { Avatar } from './avatar.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface CommentProps {
+  author?: string;
+  avatar?: string | Node;
+  content?: string | Node;
+  datetime?: string;
+  onReply?: (...args: unknown[]) => unknown;
+  variant?: 'default'|'minimal'|'bordered';
+  class?: string;
+  actions?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.author] - Display name
@@ -21,7 +34,7 @@ import { icon } from './icon.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Comment(props = {}, ...children) {
+export const Comment = component<CommentProps>((props: CommentProps = {} as CommentProps, ...children: (string | Node)[]) => {
   injectBase();
   const {
     author, avatar, content, datetime, actions = [],
@@ -203,4 +216,4 @@ export function Comment(props = {}, ...children) {
   }
 
   return root;
-}
+})

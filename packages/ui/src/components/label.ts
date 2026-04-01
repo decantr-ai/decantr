@@ -6,6 +6,14 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface LabelProps {
+  for?: string;
+  required?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.for] - Associated input ID
@@ -14,7 +22,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Label(props = {}, ...children) {
+export const Label = component<LabelProps>((props: LabelProps = {} as LabelProps, ...children: (string | Node)[]) => {
   injectBase();
   const { for: htmlFor, required, class: cls, ...rest } = props;
   return h('label', {
@@ -22,4 +30,4 @@ export function Label(props = {}, ...children) {
     for: htmlFor,
     ...rest
   }, ...children);
-}
+})

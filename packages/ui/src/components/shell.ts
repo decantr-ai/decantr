@@ -11,6 +11,27 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createDisclosure } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface resolveShellConfigProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+export interface buildGridTemplateProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+export interface ShellProps {
+  config?: string|Object;
+  navState?: (...args: unknown[]) => unknown;
+  onNavStateChange?: (...args: unknown[]) => unknown;
+  class?: string;
+  inset?: unknown;
+  dimensions?: unknown;
+  [key: string]: unknown;
+}
+
 const { div } = tags;
 
 // ─── Preset Configs ─────────────────────────────────────────────
@@ -110,7 +131,7 @@ function mergeSection(defaults, override) {
  * @param {string|Object} config
  * @returns {Object} resolved config
  */
-export function resolveShellConfig(config) {
+export const resolveShellConfig = component<resolveShellConfigProps>((config) => {
   const base = typeof config === 'string' ? PRESETS[config] : config;
   if (!base) throw new Error(`Shell: unknown preset "${config}"`);
 
@@ -123,7 +144,7 @@ export function resolveShellConfig(config) {
     footer: mergeSection(DEFAULTS.footer, base.footer),
     aside: mergeSection(DEFAULTS.aside, base.aside)
   };
-}
+})
 
 // ─── Grid Template Generation ───────────────────────────────────
 
@@ -154,7 +175,7 @@ function validateAreas(areas) {
  * @param {string} navState - 'expanded' | 'rail' | 'hidden'
  * @returns {{ areas: string, columns: string, rows: string }}
  */
-export function buildGridTemplate(cfg, navState) {
+export const buildGridTemplate = component<buildGridTemplateProps>((cfg, navState) => {
   const { grid, nav, header, footer, aside } = cfg;
   validateAreas(grid.areas);
 
@@ -203,7 +224,7 @@ export function buildGridTemplate(cfg, navState) {
     columns: colDefs.join(' '),
     rows: rowDefs.join(' ')
   };
-}
+})
 
 // ─── Shell Sub-Components ───────────────────────────────────────
 
@@ -225,7 +246,7 @@ function isShellSection(node) {
  * @param {...Node} children - Shell.Header, Shell.Nav, Shell.Body, Shell.Footer, Shell.Aside
  * @returns {HTMLElement}
  */
-export function Shell(props = {}, ...children) {
+export const Shell = component<ShellProps>((props: ShellProps = {} as ShellProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const {
@@ -353,7 +374,7 @@ export function Shell(props = {}, ...children) {
   });
 
   return el;
-}
+})
 
 /**
  * Shell.Header — header region
@@ -362,7 +383,13 @@ export function Shell(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.Header = function ShellHeader(props = {}, ...children) {
+
+export interface ShellHeaderProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.Header = function ShellHeader(props: ShellHeaderProps = {} as ShellHeaderProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-shell-header', cls), role: 'banner' }, ...children);
 };
@@ -375,7 +402,13 @@ Shell.Header = function ShellHeader(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.Nav = function ShellNav(props = {}, ...children) {
+
+export interface ShellNavProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.Nav = function ShellNav(props: ShellNavProps = {} as ShellNavProps, ...children: (string | Node)[]) {
   const { class: cls, 'aria-label': ariaLabel = 'Main' } = props;
   return div({ class: cx('d-shell-nav', cls), role: 'navigation', 'aria-label': ariaLabel }, ...children);
 };
@@ -387,7 +420,13 @@ Shell.Nav = function ShellNav(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.Body = function ShellBody(props = {}, ...children) {
+
+export interface ShellBodyProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.Body = function ShellBody(props: ShellBodyProps = {} as ShellBodyProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-shell-body', cls), role: 'main' }, ...children);
 };
@@ -399,7 +438,13 @@ Shell.Body = function ShellBody(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.Footer = function ShellFooter(props = {}, ...children) {
+
+export interface ShellFooterProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.Footer = function ShellFooter(props: ShellFooterProps = {} as ShellFooterProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-shell-footer', cls), role: 'contentinfo' }, ...children);
 };
@@ -411,7 +456,13 @@ Shell.Footer = function ShellFooter(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.Aside = function ShellAside(props = {}, ...children) {
+
+export interface ShellAsideProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.Aside = function ShellAside(props: ShellAsideProps = {} as ShellAsideProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-shell-aside', cls), role: 'complementary' }, ...children);
 };
@@ -423,7 +474,13 @@ Shell.Aside = function ShellAside(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.NavGroup = function ShellNavGroup(props = {}, ...children) {
+
+export interface ShellNavGroupProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.NavGroup = function ShellNavGroup(props: ShellNavGroupProps = {} as ShellNavGroupProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-shell-nav-group', cls), role: 'group' }, ...children);
 };
@@ -435,7 +492,13 @@ Shell.NavGroup = function ShellNavGroup(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.NavGroupLabel = function ShellNavGroupLabel(props = {}, ...children) {
+
+export interface ShellNavGroupLabelProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.NavGroupLabel = function ShellNavGroupLabel(props: ShellNavGroupLabelProps = {} as ShellNavGroupLabelProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-shell-nav-group-label', cls) }, ...children);
 };
@@ -447,7 +510,13 @@ Shell.NavGroupLabel = function ShellNavGroupLabel(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.NavFooter = function ShellNavFooter(props = {}, ...children) {
+
+export interface ShellNavFooterProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.NavFooter = function ShellNavFooter(props: ShellNavFooterProps = {} as ShellNavFooterProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-shell-nav-footer', cls) }, ...children);
 };
@@ -461,7 +530,13 @@ Shell.NavFooter = function ShellNavFooter(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.NavSub = function ShellNavSub(props = {}, ...children) {
+
+export interface ShellNavSubProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.NavSub = function ShellNavSub(props: ShellNavSubProps = {} as ShellNavSubProps, ...children: (string | Node)[]) {
   const { open = false, trigger, class: cls } = props;
   const triggerEl = typeof trigger === 'function' ? trigger() : trigger;
   if (triggerEl) triggerEl.classList.add('d-shell-nav-sub-trigger');
@@ -483,7 +558,13 @@ Shell.NavSub = function ShellNavSub(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Shell.Trigger = function ShellTrigger(props = {}, ...children) {
+
+export interface ShellTriggerProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Shell.Trigger = function ShellTrigger(props: ShellTriggerProps = {} as ShellTriggerProps, ...children: (string | Node)[]) {
   const { class: cls, onToggle, 'aria-label': ariaLabel = 'Toggle sidebar' } = props;
   const btn = h('button', {
     type: 'button',

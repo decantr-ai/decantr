@@ -4,6 +4,22 @@ import { injectBase, cx, reactiveAttr } from './_base.js';
 import { Spinner } from './spinner.js';
 import { icon as renderIcon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface ButtonProps {
+  variant?: string;
+  size?: string;
+  disabled?: boolean | (() => boolean);
+  loading?: boolean | (() => boolean);
+  class?: string;
+  block?: boolean;
+  rounded?: boolean;
+  onclick?: (e: MouseEvent) => void;
+  iconLeft?: unknown;
+  iconRight?: unknown;
+  type?: unknown;
+  [key: string]: unknown;
+}
+
 const SPINNER_SIZE = {
   xs: 'xs', sm: 'xs', default: 'sm', lg: 'default',
   icon: 'sm', 'icon-xs': 'xs', 'icon-sm': 'xs', 'icon-lg': 'sm'
@@ -33,7 +49,7 @@ export function buttonVariants({ variant = 'default', size = 'default' } = {}) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Button(props = {}, ...children) {
+export const Button = component<ButtonProps>((props: ButtonProps = {} as ButtonProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { variant, size, disabled, loading, block, rounded, iconLeft, iconRight, class: cls, onclick, type, ...rest } = props;
@@ -89,7 +105,7 @@ export function Button(props = {}, ...children) {
   }
 
   return el;
-}
+})
 
 function _addSpinner(el, size) {
   if (el.querySelector('.d-btn-spinner')) return;
@@ -111,7 +127,13 @@ function _removeSpinner(el) {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-Button.Group = function Group(props = {}, ...children) {
+
+export interface ButtonGroupProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Button.Group = function Group(props: ButtonGroupProps = {} as ButtonGroupProps, ...children: (string | Node)[]) {
   injectBase();
   const { class: cls, ...rest } = props;
   return h('div', { class: cx('d-btn-group', cls), role: 'group', ...rest }, ...children);

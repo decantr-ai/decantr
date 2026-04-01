@@ -3,6 +3,18 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface PaginationProps {
+  total?: number | (() => number);
+  perPage?: number;
+  current?: number | (() => number);
+  onchange?: (value: unknown) => void;
+  siblings?: number;
+  size?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { nav: navTag, ul, li, button: buttonTag, span } = tags;
 
 /**
@@ -16,7 +28,7 @@ const { nav: navTag, ul, li, button: buttonTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Pagination(props = {}) {
+export const Pagination = component<PaginationProps>((props: PaginationProps = {} as PaginationProps) => {
   injectBase();
 
   const { total, perPage = 10, current = 1, onchange, siblings = 1, size, class: cls } = props;
@@ -101,4 +113,4 @@ export function Pagination(props = {}) {
   }
 
   return nav;
-}
+})

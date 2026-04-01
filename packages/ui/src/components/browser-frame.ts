@@ -7,6 +7,13 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface BrowserFrameProps {
+  url?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.url] - URL text to display in the address bar
@@ -14,7 +21,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...(HTMLElement|string)} children - Content to render inside the frame
  * @returns {HTMLElement}
  */
-export function BrowserFrame(props = {}, ...children) {
+export const BrowserFrame = component<BrowserFrameProps>((props: BrowserFrameProps = {} as BrowserFrameProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { url = '', class: cls } = props;
@@ -47,4 +54,4 @@ export function BrowserFrame(props = {}, ...children) {
   frame.appendChild(body);
 
   return frame;
-}
+})

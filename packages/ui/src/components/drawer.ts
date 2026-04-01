@@ -11,6 +11,21 @@ import { injectBase, cx } from './_base.js';
 import { createFocusTrap } from './_behaviors.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface DrawerProps {
+  visible?: () => boolean;
+  onClose?: () => void;
+  side?: 'left'|'right'|'top'|'bottom';
+  title?: string;
+  footer?: Node | Node[];
+  size?: string;
+  closeOnOutside?: boolean;
+  width?: string;
+  height?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, button, span, dialog: dialogTag } = tags;
 
 const DRAWER_SECTIONS = ['d-drawer-header', 'd-drawer-body', 'd-drawer-footer'];
@@ -37,7 +52,7 @@ function hasSection(children) {
  * @param {...Node} children
  * @returns {HTMLDialogElement}
  */
-export function Drawer(props = {}, ...children) {
+export const Drawer = component<DrawerProps>((props: DrawerProps = {} as DrawerProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const {
@@ -172,7 +187,7 @@ export function Drawer(props = {}, ...children) {
   });
 
   return dialog;
-}
+})
 
 /**
  * Drawer.Header — drawer header section
@@ -180,7 +195,13 @@ export function Drawer(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Drawer.Header = function DrawerHeader(props = {}, ...children) {
+
+export interface DrawerHeaderProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Drawer.Header = function DrawerHeader(props: DrawerHeaderProps = {} as DrawerHeaderProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-drawer-header', cls) }, ...children);
 };
@@ -191,7 +212,13 @@ Drawer.Header = function DrawerHeader(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Drawer.Body = function DrawerBody(props = {}, ...children) {
+
+export interface DrawerBodyProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Drawer.Body = function DrawerBody(props: DrawerBodyProps = {} as DrawerBodyProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-drawer-body', cls) }, ...children);
 };
@@ -202,7 +229,13 @@ Drawer.Body = function DrawerBody(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Drawer.Footer = function DrawerFooter(props = {}, ...children) {
+
+export interface DrawerFooterProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Drawer.Footer = function DrawerFooter(props: DrawerFooterProps = {} as DrawerFooterProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return div({ class: cx('d-drawer-footer', cls) }, ...children);
 };

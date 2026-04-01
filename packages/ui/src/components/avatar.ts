@@ -2,6 +2,16 @@ import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface AvatarProps {
+  src?: string;
+  alt?: string;
+  size?: string;
+  fallback?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.src] - Image URL
@@ -11,7 +21,7 @@ import { icon } from './icon.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Avatar(props = {}) {
+export const Avatar = component<AvatarProps>((props: AvatarProps = {} as AvatarProps) => {
   injectBase();
 
   const { src, alt = '', size, fallback, class: cls } = props;
@@ -41,4 +51,4 @@ export function Avatar(props = {}) {
   }
 
   return container;
-}
+})

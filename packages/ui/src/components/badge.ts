@@ -2,6 +2,19 @@ import { h, text } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon as iconHelper } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface BadgeProps {
+  count?: number | (() => number);
+  color?: string;
+  dot?: boolean;
+  status?: string;
+  variant?: string;
+  solid?: boolean;
+  icon?: string | Node;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {number|Function} [props.count]
@@ -15,7 +28,7 @@ import { icon as iconHelper } from './icon.js';
  * @param {...Node} children - If provided, badge wraps as superscript
  * @returns {HTMLElement}
  */
-export function Badge(props = {}, ...children) {
+export const Badge = component<BadgeProps>((props: BadgeProps = {} as BadgeProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { count, color, dot, status, variant, solid, icon, class: cls } = props;
@@ -88,4 +101,4 @@ export function Badge(props = {}, ...children) {
   }
 
   return badgeEl;
-}
+})

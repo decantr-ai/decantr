@@ -9,6 +9,15 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createOverlay } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface TooltipProps {
+  content?: string;
+  position?: string;
+  delay?: number;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div } = tags;
 
 /**
@@ -20,7 +29,7 @@ const { div } = tags;
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-export function Tooltip(props = {}, ...children) {
+export const Tooltip = component<TooltipProps>((props: TooltipProps = {} as TooltipProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { content, position = 'top', delay = 200, class: cls } = props;
@@ -52,6 +61,6 @@ export function Tooltip(props = {}, ...children) {
   });
 
   return wrapper;
-}
+})
 
 let _tooltipId = 0;

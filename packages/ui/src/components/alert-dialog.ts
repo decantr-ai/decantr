@@ -9,6 +9,20 @@ import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFocusTrap } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface AlertDialogProps {
+  title?: string;
+  description?: string;
+  visible?: () => boolean;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 let _adid = 0;
 
 /**
@@ -24,7 +38,7 @@ let _adid = 0;
  * @param {string} [props.class]
  * @returns {HTMLDialogElement}
  */
-export function AlertDialog(props = {}) {
+export const AlertDialog = component<AlertDialogProps>((props: AlertDialogProps = {} as AlertDialogProps) => {
   injectBase();
   const { title, description, visible, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel', variant = 'destructive', class: cls } = props;
 
@@ -96,4 +110,4 @@ export function AlertDialog(props = {}) {
   });
 
   return dialog;
-}
+})

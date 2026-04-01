@@ -10,6 +10,32 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx, reactiveAttr } from './_base.js';
 import { createRovingTabindex } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface ToggleProps {
+  pressed?: boolean | (() => boolean);
+  variant?: string;
+  size?: string;
+  disabled?: boolean | (() => boolean);
+  onchange?: (value: unknown) => void;
+  class?: string;
+  [key: string]: unknown;
+}
+
+export interface ToggleGroupProps {
+  value?: string|string[]|Function;
+  type?: 'single'|'multiple';
+  multiple?: boolean;
+  variant?: string;
+  size?: string;
+  block?: boolean;
+  disabled?: boolean | (() => boolean);
+  onchange?: (value: unknown) => void;
+  class?: string;
+  items?: unknown;
+  'aria-label'?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag } = tags;
 
 /**
@@ -23,7 +49,7 @@ const { div, button: buttonTag } = tags;
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Toggle(props = {}, ...children) {
+export const Toggle = component<ToggleProps>((props: ToggleProps = {} as ToggleProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { pressed = false, variant, size, disabled, onchange, class: cls, ...rest } = props;
@@ -61,7 +87,7 @@ export function Toggle(props = {}, ...children) {
   }
 
   return el;
-}
+})
 
 /**
  * ToggleGroup — A group of toggles, single or multi-select.
@@ -81,7 +107,7 @@ export function Toggle(props = {}, ...children) {
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function ToggleGroup(props = {}) {
+export const ToggleGroup = component<ToggleGroupProps>((props: ToggleGroupProps = {} as ToggleGroupProps) => {
   injectBase();
 
   const { items = [], value, type, multiple, variant, size, block, disabled, onchange, 'aria-label': ariaLabel, class: cls } = props;
@@ -214,4 +240,4 @@ export function ToggleGroup(props = {}) {
   });
 
   return group;
-}
+})

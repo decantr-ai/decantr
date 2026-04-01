@@ -6,6 +6,15 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface ScrollAreaProps {
+  height?: string;
+  width?: string;
+  direction?: 'vertical'|'horizontal'|'both';
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.height] - CSS height for the scrollable area
@@ -15,7 +24,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-export function ScrollArea(props = {}, ...children) {
+export const ScrollArea = component<ScrollAreaProps>((props: ScrollAreaProps = {} as ScrollAreaProps, ...children: (string | Node)[]) => {
   injectBase();
   const { height, width, direction = 'vertical', class: cls, ...rest } = props;
 
@@ -40,4 +49,4 @@ export function ScrollArea(props = {}, ...children) {
     style: Object.keys(style).length ? style : undefined,
     ...rest
   }, viewport);
-}
+})

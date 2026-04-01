@@ -6,6 +6,17 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface DescriptionsProps {
+  title?: string;
+  columns?: number;
+  layout?: 'horizontal'|'vertical';
+  bordered?: boolean;
+  class?: string;
+  items?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.title]
@@ -16,7 +27,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Descriptions(props = {}) {
+export const Descriptions = component<DescriptionsProps>((props: DescriptionsProps = {} as DescriptionsProps) => {
   injectBase();
   const { title, items = [], columns = 3, layout = 'horizontal', bordered, class: cls } = props;
 
@@ -65,4 +76,4 @@ export function Descriptions(props = {}) {
   table.appendChild(tbody);
   container.appendChild(table);
   return container;
-}
+})

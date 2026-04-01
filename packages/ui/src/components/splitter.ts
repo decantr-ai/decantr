@@ -8,6 +8,14 @@ import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { createDrag } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface SplitterProps {
+  direction?: 'horizontal'|'vertical';
+  panels?: SplitterPanel[];
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @typedef {Object} SplitterPanel
  * @property {string} [size] - Initial CSS size (e.g. '50%', '300px')
@@ -23,7 +31,7 @@ import { createDrag } from './_behaviors.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Splitter(props = {}) {
+export const Splitter = component<SplitterProps>((props: SplitterProps = {} as SplitterProps) => {
   injectBase();
   const { direction = 'horizontal', panels = [], class: cls } = props;
 
@@ -144,4 +152,4 @@ export function Splitter(props = {}) {
   });
 
   return container;
-}
+})

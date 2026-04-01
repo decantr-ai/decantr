@@ -10,6 +10,17 @@ import { injectBase, cx } from './_base.js';
 import { createListbox, createOverlay } from './_behaviors.js';
 import { renderMenuItems } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface DropdownProps {
+  trigger?: (...args: unknown[]) => unknown;
+  align?: string;
+  block?: boolean;
+  class?: string;
+  items?: unknown;
+  portal?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag } = tags;
 
 /**
@@ -21,7 +32,7 @@ const { div, button: buttonTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Dropdown(props = {}) {
+export const Dropdown = component<DropdownProps>((props: DropdownProps = {} as DropdownProps) => {
   injectBase();
 
   const { trigger, items = [], align = 'left', portal: usePortal = true, block, class: cls } = props;
@@ -91,4 +102,4 @@ export function Dropdown(props = {}) {
   });
 
   return wrap;
-}
+})

@@ -8,6 +8,16 @@ import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon as makeIcon } from './icon.js';
 
+export interface messageProps {
+  content?: string;
+  type?: 'info'|'success'|'warning'|'error'|'loading';
+  duration?: number;
+  icon?: Node;
+  onClose?: () => void;
+  class?: string;
+  [key: string]: unknown;
+}
+
 let _container = null;
 
 function getContainer() {
@@ -36,7 +46,7 @@ const ICON_MAP = {
  * @param {string} [props.class]
  * @returns {{ close: Function }}
  */
-export function message(props = {}) {
+export function message(props: messageProps = {} as messageProps) {
   injectBase();
   const { content, type = 'info', duration = 3000, icon, onClose, class: cls } = props;
 
@@ -67,11 +77,11 @@ export function message(props = {}) {
 }
 
 // Convenience methods
-message.info = (content, duration) => message({ content, type: 'info', duration });
-message.success = (content, duration) => message({ content, type: 'success', duration });
-message.warning = (content, duration) => message({ content, type: 'warning', duration });
-message.error = (content, duration) => message({ content, type: 'error', duration });
-message.loading = (content, duration = 0) => message({ content, type: 'loading', duration });
+message.info = (content: string, duration?: number) => message({ content, type: 'info', duration });
+message.success = (content: string, duration?: number) => message({ content, type: 'success', duration });
+message.warning = (content: string, duration?: number) => message({ content, type: 'warning', duration });
+message.error = (content: string, duration?: number) => message({ content, type: 'error', duration });
+message.loading = (content: string, duration: number = 0) => message({ content, type: 'loading', duration });
 
 /** Reset message container (for testing) */
 export function resetMessages() {

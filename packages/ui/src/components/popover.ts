@@ -9,6 +9,16 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createOverlay } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface PopoverProps {
+  trigger?: (...args: unknown[]) => unknown;
+  position?: string;
+  align?: string;
+  class?: string;
+  portal?: unknown;
+  [key: string]: unknown;
+}
+
 const { div } = tags;
 
 /**
@@ -19,7 +29,7 @@ const { div } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Popover(props = {}, ...children) {
+export const Popover = component<PopoverProps>((props: PopoverProps = {} as PopoverProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const {
@@ -59,4 +69,4 @@ export function Popover(props = {}, ...children) {
   });
 
   return wrap;
-}
+})

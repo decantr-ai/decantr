@@ -10,6 +10,15 @@ import { injectBase, cx } from './_base.js';
 import { createListbox, createOverlay } from './_behaviors.js';
 import { renderMenuItems } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface ContextMenuProps {
+  target?: HTMLElement;
+  onSelect?: (value: unknown) => void;
+  class?: string;
+  items?: unknown;
+  [key: string]: unknown;
+}
+
 const { div } = tags;
 
 /**
@@ -20,7 +29,7 @@ const { div } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function ContextMenu(props = {}) {
+export const ContextMenu = component<ContextMenuProps>((props: ContextMenuProps = {} as ContextMenuProps) => {
   injectBase();
   const { target, items = [], onSelect, class: cls } = props;
 
@@ -73,4 +82,4 @@ export function ContextMenu(props = {}) {
   });
 
   return menu;
-}
+})

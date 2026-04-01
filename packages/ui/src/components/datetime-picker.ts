@@ -11,6 +11,20 @@ import { injectBase, cx } from './_base.js';
 import { caret, createOverlay } from './_behaviors.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface DateTimePickerProps {
+  value?: Date | string | (() => Date | string);
+  placeholder?: string;
+  min?: Date;
+  max?: Date;
+  seconds?: boolean;
+  use12h?: boolean;
+  disabled?: boolean | (() => boolean);
+  onchange?: (value: unknown) => void;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, span, button: buttonTag, input } = tags;
 
 const DAYS_HDR = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -29,7 +43,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function DateTimePicker(props = {}) {
+export const DateTimePicker = component<DateTimePickerProps>((props: DateTimePickerProps = {} as DateTimePickerProps) => {
   injectBase();
   const {
     value, placeholder = 'Select date and time',
@@ -268,4 +282,4 @@ export function DateTimePicker(props = {}) {
   });
 
   return wrap;
-}
+})

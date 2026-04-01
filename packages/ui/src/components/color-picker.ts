@@ -12,6 +12,23 @@ import { injectBase, cx } from './_base.js';
 import { createDrag, createFormField } from './_behaviors.js';
 import { applyFieldState, createFieldOverlay, hexToOklch, oklchToHex } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface ColorPickerProps {
+  value?: string | (() => string);
+  alpha?: boolean;
+  presets?: string[];
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  onchange?: (value: unknown) => void;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag, span, input: inputTag } = tags;
 
 const HEX_RE = /^#?([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
@@ -36,7 +53,7 @@ const STEP_A = 0.01;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function ColorPicker(props = {}) {
+export const ColorPicker = component<ColorPickerProps>((props: ColorPickerProps = {} as ColorPickerProps) => {
   injectBase();
   const {
     value = '#1366D9', alpha = false, presets, disabled,
@@ -311,4 +328,4 @@ export function ColorPicker(props = {}) {
   }
 
   return wrap;
-}
+})

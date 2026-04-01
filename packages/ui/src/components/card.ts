@@ -3,6 +3,21 @@ import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { Skeleton } from './skeleton.js';
 
+import { component } from '../runtime/component.js';
+export interface CardProps {
+  title?: string | Node;
+  extra?: Node|Function;
+  hoverable?: boolean;
+  bordered?: boolean;
+  loading?: boolean | (() => boolean);
+  size?: 'default'|'sm';
+  type?: 'inner';
+  cover?: Node;
+  actions?: Node[];
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string|Node} [props.title]
@@ -18,7 +33,7 @@ import { Skeleton } from './skeleton.js';
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-export function Card(props = {}, ...children) {
+export const Card = component<CardProps>((props: CardProps = {} as CardProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const {
@@ -59,7 +74,7 @@ export function Card(props = {}, ...children) {
   const parts = [];
   buildCardContent(null, { title, extra, cover, actions }, children, parts);
   return h('div', { class: cardClass }, ...parts);
-}
+})
 
 /**
  * Build card content parts — either appends to el or pushes to parts array.
@@ -104,7 +119,13 @@ function buildCardContent(el, { title, extra, cover, actions }, children, parts)
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Card.Header = function CardHeader(props = {}, ...children) {
+
+export interface CardHeaderProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Card.Header = function CardHeader(props: CardHeaderProps = {} as CardHeaderProps, ...children: (string | Node)[]) {
   const { extra, class: cls } = props;
   if (extra) {
     const extraNode = typeof extra === 'function' ? extra() : extra;
@@ -122,7 +143,13 @@ Card.Header = function CardHeader(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Card.Body = function CardBody(props = {}, ...children) {
+
+export interface CardBodyProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Card.Body = function CardBody(props: CardBodyProps = {} as CardBodyProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return h('div', { class: cx('d-card-body', cls) }, ...children);
 };
@@ -133,7 +160,13 @@ Card.Body = function CardBody(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Card.Footer = function CardFooter(props = {}, ...children) {
+
+export interface CardFooterProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Card.Footer = function CardFooter(props: CardFooterProps = {} as CardFooterProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return h('div', { class: cx('d-card-footer', cls) }, ...children);
 };
@@ -144,7 +177,13 @@ Card.Footer = function CardFooter(props = {}, ...children) {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-Card.Cover = function CardCover(props = {}, ...children) {
+
+export interface CardCoverProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Card.Cover = function CardCover(props: CardCoverProps = {} as CardCoverProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return h('div', { class: cx('d-card-cover', cls) }, ...children);
 };
@@ -158,7 +197,13 @@ Card.Cover = function CardCover(props = {}, ...children) {
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-Card.Meta = function CardMeta(props = {}) {
+
+export interface CardMetaProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Card.Meta = function CardMeta(props: CardMetaProps = {} as CardMetaProps) {
   const { avatar, title, description, class: cls } = props;
   const detail = h('div', { class: 'd-card-meta-detail' });
   if (title) detail.appendChild(h('div', { class: 'd-card-meta-title' }, title));
@@ -175,7 +220,13 @@ Card.Meta = function CardMeta(props = {}) {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-Card.Grid = function CardGrid(props = {}, ...children) {
+
+export interface CardGridProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Card.Grid = function CardGrid(props: CardGridProps = {} as CardGridProps, ...children: (string | Node)[]) {
   const { hoverable, class: cls } = props;
   return h('div', { class: cx('d-card-grid', hoverable && 'd-card-grid-hover', cls) }, ...children);
 };
@@ -186,7 +237,13 @@ Card.Grid = function CardGrid(props = {}, ...children) {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-Card.Actions = function CardActions(props = {}, ...children) {
+
+export interface CardActionsProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Card.Actions = function CardActions(props: CardActionsProps = {} as CardActionsProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return h('div', { class: cx('d-card-actions', cls) }, ...children);
 };

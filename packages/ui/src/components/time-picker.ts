@@ -12,6 +12,28 @@ import { createFormField } from './_behaviors.js';
 import { icon } from './icon.js';
 import { applyFieldState, createFieldOverlay, renderTimeColumns } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface TimePickerProps {
+  value?: string | (() => string);
+  placeholder?: string;
+  seconds?: boolean;
+  use12h?: boolean;
+  hourStep?: number;
+  minuteStep?: number;
+  secondStep?: number;
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  onchange?: (value: unknown) => void;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag, span } = tags;
 
 /**
@@ -35,7 +57,7 @@ const { div, button: buttonTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function TimePicker(props = {}) {
+export const TimePicker = component<TimePickerProps>((props: TimePickerProps = {} as TimePickerProps) => {
   injectBase();
   const {
     value, placeholder = 'Select time', seconds = false, use12h = false,
@@ -150,4 +172,4 @@ export function TimePicker(props = {}) {
   }
 
   return wrap;
-}
+})

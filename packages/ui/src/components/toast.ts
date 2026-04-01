@@ -1,6 +1,15 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+export interface toastProps {
+  message?: string;
+  variant?: string;
+  duration?: number;
+  position?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 let containerCache = {};
 
 function getContainer(position) {
@@ -22,7 +31,7 @@ function getContainer(position) {
  * @param {string} [props.position] - top-right|top-left|bottom-right|bottom-left (default: top-right)
  * @returns {{ dismiss: Function }}
  */
-export function toast(props = {}) {
+export function toast(props: toastProps = {} as toastProps) {
   injectBase();
 
   const {

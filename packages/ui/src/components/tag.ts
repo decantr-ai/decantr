@@ -8,6 +8,17 @@ import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { pickForeground } from '../css/derive.js';
 
+import { component } from '../runtime/component.js';
+export interface TagProps {
+  color?: string;
+  closable?: boolean;
+  checked?: boolean | (() => boolean);
+  onClose?: () => void;
+  onCheck?: (...args: unknown[]) => unknown;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.color] - Preset: primary|success|warning|danger or custom hex
@@ -19,7 +30,7 @@ import { pickForeground } from '../css/derive.js';
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-export function Tag(props = {}, ...children) {
+export const Tag = component<TagProps>((props: TagProps = {} as TagProps, ...children: (string | Node)[]) => {
   injectBase();
   const { color, closable, checked, onClose, onCheck, class: cls, ...rest } = props;
 
@@ -81,7 +92,7 @@ export function Tag(props = {}, ...children) {
   }
 
   return tag;
-}
+})
 
 /**
  * Tag.CheckableGroup — Group of checkable tags.
@@ -92,7 +103,13 @@ export function Tag(props = {}, ...children) {
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-Tag.CheckableGroup = function CheckableGroup(props = {}) {
+
+export interface TagCheckableGroupProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Tag.CheckableGroup = function CheckableGroup(props: TagCheckableGroupProps = {} as TagCheckableGroupProps) {
   injectBase();
   const { options = [], value = [], onchange, class: cls } = props;
   let selected = [...value];

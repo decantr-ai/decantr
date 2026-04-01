@@ -2,6 +2,19 @@ import { h } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface ProgressProps {
+  value?: number | (() => number);
+  max?: number;
+  label?: string;
+  variant?: string;
+  size?: string;
+  striped?: boolean;
+  animated?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {number|Function} [props.value] - Current value (0-100 or 0-max)
@@ -14,7 +27,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Progress(props = {}) {
+export const Progress = component<ProgressProps>((props: ProgressProps = {} as ProgressProps) => {
   injectBase();
 
   const { value, max = 100, label, variant, size, striped, animated, class: cls } = props;
@@ -58,4 +71,4 @@ export function Progress(props = {}) {
   }
 
   return wrap;
-}
+})

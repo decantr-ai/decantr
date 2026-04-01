@@ -9,6 +9,15 @@ import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { createDisclosure } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface CollapsibleProps {
+  open?: boolean | (() => boolean);
+  onToggle?: (...args: unknown[]) => unknown;
+  class?: string;
+  trigger?: (...args: unknown[]) => unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {boolean|Function} [props.open=false] - Open state
@@ -18,7 +27,7 @@ import { createDisclosure } from './_behaviors.js';
  * @param {...Node} children - Collapsible content
  * @returns {HTMLElement}
  */
-export function Collapsible(props = {}, ...children) {
+export const Collapsible = component<CollapsibleProps>((props: CollapsibleProps = {} as CollapsibleProps, ...children: (string | Node)[]) => {
   injectBase();
   const { open = false, onToggle, trigger, class: cls, ...rest } = props;
 
@@ -47,4 +56,4 @@ export function Collapsible(props = {}, ...children) {
   }
 
   return wrap;
-}
+})

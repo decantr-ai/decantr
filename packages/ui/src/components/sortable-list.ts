@@ -9,6 +9,18 @@ import { injectBase, cx } from './_base.js';
 import { createDrag } from './_behaviors.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface SortableListProps {
+  items?: unknown[];
+  keyFn?: (item: unknown, index: number) => string;
+  renderFn?: (item: unknown, index: number, handle: HTMLElement) => HTMLElement;
+  onReorder?: (...args: unknown[]) => unknown;
+  direction?: 'vertical'|'horizontal';
+  disabled?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} props
  * @param {Array} props.items - Array of items to render
@@ -20,7 +32,7 @@ import { icon } from './icon.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function SortableList(props = {}) {
+export const SortableList = component<SortableListProps>((props: SortableListProps = {} as SortableListProps) => {
   injectBase();
 
   const {
@@ -173,4 +185,4 @@ export function SortableList(props = {}) {
 
   render();
   return container;
-}
+})

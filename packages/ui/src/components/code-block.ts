@@ -7,6 +7,17 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface CodeBlockProps {
+  language?: string;
+  lineNumbers?: boolean;
+  copyable?: boolean;
+  maxHeight?: number;
+  highlight?: (code: string, lang: string) => string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.language] - Language label (e.g. 'javascript', 'html')
@@ -18,7 +29,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...string} children - Code string(s)
  * @returns {HTMLElement}
  */
-export function CodeBlock(props = {}, ...children) {
+export const CodeBlock = component<CodeBlockProps>((props: CodeBlockProps = {} as CodeBlockProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { language, lineNumbers = false, copyable = true, maxHeight, highlight, class: cls } = props;
@@ -84,4 +95,4 @@ export function CodeBlock(props = {}, ...children) {
 
   wrap.appendChild(pre);
   return wrap;
-}
+})

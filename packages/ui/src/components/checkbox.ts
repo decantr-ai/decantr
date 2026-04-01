@@ -3,6 +3,23 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFormField } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface CheckboxProps {
+  checked?: boolean | (() => boolean);
+  disabled?: boolean | (() => boolean);
+  label?: string;
+  indeterminate?: boolean;
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  help?: string;
+  required?: boolean;
+  size?: string;
+  onchange?: (value: unknown) => void;
+  'aria-label'?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { label: labelTag, input: inputTag, span } = tags;
 
 /**
@@ -21,7 +38,7 @@ const { label: labelTag, input: inputTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Checkbox(props = {}) {
+export const Checkbox = component<CheckboxProps>((props: CheckboxProps = {} as CheckboxProps) => {
   injectBase();
 
   const { checked, disabled, label, indeterminate, error, success, help, required, size, onchange, 'aria-label': ariaLabel, class: cls } = props;
@@ -77,4 +94,4 @@ export function Checkbox(props = {}) {
   }
 
   return wrapper;
-}
+})

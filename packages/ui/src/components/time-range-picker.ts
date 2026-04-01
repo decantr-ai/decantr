@@ -11,6 +11,23 @@ import { injectBase, cx } from './_base.js';
 import { createFormField } from './_behaviors.js';
 import { applyFieldState, createFieldOverlay, renderTimeColumns } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface TimeRangePickerProps {
+  value?: Array<string>|Function;
+  placeholder?: string;
+  onchange?: (value: unknown) => void;
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag, span } = tags;
 
 /**
@@ -29,7 +46,7 @@ const { div, button: buttonTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function TimeRangePicker(props = {}) {
+export const TimeRangePicker = component<TimeRangePickerProps>((props: TimeRangePickerProps = {} as TimeRangePickerProps) => {
   injectBase();
   const {
     value, placeholder = 'Select time range', onchange,
@@ -167,4 +184,4 @@ export function TimeRangePicker(props = {}) {
   }
 
   return wrap;
-}
+})

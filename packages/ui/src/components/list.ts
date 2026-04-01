@@ -7,6 +7,20 @@ import { h } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface ListProps {
+  renderItem?: (item: unknown, index: number) => Node;
+  header?: string;
+  footer?: string;
+  bordered?: boolean;
+  grid?: number;
+  loading?: boolean;
+  emptyText?: string;
+  class?: string;
+  items?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {{ title?: string, description?: string, avatar?: Node, extra?: Node, actions?: Node[] }[]|Function} [props.items]
@@ -20,7 +34,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function List(props = {}) {
+export const List = component<ListProps>((props: ListProps = {} as ListProps) => {
   injectBase();
   const { items, renderItem, header, footer, bordered, grid, loading, emptyText = 'No data', class: cls } = props;
 
@@ -93,7 +107,7 @@ export function List(props = {}) {
   }
 
   return container;
-}
+})
 
 /**
  * List.Item — Standalone list item.
@@ -102,7 +116,13 @@ export function List(props = {}) {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-List.Item = function Item(props = {}, ...children) {
+
+export interface ListItemProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+List.Item = function Item(props: ListItemProps = {} as ListItemProps, ...children: (string | Node)[]) {
   injectBase();
   const { class: cls, ...rest } = props;
   return h('div', { class: cx('d-list-item', cls), role: 'listitem', ...rest }, ...children);

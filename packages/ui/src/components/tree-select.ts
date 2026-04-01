@@ -12,6 +12,26 @@ import { injectBase, cx } from './_base.js';
 import { caret, createCheckControl, createFormField } from './_behaviors.js';
 import { applyFieldState, createFieldOverlay } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface TreeSelectProps {
+  value?: string|Array<string>|Function;
+  multiple?: boolean;
+  checkable?: boolean;
+  onchange?: (value: unknown) => void;
+  placeholder?: string;
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  class?: string;
+  options?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag, span, input: inputTag } = tags;
 
 /**
@@ -33,7 +53,7 @@ const { div, button: buttonTag, span, input: inputTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function TreeSelect(props = {}) {
+export const TreeSelect = component<TreeSelectProps>((props: TreeSelectProps = {} as TreeSelectProps) => {
   injectBase();
   const {
     options = [], value, multiple = false, checkable = false,
@@ -271,4 +291,4 @@ export function TreeSelect(props = {}) {
   }
 
   return wrap;
-}
+})

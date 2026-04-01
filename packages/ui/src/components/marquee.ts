@@ -8,6 +8,17 @@ import { h } from '../runtime/index.js';
 import { onDestroy } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface MarqueeProps {
+  speed?: number;
+  direction?: 'left'|'right';
+  pauseOnHover?: boolean;
+  gap?: number;
+  repeat?: number;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {number} [props.speed=30] - Duration in seconds for one full cycle
@@ -19,7 +30,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...(HTMLElement|string)} children - Items to scroll
  * @returns {HTMLElement}
  */
-export function Marquee(props = {}, ...children) {
+export const Marquee = component<MarqueeProps>((props: MarqueeProps = {} as MarqueeProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const {
@@ -73,4 +84,4 @@ export function Marquee(props = {}, ...children) {
 
   wrap.appendChild(track);
   return wrap;
-}
+})

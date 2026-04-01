@@ -8,6 +8,22 @@ import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret, createCheckControl } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface TreeProps {
+  data?: TreeNode[];
+  expandedKeys?: string[];
+  selectedKeys?: string[];
+  checkedKeys?: string[];
+  checkable?: boolean;
+  selectable?: boolean;
+  defaultExpandAll?: boolean;
+  onSelect?: (value: unknown) => void;
+  onCheck?: (...args: unknown[]) => unknown;
+  onExpand?: (...args: unknown[]) => unknown;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @typedef {Object} TreeNode
  * @property {string} key - Unique identifier
@@ -33,7 +49,7 @@ import { caret, createCheckControl } from './_behaviors.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Tree(props = {}) {
+export const Tree = component<TreeProps>((props: TreeProps = {} as TreeProps) => {
   injectBase();
   const { data = [], expandedKeys: initExpanded = [], selectedKeys: initSelected = [], checkedKeys: initChecked = [], checkable = false, selectable = true, defaultExpandAll = false, onSelect, onCheck, onExpand, class: cls } = props;
 
@@ -145,4 +161,4 @@ export function Tree(props = {}) {
 
   render();
   return tree;
-}
+})

@@ -10,6 +10,26 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFormField } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface RateProps {
+  value?: number | (() => number);
+  count?: number;
+  half?: boolean;
+  disabled?: boolean | (() => boolean);
+  readonly?: boolean;
+  size?: string;
+  character?: string;
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  label?: string;
+  help?: string;
+  required?: boolean;
+  onchange?: (value: unknown) => void;
+  'aria-label'?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag } = tags;
 
 /**
@@ -31,7 +51,7 @@ const { div, button: buttonTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Rate(props = {}) {
+export const Rate = component<RateProps>((props: RateProps = {} as RateProps) => {
   injectBase();
   const {
     value = 0, count = 5, half = false, disabled = false, readonly = false,
@@ -183,4 +203,4 @@ export function Rate(props = {}) {
   }
 
   return container;
-}
+})

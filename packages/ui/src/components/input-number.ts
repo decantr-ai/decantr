@@ -11,6 +11,29 @@ import { createFormField } from './_behaviors.js';
 import { icon } from './icon.js';
 import { applyFieldState } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface InputNumberProps {
+  value?: number | (() => number);
+  min?: number;
+  max?: number;
+  step?: number;
+  precision?: number;
+  disabled?: boolean | (() => boolean);
+  controls?: boolean;
+  placeholder?: string;
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  onchange?: (value: unknown) => void;
+  'aria-label'?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, input: inputTag, button: buttonTag } = tags;
 
 /**
@@ -35,7 +58,7 @@ const { div, input: inputTag, button: buttonTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function InputNumber(props = {}) {
+export const InputNumber = component<InputNumberProps>((props: InputNumberProps = {} as InputNumberProps) => {
   injectBase();
   const {
     value, min = -Infinity, max = Infinity, step = 1, precision,
@@ -152,4 +175,4 @@ export function InputNumber(props = {}) {
   }
 
   return wrap;
-}
+})

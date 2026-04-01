@@ -4,6 +4,27 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret, createCheckControl, createLiveRegion } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface DataTableProps {
+  data?: Array<Object>|Function;
+  pagination?: Record<string, unknown>;
+  selection?: 'single'|'multi'|'none';
+  onSelectionChange?: (value: unknown) => void;
+  striped?: boolean;
+  hoverable?: boolean;
+  stickyHeader?: boolean;
+  onSort?: (...args: unknown[]) => unknown;
+  rowKey?: (...args: unknown[]) => unknown;
+  onCellEdit?: (...args: unknown[]) => unknown;
+  expandable?: boolean;
+  expandRender?: (...args: unknown[]) => unknown;
+  exportable?: boolean;
+  emptyText?: string;
+  class?: string;
+  columns?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag, span, label: labelTag } = tags;
 
 // ═══════════════════════════════════════════════════════════════
@@ -57,7 +78,7 @@ function csvCell(v) {
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function DataTable(props = {}) {
+export const DataTable = component<DataTableProps>((props: DataTableProps = {} as DataTableProps) => {
   injectBase();
 
   const {
@@ -760,4 +781,4 @@ export function DataTable(props = {}) {
   });
 
   return root;
-}
+})

@@ -3,6 +3,17 @@ import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFocusTrap } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface ModalProps {
+  title?: string;
+  footer?: Node | Node[];
+  visible?: () => boolean;
+  onClose?: () => void;
+  width?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const MODAL_SECTIONS = ['d-modal-header', 'd-modal-body', 'd-modal-footer'];
 let _mid = 0;
 
@@ -24,7 +35,7 @@ function hasSection(children) {
  * @param {...Node} children
  * @returns {HTMLDialogElement}
  */
-export function Modal(props = {}, ...children) {
+export const Modal = component<ModalProps>((props: ModalProps = {} as ModalProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { title, footer, visible, onClose, width = '480px', class: cls } = props;
@@ -141,7 +152,7 @@ export function Modal(props = {}, ...children) {
   });
 
   return dialog;
-}
+})
 
 /**
  * Modal.Header - modal header section
@@ -149,7 +160,13 @@ export function Modal(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Modal.Header = function ModalHeader(props = {}, ...children) {
+
+export interface ModalHeaderProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Modal.Header = function ModalHeader(props: ModalHeaderProps = {} as ModalHeaderProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return h('div', { class: cx('d-modal-header', cls) }, ...children);
 };
@@ -160,7 +177,13 @@ Modal.Header = function ModalHeader(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Modal.Body = function ModalBody(props = {}, ...children) {
+
+export interface ModalBodyProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Modal.Body = function ModalBody(props: ModalBodyProps = {} as ModalBodyProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return h('div', { class: cx('d-modal-body', cls) }, ...children);
 };
@@ -171,7 +194,13 @@ Modal.Body = function ModalBody(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-Modal.Footer = function ModalFooter(props = {}, ...children) {
+
+export interface ModalFooterProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+Modal.Footer = function ModalFooter(props: ModalFooterProps = {} as ModalFooterProps, ...children: (string | Node)[]) {
   const { class: cls } = props;
   return h('div', { class: cx('d-modal-footer', cls) }, ...children);
 };

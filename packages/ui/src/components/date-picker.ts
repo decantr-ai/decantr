@@ -12,6 +12,27 @@ import { caret, createFormField } from './_behaviors.js';
 import { icon } from './icon.js';
 import { applyFieldState, createFieldOverlay, renderCalendar, MONTHS } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface DatePickerProps {
+  value?: Date | string | (() => Date | string);
+  placeholder?: string;
+  format?: string;
+  min?: Date;
+  max?: Date;
+  disabledDate?: (...args: unknown[]) => unknown;
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  onchange?: (value: unknown) => void;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag, span } = tags;
 
 /**
@@ -34,7 +55,7 @@ const { div, button: buttonTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function DatePicker(props = {}) {
+export const DatePicker = component<DatePickerProps>((props: DatePickerProps = {} as DatePickerProps) => {
   injectBase();
   const {
     value, placeholder = 'Select date', format = 'yyyy-MM-dd',
@@ -214,4 +235,4 @@ export function DatePicker(props = {}) {
   }
 
   return wrap;
-}
+})

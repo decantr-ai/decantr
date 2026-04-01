@@ -1,6 +1,16 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface SkeletonProps {
+  variant?: string;
+  width?: string;
+  height?: string;
+  lines?: number;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.variant] - text|rect|circle (default: text)
@@ -10,7 +20,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Skeleton(props = {}) {
+export const Skeleton = component<SkeletonProps>((props: SkeletonProps = {} as SkeletonProps) => {
   injectBase();
 
   const { variant = 'text', width, height, lines, class: cls } = props;
@@ -36,4 +46,4 @@ export function Skeleton(props = {}) {
   if (height) el.style.height = height;
 
   return el;
-}
+})

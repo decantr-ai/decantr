@@ -2,6 +2,21 @@ import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon as iconHelper } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface ChipProps {
+  icon?: string | Node;
+  label?: string;
+  variant?: string;
+  size?: string;
+  removable?: boolean;
+  onRemove?: (...args: unknown[]) => unknown;
+  onClick?: (...args: unknown[]) => unknown;
+  selected?: boolean;
+  class?: string;
+  color?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string|Node} [props.icon] - Leading icon (string = icon name, Node = element)
@@ -15,7 +30,7 @@ import { icon as iconHelper } from './icon.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Chip(props = {}) {
+export const Chip = component<ChipProps>((props: ChipProps = {} as ChipProps) => {
   injectBase();
 
   const {
@@ -83,4 +98,4 @@ export function Chip(props = {}) {
   }
 
   return el;
-}
+})

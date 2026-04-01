@@ -7,6 +7,17 @@ import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon as makeIcon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface ResultProps {
+  status?: 'success'|'error'|'info'|'warning'|'403'|'404'|'500';
+  title?: string;
+  subTitle?: string;
+  icon?: Node;
+  extra?: Node[];
+  class?: string;
+  [key: string]: unknown;
+}
+
 const STATUS_ICON_MAP = {
   success: 'check-circle',
   error: 'x-circle',
@@ -28,7 +39,7 @@ const STATUS_ICON_MAP = {
  * @param {...Node} children - Additional content
  * @returns {HTMLElement}
  */
-export function Result(props = {}, ...children) {
+export const Result = component<ResultProps>((props: ResultProps = {} as ResultProps, ...children: (string | Node)[]) => {
   injectBase();
   const { status = 'info', title, subTitle, icon, extra, class: cls } = props;
 
@@ -54,4 +65,4 @@ export function Result(props = {}, ...children) {
   }
 
   return el;
-}
+})

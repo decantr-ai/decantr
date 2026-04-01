@@ -10,6 +10,13 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createOverlay, createRovingTabindex, createListbox, caret } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface NavigationMenuProps {
+  items?: NavMenuItem[];
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, nav: navTag, ul, li, a, button: buttonTag } = tags;
 
 /**
@@ -25,7 +32,7 @@ const { div, nav: navTag, ul, li, a, button: buttonTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function NavigationMenu(props = {}) {
+export const NavigationMenu = component<NavigationMenuProps>((props: NavigationMenuProps = {} as NavigationMenuProps) => {
   injectBase();
   const { items = [], class: cls } = props;
 
@@ -163,4 +170,4 @@ export function NavigationMenu(props = {}) {
   });
 
   return navEl;
-}
+})

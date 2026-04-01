@@ -11,6 +11,27 @@ import { injectBase, cx } from './_base.js';
 import { createListbox, createFormField } from './_behaviors.js';
 import { applyFieldState, createFieldOverlay } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface MentionsProps {
+  prefix?: string;
+  value?: string | (() => string);
+  placeholder?: string;
+  rows?: number;
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  onchange?: (value: unknown) => void;
+  onSelect?: (value: unknown) => void;
+  class?: string;
+  options?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, textarea: textareaTag } = tags;
 
 /**
@@ -33,7 +54,7 @@ const { div, textarea: textareaTag } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Mentions(props = {}) {
+export const Mentions = component<MentionsProps>((props: MentionsProps = {} as MentionsProps) => {
   injectBase();
   const {
     options = [], prefix = '@', value, placeholder, rows = 3,
@@ -162,4 +183,4 @@ export function Mentions(props = {}) {
   }
 
   return wrap;
-}
+})

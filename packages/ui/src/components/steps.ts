@@ -9,6 +9,17 @@ import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface StepsProps {
+  current?: number | (() => number);
+  direction?: 'horizontal'|'vertical';
+  onChange?: (...args: unknown[]) => unknown;
+  clickable?: boolean;
+  class?: string;
+  items?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {{ title: string, description?: string, icon?: string|Node, status?: 'wait'|'process'|'finish'|'error' }[]} [props.items]
@@ -19,7 +30,7 @@ import { icon } from './icon.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Steps(props = {}) {
+export const Steps = component<StepsProps>((props: StepsProps = {} as StepsProps) => {
   injectBase();
   const { items = [], current = 0, direction = 'horizontal', onChange, clickable = false, class: cls } = props;
 
@@ -96,4 +107,4 @@ export function Steps(props = {}) {
   }
 
   return container;
-}
+})

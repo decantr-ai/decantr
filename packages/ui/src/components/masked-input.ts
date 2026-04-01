@@ -8,6 +8,20 @@ import { h } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface MaskedInputProps {
+  mask?: string;
+  placeholder?: string;
+  value?: string | (() => string);
+  disabled?: boolean | (() => boolean);
+  readonly?: boolean;
+  error?: string;
+  onchange?: (value: unknown) => void;
+  oncomplete?: (...args: unknown[]) => unknown;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} props.mask - Mask pattern, e.g. '(###) ###-####', '##/##/####', '####-####-####-####'
@@ -21,7 +35,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function MaskedInput(props = {}) {
+export const MaskedInput = component<MaskedInputProps>((props: MaskedInputProps = {} as MaskedInputProps) => {
   injectBase();
   const {
     mask,
@@ -233,4 +247,4 @@ export function MaskedInput(props = {}) {
   }
 
   return input;
-}
+})

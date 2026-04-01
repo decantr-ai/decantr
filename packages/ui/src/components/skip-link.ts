@@ -7,13 +7,21 @@
 import { h } from '../runtime/index.js';
 import { injectBase } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface SkipLinkProps {
+  target?: string;
+  label?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string} [props.target='#main-content'] - CSS selector or ID of target element
  * @param {string} [props.label='Skip to main content']
  * @returns {HTMLElement}
  */
-export function SkipLink(props = {}) {
+export const SkipLink = component<SkipLinkProps>((props: SkipLinkProps = {} as SkipLinkProps) => {
   injectBase();
   const { target = '#main-content', label = 'Skip to main content' } = props;
 
@@ -32,4 +40,4 @@ export function SkipLink(props = {}) {
   });
 
   return el;
-}
+})

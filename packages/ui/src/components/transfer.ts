@@ -8,6 +8,17 @@ import { createEffect, createSignal } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret, createCheckControl } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface TransferProps {
+  targetKeys?: string[];
+  searchable?: boolean;
+  titles?: string[];
+  onchange?: (value: unknown) => void;
+  class?: string;
+  dataSource?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {{ key: string, label: string, disabled?: boolean }[]} [props.dataSource=[]]
@@ -18,7 +29,7 @@ import { caret, createCheckControl } from './_behaviors.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Transfer(props = {}) {
+export const Transfer = component<TransferProps>((props: TransferProps = {} as TransferProps) => {
   injectBase();
   const { dataSource = [], targetKeys: initTarget = [], searchable = false, titles = ['Source', 'Target'], onchange, class: cls } = props;
 
@@ -160,4 +171,4 @@ export function Transfer(props = {}) {
 
   render();
   return container;
-}
+})

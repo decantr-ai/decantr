@@ -9,6 +9,27 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFormField } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface InputOTPProps {
+  length?: number;
+  value?: string | (() => string);
+  masked?: boolean;
+  separator?: number;
+  onComplete?: (...args: unknown[]) => unknown;
+  onchange?: (value: unknown) => void;
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  size?: string;
+  variant?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  'aria-label'?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, input: inputTag, span } = tags;
 
 /**
@@ -31,7 +52,7 @@ const { div, input: inputTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function InputOTP(props = {}) {
+export const InputOTP = component<InputOTPProps>((props: InputOTPProps = {} as InputOTPProps) => {
   injectBase();
   const { length = 6, value, masked = false, separator, onComplete, onchange, disabled, error, success, size, variant, label, help, required, 'aria-label': ariaLabel, class: cls } = props;
 
@@ -175,4 +196,4 @@ export function InputOTP(props = {}) {
   }
 
   return container;
-}
+})

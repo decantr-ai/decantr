@@ -8,6 +8,16 @@ import { onDestroy } from '../runtime/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface TourProps {
+  onFinish?: (...args: unknown[]) => unknown;
+  onChange?: (...args: unknown[]) => unknown;
+  onClose?: () => void;
+  class?: string;
+  steps?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, span, button: buttonTag } = tags;
 
 /**
@@ -19,7 +29,7 @@ const { div, span, button: buttonTag } = tags;
  * @param {string} [props.class]
  * @returns {{ start: Function, next: Function, prev: Function, close: Function, goTo: Function }}
  */
-export function Tour(props = {}) {
+export const Tour = component<TourProps>((props: TourProps = {} as TourProps) => {
   injectBase();
   const { steps = [], onFinish, onChange, onClose, class: cls } = props;
 
@@ -156,4 +166,4 @@ export function Tour(props = {}) {
   });
 
   return { start, next, prev, close, goTo };
-}
+})

@@ -7,6 +7,14 @@ import { h, onCleanup } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon } from './icon.js';
 
+import { component } from '../runtime/component.js';
+export interface BackTopProps {
+  visibilityHeight?: number;
+  target?: HTMLElement;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {number} [props.visibilityHeight=400] - Scroll threshold in px
@@ -15,7 +23,7 @@ import { icon } from './icon.js';
  * @param {...Node} children - Custom button content
  * @returns {HTMLElement}
  */
-export function BackTop(props = {}, ...children) {
+export const BackTop = component<BackTopProps>((props: BackTopProps = {} as BackTopProps, ...children: (string | Node)[]) => {
   injectBase();
   const { visibilityHeight = 400, target, class: cls } = props;
 
@@ -72,4 +80,4 @@ export function BackTop(props = {}, ...children) {
   });
 
   return btn;
-}
+})

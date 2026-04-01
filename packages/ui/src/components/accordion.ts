@@ -2,6 +2,18 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface AccordionProps {
+  multiple?: boolean;
+  collapsible?: boolean;
+  defaultOpen?: string[];
+  disabled?: boolean | (() => boolean);
+  onValueChange?: (...args: unknown[]) => unknown;
+  class?: string;
+  items?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag } = tags;
 
 const ANIM_MS = 250;
@@ -63,7 +75,7 @@ let uid = 0;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Accordion(props = {}) {
+export const Accordion = component<AccordionProps>((props: AccordionProps = {} as AccordionProps) => {
   injectBase();
 
   const {
@@ -207,4 +219,4 @@ export function Accordion(props = {}) {
   }
 
   return container;
-}
+})

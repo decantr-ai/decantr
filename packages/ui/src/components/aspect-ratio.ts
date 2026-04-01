@@ -6,6 +6,13 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface AspectRatioProps {
+  ratio?: number;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {number} [props.ratio=16/9] - Width/height ratio
@@ -13,7 +20,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-export function AspectRatio(props = {}, ...children) {
+export const AspectRatio = component<AspectRatioProps>((props: AspectRatioProps = {} as AspectRatioProps, ...children: (string | Node)[]) => {
   injectBase();
   const { ratio = 16 / 9, class: cls, ...rest } = props;
   return h('div', {
@@ -21,4 +28,4 @@ export function AspectRatio(props = {}, ...children) {
     style: { aspectRatio: String(ratio) },
     ...rest
   }, ...children);
-}
+})

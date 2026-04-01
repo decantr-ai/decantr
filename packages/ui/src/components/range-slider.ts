@@ -10,6 +10,18 @@ import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { createDrag } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface RangeSliderProps {
+  value?: Array<number>|Function;
+  min?: number;
+  max?: number;
+  step?: number;
+  onchange?: (value: unknown) => void;
+  disabled?: boolean | (() => boolean);
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {Array<number>|Function} [props.value] - [min, max]
@@ -21,7 +33,7 @@ import { createDrag } from './_behaviors.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function RangeSlider(props = {}) {
+export const RangeSlider = component<RangeSliderProps>((props: RangeSliderProps = {} as RangeSliderProps) => {
   injectBase();
   const {
     value, min: pMin = 0, max: pMax = 100, step = 1,
@@ -175,4 +187,4 @@ export function RangeSlider(props = {}) {
 
   syncDOM();
   return container;
-}
+})

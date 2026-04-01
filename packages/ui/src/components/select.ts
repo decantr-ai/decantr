@@ -5,6 +5,25 @@ import { injectBase, cx } from './_base.js';
 import { caret, createListbox, createFormField } from './_behaviors.js';
 import { applyFieldState, createFieldOverlay } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface SelectProps {
+  value?: string | (() => string);
+  placeholder?: string;
+  disabled?: boolean | (() => boolean);
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  onchange?: (value: unknown) => void;
+  'aria-label'?: string;
+  class?: string;
+  options?: unknown;
+  [key: string]: unknown;
+}
+
 const { div, button: buttonTag, span } = tags;
 
 /**
@@ -25,7 +44,7 @@ const { div, button: buttonTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Select(props = {}) {
+export const Select = component<SelectProps>((props: SelectProps = {} as SelectProps) => {
   injectBase();
 
   const {
@@ -168,4 +187,4 @@ export function Select(props = {}) {
   }
 
   return wrap;
-}
+})

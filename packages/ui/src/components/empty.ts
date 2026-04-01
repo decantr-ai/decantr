@@ -6,6 +6,14 @@
 import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface EmptyProps {
+  icon?: string | Node;
+  description?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {string|Node} [props.icon] - Custom icon (default: generic empty icon)
@@ -14,7 +22,7 @@ import { injectBase, cx } from './_base.js';
  * @param {...Node} children - Optional action buttons below description
  * @returns {HTMLElement}
  */
-export function Empty(props = {}, ...children) {
+export const Empty = component<EmptyProps>((props: EmptyProps = {} as EmptyProps, ...children: (string | Node)[]) => {
   injectBase();
   const { icon, description = 'No data', class: cls, ...rest } = props;
 
@@ -38,4 +46,4 @@ export function Empty(props = {}, ...children) {
   });
 
   return container;
-}
+})

@@ -4,6 +4,20 @@ import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createRovingTabindex } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface RadioGroupProps {
+  value?: string | (() => string);
+  name?: string;
+  disabled?: boolean | (() => boolean);
+  orientation?: string;
+  error?: boolean | string | (() => boolean | string);
+  size?: string;
+  onchange?: (value: unknown) => void;
+  'aria-label'?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, label: labelTag, input: inputTag, span } = tags;
 
 /**
@@ -20,7 +34,7 @@ const { div, label: labelTag, input: inputTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function RadioGroup(props = {}) {
+export const RadioGroup = component<RadioGroupProps>((props: RadioGroupProps = {} as RadioGroupProps) => {
   injectBase();
 
   const {
@@ -136,4 +150,4 @@ export function RadioGroup(props = {}) {
   }
 
   return group;
-}
+})

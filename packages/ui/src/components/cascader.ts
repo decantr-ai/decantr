@@ -12,6 +12,28 @@ import { injectBase, cx } from './_base.js';
 import { caret, createFormField } from './_behaviors.js';
 import { applyFieldState, createFieldOverlay } from './_primitives.js';
 
+import { component } from '../runtime/component.js';
+export interface CascaderProps {
+  options?: CascaderOption[];
+  value?: string[];
+  onChange?: (...args: unknown[]) => unknown;
+  placeholder?: string;
+  disabled?: boolean | (() => boolean);
+  clearable?: boolean;
+  separator?: string;
+  expandTrigger?: 'click'|'hover';
+  searchable?: boolean;
+  error?: boolean | string | (() => boolean | string);
+  success?: boolean | string | (() => boolean | string);
+  variant?: string;
+  size?: string;
+  label?: string;
+  help?: string;
+  required?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
 const { div, input: inputTag, button: buttonTag, span } = tags;
 
 /**
@@ -43,7 +65,7 @@ const { div, input: inputTag, button: buttonTag, span } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Cascader(props = {}) {
+export const Cascader = component<CascaderProps>((props: CascaderProps = {} as CascaderProps) => {
   injectBase();
   const {
     options = [], value, onChange, placeholder = 'Select', disabled = false,
@@ -258,4 +280,4 @@ export function Cascader(props = {}) {
   }
 
   return wrap;
-}
+})

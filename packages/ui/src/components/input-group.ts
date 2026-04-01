@@ -8,6 +8,21 @@ import { h } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx, reactiveClass, reactiveAttr, resolve } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface InputGroupProps {
+  vertical?: boolean;
+  size?: string;
+  error?: boolean | (() => boolean);
+  disabled?: boolean | (() => boolean);
+  class?: string;
+  [key: string]: unknown;
+}
+
+export interface CompactGroupProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {boolean} [props.vertical=false] - Stack vertically (for textarea header/footer)
@@ -18,7 +33,7 @@ import { injectBase, cx, reactiveClass, reactiveAttr, resolve } from './_base.js
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-export function InputGroup(props = {}, ...children) {
+export const InputGroup = component<InputGroupProps>((props: InputGroupProps = {} as InputGroupProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { vertical = false, size, error, disabled, class: cls, ...rest } = props;
@@ -36,7 +51,7 @@ export function InputGroup(props = {}, ...children) {
   reactiveAttr(el, disabled, 'data-disabled');
 
   return el;
-}
+})
 
 /**
  * Static addon sub-component.
@@ -46,7 +61,13 @@ export function InputGroup(props = {}, ...children) {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
-InputGroup.Addon = function Addon(propsOrChild, ...children) {
+
+export interface InputGroupAddonProps {
+  class?: string;
+  [key: string]: unknown;
+}
+
+InputGroup.Addon = function Addon(propsOrChild, ...children: (string | Node)[]) {
   injectBase();
 
   // Smart first-arg detection: string, DOM node (has nodeType), or null → treat as child
@@ -67,9 +88,9 @@ InputGroup.Addon = function Addon(propsOrChild, ...children) {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
-export function CompactGroup(props = {}, ...children) {
+export const CompactGroup = component<CompactGroupProps>((props: CompactGroupProps = {} as CompactGroupProps, ...children: (string | Node)[]) => {
   injectBase();
 
   const { class: cls, ...rest } = props;
   return h('div', { class: cx('d-compact-group', cls), role: 'group', ...rest }, ...children);
-}
+})

@@ -7,6 +7,26 @@ import { h } from '../runtime/index.js';
 import { createSignal, createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 
+import { component } from '../runtime/component.js';
+export interface TimelineProps {
+  mode?: 'left'|'right'|'alternate'|'custom';
+  pending?: boolean|string;
+  pendingDot?: string | Node;
+  variant?: 'default'|'branded';
+  size?: string;
+  active?: number | (() => number);
+  gradient?: boolean;
+  glass?: boolean;
+  reverse?: boolean;
+  direction?: 'vertical'|'horizontal';
+  loading?: boolean | (() => boolean);
+  loadingCount?: number;
+  onClick?: (...args: unknown[]) => unknown;
+  class?: string;
+  items?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * @param {Object} [props]
  * @param {{ label?: string, content: string|Node, color?: string, icon?: string|Node, time?: string, status?: 'default'|'success'|'warning'|'error'|'info', tag?: string, position?: 'left'|'right', collapsible?: boolean, defaultOpen?: boolean, onclick?: Function, disabled?: boolean }[]} [props.items]
@@ -26,7 +46,7 @@ import { injectBase, cx } from './_base.js';
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Timeline(props = {}) {
+export const Timeline = component<TimelineProps>((props: TimelineProps = {} as TimelineProps) => {
   injectBase();
   const {
     items = [], mode = 'left', pending = false, pendingDot,
@@ -73,7 +93,7 @@ export function Timeline(props = {}) {
   }
 
   return container;
-}
+})
 
 /**
  * Render timeline items into the container.

@@ -5,6 +5,16 @@ import { injectBase, cx } from './_base.js';
 import { icon } from './icon.js';
 import { createOverlay, createListbox } from './_behaviors.js';
 
+import { component } from '../runtime/component.js';
+export interface BreadcrumbProps {
+  separator?: 'chevron'|'slash'|'dot'|string|HTMLElement;
+  size?: 'sm'|'lg';
+  maxItems?: number;
+  class?: string;
+  items?: unknown;
+  [key: string]: unknown;
+}
+
 const { nav: navTag, ol, li, span, button: buttonTag, a } = tags;
 
 /**
@@ -16,7 +26,7 @@ const { nav: navTag, ol, li, span, button: buttonTag, a } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
-export function Breadcrumb(props = {}) {
+export const Breadcrumb = component<BreadcrumbProps>((props: BreadcrumbProps = {} as BreadcrumbProps) => {
   injectBase();
 
   const { items: itemsProp = [], separator = 'chevron', size, maxItems, class: cls } = props;
@@ -179,4 +189,4 @@ export function Breadcrumb(props = {}) {
 
   nav.appendChild(list);
   return nav;
-}
+})
