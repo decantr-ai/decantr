@@ -640,14 +640,58 @@ function generateDecoratorsCSS(recipeData: RecipeData | undefined, themeName: st
 }
 
 /**
+ * Generate a dedicated decorators.md context file with full decorator table and usage examples.
+ */
+function generateDecoratorsContext(recipeData: RecipeData | undefined, recipeName: string): string {
+  const lines: string[] = [];
+  lines.push(`# Recipe Decorators: ${recipeName}`);
+  lines.push('');
+  lines.push('## Available Classes');
+  lines.push('');
+
+  if (recipeData?.decorators && Object.keys(recipeData.decorators).length > 0) {
+    lines.push('| Decorator | Description |');
+    lines.push('|-----------|-------------|');
+    for (const [name, description] of Object.entries(recipeData.decorators)) {
+      lines.push(`| ${name} | ${description} |`);
+    }
+  } else {
+    lines.push('No decorators defined.');
+  }
+
+  lines.push('');
+  lines.push('## Usage');
+  lines.push('');
+  lines.push('Decorators are plain CSS class names from `src/styles/decorators.css`. Combine with atoms:');
+  lines.push('');
+  lines.push('```tsx');
+  lines.push("<div className={css('_flex _col _gap4') + ' " + recipeName + "-card'}>");
+  lines.push("  <pre className={css('_p3') + ' " + recipeName + "-code'}>{code}</pre>");
+  lines.push('</div>');
+  lines.push('```');
+  lines.push('');
+  lines.push('Atoms use `css()` function. Decorators are plain class strings. Combined via string concatenation.');
+  lines.push('');
+
+  return lines.join('\n');
+}
+
+/**
  * Generate a CSS rule from a decorator name and description.
  */
 function generateDecoratorRule(name: string, description: string): string {
   const rules: string[] = [];
   const descLower = description.toLowerCase();
 
+  // Font patterns
+  if (descLower.includes('monospace') || descLower.includes('mono font')) {
+    rules.push("font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace");
+  }
+
   // Background patterns
-  if (descLower.includes('surface background') || descLower.includes('surface elevation')) {
+  if (descLower.includes('surface-raised') || descLower.includes('surface raised')) {
+    rules.push('background: var(--d-surface-raised)');
+  } else if (descLower.includes('surface background') || descLower.includes('surface elevation')) {
     rules.push('background: var(--d-surface)');
   } else if (descLower.includes('background') && descLower.includes('theme')) {
     rules.push('background: var(--d-bg)');
@@ -655,8 +699,13 @@ function generateDecoratorRule(name: string, description: string): string {
     rules.push('background: color-mix(in srgb, var(--d-primary) 15%, var(--d-surface))');
   }
 
-  // Border patterns
-  if (descLower.includes('1px border') || descLower.includes('subtle border')) {
+  // Border patterns (specific before generic)
+  const leftBorderMatch = descLower.match(/(\d+)px\s+left\s+border/);
+  if (leftBorderMatch) {
+    rules.push(`border-left: ${leftBorderMatch[1]}px solid var(--d-primary)`);
+  } else if (descLower.includes('left border')) {
+    rules.push('border-left: 3px solid var(--d-primary)');
+  } else if (descLower.includes('1px border') || descLower.includes('subtle border')) {
     rules.push('border: 1px solid var(--d-border)');
   } else if (descLower.includes('border') && !descLower.includes('radius')) {
     rules.push('border: 1px solid var(--d-border)');
@@ -703,6 +752,17 @@ function generateDecoratorRule(name: string, description: string): string {
     rules.push('padding: var(--d-gap-3) var(--d-gap-4)');
     rules.push('border-radius: var(--d-radius-lg)');
     rules.push('max-width: 80%');
+  }
+
+  // Code blocks: add padding, radius, and overflow when monospace/code is detected
+  if (descLower.includes('monospace') || descLower.includes('code')) {
+    if (!rules.some(r => r.startsWith('padding'))) {
+      rules.push('padding: 0.75rem 1rem');
+    }
+    if (!rules.some(r => r.startsWith('border-radius'))) {
+      rules.push('border-radius: var(--d-radius-sm)');
+    }
+    rules.push('overflow-x: auto');
   }
 
   // Fallback if no rules matched
@@ -1466,6 +1526,14 @@ Recipe decorators (from \`src/styles/decorators.css\`) are regular CSS class nam
 - Decorators: \`'carbon-card'\`, \`'carbon-glass'\` — plain CSS classes from decorators.css
 - Combined: \`css('_flex _col') + ' carbon-card'\`
 
+### Routing
+
+Check \`decantr.essence.json\` → \`meta.platform.routing\` for the routing strategy:
+- \`"hash"\` → use \`HashRouter\` (e.g., for static hosting, GitHub Pages)
+- \`"history"\` → use \`BrowserRouter\` (e.g., for server-rendered apps)
+
+Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and listed in \`.decantr/context/scaffold.md\`.
+
 ### CSS Architecture
 
 The CSS is organized into two parts:
@@ -2177,6 +2245,10 @@ export async function refreshDerivedFiles(
 
   const cssFiles = [tokensPath, decoratorsPath];
 
+  // ── Generate decorators.md context file (full table + usage examples) ──
+  const decoratorsMdPath = join(contextDir, 'decorators.md');
+  writeFileSync(decoratorsMdPath, generateDecoratorsContext(recipeData, recipeName));
+
   // ── Generate DECANTR.md ──
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
   writeFileSync(decantrMdPath, generateDecantrMdV31(guardMode, CSS_APPROACH_CONTENT));
@@ -2186,7 +2258,7 @@ export async function refreshDerivedFiles(
   writeFileSync(summaryPath, generateEssenceSummaryV3(essence));
 
   // ── Determine sections (V3.1 sectioned or V3.0 flat) ──
-  const contextFiles: string[] = [summaryPath];
+  const contextFiles: string[] = [decoratorsMdPath, summaryPath];
   const blueprint = essence.blueprint;
 
   // V3.1: has sections array
@@ -2684,17 +2756,12 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push(`**Theme tokens:** see \`src/styles/tokens.css\` — use \`var(--d-primary)\`, \`var(--d-bg)\`, etc.`);
   lines.push('');
 
-  // Decorators
-  lines.push(`## Decorators (${recipeName} recipe)`);
-  lines.push('');
+  // Decorators (compact one-line reference; full table in .decantr/context/decorators.md)
   if (decorators.length > 0) {
-    lines.push('| Decorator | Description |');
-    lines.push('|-----------|-------------|');
-    for (const dec of decorators) {
-      lines.push(`| ${dec.name} | ${dec.description} |`);
-    }
+    const names = decorators.map(d => d.name).join(', ');
+    lines.push(`**Decorators:** see \`src/styles/decorators.css\` — available classes: ${names}`);
   } else {
-    lines.push('No decorators defined.');
+    lines.push('**Decorators:** none defined.');
   }
   lines.push('');
   if (recipeHints) {

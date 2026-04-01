@@ -66,12 +66,14 @@ describe('generateSectionContext', () => {
     expect(result).not.toContain('--d-primary: #6366f1');
   });
 
-  it('inlines decorators', () => {
+  it('references decorators with compact one-line list', () => {
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('## Decorators (sharp-edge recipe)');
-    expect(result).toContain('| surface-card | Surface background with border |');
-    expect(result).toContain('| glass-panel | Backdrop blur glass effect |');
+    expect(result).toContain('**Decorators:** see `src/styles/decorators.css`');
+    expect(result).toContain('surface-card, glass-panel');
+    // Should NOT contain the full table
+    expect(result).not.toContain('| Decorator | Description |');
+    expect(result).not.toContain('| surface-card | Surface background with border |');
   });
 
   it('includes zone context inline without heading', () => {
