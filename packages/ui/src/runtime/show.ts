@@ -5,13 +5,12 @@ import { createEffect } from '../state/index.js';
  * Conditional rendering with proper reactive disposal.
  * Each branch gets its own createRoot scope — when the condition flips,
  * the old branch's effects/signals are disposed before the new branch mounts.
- *
- * @param {Function} when - Signal getter returning truthy/falsy
- * @param {Function} renderFn - () => Node for truthy branch
- * @param {Function} [fallbackFn] - () => Node for falsy branch
- * @returns {HTMLElement}
  */
-export function Show(when, renderFn, fallbackFn) {
+export function Show(
+  when: () => boolean,
+  renderFn: () => Node,
+  fallbackFn?: () => Node
+): HTMLElement {
   const container = document.createElement('d-show');
 
   createEffect(() => {
@@ -19,8 +18,8 @@ export function Show(when, renderFn, fallbackFn) {
     const fn = result ? renderFn : fallbackFn;
     if (!fn) return;
 
-    let branchNode;
-    let branchDispose;
+    let branchNode: Node | undefined;
+    let branchDispose: (() => void) | undefined;
     createRoot((dispose) => {
       branchDispose = dispose;
       branchNode = fn();

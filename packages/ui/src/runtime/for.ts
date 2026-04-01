@@ -1,25 +1,28 @@
 import { createRoot, registerCleanup } from '../state/scheduler.js';
 import { createEffect } from '../state/index.js';
 
+interface ForEntry {
+  node: Node;
+  dispose: (() => void) | undefined;
+}
+
 /**
  * Keyed list rendering with per-item reactive disposal.
  * Each item gets its own createRoot scope. When an item is removed from
  * the list, its scope is disposed (killing all owned effects/signals).
- *
- * @param {Function} each - Signal getter returning an array
- * @param {Function} keyFn - (item, index) => unique key
- * @param {Function} renderFn - (item, index) => Node
- * @returns {HTMLElement}
  */
-export function For(each, keyFn, renderFn) {
+export function For<T>(
+  each: () => T[],
+  keyFn: (item: T, index: number) => unknown,
+  renderFn: (item: T, index: number) => Node
+): HTMLElement {
   const container = document.createElement('d-for');
-  /** @type {Map<*, {node: Node, dispose: Function}>} */
-  let currentMap = new Map();
+  let currentMap = new Map<unknown, ForEntry>();
 
   createEffect(() => {
     const items = each();
-    const newMap = new Map();
-    const newNodes = [];
+    const newMap = new Map<unknown, ForEntry>();
+    const newNodes: Node[] = [];
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -30,8 +33,8 @@ export function For(each, keyFn, renderFn) {
         newMap.set(key, existing);
         newNodes.push(existing.node);
       } else {
-        let node;
-        let itemDispose;
+        let node!: Node;
+        let itemDispose: (() => void) | undefined;
         createRoot((dispose) => {
           itemDispose = dispose;
           node = renderFn(item, i);
