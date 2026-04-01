@@ -21,6 +21,7 @@ import { cmdPublish } from './commands/publish.js';
 import { cmdCreate } from './commands/create.js';
 import { cmdMigrate } from './commands/migrate.js';
 import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
+import { cmdRefresh } from './commands/refresh.js';
 
 // ── Helpers ──
 
@@ -1469,6 +1470,11 @@ async function main() {
         break;
       }
       await cmdPublish(type, name);
+      break;
+    }
+
+    case 'refresh': {
+      await cmdRefresh(process.cwd());
       break;
     }
 
