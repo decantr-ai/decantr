@@ -214,16 +214,21 @@ export class RegistryClient {
     // If the id had "custom:" prefix and we didn't find it, return null
     if (id.startsWith('custom:')) return null;
 
-    // 2. Try API
+    // 2. Try API (with one retry on failure)
     if (!this.offline) {
-      try {
-        const data = await this.apiClient.getContent<RegistryItem>(contentType, namespace, id);
-        saveToCache(this.cacheDir, contentType, id, data, namespace);
-        return { data, source: { type: 'api', url: this.apiUrl } };
-      } catch (e) {
-        // API failed, fall through to cache
-        if (process.env.DECANTR_DEBUG) {
-          console.error(`  [debug] API fetch failed for ${contentType}/${namespace}/${id}: ${(e as Error).message}`);
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const data = await this.apiClient.getContent<RegistryItem>(contentType, namespace, id);
+          saveToCache(this.cacheDir, contentType, id, data, namespace);
+          return { data, source: { type: 'api', url: this.apiUrl } };
+        } catch (e) {
+          if (process.env.DECANTR_DEBUG) {
+            console.error(`  [debug] API fetch ${attempt === 0 ? 'failed' : 'retry failed'} for ${contentType}/${namespace}/${id}: ${(e as Error).message}`);
+          }
+          if (attempt === 0) {
+            // Brief pause before retry
+            await new Promise(r => setTimeout(r, 500));
+          }
         }
       }
     } else if (process.env.DECANTR_DEBUG) {
