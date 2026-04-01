@@ -1,6 +1,20 @@
 import { createSignal, createEffect } from '../state/index.js';
 
-/** @type {number} */
+export interface WorkerSignalResult {
+  result: () => any;
+  busy: () => boolean;
+  error: () => any;
+  send: (data: any) => number;
+  terminate: () => void;
+}
+
+export interface WorkerQueryResult {
+  data: () => any;
+  loading: () => boolean;
+  error: () => any;
+  refetch: () => void;
+}
+
 let nextId = 1;
 
 /**
@@ -27,7 +41,7 @@ let nextId = 1;
  * // ws.error()  — last error (if any)
  * ```
  */
-export function createWorkerSignal(worker) {
+export function createWorkerSignal(worker: Worker): WorkerSignalResult {
   const [result, setResult] = createSignal(undefined);
   const [busy, setBusy] = createSignal(false);
   const [error, setError] = createSignal(undefined);
@@ -108,7 +122,7 @@ export function createWorkerSignal(worker) {
  * // result.refetch() — re-run with current input
  * ```
  */
-export function createWorkerQuery(worker, input) {
+export function createWorkerQuery(worker: Worker, input: (() => any) | any): WorkerQueryResult {
   const ws = createWorkerSignal(worker);
   const isGetter = typeof input === 'function';
 

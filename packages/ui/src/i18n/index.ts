@@ -10,6 +10,20 @@
 
 import { createSignal, createMemo } from '../state/index.js';
 
+export interface I18nConfig {
+  locale: string;
+  messages: Record<string, Record<string, any>>;
+  fallbackLocale?: string;
+}
+
+export interface I18nInstance {
+  t: (key: string, params?: Record<string, any>) => string;
+  locale: () => string;
+  setLocale: (locale: string) => void;
+  setDirection: (dir: 'ltr' | 'rtl') => void;
+  addMessages: (locale: string, messages: Record<string, any>) => void;
+}
+
 /**
  * Resolve a dot-notation key against a nested message object.
  * Example: resolve('nav.home', { nav: { home: 'Home' } }) => 'Home'
@@ -56,7 +70,7 @@ function interpolate(template, params) {
  *   addMessages: (locale: string, messages: Record<string, any>) => void
  * }}
  */
-export function createI18n(config) {
+export function createI18n(config: I18nConfig): I18nInstance {
   if (!config || typeof config !== 'object') {
     throw new Error('createI18n requires a config object');
   }

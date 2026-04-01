@@ -1,28 +1,22 @@
 import { createSignal, createMemo, batch } from '../state/index.js';
 
-/**
- * @template T
- * @template {string|number} ID
- * @typedef {Object} EntityStore
- * @property {(entities: T[]) => void} addMany
- * @property {(entity: T) => void} upsert
- * @property {(id: ID, partial: Partial<T>) => void} update
- * @property {(id: ID) => void} remove
- * @property {() => void} clear
- * @property {(id: ID) => () => T|undefined} get
- * @property {() => T[]} all
- * @property {() => number} count
- * @property {(predicate: (entity: T) => boolean) => () => T[]} filter
- * @property {(comparator: (a: T, b: T) => number) => () => T[]} sorted
- * @property {(opts: { page: () => number, size: () => number }) => () => T[]} paginated
- */
+export interface EntityStore<T, ID extends string | number = string> {
+  addMany: (entities: T[]) => void;
+  upsert: (entity: T) => void;
+  update: (id: ID, partial: Partial<T>) => void;
+  remove: (id: ID) => void;
+  clear: () => void;
+  get: (id: ID) => () => T | undefined;
+  all: () => T[];
+  count: () => number;
+  filter: (predicate: (entity: T) => boolean) => () => T[];
+  sorted: (comparator: (a: T, b: T) => number) => () => T[];
+  paginated: (opts: { page: number | (() => number); size: number | (() => number) }) => () => T[];
+}
 
-/**
- * @template T
- * @template {string|number} [ID=string]
- * @typedef {Object} EntityStoreOptions
- * @property {(entity: T) => ID} getId - Extract the unique identifier from an entity
- */
+export interface EntityStoreOptions<T, ID extends string | number = string> {
+  getId: (entity: T) => ID;
+}
 
 /**
  * Create a normalized entity collection store with per-entity reactivity.
@@ -45,7 +39,7 @@ import { createSignal, createMemo, batch } from '../state/index.js';
  * console.log(alice().name);    // 'Alice'
  * ```
  */
-export function createEntityStore(options) {
+export function createEntityStore<T, ID extends string | number = string>(options: EntityStoreOptions<T, ID>): EntityStore<T, ID> {
   const { getId } = options;
 
   // ── Internal storage ──────────────────────────────────────────────────

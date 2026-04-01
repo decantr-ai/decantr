@@ -10,6 +10,55 @@
 import { createSignal, createEffect, createMemo, batch, untrack } from '../state/index.js';
 import { trackPending } from '../runtime/index.js';
 
+// ─── Public Types ────────────────────────────────────────────────
+
+export interface QueryResult<T> {
+  data: () => T | undefined;
+  status: () => string;
+  error: () => Error | null;
+  isLoading: () => boolean;
+  isStale: () => boolean;
+  isFetching: () => boolean;
+  refetch: () => Promise<void>;
+  setData: (v: T) => void;
+}
+
+export interface InfiniteQueryResult<T> {
+  pages: () => T[];
+  allItems: () => any[];
+  hasNextPage: () => boolean;
+  fetchNextPage: () => Promise<void>;
+  isFetchingNextPage: () => boolean;
+  refetch: () => Promise<void>;
+}
+
+export interface MutationResult<TData, TVariables> {
+  mutate: (variables: TVariables) => void;
+  mutateAsync: (variables: TVariables) => Promise<TData>;
+  isLoading: () => boolean;
+  error: () => Error | null;
+  data: () => TData | undefined;
+  reset: () => void;
+}
+
+export interface MiddlewareContext {
+  url: string;
+  method: string;
+  headers: Record<string, string>;
+  body: any;
+  response?: any;
+}
+
+export interface QueryClientInstance {
+  use: (middleware: (ctx: MiddlewareContext, next: () => Promise<any>) => Promise<any>) => () => void;
+  invalidate: (keyPrefix: string) => void;
+  invalidateQueries: (keyPattern: string) => void;
+  prefetch: (key: string, fetcher: (ctx: { key: string; signal: AbortSignal }) => Promise<any>) => Promise<void>;
+  setCache: (key: string, data: any) => void;
+  getCache: (key: string) => any;
+  clear: () => void;
+}
+
 // ─── Request Middleware ──────────────────────────────────────────
 
 /**
@@ -150,7 +199,7 @@ function cancelGC(key) {
  * @param {T}        [options.placeholderData]
  * @returns {{ data: () => T, status: () => string, error: () => Error|null, isLoading: () => boolean, isStale: () => boolean, isFetching: () => boolean, refetch: () => Promise<void>, setData: (v: T) => void }}
  */
-export function createQuery(key, fetcher, options = {}) {
+export function createQuery<T>(key: string | (() => string), fetcher: (ctx: { key: string; signal: AbortSignal }) => Promise<T>, options: { staleTime?: number; cacheTime?: number; retry?: number; refetchInterval?: number; refetchOnWindowFocus?: boolean; enabled?: () => boolean; select?: (raw: T) => any; initialData?: T; placeholderData?: T } = {}): QueryResult<T> {
   const {
     staleTime = 0,
     cacheTime = 300000,
@@ -449,7 +498,7 @@ export function createQuery(key, fetcher, options = {}) {
  * @param {() => boolean} [options.enabled]
  * @returns {{ pages: () => T[], allItems: () => *[], hasNextPage: () => boolean, fetchNextPage: () => Promise<void>, isFetchingNextPage: () => boolean, refetch: () => Promise<void> }}
  */
-export function createInfiniteQuery(key, fetcher, options = {}) {
+export function createInfiniteQuery<T>(key: string | (() => string), fetcher: (ctx: { key: string; pageParam: any; signal: AbortSignal }) => Promise<T>, options: { getNextPageParam: (lastPage: T, allPages: T[]) => any; staleTime?: number; cacheTime?: number; retry?: number; enabled?: () => boolean } = {} as any): InfiniteQueryResult<T> {
   const {
     getNextPageParam,
     staleTime = 0,
@@ -643,7 +692,7 @@ export function createInfiniteQuery(key, fetcher, options = {}) {
  * @param {(data: TData|undefined, error: Error|undefined, variables: TVariables, ctx: *) => void} [options.onSettled]
  * @returns {{ mutate: (variables: TVariables) => void, mutateAsync: (variables: TVariables) => Promise<TData>, isLoading: () => boolean, error: () => Error|null, data: () => TData|undefined, reset: () => void }}
  */
-export function createMutation(mutationFn, options = {}) {
+export function createMutation<TData, TVariables>(mutationFn: (variables: TVariables) => Promise<TData>, options: { onMutate?: (variables: TVariables) => any; onSuccess?: (data: TData, variables: TVariables, ctx: any) => void; onError?: (error: Error, variables: TVariables, ctx: any) => void; onSettled?: (data: TData | undefined, error: Error | undefined, variables: TVariables, ctx: any) => void } = {}): MutationResult<TData, TVariables> {
   const { onMutate, onSuccess, onError, onSettled } = options;
 
   const [data, setData] = createSignal(/** @type {TData|undefined} */ (undefined));
@@ -734,7 +783,7 @@ export function createMutation(mutationFn, options = {}) {
  * Global query client for imperative cache operations.
  * @type {{ use: (middleware: Function) => () => void, invalidate: (keyPrefix: string) => void, invalidateQueries: (keyPattern: string) => void, prefetch: (key: string, fetcher: Function) => Promise<void>, setCache: (key: string, data: *) => void, getCache: (key: string) => *, clear: () => void }}
  */
-export const queryClient = {
+export const queryClient: QueryClientInstance = {
   /**
    * Add a request middleware to the chain.
    * Middleware signature: `async (ctx, next) => { ... }`

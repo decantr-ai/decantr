@@ -11,6 +11,33 @@
 import { createSignal, createMemo, batch } from '../state/index.js';
 import { setErrorHandler } from '../runtime/index.js';
 
+export interface TelemetryConfig {
+  reporters?: Array<'console' | { type: 'http'; url: string; batchSize?: number; headers?: Record<string, string> } | { type: 'callback'; fn: (events: any[]) => void }>;
+  webVitals?: boolean;
+  errorCapture?: boolean;
+  navigationTiming?: boolean;
+  queryTiming?: boolean;
+  router?: any;
+  queryClient?: any;
+  sampleRate?: number;
+  maxBufferSize?: number;
+  flushInterval?: number;
+}
+
+export interface TelemetryInstance {
+  metrics: () => Map<string, any>;
+  errors: () => any[];
+  vitals: () => { lcp: number | null; fid: number | null; cls: number | null; inp: number | null };
+  isCollecting: () => boolean;
+  recordMetric: (name: string, value: number, tags?: Record<string, any>) => void;
+  startTimer: (name: string, tags?: Record<string, any>) => () => number;
+  recordError: (error: Error, context?: Record<string, any>) => void;
+  flush: () => Promise<void>;
+  pause: () => void;
+  resume: () => void;
+  destroy: () => void;
+}
+
 // ─── Event Buffer ────────────────────────────────────────────
 
 /**
@@ -379,7 +406,7 @@ function createQueryTimingMiddleware(queryClient, onMetric) {
  *   destroy: () => void,
  * }}
  */
-export function createTelemetry(config = {}) {
+export function createTelemetry(config: TelemetryConfig = {}): TelemetryInstance {
   const {
     reporters: reporterSpecs = ['console'],
     webVitals = true,

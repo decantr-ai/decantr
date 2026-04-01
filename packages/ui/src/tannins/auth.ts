@@ -11,6 +11,29 @@
 import { createSignal, createMemo, createEffect, batch } from '../state/index.js';
 import { createPersisted } from '../data/persist.js';
 
+export interface AuthConfig {
+  loginEndpoint?: string;
+  refreshEndpoint?: string;
+  logoutEndpoint?: string;
+  tokenKey?: string;
+  storage?: 'localStorage' | 'sessionStorage';
+  onAuthChange?: ((isAuthenticated: boolean) => void) | null;
+}
+
+export interface AuthInstance {
+  user: () => any;
+  token: () => string | null;
+  isAuthenticated: () => boolean;
+  isLoading: () => boolean;
+  error: () => any;
+  login: (credentials: Record<string, any>) => Promise<any>;
+  logout: () => Promise<void>;
+  refresh: () => Promise<void>;
+  setUser: (user: any) => void;
+  setToken: (token: string | null) => void;
+  destroy: () => void;
+}
+
 /**
  * Create an auth instance with reactive signals, token persistence,
  * login/logout/refresh flows, and fetch middleware.
@@ -37,7 +60,7 @@ import { createPersisted } from '../data/persist.js';
  *   destroy: () => void
  * }}
  */
-export function createAuth(config = {}) {
+export function createAuth(config: AuthConfig = {}): AuthInstance {
   const {
     loginEndpoint = '/api/auth/login',
     refreshEndpoint = '/api/auth/refresh',
@@ -324,7 +347,7 @@ export function createAuth(config = {}) {
  *   isAuthenticated?: () => boolean
  * }} [options]
  */
-export function requireAuth(router, options = {}) {
+export function requireAuth(router: any, options: { loginPath?: string; redirectParam?: string; isAuthenticated?: (() => boolean) | null } = {}): () => void {
   const {
     loginPath = '/login',
     redirectParam = 'redirect',

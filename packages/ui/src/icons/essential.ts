@@ -1,6 +1,6 @@
 // Decantr essential icons — original SVG paths on 24×24 grid
 // Stroke-based: fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-export const ESSENTIAL = {
+export const ESSENTIAL: Record<string, string> = {
   // ── Navigation ──────────────────────────────────────────────
   'check': '<polyline points="20 6 9 17 4 12"/>',
   'x': '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',

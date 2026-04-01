@@ -10,6 +10,26 @@
  */
 import { createSignal, batch } from '../state/index.js';
 
+export type WebSocketStatus = 'connecting' | 'open' | 'closed' | 'reconnecting';
+export type EventSourceStatus = 'connecting' | 'open' | 'closed';
+
+export interface WebSocketInstance {
+  lastMessage: () => any;
+  messages: () => any[];
+  status: () => WebSocketStatus;
+  send: (data: any) => void;
+  close: () => void;
+  reconnect: () => void;
+  on: (handler: (msg: any) => void) => () => void;
+}
+
+export interface EventSourceInstance {
+  lastEvent: () => { type: string; data: string } | null;
+  status: () => EventSourceStatus;
+  close: () => void;
+  on: (eventType: string, handler: (ev: { type: string; data: string }) => void) => () => void;
+}
+
 // ─── CONSTANTS ──────────────────────────────────────────────────
 
 const MAX_MESSAGES = 100;
@@ -37,7 +57,7 @@ const MAX_BACKOFF = 30000;
  *   on: (handler: (msg: any) => void) => () => void
  * }}
  */
-export function createWebSocket(url, options = {}) {
+export function createWebSocket(url: string, options: { reconnectDelay?: number; maxRetries?: number; buffer?: boolean; parse?: (data: any) => any; protocols?: string[] } = {}): WebSocketInstance {
   const {
     reconnectDelay = 1000,
     maxRetries = 5,
@@ -216,7 +236,7 @@ export function createWebSocket(url, options = {}) {
  *   on: (eventType: string, handler: (ev: { type: string, data: string }) => void) => () => void
  * }}
  */
-export function createEventSource(url, options = {}) {
+export function createEventSource(url: string, options: { events?: string[]; withCredentials?: boolean } = {}): EventSourceInstance {
   const { events, withCredentials = false } = options;
 
   const [lastEvent, setLastEvent] = createSignal(null);

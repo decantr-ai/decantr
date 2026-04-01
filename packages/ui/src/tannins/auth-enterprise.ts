@@ -12,6 +12,47 @@
 
 import { createSignal, createMemo, createEffect, batch } from '../state/index.js';
 import { createAuth } from './auth.js';
+import type { AuthConfig, AuthInstance } from './auth.js';
+
+export interface EnterpriseAuthConfig extends AuthConfig {
+  oidc?: {
+    provider: 'okta' | 'auth0' | 'azure' | 'keycloak' | 'generic';
+    clientId: string;
+    authority: string;
+    redirectUri: string;
+    scopes?: string[];
+    postLogoutRedirectUri?: string;
+  };
+  roles?: {
+    claimPath?: string;
+    superRole?: string;
+  };
+  session?: {
+    idleTimeout?: number;
+    maxDuration?: number;
+    keepAliveInterval?: number;
+    onIdle?: () => void;
+    onExpired?: () => void;
+  };
+  refreshStrategy?: 'sliding' | 'fixed';
+  refreshBuffer?: number;
+}
+
+export interface EnterpriseAuthInstance extends AuthInstance {
+  loginWithOIDC: (providerOverride?: string) => Promise<void>;
+  handleCallback: () => Promise<void>;
+  roles: () => string[];
+  hasRole: (role: string) => boolean;
+  hasAnyRole: (roleList: string[]) => boolean;
+  hasAllRoles: (roleList: string[]) => boolean;
+  sessionExpiresAt: () => number | null;
+  isSessionExpired: () => boolean;
+  isSessionIdle: () => boolean;
+  resetIdleTimer: () => void;
+  decodedToken: () => Record<string, any> | null;
+  tokenExpiresAt: () => number | null;
+  isTokenExpired: () => boolean;
+}
 
 // ─── Provider Endpoint Presets ───────────────────────────────
 
@@ -338,7 +379,7 @@ function createRefreshScheduler(config, getToken, doRefresh) {
  * }} [config]
  * @returns {Object}
  */
-export function createEnterpriseAuth(config = {}) {
+export function createEnterpriseAuth(config: EnterpriseAuthConfig = {}): EnterpriseAuthInstance {
   const {
     oidc: oidcConfig = null,
     roles: rolesConfig = {},
@@ -649,7 +690,7 @@ export function createEnterpriseAuth(config = {}) {
  * @param {{ loginPath?: string, forbiddenPath?: string }} [options]
  * @returns {{ guard: (to: Object, from: Object) => string|void }}
  */
-export function requireRoles(auth, options = {}) {
+export function requireRoles(auth: EnterpriseAuthInstance, options: { loginPath?: string; forbiddenPath?: string } = {}): { guard: (to: any, from: any) => string | void } {
   const {
     loginPath = '/login',
     forbiddenPath = '/403'

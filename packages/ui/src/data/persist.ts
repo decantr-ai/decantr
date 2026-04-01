@@ -8,7 +8,7 @@ import { createSignal, createEffect, batch } from '../state/index.js';
  * @param {{ storage?: 'local' | 'session', serialize?: (v: T) => string, deserialize?: (s: string) => T }} [options]
  * @returns {[() => T, (v: T | ((prev: T) => T)) => void]}
  */
-export function createPersisted(key, init, options = {}) {
+export function createPersisted<T>(key: string, init: T, options: { storage?: 'local' | 'session'; serialize?: (v: T) => string; deserialize?: (s: string) => T } = {}): [() => T, (v: T | ((prev: T) => T)) => void] {
   const storageType = options.storage || 'local';
   const serialize = options.serialize || JSON.stringify;
   const deserialize = options.deserialize || JSON.parse;
@@ -64,7 +64,15 @@ export function createPersisted(key, init, options = {}) {
  * @param {string} storeName
  * @returns {{ get: <T>(key: IDBValidKey) => Promise<T>, set: (key: IDBValidKey, value: any) => Promise<void>, delete: (key: IDBValidKey) => Promise<void>, getAll: <T>() => Promise<T[]>, clear: () => Promise<void> }}
  */
-export function createIndexedDB(dbName, storeName) {
+export interface IndexedDBStore {
+  get: <T>(key: IDBValidKey) => Promise<T>;
+  set: (key: IDBValidKey, value: any) => Promise<void>;
+  delete: (key: IDBValidKey) => Promise<void>;
+  getAll: <T>() => Promise<T[]>;
+  clear: () => Promise<void>;
+}
+
+export function createIndexedDB(dbName: string, storeName: string): IndexedDBStore {
   /** @type {IDBDatabase | null} */
   let db = null;
   /** @type {Promise<IDBDatabase> | null} */
@@ -121,7 +129,7 @@ export function createIndexedDB(dbName, storeName) {
  * @param {[() => T, (v: T) => void]} signal — [getter, setter] tuple
  * @returns {() => void} cleanup function
  */
-export function createCrossTab(channel, signal) {
+export function createCrossTab<T>(channel: string, signal: [() => T, (v: T) => void]): () => void {
   if (typeof BroadcastChannel === 'undefined') return () => {};
 
   const [get, set] = signal;
@@ -157,7 +165,14 @@ export function createCrossTab(channel, signal) {
  * @param {{ process: (item: T) => Promise<any>, persist?: boolean, key?: string, retryDelay?: number }} options
  * @returns {{ add: (item: T) => void, pending: () => T[], isOnline: () => boolean, flush: () => Promise<void> }}
  */
-export function createOfflineQueue(options) {
+export interface OfflineQueue<T> {
+  add: (item: T) => void;
+  pending: () => T[];
+  isOnline: () => boolean;
+  flush: () => Promise<void>;
+}
+
+export function createOfflineQueue<T>(options: { process: (item: T) => Promise<any>; persist?: boolean; key?: string; retryDelay?: number }): OfflineQueue<T> {
   const { process, persist = false, key = '__decantr_offline_queue', retryDelay = 1000 } = options;
 
   // Restore persisted queue

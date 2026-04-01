@@ -1,19 +1,18 @@
 import { createSignal, batch, untrack } from '../state/index.js';
 
+export interface URLParser<T> {
+  parse: (v: string) => T;
+  serialize: (v: T) => string;
+}
+
 /* Built-in parsers -------------------------------------------------------- */
 
-/** @type {{ parse: (v: string) => string, serialize: (v: string) => string }} */
-const string = { parse: v => v, serialize: v => v };
-/** @type {{ parse: (v: string) => number, serialize: (v: number) => string }} */
-const integer = { parse: v => parseInt(v, 10), serialize: v => String(v) };
-/** @type {{ parse: (v: string) => number, serialize: (v: number) => string }} */
-const float = { parse: v => parseFloat(v), serialize: v => String(v) };
-/** @type {{ parse: (v: string) => boolean, serialize: (v: boolean) => string }} */
-const boolean = { parse: v => v === 'true', serialize: v => v ? 'true' : 'false' };
-/** @type {{ parse: (v: string) => any, serialize: (v: any) => string }} */
-const json = { parse: v => JSON.parse(v), serialize: v => JSON.stringify(v) };
-/** @type {{ parse: (v: string) => Date, serialize: (v: Date) => string }} */
-const date = { parse: v => new Date(v), serialize: v => v.toISOString() };
+const string: URLParser<string> = { parse: (v: string) => v, serialize: (v: string) => v };
+const integer: URLParser<number> = { parse: (v: string) => parseInt(v, 10), serialize: (v: number) => String(v) };
+const float: URLParser<number> = { parse: (v: string) => parseFloat(v), serialize: (v: number) => String(v) };
+const boolean: URLParser<boolean> = { parse: (v: string) => v === 'true', serialize: (v: boolean) => v ? 'true' : 'false' };
+const json: URLParser<any> = { parse: (v: string) => JSON.parse(v), serialize: (v: any) => JSON.stringify(v) };
+const date: URLParser<Date> = { parse: (v: string) => new Date(v), serialize: (v: Date) => v.toISOString() };
 
 /**
  * Factory parser that validates against an allowed set of values.
@@ -21,9 +20,9 @@ const date = { parse: v => new Date(v), serialize: v => v.toISOString() };
  * @param {T[]} values
  * @returns {{ parse: (v: string) => T | undefined, serialize: (v: T) => string }}
  */
-function enumParser(values) {
+function enumParser<T extends string>(values: T[]): URLParser<T | undefined> {
   const allowed = new Set(values);
-  return { parse: v => allowed.has(v) ? /** @type {T} */ (v) : undefined, serialize: v => v };
+  return { parse: (v: string) => allowed.has(v as T) ? v as T : undefined, serialize: (v: T | undefined) => v as string };
 }
 
 export const parsers = { string, integer, float, boolean, json, date, enum: enumParser };
@@ -101,7 +100,7 @@ function scheduleFlush() {
  * @param {{ defaultValue?: T, push?: boolean }} [options]
  * @returns {[() => T, (v: T | ((prev: T) => T)) => void]}
  */
-export function createURLSignal(key, parser, options = {}) {
+export function createURLSignal<T>(key: string, parser: URLParser<T>, options: { defaultValue?: T; push?: boolean } = {}): [() => T, (v: T | ((prev: T) => T)) => void] {
   const { defaultValue, push = false } = options;
 
   function fromURL() {
@@ -147,7 +146,7 @@ export function createURLSignal(key, parser, options = {}) {
  * @param {S} schema
  * @returns {Record<string, any>} — getter/setter pairs, plus values() and reset()
  */
-export function createURLStore(schema) {
+export function createURLStore(schema: Record<string, { parser: URLParser<any>; defaultValue?: any; push?: boolean }>): Record<string, any> {
   const keys = Object.keys(schema);
   /** @type {Record<string, [Function, Function]>} */
   const signals = {};
