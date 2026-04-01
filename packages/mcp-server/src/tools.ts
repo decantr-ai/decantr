@@ -15,6 +15,8 @@ import {
   writeDriftLog,
 } from './helpers.js';
 import type { DriftLogEntry } from './helpers.js';
+import { COMPONENT_MANIFEST, getComponentsByCategory } from './component-manifest.js';
+import type { ComponentManifestEntry } from './component-manifest.js';
 
 // ── Inline topology derivation (lightweight version of cli/scaffold.ts) ──
 
@@ -365,6 +367,28 @@ export const TOOLS = [
         section_id: { type: 'string', description: 'Section ID (archetype ID, e.g., "ai-chatbot", "auth-full", "settings-full")' },
       },
       required: ['section_id'],
+    },
+    annotations: READ_ONLY,
+  },
+  // 14. decantr_component_api — local read (static manifest)
+  {
+    name: 'decantr_component_api',
+    title: 'Component API',
+    description: 'Query the @decantr/ui component API. Pass a component name to get its full props, usage examples, and related components. Pass "list" to see all available components grouped by category.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        component: {
+          type: 'string',
+          description: "Component name (e.g., 'Button', 'Modal', 'Card') or 'list' to see all available components.",
+        },
+        category: {
+          type: 'string',
+          description: "Filter by category when listing components.",
+          enum: ['original', 'general', 'layout', 'navigation', 'form', 'data-display', 'feedback', 'media', 'utility', 'all'],
+        },
+      },
+      required: ['component'],
     },
     annotations: READ_ONLY,
   },
@@ -1043,6 +1067,92 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
         note: 'Section context file not found. Run decantr refresh to generate it.',
       };
+    }
+
+    case 'decantr_component_api': {
+      const componentName = args.component as string;
+      const category = args.category as string | undefined;
+
+      if (!componentName) {
+        return { error: 'The "component" argument is required.' };
+      }
+
+      if (componentName === 'list') {
+        const grouped = getComponentsByCategory(category);
+        const lines: string[] = ['# @decantr/ui Components\n'];
+
+        for (const [cat, entries] of Object.entries(grouped)) {
+          lines.push(`## ${cat}`);
+          for (const entry of entries) {
+            lines.push(`- **${entry.name}** — ${entry.description}`);
+          }
+          lines.push('');
+        }
+
+        return { content: lines.join('\n'), total: Object.keys(COMPONENT_MANIFEST).length };
+      }
+
+      // Look up the specific component (case-insensitive)
+      const entry: ComponentManifestEntry | undefined =
+        COMPONENT_MANIFEST[componentName] ||
+        Object.values(COMPONENT_MANIFEST).find(
+          e => e.name.toLowerCase() === componentName.toLowerCase()
+        );
+
+      if (!entry) {
+        // Fuzzy suggest
+        const candidates = Object.keys(COMPONENT_MANIFEST);
+        const scored = candidates
+          .map(name => ({ name, score: fuzzyScore(componentName.toLowerCase(), name.toLowerCase()) }))
+          .filter(s => s.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 5);
+
+        return {
+          error: `Component "${componentName}" not found in manifest.`,
+          suggestions: scored.map(s => s.name),
+          hint: 'Use component: "list" to see all available components.',
+        };
+      }
+
+      // Format as markdown
+      const lines: string[] = [
+        `# ${entry.name}`,
+        `**Category:** ${entry.category}`,
+        '',
+        entry.description,
+        '',
+        '## Props',
+        '',
+        '| Prop | Type | Required | Default | Description |',
+        '|------|------|----------|---------|-------------|',
+      ];
+
+      for (const p of entry.props) {
+        const req = p.required ? 'Yes' : 'No';
+        const def = p.default || '—';
+        const escapedType = p.type.replace(/\|/g, '\\|');
+        lines.push(`| \`${p.name}\` | \`${escapedType}\` | ${req} | ${def} | ${p.description} |`);
+      }
+
+      lines.push('');
+      lines.push('## Usage');
+      lines.push('');
+      lines.push('```ts');
+      lines.push(entry.usage);
+      lines.push('```');
+
+      if (entry.subComponents?.length) {
+        lines.push('');
+        lines.push(`**Sub-components:** ${entry.subComponents.join(', ')}`);
+      }
+
+      if (entry.relatedComponents?.length) {
+        lines.push('');
+        lines.push(`**Related:** ${entry.relatedComponents.join(', ')}`);
+      }
+
+      return { content: lines.join('\n') };
     }
 
     default:
