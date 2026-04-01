@@ -3,7 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3 } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage } from '@decantr/essence-spec';
-import type { ComposeEntry } from '@decantr/registry';
+import type { ComposeEntry, ArchetypeRole } from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 
@@ -61,6 +61,8 @@ export interface EssenceFile {
 export interface ArchetypeData {
   id: string;
   name?: string;
+  role?: ArchetypeRole;
+  description?: string;
   pages?: Array<{
     id: string;
     shell: string;
@@ -149,6 +151,111 @@ export function composeArchetypes(
     features: [...new Set(allFeatures)],
     defaultShell,
   };
+}
+
+// ── Topology Derivation ──
+
+export interface ZoneInput {
+  archetypeId: string;
+  role: ArchetypeRole;
+  shell: string;
+  features: string[];
+  description: string;
+}
+
+export interface ComposedZone {
+  role: ArchetypeRole;
+  archetypes: string[];
+  shell: string;
+  features: string[];
+  descriptions: string[];
+}
+
+export interface ZoneTransition {
+  from: string;
+  to: string;
+  type: string;
+  trigger: string;
+}
+
+const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
+
+export function deriveZones(inputs: ZoneInput[]): ComposedZone[] {
+  const zoneMap = new Map<ArchetypeRole, ComposedZone>();
+
+  for (const input of inputs) {
+    const existing = zoneMap.get(input.role);
+    if (existing) {
+      existing.archetypes.push(input.archetypeId);
+      existing.features.push(...input.features);
+      existing.descriptions.push(input.description);
+    } else {
+      zoneMap.set(input.role, {
+        role: input.role,
+        archetypes: [input.archetypeId],
+        shell: input.shell,
+        features: [...input.features],
+        descriptions: [input.description],
+      });
+    }
+  }
+
+  for (const zone of zoneMap.values()) {
+    zone.features = [...new Set(zone.features)];
+  }
+
+  return ZONE_ORDER
+    .filter(role => zoneMap.has(role))
+    .map(role => zoneMap.get(role)!);
+}
+
+const GATEWAY_TRIGGER_MAP: Record<string, string> = {
+  auth: 'authentication',
+  login: 'authentication',
+  mfa: 'authentication',
+  payment: 'payment',
+  subscription: 'payment',
+  checkout: 'payment',
+  onboarding: 'onboarding',
+  'setup-wizard': 'onboarding',
+  welcome: 'onboarding',
+  invite: 'invitation',
+  'access-code': 'invitation',
+};
+
+function resolveGatewayTrigger(features: string[]): string {
+  for (const feature of features) {
+    const trigger = GATEWAY_TRIGGER_MAP[feature];
+    if (trigger) return trigger;
+  }
+  return 'authentication';
+}
+
+export function deriveTransitions(zones: ComposedZone[]): ZoneTransition[] {
+  const transitions: ZoneTransition[] = [];
+  const roles = new Set(zones.map(z => z.role));
+  const gateway = zones.find(z => z.role === 'gateway');
+  const gatewayTrigger = gateway ? resolveGatewayTrigger(gateway.features) : 'authentication';
+
+  const hasApp = roles.has('primary') || roles.has('auxiliary');
+  const hasGateway = roles.has('gateway');
+  const hasPublic = roles.has('public');
+
+  if (hasPublic && hasGateway) {
+    transitions.push({ from: 'public', to: 'gateway', type: 'conversion', trigger: gatewayTrigger });
+  }
+  if (hasPublic && hasApp && !hasGateway) {
+    transitions.push({ from: 'public', to: 'app', type: 'conversion', trigger: 'navigation' });
+  }
+  if (hasGateway && hasApp) {
+    transitions.push({ from: 'gateway', to: 'app', type: 'gate-pass', trigger: gatewayTrigger });
+    transitions.push({ from: 'app', to: 'gateway', type: 'gate-return', trigger: gatewayTrigger });
+  }
+  if (hasApp && hasPublic) {
+    transitions.push({ from: 'app', to: 'public', type: 'navigation', trigger: 'external' });
+  }
+
+  return transitions;
 }
 
 export interface ScaffoldResult {
