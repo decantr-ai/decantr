@@ -1800,7 +1800,7 @@ export async function scaffoldProject(
   }
 
   // Delegate derived file generation to refreshDerivedFiles
-  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry);
+  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry, themeData, recipeData);
 
   // Merge context files from refresh into our list
   contextFiles.push(...refreshResult.contextFiles);
@@ -2049,6 +2049,8 @@ export async function refreshDerivedFiles(
   projectRoot: string,
   essence: EssenceV3,
   registry: RegistryClient,
+  prefetchedThemeData?: ThemeData,
+  prefetchedRecipeData?: RecipeData,
 ): Promise<RefreshResult> {
   const decantrDir = join(projectRoot, '.decantr');
   const contextDir = join(decantrDir, 'context');
@@ -2066,11 +2068,11 @@ export async function refreshDerivedFiles(
   };
   const personality = essence.dna.personality || [];
 
-  // ── Fetch theme & recipe from registry ──
-  let themeData: ThemeData | undefined;
-  let recipeData: RecipeData | undefined;
+  // ── Fetch theme & recipe from registry (use prefetched if available) ──
+  let themeData: ThemeData | undefined = prefetchedThemeData;
+  let recipeData: RecipeData | undefined = prefetchedRecipeData;
 
-  try {
+  if (!themeData) try {
     const themeResult = await registry.fetchTheme(themeName);
     if (themeResult?.data) {
       // Unwrap API wrapper: actual theme content is in .data
@@ -2087,7 +2089,7 @@ export async function refreshDerivedFiles(
     }
   } catch { /* continue without theme data */ }
 
-  try {
+  if (!recipeData) try {
     const recipeResult = await registry.fetchRecipe(recipeName);
     if (recipeResult?.data) {
       // Unwrap API wrapper: actual recipe content is in .data
@@ -2111,6 +2113,47 @@ export async function refreshDerivedFiles(
       }
     }
   } catch { /* continue without recipe data */ }
+
+  // If recipe data still has no decorators, try a direct API fetch as last resort
+  if (!recipeData?.decorators || Object.keys(recipeData.decorators).length === 0) {
+    try {
+      const apiUrl = (registry as any).apiUrl || 'https://api.decantr.ai/v1';
+      const resp = await fetch(`${apiUrl}/recipes/@official/${recipeName}`);
+      if (resp.ok) {
+        const apiData = await resp.json() as Record<string, unknown>;
+        const inner = (apiData.data ?? apiData) as Record<string, unknown>;
+        if (inner.decorators && Object.keys(inner.decorators as object).length > 0) {
+          recipeData = {
+            decorators: inner.decorators as RecipeData['decorators'],
+            spatial_hints: inner.spatial_hints as RecipeData['spatial_hints'],
+            radius_hints: inner.radius_hints as RecipeData['radius_hints'],
+          };
+        }
+      }
+    } catch { /* API unavailable — continue without decorators */ }
+  }
+
+  // Same for theme data
+  if (!themeData?.seed?.primary) {
+    try {
+      const apiUrl = (registry as any).apiUrl || 'https://api.decantr.ai/v1';
+      const resp = await fetch(`${apiUrl}/themes/@official/${themeName}`);
+      if (resp.ok) {
+        const apiData = await resp.json() as Record<string, unknown>;
+        const inner = (apiData.data ?? apiData) as Record<string, unknown>;
+        if (inner.seed) {
+          themeData = {
+            seed: inner.seed as ThemeData['seed'],
+            palette: inner.palette as ThemeData['palette'],
+            cvd_support: inner.cvd_support as ThemeData['cvd_support'],
+            tokens: inner.tokens as ThemeData['tokens'],
+            typography_hints: inner.typography_hints as ThemeData['typography_hints'],
+            motion_hints: inner.motion_hints as ThemeData['motion_hints'],
+          };
+        }
+      }
+    } catch { /* API unavailable */ }
+  }
 
   // ── Generate CSS files ──
   const stylesDir = join(projectRoot, 'src', 'styles');
