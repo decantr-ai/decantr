@@ -17,6 +17,7 @@ if (!supabaseAnonKey) {
 export function createUserClient(accessToken?: string) {
   return createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
     global: {
+      fetch: globalThis.fetch,
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     },
   });
@@ -32,8 +33,13 @@ export function createAdminClient() {
       autoRefreshToken: false,
       persistSession: false,
     },
+    global: {
+      fetch: globalThis.fetch,  // Use Node.js native fetch (fixes getReader compatibility)
+    },
   });
 }
 
 // Default client for public operations
-export const supabase = createClient<Database>(supabaseUrl!, supabaseAnonKey!);
+export const supabase = createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+  global: { fetch: globalThis.fetch },
+});
