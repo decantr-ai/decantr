@@ -243,14 +243,60 @@ describe('createMemo', () => {
 });
 
 describe('createContext', () => {
-  it('provides and consumes a value (global behavior)', () => {
+  it('provides and consumes a value', () => {
     const ctx = createContext('default');
-    expect(ctx.consume()).toBe('default');
+    createRoot(() => {
+      const cleanup = ctx.Provider('hello');
+      expect(ctx.consume()).toBe('hello');
+      cleanup();
+    });
+  });
 
-    const restore = ctx.Provider('hello');
-    expect(ctx.consume()).toBe('hello');
+  it('falls back to default when no provider in chain', () => {
+    const ctx = createContext('fallback');
+    createRoot(() => {
+      expect(ctx.consume()).toBe('fallback');
+    });
+  });
 
-    restore();
-    expect(ctx.consume()).toBe('default');
+  it('nested providers shadow parent', () => {
+    const ctx = createContext('default');
+    createRoot(() => {
+      ctx.Provider('outer');
+      expect(ctx.consume()).toBe('outer');
+
+      createRoot(() => {
+        ctx.Provider('inner');
+        expect(ctx.consume()).toBe('inner');
+      });
+
+      // outer scope still sees 'outer'
+      expect(ctx.consume()).toBe('outer');
+    });
+  });
+
+  it('sibling scopes are isolated', () => {
+    const ctx = createContext('default');
+    createRoot(() => {
+      createRoot(() => {
+        ctx.Provider('scopeA');
+        expect(ctx.consume()).toBe('scopeA');
+      });
+
+      createRoot(() => {
+        // scope B should NOT see scope A's provider
+        expect(ctx.consume()).toBe('default');
+      });
+    });
+  });
+
+  it('provider cleanup removes the value', () => {
+    const ctx = createContext('default');
+    createRoot(() => {
+      const cleanup = ctx.Provider('provided');
+      expect(ctx.consume()).toBe('provided');
+      cleanup();
+      expect(ctx.consume()).toBe('default');
+    });
   });
 });

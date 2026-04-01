@@ -286,24 +286,26 @@ export function useLocalStorage<T>(key: string, initialValue: T): Signal<T> {
   }];
 }
 
-let _ctxId = 0;
-const _ctxMap = new Map<number, unknown>();
-
-export function createContext<T>(defaultValue: T): { Provider: (value: T) => () => void; consume: () => T } {
-  const id = _ctxId++;
+export function createContext<T>(defaultValue: T): Context<T> {
+  const id = Symbol('context');
   return {
+    id,
+    defaultValue,
     Provider(value: T): () => void {
-      const prev = _ctxMap.get(id);
-      const hadPrev = _ctxMap.has(id);
-      _ctxMap.set(id, value);
-      return () => {
-        if (hadPrev) _ctxMap.set(id, prev);
-        else _ctxMap.delete(id);
-      };
+      const owner = getOwner();
+      if (!owner) throw new Error('Provider must be called within a reactive scope');
+      if (!owner.context) owner.context = new Map();
+      owner.context.set(id, value);
+      return () => { if (owner.context) owner.context.delete(id); };
     },
     consume(): T {
-      return (_ctxMap.has(id) ? _ctxMap.get(id) : defaultValue) as T;
-    }
+      let current: Owner | null | undefined = getOwner();
+      while (current) {
+        if (current.context && current.context.has(id)) return current.context.get(id) as T;
+        current = current._parent;
+      }
+      return defaultValue;
+    },
   };
 }
 
