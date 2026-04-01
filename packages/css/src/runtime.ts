@@ -258,10 +258,10 @@ export function extractCSS(): string {
 }
 
 /**
- * Get set of injected class names.
+ * Get array of injected class names.
  */
-export function getInjectedClasses(): Set<string> {
-  return new Set(injected);
+export function getInjectedClasses(): string[] {
+  return [...injected];
 }
 
 /**
