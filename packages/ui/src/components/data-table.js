@@ -1,4 +1,4 @@
-import { h, onDestroy } from '../core/index.js';
+import { h, onDestroy } from '../runtime/index.js';
 import { createSignal, createEffect, batch } from '../state/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';

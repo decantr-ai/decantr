@@ -3,7 +3,7 @@
  *
  * @module decantr/components/transfer
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { createEffect, createSignal } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { caret, createCheckControl } from './_behaviors.js';

@@ -8,7 +8,7 @@
  */
 
 import { createSignal, createEffect, createMemo, batch, untrack } from '../state/index.js';
-import { _pendingQueries } from '../core/index.js';
+import { _pendingQueries } from '../runtime/index.js';
 
 // ─── Request Middleware ──────────────────────────────────────────
 

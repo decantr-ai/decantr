@@ -1,4 +1,4 @@
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 
 /**
  * Proxy-based tag functions. Destructure what you need:

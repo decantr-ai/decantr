@@ -3,7 +3,7 @@
  *
  * @module decantr/components/placeholder
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
 const NS = 'http://www.w3.org/2000/svg';

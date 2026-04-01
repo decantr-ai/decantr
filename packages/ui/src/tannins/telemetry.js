@@ -9,7 +9,7 @@
  */
 
 import { createSignal, createMemo, batch } from '../state/index.js';
-import { setErrorHandler } from '../core/index.js';
+import { setErrorHandler } from '../runtime/index.js';
 
 // ─── Event Buffer ────────────────────────────────────────────
 

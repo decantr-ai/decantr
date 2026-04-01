@@ -16,7 +16,8 @@ export function For<T>(
   keyFn: (item: T, index: number) => unknown,
   renderFn: (item: T, index: number) => Node
 ): HTMLElement {
-  const container = document.createElement('d-for');
+  const container = document.createElement('div');
+  container.style.display = 'contents';
   let currentMap = new Map<unknown, ForEntry>();
 
   createEffect(() => {

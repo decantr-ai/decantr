@@ -1,8 +1,8 @@
 import { createSignal, createEffect, createRoot, getOwner, untrack } from '../state/index.js';
 import { getAnimations } from '../css/theme-registry.js';
-import { h } from '../core/index.js';
-import { disposeNode } from '../core/component.js';
-import { drainMountQueue, runDestroyFns } from '../core/lifecycle.js';
+import { h } from '../runtime/index.js';
+import { disposeNode } from '../runtime/component.js';
+import { drainMountQueue, runDestroyFns } from '../runtime/lifecycle.js';
 import { hashStrategy } from './hash.js';
 import { historyStrategy } from './history.js';
 import { createLiveRegion } from '../components/_behaviors.js';

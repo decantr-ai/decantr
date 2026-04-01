@@ -4,7 +4,7 @@
  * @module decantr/components/input-otp
  */
 import { createEffect } from '../state/index.js';
-import { onDestroy } from '../core/index.js';
+import { onDestroy } from '../runtime/index.js';
 import { tags } from '../tags/index.js';
 import { injectBase, cx } from './_base.js';
 import { createFormField } from './_behaviors.js';

@@ -5,7 +5,7 @@
  *
  * @module decantr/components/command
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { createSignal, createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { createListbox, createFocusTrap } from './_behaviors.js';

@@ -3,7 +3,7 @@
  *
  * @module decantr/components/result
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon as makeIcon } from './icon.js';
 

@@ -1,5 +1,5 @@
 import type { Child } from '../types.js';
-import { createEffect } from '../state/index.js';
+import { createEffect, createSignal } from '../state/index.js';
 import { disposeNode } from './component.js';
 export { onMount, onDestroy, onCleanup } from './lifecycle.js';
 export { component } from './component.js';
@@ -65,84 +65,6 @@ export function text(getter: string | (() => string)): Text {
     node.nodeValue = String(fn());
   });
   return node;
-}
-
-/** @deprecated Use Show instead. */
-export function cond(
-  condition: () => boolean,
-  thenFn: () => Node,
-  elseFn?: () => Node
-): HTMLElement {
-  const container = document.createElement('d-cond');
-  let currentNode: Node | null = null;
-
-  createEffect(() => {
-    const result = condition();
-    if (currentNode) {
-      disposeNode(currentNode);
-      container.removeChild(currentNode);
-      currentNode = null;
-    }
-    const fn = result ? thenFn : elseFn;
-    if (fn) {
-      currentNode = fn();
-      if (currentNode) container.appendChild(currentNode);
-    }
-  });
-
-  return container;
-}
-
-/** @deprecated Use For instead. */
-export function list<T>(
-  itemsGetter: () => T[],
-  keyFn: (item: T, index: number) => unknown,
-  renderFn: (item: T, index: number) => Node
-): HTMLElement {
-  const container = document.createElement('d-list');
-  let currentMap = new Map<unknown, { node: Node }>();
-
-  createEffect(() => {
-    const items = itemsGetter();
-    const newMap = new Map<unknown, { node: Node }>();
-    const newNodes: Node[] = [];
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const key = keyFn(item, i);
-      const existing = currentMap.get(key);
-
-      if (existing) {
-        newMap.set(key, existing);
-        newNodes.push(existing.node);
-      } else {
-        const node = renderFn(item, i);
-        newMap.set(key, { node });
-        newNodes.push(node);
-      }
-    }
-
-    // Remove nodes no longer in list — dispose reactive trees
-    for (const [key, entry] of currentMap) {
-      if (!newMap.has(key) && entry.node.parentNode === container) {
-        disposeNode(entry.node);
-        container.removeChild(entry.node);
-      }
-    }
-
-    // Append/reorder
-    for (let i = 0; i < newNodes.length; i++) {
-      const node = newNodes[i];
-      const current = container.childNodes[i];
-      if (node !== current) {
-        container.insertBefore(node, current || null);
-      }
-    }
-
-    currentMap = newMap;
-  });
-
-  return container;
 }
 
 export function mount(root: HTMLElement, component: () => HTMLElement): void {
@@ -238,7 +160,8 @@ interface ErrorBoundaryProps {
  * Also catches errors thrown inside createEffect within its subtree.
  */
 export function ErrorBoundary(props: ErrorBoundaryProps, ...children: Child[]): HTMLElement {
-  const container = document.createElement('d-boundary');
+  const container = document.createElement('div');
+  container.style.display = 'contents';
   let caught: unknown = null;
 
   function clear(): void {
@@ -353,7 +276,16 @@ function resolveTarget(target: HTMLElement | string | undefined): HTMLElement {
 
 // ─── Suspense ───────────────────────────────────────────────────
 
-export const _pendingQueries: Set<Promise<unknown>> = new Set();
+const [_pendingCount, _setPendingCount] = createSignal(0);
+
+/**
+ * Track an async operation for Suspense boundaries.
+ * Call this when starting an async operation that Suspense should wait for.
+ */
+export function trackPending(promise: Promise<unknown>): void {
+  _setPendingCount(c => c + 1);
+  promise.finally(() => _setPendingCount(c => c - 1));
+}
 
 interface SuspenseProps {
   fallback: () => Node;
@@ -363,7 +295,8 @@ interface SuspenseProps {
  * Async boundary. Shows fallback while any createQuery() in children is loading.
  */
 export function Suspense(props: SuspenseProps, ...children: Child[]): HTMLElement {
-  const container = document.createElement('d-suspense');
+  const container = document.createElement('div');
+  container.style.display = 'contents';
   const childNodes: Node[] = [];
   let fallbackNode: Node | null = null;
   let showing: 'children' | 'fallback' = 'children';
@@ -430,7 +363,8 @@ interface TransitionProps {
  * Enter/exit animation wrapper for conditional content.
  */
 export function Transition(props: TransitionProps, child: () => HTMLElement | null): HTMLElement {
-  const container = document.createElement('d-transition');
+  const container = document.createElement('div');
+  container.style.display = 'contents';
   const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const duration = reducedMotion ? 0 : (props.duration != null ? props.duration : 200);

@@ -4,7 +4,7 @@
  *
  * @module decantr/components/watermark
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 import { getResolvedMode } from '../css/index.js';
 

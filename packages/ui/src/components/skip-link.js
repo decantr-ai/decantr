@@ -4,7 +4,7 @@
  *
  * @module decantr/components/skip-link
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { injectBase } from './_base.js';
 
 /**

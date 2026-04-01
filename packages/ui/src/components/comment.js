@@ -3,7 +3,7 @@
  *
  * @module decantr/components/comment
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { createSignal, createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { Avatar } from './avatar.js';

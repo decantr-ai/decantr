@@ -1,4 +1,4 @@
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { getIconPath } from '../icons/index.js';
 
 let styleEl = null;

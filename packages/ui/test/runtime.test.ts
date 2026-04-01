@@ -3,6 +3,8 @@ import { createRoot } from '../src/state/scheduler.js';
 import { createSignal } from '../src/state/index.js';
 import { h, mount, text } from '../src/runtime/index.js';
 import { component } from '../src/runtime/component.js';
+import { Show } from '../src/runtime/show.js';
+import { For } from '../src/runtime/for.js';
 
 // ─── h() ─────────────────────────────────────────────────────
 
@@ -93,5 +95,31 @@ describe('component()', () => {
     const node = Comp({}) as any;
     expect(node.__d_owner).toBeTruthy();
     expect(node.__d_owner.children).toBeDefined();
+  });
+});
+
+// ─── Show — clean DOM ───────────────────────────────────────────
+
+describe('Show — clean DOM', () => {
+  it('does not create custom elements in the DOM', () => {
+    const [visible] = createSignal(true);
+    let container: any;
+    createRoot(() => {
+      container = Show(visible, () => document.createElement('span'));
+    });
+    expect(container.tagName).not.toBe('D-SHOW');
+  });
+});
+
+// ─── For — clean DOM ────────────────────────────────────────────
+
+describe('For — clean DOM', () => {
+  it('does not create custom elements in the DOM', () => {
+    const [items] = createSignal([1, 2, 3]);
+    let container: any;
+    createRoot(() => {
+      container = For(items, (item: number) => item, (item: number) => document.createElement('span'));
+    });
+    expect(container.tagName).not.toBe('D-FOR');
   });
 });

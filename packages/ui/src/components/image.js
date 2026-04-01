@@ -3,7 +3,7 @@
  *
  * @module decantr/components/image
  */
-import { h, onDestroy } from '../core/index.js';
+import { h, onDestroy } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
 /**

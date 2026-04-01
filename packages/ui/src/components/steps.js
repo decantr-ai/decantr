@@ -4,7 +4,7 @@
  *
  * @module decantr/components/steps
  */
-import { h } from '../core/index.js';
+import { h } from '../runtime/index.js';
 import { createEffect } from '../state/index.js';
 import { injectBase, cx } from './_base.js';
 import { icon } from './icon.js';

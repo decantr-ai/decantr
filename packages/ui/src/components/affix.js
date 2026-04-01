@@ -3,7 +3,7 @@
  *
  * @module decantr/components/affix
  */
-import { h, onCleanup } from '../core/index.js';
+import { h, onCleanup } from '../runtime/index.js';
 import { injectBase, cx } from './_base.js';
 
 /**

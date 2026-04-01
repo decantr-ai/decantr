@@ -11,7 +11,8 @@ export function Show(
   renderFn: () => Node,
   fallbackFn?: () => Node
 ): HTMLElement {
-  const container = document.createElement('d-show');
+  const container = document.createElement('div');
+  container.style.display = 'contents';
 
   createEffect(() => {
     const result = when();
