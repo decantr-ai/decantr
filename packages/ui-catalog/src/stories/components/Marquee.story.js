@@ -1,5 +1,5 @@
 import { Marquee } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 function makeItems(texts) {
   return texts.map(t => h('span', { style: { padding: '4px 12px', background: '#f0f0f0', borderRadius: '4px', whiteSpace: 'nowrap' } }, t));
@@ -37,7 +37,7 @@ export default {
     {
       title: 'News ticker',
       code: `import { Marquee } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const ticker = Marquee(
   { speed: 20, pauseOnHover: true },
@@ -50,7 +50,7 @@ document.body.appendChild(ticker);`,
     {
       title: 'Logo carousel',
       code: `import { Marquee } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const logos = Marquee(
   { speed: 40, direction: 'right' },

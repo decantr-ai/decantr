@@ -1,5 +1,5 @@
 import { SkipLink } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 export default {
   component: (props) => {
@@ -35,7 +35,7 @@ document.body.prepend(skip);`,
     {
       title: 'Multiple skip links',
       code: `import { SkipLink } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const nav = h('div', null,
   SkipLink({ target: '#main', label: 'Skip to main content' }),

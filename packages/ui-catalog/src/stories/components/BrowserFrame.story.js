@@ -1,5 +1,5 @@
 import { BrowserFrame } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 function sampleContent(text) {
   return h('div', { style: { padding: '24px', textAlign: 'center', color: '#666' } }, text || 'Page content goes here');
@@ -29,7 +29,7 @@ export default {
     {
       title: 'Basic browser frame',
       code: `import { BrowserFrame } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const frame = BrowserFrame(
   { url: 'https://example.com' },
@@ -40,7 +40,7 @@ document.body.appendChild(frame);`,
     {
       title: 'Wrapping a screenshot',
       code: `import { BrowserFrame } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const frame = BrowserFrame(
   { url: 'https://myapp.dev' },

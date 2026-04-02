@@ -1,5 +1,5 @@
 import { createHighlighter } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const jsSample = `const greet = (name) => {
   // Say hello

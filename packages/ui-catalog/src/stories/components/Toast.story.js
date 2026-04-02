@@ -1,5 +1,5 @@
 import { toast } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 export default {
   component: (props) => {

@@ -1,6 +1,6 @@
 import { Drawer, Button } from '@decantr/ui/components';
 import { createSignal } from '@decantr/ui/state';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 export default {
   component: (props) => {
@@ -37,7 +37,7 @@ export default {
       title: 'Basic',
       code: `import { Drawer } from '@decantr/ui/components';
 import { createSignal } from '@decantr/ui/state';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const [visible, setVisible] = createSignal(false);
 const drawer = Drawer(

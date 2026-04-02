@@ -1,5 +1,5 @@
 import { SortableList } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const fruits = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry'];
 const tasks = ['Design mockups', 'Write tests', 'Review PR', 'Deploy'];
@@ -38,7 +38,7 @@ export default {
     {
       title: 'Basic sortable list',
       code: `import { SortableList } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const list = SortableList({
   items: ['Apple', 'Banana', 'Cherry'],
@@ -55,7 +55,7 @@ document.body.appendChild(list);`,
     {
       title: 'Horizontal layout',
       code: `import { SortableList } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const list = SortableList({
   items: ['A', 'B', 'C'],

@@ -11,6 +11,52 @@
 import { createSignal, createMemo, batch } from '../state/index.js';
 import { setErrorHandler } from '../runtime/index.js';
 
+// ─── Internal Types ──────────────────────────────────────────
+
+interface TelemetryEvent {
+  type: string;
+  name: string;
+  value?: number;
+  tags?: Record<string, any>;
+  timestamp: number;
+  error?: Error;
+  component?: string | null;
+  stack?: string | null | undefined;
+  context?: Record<string, any>;
+}
+
+interface Reporter {
+  type: string;
+  send(events: TelemetryEvent[]): Promise<void>;
+  flush?(): Promise<void>;
+}
+
+interface Collector {
+  destroy(): void;
+}
+
+interface TelemetryErrorInfo {
+  error: Error;
+  component: string | null;
+  stack: string | null | undefined;
+  context: Record<string, any>;
+  timestamp: number;
+}
+
+interface HttpReporterConfig {
+  type: 'http';
+  url: string;
+  batchSize?: number;
+  headers?: Record<string, string>;
+}
+
+interface CallbackReporterConfig {
+  type: 'callback';
+  fn: (events: TelemetryEvent[]) => void;
+}
+
+type ReporterSpec = 'console' | HttpReporterConfig | CallbackReporterConfig;
+
 export interface TelemetryConfig {
   reporters?: Array<'console' | { type: 'http'; url: string; batchSize?: number; headers?: Record<string, string> } | { type: 'callback'; fn: (events: any[]) => void }>;
   webVitals?: boolean;
@@ -44,11 +90,11 @@ export interface TelemetryInstance {
  * Bounded event buffer that drops oldest entries when full.
  * @param {number} maxSize
  */
-function createEventBuffer(maxSize) {
-  const events = [];
+function createEventBuffer(maxSize: number) {
+  const events: TelemetryEvent[] = [];
 
   return {
-    push(event) {
+    push(event: TelemetryEvent) {
       events.push(event);
       if (events.length > maxSize) events.shift();
     },
@@ -66,13 +112,13 @@ function createEventBuffer(maxSize) {
 
 // ─── Reporters ───────────────────────────────────────────────
 
-function createConsoleReporter() {
+function createConsoleReporter(): Reporter {
   return {
     type: 'console',
-    async send(events) {
+    async send(events: TelemetryEvent[]) {
       if (events.length === 0) return;
       if (typeof console !== 'undefined' && typeof console.table === 'function') {
-        console.table(events.map(e => ({
+        console.table(events.map((e: TelemetryEvent) => ({
           type: e.type,
           name: e.name,
           value: e.value,
@@ -83,13 +129,13 @@ function createConsoleReporter() {
   };
 }
 
-function createHttpReporter(config) {
+function createHttpReporter(config: HttpReporterConfig): Reporter {
   const { url, batchSize = 20, headers = {} } = config;
-  const queue = [];
+  const queue: TelemetryEvent[] = [];
 
   return {
     type: 'http',
-    async send(events) {
+    async send(events: TelemetryEvent[]) {
       queue.push(...events);
       while (queue.length >= batchSize) {
         const batch = queue.splice(0, batchSize);
@@ -104,7 +150,7 @@ function createHttpReporter(config) {
     }
   };
 
-  async function sendBatch(batch) {
+  async function sendBatch(batch: TelemetryEvent[]) {
     try {
       await fetch(url, {
         method: 'POST',
@@ -118,11 +164,11 @@ function createHttpReporter(config) {
   }
 }
 
-function createCallbackReporter(config) {
+function createCallbackReporter(config: CallbackReporterConfig): Reporter {
   const { fn } = config;
   return {
     type: 'callback',
-    async send(events) {
+    async send(events: TelemetryEvent[]) {
       if (events.length === 0) return;
       try {
         await fn(events);
@@ -133,7 +179,7 @@ function createCallbackReporter(config) {
   };
 }
 
-function resolveReporter(spec) {
+function resolveReporter(spec: ReporterSpec): Reporter | null {
   if (spec === 'console') return createConsoleReporter();
   if (typeof spec === 'object' && spec.type === 'http') return createHttpReporter(spec);
   if (typeof spec === 'object' && spec.type === 'callback') return createCallbackReporter(spec);
@@ -142,8 +188,8 @@ function resolveReporter(spec) {
 
 // ─── Web Vitals Collector ────────────────────────────────────
 
-function createWebVitalsCollector(onMetric) {
-  const observers = [];
+function createWebVitalsCollector(onMetric: (name: string, value: number) => void): Collector {
+  const observers: PerformanceObserver[] = [];
 
   // Guard for environments without PerformanceObserver
   if (typeof PerformanceObserver === 'undefined') {
@@ -169,7 +215,7 @@ function createWebVitalsCollector(onMetric) {
       const entries = list.getEntries();
       if (entries.length > 0) {
         const first = entries[0];
-        onMetric('fid', first.processingStart - first.startTime);
+        onMetric('fid', (first as any).processingStart - first.startTime);
       }
     });
     fidObserver.observe({ type: 'first-input', buffered: true });
@@ -180,11 +226,11 @@ function createWebVitalsCollector(onMetric) {
   try {
     let clsValue = 0;
     let sessionValue = 0;
-    let sessionEntries = [];
+    let sessionEntries: PerformanceEntry[] = [];
 
     const clsObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        if (!entry.hadRecentInput) {
+        if (!(entry as any).hadRecentInput) {
           const firstEntry = sessionEntries[0];
           const lastEntry = sessionEntries[sessionEntries.length - 1];
 
@@ -198,7 +244,7 @@ function createWebVitalsCollector(onMetric) {
           }
 
           sessionEntries.push(entry);
-          sessionValue += entry.value;
+          sessionValue += (entry as any).value;
 
           if (sessionValue > clsValue) {
             clsValue = sessionValue;
@@ -213,11 +259,11 @@ function createWebVitalsCollector(onMetric) {
 
   // INP — Interaction to Next Paint (p98 of interaction durations)
   try {
-    const interactions = [];
+    const interactions: number[] = [];
 
     const inpObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        if (entry.interactionId) {
+        if ((entry as any).interactionId) {
           interactions.push(entry.duration);
           // Calculate p98
           if (interactions.length > 0) {
@@ -228,7 +274,7 @@ function createWebVitalsCollector(onMetric) {
         }
       }
     });
-    inpObserver.observe({ type: 'event', buffered: true, durationThreshold: 40 });
+    inpObserver.observe({ type: 'event', buffered: true, durationThreshold: 40 } as PerformanceObserverInit);
     observers.push(inpObserver);
   } catch (_) {}
 
@@ -244,11 +290,11 @@ function createWebVitalsCollector(onMetric) {
 
 // ─── Error Capture ───────────────────────────────────────────
 
-function createErrorCapture(onError) {
-  let previousHandler = null;
+function createErrorCapture(onError: (info: TelemetryErrorInfo) => void): Collector {
+  let previousHandler: ((info: any) => void) | null = null;
 
   // Integrate with Decantr's setErrorHandler
-  setErrorHandler((info) => {
+  setErrorHandler((info: any) => {
     onError({
       error: info.error,
       component: info.component,
@@ -258,16 +304,16 @@ function createErrorCapture(onError) {
     });
     // Chain to previous handler if it existed
     if (typeof previousHandler === 'function') {
-      try { previousHandler(info); } catch (_) {}
+      try { (previousHandler as (info: any) => void)(info); } catch (_) {}
     }
   });
 
   // Also catch unhandled errors
-  let windowErrorHandler = null;
-  let unhandledRejectionHandler = null;
+  let windowErrorHandler: ((event: ErrorEvent) => void) | null = null;
+  let unhandledRejectionHandler: ((event: PromiseRejectionEvent) => void) | null = null;
 
   if (typeof globalThis !== 'undefined' && typeof globalThis.addEventListener === 'function') {
-    windowErrorHandler = (event) => {
+    windowErrorHandler = (event: ErrorEvent) => {
       onError({
         error: event.error || new Error(event.message || 'Unknown error'),
         component: null,
@@ -278,7 +324,7 @@ function createErrorCapture(onError) {
     };
     globalThis.addEventListener('error', windowErrorHandler);
 
-    unhandledRejectionHandler = (event) => {
+    unhandledRejectionHandler = (event: PromiseRejectionEvent) => {
       const reason = event.reason;
       onError({
         error: reason instanceof Error ? reason : new Error(String(reason)),
@@ -304,23 +350,23 @@ function createErrorCapture(onError) {
 
 // ─── Navigation Timing ───────────────────────────────────────
 
-function createNavigationTracker(router, onMetric) {
+function createNavigationTracker(router: any, onMetric: (name: string, value: number, tags?: Record<string, any>) => void): Collector {
   if (!router || typeof router.onNavigate !== 'function') {
     return { destroy() {} };
   }
 
-  let lastNavStart = null;
-  let lastPath = null;
+  let lastNavStart: number | null = null;
+  let lastPath: string | null = null;
 
   // Track navigation start via patching navigate
   const origNavigate = router.navigate;
-  router.navigate = function trackedNavigate(...args) {
+  router.navigate = function trackedNavigate(...args: any[]) {
     lastNavStart = performance.now();
     lastPath = typeof args[0] === 'string' ? args[0] : null;
     return origNavigate.apply(this, args);
   };
 
-  const unsub = router.onNavigate((to, from) => {
+  const unsub = router.onNavigate((to: any, from: any) => {
     const duration = lastNavStart !== null ? performance.now() - lastNavStart : 0;
     onMetric('navigation', duration, {
       from: from && from.path ? from.path : lastPath,
@@ -340,12 +386,12 @@ function createNavigationTracker(router, onMetric) {
 
 // ─── Query Timing Middleware ─────────────────────────────────
 
-function createQueryTimingMiddleware(queryClient, onMetric) {
+function createQueryTimingMiddleware(queryClient: any, onMetric: (name: string, value: number, tags?: Record<string, any>) => void): Collector {
   if (!queryClient || typeof queryClient.use !== 'function') {
     return { destroy() {} };
   }
 
-  const removeMiddleware = queryClient.use(async (ctx, next) => {
+  const removeMiddleware = queryClient.use(async (ctx: any, next: () => Promise<any>) => {
     const start = performance.now();
     try {
       const result = await next();
@@ -356,12 +402,12 @@ function createQueryTimingMiddleware(queryClient, onMetric) {
         status: ctx.response ? ctx.response.status : 200
       });
       return result;
-    } catch (err) {
+    } catch (err: unknown) {
       const duration = performance.now() - start;
       onMetric('query_error', duration, {
         url: ctx.url,
         method: ctx.method,
-        error: err.message
+        error: err instanceof Error ? err.message : String(err)
       });
       throw err;
     }
@@ -421,14 +467,14 @@ export function createTelemetry(config: TelemetryConfig = {}): TelemetryInstance
   } = config;
 
   // ── Signals ──
-  const [metricsMap, setMetricsMap] = createSignal(new Map());
-  const [errorsList, setErrorsList] = createSignal([]);
-  const [vitalsData, setVitalsData] = createSignal({ lcp: null, fid: null, cls: null, inp: null });
+  const [metricsMap, setMetricsMap] = createSignal<Map<string, any>>(new Map());
+  const [errorsList, setErrorsList] = createSignal<TelemetryEvent[]>([]);
+  const [vitalsData, setVitalsData] = createSignal<{ lcp: number | null; fid: number | null; cls: number | null; inp: number | null }>({ lcp: null, fid: null, cls: null, inp: null });
   const [collecting, setCollecting] = createSignal(true);
 
   // ── Buffer & Reporters ──
   const buffer = createEventBuffer(maxBufferSize);
-  const reporters = reporterSpecs.map(resolveReporter).filter(Boolean);
+  const reporters = reporterSpecs.map(resolveReporter).filter(Boolean) as Reporter[];
 
   // ── Sampling ──
   function shouldSample() {
@@ -438,7 +484,7 @@ export function createTelemetry(config: TelemetryConfig = {}): TelemetryInstance
   }
 
   // ── Push event into buffer ──
-  function pushEvent(event) {
+  function pushEvent(event: TelemetryEvent) {
     if (!collecting()) return;
     if (!shouldSample()) return;
     buffer.push(event);
@@ -450,7 +496,7 @@ export function createTelemetry(config: TelemetryConfig = {}): TelemetryInstance
   }
 
   // ── Record metric ──
-  function recordMetric(name, value, tags) {
+  function recordMetric(name: string, value: number, tags?: Record<string, any>) {
     const event = {
       type: 'metric',
       name,
@@ -467,7 +513,7 @@ export function createTelemetry(config: TelemetryConfig = {}): TelemetryInstance
   }
 
   // ── Start timer ──
-  function startTimer(name, tags) {
+  function startTimer(name: string, tags?: Record<string, any>) {
     const start = performance.now();
     return () => {
       const duration = performance.now() - start;
@@ -477,7 +523,7 @@ export function createTelemetry(config: TelemetryConfig = {}): TelemetryInstance
   }
 
   // ── Record error ──
-  function recordError(error, context) {
+  function recordError(error: Error, context?: Record<string, any>) {
     const errorEvent = {
       type: 'error',
       name: 'error',
@@ -511,24 +557,24 @@ export function createTelemetry(config: TelemetryConfig = {}): TelemetryInstance
   }
 
   // ── Collectors ──
-  const collectors = [];
+  const collectors: Collector[] = [];
 
   // Web Vitals
   if (webVitals) {
-    const vitalsCollector = createWebVitalsCollector((name, value) => {
+    const vitalsCollector = createWebVitalsCollector((name: string, value: number) => {
       recordMetric(`web_vitals.${name}`, value, { vital: name });
 
       // Update vitals signal
-      const current = { ...vitalsData() };
+      const current = { ...vitalsData() } as { lcp: number | null; fid: number | null; cls: number | null; inp: number | null } & Record<string, number | null>;
       current[name] = value;
-      setVitalsData(current);
+      setVitalsData(current as { lcp: number | null; fid: number | null; cls: number | null; inp: number | null });
     });
     collectors.push(vitalsCollector);
   }
 
   // Error capture
   if (errorCapture) {
-    const errorCollector = createErrorCapture((errorInfo) => {
+    const errorCollector = createErrorCapture((errorInfo: TelemetryErrorInfo) => {
       const event = {
         type: 'error',
         name: 'error',
@@ -543,7 +589,7 @@ export function createTelemetry(config: TelemetryConfig = {}): TelemetryInstance
 
   // Navigation timing
   if (navigationTiming && router) {
-    const navTracker = createNavigationTracker(router, (name, value, tags) => {
+    const navTracker = createNavigationTracker(router, (name: string, value: number, tags?: Record<string, any>) => {
       recordMetric(name, value, tags);
     });
     collectors.push(navTracker);
@@ -551,14 +597,14 @@ export function createTelemetry(config: TelemetryConfig = {}): TelemetryInstance
 
   // Query timing
   if (queryTiming && qc) {
-    const queryMiddleware = createQueryTimingMiddleware(qc, (name, value, tags) => {
+    const queryMiddleware = createQueryTimingMiddleware(qc, (name: string, value: number, tags?: Record<string, any>) => {
       recordMetric(name, value, tags);
     });
     collectors.push(queryMiddleware);
   }
 
   // ── Flush timer ──
-  let flushTimerId = null;
+  let flushTimerId: ReturnType<typeof setInterval> | null = null;
   if (flushInterval > 0) {
     flushTimerId = setInterval(() => {
       if (collecting()) flush();

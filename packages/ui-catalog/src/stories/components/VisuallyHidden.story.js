@@ -1,5 +1,5 @@
 import { VisuallyHidden } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 export default {
   component: (props) => {
@@ -28,7 +28,7 @@ export default {
     {
       title: 'Accessible icon button',
       code: `import { VisuallyHidden } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const btn = h('button', { type: 'button' },
   h('span', { 'aria-hidden': 'true' }, '\u2715'),
@@ -39,7 +39,7 @@ document.body.appendChild(btn);`,
     {
       title: 'Hidden form label',
       code: `import { VisuallyHidden } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const label = h('label', null,
   VisuallyHidden({}, 'Search'),

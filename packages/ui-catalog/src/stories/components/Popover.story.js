@@ -1,5 +1,5 @@
 import { Popover, Button } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 export default {
   component: (props) => Popover(
@@ -30,7 +30,7 @@ export default {
     {
       title: 'Basic',
       code: `import { Popover, Button } from '@decantr/ui/components';
-import { h } from '@decantr/ui/core';
+import { h } from '@decantr/ui/runtime';
 
 const pop = Popover(
   { trigger: () => Button({ variant: 'outline' }, 'Info'), position: 'bottom' },
