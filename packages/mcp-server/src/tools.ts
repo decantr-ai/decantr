@@ -224,7 +224,7 @@ export const TOOLS = [
   {
     name: 'decantr_resolve_recipe',
     title: 'Resolve Recipe',
-    description: 'Get recipe decoration rules including shell styles, spatial hints, visual effects, and pattern preferences.',
+    description: 'Get recipe visual treatment overrides, decoration rules, shell styles, spatial hints, visual effects, and pattern preferences.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -360,7 +360,7 @@ export const TOOLS = [
   {
     name: 'decantr_get_section_context',
     title: 'Get Section Context',
-    description: 'Get the self-contained context for a specific section of the project. Returns guard rules, theme tokens, decorators, pattern specs, zone context, and pages — everything an AI needs to work on that section.',
+    description: 'Get the self-contained context for a specific section of the project. Returns guard rules, theme tokens, visual treatments, recipe decorators, pattern specs, zone context, and pages — everything an AI needs to work on that section.',
     inputSchema: {
       type: 'object' as const,
       properties: {
