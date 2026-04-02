@@ -85,6 +85,8 @@ export interface Recipe {
   visual_effects: RecipeVisualEffects;
   pattern_preferences: { prefer: string[]; avoid: string[]; default_presets?: Record<string, string> };
   pattern_overrides?: Record<string, { background?: string[] }>;
+  /** Maps CSS class selectors (e.g. "d-surface") to property override objects (e.g. {"background": "rgba(31,31,35,0.8)"}). */
+  treatment_overrides?: Record<string, Record<string, string>>;
   animation?: { entrance?: string; micro?: string };
 }
 
