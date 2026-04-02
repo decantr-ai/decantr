@@ -66,11 +66,13 @@ describe('generateSectionContext', () => {
     expect(result).not.toContain('--d-primary: #6366f1');
   });
 
-  it('references decorators with compact one-line list', () => {
+  it('references decorators with compact one-line list and usage hint', () => {
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('**Decorators:** see `src/styles/decorators.css`');
-    expect(result).toContain('surface-card, glass-panel');
+    expect(result).toContain('`surface-card`');
+    expect(result).toContain('`glass-panel`');
+    expect(result).toContain('(see `src/styles/decorators.css`)');
+    expect(result).toContain("Usage: `className={css('_flex _col') + ' carbon-card'}`");
     // Should NOT contain the full table
     expect(result).not.toContain('| Decorator | Description |');
     expect(result).not.toContain('| surface-card | Surface background with border |');

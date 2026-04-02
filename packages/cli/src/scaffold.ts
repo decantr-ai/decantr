@@ -735,9 +735,29 @@ function generateDecoratorRule(name: string, description: string): string {
     rules.push('animation: decantr-pulse 1.5s ease-in-out infinite');
   }
 
-  // Backdrop blur
-  if (descLower.includes('blur') || descLower.includes('glass')) {
+  // Backdrop blur — detect explicit blur size or glassmorphic keyword
+  const blurMatch = descLower.match(/blur\((\d+)px\)/);
+  if (blurMatch) {
+    rules.push(`backdrop-filter: blur(${blurMatch[1]}px)`);
+    rules.push(`-webkit-backdrop-filter: blur(${blurMatch[1]}px)`);
+  } else if (descLower.includes('glassmorphic') || descLower.includes('glass')) {
+    rules.push('backdrop-filter: blur(12px)');
+    rules.push('-webkit-backdrop-filter: blur(12px)');
+  } else if (descLower.includes('blur')) {
     rules.push('backdrop-filter: blur(8px)');
+    rules.push('-webkit-backdrop-filter: blur(8px)');
+  }
+
+  // Semi-transparent background for glassmorphic panels
+  if (descLower.includes('semi-transparent') || descLower.includes('glassmorphic')) {
+    // Override any prior background rule with rgba version
+    const bgIdx = rules.findIndex(r => r.startsWith('background:'));
+    const rgbaBg = 'background: rgba(31, 31, 35, 0.8)';
+    if (bgIdx !== -1) {
+      rules[bgIdx] = rgbaBg;
+    } else {
+      rules.push(rgbaBg);
+    }
   }
 
   // Text alignment for bubbles
@@ -2305,23 +2325,31 @@ export async function refreshDerivedFiles(
                     }
                   }
 
-                  patternSpecs[name] = {
+                  const spec: PatternSpecSummary = {
                     description: (inner.description as string) || '',
                     components: (inner.components as string[]) || [],
                     slots,
                   };
+                  // Enrich empty components with synthetic inference
+                  if (!spec.components || spec.components.length === 0) {
+                    const syntheticComps = generateSyntheticComponents(name, spec.description);
+                    if (syntheticComps.length > 0) spec.components = syntheticComps;
+                  }
+                  patternSpecs[name] = spec;
                 } else {
                   // Pattern not in registry — generate synthetic spec from name alone
                   const synthetic = generateSyntheticSlots(name, '');
-                  if (Object.keys(synthetic).length > 0) {
-                    patternSpecs[name] = { description: '', components: [], slots: synthetic };
+                  const syntheticComps = generateSyntheticComponents(name, '');
+                  if (Object.keys(synthetic).length > 0 || syntheticComps.length > 0) {
+                    patternSpecs[name] = { description: '', components: syntheticComps, slots: synthetic };
                   }
                 }
               } catch {
                 // Pattern fetch failed — generate synthetic spec from name alone
                 const synthetic = generateSyntheticSlots(name, '');
-                if (Object.keys(synthetic).length > 0) {
-                  patternSpecs[name] = { description: '', components: [], slots: synthetic };
+                const syntheticComps = generateSyntheticComponents(name, '');
+                if (Object.keys(synthetic).length > 0 || syntheticComps.length > 0) {
+                  patternSpecs[name] = { description: '', components: syntheticComps, slots: synthetic };
                 }
               }
             }
@@ -2513,23 +2541,31 @@ export async function refreshDerivedFiles(
                   }
                 }
 
-                patternSpecs[name] = {
+                const spec: PatternSpecSummary = {
                   description: (inner.description as string) || '',
                   components: (inner.components as string[]) || [],
                   slots,
                 };
+                // Enrich empty components with synthetic inference
+                if (!spec.components || spec.components.length === 0) {
+                  const syntheticComps = generateSyntheticComponents(name, spec.description);
+                  if (syntheticComps.length > 0) spec.components = syntheticComps;
+                }
+                patternSpecs[name] = spec;
               } else {
                 // Pattern not in registry — generate synthetic spec from name alone
                 const synthetic = generateSyntheticSlots(name, '');
-                if (Object.keys(synthetic).length > 0) {
-                  patternSpecs[name] = { description: '', components: [], slots: synthetic };
+                const syntheticComps = generateSyntheticComponents(name, '');
+                if (Object.keys(synthetic).length > 0 || syntheticComps.length > 0) {
+                  patternSpecs[name] = { description: '', components: syntheticComps, slots: synthetic };
                 }
               }
             } catch {
               // Pattern fetch failed — generate synthetic spec from name alone
               const synthetic = generateSyntheticSlots(name, '');
-              if (Object.keys(synthetic).length > 0) {
-                patternSpecs[name] = { description: '', components: [], slots: synthetic };
+              const syntheticComps = generateSyntheticComponents(name, '');
+              if (Object.keys(synthetic).length > 0 || syntheticComps.length > 0) {
+                patternSpecs[name] = { description: '', components: syntheticComps, slots: synthetic };
               }
             }
           }
@@ -2675,6 +2711,34 @@ function generateSyntheticSlots(patternId: string, description: string): Record<
   return syntheticSlots;
 }
 
+/**
+ * Generate synthetic component lists for patterns that lack explicit component definitions.
+ * Uses the pattern ID and description to infer common component needs.
+ */
+function generateSyntheticComponents(patternId: string, description: string): string[] {
+  const desc = description.toLowerCase();
+  const syntheticComponents: string[] = [];
+
+  if (patternId.includes('hero')) syntheticComponents.push('Button', 'Icon', 'Image');
+  if (patternId.includes('feature')) syntheticComponents.push('Card', 'Icon', 'Text');
+  if (patternId.includes('pricing')) syntheticComponents.push('Card', 'Button', 'Badge');
+  if (patternId.includes('testimonial')) syntheticComponents.push('Card', 'Avatar', 'Text');
+  if (patternId.includes('cta')) syntheticComponents.push('Button', 'Text');
+  if (patternId.includes('form') || patternId.includes('contact')) syntheticComponents.push('Input', 'Textarea', 'Button', 'Label');
+  if (patternId.includes('team')) syntheticComponents.push('Card', 'Avatar', 'Text');
+  if (patternId.includes('settings') || patternId.includes('security')) syntheticComponents.push('Card', 'Toggle', 'Input', 'Button');
+  if (patternId.includes('message') || patternId.includes('chat')) syntheticComponents.push('Avatar', 'Text', 'CodeBlock');
+  if (patternId.includes('input') && desc.includes('chat')) syntheticComponents.push('Textarea', 'Button', 'Icon');
+  if (patternId.includes('header') && desc.includes('chat')) syntheticComponents.push('Button', 'Icon', 'Text');
+  if (patternId.includes('content') || patternId.includes('legal')) syntheticComponents.push('Heading', 'Text', 'List');
+  if (patternId.includes('how-it-works') || patternId.includes('steps')) syntheticComponents.push('Card', 'Icon', 'Text', 'Badge');
+  if (patternId.includes('values')) syntheticComponents.push('Card', 'Icon', 'Text');
+  if (patternId.includes('story') || patternId.includes('about')) syntheticComponents.push('Text', 'Image');
+  if (patternId.includes('empty') || patternId.includes('new')) syntheticComponents.push('Icon', 'Text', 'Button');
+
+  return [...new Set(syntheticComponents)];
+}
+
 // ── Context Generation ──
 
 export interface PatternSpecSummary {
@@ -2758,10 +2822,11 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push(`**Theme tokens:** see \`src/styles/tokens.css\` — use \`var(--d-primary)\`, \`var(--d-bg)\`, etc.`);
   lines.push('');
 
-  // Decorators (compact one-line reference; full table in .decantr/context/decorators.md)
+  // Decorators (compact reference with usage pattern; full table in .decantr/context/decorators.md)
   if (decorators.length > 0) {
-    const names = decorators.map(d => d.name).join(', ');
-    lines.push(`**Decorators:** see \`src/styles/decorators.css\` — available classes: ${names}`);
+    const names = decorators.map(d => `\`${d.name}\``).join(', ');
+    lines.push(`**Decorators:** ${names} (see \`src/styles/decorators.css\`)`);
+    lines.push("Usage: `className={css('_flex _col') + ' carbon-card'}` — atoms via css(), decorators as plain class strings.");
   } else {
     lines.push('**Decorators:** none defined.');
   }
