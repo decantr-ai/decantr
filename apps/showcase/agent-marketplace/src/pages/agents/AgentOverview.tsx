@@ -1,124 +1,176 @@
 import { css } from '@decantr/css';
-import { Bot, Zap, AlertTriangle, Wifi, Search, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { PageHeader } from '../../components/PageHeader';
-import { StatusRing } from '../../components/StatusRing';
-import { TimelineEvent } from '../../components/TimelineEvent';
+import {
+  Cpu, Zap, AlertTriangle, Clock,
+  ArrowUpRight, ArrowDownRight, Minus,
+  ChevronRight, Circle,
+} from 'lucide-react';
 
-const AGENTS = [
-  { id: 'a1', name: 'CodeGen Alpha', model: 'gpt-4o', status: 'active' as const, tasks: 142, latency: '120ms' },
-  { id: 'a2', name: 'Data Miner v3', model: 'claude-3.5', status: 'active' as const, tasks: 89, latency: '340ms' },
-  { id: 'a3', name: 'Safety Monitor', model: 'gpt-4o-mini', status: 'warning' as const, tasks: 12, latency: '890ms' },
-  { id: 'a4', name: 'Search Index', model: 'mistral-large', status: 'idle' as const, tasks: 0, latency: '—' },
-  { id: 'a5', name: 'Deploy Bot', model: 'claude-3.5', status: 'error' as const, tasks: 3, latency: '—' },
-  { id: 'a6', name: 'Test Runner', model: 'gpt-4o', status: 'active' as const, tasks: 57, latency: '210ms' },
+const agents = [
+  { id: 'agent-001', name: 'Sentinel-Alpha', type: 'Monitor', status: 'online' as const, cpu: 23, tasks: 147, uptime: '99.97%', lastAction: '2s ago' },
+  { id: 'agent-002', name: 'Parser-Beta', type: 'ETL', status: 'online' as const, cpu: 67, tasks: 89, uptime: '99.91%', lastAction: '14s ago' },
+  { id: 'agent-003', name: 'Curator-Gamma', type: 'Classifier', status: 'warning' as const, cpu: 92, tasks: 203, uptime: '98.44%', lastAction: '1m ago' },
+  { id: 'agent-004', name: 'Router-Delta', type: 'Orchestrator', status: 'online' as const, cpu: 45, tasks: 512, uptime: '99.99%', lastAction: '0s ago' },
+  { id: 'agent-005', name: 'Analyst-Epsilon', type: 'Inference', status: 'error' as const, cpu: 0, tasks: 31, uptime: '87.22%', lastAction: '5m ago' },
+  { id: 'agent-006', name: 'Guard-Zeta', type: 'Security', status: 'offline' as const, cpu: 0, tasks: 0, uptime: '—', lastAction: '2h ago' },
 ];
 
-const TIMELINE_EVENTS = [
-  { type: 'action' as const, title: 'CodeGen Alpha deployed to production', description: 'Automated deployment pipeline triggered after 47 tests passed.', timestamp: '2m ago', duration: '1.2s' },
-  { type: 'decision' as const, title: 'Data Miner v3 selected extraction strategy', description: 'Chose parallel chunked processing over sequential for 12GB dataset.', timestamp: '8m ago', duration: '340ms' },
-  { type: 'error' as const, title: 'Deploy Bot connection timeout', description: 'Lost WebSocket connection to orchestrator. Retry 3/5 in progress.', timestamp: '12m ago' },
-  { type: 'tool_call' as const, title: 'Test Runner invoked pytest suite', description: 'Running 847 unit tests across 12 modules with coverage tracking.', timestamp: '15m ago', duration: '24s' },
-  { type: 'reasoning' as const, title: 'Safety Monitor flagged anomalous pattern', description: 'Elevated token consumption rate (3.2x baseline) detected on CodeGen Alpha.', timestamp: '22m ago' },
+const timeline = [
+  { time: '14:32:01', agent: 'Router-Delta', event: 'Routed 48 tasks to Parser-Beta cluster', type: 'action' as const },
+  { time: '14:31:47', agent: 'Sentinel-Alpha', event: 'Anomaly detected in request latency — p99 > 400ms', type: 'warning' as const },
+  { time: '14:31:22', agent: 'Curator-Gamma', event: 'Classification confidence dropped below 0.85 threshold', type: 'warning' as const },
+  { time: '14:30:58', agent: 'Parser-Beta', event: 'Batch #4782 processed — 89 records transformed', type: 'action' as const },
+  { time: '14:30:15', agent: 'Analyst-Epsilon', event: 'Process crashed: OOM at inference step 3', type: 'error' as const },
+  { time: '14:29:44', agent: 'Router-Delta', event: 'Load balancer reweighted: shifted 20% to Sentinel cluster', type: 'action' as const },
 ];
+
+const stats: { label: string; value: string; change: string; trend: 'up' | 'down' | 'flat'; icon: typeof Cpu }[] = [
+  { label: 'Active Agents', value: '4', change: '+1', trend: 'up', icon: Cpu },
+  { label: 'Tasks / min', value: '847', change: '+12%', trend: 'up', icon: Zap },
+  { label: 'Alerts', value: '3', change: '+2', trend: 'down', icon: AlertTriangle },
+  { label: 'Avg Latency', value: '124ms', change: '-8ms', trend: 'up', icon: Clock },
+];
+
+function StatusDot({ status }: { status: 'online' | 'offline' | 'warning' | 'error' }) {
+  const cls = status === 'online' ? 'status-online pulse' :
+              status === 'warning' ? 'status-warning pulse' :
+              status === 'error' ? 'status-error' : 'status-offline';
+  return <span className={'status-ring ' + cls} />;
+}
 
 export function AgentOverview() {
   return (
-    <>
-      <PageHeader
-        title="Agent Swarm"
-        subtitle="6 agents / 3 active / 1 alert"
-        actions={
-          <>
-            <button className="d-interactive neon-glow-hover" data-variant="ghost" style={{ border: '1px solid transparent' }}>
-              <Search size={14} /> Filter
-            </button>
-            <button className="d-interactive neon-glow-hover" style={{ background: 'var(--d-accent)', color: 'var(--d-bg)', borderColor: 'var(--d-accent)' }}>
-              <Plus size={14} /> Deploy Agent
-            </button>
-          </>
-        }
-      />
-
-      {/* Swarm topology — node canvas */}
-      <section className="d-section" style={{ paddingTop: 0 }}>
-        <h2 className="mono-data" style={{ fontSize: '0.6875rem', color: 'var(--d-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 'var(--d-gap-4)' }}>
-          Swarm Topology
-        </h2>
-        <div
-          className="d-surface carbon-glass"
-          style={{ padding: 'var(--d-gap-6)', position: 'relative', overflow: 'hidden', minHeight: 320 }}
-        >
-          {/* Grid background */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: 'radial-gradient(circle, var(--d-border) 1px, transparent 1px)',
-              backgroundSize: '24px 24px',
-              opacity: 0.3,
-            }}
-          />
-
-          {/* Agent nodes */}
-          <div className={css('_flex _wrap _gap6 _jcc')} style={{ position: 'relative', zIndex: 1 }}>
-            {AGENTS.map((agent) => (
-              <Link
-                key={agent.id}
-                to={`/agents/${agent.id}`}
-                className={css('_flex _col _aic _gap2') + ' d-surface neon-glow-hover neon-entrance'}
-                style={{
-                  padding: 'var(--d-gap-4)',
-                  minWidth: 140,
-                  textDecoration: 'none',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-                data-interactive=""
-              >
-                <StatusRing status={agent.status} size={48}>
-                  <Bot size={20} style={{ color: agent.status === 'active' ? 'var(--d-accent)' : agent.status === 'error' ? 'var(--d-error)' : 'var(--d-text-muted)' }} />
-                </StatusRing>
-                <span style={{ fontSize: '0.8125rem', fontWeight: 500 }}>{agent.name}</span>
-                <span className="mono-data" style={{ fontSize: '0.6875rem', color: 'var(--d-text-muted)' }}>{agent.model}</span>
-                <div className={css('_flex _aic _gap2')}>
-                  <span className="mono-data" style={{ fontSize: '0.6875rem', color: 'var(--d-text-muted)' }}>
-                    <Zap size={10} style={{ display: 'inline', verticalAlign: 'middle' }} /> {agent.tasks}
-                  </span>
-                  <span className="mono-data" style={{ fontSize: '0.6875rem', color: 'var(--d-text-muted)' }}>
-                    <Wifi size={10} style={{ display: 'inline', verticalAlign: 'middle' }} /> {agent.latency}
-                  </span>
-                </div>
-                <span
-                  className="d-annotation"
-                  data-status={agent.status === 'active' ? 'success' : agent.status === 'error' ? 'error' : agent.status === 'warning' ? 'warning' : 'info'}
-                >
-                  {agent.status === 'active' && '● '}{agent.status}
-                </span>
-              </Link>
-            ))}
-          </div>
-
-          {/* Connection lines are decorative SVG */}
-          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
-            <line x1="25%" y1="40%" x2="50%" y2="30%" stroke="var(--d-accent)" strokeWidth="1" opacity="0.2" />
-            <line x1="50%" y1="30%" x2="75%" y2="40%" stroke="var(--d-accent)" strokeWidth="1" opacity="0.2" />
-            <line x1="25%" y1="70%" x2="50%" y2="60%" stroke="var(--d-border)" strokeWidth="1" opacity="0.3" />
-          </svg>
+    <div className={css('_flex _col _gap6') + ' fade-in'}>
+      {/* Page header */}
+      <div className={css('_flex _aic _jcsb')}>
+        <div>
+          <h1 className={'font-mono ' + css('_text2xl _fontbold')}>Agent Swarm</h1>
+          <p className={'font-mono ' + css('_textsm _fgmuted _mt1')}>
+            Real-time orchestration overview
+          </p>
         </div>
-      </section>
+        <div className={css('_flex _aic _gap2')}>
+          <span className={'status-ring status-online pulse'} />
+          <span className={'font-mono ' + css('_textxs _fgsuccess')}>SYSTEM NOMINAL</span>
+        </div>
+      </div>
 
-      {/* Activity feed — timeline */}
-      <section className="d-section">
-        <h2 className="mono-data" style={{ fontSize: '0.6875rem', color: 'var(--d-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 'var(--d-gap-4)' }}>
-          Activity Feed
-        </h2>
-        <div className={css('_flex _col')}>
-          {TIMELINE_EVENTS.map((event, i) => (
-            <TimelineEvent key={i} {...event} />
+      {/* Stats row */}
+      <div className={css('_grid _gc2 _lg:gc4 _gap4')}>
+        {stats.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.label} className={css('_flex _col _gap2 _p4') + ' carbon-card'}>
+              <div className={css('_flex _aic _jcsb')}>
+                <Icon size={16} style={{ color: 'var(--d-text-muted)' }} />
+                {s.trend === 'up' ? (
+                  <span className={css('_flex _aic _gap1 _textxs _fgsuccess')}>
+                    <ArrowUpRight size={12} />{s.change}
+                  </span>
+                ) : s.trend === 'down' ? (
+                  <span className={css('_flex _aic _gap1 _textxs _fgerror')}>
+                    <ArrowDownRight size={12} />{s.change}
+                  </span>
+                ) : (
+                  <span className={css('_flex _aic _gap1 _textxs _fgmuted')}>
+                    <Minus size={12} />{s.change}
+                  </span>
+                )}
+              </div>
+              <span className="metric-value">{s.value}</span>
+              <span className={'font-mono ' + css('_textxs _fgmuted _uppercase')}>{s.label}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Agent topology / table */}
+      <div className={css('_flex _col _gap3')}>
+        <div className={css('_flex _aic _jcsb')}>
+          <h2 className={'font-mono ' + css('_textsm _fontbold _uppercase')}>Agent Fleet</h2>
+          <span className={'font-mono badge badge-info'}>6 registered</span>
+        </div>
+        <div className={css('_overauto') + ' carbon-card'} style={{ padding: 0 }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Agent</th>
+                <th>Type</th>
+                <th>CPU</th>
+                <th>Tasks</th>
+                <th>Uptime</th>
+                <th>Last Action</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {agents.map((a) => (
+                <tr key={a.id}>
+                  <td><StatusDot status={a.status} /></td>
+                  <td>
+                    <Link to={`/agents/${a.id}`} className={'font-mono ' + css('_fgtext')}>
+                      {a.name}
+                    </Link>
+                  </td>
+                  <td><span className="badge badge-muted">{a.type}</span></td>
+                  <td>
+                    <div className={css('_flex _aic _gap2')}>
+                      <div className="progress-bar" style={{ width: 48 }}>
+                        <div
+                          className="progress-fill"
+                          style={{
+                            width: `${a.cpu}%`,
+                            background: a.cpu > 80 ? 'var(--d-warning)' : 'var(--d-primary)',
+                          }}
+                        />
+                      </div>
+                      <span className={'font-mono ' + css('_textxs _fgmuted')}>{a.cpu}%</span>
+                    </div>
+                  </td>
+                  <td><span className="font-mono">{a.tasks.toLocaleString()}</span></td>
+                  <td><span className="font-mono">{a.uptime}</span></td>
+                  <td><span className={'font-mono ' + css('_fgmuted')}>{a.lastAction}</span></td>
+                  <td>
+                    <Link to={`/agents/${a.id}`} className="btn btn-ghost btn-sm">
+                      <ChevronRight size={14} />
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Activity timeline */}
+      <div className={css('_flex _col _gap3')}>
+        <h2 className={'font-mono ' + css('_textsm _fontbold _uppercase')}>Activity Feed</h2>
+        <div className={css('_flex _col _gap2')}>
+          {timeline.map((evt, i) => (
+            <div key={i} className={css('_flex _aic _gap3 _p3') + ' carbon-card'}>
+              <span className={'font-mono ' + css('_textxs _fgmuted _shrink0')} style={{ width: 72 }}>
+                {evt.time}
+              </span>
+              <Circle
+                size={8}
+                fill={
+                  evt.type === 'error' ? 'var(--d-error)' :
+                  evt.type === 'warning' ? 'var(--d-warning)' : 'var(--d-primary)'
+                }
+                stroke="none"
+              />
+              <span className={'font-mono badge ' + (
+                evt.type === 'error' ? 'badge-error' :
+                evt.type === 'warning' ? 'badge-warning' : 'badge-info'
+              )}>
+                {evt.agent}
+              </span>
+              <span className={'font-mono ' + css('_textsm _fgmuted _flex1')}>{evt.event}</span>
+            </div>
           ))}
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 }

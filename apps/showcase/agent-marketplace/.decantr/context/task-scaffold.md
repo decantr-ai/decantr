@@ -17,7 +17,8 @@ During scaffolding, the following rules are recommendations, not requirements:
 | # | Layer | Rule | Status | Guidance |
 |---|-------|------|--------|----------|
 | 1 | DNA | Style | Advisory | Use the theme from essence, but creative variations are acceptable |
-| 2 | DNA | Density | Advisory | Follow spacing guidelines loosely |
+| 2 | DNA | Recipe | Advisory | Apply recipe styles where possible |
+| 3 | DNA | Density | Advisory | Follow spacing guidelines loosely |
 | 4 | DNA | Accessibility | Advisory | Meet WCAG level from essence where possible |
 | 5 | DNA | Theme-mode | Advisory | Use the specified theme/mode combination |
 | 6 | Blueprint | Structure | Advisory | Follow the page structure, add placeholder content |
@@ -30,7 +31,7 @@ Before scaffolding:
 
 - [ ] Read `decantr.essence.json`
 - [ ] Understand the target framework (react)
-- [ ] Know the theme (carbon-neon) and mode (dark)
+- [ ] Know the theme (carbon) and mode (dark)
 - [ ] Review the page structure
 
 During scaffolding:

@@ -1,7 +1,7 @@
 # Scaffold: agent-orchestrator
 
 **Blueprint:** 
-**Theme:** carbon-neon
+**Theme:** carbon | **Recipe:** carbon
 **Personality:** Confident cyber-minimal agent marketplace. Neon accent glows on dark void backgrounds. Monospace data typography. Agent status shown through color-coded rings and pulse animations. Think Linear meets a mission control center. Lucide icons. No decorative elements — every pixel serves the operator.
 **Guard mode:** creative (no enforcement during initial scaffolding)
 

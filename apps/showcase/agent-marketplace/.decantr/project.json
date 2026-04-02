@@ -12,18 +12,19 @@
   },
   "sync": {
     "status": "synced",
-    "lastSync": "2026-04-02T17:25:41.511Z",
+    "lastSync": "2026-04-02T11:49:36.498Z",
     "registrySource": "api",
     "cachedContent": {
       "archetypes": [],
       "patterns": [],
-      "themes": []
+      "themes": [],
+      "recipes": []
     }
   },
   "initialized": {
-    "at": "2026-04-02T17:25:41.511Z",
+    "at": "2026-04-02T11:49:36.498Z",
     "via": "cli",
     "version": "1.0.0",
-    "flags": "--blueprint=agent-marketplace --theme=carbon-neon --mode=dark --guard=strict"
+    "flags": "--blueprint=agent-marketplace --theme=carbon --mode=dark --guard=strict"
   }
 }

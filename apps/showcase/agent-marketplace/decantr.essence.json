@@ -2,8 +2,9 @@
   "version": "3.1.0",
   "dna": {
     "theme": {
-      "id": "carbon-neon",
+      "style": "carbon",
       "mode": "dark",
+      "recipe": "carbon",
       "shape": "rounded"
     },
     "spacing": {
