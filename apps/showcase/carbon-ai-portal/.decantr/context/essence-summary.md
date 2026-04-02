@@ -10,7 +10,7 @@ Auto-generated summary of `decantr.essence.json`.
 |----------|-------|
 | Archetype | ai-chatbot |
 | Blueprint |  |
-| Personality | professional, minimal, developer-focused, polished |
+| Personality | Production-ready AI chatbot with refined glassmorphic depth. Muted stormy-blue palette with soft drop shadows and subtle backdrop blur on panels. Lucide icons throughout. Rich typographic hierarchy — Inter or system sans-serif for body, monospace for code and data. Polished form fields with visible focus rings, smooth hover-lift transitions on cards and buttons. No emoji in UI. Think Claude meets Linear. |
 | Target | react |
 
 ## Visual Identity
@@ -96,4 +96,4 @@ Auto-generated summary of `decantr.essence.json`.
 
 ---
 
-*Last updated: 2026-04-01T22:54:08.004Z*
+*Last updated: 2026-04-02T00:06:13.770Z*

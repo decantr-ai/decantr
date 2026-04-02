@@ -1,6 +1,6 @@
 {
   "name": "@decantr/cli",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Decantr CLI — search the registry, validate essence files, and access design intelligence from the terminal",
   "license": "MIT",
   "repository": {

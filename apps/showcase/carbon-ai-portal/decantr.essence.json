@@ -42,10 +42,7 @@
       "skip_nav": true
     },
     "personality": [
-      "professional",
-      "minimal",
-      "developer-focused",
-      "polished"
+      "Production-ready AI chatbot with refined glassmorphic depth. Muted stormy-blue palette with soft drop shadows and subtle backdrop blur on panels. Lucide icons throughout. Rich typographic hierarchy — Inter or system sans-serif for body, monospace for code and data. Polished form fields with visible focus rings, smooth hover-lift transitions on cards and buttons. No emoji in UI. Think Claude meets Linear."
     ]
   },
   "blueprint": {

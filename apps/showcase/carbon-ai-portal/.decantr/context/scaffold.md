@@ -2,7 +2,7 @@
 
 **Blueprint:** 
 **Theme:** carbon | **Recipe:** carbon
-**Personality:** professional, minimal, developer-focused, polished
+**Personality:** Production-ready AI chatbot with refined glassmorphic depth. Muted stormy-blue palette with soft drop shadows and subtle backdrop blur on panels. Lucide icons throughout. Rich typographic hierarchy — Inter or system sans-serif for body, monospace for code and data. Polished form fields with visible focus rings, smooth hover-lift transitions on cards and buttons. No emoji in UI. Think Claude meets Linear.
 **Guard mode:** creative (no enforcement during initial scaffolding)
 
 ## App Topology
@@ -16,25 +16,25 @@
 **Public** — top-nav-footer shell
   Archetypes: marketing-saas, about-hybrid, contact, legal
   Purpose: SaaS marketing landing page with hero, features, how-it-works timeline, pricing, testimonials, and CTA sections. About page combining hero, company story, team grid, values, and call-to-action sections. Contact page with hero header and working contact form with validation and spam protection. Legal pages including privacy policy, terms of service, and cookie policy with sticky TOC and print-friendly layout.
-  Tone: professional, minimal, developer-focused, polished
+  Tone: Production-ready AI chatbot with refined glassmorphic depth. Muted stormy-blue palette with soft drop shadows and subtle backdrop blur on panels. Lucide icons throughout. Rich typographic hierarchy — Inter or system sans-serif for body, monospace for code and data. Polished form fields with visible focus rings, smooth hover-lift transitions on cards and buttons. No emoji in UI. Think Claude meets Linear.
   Features: pricing-toggle, testimonials, feature-grid, team-grid, values-display, form-validation, spam-protection, file-attachment, toc-navigation, print-friendly, smooth-scroll
 
 **Gateway** — centered shell
   Archetypes: auth-full
   Purpose: Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.
-  Tone: professional, minimal, developer-focused, polished
+  Tone: Production-ready AI chatbot with refined glassmorphic depth. Muted stormy-blue palette with soft drop shadows and subtle backdrop blur on panels. Lucide icons throughout. Rich typographic hierarchy — Inter or system sans-serif for body, monospace for code and data. Polished form fields with visible focus rings, smooth hover-lift transitions on cards and buttons. No emoji in UI. Think Claude meets Linear.
   Features: auth, mfa, oauth, email-verification, password-reset
 
 **App** — chat-portal shell
   Archetypes: ai-chatbot
   Purpose: AI chatbot interface with conversation sidebar, message thread, and anchored input. Core interface for chat-first AI applications.
-  Tone: professional, minimal, developer-focused, polished
+  Tone: Production-ready AI chatbot with refined glassmorphic depth. Muted stormy-blue palette with soft drop shadows and subtle backdrop blur on panels. Lucide icons throughout. Rich typographic hierarchy — Inter or system sans-serif for body, monospace for code and data. Polished form fields with visible focus rings, smooth hover-lift transitions on cards and buttons. No emoji in UI. Think Claude meets Linear.
   Features: chat, markdown, code-highlight, file-upload, mentions, reactions, export
 
 **App (auxiliary)** — chat-portal shell
   Archetypes: settings-full
   Purpose: Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.
-  Tone: professional, minimal, developer-focused, polished
+  Tone: Production-ready AI chatbot with refined glassmorphic depth. Muted stormy-blue palette with soft drop shadows and subtle backdrop blur on panels. Lucide icons throughout. Rich typographic hierarchy — Inter or system sans-serif for body, monospace for code and data. Polished form fields with visible focus rings, smooth hover-lift transitions on cards and buttons. No emoji in UI. Think Claude meets Linear.
   Features: profile-edit, password-change, mfa-management, session-management, theme-toggle, account-deletion
 
 ### Zone Transitions

@@ -1,0 +1,16 @@
+{
+  "pages": [
+    {
+      "pageId": "home",
+      "route": "/"
+    }
+  ],
+  "theme": {
+    "style": "auradecantism",
+    "mode": "dark",
+    "shape": "rounded",
+    "recipe": "default",
+    "isAddon": false
+  },
+  "routing": "history"
+}

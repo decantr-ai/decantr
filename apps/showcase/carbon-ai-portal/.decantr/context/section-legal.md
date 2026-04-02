@@ -25,11 +25,7 @@ toc-navigation, print-friendly, smooth-scroll
 
 ---
 
-## Personality
-
-professional, minimal, developer-focused, polished
-
----
+**Personality:** Production-ready AI chatbot with refined glassmorphic depth.... (full details in scaffold.md)
 
 ## Pages
 

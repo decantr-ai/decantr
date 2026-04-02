@@ -25,11 +25,7 @@ auth, mfa, oauth, email-verification, password-reset
 
 ---
 
-## Personality
-
-professional, minimal, developer-focused, polished
-
----
+**Personality:** Production-ready AI chatbot with refined glassmorphic depth.... (full details in scaffold.md)
 
 ## Pages
 
