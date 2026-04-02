@@ -377,6 +377,20 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
+  // 15. decantr_critique — local read
+  {
+    name: 'decantr_critique',
+    title: 'Design Critique',
+    description: 'Evaluate generated code against the essence spec for visual quality. Returns a scorecard covering treatment usage, decorator coverage, personality alignment, motion, accessibility, and responsiveness.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        file_path: { type: 'string' as const, description: 'Path to the component file to critique' },
+      },
+      required: ['file_path'],
+    },
+    annotations: READ_ONLY,
+  },
 ];
 
 export async function handleTool(name: string, args: Record<string, unknown>): Promise<unknown> {
@@ -1155,6 +1169,12 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       return { content: lines.join('\n') };
+    }
+
+    case 'decantr_critique': {
+      const { critiqueFile } = await import('./critique.js');
+      const result = await critiqueFile(args.file_path as string, process.cwd());
+      return result;
     }
 
     default:
