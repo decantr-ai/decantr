@@ -23,9 +23,32 @@ export interface Pattern {
   contained?: boolean;
   io?: PatternIO;
   code?: { imports: string; example: string };
+  visual_brief?: string;
+  composition?: Record<string, string>;
+  motion?: {
+    micro?: Record<string, string>;
+    transitions?: Record<string, string>;
+    ambient?: Record<string, string>;
+  };
+  responsive?: {
+    mobile?: string;
+    tablet?: string;
+    desktop?: string;
+  };
+  accessibility?: {
+    role?: string;
+    'aria-label'?: string;
+    keyboard?: string[];
+    announcements?: string[];
+    focus_management?: string;
+  };
+  layout_hints?: Record<string, string>;
+  category?: string;
 }
 
 // --- Archetype ---
+export type ArchetypeRole = 'primary' | 'gateway' | 'public' | 'auxiliary';
+
 export interface ArchetypePage {
   id: string;
   default_layout: (string | { pattern: string; preset?: string; as?: string })[];
@@ -43,10 +66,18 @@ export interface Archetype {
   name: string;
   description: string;
   tags: string[];
+  role: ArchetypeRole;
   pages: ArchetypePage[];
   features: string[];
   dependencies: { patterns: Record<string, string> };
   seo_hints?: SeoHints;
+  classification?: {
+    triggers: { primary: string[]; secondary: string[]; negative: string[] };
+    implies: string[];
+    weight: number;
+    tier: string;
+  };
+  page_briefs?: Record<string, string>;
 }
 
 // --- Theme substructures (absorbed from former Recipe type) ---
@@ -76,8 +107,6 @@ export interface ThemeShell {
 }
 
 // --- Blueprint ---
-export type ArchetypeRole = 'primary' | 'gateway' | 'public' | 'auxiliary';
-
 export type ComposeEntry = string | { archetype: string; prefix: string; role?: ArchetypeRole };
 
 export interface Blueprint {
@@ -95,6 +124,20 @@ export interface Blueprint {
   }>;
   features?: string[];
   version?: string;
+  voice?: {
+    tone?: string;
+    cta_verbs?: string[];
+    avoid?: string[];
+    empty_states?: string;
+    errors?: string;
+    loading?: string;
+    metrics_format?: string;
+  };
+  responsive_strategy?: {
+    breakpoints?: string[];
+    navigation?: Record<string, string>;
+    data_display?: Record<string, string>;
+  };
 }
 
 // --- Shell ---
@@ -113,7 +156,7 @@ export interface Shell {
 }
 
 // --- Content Resolution ---
-export type ContentType = 'pattern' | 'archetype' | 'theme' | 'blueprint';
+export type ContentType = 'pattern' | 'archetype' | 'theme' | 'blueprint' | 'shell';
 
 export interface ResolvedContent<T> {
   item: T;
@@ -155,6 +198,13 @@ export interface Theme {
   radius?: { philosophy?: string; base?: number };
   compositions?: Record<string, { shell: string; description: string; effects?: string[] }>;
   pattern_preferences?: { prefer: string[]; avoid: string[]; default_presets?: Record<string, string> };
+  decorator_definitions?: Record<string, {
+    description: string;
+    intent: string;
+    suggested_properties?: Record<string, string>;
+    pairs_with?: string[];
+    usage?: string[];
+  }>;
 }
 
 // --- API Client Types ---

@@ -1,12 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Pattern, Archetype, Theme, Blueprint, ContentType, ResolvedContent } from './types.js';
+import type { Pattern, Archetype, Theme, Blueprint, Shell, ContentType, ResolvedContent } from './types.js';
 
 type ContentMap = {
   pattern: Pattern;
   archetype: Archetype;
   theme: Theme;
   blueprint: Blueprint;
+  shell: Shell;
 };
 
 export interface ResolverOptions {
@@ -23,6 +24,7 @@ const TYPE_DIRS: Record<ContentType, string> = {
   archetype: 'archetypes',
   theme: 'themes',
   blueprint: 'blueprints',
+  shell: 'shells',
 };
 
 async function tryLoadJson<T>(filePath: string): Promise<T | null> {
