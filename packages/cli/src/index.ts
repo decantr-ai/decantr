@@ -776,13 +776,15 @@ async function cmdInit(args: InitArgs) {
       const rawRecipe = recipeResult.data as Record<string, unknown>;
       const recipe = (rawRecipe.data ?? rawRecipe) as {
         decorators?: Record<string, string>;
-        spatial_hints?: { density_bias?: string; content_gap_shift?: number; section_padding?: string | null; card_wrapping?: string; surface_override?: string };
+        spatial_hints?: { density_bias?: number; content_gap_shift?: number; section_padding?: string | null; card_wrapping?: string; surface_override?: string };
         radius_hints?: { philosophy: string; base: number };
+        treatment_overrides?: Record<string, Record<string, string>>;
       };
       recipeData = {
         decorators: recipe.decorators || recipeData?.decorators,
         spatial_hints: recipe.spatial_hints,
         radius_hints: recipe.radius_hints,
+        treatment_overrides: recipe.treatment_overrides,
       };
     }
   }

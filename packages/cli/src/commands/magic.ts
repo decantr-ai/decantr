@@ -542,6 +542,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
         decorators: recipe.decorators || recipeData?.decorators,
         spatial_hints: recipe.spatial_hints,
         radius_hints: recipe.radius_hints,
+        treatment_overrides: recipe.treatment_overrides,
       };
     }
   }
