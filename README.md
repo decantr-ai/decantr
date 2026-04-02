@@ -18,6 +18,108 @@ Decantr uses a seven-stage **Design Pipeline** to transform a natural language i
 6. **Generate** -- The user's AI produces code from the composition. (Decantr does not generate code.)
 7. **Guard** -- Every change is validated against the spec to prevent drift.
 
+### Architecture
+
+```
+                         CONTENT AUTHORING (decantr-content repo)
+                         =========================================
+                         patterns/     97 UI sections (hero, chat-input, kpi-grid)
+                         archetypes/   52 app templates with role (primary/gateway/public/auxiliary)
+                         themes/       17 color palettes with dark/light modes
+                         recipes/      11 visual decoration rules (decorators, spatial hints, animations)
+                         blueprints/   17 complete app compositions (routes, personality, overrides)
+                         shells/       13 page layout containers (sidebar-main, chat-portal, centered)
+                                |
+                                | GitHub Actions: validate → sync to API
+                                v
+                         REGISTRY API (Hono + Supabase on Fly.io)
+                         =========================================
+                         GET /v1/{type}/@official/{slug}  →  full content item
+                         GET /v1/{type}?namespace=@official  →  list items
+                         POST /v1/admin/sync  →  publish from decantr-content
+                                |
+                    +-----------+-----------+
+                    |                       |
+                    v                       v
+             CLI (decantr)           MCP SERVER (@decantr/mcp-server)
+             =============           ==================================
+             decantr init             14 tools for AI assistants
+             decantr refresh          decantr_resolve_blueprint (+ topology)
+             decantr add/remove       decantr_get_section_context
+             decantr analyze          decantr_create_essence
+             decantr check            decantr_check_drift
+                    |                       |
+                    v                       v
+             COMPOSITION PIPELINE          AI ASSISTANT (Claude, Cursor, etc.)
+             ====================          ================================
+             1. Fetch blueprint             Reads MCP tool responses
+             2. Resolve archetypes          Searches registry
+             3. Compose sections            Creates/updates essence
+             4. Resolve features            Validates changes
+                (union + add - remove)
+             5. Map routes
+             6. Derive topology
+                (roles → zones → transitions)
+             7. Fetch theme + recipe
+             8. Generate essence V3.1
+                    |
+                    v
+             GENERATED OUTPUT (Three-Tier Context Model)
+             ============================================
+
+             Tier 1: DECANTR.md                (~170 lines, constant size)
+             ├── Methodology primer
+             ├── Guard rules + enforcement tiers
+             ├── CSS atom reference
+             ├── Decorator usage guide
+             └── Routing guidance
+
+             Tier 2: decantr.essence.json       (V3.1, grows with app)
+             ├── dna: theme, spacing, typography, color, radius,
+             │        elevation, motion, accessibility, personality
+             ├── blueprint:
+             │   ├── sections[] (grouped by archetype)
+             │   │   ├── id, role, shell, features, description
+             │   │   └── pages[] (id, route, layout, patterns)
+             │   ├── features[] (resolved global list)
+             │   └── routes{} (URL → section/page mapping)
+             └── meta: archetype, target, platform, guard, seo, navigation
+
+             Tier 3: .decantr/context/          (per-section, scoped)
+             ├── scaffold.md         Full app overview, topology, route map
+             ├── section-{id}.md     Per-section: guard, zone, decorators, patterns, pages
+             ├── decorators.md       Full decorator table + usage examples
+             └── task-scaffold.md    Scaffolding task checklist
+
+             Generated CSS:
+             ├── src/styles/tokens.css       Theme color/spacing/radius tokens
+             └── src/styles/decorators.css   Recipe decorator CSS classes
+                    |
+                    v
+             AI CODE GENERATION (Stage 6)
+             ============================
+             AI reads: DECANTR.md (once) + section context (per task)
+             AI uses: tokens.css + decorators.css + @decantr/css atoms
+             AI follows: personality directive for visual quality
+             AI generates: framework-appropriate code (React, Vue, Svelte, etc.)
+                    |
+                    v
+             GUARD VALIDATION (Stage 7)
+             =========================
+             decantr check
+             ├── DNA rules (errors): style, recipe, density, accessibility, theme-mode
+             └── Blueprint rules (warnings): structure, layout, pattern existence
+                    |
+                    v
+             PROGRESSIVE DEVELOPMENT
+             =======================
+             decantr add section billing-portal    →  compose new archetype
+             decantr add page settings/webhooks    →  add page to section
+             decantr theme switch terminal         →  change visual direction
+             decantr refresh                       →  regenerate all context files
+             decantr upgrade --apply               →  pull registry updates
+```
+
 ---
 
 ## Get Started
