@@ -1,54 +1,60 @@
 import { css } from '@decantr/css';
+import { ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Shield, ArrowRight } from 'lucide-react';
 
 export function MfaVerify() {
   return (
-    <div className={css('_flex _col _gap5 _wfull') + ' carbon-card ' + css('_p6') + ' fade-in'}>
-      <div className={css('_flex _col _aic _gap3 _textc')}>
-        <div
-          className={css('_flex _aic _jcc _roundedfull')}
-          style={{ width: 64, height: 64, background: 'color-mix(in srgb, var(--d-primary) 15%, transparent)' }}
-        >
-          <Shield size={28} style={{ color: 'var(--d-primary)' }} />
-        </div>
-        <h1 className={'font-mono ' + css('_textxl _fontbold')}>Two-factor verification</h1>
-        <p className={'font-mono ' + css('_textsm _fgmuted')}>
-          Enter the 6-digit code from your authenticator app
+    <form className={css('_flex _col _gap4')} onSubmit={(e) => e.preventDefault()}>
+      <div className={css('_flex _col _aic _gap2')} style={{ textAlign: 'center', marginBottom: 'var(--d-gap-2)' }}>
+        <ShieldCheck size={28} style={{ color: 'var(--d-accent)' }} />
+        <h1 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Verify 2FA</h1>
+        <p className="mono-data" style={{ fontSize: '0.8125rem', color: 'var(--d-text-muted)' }}>
+          Enter the 6-digit code from your authenticator
         </p>
       </div>
 
-      <form className={css('_flex _col _gap4')} onSubmit={(e) => e.preventDefault()}>
-        {/* Code input grid */}
-        <div className={css('_grid _gc6 _gap2')}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <input
-              key={i}
-              type="text"
-              className="carbon-input font-mono"
-              maxLength={1}
-              inputMode="numeric"
-              style={{ textAlign: 'center', fontSize: '1.5rem', padding: '0.75rem 0' }}
-              aria-label={`Digit ${i + 1}`}
-            />
-          ))}
-        </div>
+      {/* Code input boxes */}
+      <div className={css('_flex _gap2 _jcc')}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <input
+            key={i}
+            type="text"
+            maxLength={1}
+            className="d-control mono-data neon-glow-hover"
+            style={{
+              width: 44,
+              height: 52,
+              textAlign: 'center',
+              fontSize: '1.25rem',
+              fontWeight: 600,
+              padding: 0,
+            }}
+            aria-label={`Digit ${i + 1}`}
+          />
+        ))}
+      </div>
 
-        <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }}>
-          Verify <ArrowRight size={16} />
-        </button>
-      </form>
+      <button
+        type="submit"
+        className="d-interactive neon-glow-hover"
+        style={{
+          width: '100%',
+          justifyContent: 'center',
+          background: 'var(--d-accent)',
+          color: 'var(--d-bg)',
+          borderColor: 'var(--d-accent)',
+          fontWeight: 500,
+          marginTop: 'var(--d-gap-2)',
+        }}
+      >
+        Verify
+      </button>
 
-      <div className="separator" />
-
-      <div className={css('_flex _col _gap2 _textc')}>
-        <button type="button" className={'font-mono btn btn-ghost ' + css('_textsm')}>
-          Use backup code instead
-        </button>
-        <Link to="/login" className={'font-mono ' + css('_textxs _fgmuted')}>
-          Back to sign in
+      <div className={css('_flex _col _aic _gap2')} style={{ marginTop: 'var(--d-gap-1)' }}>
+        <Link to="/login" className="mono-data" style={{ fontSize: '0.75rem', color: 'var(--d-text-muted)' }}>
+          Use recovery code instead
         </Link>
       </div>
-    </div>
+    </form>
   );
 }

@@ -1,86 +1,69 @@
 import { css } from '@decantr/css';
-import { Link } from 'react-router-dom';
-import {
-  Search, Filter, Star, Download, ArrowRight,
-  Bot, Brain, Shield, BarChart3, Workflow, Database,
-  Eye, Zap,
-} from 'lucide-react';
-import { useState } from 'react';
+import { Search, Filter, Star, Download, Bot, Sparkles, Shield, Gauge, Code, FileSearch } from 'lucide-react';
+import { PageHeader } from '../../components/PageHeader';
+import { StatusRing } from '../../components/StatusRing';
 
-const categories = ['All', 'Monitor', 'ETL', 'Classifier', 'Orchestrator', 'Security', 'Inference'];
+const CATEGORIES = ['All', 'Code', 'Data', 'Security', 'DevOps', 'Research'] as const;
 
-const marketplaceAgents = [
-  { id: 'sentinel-pro', name: 'Sentinel Pro', author: '@coreai', category: 'Monitor', stars: 2847, downloads: '12.4k', icon: Eye, description: 'Enterprise-grade anomaly detection with sub-second alerting. Monitors API latency, error rates, and resource utilization.', tags: ['monitoring', 'alerting', 'anomaly'], verified: true, price: 'Free' },
-  { id: 'neural-router', name: 'Neural Router', author: '@swarmtech', category: 'Orchestrator', stars: 1923, downloads: '8.1k', icon: Workflow, description: 'Intelligent task routing using reinforcement learning. Dynamically distributes workloads across agent clusters.', tags: ['routing', 'RL', 'load-balancing'], verified: true, price: '$29/mo' },
-  { id: 'dataweave', name: 'DataWeave', author: '@pipelineai', category: 'ETL', stars: 3421, downloads: '19.7k', icon: Database, description: 'Schema-aware ETL agent with automatic type inference and validation. Handles JSON, CSV, Parquet, and streaming data.', tags: ['etl', 'streaming', 'schema'], verified: true, price: 'Free' },
-  { id: 'guardian-shield', name: 'Guardian Shield', author: '@secureai', category: 'Security', stars: 1547, downloads: '6.2k', icon: Shield, description: 'Real-time threat detection and response. Monitors agent communications for prompt injection and data exfiltration.', tags: ['security', 'threat-detection', 'audit'], verified: false, price: '$49/mo' },
-  { id: 'deep-classifier', name: 'Deep Classifier', author: '@mlops', category: 'Classifier', stars: 4102, downloads: '24.8k', icon: Brain, description: 'Multi-modal classification agent supporting text, image, and structured data. Fine-tunable with zero-shot capability.', tags: ['classification', 'multi-modal', 'fine-tune'], verified: true, price: 'Free' },
-  { id: 'insight-engine', name: 'Insight Engine', author: '@analytics', category: 'Inference', stars: 892, downloads: '3.4k', icon: BarChart3, description: 'Statistical inference agent for time-series forecasting, causal analysis, and automated hypothesis testing.', tags: ['inference', 'forecasting', 'statistics'], verified: false, price: '$19/mo' },
-  { id: 'swarm-coordinator', name: 'Swarm Coordinator', author: '@coreai', category: 'Orchestrator', stars: 2156, downloads: '11.2k', icon: Bot, description: 'Multi-agent coordination protocol with consensus mechanisms. Enables collaborative problem-solving across heterogeneous agents.', tags: ['orchestration', 'consensus', 'multi-agent'], verified: true, price: '$39/mo' },
-  { id: 'fast-parser', name: 'Fast Parser', author: '@pipelineai', category: 'ETL', stars: 1789, downloads: '9.3k', icon: Zap, description: 'High-throughput log parsing with automatic format detection. Handles 100k+ events/second with structured output.', tags: ['parsing', 'logs', 'high-throughput'], verified: true, price: 'Free' },
+const AGENTS = [
+  { name: 'CodeGen Pro', author: '@openai', stars: 2847, downloads: '12.4k', category: 'Code', status: 'active' as const, description: 'Production-grade code generation with multi-language support and test generation.', icon: Code },
+  { name: 'DataForge', author: '@anthropic', stars: 1923, downloads: '8.7k', category: 'Data', status: 'active' as const, description: 'ETL pipeline builder with schema inference and data validation.', icon: FileSearch },
+  { name: 'SecGuard AI', author: '@security-lab', stars: 1456, downloads: '5.2k', category: 'Security', status: 'active' as const, description: 'Automated vulnerability scanning and threat modeling for codebases.', icon: Shield },
+  { name: 'PerfTuner', author: '@meta-ai', stars: 987, downloads: '3.1k', category: 'DevOps', status: 'idle' as const, description: 'Real-time performance profiling and optimization recommendations.', icon: Gauge },
+  { name: 'DocBot v4', author: '@google', stars: 2134, downloads: '9.8k', category: 'Code', status: 'active' as const, description: 'Intelligent documentation generation from code analysis.', icon: Sparkles },
+  { name: 'TestPilot', author: '@vercel', stars: 1678, downloads: '6.3k', category: 'Code', status: 'active' as const, description: 'AI-driven test case generation with edge case discovery.', icon: Bot },
 ];
 
 export function AgentMarketplace() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
-
-  const filtered = marketplaceAgents.filter((a) => {
-    const matchesCategory = activeCategory === 'All' || a.category === activeCategory;
-    const matchesSearch = searchQuery === '' ||
-      a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
   return (
-    <div className={css('_flex _col _gap6') + ' fade-in'}>
-      {/* Marketplace hero */}
-      <div className={css('_flex _col _aic _textc _py8 _gap4') + ' neon-glow carbon-card'} style={{ background: 'linear-gradient(180deg, color-mix(in srgb, var(--d-primary) 8%, var(--d-bg)), var(--d-surface))' }}>
-        <h1 className={'font-mono neon-text-glow ' + css('_text3xl _fontbold')}>
-          Agent Marketplace
-        </h1>
-        <p className={'font-mono ' + css('_textlg _fgmuted')} style={{ maxWidth: 480 }}>
-          Discover, deploy, and orchestrate autonomous agents for your swarm.
-        </p>
-        <div className={css('_flex _gap3 _mt2')}>
-          <Link to="/agents" className="btn btn-primary">
-            <Bot size={16} /> Browse Catalog
-          </Link>
-          <a href="#" className="btn btn-secondary">
-            Publish Agent <ArrowRight size={16} />
-          </a>
+    <>
+      {/* Hero */}
+      <section className="d-section" style={{ paddingTop: 0, paddingBottom: 'var(--d-gap-8)' }}>
+        <div
+          className="neon-entrance"
+          style={{
+            textAlign: 'center',
+            padding: 'var(--d-gap-12) var(--d-gap-6)',
+            background: 'radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.08) 0%, transparent 60%)',
+            borderRadius: 'var(--d-radius-lg)',
+            border: '1px solid var(--d-border)',
+          }}
+        >
+          <h1 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: 'var(--d-gap-3)' }}>
+            Agent <span style={{ color: 'var(--d-accent)' }} className="neon-text-glow">Marketplace</span>
+          </h1>
+          <p className="mono-data" style={{ fontSize: '0.875rem', color: 'var(--d-text-muted)', maxWidth: 480, margin: '0 auto var(--d-gap-6)' }}>
+            Discover, deploy, and orchestrate autonomous agents from the community registry.
+          </p>
+          <div className={css('_flex _aic _gap2 _jcc')}>
+            <div style={{ position: 'relative', width: '100%', maxWidth: 400 }}>
+              <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--d-text-muted)' }} />
+              <input
+                className="d-control mono-data neon-glow-hover"
+                placeholder="Search agents..."
+                style={{ paddingLeft: 36, fontSize: '0.8125rem' }}
+                aria-label="Search agents"
+              />
+            </div>
+            <button className="d-interactive neon-glow-hover" data-variant="ghost" style={{ border: '1px solid var(--d-border)' }}>
+              <Filter size={14} /> Filters
+            </button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Search + filters */}
-      <div className={css('_flex _aic _gap3')}>
-        <div className={css('_flex _aic _gap2 _flex1 _rel')}>
-          <Search size={16} style={{ position: 'absolute', left: 12, color: 'var(--d-text-muted)' }} />
-          <input
-            type="text"
-            className="carbon-input font-mono"
-            placeholder="Search agents..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: 36 }}
-          />
-        </div>
-        <button className="btn btn-secondary btn-sm">
-          <Filter size={14} /> Filters
-        </button>
-      </div>
-
-      {/* Category tabs */}
-      <div className={css('_flex _gap2 _wrap')}>
-        {categories.map((cat) => (
+      {/* Category chips */}
+      <div className={css('_flex _gap2 _wrap')} style={{ marginBottom: 'var(--d-gap-6)' }}>
+        {CATEGORIES.map((cat, i) => (
           <button
             key={cat}
-            type="button"
-            className={
-              'btn btn-sm font-mono ' +
-              (activeCategory === cat ? 'btn-primary' : 'btn-ghost')
-            }
-            onClick={() => setActiveCategory(cat)}
+            className="d-interactive neon-glow-hover"
+            data-variant={i === 0 ? undefined : 'ghost'}
+            style={{
+              fontSize: '0.75rem',
+              padding: 'var(--d-gap-1) var(--d-gap-3)',
+              ...(i === 0 ? { background: 'var(--d-accent)', color: 'var(--d-bg)', borderColor: 'var(--d-accent)' } : { border: '1px solid var(--d-border)' }),
+            }}
           >
             {cat}
           </button>
@@ -88,64 +71,64 @@ export function AgentMarketplace() {
       </div>
 
       {/* Agent card grid */}
-      <div className={css('_grid _gc1 _lg:gc2 _gap4')}>
-        {filtered.map((agent) => {
-          const Icon = agent.icon;
-          return (
-            <div key={agent.id} className={css('_flex _col _gap3 _p5') + ' carbon-card hover-lift'}>
-              <div className={css('_flex _aic _jcsb')}>
-                <div className={css('_flex _aic _gap3')}>
-                  <div
-                    className={css('_flex _aic _jcc _rounded')}
-                    style={{
-                      width: 40, height: 40,
-                      background: 'color-mix(in srgb, var(--d-primary) 15%, transparent)',
-                    }}
-                  >
-                    <Icon size={20} style={{ color: 'var(--d-primary)' }} />
+      <section className="d-section" style={{ paddingTop: 0 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: 'var(--d-gap-4)',
+          }}
+        >
+          {AGENTS.map((agent) => (
+            <div
+              key={agent.name}
+              className="d-surface carbon-glass neon-glow-hover neon-entrance"
+              data-interactive=""
+              style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 'var(--d-gap-3)' }}
+            >
+              <div className={css('_flex _aic _gap3')}>
+                <StatusRing status={agent.status} size={40}>
+                  <agent.icon size={18} style={{ color: 'var(--d-accent)' }} />
+                </StatusRing>
+                <div style={{ flex: 1 }}>
+                  <div className={css('_flex _aic _gap2')}>
+                    <span style={{ fontSize: '0.9375rem', fontWeight: 500 }}>{agent.name}</span>
+                    <span className="d-annotation" data-status="success">{agent.category}</span>
                   </div>
-                  <div>
-                    <div className={css('_flex _aic _gap2')}>
-                      <span className={'font-mono ' + css('_fontsemi')}>{agent.name}</span>
-                      {agent.verified && (
-                        <span className="badge badge-success">verified</span>
-                      )}
-                    </div>
-                    <span className={'font-mono ' + css('_textxs _fgmuted')}>{agent.author}</span>
-                  </div>
+                  <span className="mono-data" style={{ fontSize: '0.6875rem', color: 'var(--d-text-muted)' }}>{agent.author}</span>
                 </div>
-                <span className={'font-mono ' + css('_textsm _fontbold')} style={{
-                  color: agent.price === 'Free' ? 'var(--d-success)' : 'var(--d-text)',
-                }}>
-                  {agent.price}
-                </span>
               </div>
 
-              <p className={'font-mono ' + css('_textsm _fgmuted')} style={{ lineHeight: '1.5' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--d-text-muted)', lineHeight: 1.5, flex: 1 }}>
                 {agent.description}
               </p>
 
-              <div className={css('_flex _wrap _gap2')}>
-                {agent.tags.map((tag) => (
-                  <span key={tag} className="badge badge-muted">{tag}</span>
-                ))}
-              </div>
-
-              <div className={css('_flex _aic _jcsb _mt1')}>
+              <div className={css('_flex _jcsb _aic')} style={{ borderTop: '1px solid var(--d-border)', paddingTop: 'var(--d-gap-3)' }}>
                 <div className={css('_flex _aic _gap3')}>
-                  <span className={css('_flex _aic _gap1 _textxs _fgmuted') + ' font-mono'}>
+                  <span className={css('_flex _aic _gap1') + ' mono-data'} style={{ fontSize: '0.6875rem', color: 'var(--d-text-muted)' }}>
                     <Star size={12} /> {agent.stars.toLocaleString()}
                   </span>
-                  <span className={css('_flex _aic _gap1 _textxs _fgmuted') + ' font-mono'}>
+                  <span className={css('_flex _aic _gap1') + ' mono-data'} style={{ fontSize: '0.6875rem', color: 'var(--d-text-muted)' }}>
                     <Download size={12} /> {agent.downloads}
                   </span>
                 </div>
-                <button className="btn btn-primary btn-sm">Deploy</button>
+                <button
+                  className="d-interactive neon-glow-hover"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: 'var(--d-gap-1) var(--d-gap-3)',
+                    background: 'var(--d-accent)',
+                    color: 'var(--d-bg)',
+                    borderColor: 'var(--d-accent)',
+                  }}
+                >
+                  Deploy
+                </button>
               </div>
             </div>
-          );
-        })}
-      </div>
-    </div>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }

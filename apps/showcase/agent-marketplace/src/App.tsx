@@ -1,7 +1,7 @@
-import { Routes, Route } from 'react-router-dom';
-import { SidebarMainShell } from './layouts/SidebarMainShell';
-import { CenteredShell } from './layouts/CenteredShell';
-import { TopNavFooterShell } from './layouts/TopNavFooterShell';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { SidebarMainLayout } from './layouts/SidebarMainLayout';
+import { CenteredLayout } from './layouts/CenteredLayout';
+import { TopNavFooterLayout } from './layouts/TopNavFooterLayout';
 import { AgentOverview } from './pages/agents/AgentOverview';
 import { AgentDetail } from './pages/agents/AgentDetail';
 import { AgentConfig } from './pages/agents/AgentConfig';
@@ -21,38 +21,39 @@ import { ConfidenceExplorer } from './pages/transparency/ConfidenceExplorer';
 
 export function App() {
   return (
-    <Routes>
-      {/* Marketing — top-nav-footer shell */}
-      <Route element={<TopNavFooterShell />}>
-        <Route path="/" element={<Home />} />
-      </Route>
+    <HashRouter>
+      <Routes>
+        {/* Marketing — top-nav-footer shell */}
+        <Route element={<TopNavFooterLayout />}>
+          <Route path="/" element={<Home />} />
+        </Route>
 
-      {/* Auth — centered shell */}
-      <Route element={<CenteredShell />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/mfa-setup" element={<MfaSetup />} />
-        <Route path="/mfa-verify" element={<MfaVerify />} />
-        <Route path="/phone-verify" element={<PhoneVerify />} />
-      </Route>
+        {/* Auth — centered shell */}
+        <Route element={<CenteredLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/mfa-setup" element={<MfaSetup />} />
+          <Route path="/mfa-verify" element={<MfaVerify />} />
+          <Route path="/phone-verify" element={<PhoneVerify />} />
+        </Route>
 
-      {/* Agent Orchestrator — sidebar-main shell */}
-      <Route element={<SidebarMainShell section="agents" />}>
-        <Route path="/agents" element={<AgentOverview />} />
-        <Route path="/agents/:id" element={<AgentDetail />} />
-        <Route path="/agents/config" element={<AgentConfig />} />
-        <Route path="/marketplace" element={<AgentMarketplace />} />
-      </Route>
+        {/* Agent orchestrator + AI transparency — sidebar-main shell */}
+        <Route element={<SidebarMainLayout />}>
+          <Route path="/agents" element={<AgentOverview />} />
+          <Route path="/agents/:id" element={<AgentDetail />} />
+          <Route path="/agents/config" element={<AgentConfig />} />
+          <Route path="/marketplace" element={<AgentMarketplace />} />
+          <Route path="/transparency" element={<ModelOverview />} />
+          <Route path="/transparency/inference" element={<InferenceLog />} />
+          <Route path="/transparency/confidence" element={<ConfidenceExplorer />} />
+        </Route>
 
-      {/* AI Transparency — sidebar-main shell */}
-      <Route element={<SidebarMainShell section="transparency" />}>
-        <Route path="/transparency" element={<ModelOverview />} />
-        <Route path="/transparency/inference" element={<InferenceLog />} />
-        <Route path="/transparency/confidence" element={<ConfidenceExplorer />} />
-      </Route>
-    </Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </HashRouter>
   );
 }

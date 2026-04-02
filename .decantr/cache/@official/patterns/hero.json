@@ -151,7 +151,6 @@
     "description": "Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages, recipe detail headers, and marketing sections.",
     "dependencies": {
       "styles": {},
-      "recipes": {},
       "patterns": {},
       "requires_core": {
         "charts": [],
@@ -164,6 +163,14 @@
           "icon"
         ]
       }
+    },
+    "layout_hints": {
+      "note": "Hero sections should NOT wrap content in d-surface cards. The hero IS the section. Use d-section for spacing.",
+      "subtitle": "Subtitle line-height should be 1.6-1.8. Use text-muted color, smaller font than heading.",
+      "container": "none",
+      "cta_sizing": "Primary and secondary CTAs should have equal padding and height. Primary is filled (d-interactive[data-variant=primary]), secondary is ghost (d-interactive[data-variant=ghost]).",
+      "announcement": "If showing an announcement badge above the heading, use d-annotation with prominent styling — not a tiny muted pill. Accent border or accent background at 15% opacity.",
+      "visual_proof": "The visual element below CTAs should be an ambient visualization (animated gradient, particle effect, blurred screenshot) — NOT a data widget wrapped in a card. If showing product data (agents, metrics), render as floating elements without card containment. Omit entirely if no meaningful visual is available."
     },
     "decantr_compat": ">=0.9.0",
     "default_layout": {
@@ -179,8 +186,8 @@
     "default_preset": "landing"
   },
   "created_at": "2026-03-28T15:26:39.648381+00:00",
-  "updated_at": "2026-04-02T11:17:41.524833+00:00",
-  "published_at": "2026-04-02T11:17:41.47+00:00",
+  "updated_at": "2026-04-02T18:41:18.721423+00:00",
+  "published_at": "2026-04-02T18:41:18.68+00:00",
   "owner_name": "system",
   "owner_username": "system-1bf7"
 }
