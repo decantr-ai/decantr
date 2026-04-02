@@ -2106,7 +2106,8 @@ export async function scaffoldProject(
   }
 
   // Delegate derived file generation to refreshDerivedFiles
-  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry, themeData, { isInitialScaffold: true });
+  // Pass patternSpecs through to avoid double-fetching from registry (Spec 1.8)
+  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry, themeData, { isInitialScaffold: true, patternSpecs });
 
   // Merge context files from refresh into our list
   contextFiles.push(...refreshResult.contextFiles);
@@ -2810,7 +2811,8 @@ export async function refreshDerivedFiles(
       pages,
     };
 
-    // Fetch pattern specs
+    // Resolve pattern specs (uses prefetched when available — Spec 1.8)
+    const prefetchedSpecs = options?.patternSpecs;
     const patternSpecs: Record<string, PatternSpecSummary> = {};
     const seenPatterns = new Set<string>();
     for (const page of pages) {
@@ -2819,50 +2821,8 @@ export async function refreshDerivedFiles(
         for (const name of names) {
           if (!seenPatterns.has(name)) {
             seenPatterns.add(name);
-            try {
-              const patResult = await registry.fetchPattern(name);
-              if (patResult?.data) {
-                const inner = patResult.data as Record<string, any>;
-                const defaultPreset = inner.default_preset || 'standard';
-                const preset = inner.presets?.[defaultPreset];
-                let slots = preset?.layout?.slots || {};
-
-                // If no slots defined, generate synthetic ones from the pattern name and description
-                if (Object.keys(slots).length === 0) {
-                  const synthetic = generateSyntheticSlots(name, (inner.description as string) || '');
-                  if (Object.keys(synthetic).length > 0) {
-                    slots = synthetic;
-                  }
-                }
-
-                const spec: PatternSpecSummary = {
-                  description: (inner.description as string) || '',
-                  components: (inner.components as string[]) || [],
-                  slots,
-                  layout_hints: inner.layout_hints as Record<string, string> | undefined,
-                };
-                // Enrich empty components with synthetic inference
-                if (!spec.components || spec.components.length === 0) {
-                  const syntheticComps = generateSyntheticComponents(name, spec.description);
-                  if (syntheticComps.length > 0) spec.components = syntheticComps;
-                }
-                patternSpecs[name] = spec;
-              } else {
-                // Pattern not in registry — generate synthetic spec from name alone
-                const synthetic = generateSyntheticSlots(name, '');
-                const syntheticComps = generateSyntheticComponents(name, '');
-                if (Object.keys(synthetic).length > 0 || syntheticComps.length > 0) {
-                  patternSpecs[name] = { description: '', components: syntheticComps, slots: synthetic };
-                }
-              }
-            } catch {
-              // Pattern fetch failed — generate synthetic spec from name alone
-              const synthetic = generateSyntheticSlots(name, '');
-              const syntheticComps = generateSyntheticComponents(name, '');
-              if (Object.keys(synthetic).length > 0 || syntheticComps.length > 0) {
-                patternSpecs[name] = { description: '', components: syntheticComps, slots: synthetic };
-              }
-            }
+            const spec = await resolvePatternSpec(name, registry, prefetchedSpecs?.[name], false);
+            if (spec) patternSpecs[name] = spec;
           }
         }
       }
