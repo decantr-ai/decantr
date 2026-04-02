@@ -9,7 +9,7 @@ A comprehensive QA + benchmarking tool that dispatches a fresh agent to scaffold
 
 ## When to Use
 
-- After making changes to the CLI, composition pipeline, recipes, patterns, or context generation
+- After making changes to the CLI, composition pipeline, themes, patterns, or context generation
 - Before publishing new package versions
 - When evaluating a new blueprint's quality
 - When testing visual personality directives
@@ -89,7 +89,7 @@ Pay special attention to the **Personality** section — it contains visual dire
 
 Build ALL pages the blueprint defines (check scaffold.md route map for the full list). For EACH page:
 - Use theme tokens from tokens.css
-- Use treatment classes from treatments.css and recipe decorator classes (combine with css() atoms)
+- Use treatment classes from treatments.css and theme decorator classes (combine with css() atoms)
 - Follow the personality directive for visual quality
 - Install any packages the personality requests (e.g., lucide-react)
 - Record: which files you created, which docs you referenced, where you had to improvise
@@ -164,7 +164,7 @@ Numbered list. For EACH issue:
 - **Severity:** CRITICAL | HIGH | MEDIUM | LOW
 - **File:** which doc/file the issue is in
 - **Description:** 1-2 sentences
-- **Framework fix:** where in Decantr this should be fixed (CLI scaffold.ts, recipe JSON, pattern content, DECANTR.md template, etc.)
+- **Framework fix:** where in Decantr this should be fixed (CLI scaffold.ts, theme JSON, pattern content, DECANTR.md template, etc.)
 
 ### E: Improvisation Log
 
@@ -220,7 +220,7 @@ Based on what you built, suggest improvements to:
 - **Blueprints:** Missing routes, wrong shell assignments, feature gaps
 - **Patterns:** Missing patterns that should exist, pattern specs that need enrichment
 - **Archetypes:** Role misassignment, missing pages, feature gaps
-- **Recipes:** Treatment CSS quality, missing treatments, recipe decorator completeness, spatial hints accuracy
+- **Themes:** Treatment CSS quality, missing treatments, decorator completeness, spatial hints accuracy
 - **Themes:** Token completeness, missing status colors, palette issues
 
 ### J: Theme & Color System Audit
@@ -271,7 +271,7 @@ Evaluate the theme's color palette sophistication against modern CSS standards (
 
 | Effect | Palette supports it? | Recommendation |
 |--------|---------------------|---------------|
-| Glassmorphic blur | Need semi-transparent surface token | Add `rgba(surface, 0.8)` variant or recipe handles it |
+| Glassmorphic blur | Need semi-transparent surface token | Add `rgba(surface, 0.8)` variant or theme handles it |
 | Glow on primary | Primary must be light enough to glow on dark bg | Does primary (#7C93B0) glow well? Or too muted? |
 | Focus ring | Need primary at low opacity for ring | `rgba(primary, 0.2-0.3)` — is primary vibrant enough? |
 | Gradient accent | Need primary → accent direction | Are primary/accent distinct enough for a gradient? |
@@ -284,11 +284,11 @@ Evaluate the theme's color palette sophistication against modern CSS standards (
 |---------|-------------|---------|
 | Missing token | `themes/{name}.json` → `seed` or `palette` | Add `surface-glass: rgba(31,31,35,0.8)` |
 | Missing mode palette | `themes/{name}.json` → `palette.{token}.{mode}` | Add light mode values |
-| Shadow quality | `themes/{name}.json` → can be tokens OR `recipes/{name}.json` → decorators | Theme owns token values, recipe owns CSS classes |
-| Glow/effects | `recipes/{name}.json` → `decorators` + `visual_effects` | Recipe owns visual treatments |
-| Anti-aliasing | `recipes/{name}.json` → `shell.root` class OR CLI CSS generation | Generated CSS should include font-smoothing |
+| Shadow quality | `themes/{name}.json` → tokens and decorators | Theme owns both token values and CSS classes |
+| Glow/effects | `themes/{name}.json` → `decorators` + `visual_effects` | Theme owns visual treatments |
+| Anti-aliasing | `themes/{name}.json` → `shell.root` class OR CLI CSS generation | Generated CSS should include font-smoothing |
 | oklch migration | `themes/{name}.json` → `palette` values | Convert hex to oklch for perceptual uniformity |
-| Spacing/density | DNA `spacing` in essence + recipe `spatial_hints` | Recipe suggests, DNA enforces |
+| Spacing/density | DNA `spacing` in essence + theme `spatial_hints` | Theme suggests, DNA enforces |
 | Personality overrides | Blueprint `personality` string | "prefer oklch tokens, P3 gamut colors" |
 
 **Summary recommendation:** One paragraph describing the overall palette sophistication and the top 3 changes that would most improve the theme's ability to produce visually stunning scaffolds.
@@ -378,7 +378,7 @@ For EACH base treatment in treatments.css, evaluate completeness:
 | d-section | Y/N | N/A | N/A | N/A | N/A | adjacent | N/A | A-F |
 | d-annotation | Y/N | N/A | N/A | N/A | N/A | 4 status variants | N/A | A-F |
 
-Then evaluate recipe decorators separately (same format as before).
+Then evaluate theme decorators separately (same format as before).
 
 **Average grade:** [X]
 **Recommendation:** If average is below B, the treatment generation system needs improvement.

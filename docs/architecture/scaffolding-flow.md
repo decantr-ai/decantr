@@ -105,7 +105,7 @@
 │  │  │  DNA (Guarded — design axioms)                  │    │       │
 │  │  │                                                 │    │       │
 │  │  │  theme ◄──────── Blueprint.theme                │    │       │
-│  │  │    style, mode, recipe, shape                   │    │       │
+│  │  │    id, mode, shape                              │    │       │
 │  │  │                                                 │    │       │
 │  │  │  typography ◄──── Theme.typography_hints         │    │       │
 │  │  │    scale, heading_weight, body_weight           │    │       │
@@ -113,8 +113,8 @@
 │  │  │  spacing ◄─────── Options.density               │    │       │
 │  │  │    base_unit, scale, density, content_gap       │    │       │
 │  │  │                                                 │    │       │
-│  │  │  radius ◄──────── Recipe.radius_hints           │    │       │
-│  │  │    philosophy, base    (Recipe > Theme > Default)│    │       │
+│  │  │  radius ◄──────── Theme.radius_hints             │    │       │
+│  │  │    philosophy, base                             │    │       │
 │  │  │                                                 │    │       │
 │  │  │  motion ◄──────── Theme.motion_hints            │    │       │
 │  │  │    preference, duration_scale, reduce_motion    │    │       │
@@ -212,11 +212,10 @@
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │  DNA Rules (enforce design axioms)                          │    │
 │  │                                                             │    │
-│  │  Rule 1: Style    — code theme matches dna.theme.style      │    │
-│  │  Rule 2: Recipe   — decorations match dna.theme.recipe      │    │
-│  │  Rule 3: Density  — spacing matches dna.spacing.content_gap │    │
-│  │  Rule 4: A11y     — meets dna.accessibility.wcag_level      │    │
-│  │  Rule 5: Mode     — theme/mode combo is compatible          │    │
+│  │  Rule 1: Style    — code theme matches dna.theme.id           │    │
+│  │  Rule 2: Density  — spacing matches dna.spacing.content_gap │    │
+│  │  Rule 3: A11y     — meets dna.accessibility.wcag_level      │    │
+│  │  Rule 4: Mode     — theme/mode combo is compatible          │    │
 │  │                                                             │    │
 │  │  Severity: controlled by meta.guard.dna_enforcement         │    │
 │  │    'error' → violations are errors                          │    │
