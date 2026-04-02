@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
+import * as fs from 'node:fs/promises';
 import { RegistryClient } from '../registry.js';
 import { detectProject } from '../detect.js';
 import { mergeWithDefaults } from '../prompts.js';
@@ -163,8 +164,44 @@ export function parseMagicPrompt(prompt: string): MagicIntent {
 
 /**
  * Resolve the best theme ID from theme hints.
+ * When online, scores registry themes against intent hints by matching
+ * personality strings and tags. Falls back to hardcoded map offline.
  */
-function resolveTheme(hints: string[]): { style: string; mode: 'dark' | 'light' | 'auto' } {
+async function resolveTheme(
+  intent: MagicIntent,
+  registryClient?: any,
+): Promise<{ style: string; mode: 'dark' | 'light' | 'auto' }> {
+  const hints = intent.themeHints;
+
+  // Try registry-based scoring first
+  if (registryClient) {
+    try {
+      const themes = await registryClient.fetchThemes();
+      if (themes && themes.length > 0) {
+        const scored = themes.map((t: any) => {
+          let score = 0;
+          const personality = (t.personality || '').toLowerCase();
+          const tags = (t.tags || []).map((tag: string) => tag.toLowerCase());
+          for (const hint of intent.themeHints) {
+            if (personality.includes(hint)) score += 3;
+            if (tags.some((tag: string) => tag.includes(hint))) score += 2;
+          }
+          if (intent.themeHints.includes('dark') && t.modes?.includes('dark')) score += 1;
+          if (intent.themeHints.includes('light') && t.modes?.includes('light')) score += 1;
+          return { id: t.id || t.slug, score, modes: t.modes };
+        }).sort((a: any, b: any) => b.score - a.score);
+
+        if (scored[0] && scored[0].score > 0) {
+          const mode: 'dark' | 'light' | 'auto' = intent.themeHints.includes('light') ? 'light'
+            : intent.themeHints.includes('dark') ? 'dark'
+            : scored[0].modes?.includes('dark') ? 'dark' : 'light';
+          return { style: scored[0].id, mode };
+        }
+      }
+    } catch { /* fall through to hardcoded map */ }
+  }
+
+  // Hardcoded map as offline fallback
   let mode: 'dark' | 'light' | 'auto' = 'dark';
   if (hints.includes('light')) mode = 'light';
 
@@ -194,6 +231,26 @@ function buildPersonality(intent: MagicIntent): string[] {
   if (intent.themeHints.includes('corporate')) return ['professional', 'reliable'];
   if (intent.themeHints.includes('playful')) return ['friendly', 'energetic'];
   return ['professional'];
+}
+
+/**
+ * Build a richer personality string from intent, blueprint, and theme data.
+ */
+function buildRichPersonality(
+  intent: MagicIntent,
+  blueprintData?: any,
+  themeData?: any,
+): string {
+  const parts: string[] = [];
+  if (blueprintData?.personality && typeof blueprintData.personality === 'string')
+    parts.push(blueprintData.personality);
+  if (intent.personalityHints.length > 0 && !parts.some(p => intent.personalityHints.every(h => p.toLowerCase().includes(h))))
+    parts.push(`Visual character: ${intent.personalityHints.join(', ')}.`);
+  if (themeData?.personality && !parts.some(p => p.toLowerCase().includes(themeData.personality.toLowerCase())))
+    parts.push(`Theme influence: ${themeData.personality}.`);
+  if (parts.length === 0)
+    parts.push(`Modern, production-ready ${intent.description}. Clean typography, intentional spacing, polished interactions.`);
+  return parts.join(' ');
 }
 
 // ── Magic Options ──
@@ -309,7 +366,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   }
 
   // 5. Resolve theme and build options
-  const themeResolved = resolveTheme(intent.themeHints);
+  const themeResolved = await resolveTheme(intent, apiAvailable ? registryClient : undefined);
   const personality = buildPersonality(intent);
 
   const initOptions: InitOptions = {
@@ -344,18 +401,31 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     }
   }
 
+  // Map constraints to essence options
+  if (intent.constraints.includes('accessible')) {
+    initOptions.accessibility = { wcag_level: 'AA' };
+  }
+  if (intent.constraints.includes('mobile-first')) {
+    initOptions.density = 'comfortable';
+  }
+  if (intent.constraints.includes('real-time')) {
+    initOptions.features = [...(initOptions.features || []), 'websockets', 'live-updates'];
+  }
+
   // Dry run — show what would be created and exit
   if (options.dryRun) {
+    const personalityStr = initOptions.personality.join('. ');
     console.log('');
-    console.log(`${YELLOW}${BOLD} Dry run — no files written${RESET}`);
-    console.log('');
-    console.log(`   Blueprint:    ${matchedBlueprint || dim('(none — archetype-based)')}`);
-    console.log(`   Theme:        ${initOptions.theme} (${initOptions.mode})`);
-    console.log(`   Personality:  ${initOptions.personality.join(', ')}`);
-    console.log(`   Archetype:    ${initOptions.archetype}`);
-    console.log(`   Guard:        ${initOptions.guard}`);
-    console.log(`   Density:      ${initOptions.density}`);
-    console.log('');
+    console.log(`${BOLD}decantr magic preview${RESET}`);
+    console.log('\u2500'.repeat(60));
+    console.log(`  Blueprint:    ${matchedBlueprint || 'none (archetype-direct)'}`);
+    console.log(`  Theme:        ${initOptions.theme} (${initOptions.mode}${initOptions.shape ? ', ' + initOptions.shape : ''})`);
+    console.log(`  Archetype:    ${initOptions.archetype || 'auto-detected'}`);
+    console.log(`  Personality:  ${personalityStr.slice(0, 80)}${personalityStr.length > 80 ? '...' : ''}`);
+    console.log(`  WCAG:         ${initOptions.accessibility?.wcag_level || 'AA'} | Density: ${initOptions.density} | Guard: ${initOptions.guard}`);
+    if (intent.constraints.length > 0)
+      console.log(`  Constraints:  ${intent.constraints.join(', ')}`);
+    console.log('\u2500'.repeat(60));
     return;
   }
 
@@ -533,6 +603,12 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     }
   }
 
+  // Build rich personality from all available data
+  const richPersonality = buildRichPersonality(intent, blueprintData, themeData);
+  if (richPersonality) {
+    initOptions.personality = [richPersonality];
+  }
+
   // Scaffold
   console.log(`${BOLD} Scaffolding...${RESET}`);
 
@@ -579,6 +655,26 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   if (result.gitignoreUpdated) {
     console.log(`   ${dim('.gitignore updated')}`);
   }
+
+  // Quality summary
+  const contextDir = join(projectRoot, '.decantr', 'context');
+  let sectionCount = 0;
+  try {
+    const files = await fs.readdir(contextDir);
+    sectionCount = files.filter((f: string) => f.startsWith('section-')).length;
+  } catch {}
+
+  const treatmentsPath = join(projectRoot, 'src', 'styles', 'treatments.css');
+  let hasLayers = false;
+  try {
+    const css = await fs.readFile(treatmentsPath, 'utf-8');
+    hasLayers = css.includes('@layer');
+  } catch {}
+
+  console.log(`\n${GREEN}${BOLD}Quality summary:${RESET}`);
+  console.log(`  Context files:   ${sectionCount} sections + scaffold.md + DECANTR.md`);
+  console.log(`  CSS:             tokens.css + treatments.css + global.css`);
+  console.log(`  @layer cascade:  ${hasLayers ? GREEN + 'yes' + RESET : YELLOW + 'missing' + RESET}`);
 
   console.log('');
   console.log(`${BOLD} Ready!${RESET} Next steps:`);
