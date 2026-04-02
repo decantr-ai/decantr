@@ -1,6 +1,10 @@
 {
   "id": "hero",
   "name": "Hero Section",
+  "motion": {
+    "micro": "CTA buttons scale subtly on hover (scale 1.02). Badge shimmer on announcement pill.",
+    "transitions": "Hero entrance: headline fades up from 20px below with 600ms ease-out. Subtext follows 150ms later. CTAs follow 300ms after subtext. Decorative orbs drift slowly with infinite CSS animation. Brand preset media floats with gentle vertical oscillation."
+  },
   "$schema": "https://decantr.ai/schemas/pattern.v2.json",
   "presets": {
     "brand": {
@@ -140,6 +144,11 @@
     "Button",
     "icon"
   ],
+  "responsive": {
+    "mobile": "Single column, stacked vertically. Headline drops to heading2 scale. CTAs stack full-width. Padding reduces to py8 px4. Media goes below content at full width. Min-height removed on brand/vision presets.",
+    "tablet": "Content remains centered or stacked. Headline at heading1 scale. CTAs stay horizontal. Split preset still single-column. Padding at py12 px6.",
+    "desktop": "Full layout as designed — centered or split two-column. Headline at display scale for brand/vision. Generous py16-py24 padding. Split preset activates side-by-side grid. Decorative elements visible."
+  },
   "description": "Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages, recipe detail headers, and marketing sections.",
   "dependencies": {
     "styles": {},
@@ -164,6 +173,7 @@
     "announcement": "If showing an announcement badge above the heading, use d-annotation with prominent styling — not a tiny muted pill. Accent border or accent background at 15% opacity.",
     "visual_proof": "The visual element below CTAs should be an ambient visualization (animated gradient, particle effect, blurred screenshot) — NOT a data widget wrapped in a card. If showing product data (agents, metrics), render as floating elements without card containment. Omit entirely if no meaningful visual is available."
   },
+  "visual_brief": "Full-width section dominating the viewport with a bold, large-scale headline centered or left-aligned depending on preset. Generous vertical padding (4-6rem top/bottom) creates breathing room. Subtext sits beneath the headline in muted, lighter-weight type with relaxed line-height. One or two CTA buttons are arranged horizontally with equal height — the primary filled, the secondary ghost-outlined. Optional media (illustration, screenshot, or ambient gradient) appears below or beside the content. Brand preset fills the entire viewport height with decorative floating orbs in the background. Split preset uses a two-column grid with content on one side and media on the other.",
   "decantr_compat": ">=0.9.0",
   "default_layout": {
     "atoms": "_flex _flexCol _itemsCenter _textCenter _gap6 _py16 _px6",
