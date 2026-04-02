@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateTokensCSS, generateDecoratorsCSS, generateDecoratorRule } from '../src/scaffold.js';
+import { generateTokensCSS, generateDecoratorsCSS, generateDecoratorRule, generateGlobalCSS } from '../src/scaffold.js';
 
 describe('generateDecoratorRule', () => {
   it('returns a CSS comment for empty description', () => {
@@ -144,5 +144,46 @@ describe('generateDecoratorsCSS', () => {
   it('returns comment when no recipe data', () => {
     const result = generateDecoratorsCSS(undefined, 'test');
     expect(result).toContain('No recipe decorators');
+  });
+});
+
+describe('generateGlobalCSS', () => {
+  it('includes box-sizing reset', () => {
+    const css = generateGlobalCSS([]);
+    expect(css).toContain('box-sizing: border-box');
+    expect(css).toContain('*, *::before, *::after');
+  });
+
+  it('includes body styles with theme tokens', () => {
+    const css = generateGlobalCSS([]);
+    expect(css).toContain('var(--d-bg)');
+    expect(css).toContain('var(--d-text)');
+    expect(css).toContain('font-family');
+  });
+
+  it('includes color-scheme declaration', () => {
+    const css = generateGlobalCSS([]);
+    expect(css).toContain('color-scheme');
+  });
+
+  it('includes font-smoothing for dark mode', () => {
+    const css = generateGlobalCSS([]);
+    expect(css).toContain('-webkit-font-smoothing: antialiased');
+  });
+
+  it('includes focus-visible base style', () => {
+    const css = generateGlobalCSS([]);
+    expect(css).toContain(':focus-visible');
+    expect(css).toContain('outline');
+  });
+
+  it('includes sr-only utility', () => {
+    const css = generateGlobalCSS([]);
+    expect(css).toContain('.sr-only');
+  });
+
+  it('extracts font family from personality when mentioned', () => {
+    const css = generateGlobalCSS(['Polished UI with Inter typeface and monospace for code']);
+    expect(css).toContain('Inter');
   });
 });
