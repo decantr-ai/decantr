@@ -83,13 +83,21 @@ Read ALL generated documentation. For EACH file you read, record:
 - Lines you actually USED vs lines you skimmed/ignored
 - Moments of confusion or missing information
 
-Pay special attention to the **Personality** section — it contains visual direction. Follow it precisely.
+Pay special attention to:
+- The **Personality** section — it contains visual direction. Follow it precisely.
+- The **Project Brief** in DECANTR.md — blueprint, theme, personality, sections, features, decorators.
+- The **Voice & Copy** section in scaffold.md — tone, CTA verbs, avoid words, empty states, errors, loading.
+- The **Visual Direction** section in each section-*.md — personality utilities, decorator table, token palette.
+- The **decorator table** (Class + Usage columns) in each section context.
+- The **semantic token palette** (Token/Value/Role) in each section context.
+- The **theme hints** (preferred patterns, compositions, spatial) in each section context.
 
 ## PHASE 3: BUILD
 
 Build ALL pages the blueprint defines (check scaffold.md route map for the full list). For EACH page:
-- Use theme tokens from tokens.css
-- Use treatment classes from treatments.css and theme decorator classes (combine with css() atoms)
+- Use theme tokens from tokens.css (wrapped in @layer tokens)
+- Use treatment classes from treatments.css (wrapped in @layer treatments, decorators, utilities)
+- Verify global.css has @layer order: reset > tokens > treatments > decorators > utilities > app
 - Follow the personality directive for visual quality
 - Install any packages the personality requests (e.g., lucide-react)
 - Record: which files you created, which docs you referenced, where you had to improvise
@@ -125,6 +133,12 @@ For each dimension, rate 1-5 and note gaps:
 | Sections | N |
 | Routes | N |
 | Personality type | narrative / array / missing |
+| Visual brief coverage | N/M patterns with visual_brief |
+| Motion spec coverage | N/M patterns with motion specs |
+| Responsive coverage | N/M patterns with responsive strategies |
+| Voice presence | YES/NO (scaffold.md Voice & Copy section) |
+| @layer cascade | VALID/INVALID (global.css layer order) |
+| Personality materialization | YES/NO (section contexts contain Visual Direction) |
 
 ### B: Build Metrics
 
@@ -148,7 +162,6 @@ For each dimension, rate 1-5 and note gaps:
 | section-*.md (each) | N | N | N | N% |
 | essence.json | N | N | N | N% |
 | task-*.md | N | N | N | N% |
-| treatments.md | N | N | N | N% |
 | **TOTAL** | N | N | N | **N%** |
 
 **Token waste sources:** (list specific duplications, empty fields, irrelevant content)
@@ -171,7 +184,7 @@ Numbered list. For EACH issue:
 For every place you had to guess, improvise, or deviate from documentation:
 | What | Why | What docs should have said | Severity |
 |------|-----|---------------------------|----------|
-| Invented section spacing | No guidance on padding between sections | Recipe spatial_hints should specify section_padding | MEDIUM |
+| Invented section spacing | No guidance on padding between sections | Theme spatial_hints should specify section_padding | MEDIUM |
 | Used inline styles for X | No atom or treatment exists | Add atom or document expected approach | LOW |
 | ... | ... | ... | ... |
 
@@ -181,7 +194,7 @@ For every place you had to guess, improvise, or deviate from documentation:
 
 ### F: Treatment Coverage Scorecard
 
-For each of the 6 visual treatment categories, evaluate whether the LLM used the generated classes:
+For each of the 7 visual treatment categories, evaluate whether the LLM used the generated classes:
 
 | Treatment | Classes in CSS | Used by LLM (pages) | Improvised Instead | Inline Styles | Coverage % |
 |-----------|:-:|:-:|:-:|:-:|:-:|
@@ -191,6 +204,7 @@ For each of the 6 visual treatment categories, evaluate whether the LLM used the
 | Form Control (d-control) | count | N/M | count | count | % |
 | Section Rhythm (d-section) | count | N/M | count | count | % |
 | Inline Annotation (d-annotation) | count | N/M | count | count | % |
+| Personality Utilities (d-personality-*) | count | N/M | count | count | % |
 | **TOTAL** | | | | | **avg%** |
 
 "Coverage" = (pages where LLM used treatment class) / (pages where that category applies).
@@ -218,7 +232,7 @@ Prioritized by: "If I could only fix ONE thing to make the next scaffold better,
 
 Based on what you built, suggest improvements to:
 - **Blueprints:** Missing routes, wrong shell assignments, feature gaps
-- **Patterns:** Missing patterns that should exist, pattern specs that need enrichment
+- **Patterns:** Missing patterns that should exist, pattern specs that need enrichment, missing visual_brief
 - **Archetypes:** Role misassignment, missing pages, feature gaps
 - **Themes:** Treatment CSS quality, missing treatments, decorator completeness, spatial hints accuracy
 - **Themes:** Token completeness, missing status colors, palette issues
@@ -380,6 +394,31 @@ For EACH base treatment in treatments.css, evaluate completeness:
 
 Then evaluate theme decorators separately (same format as before).
 
+### Q: Context Quality Audit
+
+Evaluate the richness of generated context files against v2 expectations:
+
+| Dimension | Present? | Quality (1-5) | Notes |
+|-----------|----------|---------------|-------|
+| **Section contexts** | | | |
+| Decorator table (Class + Usage) | Y/N | N | Are descriptions useful or just names? |
+| Token palette table (Token/Value/Role) | Y/N | N | Semantic roles assigned? |
+| Theme hints (preferred patterns, compositions, spatial) | Y/N | N | Actionable or vague? |
+| Visual Direction section | Y/N | N | Personality materialized with utility refs? |
+| Composition algebra (if in content) | Y/N | N | Clear sub-pattern combination rules? |
+| Accessibility patterns (if in content) | Y/N | N | ARIA roles, keyboard nav specified? |
+| Motion specs (if in content) | Y/N | N | Entrance, exit, hover animations defined? |
+| **Scaffold.md** | | | |
+| Voice & Copy section | Y/N | N | Tone, CTA verbs, avoid words present? |
+| **DECANTR.md** | | | |
+| Project Brief section | Y/N | N | Blueprint, theme, personality, features listed? |
+| **CSS files** | | | |
+| tokens.css @layer tokens | Y/N | N | Wrapped in @layer? |
+| treatments.css @layer (treatments, decorators, utilities) | Y/N | N | All three layers present? |
+| global.css @layer order declaration | Y/N | N | reset > tokens > treatments > decorators > utilities > app? |
+
+**Context quality score:** N/65 (sum of all quality ratings)
+
 **Average grade:** [X]
 **Recommendation:** If average is below B, the treatment generation system needs improvement.
 
@@ -396,11 +435,12 @@ The operator reviews all sections. Key decision points:
 2. **Section O (Root Causes)** — understand WHY before fixing WHAT. Root causes often chain together.
 3. **Section M (Personality Compliance)** — if below 70%, the framework needs work before the AI can follow personality directives.
 4. **Section P (Treatment Completeness)** — if average grade below B, prioritize treatment CSS generation improvement.
+5. **Section Q (Context Quality)** — if score below 40/65, the context generation pipeline needs enrichment.
 
 Create:
 1. **P0 fixes** — implement immediately (from sections N, O)
-2. **Content fixes** — changes to decantr-content (from sections D, I, J, P)
-3. **Framework fixes** — changes to CLI scaffold.ts (from sections E, H, O, P)
+2. **Content fixes** — changes to decantr-content (from sections D, I, J, P, Q)
+3. **Framework fixes** — changes to CLI scaffold.ts (from sections E, H, O, P, Q)
 4. **Regression baseline** — save metrics for comparison (from sections A, B, C, F, K)
 
 ### No Cleanup Needed
@@ -411,7 +451,7 @@ The harness agent does NOT take screenshots or create temporary files. All analy
 
 Track improvements across harness runs:
 
-| Run | Date | Token % | Treatment Coverage | Personality Compliance | Treatment Grade | Bundle | Inline Styles | P0 Fixes |
-|-----|------|---------|-----------|----------------------|----------------|--------|--------------|----------|
-| 1 | YYYY-MM-DD | N% | N/5 | N% | X | XKB | N | N |
-| 2 | YYYY-MM-DD | N% | N/5 | N% | X | XKB | N | N |
+| Run | Date | Token % | Treatment Coverage | Personality Compliance | Treatment Grade | Context Quality | Bundle | Inline Styles | P0 Fixes |
+|-----|------|---------|-----------|----------------------|----------------|----------------|--------|--------------|----------|
+| 1 | YYYY-MM-DD | N% | N/5 | N% | X | N/65 | XKB | N | N |
+| 2 | YYYY-MM-DD | N% | N/5 | N% | X | N/65 | XKB | N | N |
