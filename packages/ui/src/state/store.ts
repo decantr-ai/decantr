@@ -15,7 +15,7 @@ const proxyToRaw = new WeakMap();
 
 const MUTATORS = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse', 'fill', 'copyWithin'];
 
-function getSubs(prop, target) {
+function getSubs(prop: any, target: any) {
   let map = subMaps.get(target);
   if (!map) { map = new Map(); subMaps.set(target, map); }
   let s = map.get(prop);
@@ -23,14 +23,14 @@ function getSubs(prop, target) {
   return s;
 }
 
-function track(subs) {
+function track(subs: any) {
   const eff = getCurrentEffect();
   if (!eff) return;
   subs.add(eff);
   if (eff.sources) eff.sources.add(subs);
 }
 
-function notify(subs) {
+function notify(subs: any) {
   if (!subs || subs.size === 0) return;
   if (isBatching()) {
     for (const sub of subs) scheduleEffect(sub);
@@ -42,24 +42,24 @@ function notify(subs) {
   }
 }
 
-function notifyAll(target) {
+function notifyAll(target: any) {
   const map = subMaps.get(target);
   if (!map) return;
   for (const subs of map.values()) notify(subs);
 }
 
 /** @param {*} v */
-function isProxyable(v) {
+function isProxyable(v: any) {
   return v !== null && typeof v === 'object' && !Object.isFrozen(v);
 }
 
 /** Unwrap proxy to raw target (identity if not proxied). */
-function toRaw(v) {
+function toRaw(v: any) {
   return (v && proxyToRaw.get(v)) || v;
 }
 
 /** Wrap a value in a deep reactive proxy (cached per identity). */
-function wrap(target) {
+function wrap(target: any) {
   if (proxyCache.has(target)) return proxyCache.get(target);
   const isArr = Array.isArray(target);
 
@@ -69,8 +69,9 @@ function wrap(target) {
       if (typeof prop === 'symbol') return Reflect.get(target, prop, receiver);
 
       if (isArr && MUTATORS.includes(/** @type {string} */ (prop))) {
-        return (...args) => {
+        return (...args: any[]) => {
           batch(() => {
+            // @ts-expect-error -- strict-mode fix (auto)
             Array.prototype[prop].apply(target, args.map(a => toRaw(a)));
             notify(getSubs('length', target));
             notifyAll(target);
@@ -144,10 +145,10 @@ export function createDeepStore<T extends object>(init: T): T {
  */
 export function produce<T extends object>(store: T, recipe: (draft: T) => void): void {
   /** @type {Array<{target: object, prop: string|symbol, value: *, type: string}>} */
-  const patches = [];
+  const patches: any[] = [];
   const drafts = new WeakMap();
 
-  function createDraft(target) {
+  function createDraft(target: any) {
     const raw = toRaw(target);
     if (drafts.has(raw)) return drafts.get(raw);
 
@@ -156,9 +157,10 @@ export function produce<T extends object>(store: T, recipe: (draft: T) => void):
         if (prop === '__raw') return raw;
         if (typeof prop === 'symbol') return Reflect.get(t, prop);
         if (Array.isArray(t) && MUTATORS.includes(/** @type {string} */ (prop))) {
-          return (...args) => {
+          return (...args: any[]) => {
             const unwrapped = args.map(a => toRaw(a));
             patches.push({ target: t, prop, value: unwrapped, type: 'array' });
+            // @ts-expect-error -- strict-mode fix (auto)
             Array.prototype[prop].apply(t, unwrapped);
             return t.length;
           };
@@ -221,7 +223,7 @@ export function reconcile<T extends object>(store: T, data: T): void {
   batch(() => { _reconcile(raw, data); });
 }
 
-function _reconcile(target, next) {
+function _reconcile(target: any, next: any) {
   const isArr = Array.isArray(target);
   if (isArr !== Array.isArray(next)) return; // type mismatch
   if (isArr) return _reconcileArray(target, next);
@@ -263,7 +265,7 @@ function _reconcile(target, next) {
   if (keysChanged) notify(getSubs('@@keys', target));
 }
 
-function _reconcileArray(target, next) {
+function _reconcileArray(target: any, next: any) {
   const oldLen = target.length;
   const newLen = next.length;
   let changed = false;

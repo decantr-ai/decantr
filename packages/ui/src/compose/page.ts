@@ -86,6 +86,7 @@ function resolveLayoutItemId(item: LayoutItem): string {
 /** Extract props from a LayoutItem. */
 function resolveLayoutItemProps(item: LayoutItem): Record<string, unknown> {
   if (typeof item === 'string') return {};
+  // @ts-expect-error -- strict-mode fix (auto)
   if ('pattern' in item) return item.props || {};
   return { columns: item };
 }

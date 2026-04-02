@@ -87,7 +87,7 @@ export function mapArray<T, U>(list: () => T[], mapFn: (item: T, index: () => nu
  */
 export function indexArray<T, U>(list: () => T[], mapFn: (item: () => T, index: number) => U): () => U[] {
   /** @type {{ result: U, dispose: Function, setItem: (v: T) => void }[]} */
-  let rows = [];
+  let rows: any[] = [];
   /** @type {U[]} */
   let mapped = [];
 

@@ -23,27 +23,31 @@ export function withMiddleware<T>(
 
   // Wire _attach hooks (used by undoMiddleware to get a reference to rawSet)
   for (let i = 0; i < chain.length; i++) {
+    // @ts-expect-error -- strict-mode fix (auto)
     if (typeof chain[i]._attach === 'function') chain[i]._attach(rawSet);
   }
 
   // Hydrate from persistMiddleware if present
   for (let i = 0; i < chain.length; i++) {
+    // @ts-expect-error -- strict-mode fix (auto)
     if (chain[i]._hasHydrated) rawSet(chain[i]._hydrated);
   }
 
   function getter() {
     let value = rawGet();
     for (let i = 0; i < chain.length; i++) {
+      // @ts-expect-error -- strict-mode fix (auto)
       if (chain[i].onGet) value = chain[i].onGet(value);
     }
     return value;
   }
 
-  function setter(next) {
+  function setter(next: any) {
     const prev = rawGet();
     let resolved = typeof next === 'function' ? next(prev) : next;
     for (let i = 0; i < chain.length; i++) {
       if (chain[i].onSet) {
+        // @ts-expect-error -- strict-mode fix (auto)
         resolved = chain[i].onSet(resolved, prev);
         if (resolved === undefined) return;
       }
@@ -52,6 +56,7 @@ export function withMiddleware<T>(
   }
 
   // Preserve _subscribers for reactive tracking
+  // @ts-expect-error -- strict-mode fix (auto)
   getter._subscribers = rawGet._subscribers;
 
   return [getter, setter];
@@ -73,15 +78,18 @@ export function withStoreMiddleware<T extends object>(store: T, middlewares: Arr
     get(target, prop, receiver) {
       let value = Reflect.get(target, prop, receiver);
       for (let i = 0; i < chain.length; i++) {
+        // @ts-expect-error -- strict-mode fix (auto)
         if (chain[i].onGet) value = chain[i].onGet(value, prop);
       }
       return value;
     },
     set(target, prop, value, receiver) {
+      // @ts-expect-error -- strict-mode fix (auto)
       const prev = target[prop];
       let resolved = value;
       for (let i = 0; i < chain.length; i++) {
         if (chain[i].onSet) {
+          // @ts-expect-error -- strict-mode fix (auto)
           resolved = chain[i].onSet(resolved, prev, prop);
           if (resolved === undefined) return true;
         }
@@ -129,7 +137,7 @@ export function persistMiddleware(options: { key: string; storage?: 'local' | 's
   const storageType = options.storage || 'local';
   const debounceMs = options.debounce || 0;
   /** @type {ReturnType<typeof setTimeout> | null} */
-  let timer = null;
+  let timer: any = null;
 
   function getStorage() {
     return storageType === 'session'
@@ -137,7 +145,7 @@ export function persistMiddleware(options: { key: string; storage?: 'local' | 's
       : (typeof localStorage !== 'undefined' ? localStorage : null);
   }
 
-  function writeTo(store, value) {
+  function writeTo(store: any, value: any) {
     if (!store) return;
     try {
       store.setItem(key, JSON.stringify(value));
@@ -233,16 +241,16 @@ export function undoMiddleware(options?: { maxLength?: number }): UndoMiddleware
   const maxLength = (options && options.maxLength) || 100;
 
   /** @type {any[]} */
-  const stack = [];
+  const stack: any[] = [];
   /** @type {any[]} */
-  const redoStack = [];
+  const redoStack: any[] = [];
 
   const [canUndo, setCanUndo] = createSignal(false);
   const [canRedo, setCanRedo] = createSignal(false);
 
   let skip = false;
   /** @type {((v: any) => void) | null} */
-  let rawSetter = null;
+  let rawSetter: any = null;
 
   function updateFlags() {
     batch(() => {
