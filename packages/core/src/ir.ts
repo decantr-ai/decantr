@@ -3,7 +3,7 @@ import type {
   IRCardWrapping, IRPatternMeta, IRVisualEffect, IRNode, IRLayer,
 } from './types.js';
 import type { StructurePage, LayoutItem, PatternRef, ColumnLayout } from '@decantr/essence-spec';
-import type { Pattern, Recipe, ResolvedPreset } from '@decantr/registry';
+import type { Pattern, Theme as RegistryTheme, ResolvedPreset } from '@decantr/registry';
 import { resolveVisualEffects } from './resolve.js';
 
 export interface ResolvedPatternEntry {
@@ -34,7 +34,7 @@ function getPatternId(item: LayoutItem): string {
 function shouldWrapInCard(
   pattern: Pattern,
   preset: ResolvedPreset,
-  recipe: Recipe | null,
+  theme: RegistryTheme | null,
 ): boolean {
   // Hero/row/stack layouts are standalone
   const layout = preset.layout.layout;
@@ -43,8 +43,8 @@ function shouldWrapInCard(
   // Pattern explicitly opts out
   if (pattern.contained === false) return false;
 
-  // Recipe says no cards
-  const cardWrapping = recipe?.spatial_hints?.card_wrapping;
+  // Theme spatial says no cards
+  const cardWrapping = theme?.spatial?.card_wrapping;
   if (cardWrapping === 'none') return false;
 
   // Minimal: only wrap if pattern has presets (complex pattern)
@@ -58,14 +58,12 @@ function shouldWrapInCard(
 
 function buildCardWrapping(
   pattern: Pattern,
-  recipe: Recipe | null,
+  theme: RegistryTheme | null,
 ): IRCardWrapping {
-  const mode = recipe?.spatial_hints?.card_wrapping || 'always';
-  const overrides = recipe?.pattern_overrides?.[pattern.id];
+  const mode = theme?.spatial?.card_wrapping || 'always';
   return {
     mode: mode as IRCardWrapping['mode'],
     headerLabel: pattern.name,
-    background: overrides?.background?.join(' '),
   };
 }
 
@@ -74,7 +72,7 @@ function buildPatternNode(
   alias: string,
   resolved: ResolvedPatternEntry | undefined,
   wiring: IRWiring | null,
-  recipe: Recipe | null,
+  theme: RegistryTheme | null,
   density: { gap: string },
   layer?: IRLayer,
 ): IRPatternNode {
@@ -83,7 +81,7 @@ function buildPatternNode(
 
   const layout = preset?.layout.layout || 'column';
   const isStandalone = layout === 'hero' || layout === 'row';
-  const contained = pattern && preset ? shouldWrapInCard(pattern, preset, recipe) : false;
+  const contained = pattern && preset ? shouldWrapInCard(pattern, preset, theme) : false;
   const components = pattern?.components || [];
 
   const patternMeta: IRPatternMeta = {
@@ -98,14 +96,14 @@ function buildPatternNode(
   };
 
   const card = contained && !isStandalone && pattern
-    ? buildCardWrapping(pattern, recipe)
+    ? buildCardWrapping(pattern, theme)
     : null;
 
   const wireProps = wiring?.props[alias] || wiring?.props[patternId] || null;
 
-  // Resolve visual effects from recipe + pattern when available
-  const visualEffects = recipe && pattern
-    ? resolveVisualEffects(recipe, pattern)
+  // Resolve visual effects from theme + pattern when available
+  const visualEffects = theme && pattern
+    ? resolveVisualEffects(theme, pattern)
     : null;
 
   return {
@@ -126,7 +124,7 @@ export function buildPageIR(
   page: StructurePage,
   resolvedPatterns: Map<string, ResolvedPatternEntry>,
   wiring: IRWiring | null,
-  recipe: Recipe | null,
+  theme: RegistryTheme | null,
   density: { gap: string },
   layer?: IRLayer,
 ): IRPageNode {
@@ -136,12 +134,12 @@ export function buildPageIR(
     if (typeof item === 'string') {
       // Simple string → full-width pattern
       const resolved = resolvedPatterns.get(item);
-      children.push(buildPatternNode(item, item, resolved, wiring, recipe, density, layer));
+      children.push(buildPatternNode(item, item, resolved, wiring, theme, density, layer));
     } else if (isPatternRef(item)) {
       // PatternRef → pattern with optional preset/alias
       const alias = item.as || item.pattern;
       const resolved = resolvedPatterns.get(alias) || resolvedPatterns.get(item.pattern);
-      children.push(buildPatternNode(item.pattern, alias, resolved, wiring, recipe, density, layer));
+      children.push(buildPatternNode(item.pattern, alias, resolved, wiring, theme, density, layer));
     } else if (isColumnLayout(item)) {
       // ColumnLayout → grid with pattern children
       const cols = item.cols;
@@ -160,7 +158,7 @@ export function buildPageIR(
       const gridChildren: IRNode[] = [];
       for (const col of cols) {
         const resolved = resolvedPatterns.get(col);
-        gridChildren.push(buildPatternNode(col, col, resolved, wiring, recipe, density, layer));
+        gridChildren.push(buildPatternNode(col, col, resolved, wiring, theme, density, layer));
       }
 
       const totalCols = normalizedSpans

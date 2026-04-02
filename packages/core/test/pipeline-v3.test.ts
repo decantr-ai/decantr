@@ -19,7 +19,7 @@ describe('runPipeline (v3 essences)', () => {
 
     const ir = result.ir;
     expect(ir.type).toBe('app');
-    expect(ir.theme.style).toBe('auradecantism');
+    expect(ir.theme.id).toBe('auradecantism');
     expect(ir.theme.mode).toBe('dark');
     expect(ir.routing).toBe('hash');
     expect(ir.routes.length).toBe(2);
@@ -66,7 +66,7 @@ describe('runPipeline (v3 essences)', () => {
     // Should still produce valid IR
     const ir = result.ir;
     expect(ir.type).toBe('app');
-    expect(ir.theme.style).toBe('auradecantism');
+    expect(ir.theme.id).toBe('auradecantism');
     expect(ir.routes.length).toBe(2);
     expect(ir.children.length).toBe(2);
   });
@@ -83,15 +83,15 @@ describe('runPipeline (v3 essences)', () => {
     }
   });
 
-  it('applies recipe decoration to shell IR for v3', async () => {
+  it('applies theme decoration to shell IR for v3', async () => {
     const essence = loadFixture('essence-v3-saas');
     const result = await runPipeline(essence, { contentRoot, overridePaths: [contentRoot] });
 
     const shell = result.ir.shell;
-    expect(shell.config.recipe).not.toBeNull();
-    expect(shell.config.recipe!.root).toBe('d-mesh');
-    expect(shell.config.recipe!.nav).toBe('d-glass');
-    expect(shell.config.recipe!.navStyle).toBe('filled');
+    expect(shell.config.decoration).not.toBeNull();
+    expect(shell.config.decoration!.root).toBe('d-mesh');
+    expect(shell.config.decoration!.nav).toBe('d-glass');
+    expect(shell.config.decoration!.navStyle).toBe('filled');
   });
 
   it('respects pageFilter with v3 essence', async () => {
@@ -132,7 +132,7 @@ describe('runPipeline (v2 auto-migration)', () => {
     // Both should produce the same routes and page count
     expect(v2Result.ir.routes.length).toBe(v3Result.ir.routes.length);
     expect(v2Result.ir.children.length).toBe(v3Result.ir.children.length);
-    expect(v2Result.ir.theme.style).toBe(v3Result.ir.theme.style);
+    expect(v2Result.ir.theme.id).toBe(v3Result.ir.theme.id);
     expect(v2Result.ir.theme.mode).toBe(v3Result.ir.theme.mode);
   });
 

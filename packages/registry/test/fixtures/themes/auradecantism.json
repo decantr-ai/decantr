@@ -12,10 +12,10 @@
   "style": "auradecantism",
   "mode": "dark",
   "setup": "import { setStyle, setMode } from 'decantr/css';\nsetStyle('auradecantism');\nsetMode('dark');",
-  "spatial_hints": {
+  "spatial": {
     "density_bias": 0,
     "content_gap_shift": 0,
-    "section_padding": null,
+    "section_padding": "",
     "card_wrapping": "minimal",
     "surface_override": null
   },
@@ -37,7 +37,7 @@
     "entrance": "d-stagger",
     "micro": "bouncy"
   },
-  "visual_effects": {
+  "effects": {
     "enabled": true,
     "intensity": "medium",
     "type_mapping": {

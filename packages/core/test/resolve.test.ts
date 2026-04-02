@@ -2,17 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { resolveEssence, resolveVisualEffects } from '../src/resolve.js';
 import { createResolver } from '@decantr/registry';
 import type { Essence } from '@decantr/essence-spec';
-import type { Pattern, Recipe } from '@decantr/registry';
+import type { Pattern, Theme as RegistryTheme } from '@decantr/registry';
 import { join } from 'node:path';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
-const recipesRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
 function makeSaasEssence(): Essence {
   return {
     version: '2.0.0',
     archetype: 'saas-dashboard',
-    theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism' },
+    theme: { id: 'auradecantism', mode: 'dark' },
     personality: ['professional', 'data-rich'],
     platform: { type: 'spa', routing: 'hash' },
     structure: [
@@ -24,19 +23,19 @@ function makeSaasEssence(): Essence {
     ],
     features: ['auth'],
     density: { level: 'comfortable', content_gap: '4' },
-    guard: { enforce_style: true, enforce_recipe: true, mode: 'strict' },
+    guard: { enforce_style: true, mode: 'strict' },
     target: 'decantr',
   };
 }
 
 describe('resolveEssence', () => {
-  it('loads recipe and computes density from personality traits', async () => {
+  it('loads theme and computes density from personality traits', async () => {
     const essence = makeSaasEssence();
-    const resolver = createResolver({ contentRoot, overridePaths: [recipesRoot] });
+    const resolver = createResolver({ contentRoot, overridePaths: [contentRoot] });
     const resolved = await resolveEssence(essence, resolver);
 
-    expect(resolved.recipe).not.toBeNull();
-    expect(resolved.recipe?.id).toBe('auradecantism');
+    expect(resolved.registryTheme).not.toBeNull();
+    expect(resolved.registryTheme?.id).toBe('auradecantism');
     expect(resolved.density.gap).toBeDefined();
     expect(resolved.density.level).toBeDefined();
   });
@@ -84,7 +83,7 @@ describe('resolveEssence', () => {
   it('identifies addon styles as isAddon=true', async () => {
     const essence: Essence = {
       ...makeSaasEssence(),
-      theme: { style: 'glassmorphism', mode: 'dark', recipe: 'auradecantism' },
+      theme: { id: 'glassmorphism', mode: 'dark' },
     };
     const resolver = createResolver({ contentRoot });
     const resolved = await resolveEssence(essence, resolver);
@@ -110,39 +109,29 @@ describe('resolveEssence', () => {
           id: 'brand',
           path: '/',
           archetype: 'portfolio',
-          theme: { style: 'glassmorphism' as const, mode: 'dark' as const, recipe: 'auradecantism' },
+          theme: { id: 'glassmorphism' as const, mode: 'dark' as const },
           structure: [{ id: 'home', shell: 'full-bleed', layout: ['hero'] }],
           features: ['analytics'],
         },
       ],
       density: { level: 'comfortable' as const, content_gap: '4' },
-      guard: { enforce_style: true, enforce_recipe: true, mode: 'strict' as const },
+      guard: { enforce_style: true, mode: 'strict' as const },
       target: 'decantr',
     };
     const resolver = createResolver({ contentRoot });
     const resolved = await resolveEssence(sectioned, resolver);
 
-    expect(resolved.theme.style).toBe('glassmorphism');
+    expect(resolved.theme.id).toBe('glassmorphism');
     expect(resolved.pages.length).toBe(1);
     expect(resolved.pages[0].page.id).toBe('home');
   });
 });
 
 describe('resolveVisualEffects', () => {
-  const baseRecipe: Recipe = {
+  const baseTheme: RegistryTheme = {
     id: 'test',
-    style: 'test',
-    mode: 'dark',
-    schema_version: '2.0',
-    spatial_hints: {
-      density_bias: 0,
-      content_gap_shift: 0,
-      section_padding: '',
-      card_wrapping: 'always',
-      surface_override: null,
-    },
-    shell: { preferred: [], nav_style: 'minimal' },
-    visual_effects: {
+    name: 'Test',
+    effects: {
       enabled: true,
       intensity: 'medium',
       type_mapping: {
@@ -154,11 +143,19 @@ describe('resolveVisualEffects', () => {
         Statistic: 'stat_display',
       },
     },
+    spatial: {
+      density_bias: 0,
+      content_gap_shift: 0,
+      section_padding: '',
+      card_wrapping: 'always',
+      surface_override: null,
+    },
+    shell: { preferred: [], nav_style: 'minimal' },
     pattern_preferences: { prefer: [], avoid: [] },
   };
 
-  it('returns null when visual_effects.enabled is false', () => {
-    const recipe = { ...baseRecipe, visual_effects: { ...baseRecipe.visual_effects, enabled: false } };
+  it('returns null when effects.enabled is false', () => {
+    const theme = { ...baseTheme, effects: { ...baseTheme.effects!, enabled: false } };
     const pattern: Pattern = {
       id: 'test',
       version: '1.0.0',
@@ -169,7 +166,7 @@ describe('resolveVisualEffects', () => {
       default_preset: 'default',
       presets: {},
     };
-    expect(resolveVisualEffects(recipe, pattern)).toBeNull();
+    expect(resolveVisualEffects(theme, pattern)).toBeNull();
   });
 
   it('falls back to component_fallback matching', () => {
@@ -183,7 +180,7 @@ describe('resolveVisualEffects', () => {
       default_preset: 'default',
       presets: {},
     };
-    const result = resolveVisualEffects(baseRecipe, pattern);
+    const result = resolveVisualEffects(baseTheme, pattern);
     expect(result).not.toBeNull();
     expect(result!.decorators).toContain('d-glass');
     expect(result!.decorators).toContain('d-gradient-hint-primary');
@@ -200,6 +197,6 @@ describe('resolveVisualEffects', () => {
       default_preset: 'default',
       presets: {},
     };
-    expect(resolveVisualEffects(baseRecipe, pattern)).toBeNull();
+    expect(resolveVisualEffects(baseTheme, pattern)).toBeNull();
   });
 });

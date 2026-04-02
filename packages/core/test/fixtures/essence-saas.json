@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "archetype": "saas-dashboard",
-  "theme": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism" },
+  "theme": { "id": "auradecantism", "mode": "dark" },
   "personality": ["professional", "data-rich"],
   "platform": { "type": "spa", "routing": "hash" },
   "structure": [
@@ -18,6 +18,6 @@
   ],
   "features": ["auth"],
   "density": { "level": "comfortable", "content_gap": "4" },
-  "guard": { "enforce_style": true, "enforce_recipe": true, "mode": "strict" },
+  "guard": { "enforce_style": true, "mode": "strict" },
   "target": "decantr"
 }

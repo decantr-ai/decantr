@@ -2,9 +2,8 @@
   "version": "3.0.0",
   "dna": {
     "theme": {
-      "style": "auradecantism",
-      "mode": "dark",
-      "recipe": "auradecantism"
+      "id": "auradecantism",
+      "mode": "dark"
     },
     "spacing": {
       "base_unit": 4,

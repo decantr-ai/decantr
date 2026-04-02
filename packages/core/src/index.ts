@@ -10,7 +10,7 @@ export type {
   IRCardWrapping,
   IRNavItem,
   IRShellConfig,
-  IRRecipeDecoration,
+  IRThemeDecoration,
   IRTheme,
   IRRoute,
   IRNode,

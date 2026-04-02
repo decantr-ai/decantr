@@ -10,7 +10,7 @@ function makeV3Essence(overrides?: Partial<EssenceV3>): EssenceV3 {
   return {
     version: '3.0.0',
     dna: {
-      theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism' },
+      theme: { id: 'auradecantism', mode: 'dark' },
       spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
       typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
       color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
@@ -51,7 +51,7 @@ describe('resolveEssence (v3)', () => {
     const resolver = createResolver({ contentRoot });
     const resolved = await resolveEssence(essence, resolver);
 
-    expect(resolved.theme.style).toBe('auradecantism');
+    expect(resolved.theme.id).toBe('auradecantism');
     expect(resolved.theme.mode).toBe('dark');
     expect(resolved.theme.isAddon).toBe(false);
   });
@@ -98,13 +98,13 @@ describe('resolveEssence (v3)', () => {
     expect(resolved.features).toEqual(['auth']);
   });
 
-  it('resolves recipe from dna.theme.recipe', async () => {
+  it('resolves theme from dna.theme.id', async () => {
     const essence = makeV3Essence();
     const resolver = createResolver({ contentRoot, overridePaths: [contentRoot] });
     const resolved = await resolveEssence(essence, resolver);
 
-    expect(resolved.recipe).not.toBeNull();
-    expect(resolved.recipe?.id).toBe('auradecantism');
+    expect(resolved.registryTheme).not.toBeNull();
+    expect(resolved.registryTheme?.id).toBe('auradecantism');
   });
 
   it('resolves patterns from blueprint pages', async () => {
@@ -137,7 +137,7 @@ describe('resolveEssence (v3)', () => {
     const essence = makeV3Essence({
       dna: {
         ...makeV3Essence().dna,
-        theme: { style: 'glassmorphism', mode: 'dark', recipe: 'auradecantism' },
+        theme: { id: 'glassmorphism', mode: 'dark' },
       },
     });
     const resolver = createResolver({ contentRoot });
@@ -189,7 +189,7 @@ describe('resolveEssence (v2 sectioned error)', () => {
           id: 'brand',
           path: '/',
           archetype: 'portfolio',
-          theme: { style: 'glassmorphism' as const, mode: 'dark' as const, recipe: 'auradecantism' },
+          theme: { id: 'glassmorphism' as const, mode: 'dark' as const },
           structure: [{ id: 'home', shell: 'full-bleed', layout: ['hero'] }],
           features: ['analytics'],
         },
@@ -197,13 +197,13 @@ describe('resolveEssence (v2 sectioned error)', () => {
           id: 'app',
           path: '/app',
           archetype: 'saas-dashboard',
-          theme: { style: 'auradecantism' as const, mode: 'dark' as const, recipe: 'auradecantism' },
+          theme: { id: 'auradecantism' as const, mode: 'dark' as const },
           structure: [{ id: 'dashboard', shell: 'sidebar-main', layout: ['hero'] }],
           features: ['auth'],
         },
       ],
       density: { level: 'comfortable' as const, content_gap: '4' },
-      guard: { enforce_style: true, enforce_recipe: true, mode: 'strict' as const },
+      guard: { enforce_style: true, mode: 'strict' as const },
       target: 'decantr',
     };
     const resolver = createResolver({ contentRoot });

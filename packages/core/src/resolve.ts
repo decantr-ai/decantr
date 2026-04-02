@@ -4,11 +4,11 @@ import type {
 } from '@decantr/essence-spec';
 import { isSimple, isSectioned, isV3, computeDensity } from '@decantr/essence-spec';
 import { pascalCase } from './utils.js';
-import type { ContentResolver, Pattern, Recipe, ResolvedPreset } from '@decantr/registry';
+import type { ContentResolver, Pattern, Theme as RegistryTheme, ResolvedPreset } from '@decantr/registry';
 import { resolvePatternPreset, detectWirings } from '@decantr/registry';
 import type {
   IRWiring, IRWiringSignal, IRShellConfig, IRNavItem,
-  IRRecipeDecoration, IRTheme, IRRoute, IRVisualEffect,
+  IRThemeDecoration, IRTheme, IRRoute, IRVisualEffect,
 } from './types.js';
 
 export interface ResolvedPage {
@@ -20,7 +20,7 @@ export interface ResolvedPage {
 export interface ResolvedEssence {
   essence: EssenceFile;
   pages: ResolvedPage[];
-  recipe: Recipe | null;
+  registryTheme: RegistryTheme | null;
   density: { gap: string; level: string };
   theme: IRTheme;
   shell: IRShellConfig;
@@ -132,8 +132,9 @@ function buildNavItems(pages: StructurePage[]): IRNavItem[] {
   }));
 }
 
-function buildRecipeDecoration(recipe: Recipe): IRRecipeDecoration {
-  const shell = recipe.shell;
+function buildThemeDecoration(theme: RegistryTheme): IRThemeDecoration | null {
+  const shell = theme.shell;
+  if (!shell) return null;
   // The JSON may have additional fields not in the strict type
   const shellAny = shell as unknown as Record<string, unknown>;
   return {
@@ -151,10 +152,9 @@ function buildRecipeDecoration(recipe: Recipe): IRRecipeDecoration {
 
 function buildTheme(essence: Essence, isAddon: boolean): IRTheme {
   return {
-    style: essence.theme.style,
+    id: essence.theme.id,
     mode: essence.theme.mode,
     shape: essence.theme.shape || null,
-    recipe: essence.theme.recipe,
     isAddon,
   };
 }
@@ -162,10 +162,9 @@ function buildTheme(essence: Essence, isAddon: boolean): IRTheme {
 function buildThemeFromV3(essence: EssenceV3, isAddon: boolean): IRTheme {
   const dna = essence.dna;
   return {
-    style: dna.theme.style,
+    id: dna.theme.id,
     mode: dna.theme.mode,
     shape: dna.radius.philosophy || dna.theme.shape || null,
-    recipe: dna.theme.recipe,
     isAddon,
   };
 }
@@ -217,16 +216,17 @@ function convertWiring(wiringResults: ReturnType<typeof detectWirings>): IRWirin
 // ─── Visual Effects Resolution ────────────────────────────────
 
 export function resolveVisualEffects(
-  recipe: Recipe,
+  theme: RegistryTheme,
   pattern: Pattern,
   _slot?: string,
 ): IRVisualEffect | null {
-  if (!recipe.visual_effects?.enabled) return null;
+  const effects = theme.effects;
+  if (!effects?.enabled) return null;
 
-  const typeMapping = recipe.visual_effects.type_mapping || {};
-  const componentFallback = recipe.visual_effects.component_fallback || {};
-  const intensity = recipe.visual_effects.intensity || 'medium';
-  const intensityValues = recipe.visual_effects.intensity_values || {};
+  const typeMapping = effects.type_mapping || {};
+  const componentFallback = effects.component_fallback || {};
+  const intensity = effects.intensity || 'medium';
+  const intensityValues = effects.intensity_values || {};
 
   // Check pattern tags / components against type_mapping
   let decorators: string[] = [];
@@ -292,40 +292,40 @@ export async function resolveEssence(
     throw new Error('Invalid essence format');
   }
 
-  // 1. Recipe resolution
-  let recipe: Recipe | null = null;
-  const recipeResult = await resolver.resolve('recipe', simpleEssence.theme.recipe);
-  if (recipeResult) {
-    recipe = recipeResult.item;
+  // 1. Theme resolution (replaces former recipe resolution)
+  let registryTheme: RegistryTheme | null = null;
+  const themeResult = await resolver.resolve('theme', simpleEssence.theme.id);
+  if (themeResult) {
+    registryTheme = themeResult.item;
   }
 
   // 2. Density computation
-  const recipeSpatial = recipe?.spatial_hints;
-  const density = computeDensity(simpleEssence.personality, recipeSpatial ? {
-    density_bias: recipeSpatial.density_bias,
-    content_gap_shift: recipeSpatial.content_gap_shift,
+  const themeSpatial = registryTheme?.spatial;
+  const density = computeDensity(simpleEssence.personality, themeSpatial ? {
+    density_bias: themeSpatial.density_bias,
+    content_gap_shift: themeSpatial.content_gap_shift,
   } : undefined);
 
   // 3. Theme
-  const style = simpleEssence.theme.style;
-  const isAddon = style.startsWith('custom:') || !CORE_STYLES.has(style);
+  const themeId = simpleEssence.theme.id;
+  const isAddon = themeId.startsWith('custom:') || !CORE_STYLES.has(themeId);
   const theme = buildTheme(simpleEssence, isAddon);
 
   // 4. Resolve each page
-  const resolvedPages = await resolvePages(simpleEssence.structure, resolver, recipe);
+  const resolvedPages = await resolvePages(simpleEssence.structure, resolver, registryTheme);
 
   // 5. Shell config
   const shellType = simpleEssence.structure[0]?.shell || 'sidebar-main';
   const brand = pascalCase(simpleEssence.archetype);
   const nav = buildNavItems(simpleEssence.structure);
-  const recipeDecoration = recipe ? buildRecipeDecoration(recipe) : null;
+  const decoration = registryTheme ? buildThemeDecoration(registryTheme) : null;
 
   const shell: IRShellConfig = {
     type: shellType,
     brand,
     nav,
     inset: false,
-    recipe: recipeDecoration,
+    decoration,
   };
 
   // 6. Routes
@@ -337,7 +337,7 @@ export async function resolveEssence(
   return {
     essence,
     pages: resolvedPages,
-    recipe,
+    registryTheme,
     density: { gap: density.content_gap, level: density.level },
     theme,
     shell,
@@ -355,18 +355,18 @@ async function resolveV3Essence(
 ): Promise<ResolvedEssence> {
   const { dna, blueprint, meta } = essence;
 
-  // 1. Recipe resolution (from dna.theme.recipe)
-  let recipe: Recipe | null = null;
-  const recipeResult = await resolver.resolve('recipe', dna.theme.recipe);
-  if (recipeResult) {
-    recipe = recipeResult.item;
+  // 1. Theme resolution (replaces former recipe resolution)
+  let registryTheme: RegistryTheme | null = null;
+  const themeResult = await resolver.resolve('theme', dna.theme.id);
+  if (themeResult) {
+    registryTheme = themeResult.item;
   }
 
   // 2. Density — v3 carries density directly in dna.spacing
-  const recipeSpatial = recipe?.spatial_hints;
-  const density = computeDensity(dna.personality, recipeSpatial ? {
-    density_bias: recipeSpatial.density_bias,
-    content_gap_shift: recipeSpatial.content_gap_shift,
+  const themeSpatial = registryTheme?.spatial;
+  const density = computeDensity(dna.personality, themeSpatial ? {
+    density_bias: themeSpatial.density_bias,
+    content_gap_shift: themeSpatial.content_gap_shift,
   } : undefined);
   // V3 dna.spacing is authoritative; override computed density with DNA values
   const densityResult = {
@@ -375,8 +375,8 @@ async function resolveV3Essence(
   };
 
   // 3. Theme from DNA layer
-  const style = dna.theme.style;
-  const isAddon = style.startsWith('custom:') || !CORE_STYLES.has(style);
+  const themeId = dna.theme.id;
+  const isAddon = themeId.startsWith('custom:') || !CORE_STYLES.has(themeId);
   const theme = buildThemeFromV3(essence, isAddon);
 
   // 4. Convert blueprint pages to StructurePage and resolve
@@ -392,20 +392,20 @@ async function resolveV3Essence(
   const structurePages: StructurePage[] = blueprintPages.map(
     p => blueprintPageToStructurePage(p, defaultShell),
   );
-  const resolvedPages = await resolvePages(structurePages, resolver, recipe);
+  const resolvedPages = await resolvePages(structurePages, resolver, registryTheme);
 
   // 5. Shell config from blueprint
   const shellType = defaultShell;
   const brand = pascalCase(meta.archetype);
   const nav = buildNavItems(structurePages);
-  const recipeDecoration = recipe ? buildRecipeDecoration(recipe) : null;
+  const decoration = registryTheme ? buildThemeDecoration(registryTheme) : null;
 
   const shell: IRShellConfig = {
     type: shellType,
     brand,
     nav,
     inset: false,
-    recipe: recipeDecoration,
+    decoration,
   };
 
   // 6. Routes
@@ -417,7 +417,7 @@ async function resolveV3Essence(
   return {
     essence,
     pages: resolvedPages,
-    recipe,
+    registryTheme,
     density: densityResult,
     theme,
     shell,
@@ -432,7 +432,7 @@ async function resolveV3Essence(
 async function resolvePages(
   pages: StructurePage[],
   resolver: ContentResolver,
-  recipe: Recipe | null,
+  registryTheme: RegistryTheme | null,
 ): Promise<ResolvedPage[]> {
   const resolvedPages: ResolvedPage[] = [];
   for (const page of pages) {
@@ -445,7 +445,7 @@ async function resolvePages(
         const preset = resolvePatternPreset(
           patternResult.item,
           ref.explicitPreset,
-          recipe?.pattern_preferences?.default_presets,
+          registryTheme?.pattern_preferences?.default_presets,
         );
         const key = ref.alias || ref.id;
         patterns.set(key, { pattern: patternResult.item, preset });

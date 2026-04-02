@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "archetype": "portfolio",
-  "theme": { "style": "auradecantism", "mode": "dark", "recipe": "auradecantism" },
+  "theme": { "id": "auradecantism", "mode": "dark" },
   "personality": ["minimal", "clean"],
   "platform": { "type": "spa", "routing": "history" },
   "structure": [
@@ -13,6 +13,6 @@
   ],
   "features": [],
   "density": { "level": "spacious", "content_gap": "6" },
-  "guard": { "enforce_style": true, "enforce_recipe": true, "mode": "guided" },
+  "guard": { "enforce_style": true, "mode": "guided" },
   "target": "decantr"
 }

@@ -59,7 +59,6 @@ export interface IRVisualEffect {
 export interface IRCardWrapping {
   mode: 'always' | 'minimal' | 'none';
   headerLabel: string;    // Display name for Card.Header
-  background?: string;    // Recipe pattern_overrides background atoms
 }
 
 export interface IRNavItem {
@@ -73,10 +72,10 @@ export interface IRShellConfig {
   brand: string;          // Brand label (from archetype/terroir)
   nav: IRNavItem[];
   inset: boolean;
-  recipe: IRRecipeDecoration | null;
+  decoration: IRThemeDecoration | null;
 }
 
-export interface IRRecipeDecoration {
+export interface IRThemeDecoration {
   root: string;           // CSS class for Shell root (e.g. "d-mesh")
   nav: string;            // CSS class for Shell.Nav (e.g. "d-glass")
   header: string;         // CSS class for Shell.Header
@@ -88,10 +87,9 @@ export interface IRRecipeDecoration {
 }
 
 export interface IRTheme {
-  style: string;          // e.g. "auradecantism"
+  id: string;             // e.g. "auradecantism"
   mode: string;           // "light" | "dark" | "auto"
   shape: string | null;   // "sharp" | "rounded" | "pill"
-  recipe: string;         // Recipe ID
   isAddon: boolean;       // Needs explicit style registration
 }
 

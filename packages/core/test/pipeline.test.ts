@@ -5,7 +5,6 @@ import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
-const recipesRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
 function loadFixture(name: string): EssenceFile {
   const path = join(import.meta.dirname, 'fixtures', `${name}.json`);
@@ -19,7 +18,7 @@ describe('runPipeline', () => {
 
     const ir = result.ir;
     expect(ir.type).toBe('app');
-    expect(ir.theme.style).toBe('auradecantism');
+    expect(ir.theme.id).toBe('auradecantism');
     expect(ir.theme.mode).toBe('dark');
     expect(ir.routing).toBe('hash');
     expect(ir.routes.length).toBe(2);
@@ -59,15 +58,15 @@ describe('runPipeline', () => {
     }
   });
 
-  it('applies recipe decoration to shell IR', async () => {
+  it('applies theme decoration to shell IR', async () => {
     const essence = loadFixture('essence-saas');
-    const result = await runPipeline(essence, { contentRoot, overridePaths: [recipesRoot] });
+    const result = await runPipeline(essence, { contentRoot, overridePaths: [contentRoot] });
 
     const shell = result.ir.shell;
-    expect(shell.config.recipe).not.toBeNull();
-    expect(shell.config.recipe!.root).toBe('d-mesh');
-    expect(shell.config.recipe!.nav).toBe('d-glass');
-    expect(shell.config.recipe!.navStyle).toBe('filled');
+    expect(shell.config.decoration).not.toBeNull();
+    expect(shell.config.decoration!.root).toBe('d-mesh');
+    expect(shell.config.decoration!.nav).toBe('d-glass');
+    expect(shell.config.decoration!.navStyle).toBe('filled');
   });
 
   it('respects pageFilter option', async () => {

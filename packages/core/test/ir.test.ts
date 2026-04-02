@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildPageIR } from '../src/ir.js';
 import type { StructurePage } from '@decantr/essence-spec';
-import type { Pattern, ResolvedPreset } from '@decantr/registry';
+import type { Pattern, Theme as RegistryTheme, ResolvedPreset } from '@decantr/registry';
 import type { IRWiring, IRPatternNode, IRGridNode } from '../src/types.js';
 
 function makePattern(id: string, overrides?: Partial<Pattern>): Pattern {
@@ -158,7 +158,7 @@ describe('buildPageIR', () => {
     expect(node.pattern.standalone).toBe(true);
   });
 
-  it('applies recipe card_wrapping=none to skip all cards', () => {
+  it('applies theme spatial card_wrapping=none to skip all cards', () => {
     const page: StructurePage = {
       id: 'overview',
       shell: 'sidebar-main',
@@ -167,12 +167,10 @@ describe('buildPageIR', () => {
     const pattern = makePattern('kpi-grid');
     const preset = makeResolvedPreset();
     const patterns = new Map([['kpi-grid', { pattern, preset }]]);
-    const recipe = {
+    const theme: RegistryTheme = {
       id: 'test',
-      style: 'test',
-      mode: 'dark',
-      schema_version: '2.0',
-      spatial_hints: {
+      name: 'Test',
+      spatial: {
         density_bias: 0,
         content_gap_shift: 0,
         section_padding: '',
@@ -180,11 +178,11 @@ describe('buildPageIR', () => {
         surface_override: null,
       },
       shell: { preferred: [], nav_style: 'minimal' },
-      visual_effects: { enabled: false, intensity: 'subtle' as const, type_mapping: {}, component_fallback: {} },
+      effects: { enabled: false, intensity: 'subtle' as const, type_mapping: {}, component_fallback: {} },
       pattern_preferences: { prefer: [], avoid: [] },
     };
 
-    const ir = buildPageIR(page, patterns, null, recipe, defaultDensity);
+    const ir = buildPageIR(page, patterns, null, theme, defaultDensity);
 
     const node = ir.children[0] as IRPatternNode;
     expect(node.card).toBeNull();

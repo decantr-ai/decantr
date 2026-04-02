@@ -7,7 +7,7 @@
       "id": "brand",
       "path": "/",
       "archetype": "portfolio",
-      "theme": { "style": "glassmorphism", "mode": "dark", "recipe": "auradecantism" },
+      "theme": { "id": "glassmorphism", "mode": "dark" },
       "structure": [
         { "id": "home", "shell": "full-bleed", "layout": ["hero"] }
       ],
@@ -16,6 +16,6 @@
   ],
   "shared_features": ["auth"],
   "density": { "level": "comfortable", "content_gap": "4" },
-  "guard": { "enforce_style": true, "enforce_recipe": true, "mode": "strict" },
+  "guard": { "enforce_style": true, "mode": "strict" },
   "target": "decantr"
 }

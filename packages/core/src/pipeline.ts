@@ -14,7 +14,7 @@ function extractRouting(essence: EssenceFile): 'hash' | 'history' {
 }
 
 export interface PipelineOptions {
-  /** Path to content directory (patterns, archetypes, recipes) */
+  /** Path to content directory (patterns, archetypes, themes) */
   contentRoot: string;
 
   /** Override paths for local content resolution */
@@ -32,7 +32,7 @@ export interface PipelineResult {
 /**
  * Run the Design Pipeline:
  *   1. Validate Essence against schema + guard rules
- *   2. Resolve all references (patterns, recipe, wiring) from registry
+ *   2. Resolve all references (patterns, theme, wiring) from registry
  *   3. Build framework-agnostic IR tree
  *   4. Return IR (no code generation — that's the consumer's job)
  */
@@ -65,7 +65,7 @@ export async function runPipeline(
       rp.page,
       rp.patterns,
       rp.wiring,
-      resolved.recipe,
+      resolved.registryTheme,
       { gap: resolved.density.gap },
       layer,
     );
