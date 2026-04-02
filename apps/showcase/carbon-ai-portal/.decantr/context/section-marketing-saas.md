@@ -11,7 +11,8 @@
 
 **Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
 
-**Decorators:** see `src/styles/decorators.css` — available classes: carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
+**Decorators:** `carbon-card`, `carbon-code`, `carbon-glass`, `carbon-input`, `carbon-canvas`, `carbon-divider`, `carbon-skeleton`, `carbon-bubble-ai`, `carbon-fade-slide`, `carbon-bubble-user` (see `src/styles/decorators.css`)
+Usage: `className={css('_flex _col') + ' carbon-card'}` — atoms via css(), decorators as plain class strings.
 
 ---
 
@@ -49,7 +50,7 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 
 
 
-**Components:** 
+**Components:** Card, Icon, Text
 
 **Layout slots:**
 - `grid`: Grid of feature cards (icon + title + description)
@@ -59,7 +60,7 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 
 
 
-**Components:** 
+**Components:** Card, Icon, Text, Badge
 
 **Layout slots:**
 - `steps`: Numbered steps (step number, title, description)
@@ -68,7 +69,7 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 
 
 
-**Components:** 
+**Components:** Card, Button, Badge
 
 **Layout slots:**
 - `tiers`: Pricing tier cards (name, price, features list, CTA button)
@@ -78,7 +79,7 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 
 
 
-**Components:** 
+**Components:** Card, Avatar, Text
 
 **Layout slots:**
 - `quotes`: Testimonial cards (quote text, author name, role, avatar)
@@ -87,7 +88,7 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 
 
 
-**Components:** 
+**Components:** Button, Text
 
 **Layout slots:**
 - `headline`: CTA headline text

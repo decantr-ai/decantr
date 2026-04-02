@@ -79,6 +79,7 @@
 | /register | auth-full | register |
 | /mfa-setup | auth-full | mfa-setup |
 | /mfa-verify | auth-full | mfa-verify |
+| /phone-verify | auth-full | phone-verify |
 | /verify-email | auth-full | verify-email |
 | /reset-password | auth-full | reset-password |
 | /forgot-password | auth-full | forgot-password |

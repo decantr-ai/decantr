@@ -11,7 +11,8 @@
 
 **Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
 
-**Decorators:** see `src/styles/decorators.css` — available classes: carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
+**Decorators:** `carbon-card`, `carbon-code`, `carbon-glass`, `carbon-input`, `carbon-canvas`, `carbon-divider`, `carbon-skeleton`, `carbon-bubble-ai`, `carbon-fade-slide`, `carbon-bubble-user` (see `src/styles/decorators.css`)
+Usage: `className={css('_flex _col') + ' carbon-card'}` — atoms via css(), decorators as plain class strings.
 
 ---
 
@@ -49,7 +50,7 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 
 
 
-**Components:** 
+**Components:** Text, Image
 
 **Layout slots:**
 - `content`: Story/about narrative text content
@@ -58,7 +59,7 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 
 
 
-**Components:** 
+**Components:** Card, Avatar, Text
 
 **Layout slots:**
 - `members`: Team member cards (avatar, name, role)
@@ -67,7 +68,7 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 
 
 
-**Components:** 
+**Components:** Card, Icon, Text
 
 **Layout slots:**
 - `values`: Value cards (icon/emoji, title, description)
@@ -76,7 +77,7 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 
 
 
-**Components:** 
+**Components:** Button, Text
 
 **Layout slots:**
 - `headline`: CTA headline text

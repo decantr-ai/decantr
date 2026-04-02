@@ -18,9 +18,8 @@
 }
 
 .carbon-glass {
-  background: var(--d-surface);
+  background: rgba(31, 31, 35, 0.8);
   border: 1px solid var(--d-border);
-  box-shadow: var(--d-shadow);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }

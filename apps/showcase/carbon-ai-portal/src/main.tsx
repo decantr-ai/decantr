@@ -2,6 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import { App } from './App';
+
+import './styles/tokens.css';
+import './styles/decorators.css';
+import './styles/components.css';
 import './styles/global.css';
 
 createRoot(document.getElementById('root')!).render(
@@ -9,5 +13,5 @@ createRoot(document.getElementById('root')!).render(
     <HashRouter>
       <App />
     </HashRouter>
-  </StrictMode>
+  </StrictMode>,
 );

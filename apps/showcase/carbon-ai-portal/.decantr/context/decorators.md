@@ -6,7 +6,7 @@
 |-----------|-------------|
 | carbon-card | Surface background, subtle border, 8px radius, hover shadow transition. |
 | carbon-code | Monospace font, surface-raised background, subtle 3px left border accent in primary color. |
-| carbon-glass | Subtle surface elevation with 1px border, no blur. Uses surface background. |
+| carbon-glass | Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels. |
 | carbon-input | Soft border with gentle focus ring using primary blue. Border transitions on focus. |
 | carbon-canvas | Background color using theme background token. Clean, minimal foundation. |
 | carbon-divider | Hairline separator using border-color token. |

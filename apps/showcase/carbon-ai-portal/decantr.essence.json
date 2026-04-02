@@ -147,7 +147,8 @@
             "id": "phone-verify",
             "layout": [
               "form"
-            ]
+            ],
+            "route": "/phone-verify"
           }
         ]
       },
@@ -379,6 +380,10 @@
       "/mfa-verify": {
         "section": "auth-full",
         "page": "mfa-verify"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
       },
       "/verify-email": {
         "section": "auth-full",

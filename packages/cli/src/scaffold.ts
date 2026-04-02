@@ -502,7 +502,7 @@ export interface RecipeData {
 /**
  * Generate tokens.css from theme data.
  */
-function generateTokensCSS(themeData: ThemeData | undefined, mode: string): string {
+export function generateTokensCSS(themeData: ThemeData | undefined, mode: string): string {
   if (!themeData) {
     return `/* No theme data available */
 :root {
@@ -607,7 +607,7 @@ ${lightLines}
 /**
  * Generate decorators.css from recipe data.
  */
-function generateDecoratorsCSS(recipeData: RecipeData | undefined, themeName: string): string {
+export function generateDecoratorsCSS(recipeData: RecipeData | undefined, themeName: string): string {
   if (!recipeData?.decorators) {
     return `/* No recipe decorators available */`;
   }
@@ -679,7 +679,7 @@ function generateDecoratorsContext(recipeData: RecipeData | undefined, recipeNam
 /**
  * Generate a CSS rule from a decorator name and description.
  */
-function generateDecoratorRule(name: string, description: string): string {
+export function generateDecoratorRule(name: string, description: string): string {
   const rules: string[] = [];
   const descLower = description.toLowerCase();
 

@@ -11,7 +11,8 @@
 
 **Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
 
-**Decorators:** see `src/styles/decorators.css` — available classes: carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
+**Decorators:** `carbon-card`, `carbon-code`, `carbon-glass`, `carbon-input`, `carbon-canvas`, `carbon-divider`, `carbon-skeleton`, `carbon-bubble-ai`, `carbon-fade-slide`, `carbon-bubble-user` (see `src/styles/decorators.css`)
+Usage: `className={css('_flex _col') + ' carbon-card'}` — atoms via css(), decorators as plain class strings.
 
 ---
 
@@ -37,7 +38,7 @@ Layout: content
 
 
 
-**Components:** 
+**Components:** Heading, Text, List
 
 **Layout slots:**
 - `body`: Long-form text content with headings and paragraphs
@@ -51,7 +52,7 @@ Layout: content
 
 
 
-**Components:** 
+**Components:** Heading, Text, List
 
 **Layout slots:**
 - `body`: Long-form text content with headings and paragraphs
@@ -65,7 +66,7 @@ Layout: content
 
 
 
-**Components:** 
+**Components:** Heading, Text, List
 
 **Layout slots:**
 - `body`: Long-form text content with headings and paragraphs
