@@ -19,10 +19,45 @@
 
 **Guard:** strict mode | DNA violations = error | Blueprint violations = warn
 
-**Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
+**Key palette tokens:**
+
+| Token | Value | Role |
+|-------|-------|------|
+| `--d-text` | `#FAFAFA` | Body text, headings, primary content |
+| `--d-border` | `#3F3F46` | Dividers, card borders, separators |
+| `--d-primary` | `#7C93B0` | Brand color, key interactive, selected states |
+| `--d-surface` | `#1F1F23` | Cards, panels, containers |
+| `--d-secondary` | `#A78BFA` |  |
+| `--d-background` | `#18181B` | Page canvas / base layer |
+| `--d-text-muted` | `#A1A1AA` | Secondary text, placeholders, labels |
+| `--d-accent-glow` | `rgba(0, 212, 255, 0.3)` |  |
+| `--d-primary-hover` | `#8CA3C0` | Hover state for primary elements |
+| `--d-surface-raised` | `#27272A` | Elevated containers, modals, popovers |
+| `--d-accent` | `#00D4FF` | CTAs, links, active states, glow effects |
+
+Full token set: `src/styles/tokens.css`
 
 **Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).
-**Theme decorators:** carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
+**Theme decorators:**
+
+| Class | Usage |
+|-------|-------|
+| `.carbon-card` | Surface background, subtle border, 8px radius, hover shadow transition. |
+| `.carbon-code` | Monospace font, surface-raised background, subtle 3px left border accent in primary color. |
+| `.carbon-glass` | Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels. |
+| `.carbon-input` | Soft border with gentle focus ring using primary blue. Border transitions on focus. |
+| `.carbon-canvas` | Background color using theme background token. Clean, minimal foundation. |
+| `.carbon-divider` | Hairline separator using border-color token. |
+| `.carbon-skeleton` | Loading placeholder with subtle pulse animation for skeleton states. |
+| `.carbon-bubble-ai` | Left-aligned message bubble with surface background for AI responses. |
+| `.carbon-fade-slide` | Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out. |
+| `.carbon-bubble-user` | Right-aligned message bubble with primary-tinted background for user messages. |
+
+**Preferred:** chat-thread, chat-input, conversation-list, auth-form
+**Compositions:** **auth:** Centered auth forms with clean card styling.
+**chat:** Chat interface with conversation list sidebar and message thread. Anchored input at bottom.
+**marketing:** Marketing pages with top nav and footer. Clean sections with subtle separators.
+**Spatial hints:** Density bias: none. Section padding: 80px. Card wrapping: minimal.
 
 
 Usage: `className={css('_flex _col _gap4') + ' d-surface carbon-glass'}` — atoms via css(), treatments and theme decorators as plain class strings.
@@ -39,7 +74,14 @@ agents, monitoring, orchestration, real-time, websockets
 
 ---
 
-**Personality:** See scaffold.md for personality and visual direction.
+## Visual Direction
+
+**Personality:** Confident cyber-minimal agent marketplace. Neon accent glows on dark void backgrounds. Monospace data typography. Agent status shown through color-coded rings and pulse animations. Think Linear meets a mission control center. Lucide icons. No decorative elements — every pixel serves the operator.
+
+**Personality utilities available in treatments.css:**
+- `neon-glow`, `neon-glow-hover`, `neon-text-glow`, `neon-border-glow` — Apply to elements needing accent emphasis
+- `mono-data` — Monospace + tabular-nums for metrics, IDs, timestamps
+- `status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation
 
 ## Pattern Reference
 
@@ -57,6 +99,15 @@ A spatial node-graph canvas where AI agents appear as interactive nodes with rea
   - error_escalation: Agents with error status should have a subtle red border glow on their card: box-shadow: 0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent).
   - node_interaction: Each agent node card MUST have cursor: pointer. Use d-surface[data-interactive] for clickable nodes. Clicking navigates to agent detail.
   - status_consistency: All status badges MUST use d-annotation[data-status]. Every status includes a colored dot (8px circle) prefix for visual scanning. Consistent across all agents.
+**Responsive:**
+- **Mobile (<640px):** Canvas remains spatial but disables drag-to-connect (use tap-to-select then tap-target-to-connect two-step flow). Minimap hidden. Control bar simplifies to zoom + play/pause. Agent nodes render at minimum 64px width with truncated labels.
+- **Tablet (640-1024px):** Full spatial canvas with minimap collapsed by default (toggle via control bar). Touch gestures: two-finger pan, pinch-to-zoom. Connection drag uses long-press to initiate.
+
+**Accessibility:**
+- Role: `application`
+- Keyboard: Tab: cycle through agent nodes in DOM order; Enter: expand selected agent node details; Space: toggle swarm play/pause; Arrow keys: pan canvas viewport; +/-: zoom in/out; 0: fit all agents in view; Delete: remove selected connection; Escape: deselect current node or cancel drag
+- Announcements: Agent {name} status changed to {status}; Connection established between {source} and {target}; Swarm execution {started|paused|completed}
+
 
 ### agent-timeline
 
@@ -72,6 +123,15 @@ A vertical timeline for agent observability that displays actions, decisions, to
   - badge_size: Event type badges use d-annotation with at least 0.7rem font and enough padding to be scannable at speed.
   - event_colors: Each event TYPE must have a DISTINCT color. No two types share the same color. Suggested: action=cyan(accent), decision=green(success), error=red(error), warning=amber(warning), tool_call=purple, reasoning=amber/gold, info=blue(info).
   - vertical_line: A continuous 2px vertical line runs the FULL height of the timeline, 16px from the left edge. Color: var(--d-border). The line MUST NOT have gaps between events — it connects all events visually.
+**Responsive:**
+- **Mobile (<640px):** Timeline track moves to a thin left-edge gutter (8px inset). Event cards span full width with reduced padding. Filter bar scrolls horizontally with momentum. Summary header stacks stats in a 2×2 grid. Event details render in a bottom sheet on tap rather than inline expansion to save vertical space.
+- **Tablet (640-1024px):** Standard vertical layout maintained. Filter bar remains fully visible without scrolling (wraps to second row if needed). Event cards maintain comfortable padding. Summary header displays stats in a single row.
+
+**Accessibility:**
+- Role: `feed`
+- Keyboard: Arrow Up/Down: navigate between timeline events; Enter: expand/collapse selected event detail; F: focus the filter bar search input; 1-6: toggle filter chips by position; Home: jump to first event; End: jump to latest event; Escape: collapse all expanded events and clear filters
+- Announcements: New event: {type} — {summary}; Error occurred: {message}; Agent completed after {duration} with {event_count} events; Filter applied: showing {type} events only; Event details expanded for {summary}
+
 
 ### neural-feedback-loop
 
@@ -81,6 +141,15 @@ A bio-mimetic visualization that renders AI processing state through organic pul
 
 **Layout slots:**
 - `values`: Value cards (icon/emoji, title, description)
+**Responsive:**
+- **Mobile (<640px):** Use inline-flow or static-gauge preset. Radial preset requires minimum 160px container. FlowTrack particle count reduced for performance. FeedbackTooltip appears as a bottom sheet on tap rather than hover tooltip.
+- **Tablet (640-1024px):** All presets available. Radial preset scales to container. Touch targets for tooltip activation are 44px minimum. Ambient preset works well as a page background on tablet.
+
+**Accessibility:**
+- Role: `status`
+- Keyboard: Tab focuses the feedback element, announcing current metric value; Enter or Space opens the detail tooltip; Escape closes the detail tooltip
+- Announcements: Announce significant metric changes: 'Confidence increased to 94%'; Announce state transitions: 'Processing started', 'Processing complete'; Announce threshold crossings: 'Token rate exceeded limit'; Provide metric summary on focus: '[Metric name]: [value], [trend]'
+
 
 ### settings-nav
 
@@ -115,6 +184,8 @@ Grouped form fields organized in labeled sections with validation
 
 Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages, recipe detail headers, and marketing sections.
 
+**Visual brief:** Full-width section dominating the viewport with a bold, large-scale headline centered or left-aligned depending on preset. Generous vertical padding (4-6rem top/bottom) creates breathing room. Subtext sits beneath the headline in muted, lighter-weight type with relaxed line-height. One or two CTA buttons are arranged horizontally with equal height — the primary filled, the secondary ghost-outlined. Optional media (illustration, screenshot, or ambient gradient) appears below or beside the content. Brand preset fills the entire viewport height with decorative floating orbs in the background. Split preset uses a two-column grid with content on one side and media on the other.
+
 **Components:** Button, icon
 
 **Layout slots:**
@@ -129,6 +200,17 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
   - cta_sizing: Primary and secondary CTAs should have equal padding and height. Primary is filled (d-interactive[data-variant=primary]), secondary is ghost (d-interactive[data-variant=ghost]).
   - announcement: If showing an announcement badge above the heading, use d-annotation with prominent styling — not a tiny muted pill. Accent border or accent background at 15% opacity.
   - visual_proof: The visual element below CTAs should be an ambient visualization (animated gradient, particle effect, blurred screenshot) — NOT a data widget wrapped in a card. If showing product data (agents, metrics), render as floating elements without card containment. Omit entirely if no meaningful visual is available.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | CTA buttons scale subtly on hover (scale 1.02). Badge shimmer on announcement pill. |
+| transitions | Hero entrance: headline fades up from 20px below with 600ms ease-out. Subtext follows 150ms later. CTAs follow 300ms after subtext. Decorative orbs drift slowly with infinite CSS animation. Brand preset media floats with gentle vertical oscillation. |
+
+**Responsive:**
+- **Mobile (<640px):** Single column, stacked vertically. Headline drops to heading2 scale. CTAs stack full-width. Padding reduces to py8 px4. Media goes below content at full width. Min-height removed on brand/vision presets.
+- **Tablet (640-1024px):** Content remains centered or stacked. Headline at heading1 scale. CTAs stay horizontal. Split preset still single-column. Padding at py12 px6.
+- **Desktop (>1024px):** Full layout as designed — centered or split two-column. Headline at display scale for brand/vision. Generous py16-py24 padding. Split preset activates side-by-side grid. Decorative elements visible.
+
 
 ### generative-card-grid
 
@@ -142,6 +224,15 @@ A grid of cards where each card shows a procedurally generated preview of what a
   - grid: Use CSS grid with auto-fill: grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)). Cards should be equal height within each row.
   - filtering: If filter tabs or category pills are shown, they MUST be functional. Clicking a tab/pill filters the grid. Use React state to filter. Non-functional filter UI is worse than no filters.
   - empty_state: When filters produce 0 results, show an empty state: centered icon (48px, muted) + descriptive message + 'Clear filters' action.
+**Responsive:**
+- **Mobile (<640px):** Single column layout regardless of preset. Cards full-width. Preview area maintains 16:9 aspect ratio. ActionBar always visible (no hover state on touch). Skeleton state simplified to a single pulsing block. Maximum 10 cards before 'Load more' button.
+- **Tablet (640-1024px):** Two-column grid for uniform and masonry presets. Featured preset uses 2-column with featured card spanning full width at top. List preset unchanged. Touch targets for ActionBar buttons are 44px minimum.
+
+**Accessibility:**
+- Role: `feed`
+- Keyboard: Tab navigates between cards in grid order; Arrow keys navigate between cards in 2D grid (Left/Right within row, Up/Down between rows); Enter expands the focused card to full view; R key triggers regeneration for the focused card; F key toggles the focused card as featured; V key cycles between grid presets (masonry, uniform, featured, list); Escape closes expanded view and returns focus to the card
+- Announcements: Announce new generation completion: 'Generation complete: [prompt summary]'; Announce when entering skeleton/loading state: 'Generating preview for: [prompt]'; Announce grid layout changes: 'Switched to [preset] view'; Announce featured card change: '[prompt] featured'
+
 
 ---
 

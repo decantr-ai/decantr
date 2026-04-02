@@ -2050,10 +2050,8 @@ export async function scaffoldProject(
   patternSpecs?: Record<string, PatternSpecSummary>,
   blueprintData?: Record<string, any>,
 ): Promise<ScaffoldResult> {
-  // Build v3 essence by default, but keep a v2-compatible view for template rendering
+  // Build v3 essence (v2 build removed — Spec 5.9)
   const essenceV3 = buildEssenceV3(options, archetypeData, themeData);
-  // Build the v2 shape for backward-compatible template rendering
-  const essence = buildEssence(options, archetypeData);
 
   // Create directories
   const decantrDir = join(projectRoot, '.decantr');
@@ -2071,13 +2069,13 @@ export async function scaffoldProject(
   const projectJsonPath = join(decantrDir, 'project.json');
   writeFileSync(projectJsonPath, generateProjectJson(detected, options, registrySource));
 
-  // Write legacy task context files (v2-compatible)
+  // Write task context files using v3 essence directly
   // Note: task-modify.md and task-add-page.md are skipped during initial scaffold
   // (0% token usage during scaffolding). They are generated on first refresh/add/remove.
   const contextFiles: string[] = [];
 
   const scaffoldPath = join(contextDir, 'task-scaffold.md');
-  writeFileSync(scaffoldPath, generateTaskContext('task-scaffold.md.template', essence));
+  writeFileSync(scaffoldPath, generateTaskContextV3('task-scaffold.md.template', essenceV3));
   contextFiles.push(scaffoldPath);
 
   // V3.1 upgrade: if composedSections is provided, upgrade the essence
@@ -2341,6 +2339,92 @@ export interface RefreshResult {
 }
 
 /**
+ * Resolve a single pattern spec: use prefetched data if available and complete,
+ * otherwise fetch from registry and enrich. Falls back to synthetic generation.
+ *
+ * A prefetched spec is considered "complete" if it already has layout_hints or
+ * visual_brief fields — the enriched fields that cmdInit's fetch omits.
+ */
+async function resolvePatternSpec(
+  name: string,
+  registry: RegistryClient,
+  prefetched?: PatternSpecSummary,
+  includeExtendedFields = true,
+): Promise<PatternSpecSummary | null> {
+  // If prefetched spec has extended fields, use it directly
+  if (prefetched && (prefetched.layout_hints || prefetched.visual_brief || !includeExtendedFields)) {
+    // Ensure synthetic enrichment for empty components
+    if (!prefetched.components || prefetched.components.length === 0) {
+      const syntheticComps = generateSyntheticComponents(name, prefetched.description);
+      if (syntheticComps.length > 0) prefetched.components = syntheticComps;
+    }
+    // Ensure synthetic slots if empty
+    if (!prefetched.slots || Object.keys(prefetched.slots).length === 0) {
+      const synthetic = generateSyntheticSlots(name, prefetched.description);
+      if (Object.keys(synthetic).length > 0) prefetched.slots = synthetic;
+    }
+    return prefetched;
+  }
+
+  // Fetch from registry (full spec with extended fields)
+  try {
+    const patResult = await registry.fetchPattern(name);
+    if (patResult?.data) {
+      const inner = patResult.data as Record<string, any>;
+      const defaultPreset = inner.default_preset || 'standard';
+      const preset = inner.presets?.[defaultPreset];
+      let slots = preset?.layout?.slots || {};
+
+      if (Object.keys(slots).length === 0) {
+        const synthetic = generateSyntheticSlots(name, (inner.description as string) || '');
+        if (Object.keys(synthetic).length > 0) slots = synthetic;
+      }
+
+      const spec: PatternSpecSummary = {
+        description: (inner.description as string) || prefetched?.description || '',
+        components: (inner.components as string[]) || prefetched?.components || [],
+        slots,
+        layout_hints: inner.layout_hints as Record<string, string> | undefined,
+        ...(includeExtendedFields ? {
+          visual_brief: inner.visual_brief as string | undefined,
+          composition: inner.composition as Record<string, string> | undefined,
+          motion: inner.motion as PatternSpecSummary['motion'],
+          responsive: inner.responsive as PatternSpecSummary['responsive'],
+          accessibility: inner.accessibility as PatternSpecSummary['accessibility'],
+        } : {}),
+      };
+
+      if (!spec.components || spec.components.length === 0) {
+        const syntheticComps = generateSyntheticComponents(name, spec.description);
+        if (syntheticComps.length > 0) spec.components = syntheticComps;
+      }
+      return spec;
+    }
+  } catch { /* fetch failed */ }
+
+  // Use prefetched even if incomplete (better than nothing)
+  if (prefetched) {
+    if (!prefetched.components || prefetched.components.length === 0) {
+      const syntheticComps = generateSyntheticComponents(name, prefetched.description);
+      if (syntheticComps.length > 0) prefetched.components = syntheticComps;
+    }
+    if (!prefetched.slots || Object.keys(prefetched.slots).length === 0) {
+      const synthetic = generateSyntheticSlots(name, prefetched.description);
+      if (Object.keys(synthetic).length > 0) prefetched.slots = synthetic;
+    }
+    return prefetched;
+  }
+
+  // No prefetched, no registry — generate synthetic
+  const syntheticSlots = generateSyntheticSlots(name, '');
+  const syntheticComps = generateSyntheticComponents(name, '');
+  if (Object.keys(syntheticSlots).length > 0 || syntheticComps.length > 0) {
+    return { description: '', components: syntheticComps, slots: syntheticSlots };
+  }
+  return null;
+}
+
+/**
  * Regenerate all derived files from an existing essence + registry.
  *
  * This is the standalone function that `decantr refresh` will call.
@@ -2356,7 +2440,7 @@ export async function refreshDerivedFiles(
   essence: EssenceV3,
   registry: RegistryClient,
   prefetchedThemeData?: ThemeData,
-  options?: { isInitialScaffold?: boolean },
+  options?: { isInitialScaffold?: boolean; patternSpecs?: Record<string, PatternSpecSummary> },
 ): Promise<RefreshResult> {
   const decantrDir = join(projectRoot, '.decantr');
   const contextDir = join(decantrDir, 'context');
@@ -2550,7 +2634,10 @@ export async function refreshDerivedFiles(
       }
     }
 
-    // ── Fetch pattern specs for all patterns in all sections ──
+    // ── Resolve pattern specs for all patterns in all sections ──
+    // Uses prefetched specs from cmdInit when available (Spec 1.8),
+    // enriching with extended fields from registry as needed.
+    const prefetchedSpecs = options?.patternSpecs;
     const patternSpecs: Record<string, PatternSpecSummary> = {};
     const seenPatterns = new Set<string>();
 
@@ -2561,55 +2648,8 @@ export async function refreshDerivedFiles(
           for (const name of names) {
             if (!seenPatterns.has(name)) {
               seenPatterns.add(name);
-              try {
-                const patResult = await registry.fetchPattern(name);
-                if (patResult?.data) {
-                  const inner = patResult.data as Record<string, any>;
-                  const defaultPreset = inner.default_preset || 'standard';
-                  const preset = inner.presets?.[defaultPreset];
-                  let slots = preset?.layout?.slots || {};
-
-                  // If no slots defined, generate synthetic ones from the pattern name and description
-                  if (Object.keys(slots).length === 0) {
-                    const synthetic = generateSyntheticSlots(name, (inner.description as string) || '');
-                    if (Object.keys(synthetic).length > 0) {
-                      slots = synthetic;
-                    }
-                  }
-
-                  const spec: PatternSpecSummary = {
-                    description: (inner.description as string) || '',
-                    components: (inner.components as string[]) || [],
-                    slots,
-                    layout_hints: inner.layout_hints as Record<string, string> | undefined,
-                    visual_brief: inner.visual_brief as string | undefined,
-                    composition: inner.composition as Record<string, string> | undefined,
-                    motion: inner.motion as PatternSpecSummary['motion'],
-                    responsive: inner.responsive as PatternSpecSummary['responsive'],
-                    accessibility: inner.accessibility as PatternSpecSummary['accessibility'],
-                  };
-                  // Enrich empty components with synthetic inference
-                  if (!spec.components || spec.components.length === 0) {
-                    const syntheticComps = generateSyntheticComponents(name, spec.description);
-                    if (syntheticComps.length > 0) spec.components = syntheticComps;
-                  }
-                  patternSpecs[name] = spec;
-                } else {
-                  // Pattern not in registry — generate synthetic spec from name alone
-                  const synthetic = generateSyntheticSlots(name, '');
-                  const syntheticComps = generateSyntheticComponents(name, '');
-                  if (Object.keys(synthetic).length > 0 || syntheticComps.length > 0) {
-                    patternSpecs[name] = { description: '', components: syntheticComps, slots: synthetic };
-                  }
-                }
-              } catch {
-                // Pattern fetch failed — generate synthetic spec from name alone
-                const synthetic = generateSyntheticSlots(name, '');
-                const syntheticComps = generateSyntheticComponents(name, '');
-                if (Object.keys(synthetic).length > 0 || syntheticComps.length > 0) {
-                  patternSpecs[name] = { description: '', components: syntheticComps, slots: synthetic };
-                }
-              }
+              const spec = await resolvePatternSpec(name, registry, prefetchedSpecs?.[name], true);
+              if (spec) patternSpecs[name] = spec;
             }
           }
         }
@@ -3261,9 +3301,13 @@ export function generateSectionContext(input: SectionContextInput): string {
       }
       if (spec.motion) {
         const entries: Array<[string, string]> = [];
-        if (spec.motion.micro) for (const [k, v] of Object.entries(spec.motion.micro)) entries.push([k, v]);
-        if (spec.motion.transitions) for (const [k, v] of Object.entries(spec.motion.transitions)) entries.push([k, v]);
-        if (spec.motion.ambient) for (const [k, v] of Object.entries(spec.motion.ambient)) entries.push([k, v]);
+        const isObj = (v: unknown): v is Record<string, string> => typeof v === 'object' && v !== null && !Array.isArray(v);
+        if (isObj(spec.motion.micro)) for (const [k, v] of Object.entries(spec.motion.micro)) entries.push([k, v]);
+        else if (typeof spec.motion.micro === 'string') entries.push(['micro', spec.motion.micro]);
+        if (isObj(spec.motion.transitions)) for (const [k, v] of Object.entries(spec.motion.transitions)) entries.push([k, v]);
+        else if (typeof spec.motion.transitions === 'string') entries.push(['transitions', spec.motion.transitions]);
+        if (isObj(spec.motion.ambient)) for (const [k, v] of Object.entries(spec.motion.ambient)) entries.push([k, v]);
+        else if (typeof spec.motion.ambient === 'string') entries.push(['ambient', spec.motion.ambient]);
         if (entries.length > 0) {
           lines.push('**Motion:**');
           lines.push('| Interaction | Animation |');
@@ -3282,8 +3326,8 @@ export function generateSectionContext(input: SectionContextInput): string {
       if (spec.accessibility) {
         lines.push('**Accessibility:**');
         if (spec.accessibility.role) lines.push(`- Role: \`${spec.accessibility.role}\``);
-        if (spec.accessibility.keyboard?.length) lines.push(`- Keyboard: ${spec.accessibility.keyboard.join('; ')}`);
-        if (spec.accessibility.announcements?.length) lines.push(`- Announcements: ${spec.accessibility.announcements.join('; ')}`);
+        if (Array.isArray(spec.accessibility.keyboard) && spec.accessibility.keyboard.length) lines.push(`- Keyboard: ${spec.accessibility.keyboard.join('; ')}`);
+        if (Array.isArray(spec.accessibility.announcements) && spec.accessibility.announcements.length) lines.push(`- Announcements: ${spec.accessibility.announcements.join('; ')}`);
         if (spec.accessibility.focus_management) lines.push(`- Focus: ${spec.accessibility.focus_management}`);
         lines.push('');
       }

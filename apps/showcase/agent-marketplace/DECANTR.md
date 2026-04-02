@@ -1,3 +1,27 @@
+## Project Brief
+
+- **Blueprint:** custom
+- **Theme:** carbon-neon (dark mode (rounded)
+- **Personality:** Confident cyber-minimal agent marketplace. Neon accent glows on dark void backgrounds. Monospace data typography. Agent status shown through color-coded rings and pulse animations. Think Linear meets a mission control center. Lucide icons. No decorative elements — every pixel serves the operator.
+- **Sections:** 4 (agent-orchestrator [primary], auth-full [gateway], marketing-saas [public], ai-transparency [auxiliary])
+- **Features:** agents, monitoring, orchestration, real-time, websockets, auth, mfa, oauth, email-verification, password-reset, pricing-toggle, testimonials, feature-grid, analytics, observability, theme-toggle, command-palette
+- **Guard mode:** strict
+
+### Decorator Quick Reference
+| Class | Purpose |
+|-------|---------|
+| `.carbon-card` | Surface background, subtle border, 8px radius, hover shadow transition. |
+| `.carbon-code` | Monospace font, surface-raised background, subtle 3px left border accent in primary color. |
+| `.carbon-glass` | Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels. |
+| `.carbon-input` | Soft border with gentle focus ring using primary blue. Border transitions on focus. |
+| `.carbon-canvas` | Background color using theme background token. Clean, minimal foundation. |
+| `.carbon-divider` | Hairline separator using border-color token. |
+| `.carbon-skeleton` | Loading placeholder with subtle pulse animation for skeleton states. |
+| `.carbon-bubble-ai` | Left-aligned message bubble with surface background for AI responses. |
+| `.carbon-fade-slide` | Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out. |
+| `.carbon-bubble-user` | Right-aligned message bubble with primary-tinted background for user messages. |
+
+---
 # DECANTR.md
 
 This project uses **Decantr** for design intelligence. Read this file before generating any UI code.
