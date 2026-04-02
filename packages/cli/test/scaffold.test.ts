@@ -138,6 +138,27 @@ describe('generateDecoratorRule interactive states', () => {
     expect(css).toContain('padding:');
     expect(css).toContain('border-radius:');
   });
+
+  it('detects semantic type from name when description lacks keywords', () => {
+    // Real-world case: recipe description says "Surface elevation with subtle border"
+    // but name is "carbon-card" — should still get hover state
+    const css = generateDecoratorRule(
+      'carbon-card',
+      'Surface elevation with subtle border, rounded 8px radius, shadow'
+    );
+    expect(css).toContain('.carbon-card:hover');
+  });
+
+  it('detects input type from name when description is minimal', () => {
+    // Real-world case: description just says "Subtle border" but name is "carbon-input"
+    const css = generateDecoratorRule(
+      'carbon-input',
+      'Subtle border for form elements'
+    );
+    expect(css).toContain('.carbon-input:focus');
+    expect(css).toContain('.carbon-input:disabled');
+    expect(css).toContain('background: var(--d-surface)');
+  });
 });
 
 describe('generateDecoratorsCSS', () => {

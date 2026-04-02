@@ -760,13 +760,15 @@ export function generateDecoratorRule(name: string, description: string): string
   const rules: string[] = [];
   const descLower = description.toLowerCase();
 
-  // Detect semantic type for interactive state generation
-  const isCard = descLower.includes('card') || descLower.includes('panel');
-  const isInput = descLower.includes('input') || descLower.includes('field') || descLower.includes('textarea');
-  const isGlass = descLower.includes('glassmorphic') || descLower.includes('glass');
+  // Detect semantic type for interactive state generation (check both name and description)
+  const nameLower = name.toLowerCase();
+  const isCard = descLower.includes('card') || descLower.includes('panel') || nameLower.includes('card') || nameLower.includes('panel');
+  const isInput = descLower.includes('input') || descLower.includes('field') || descLower.includes('textarea') || nameLower.includes('input') || nameLower.includes('textarea');
+  const isGlass = descLower.includes('glassmorphic') || descLower.includes('glass') || nameLower.includes('glass');
   const isInteractive = isCard || isInput || isGlass;
   const isNonInteractive = descLower.includes('divider') || descLower.includes('skeleton')
-    || descLower.includes('keyframe') || descLower.includes('canvas');
+    || descLower.includes('keyframe') || descLower.includes('canvas')
+    || nameLower.includes('divider') || nameLower.includes('skeleton') || nameLower.includes('canvas');
 
   // Font patterns
   if (descLower.includes('monospace') || descLower.includes('mono font')) {
