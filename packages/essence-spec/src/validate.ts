@@ -32,7 +32,8 @@ function getValidator(version: 'v2' | 'v3'): ReturnType<Ajv['compile']> | null {
 
 function detectVersion(data: unknown): 'v2' | 'v3' {
   if (typeof data === 'object' && data !== null && 'version' in data) {
-    if ((data as Record<string, unknown>).version === '3.0.0') return 'v3';
+    const v = (data as Record<string, unknown>).version;
+    if (v === '3.0.0' || v === '3.1.0') return 'v3';
   }
   return 'v2';
 }

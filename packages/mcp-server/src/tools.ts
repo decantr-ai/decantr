@@ -550,20 +550,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const desc = (args.description as string).toLowerCase();
 
       try {
-        const patternsResponse = await apiClient.listContent<Pattern>('patterns', {
+        const patternsResponse = await apiClient.listContent<Record<string, unknown>>('patterns', {
           namespace: '@official',
           limit: 100,
         });
 
-        const suggestions: { id: string; score: number; name: string; description: string; components: string[]; layout: string }[] = [];
+        // Phase 1: Score by name/description only (fields present in list items)
+        const prelimScores: { slug: string; score: number; name: string; description: string }[] = [];
 
         for (const p of patternsResponse.items) {
-          const searchable = [
-            p.name || '',
-            p.description || '',
-            ...(p.components || []),
-            ...(p.tags || []),
-          ].join(' ').toLowerCase();
+          const slug = (p as any).slug || '';
+          const name = (p as any).name || slug;
+          const description = (p as any).description || '';
+          const searchable = [name, description].join(' ').toLowerCase();
 
           let score = 0;
           const words = desc.split(/\s+/);
@@ -573,31 +572,63 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           }
 
           // Boost for common keyword associations
-          if (desc.includes('dashboard') && ['kpi-grid', 'chart-grid', 'data-table', 'filter-bar'].includes(p.id)) score += 20;
-          if (desc.includes('metric') && p.id === 'kpi-grid') score += 15;
-          if (desc.includes('chart') && p.id === 'chart-grid') score += 15;
-          if (desc.includes('table') && p.id === 'data-table') score += 15;
-          if (desc.includes('form') && p.id === 'form-sections') score += 15;
-          if (desc.includes('setting') && p.id === 'form-sections') score += 15;
-          if (desc.includes('landing') && ['hero', 'cta-section', 'card-grid'].includes(p.id)) score += 20;
-          if (desc.includes('hero') && p.id === 'hero') score += 20;
-          if (desc.includes('ecommerce') && ['card-grid', 'filter-bar', 'detail-header'].includes(p.id)) score += 15;
-          if (desc.includes('product') && p.id === 'card-grid') score += 15;
-          if (desc.includes('feed') && p.id === 'activity-feed') score += 15;
-          if (desc.includes('filter') && p.id === 'filter-bar') score += 15;
-          if (desc.includes('search') && p.id === 'filter-bar') score += 10;
+          if (desc.includes('dashboard') && ['kpi-grid', 'chart-grid', 'data-table', 'filter-bar'].includes(slug)) score += 20;
+          if (desc.includes('metric') && slug === 'kpi-grid') score += 15;
+          if (desc.includes('chart') && slug === 'chart-grid') score += 15;
+          if (desc.includes('table') && slug === 'data-table') score += 15;
+          if (desc.includes('form') && slug === 'form-sections') score += 15;
+          if (desc.includes('setting') && slug === 'form-sections') score += 15;
+          if (desc.includes('landing') && ['hero', 'cta-section', 'card-grid'].includes(slug)) score += 20;
+          if (desc.includes('hero') && slug === 'hero') score += 20;
+          if (desc.includes('ecommerce') && ['card-grid', 'filter-bar', 'detail-header'].includes(slug)) score += 15;
+          if (desc.includes('product') && slug === 'card-grid') score += 15;
+          if (desc.includes('feed') && slug === 'activity-feed') score += 15;
+          if (desc.includes('filter') && slug === 'filter-bar') score += 15;
+          if (desc.includes('search') && slug === 'filter-bar') score += 10;
 
           if (score > 0) {
-            const preset = p.presets ? Object.values(p.presets)[0] : null;
-            suggestions.push({
-              id: p.id,
-              score,
-              name: p.name || p.id,
-              description: p.description || '',
-              components: p.components || [],
-              layout: preset?.layout ? preset.layout.layout : 'grid',
-            });
+            prelimScores.push({ slug, score, name, description });
           }
+        }
+
+        prelimScores.sort((a, b) => b.score - a.score);
+
+        // Phase 2: Fetch full data for top 10 and re-score with components/tags
+        const top10 = prelimScores.slice(0, 10);
+        const suggestions: { id: string; score: number; name: string; description: string; components: string[]; layout: string }[] = [];
+
+        for (const candidate of top10) {
+          let fullPattern: Pattern | null = null;
+          try {
+            const fetched = await apiClient.getPattern('@official', candidate.slug);
+            // Unwrap .data if the API wraps the response
+            fullPattern = ((fetched as any).data ?? fetched) as Pattern;
+          } catch { /* pattern fetch failed, use preliminary data */ }
+
+          let score = candidate.score;
+          if (fullPattern) {
+            // Re-score with full data (components, tags)
+            const fullSearchable = [
+              ...(fullPattern.components || []),
+              ...(fullPattern.tags || []),
+            ].join(' ').toLowerCase();
+
+            const words = desc.split(/\s+/);
+            for (const word of words) {
+              if (word.length < 3) continue;
+              if (fullSearchable.includes(word)) score += 10;
+            }
+          }
+
+          const preset = fullPattern?.presets ? Object.values(fullPattern.presets)[0] : null;
+          suggestions.push({
+            id: candidate.slug,
+            score,
+            name: fullPattern?.name || candidate.name,
+            description: fullPattern?.description || candidate.description,
+            components: fullPattern?.components || [],
+            layout: preset?.layout ? preset.layout.layout : 'grid',
+          });
         }
 
         suggestions.sort((a, b) => b.score - a.score);
@@ -605,7 +636,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         return {
           query: args.description,
           suggestions: suggestions.slice(0, 5),
-          total: suggestions.length,
+          total: prelimScores.length,
         };
       } catch (e) {
         return { error: `Could not fetch patterns: ${(e as Error).message}` };

@@ -33,6 +33,37 @@ export const VALID_V2_SECTIONED: SectionedEssence = {
   target: 'decantr',
 };
 
+export const VALID_V31: EssenceV3 = {
+  version: '3.1.0',
+  dna: {
+    theme: { id: 'luminarum', mode: 'dark', shape: 'pill' },
+    spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+    typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+    color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+    radius: { philosophy: 'pill', base: 12 },
+    elevation: { system: 'layered', max_levels: 3 },
+    motion: { preference: 'subtle', duration_scale: 1.0, reduce_motion: true },
+    accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+    personality: ['professional'],
+  },
+  blueprint: {
+    shell: 'sidebar-main',
+    pages: [
+      {
+        id: 'main',
+        layout: ['kpi-grid', 'chart-grid'],
+      },
+    ],
+    features: ['auth'],
+  },
+  meta: {
+    archetype: 'saas-dashboard',
+    target: 'react',
+    platform: { type: 'spa', routing: 'hash' },
+    guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+  },
+};
+
 export const VALID_V3: EssenceV3 = {
   version: '3.0.0',
   dna: {

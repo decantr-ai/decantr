@@ -8,7 +8,7 @@
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
-    "version": { "type": "string", "const": "3.0.0" },
+    "version": { "type": "string", "enum": ["3.0.0", "3.1.0"] },
     "dna": { "$ref": "#/$defs/DNA" },
     "blueprint": { "$ref": "#/$defs/Blueprint" },
     "meta": { "$ref": "#/$defs/Meta" },

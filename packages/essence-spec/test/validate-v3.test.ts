@@ -1,10 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { validateEssence } from '../src/validate.js';
-import { VALID_V3, VALID_V2_SIMPLE, VALID_V2_SECTIONED } from './fixtures.js';
+import { VALID_V3, VALID_V31, VALID_V2_SIMPLE, VALID_V2_SECTIONED } from './fixtures.js';
 
 describe('validateEssence - v3', () => {
   it('accepts a valid v3 document', () => {
     const result = validateEssence(VALID_V3);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
+  it('accepts a valid v3.1.0 document', () => {
+    const result = validateEssence(VALID_V31);
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
   });
