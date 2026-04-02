@@ -1394,10 +1394,11 @@
           <div class="mini-code"><span class="k">{</span>
   <span class="s">"theme"</span>: <span class="s">"clean"</span>,
   <span class="s">"personality"</span>: <span class="s">"professional"</span>,
-  <span class="s">"density"</span>: <span class="s">"comfortable"</span>,
-  <span class="s">"pages"</span>: <span class="k">{</span>
-    <span class="s">"dashboard"</span>: [<span class="s">"kpi-grid"</span>, <span class="s">"chart-grid"</span>]
-  <span class="k">}</span>
+  <span class="s">"sections"</span>: [<span class="k">{</span>
+    <span class="s">"id"</span>: <span class="s">"dashboard"</span>,
+    <span class="s">"role"</span>: <span class="s">"primary"</span>,
+    <span class="s">"pages"</span>: [...]
+  <span class="k">}</span>]
 <span class="k">}</span></div>
         </div>
       </div>
@@ -1468,7 +1469,7 @@
 <!-- ==================== MCP TOOLS ==================== -->
 <section class="section" id="tools">
   <div class="container">
-    <h2 class="section-heading reveal">10 tools for your AI assistant</h2>
+    <h2 class="section-heading reveal">14 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
 
     <div class="tools-list reveal">
@@ -1490,7 +1491,7 @@
       </div>
       <div class="tool-item">
         <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_blueprint</div>
-        <p class="tool-desc">Composed templates with full structure</p>
+        <p class="tool-desc">Composed templates with topology, zones, and transitions</p>
       </div>
       <div class="tool-item">
         <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_recipe</div>
@@ -1511,6 +1512,22 @@
       <div class="tool-item">
         <div class="tool-name"><span class="tool-dot"></span>decantr_search_registry</div>
         <p class="tool-desc">Search patterns, archetypes, themes</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><span class="tool-dot"></span>decantr_accept_drift</div>
+        <p class="tool-desc">Accept detected drift as intentional</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><span class="tool-dot"></span>decantr_update_essence</div>
+        <p class="tool-desc">Apply structured updates to the design spec</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><span class="tool-dot"></span>decantr_get_section_context</div>
+        <p class="tool-desc">Get scoped context for a specific app section</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><span class="tool-dot"></span>decantr_component_api</div>
+        <p class="tool-desc">Query component specs and usage patterns</p>
       </div>
     </div>
   </div>
@@ -1606,12 +1623,12 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
 <section class="section" id="packages">
   <div class="container">
     <h2 class="section-heading reveal">Open source. MIT licensed.</h2>
-    <p class="section-sub reveal">Four packages, one mission: make AI-generated UI not suck.</p>
+    <p class="section-sub reveal">Eight packages, one mission: make AI-generated UI not suck.</p>
 
     <div class="packages-grid">
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/mcp-server</div>
-        <p class="pkg-desc">MCP server exposing 10 design intelligence tools to AI assistants</p>
+        <p class="pkg-desc">MCP server exposing 14 design intelligence tools to AI assistants</p>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/essence-spec</div>
@@ -1624,6 +1641,22 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
       <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d4">
         <div class="pkg-name">@decantr/registry</div>
         <p class="pkg-desc">Content resolver for patterns, archetypes, themes, and recipes</p>
+      </div>
+      <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
+        <div class="pkg-name">@decantr/cli</div>
+        <p class="pkg-desc">Project scaffolding, mutation commands, brownfield analysis, and registry sync</p>
+      </div>
+      <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
+        <div class="pkg-name">@decantr/css</div>
+        <p class="pkg-desc">Framework-agnostic CSS atoms runtime for layout utilities</p>
+      </div>
+      <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
+        <div class="pkg-name">@decantr/ui</div>
+        <p class="pkg-desc">Signal-based UI framework with 100+ components and reactive state</p>
+      </div>
+      <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d4">
+        <div class="pkg-name">@decantr/ui-catalog</div>
+        <p class="pkg-desc">Component stories, pattern stories, and demo definitions</p>
       </div>
     </div>
   </div>
