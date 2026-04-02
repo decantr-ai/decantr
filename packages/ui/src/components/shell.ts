@@ -275,7 +275,7 @@ export const Shell = component<ShellProps>((props: ShellProps = {} as ShellProps
   // @ts-expect-error -- strict-mode fix (auto)
   const cfg = resolveShellConfig(configProp);
 
-  // Apply recipe-driven dimension overrides
+  // Apply theme-driven dimension overrides
   if (dimensions) {
     // @ts-expect-error -- strict-mode fix (auto)
     if (dimensions.nav) Object.assign(cfg.nav, dimensions.nav);

@@ -7,7 +7,7 @@ This is a placeholder for the unified Decantr Workbench tool.
 The workbench will include:
 
 - **Component Development Environment** - A Storybook-like tool for developing and testing UI components in isolation
-- **Design System Explorer** - Browse and visualize patterns, archetypes, and recipes from the Decantr registry
+- **Design System Explorer** - Browse and visualize patterns, archetypes, and themes from the Decantr registry
 - **Interactive Playground** - Live editor for experimenting with components, themes, and layouts
 
 ## Status

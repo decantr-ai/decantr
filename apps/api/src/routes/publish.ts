@@ -78,7 +78,7 @@ publishRoutes.post('/content', async (c) => {
   }
 
   // Validate essence content data if the type is an essence document
-  // (patterns, recipes, themes, etc. have their own data shapes, but
+  // (patterns, themes, etc. have their own data shapes, but
   // if the data looks like an essence document, validate it)
   if (body.data.version && (body.data.platform || body.data.dna)) {
     const validation = validateEssence(body.data);

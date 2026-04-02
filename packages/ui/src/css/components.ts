@@ -963,7 +963,7 @@ export const componentCSSMap = {
     '.d-shell-nav-rail .d-shell-nav-item{padding:var(--d-sp-2);justify-content:center}',
     '.d-shell-nav-hidden>.d-shell-nav{padding:0;overflow:hidden}',
     '.d-shell-nav-hidden .d-shell-nav-item{padding:0;overflow:hidden}',
-    // Nav style variants — recipe-driven visual diversity for nav items
+    // Nav style variants — theme-driven visual diversity for nav items
     '.d-shell-nav-style-pill.d-shell-nav-item-active{background:var(--d-primary-subtle);border-radius:var(--d-radius-full);padding-left:var(--d-sp-4);padding-right:var(--d-sp-4)}',
     '.d-shell-nav-style-underline.d-shell-nav-item-active{background:transparent;color:var(--d-primary);border-bottom:2px solid var(--d-primary);border-radius:0;padding-bottom:calc(var(--d-sp-2) - 2px)}',
     '.d-shell-nav-style-filled.d-shell-nav-item-active{background:var(--d-primary);color:var(--d-primary-fg)}',
