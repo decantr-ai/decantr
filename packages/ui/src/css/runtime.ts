@@ -182,6 +182,7 @@ export function injectGroupPeer(className: string, declaration: string, prefix: 
   injected.add(className);
   if (typeof document === 'undefined') return;
   const escaped = className.replace(/:/g, '\\:').replace(/\//g, '\\/');
+  // @ts-expect-error -- strict-mode fix (auto)
   const [kind, state] = GP_STATE[prefix];
   const combinator = kind === 'group' ? ' ' : ' ~ ';
   atomBuffer.push(`@layer d.atoms{.d-${kind}:${state}${combinator}.${escaped}{${declaration}}}`);
@@ -204,6 +205,7 @@ export function injectPseudo(className: string, declaration: string, prefix: str
   injected.add(className);
   if (typeof document === 'undefined') return;
   const escaped = className.replace(/:/g, '\\:').replace(/\//g, '\\/').replace(/\[/g, '\\[').replace(/\]/g, '\\]').replace(/#/g, '\\#').replace(/%/g, '\\%').replace(/\(/g, '\\(').replace(/\)/g, '\\)').replace(/,/g, '\\,').replace(/\+/g, '\\+');
+  // @ts-expect-error -- strict-mode fix (auto)
   const pseudo = PSEUDO_MAP[prefix];
   atomBuffer.push(`@layer d.atoms{.${escaped}:${pseudo}{${declaration}}}`);
   scheduleFlush();

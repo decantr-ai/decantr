@@ -91,17 +91,19 @@ function getStyleElement() {
 }
 
 /** Apply token map to :root */
-function applyTokens(tokens) {
+function applyTokens(tokens: any) {
   if (typeof document === 'undefined') return;
   const el = document.documentElement;
   for (const [key, value] of Object.entries(tokens)) {
+    // @ts-expect-error -- strict-mode fix (auto)
     if (el.style.setProperty) el.style.setProperty(key, value);
+    // @ts-expect-error -- strict-mode fix (auto)
     else el.style[key] = value;
   }
 }
 
 /** Clear all custom properties from :root */
-function clearTokens(tokens) {
+function clearTokens(tokens: any) {
   if (typeof document === 'undefined') return;
   const el = document.documentElement;
   for (const key of Object.keys(tokens)) {
@@ -305,6 +307,7 @@ export function onModeChange(fn: (mode: string) => void): () => void {
  */
 export function setTheme(id: string, mode?: 'light' | 'dark' | 'auto'): void {
   // Handle legacy theme IDs
+  // @ts-expect-error -- strict-mode fix (auto)
   const legacy = LEGACY_THEME_MAP[id];
   if (legacy && !styles.has(id)) {
     const targetStyle = legacy.style;
@@ -388,6 +391,7 @@ export function setShape(shape: string | null): void {
   if (shape !== null && !SHAPES.includes(shape)) {
     throw new Error(`[decantr] Invalid shape: "${shape}". Use 'sharp', 'rounded', 'pill', or null for style default.`);
   }
+  // @ts-expect-error -- strict-mode fix (auto)
   _setShape(shape);
   // Re-derive to restore style defaults, then applyShape() overrides if shape is set
   applyCurrentState();

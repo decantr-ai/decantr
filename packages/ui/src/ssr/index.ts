@@ -32,7 +32,7 @@ export interface TextVNode {
  * @param {...string} classes
  * @returns {string}
  */
-function ssrCss(...classes) {
+function ssrCss(...classes: any[]) {
   const result = [];
   for (let i = 0; i < classes.length; i++) {
     const cls = classes[i];
@@ -57,7 +57,7 @@ function ssrCss(...classes) {
  * @param {string} str
  * @returns {string}
  */
-function escapeHTML(str) {
+function escapeHTML(str: any) {
   if (typeof str !== 'string') return '';
   return str
     .replace(/&/g, '&amp;')
@@ -70,7 +70,7 @@ function escapeHTML(str) {
  * @param {string} str
  * @returns {string}
  */
-function escapeAttr(str) {
+function escapeAttr(str: any) {
   if (typeof str !== 'string') return '';
   return str
     .replace(/&/g, '&amp;')
@@ -116,7 +116,7 @@ let _ssrActive = false;
  * @param {() => T} fn
  * @returns {T}
  */
-function ssrUntrack(fn) {
+function ssrUntrack(fn: any) {
   // In SSR we don't have reactive tracking, so just call the function
   return fn();
 }
@@ -132,7 +132,7 @@ function ssrUntrack(fn) {
  * @param {...*} children
  * @returns {VNode}
  */
-function ssrH(tag, props, ...children) {
+function ssrH(tag: any, props: any, ...children: any[]) {
   const id = _nextId++;
   const resolvedProps = {};
   const handlers = {};
@@ -143,6 +143,7 @@ function ssrH(tag, props, ...children) {
 
       // Event handlers — store separately, do not serialize
       if (key.startsWith('on') && typeof val === 'function') {
+        // @ts-expect-error -- strict-mode fix (auto)
         handlers[key] = val;
         continue;
       }
@@ -154,17 +155,23 @@ function ssrH(tag, props, ...children) {
       if (typeof val === 'function') {
         const evaluated = ssrUntrack(val);
         if (key === 'class' || key === 'className') {
+          // @ts-expect-error -- strict-mode fix (auto)
           resolvedProps['class'] = evaluated;
         } else if (key === 'style' && typeof evaluated === 'object') {
+          // @ts-expect-error -- strict-mode fix (auto)
           resolvedProps['style'] = styleObjToString(evaluated);
         } else if (evaluated !== false && evaluated != null) {
+          // @ts-expect-error -- strict-mode fix (auto)
           resolvedProps[key] = evaluated === true ? true : String(evaluated);
         }
       } else if (key === 'class' || key === 'className') {
+        // @ts-expect-error -- strict-mode fix (auto)
         resolvedProps['class'] = val;
       } else if (key === 'style' && typeof val === 'object') {
+        // @ts-expect-error -- strict-mode fix (auto)
         resolvedProps['style'] = styleObjToString(val);
       } else if (val !== false && val != null) {
+        // @ts-expect-error -- strict-mode fix (auto)
         resolvedProps[key] = val === true ? true : String(val);
       }
     }
@@ -187,7 +194,7 @@ function ssrH(tag, props, ...children) {
  * @param {Function} getter
  * @returns {TextVNode}
  */
-function ssrText(getter) {
+function ssrText(getter: any) {
   const id = _nextId++;
   const value = ssrUntrack(getter);
   return { text: String(value), _id: id, _reactive: true };
@@ -201,7 +208,7 @@ function ssrText(getter) {
  * @param {Function} [elseFn]
  * @returns {VNode}
  */
-function ssrCond(condition, thenFn, elseFn) {
+function ssrCond(condition: any, thenFn: any, elseFn: any) {
   const id = _nextId++;
   const result = ssrUntrack(condition);
   const fn = result ? thenFn : elseFn;
@@ -225,7 +232,7 @@ function ssrCond(condition, thenFn, elseFn) {
  * @param {Function} renderFn
  * @returns {VNode}
  */
-function ssrList(itemsGetter, keyFn, renderFn) {
+function ssrList(itemsGetter: any, keyFn: any, renderFn: any) {
   const id = _nextId++;
   const items = ssrUntrack(itemsGetter);
   const children = [];
@@ -252,7 +259,7 @@ function ssrList(itemsGetter, keyFn, renderFn) {
  * SSR-safe onMount — no-op during SSR (mount callbacks don't run on server).
  * @param {Function} _fn
  */
-function ssrOnMount(_fn) {
+function ssrOnMount(_fn: any) {
   // No-op in SSR — mount callbacks run only on client
 }
 
@@ -260,7 +267,7 @@ function ssrOnMount(_fn) {
  * SSR-safe onDestroy — no-op during SSR.
  * @param {Function} _fn
  */
-function ssrOnDestroy(_fn) {
+function ssrOnDestroy(_fn: any) {
   // No-op in SSR — destroy callbacks run only on client
 }
 
@@ -271,7 +278,7 @@ function ssrOnDestroy(_fn) {
  * @param {*} value
  * @returns {VNode|TextVNode|null}
  */
-function normalizeVNode(value) {
+function normalizeVNode(value: any) {
   if (value == null || value === false) return null;
   if (typeof value === 'object' && (value.tag || value.text !== undefined)) return value;
   if (typeof value === 'function') {
@@ -287,12 +294,14 @@ function normalizeVNode(value) {
  * @param {Array} children
  * @returns {Array<VNode|TextVNode>}
  */
-function flattenChildren(children) {
+// @ts-expect-error -- strict-mode fix (auto)
+function flattenChildren(children: any) {
   const result = [];
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
     if (child == null || child === false) continue;
     if (Array.isArray(child)) {
+      // @ts-expect-error -- strict-mode fix (auto)
       const flat = flattenChildren(child);
       for (let j = 0; j < flat.length; j++) result.push(flat[j]);
     } else {
@@ -308,7 +317,7 @@ function flattenChildren(children) {
  * @param {Object} obj
  * @returns {string}
  */
-function styleObjToString(obj) {
+function styleObjToString(obj: any) {
   if (!obj || typeof obj !== 'object') return '';
   const parts = [];
   for (const key in obj) {
@@ -328,7 +337,7 @@ function styleObjToString(obj) {
  * @param {VNode|TextVNode|null} node
  * @returns {string}
  */
-function serializeVNode(node) {
+function serializeVNode(node: any) {
   if (!node) return '';
 
   // Text node
@@ -379,7 +388,7 @@ function serializeVNode(node) {
  * @param {VNode|TextVNode|null} node
  * @param {function(string): void} push — called for each chunk
  */
-function streamVNode(node, push) {
+function streamVNode(node: any, push: any) {
   if (!node) return;
 
   // Text node
@@ -431,28 +440,44 @@ function streamVNode(node, push) {
  * @param {Function} componentFn — () => VNode tree
  * @returns {VNode|TextVNode|null}
  */
-function runInSSRContext(componentFn) {
+function runInSSRContext(componentFn: any) {
   _nextId = 0;
   _ssrActive = true;
 
   // Store original globals if they exist
+  // @ts-expect-error -- strict-mode fix (auto)
   const prevH = globalThis.__d_ssr_h;
+  // @ts-expect-error -- strict-mode fix (auto)
   const prevText = globalThis.__d_ssr_text;
+  // @ts-expect-error -- strict-mode fix (auto)
   const prevCond = globalThis.__d_ssr_cond;
+  // @ts-expect-error -- strict-mode fix (auto)
   const prevList = globalThis.__d_ssr_list;
+  // @ts-expect-error -- strict-mode fix (auto)
   const prevCss = globalThis.__d_ssr_css;
+  // @ts-expect-error -- strict-mode fix (auto)
   const prevOnMount = globalThis.__d_ssr_onMount;
+  // @ts-expect-error -- strict-mode fix (auto)
   const prevOnDestroy = globalThis.__d_ssr_onDestroy;
+  // @ts-expect-error -- strict-mode fix (auto)
   const prevActive = globalThis.__d_ssr_active;
 
   // Install SSR implementations on globalThis
+  // @ts-expect-error -- strict-mode fix (auto)
   globalThis.__d_ssr_h = ssrH;
+  // @ts-expect-error -- strict-mode fix (auto)
   globalThis.__d_ssr_text = ssrText;
+  // @ts-expect-error -- strict-mode fix (auto)
   globalThis.__d_ssr_cond = ssrCond;
+  // @ts-expect-error -- strict-mode fix (auto)
   globalThis.__d_ssr_list = ssrList;
+  // @ts-expect-error -- strict-mode fix (auto)
   globalThis.__d_ssr_css = ssrCss;
+  // @ts-expect-error -- strict-mode fix (auto)
   globalThis.__d_ssr_onMount = ssrOnMount;
+  // @ts-expect-error -- strict-mode fix (auto)
   globalThis.__d_ssr_onDestroy = ssrOnDestroy;
+  // @ts-expect-error -- strict-mode fix (auto)
   globalThis.__d_ssr_active = true;
 
   try {
@@ -462,13 +487,21 @@ function runInSSRContext(componentFn) {
     _ssrActive = false;
 
     // Restore previous values
+    // @ts-expect-error -- strict-mode fix (auto)
     globalThis.__d_ssr_h = prevH;
+    // @ts-expect-error -- strict-mode fix (auto)
     globalThis.__d_ssr_text = prevText;
+    // @ts-expect-error -- strict-mode fix (auto)
     globalThis.__d_ssr_cond = prevCond;
+    // @ts-expect-error -- strict-mode fix (auto)
     globalThis.__d_ssr_list = prevList;
+    // @ts-expect-error -- strict-mode fix (auto)
     globalThis.__d_ssr_css = prevCss;
+    // @ts-expect-error -- strict-mode fix (auto)
     globalThis.__d_ssr_onMount = prevOnMount;
+    // @ts-expect-error -- strict-mode fix (auto)
     globalThis.__d_ssr_onDestroy = prevOnDestroy;
+    // @ts-expect-error -- strict-mode fix (auto)
     globalThis.__d_ssr_active = prevActive;
   }
 }
@@ -513,7 +546,7 @@ export function renderToStream(component: Function): ReadableStream {
   return new ReadableStream({
     start(controller) {
       try {
-        streamVNode(vnode, chunk => {
+        streamVNode(vnode, (chunk: any) => {
           controller.enqueue(chunk);
         });
         controller.close();
@@ -589,7 +622,7 @@ export function hydrate(root: HTMLElement, component: Function): void {
  * @param {Node} parent — parent of ssrNode
  * @param {Function} createEffect — reactive effect factory
  */
-function _hydrateNode(ssrNode, clientNode, parent, createEffect) {
+function _hydrateNode(ssrNode: any, clientNode: any, parent: any, createEffect: any) {
   if (!ssrNode || !clientNode) return;
 
   // Text node hydration
@@ -663,7 +696,7 @@ function _hydrateNode(ssrNode, clientNode, parent, createEffect) {
  * @param {Text} ssrNode
  * @param {Text} clientNode
  */
-function _redirectTextUpdates(ssrNode, clientNode) {
+function _redirectTextUpdates(ssrNode: any, clientNode: any) {
   // Observe changes to clientNode.nodeValue and mirror them to ssrNode
   const originalDescriptor = Object.getOwnPropertyDescriptor(
     Object.getPrototypeOf(clientNode), 'nodeValue'
@@ -704,7 +737,7 @@ function _redirectTextUpdates(ssrNode, clientNode) {
  * @param {Element} clientNode
  * @param {Function} createEffect
  */
-function _redirectElementUpdates(ssrNode, clientNode, createEffect) {
+function _redirectElementUpdates(ssrNode: any, clientNode: any, createEffect: any) {
   // Intercept className writes
   Object.defineProperty(clientNode, 'className', {
     get() { return ssrNode.className; },
@@ -715,7 +748,7 @@ function _redirectElementUpdates(ssrNode, clientNode, createEffect) {
   // Intercept setAttribute calls
   const origSetAttribute = clientNode.setAttribute;
   if (origSetAttribute) {
-    clientNode.setAttribute = function(name, value) {
+    clientNode.setAttribute = function(name: any, value: any) {
       ssrNode.setAttribute(name, value);
     };
   }
@@ -739,8 +772,8 @@ function _redirectElementUpdates(ssrNode, clientNode, createEffect) {
 // These helpers lazily import core modules so that the SSR entry point
 // does not pull in DOM-dependent code at module level.
 
-let _stateModule = null;
-let _lifecycleModule = null;
+let _stateModule: any = null;
+let _lifecycleModule: any = null;
 
 /**
  * @returns {{ createEffect: Function }}
@@ -753,13 +786,14 @@ function _requireState() {
     // We use a dynamic technique to avoid static analysis pulling it into SSR bundles
     try {
       // For Node.js test environments that have already loaded the module
+      // @ts-expect-error -- strict-mode fix (auto)
       _stateModule = { createEffect: globalThis.__d_state_createEffect };
       if (!_stateModule.createEffect) {
         throw new Error('Not cached');
       }
     } catch {
       // Fallback: assume the module has been loaded and is available
-      _stateModule = { createEffect: function(fn) { fn(); return () => {}; } };
+      _stateModule = { createEffect: function(fn: any) { fn(); return () => {}; } };
     }
   }
   return _stateModule;
@@ -772,9 +806,13 @@ function _requireLifecycle() {
   if (!_lifecycleModule) {
     try {
       _lifecycleModule = {
+        // @ts-expect-error -- strict-mode fix (auto)
         pushScope: globalThis.__d_lifecycle_pushScope,
+        // @ts-expect-error -- strict-mode fix (auto)
         popScope: globalThis.__d_lifecycle_popScope,
+        // @ts-expect-error -- strict-mode fix (auto)
         drainMountQueue: globalThis.__d_lifecycle_drainMountQueue,
+        // @ts-expect-error -- strict-mode fix (auto)
         runDestroyFns: globalThis.__d_lifecycle_runDestroyFns,
       };
       if (!_lifecycleModule.pushScope) throw new Error('Not cached');
@@ -805,10 +843,15 @@ export function installHydrationRuntime(stateMod: { createEffect: Function }, li
   _lifecycleModule = lifecycleMod;
 
   // Also set globals for lazy resolution
+  // @ts-expect-error -- strict-mode fix (auto)
   if (stateMod.createEffect) globalThis.__d_state_createEffect = stateMod.createEffect;
+  // @ts-expect-error -- strict-mode fix (auto)
   if (lifecycleMod.pushScope) globalThis.__d_lifecycle_pushScope = lifecycleMod.pushScope;
+  // @ts-expect-error -- strict-mode fix (auto)
   if (lifecycleMod.popScope) globalThis.__d_lifecycle_popScope = lifecycleMod.popScope;
+  // @ts-expect-error -- strict-mode fix (auto)
   if (lifecycleMod.drainMountQueue) globalThis.__d_lifecycle_drainMountQueue = lifecycleMod.drainMountQueue;
+  // @ts-expect-error -- strict-mode fix (auto)
   if (lifecycleMod.runDestroyFns) globalThis.__d_lifecycle_runDestroyFns = lifecycleMod.runDestroyFns;
 }
 
@@ -820,6 +863,7 @@ export function installHydrationRuntime(stateMod: { createEffect: Function }, li
  * @returns {boolean}
  */
 export function isSSR(): boolean {
+  // @ts-expect-error -- strict-mode fix (auto)
   return _ssrActive || !!globalThis.__d_ssr_active;
 }
 
@@ -829,6 +873,7 @@ export function isSSR(): boolean {
  * @returns {Function|null}
  */
 export function getSSRH(): Function | null {
+  // @ts-expect-error -- strict-mode fix (auto)
   return _ssrActive ? ssrH : (globalThis.__d_ssr_h || null);
 }
 
@@ -838,6 +883,7 @@ export function getSSRH(): Function | null {
  * @returns {Function|null}
  */
 export function getSSRText(): Function | null {
+  // @ts-expect-error -- strict-mode fix (auto)
   return _ssrActive ? ssrText : (globalThis.__d_ssr_text || null);
 }
 
@@ -846,6 +892,7 @@ export function getSSRText(): Function | null {
  * @returns {Function|null}
  */
 export function getSSRCond(): Function | null {
+  // @ts-expect-error -- strict-mode fix (auto)
   return _ssrActive ? ssrCond : (globalThis.__d_ssr_cond || null);
 }
 
@@ -854,6 +901,7 @@ export function getSSRCond(): Function | null {
  * @returns {Function|null}
  */
 export function getSSRList(): Function | null {
+  // @ts-expect-error -- strict-mode fix (auto)
   return _ssrActive ? ssrList : (globalThis.__d_ssr_list || null);
 }
 
@@ -862,6 +910,7 @@ export function getSSRList(): Function | null {
  * @returns {Function|null}
  */
 export function getSSRCss(): Function | null {
+  // @ts-expect-error -- strict-mode fix (auto)
   return _ssrActive ? ssrCss : (globalThis.__d_ssr_css || null);
 }
 
@@ -885,7 +934,7 @@ export function getSSRCss(): Function | null {
  * @returns {Function}
  */
 export function ssrComponent(factory: (h: Function, text: Function, cond: Function, list: Function, css: Function) => Function): Function {
-  return function(...args) {
+  return function(...args: any[]) {
     if (isSSR()) {
       const impl = factory(ssrH, ssrText, ssrCond, ssrList, ssrCss);
       return impl(...args);

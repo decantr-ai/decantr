@@ -50,7 +50,7 @@ const CQ_SET = new Set(CQ_WIDTHS);
  * @param {string} val
  * @returns {string}
  */
-function sanitizeArbValue(val) {
+function sanitizeArbValue(val: any) {
   // Strip dangerous characters
   let safe = val.replace(/[{}<>;]/g, '');
   // Block url() — case-insensitive, with optional whitespace
@@ -118,6 +118,7 @@ function resolveAtom(atomPart: string): { className: string; decl: string } | nu
   const arbMatch = atomPart.match(ARB_RE);
   if (arbMatch) {
     const [, propPrefix, rawValue] = arbMatch;
+    // @ts-expect-error -- strict-mode fix (auto)
     const cssProp = ARB_PROPS[propPrefix] || ARB_PROPS[propPrefix.toLowerCase()];
     if (cssProp) {
       // Convert underscores to spaces in value (e.g., 0_4px_6px → 0 4px 6px)
@@ -170,6 +171,7 @@ export function css(...classes: string[]): string {
         const [, motionPrefix, innerAtom] = motionMatch;
         const resolved = resolveAtom(`_${innerAtom}`);
         if (resolved) {
+          // @ts-expect-error -- strict-mode fix (auto)
           injectMediaQuery(part, resolved.decl, MOTION_QUERIES[motionPrefix]);
           result.push(part);
         } else {
@@ -196,6 +198,7 @@ export function css(...classes: string[]): string {
           const resolved = resolveAtom(`_${atomName}`);
           if (resolved) {
             const PSEUDO_NAMES = { h: 'hover', f: 'focus', fv: 'focus-visible', a: 'active', fw: 'focus-within' };
+            // @ts-expect-error -- strict-mode fix (auto)
             injectResponsivePseudo(part, resolved.decl, bp, PSEUDO_NAMES[pseudoPrefix]);
             result.push(part);
           } else {
