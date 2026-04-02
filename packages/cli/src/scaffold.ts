@@ -726,38 +726,37 @@ input, button, textarea, select {
 }
 
 /**
- * Generate a dedicated decorators.md context file with full decorator table and usage examples.
+ * Generate a dedicated treatments.md context file with base treatments and recipe decorators.
  */
-function generateDecoratorsContext(recipeData: RecipeData | undefined, recipeName: string): string {
+function generateTreatmentsContext(recipeData: RecipeData | undefined, recipeName: string): string {
   const lines: string[] = [];
-  lines.push(`# Recipe Decorators: ${recipeName}`);
+  lines.push(`# Visual Treatments: ${recipeName}`);
   lines.push('');
-  lines.push('## Available Classes');
+  lines.push('## Base Treatments');
+  lines.push('');
+  lines.push('d-interactive, d-surface, d-data, d-control, d-section, d-annotation — see DECANTR.md for usage.');
   lines.push('');
 
   if (recipeData?.decorators && Object.keys(recipeData.decorators).length > 0) {
-    lines.push('| Decorator | Description |');
-    lines.push('|-----------|-------------|');
+    lines.push(`## Recipe Decorators (${recipeName}-specific)`);
+    lines.push('');
+    lines.push('| Class | Use for |');
+    lines.push('|-------|---------|');
     for (const [name, description] of Object.entries(recipeData.decorators)) {
-      lines.push(`| ${name} | ${description} |`);
+      const useFor = description.split('.')[0].trim();
+      lines.push(`| ${name} | ${useFor} |`);
     }
-  } else {
-    lines.push('No decorators defined.');
+    lines.push('');
   }
 
+  lines.push('## Composition');
   lines.push('');
-  lines.push('## Usage');
-  lines.push('');
-  lines.push('Decorators are plain CSS class names from `src/styles/decorators.css`. Combine with atoms:');
-  lines.push('');
+  lines.push('Atoms + treatment + recipe decorator:');
   lines.push('```tsx');
-  lines.push("<div className={css('_flex _col _gap4') + ' " + recipeName + "-card'}>");
-  lines.push("  <pre className={css('_p3') + ' " + recipeName + "-code'}>{code}</pre>");
-  lines.push('</div>');
+  lines.push(`css('_flex _col _gap4') + ' d-surface'`);
   lines.push('```');
   lines.push('');
-  lines.push('Atoms use `css()` function. Decorators are plain class strings. Combined via string concatenation.');
-  lines.push('');
+  lines.push('Atoms use `css()` function. Treatments and recipe decorators are plain class strings.');
 
   return lines.join('\n');
 }
@@ -2293,9 +2292,9 @@ export async function refreshDerivedFiles(
 
   const cssFiles = [tokensPath, treatmentsPath, globalPath];
 
-  // ── Generate decorators.md context file (full table + usage examples) ──
-  const decoratorsMdPath = join(contextDir, 'decorators.md');
-  writeFileSync(decoratorsMdPath, generateDecoratorsContext(recipeData, recipeName));
+  // ── Generate treatments.md context file (base treatments + recipe decorators) ──
+  const treatmentsMdPath = join(contextDir, 'treatments.md');
+  writeFileSync(treatmentsMdPath, generateTreatmentsContext(recipeData, recipeName));
 
   // ── Generate DECANTR.md ──
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
@@ -2304,7 +2303,7 @@ export async function refreshDerivedFiles(
   // ── Generate essence-summary.md only for V3.0 flat projects ──
   // For V3.1 (sectioned), scaffold.md covers the same overview — skip to save tokens.
   const hasSections = essence.blueprint.sections && essence.blueprint.sections.length > 0;
-  const contextFiles: string[] = [decoratorsMdPath];
+  const contextFiles: string[] = [treatmentsMdPath];
 
   if (!hasSections) {
     const summaryPath = join(contextDir, 'essence-summary.md');
@@ -2864,13 +2863,11 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push(`**Theme tokens:** see \`src/styles/tokens.css\` — use \`var(--d-primary)\`, \`var(--d-bg)\`, etc.`);
   lines.push('');
 
-  // Decorators (compact reference with usage pattern; full table in .decantr/context/decorators.md)
+  // Visual Treatments (base treatments + recipe decorators; full table in .decantr/context/treatments.md)
+  lines.push('**Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).');
   if (decorators.length > 0) {
-    const names = decorators.map(d => `\`${d.name}\``).join(', ');
-    lines.push(`**Decorators:** ${names} (see \`src/styles/decorators.css\`)`);
-    lines.push("Usage: `className={css('_flex _col') + ' carbon-card'}` — atoms via css(), decorators as plain class strings.");
-  } else {
-    lines.push('**Decorators:** none defined.');
+    const names = decorators.map(d => d.name).join(', ');
+    lines.push(`**Recipe decorators:** ${names}`);
   }
   lines.push('');
   if (recipeHints) {

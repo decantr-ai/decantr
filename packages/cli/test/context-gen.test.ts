@@ -66,13 +66,12 @@ describe('generateSectionContext', () => {
     expect(result).not.toContain('--d-primary: #6366f1');
   });
 
-  it('references decorators with compact one-line list and usage hint', () => {
+  it('references visual treatments and recipe decorators', () => {
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('`surface-card`');
-    expect(result).toContain('`glass-panel`');
-    expect(result).toContain('(see `src/styles/decorators.css`)');
-    expect(result).toContain("Usage: `className={css('_flex _col') + ' carbon-card'}`");
+    expect(result).toContain('**Visual Treatments:** All 6 base treatments available');
+    expect(result).toContain('see DECANTR.md for usage');
+    expect(result).toContain('**Recipe decorators:** surface-card, glass-panel');
     // Should NOT contain the full table
     expect(result).not.toContain('| Decorator | Description |');
     expect(result).not.toContain('| surface-card | Surface background with border |');
