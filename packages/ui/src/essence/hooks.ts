@@ -1,4 +1,4 @@
-import type { GuardMode, DensityLevel, ThemeStyle, ThemeMode, ThemeShape, GuardViolation } from '@decantr/essence-spec';
+import type { GuardMode, DensityLevel, ThemeStyle, ThemeMode, ThemeShape } from '@decantr/essence-spec';
 import { EssenceContext, type EssenceContextValue } from './context.js';
 
 export function useEssence(): EssenceContextValue {
@@ -30,8 +30,4 @@ export function useDensity(): DensityLevel {
 
 export function useGuardMode(): GuardMode {
   return EssenceContext.consume().guardMode;
-}
-
-export function useGuard(): (context: Record<string, unknown>) => GuardViolation[] {
-  return EssenceContext.consume().validateGuard;
 }

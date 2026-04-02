@@ -1,7 +1,6 @@
 import { component } from '../runtime/component.js';
 import { h } from '../runtime/index.js';
-import type { EssenceV3, GuardContext } from '@decantr/essence-spec';
-import { evaluateGuard } from '@decantr/essence-spec';
+import type { EssenceV3 } from '@decantr/essence-spec';
 import { EssenceContext, type EssenceContextValue } from './context.js';
 import { applyTokens } from './tokens.js';
 import type { Child } from '../types.js';
@@ -18,7 +17,8 @@ export const EssenceProvider = component<EssenceProviderProps>((props, ...childr
   const parent = EssenceContext.consume();
   const essence = props.essence || parent.essence;
 
-  // Build context value from essence or merge overrides onto parent
+  // Build context value from essence DNA — no runtime guard validation
+  // Guard validation belongs in the CLI (decantr check) and vite-plugin, not the browser
   const value: EssenceContextValue = essence
     ? {
         essence,
@@ -34,7 +34,6 @@ export const EssenceProvider = component<EssenceProviderProps>((props, ...childr
           essence.meta.guard.blueprint_enforcement ?? parent.blueprintEnforcement,
         personality: essence.dna.personality ?? parent.personality,
         wcagLevel: essence.dna.accessibility.wcag_level ?? parent.wcagLevel,
-        validateGuard: (ctx) => evaluateGuard(essence, ctx as GuardContext),
       }
     : { ...parent, ...props.overrides };
 

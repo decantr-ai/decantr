@@ -1,4 +1,9 @@
 import { createContext } from '../state/index.js';
+/**
+ * Essence DNA types — imported as type-only so @decantr/essence-spec
+ * is NOT bundled into browser code. Guard validation runs in the CLI
+ * and vite-plugin, not in the browser.
+ */
 import type {
   EssenceV3,
   GuardMode,
@@ -6,7 +11,6 @@ import type {
   ThemeStyle,
   ThemeMode,
   ThemeShape,
-  GuardViolation,
 } from '@decantr/essence-spec';
 
 export interface EssenceContextValue {
@@ -24,9 +28,6 @@ export interface EssenceContextValue {
   blueprintEnforcement: 'warn' | 'off';
   personality: string[];
   wcagLevel: string;
-
-  /** Guard validation function bound to this essence */
-  validateGuard: (context: Record<string, unknown>) => GuardViolation[];
 }
 
 export const EssenceContext = createContext<EssenceContextValue>({
@@ -41,5 +42,4 @@ export const EssenceContext = createContext<EssenceContextValue>({
   blueprintEnforcement: 'off',
   personality: [],
   wcagLevel: 'AA',
-  validateGuard: () => [],
 });

@@ -48,13 +48,13 @@
   "author": "David Aimi",
   "license": "MIT",
   "dependencies": {
-    "@decantr/essence-spec": "workspace:*",
     "@decantr/core": "workspace:*"
   },
   "peerDependencies": {
     "@decantr/css": "workspace:*"
   },
   "devDependencies": {
+    "@decantr/essence-spec": "workspace:*",
     "@vitest/coverage-v8": "^4.1.2",
     "jsdom": "^26.1.0",
     "tsup": "^8.0.0",

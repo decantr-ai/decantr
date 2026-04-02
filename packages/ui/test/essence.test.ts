@@ -1,11 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { createRoot } from '../src/state/scheduler.js';
-import { createContext } from '../src/state/index.js';
 import type { EssenceContextValue } from '../src/essence/context.js';
 import { EssenceContext } from '../src/essence/context.js';
-import { useEssence, useDNA, useDensity, useGuardMode, useGuard } from '../src/essence/hooks.js';
-import { handleViolations, guardWarn, guardError } from '../src/essence/guard.js';
-import type { GuardViolation } from '@decantr/essence-spec';
+import { useEssence, useDNA, useDensity, useGuardMode } from '../src/essence/hooks.js';
 
 // ─── EssenceContext defaults ──────────────────────────────────
 
@@ -25,7 +22,6 @@ describe('EssenceContext', () => {
     expect(ctx.blueprintEnforcement).toBe('off');
     expect(ctx.personality).toEqual([]);
     expect(ctx.wcagLevel).toBe('AA');
-    expect(ctx.validateGuard({})).toEqual([]);
   });
 });
 
@@ -47,7 +43,6 @@ describe('EssenceProvider context', () => {
         blueprintEnforcement: 'warn',
         personality: ['bold'],
         wcagLevel: 'AAA',
-        validateGuard: () => [],
       };
       EssenceContext.Provider(value);
       childCtx = EssenceContext.consume();
@@ -74,7 +69,6 @@ describe('EssenceProvider context', () => {
         blueprintEnforcement: 'off',
         personality: [],
         wcagLevel: 'AA',
-        validateGuard: () => [],
       };
       EssenceContext.Provider(parentValue);
       parentCtx = EssenceContext.consume();
@@ -115,7 +109,6 @@ describe('useEssence', () => {
         blueprintEnforcement: 'off',
         personality: ['playful'],
         wcagLevel: 'A',
-        validateGuard: () => [],
       };
       EssenceContext.Provider(value);
       result = useEssence();
@@ -142,7 +135,6 @@ describe('useDNA', () => {
         blueprintEnforcement: 'warn',
         personality: ['elegant'],
         wcagLevel: 'AA',
-        validateGuard: () => [],
       };
       EssenceContext.Provider(value);
       dna = useDNA();
@@ -174,7 +166,6 @@ describe('useDensity', () => {
         blueprintEnforcement: 'off',
         personality: [],
         wcagLevel: 'AA',
-        validateGuard: () => [],
       };
       EssenceContext.Provider(value);
       density = useDensity();
@@ -199,125 +190,11 @@ describe('useGuardMode', () => {
         blueprintEnforcement: 'warn',
         personality: [],
         wcagLevel: 'AA',
-        validateGuard: () => [],
       };
       EssenceContext.Provider(value);
       mode = useGuardMode();
     });
     expect(mode).toBe('strict');
-  });
-});
-
-describe('useGuard', () => {
-  it('returns the validateGuard function from context', () => {
-    const mockValidate = vi.fn(() => []);
-    let validate!: ReturnType<typeof useGuard>;
-    createRoot(() => {
-      const value: EssenceContextValue = {
-        essence: null,
-        style: 'clean',
-        mode: 'dark',
-        shape: 'sharp',
-        density: 'comfortable',
-        contentGap: '4',
-        guardMode: 'strict',
-        dnaEnforcement: 'error',
-        blueprintEnforcement: 'warn',
-        personality: [],
-        wcagLevel: 'AA',
-        validateGuard: mockValidate,
-      };
-      EssenceContext.Provider(value);
-      validate = useGuard();
-    });
-    validate({ pageId: 'home' });
-    expect(mockValidate).toHaveBeenCalledWith({ pageId: 'home' });
-  });
-});
-
-// ─── Guard utilities ──────────────────────────────────────────
-
-describe('guardWarn', () => {
-  it('logs a console warning', () => {
-    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const violation: GuardViolation = {
-      rule: 'style',
-      severity: 'warning',
-      message: 'Style mismatch',
-      suggestion: 'Use auradecantism',
-      layer: 'dna',
-    };
-    guardWarn(violation);
-    expect(spy).toHaveBeenCalledWith('[decantr guard] style: Style mismatch');
-    expect(spy).toHaveBeenCalledWith('  suggestion: Use auradecantism');
-    spy.mockRestore();
-  });
-});
-
-describe('guardError', () => {
-  it('throws an error', () => {
-    const violation: GuardViolation = {
-      rule: 'density',
-      severity: 'error',
-      message: 'Density violation',
-      layer: 'dna',
-    };
-    expect(() => guardError(violation)).toThrow('[decantr guard] density: Density violation');
-  });
-});
-
-describe('handleViolations', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('calls console.warn for DNA warnings', () => {
-    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const violations: GuardViolation[] = [
-      { rule: 'style', severity: 'warning', message: 'Style mismatch', layer: 'dna' },
-    ];
-    handleViolations(violations, 'warn', 'off');
-    expect(spy).toHaveBeenCalledWith('[decantr guard] style: Style mismatch');
-    spy.mockRestore();
-  });
-
-  it('throws for DNA errors', () => {
-    const violations: GuardViolation[] = [
-      { rule: 'style', severity: 'error', message: 'Style violation', layer: 'dna' },
-    ];
-    expect(() => handleViolations(violations, 'error', 'off')).toThrow(
-      '[decantr guard] style: Style violation',
-    );
-  });
-
-  it('does nothing when dnaEnforcement is off', () => {
-    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const violations: GuardViolation[] = [
-      { rule: 'style', severity: 'warning', message: 'Style mismatch', layer: 'dna' },
-    ];
-    handleViolations(violations, 'off', 'off');
-    expect(spy).not.toHaveBeenCalled();
-    spy.mockRestore();
-  });
-
-  it('warns for blueprint violations when enforcement is warn', () => {
-    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const violations: GuardViolation[] = [
-      { rule: 'structure', severity: 'warning', message: 'Missing page', layer: 'blueprint' },
-    ];
-    handleViolations(violations, 'off', 'warn');
-    expect(spy).toHaveBeenCalledWith('[decantr guard] structure: Missing page');
-    spy.mockRestore();
-  });
-
-  it('ignores blueprint violations when enforcement is off', () => {
-    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const violations: GuardViolation[] = [
-      { rule: 'structure', severity: 'warning', message: 'Missing page', layer: 'blueprint' },
-    ];
-    handleViolations(violations, 'off', 'off');
-    expect(spy).not.toHaveBeenCalled();
-    spy.mockRestore();
   });
 });
 
@@ -351,7 +228,6 @@ describe('applyTokens', () => {
       blueprintEnforcement: 'off',
       personality: [],
       wcagLevel: 'AA',
-      validateGuard: () => [],
     };
 
     applyTokens(ctx);
