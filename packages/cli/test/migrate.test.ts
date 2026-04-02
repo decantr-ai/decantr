@@ -19,9 +19,8 @@ describe('migrateEssenceFile', () => {
     version: '2.0.0',
     archetype: 'dashboard',
     theme: {
-      style: 'luminarum',
+      id: 'luminarum',
       mode: 'dark',
-      recipe: 'luminarum',
       shape: 'rounded',
     },
     personality: ['professional', 'clean'],
@@ -31,7 +30,7 @@ describe('migrateEssenceFile', () => {
       { id: 'settings', shell: 'sidebar-main', layout: ['form'] },
     ],
     features: ['auth', 'search'],
-    guard: { enforce_style: true, enforce_recipe: true, mode: 'guided' },
+    guard: { enforce_style: true, mode: 'guided' },
     density: { level: 'comfortable', content_gap: '_gap4' },
     target: 'react',
   };
@@ -51,7 +50,7 @@ describe('migrateEssenceFile', () => {
     expect(migrated.dna).toBeDefined();
     expect(migrated.blueprint).toBeDefined();
     expect(migrated.meta).toBeDefined();
-    expect(migrated.dna.theme.style).toBe('luminarum');
+    expect(migrated.dna.theme.id).toBe('luminarum');
     expect(migrated.blueprint.pages).toHaveLength(2);
     expect(migrated.meta.archetype).toBe('dashboard');
   });
@@ -75,7 +74,7 @@ describe('migrateEssenceFile', () => {
     const v3Essence = {
       version: '3.0.0',
       dna: {
-        theme: { style: 'test', mode: 'dark', recipe: 'test' },
+        theme: { id: 'test', mode: 'dark' },
         spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
         typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
         color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },

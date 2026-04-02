@@ -26,7 +26,7 @@ const DEFAULT_API_URL = 'https://api.decantr.ai/v1';
 /**
  * Content types that support custom overrides in .decantr/custom/
  */
-const ALL_CONTENT_TYPES = ['themes', 'patterns', 'recipes', 'blueprints', 'archetypes', 'shells'] as const;
+const ALL_CONTENT_TYPES = ['themes', 'patterns', 'blueprints', 'archetypes', 'shells'] as const;
 
 /**
  * Load data from cache at .decantr/cache/{namespace}/{type}/
@@ -279,14 +279,6 @@ export class RegistryClient {
 
   async fetchShell(id: string): Promise<FetchResult<RegistryItem> | null> {
     return this.fetchContentItem('shells', id);
-  }
-
-  async fetchRecipes(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
-    return this.fetchContentList('recipes');
-  }
-
-  async fetchRecipe(id: string): Promise<FetchResult<RegistryItem> | null> {
-    return this.fetchContentItem('recipes', id);
   }
 
   /**

@@ -19,7 +19,7 @@ Auto-generated summary of `decantr.essence.json`.
 |----------|-------|
 | Theme | {{THEME_STYLE}} |
 | Mode | {{THEME_MODE}} |
-| Recipe | {{THEME_RECIPE}} |
+| Theme ID | {{THEME_RECIPE}} |
 | Shape | {{SHAPE}} |
 
 ## Structure

@@ -240,7 +240,7 @@ export async function runInteractivePrompts(
     'Guard enforcement level',
     [
       { value: 'creative', label: 'creative', description: 'Advisory only (new projects)' },
-      { value: 'guided', label: 'guided', description: 'Style, structure, recipe enforced' },
+      { value: 'guided', label: 'guided', description: 'Style, structure, density enforced' },
       { value: 'strict', label: 'strict', description: 'All 5 rules enforced exactly' },
     ],
     detected.existingEssence ? 1 : 2 // Default to guided for existing, strict for new

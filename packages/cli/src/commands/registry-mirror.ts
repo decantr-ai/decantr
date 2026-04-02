@@ -11,7 +11,7 @@ const YELLOW = '\x1b[33m';
 const RESET = '\x1b[0m';
 
 const ALL_CONTENT_TYPES: ApiContentType[] = [
-  'patterns', 'archetypes', 'themes', 'recipes', 'blueprints', 'shells',
+  'patterns', 'archetypes', 'themes', 'blueprints', 'shells',
 ];
 
 interface MirrorManifest {

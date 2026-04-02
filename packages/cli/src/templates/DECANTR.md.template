@@ -18,7 +18,7 @@ Decantr is a design intelligence layer that sits between you (the AI code genera
 
 DNA defines the foundational design rules. **DNA violations are errors** -- they must never happen without updating the essence first.
 
-DNA axioms include: Theme (style, mode, recipe, shape), Spacing (density, content gap), Typography (scale, weights), Color (palette, accent count), Radius (philosophy, base), Elevation (system, levels), Motion (preference, reduce-motion), Accessibility (WCAG level, focus-visible), and Personality traits.
+DNA axioms include: Theme (id, mode, shape), Spacing (density, content gap), Typography (scale, weights), Color (palette, accent count), Radius (philosophy, base), Elevation (system, levels), Motion (preference, reduce-motion), Accessibility (WCAG level, focus-visible), and Personality traits.
 
 ### Blueprint (Structural Layout)
 
@@ -33,13 +33,12 @@ Blueprint includes: Sections (grouped by archetype with role, shell, and scoped 
 | # | Rule | Layer | What It Checks |
 |---|------|-------|----------------|
 | 1 | Style | DNA (error) | Code uses the theme specified in DNA |
-| 2 | Recipe | DNA (error) | Decorations match the DNA recipe |
-| 3 | Density | DNA (error) | Spacing follows the density profile |
-| 4 | Accessibility | DNA (error) | Code meets the WCAG level |
-| 5 | Theme-mode | DNA (error) | Theme/mode combination is valid |
-| 6 | Structure | Blueprint (warn) | Pages exist in the blueprint sections |
-| 7 | Layout | Blueprint (warn) | Pattern order matches the layout spec |
-| 8 | Pattern existence | Blueprint (warn) | Patterns referenced exist in the registry |
+| 2 | Density | DNA (error) | Spacing follows the density profile |
+| 3 | Accessibility | DNA (error) | Code meets the WCAG level |
+| 4 | Theme-mode | DNA (error) | Theme/mode combination is valid |
+| 5 | Structure | Blueprint (warn) | Pages exist in the blueprint sections |
+| 6 | Layout | Blueprint (warn) | Pattern order matches the layout spec |
+| 7 | Pattern existence | Blueprint (warn) | Patterns referenced exist in the registry |
 
 ### Enforcement Tiers
 
@@ -96,7 +95,7 @@ Run `decantr check` to validate code against the spec.
 decantr status          # Project health
 decantr check           # Detect drift violations
 decantr get pattern X   # Fetch a pattern spec from registry
-decantr get recipe X    # Fetch recipe decorators
+decantr get theme X     # Fetch theme details and decorators
 decantr search <query>  # Search the registry
 ```
 

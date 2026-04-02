@@ -7,7 +7,7 @@ import { RegistryAPIClient } from '@decantr/registry';
 import type { ApiContentType, ComposeEntry } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
-import { scaffoldProject, scaffoldMinimal, refreshDerivedFiles, composeArchetypes, composeSections, generateSectionContext, generateScaffoldContext, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type RecipeData, type LayoutItem, type ZoneInput, type TopologyData, type ComposeSectionsResult, type PatternSpecSummary, type BlueprintOverrides, type RefreshResult } from './scaffold.js';
+import { scaffoldProject, scaffoldMinimal, refreshDerivedFiles, composeArchetypes, composeSections, generateSectionContext, generateScaffoldContext, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type LayoutItem, type ZoneInput, type TopologyData, type ComposeSectionsResult, type PatternSpecSummary, type BlueprintOverrides, type RefreshResult } from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
   createTheme,
@@ -201,7 +201,7 @@ async function cmdSuggest(query: string, type?: string) {
 }
 
 async function cmdGet(type: string, id: string) {
-  const validTypes = ['pattern', 'archetype', 'recipe', 'theme', 'blueprint', 'shell'] as const;
+  const validTypes = ['pattern', 'archetype', 'theme', 'blueprint', 'shell'] as const;
   if (!validTypes.includes(type as any)) {
     console.error(error(`Invalid type "${type}". Must be one of: ${validTypes.join(', ')}`));
     process.exitCode = 1;
@@ -212,7 +212,6 @@ async function cmdGet(type: string, id: string) {
   const typeMap: Record<string, string> = {
     pattern: 'patterns',
     archetype: 'archetypes',
-    recipe: 'recipes',
     theme: 'themes',
     blueprint: 'blueprints',
     shell: 'shells',
@@ -359,7 +358,7 @@ async function cmdValidate(path?: string) {
 }
 
 async function cmdList(type: string) {
-  const validTypes = ['patterns', 'archetypes', 'recipes', 'themes', 'blueprints', 'shells'] as const;
+  const validTypes = ['patterns', 'archetypes', 'themes', 'blueprints', 'shells'] as const;
   if (!validTypes.includes(type as any)) {
     console.error(error(`Invalid type "${type}". Must be one of: ${validTypes.join(', ')}`));
     process.exitCode = 1;
@@ -526,9 +525,6 @@ async function cmdInit(args: InitArgs) {
     options = await runInteractivePrompts(detected, archetypes, blueprints, themes);
   }
 
-  // Track blueprint recipe name if specified
-  let blueprintRecipeName: string | undefined;
-
   // Topology markdown (populated when blueprint has composition)
   let topologyMarkdown = '';
 
@@ -557,7 +553,7 @@ async function cmdInit(args: InitArgs) {
         description?: string;
         compose?: ComposeEntry[];
         features?: string[];
-        theme?: { style?: string; mode?: string; recipe?: string; shape?: string };
+        theme?: { style?: string; id?: string; mode?: string; shape?: string };
         personality?: string | string[];
         routes?: Record<string, { shell?: string; archetype?: string; page?: string }>;
         overrides?: {
@@ -573,8 +569,8 @@ async function cmdInit(args: InitArgs) {
 
       // Apply blueprint theme settings (unless explicitly overridden by flags)
       if (blueprint.theme) {
-        if (blueprint.theme.style && options.theme === 'luminarum') {
-          options.theme = blueprint.theme.style;
+        if ((blueprint.theme.id || blueprint.theme.style) && options.theme === 'luminarum') {
+          options.theme = blueprint.theme.id || blueprint.theme.style!;
         }
         if (blueprint.theme.mode && options.mode === 'dark') {
           options.mode = blueprint.theme.mode as 'dark' | 'light' | 'auto';
@@ -591,9 +587,6 @@ async function cmdInit(args: InitArgs) {
           ? [blueprint.personality]
           : blueprint.personality;
       }
-
-      // Remember the blueprint recipe name for recipe fetch
-      blueprintRecipeName = blueprint.theme?.recipe;
 
       if (blueprint.compose && blueprint.compose.length > 0) {
         // Fetch all archetypes in parallel
@@ -732,60 +725,32 @@ async function cmdInit(args: InitArgs) {
     }
   }
 
-  // Fetch theme data for DECANTR.md quick reference and CSS generation
+  // Fetch theme data — single fetch, theme now contains all visual treatment data
   let themeData: ThemeData | undefined;
-  let recipeData: RecipeData | undefined;
 
   if (options.theme) {
     const themeResult = await registryClient.fetchTheme(options.theme);
     if (themeResult) {
       const rawTheme = themeResult.data as Record<string, unknown>;
-      const theme = (rawTheme.data ?? rawTheme) as {
-        seed?: Record<string, string>;
-        palette?: Record<string, Record<string, string>>;
-        tokens?: { base?: Record<string, string> };
-        decorators?: Record<string, string>;
-        cvd_support?: string[];
-        typography_hints?: { scale?: string; heading_weight?: number; body_weight?: number };
-        motion_hints?: { preference?: string; reduce_motion_default?: boolean };
-      };
+      const theme = (rawTheme.data ?? rawTheme) as Record<string, any>;
       themeData = {
         seed: theme.seed,
         palette: theme.palette,
         tokens: theme.tokens,
         cvd_support: theme.cvd_support,
-        typography_hints: theme.typography_hints,
-        motion_hints: theme.motion_hints,
+        typography: theme.typography,
+        motion: theme.motion,
+        decorators: theme.decorators,
+        treatments: theme.treatments,
+        spatial: theme.spatial,
+        radius: theme.radius,
+        shell: theme.shell,
+        effects: theme.effects,
+        compositions: theme.compositions,
+        pattern_preferences: theme.pattern_preferences,
       };
-      // Some themes include decorators (recipe data)
-      if (theme.decorators) {
-        recipeData = { decorators: theme.decorators };
-      }
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch theme "${options.theme}". Using defaults.${RESET}`);
-    }
-
-    // Fetch recipe data (recipe is authoritative for decorators, spatial_hints, radius_hints)
-    const recipeName = blueprintRecipeName || options.theme;
-    const recipeResult = await registryClient.fetchRecipe(recipeName);
-    if (process.env.DECANTR_DEBUG && recipeResult) {
-      const dbg = recipeResult.data as Record<string, unknown>;
-      console.error(`  [debug] recipe source: ${recipeResult.source.type}, keys: ${Object.keys(dbg).join(',')}, has .data: ${'data' in dbg}, has .decorators: ${'decorators' in dbg}, inner.decorators: ${!!(dbg.data as any)?.decorators}`);
-    }
-    if (recipeResult) {
-      const rawRecipe = recipeResult.data as Record<string, unknown>;
-      const recipe = (rawRecipe.data ?? rawRecipe) as {
-        decorators?: Record<string, string>;
-        spatial_hints?: { density_bias?: number; content_gap_shift?: number; section_padding?: string | null; card_wrapping?: string; surface_override?: string };
-        radius_hints?: { philosophy: string; base: number };
-        treatment_overrides?: Record<string, Record<string, string>>;
-      };
-      recipeData = {
-        decorators: recipe.decorators || recipeData?.decorators,
-        spatial_hints: recipe.spatial_hints,
-        radius_hints: recipe.radius_hints,
-        treatment_overrides: recipe.treatment_overrides,
-      };
     }
   }
 
@@ -800,7 +765,6 @@ async function cmdInit(args: InitArgs) {
     archetypeData,
     registrySource as 'api' | 'cache',
     themeData,
-    recipeData,
     topologyMarkdown,
     // V3.1 composition data:
     composedSections,
@@ -1192,7 +1156,7 @@ ${BOLD}Examples:${RESET}
     case 'switch': {
       const name = args[1];
       if (!name) {
-        console.error(error('Usage: decantr theme switch <themeName> [--recipe <r>] [--shape <s>] [--mode <m>]'));
+        console.error(error('Usage: decantr theme switch <themeName> [--shape <s>] [--mode <m>]'));
         process.exitCode = 1;
         return;
       }
@@ -1265,7 +1229,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('list')}        List items by type
   ${cyan('validate')}    Validate essence file (v2 and v3)
   ${cyan('theme')}       Manage custom themes (create, list, validate, delete, import)
-  ${cyan('create')}      Create a custom content item (pattern, recipe, theme, etc.)
+  ${cyan('create')}      Create a custom content item (pattern, theme, blueprint, etc.)
   ${cyan('publish')}     Publish a custom content item to the community registry
   ${cyan('login')}       Authenticate with the Decantr registry
   ${cyan('logout')}      Remove stored credentials
@@ -1525,7 +1489,7 @@ async function main() {
       const name = args[2];
       if (!type || !name) {
         console.error(error('Usage: decantr create <type> <name>'));
-        console.error(dim('Types: pattern, recipe, theme, blueprint, archetype, shell'));
+        console.error(dim('Types: pattern, theme, blueprint, archetype, shell'));
         process.exitCode = 1;
         break;
       }
@@ -1538,7 +1502,7 @@ async function main() {
       const name = args[2];
       if (!type || !name) {
         console.error(error('Usage: decantr publish <type> <name>'));
-        console.error(dim('Types: pattern, recipe, theme, blueprint, archetype, shell'));
+        console.error(dim('Types: pattern, theme, blueprint, archetype, shell'));
         process.exitCode = 1;
         break;
       }

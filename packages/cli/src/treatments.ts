@@ -2,17 +2,17 @@ import { generateDecoratorRule } from './scaffold.js';
 
 /**
  * Generate CSS for the 6 universal visual treatment categories,
- * plus recipe overrides and recipe decorators.
+ * plus theme treatment overrides and theme decorators.
  *
  * Layer 1: Base treatments (the 6 categories)
- * Layer 2: Recipe treatment overrides (merged into base rules)
- * Layer 3: Recipe decorators (appended after treatments)
+ * Layer 2: Theme treatment overrides (merged into base rules)
+ * Layer 3: Theme decorators (appended after treatments)
  */
 export function generateTreatmentCSS(
   spatialTokens: Record<string, string>,
   treatmentOverrides?: Record<string, Record<string, string>>,
-  recipeDecorators?: Record<string, string>,
-  recipeName?: string,
+  themeDecorators?: Record<string, string>,
+  themeName?: string,
 ): string {
   const lines: string[] = [];
 
@@ -244,14 +244,14 @@ export function generateTreatmentCSS(
     ['color', 'var(--d-info)'],
   ]);
 
-  // ── Layer 3: Recipe Decorators ──
+  // ── Layer 3: Theme Decorators ──
 
-  if (recipeDecorators && Object.keys(recipeDecorators).length > 0) {
-    const label = recipeName ? ` (${recipeName})` : '';
-    lines.push(`/* ── Layer 3: Recipe Decorators${label} ── */`);
+  if (themeDecorators && Object.keys(themeDecorators).length > 0) {
+    const label = themeName ? ` (${themeName})` : '';
+    lines.push(`/* ── Layer 3: Theme Decorators${label} ── */`);
     lines.push('');
 
-    for (const [name, description] of Object.entries(recipeDecorators)) {
+    for (const [name, description] of Object.entries(themeDecorators)) {
       const rule = generateDecoratorRule(name, description);
       lines.push(rule);
       lines.push('');

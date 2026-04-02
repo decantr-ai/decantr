@@ -29,7 +29,6 @@ function makeSectionInput(overrides?: Partial<SectionContextInput>): SectionCont
     guardConfig: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
     personality: ['professional', 'clean', 'data-focused'],
     themeName: 'midnight',
-    recipeName: 'sharp-edge',
     zoneContext: 'Primary app zone — authenticated users with sidebar navigation.',
     patternSpecs: {},
     ...overrides,
@@ -71,7 +70,7 @@ describe('generateSectionContext', () => {
 
     expect(result).toContain('**Visual Treatments:** All 6 base treatments available');
     expect(result).toContain('see DECANTR.md for usage');
-    expect(result).toContain('**Recipe decorators:** surface-card, glass-panel');
+    expect(result).toContain('**Theme decorators:** surface-card, glass-panel');
     // Should NOT contain the full table
     expect(result).not.toContain('| Decorator | Description |');
     expect(result).not.toContain('| surface-card | Surface background with border |');
@@ -128,7 +127,7 @@ describe('generateSectionContext', () => {
       personality: [],
       zoneContext: '',
       constraints: undefined,
-      recipeHints: undefined,
+      themeHints: undefined,
     });
 
     const result = generateSectionContext(input);
@@ -176,7 +175,6 @@ describe('generateScaffoldContext', () => {
       appName: 'MyApp',
       blueprintId: 'saas-dashboard',
       themeName: 'midnight',
-      recipeName: 'sharp-edge',
       personality: ['professional', 'clean'],
       topologyMarkdown: 'Public zone -> Gateway -> App zone',
       sections,
@@ -188,7 +186,7 @@ describe('generateScaffoldContext', () => {
     // Header
     expect(result).toContain('# Scaffold: MyApp');
     expect(result).toContain('**Blueprint:** saas-dashboard');
-    expect(result).toContain('**Theme:** midnight | **Recipe:** sharp-edge');
+    expect(result).toContain('**Theme:** midnight');
     expect(result).toContain('**Personality:** professional, clean');
     expect(result).toContain('**Guard mode:** creative');
 

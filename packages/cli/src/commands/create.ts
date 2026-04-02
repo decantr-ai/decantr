@@ -1,12 +1,11 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const CONTENT_TYPES = ['pattern', 'recipe', 'theme', 'blueprint', 'archetype', 'shell'] as const;
+const CONTENT_TYPES = ['pattern', 'theme', 'blueprint', 'archetype', 'shell'] as const;
 type ContentType = typeof CONTENT_TYPES[number];
 
 const PLURAL: Record<string, string> = {
   pattern: 'patterns',
-  recipe: 'recipes',
   theme: 'themes',
   blueprint: 'blueprints',
   archetype: 'archetypes',
@@ -25,8 +24,6 @@ function getSkeleton(type: ContentType, id: string, name: string): Record<string
   switch (type) {
     case 'pattern':
       return { ...base, components: [], presets: {}, layout: {} };
-    case 'recipe':
-      return { ...base, shell: {}, spatial: {}, effects: {} };
     case 'theme':
       return { ...base, seed: { primary: '#6500C6', secondary: '#0AF3EB', accent: '#F58882', background: '#0D0D1A' }, modes: ['dark'], shapes: ['rounded'] };
     case 'blueprint':

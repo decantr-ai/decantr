@@ -11,12 +11,11 @@ You are adding new pages or features to an existing Decantr project. Guided mode
 | # | Layer | Rule | Enforcement | What It Means |
 |---|-------|------|-------------|---------------|
 | 1 | DNA | **Style** | ENFORCED | You MUST use theme `{{THEME_STYLE}}` |
-| 2 | DNA | **Recipe** | ENFORCED | You MUST use recipe `{{THEME_RECIPE}}` |
-| 3 | DNA | **Density** | ENFORCED | You MUST follow density `{{DENSITY}}` |
-| 4 | DNA | **Accessibility** | ENFORCED | You MUST meet WCAG level from essence |
-| 5 | DNA | **Theme-mode** | ENFORCED | Theme/mode combination must be compatible |
-| 6 | Blueprint | **Structure** | ENFORCED | Page MUST exist in essence before generating code |
-| 7 | Blueprint | Layout | advisory | Pattern order is flexible |
+| 2 | DNA | **Density** | ENFORCED | You MUST follow density `{{DENSITY}}` |
+| 3 | DNA | **Accessibility** | ENFORCED | You MUST meet WCAG level from essence |
+| 4 | DNA | **Theme-mode** | ENFORCED | Theme/mode combination must be compatible |
+| 5 | Blueprint | **Structure** | ENFORCED | Page MUST exist in essence before generating code |
+| 6 | Blueprint | Layout | advisory | Pattern order is flexible |
 | 8 | Blueprint | **Pattern-exists** | ENFORCED | All patterns must exist in the registry |
 
 ## Before You Start
@@ -64,7 +63,7 @@ Before adding a page:
 During code generation:
 
 - [ ] Use theme `{{THEME_STYLE}}` for all styling
-- [ ] Use recipe `{{THEME_RECIPE}}` for decorations
+- [ ] Use theme `{{THEME_RECIPE}}` decorators for decoration
 - [ ] Follow the shell structure ({{DEFAULT_SHELL}})
 - [ ] Include patterns from the layout array
 
@@ -72,7 +71,7 @@ After generation:
 
 - [ ] Run `npx @decantr/cli validate`
 - [ ] Verify the page matches the theme
-- [ ] Check that the recipe styles are applied
+- [ ] Check that the theme decorator styles are applied
 
 ## Violation Response
 

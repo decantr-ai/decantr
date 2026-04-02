@@ -6,7 +6,6 @@ import { getApiKeyOrToken } from '../auth.js';
 
 const PLURAL_TO_SINGULAR: Record<string, string> = {
   patterns: 'pattern',
-  recipes: 'recipe',
   themes: 'theme',
   blueprints: 'blueprint',
   archetypes: 'archetype',
@@ -15,7 +14,6 @@ const PLURAL_TO_SINGULAR: Record<string, string> = {
 
 const SINGULAR_TO_PLURAL: Record<string, string> = {
   pattern: 'patterns',
-  recipe: 'recipes',
   theme: 'themes',
   blueprint: 'blueprints',
   archetype: 'archetypes',

@@ -124,9 +124,9 @@ describe('generateTreatmentCSS', () => {
     expect(css).toContain('var(--d-content-gap)');
   });
 
-  // ── 11. Recipe treatment overrides ──
+  // ── 11. Theme treatment overrides ──
 
-  it('applies recipe treatment overrides to base rules', () => {
+  it('applies theme treatment overrides to base rules', () => {
     const overrides = {
       'd-surface': {
         'background': 'rgba(31, 31, 35, 0.8)',
@@ -141,17 +141,17 @@ describe('generateTreatmentCSS', () => {
     expect(surfaceBlock).not.toContain('background: var(--d-surface)');
   });
 
-  // ── 12. Recipe decorators appended after treatments ──
+  // ── 12. Theme decorators appended after treatments ──
 
-  it('appends recipe decorators after treatment rules', () => {
+  it('appends theme decorators after treatment rules', () => {
     const decorators = {
       'carbon-glass': 'Glassmorphic panel with blur and semi-transparent background',
       'carbon-code': 'Monospace code block with surface background',
     };
     const css = generateTreatmentCSS(baseSpatialTokens, undefined, decorators, 'carbon');
 
-    // Layer 3 header with recipe name
-    expect(css).toContain('Layer 3: Recipe Decorators (carbon)');
+    // Layer 3 header with theme name
+    expect(css).toContain('Layer 3: Theme Decorators (carbon)');
     // Decorator class names present
     expect(css).toContain('.carbon-glass');
     expect(css).toContain('.carbon-code');
@@ -161,9 +161,9 @@ describe('generateTreatmentCSS', () => {
     expect(decoratorIdx).toBeGreaterThan(treatmentIdx);
   });
 
-  // ── 13. Works with no recipe data ──
+  // ── 13. Works with no theme decorator data ──
 
-  it('produces valid CSS with no recipe data', () => {
+  it('produces valid CSS with no theme decorator data', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).not.toContain('undefined');
     expect(css).not.toContain('NaN');

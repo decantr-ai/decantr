@@ -217,9 +217,9 @@ describe('generateDecoratorRule interactive states', () => {
 });
 
 describe('generateDecoratorsCSS', () => {
-  it('returns comment when no recipe data', () => {
+  it('returns comment when no theme data', () => {
     const result = generateDecoratorsCSS(undefined, 'test');
-    expect(result).toContain('No recipe decorators');
+    expect(result).toContain('No theme decorators');
   });
 });
 

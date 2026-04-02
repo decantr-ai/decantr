@@ -12,7 +12,6 @@ import {
   generateTopologySection,
   type ArchetypeData,
   type ThemeData,
-  type RecipeData,
   type ComposeSectionsResult,
   type PatternSpecSummary,
   type ZoneInput,
@@ -330,7 +329,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
 
   // Apply blueprint overrides
   if (blueprintData) {
-    if (blueprintData.theme?.style) initOptions.theme = blueprintData.theme.style;
+    if (blueprintData.theme?.id || blueprintData.theme?.style) initOptions.theme = blueprintData.theme.id || blueprintData.theme.style;
     if (blueprintData.theme?.mode) initOptions.mode = blueprintData.theme.mode;
     if (blueprintData.theme?.shape) initOptions.shape = blueprintData.theme.shape;
     if (blueprintData.personality) {
@@ -371,8 +370,6 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   let patternSpecs: Record<string, PatternSpecSummary> | undefined;
   let topologyMarkdown = '';
   let themeData: ThemeData | undefined;
-  let recipeData: RecipeData | undefined;
-  let blueprintRecipeName: string | undefined;
   let registrySource: 'api' | 'cache' = apiAvailable ? 'api' : 'cache';
 
   // If we have a blueprint with compose entries, do full composition
@@ -493,8 +490,6 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       );
     }
 
-    blueprintRecipeName = blueprintData.theme?.recipe;
-
     // Print composition summary
     console.log(`${BOLD} Composition:${RESET}`);
     console.log(`   Sections:  ${composedSections.sections.length} (${composedSections.sections.map(s => s.id).join(', ')})`);
@@ -513,7 +508,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     }
   }
 
-  // Fetch theme data
+  // Fetch theme data (single fetch — theme now contains all visual treatment data)
   if (apiAvailable && initOptions.theme) {
     const themeResult = await registryClient.fetchTheme(initOptions.theme);
     if (themeResult) {
@@ -524,25 +519,16 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
         palette: theme.palette,
         tokens: theme.tokens,
         cvd_support: theme.cvd_support,
-        typography_hints: theme.typography_hints,
-        motion_hints: theme.motion_hints,
-      };
-      if (theme.decorators) {
-        recipeData = { decorators: theme.decorators };
-      }
-    }
-
-    // Fetch recipe
-    const recipeName = blueprintRecipeName || initOptions.theme;
-    const recipeResult = await registryClient.fetchRecipe(recipeName);
-    if (recipeResult) {
-      const rawRecipe = recipeResult.data as Record<string, unknown>;
-      const recipe = (rawRecipe.data ?? rawRecipe) as Record<string, any>;
-      recipeData = {
-        decorators: recipe.decorators || recipeData?.decorators,
-        spatial_hints: recipe.spatial_hints,
-        radius_hints: recipe.radius_hints,
-        treatment_overrides: recipe.treatment_overrides,
+        typography: theme.typography,
+        motion: theme.motion,
+        decorators: theme.decorators,
+        treatments: theme.treatments,
+        spatial: theme.spatial,
+        radius: theme.radius,
+        shell: theme.shell,
+        effects: theme.effects,
+        compositions: theme.compositions,
+        pattern_preferences: theme.pattern_preferences,
       };
     }
   }
@@ -558,7 +544,6 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     archetypeData,
     registrySource,
     themeData,
-    recipeData,
     topologyMarkdown,
     composedSections,
     routeMap,

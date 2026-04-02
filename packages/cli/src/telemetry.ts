@@ -20,7 +20,7 @@ export interface GuardMetrics {
 const TELEMETRY_ENDPOINT = 'https://api.decantr.ai/v1/telemetry/guard';
 const TELEMETRY_TIMEOUT_MS = 3000;
 
-const DNA_RULES = new Set(['style', 'recipe', 'density', 'accessibility', 'theme-mode']);
+const DNA_RULES = new Set(['style', 'density', 'accessibility', 'theme-mode']);
 
 export async function sendGuardMetrics(metrics: GuardMetrics): Promise<void> {
   try {

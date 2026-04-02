@@ -17,8 +17,7 @@
     "cachedContent": {
       "archetypes": {{CACHED_ARCHETYPES}},
       "patterns": {{CACHED_PATTERNS}},
-      "themes": {{CACHED_THEMES}},
-      "recipes": {{CACHED_RECIPES}}
+      "themes": {{CACHED_THEMES}}
     }
   },
   "initialized": {

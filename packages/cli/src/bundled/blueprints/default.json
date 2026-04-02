@@ -8,9 +8,8 @@
   "tags": ["starter", "minimal", "offline"],
   "compose": [],
   "theme": {
-    "style": "default",
+    "id": "default",
     "mode": "system",
-    "recipe": null,
     "shape": "rounded"
   },
   "personality": ["clean", "minimal"],
