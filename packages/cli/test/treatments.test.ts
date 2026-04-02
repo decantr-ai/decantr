@@ -147,23 +147,17 @@ describe('generateTreatmentCSS', () => {
     expect(surfaceBlock).not.toContain('background: var(--d-surface)');
   });
 
-  // ── 12. Theme decorators appended after treatments ──
+  // ── 12. Decorator layer is an empty stub ──
 
-  it('appends theme decorators after treatment rules', () => {
-    const decorators = {
-      'carbon-glass': 'Glassmorphic panel with blur and semi-transparent background',
-      'carbon-code': 'Monospace code block with surface background',
-    };
-    const css = generateTreatmentCSS(baseSpatialTokens, undefined, decorators, 'carbon');
-
-    // Layer 3 header with theme name
-    expect(css).toContain('Layer 3: Theme Decorators (carbon)');
-    // Decorator class names present
-    expect(css).toContain('.carbon-glass');
-    expect(css).toContain('.carbon-code');
-    // Decorators appear after treatments
-    const treatmentIdx = css.indexOf('.d-annotation');
-    const decoratorIdx = css.indexOf('.carbon-glass');
+  it('emits empty @layer decorators block after treatments', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens, undefined, undefined, 'carbon');
+    expect(css).toContain('@layer decorators {');
+    expect(css).toContain('Decorator CSS is AI-generated from structured definitions');
+    // No generated decorator class rules
+    expect(css).not.toContain('.carbon-glass');
+    // Decorator block appears after treatments
+    const treatmentIdx = css.indexOf('end @layer treatments');
+    const decoratorIdx = css.indexOf('@layer decorators');
     expect(decoratorIdx).toBeGreaterThan(treatmentIdx);
   });
 
@@ -173,10 +167,10 @@ describe('generateTreatmentCSS', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).not.toContain('undefined');
     expect(css).not.toContain('NaN');
-    expect(css).not.toContain('Layer 3');
     expect(css).toContain('Layer 1: Base Treatments');
     expect(css).toContain('@keyframes decantr-fade-in');
     expect(css).toContain('@keyframes decantr-pulse');
+    expect(css).toContain('@layer decorators');
   });
 
   // ── Additional edge cases ──
@@ -193,14 +187,10 @@ describe('generateTreatmentCSS', () => {
     expect(css).toContain('@keyframes decantr-pulse');
   });
 
-  it('does not include Layer 3 header when no decorators provided', () => {
+  it('always includes empty @layer decorators block', () => {
     const css = generateTreatmentCSS(baseSpatialTokens, undefined, undefined, 'carbon');
-    expect(css).not.toContain('Layer 3');
-  });
-
-  it('does not include Layer 3 header when decorators object is empty', () => {
-    const css = generateTreatmentCSS(baseSpatialTokens, undefined, {}, 'carbon');
-    expect(css).not.toContain('Layer 3');
+    expect(css).toContain('@layer decorators');
+    expect(css).toContain('AI-generated from structured definitions');
   });
 
   it('overrides only affect matching base rules, not variant rules', () => {

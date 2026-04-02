@@ -1,12 +1,10 @@
-import { generateDecoratorRule } from './scaffold.js';
-
 /**
  * Generate CSS for the 6 universal visual treatment categories,
- * plus theme treatment overrides and theme decorators.
+ * plus theme treatment overrides.
  *
  * Layer 1: Base treatments (the 6 categories)
  * Layer 2: Theme treatment overrides (merged into base rules)
- * Layer 3: Theme decorators (appended after treatments)
+ * Layer 3: Decorator stub (AI generates decorator CSS from structured definitions)
  */
 export function generateTreatmentCSS(
   spatialTokens: Record<string, string>,
@@ -284,24 +282,9 @@ export function generateTreatmentCSS(
   lines.push('');
   lines.push('} /* end @layer treatments */');
 
-  // ── Layer 3: Theme Decorators ──
-
-  if (themeDecorators && Object.keys(themeDecorators).length > 0) {
-    const label = themeName ? ` (${themeName})` : '';
-    lines.push('');
-    lines.push('@layer decorators {');
-    lines.push('');
-    lines.push(`/* ── Layer 3: Theme Decorators${label} ── */`);
-    lines.push('');
-
-    for (const [name, description] of Object.entries(themeDecorators)) {
-      const rule = generateDecoratorRule(name, description);
-      lines.push(rule);
-      lines.push('');
-    }
-
-    lines.push('} /* end @layer decorators */');
-  }
+  // Build empty @layer decorators block — AI generates decorator CSS from structured definitions
+  const decoratorBlock = `\n@layer decorators {\n  /* Decorator CSS is AI-generated from structured definitions in section context files. */\n  /* See .decantr/context/section-*.md for intent, suggested properties, and usage guidance. */\n}\n`;
+  lines.push(decoratorBlock);
 
   return lines.join('\n');
 }

@@ -1,13 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateTokensCSS, generateDecoratorsCSS, generateDecoratorRule, generateGlobalCSS, generateSectionContext } from '../src/scaffold.js';
+import { generateTokensCSS, generateDecoratorsCSS, generateGlobalCSS, generateSectionContext } from '../src/scaffold.js';
 import type { SectionContextInput } from '../src/scaffold.js';
-
-describe('generateDecoratorRule', () => {
-  it('returns a CSS comment for empty description', () => {
-    const result = generateDecoratorRule('test', '');
-    expect(result).toContain('/*');
-  });
-});
 
 describe('generateTokensCSS', () => {
   it('returns fallback CSS when themeData is undefined', () => {
@@ -127,94 +120,6 @@ describe('generateTokensCSS shadow tokens', () => {
   });
 });
 
-describe('generateDecoratorRule interactive states', () => {
-  it('generates hover state for card decorators', () => {
-    const css = generateDecoratorRule(
-      'carbon-card',
-      'Surface card with subtle border, rounded corners, shadow elevation, and hover shadow transition'
-    );
-    expect(css).toContain('.carbon-card:hover');
-    expect(css).toContain('border-color');
-  });
-
-  it('generates focus and placeholder styles for input decorators', () => {
-    const css = generateDecoratorRule(
-      'carbon-input',
-      'Input field with subtle border and gentle focus ring'
-    );
-    expect(css).toContain('.carbon-input:focus');
-    expect(css).toContain('box-shadow');
-    expect(css).toContain('background');
-    expect(css).toContain('padding');
-  });
-
-  it('generates disabled state for input decorators', () => {
-    const css = generateDecoratorRule(
-      'carbon-input',
-      'Input field with subtle border and gentle focus ring'
-    );
-    expect(css).toContain('.carbon-input:disabled');
-    expect(css).toContain('opacity');
-    expect(css).toContain('cursor: not-allowed');
-  });
-
-  it('generates transition property for interactive decorators', () => {
-    const css = generateDecoratorRule(
-      'carbon-card',
-      'Surface card with subtle border, rounded corners, shadow elevation, and hover shadow transition'
-    );
-    expect(css).toContain('transition:');
-  });
-
-  it('does not generate interactive states for non-interactive decorators', () => {
-    const css = generateDecoratorRule(
-      'carbon-divider',
-      'Horizontal divider line using border color'
-    );
-    expect(css).not.toContain(':hover');
-    expect(css).not.toContain(':focus');
-  });
-
-  it('generates hover state for glass decorators', () => {
-    const css = generateDecoratorRule(
-      'carbon-glass',
-      'Frosted glassmorphic panel with backdrop blur, semi-transparent background, subtle border'
-    );
-    expect(css).toContain('.carbon-glass:hover');
-  });
-
-  it('generates input base styles: background, padding, radius, color', () => {
-    const css = generateDecoratorRule(
-      'carbon-input',
-      'Input field with subtle border and gentle focus ring'
-    );
-    expect(css).toContain('var(--d-surface)');
-    expect(css).toContain('var(--d-text)');
-    expect(css).toContain('padding:');
-    expect(css).toContain('border-radius:');
-  });
-
-  it('detects semantic type from name when description lacks keywords', () => {
-    // Real-world case: recipe description says "Surface elevation with subtle border"
-    // but name is "carbon-card" — should still get hover state
-    const css = generateDecoratorRule(
-      'carbon-card',
-      'Surface elevation with subtle border, rounded 8px radius, shadow'
-    );
-    expect(css).toContain('.carbon-card:hover');
-  });
-
-  it('detects input type from name when description is minimal', () => {
-    // Real-world case: description just says "Subtle border" but name is "carbon-input"
-    const css = generateDecoratorRule(
-      'carbon-input',
-      'Subtle border for form elements'
-    );
-    expect(css).toContain('.carbon-input:focus');
-    expect(css).toContain('.carbon-input:disabled');
-    expect(css).toContain('background: var(--d-surface)');
-  });
-});
 
 describe('generateDecoratorsCSS', () => {
   it('returns comment when no theme data', () => {
