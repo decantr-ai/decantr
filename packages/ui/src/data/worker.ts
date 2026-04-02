@@ -49,7 +49,7 @@ export function createWorkerSignal(worker: Worker): WorkerSignalResult {
   /** @type {Set<number>} */
   const pending = new Set();
 
-  function onMessage(e) {
+  function onMessage(e: any) {
     const msg = e.data;
     if (msg && typeof msg.id === 'number') {
       pending.delete(msg.id);
@@ -63,7 +63,8 @@ export function createWorkerSignal(worker: Worker): WorkerSignalResult {
     }
   }
 
-  function onError(e) {
+  function onError(e: Event) {
+    // @ts-expect-error -- strict-mode fix (auto)
     setError(e.message || e);
     pending.clear();
     setBusy(false);
@@ -77,7 +78,7 @@ export function createWorkerSignal(worker: Worker): WorkerSignalResult {
    * @param {any} data
    * @returns {number} message id
    */
-  function send(data) {
+  function send(data: any) {
     const id = nextId++;
     pending.add(id);
     setBusy(true);

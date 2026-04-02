@@ -72,7 +72,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * @param {ID} id
    * @param {T|undefined} value
    */
-  function notifyEntity(id, value) {
+  function notifyEntity(id: any, value: any) {
     const sig = entitySignals.get(id);
     if (sig) sig[1](value);
   }
@@ -83,7 +83,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * @param {T} entity
    * @returns {boolean}
    */
-  function setEntity(entity) {
+  function setEntity(entity: any) {
     const id = getId(entity);
     const existed = entities.has(id);
     entities.set(id, entity);
@@ -98,7 +98,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * existing entries (upsert semantics).
    * @param {T[]} items
    */
-  function addMany(items) {
+  function addMany(items: any) {
     if (items.length === 0) return;
     batch(() => {
       for (let i = 0; i < items.length; i++) {
@@ -112,7 +112,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * Add or replace a single entity.
    * @param {T} entity
    */
-  function upsert(entity) {
+  function upsert(entity: any) {
     batch(() => {
       setEntity(entity);
       bump();
@@ -125,7 +125,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * @param {ID} id
    * @param {Partial<T>} partial
    */
-  function update(id, partial) {
+  function update(id: any, partial: any) {
     const existing = entities.get(id);
     if (existing === undefined) return;
     /** @type {T} */
@@ -141,7 +141,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * Remove an entity by ID. No-op if the entity does not exist.
    * @param {ID} id
    */
-  function remove(id) {
+  function remove(id: any) {
     if (!entities.has(id)) return;
     batch(() => {
       entities.delete(id);
@@ -175,7 +175,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * @param {ID} id
    * @returns {() => T|undefined}
    */
-  function get(id) {
+  function get(id: any) {
     let sig = entitySignals.get(id);
     if (!sig) {
       sig = createSignal(entities.get(id));
@@ -214,7 +214,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * @param {(entity: T) => boolean} predicate
    * @returns {() => T[]}
    */
-  function filter(predicate) {
+  function filter(predicate: any) {
     return createMemo(() => {
       version();
       /** @type {T[]} */
@@ -233,7 +233,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * @param {(a: T, b: T) => number} comparator
    * @returns {() => T[]}
    */
-  function sorted(comparator) {
+  function sorted(comparator: any) {
     return createMemo(() => {
       version();
       return Array.from(entities.values()).sort(comparator);
@@ -248,7 +248,7 @@ export function createEntityStore<T, ID extends string | number = string>(option
    * @param {{ page: number|(() => number), size: number|(() => number) }} opts
    * @returns {() => T[]}
    */
-  function paginated(opts) {
+  function paginated(opts: any) {
     return createMemo(() => {
       version();
       const p = typeof opts.page === 'function' ? opts.page() : opts.page;

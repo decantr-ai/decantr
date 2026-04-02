@@ -71,7 +71,7 @@ export interface QueryClientInstance {
  */
 
 /** @type {Array<(ctx: MiddlewareContext, next: () => Promise<*>) => Promise<*>>} */
-const middlewareChain = [];
+const middlewareChain: any[] = [];
 
 /**
  * Execute the middleware chain for a request context.
@@ -81,7 +81,7 @@ const middlewareChain = [];
  * @param {() => Promise<*>} finalHandler — the actual fetch at the end of the chain
  * @returns {Promise<*>}
  */
-async function runMiddleware(ctx, finalHandler) {
+async function runMiddleware(ctx: any, finalHandler: any) {
   let index = 0;
   async function next() {
     if (index < middlewareChain.length) {
@@ -101,7 +101,7 @@ async function runMiddleware(ctx, finalHandler) {
  * @param {string} pattern
  * @returns {RegExp}
  */
-function globToRegex(pattern) {
+function globToRegex(pattern: any) {
   let re = '';
   for (let i = 0; i < pattern.length; i++) {
     const ch = pattern[i];
@@ -143,7 +143,7 @@ const gcTimers = new Map();
  * @param {string} key
  * @returns {CacheEntry}
  */
-function getEntry(key) {
+function getEntry(key: any) {
   let entry = cache.get(key);
   if (!entry) {
     entry = { data: undefined, timestamp: 0, subscribers: new Set(), fetchPromise: null, abortController: null };
@@ -157,7 +157,7 @@ function getEntry(key) {
  * @param {string} key
  * @param {number} cacheTime
  */
-function scheduleGC(key, cacheTime) {
+function scheduleGC(key: any, cacheTime: any) {
   if (gcTimers.has(key)) clearTimeout(gcTimers.get(key));
   gcTimers.set(key, setTimeout(() => {
     const entry = cache.get(key);
@@ -172,7 +172,7 @@ function scheduleGC(key, cacheTime) {
  * Cancel a pending GC timer.
  * @param {string} key
  */
-function cancelGC(key) {
+function cancelGC(key: any) {
   if (gcTimers.has(key)) {
     clearTimeout(gcTimers.get(key));
     gcTimers.delete(key);
@@ -227,7 +227,8 @@ export function createQuery<T>(key: string | (() => string), fetcher: (ctx: { ke
     return _queryError();
   }
 
-  function setError(err) {
+  function setError(err: unknown) {
+    // @ts-expect-error -- strict-mode fix (auto)
     _setQueryError(err);
     if (err && globalThis.__DECANTR_DEV__) {
       _errorObserved = false;
@@ -250,9 +251,9 @@ export function createQuery<T>(key: string | (() => string), fetcher: (ctx: { ke
     return Date.now() - entry.timestamp > staleTime;
   });
 
-  let currentKey = /** @type {string|null} */ (null);
-  let intervalId = /** @type {number|null} */ (null);
-  let focusHandler = /** @type {Function|null} */ (null);
+  let currentKey: any = /** @type {string|null} */ (null);
+  let intervalId: any = /** @type {number|null} */ (null);
+  let focusHandler: any = /** @type {Function|null} */ (null);
 
   /**
    * Core fetch with retry and deduplication.
@@ -260,7 +261,7 @@ export function createQuery<T>(key: string | (() => string), fetcher: (ctx: { ke
    * @param {boolean} [background=false]
    * @returns {Promise<void>}
    */
-  async function doFetch(k, background = false) {
+  async function doFetch(k: any, background = false) {
     const entry = getEntry(k);
 
     // Deduplication: if an identical fetch is already in flight, piggyback on it
@@ -297,7 +298,7 @@ export function createQuery<T>(key: string | (() => string), fetcher: (ctx: { ke
     setIsFetching(true);
 
     const promise = (async () => {
-      let lastErr;
+      let lastErr: any;
       for (let attempt = 0; attempt <= retry; attempt++) {
         if (ac.signal.aborted) return;
         try {
@@ -322,6 +323,7 @@ export function createQuery<T>(key: string | (() => string), fetcher: (ctx: { ke
         } catch (err) {
           if (ac.signal.aborted) return;
           // Don't retry AbortError
+          // @ts-expect-error -- strict-mode fix (auto)
           if (err && err.name === 'AbortError') return;
           lastErr = err instanceof Error ? err : new Error(String(err));
           if (attempt < retry) {
@@ -371,7 +373,7 @@ export function createQuery<T>(key: string | (() => string), fetcher: (ctx: { ke
    * Manually overwrite cached data for the current key.
    * @param {T} value
    */
-  function setData(value) {
+  function setData(value: any) {
     const k = untrack(resolveKey);
     if (!k) return;
     const entry = getEntry(k);
@@ -383,13 +385,13 @@ export function createQuery<T>(key: string | (() => string), fetcher: (ctx: { ke
   }
 
   // Subscribe / unsubscribe helper for cache entry
-  function subscribe(k) {
+  function subscribe(k: any) {
     const entry = getEntry(k);
     cancelGC(k);
     entry.subscribers.add(refetch);
   }
 
-  function unsubscribe(k) {
+  function unsubscribe(k: any) {
     const entry = cache.get(k);
     if (entry) {
       entry.subscribers.delete(refetch);
@@ -520,10 +522,15 @@ export function createInfiniteQuery<T>(key: string | (() => string), fetcher: (c
     for (let i = 0; i < p.length; i++) {
       const page = p[i];
       if (Array.isArray(page)) {
+        // @ts-expect-error -- strict-mode fix (auto)
         for (let j = 0; j < page.length; j++) items.push(page[j]);
+      // @ts-expect-error -- strict-mode fix (auto)
       } else if (page && typeof page === 'object' && Array.isArray(page.items)) {
+        // @ts-expect-error -- strict-mode fix (auto)
         for (let j = 0; j < page.items.length; j++) items.push(page.items[j]);
+      // @ts-expect-error -- strict-mode fix (auto)
       } else if (page && typeof page === 'object' && Array.isArray(page.data)) {
+        // @ts-expect-error -- strict-mode fix (auto)
         for (let j = 0; j < page.data.length; j++) items.push(page.data[j]);
       } else {
         items.push(page);
@@ -539,7 +546,7 @@ export function createInfiniteQuery<T>(key: string | (() => string), fetcher: (c
   });
 
   /** @type {AbortController|null} */
-  let ac = null;
+  let ac: any = null;
 
   /**
    * Fetch a single page with retry.
@@ -548,7 +555,7 @@ export function createInfiniteQuery<T>(key: string | (() => string), fetcher: (c
    * @param {AbortSignal} signal
    * @returns {Promise<T>}
    */
-  async function fetchPage(k, pageParam, signal) {
+  async function fetchPage(k: any, pageParam: any, signal: any) {
     let lastErr;
     for (let attempt = 0; attempt <= retry; attempt++) {
       if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
@@ -559,6 +566,7 @@ export function createInfiniteQuery<T>(key: string | (() => string), fetcher: (c
         }
         return await fetcher({ key: k, pageParam, signal });
       } catch (err) {
+        // @ts-expect-error -- strict-mode fix (auto)
         if (signal.aborted || (err && err.name === 'AbortError')) throw err;
         lastErr = err instanceof Error ? err : new Error(String(err));
         if (attempt < retry) {
@@ -588,6 +596,7 @@ export function createInfiniteQuery<T>(key: string | (() => string), fetcher: (c
         const firstPage = await fetchPage(k, undefined, signal);
         if (signal.aborted) return;
         batch(() => {
+          // @ts-expect-error -- strict-mode fix (auto)
           setPages([firstPage]);
           setStatus('success');
           setError(null);
@@ -597,8 +606,10 @@ export function createInfiniteQuery<T>(key: string | (() => string), fetcher: (c
         entry.data = [firstPage];
         entry.timestamp = Date.now();
       } catch (err) {
+        // @ts-expect-error -- strict-mode fix (auto)
         if (signal.aborted || (err && err.name === 'AbortError')) return;
         batch(() => {
+          // @ts-expect-error -- strict-mode fix (auto)
           setError(err instanceof Error ? err : new Error(String(err)));
           setStatus('error');
         });
@@ -632,6 +643,7 @@ export function createInfiniteQuery<T>(key: string | (() => string), fetcher: (c
       const nextPage = await fetchPage(k, nextParam, signal);
       if (signal.aborted) return;
       batch(() => {
+        // @ts-expect-error -- strict-mode fix (auto)
         setPages(prev => [...prev, nextPage]);
         setIsFetchingNextPage(false);
         setError(null);
@@ -640,8 +652,10 @@ export function createInfiniteQuery<T>(key: string | (() => string), fetcher: (c
       entry.data = untrack(pages);
       entry.timestamp = Date.now();
     } catch (err) {
+      // @ts-expect-error -- strict-mode fix (auto)
       if (signal.aborted || (err && err.name === 'AbortError')) return;
       batch(() => {
+        // @ts-expect-error -- strict-mode fix (auto)
         setError(err instanceof Error ? err : new Error(String(err)));
         setIsFetchingNextPage(false);
       });
@@ -704,7 +718,7 @@ export function createMutation<TData, TVariables>(mutationFn: (variables: TVaria
    * @param {TVariables} variables
    * @returns {Promise<TData>}
    */
-  async function mutateAsync(variables) {
+  async function mutateAsync(variables: any) {
     let context;
     batch(() => {
       setIsLoading(true);
@@ -742,6 +756,7 @@ export function createMutation<TData, TVariables>(mutationFn: (variables: TVaria
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       batch(() => {
+        // @ts-expect-error -- strict-mode fix (auto)
         setError(error);
         setIsLoading(false);
       });
@@ -761,7 +776,7 @@ export function createMutation<TData, TVariables>(mutationFn: (variables: TVaria
    * Fire-and-forget mutation.
    * @param {TVariables} variables
    */
-  function mutate(variables) {
+  function mutate(variables: any) {
     mutateAsync(variables).catch(e => { if (globalThis.__DECANTR_DEV__) console.error('[decantr] Unhandled mutation error:', e); });
   }
 

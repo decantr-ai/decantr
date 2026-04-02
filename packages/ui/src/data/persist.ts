@@ -74,9 +74,9 @@ export interface IndexedDBStore {
 
 export function createIndexedDB(dbName: string, storeName: string): IndexedDBStore {
   /** @type {IDBDatabase | null} */
-  let db = null;
+  let db: any = null;
   /** @type {Promise<IDBDatabase> | null} */
-  let opening = null;
+  let opening: any = null;
 
   function open() {
     if (db) return Promise.resolve(db);
@@ -94,8 +94,8 @@ export function createIndexedDB(dbName: string, storeName: string): IndexedDBSto
   }
 
   /** @param {IDBTransactionMode} mode @param {(s: IDBObjectStore) => IDBRequest} fn */
-  function tx(mode, fn) {
-    return open().then((d) => new Promise((resolve, reject) => {
+  function tx(mode: any, fn: any) {
+    return open().then((d: any) => new Promise((resolve, reject) => {
       const t = d.transaction(storeName, mode);
       const req = fn(t.objectStore(storeName));
       if (req) {
@@ -110,15 +110,15 @@ export function createIndexedDB(dbName: string, storeName: string): IndexedDBSto
 
   return {
     /** @template T @param {IDBValidKey} key @returns {Promise<T>} */
-    get(key) { return tx('readonly', (s) => s.get(key)); },
+    get(key) { return tx('readonly', (s: any) => s.get(key)); },
     /** @param {IDBValidKey} key @param {any} value @returns {Promise<void>} */
-    set(key, value) { return tx('readwrite', (s) => s.put(value, key)); },
+    set(key, value) { return tx('readwrite', (s: any) => s.put(value, key)); },
     /** @param {IDBValidKey} key @returns {Promise<void>} */
-    delete(key) { return tx('readwrite', (s) => s.delete(key)); },
+    delete(key) { return tx('readwrite', (s: any) => s.delete(key)); },
     /** @template T @returns {Promise<T[]>} */
-    getAll() { return tx('readonly', (s) => s.getAll()); },
+    getAll() { return tx('readonly', (s: any) => s.getAll()); },
     /** @returns {Promise<void>} */
-    clear() { return tx('readwrite', (s) => s.clear()); }
+    clear() { return tx('readwrite', (s: any) => s.clear()); }
   };
 }
 
@@ -216,7 +216,7 @@ export function createOfflineQueue<T>(options: { process: (item: T) => Promise<a
         const item = pending()[0];
         try {
           await process(item);
-          setPending((prev) => prev.slice(1));
+          setPending((prev: any) => prev.slice(1));
         } catch (_) {
           await new Promise((r) => setTimeout(r, retryDelay));
           if (!isOnline()) break;
@@ -230,7 +230,7 @@ export function createOfflineQueue<T>(options: { process: (item: T) => Promise<a
   return {
     /** @param {T} item — add to queue; triggers flush if online */
     add(item) {
-      setPending((prev) => [...prev, item]);
+      setPending((prev: any) => [...prev, item]);
       if (isOnline()) flush();
     },
     pending,

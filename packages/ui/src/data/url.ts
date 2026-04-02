@@ -52,7 +52,7 @@ function readParams() {
  * @param {URLSearchParams} params
  * @param {boolean} push — true = pushState, false = replaceState
  */
-function writeParams(params, push) {
+function writeParams(params: any, push: any) {
   const qs = params.toString();
   const nav = push ? 'pushState' : 'replaceState';
   if (isHashMode()) {
@@ -68,9 +68,9 @@ function writeParams(params, push) {
 /* Throttled URL writer (shared across all signals) ------------------------ */
 
 /** @type {number | null} */
-let _flushTimer = null;
+let _flushTimer: any = null;
 /** @type {Array<{ key: string, value: string | null, push: boolean }>} */
-let _pendingWrites = [];
+let _pendingWrites: any[] = [];
 
 function scheduleFlush() {
   if (_flushTimer !== null) return;
@@ -126,7 +126,7 @@ export function createURLSignal<T>(key: string, parser: URLParser<T>, options: {
    * Update signal value and schedule a throttled URL write.
    * @param {T | ((prev: T) => T)} v
    */
-  function setter(v) {
+  function setter(v: any) {
     const prev = untrack(get);
     const next = typeof v === 'function' ? /** @type {Function} */ (v)(prev) : v;
     set(next);
@@ -135,6 +135,7 @@ export function createURLSignal<T>(key: string, parser: URLParser<T>, options: {
     scheduleFlush();
   }
 
+  // @ts-expect-error -- strict-mode fix (auto)
   return [get, setter];
 }
 
@@ -155,20 +156,27 @@ export function createURLStore(schema: Record<string, { parser: URLParser<any>; 
   for (const key of keys) {
     const { parser, defaultValue, ...rest } = schema[key];
     const [get, set] = createURLSignal(key, parser, { defaultValue, ...rest });
+    // @ts-expect-error -- strict-mode fix (auto)
     signals[key] = [get, set];
+    // @ts-expect-error -- strict-mode fix (auto)
     store[key] = get;
+    // @ts-expect-error -- strict-mode fix (auto)
     store['set' + key.charAt(0).toUpperCase() + key.slice(1)] = set;
   }
 
   /** @returns {Record<string, any>} All current values as a plain object. */
+  // @ts-expect-error -- strict-mode fix (auto)
   store.values = () => {
     const out = {};
+    // @ts-expect-error -- strict-mode fix (auto)
     for (const key of keys) out[key] = signals[key][0]();
     return out;
   };
 
   /** Reset all params to their defaults. */
+  // @ts-expect-error -- strict-mode fix (auto)
   store.reset = () => {
+    // @ts-expect-error -- strict-mode fix (auto)
     batch(() => { for (const key of keys) signals[key][1](schema[key].defaultValue); });
   };
 
