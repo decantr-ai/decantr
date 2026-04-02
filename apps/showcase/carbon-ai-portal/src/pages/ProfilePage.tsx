@@ -1,91 +1,131 @@
 import { css } from '@decantr/css';
+import { Link, useLocation } from 'react-router-dom';
+import { InputField } from '../components/InputField';
+import { Button } from '../components/Button';
+import {
+  User,
+  Shield,
+  Palette,
+  AlertTriangle,
+  Save,
+  Camera,
+} from 'lucide-react';
+
+const settingsNav = [
+  { to: '/settings/profile', label: 'Profile', icon: <User size={16} /> },
+  { to: '/settings/security', label: 'Security', icon: <Shield size={16} /> },
+  { to: '/settings/preferences', label: 'Preferences', icon: <Palette size={16} /> },
+  { to: '/settings/account', label: 'Account', icon: <AlertTriangle size={16} /> },
+];
+
+function SettingsNav() {
+  const location = useLocation();
+  return (
+    <nav className={css('_flex _col _gap1')}>
+      {settingsNav.map((item) => (
+        <Link
+          key={item.to}
+          to={item.to}
+          className={
+            css('_flex _aic _gap2 _px3 _py2 _textsm _rounded _pointer _trans') +
+            ' settings-nav-item' +
+            (location.pathname === item.to ? ' active' : '')
+          }
+        >
+          {item.icon}
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export { SettingsNav };
 
 export function ProfilePage() {
   return (
-    <div className={css('_flex _col _flex1 _overauto _px8 _py8')}>
-      <div style={{ maxWidth: 640 }}>
-        <h1 className={css('_heading2 _fgtext')} style={{ marginBottom: 'var(--d-gap-2)' }}>Profile</h1>
-        <p className={css('_textsm _fgmuted')} style={{ marginBottom: 'var(--d-gap-8)' }}>
-          Manage your personal information
-        </p>
+    <div className={css('_flex _flex1 _overauto')}>
+      <div
+        className={css('_flex _gap8 _p6')}
+        style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}
+      >
+        {/* Sidebar nav */}
+        <div className={css('_none _md:flex _col _shrink0')} style={{ width: '200px' }}>
+          <SettingsNav />
+        </div>
 
-        <div className={css('_flex _col _gap8')}>
-          {/* Avatar */}
-          <div className={css('_flex _aic _gap6 _p6') + ' carbon-card'}>
+        {/* Content */}
+        <div className={css('_flex1 _flex _col _gap6')}>
+          <div className={css('_flex _col _gap1')}>
+            <h1 className={css('_heading3 _fgtext')}>Profile</h1>
+            <p className={css('_textsm _fgmuted')}>
+              Manage your personal information and public profile.
+            </p>
+          </div>
+
+          {/* Avatar section */}
+          <div className={css('_flex _aic _gap4 _p5 _rounded') + ' carbon-card'}>
             <div
-              className={css('_flex _aic _jcc _fontsemi _fgprimary _textxl _shrink0')}
+              className={css('_flex _aic _jcc _roundedfull _rel')}
               style={{
-                width: 64,
-                height: 64,
-                borderRadius: 'var(--d-radius-full)',
-                background: 'var(--d-surface-raised)',
-                border: '1px solid var(--d-border)',
+                width: '72px',
+                height: '72px',
+                background: 'rgba(124,147,176,0.12)',
+                color: 'var(--d-primary)',
               }}
             >
-              JD
+              <User size={28} />
+              <button
+                className={css('_abs _flex _aic _jcc _roundedfull _bordernone _pointer')}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  bottom: '-2px',
+                  right: '-2px',
+                  background: 'var(--d-surface-raised)',
+                  border: '2px solid var(--d-bg)',
+                  color: 'var(--d-text-muted)',
+                }}
+                aria-label="Change avatar"
+              >
+                <Camera size={12} />
+              </button>
             </div>
-            <div className={css('_flex1')}>
-              <p className={css('_textsm _fontsemi _fgtext')}>Jane Doe</p>
-              <p className={css('_textxs _fgmuted')}>jane@company.com</p>
+            <div className={css('_flex _col _gap0')}>
+              <span className={css('_fontsemi _fgtext')}>Jane Doe</span>
+              <span className={css('_textsm _fgmuted')}>jane@example.com</span>
             </div>
-            <button
-              className={css('_textsm _fgmuted _px4 _py2 _rounded _pointer')}
-              style={{ border: '1px solid var(--d-border)', background: 'transparent' }}
-            >
-              Change
-            </button>
           </div>
 
-          {/* Name */}
-          <div className={css('_p6 _flex _col _gap4') + ' carbon-card'}>
-            <div className={css('_flex _jcsb _aic')}>
-              <div>
-                <p className={css('_textsm _fontsemi _fgtext')}>Display Name</p>
-                <p className={css('_textxs _fgmuted')}>How others see you in conversations</p>
-              </div>
-            </div>
-            <input
-              type="text"
-              defaultValue="Jane Doe"
-              className={css('_px4 _py3 _rounded _textsm _fgtext') + ' carbon-input'}
-              style={{ background: 'var(--d-bg)', outline: 'none' }}
-            />
-          </div>
-
-          {/* Email */}
-          <div className={css('_p6 _flex _col _gap4') + ' carbon-card'}>
-            <div>
-              <p className={css('_textsm _fontsemi _fgtext')}>Email Address</p>
-              <p className={css('_textxs _fgmuted')}>Used for login and notifications</p>
-            </div>
-            <input
-              type="email"
-              defaultValue="jane@company.com"
-              className={css('_px4 _py3 _rounded _textsm _fgtext') + ' carbon-input'}
-              style={{ background: 'var(--d-bg)', outline: 'none' }}
-            />
-          </div>
-
-          {/* Bio */}
-          <div className={css('_p6 _flex _col _gap4') + ' carbon-card'}>
-            <div>
-              <p className={css('_textsm _fontsemi _fgtext')}>Bio</p>
-              <p className={css('_textxs _fgmuted')}>Brief description for your profile</p>
-            </div>
-            <textarea
-              rows={3}
-              defaultValue="Full-stack developer working on distributed systems."
-              className={css('_px4 _py3 _rounded _textsm _fgtext') + ' carbon-input'}
-              style={{ background: 'var(--d-bg)', outline: 'none', resize: 'vertical' }}
-            />
-          </div>
-
-          <button
-            className={css('_bgprimary _fgtext _fontsemi _py3 _rounded _textbase _pointer')}
-            style={{ border: 'none', width: 'fit-content', padding: '0.75rem 2rem' }}
+          {/* Form */}
+          <form
+            className={css('_flex _col _gap4 _p5 _rounded') + ' carbon-card'}
+            onSubmit={(e) => e.preventDefault()}
           >
-            Save Changes
-          </button>
+            <div className={css('_grid _gc1 _md:gc2 _gap4')}>
+              <InputField label="First name" defaultValue="Jane" />
+              <InputField label="Last name" defaultValue="Doe" />
+            </div>
+            <InputField label="Email" type="email" defaultValue="jane@example.com" />
+            <InputField label="Display name" defaultValue="janedoe" />
+            <div className={css('_flex _col _gap1')}>
+              <label htmlFor="bio" className={css('_textsm _fontsemi _fgtext')}>
+                Bio
+              </label>
+              <textarea
+                id="bio"
+                rows={3}
+                className={css('_textbase _rounded _trans') + ' carbon-input'}
+                defaultValue="Software engineer working with React and TypeScript."
+                style={{ resize: 'vertical' }}
+              />
+            </div>
+            <div className={css('_flex _jcfe')}>
+              <Button variant="primary" icon={<Save size={16} />} type="submit">
+                Save changes
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

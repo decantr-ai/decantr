@@ -1,93 +1,119 @@
 import { css } from '@decantr/css';
+import { Button } from '../components/Button';
+import { InputField } from '../components/InputField';
+import { SettingsNav } from './ProfilePage';
+import {
+  Save,
+  ShieldCheck,
+  Monitor,
+  Smartphone,
+  Trash2,
+} from 'lucide-react';
 
 const sessions = [
-  { device: 'Chrome on macOS', location: 'San Francisco, US', lastActive: 'Now', current: true },
-  { device: 'Firefox on Windows', location: 'New York, US', lastActive: '2 hours ago', current: false },
-  { device: 'Safari on iPhone', location: 'San Francisco, US', lastActive: '1 day ago', current: false },
+  { device: 'MacBook Pro', icon: <Monitor size={16} />, location: 'San Francisco, CA', lastActive: 'Now', current: true },
+  { device: 'iPhone 15', icon: <Smartphone size={16} />, location: 'San Francisco, CA', lastActive: '2h ago', current: false },
+  { device: 'Chrome on Windows', icon: <Monitor size={16} />, location: 'New York, NY', lastActive: '3 days ago', current: false },
 ];
 
 export function SecurityPage() {
   return (
-    <div className={css('_flex _col _flex1 _overauto _px8 _py8')}>
-      <div style={{ maxWidth: 640 }}>
-        <h1 className={css('_heading2 _fgtext')} style={{ marginBottom: 'var(--d-gap-2)' }}>Security</h1>
-        <p className={css('_textsm _fgmuted')} style={{ marginBottom: 'var(--d-gap-8)' }}>
-          Manage your password, MFA, and active sessions
-        </p>
+    <div className={css('_flex _flex1 _overauto')}>
+      <div
+        className={css('_flex _gap8 _p6')}
+        style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}
+      >
+        <div className={css('_none _md:flex _col _shrink0')} style={{ width: '200px' }}>
+          <SettingsNav />
+        </div>
 
-        <div className={css('_flex _col _gap8')}>
-          {/* Password */}
-          <div className={css('_p6 _flex _col _gap4') + ' carbon-card'}>
-            <div className={css('_flex _jcsb _aic')}>
-              <div>
-                <p className={css('_textsm _fontsemi _fgtext')}>Password</p>
-                <p className={css('_textxs _fgmuted')}>Last changed 30 days ago</p>
-              </div>
-              <button
-                className={css('_textsm _fgmuted _px4 _py2 _rounded _pointer')}
-                style={{ border: '1px solid var(--d-border)', background: 'transparent' }}
-              >
-                Change
-              </button>
-            </div>
+        <div className={css('_flex1 _flex _col _gap6')}>
+          <div className={css('_flex _col _gap1')}>
+            <h1 className={css('_heading3 _fgtext')}>Security</h1>
+            <p className={css('_textsm _fgmuted')}>
+              Manage your password, two-factor authentication, and active sessions.
+            </p>
           </div>
 
-          {/* MFA */}
-          <div className={css('_p6 _flex _col _gap4') + ' carbon-card'}>
-            <div className={css('_flex _jcsb _aic')}>
-              <div>
-                <p className={css('_textsm _fontsemi _fgtext')}>Two-Factor Authentication</p>
-                <p className={css('_textxs _fgmuted')}>Add an extra layer of security</p>
-              </div>
-              <span
-                className={css('_textxs _fontsemi _px3 _py1 _rounded')}
-                style={{ background: 'color-mix(in srgb, var(--d-success) 15%, transparent)', color: 'var(--d-success)' }}
-              >
-                Enabled
-              </span>
+          {/* Change password */}
+          <form
+            className={css('_flex _col _gap4 _p5 _rounded') + ' carbon-card'}
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <h2 className={css('_fontsemi _fgtext')}>Change password</h2>
+            <InputField label="Current password" type="password" placeholder="Enter current password" />
+            <InputField label="New password" type="password" placeholder="Enter new password" />
+            <InputField label="Confirm new password" type="password" placeholder="Confirm new password" />
+            <div className={css('_flex _jcfe')}>
+              <Button variant="primary" icon={<Save size={16} />} type="submit">
+                Update password
+              </Button>
             </div>
-            <button
-              className={css('_textsm _fgmuted _px4 _py2 _rounded _pointer')}
-              style={{ border: '1px solid var(--d-border)', background: 'transparent', width: 'fit-content' }}
-            >
-              Manage
-            </button>
+          </form>
+
+          {/* MFA */}
+          <div className={css('_flex _col _gap4 _p5 _rounded') + ' carbon-card'}>
+            <div className={css('_flex _jcsb _aic')}>
+              <div className={css('_flex _col _gap1')}>
+                <h2 className={css('_fontsemi _fgtext')}>Two-factor authentication</h2>
+                <p className={css('_textsm _fgmuted')}>
+                  Add an extra layer of security to your account.
+                </p>
+              </div>
+              <div className={css('_flex _aic _gap2')}>
+                <ShieldCheck size={16} style={{ color: 'var(--d-success)' }} />
+                <span className={css('_textsm _fgsuccess _fontsemi')}>Enabled</span>
+              </div>
+            </div>
+            <div className={css('_flex _gap3')}>
+              <Button variant="secondary" size="sm">
+                Reconfigure
+              </Button>
+              <Button variant="ghost" size="sm">
+                Disable
+              </Button>
+            </div>
           </div>
 
           {/* Sessions */}
-          <div className={css('_flex _col _gap4')}>
-            <div>
-              <h2 className={css('_textlg _fontsemi _fgtext')} style={{ marginBottom: 'var(--d-gap-1)' }}>
-                Active Sessions
-              </h2>
-              <p className={css('_textxs _fgmuted')}>Devices currently signed in to your account</p>
-            </div>
-            {sessions.map((s, i) => (
-              <div key={i} className={css('_flex _aic _jcsb _p4') + ' carbon-glass'}>
-                <div>
-                  <p className={css('_textsm _fgtext _flex _aic _gap2')}>
-                    {s.device}
-                    {s.current && (
-                      <span
-                        className={css('_textxs _fontsemi _px2 _py0 _rounded')}
-                        style={{ background: 'color-mix(in srgb, var(--d-primary) 15%, transparent)', color: 'var(--d-primary)' }}
-                      >
-                        Current
+          <div className={css('_flex _col _gap4 _p5 _rounded') + ' carbon-card'}>
+            <h2 className={css('_fontsemi _fgtext')}>Active sessions</h2>
+            <div className={css('_flex _col')}>
+              {sessions.map((s, i) => (
+                <div
+                  key={i}
+                  className={css('_flex _aic _jcsb _py3 _px1') + ' session-row'}
+                >
+                  <div className={css('_flex _aic _gap3')}>
+                    <span style={{ color: 'var(--d-text-muted)' }}>{s.icon}</span>
+                    <div className={css('_flex _col _gap0')}>
+                      <div className={css('_flex _aic _gap2')}>
+                        <span className={css('_textsm _fontsemi _fgtext')}>{s.device}</span>
+                        {s.current && (
+                          <span
+                            className={css('_textxs _fontsemi _fgsuccess _px2 _rounded')}
+                            style={{ background: 'rgba(34,197,94,0.1)' }}
+                          >
+                            Current
+                          </span>
+                        )}
+                      </div>
+                      <span className={css('_textxs _fgmuted')}>
+                        {s.location} -- {s.lastActive}
                       </span>
-                    )}
-                  </p>
-                  <p className={css('_textxs _fgmuted')}>{s.location} &middot; {s.lastActive}</p>
+                    </div>
+                  </div>
+                  {!s.current && (
+                    <button
+                      className={css('_flex _aic _jcc _p1 _rounded _bordernone _trans _pointer _fgerror') + ' btn-ghost'}
+                      aria-label={`Revoke session on ${s.device}`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
-                {!s.current && (
-                  <button
-                    className={css('_textxs _fgerror _pointer')}
-                    style={{ border: 'none', background: 'transparent' }}
-                  >
-                    Revoke
-                  </button>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

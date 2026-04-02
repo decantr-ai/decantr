@@ -1,66 +1,68 @@
 import { css } from '@decantr/css';
 import { Link } from 'react-router-dom';
+import { Button } from '../components/Button';
+import { ShieldCheck, Copy } from 'lucide-react';
 
 export function MfaSetupPage() {
   return (
-    <div className={css('_wfull')}>
-      <div className={css('_flex _col _gap6 _p8') + ' carbon-card carbon-fade-slide'}>
-        <div className={css('_flex _col _gap2 _textc')}>
-          <h1 className={css('_heading3 _fgtext')}>Set Up Two-Factor Auth</h1>
-          <p className={css('_textsm _fgmuted')}>
-            Scan the QR code with your authenticator app
-          </p>
-        </div>
+    <div className={css('_flex _col _gap6 _wfull')}>
+      <div className={css('_flex _col _gap1 _textc')}>
+        <h1 className={css('_heading3 _fgtext')}>Set up two-factor auth</h1>
+        <p className={css('_textsm _fgmuted')}>
+          Add an extra layer of security to your account.
+        </p>
+      </div>
 
-        {/* QR code placeholder */}
+      <div className={css('_flex _col _gap4 _p6 _rounded') + ' carbon-card'}>
+        <p className={css('_textsm _fgmuted')}>
+          Scan this QR code with your authenticator app (Google Authenticator, Authy, 1Password, etc.).
+        </p>
+
+        {/* QR placeholder */}
         <div
           className={css('_flex _aic _jcc _rounded')}
           style={{
-            width: 200,
-            height: 200,
-            margin: '0 auto',
+            width: '200px',
+            height: '200px',
             background: 'var(--d-surface-raised)',
+            margin: '0 auto',
             border: '1px solid var(--d-border)',
           }}
         >
-          <span className={css('_textsm _fgmuted')}>QR Code</span>
+          <ShieldCheck size={48} style={{ color: 'var(--d-text-muted)' }} />
         </div>
 
-        <div className={css('_flex _col _gap2')}>
-          <label className={css('_textsm _fontmedium _fgtext')} htmlFor="mfa-secret">
-            Or enter this code manually
-          </label>
-          <div className={css('_px4 _py3 _rounded _textsm _fgprimary _textc') + ' carbon-code'}>
-            ABCD-EFGH-IJKL-MNOP
+        <div className={css('_flex _col _gap1')}>
+          <span className={css('_textxs _fgmuted _fontsemi')}>Manual entry key</span>
+          <div className={css('_flex _aic _gap2')}>
+            <code
+              className={css('_flex1 _textsm _p2 _rounded') + ' carbon-code'}
+              style={{ fontFamily: 'monospace', letterSpacing: '0.1em' }}
+            >
+              JBSW Y3DP EHPK 3PXP
+            </code>
+            <button
+              className={css('_flex _aic _jcc _p2 _rounded _bordernone _trans _pointer') + ' btn-ghost'}
+              aria-label="Copy key"
+            >
+              <Copy size={16} />
+            </button>
           </div>
         </div>
 
-        <div className={css('_flex _col _gap2')}>
-          <label className={css('_textsm _fontmedium _fgtext')} htmlFor="mfa-code">
-            Verification Code
-          </label>
-          <input
-            id="mfa-code"
-            type="text"
-            placeholder="Enter 6-digit code"
-            className={css('_px4 _py3 _rounded _textsm _fgtext') + ' carbon-input'}
-            style={{ background: 'var(--d-bg)', outline: 'none' }}
-          />
-        </div>
-
-        <button
-          type="button"
-          className={css('_bgprimary _fgtext _fontsemi _py3 _rounded _textbase _pointer')}
-          style={{ border: 'none' }}
-        >
-          Verify &amp; Enable
-        </button>
-      </div>
-      <p className={css('_textsm _fgmuted _textc _pt4')}>
-        <Link to="/login" className={css('_fgprimary')} style={{ textDecoration: 'none' }}>
-          Back to sign in
+        <Link to="/mfa-verify">
+          <Button variant="primary" className={css('_wfull _jcc')}>
+            Continue to verification
+          </Button>
         </Link>
-      </p>
+      </div>
+
+      <Link
+        to="/login"
+        className={css('_textsm _fgmuted _textc _fontsemi _trans') + ' nav-link'}
+      >
+        Skip for now
+      </Link>
     </div>
   );
 }

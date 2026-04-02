@@ -21,7 +21,8 @@
   background: var(--d-surface);
   border: 1px solid var(--d-border);
   box-shadow: var(--d-shadow);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .carbon-input {

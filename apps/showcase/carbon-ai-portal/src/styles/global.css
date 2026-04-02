@@ -1,0 +1,177 @@
+/* Global styles for Carbon AI Portal */
+@import url('./tokens.css');
+@import url('./decorators.css');
+@import url('./components.css');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--d-text);
+  background: var(--d-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+code, pre, kbd, samp {
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas,
+    'DejaVu Sans Mono', monospace;
+}
+
+a {
+  color: var(--d-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--d-primary-hover);
+}
+
+/* Focus ring - accessibility */
+:focus-visible {
+  outline: 2px solid var(--d-primary);
+  outline-offset: 2px;
+}
+
+/* Skip nav for accessibility */
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 999;
+  padding: 0.75rem 1.5rem;
+  background: var(--d-primary);
+  color: var(--d-bg);
+  font-weight: 600;
+  transition: top 0.2s ease;
+}
+
+.skip-nav:focus {
+  top: 0;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--d-border);
+  border-radius: var(--d-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--d-text-muted);
+}
+
+/* Utility: glassmorphic panel */
+.glass-panel {
+  background: rgba(31, 31, 35, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+}
+
+/* Utility: hover-lift for cards */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* Form field styling */
+input, textarea, select {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--d-text);
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  padding: 0.625rem 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--d-primary);
+  box-shadow: 0 0 0 3px rgba(124, 147, 176, 0.2);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--d-text-muted);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---------- Section spacing ---------- */
+.section {
+  padding: 5rem 0;
+}
+
+.section--hero {
+  padding-top: 7rem;
+  padding-bottom: 5rem;
+}
+
+.section--alt {
+  background: var(--d-surface);
+}
+
+.section__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ---------- Card & button transitions ---------- */
+.carbon-card,
+button,
+a {
+  transition: all 0.2s ease;
+}
+
+.carbon-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- Reduce motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

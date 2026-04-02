@@ -1,18 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import { css } from '@decantr/css';
-import './styles/tokens.css';
-import './styles/decorators.css';
-import App from './App';
+import { App } from './App';
+import './styles/global.css';
 
-/* inject a minimal global reset */
-css('_m0 _p0');
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
     <HashRouter>
       <App />
     </HashRouter>
-  </React.StrictMode>,
+  </StrictMode>
 );

@@ -1,51 +1,98 @@
 import { css } from '@decantr/css';
+import { Cookie } from 'lucide-react';
+
+const sections = [
+  { id: 'what', title: 'What Are Cookies' },
+  { id: 'how', title: 'How We Use Cookies' },
+  { id: 'types', title: 'Types of Cookies' },
+  { id: 'manage', title: 'Managing Cookies' },
+  { id: 'contact', title: 'Contact Us' },
+];
 
 export function CookiesPage() {
   return (
-    <section className={css('_py16 _px6')} style={{ background: 'var(--d-bg)' }}>
-      <article className={css('_flex _col _gap8')} style={{ maxWidth: 720, margin: '0 auto' }}>
-        <div>
-          <h1 className={css('_heading1 _fgtext')} style={{ marginBottom: 'var(--d-gap-3)' }}>Cookie Policy</h1>
-          <p className={css('_textsm _fgmuted')}>Last updated: March 15, 2026</p>
-        </div>
+    <div className={css('_px4 _py12')}>
+      <div
+        className={css('_flex _gap8')}
+        style={{ maxWidth: '1000px', margin: '0 auto' }}
+      >
+        {/* TOC sidebar */}
+        <aside
+          className={css('_none _lg:flex _col _gap2 _shrink0 _sticky')}
+          style={{ width: '220px', top: '80px', alignSelf: 'flex-start' }}
+        >
+          <span className={css('_textxs _fontsemi _fgmuted _uppercase _mb2')}>
+            On this page
+          </span>
+          {sections.map((s) => (
+            <a key={s.id} href={`#${s.id}`} className={'toc-link'}>
+              {s.title}
+            </a>
+          ))}
+        </aside>
 
-        <section className={css('_flex _col _gap3')}>
-          <h2 className={css('_heading3 _fgtext')}>What Are Cookies</h2>
-          <p className={css('_textsm _fgmuted')} style={{ lineHeight: 1.8 }}>
-            Cookies are small text files stored on your device when you visit a website. They help us
-            provide essential functionality, remember your preferences, and understand how you use our service.
-          </p>
-        </section>
-
-        <section className={css('_flex _col _gap3')}>
-          <h2 className={css('_heading3 _fgtext')}>Essential Cookies</h2>
-          <p className={css('_textsm _fgmuted')} style={{ lineHeight: 1.8 }}>
-            These cookies are necessary for the platform to function. They handle authentication sessions,
-            security tokens, and basic preferences like language. You cannot disable these cookies.
-          </p>
-          <div className={css('_p4 _rounded') + ' carbon-code'} style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--d-text-muted)' }}>
-            session_id &mdash; Authentication session (expires on logout)<br />
-            csrf_token &mdash; Security token (per session)<br />
-            locale &mdash; Language preference (1 year)
+        {/* Content */}
+        <article className={css('_flex1') + ' legal-content'}>
+          <div className={css('_flex _aic _gap3 _mb6')}>
+            <Cookie size={24} style={{ color: 'var(--d-primary)' }} />
+            <h1 className={css('_heading2 _fgtext')}>Cookie Policy</h1>
           </div>
-        </section>
-
-        <section className={css('_flex _col _gap3')}>
-          <h2 className={css('_heading3 _fgtext')}>Analytics Cookies</h2>
-          <p className={css('_textsm _fgmuted')} style={{ lineHeight: 1.8 }}>
-            We use privacy-focused analytics (no third-party trackers) to understand usage patterns and
-            improve our product. These cookies are anonymized and do not track individual users across websites.
+          <p>
+            Last updated: March 15, 2026. This Cookie Policy explains how Carbon AI uses
+            cookies and similar technologies when you visit our website or use our services.
           </p>
-        </section>
 
-        <section className={css('_flex _col _gap3')}>
-          <h2 className={css('_heading3 _fgtext')}>Managing Cookies</h2>
-          <p className={css('_textsm _fgmuted')} style={{ lineHeight: 1.8 }}>
-            You can control cookies through your browser settings. Note that disabling essential cookies
-            may prevent you from using parts of our service. For more details, visit your browser&apos;s help documentation.
+          <h2 id="what">What Are Cookies</h2>
+          <p>
+            Cookies are small text files placed on your device by websites you visit. They
+            are widely used to make websites work more efficiently and to provide information
+            to site owners. Cookies may be &quot;session&quot; cookies (deleted when you close your browser)
+            or &quot;persistent&quot; cookies (remaining until they expire or you delete them).
           </p>
-        </section>
-      </article>
-    </section>
+
+          <h2 id="how">How We Use Cookies</h2>
+          <p>We use cookies to:</p>
+          <ul>
+            <li>Keep you signed in to your account</li>
+            <li>Remember your preferences and settings</li>
+            <li>Understand how you interact with our service</li>
+            <li>Improve the performance and reliability of our platform</li>
+            <li>Protect against fraud and unauthorized access</li>
+          </ul>
+
+          <h2 id="types">Types of Cookies We Use</h2>
+          <h3>Essential Cookies</h3>
+          <p>
+            These cookies are necessary for the service to function. They enable core
+            features like authentication, session management, and security. You cannot
+            opt out of these cookies.
+          </p>
+          <h3>Preference Cookies</h3>
+          <p>
+            These cookies remember your settings, such as theme preference and language
+            selection. They are not strictly necessary but improve your experience.
+          </p>
+          <h3>Analytics Cookies</h3>
+          <p>
+            We use privacy-respecting analytics to understand usage patterns. These cookies
+            collect aggregate, anonymous data. We do not use third-party advertising cookies.
+          </p>
+
+          <h2 id="manage">Managing Cookies</h2>
+          <p>
+            Most browsers allow you to control cookies through their settings. You can
+            typically choose to block all cookies, accept all cookies, or be notified
+            when a cookie is set. Note that blocking essential cookies may prevent
+            you from using some features of our service.
+          </p>
+
+          <h2 id="contact">Contact Us</h2>
+          <p>
+            If you have questions about our use of cookies, please contact us at
+            privacy@carbonai.dev.
+          </p>
+        </article>
+      </div>
+    </div>
   );
 }
