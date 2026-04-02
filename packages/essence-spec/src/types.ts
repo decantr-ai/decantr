@@ -86,6 +86,16 @@ export interface Density {
   content_gap: string;
 }
 
+export interface SpatialTokens {
+  '--d-section-py': string;
+  '--d-interactive-py': string;
+  '--d-interactive-px': string;
+  '--d-surface-p': string;
+  '--d-data-py': string;
+  '--d-control-py': string;
+  '--d-content-gap': string;
+}
+
 // --- Guard ---
 
 export type GuardMode = 'creative' | 'guided' | 'strict';
