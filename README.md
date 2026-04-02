@@ -59,7 +59,7 @@ This will:
 
 ## MCP Server Tools
 
-The MCP server (`@decantr/mcp-server`) exposes design intelligence tools directly to AI coding assistants. These tools are called automatically by AI assistants when they need design guidance.
+The MCP server (`@decantr/mcp-server`) exposes 14 design intelligence tools directly to AI coding assistants. These tools are called automatically by AI assistants when they need design guidance.
 
 | Tool | Description |
 |------|-------------|
@@ -67,47 +67,77 @@ The MCP server (`@decantr/mcp-server`) exposes design intelligence tools directl
 | `decantr_suggest_patterns` | Given a page description (e.g., "dashboard with metrics and charts"), suggest appropriate patterns from the registry. Returns ranked pattern matches with layout specs and component lists. |
 | `decantr_resolve_pattern` | Get full pattern details including layout spec, components, presets, and code examples. Use a preset parameter to get specific variants (e.g., "product", "content"). |
 | `decantr_resolve_archetype` | Get archetype details including default pages, layouts, features, and suggested theme. Archetypes are app-level templates like "saas-dashboard" or "ecommerce". |
-| `decantr_resolve_blueprint` | Get a blueprint (app composition) with its archetype list, suggested theme, personality traits, and full page structure. Blueprints combine multiple archetypes into complete apps. |
+| `decantr_resolve_blueprint` | Get a blueprint with its archetype list, suggested theme, personality, and full page structure. Includes topology (zones, transitions, entry points) derived from archetype roles. |
 | `decantr_resolve_recipe` | Get recipe decoration rules including shell styles, spatial hints, visual effects, and pattern preferences. Recipes define the visual character of an app. |
 | `decantr_check_drift` | Check if code changes violate the design intent captured in the Essence spec. Returns guard rule violations with severity and fix suggestions. |
+| `decantr_accept_drift` | Resolve drift violations by accepting, scoping, rejecting, or deferring them. Allows controlled deviation from the spec when intentional. |
+| `decantr_update_essence` | Apply structured updates to DNA or Blueprint layers of the Essence spec. Supports targeted mutations without manual JSON editing. |
+| `decantr_get_section_context` | Get self-contained context for a specific blueprint section. Returns guard rules, decorators, and pattern specs scoped to that section. |
 | `decantr_validate` | Validate a `decantr.essence.json` file against the schema and guard rules. Returns errors and warnings. |
 | `decantr_read_essence` | Read and return the current `decantr.essence.json` file from the working directory. |
 | `decantr_search_registry` | Search the Decantr community content registry for patterns, archetypes, recipes, and themes. |
+| `decantr_component_api` | Query @decantr/ui component API including props, usage, and examples. |
 
 ---
 
 ## CLI Commands
 
-The Decantr CLI (`@decantr/cli`) provides commands for project initialization, registry queries, and validation.
+The Decantr CLI (`@decantr/cli`) provides commands for project initialization, mutation, registry queries, and validation.
 
 ### Project Commands
 
 | Command | Description |
 |---------|-------------|
-| `npx @decantr/cli init` | Initialize a new Decantr project. Interactive prompts guide you through selecting an archetype, blueprint, theme, and configuration. Creates `decantr.essence.json`, `DECANTR.md`, and `.decantr/` directory. |
-| `npx @decantr/cli status` | Show project status including essence validation, theme, guard mode, and sync status. |
-| `npx @decantr/cli validate [path]` | Validate a `decantr.essence.json` file against the schema and guard rules. Defaults to `./decantr.essence.json`. |
-| `npx @decantr/cli sync` | Sync the content registry from the API. Downloads latest patterns, archetypes, themes, and recipes to local cache. |
-| `npx @decantr/cli audit` | Audit the project for issues. Checks for common problems and suggests fixes. |
+| `decantr init` | Initialize a new Decantr project. Interactive prompts guide you through selecting an archetype, blueprint, theme, and configuration. Creates `decantr.essence.json`, `DECANTR.md`, and `.decantr/` directory. |
+| `decantr status` | Show project status including essence validation, theme, guard mode, and sync status. |
+| `decantr validate [path]` | Validate a `decantr.essence.json` file against the schema and guard rules. Defaults to `./decantr.essence.json`. |
+| `decantr sync` | Sync the content registry from the API. Downloads latest patterns, archetypes, themes, and recipes to local cache. |
+| `decantr audit` | Audit the project for issues. Checks for common problems and suggests fixes. |
+| `decantr refresh` | Regenerate all derived files (DECANTR.md, tokens, decorators, context) from essence + registry. |
+| `decantr check` | Detect drift issues by validating the project against guard rules. |
+| `decantr migrate` | Migrate a v2 essence file to the v3 schema format. |
+| `decantr upgrade --apply` | Check for content updates from the registry and optionally apply them. |
+| `decantr analyze` | Scan an existing project for brownfield adoption. Detects current structure to bootstrap an essence file. |
+
+### Mutation Commands
+
+| Command | Description |
+|---------|-------------|
+| `decantr add section <archetype>` | Compose a new archetype into the essence as a section. |
+| `decantr add page <section/page>` | Add a page to an existing section. |
+| `decantr add feature <name>` | Enable a feature (auth, search, payments, etc.) in the essence. |
+| `decantr remove section <id>` | Remove a section from the essence. |
+| `decantr remove page <section/page>` | Remove a page from a section. |
+| `decantr remove feature <name>` | Disable a feature in the essence. |
 
 ### Registry Commands
 
 | Command | Description |
 |---------|-------------|
-| `npx @decantr/cli search <query>` | Search the registry for patterns, archetypes, recipes, and themes. |
-| `npx @decantr/cli suggest <query>` | Get pattern suggestions for a description. More targeted than search. |
-| `npx @decantr/cli get <type> <id>` | Get full details for an item. Type: `pattern`, `archetype`, `recipe`, `theme`, `blueprint`. |
-| `npx @decantr/cli list <type>` | List all items of a type. Type: `patterns`, `archetypes`, `recipes`, `themes`, `blueprints`. |
+| `decantr search <query>` | Search the registry for patterns, archetypes, recipes, and themes. |
+| `decantr suggest <query>` | Get pattern suggestions for a description. More targeted than search. |
+| `decantr get <type> <id>` | Get full details for an item. Type: `pattern`, `archetype`, `recipe`, `theme`, `blueprint`. |
+| `decantr list <type>` | List all items of a type. Type: `patterns`, `archetypes`, `recipes`, `themes`, `blueprints`. |
 
 ### Theme Commands
 
 | Command | Description |
 |---------|-------------|
 | `decantr theme create <name>` | Create a new custom theme. Interactive prompts for colors, modes, and shape. |
+| `decantr theme switch <name>` | Change the active theme and regenerate CSS tokens. |
 | `decantr theme list` | List all themes including custom themes. |
 | `decantr theme validate <name>` | Validate a custom theme against the schema. |
 | `decantr theme delete <name>` | Delete a custom theme. |
 | `decantr theme import <path>` | Import a theme from a JSON file. |
+
+### Publishing Commands
+
+| Command | Description |
+|---------|-------------|
+| `decantr login` | Authenticate with the registry. |
+| `decantr logout` | Log out of the registry. |
+| `decantr create` | Create a new content item. |
+| `decantr publish` | Publish content to the registry. |
 
 ### Init Command Options
 
@@ -146,6 +176,8 @@ Options:
 | `@decantr/cli` | [![npm](https://img.shields.io/npm/v/@decantr/cli)](https://www.npmjs.com/package/@decantr/cli) | CLI for project initialization, registry queries, and validation |
 | `@decantr/ui` | [![npm](https://img.shields.io/npm/v/@decantr/ui)](https://www.npmjs.com/package/@decantr/ui) | Signal-based UI framework with 100+ components |
 | `@decantr/ui-chart` | [![npm](https://img.shields.io/npm/v/@decantr/ui-chart)](https://www.npmjs.com/package/@decantr/ui-chart) | Chart library with SVG, Canvas, WebGPU renderers |
+| `@decantr/ui-catalog` | [![npm](https://img.shields.io/npm/v/@decantr/ui-catalog)](https://www.npmjs.com/package/@decantr/ui-catalog) | Component stories, demo definitions, and metadata |
+| `@decantr/vite-plugin` | [![npm](https://img.shields.io/npm/v/@decantr/vite-plugin)](https://www.npmjs.com/package/@decantr/vite-plugin) | Vite plugin for real-time design drift detection |
 
 ### Package Scripts
 
@@ -161,9 +193,9 @@ pnpm test:watch   # Run tests in watch mode
 
 ## Content Registry
 
-The `content/` directory contains the community registry of reusable design building blocks.
+Content lives in the `decantr-content` repository (separate repo) and is the source of truth for all `@official` registry content. It is synced to Supabase via a publishing pipeline and served by the API.
 
-### Patterns (87)
+### Patterns (97)
 
 Composable UI sections with layout specs, components, and presets.
 
@@ -179,9 +211,9 @@ Composable UI sections with layout specs, components, and presets.
 | **Developer** | `terminal-emulator`, `log-stream`, `diff-view`, `doc-editor`, `split-pane` |
 | **Collaboration** | `presence-avatars`, `remote-cursor`, `share-modal`, `version-history` |
 
-### Archetypes (53)
+### Archetypes (52)
 
-App-level templates defining pages, features, and suggested themes.
+App-level templates defining pages, features, and suggested themes. Each archetype has a `role` field (`primary`, `gateway`, `public`, or `auxiliary`) that determines its position in topology zones.
 
 | Category | Examples |
 |----------|----------|
@@ -198,9 +230,9 @@ App-level templates defining pages, features, and suggested themes.
 | **Marketing** | `marketing-landing`, `marketing-saas`, `marketing-creator`, `marketing-devtool`, `marketing-productivity` |
 | **Auth** | `auth-flow`, `auth-full` |
 
-### Blueprints (16)
+### Blueprints (17)
 
-Complete app compositions combining multiple archetypes.
+Complete app compositions combining multiple archetypes. Each blueprint defines routes, personality traits, and per-archetype overrides.
 
 - `saas-dashboard` -- Full SaaS application with dashboard, settings, and billing
 - `ecommerce` -- Complete e-commerce storefront with checkout
@@ -218,6 +250,7 @@ Complete app compositions combining multiple archetypes.
 - `recipe-community` -- Recipe sharing community
 - `product-landing` -- Product landing page
 - `carbon-ai-portal` -- AI-powered portal
+- `marketing-saas` -- SaaS marketing site with landing pages
 
 ### Recipes (11)
 
@@ -263,51 +296,48 @@ Style definitions for color, mode, and shape.
 
 ---
 
+## Essence Structure (V3.1)
+
+The Essence spec V3.1 organizes a project into four layers:
+
+- **Sections** -- Pages are grouped by archetype into sections rather than listed as a flat page array. Each section inherits its archetype's defaults and can override them.
+- **Routes** -- Explicit URL mapping for each page, supporting nested routes and dynamic segments.
+- **Topology** -- Zones (core, gateway, public, auxiliary) derived from archetype roles. Defines transitions and entry points between sections.
+- **Personality** -- A narrative string (e.g., "confident, technical, approachable") that sets visual direction for recipe application and decorator selection.
+
+---
+
 ## Guard Rules
 
-The guard system enforces design consistency by validating code against the Essence spec.
+The guard system enforces design consistency by validating code against the Essence spec. Eight rules are organized into two tiers.
+
+### DNA Guards (errors)
 
 | Rule | Mode | Severity | Description |
 |------|------|----------|-------------|
 | **Style Guard** | guided, strict | error | Code must use the theme specified in the Essence |
-| **Structure Guard** | guided, strict | error | Pages in code must exist in the Essence structure |
-| **Layout Guard** | strict | error | Pattern order must match the Essence layout spec |
 | **Recipe Guard** | guided, strict | error | Visual recipe must match the Essence recipe |
 | **Density Guard** | strict | warning | Content gaps must match the Essence density setting |
 | **Accessibility Guard** | guided, strict | error | Code must meet the WCAG level in the Essence |
+| **Theme-mode Compatibility** | guided, strict | error | Theme/mode combination must be compatible (e.g., a dark-only theme rejects `mode: "light"`) |
+
+### Blueprint Guards (warnings, auto-fixable)
+
+| Rule | Mode | Severity | Description |
+|------|------|----------|-------------|
+| **Structure Guard** | guided, strict | warning | Pages in code must exist in the Essence structure |
+| **Layout Guard** | strict | warning | Pattern order must match the Essence layout spec |
+| **Pattern Existence** | guided, strict | warning | All patterns referenced in layouts must exist in the registry. Includes fuzzy "did you mean?" suggestions. |
 
 ### Guard Modes
 
 - **creative** -- No enforcement. Full freedom for experimentation.
-- **guided** -- Core rules enforced (style, structure, recipe, accessibility).
+- **guided** -- Core rules enforced (style, recipe, accessibility, theme-mode compatibility, structure, pattern existence).
 - **strict** -- All rules enforced including layout and density.
 
----
+### Enforcement Fields (V3)
 
-## Development
-
-### Prerequisites
-
-- Node.js >= 20
-- pnpm >= 9
-
-### Commands
-
-```bash
-pnpm install        # Install all dependencies
-pnpm build          # Build all packages (dependency-aware order)
-pnpm test           # Run all tests via vitest
-pnpm lint           # Type-check with tsc --noEmit
-pnpm clean          # Remove all dist/ directories
-pnpm mcp            # Run the MCP server locally
-```
-
-### Package Build Order
-
-Packages are built in dependency order:
-
-1. `@decantr/essence-spec` and `@decantr/registry` (no internal dependencies)
-2. `@decantr/core`, `@decantr/mcp-server`, and `@decantr/cli` (depend on above)
+DNA violations are controlled by `dna_enforcement` (`'error'` | `'warn'` | `'off'`). Blueprint violations are controlled by `blueprint_enforcement` (`'warn'` | `'off'`).
 
 ---
 
@@ -322,8 +352,40 @@ When you run `decantr init`, these files are created:
 | `src/styles/tokens.css` | Theme tokens (CSS variables for colors, spacing, radii). |
 | `src/styles/decorators.css` | Recipe decorator classes generated from the selected recipe. |
 | `.decantr/project.json` | Project state including sync timestamps and registry source. |
-| `.decantr/context/` | Task-specific guides for different workflows. |
+| `.decantr/context/scaffold.md` | Full app overview with topology, route map, and shared components. |
+| `.decantr/context/section-{id}.md` | Per-section context with guard rules, decorators, and pattern specs. |
+| `.decantr/context/decorators.md` | Full decorator table with usage examples. |
 | `.decantr/cache/` | Local cache of registry content (gitignored). |
+
+---
+
+## Development
+
+### Prerequisites
+
+- Node.js >= 20
+- pnpm >= 9
+
+### Commands
+
+```bash
+pnpm install           # Install all dependencies
+pnpm build             # Build all packages (dependency-aware order)
+pnpm test              # Run all tests via vitest
+pnpm lint              # Type-check with tsc --noEmit
+pnpm clean             # Remove all dist/ directories
+pnpm mcp               # Run the MCP server locally
+pnpm showcase:build    # Build showcase projects
+pnpm showcase:copy     # Copy built showcase output to web app
+pnpm showcase          # Build + copy showcase
+```
+
+### Package Build Order
+
+Packages are built in dependency order:
+
+1. `@decantr/essence-spec` and `@decantr/registry` (no internal dependencies)
+2. `@decantr/core`, `@decantr/mcp-server`, and `@decantr/cli` (depend on above)
 
 ---
 
