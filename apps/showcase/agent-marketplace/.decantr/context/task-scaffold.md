@@ -36,7 +36,7 @@ Before scaffolding:
 
 During scaffolding:
 
-- [ ] Create the shell layout (chat-portal)
+- [ ] Create the shell layout (sidebar-main)
 - [ ] Generate pages from `blueprint.pages[]`
 - [ ] Add pattern placeholders for each page's `layout[]`
 - [ ] Apply theme colors and typography
@@ -50,10 +50,14 @@ After scaffolding:
 
 ## What to Generate
 
-- **chat** (chat-portal)
-  - Patterns: header, messages, input
-- **new** (chat-portal)
-  - Patterns: empty-thread, input
+- **agent-overview** (sidebar-main)
+  - Patterns: agent-swarm-canvas as swarm-topology, agent-timeline as activity-feed
+- **agent-detail** (sidebar-main)
+  - Patterns: agent-timeline as agent-history, neural-feedback-loop as feedback-inspector
+- **agent-config** (sidebar-main)
+  - Patterns: settings-nav, form-sections (structured) as agent-parameters
+- **agent-marketplace** (sidebar-main)
+  - Patterns: hero (standard) as marketplace-hero, generative-card-grid as agent-catalog
 - **auth-full-login** (centered)
   - Patterns: form
 - **auth-full-register** (centered)
@@ -70,26 +74,14 @@ After scaffolding:
   - Patterns: form
 - **auth-full-phone-verify** (centered)
   - Patterns: form
-- **settings-full-profile** (inherit)
-  - Patterns: settings
-- **settings-full-security** (inherit)
-  - Patterns: security-settings, sessions
-- **settings-full-preferences** (inherit)
-  - Patterns: settings
-- **settings-full-danger** (inherit)
-  - Patterns: settings
 - **marketing-saas-home** (top-nav-footer)
   - Patterns: hero, features, how-it-works, pricing, testimonials, cta
-- **about-hybrid-about** (top-nav-footer)
-  - Patterns: hero, story, team, values, cta
-- **contact-contact** (top-nav-footer)
-  - Patterns: hero, form
-- **legal-privacy** (top-nav-footer)
-  - Patterns: content
-- **legal-terms** (top-nav-footer)
-  - Patterns: content
-- **legal-cookies** (top-nav-footer)
-  - Patterns: content
+- **ai-transparency-model-overview** (sidebar-main)
+  - Patterns: stats-overview as model-kpis, neural-feedback-loop as feedback-summary
+- **ai-transparency-inference-log** (sidebar-main)
+  - Patterns: agent-timeline as inference-trace
+- **ai-transparency-confidence-explorer** (sidebar-main)
+  - Patterns: intent-radar as confidence-distribution, stats-detail as metric-breakdown
 
 ## Next Steps
 

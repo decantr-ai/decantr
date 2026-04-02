@@ -64,14 +64,14 @@ Layout: form
 
 Layout: form
 
-### mfa-setup (/mfa-setup)
+### mfa-setup (/auth-full/mfa-setup)
 
 Layout: form
 
-### mfa-verify (/mfa-verify)
+### mfa-verify (/auth-full/mfa-verify)
 
 Layout: form
 
-### phone-verify (/phone-verify)
+### phone-verify (/auth-full/phone-verify)
 
 Layout: form

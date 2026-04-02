@@ -1,14 +1,18 @@
 name: Deploy UI Site to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'apps/ui-site/**'
-      - 'packages/ui-catalog/**'
-      - 'packages/ui/**'
-      - 'packages/ui-chart/**'
-      - 'packages/css/**'
+  # Disabled: this workflow deploys to the same GitHub Pages environment as
+  # the docs homepage (pages.yml), overwriting decantr.ai with the ui-site build.
+  # Re-enable when ui-site has its own deployment target (e.g. ui.decantr.ai).
+  #
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'apps/ui-site/**'
+  #     - 'packages/ui-catalog/**'
+  #     - 'packages/ui/**'
+  #     - 'packages/ui-chart/**'
+  #     - 'packages/css/**'
 
   workflow_dispatch:
 

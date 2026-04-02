@@ -1,0 +1,32 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "pnpm",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": [
+      "CLAUDE.md"
+    ]
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-02T11:26:10.317Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": [],
+      "recipes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-02T11:26:10.317Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--theme=luminarum --mode=dark --guard=guided"
+  }
+}
