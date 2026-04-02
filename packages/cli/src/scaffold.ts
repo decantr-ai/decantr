@@ -557,11 +557,19 @@ export function generateTokensCSS(themeData: ThemeData | undefined, mode: string
       '--d-radius-xl': '1rem',
       '--d-radius-full': '9999px',
 
-      // Shadows
-      '--d-shadow-sm': '0 1px 2px rgba(0,0,0,0.05)',
-      '--d-shadow': '0 1px 3px rgba(0,0,0,0.1)',
-      '--d-shadow-md': '0 4px 6px rgba(0,0,0,0.1)',
-      '--d-shadow-lg': '0 10px 15px rgba(0,0,0,0.1)',
+      // Shadows — dark mode needs higher opacity to be visible on dark backgrounds
+      '--d-shadow-sm': tokenMode === 'light'
+        ? '0 1px 2px rgba(0,0,0,0.05)'
+        : '0 1px 2px rgba(0,0,0,0.2)',
+      '--d-shadow': tokenMode === 'light'
+        ? '0 1px 3px rgba(0,0,0,0.1)'
+        : '0 1px 3px rgba(0,0,0,0.25)',
+      '--d-shadow-md': tokenMode === 'light'
+        ? '0 4px 6px rgba(0,0,0,0.1)'
+        : '0 4px 6px rgba(0,0,0,0.3)',
+      '--d-shadow-lg': tokenMode === 'light'
+        ? '0 10px 15px rgba(0,0,0,0.1)'
+        : '0 10px 15px rgba(0,0,0,0.4)',
 
       // Status colors
       '--d-success': themeData.tokens?.base?.success || '#22c55e',
@@ -586,7 +594,11 @@ ${lines}
   if (mode === 'auto') {
     const lightTokens = buildTokens('light');
     // Only emit palette tokens that differ between modes
-    const paletteKeys = ['--d-bg', '--d-surface', '--d-surface-raised', '--d-border', '--d-text', '--d-text-muted', '--d-primary-hover'];
+    const paletteKeys = [
+      '--d-bg', '--d-surface', '--d-surface-raised', '--d-border',
+      '--d-text', '--d-text-muted', '--d-primary-hover',
+      '--d-shadow-sm', '--d-shadow', '--d-shadow-md', '--d-shadow-lg',
+    ];
     const lightLines = Object.entries(lightTokens)
       .filter(([key]) => paletteKeys.includes(key))
       .map(([key, value]) => `    ${key}: ${value};`)
