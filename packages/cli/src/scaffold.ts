@@ -2451,6 +2451,7 @@ export async function refreshDerivedFiles(
               description: (inner.description as string) || '',
               regions: (inner.config?.regions as string[]) || [],
               layout: (inner.layout as string) || undefined,
+              guidance: (inner.guidance as Record<string, string>) || undefined,
             };
           }
         } catch { /* continue without shell info */ }
@@ -2628,6 +2629,7 @@ export async function refreshDerivedFiles(
           description: (inner.description as string) || '',
           regions: (inner.config?.regions as string[]) || [],
           layout: (inner.layout as string) || undefined,
+          guidance: (inner.guidance as Record<string, string>) || undefined,
         };
       }
     } catch { /* continue without shell info */ }
@@ -2773,6 +2775,7 @@ export interface ShellInfo {
   description: string;
   regions: string[];
   layout?: string;
+  guidance?: Record<string, string>;
 }
 
 export interface SectionContextInput {
@@ -2830,6 +2833,18 @@ export function generateSectionContext(input: SectionContextInput): string {
     }
   }
   lines.push('');
+
+  // Shell Notes — guidance from the shell definition
+  if (shellInfo?.guidance && Object.keys(shellInfo.guidance).length > 0) {
+    lines.push(`## Shell Notes (${section.shell})`);
+    lines.push('');
+    for (const [key, value] of Object.entries(shellInfo.guidance)) {
+      const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      lines.push(`- **${label}:** ${value}`);
+    }
+    lines.push('');
+  }
+
   lines.push('---');
   lines.push('');
 
