@@ -495,14 +495,14 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
         // Derive topology from composed archetypes
         let topology = null;
-        const composeEntries = (blueprint as any).compose || (blueprint as any).data?.compose;
+        const composeEntries = (blueprint as any).compose;
         if (composeEntries && Array.isArray(composeEntries) && composeEntries.length > 0) {
           const zoneInputs: ZoneInput[] = [];
           const archetypePromises = composeEntries.map(async (entry: any) => {
             const arcId = typeof entry === 'string' ? entry : entry.archetype;
             try {
               const arch = await apiClient.getContent('archetypes', namespace, arcId);
-              const archData = (arch as any).data || arch;
+              const archData = arch as any;
               const explicitRole = typeof entry === 'object' ? entry.role : undefined;
               zoneInputs.push({
                 archetypeId: arcId,
@@ -601,8 +601,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           let fullPattern: Pattern | null = null;
           try {
             const fetched = await apiClient.getPattern('@official', candidate.slug);
-            // Unwrap .data if the API wraps the response
-            fullPattern = ((fetched as any).data ?? fetched) as Pattern;
+            fullPattern = fetched as Pattern;
           } catch { /* pattern fetch failed, use preliminary data */ }
 
           let score = candidate.score;

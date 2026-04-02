@@ -142,9 +142,11 @@ export class RegistryAPIClient {
     const cached = this.getCached<T>(cacheKey);
     if (cached) return cached;
 
-    const result = await this.request<T>(`/${type}/${namespace}/${slug}`);
-    this.setCache(cacheKey, result);
-    return result;
+    const raw = await this.request<T>(`/${type}/${namespace}/${slug}`);
+    // API returns { id, type, slug, data: {...actual content...} } — unwrap
+    const unwrapped = ((raw as any).data ?? raw) as T;
+    this.setCache(cacheKey, unwrapped);
+    return unwrapped;
   }
 
   // ── Typed convenience methods ──

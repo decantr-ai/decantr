@@ -558,10 +558,7 @@ async function cmdInit(args: InitArgs) {
     // Fetch the blueprint to get its primary archetype and theme
     const blueprintResult = await registryClient.fetchBlueprint(options.blueprint);
     if (blueprintResult) {
-      // API/cache returns wrapper {id, type, slug, data: {...actual content...}}
-      // Unwrap: use inner .data if present, otherwise treat as direct content
-      const rawBlueprint = blueprintResult.data as Record<string, unknown>;
-      const blueprint = (rawBlueprint.data ?? rawBlueprint) as {
+      const blueprint = blueprintResult.data as {
         id: string;
         description?: string;
         compose?: ComposeEntry[];
@@ -609,9 +606,7 @@ async function cmdInit(args: InitArgs) {
         for (const entry of entries) {
           const id = typeof entry === 'string' ? entry : entry.archetype;
           const r = await registryClient.fetchArchetype(id);
-          const raw = r?.data as Record<string, unknown> | undefined;
-          const inner = raw?.data ?? raw;
-          results.push([id, inner] as const);
+          results.push([id, r?.data ?? null] as const);
         }
         const archetypeMap = new Map(results.map(([id, data]) => [id, (data || null) as any]));
 
@@ -672,8 +667,7 @@ async function cmdInit(args: InitArgs) {
             try {
               const result = await registryClient.fetchPattern(pid);
               if (result) {
-                const raw = result.data as Record<string, unknown>;
-                const inner = (raw.data ?? raw) as Record<string, any>;
+                const inner = result.data as Record<string, any>;
                 const defaultPreset = inner.default_preset || 'standard';
                 const preset = inner.presets?.[defaultPreset];
                 patternSpecs[pid] = {
@@ -731,8 +725,7 @@ async function cmdInit(args: InitArgs) {
     // Direct archetype selection
     const archetypeResult = await registryClient.fetchArchetype(options.archetype);
     if (archetypeResult) {
-      const rawArch = archetypeResult.data as Record<string, unknown>;
-      archetypeData = (rawArch.data ?? rawArch) as typeof archetypeData;
+      archetypeData = archetypeResult.data as typeof archetypeData;
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch archetype "${options.archetype}". Using defaults.${RESET}`);
     }
@@ -744,8 +737,7 @@ async function cmdInit(args: InitArgs) {
   if (options.theme) {
     const themeResult = await registryClient.fetchTheme(options.theme);
     if (themeResult) {
-      const rawTheme = themeResult.data as Record<string, unknown>;
-      const theme = (rawTheme.data ?? rawTheme) as Record<string, any>;
+      const theme = themeResult.data as Record<string, any>;
       themeData = {
         seed: theme.seed,
         palette: theme.palette,

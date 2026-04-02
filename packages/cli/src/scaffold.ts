@@ -2369,8 +2369,7 @@ export async function refreshDerivedFiles(
   if (!themeData) try {
     const themeResult = await registry.fetchTheme(themeName);
     if (themeResult?.data) {
-      const raw = themeResult.data as Record<string, unknown>;
-      const t = (raw.data ?? raw) as Record<string, unknown>;
+      const t = themeResult.data as Record<string, unknown>;
       themeData = {
         seed: t.seed as ThemeData['seed'],
         palette: t.palette as ThemeData['palette'],
@@ -2554,8 +2553,7 @@ export async function refreshDerivedFiles(
               try {
                 const patResult = await registry.fetchPattern(name);
                 if (patResult?.data) {
-                  const raw = patResult.data as Record<string, unknown>;
-                  const inner = ((raw.data ?? raw) as Record<string, any>);
+                  const inner = patResult.data as Record<string, any>;
                   const defaultPreset = inner.default_preset || 'standard';
                   const preset = inner.presets?.[defaultPreset];
                   let slots = preset?.layout?.slots || {};
@@ -2651,8 +2649,7 @@ export async function refreshDerivedFiles(
         try {
           const shellResult = await registry.fetchShell(shellId);
           if (shellResult?.data) {
-            const raw = shellResult.data as Record<string, unknown>;
-            const inner = ((raw.data ?? raw) as Record<string, any>);
+            const inner = shellResult.data as Record<string, any>;
             shellInfoCache[shellId] = {
               description: (inner.description as string) || '',
               regions: (inner.config?.regions as string[]) || [],
@@ -2769,8 +2766,7 @@ export async function refreshDerivedFiles(
             try {
               const patResult = await registry.fetchPattern(name);
               if (patResult?.data) {
-                const raw = patResult.data as Record<string, unknown>;
-                const inner = ((raw.data ?? raw) as Record<string, any>);
+                const inner = patResult.data as Record<string, any>;
                 const defaultPreset = inner.default_preset || 'standard';
                 const preset = inner.presets?.[defaultPreset];
                 let slots = preset?.layout?.slots || {};
@@ -2830,8 +2826,7 @@ export async function refreshDerivedFiles(
     try {
       const shellResult = await registry.fetchShell(shell);
       if (shellResult?.data) {
-        const raw = shellResult.data as Record<string, unknown>;
-        const inner = ((raw.data ?? raw) as Record<string, any>);
+        const inner = shellResult.data as Record<string, any>;
         v30ShellInfo = {
           description: (inner.description as string) || '',
           regions: (inner.config?.regions as string[]) || [],
