@@ -2798,13 +2798,10 @@ export function generateSectionContext(input: SectionContextInput): string {
     lines.push('');
   }
 
-  // Personality
+  // Personality — reference only (full text in scaffold.md)
   if (personality.length > 0) {
-    lines.push('## Personality');
-    lines.push('');
-    lines.push(personality.join(', '));
-    lines.push('');
-    lines.push('---');
+    const preview = personality[0].length > 60 ? personality[0].substring(0, 60) + '...' : personality.join(', ');
+    lines.push(`**Personality:** ${preview} (full details in scaffold.md)`);
     lines.push('');
   }
 
