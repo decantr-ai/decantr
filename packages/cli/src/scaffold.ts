@@ -695,6 +695,14 @@ export function generateDecoratorRule(name: string, description: string): string
   const rules: string[] = [];
   const descLower = description.toLowerCase();
 
+  // Detect semantic type for interactive state generation
+  const isCard = descLower.includes('card') || descLower.includes('panel');
+  const isInput = descLower.includes('input') || descLower.includes('field') || descLower.includes('textarea');
+  const isGlass = descLower.includes('glassmorphic') || descLower.includes('glass');
+  const isInteractive = isCard || isInput || isGlass;
+  const isNonInteractive = descLower.includes('divider') || descLower.includes('skeleton')
+    || descLower.includes('keyframe') || descLower.includes('canvas');
+
   // Font patterns
   if (descLower.includes('monospace') || descLower.includes('mono font')) {
     rules.push("font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace");
@@ -709,6 +717,18 @@ export function generateDecoratorRule(name: string, description: string): string
     rules.push('background: var(--d-bg)');
   } else if (descLower.includes('primary-tinted') || descLower.includes('primary background')) {
     rules.push('background: color-mix(in srgb, var(--d-primary) 15%, var(--d-surface))');
+  }
+
+  // Input base styles: always add bg, padding, radius, color
+  if (isInput) {
+    if (!rules.some(r => r.startsWith('background'))) {
+      rules.push('background: var(--d-surface)');
+    }
+    rules.push('color: var(--d-text)');
+    rules.push('padding: 0.5rem 0.75rem');
+    rules.push('border-radius: var(--d-radius)');
+    rules.push('width: 100%');
+    rules.push('outline: none');
   }
 
   // Border patterns (specific before generic)
@@ -727,16 +747,18 @@ export function generateDecoratorRule(name: string, description: string): string
   const radiusMatch = descLower.match(/(\d+)px radius/);
   if (radiusMatch) {
     rules.push(`border-radius: ${radiusMatch[1]}px`);
-  } else if (descLower.includes('radius') || descLower.includes('rounded')) {
+  } else if ((descLower.includes('radius') || descLower.includes('rounded')) && !isInput) {
     rules.push('border-radius: var(--d-radius)');
   }
 
   // Shadow patterns
-  if (descLower.includes('hover shadow') || descLower.includes('shadow transition')) {
-    rules.push('transition: box-shadow 0.15s ease');
-  }
   if (descLower.includes('elevation') || descLower.includes('shadow')) {
     rules.push('box-shadow: var(--d-shadow)');
+  }
+
+  // Transition for interactive elements
+  if (isInteractive && !isNonInteractive) {
+    rules.push('transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease');
   }
 
   // Animation patterns
@@ -752,7 +774,7 @@ export function generateDecoratorRule(name: string, description: string): string
   if (blurMatch) {
     rules.push(`backdrop-filter: blur(${blurMatch[1]}px)`);
     rules.push(`-webkit-backdrop-filter: blur(${blurMatch[1]}px)`);
-  } else if (descLower.includes('glassmorphic') || descLower.includes('glass')) {
+  } else if (isGlass) {
     rules.push('backdrop-filter: blur(12px)');
     rules.push('-webkit-backdrop-filter: blur(12px)');
   } else if (descLower.includes('blur')) {
@@ -762,7 +784,6 @@ export function generateDecoratorRule(name: string, description: string): string
 
   // Semi-transparent background for glassmorphic panels
   if (descLower.includes('semi-transparent') || descLower.includes('glassmorphic')) {
-    // Override any prior background rule with rgba version
     const bgIdx = rules.findIndex(r => r.startsWith('background:'));
     const rgbaBg = 'background: rgba(31, 31, 35, 0.8)';
     if (bgIdx !== -1) {
@@ -786,7 +807,7 @@ export function generateDecoratorRule(name: string, description: string): string
     rules.push('max-width: 80%');
   }
 
-  // Code blocks: add padding, radius, and overflow when monospace/code is detected
+  // Code blocks
   if (descLower.includes('monospace') || descLower.includes('code')) {
     if (!rules.some(r => r.startsWith('padding'))) {
       rules.push('padding: 0.75rem 1rem');
@@ -802,7 +823,27 @@ export function generateDecoratorRule(name: string, description: string): string
     return `/* .${name}: ${description} */`;
   }
 
-  return `.${name} {\n  ${rules.join(';\n  ')};\n}`;
+  // Build base rule
+  let css = `.${name} {\n  ${rules.join(';\n  ')};\n}`;
+
+  // Interactive state rules (only for interactive decorators)
+  if (isInteractive && !isNonInteractive) {
+    const stateRules: string[] = [];
+
+    if (isCard || isGlass) {
+      stateRules.push(`.${name}:hover {\n  border-color: var(--d-primary-hover, var(--d-border));\n  box-shadow: var(--d-shadow-md);\n}`);
+    }
+
+    if (isInput) {
+      stateRules.push(`.${name}:focus {\n  border-color: var(--d-primary);\n  box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-primary) 25%, transparent);\n}`);
+      stateRules.push(`.${name}::placeholder {\n  color: var(--d-text-muted);\n}`);
+      stateRules.push(`.${name}:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}`);
+    }
+
+    css += '\n\n' + stateRules.join('\n\n');
+  }
+
+  return css;
 }
 
 /**
