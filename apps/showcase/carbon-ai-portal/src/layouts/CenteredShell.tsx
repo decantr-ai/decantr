@@ -1,22 +1,23 @@
 import { css } from '@decantr/css';
-import { Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Outlet, Link } from 'react-router-dom';
+import { Cpu } from 'lucide-react';
 
-export function CenteredShell({ children }: { children: React.ReactNode }) {
+export function CenteredShell() {
   return (
     <div
-      className={css('_flex _aic _jcc _hscreen _p4') + ' carbon-canvas'}
+      className={css('_flex _col _aic _jcc _p4') + ' carbon-canvas'}
+      style={{ minHeight: '100vh' }}
     >
-      <div className={css('_flex _col _gap6') + ' carbon-card'} style={{ width: '100%', maxWidth: '420px', padding: 'var(--d-gap-8)' }}>
-        <div className={css('_flex _col _aic _gap3')}>
-          <Link to="/" className={css('_flex _aic _gap2 _fgtext')}>
-            <div className={css('_flex _aic _jcc _roundedfull _bgprimary')} style={{ width: '36px', height: '36px' }}>
-              <Sparkles size={20} color="#fff" />
-            </div>
-            <span className={css('_fontsemi _textlg')}>Carbon AI</span>
-          </Link>
-        </div>
-        {children}
+      <Link to="/" className={css('_flex _aic _gap2 _mb8 _fgtext _fontsemi _textlg')}>
+        <Cpu size={22} strokeWidth={1.5} />
+        Carbon AI
+      </Link>
+      <div style={{ width: '100%', maxWidth: 420 }}>
+        <Outlet />
+      </div>
+      <div className={css('_mt8 _textxs _fgmuted _flex _gap4')}>
+        <Link to="/privacy" className={css('_fgmuted _trans')}>Privacy</Link>
+        <Link to="/terms" className={css('_fgmuted _trans')}>Terms</Link>
       </div>
     </div>
   );

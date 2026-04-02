@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateTokensCSS, generateDecoratorsCSS, generateDecoratorRule, generateGlobalCSS } from '../src/scaffold.js';
+import { generateTokensCSS, generateDecoratorsCSS, generateDecoratorRule, generateGlobalCSS, generateSectionContext } from '../src/scaffold.js';
+import type { SectionContextInput } from '../src/scaffold.js';
 
 describe('generateDecoratorRule', () => {
   it('returns a CSS comment for empty description', () => {
@@ -206,5 +207,95 @@ describe('generateGlobalCSS', () => {
   it('extracts font family from personality when mentioned', () => {
     const css = generateGlobalCSS(['Polished UI with Inter typeface and monospace for code']);
     expect(css).toContain('Inter');
+  });
+});
+
+describe('generateSectionContext pattern deduplication', () => {
+  function makeInput(overrides?: Partial<SectionContextInput>): SectionContextInput {
+    return {
+      section: {
+        id: 'auth-full',
+        role: 'gateway',
+        shell: 'centered',
+        features: ['auth'],
+        description: 'Authentication section',
+        pages: [
+          {
+            id: 'login',
+            route: '/login',
+            layout: ['form', 'social-login'],
+            patterns: [],
+          },
+          {
+            id: 'register',
+            route: '/register',
+            layout: ['form', 'social-login'],
+            patterns: [],
+          },
+          {
+            id: 'forgot-password',
+            route: '/forgot-password',
+            layout: ['form'],
+            patterns: [],
+          },
+        ],
+      },
+      themeTokens: '',
+      decorators: [],
+      guardConfig: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+      personality: ['clean', 'modern'],
+      themeName: 'luminarum',
+      recipeName: 'carbon',
+      zoneContext: '',
+      patternSpecs: {
+        'form': {
+          description: 'A form pattern',
+          components: ['Input', 'Button', 'Label'],
+          slots: { header: 'Form title', body: 'Form fields', actions: 'Submit/cancel buttons' },
+        },
+        'social-login': {
+          description: 'Social login buttons',
+          components: ['Button', 'Icon'],
+          slots: { providers: 'OAuth provider buttons' },
+        },
+      },
+      ...overrides,
+    };
+  }
+
+  it('lists each pattern spec only once even when used by multiple pages', () => {
+    const result = generateSectionContext(makeInput());
+
+    // "form" pattern appears on 3 pages but spec should only appear once
+    const formSpecCount = (result.match(/### form\b/g) || []).length;
+    expect(formSpecCount).toBe(1);
+
+    // "social-login" appears on 2 pages but spec should only appear once
+    const socialCount = (result.match(/### social-login\b/g) || []).length;
+    expect(socialCount).toBe(1);
+  });
+
+  it('emits pattern specs in a Pattern Reference section before Pages', () => {
+    const result = generateSectionContext(makeInput());
+
+    const patternRefIdx = result.indexOf('## Pattern Reference');
+    const pagesIdx = result.indexOf('## Pages');
+    expect(patternRefIdx).toBeGreaterThan(-1);
+    expect(pagesIdx).toBeGreaterThan(patternRefIdx);
+  });
+
+  it('does not repeat pattern specs inside individual page entries', () => {
+    const result = generateSectionContext(makeInput());
+
+    // After "## Pages", there should be no "**Components:**" or "**Layout slots:**"
+    const afterPages = result.substring(result.indexOf('## Pages'));
+    expect(afterPages).not.toContain('**Components:**');
+    expect(afterPages).not.toContain('**Layout slots:**');
+  });
+
+  it('references personality via scaffold.md instead of inlining', () => {
+    const result = generateSectionContext(makeInput());
+    expect(result).toContain('See scaffold.md for personality and visual direction.');
+    expect(result).not.toContain('clean, modern');
   });
 });

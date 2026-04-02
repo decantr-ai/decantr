@@ -1,10 +1,12 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateEssence, evaluateGuard } from '@decantr/essence-spec';
+import { isOptedIn, optIn, collectMetrics, sendGuardMetrics } from '../telemetry.js';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
 const YELLOW = '\x1b[33m';
+const CYAN = '\x1b[36m';
 const RESET = '\x1b[0m';
 const DIM = '\x1b[2m';
 
@@ -15,7 +17,11 @@ interface Issue {
   suggestion?: string;
 }
 
-export async function cmdHeal(projectRoot: string = process.cwd()): Promise<void> {
+export interface CheckOptions {
+  telemetry?: boolean;
+}
+
+export async function cmdHeal(projectRoot: string = process.cwd(), options: CheckOptions = {}): Promise<void> {
   const essencePath = join(projectRoot, 'decantr.essence.json');
 
   if (!existsSync(essencePath)) {
@@ -57,6 +63,7 @@ export async function cmdHeal(projectRoot: string = process.cwd()): Promise<void
 
   if (issues.length === 0) {
     console.log(`${GREEN}No issues found. Project is healthy.${RESET}`);
+    await maybeSendTelemetry(projectRoot, essence, issues, options);
     return;
   }
 
@@ -71,4 +78,24 @@ export async function cmdHeal(projectRoot: string = process.cwd()): Promise<void
   }
 
   console.log(`\n${YELLOW}Manual fixes required. Review the issues above.${RESET}`);
+
+  await maybeSendTelemetry(projectRoot, essence, issues, options);
+}
+
+async function maybeSendTelemetry(
+  projectRoot: string,
+  essence: Record<string, unknown>,
+  issues: Issue[],
+  options: CheckOptions,
+): Promise<void> {
+  if (options.telemetry && !isOptedIn(projectRoot)) {
+    optIn(projectRoot);
+    console.log(`\n${CYAN}Telemetry enabled.${RESET} Anonymous guard metrics will be sent on future checks.`);
+    console.log(`${DIM}Set "telemetry": false in .decantr/project.json to opt out.${RESET}`);
+  }
+
+  if (isOptedIn(projectRoot)) {
+    const metrics = collectMetrics(essence, issues);
+    sendGuardMetrics(metrics);
+  }
 }

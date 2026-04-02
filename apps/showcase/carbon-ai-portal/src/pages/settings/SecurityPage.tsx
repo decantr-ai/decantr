@@ -1,101 +1,85 @@
 import { css } from '@decantr/css';
+import { Shield, Smartphone, Monitor, Globe } from 'lucide-react';
+import { Button, Card, Input, Badge, Toggle } from '@/components';
 import { useState } from 'react';
-import { Monitor, Smartphone, Globe, Trash2 } from 'lucide-react';
-import { ChatPortalShell } from '@/layouts/ChatPortalShell';
-import { Input, Button, Card, Toggle, Badge } from '@/components';
 
 const sessions = [
-  { id: '1', device: 'MacBook Pro', browser: 'Chrome 120', location: 'San Francisco, US', lastActive: 'Now', current: true, icon: Monitor },
-  { id: '2', device: 'iPhone 15', browser: 'Safari', location: 'San Francisco, US', lastActive: '2 hours ago', current: false, icon: Smartphone },
-  { id: '3', device: 'Windows PC', browser: 'Firefox 121', location: 'New York, US', lastActive: '3 days ago', current: false, icon: Globe },
+  { device: 'MacBook Pro', location: 'San Francisco, CA', active: true, icon: Monitor, lastActive: 'Now' },
+  { device: 'iPhone 15', location: 'San Francisco, CA', active: false, icon: Smartphone, lastActive: '2 hours ago' },
+  { device: 'Chrome on Windows', location: 'New York, NY', active: false, icon: Globe, lastActive: '3 days ago' },
 ];
 
 export function SecurityPage() {
-  const [mfaEnabled, setMfaEnabled] = useState(true);
+  const [mfaEnabled, setMfaEnabled] = useState(false);
 
   return (
-    <ChatPortalShell mode="settings">
-      <div className={css('_flex1 _overyauto _p6')}>
-        <div className={css('_flex _col _gap6')} style={{ maxWidth: '680px' }}>
-          <div className={css('_flex _col _gap1')}>
-            <h2 className={css('_text2xl _fontsemi _fgtext')}>Security</h2>
-            <p className={css('_textsm _fgmuted')}>Manage your password, two-factor authentication, and active sessions.</p>
-          </div>
+    <div className={css('_flex _col _flex1 _overyauto _p6')}>
+      <div style={{ maxWidth: 640, marginInline: 'auto', width: '100%' }}>
+        <h1 className={css('_heading3 _mb1')}>Security</h1>
+        <p className={css('_textsm _fgmuted _mb6')}>Manage your account security and sessions.</p>
 
-          {/* Password change */}
+        <div className={css('_flex _col _gap6')}>
+          {/* Change password */}
           <Card>
-            <div className={css('_flex _col _gap4')}>
-              <div className={css('_flex _col _gap1')}>
-                <h3 className={css('_textlg _fontsemi _fgtext')}>Change password</h3>
-                <p className={css('_textsm _fgmuted')}>Update your password regularly to keep your account secure.</p>
-              </div>
+            <h2 className={css('_fontsemi _textbase _mb4')}>Change password</h2>
+            <form className={css('_flex _col _gap4')} onSubmit={(e) => e.preventDefault()}>
               <Input label="Current password" type="password" placeholder="Enter current password" />
               <Input label="New password" type="password" placeholder="Enter new password" />
-              <Input label="Confirm new password" type="password" placeholder="Confirm new password" />
+              <Input label="Confirm password" type="password" placeholder="Confirm new password" />
               <div className={css('_flex _jcfe')}>
                 <Button variant="primary">Update password</Button>
               </div>
-            </div>
+            </form>
           </Card>
 
           {/* MFA */}
           <Card>
             <div className={css('_flex _aic _jcsb')}>
-              <div className={css('_flex _col _gap1')}>
-                <h3 className={css('_textlg _fontsemi _fgtext')}>Two-factor authentication</h3>
-                <p className={css('_textsm _fgmuted')}>Add an extra layer of security to your account.</p>
-              </div>
-              <Toggle checked={mfaEnabled} onChange={setMfaEnabled} />
-            </div>
-            {mfaEnabled && (
-              <div className={css('_mt4 _pt4')} style={{ borderTop: '1px solid var(--d-border)' }}>
-                <div className={css('_flex _aic _gap3')}>
-                  <Badge variant="success">Active</Badge>
-                  <span className={css('_textsm _fgmuted')}>Authenticator app configured</span>
+              <div className={css('_flex _aic _gap3')}>
+                <Shield size={20} style={{ color: 'var(--d-primary)' }} />
+                <div>
+                  <h2 className={css('_fontsemi _textbase')}>Two-factor authentication</h2>
+                  <p className={css('_textsm _fgmuted _mt1')}>Add an extra layer of security to your account.</p>
                 </div>
               </div>
-            )}
+              <Toggle checked={mfaEnabled} onChange={setMfaEnabled} label="Toggle MFA" />
+            </div>
           </Card>
 
           {/* Sessions */}
           <Card>
-            <div className={css('_flex _col _gap4')}>
-              <div className={css('_flex _col _gap1')}>
-                <h3 className={css('_textlg _fontsemi _fgtext')}>Active sessions</h3>
-                <p className={css('_textsm _fgmuted')}>Manage your active sessions and revoke access on other devices.</p>
-              </div>
-              <div className={css('_flex _col _gap3')}>
-                {sessions.map((session) => (
+            <h2 className={css('_fontsemi _textbase _mb4')}>Active sessions</h2>
+            <div className={css('_flex _col _gap3')}>
+              {sessions.map((s) => {
+                const Icon = s.icon;
+                return (
                   <div
-                    key={session.id}
-                    className={css('_flex _aic _jcsb _p3 _rounded')}
-                    style={{ background: 'var(--d-bg)', border: '1px solid var(--d-border)' }}
+                    key={s.device}
+                    className={css('_flex _aic _jcsb _py3')}
+                    style={{ borderBottom: '1px solid var(--d-border)' }}
                   >
                     <div className={css('_flex _aic _gap3')}>
-                      <session.icon size={20} className={css('_fgmuted')} />
-                      <div className={css('_flex _col _gap1')}>
-                        <div className={css('_flex _aic _gap2')}>
-                          <span className={css('_textsm _fontmedium _fgtext')}>{session.device}</span>
-                          <span className={css('_textxs _fgmuted')}>{session.browser}</span>
-                          {session.current && <Badge variant="primary">Current</Badge>}
+                      <Icon size={18} className={css('_fgmuted')} />
+                      <div>
+                        <div className={css('_textsm _fontsemi _flex _aic _gap2')}>
+                          {s.device}
+                          {s.active && <Badge variant="success">Active</Badge>}
                         </div>
-                        <span className={css('_textxs _fgmuted')}>
-                          {session.location} -- {session.lastActive}
-                        </span>
+                        <div className={css('_textxs _fgmuted')}>
+                          {s.location} -- {s.lastActive}
+                        </div>
                       </div>
                     </div>
-                    {!session.current && (
-                      <button className={css('_flex _aic _jcc _p2 _rounded _trans') + ' btn-ghost'} title="Revoke session">
-                        <Trash2 size={14} className={css('_fgerror')} />
-                      </button>
+                    {!s.active && (
+                      <Button variant="ghost" size="sm">Revoke</Button>
                     )}
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </Card>
         </div>
       </div>
-    </ChatPortalShell>
+    </div>
   );
 }

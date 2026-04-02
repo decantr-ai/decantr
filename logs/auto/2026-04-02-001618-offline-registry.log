@@ -1,0 +1,37 @@
+Operating as Principal Decantr Engineer with full architecture awareness. Let me read the existing files first.
+Now let me check the `InitArgs` interface and `cmdInit` to understand the existing `--offline` flag usage.
+Let me also check the `cmdHelp` function and the `cmdRefresh` import to understand what needs to change.
+Now let me check existing test files to understand the test patterns.
+Good, I have a clear picture. Now let me implement. I'll create the three changes in parallel:
+
+1. New `registry-mirror.ts` command
+2. Modify `index.ts` to add the `registry` command and `--offline` to `refresh`
+3. Create tests
+Now add the import and the `registry` command + `--offline` for `refresh` in `index.ts`.
+Now add the `registry` command case before the `default` case, and add `--offline` to `refresh`.
+Now update the help text to include the `registry` command.
+Now update `cmdRefresh` to accept an `offline` option. Let me read the full file first.
+Now create the tests.
+Build passes. Now run tests.
+The mock is getting consumed by the first test and not being re-applied for subsequent tests. The issue is that `vi.mock` creates the mock once but only returns the implementation for the first call. Let me fix the test — the mock needs to always return a fresh instance.
+The issue is that `vi.restoreAllMocks()` is restoring the mock implementation, so subsequent tests get a bare constructor. I need to not restore mocks or handle this differently. Let me rewrite the test to be more robust.
+The issue is `vi.restoreAllMocks()` is undoing the `vi.fn().mockImplementation()` on the constructor. I need to only restore the console spies.
+All 719 tests pass, including the 7 new ones.
+All done. Here's what was implemented:
+
+**New file:** `packages/cli/src/commands/registry-mirror.ts`
+- `cmdRegistryMirror(projectRoot, { type? })` — downloads full registry to `.decantr/cache/@official/`
+- Fetches each item individually (sequential, not burst) for full data
+- Saves `mirror-manifest.json` with timestamp and counts
+- Supports `--type` filter for single content type
+
+**Modified:** `packages/cli/src/index.ts`
+- Added `decantr registry mirror [--type <type>]` command
+- Added to help text
+
+**Modified:** `packages/cli/src/commands/refresh.ts`
+- `cmdRefresh` now accepts `{ offline?: boolean }` and passes it to `RegistryClient`
+- `decantr refresh --offline` works (the `init --offline` flag already existed)
+
+**New file:** `packages/cli/test/registry-mirror.test.ts`
+- 7 tests covering: full mirror, individual items, index files, type filter, invalid type, API unavailability, and offline-only cache resolution

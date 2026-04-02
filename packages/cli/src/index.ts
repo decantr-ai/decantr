@@ -26,6 +26,11 @@ import { cmdAddSection, cmdAddPage, cmdAddFeature } from './commands/add.js';
 import { cmdRemoveSection, cmdRemovePage, cmdRemoveFeature } from './commands/remove.js';
 import { cmdThemeSwitch } from './commands/theme-switch.js';
 import { cmdAnalyze } from './commands/analyze.js';
+import { cmdMagic } from './commands/magic.js';
+import { cmdExport } from './commands/export.js';
+import type { ExportTarget } from './commands/export.js';
+import { cmdRegistryMirror } from './commands/registry-mirror.js';
+import { cmdNewProject } from './commands/new-project.js';
 
 // ── Helpers ──
 
@@ -1206,6 +1211,8 @@ function cmdHelp() {
 ${BOLD}decantr${RESET} — Design intelligence for AI-generated UI
 
 ${BOLD}Usage:${RESET}
+  decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X]
+  decantr magic <prompt> [--dry-run]
   decantr init [options]
   decantr status
   decantr sync
@@ -1241,12 +1248,14 @@ ${BOLD}Init Options:${RESET}
   --registry         Custom registry URL
 
 ${BOLD}Commands:${RESET}
-  ${cyan('init')}        Initialize a new Decantr project (v3 essence by default)
+  ${cyan('new')}         Create a new project with Vite + React + Decantr
+  ${cyan('magic')}       One-liner scaffold from a natural language prompt
+  ${cyan('init')}        Initialize Decantr in an existing project (v3 essence by default)
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
   ${cyan('sync')}        Sync registry content from API
   ${cyan('audit')}       Validate essence and check for drift
   ${cyan('migrate')}     Migrate v2 essence to v3 format (with .v2.backup.json backup)
-  ${cyan('check')}       Detect drift issues (validate + guard rules)
+  ${cyan('check')}       Detect drift issues (validate + guard rules) [--telemetry]
   ${cyan('sync-drift')}  Review and resolve drift log entries
   ${cyan('search')}      Search the registry
   ${cyan('suggest')}     Suggest patterns or alternatives for a query
@@ -1259,10 +1268,14 @@ ${BOLD}Commands:${RESET}
   ${cyan('login')}       Authenticate with the Decantr registry
   ${cyan('logout')}      Remove stored credentials
   ${cyan('analyze')}     Scan existing project and produce analysis report
+  ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
+  ${cyan('registry')}    Registry management (mirror)
   ${cyan('upgrade')}     Check for content updates from registry
   ${cyan('help')}        Show this help
 
 ${BOLD}Examples:${RESET}
+  decantr new my-app --blueprint=carbon-ai-portal
+  decantr magic "AI chatbot with dark cyber theme — bold and futuristic"
   decantr init
   decantr init --blueprint=saas-dashboard --theme=luminarum --yes
   decantr status
@@ -1288,6 +1301,39 @@ async function main() {
   }
 
   switch (command) {
+    case 'new': {
+      const newName = args[1];
+      if (!newName) {
+        console.error(error('Usage: decantr new <project-name> [--blueprint=X] [--archetype=X] [--theme=X]'));
+        process.exitCode = 1;
+        break;
+      }
+      const newOpts: Record<string, string | boolean> = {};
+      for (let i = 2; i < args.length; i++) {
+        const arg = args[i];
+        if (arg === '--offline') {
+          newOpts.offline = true;
+        } else if (arg.startsWith('--')) {
+          const [key, value] = arg.slice(2).split('=');
+          if (value) {
+            newOpts[key] = value;
+          } else if (args[i + 1] && !args[i + 1].startsWith('-')) {
+            newOpts[key] = args[++i];
+          }
+        }
+      }
+      await cmdNewProject(newName, {
+        blueprint: newOpts.blueprint as string | undefined,
+        archetype: newOpts.archetype as string | undefined,
+        theme: newOpts.theme as string | undefined,
+        mode: newOpts.mode as string | undefined,
+        shape: newOpts.shape as string | undefined,
+        offline: newOpts.offline === true,
+        registry: newOpts.registry as string | undefined,
+      });
+      break;
+    }
+
     case 'init': {
       // Parse init flags
       const initArgs: InitArgs = {};
@@ -1340,7 +1386,8 @@ async function main() {
         console.log(`${YELLOW}Note: \`decantr heal\` is deprecated. Use \`decantr check\` instead.${RESET}`);
       }
       const { cmdHeal } = await import('./commands/heal.js');
-      await cmdHeal(process.cwd());
+      const telemetryFlag = args.includes('--telemetry');
+      await cmdHeal(process.cwd(), { telemetry: telemetryFlag });
       break;
     }
 
@@ -1498,7 +1545,21 @@ async function main() {
     }
 
     case 'refresh': {
-      await cmdRefresh(process.cwd());
+      const refreshOffline = args.includes('--offline');
+      await cmdRefresh(process.cwd(), { offline: refreshOffline });
+      break;
+    }
+
+    case 'registry': {
+      const subcommand = args[1];
+      if (subcommand === 'mirror') {
+        const typeIdx = args.indexOf('--type');
+        const mirrorType = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
+        await cmdRegistryMirror(process.cwd(), { type: mirrorType });
+      } else {
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>]${RESET}`);
+        process.exitCode = 1;
+      }
       break;
     }
 
@@ -1594,6 +1655,64 @@ async function main() {
 
     case 'analyze': {
       cmdAnalyze(process.cwd());
+      break;
+    }
+
+    case 'magic': {
+      // Collect all non-flag args after 'magic' as the prompt
+      const magicFlags: Record<string, boolean> = {};
+      const promptParts: string[] = [];
+      for (let i = 1; i < args.length; i++) {
+        if (args[i] === '--dry-run') {
+          magicFlags.dryRun = true;
+        } else if (args[i] === '--offline') {
+          magicFlags.offline = true;
+        } else if (args[i].startsWith('--registry=')) {
+          magicFlags.registry = args[i].split('=')[1] as any;
+        } else if (args[i].startsWith('--registry') && args[i + 1]) {
+          magicFlags.registry = args[++i] as any;
+        } else {
+          promptParts.push(args[i]);
+        }
+      }
+      const magicPrompt = promptParts.join(' ').trim();
+      if (!magicPrompt) {
+        console.error(error('Usage: decantr magic <prompt> [--dry-run] [--offline]'));
+        console.error('');
+        console.error('  Example:');
+        console.error(`    ${CYAN}decantr magic "AI agent dashboard — dark, neon, confident"${RESET}`);
+        process.exitCode = 1;
+        break;
+      }
+      await cmdMagic(magicPrompt, process.cwd(), {
+        dryRun: magicFlags.dryRun,
+        offline: magicFlags.offline,
+        registry: magicFlags.registry as any as string | undefined,
+      });
+      break;
+    }
+
+    case 'export': {
+      let exportTarget: string | undefined;
+      let exportOutput: string | undefined;
+      for (let i = 1; i < args.length; i++) {
+        if (args[i] === '--to' && args[i + 1]) {
+          exportTarget = args[++i];
+        } else if (args[i].startsWith('--to=')) {
+          exportTarget = args[i].split('=')[1];
+        } else if (args[i] === '--output' && args[i + 1]) {
+          exportOutput = args[++i];
+        } else if (args[i].startsWith('--output=')) {
+          exportOutput = args[i].split('=')[1];
+        }
+      }
+      const validTargets = ['shadcn', 'tailwind', 'css-vars'];
+      if (!exportTarget || !validTargets.includes(exportTarget)) {
+        console.error(error(`Usage: decantr export --to <${validTargets.join('|')}>`));
+        process.exitCode = 1;
+        break;
+      }
+      await cmdExport(exportTarget as ExportTarget, process.cwd(), { output: exportOutput });
       break;
     }
 

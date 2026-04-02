@@ -1,0 +1,31 @@
+Operating as Principal Decantr Engineer with full architecture awareness. Let me read the existing files before implementing.
+The bootstrap/next-upgrade skill suggestions are false positives (triggered on package.json basename, but this is the Decantr CLI). Let me find the check command and understand the CLI structure.
+The `check` command is aliased to `heal`. Let me read the heal command and the check case in index.ts more closely.
+Good, I have full context. Now let me implement the three changes.
+Now modify `heal.ts` to integrate telemetry after guard checks:
+Now add telemetry opt-in handling and metric sending at the end of the function:
+Now update the `check` case in `index.ts` to pass the `--telemetry` flag:
+Now update the help text for the check command:
+Now build and test:
+Build succeeded. Now run tests:
+All 159 tests pass, build succeeds. Let me verify the final state of the modified files:
+I notice a small issue — when there are zero issues, the function returns early on line 66 without sending telemetry. Even healthy projects should report metrics if opted in. Let me fix that:
+Rebuild to confirm:
+Done. Here's what was implemented:
+
+**New file:** `packages/cli/src/telemetry.ts`
+- `GuardMetrics` interface — anonymized, no file paths or code
+- `sendGuardMetrics()` — fire-and-forget POST with 3s timeout
+- `isOptedIn()` / `optIn()` / `optOut()` — reads/writes `.decantr/project.json`
+- `collectMetrics()` — builds metrics from essence + issues, categorizing DNA vs blueprint violations
+
+**Modified:** `packages/cli/src/commands/heal.ts`
+- Added `CheckOptions` with optional `telemetry` flag
+- `maybeSendTelemetry()` helper: handles opt-in on `--telemetry` flag, sends metrics if opted in
+- Telemetry runs on both healthy (0 issues) and unhealthy paths
+
+**Modified:** `packages/cli/src/index.ts`
+- `check`/`heal` case passes `--telemetry` flag to `cmdHeal`
+- Help text updated with `[--telemetry]`
+
+Build passes, all 159 tests pass.

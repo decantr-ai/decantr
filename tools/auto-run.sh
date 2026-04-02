@@ -16,7 +16,7 @@ QUEUE_DIR="$SCRIPT_DIR/auto-tasks/queue"
 DONE_DIR="$SCRIPT_DIR/auto-tasks/done"
 LOG_DIR="$PROJECT_DIR/logs/auto"
 
-ALLOWED_TOOLS='Read,Write,Edit,Glob,Grep,Bash(pnpm *),Bash(node *),Bash(npm test),Bash(npm run *)'
+ALLOWED_TOOLS='Read,Write,Edit,Glob,Grep,Bash'
 
 DRY_RUN=false
 

@@ -1,0 +1,23 @@
+
+
+Operating as Principal Decantr Engineer with full architecture awareness. I understand the V3.1 composition pipeline, three-tier context model, 14 MCP tools, composition topology, and registry flow. Ready to work systemically.
+
+Let me check existing patterns for structural reference, then create the 4 agentic patterns.
+Directory exists and is empty. Now I'll create all 4 patterns in parallel, following the existing `pattern.v2.json` schema structure with rich slot descriptions for LLM consumption.
+Let me validate the JSON files are well-formed.
+All 4 patterns created and validated. Here's the summary:
+
+| Pattern | File | Purpose |
+|---------|------|---------|
+| **agent-swarm-canvas** | `agent-swarm-canvas.json` | Spatial node-graph for agent orchestration — drag-to-connect nodes, zoom/pan, minimap, real-time status colors |
+| **intent-radar** | `intent-radar.json` | Radial polar interface for intent visualization — confidence vectors, pulsing suggestion rings, keyboard-navigable command palette |
+| **agent-handoff-zone** | `agent-handoff-zone.json` | Agent-to-agent context transfer portal — source/target cards, animated transfer beam, context preview, approval workflow |
+| **agent-timeline** | `agent-timeline.json` | Vertical observability timeline — collapsible events, color-coded by type, filterable, live-streaming variant |
+
+Each pattern follows the `pattern.v2.json` schema and includes:
+- **Rich slot descriptions** — detailed enough for an LLM to generate complete framework-specific components without ambiguity
+- **3 presets each** — standard, compact, and a context-specific third variant (readonly/inline/inline-chat/live)
+- **Full accessibility** — ARIA roles, screen reader announcements, comprehensive keyboard navigation
+- **Responsive behavior** — mobile and tablet adaptations that preserve usability
+
+The patterns extend the existing schema with `category`, `tags`, `accessibility`, and `responsive` fields that align with the user-provided spec while remaining backward-compatible with the existing `pattern.v2.json` structure.

@@ -99,7 +99,7 @@ describe('generateSectionContext', () => {
     expect(result).toContain('Layout: settings-form');
   });
 
-  it('inlines pattern specs when provided', () => {
+  it('lists pattern specs in Pattern Reference section', () => {
     const patternSpecs: Record<string, PatternSpecSummary> = {
       'kpi-grid': {
         description: 'Grid of KPI metric cards',
@@ -113,7 +113,8 @@ describe('generateSectionContext', () => {
 
     const result = generateSectionContext(makeSectionInput({ patternSpecs }));
 
-    expect(result).toContain('#### Pattern: kpi-grid');
+    expect(result).toContain('## Pattern Reference');
+    expect(result).toContain('### kpi-grid');
     expect(result).toContain('Grid of KPI metric cards');
     expect(result).toContain('**Components:** KpiCard, MetricValue, TrendIndicator');
     expect(result).toContain('**Layout slots:**');

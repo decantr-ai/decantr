@@ -10,7 +10,10 @@ const RED = '\x1b[31m';
 const DIM = '\x1b[2m';
 const RESET = '\x1b[0m';
 
-export async function cmdRefresh(projectRoot: string = process.cwd()): Promise<void> {
+export async function cmdRefresh(
+  projectRoot: string = process.cwd(),
+  options: { offline?: boolean } = {}
+): Promise<void> {
   const essencePath = join(projectRoot, 'decantr.essence.json');
 
   if (!existsSync(essencePath)) {
@@ -37,6 +40,7 @@ export async function cmdRefresh(projectRoot: string = process.cwd()): Promise<v
 
   const registryClient = new RegistryClient({
     cacheDir: join(projectRoot, '.decantr', 'cache'),
+    offline: options.offline,
   });
 
   console.log('Regenerating derived files...\n');

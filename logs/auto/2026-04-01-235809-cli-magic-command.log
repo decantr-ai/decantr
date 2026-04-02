@@ -1,0 +1,41 @@
+Operating as Principal Decantr Engineer with full architecture awareness. Let me start by reading the existing CLI structure to understand how commands are registered and how scaffolding works.
+Let me see how `cmdInit` works and the main CLI argument parser.
+Now let me see the rest of `cmdInit` to understand the full init flow, and the main argument parser.
+Now let me check what the rest of `cmdInit` does after scaffolding (the output section), and look at the `cmdHelp` function to understand how help is structured.
+Now let me check how existing command files are structured and look at a simple one for reference.
+Now I have enough context. Let me also quickly check the `RegistryClient` to understand the `searchContent` and `fetchBlueprint` APIs.
+Now let me check the `RegistryAPIClient.search` method since that's the API search we'll want to use for blueprint matching.
+Good, I have everything I need. Let me now implement the magic command.
+Now register the magic command in `index.ts`. I need to add the import and the switch case.
+Now add the magic command to the help text.
+Add magic to the Commands section of help.
+Add magic to the Examples section.
+Now add the switch case for the magic command. It goes before the default case.
+Now let me check an existing test to understand the test patterns used.
+Good, standard vitest patterns. Now create the test file.
+Build succeeded. Now run the tests.
+All 129 tests pass, including all 16 magic tests.
+All done. Here's what was implemented:
+
+**`packages/cli/src/commands/magic.ts`** (new) — The magic command with:
+- `parseMagicPrompt()` — Offline keyword-based parser that extracts `MagicIntent` (description, themeHints, personalityHints, constraints, archetype) from a natural language prompt
+- `resolveTheme()` — Maps theme hints to known theme IDs (obsidianite, aurealis, glacialis, etc.)
+- `buildPersonality()` — Synthesizes personality traits from hints or theme context
+- `cmdMagic()` — Main flow: parse prompt → search blueprints (scored matching) → resolve theme/personality → fetch archetypes/compose sections/derive topology → call `scaffoldProject()` → print formatted summary
+- `--dry-run` flag shows parsed intent without writing files
+- `--offline` flag skips registry calls
+
+**`packages/cli/src/index.ts`** (modified) — Added:
+- Import for `cmdMagic`
+- `magic` case in the switch with prompt collection from remaining args
+- Help text entry and example
+
+**`packages/cli/test/magic.test.ts`** (new) — 16 unit tests covering:
+- Theme extraction (dark, light, neon, cyber, corporate, glass)
+- Archetype matching (dashboard, chat, marketplace, admin, agent-orchestrator)
+- Personality hint extraction
+- Constraint extraction (mobile-first, accessible, real-time)
+- Full example prompt parsing
+- Edge cases (empty matches, minimal prompts, multi-keyword scoring)
+
+Build compiles cleanly, all 129 tests pass (including 16 new magic tests).

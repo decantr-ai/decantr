@@ -1,55 +1,52 @@
 import { css } from '@decantr/css';
 import { Link } from 'react-router-dom';
-import { Shield } from 'lucide-react';
-import { CenteredShell } from '@/layouts/CenteredShell';
-import { Input, Button } from '@/components';
+import { ShieldCheck } from 'lucide-react';
+import { Button, Card, Input } from '@/components';
 
 export function MfaSetupPage() {
   return (
-    <CenteredShell>
-      <div className={css('_flex _col _aic _gap4 _textc')}>
-        <div
-          className={css('_flex _aic _jcc _roundedfull')}
-          style={{
-            width: '56px',
-            height: '56px',
-            background: 'color-mix(in srgb, var(--d-primary) 15%, transparent)',
-          }}
-        >
-          <Shield size={24} className={css('_fgprimary')} />
+    <Card className={css('_flex _col _gap6') + ' carbon-fade-slide'}>
+      <div className={css('_textc')}>
+        <div className={css('_flex _jcc _mb3')}>
+          <div
+            className={css('_flex _aic _jcc _rounded')}
+            style={{
+              width: 48,
+              height: 48,
+              background: 'color-mix(in srgb, var(--d-primary) 15%, var(--d-surface))',
+            }}
+          >
+            <ShieldCheck size={24} style={{ color: 'var(--d-primary)' }} />
+          </div>
         </div>
-        <div className={css('_flex _col _gap1')}>
-          <h1 className={css('_text2xl _fontsemi _fgtext')}>Set up two-factor authentication</h1>
-          <p className={css('_textsm _fgmuted')}>
-            Scan the QR code with your authenticator app, then enter the verification code below.
-          </p>
-        </div>
-      </div>
-
-      {/* QR code placeholder */}
-      <div
-        className={css('_flex _aic _jcc _rounded _bgsurface')}
-        style={{ height: '200px', border: '1px solid var(--d-border)' }}
-      >
-        <span className={css('_textsm _fgmuted')}>QR Code Placeholder</span>
-      </div>
-
-      <div className={css('_flex _col _gap2')}>
-        <p className={css('_textxs _fgmuted _textc')}>
-          Manual entry key: <code className={css('_fgprimary')}>JBSWY3DPEHPK3PXP</code>
+        <h1 className={css('_heading3')}>Set up two-factor authentication</h1>
+        <p className={css('_textsm _fgmuted _mt1')}>
+          Scan the QR code with your authenticator app.
         </p>
       </div>
 
+      {/* Placeholder QR code area */}
+      <div
+        className={css('_flex _aic _jcc _rounded _mx6')}
+        style={{
+          height: 180,
+          background: 'var(--d-surface-raised)',
+          border: '1px dashed var(--d-border)',
+        }}
+      >
+        <span className={css('_textsm _fgmuted')}>QR Code</span>
+      </div>
+
       <form className={css('_flex _col _gap4')} onSubmit={(e) => e.preventDefault()}>
-        <Input label="Verification code" placeholder="Enter 6-digit code" maxLength={6} autoComplete="one-time-code" />
+        <Input label="Verification code" placeholder="000 000" autoComplete="one-time-code" />
         <Button variant="primary" type="submit" className={css('_wfull')}>
           Verify and enable
         </Button>
       </form>
 
-      <Link to="/login" className={css('_textsm _fgmuted _textc')}>
-        Skip for now
-      </Link>
-    </CenteredShell>
+      <div className={css('_textc _textsm _fgmuted')}>
+        <Link to="/settings/security" className={css('_fgprimary')}>Skip for now</Link>
+      </div>
+    </Card>
   );
 }

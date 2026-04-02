@@ -1,0 +1,28 @@
+
+
+Operating as Principal Decantr Engineer with full architecture awareness. I understand the V3.1 composition pipeline, three-tier context model, 14 MCP tools, composition topology, and registry flow. Ready to work systemically.
+
+Let me first check the existing pattern format for reference, then create all 6 patterns.
+Good, I have the actual pattern structure. Now let me create the staging directory and write all 6 patterns. I'll use the real Decantr pattern schema enriched with the registry-level fields (category, tags, accessibility, responsive).
+All 6 patterns created at `tools/auto-tasks/staging/patterns/`:
+
+### Spatial/Immersive
+| Pattern | Key Innovation |
+|---------|---------------|
+| **depth-layered-canvas** | True z-axis with CSS `perspective` + `preserve-3d`, parallax rates per layer, focal-plane blur |
+| **holographic-control-bar** | Drag-to-reposition + edge-snap docking, glassmorphic treatment, 4 presets (floating/docked/minimal) |
+| **spatial-presence-ring** | Conic-gradient ring segments, expand-on-focus details, smooth reflow on participant changes |
+
+### Generative/Adaptive
+| Pattern | Key Innovation |
+|---------|---------------|
+| **morphing-topology** | Animated `grid-template` changes driven by AI context, zone merge/split, ties to Decantr archetype roles |
+| **neural-feedback-loop** | Bio-mimetic pulsing with custom cubic-bezier, `color-mix()` confidence mapping, particle flow tracks |
+| **generative-card-grid** | Skeleton-to-render lifecycle, masonry/featured/list presets, generation metadata overlay |
+
+Each pattern includes:
+- Rich slot descriptions (50-100 words each) giving LLMs enough context to generate correct code
+- 3-5 presets including reduce-motion/fallback variants
+- Full accessibility spec (role, aria, keyboard shortcuts, announcements, reduce-motion behavior)
+- Mobile and tablet responsive breakpoint guidance
+- `decantr_compat: >=1.5.0` marking them as V3.1-era patterns

@@ -1,57 +1,39 @@
 import { css } from '@decantr/css';
-import { Mail, MapPin, Clock } from 'lucide-react';
-import { TopNavFooterShell } from '@/layouts/TopNavFooterShell';
-import { Input, Button, Card } from '@/components';
+import { Mail, MapPin, Phone } from 'lucide-react';
+import { Button, Card, Input } from '@/components';
 
-/* -- Hero --------------------------------------------------------- */
-function HeroSection() {
+function Hero() {
   return (
-    <section className={css('_flex _col _aic _textc _py16 _px4')}>
-      <div className={css('_flex _col _aic _gap4')} style={{ maxWidth: '600px' }}>
-        <h1 className={css('_text3xl _fontsemi _fgtext')} style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', lineHeight: 1.15 }}>
-          Get in touch
-        </h1>
-        <p className={css('_textlg _fgmuted')}>
-          Have a question, partnership opportunity, or just want to say hello? We'd love to hear from you.
-        </p>
-      </div>
+    <section className={css('_flex _col _aic _textc _py16 _px4') + ' carbon-fade-slide'}>
+      <h1 className={css('_heading1')} style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+        Get in touch
+      </h1>
+      <p className={css('_textlg _fgmuted _mt4')} style={{ maxWidth: 480 }}>
+        Have a question, feedback, or enterprise inquiry? We'd love to hear from you.
+      </p>
     </section>
   );
 }
 
-/* -- Contact form ------------------------------------------------- */
 function ContactForm() {
   return (
-    <section className={css('_px4 _pb16')}>
-      <div className={css('_grid _gap8')} style={{ maxWidth: '1000px', margin: '0 auto', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+    <section className="section-gap-sm">
+      <div className={css('_grid _gc1 _lg:gc2 _gap8') + ' container'} style={{ maxWidth: 1000 }}>
+        {/* Form */}
         <Card>
           <form className={css('_flex _col _gap4')} onSubmit={(e) => e.preventDefault()}>
-            <h2 className={css('_textlg _fontsemi _fgtext')}>Send a message</h2>
-            <div className={css('_grid _gap4')} style={{ gridTemplateColumns: '1fr 1fr' }}>
-              <Input label="First name" placeholder="John" />
+            <div className={css('_grid _gc1 _sm:gc2 _gap4')}>
+              <Input label="First name" placeholder="Jane" />
               <Input label="Last name" placeholder="Doe" />
             </div>
-            <Input label="Email" type="email" placeholder="you@example.com" />
+            <Input label="Email" type="email" placeholder="jane@example.com" />
+            <Input label="Subject" placeholder="How can we help?" />
             <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium _fgtext')}>Subject</label>
-              <select
-                className={css('_wfull _px3 _py2 _textbase _rounded _bgbg _fgtext _bw1 _pointer') + ' carbon-input'}
-                defaultValue=""
-              >
-                <option value="" disabled>Select a topic</option>
-                <option value="general">General inquiry</option>
-                <option value="sales">Sales & pricing</option>
-                <option value="support">Technical support</option>
-                <option value="partnership">Partnership</option>
-                <option value="press">Press & media</option>
-              </select>
-            </div>
-            <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium _fgtext')}>Message</label>
+              <label className={css('_textsm _fontsemi _fgtext')}>Message</label>
               <textarea
-                className={css('_wfull _px3 _py2 _textbase _rounded _bgbg _fgtext _bw1') + ' carbon-input'}
+                className="carbon-textarea"
+                placeholder="Tell us more about your inquiry..."
                 rows={5}
-                placeholder="Tell us what you need..."
               />
             </div>
             <Button variant="primary" type="submit" className={css('_wfull')}>
@@ -60,55 +42,49 @@ function ContactForm() {
           </form>
         </Card>
 
+        {/* Contact info */}
         <div className={css('_flex _col _gap6')}>
-          <div className={css('_flex _col _gap4')}>
-            <h2 className={css('_textlg _fontsemi _fgtext')}>Other ways to reach us</h2>
-            <div className={css('_flex _col _gap4')}>
-              <div className={css('_flex _gap3')}>
-                <Mail size={20} className={css('_fgprimary _shrink0 _mt1')} />
-                <div className={css('_flex _col _gap1')}>
-                  <span className={css('_fontmedium _fgtext')}>Email</span>
-                  <span className={css('_textsm _fgmuted')}>hello@carbonai.dev</span>
-                </div>
-              </div>
-              <div className={css('_flex _gap3')}>
-                <MapPin size={20} className={css('_fgprimary _shrink0 _mt1')} />
-                <div className={css('_flex _col _gap1')}>
-                  <span className={css('_fontmedium _fgtext')}>Office</span>
-                  <span className={css('_textsm _fgmuted')}>548 Market St, Suite 92<br />San Francisco, CA 94104</span>
-                </div>
-              </div>
-              <div className={css('_flex _gap3')}>
-                <Clock size={20} className={css('_fgprimary _shrink0 _mt1')} />
-                <div className={css('_flex _col _gap1')}>
-                  <span className={css('_fontmedium _fgtext')}>Business hours</span>
-                  <span className={css('_textsm _fgmuted')}>Monday - Friday, 9am - 6pm PST</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Card className={css('_flex _col _gap3')}>
-            <h3 className={css('_fontmedium _fgtext')}>Need enterprise support?</h3>
-            <p className={css('_textsm _fgmuted')}>
-              For team plans, custom deployments, and SLA inquiries, reach out to our sales team directly.
+          <div>
+            <h3 className={css('_fontsemi _textlg _mb4')}>Contact information</h3>
+            <p className={css('_textsm _fgmuted')} style={{ lineHeight: 1.7 }}>
+              Fill out the form and our team will get back to you within 24 hours.
             </p>
-            <a href="mailto:sales@carbonai.dev" className={css('_textsm _fgprimary _fontmedium')}>
-              sales@carbonai.dev
-            </a>
-          </Card>
+          </div>
+          <div className={css('_flex _col _gap4')}>
+            {[
+              { icon: Mail, label: 'hello@carbonai.dev' },
+              { icon: Phone, label: '+1 (555) 000-0000' },
+              { icon: MapPin, label: 'San Francisco, CA' },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label} className={css('_flex _aic _gap3')}>
+                  <div
+                    className={css('_flex _aic _jcc _rounded _shrink0')}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      background: 'color-mix(in srgb, var(--d-primary) 15%, var(--d-surface))',
+                    }}
+                  >
+                    <Icon size={16} style={{ color: 'var(--d-primary)' }} />
+                  </div>
+                  <span className={css('_textsm _fgmuted')}>{item.label}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-/* -- Page --------------------------------------------------------- */
 export function ContactPage() {
   return (
-    <TopNavFooterShell>
-      <HeroSection />
+    <>
+      <Hero />
       <ContactForm />
-    </TopNavFooterShell>
+    </>
   );
 }

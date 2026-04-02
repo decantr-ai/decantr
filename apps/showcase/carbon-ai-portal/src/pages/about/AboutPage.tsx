@@ -1,42 +1,37 @@
 import { css } from '@decantr/css';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Heart, Lightbulb, Shield, Users, Zap } from 'lucide-react';
-import { TopNavFooterShell } from '@/layouts/TopNavFooterShell';
+import { Heart, Globe, Lightbulb, Users, ArrowRight } from 'lucide-react';
 import { Button, Card, Avatar } from '@/components';
 
-/* -- Hero --------------------------------------------------------- */
-function HeroSection() {
+/* ---------- hero ---------- */
+function Hero() {
   return (
-    <section className={css('_flex _col _aic _textc _py20 _px4')}>
-      <div className={css('_flex _col _aic _gap6')} style={{ maxWidth: '720px' }}>
-        <h1 className={css('_text3xl _fontsemi _fgtext')} style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', lineHeight: 1.15 }}>
-          Making AI work for developers
-        </h1>
-        <p className={css('_textlg _fgmuted')} style={{ maxWidth: '560px' }}>
-          We are building the next generation of developer tools -- AI that truly understands code, context, and craft.
-        </p>
-      </div>
+    <section className={css('_flex _col _aic _textc _py20 _px4') + ' carbon-fade-slide'}>
+      <h1 className={css('_heading1')} style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+        About Carbon AI
+      </h1>
+      <p className={css('_textlg _fgmuted _mt4')} style={{ maxWidth: 560 }}>
+        We believe AI should amplify human thinking, not replace it. Carbon AI is built by a team obsessed with developer experience.
+      </p>
     </section>
   );
 }
 
-/* -- Story -------------------------------------------------------- */
-function StorySection() {
+/* ---------- story ---------- */
+function Story() {
   return (
-    <section className={css('_px4') + ' section-padding'} style={{ background: 'var(--d-surface)' }}>
-      <div className={css('_flex _col _gap8') + ' container-sm'}>
-        <h2 className={css('_text2xl _fontsemi _fgtext _textc')} style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>
-          Our story
-        </h2>
-        <div className={css('_flex _col _gap4')}>
-          <p className={css('_textbase _fgmuted')} style={{ lineHeight: 1.8 }}>
-            Carbon AI started with a simple observation: AI coding tools were impressive at generating code, but terrible at understanding it. They could write a function, but couldn't tell you why your architecture was heading in the wrong direction.
+    <section className="section-gap" style={{ background: 'var(--d-surface)' }}>
+      <div className="container container-md">
+        <h2 className={css('_heading2 _mb6')}>Our story</h2>
+        <div className={css('_flex _col _gap4 _fgmuted _textbase')} style={{ lineHeight: 1.8 }}>
+          <p>
+            Carbon AI started in 2024 as an internal tool at a developer tools company. We were frustrated with existing AI assistants that felt like toys -- great for demos, terrible for real work.
           </p>
-          <p className={css('_textbase _fgmuted')} style={{ lineHeight: 1.8 }}>
-            We set out to build something different. An AI assistant that doesn't just autocomplete -- it comprehends. One that understands your project structure, your coding patterns, your team's conventions. One that can have a real conversation about your code, not just pattern-match against a training set.
+          <p>
+            We wanted something that understood code deeply, maintained context across long conversations, and respected our privacy. When we couldn't find it, we built it.
           </p>
-          <p className={css('_textbase _fgmuted')} style={{ lineHeight: 1.8 }}>
-            Today, Carbon AI is used by thousands of developers and engineering teams worldwide. From solo hackers to Fortune 500 engineering orgs, our AI helps ship better code, faster.
+          <p>
+            Today, Carbon AI serves thousands of developers and engineering teams who demand more from their AI tools. We remain a small, focused team committed to building the most thoughtful AI assistant in the industry.
           </p>
         </div>
       </div>
@@ -44,79 +39,32 @@ function StorySection() {
   );
 }
 
-/* -- Team --------------------------------------------------------- */
+/* ---------- team ---------- */
 const team = [
-  { name: 'Alex Chen', role: 'CEO & Co-founder', initials: 'AC' },
-  { name: 'Sarah Kim', role: 'CTO & Co-founder', initials: 'SK' },
-  { name: 'Marcus Rivera', role: 'VP Engineering', initials: 'MR' },
-  { name: 'Emily Zhao', role: 'Head of AI', initials: 'EZ' },
-  { name: 'David Park', role: 'Head of Design', initials: 'DP' },
-  { name: 'Lisa Wang', role: 'Head of Product', initials: 'LW' },
+  { name: 'Elena Vasquez', role: 'CEO & Co-founder' },
+  { name: 'James Park', role: 'CTO & Co-founder' },
+  { name: 'Aisha Patel', role: 'Head of AI Research' },
+  { name: 'Tom Lindgren', role: 'Head of Engineering' },
+  { name: 'Maya Johnson', role: 'Head of Design' },
+  { name: 'Luca Rossi', role: 'Head of Security' },
 ];
 
-function TeamSection() {
+function Team() {
   return (
-    <section className={css('_px4') + ' section-padding'}>
-      <div className={css('_flex _col _gap12') + ' container'}>
-        <div className={css('_flex _col _aic _gap3 _textc')}>
-          <h2 className={css('_text2xl _fontsemi _fgtext')} style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>
-            The team
-          </h2>
-          <p className={css('_textlg _fgmuted')} style={{ maxWidth: '480px' }}>
-            Engineers, researchers, and designers united by a passion for developer experience.
-          </p>
+    <section className="section-gap">
+      <div className="container">
+        <div className={css('_textc _mb12')}>
+          <h2 className={css('_heading2')}>Our team</h2>
+          <p className={css('_textlg _fgmuted _mt2')}>A small team building big things.</p>
         </div>
-        <div className={css('_grid _gap6')} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-          {team.map((member) => (
-            <div key={member.name} className={css('_flex _col _aic _gap3 _p4 _textc')}>
-              <Avatar size="lg" fallback={member.initials} />
-              <div className={css('_flex _col _gap1')}>
-                <span className={css('_fontmedium _fgtext')}>{member.name}</span>
-                <span className={css('_textsm _fgmuted')}>{member.role}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* -- Values ------------------------------------------------------- */
-const values = [
-  { icon: Zap, title: 'Ship with urgency', description: 'We bias toward action. Perfect is the enemy of shipped.' },
-  { icon: Heart, title: 'Developer empathy', description: 'We build tools we want to use. Every feature starts with a real pain point.' },
-  { icon: Shield, title: 'Trust through transparency', description: 'Open pricing, honest communication, and clear privacy policies.' },
-  { icon: Lightbulb, title: 'Think from first principles', description: 'We question assumptions and rebuild from the ground up when needed.' },
-  { icon: Users, title: 'Team over individual', description: 'Great products are built by great teams. We lift each other up.' },
-];
-
-function ValuesSection() {
-  return (
-    <section className={css('_px4') + ' section-padding'} style={{ background: 'var(--d-surface)' }}>
-      <div className={css('_flex _col _gap12') + ' container'}>
-        <div className={css('_flex _col _aic _gap3 _textc')}>
-          <h2 className={css('_text2xl _fontsemi _fgtext')} style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>
-            Our values
-          </h2>
-        </div>
-        <div className={css('_grid _gap6')} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-          {values.map((value) => (
-            <Card key={value.title}>
-              <div className={css('_flex _gap4')}>
-                <div
-                  className={css('_flex _aic _jcc _rounded _shrink0')}
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    background: 'color-mix(in srgb, var(--d-primary) 15%, transparent)',
-                  }}
-                >
-                  <value.icon size={20} className={css('_fgprimary')} />
-                </div>
-                <div className={css('_flex _col _gap1')}>
-                  <h3 className={css('_fontmedium _fgtext')}>{value.title}</h3>
-                  <p className={css('_textsm _fgmuted')}>{value.description}</p>
+        <div className={css('_grid _gc2 _lg:gc3 _gap6')} style={{ maxWidth: 800, marginInline: 'auto' }}>
+          {team.map((m) => (
+            <Card key={m.name} hover className={css('_textc')}>
+              <div className={css('_flex _col _aic _gap3')}>
+                <Avatar name={m.name} size="lg" />
+                <div>
+                  <div className={css('_fontsemi _textsm')}>{m.name}</div>
+                  <div className={css('_textxs _fgmuted')}>{m.role}</div>
                 </div>
               </div>
             </Card>
@@ -127,37 +75,79 @@ function ValuesSection() {
   );
 }
 
-/* -- CTA ---------------------------------------------------------- */
-function CtaSection() {
+/* ---------- values ---------- */
+const values = [
+  { icon: Heart, title: 'Craft', desc: 'Every detail matters. We sweat the small stuff so our users don\'t have to.' },
+  { icon: Globe, title: 'Openness', desc: 'Transparent pricing, open roadmap, and honest communication with our community.' },
+  { icon: Lightbulb, title: 'Innovation', desc: 'We push boundaries on what AI assistants can do, guided by real user needs.' },
+  { icon: Users, title: 'Trust', desc: 'Privacy by design. Your conversations are yours. Period.' },
+];
+
+function Values() {
   return (
-    <section className={css('_px4') + ' section-padding'}>
-      <div className={css('_flex _col _aic _gap6 _textc') + ' container'}>
-        <h2 className={css('_text2xl _fontsemi _fgtext')} style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>
-          Join us in building the future
-        </h2>
-        <p className={css('_textlg _fgmuted')} style={{ maxWidth: '480px' }}>
-          We are hiring across engineering, design, and research. Come build something great.
-        </p>
-        <Link to="/contact">
-          <Button variant="primary" size="lg">
-            Get in touch
-            <ArrowRight size={18} />
-          </Button>
-        </Link>
+    <section className="section-gap" style={{ background: 'var(--d-surface)' }}>
+      <div className="container">
+        <div className={css('_textc _mb12')}>
+          <h2 className={css('_heading2')}>Our values</h2>
+        </div>
+        <div className={css('_grid _gc1 _sm:gc2 _gap6')} style={{ maxWidth: 800, marginInline: 'auto' }}>
+          {values.map((v) => {
+            const Icon = v.icon;
+            return (
+              <div key={v.title} className={css('_flex _gap4')}>
+                <div
+                  className={css('_flex _aic _jcc _rounded _shrink0')}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    background: 'color-mix(in srgb, var(--d-primary) 15%, var(--d-surface))',
+                  }}
+                >
+                  <Icon size={20} style={{ color: 'var(--d-primary)' }} />
+                </div>
+                <div>
+                  <h3 className={css('_fontsemi _textbase')}>{v.title}</h3>
+                  <p className={css('_textsm _fgmuted _mt1')} style={{ lineHeight: 1.6 }}>{v.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
 }
 
-/* -- Page --------------------------------------------------------- */
+/* ---------- CTA ---------- */
+function CTA() {
+  return (
+    <section className="section-gap">
+      <div className={css('_textc _flex _col _aic') + ' container'}>
+        <h2 className={css('_heading2')}>Join us on this journey</h2>
+        <p className={css('_textlg _fgmuted _mt2')} style={{ maxWidth: 480 }}>
+          We're hiring. If you care about building tools that respect developers, we'd love to hear from you.
+        </p>
+        <div className={css('_flex _aic _gap3 _mt8')}>
+          <Link to="/contact">
+            <Button variant="primary" size="lg">
+              Get in touch
+              <ArrowRight size={18} />
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function AboutPage() {
   return (
-    <TopNavFooterShell>
-      <HeroSection />
-      <StorySection />
-      <TeamSection />
-      <ValuesSection />
-      <CtaSection />
-    </TopNavFooterShell>
+    <>
+      <Hero />
+      <Story />
+      <Team />
+      <Values />
+      <CTA />
+    </>
   );
 }

@@ -1,143 +1,66 @@
 import { css } from '@decantr/css';
-import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Send, Paperclip, Copy, ThumbsUp, ThumbsDown, RotateCcw } from 'lucide-react';
-import { ChatPortalShell } from '@/layouts/ChatPortalShell';
-import { Avatar, Button } from '@/components';
+import { Send, Paperclip, Bot, User } from 'lucide-react';
+import { Avatar } from '@/components';
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  timestamp: string;
+  time: string;
 }
 
-const demoMessages: Message[] = [
+const mockMessages: Message[] = [
   {
     id: '1',
     role: 'user',
-    content: 'Can you explain how React Server Components work?',
-    timestamp: '10:30 AM',
+    content: 'Can you help me refactor this React component to use proper TypeScript types?',
+    time: '2:30 PM',
   },
   {
     id: '2',
     role: 'assistant',
-    content: `React Server Components (RSC) are a new paradigm that allows components to run on the server. Here are the key concepts:
-
-**Server Components** render on the server and send HTML to the client. They can directly access databases, file systems, and other server-only resources.
-
-\`\`\`tsx
-// This runs on the server
-async function BlogPost({ id }: { id: string }) {
-  const post = await db.posts.find(id);
-  return <article>{post.content}</article>;
-}
-\`\`\`
-
-**Key benefits:**
-- Zero bundle size impact for server components
-- Direct access to backend resources
-- Automatic code splitting
-- Streaming and progressive rendering
-
-**Client Components** still work as before, using the \`"use client"\` directive when you need interactivity, state, or browser APIs.`,
-    timestamp: '10:31 AM',
+    content: 'Of course! I\'d be happy to help you refactor your React component with proper TypeScript types. Could you share the component code? Here are a few things I\'ll look for:\n\n1. **Props interface definition** -- Ensuring all props have explicit types\n2. **Event handler types** -- Using React.ChangeEvent, React.MouseEvent, etc.\n3. **State types** -- Proper typing for useState hooks\n4. **Return type** -- Explicit JSX.Element or ReactNode return types\n\nPlease paste the component and I\'ll provide a fully typed version.',
+    time: '2:30 PM',
   },
   {
     id: '3',
     role: 'user',
-    content: 'How does data fetching differ from traditional useEffect patterns?',
-    timestamp: '10:33 AM',
+    content: 'Here it is:\n\n```tsx\nfunction UserCard({ user, onSelect }) {\n  const [expanded, setExpanded] = useState(false);\n  return (\n    <div onClick={() => onSelect(user)}>\n      <h3>{user.name}</h3>\n      {expanded && <p>{user.bio}</p>}\n    </div>\n  );\n}\n```',
+    time: '2:31 PM',
   },
   {
     id: '4',
     role: 'assistant',
-    content: `Great question. The shift is fundamental:
-
-**Traditional (useEffect):**
-\`\`\`tsx
-function Posts() {
-  const [posts, setPosts] = useState([]);
-  useEffect(() => {
-    fetch('/api/posts').then(r => r.json()).then(setPosts);
-  }, []);
-  return posts.map(p => <Post key={p.id} {...p} />);
-}
-\`\`\`
-
-**Server Components:**
-\`\`\`tsx
-async function Posts() {
-  const posts = await db.posts.findMany();
-  return posts.map(p => <Post key={p.id} {...p} />);
-}
-\`\`\`
-
-The server component approach eliminates waterfalls, reduces client-side JavaScript, and provides a more natural data-fetching experience. No loading states needed for the initial render since data is available before the component reaches the client.`,
-    timestamp: '10:34 AM',
+    content: 'Here\'s the refactored version with proper TypeScript types:\n\n```tsx\ninterface User {\n  id: string;\n  name: string;\n  bio: string;\n}\n\ninterface UserCardProps {\n  user: User;\n  onSelect: (user: User) => void;\n}\n\nfunction UserCard({ user, onSelect }: UserCardProps) {\n  const [expanded, setExpanded] = useState<boolean>(false);\n  \n  return (\n    <div\n      role="button"\n      tabIndex={0}\n      onClick={() => onSelect(user)}\n      onKeyDown={(e: React.KeyboardEvent) => {\n        if (e.key === \'Enter\') onSelect(user);\n      }}\n    >\n      <h3>{user.name}</h3>\n      {expanded && <p>{user.bio}</p>}\n    </div>\n  );\n}\n```\n\nKey improvements:\n- Added `User` interface for the data model\n- Created explicit `UserCardProps` interface\n- Added keyboard accessibility with `onKeyDown`\n- Typed the `useState` hook explicitly',
+    time: '2:32 PM',
   },
 ];
 
-function MessageBubble({ message }: { message: Message }) {
-  const isUser = message.role === 'user';
-
+function MessageBubble({ msg }: { msg: Message }) {
+  const isUser = msg.role === 'user';
   return (
-    <div className={css('_flex _gap3') + ' carbon-fade-slide'} style={{ justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
-      {!isUser && <Avatar size="sm" fallback="AI" />}
-      <div className={isUser ? 'carbon-bubble-user' : 'carbon-bubble-ai'}>
-        <div className={css('_textsm _prewrap _breakword')} style={{ whiteSpace: 'pre-wrap' }}>
-          {message.content}
-        </div>
-        <div className={css('_flex _aic _jcsb _mt2')}>
-          <span className={css('_textxs _fgmuted')}>{message.timestamp}</span>
-          {!isUser && (
-            <div className={css('_flex _aic _gap1')}>
-              <button className={css('_flex _aic _jcc _p1 _rounded _trans') + ' btn-ghost'} title="Copy">
-                <Copy size={12} />
-              </button>
-              <button className={css('_flex _aic _jcc _p1 _rounded _trans') + ' btn-ghost'} title="Good response">
-                <ThumbsUp size={12} />
-              </button>
-              <button className={css('_flex _aic _jcc _p1 _rounded _trans') + ' btn-ghost'} title="Bad response">
-                <ThumbsDown size={12} />
-              </button>
-              <button className={css('_flex _aic _jcc _p1 _rounded _trans') + ' btn-ghost'} title="Regenerate">
-                <RotateCcw size={12} />
-              </button>
-            </div>
-          )}
-        </div>
+    <div className={css('_flex _gap3 _mb4') + ' carbon-fade-slide'} style={{ flexDirection: isUser ? 'row-reverse' : 'row' }}>
+      <div className={css('_shrink0 _mt1')}>
+        {isUser ? (
+          <Avatar name="You" size="sm" />
+        ) : (
+          <div
+            className={css('_flex _aic _jcc _roundedfull')}
+            style={{ width: 32, height: 32, background: 'color-mix(in srgb, var(--d-primary) 20%, var(--d-surface))' }}
+          >
+            <Bot size={16} style={{ color: 'var(--d-primary)' }} />
+          </div>
+        )}
       </div>
-      {isUser && <Avatar size="sm" />}
-    </div>
-  );
-}
-
-function ChatInput() {
-  const [message, setMessage] = useState('');
-
-  return (
-    <div className={css('_p4')} style={{ borderTop: '1px solid var(--d-border)' }}>
-      <div className={css('_flex _aic _gap3')}>
-        <button className={css('_flex _aic _jcc _p2 _rounded _trans _shrink0') + ' btn-ghost'} title="Attach file">
-          <Paperclip size={18} />
-        </button>
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Send a message..."
-          className={css('_flex1 _px4 _py3 _textbase _rounded _bgbg _fgtext _bw1') + ' carbon-input'}
-          onKeyDown={(e) => { if (e.key === 'Enter' && message.trim()) setMessage(''); }}
-        />
-        <Button
-          variant="primary"
-          size="md"
-          disabled={!message.trim()}
-          onClick={() => setMessage('')}
+      <div className={isUser ? 'carbon-bubble-user' : 'carbon-bubble-ai'}>
+        <div
+          className={css('_textsm _prewrap _breakword')}
+          style={{ lineHeight: 1.7, whiteSpace: 'pre-wrap' }}
         >
-          <Send size={16} />
-        </Button>
+          {msg.content}
+        </div>
+        <div className={css('_textxs _fgmuted _mt2')} style={{ opacity: 0.6 }}>{msg.time}</div>
       </div>
     </div>
   );
@@ -147,24 +70,60 @@ export function ChatPage() {
   const { id } = useParams();
 
   return (
-    <ChatPortalShell mode="chat">
-      <div className={css('_flex1 _overyauto _p6')}>
-        <div className={css('_flex _col _gap6')} style={{ maxWidth: '800px', margin: '0 auto' }}>
-          {/* Chat header */}
-          <div className={css('_flex _aic _gap3 _pb4')} style={{ borderBottom: '1px solid var(--d-border)' }}>
-            <span className={css('_fontsemi _textbase _fgtext')}>
-              {id === '1' ? 'Explain quantum computing' : `Conversation ${id}`}
-            </span>
+    <div className={css('_flex _col _flex1 _minh0')}>
+      {/* Chat header */}
+      <div
+        className={css('_flex _aic _jcsb _px6 _py3')}
+        style={{ borderBottom: '1px solid var(--d-border)' }}
+      >
+        <div className={css('_flex _aic _gap3')}>
+          <Bot size={18} style={{ color: 'var(--d-primary)' }} />
+          <div>
+            <div className={css('_fontsemi _textsm')}>Conversation #{id}</div>
+            <div className={css('_textxs _fgmuted')}>Carbon AI Assistant</div>
           </div>
+        </div>
+      </div>
 
-          {/* Messages */}
-          {demoMessages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} />
+      {/* Messages area */}
+      <div className={css('_flex1 _overyauto _px6 _py6')}>
+        <div style={{ maxWidth: 768, marginInline: 'auto' }}>
+          {mockMessages.map((msg) => (
+            <MessageBubble key={msg.id} msg={msg} />
           ))}
         </div>
       </div>
 
-      <ChatInput />
-    </ChatPortalShell>
+      {/* Input area */}
+      <div className={css('_px6 _py4')} style={{ borderTop: '1px solid var(--d-border)' }}>
+        <div style={{ maxWidth: 768, marginInline: 'auto' }}>
+          <div className={css('_flex _aic _gap3 _p3 _rounded') + ' carbon-card'}>
+            <button className={css('_flex _aic _jcc _p2 _rounded _fgmuted _trans _pointer') + ' btn-ghost'} aria-label="Attach file">
+              <Paperclip size={18} />
+            </button>
+            <input
+              type="text"
+              placeholder="Send a message..."
+              className={css('_flex1 _textbase')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: 'var(--d-text)',
+              }}
+            />
+            <button
+              className={css('_flex _aic _jcc _p2 _roundedfull _trans _pointer') + ' btn-primary'}
+              aria-label="Send message"
+            >
+              <Send size={16} />
+            </button>
+          </div>
+          <p className={css('_textxs _fgmuted _textc _mt2')} style={{ opacity: 0.5 }}>
+            Carbon AI can make mistakes. Review important information.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

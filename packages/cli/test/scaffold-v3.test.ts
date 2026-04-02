@@ -204,4 +204,15 @@ describe('v3 scaffold', () => {
     expect(v3.dna.radius.philosophy).toBe('rounded');
     expect(v3.dna.radius.base).toBe(8);
   });
+
+  it('scaffoldProject skips task-modify.md and task-add-page.md during init', async () => {
+    await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
+
+    const contextDir = join(testDir, '.decantr', 'context');
+    // task-scaffold.md should exist (always generated)
+    expect(existsSync(join(contextDir, 'task-scaffold.md'))).toBe(true);
+    // Mutation task contexts should NOT exist during initial scaffold
+    expect(existsSync(join(contextDir, 'task-modify.md'))).toBe(false);
+    expect(existsSync(join(contextDir, 'task-add-page.md'))).toBe(false);
+  });
 });

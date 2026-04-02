@@ -1802,6 +1802,47 @@ function generateTaskContext(
 }
 
 /**
+ * Generate task context from a V3 essence (used by refreshDerivedFiles).
+ * Extracts the same template variables as the v2 version.
+ */
+function generateTaskContextV3(templateName: string, essence: EssenceV3): string {
+  const template = loadTemplate(templateName);
+
+  const pages = essence.blueprint.sections && essence.blueprint.sections.length > 0
+    ? essence.blueprint.sections.flatMap(s => s.pages)
+    : essence.blueprint.pages || [];
+  const defaultShell = essence.blueprint.sections?.[0]?.shell
+    || (essence.blueprint as any).shell
+    || 'sidebar-main';
+  const layout = pages[0]?.layout?.map(serializeLayoutItem).join(', ') || 'none';
+
+  const scaffoldStructure = pages.map(p => {
+    const patterns = p.layout.length > 0
+      ? `\n  - Patterns: ${p.layout.map(serializeLayoutItem).join(', ')}`
+      : '';
+    return `- **${p.id}** (${defaultShell})${patterns}`;
+  }).join('\n');
+
+  const densityLevel = essence.dna.spacing?.density || 'comfortable';
+  const contentGap = essence.dna.spacing?.content_gap || '_gap4';
+
+  const vars: Record<string, string> = {
+    TARGET: essence.meta.target || 'react',
+    THEME_STYLE: essence.dna.theme.style,
+    THEME_MODE: essence.dna.theme.mode,
+    THEME_RECIPE: essence.dna.theme.recipe || essence.dna.theme.style,
+    DEFAULT_SHELL: defaultShell as string,
+    GUARD_MODE: essence.meta.guard.mode,
+    LAYOUT: layout,
+    DENSITY: densityLevel,
+    CONTENT_GAP: contentGap,
+    SCAFFOLD_STRUCTURE: scaffoldStructure,
+  };
+
+  return renderTemplate(template, vars);
+}
+
+/**
  * Generate essence summary markdown.
  */
 function generateEssenceSummary(essence: EssenceFile): string {
@@ -1964,23 +2005,13 @@ export async function scaffoldProject(
   writeFileSync(projectJsonPath, generateProjectJson(detected, options, registrySource));
 
   // Write legacy task context files (v2-compatible)
+  // Note: task-modify.md and task-add-page.md are skipped during initial scaffold
+  // (0% token usage during scaffolding). They are generated on first refresh/add/remove.
   const contextFiles: string[] = [];
 
   const scaffoldPath = join(contextDir, 'task-scaffold.md');
   writeFileSync(scaffoldPath, generateTaskContext('task-scaffold.md.template', essence));
   contextFiles.push(scaffoldPath);
-
-  const addPagePath = join(contextDir, 'task-add-page.md');
-  writeFileSync(addPagePath, generateTaskContext('task-add-page.md.template', essence));
-  contextFiles.push(addPagePath);
-
-  const modifyPath = join(contextDir, 'task-modify.md');
-  writeFileSync(modifyPath, generateTaskContext('task-modify.md.template', essence));
-  contextFiles.push(modifyPath);
-
-  const summaryPath = join(contextDir, 'essence-summary.md');
-  writeFileSync(summaryPath, generateEssenceSummary(essence));
-  contextFiles.push(summaryPath);
 
   // V3.1 upgrade: if composedSections is provided, upgrade the essence
   if (composedSections) {
@@ -2010,7 +2041,7 @@ export async function scaffoldProject(
   }
 
   // Delegate derived file generation to refreshDerivedFiles
-  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry, themeData, recipeData);
+  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry, themeData, recipeData, { isInitialScaffold: true });
 
   // Merge context files from refresh into our list
   contextFiles.push(...refreshResult.contextFiles);
@@ -2261,6 +2292,7 @@ export async function refreshDerivedFiles(
   registry: RegistryClient,
   prefetchedThemeData?: ThemeData,
   prefetchedRecipeData?: RecipeData,
+  options?: { isInitialScaffold?: boolean },
 ): Promise<RefreshResult> {
   const decantrDir = join(projectRoot, '.decantr');
   const contextDir = join(decantrDir, 'context');
@@ -2401,12 +2433,28 @@ export async function refreshDerivedFiles(
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
   writeFileSync(decantrMdPath, generateDecantrMdV31(guardMode, CSS_APPROACH_CONTENT));
 
-  // ── Generate essence-summary.md from V3 data ──
-  const summaryPath = join(contextDir, 'essence-summary.md');
-  writeFileSync(summaryPath, generateEssenceSummaryV3(essence));
+  // ── Generate essence-summary.md only for V3.0 flat projects ──
+  // For V3.1 (sectioned), scaffold.md covers the same overview — skip to save tokens.
+  const hasSections = essence.blueprint.sections && essence.blueprint.sections.length > 0;
+  const contextFiles: string[] = [decoratorsMdPath];
 
-  // ── Determine sections (V3.1 sectioned or V3.0 flat) ──
-  const contextFiles: string[] = [decoratorsMdPath, summaryPath];
+  if (!hasSections) {
+    const summaryPath = join(contextDir, 'essence-summary.md');
+    writeFileSync(summaryPath, generateEssenceSummaryV3(essence));
+    contextFiles.push(summaryPath);
+  }
+
+  // ── Generate mutation task contexts (skipped during init, generated on refresh/add/remove) ──
+  if (!options?.isInitialScaffold) {
+    const addPagePath = join(contextDir, 'task-add-page.md');
+    writeFileSync(addPagePath, generateTaskContextV3('task-add-page.md.template', essence));
+    contextFiles.push(addPagePath);
+
+    const modifyPath = join(contextDir, 'task-modify.md');
+    writeFileSync(modifyPath, generateTaskContextV3('task-modify.md.template', essence));
+    contextFiles.push(modifyPath);
+  }
+
   const blueprint = essence.blueprint;
 
   // V3.1: has sections array
@@ -2989,10 +3037,9 @@ export function generateSectionContext(input: SectionContextInput): string {
     lines.push('');
   }
 
-  // Personality — reference only (full text in scaffold.md)
+  // Personality — reference only, full text lives in scaffold.md
   if (personality.length > 0) {
-    const preview = personality[0].length > 60 ? personality[0].substring(0, 60) + '...' : personality.join(', ');
-    lines.push(`**Personality:** ${preview} (full details in scaffold.md)`);
+    lines.push('**Personality:** See scaffold.md for personality and visual direction.');
     lines.push('');
   }
 
@@ -3008,12 +3055,44 @@ export function generateSectionContext(input: SectionContextInput): string {
     lines.push('');
   }
 
-  // Pages
+  // Collect unique patterns across all pages in this section
+  const uniquePatterns = new Map<string, PatternSpecSummary>();
+  for (const page of section.pages) {
+    const patternNames = page.layout.flatMap(extractPatternNames);
+    for (const name of patternNames) {
+      if (patternSpecs[name] && !uniquePatterns.has(name)) {
+        uniquePatterns.set(name, patternSpecs[name]);
+      }
+    }
+  }
+
+  // Pattern Reference — each pattern spec listed once
+  if (uniquePatterns.size > 0) {
+    lines.push('## Pattern Reference');
+    lines.push('');
+    for (const [patternName, spec] of uniquePatterns) {
+      lines.push(`### ${patternName}`);
+      lines.push('');
+      lines.push(spec.description);
+      lines.push('');
+      lines.push(`**Components:** ${spec.components.join(', ')}`);
+      lines.push('');
+      lines.push('**Layout slots:**');
+      for (const [slot, desc] of Object.entries(spec.slots)) {
+        lines.push(`- \`${slot}\`: ${desc}`);
+      }
+      lines.push('');
+    }
+    lines.push('---');
+    lines.push('');
+  }
+
+  // Pages — layout and mapping only, pattern specs referenced above
   lines.push('## Pages');
   lines.push('');
   for (const page of section.pages) {
     const route = page.route || `/${section.id}/${page.id}`;
-    const layoutStr = page.layout.map(serializeLayoutItem).join(' \u2192 ');
+    const layoutStr = page.layout.map(serializeLayoutItem).join(' → ');
     lines.push(`### ${page.id} (${route})`);
     lines.push('');
     lines.push(`Layout: ${layoutStr}`);
@@ -3028,26 +3107,6 @@ export function generateSectionContext(input: SectionContextInput): string {
         const alias = ref.as || ref.pattern;
         const preset = ref.preset || 'standard';
         lines.push(`| ${alias} | ${ref.pattern} | ${preset} |`);
-      }
-      lines.push('');
-    }
-
-    // Collect pattern names from layout items
-    const patternNames = page.layout.flatMap(extractPatternNames);
-
-    for (const patternName of patternNames) {
-      const spec = patternSpecs[patternName];
-      if (!spec) continue;
-
-      lines.push(`#### Pattern: ${patternName}`);
-      lines.push('');
-      lines.push(spec.description);
-      lines.push('');
-      lines.push(`**Components:** ${spec.components.join(', ')}`);
-      lines.push('');
-      lines.push('**Layout slots:**');
-      for (const [slot, desc] of Object.entries(spec.slots)) {
-        lines.push(`- \`${slot}\`: ${desc}`);
       }
       lines.push('');
     }

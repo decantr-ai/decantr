@@ -1,77 +1,76 @@
 import { css } from '@decantr/css';
-import { useState } from 'react';
-import { Send, Paperclip, Zap, Code, FileText, Lightbulb } from 'lucide-react';
-import { ChatPortalShell } from '@/layouts/ChatPortalShell';
-import { Button } from '@/components';
+import { Send, Paperclip, MessageSquare, Code2, FileText, Lightbulb } from 'lucide-react';
 
 const suggestions = [
-  { icon: Code, label: 'Write code', description: 'Generate, debug, or review code in any language' },
-  { icon: FileText, label: 'Analyze text', description: 'Summarize, translate, or extract insights from documents' },
-  { icon: Lightbulb, label: 'Brainstorm ideas', description: 'Get creative suggestions and explore concepts' },
-  { icon: Zap, label: 'Automate tasks', description: 'Create scripts, workflows, and integrations' },
+  { icon: Code2, label: 'Help me debug a React component' },
+  { icon: FileText, label: 'Summarize this document' },
+  { icon: Lightbulb, label: 'Brainstorm product ideas' },
+  { icon: MessageSquare, label: 'Explain a technical concept' },
 ];
 
 export function NewChatPage() {
-  const [message, setMessage] = useState('');
-
   return (
-    <ChatPortalShell mode="chat">
-      <div className={css('_flex1 _flex _col _aic _jcc _p6')}>
-        <div className={css('_flex _col _aic _gap6 _textc')} style={{ maxWidth: '600px' }}>
-          {/* Empty thread illustration */}
-          <div
-            className={css('_flex _aic _jcc _roundedfull')}
-            style={{
-              width: '64px',
-              height: '64px',
-              background: 'color-mix(in srgb, var(--d-primary) 15%, transparent)',
-            }}
-          >
-            <Zap size={28} className={css('_fgprimary')} />
-          </div>
+    <div className={css('_flex _col _flex1 _aic _jcc _p6')}>
+      <div className={css('_flex _col _aic _textc') + ' carbon-fade-slide'} style={{ maxWidth: 600, width: '100%' }}>
+        {/* Empty thread illustration */}
+        <div
+          className={css('_flex _aic _jcc _roundedfull _mb6')}
+          style={{
+            width: 64,
+            height: 64,
+            background: 'color-mix(in srgb, var(--d-primary) 15%, var(--d-surface))',
+          }}
+        >
+          <MessageSquare size={28} style={{ color: 'var(--d-primary)' }} />
+        </div>
+        <h1 className={css('_heading2')}>How can I help you today?</h1>
+        <p className={css('_textsm _fgmuted _mt2')}>
+          Start a conversation or choose a suggestion below.
+        </p>
 
-          <div className={css('_flex _col _gap2')}>
-            <h1 className={css('_text2xl _fontsemi _fgtext')}>How can I help you today?</h1>
-            <p className={css('_textbase _fgmuted')}>
-              Start a conversation with Carbon AI. Ask questions, write code, analyze data, or brainstorm ideas.
-            </p>
-          </div>
-
-          {/* Suggestions grid */}
-          <div className={css('_grid _gap3 _wfull')} style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-            {suggestions.map((suggestion) => (
+        {/* Suggestions */}
+        <div className={css('_grid _gc1 _sm:gc2 _gap3 _mt8 _wfull')}>
+          {suggestions.map((s) => {
+            const Icon = s.icon;
+            return (
               <button
-                key={suggestion.label}
-                className={css('_flex _col _aic _gap2 _p4 _textc _rounded _trans') + ' carbon-card card-hover'}
-                onClick={() => setMessage(suggestion.label.toLowerCase() + ': ')}
+                key={s.label}
+                className={css('_flex _aic _gap3 _px4 _py3 _textsm _textl _rounded _trans _pointer') + ' carbon-card'}
+                style={{ cursor: 'pointer' }}
               >
-                <suggestion.icon size={20} className={css('_fgprimary')} />
-                <span className={css('_textsm _fontmedium _fgtext')}>{suggestion.label}</span>
-                <span className={css('_textxs _fgmuted')}>{suggestion.description}</span>
+                <Icon size={16} style={{ color: 'var(--d-primary)', flexShrink: 0 }} />
+                <span className={css('_fgmuted')}>{s.label}</span>
               </button>
-            ))}
+            );
+          })}
+        </div>
+
+        {/* Input */}
+        <div className={css('_wfull _mt8')}>
+          <div className={css('_flex _aic _gap3 _p3 _rounded') + ' carbon-card'}>
+            <button className={css('_flex _aic _jcc _p2 _rounded _fgmuted _trans _pointer') + ' btn-ghost'} aria-label="Attach file">
+              <Paperclip size={18} />
+            </button>
+            <input
+              type="text"
+              placeholder="Send a message..."
+              className={css('_flex1 _textbase')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: 'var(--d-text)',
+              }}
+            />
+            <button
+              className={css('_flex _aic _jcc _p2 _roundedfull _trans _pointer') + ' btn-primary'}
+              aria-label="Send message"
+            >
+              <Send size={16} />
+            </button>
           </div>
         </div>
       </div>
-
-      {/* Input */}
-      <div className={css('_p4')} style={{ borderTop: '1px solid var(--d-border)' }}>
-        <div className={css('_flex _aic _gap3')}>
-          <button className={css('_flex _aic _jcc _p2 _rounded _trans _shrink0') + ' btn-ghost'} title="Attach file">
-            <Paperclip size={18} />
-          </button>
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Send a message..."
-            className={css('_flex1 _px4 _py3 _textbase _rounded _bgbg _fgtext _bw1') + ' carbon-input'}
-          />
-          <Button variant="primary" size="md" disabled={!message.trim()}>
-            <Send size={16} />
-          </Button>
-        </div>
-      </div>
-    </ChatPortalShell>
+    </div>
   );
 }

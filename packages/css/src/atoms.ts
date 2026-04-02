@@ -276,8 +276,16 @@ const DIRECT: Record<string, string> = {
   ring1: 'outline:1px solid var(--d-primary,#6366f1);outline-offset:1px',
   ring2: 'outline:2px solid var(--d-primary,#6366f1);outline-offset:2px',
 
-  // Container
-  container: 'container-type:inline-size',
+  // Container queries
+  cqinline: 'container-type:inline-size',
+
+  // Container (max-width containment)
+  container: 'max-width:1200px;margin-inline:auto;width:100%;padding-inline:1rem',
+  containersm: 'max-width:640px;margin-inline:auto;width:100%;padding-inline:1rem',
+  containermd: 'max-width:768px;margin-inline:auto;width:100%;padding-inline:1rem',
+  containerlg: 'max-width:1024px;margin-inline:auto;width:100%;padding-inline:1rem',
+  containerxl: 'max-width:1400px;margin-inline:auto;width:100%;padding-inline:1rem',
+  containerfull: 'max-width:100%;margin-inline:auto;width:100%;padding-inline:1rem',
 
   // Background
   bgcover: 'background-size:cover',

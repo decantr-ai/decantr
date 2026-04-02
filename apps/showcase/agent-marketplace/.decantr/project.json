@@ -1,0 +1,30 @@
+{
+  "detected": {
+    "framework": "react",
+    "version": "19.0.0",
+    "packageManager": "unknown",
+    "hasTypeScript": true,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": null
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-02T04:30:20.680Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": [],
+      "recipes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-02T04:30:20.680Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=carbon-ai-portal --theme=carbon --mode=dark --guard=strict"
+  }
+}
