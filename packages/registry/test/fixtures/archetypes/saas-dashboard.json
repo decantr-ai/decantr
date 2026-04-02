@@ -33,7 +33,7 @@
     "patterns": {
       "kpi-grid": ">=1.0.0"
     },
-    "recipes": {
+    "themes": {
       "auradecantism": ">=1.0.0"
     }
   },

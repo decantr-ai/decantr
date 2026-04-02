@@ -37,12 +37,12 @@ describe('resolvePatternPreset', () => {
     expect(result.preset).toBe('landing');
   });
 
-  it('uses recipe default_presets as middle priority', () => {
+  it('uses theme default_presets as middle priority', () => {
     const result = resolvePatternPreset(HERO_PATTERN, undefined, { hero: 'image-overlay' });
     expect(result.preset).toBe('image-overlay');
   });
 
-  it('explicit preset overrides recipe default', () => {
+  it('explicit preset overrides theme default', () => {
     const result = resolvePatternPreset(HERO_PATTERN, 'landing', { hero: 'image-overlay' });
     expect(result.preset).toBe('landing');
   });

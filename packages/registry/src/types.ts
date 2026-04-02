@@ -45,12 +45,12 @@ export interface Archetype {
   tags: string[];
   pages: ArchetypePage[];
   features: string[];
-  dependencies: { patterns: Record<string, string>; recipes: Record<string, string> };
+  dependencies: { patterns: Record<string, string> };
   seo_hints?: SeoHints;
 }
 
-// --- Recipe ---
-export interface RecipeSpatialHints {
+// --- Theme substructures (absorbed from former Recipe type) ---
+export interface ThemeSpatial {
   density_bias: number;
   content_gap_shift: number;
   section_padding: string;
@@ -58,7 +58,7 @@ export interface RecipeSpatialHints {
   surface_override: string | null;
 }
 
-export interface RecipeVisualEffects {
+export interface ThemeEffects {
   enabled: boolean;
   intensity: 'subtle' | 'moderate' | 'bold';
   type_mapping: Record<string, string[]>;
@@ -66,28 +66,13 @@ export interface RecipeVisualEffects {
   intensity_values?: Record<string, Record<string, string>>;
 }
 
-export interface RecipeShell {
+export interface ThemeShell {
   preferred: string[];
   nav_style: string;
   root?: string;
   nav?: string;
   header?: string;
   dimensions?: { navWidth?: string; headerHeight?: string };
-}
-
-export interface Recipe {
-  id: string;
-  style: string;
-  mode: string;
-  schema_version: string;
-  spatial_hints: RecipeSpatialHints;
-  shell: RecipeShell;
-  visual_effects: RecipeVisualEffects;
-  pattern_preferences: { prefer: string[]; avoid: string[]; default_presets?: Record<string, string> };
-  pattern_overrides?: Record<string, { background?: string[] }>;
-  /** Maps CSS class selectors (e.g. "d-surface") to property override objects (e.g. {"background": "rgba(31,31,35,0.8)"}). */
-  treatment_overrides?: Record<string, Record<string, string>>;
-  animation?: { entrance?: string; micro?: string };
 }
 
 // --- Blueprint ---
@@ -101,7 +86,7 @@ export interface Blueprint {
   description?: string;
   archetype: string;
   compose?: ComposeEntry[];
-  theme: { style: string; recipe?: string; mode?: string; shape?: string };
+  theme: { id: string; mode?: string; shape?: string };
   personality?: string;
   pages: Array<{
     id: string;
@@ -128,7 +113,7 @@ export interface Shell {
 }
 
 // --- Content Resolution ---
-export type ContentType = 'pattern' | 'archetype' | 'recipe' | 'theme' | 'blueprint';
+export type ContentType = 'pattern' | 'archetype' | 'theme' | 'blueprint';
 
 export interface ResolvedContent<T> {
   item: T;
@@ -152,17 +137,29 @@ export interface Theme {
   tags?: string[];
   personality?: string;
   seed?: Record<string, string>;
+  palette?: Record<string, Record<string, string>>;
   modes?: string[];
   shapes?: string[];
   cvd_support?: CvdMode[];
   tokens?: ThemeTokens;
   decantr_compat?: string;
   source?: string;
+  // Absorbed from former Recipe type
+  decorators?: Record<string, string>;
+  treatments?: Record<string, Record<string, string>>;
+  spatial?: ThemeSpatial;
+  shell?: ThemeShell;
+  effects?: ThemeEffects;
+  motion?: { preference?: string; reduce_motion?: boolean; entrance?: string; timing?: string; durations?: Record<string, string> };
+  typography?: { scale?: string; heading_weight?: number; body_weight?: number; mono?: string };
+  radius?: { philosophy?: string; base?: number };
+  compositions?: Record<string, { shell: string; description: string; effects?: string[] }>;
+  pattern_preferences?: { prefer: string[]; avoid: string[]; default_presets?: Record<string, string> };
 }
 
 // --- API Client Types ---
 
-export type ApiContentType = 'patterns' | 'recipes' | 'themes' | 'blueprints' | 'archetypes' | 'shells';
+export type ApiContentType = 'patterns' | 'themes' | 'blueprints' | 'archetypes' | 'shells';
 
 export interface ContentListResponse<T = Record<string, unknown>> {
   items: T[];

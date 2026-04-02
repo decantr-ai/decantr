@@ -7,7 +7,6 @@
   "description": "Search input and filter controls for filtering page content. Sits above data-consuming patterns like data-table, card-grid, and activity-feed.",
   "dependencies": {
     "patterns": {},
-    "recipes": {},
     "styles": {},
     "requires_core": {
       "components": [

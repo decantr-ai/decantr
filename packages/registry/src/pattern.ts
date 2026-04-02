@@ -9,7 +9,7 @@ export interface ResolvedPreset {
 export function resolvePatternPreset(
   pattern: Pattern,
   explicitPreset?: string,
-  recipeDefaultPresets?: Record<string, string>,
+  themeDefaultPresets?: Record<string, string>,
 ): ResolvedPreset {
   const presets = pattern.presets;
   const hasPresets = Object.keys(presets).length > 0;
@@ -24,9 +24,9 @@ export function resolvePatternPreset(
 
   let presetName = explicitPreset;
   if (presetName && !presets[presetName]) presetName = undefined;
-  if (!presetName && recipeDefaultPresets?.[pattern.id]) {
-    const recipeName = recipeDefaultPresets[pattern.id];
-    if (presets[recipeName]) presetName = recipeName;
+  if (!presetName && themeDefaultPresets?.[pattern.id]) {
+    const themeName = themeDefaultPresets[pattern.id];
+    if (presets[themeName]) presetName = themeName;
   }
   if (!presetName) presetName = pattern.default_preset;
   if (!presetName || !presets[presetName]) presetName = Object.keys(presets)[0];

@@ -27,9 +27,9 @@ describe('ContentResolver', () => {
     expect(result!.item.id).toBe('saas-dashboard');
   });
 
-  it('resolves a recipe by id', async () => {
+  it('resolves a theme by id', async () => {
     const resolver = createResolver({ contentRoot: fixtureRoot });
-    const result = await resolver.resolve('recipe', 'auradecantism');
+    const result = await resolver.resolve('theme', 'auradecantism');
     expect(result).not.toBeNull();
     expect(result!.item.id).toBe('auradecantism');
   });

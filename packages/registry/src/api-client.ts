@@ -1,7 +1,6 @@
 import type {
   Pattern,
   Archetype,
-  Recipe,
   Theme,
   Blueprint,
   Shell,
@@ -156,10 +155,6 @@ export class RegistryAPIClient {
 
   async getArchetype(namespace: string, slug: string): Promise<Archetype> {
     return this.getContent<Archetype>('archetypes', namespace, slug);
-  }
-
-  async getRecipe(namespace: string, slug: string): Promise<Recipe> {
-    return this.getContent<Recipe>('recipes', namespace, slug);
   }
 
   async getTheme(namespace: string, slug: string): Promise<Theme> {

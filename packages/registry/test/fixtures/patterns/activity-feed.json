@@ -7,7 +7,6 @@
   "description": "Chronological list of activity events with avatars, timestamps, and action descriptions",
   "dependencies": {
     "patterns": {},
-    "recipes": {},
     "styles": {},
     "requires_core": {
       "components": [

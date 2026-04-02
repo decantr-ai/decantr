@@ -27,8 +27,8 @@ describe.skipIf(!hasContent)('Integration: resolver with real content', () => {
     expect(result!.item.presets).toBeDefined();
   });
 
-  it('resolves the auradecantism recipe', async () => {
-    const result = await resolver.resolve('recipe', 'auradecantism');
+  it('resolves the auradecantism theme', async () => {
+    const result = await resolver.resolve('theme', 'auradecantism');
     expect(result).not.toBeNull();
     expect(result!.item.id).toBe('auradecantism');
   });
