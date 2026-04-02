@@ -1,52 +1,6 @@
 # Task Context: Scaffolding
 
-**Enforcement Tier: Creative**
-
-You are scaffolding a new Decantr project. Guard rules are advisory only during initial scaffolding.
-
----
-
-## Your Task
-
-Generate the initial project structure based on the essence specification.
-
-## Rules (Advisory)
-
-During scaffolding, the following rules are recommendations, not requirements:
-
-| # | Layer | Rule | Status | Guidance |
-|---|-------|------|--------|----------|
-| 1 | DNA | Style | Advisory | Use the theme from essence, but creative variations are acceptable |
-| 2 | DNA | Recipe | Advisory | Apply recipe styles where possible |
-| 3 | DNA | Density | Advisory | Follow spacing guidelines loosely |
-| 4 | DNA | Accessibility | Advisory | Meet WCAG level from essence where possible |
-| 5 | DNA | Theme-mode | Advisory | Use the specified theme/mode combination |
-| 6 | Blueprint | Structure | Advisory | Follow the page structure, add placeholder content |
-| 7 | Blueprint | Layout | Advisory | Use suggested patterns, order can be adjusted |
-| 8 | Blueprint | Pattern-exists | Advisory | Use patterns that exist in the registry |
-
-## Checklist
-
-Before scaffolding:
-
-- [ ] Read `decantr.essence.json`
-- [ ] Understand the target framework (react)
-- [ ] Know the theme (carbon) and mode (dark)
-- [ ] Review the page structure
-
-During scaffolding:
-
-- [ ] Create the shell layout (sidebar-main)
-- [ ] Generate pages from `blueprint.pages[]`
-- [ ] Add pattern placeholders for each page's `layout[]`
-- [ ] Apply theme colors and typography
-- [ ] Set up routing based on page IDs
-
-After scaffolding:
-
-- [ ] Run `npx @decantr/cli validate` to check the essence
-- [ ] Verify each page renders correctly
-- [ ] Check theme consistency across pages
+**Enforcement Tier: Creative** — Guard rules are advisory during initial scaffolding.
 
 ## What to Generate
 
@@ -83,16 +37,7 @@ After scaffolding:
 - **ai-transparency-confidence-explorer** (sidebar-main)
   - Patterns: intent-radar as confidence-distribution, stats-detail as metric-breakdown
 
-## Next Steps
-
-After scaffolding is complete:
-
-1. Run the development server
-2. Verify all pages load
-3. Check theme consistency
-4. Run `npx @decantr/cli validate`
-
-Once verified, subsequent changes will use **strict** enforcement mode.
+Post-scaffold enforcement mode: **strict**.
 
 ---
 

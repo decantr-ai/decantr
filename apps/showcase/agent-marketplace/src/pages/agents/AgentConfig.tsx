@@ -1,238 +1,269 @@
-import { css } from '@decantr/css';
-import {
-  Settings, Cpu, Shield, Bell, Plug, Save, RotateCcw,
-} from 'lucide-react';
 import { useState } from 'react';
+import { css } from '@decantr/css';
+import { Bot, Shield, Bell, Workflow, Globe, ChevronDown } from 'lucide-react';
 
-const sections = [
-  { id: 'general', label: 'General', icon: Settings },
-  { id: 'compute', label: 'Compute', icon: Cpu },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'integrations', label: 'Integrations', icon: Plug },
+interface SettingsSection {
+  id: string;
+  label: string;
+  icon: typeof Bot;
+  description: string;
+}
+
+const sections: SettingsSection[] = [
+  { id: 'general', label: 'General', icon: Bot, description: 'Agent name, model, and basic configuration' },
+  { id: 'security', label: 'Security', icon: Shield, description: 'API keys, access controls, and permissions' },
+  { id: 'notifications', label: 'Notifications', icon: Bell, description: 'Alert thresholds and notification channels' },
+  { id: 'orchestration', label: 'Orchestration', icon: Workflow, description: 'Swarm behavior, routing rules, and fallbacks' },
+  { id: 'network', label: 'Network', icon: Globe, description: 'Endpoints, rate limits, and retry policies' },
 ];
 
-function Toggle({ active, onToggle }: { active: boolean; onToggle: () => void }) {
+function SelectInput({ label, options, defaultValue }: { label: string; options: string[]; defaultValue?: string }) {
   return (
-    <button
-      type="button"
-      className={'toggle-track' + (active ? ' active' : '')}
-      onClick={onToggle}
-      role="switch"
-      aria-checked={active}
-    >
-      <span className="toggle-thumb" />
-    </button>
+    <div className={css('_flex _col _gap1')}>
+      <label className={css('_textsm _fontmedium') + ' mono-data'} style={{ color: 'var(--d-text-muted)' }}>
+        {label}
+      </label>
+      <div className={css('_rel')}>
+        <select
+          className="d-control"
+          defaultValue={defaultValue}
+          style={{ appearance: 'none', paddingRight: '2rem' }}
+        >
+          {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+        </select>
+        <ChevronDown
+          size={14}
+          style={{
+            position: 'absolute',
+            right: '0.75rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            color: 'var(--d-text-muted)',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function TextInput({ label, placeholder, type = 'text', defaultValue }: { label: string; placeholder?: string; type?: string; defaultValue?: string }) {
+  return (
+    <div className={css('_flex _col _gap1')}>
+      <label className={css('_textsm _fontmedium') + ' mono-data'} style={{ color: 'var(--d-text-muted)' }}>
+        {label}
+      </label>
+      <input
+        type={type}
+        placeholder={placeholder}
+        defaultValue={defaultValue}
+        className="d-control carbon-input"
+      />
+    </div>
+  );
+}
+
+function ToggleInput({ label, description, defaultChecked = false }: { label: string; description: string; defaultChecked?: boolean }) {
+  const [checked, setChecked] = useState(defaultChecked);
+  return (
+    <div className={css('_flex _aic _jcsb _gap4')}>
+      <div className={css('_flex _col')}>
+        <span className={css('_textsm _fontmedium')}>{label}</span>
+        <span className={css('_textxs')} style={{ color: 'var(--d-text-muted)' }}>{description}</span>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => setChecked(!checked)}
+        className={css('_shrink0 _rounded')}
+        style={{
+          width: '40px',
+          height: '22px',
+          background: checked ? 'var(--d-accent)' : 'var(--d-surface-raised)',
+          border: '1px solid var(--d-border)',
+          cursor: 'pointer',
+          position: 'relative',
+          transition: 'background 0.2s ease',
+        }}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            top: '2px',
+            left: checked ? '20px' : '2px',
+            width: '16px',
+            height: '16px',
+            borderRadius: '50%',
+            background: '#fff',
+            transition: 'left 0.2s ease',
+            boxShadow: checked ? '0 0 6px var(--d-accent-glow)' : undefined,
+          }}
+        />
+      </button>
+    </div>
+  );
+}
+
+function TextareaInput({ label, placeholder, rows = 3 }: { label: string; placeholder?: string; rows?: number }) {
+  return (
+    <div className={css('_flex _col _gap1')}>
+      <label className={css('_textsm _fontmedium') + ' mono-data'} style={{ color: 'var(--d-text-muted)' }}>
+        {label}
+      </label>
+      <textarea
+        className="d-control carbon-input"
+        placeholder={placeholder}
+        rows={rows}
+        style={{ minHeight: '6rem', resize: 'vertical' }}
+      />
+    </div>
   );
 }
 
 export function AgentConfig() {
   const [activeSection, setActiveSection] = useState('general');
-  const [autoScale, setAutoScale] = useState(true);
-  const [notifications, setNotifications] = useState(true);
-  const [mfa, setMfa] = useState(false);
 
   return (
-    <div className={css('_flex _col _gap6') + ' fade-in'}>
-      {/* Page header */}
-      <div className={css('_flex _aic _jcsb')}>
-        <div>
-          <h1 className={'font-mono ' + css('_text2xl _fontbold')}>Configuration</h1>
-          <p className={'font-mono ' + css('_textsm _fgmuted _mt1')}>
-            Swarm parameters and agent defaults
-          </p>
+    <div className={css('_flex _col _gap6')} style={{ maxWidth: '40rem' }}>
+      {/* Settings nav */}
+      <nav className={css('_flex _gap2 _wrap')}>
+        {sections.map(section => {
+          const Icon = section.icon;
+          const isActive = activeSection === section.id;
+          return (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={css('_flex _aic _gap2') + ' d-interactive'}
+              data-variant={isActive ? 'primary' : 'ghost'}
+              style={{ fontSize: '0.8125rem' }}
+            >
+              <Icon size={14} />
+              {section.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Form content — single card */}
+      <form
+        className={css('_flex _col _gap6 _p5') + ' d-surface carbon-glass'}
+        onSubmit={e => e.preventDefault()}
+      >
+        {activeSection === 'general' && (
+          <>
+            <div className={css('_flex _col _gap1')}>
+              <h3 className={css('_textlg _fontsemi _flex _aic _gap2')}>
+                <Bot size={18} style={{ color: 'var(--d-accent)' }} />
+                General Settings
+              </h3>
+              <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
+                Configure basic agent properties and model selection.
+              </p>
+            </div>
+            <div className={css('_grid _gc1 _lg:gc2 _gap4')}>
+              <TextInput label="Agent Name" placeholder="e.g., Classifier-v3" defaultValue="Classifier-v3" />
+              <SelectInput label="Model" options={['GPT-4o', 'GPT-4o-mini', 'Claude-3', 'Claude-3.5', 'Mistral-7B']} defaultValue="GPT-4o" />
+              <TextInput label="Version" placeholder="1.0.0" defaultValue="3.2.1" />
+              <SelectInput label="Priority" options={['Low', 'Medium', 'High', 'Critical']} defaultValue="High" />
+            </div>
+            <TextareaInput label="System Prompt" placeholder="Enter the agent's system prompt..." />
+            <ToggleInput label="Auto-restart on failure" description="Automatically restart the agent if it crashes or becomes unresponsive" defaultChecked />
+          </>
+        )}
+
+        {activeSection === 'security' && (
+          <>
+            <div className={css('_flex _col _gap1')}>
+              <h3 className={css('_textlg _fontsemi _flex _aic _gap2')}>
+                <Shield size={18} style={{ color: 'var(--d-accent)' }} />
+                Security Settings
+              </h3>
+              <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
+                API keys, access controls, and permissions for this agent.
+              </p>
+            </div>
+            <div className={css('_grid _gc1 _lg:gc2 _gap4')}>
+              <TextInput label="API Key" type="password" placeholder="sk-..." defaultValue="sk-xxxxxxxxxxxx" />
+              <SelectInput label="Access Level" options={['Read-only', 'Read-write', 'Admin']} defaultValue="Read-write" />
+            </div>
+            <ToggleInput label="Sandbox mode" description="Run agent in isolated sandbox environment" defaultChecked />
+            <ToggleInput label="Audit logging" description="Log all agent actions for compliance review" defaultChecked />
+          </>
+        )}
+
+        {activeSection === 'notifications' && (
+          <>
+            <div className={css('_flex _col _gap1')}>
+              <h3 className={css('_textlg _fontsemi _flex _aic _gap2')}>
+                <Bell size={18} style={{ color: 'var(--d-accent)' }} />
+                Notification Settings
+              </h3>
+              <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
+                Configure when and how you receive alerts about this agent.
+              </p>
+            </div>
+            <div className={css('_grid _gc1 _lg:gc2 _gap4')}>
+              <TextInput label="Error Threshold" type="number" placeholder="5" defaultValue="5" />
+              <TextInput label="Latency Threshold (ms)" type="number" placeholder="500" defaultValue="500" />
+              <TextInput label="Webhook URL" placeholder="https://hooks.slack.com/..." />
+              <SelectInput label="Alert Channel" options={['Email', 'Slack', 'Webhook', 'PagerDuty']} defaultValue="Slack" />
+            </div>
+            <ToggleInput label="Enable error alerts" description="Get notified when this agent encounters errors" defaultChecked />
+            <ToggleInput label="Performance alerts" description="Alert on latency spikes or throughput drops" />
+          </>
+        )}
+
+        {activeSection === 'orchestration' && (
+          <>
+            <div className={css('_flex _col _gap1')}>
+              <h3 className={css('_textlg _fontsemi _flex _aic _gap2')}>
+                <Workflow size={18} style={{ color: 'var(--d-accent)' }} />
+                Orchestration Settings
+              </h3>
+              <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
+                Configure swarm behavior, task routing, and fallback strategies.
+              </p>
+            </div>
+            <div className={css('_grid _gc1 _lg:gc2 _gap4')}>
+              <SelectInput label="Routing Strategy" options={['Round-robin', 'Weighted', 'Priority', 'Least-latency']} defaultValue="Priority" />
+              <TextInput label="Max Concurrent Tasks" type="number" placeholder="10" defaultValue="10" />
+              <SelectInput label="Fallback Agent" options={['None', 'Classifier-v3', 'Summarizer-v2', 'Guardian-v1']} defaultValue="Guardian-v1" />
+              <TextInput label="Task Timeout (s)" type="number" placeholder="30" defaultValue="30" />
+            </div>
+            <ToggleInput label="Auto-scale" description="Automatically scale agent instances based on load" />
+            <ToggleInput label="Circuit breaker" description="Stop routing tasks after consecutive failures" defaultChecked />
+          </>
+        )}
+
+        {activeSection === 'network' && (
+          <>
+            <div className={css('_flex _col _gap1')}>
+              <h3 className={css('_textlg _fontsemi _flex _aic _gap2')}>
+                <Globe size={18} style={{ color: 'var(--d-accent)' }} />
+                Network Settings
+              </h3>
+              <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
+                Configure endpoints, rate limits, and retry policies.
+              </p>
+            </div>
+            <div className={css('_grid _gc1 _lg:gc2 _gap4')}>
+              <TextInput label="Base URL" placeholder="https://api.example.com" defaultValue="https://api.openai.com/v1" />
+              <TextInput label="Rate Limit (req/min)" type="number" placeholder="60" defaultValue="120" />
+              <TextInput label="Max Retries" type="number" placeholder="3" defaultValue="3" />
+              <SelectInput label="Retry Backoff" options={['Linear', 'Exponential', 'Fixed']} defaultValue="Exponential" />
+            </div>
+            <ToggleInput label="Keep-alive connections" description="Reuse TCP connections for lower latency" defaultChecked />
+          </>
+        )}
+
+        {/* Action buttons */}
+        <div className={css('_flex _jcfe _gap3 _pt4')} style={{ borderTop: '1px solid var(--d-border)' }}>
+          <button type="button" className="d-interactive" data-variant="ghost">Cancel</button>
+          <button type="submit" className="d-interactive neon-glow-hover" data-variant="primary">Save Changes</button>
         </div>
-        <div className={css('_flex _gap2')}>
-          <button className="btn btn-secondary btn-sm">
-            <RotateCcw size={14} /> Reset
-          </button>
-          <button className="btn btn-primary btn-sm">
-            <Save size={14} /> Save Changes
-          </button>
-        </div>
-      </div>
-
-      <div className={css('_grid _gap6')} style={{ gridTemplateColumns: '200px 1fr' }}>
-        {/* Settings nav */}
-        <nav className={css('_flex _col _gap1')}>
-          {sections.map((s) => {
-            const Icon = s.icon;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                className={'nav-item' + (activeSection === s.id ? ' active' : '')}
-                onClick={() => setActiveSection(s.id)}
-              >
-                <Icon size={16} />
-                <span>{s.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Settings content */}
-        <div className={css('_flex _col _gap6')}>
-          {activeSection === 'general' && (
-            <div className={css('_flex _col _gap4') + ' carbon-card ' + css('_p6')}>
-              <h3 className={'font-mono ' + css('_textlg _fontsemi')}>General Settings</h3>
-              <div className="separator" />
-
-              <div className={css('_grid _gap4')} style={{ gridTemplateColumns: '1fr 1fr' }}>
-                <div className={css('_flex _col _gap1')}>
-                  <label className={'font-mono ' + css('_textsm _fgmuted')}>Swarm Name</label>
-                  <input
-                    type="text"
-                    className="carbon-input font-mono"
-                    defaultValue="production-swarm-01"
-                  />
-                </div>
-                <div className={css('_flex _col _gap1')}>
-                  <label className={'font-mono ' + css('_textsm _fgmuted')}>Environment</label>
-                  <input
-                    type="text"
-                    className="carbon-input font-mono"
-                    defaultValue="production"
-                  />
-                </div>
-              </div>
-
-              <div className={css('_flex _col _gap1')}>
-                <label className={'font-mono ' + css('_textsm _fgmuted')}>Description</label>
-                <textarea
-                  className="carbon-input font-mono"
-                  rows={3}
-                  defaultValue="Primary production agent swarm for data processing and inference workloads."
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
-
-              <div className={css('_grid _gap4')} style={{ gridTemplateColumns: '1fr 1fr' }}>
-                <div className={css('_flex _col _gap1')}>
-                  <label className={'font-mono ' + css('_textsm _fgmuted')}>Max Agents</label>
-                  <input type="number" className="carbon-input font-mono" defaultValue="12" />
-                </div>
-                <div className={css('_flex _col _gap1')}>
-                  <label className={'font-mono ' + css('_textsm _fgmuted')}>Heartbeat Interval</label>
-                  <input type="text" className="carbon-input font-mono" defaultValue="30s" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeSection === 'compute' && (
-            <div className={css('_flex _col _gap4') + ' carbon-card ' + css('_p6')}>
-              <h3 className={'font-mono ' + css('_textlg _fontsemi')}>Compute Resources</h3>
-              <div className="separator" />
-
-              <div className={css('_flex _aic _jcsb _py3')}>
-                <div>
-                  <span className={'font-mono ' + css('_textsm')}>Auto-scaling</span>
-                  <p className={'font-mono ' + css('_textxs _fgmuted _mt1')}>
-                    Automatically scale agent count based on queue depth
-                  </p>
-                </div>
-                <Toggle active={autoScale} onToggle={() => setAutoScale(!autoScale)} />
-              </div>
-              <div className="separator" />
-
-              <div className={css('_grid _gap4')} style={{ gridTemplateColumns: '1fr 1fr' }}>
-                <div className={css('_flex _col _gap1')}>
-                  <label className={'font-mono ' + css('_textsm _fgmuted')}>CPU Limit per Agent</label>
-                  <input type="text" className="carbon-input font-mono" defaultValue="2 vCPU" />
-                </div>
-                <div className={css('_flex _col _gap1')}>
-                  <label className={'font-mono ' + css('_textsm _fgmuted')}>Memory Limit</label>
-                  <input type="text" className="carbon-input font-mono" defaultValue="4096 MB" />
-                </div>
-                <div className={css('_flex _col _gap1')}>
-                  <label className={'font-mono ' + css('_textsm _fgmuted')}>GPU Allocation</label>
-                  <input type="text" className="carbon-input font-mono" defaultValue="0.5 A100" />
-                </div>
-                <div className={css('_flex _col _gap1')}>
-                  <label className={'font-mono ' + css('_textsm _fgmuted')}>Disk IOPS</label>
-                  <input type="text" className="carbon-input font-mono" defaultValue="3000" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeSection === 'security' && (
-            <div className={css('_flex _col _gap4') + ' carbon-card ' + css('_p6')}>
-              <h3 className={'font-mono ' + css('_textlg _fontsemi')}>Security</h3>
-              <div className="separator" />
-              <div className={css('_flex _aic _jcsb _py3')}>
-                <div>
-                  <span className={'font-mono ' + css('_textsm')}>MFA Required</span>
-                  <p className={'font-mono ' + css('_textxs _fgmuted _mt1')}>
-                    Require multi-factor authentication for agent config changes
-                  </p>
-                </div>
-                <Toggle active={mfa} onToggle={() => setMfa(!mfa)} />
-              </div>
-              <div className="separator" />
-              <div className={css('_flex _col _gap1')}>
-                <label className={'font-mono ' + css('_textsm _fgmuted')}>API Key</label>
-                <input
-                  type="password"
-                  className="carbon-input font-mono"
-                  defaultValue="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                />
-              </div>
-              <div className={css('_flex _col _gap1')}>
-                <label className={'font-mono ' + css('_textsm _fgmuted')}>Allowed Origins</label>
-                <input type="text" className="carbon-input font-mono" defaultValue="*.agentctrl.io" />
-              </div>
-            </div>
-          )}
-
-          {activeSection === 'notifications' && (
-            <div className={css('_flex _col _gap4') + ' carbon-card ' + css('_p6')}>
-              <h3 className={'font-mono ' + css('_textlg _fontsemi')}>Notifications</h3>
-              <div className="separator" />
-              <div className={css('_flex _aic _jcsb _py3')}>
-                <div>
-                  <span className={'font-mono ' + css('_textsm')}>Enable Alerts</span>
-                  <p className={'font-mono ' + css('_textxs _fgmuted _mt1')}>
-                    Send alerts when agents exceed error thresholds
-                  </p>
-                </div>
-                <Toggle active={notifications} onToggle={() => setNotifications(!notifications)} />
-              </div>
-              <div className="separator" />
-              <div className={css('_flex _col _gap1')}>
-                <label className={'font-mono ' + css('_textsm _fgmuted')}>Webhook URL</label>
-                <input type="url" className="carbon-input font-mono" placeholder="https://hooks.slack.com/..." />
-              </div>
-              <div className={css('_flex _col _gap1')}>
-                <label className={'font-mono ' + css('_textsm _fgmuted')}>Alert Email</label>
-                <input type="email" className="carbon-input font-mono" placeholder="ops@company.com" />
-              </div>
-            </div>
-          )}
-
-          {activeSection === 'integrations' && (
-            <div className={css('_flex _col _gap4') + ' carbon-card ' + css('_p6')}>
-              <h3 className={'font-mono ' + css('_textlg _fontsemi')}>Integrations</h3>
-              <div className="separator" />
-              {[
-                { name: 'Datadog', status: 'Connected', badge: 'badge-success' },
-                { name: 'PagerDuty', status: 'Connected', badge: 'badge-success' },
-                { name: 'Slack', status: 'Not configured', badge: 'badge-muted' },
-                { name: 'GitHub Actions', status: 'Not configured', badge: 'badge-muted' },
-              ].map((integration) => (
-                <div key={integration.name} className={css('_flex _aic _jcsb _py3')} style={{ borderBottom: '1px solid color-mix(in srgb, var(--d-border) 40%, transparent)' }}>
-                  <div>
-                    <span className={'font-mono ' + css('_textsm')}>{integration.name}</span>
-                    <p className={'font-mono ' + css('_textxs _fgmuted _mt1')}>{integration.status}</p>
-                  </div>
-                  <button className="btn btn-secondary btn-sm font-mono">Configure</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      </form>
     </div>
   );
 }

@@ -5,14 +5,22 @@
 **Shell structure:** Centered card on a background. Used for auth flows (login, register, forgot password) across all archetypes.
 **Regions:** body
 
+## Shell Notes (centered)
+
+- **Max Width:** Centered content should be constrained to max-width: 28rem (448px) for auth forms, 36rem (576px) for wider content.
+- **Vertical Centering:** Center the content card vertically using min-height: 100dvh with flexbox centering.
+
 ---
 
 **Guard:** strict mode | DNA violations = error | Blueprint violations = warn
 
 **Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
 
-**Decorators:** `carbon-card`, `carbon-code`, `carbon-glass`, `carbon-input`, `carbon-canvas`, `carbon-divider`, `carbon-skeleton`, `carbon-bubble-ai`, `carbon-fade-slide`, `carbon-bubble-user` (see `src/styles/decorators.css`)
-Usage: `className={css('_flex _col') + ' carbon-card'}` — atoms via css(), decorators as plain class strings.
+**Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).
+**Theme decorators:** carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
+
+
+Usage: `className={css('_flex _col _gap4') + ' d-surface carbon-glass'}` — atoms via css(), treatments and theme decorators as plain class strings.
 
 ---
 

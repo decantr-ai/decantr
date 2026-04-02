@@ -153,24 +153,17 @@
 }
 
 .d-section {
-  padding-block-start: var(--d-section-py);
-}
-
-.d-section:last-child {
-  padding-block-end: var(--d-section-py);
+  padding: var(--d-section-py) 0;
 }
 
 .d-section + .d-section {
   border-top: 1px solid transparent;
   border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;
+  margin-top: var(--d-gap-2);
 }
 
 .d-section[data-density="compact"] {
-  padding-block-start: calc(var(--d-section-py) * 0.5);
-}
-
-.d-section[data-density="compact"]:last-child {
-  padding-block-end: calc(var(--d-section-py) * 0.5);
+  padding: calc(var(--d-section-py) * 0.5) 0;
 }
 
 .d-annotation {

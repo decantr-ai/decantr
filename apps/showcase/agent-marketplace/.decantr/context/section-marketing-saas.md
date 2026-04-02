@@ -5,14 +5,23 @@
 **Shell structure:** Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer.
 **Regions:** header, body, footer
 
+## Shell Notes (top-nav-footer)
+
+- **Cta Sections:** CTA sections at the bottom of marketing pages should stand out visually — subtle background gradient or glass effect, not just a plain card.
+- **Section Labels:** Section overline labels (CAPABILITIES, HOW IT WORKS) should be uppercase, small, accent-colored, center-aligned, with letter-spacing: 0.1em. Use d-label class with text-align: center.
+- **Section Spacing:** Marketing sections use spacious density. Each d-section uses full --d-section-py padding.
+
 ---
 
 **Guard:** strict mode | DNA violations = error | Blueprint violations = warn
 
 **Theme tokens:** see `src/styles/tokens.css` — use `var(--d-primary)`, `var(--d-bg)`, etc.
 
-**Decorators:** `carbon-card`, `carbon-code`, `carbon-glass`, `carbon-input`, `carbon-canvas`, `carbon-divider`, `carbon-skeleton`, `carbon-bubble-ai`, `carbon-fade-slide`, `carbon-bubble-user` (see `src/styles/decorators.css`)
-Usage: `className={css('_flex _col') + ' carbon-card'}` — atoms via css(), decorators as plain class strings.
+**Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).
+**Theme decorators:** carbon-card, carbon-code, carbon-glass, carbon-input, carbon-canvas, carbon-divider, carbon-skeleton, carbon-bubble-ai, carbon-fade-slide, carbon-bubble-user
+
+
+Usage: `className={css('_flex _col _gap4') + ' d-surface carbon-glass'}` — atoms via css(), treatments and theme decorators as plain class strings.
 
 ---
 
@@ -41,6 +50,13 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 - `headline`: Primary heading, typically h1 with _heading1
 - `cta-group`: Horizontal Button group with _flex _gap3
 - `description`: Supporting paragraph with _body _muted
+  **Layout guidance:**
+  - note: Hero sections should NOT wrap content in d-surface cards. The hero IS the section. Use d-section for spacing.
+  - subtitle: Subtitle line-height should be 1.6-1.8. Use text-muted color, smaller font than heading.
+  - container: none
+  - cta_sizing: Primary and secondary CTAs should have equal padding and height. Primary is filled (d-interactive[data-variant=primary]), secondary is ghost (d-interactive[data-variant=ghost]).
+  - announcement: If showing an announcement badge above the heading, use d-annotation with prominent styling — not a tiny muted pill. Accent border or accent background at 15% opacity.
+  - visual_proof: The visual element below CTAs should be an ambient visualization (animated gradient, particle effect, blurred screenshot) — NOT a data widget wrapped in a card. If showing product data (agents, metrics), render as floating elements without card containment. Omit entirely if no meaningful visual is available.
 
 ### features
 
