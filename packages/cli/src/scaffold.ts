@@ -1711,18 +1711,63 @@ Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and list
 /**
  * Generate DECANTR.md for v3.1 essences.
  *
- * The v3.1 template is a simplified ~200-line methodology primer that contains
- * NO project-specific data. All project-specific content lives in section
- * context files (.decantr/context/section-{name}.md).
- *
- * Only two template variables: GUARD_MODE and CSS_APPROACH.
+ * Prepends a project brief section with key design identity,
+ * then appends the methodology primer from the template.
  */
-function generateDecantrMdV31(guardMode: string, cssApproach: string): string {
+function generateDecantrMdV31(params: {
+  guardMode: string;
+  cssApproach: string;
+  blueprintId?: string;
+  themeName?: string;
+  themeMode?: string;
+  themeShape?: string;
+  personality?: string[];
+  sections?: Array<{ id: string; role: string }>;
+  features?: string[];
+  decorators?: Array<{ name: string; description: string }>;
+}): string {
   const template = loadTemplate('DECANTR.md.template');
-  return renderTemplate(template, {
-    GUARD_MODE: guardMode,
-    CSS_APPROACH: cssApproach,
+  const body = renderTemplate(template, {
+    GUARD_MODE: params.guardMode,
+    CSS_APPROACH: params.cssApproach,
   });
+
+  // Build project brief
+  const briefLines: string[] = [];
+  briefLines.push('## Project Brief');
+  briefLines.push('');
+  briefLines.push(`- **Blueprint:** ${params.blueprintId || 'custom'}`);
+  const themeParts = [params.themeName || 'default'];
+  if (params.themeMode) themeParts.push(`${params.themeMode} mode`);
+  if (params.themeShape) themeParts.push(params.themeShape);
+  briefLines.push(`- **Theme:** ${themeParts.join(' (').replace(/ \($/, '') + (themeParts.length > 1 ? ')' : '')}`);
+  if (params.personality && params.personality.length > 0) {
+    briefLines.push(`- **Personality:** ${params.personality.join('. ')}`);
+  }
+  if (params.sections && params.sections.length > 0) {
+    const sectionList = params.sections.map(s => `${s.id} [${s.role}]`).join(', ');
+    briefLines.push(`- **Sections:** ${params.sections.length} (${sectionList})`);
+  }
+  if (params.features && params.features.length > 0) {
+    briefLines.push(`- **Features:** ${params.features.join(', ')}`);
+  }
+  briefLines.push(`- **Guard mode:** ${params.guardMode}`);
+  briefLines.push('');
+
+  if (params.decorators && params.decorators.length > 0) {
+    briefLines.push('### Decorator Quick Reference');
+    briefLines.push('| Class | Purpose |');
+    briefLines.push('|-------|---------|');
+    for (const d of params.decorators) {
+      briefLines.push(`| \`.${d.name}\` | ${d.description} |`);
+    }
+    briefLines.push('');
+  }
+
+  briefLines.push('---');
+  briefLines.push('');
+
+  return briefLines.join('\n') + body;
 }
 
 /**
@@ -2415,9 +2460,47 @@ export async function refreshDerivedFiles(
 
   const cssFiles = [tokensPath, treatmentsPath, globalPath];
 
+  // ── Build decorator list for DECANTR.md and section contexts ──
+  const earlyDecoratorList: Array<{ name: string; description: string }> = [];
+  if (themeData?.decorators) {
+    for (const [name, desc] of Object.entries(themeData.decorators)) {
+      earlyDecoratorList.push({ name, description: desc as string });
+    }
+  }
+
+  // ── Collect all features across sections ──
+  const allFeatures: string[] = [];
+  const sectionSummaries: Array<{ id: string; role: string }> = [];
+  if (essence.blueprint.sections && essence.blueprint.sections.length > 0) {
+    for (const s of essence.blueprint.sections) {
+      sectionSummaries.push({ id: s.id, role: s.role });
+      if (s.features) {
+        for (const f of s.features) {
+          if (!allFeatures.includes(f)) allFeatures.push(f);
+        }
+      }
+    }
+  }
+  if (essence.blueprint.features) {
+    for (const f of essence.blueprint.features) {
+      if (!allFeatures.includes(f)) allFeatures.push(f);
+    }
+  }
+
   // ── Generate DECANTR.md ──
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
-  writeFileSync(decantrMdPath, generateDecantrMdV31(guardMode, CSS_APPROACH_CONTENT));
+  writeFileSync(decantrMdPath, generateDecantrMdV31({
+    guardMode,
+    cssApproach: CSS_APPROACH_CONTENT,
+    blueprintId: (essence.meta as any).blueprint || undefined,
+    themeName,
+    themeMode: mode,
+    themeShape: (essence.dna.theme as any).shape || undefined,
+    personality,
+    sections: sectionSummaries.length > 0 ? sectionSummaries : undefined,
+    features: allFeatures.length > 0 ? allFeatures : undefined,
+    decorators: earlyDecoratorList.length > 0 ? earlyDecoratorList : undefined,
+  }));
 
   // ── Generate essence-summary.md only for V3.0 flat projects ──
   // For V3.1 (sectioned), scaffold.md covers the same overview — skip to save tokens.
@@ -2618,8 +2701,21 @@ export async function refreshDerivedFiles(
         themeName,
         zoneContext,
         patternSpecs: sectionPatterns,
+        themeHints: themeData ? {
+          preferred: themeData.pattern_preferences?.prefer,
+          compositions: themeData.compositions
+            ? Object.entries(themeData.compositions)
+                .map(([k, v]: [string, any]) => `**${k}:** ${v.description || v}`)
+                .join('\n')
+            : undefined,
+          spatialHints: themeData.spatial
+            ? `Density bias: ${themeData.spatial.density_bias || 'none'}. Section padding: ${themeData.spatial.section_padding || 'default'}. Card wrapping: ${themeData.spatial.card_wrapping || 'default'}.`
+            : undefined,
+        } : undefined,
         constraints: essence.dna.constraints as Record<string, unknown> | undefined,
         shellInfo: shellInfoCache[section.shell as string],
+        themeData,
+        themeMode: mode,
       });
 
       const sectionContextPath = join(contextDir, `section-${section.id}.md`);
@@ -2754,8 +2850,21 @@ export async function refreshDerivedFiles(
       themeName,
       zoneContext: `This is the primary section (${shell} shell).`,
       patternSpecs,
+      themeHints: themeData ? {
+        preferred: themeData.pattern_preferences?.prefer,
+        compositions: themeData.compositions
+          ? Object.entries(themeData.compositions)
+              .map(([k, v]: [string, any]) => `**${k}:** ${v.description || v}`)
+              .join('\n')
+          : undefined,
+        spatialHints: themeData.spatial
+          ? `Density bias: ${themeData.spatial.density_bias || 'none'}. Section padding: ${themeData.spatial.section_padding || 'default'}. Card wrapping: ${themeData.spatial.card_wrapping || 'default'}.`
+          : undefined,
+      } : undefined,
       constraints: essence.dna.constraints as Record<string, unknown> | undefined,
       shellInfo: v30ShellInfo,
+      themeData,
+      themeMode: mode,
     });
 
     const sectionContextPath = join(contextDir, `section-${syntheticSection.id}.md`);
@@ -2902,6 +3011,8 @@ export interface SectionContextInput {
   themeHints?: { preferred?: string[]; compositions?: string; spatialHints?: string };
   constraints?: Record<string, unknown>;
   shellInfo?: ShellInfo;
+  themeData?: any;
+  themeMode?: string;
 }
 
 export interface ScaffoldContextInput {
@@ -2964,17 +3075,50 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push(`**Guard:** ${guardConfig.mode} mode | DNA violations = ${guardConfig.dna_enforcement} | Blueprint violations = ${guardConfig.blueprint_enforcement}`);
   lines.push('');
 
-  // Theme (reference only — full tokens in src/styles/tokens.css)
-  lines.push(`**Theme tokens:** see \`src/styles/tokens.css\` — use \`var(--d-primary)\`, \`var(--d-bg)\`, etc.`);
+  // Theme — inline key palette tokens with semantic roles
+  lines.push('**Key palette tokens:**');
+  lines.push('');
+  lines.push('| Token | Value | Role |');
+  lines.push('|-------|-------|------|');
+  const semanticRoles: Record<string, string> = {
+    background: 'Page canvas / base layer',
+    surface: 'Cards, panels, containers',
+    'surface-raised': 'Elevated containers, modals, popovers',
+    border: 'Dividers, card borders, separators',
+    text: 'Body text, headings, primary content',
+    'text-muted': 'Secondary text, placeholders, labels',
+    primary: 'Brand color, key interactive, selected states',
+    'primary-hover': 'Hover state for primary elements',
+  };
+  if (input.themeData?.palette) {
+    const modeKey = input.themeMode || 'dark';
+    for (const [name, values] of Object.entries(input.themeData.palette as Record<string, Record<string, string>>)) {
+      const val = values[modeKey] || values.dark || values.light || Object.values(values)[0];
+      lines.push(`| \`--d-${name}\` | \`${val}\` | ${semanticRoles[name] || ''} |`);
+    }
+  }
+  if (input.themeData?.seed?.accent) {
+    lines.push(`| \`--d-accent\` | \`${input.themeData.seed.accent}\` | CTAs, links, active states, glow effects |`);
+  }
+  lines.push('');
+  lines.push('Full token set: `src/styles/tokens.css`');
   lines.push('');
 
   // Visual Treatments (base treatments + theme decorators; full table in .decantr/context/treatments.md)
   lines.push('**Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).');
   if (decorators.length > 0) {
-    const names = decorators.map(d => d.name).join(', ');
-    lines.push(`**Theme decorators:** ${names}`);
+    lines.push('**Theme decorators:**');
+    lines.push('');
+    lines.push('| Class | Usage |');
+    lines.push('|-------|-------|');
+    for (const d of decorators) {
+      lines.push(`| \`.${d.name}\` | ${d.description} |`);
+    }
+    lines.push('');
+  } else {
+    lines.push('**Theme decorators:** None defined for this theme.');
+    lines.push('');
   }
-  lines.push('');
   if (themeHints) {
     if (themeHints.preferred && themeHints.preferred.length > 0) {
       lines.push(`**Preferred:** ${themeHints.preferred.join(', ')}`);
@@ -3011,10 +3155,26 @@ export function generateSectionContext(input: SectionContextInput): string {
     lines.push('');
   }
 
-  // Personality — reference only, full text lives in scaffold.md
+  // Personality — materialized inline with utility hints
   if (personality.length > 0) {
-    lines.push('**Personality:** See scaffold.md for personality and visual direction.');
+    const personalityText = personality.join('. ');
+    lines.push('## Visual Direction');
     lines.push('');
+    lines.push(`**Personality:** ${personalityText}`);
+    lines.push('');
+    const pLower = personalityText.toLowerCase();
+    const utils: string[] = [];
+    if (pLower.includes('neon') || pLower.includes('glow'))
+      utils.push('`neon-glow`, `neon-glow-hover`, `neon-text-glow`, `neon-border-glow` — Apply to elements needing accent emphasis');
+    if (pLower.includes('mono') || pLower.includes('monospace'))
+      utils.push('`mono-data` — Monospace + tabular-nums for metrics, IDs, timestamps');
+    if (pLower.includes('pulse') || pLower.includes('ring') || pLower.includes('status'))
+      utils.push('`status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation');
+    if (utils.length > 0) {
+      lines.push('**Personality utilities available in treatments.css:**');
+      for (const u of utils) lines.push(`- ${u}`);
+      lines.push('');
+    }
   }
 
   // Constraints

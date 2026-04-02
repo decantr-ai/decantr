@@ -347,9 +347,9 @@ describe('generateSectionContext pattern deduplication', () => {
     expect(afterPages).not.toContain('**Layout slots:**');
   });
 
-  it('references personality via scaffold.md instead of inlining', () => {
+  it('materializes personality inline with Visual Direction heading', () => {
     const result = generateSectionContext(makeInput());
-    expect(result).toContain('See scaffold.md for personality and visual direction.');
-    expect(result).not.toContain('clean, modern');
+    expect(result).toContain('## Visual Direction');
+    expect(result).toContain('**Personality:** clean. modern');
   });
 });

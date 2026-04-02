@@ -515,6 +515,14 @@ async function cmdInit(args: InitArgs) {
 
   let options;
 
+  // Track which flags the user explicitly provided (before defaults are merged in)
+  const userExplicit = {
+    theme: Boolean(args.theme),
+    mode: Boolean(args.mode),
+    shape: Boolean(args.shape),
+    personality: Boolean(args.personality),
+  };
+
   if (args.yes || selectedBlueprint !== 'default') {
     // Non-interactive mode or simplified selection: use flags with defaults
     const flags = parseFlags(args as Record<string, unknown>, detected);
@@ -523,6 +531,11 @@ async function cmdInit(args: InitArgs) {
   } else {
     // Full interactive mode (default blueprint selected)
     options = await runInteractivePrompts(detected, archetypes, blueprints, themes);
+    // In interactive mode, all choices are explicit
+    userExplicit.theme = true;
+    userExplicit.mode = true;
+    userExplicit.shape = true;
+    userExplicit.personality = true;
   }
 
   // Topology markdown (populated when blueprint has composition)
@@ -567,22 +580,22 @@ async function cmdInit(args: InitArgs) {
         design_constraints?: Record<string, string>;
       };
 
-      // Apply blueprint theme settings (unless explicitly overridden by flags)
+      // Apply blueprint theme settings (unless user explicitly provided flags)
       if (blueprint.theme) {
-        if ((blueprint.theme.id || blueprint.theme.style) && options.theme === 'luminarum') {
+        if (!userExplicit.theme && (blueprint.theme.id || blueprint.theme.style)) {
           options.theme = blueprint.theme.id || blueprint.theme.style!;
         }
-        if (blueprint.theme.mode && options.mode === 'dark') {
+        if (!userExplicit.mode && blueprint.theme.mode) {
           options.mode = blueprint.theme.mode as 'dark' | 'light' | 'auto';
         }
-        if (blueprint.theme.shape && options.shape === 'rounded') {
+        if (!userExplicit.shape && blueprint.theme.shape) {
           options.shape = blueprint.theme.shape as 'rounded' | 'sharp' | 'pill';
         }
       }
 
-      // Apply blueprint personality (unless explicitly overridden by flags)
+      // Apply blueprint personality (unless user explicitly provided --personality)
       // Personality can be a string (narrative) or string[] (traits) — normalize to string[]
-      if (blueprint.personality && (!options.personality || options.personality.length === 0 || (options.personality.length === 1 && options.personality[0] === 'professional'))) {
+      if (!userExplicit.personality && blueprint.personality) {
         options.personality = typeof blueprint.personality === 'string'
           ? [blueprint.personality]
           : blueprint.personality;

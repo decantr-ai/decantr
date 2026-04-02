@@ -55,25 +55,26 @@ describe('generateSectionContext', () => {
     expect(result).not.toContain('| Style guard |');
   });
 
-  it('references theme tokens file instead of inlining', () => {
+  it('inlines key palette tokens with semantic roles', () => {
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('**Theme tokens:** see `src/styles/tokens.css`');
-    // Should NOT contain inlined CSS
+    expect(result).toContain('**Key palette tokens:**');
+    expect(result).toContain('| Token | Value | Role |');
+    expect(result).toContain('Full token set: `src/styles/tokens.css`');
+    // Should NOT contain raw CSS blocks
     expect(result).not.toContain('## Theme: midnight');
     expect(result).not.toContain('```css');
-    expect(result).not.toContain('--d-primary: #6366f1');
   });
 
-  it('references visual treatments and recipe decorators', () => {
+  it('renders decorator descriptions as a markdown table', () => {
     const result = generateSectionContext(makeSectionInput());
 
     expect(result).toContain('**Visual Treatments:** All 6 base treatments available');
     expect(result).toContain('see DECANTR.md for usage');
-    expect(result).toContain('**Theme decorators:** surface-card, glass-panel');
-    // Should NOT contain the full table
-    expect(result).not.toContain('| Decorator | Description |');
-    expect(result).not.toContain('| surface-card | Surface background with border |');
+    expect(result).toContain('**Theme decorators:**');
+    expect(result).toContain('| Class | Usage |');
+    expect(result).toContain('| `.surface-card` | Surface background with border |');
+    expect(result).toContain('| `.glass-panel` | Backdrop blur glass effect |');
   });
 
   it('includes zone context inline without heading', () => {
