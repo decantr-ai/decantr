@@ -745,42 +745,6 @@ input, button, textarea, select {
 }
 
 /**
- * Generate a dedicated treatments.md context file with base treatments and theme decorators.
- */
-function generateTreatmentsContext(themeData: ThemeData | undefined, themeName: string): string {
-  const lines: string[] = [];
-  lines.push(`# Visual Treatments: ${themeName}`);
-  lines.push('');
-  lines.push('## Base Treatments');
-  lines.push('');
-  lines.push('d-interactive, d-surface, d-data, d-control, d-section, d-annotation — see DECANTR.md for usage.');
-  lines.push('');
-
-  if (themeData?.decorators && Object.keys(themeData.decorators).length > 0) {
-    lines.push(`## Theme Decorators (${themeName}-specific)`);
-    lines.push('');
-    lines.push('| Class | Use for |');
-    lines.push('|-------|---------|');
-    for (const [name, description] of Object.entries(themeData.decorators)) {
-      const useFor = description.split('.')[0].trim();
-      lines.push(`| ${name} | ${useFor} |`);
-    }
-    lines.push('');
-  }
-
-  lines.push('## Composition');
-  lines.push('');
-  lines.push('Atoms + treatment + theme decorator:');
-  lines.push('```tsx');
-  lines.push(`css('_flex _col _gap4') + ' d-surface'`);
-  lines.push('```');
-  lines.push('');
-  lines.push('Atoms use `css()` function. Treatments and theme decorators are plain class strings.');
-
-  return lines.join('\n');
-}
-
-/**
  * Generate a CSS rule from a decorator name and description.
  */
 export function generateDecoratorRule(name: string, description: string): string {
@@ -1533,18 +1497,37 @@ Atoms + treatment + theme decorator:
 ### Atoms Quick Reference
 
 | Category | Examples | Purpose |
-|----------|----------|---------|
+|----------|---------|---------|
 | Layout | \`_flex\`, \`_col\`, \`_row\`, \`_wrap\`, \`_grid\` | Flex/grid containers |
 | Spacing | \`_gap4\`, \`_p4\`, \`_px4\`, \`_py2\`, \`_m0\` | Gaps, padding, margin |
-| Sizing | \`_w100\`, \`_h100\`, \`_minw0\`, \`_maxwfull\` | Width, height |
-| Text | \`_textlg\`, \`_text2xl\`, \`_fontbold\`, \`_textc\` | Typography |
+| Sizing | \`_w100\`, \`_h100\`, \`_mw640\`, \`_mw480\` | Width, height, max-width |
+| Text | \`_textlg\`, \`_text2xl\`, \`_fontbold\`, \`_fontmono\` | Typography |
+| Color | \`_fgaccent\`, \`_fgmuted\`, \`_fgsuccess\`, \`_bgsurf\` | Foreground/background |
 | Alignment | \`_aic\`, \`_jcc\`, \`_jcsb\`, \`_pic\` | Flex/grid alignment |
 | Position | \`_rel\`, \`_abs\`, \`_sticky\`, \`_z10\` | Positioning |
 | Visual | \`_rounded\`, \`_shadow\`, \`_trans\`, \`_op50\` | Decoration |
-| Color | \`_bgprimary\`, \`_fgtext\`, \`_fgmuted\`, \`_bcborder\` | Theme colors |
 | Responsive | \`_md:gc2\`, \`_lg:gc4\`, \`_sm:flex\` | Breakpoint prefixes |
+| Cursor | \`_pointer\` | Interaction hints |
 
 Scale: 0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24. Example: \`_gap4\` = \`gap:1rem\`.
+
+### Section Labels
+
+Use the d-label class for uppercase section headings.
+Anchor with a left accent border: \`border-left: 2px solid var(--d-accent); padding-left: 0.5rem\`.
+
+### Empty States
+
+Every data-driven section should handle zero-data gracefully.
+Pattern: centered 48px muted icon + descriptive message + optional CTA button.
+
+### Page Transitions
+
+If the theme provides motion tokens, apply the \`entrance-fade\` class to page content containers for smooth page-to-page transitions.
+
+### Navigation Shortcuts
+
+If the essence defines hotkeys or command_palette, implement as keyboard event listeners (useEffect + keydown) — not as visible UI text.
 
 ### Design Tokens
 
@@ -2278,10 +2261,6 @@ export async function refreshDerivedFiles(
 
   const cssFiles = [tokensPath, treatmentsPath, globalPath];
 
-  // ── Generate treatments.md context file (base treatments + theme decorators) ──
-  const treatmentsMdPath = join(contextDir, 'treatments.md');
-  writeFileSync(treatmentsMdPath, generateTreatmentsContext(themeData, themeName));
-
   // ── Generate DECANTR.md ──
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
   writeFileSync(decantrMdPath, generateDecantrMdV31(guardMode, CSS_APPROACH_CONTENT));
@@ -2289,7 +2268,7 @@ export async function refreshDerivedFiles(
   // ── Generate essence-summary.md only for V3.0 flat projects ──
   // For V3.1 (sectioned), scaffold.md covers the same overview — skip to save tokens.
   const hasSections = essence.blueprint.sections && essence.blueprint.sections.length > 0;
-  const contextFiles: string[] = [treatmentsMdPath];
+  const contextFiles: string[] = [];
 
   if (!hasSections) {
     const summaryPath = join(contextDir, 'essence-summary.md');
