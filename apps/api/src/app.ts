@@ -46,7 +46,7 @@ export function createApp(): Hono<Env> {
 
     // Skip auth for public read-only content endpoints (GET only)
     // These don't need auth — auth is only for publishing, moderation, billing
-    if (method === 'GET' && /^\/v1\/(patterns|recipes|themes|blueprints|archetypes|shells|search|health)/.test(path)) {
+    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|health)/.test(path)) {
       c.set('auth', { user: null, isAuthenticated: false, isAdmin: false });
       return next();
     }
@@ -62,7 +62,7 @@ export function createApp(): Hono<Env> {
     if (path === '/v1/admin/sync' && method === 'POST') {
       return next();
     }
-    if (method === 'GET' && /^\/v1\/(patterns|recipes|themes|blueprints|archetypes|shells|search|health)/.test(path)) {
+    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|health)/.test(path)) {
       return next();
     }
     await rateLimiter()(c, next);

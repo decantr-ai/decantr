@@ -34,7 +34,6 @@ export default async function ContentPage() {
     switch (type) {
       case 'pattern': return 'official' as const;
       case 'theme': return 'community' as const;
-      case 'recipe': return 'org' as const;
       default: return 'default' as const;
     }
   };

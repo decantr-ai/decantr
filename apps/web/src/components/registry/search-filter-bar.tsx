@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 import { Input } from '@/components/ui/input';
 
-const CONTENT_TYPES = ['all', 'patterns', 'themes', 'blueprints', 'recipes', 'archetypes', 'shells'] as const;
+const CONTENT_TYPES = ['all', 'patterns', 'themes', 'blueprints', 'archetypes', 'shells'] as const;
 const NAMESPACES = ['all', '@official', '@community'] as const;
 
 export function SearchFilterBar() {

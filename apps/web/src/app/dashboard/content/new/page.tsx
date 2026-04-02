@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { api } from '@/lib/api';
 
-const CONTENT_TYPES = ['pattern', 'theme', 'recipe', 'shell', 'blueprint', 'archetype'];
+const CONTENT_TYPES = ['pattern', 'theme', 'shell', 'blueprint', 'archetype'];
 
 export default function NewContentPage() {
   const router = useRouter();

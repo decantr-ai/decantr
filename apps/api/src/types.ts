@@ -6,11 +6,10 @@ export type Env = {
   };
 };
 
-export type ContentType = 'pattern' | 'recipe' | 'theme' | 'blueprint' | 'archetype' | 'shell';
+export type ContentType = 'pattern' | 'theme' | 'blueprint' | 'archetype' | 'shell';
 
 export const CONTENT_TYPES: ContentType[] = [
   'pattern',
-  'recipe',
   'theme',
   'blueprint',
   'archetype',
@@ -19,7 +18,6 @@ export const CONTENT_TYPES: ContentType[] = [
 
 export const PLURAL_TO_SINGULAR: Record<string, ContentType> = {
   patterns: 'pattern',
-  recipes: 'recipe',
   themes: 'theme',
   blueprints: 'blueprint',
   archetypes: 'archetype',

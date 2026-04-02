@@ -88,7 +88,7 @@ export default function TermsPage() {
               5. Content and Publishing
             </h2>
             <p className="mb-3">
-              The Service allows users to publish design content (patterns, themes, recipes, and
+              The Service allows users to publish design content (patterns, themes, and
               other registry items) to the Decantr registry. Content submitted by the community
               is published under the <code style={{ color: 'var(--secondary)', fontSize: '0.9em' }}>@community</code> namespace.
               Content curated and maintained by Decantr is published under the <code style={{ color: 'var(--secondary)', fontSize: '0.9em' }}>@official</code> namespace.

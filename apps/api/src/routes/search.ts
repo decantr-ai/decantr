@@ -21,7 +21,6 @@ searchRoutes.get('/search', async (c) => {
   if (typeFilter) {
     const typeMap: Record<string, string> = {
       patterns: 'pattern', pattern: 'pattern',
-      recipes: 'recipe', recipe: 'recipe',
       themes: 'theme', theme: 'theme',
       blueprints: 'blueprint', blueprint: 'blueprint',
       archetypes: 'archetype', archetype: 'archetype',

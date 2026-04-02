@@ -164,7 +164,7 @@ export interface Database {
       content: {
         Row: {
           id: string;
-          type: 'pattern' | 'recipe' | 'theme' | 'blueprint' | 'archetype' | 'shell';
+          type: 'pattern' | 'theme' | 'blueprint' | 'archetype' | 'shell';
           slug: string;
           namespace: string;
           owner_id: string;
@@ -179,7 +179,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          type: 'pattern' | 'recipe' | 'theme' | 'blueprint' | 'archetype' | 'shell';
+          type: 'pattern' | 'theme' | 'blueprint' | 'archetype' | 'shell';
           slug: string;
           namespace: string;
           owner_id: string;
@@ -194,7 +194,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          type?: 'pattern' | 'recipe' | 'theme' | 'blueprint' | 'archetype' | 'shell';
+          type?: 'pattern' | 'theme' | 'blueprint' | 'archetype' | 'shell';
           slug?: string;
           namespace?: string;
           owner_id?: string;

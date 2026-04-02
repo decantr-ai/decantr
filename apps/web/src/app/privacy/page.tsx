@@ -33,7 +33,7 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong style={{ color: 'var(--fg)' }}>Content you publish</strong> &mdash; Patterns,
-                themes, recipes, and other design content you submit to the Decantr registry.
+                themes, and other design content you submit to the Decantr registry.
               </li>
               <li>
                 <strong style={{ color: 'var(--fg)' }}>Usage data</strong> &mdash; Information about

@@ -7,7 +7,7 @@ import { validateEssence, isV3 } from '@decantr/essence-spec';
 export const contentRoutes = new Hono<Env>();
 
 // GET /v1/:type/:namespace/:slug - Get single item (must be before list route)
-contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}/:namespace/:slug', async (c) => {
+contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}/:namespace/:slug', async (c) => {
   try {
     const pluralType = c.req.param('type');
     const namespace = c.req.param('namespace');
@@ -56,7 +56,7 @@ contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}/
 });
 
 // GET /v1/:type - List content (e.g., /v1/patterns, /v1/themes)
-contentRoutes.get('/:type{patterns|recipes|themes|blueprints|archetypes|shells}', async (c) => {
+contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}', async (c) => {
   try {
   const pluralType = c.req.param('type');
   const singularType = PLURAL_TO_SINGULAR[pluralType];
