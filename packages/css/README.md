@@ -119,6 +119,7 @@ Mobile-first breakpoints: `_sm:` (640px), `_md:` (768px), `_lg:` (1024px), `_xl:
 When you scaffold a project with `@decantr/cli`, it generates:
 
 - `src/styles/tokens.css` - Theme tokens (colors, spacing, radii)
+- `src/styles/treatments.css` - Visual treatment classes (interactive, surface, data, control, section, annotation)
 - `src/styles/decorators.css` - Recipe decorator classes
 
 Import these alongside @decantr/css:
@@ -126,6 +127,7 @@ Import these alongside @decantr/css:
 ```js
 import { css } from '@decantr/css';
 import './styles/tokens.css';
+import './styles/treatments.css';
 import './styles/decorators.css';
 ```
 

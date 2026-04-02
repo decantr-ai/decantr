@@ -148,14 +148,14 @@ The MCP server (`@decantr/mcp-server`) exposes 14 tools:
 | `decantr_search_registry` | Search the content registry for patterns, archetypes, recipes, and themes |
 | `decantr_resolve_pattern` | Get full pattern details including layout spec, components, and presets |
 | `decantr_resolve_archetype` | Get archetype details including pages, features, and suggested theme |
-| `decantr_resolve_recipe` | Get recipe decoration rules (shell styles, spatial hints, effects) |
+| `decantr_resolve_recipe` | Get recipe visual treatment overrides, decoration rules, shell styles, spatial hints, and effects |
 | `decantr_resolve_blueprint` | Get a blueprint with archetype list, theme, personality, and page structure |
 | `decantr_suggest_patterns` | Given a page description, suggest matching patterns from the registry |
 | `decantr_check_drift` | Check if code changes violate the Essence spec (guard rule violations) |
 | `decantr_create_essence` | Generate a valid Essence spec skeleton from a project description |
 | `decantr_accept_drift` | Resolve drift violations by accepting, scoping, rejecting, or deferring |
 | `decantr_update_essence` | Apply structured updates to DNA or Blueprint layers |
-| `decantr_get_section_context` | Get self-contained context for a specific blueprint section |
+| `decantr_get_section_context` | Get self-contained context for a specific blueprint section (guard rules, theme tokens, visual treatments, recipe decorators, pattern specs) |
 | `decantr_component_api` | Query @decantr/ui component API (props, usage, examples) |
 
 ## CLI Commands

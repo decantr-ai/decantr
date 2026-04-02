@@ -52,15 +52,17 @@
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐          │
 │  │  1. BLUEPRINT │    │  2. THEMES   │    │  3. RECIPE   │          │
 │  │              │    │              │    │              │          │
-│  │  compose[]   │    │  seed        │    │  decorators  │          │
-│  │  theme{}     │    │  palette     │    │  spatial_    │          │
-│  │  personality │    │  tokens      │    │    hints     │          │
-│  │  features    │    │  typography_ │    │  radius_     │          │
+│  │  compose[]   │    │  seed        │    │  treatment_  │          │
+│  │  theme{}     │    │  palette     │    │    overrides │          │
+│  │  personality │    │  tokens      │    │  decorators  │          │
+│  │  features    │    │  typography_ │    │  spatial_    │          │
 │  │  overrides   │    │    hints     │    │    hints     │          │
-│  └──────┬───────┘    │  motion_     │    │  animation   │          │
-│         │            │    hints     │    │  shell prefs │          │
-│         │            │  cvd_support │    │  visual_     │          │
-│         │            └──────┬───────┘    │    effects   │          │
+│  └──────┬───────┘    │  motion_     │    │  radius_     │          │
+│         │            │    hints     │    │    hints     │          │
+│         │            │  cvd_support │    │  animation   │          │
+│         │            └──────┬───────┘    │  shell prefs │          │
+│         │                   │            │  visual_     │          │
+│         │                   │            │    effects   │          │
 │         │                   │            └──────┬───────┘          │
 │         ▼                   │                   │                  │
 │  ┌──────────────────┐       │                   │                  │
@@ -167,6 +169,14 @@
 │  src/styles/tokens.css ◄── Theme seed + palette → CSS variables     │
 │    :root        { --d-primary, --d-bg, --d-text, ... }              │
 │    @media (prefers-color-scheme: light) { ... }          (if auto)   │
+│                                                                     │
+│  src/styles/treatments.css ◄── Visual treatments → CSS rules         │
+│    .d-interactive { hover, focus, active states; ... }              │
+│    .d-surface     { container surfaces, elevation; ... }            │
+│    .d-data        { table, list, grid styling; ... }                │
+│    .d-control     { form input focus, error states; ... }           │
+│    .d-section     { section rhythm and spacing; ... }               │
+│    .d-annotation  { badge, tag, status indicators; ... }            │
 │                                                                     │
 │  src/styles/decorators.css ◄── Recipe decorators → CSS rules        │
 │    .d-glass  { backdrop-filter: blur(8px); ... }                    │
