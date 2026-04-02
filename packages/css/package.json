@@ -1,6 +1,6 @@
 {
   "name": "@decantr/css",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Framework-agnostic CSS atoms runtime for Decantr projects",
   "author": "Decantr",
   "repository": {

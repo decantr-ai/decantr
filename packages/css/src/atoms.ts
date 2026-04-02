@@ -92,6 +92,8 @@ const DIRECT: Record<string, string> = {
   minh0: 'min-height:0',
   maxwfull: 'max-width:100%',
   maxhfull: 'max-height:100%',
+  mw640: 'max-width:40rem',
+  mw480: 'max-width:30rem',
 
   // Overflow
   overhidden: 'overflow:hidden',
@@ -123,6 +125,9 @@ const DIRECT: Record<string, string> = {
   fontsemi: 'font-weight:600',
   fontbold: 'font-weight:700',
   fontextrabold: 'font-weight:800',
+
+  // Font family
+  fontmono: 'font-family:var(--d-font-mono,ui-monospace,monospace)',
 
   // Font style
   italic: 'font-style:italic',
@@ -402,6 +407,8 @@ const COLOR_ATOMS: Record<string, string> = {
   bgsurface0: 'background:var(--d-surface-0,var(--d-bg))',
   bgsurface1: 'background:var(--d-surface-1,var(--d-surface))',
   bgsurface2: 'background:var(--d-surface-2,var(--d-surface-raised))',
+  bgsurf: 'background:var(--d-surface)',
+  bgsurfraised: 'background:var(--d-surface-raised)',
   bgmuted: 'background:var(--d-muted,var(--d-surface))',
   bgbg: 'background:var(--d-bg)',
   bgtransparent: 'background:transparent',

@@ -138,6 +138,32 @@ describe('resolveAtomDecl', () => {
     });
   });
 
+  describe('font family atoms', () => {
+    it('resolves _fontmono to font-family with mono stack', () => {
+      expect(resolveAtomDecl('_fontmono')).toBe('font-family:var(--d-font-mono,ui-monospace,monospace)');
+    });
+  });
+
+  describe('color shorthand atoms', () => {
+    it('resolves _bgsurf to background:var(--d-surface)', () => {
+      expect(resolveAtomDecl('_bgsurf')).toBe('background:var(--d-surface)');
+    });
+
+    it('resolves _bgsurfraised to background:var(--d-surface-raised)', () => {
+      expect(resolveAtomDecl('_bgsurfraised')).toBe('background:var(--d-surface-raised)');
+    });
+  });
+
+  describe('max-width shorthand atoms', () => {
+    it('resolves _mw640 to max-width:40rem', () => {
+      expect(resolveAtomDecl('_mw640')).toBe('max-width:40rem');
+    });
+
+    it('resolves _mw480 to max-width:30rem', () => {
+      expect(resolveAtomDecl('_mw480')).toBe('max-width:30rem');
+    });
+  });
+
   describe('unknown atoms', () => {
     it('returns null for unknown atoms', () => {
       expect(resolveAtomDecl('_unknownAtom')).toBeNull();
