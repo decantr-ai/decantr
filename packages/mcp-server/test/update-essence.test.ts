@@ -9,7 +9,7 @@ function makeV3Essence(): EssenceV3 {
   return {
     version: '3.0.0',
     dna: {
-      theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' },
+      theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
       spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
       typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
       color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
@@ -40,7 +40,7 @@ function makeV2Essence() {
   return {
     version: '2.0.0',
     archetype: 'saas-dashboard',
-    theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' },
+    theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
     personality: ['professional'],
     platform: { type: 'spa', routing: 'hash' },
     structure: [
@@ -48,7 +48,7 @@ function makeV2Essence() {
     ],
     features: ['auth'],
     density: { level: 'comfortable', content_gap: '4' },
-    guard: { enforce_style: true, enforce_recipe: true, mode: 'strict' },
+    guard: { enforce_style: true, mode: 'strict' },
     target: 'react',
   };
 }
@@ -151,14 +151,14 @@ describe('decantr_update_essence', () => {
 
     const result = await handleTool('decantr_update_essence', {
       operation: 'update_dna',
-      payload: { theme: { style: 'glassmorphism' }, personality: ['playful', 'bold'] },
+      payload: { theme: { id: 'glassmorphism' }, personality: ['playful', 'bold'] },
       path: essencePath,
     }) as { status: string };
 
     expect(result.status).toBe('updated');
 
     const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    expect(updated.dna.theme.style).toBe('glassmorphism');
+    expect(updated.dna.theme.id).toBe('glassmorphism');
     // Should merge, keeping other theme fields
     expect(updated.dna.theme.mode).toBe('dark');
     expect(updated.dna.personality).toEqual(['playful', 'bold']);

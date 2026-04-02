@@ -9,7 +9,7 @@ function makeV3Essence(): EssenceV3 {
   return {
     version: '3.0.0',
     dna: {
-      theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' },
+      theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
       spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
       typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
       color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
@@ -113,7 +113,7 @@ describe('decantr_accept_drift', () => {
     expect(result.status).toBe('accepted');
 
     const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    expect(updated.dna.theme.style).toBe('glassmorphism');
+    expect(updated.dna.theme.id).toBe('glassmorphism');
   });
 
   it('should defer violations to drift log', async () => {

@@ -4,8 +4,8 @@ import { validateStringArg, fuzzyScore } from '../src/helpers.js';
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
-    it('should define 14 tools', () => {
-      expect(TOOLS).toHaveLength(14);
+    it('should define 13 tools', () => {
+      expect(TOOLS).toHaveLength(13);
     });
 
     it('should have unique tool names', () => {
@@ -33,7 +33,7 @@ describe('MCP tool handlers', () => {
     it('should have openWorldHint: true on network tools', () => {
       const networkToolNames = [
         'decantr_search_registry', 'decantr_resolve_pattern', 'decantr_resolve_archetype',
-        'decantr_resolve_recipe', 'decantr_resolve_blueprint', 'decantr_suggest_patterns',
+        'decantr_resolve_blueprint', 'decantr_suggest_patterns',
         'decantr_create_essence',
       ];
       for (const name of networkToolNames) {

@@ -178,12 +178,12 @@ export const TOOLS = [
   {
     name: 'decantr_search_registry',
     title: 'Search Registry',
-    description: 'Search the Decantr community content registry for patterns, archetypes, recipes, and styles.',
+    description: 'Search the Decantr community content registry for patterns, archetypes, themes, and shells.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         query: { type: 'string', description: 'Search query (e.g. "kanban", "neon", "dashboard")' },
-        type: { type: 'string', description: 'Filter by type: pattern, archetype, recipe, style' },
+        type: { type: 'string', description: 'Filter by type: pattern, archetype, theme, shell' },
       },
       required: ['query'],
     },
@@ -220,22 +220,7 @@ export const TOOLS = [
     },
     annotations: READ_ONLY_NETWORK,
   },
-  // 6. decantr_resolve_recipe — network
-  {
-    name: 'decantr_resolve_recipe',
-    title: 'Resolve Recipe',
-    description: 'Get recipe visual treatment overrides, decoration rules, shell styles, spatial hints, visual effects, and pattern preferences.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        id: { type: 'string', description: 'Recipe ID (e.g. "auradecantism")' },
-        namespace: { type: 'string', description: 'Namespace (default: "@official")' },
-      },
-      required: ['id'],
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 7. decantr_resolve_blueprint — network
+  // 6. decantr_resolve_blueprint — network
   {
     name: 'decantr_resolve_blueprint',
     title: 'Resolve Blueprint',
@@ -360,7 +345,7 @@ export const TOOLS = [
   {
     name: 'decantr_get_section_context',
     title: 'Get Section Context',
-    description: 'Get the self-contained context for a specific section of the project. Returns guard rules, theme tokens, visual treatments, recipe decorators, pattern specs, zone context, and pages — everything an AI needs to work on that section.',
+    description: 'Get the self-contained context for a specific section of the project. Returns guard rules, theme tokens, visual treatments, pattern specs, zone context, and pages — everything an AI needs to work on that section.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -498,18 +483,6 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         return { found: true, ...archetype };
       } catch {
         return { found: false, message: `Archetype "${args.id}" not found in ${namespace}.` };
-      }
-    }
-
-    case 'decantr_resolve_recipe': {
-      const err = validateStringArg(args, 'id');
-      if (err) return { error: err };
-      const namespace = (args.namespace as string) || '@official';
-      try {
-        const recipe = await apiClient.getRecipe(namespace, args.id as string);
-        return { found: true, ...recipe };
-      } catch {
-        return { found: false, message: `Recipe "${args.id}" not found in ${namespace}.` };
       }
     }
 
@@ -658,10 +631,10 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       if (args.theme_used && typeof args.theme_used === 'string') {
         let expectedStyle: string | undefined;
         if (isV3(essence)) {
-          expectedStyle = essence.dna.theme.style;
+          expectedStyle = essence.dna.theme.id;
         } else {
           const expectedTheme = (essence as Record<string, unknown>).theme as Record<string, string> | undefined;
-          expectedStyle = expectedTheme?.style;
+          expectedStyle = expectedTheme?.id ?? expectedTheme?.style;
         }
         if (expectedStyle && args.theme_used !== expectedStyle) {
           violations.push({
@@ -835,9 +808,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         version: '3.0.0',
         dna: {
           theme: {
-            style: 'auradecantism',
+            id: 'auradecantism',
             mode: 'dark',
-            recipe: 'auradecantism',
             shape: 'rounded',
           },
           spacing: {
@@ -921,8 +893,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       // Check if any violations are DNA-layer; if so, require confirm_dna
       const hasDnaViolation = violations.some(v => {
         const rule = v.rule;
-        // DNA-layer rules: style, recipe, density, theme-mode, accessibility
-        return ['style', 'recipe', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(rule);
+        // DNA-layer rules: style, density, theme-mode, accessibility
+        return ['style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(rule);
       });
 
       if (hasDnaViolation && resolution !== 'reject' && resolution !== 'defer' && !args.confirm_dna) {
@@ -930,7 +902,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           error: 'DNA-layer violations detected. Set confirm_dna: true to accept changes to design axioms (theme, style, density, etc.).',
           requires_confirmation: true,
           dna_rules_affected: violations.filter(v =>
-            ['style', 'recipe', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(v.rule)
+            ['style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(v.rule)
           ).map(v => v.rule),
         };
       }
@@ -1171,9 +1143,9 @@ function applyDriftAcceptance(
   switch (violation.rule) {
     case 'theme-match':
     case 'style': {
-      // Accept a style change: update the DNA theme style
+      // Accept a theme change: update the DNA theme id
       if (violation.details) {
-        essence.dna.theme.style = violation.details;
+        essence.dna.theme.id = violation.details;
       }
       break;
     }
@@ -1194,12 +1166,6 @@ function applyDriftAcceptance(
     case 'layout': {
       // Layout drift: this is typically accept_scoped to a page
       // No automatic patch for layout acceptance — it's acknowledged
-      break;
-    }
-    case 'recipe': {
-      if (violation.details) {
-        essence.dna.theme.recipe = violation.details;
-      }
       break;
     }
     case 'density': {
