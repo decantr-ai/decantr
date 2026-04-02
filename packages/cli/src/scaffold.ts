@@ -3,7 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
-import { generateTreatmentCSS } from './treatments.js';
+import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
 import type { ComposeEntry, ArchetypeRole } from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
@@ -2260,12 +2260,15 @@ export async function refreshDerivedFiles(
 
   // Write treatments.css (replaces decorators.css)
   const treatmentsPath = join(stylesDir, 'treatments.css');
-  writeFileSync(treatmentsPath, generateTreatmentCSS(
+  let treatmentCSS = generateTreatmentCSS(
     spatialTokens,
     themeData?.treatments,
     themeData?.decorators,
     themeName,
-  ));
+  );
+  const personalityCSS = generatePersonalityCSS(personality || [], themeData || {});
+  treatmentCSS += personalityCSS;
+  writeFileSync(treatmentsPath, treatmentCSS);
 
   const globalPath = join(stylesDir, 'global.css');
   // Only generate global.css if it doesn't exist (don't overwrite user customizations)
