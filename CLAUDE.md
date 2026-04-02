@@ -86,6 +86,25 @@ packages/cli/src/bundled/    # Offline fallback content (not from RegistryClient
   shells/                    # Default shell layout
 ```
 
+## Content Schema Fields (v2)
+
+Patterns, blueprints, themes, and archetypes now support enriched fields for visual intelligence:
+
+| Field | Content Type | Description |
+|-------|-------------|-------------|
+| `visual_brief` | Pattern | 2-5 sentence visual description of the pattern |
+| `composition` | Pattern | Component composition algebra expressions |
+| `motion` | Pattern | Micro-interactions, transitions, ambient animations |
+| `responsive` | Pattern | Mobile/tablet/desktop adaptation strategies |
+| `accessibility` | Pattern | ARIA, keyboard, focus, screen reader patterns |
+| `layout_hints` | Pattern | Freeform rendering guidance key-value pairs |
+| `voice` | Blueprint | Copy/tone intelligence (CTA verbs, empty states, errors) |
+| `personality` | Blueprint | Visual personality narrative (min 100 chars) |
+| `responsive_strategy` | Blueprint | Global responsive breakpoint strategy |
+| `decorator_definitions` | Theme | Structured decorator data (intent, properties, usage) |
+| `page_briefs` | Archetype | Per-page visual descriptions |
+| `role` | Archetype | Section role: primary, gateway, public, auxiliary |
+
 ## Design Pipeline
 
 The seven stages of the Design Pipeline:
@@ -135,9 +154,24 @@ pnpm --filter @decantr/ui typecheck # Type-check without emit
 
 Requires Node.js >= 20 and pnpm >= 9.
 
+## CSS Layer Cascade
+
+All generated CSS uses `@layer` declarations for deterministic cascade ordering:
+
+```css
+@layer reset, tokens, treatments, decorators, utilities, app;
+```
+
+- `reset` -- normalize/reset styles (global.css)
+- `tokens` -- CSS custom properties from theme (tokens.css)
+- `treatments` -- base treatment classes: d-interactive, d-surface, d-data, d-control, d-section, d-annotation, d-label
+- `decorators` -- theme-specific decorator classes (e.g., carbon-card, carbon-glass)
+- `utilities` -- personality-derived utility classes (e.g., neon-glow, mono-data, status-ring)
+- `app` -- application-specific overrides
+
 ## MCP Server Tools
 
-The MCP server (`@decantr/mcp-server`) exposes 13 tools:
+The MCP server (`@decantr/mcp-server`) exposes 14 tools:
 
 | Tool | Description |
 |------|-------------|
@@ -154,6 +188,7 @@ The MCP server (`@decantr/mcp-server`) exposes 13 tools:
 | `decantr_update_essence` | Apply structured updates to DNA or Blueprint layers |
 | `decantr_get_section_context` | Get self-contained context for a specific blueprint section (guard rules, theme tokens, visual treatments, pattern specs) |
 | `decantr_component_api` | Query @decantr/ui component API (props, usage, examples) |
+| `decantr_critique` | Evaluate generated code for visual quality (treatment usage, decorator coverage, personality alignment, motion, a11y, responsiveness) |
 
 ## CLI Commands
 

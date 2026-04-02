@@ -77,9 +77,9 @@ The following sections cover manual CSS implementation for advanced scenarios wh
 
 ---
 
-## Layer Structure
+## Layer Structure (Mandatory)
 
-Use CSS `@layer` for proper cascade control:
+All Decantr projects **must** declare CSS `@layer` order for deterministic cascade control. This is not optional -- omitting layers causes specificity conflicts between treatments, decorators, and app styles.
 
 ```css
 @layer decantr.reset, decantr.tokens, decantr.treatments, decantr.decorators, decantr.patterns, decantr.utilities, app;
@@ -119,7 +119,7 @@ Use CSS `@layer` for proper cascade control:
 }
 
 @layer decantr.decorators {
-  /* Recipe-specific decorator classes (Layer 3) */
+  /* Theme-specific decorator classes (Layer 3) */
   .lum-glass { /* ... */ }
   .lum-orbs { /* ... */ }
 }
@@ -353,9 +353,9 @@ html[data-theme="luminarum"] {
 
 ---
 
-## Recipe Decorator Implementation
+## Theme Decorator Implementation
 
-Recipes define decorators as descriptions. Implement them as classes:
+Themes define decorators as structured data (intent, properties, usage). Implement them as classes:
 
 ```css
 /* From: decorators.lum-glass = "Subtle glass panel with..." */
@@ -542,7 +542,7 @@ Respect user motion preferences:
 }
 
 @layer decantr.decorators {
-  /* Recipe decorator animations should check reduced-motion */
+  /* Theme decorator animations should check reduced-motion */
   @media (prefers-reduced-motion: reduce) {
     .lum-orbs::before {
       animation: none;
@@ -722,7 +722,7 @@ Here is a complete CSS file following all conventions:
   }
 }
 
-/* 4. Recipe decorator layer */
+/* 4. Theme decorator layer */
 @layer decantr.decorators {
   .lum-glass {
     background: var(--d-surface);
@@ -755,12 +755,82 @@ Here is a complete CSS file following all conventions:
 
 ---
 
+## Layer Order Reference
+
+The canonical layer order for all Decantr projects:
+
+```css
+@layer reset, tokens, treatments, decorators, utilities, app;
+```
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| `reset` | global.css | Normalize/reset styles |
+| `tokens` | tokens.css | CSS custom properties from theme (spacing, colors, radii) |
+| `treatments` | treatments.css | Base treatment classes: `d-interactive`, `d-surface`, `d-data`, `d-control`, `d-section`, `d-annotation`, `d-label` |
+| `decorators` | decorators.css | Theme-specific decorator classes (e.g., `carbon-card`, `carbon-glass`, `lum-orbs`) |
+| `utilities` | utilities.css | Personality-derived utility classes and layout helpers |
+| `app` | (inline) | Application-specific overrides |
+
+Layers declared earlier have **lower** priority. The `app` layer always wins over all Decantr layers.
+
+---
+
+## Personality Utility Classes
+
+Personality utilities are derived from the blueprint's `personality` field and placed in the `utilities` layer. They encode brand-specific visual flourishes that go beyond treatments and decorators.
+
+Examples by personality archetype:
+
+| Personality | Utility Class | Effect |
+|-------------|--------------|--------|
+| Neon/cyberpunk | `neon-glow` | Colored box-shadow glow on interactive elements |
+| Monospace/data | `mono-data` | Monospace font + tabular-nums for data displays |
+| Status-heavy | `status-ring` | Animated ring around status indicators |
+| Glassmorphism | `glass-blur` | backdrop-filter blur + transparency |
+| Minimal/clean | `subtle-shadow` | Low-opacity, tight box-shadow |
+
+### Implementation Pattern
+
+```css
+@layer utilities {
+  /* Personality: neon-glow */
+  .neon-glow {
+    box-shadow: 0 0 8px var(--d-primary), 0 0 16px rgba(var(--d-primary-rgb), 0.3);
+    transition: box-shadow var(--d-transition-fast);
+  }
+  .neon-glow:hover {
+    box-shadow: 0 0 12px var(--d-primary), 0 0 24px rgba(var(--d-primary-rgb), 0.5);
+  }
+
+  /* Personality: mono-data */
+  .mono-data {
+    font-family: var(--d-font-mono, ui-monospace, monospace);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* Personality: status-ring */
+  .status-ring {
+    outline: 2px solid var(--d-status-color, var(--d-primary));
+    outline-offset: 2px;
+    border-radius: var(--radius-pill);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .neon-glow, .status-ring { animation: none; }
+  }
+}
+```
+
+---
+
 ## Checklist
 
 When implementing CSS for a Decantr project:
 
 ### Structure
-- [ ] Declare `@layer` order at the top of your CSS
+- [ ] **Mandatory:** Declare `@layer` order at the top of your CSS
 - [ ] Add `data-theme`, `data-mode`, and `data-cvd` to the `<html>` element
 - [ ] Add `<meta name="color-scheme">` to the `<head>`
 
