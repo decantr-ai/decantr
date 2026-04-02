@@ -12,7 +12,7 @@ export function Toolbar() {
     onchange: (e) => setStyle(e.target.value),
   });
   for (const s of styles) {
-    styleSelect.appendChild(h('option', { value: s }, s));
+    styleSelect.appendChild(h('option', { value: s.id }, s.name || s.id));
   }
 
   const modeSelect = h('select', {

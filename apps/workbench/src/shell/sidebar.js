@@ -45,19 +45,19 @@ export function Sidebar({ onSelect, selectedSlug, searchQuery, onSearch }) {
       const exp = expanded();
 
       for (const cat of categories) {
-        const isExpanded = exp.has(cat.name);
+        const isExpanded = exp.has(cat.category);
         const header = h('div', {
           style: 'padding: 6px 8px; cursor: pointer; font-weight: 600; font-size: 13px; user-select: none',
           onclick: () => {
             const next = new Set(expanded());
-            if (next.has(cat.name)) {
-              next.delete(cat.name);
+            if (next.has(cat.category)) {
+              next.delete(cat.category);
             } else {
-              next.add(cat.name);
+              next.add(cat.category);
             }
             setExpanded(next);
           },
-        }, `${isExpanded ? '\u25BE' : '\u25B8'} ${cat.name} (${cat.stories.length})`);
+        }, `${isExpanded ? '\u25BE' : '\u25B8'} ${cat.category} (${cat.stories.length})`);
         content.appendChild(header);
 
         if (isExpanded) {
