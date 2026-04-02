@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateTreatmentCSS } from '../src/treatments.js';
+import { generateTreatmentCSS, generatePersonalityCSS } from '../src/treatments.js';
 
 const baseSpatialTokens: Record<string, string> = {
   '--d-content-gap': '1rem',
@@ -91,11 +91,17 @@ describe('generateTreatmentCSS', () => {
 
   // ── 8. Section rhythm with adjacent separator ──
 
-  it('includes section rhythm with adjacent sibling separator', () => {
+  it('includes section rhythm with gradient divider and compact density variant', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).toContain('.d-section');
     expect(css).toContain('.d-section + .d-section');
-    expect(css).toContain('border-top: 1px solid var(--d-border)');
+    // Gradient fade divider
+    expect(css).toContain('border-top: 1px solid transparent');
+    expect(css).toContain('border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1');
+    expect(css).toContain('margin-top: var(--d-gap-2)');
+    // Compact density variant
+    expect(css).toContain('.d-section[data-density="compact"]');
+    expect(css).toContain('calc(var(--d-section-py) * 0.5)');
   });
 
   // ── 9. Annotation status variants ──
@@ -209,5 +215,78 @@ describe('generateTreatmentCSS', () => {
     expect(css).toContain('.d-interactive[data-variant="primary"]');
     const primaryBlock = css.split('.d-interactive[data-variant="primary"] {')[1]?.split('}')[0] ?? '';
     expect(primaryBlock).toContain('background: var(--d-primary)');
+  });
+
+  // ── Surface interactive cursor ──
+
+  it('includes cursor pointer on d-surface[data-interactive]', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    expect(css).toContain('.d-surface[data-interactive]');
+    const baseBlock = css.split('.d-surface[data-interactive] {')[1]?.split('}')[0] ?? '';
+    expect(baseBlock).toContain('cursor: pointer');
+  });
+
+  // ── d-label utility ──
+
+  it('includes d-label utility class', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    expect(css).toContain('.d-label');
+    expect(css).toContain('font-size: 0.7rem');
+    expect(css).toContain('font-weight: 600');
+    expect(css).toContain('text-transform: uppercase');
+    expect(css).toContain('letter-spacing: 0.08em');
+    expect(css).toContain('color: var(--d-text-muted)');
+    expect(css).toContain('font-family: var(--d-font-mono, ui-monospace, monospace)');
+  });
+
+  // ── Override stacking with pseudo-selectors ──
+
+  it('does not apply overrides to pseudo-selector rules', () => {
+    const overrides = {
+      'd-control': { 'border-color': 'red' },
+    };
+    const css = generateTreatmentCSS(baseSpatialTokens, overrides);
+    // Base rule should have the override
+    const baseBlock = css.split('.d-control {')[1]?.split('}')[0] ?? '';
+    expect(baseBlock).toContain('border-color: red');
+    // Focus rule should NOT have the override — it retains original properties
+    const focusBlock = css.split('.d-control:focus {')[1]?.split('}')[0] ?? '';
+    expect(focusBlock).not.toContain('border-color: red');
+    expect(focusBlock).toContain('border-color: var(--d-primary)');
+  });
+});
+
+describe('generatePersonalityCSS', () => {
+  it('generates neon utilities for neon keyword', () => {
+    const css = generatePersonalityCSS(['neon accent glows'], {});
+    expect(css).toContain('.neon-glow');
+    expect(css).toContain('.neon-glow-hover');
+    expect(css).toContain('.neon-text-glow');
+    expect(css).toContain('.neon-border-glow');
+  });
+
+  it('generates mono-data for monospace keyword', () => {
+    const css = generatePersonalityCSS(['monospace data typography'], {});
+    expect(css).toContain('.mono-data');
+    expect(css).toContain('font-variant-numeric: tabular-nums');
+  });
+
+  it('generates status-ring for pulse keyword', () => {
+    const css = generatePersonalityCSS(['pulse animations', 'status rings'], {});
+    expect(css).toContain('.status-ring');
+    expect(css).toContain('pulse-ring');
+    expect(css).toContain('[data-status="active"]');
+    expect(css).toContain('[data-status="error"]');
+  });
+
+  it('generates entrance-fade when theme has motion.entrance', () => {
+    const css = generatePersonalityCSS(['smooth'], { motion: { entrance: 'fade-slide' } });
+    expect(css).toContain('.entrance-fade');
+    expect(css).toContain('decantr-entrance');
+  });
+
+  it('returns empty string for personality with no keywords', () => {
+    const css = generatePersonalityCSS(['professional'], {});
+    expect(css).toBe('');
   });
 });

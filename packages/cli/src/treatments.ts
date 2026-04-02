@@ -126,6 +126,10 @@ export function generateTreatmentCSS(
     ['z-index', '50'],
   ]);
 
+  emitRule('.d-surface[data-interactive]', [
+    ['cursor', 'pointer'],
+  ]);
+
   emitRule('.d-surface[data-interactive]:hover', [
     ['border-color', 'var(--d-primary-hover, var(--d-border))'],
     ['box-shadow', 'var(--d-shadow-md)'],
@@ -205,7 +209,14 @@ export function generateTreatmentCSS(
   ]);
 
   lines.push('.d-section + .d-section {');
-  lines.push('  border-top: 1px solid var(--d-border);');
+  lines.push('  border-top: 1px solid transparent;');
+  lines.push('  border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;');
+  lines.push('  margin-top: var(--d-gap-2);');
+  lines.push('}');
+  lines.push('');
+
+  lines.push('.d-section[data-density="compact"] {');
+  lines.push('  padding: calc(var(--d-section-py) * 0.5) 0;');
   lines.push('}');
   lines.push('');
 
@@ -244,6 +255,17 @@ export function generateTreatmentCSS(
     ['color', 'var(--d-info)'],
   ]);
 
+  // ── 7. Label Utility — .d-label ──
+
+  emitRule('.d-label', [
+    ['font-size', '0.7rem'],
+    ['font-weight', '600'],
+    ['text-transform', 'uppercase'],
+    ['letter-spacing', '0.08em'],
+    ['color', 'var(--d-text-muted)'],
+    ['font-family', 'var(--d-font-mono, ui-monospace, monospace)'],
+  ]);
+
   // ── Layer 3: Theme Decorators ──
 
   if (themeDecorators && Object.keys(themeDecorators).length > 0) {
@@ -273,4 +295,47 @@ export function generateTreatmentCSS(
   lines.push('}');
 
   return lines.join('\n');
+}
+
+/**
+ * Generate personality-derived CSS utility classes based on keyword analysis.
+ * Scans personality array for known keywords and emits matching utility rules.
+ */
+export function generatePersonalityCSS(personality: string[], themeData: { motion?: { entrance?: string }; palette?: Record<string, Record<string, string>> }): string {
+  const text = personality.join(' ').toLowerCase();
+  const rules: string[] = [];
+
+  // Neon glow utilities
+  if (text.includes('neon') || text.includes('glow')) {
+    const glowColor = 'var(--d-accent-glow, rgba(0, 212, 255, 0.3))';
+    rules.push(`.neon-glow { box-shadow: 0 0 20px ${glowColor}; }`);
+    rules.push(`.neon-glow-hover:hover { box-shadow: 0 0 24px ${glowColor}; transition: box-shadow var(--d-duration-hover, 0.15s) var(--d-easing, ease); }`);
+    rules.push(`.neon-text-glow { text-shadow: 0 0 12px ${glowColor}; }`);
+    rules.push(`.neon-border-glow { border-color: var(--d-accent); box-shadow: 0 0 8px ${glowColor}; }`);
+  }
+
+  // Monospace data utility
+  if (text.includes('monospace') || text.includes('mono')) {
+    rules.push(`.mono-data { font-family: var(--d-font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; }`);
+  }
+
+  // Status ring utilities
+  if (text.includes('pulse') || text.includes('ring') || text.includes('status')) {
+    rules.push(`.status-ring { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--d-border); display: flex; align-items: center; justify-content: center; position: relative; transition: border-color 0.2s ease, box-shadow 0.2s ease; }`);
+    rules.push(`.status-ring[data-status="active"] { border-color: var(--d-success); }`);
+    rules.push(`.status-ring[data-status="error"] { border-color: var(--d-error); box-shadow: 0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent); }`);
+    rules.push(`.status-ring[data-status="warning"] { border-color: var(--d-warning); }`);
+    rules.push(`.status-ring[data-status="idle"] { border-color: var(--d-text-muted); }`);
+    rules.push(`@keyframes pulse-ring { 0% { opacity: 0.6; transform: scale(1); } 100% { opacity: 0; transform: scale(1.3); } }`);
+    rules.push(`.status-ring[data-status="active"]::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--d-success); opacity: 0; animation: pulse-ring 2s ease-out infinite; }`);
+  }
+
+  // Entrance animation
+  if (themeData.motion?.entrance) {
+    rules.push(`.entrance-fade { animation: decantr-entrance var(--d-duration-entrance, 0.2s) var(--d-easing, ease-out); }`);
+    rules.push(`@keyframes decantr-entrance { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`);
+  }
+
+  if (rules.length === 0) return '';
+  return '\n/* ── Personality-Derived Utilities ── */\n\n' + rules.join('\n\n') + '\n';
 }
