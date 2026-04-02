@@ -6,7 +6,7 @@ function makeEssence(overrides: Partial<Essence> = {}): Essence {
   return {
     version: '2.0.0',
     archetype: 'saas-dashboard',
-    theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' },
+    theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
     personality: ['professional'],
     platform: { type: 'spa', routing: 'hash' },
     structure: [
@@ -15,7 +15,7 @@ function makeEssence(overrides: Partial<Essence> = {}): Essence {
     ],
     features: ['auth'],
     density: { level: 'comfortable', content_gap: '4' },
-    guard: { enforce_style: true, enforce_recipe: true, mode: 'strict' },
+    guard: { enforce_style: true, mode: 'strict' },
     target: 'react',
     ...overrides,
   };
@@ -64,14 +64,6 @@ describe('evaluateGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('flags recipe mismatch when enforce_recipe is true', () => {
-    const essence = makeEssence();
-    const violations = evaluateGuard(essence, { recipe: 'dopamine' });
-    expect(violations).toEqual([
-      expect.objectContaining({ rule: 'recipe' }),
-    ]);
-  });
-
   it('flags density mismatch in strict mode', () => {
     const essence = makeEssence();
     const violations = evaluateGuard(essence, { density_gap: '8' });
@@ -84,7 +76,7 @@ describe('evaluateGuard', () => {
 describe('evaluateGuard - theme mode compatibility', () => {
   it('rejects incompatible theme/mode combination', () => {
     const essence = makeEssence({
-      theme: { style: 'luminarum', mode: 'light', recipe: 'luminarum' },
+      theme: { id: 'luminarum', mode: 'light' },
     });
     const context = {
       themeRegistry: new Map([
@@ -103,7 +95,7 @@ describe('evaluateGuard - theme mode compatibility', () => {
 
   it('accepts auto mode for any theme', () => {
     const essence = makeEssence({
-      theme: { style: 'luminarum', mode: 'auto', recipe: 'luminarum' },
+      theme: { id: 'luminarum', mode: 'auto' },
     });
     const context = {
       themeRegistry: new Map([
@@ -118,7 +110,7 @@ describe('evaluateGuard - theme mode compatibility', () => {
 
   it('accepts compatible theme/mode combination', () => {
     const essence = makeEssence({
-      theme: { style: 'luminarum', mode: 'dark', recipe: 'luminarum' },
+      theme: { id: 'luminarum', mode: 'dark' },
     });
     const context = {
       themeRegistry: new Map([
@@ -133,7 +125,7 @@ describe('evaluateGuard - theme mode compatibility', () => {
 
   it('provides suggestion for incompatible mode', () => {
     const essence = makeEssence({
-      theme: { style: 'luminarum', mode: 'light', recipe: 'luminarum' },
+      theme: { id: 'luminarum', mode: 'light' },
     });
     const context = {
       themeRegistry: new Map([
@@ -149,7 +141,7 @@ describe('evaluateGuard - theme mode compatibility', () => {
 
   it('skips check when themeRegistry not provided', () => {
     const essence = makeEssence({
-      theme: { style: 'luminarum', mode: 'light', recipe: 'luminarum' },
+      theme: { id: 'luminarum', mode: 'light' },
     });
 
     const violations = evaluateGuard(essence, {});

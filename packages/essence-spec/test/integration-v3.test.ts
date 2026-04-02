@@ -25,12 +25,10 @@ describe('v3 integration: full lifecycle', () => {
     // Step 3: Guard evaluation reads from correct paths
     if (!isV3(normalized)) throw new Error('Expected v3');
     const violations = evaluateGuard(normalized, {
-      style: 'luminarum',  // matches dna.theme.style
-      recipe: 'luminarum', // matches dna.theme.recipe
+      style: 'luminarum',  // matches dna.theme.id
       pageId: 'main',      // exists in blueprint.pages
     });
     expect(violations.filter(v => v.rule === 'style')).toHaveLength(0);
-    expect(violations.filter(v => v.rule === 'recipe')).toHaveLength(0);
     expect(violations.filter(v => v.rule === 'structure')).toHaveLength(0);
   });
 
@@ -97,7 +95,7 @@ describe('v3 integration: full lifecycle', () => {
     const trickDoc = {
       version: '2.0.0',
       archetype: 'test',
-      theme: { style: 'clean', mode: 'dark', recipe: 'clean' },
+      theme: { id: 'clean', mode: 'dark' },
       personality: ['minimal'],
       platform: { type: 'spa', routing: 'hash' },
       structure: [{ id: 'home', shell: 'full-bleed', layout: ['hero'] }],

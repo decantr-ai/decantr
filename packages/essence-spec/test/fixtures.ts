@@ -3,7 +3,7 @@ import type { Essence, EssenceV3, SectionedEssence } from '../src/types.js';
 export const VALID_V2_SIMPLE: Essence = {
   version: '2.0.0',
   archetype: 'saas-dashboard',
-  theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' },
+  theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
   personality: ['professional', 'data-rich'],
   platform: { type: 'spa', routing: 'hash' },
   structure: [
@@ -24,7 +24,7 @@ export const VALID_V2_SECTIONED: SectionedEssence = {
       id: 'brand',
       path: '/',
       archetype: 'portfolio',
-      theme: { style: 'glassmorphism', mode: 'dark', recipe: 'glassmorphism' },
+      theme: { id: 'glassmorphism', mode: 'dark' },
       structure: [{ id: 'home', shell: 'full-bleed', layout: ['hero'] }],
     },
   ],
@@ -36,7 +36,7 @@ export const VALID_V2_SECTIONED: SectionedEssence = {
 export const VALID_V3: EssenceV3 = {
   version: '3.0.0',
   dna: {
-    theme: { style: 'luminarum', mode: 'dark', recipe: 'luminarum', shape: 'pill' },
+    theme: { id: 'luminarum', mode: 'dark', shape: 'pill' },
     spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
     typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
     color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },

@@ -1,6 +1,6 @@
 import type { Density, DensityLevel, SpatialTokens } from './types.js';
 
-interface RecipeSpatialHints {
+interface SpatialHints {
   density_bias?: number;
   content_gap_shift?: number;
 }
@@ -28,7 +28,7 @@ function clamp(value: number, min: number, max: number): number {
 
 export function computeDensity(
   personality: string[],
-  recipeSpatial?: RecipeSpatialHints,
+  spatialHints?: SpatialHints,
 ): Density {
   const lower = personality.map(c => c.toLowerCase());
 
@@ -43,11 +43,11 @@ export function computeDensity(
     }
   }
 
-  if (recipeSpatial?.density_bias) {
-    gap += recipeSpatial.density_bias;
+  if (spatialHints?.density_bias) {
+    gap += spatialHints.density_bias;
   }
-  if (recipeSpatial?.content_gap_shift) {
-    gap += recipeSpatial.content_gap_shift;
+  if (spatialHints?.content_gap_shift) {
+    gap += spatialHints.content_gap_shift;
   }
 
   gap = clamp(gap, MIN_GAP, MAX_GAP);
@@ -61,7 +61,7 @@ export function computeDensity(
 
 // --- Spatial Tokens ---
 
-interface SpatialRecipeHints {
+interface SpatialTokenHints {
   section_padding?: string | null;
   density_bias?: number;
   content_gap_shift?: number;
@@ -94,18 +94,18 @@ function toRemString(value: number): string {
 
 export function computeSpatialTokens(
   density: DensityLevel,
-  recipeHints?: SpatialRecipeHints,
+  spatialHints?: SpatialTokenHints,
 ): SpatialTokens {
   const scale = DENSITY_SCALES[density];
-  const biasMultiplier = 1 + (recipeHints?.density_bias ?? 0) / 10;
+  const biasMultiplier = 1 + (spatialHints?.density_bias ?? 0) / 10;
 
   const result = {} as SpatialTokens;
 
   for (const [key, base] of Object.entries(BASE_TOKENS)) {
     const tokenKey = key as keyof SpatialTokens;
 
-    if (tokenKey === '--d-section-py' && recipeHints?.section_padding) {
-      const pxMatch = recipeHints.section_padding.match(/^(\d+(?:\.\d+)?)px$/);
+    if (tokenKey === '--d-section-py' && spatialHints?.section_padding) {
+      const pxMatch = spatialHints.section_padding.match(/^(\d+(?:\.\d+)?)px$/);
       if (pxMatch) {
         const remValue = parseFloat(pxMatch[1]) / 16;
         result[tokenKey] = toRemString(remValue * scale * biasMultiplier);
@@ -115,8 +115,8 @@ export function computeSpatialTokens(
 
     let computed = base * scale * biasMultiplier;
 
-    if (tokenKey === '--d-content-gap' && recipeHints?.content_gap_shift) {
-      computed += recipeHints.content_gap_shift * 0.25;
+    if (tokenKey === '--d-content-gap' && spatialHints?.content_gap_shift) {
+      computed += spatialHints.content_gap_shift * 0.25;
     }
 
     result[tokenKey] = toRemString(computed);

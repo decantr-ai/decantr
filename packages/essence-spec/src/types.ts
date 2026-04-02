@@ -26,9 +26,8 @@ export type ThemeMode = 'light' | 'dark' | 'auto';
 export type ThemeShape = 'sharp' | 'rounded' | 'pill';
 
 export interface Theme {
-  style: ThemeStyle | string;
+  id: string;
   mode: ThemeMode;
-  recipe: string;
   shape?: ThemeShape;
 }
 
@@ -102,7 +101,6 @@ export type GuardMode = 'creative' | 'guided' | 'strict';
 
 export interface Guard {
   enforce_style?: boolean;
-  enforce_recipe?: boolean;
   mode: GuardMode;
 }
 
@@ -231,7 +229,7 @@ export interface EssenceDNA {
   };
 }
 
-/** Only density and mode may be overridden per-page. DNA axioms like wcag_level and theme.style are never overrideable. */
+/** Only density and mode may be overridden per-page. DNA axioms like wcag_level and theme.id are never overrideable. */
 export interface DNAOverrides {
   density?: DensityLevel;
   mode?: ThemeMode;

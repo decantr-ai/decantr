@@ -50,13 +50,6 @@ describe('evaluateGuard - v3 layer metadata', () => {
     expect(layoutV!.severity).toBe('warning');
   });
 
-  it('recipe violation has layer=dna', () => {
-    const v3 = makeV3();
-    const violations = evaluateGuard(v3, { recipe: 'dopamine' });
-    const recipeV = violations.find(v => v.rule === 'recipe');
-    expect(recipeV!.layer).toBe('dna');
-  });
-
   it('density violation has layer=dna', () => {
     const v3 = makeV3();
     const violations = evaluateGuard(v3, { density_gap: '99' });
@@ -85,16 +78,10 @@ describe('evaluateGuard - v3 layer metadata', () => {
 });
 
 describe('evaluateGuard - v3 reads from correct paths', () => {
-  it('reads style from dna.theme.style', () => {
+  it('reads style from dna.theme.id', () => {
     const v3 = makeV3();
     const violations = evaluateGuard(v3, { style: 'luminarum' });
     expect(violations.filter(v => v.rule === 'style')).toHaveLength(0);
-  });
-
-  it('reads recipe from dna.theme.recipe', () => {
-    const v3 = makeV3();
-    const violations = evaluateGuard(v3, { recipe: 'luminarum' });
-    expect(violations.filter(v => v.rule === 'recipe')).toHaveLength(0);
   });
 
   it('reads pages from blueprint.pages', () => {
@@ -157,8 +144,8 @@ describe('evaluateGuard - v3 enforcement levels', () => {
     const v3 = makeV3({
       meta: { ...VALID_V3.meta, guard: { mode: 'strict', dna_enforcement: 'off', blueprint_enforcement: 'warn' } },
     });
-    // style and recipe are DNA-layer violations
-    const violations = evaluateGuard(v3, { style: 'wrong', recipe: 'wrong', density_gap: '99' });
+    // style is a DNA-layer violation
+    const violations = evaluateGuard(v3, { style: 'wrong', density_gap: '99' });
     const dnaViolations = violations.filter(v => v.layer === 'dna');
     expect(dnaViolations).toHaveLength(0);
   });
@@ -176,7 +163,7 @@ describe('evaluateGuard - v3 enforcement levels', () => {
     const v3 = makeV3({
       meta: { ...VALID_V3.meta, guard: { mode: 'strict', dna_enforcement: 'warn', blueprint_enforcement: 'warn' } },
     });
-    const violations = evaluateGuard(v3, { style: 'wrong', recipe: 'wrong' });
+    const violations = evaluateGuard(v3, { style: 'wrong' });
     const dnaViolations = violations.filter(v => v.layer === 'dna');
     expect(dnaViolations.length).toBeGreaterThan(0);
     expect(dnaViolations.every(v => v.severity === 'warning')).toBe(true);
@@ -188,7 +175,7 @@ describe('evaluateGuard - v2 backward compatibility', () => {
     const v2 = {
       version: '2.0.0',
       archetype: 'test',
-      theme: { style: 'clean', mode: 'dark' as const, recipe: 'clean' },
+      theme: { id: 'clean', mode: 'dark' as const },
       personality: ['minimal'],
       platform: { type: 'spa' as const, routing: 'hash' as const },
       structure: [{ id: 'home', shell: 'full-bleed', layout: ['hero'] }],

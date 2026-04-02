@@ -33,7 +33,7 @@ describe('computeDensity', () => {
     expect(result).toEqual({ level: 'comfortable', content_gap: '4' });
   });
 
-  it('applies recipe density_bias shift', () => {
+  it('applies density_bias shift', () => {
     const result = computeDensity(['professional'], { density_bias: -1 });
     expect(result).toEqual({ level: 'compact', content_gap: '3' });
   });
@@ -55,7 +55,7 @@ describe('computeDensity', () => {
 });
 
 describe('computeSpatialTokens', () => {
-  it('returns base values for comfortable density with no recipe hints', () => {
+  it('returns base values for comfortable density with no spatial hints', () => {
     const tokens = computeSpatialTokens('comfortable');
     expect(tokens).toEqual({
       '--d-section-py': '5rem',
@@ -94,13 +94,13 @@ describe('computeSpatialTokens', () => {
     });
   });
 
-  it('uses recipe section_padding override converted from px to rem', () => {
+  it('uses section_padding override converted from px to rem', () => {
     const tokens = computeSpatialTokens('comfortable', { section_padding: '80px' });
     // 80px / 16 = 5rem, × 1.0 density × (1 + 0/10) bias = 5rem
     expect(tokens['--d-section-py']).toBe('5rem');
   });
 
-  it('applies recipe density_bias multiplier', () => {
+  it('applies density_bias multiplier', () => {
     const tokens = computeSpatialTokens('comfortable', { density_bias: 2 });
     // base × 1.0 × (1 + 2/10) = base × 1.2
     expect(tokens).toEqual({

@@ -12,7 +12,7 @@ describe('normalizeEssence - v3 handling', () => {
 
   it('preserves all v3 DNA fields', () => {
     const result = normalizeEssence(VALID_V3 as unknown as Record<string, unknown>);
-    expect(isV3(result) && result.dna.theme.style).toBe('luminarum');
+    expect(isV3(result) && result.dna.theme.id).toBe('luminarum');
     expect(isV3(result) && result.dna.accessibility.wcag_level).toBe('AA');
     expect(isV3(result) && result.dna.spacing.density).toBe('comfortable');
   });
@@ -48,7 +48,7 @@ describe('normalizeEssence - v3 handling', () => {
     const v1 = {
       version: '1.0.0',
       terroir: 'portfolio',
-      vintage: { style: 'clean', mode: 'light', recipe: 'clean' },
+      vintage: { style: 'clean', mode: 'light' },
       character: ['minimal'],
       vessel: { type: 'spa', routing: 'hash' },
       structure: [{ id: 'home', carafe: 'full-bleed', blend: ['hero'] }],

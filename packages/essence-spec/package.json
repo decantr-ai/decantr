@@ -1,6 +1,6 @@
 {
   "name": "@decantr/essence-spec",
-  "version": "1.0.0-beta.9",
+  "version": "1.0.0-beta.10",
   "description": "Essence schema, validator, and TypeScript types for Decantr",
   "license": "MIT",
   "repository": {

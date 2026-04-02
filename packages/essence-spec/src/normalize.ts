@@ -33,9 +33,8 @@ function normalizeSimple(v1: Record<string, unknown>): Essence {
     version: '2.0.0',
     archetype: (v1.terroir ?? v1.vignette ?? v1.archetype) as string,
     theme: {
-      style: vintage?.style ?? '',
+      id: vintage?.style ?? '',
       mode: (vintage?.mode ?? 'dark') as 'light' | 'dark' | 'auto',
-      recipe: vintage?.recipe ?? '',
       ...(vintage?.shape ? { shape: vintage.shape as 'sharp' | 'rounded' | 'pill' } : {}),
     },
     // Accept both old 'character' and new 'personality' field names
@@ -79,9 +78,8 @@ function normalizeSectioned(v1: Record<string, unknown>): SectionedEssence {
       path: section.path as string,
       archetype: (section.terroir ?? section.vignette ?? section.archetype) as string,
       theme: {
-        style: (section.vintage as Record<string, string>)?.style ?? '',
+        id: (section.vintage as Record<string, string>)?.style ?? '',
         mode: ((section.vintage as Record<string, string>)?.mode ?? 'dark') as 'light' | 'dark' | 'auto',
-        recipe: (section.vintage as Record<string, string>)?.recipe ?? '',
       },
       structure: ((section.structure as Array<Record<string, unknown>>) ?? []).map(normalizeStructurePage),
       ...(section.tannins ? { features: section.tannins as string[] } : {}),
@@ -119,7 +117,6 @@ function normalizeGuard(cork: Record<string, unknown> | undefined): Essence['gua
 
   return {
     ...(cork.enforce_style !== undefined ? { enforce_style: cork.enforce_style as boolean } : {}),
-    ...(cork.enforce_recipe !== undefined ? { enforce_recipe: cork.enforce_recipe as boolean } : {}),
     mode: modeMap[(cork.mode as string) ?? 'creative'] ?? 'creative',
   };
 }

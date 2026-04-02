@@ -102,9 +102,8 @@ function buildDNA(essence: Essence): EssenceDNA {
 
   return {
     theme: {
-      style: essence.theme.style,
+      id: essence.theme.id,
       mode: essence.theme.mode,
-      recipe: essence.theme.recipe,
       ...(essence.theme.shape ? { shape: essence.theme.shape } : {}),
     },
     spacing: {

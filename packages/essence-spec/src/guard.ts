@@ -7,7 +7,7 @@ export interface AutoFix {
 }
 
 export interface GuardViolation {
-  rule: 'style' | 'structure' | 'layout' | 'recipe' | 'density' | 'theme-mode' | 'pattern-exists' | 'accessibility';
+  rule: 'style' | 'structure' | 'layout' | 'density' | 'theme-mode' | 'pattern-exists' | 'accessibility';
   severity: 'error' | 'warning';
   message: string;
   suggestion?: string;
@@ -19,7 +19,6 @@ export interface GuardViolation {
 export interface GuardContext {
   pageId?: string;
   style?: string;
-  recipe?: string;
   layout?: string[];
   density_gap?: string;
   themeRegistry?: Map<string, { modes: string[] }>;
@@ -39,10 +38,10 @@ function checkThemeModeCompatibility(
   let themeId: string | null;
   let mode: string | null;
   if (isV3(essence)) {
-    themeId = essence.dna.theme?.style ?? null;
+    themeId = essence.dna.theme?.id ?? null;
     mode = essence.dna.theme?.mode ?? null;
   } else {
-    themeId = isSimple(essence) ? essence.theme?.style : null;
+    themeId = isSimple(essence) ? essence.theme?.id : null;
     mode = isSimple(essence) ? essence.theme?.mode : null;
   }
 
@@ -198,9 +197,9 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
   if (context.style) {
     let essenceStyle: string | null;
     if (isV3(essence)) {
-      essenceStyle = essence.dna.theme.style;
+      essenceStyle = essence.dna.theme.id;
     } else {
-      essenceStyle = isSimple(essence) ? essence.theme.style : null;
+      essenceStyle = isSimple(essence) ? essence.theme.id : null;
     }
     const enforceStyle = isV3(essence) ? true : (guard as import('./types.js').Guard).enforce_style !== false;
     if (essenceStyle && context.style !== essenceStyle && enforceStyle) {
@@ -257,28 +256,7 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
     }
   }
 
-  // Rule 4: Recipe guard
-  if (context.recipe) {
-    let essenceRecipe: string | null;
-    let enforceRecipe: boolean;
-    if (isV3(essence)) {
-      essenceRecipe = essence.dna.theme.recipe;
-      enforceRecipe = true;
-    } else {
-      essenceRecipe = isSimple(essence) ? essence.theme.recipe : null;
-      enforceRecipe = (guard as import('./types.js').Guard).enforce_recipe !== false;
-    }
-    if (essenceRecipe && context.recipe !== essenceRecipe && enforceRecipe) {
-      violations.push({
-        rule: 'recipe',
-        severity: 'error',
-        message: `Recipe "${context.recipe}" does not match essence recipe "${essenceRecipe}".`,
-        ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
-      });
-    }
-  }
-
-  // Rule 5: Density guard (strict only)
+  // Rule 4: Density guard (strict only)
   if (isStrict && context.density_gap) {
     let expectedGap: string;
     if (isV3(essence)) {

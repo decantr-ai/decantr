@@ -17,9 +17,8 @@ describe('migrateV2ToV3', () => {
 
   it('maps theme fields to dna.theme', () => {
     const v3 = migrateV2ToV3(VALID_V2_SIMPLE);
-    expect(v3.dna.theme.style).toBe('auradecantism');
+    expect(v3.dna.theme.id).toBe('auradecantism');
     expect(v3.dna.theme.mode).toBe('dark');
-    expect(v3.dna.theme.recipe).toBe('auradecantism');
     expect(v3.dna.theme.shape).toBe('rounded');
   });
 
@@ -113,7 +112,7 @@ describe('migrateV2ToV3', () => {
   it('migrates sectioned essence using first section theme', () => {
     const v3 = migrateV2ToV3(VALID_V2_SECTIONED);
     expect(isV3(v3)).toBe(true);
-    expect(v3.dna.theme.style).toBe('glassmorphism');
+    expect(v3.dna.theme.id).toBe('glassmorphism');
     expect(v3.meta.archetype).toBe('portfolio');
     expect(v3.blueprint.pages).toHaveLength(1);
     expect(v3.blueprint.pages[0].id).toBe('home');

@@ -4,7 +4,7 @@ import { validateEssence } from '../src/validate.js';
 const VALID_SIMPLE: Record<string, unknown> = {
   version: '2.0.0',
   archetype: 'saas-dashboard',
-  theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' },
+  theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
   personality: ['professional', 'data-rich'],
   platform: { type: 'spa', routing: 'hash' },
   structure: [
@@ -25,7 +25,7 @@ const VALID_SECTIONED: Record<string, unknown> = {
       id: 'brand',
       path: '/',
       archetype: 'portfolio',
-      theme: { style: 'glassmorphism', mode: 'dark', recipe: 'glassmorphism' },
+      theme: { id: 'glassmorphism', mode: 'dark' },
       structure: [{ id: 'home', shell: 'full-bleed', layout: ['hero'] }],
     },
   ],

@@ -6,7 +6,7 @@ describe('normalizeEssence', () => {
     const v1 = {
       version: '1.0.0',
       terroir: 'saas-dashboard',
-      vintage: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' },
+      vintage: { style: 'auradecantism', mode: 'dark', shape: 'rounded' },
       character: ['professional'],
       vessel: { type: 'spa', routing: 'hash' },
       structure: [
@@ -14,20 +14,20 @@ describe('normalizeEssence', () => {
       ],
       tannins: ['auth'],
       clarity: { density: 'comfortable', content_gap: '_gap4' },
-      cork: { enforce_style: true, enforce_recipe: true, mode: 'maintenance' },
+      cork: { enforce_style: true, mode: 'maintenance' },
     };
 
     const v2 = normalizeEssence(v1);
 
     expect(v2.version).toBe('2.0.0');
     expect((v2 as any).archetype).toBe('saas-dashboard');
-    expect((v2 as any).theme).toEqual({ style: 'auradecantism', mode: 'dark', recipe: 'auradecantism', shape: 'rounded' });
+    expect((v2 as any).theme).toEqual({ id: 'auradecantism', mode: 'dark', shape: 'rounded' });
     expect(v2.platform).toEqual({ type: 'spa', routing: 'hash' });
     expect((v2 as any).structure[0].shell).toBe('sidebar-main');
     expect((v2 as any).structure[0].layout).toEqual(['kpi-grid']);
     expect((v2 as any).features).toEqual(['auth']);
     expect(v2.density).toEqual({ level: 'comfortable', content_gap: '4' });
-    expect(v2.guard).toEqual({ enforce_style: true, enforce_recipe: true, mode: 'strict' });
+    expect(v2.guard).toEqual({ enforce_style: true, mode: 'strict' });
     expect(v2.target).toBe('decantr');
   });
 
@@ -35,7 +35,7 @@ describe('normalizeEssence', () => {
     const v2 = {
       version: '2.0.0',
       archetype: 'saas-dashboard',
-      theme: { style: 'auradecantism', mode: 'dark', recipe: 'auradecantism' },
+      theme: { id: 'auradecantism', mode: 'dark' },
       personality: ['professional'],
       platform: { type: 'spa', routing: 'hash' },
       structure: [{ id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid'] }],
@@ -59,7 +59,7 @@ describe('normalizeEssence', () => {
           id: 'brand',
           path: '/',
           terroir: 'portfolio',
-          vintage: { style: 'glassmorphism', mode: 'dark', recipe: 'glassmorphism' },
+          vintage: { style: 'glassmorphism', mode: 'dark' },
           structure: [{ id: 'home', carafe: 'full-bleed', blend: ['hero'] }],
           tannins: ['analytics'],
         },
@@ -72,7 +72,7 @@ describe('normalizeEssence', () => {
     const v2 = normalizeEssence(v1) as any;
 
     expect(v2.sections[0].archetype).toBe('portfolio');
-    expect(v2.sections[0].theme.style).toBe('glassmorphism');
+    expect(v2.sections[0].theme.id).toBe('glassmorphism');
     expect(v2.sections[0].structure[0].shell).toBe('full-bleed');
     expect(v2.sections[0].structure[0].layout).toEqual(['hero']);
     expect(v2.sections[0].features).toEqual(['analytics']);
@@ -84,7 +84,7 @@ describe('normalizeEssence', () => {
     const v1 = {
       version: '1.0.0',
       terroir: 'test',
-      vintage: { style: 'clean', mode: 'light', recipe: 'clean' },
+      vintage: { style: 'clean', mode: 'light' },
       character: ['minimal'],
       vessel: { type: 'spa', routing: 'hash' },
       structure: [{ id: 'home', carafe: 'full-bleed', blend: ['hero'] }],
@@ -101,7 +101,7 @@ describe('normalizeEssence', () => {
     const v1 = {
       version: '1.0.0',
       terroir: 'test',
-      vintage: { style: 'clean', mode: 'light', recipe: 'clean' },
+      vintage: { style: 'clean', mode: 'light' },
       character: ['minimal'],
       vessel: { type: 'spa', routing: 'hash' },
       structure: [{ id: 'home', carafe: 'full-bleed', blend: ['hero'] }],
