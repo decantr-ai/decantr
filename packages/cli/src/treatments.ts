@@ -21,6 +21,8 @@ export function generateTreatmentCSS(
 
   // ── Layer 1 + 2: Base Treatments (with optional overrides merged) ──
 
+  lines.push('@layer treatments {');
+  lines.push('');
   lines.push('/* ── Layer 1: Base Treatments ── */');
   lines.push('');
 
@@ -266,21 +268,7 @@ export function generateTreatmentCSS(
     ['font-family', 'var(--d-font-mono, ui-monospace, monospace)'],
   ]);
 
-  // ── Layer 3: Theme Decorators ──
-
-  if (themeDecorators && Object.keys(themeDecorators).length > 0) {
-    const label = themeName ? ` (${themeName})` : '';
-    lines.push(`/* ── Layer 3: Theme Decorators${label} ── */`);
-    lines.push('');
-
-    for (const [name, description] of Object.entries(themeDecorators)) {
-      const rule = generateDecoratorRule(name, description);
-      lines.push(rule);
-      lines.push('');
-    }
-  }
-
-  // ── Keyframes ──
+  // ── Keyframes (inside treatments layer) ──
 
   lines.push('/* ── Keyframes ── */');
   lines.push('');
@@ -293,6 +281,27 @@ export function generateTreatmentCSS(
   lines.push('  0%, 100% { opacity: 1; }');
   lines.push('  50% { opacity: 0.5; }');
   lines.push('}');
+  lines.push('');
+  lines.push('} /* end @layer treatments */');
+
+  // ── Layer 3: Theme Decorators ──
+
+  if (themeDecorators && Object.keys(themeDecorators).length > 0) {
+    const label = themeName ? ` (${themeName})` : '';
+    lines.push('');
+    lines.push('@layer decorators {');
+    lines.push('');
+    lines.push(`/* ── Layer 3: Theme Decorators${label} ── */`);
+    lines.push('');
+
+    for (const [name, description] of Object.entries(themeDecorators)) {
+      const rule = generateDecoratorRule(name, description);
+      lines.push(rule);
+      lines.push('');
+    }
+
+    lines.push('} /* end @layer decorators */');
+  }
 
   return lines.join('\n');
 }
@@ -337,5 +346,5 @@ export function generatePersonalityCSS(personality: string[], themeData: { motio
   }
 
   if (rules.length === 0) return '';
-  return '\n/* ── Personality-Derived Utilities ── */\n\n' + rules.join('\n\n') + '\n';
+  return '\n@layer utilities {\n\n/* ── Personality-Derived Utilities ── */\n\n' + rules.join('\n\n') + '\n\n} /* end @layer utilities */\n';
 }
