@@ -17,6 +17,60 @@ describe('generateTokensCSS', () => {
   });
 });
 
+describe('generateTokensCSS spatial tokens', () => {
+  const sampleSpatialTokens: Record<string, string> = {
+    '--d-section-py': '4rem',
+    '--d-interactive-py': '0.625rem',
+    '--d-interactive-px': '1rem',
+    '--d-surface-p': '1.5rem',
+    '--d-data-py': '0.75rem',
+    '--d-control-py': '0.375rem',
+    '--d-content-gap': '1.5rem',
+  };
+
+  it('appends spatial tokens to :root block when provided', () => {
+    const css = generateTokensCSS(undefined, 'dark', sampleSpatialTokens);
+    expect(css).toContain('--d-section-py: 4rem;');
+    expect(css).toContain('--d-interactive-py: 0.625rem;');
+    expect(css).toContain('--d-content-gap: 1.5rem;');
+    // Spatial tokens should be inside the :root block (before closing brace)
+    const rootBlock = css.split('}')[0];
+    expect(rootBlock).toContain('--d-section-py');
+  });
+
+  it('does not include spatial tokens when not provided', () => {
+    const css = generateTokensCSS(undefined, 'dark');
+    expect(css).not.toContain('--d-section-py');
+    expect(css).not.toContain('--d-content-gap');
+  });
+
+  it('appends spatial tokens when themeData is provided', () => {
+    const themeData = {
+      seed: { primary: '#7C93B0', secondary: '#A1A1AA', accent: '#6B8AAE' },
+      palette: {
+        background: { dark: '#18181B', light: '#FAFAFA' },
+        surface: { dark: '#1F1F23', light: '#FFFFFF' },
+      },
+    };
+    const css = generateTokensCSS(themeData, 'dark', sampleSpatialTokens);
+    expect(css).toContain('--d-primary: #7C93B0;');
+    expect(css).toContain('--d-section-py: 4rem;');
+    expect(css).toContain('--d-content-gap: 1.5rem;');
+  });
+
+  it('includes spatial tokens in :root for auto mode', () => {
+    const themeData = {
+      seed: { primary: '#7C93B0' },
+      palette: {},
+    };
+    const css = generateTokensCSS(themeData, 'auto', sampleSpatialTokens);
+    // Spatial tokens should be in the :root block (before @media)
+    const rootBlock = css.split('@media')[0];
+    expect(rootBlock).toContain('--d-section-py: 4rem;');
+    expect(rootBlock).toContain('--d-content-gap: 1.5rem;');
+  });
+});
+
 describe('generateTokensCSS shadow tokens', () => {
   const darkTheme = {
     seed: { primary: '#7C93B0', secondary: '#A1A1AA', accent: '#6B8AAE' },
