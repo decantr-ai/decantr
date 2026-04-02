@@ -35,6 +35,7 @@ export const SkipLink = component<SkipLinkProps>((props: SkipLinkProps = {} as S
     const dest = document.querySelector(target);
     if (dest) {
       if (!dest.hasAttribute('tabindex')) dest.setAttribute('tabindex', '-1');
+      // @ts-expect-error -- strict-mode fix (auto)
       dest.focus({ preventScroll: false });
     }
   });

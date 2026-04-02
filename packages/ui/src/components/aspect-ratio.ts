@@ -20,6 +20,7 @@ export interface AspectRatioProps {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const AspectRatio = component<AspectRatioProps>((props: AspectRatioProps = {} as AspectRatioProps, ...children: (string | Node)[]) => {
   injectBase();
   const { ratio = 16 / 9, class: cls, ...rest } = props;

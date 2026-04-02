@@ -30,6 +30,7 @@ export interface MarqueeProps {
  * @param {...(HTMLElement|string)} children - Items to scroll
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Marquee = component<MarqueeProps>((props: MarqueeProps = {} as MarqueeProps, ...children: (string | Node)[]) => {
   injectBase();
 

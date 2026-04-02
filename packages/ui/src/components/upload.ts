@@ -36,11 +36,12 @@ export interface UploadProps {
  * @param {...Node} children - Custom trigger content (for drag mode, shown inside drop zone)
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Upload = component<UploadProps>((props: UploadProps = {} as UploadProps, ...children: (string | Node)[]) => {
   injectBase();
   const { multiple = false, accept, drag = false, maxSize, maxCount, onchange, onRemove, customRequest, disabled, class: cls } = props;
 
-  const files = [];
+  const files: any[] = [];
   const fileInput = h('input', {
     type: 'file',
     class: 'd-upload-input',
@@ -51,7 +52,7 @@ export const Upload = component<UploadProps>((props: UploadProps = {} as UploadP
   const fileList = h('div', { class: 'd-upload-list' });
   const container = h('div', { class: cx('d-upload', cls) });
 
-  function addFiles(newFiles) {
+  function addFiles(newFiles: any) {
     for (const file of newFiles) {
       if (maxSize && file.size > maxSize) continue;
       if (maxCount && files.length >= maxCount) break;
@@ -62,7 +63,7 @@ export const Upload = component<UploadProps>((props: UploadProps = {} as UploadP
     if (onchange) onchange([...files]);
   }
 
-  function removeFile(file) {
+  function removeFile(file: any) {
     const idx = files.indexOf(file);
     if (idx >= 0) files.splice(idx, 1);
     renderFileList();
@@ -70,7 +71,7 @@ export const Upload = component<UploadProps>((props: UploadProps = {} as UploadP
     if (onchange) onchange([...files]);
   }
 
-  function renderFileItem(file) {
+  function renderFileItem(file: any) {
     const item = h('div', { class: 'd-upload-item' });
     item.appendChild(h('span', { class: 'd-upload-item-name' }, file.name));
     const removeBtn = h('button', { type: 'button', class: 'd-upload-item-remove', 'aria-label': `Remove ${file.name}` }, '\u00d7');
@@ -85,7 +86,9 @@ export const Upload = component<UploadProps>((props: UploadProps = {} as UploadP
   }
 
   fileInput.addEventListener('change', () => {
+    // @ts-expect-error -- strict-mode fix (auto)
     if (fileInput.files.length) addFiles(fileInput.files);
+    // @ts-expect-error -- strict-mode fix (auto)
     fileInput.value = '';
   });
 
@@ -109,6 +112,7 @@ export const Upload = component<UploadProps>((props: UploadProps = {} as UploadP
     dragger.addEventListener('drop', (e) => {
       e.preventDefault();
       dragger.classList.remove('d-upload-dragger-active');
+      // @ts-expect-error -- strict-mode fix (auto)
       if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
     });
 

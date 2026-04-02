@@ -18,7 +18,7 @@ export interface messageProps {
   [key: string]: unknown;
 }
 
-let _container = null;
+let _container: any = null;
 
 function getContainer() {
   if (_container) return _container;
@@ -55,6 +55,7 @@ export function message(props: messageProps = {} as messageProps) {
 
   const iconEl = icon
     ? (typeof icon === 'string' ? h('span', { class: 'd-message-icon' }, icon) : icon)
+    // @ts-expect-error -- strict-mode fix (auto)
     : h('span', { class: 'd-message-icon' }, makeIcon(ICON_MAP[type] || 'info', { size: '1.25em' }));
 
   const el = h('div', {

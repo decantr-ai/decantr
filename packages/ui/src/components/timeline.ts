@@ -98,12 +98,12 @@ export const Timeline = component<TimelineProps>((props: TimelineProps = {} as T
 /**
  * Render timeline items into the container.
  */
-function renderItems(container, items, opts) {
+function renderItems(container: any, items: any, opts: any) {
   const { mode, pending, pendingDot, active, reverse, onClick } = opts;
   const ordered = reverse ? [...items].reverse() : items;
-  const dots = [];
+  const dots: any[] = [];
 
-  ordered.forEach((item, i) => {
+  ordered.forEach((item: any, i: number) => {
     const itemDisabled = item.disabled;
     const itemClickable = !itemDisabled && (item.onclick || onClick);
 
@@ -193,7 +193,7 @@ function renderItems(container, items, opts) {
 
   // Active item highlight
   if (active != null) {
-    const applyActive = (idx) => {
+    const applyActive = (idx: any) => {
       dots.forEach((d, i) => {
         d.classList.toggle('d-timeline-dot-active', i === idx);
       });
@@ -224,7 +224,7 @@ function renderItems(container, items, opts) {
 /**
  * Render skeleton loading items.
  */
-function renderSkeleton(container, count) {
+function renderSkeleton(container: any, count: any) {
   container.classList.add('d-timeline-skeleton');
   for (let i = 0; i < count; i++) {
     const el = h('div', { class: 'd-timeline-item' });

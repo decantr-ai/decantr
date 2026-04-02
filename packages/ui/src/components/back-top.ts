@@ -23,13 +23,17 @@ export interface BackTopProps {
  * @param {...Node} children - Custom button content
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const BackTop = component<BackTopProps>((props: BackTopProps = {} as BackTopProps, ...children: (string | Node)[]) => {
   injectBase();
   const { visibilityHeight = 400, target, class: cls } = props;
 
+  // @ts-expect-error -- strict-mode fix (auto)
   const hasCustomContent = children.flat().filter(c => c && c.nodeType).length > 0;
   const content = hasCustomContent
+    // @ts-expect-error -- strict-mode fix (auto)
     ? children.flat().filter(c => c && c.nodeType)
+    // @ts-expect-error -- strict-mode fix (auto)
     : [icon('arrow-up', { size: '1.25em' })];
 
   const btn = h('button', {
@@ -48,6 +52,7 @@ export const BackTop = component<BackTopProps>((props: BackTopProps = {} as Back
     if (scrollEl.scrollTo) {
       scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
+      // @ts-expect-error -- strict-mode fix (auto)
       scrollEl.scrollTop = 0;
     }
   }

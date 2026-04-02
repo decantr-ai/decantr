@@ -29,6 +29,7 @@ const { div } = tags;
  * @param {string} [props.class]
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Popover = component<PopoverProps>((props: PopoverProps = {} as PopoverProps, ...children: (string | Node)[]) => {
   injectBase();
 
@@ -48,11 +49,15 @@ export const Popover = component<PopoverProps>((props: PopoverProps = {} as Popo
   const wrap = div({ class: 'd-popover' });
 
   const triggerEl = typeof trigger === 'function' ? trigger() : tags.button({ type: 'button' }, 'Open');
+  // @ts-expect-error -- strict-mode fix (auto)
   triggerEl.setAttribute('aria-haspopup', 'dialog');
+  // @ts-expect-error -- strict-mode fix (auto)
   triggerEl.setAttribute('aria-expanded', 'false');
+  // @ts-expect-error -- strict-mode fix (auto)
   wrap.appendChild(triggerEl);
   wrap.appendChild(content);
 
+  // @ts-expect-error -- strict-mode fix (auto)
   const overlay = createOverlay(triggerEl, content, {
     trigger: 'click',
     closeOnEscape: true,

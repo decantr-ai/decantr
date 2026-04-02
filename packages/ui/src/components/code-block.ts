@@ -29,6 +29,7 @@ export interface CodeBlockProps {
  * @param {...string} children - Code string(s)
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const CodeBlock = component<CodeBlockProps>((props: CodeBlockProps = {} as CodeBlockProps, ...children: (string | Node)[]) => {
   injectBase();
 

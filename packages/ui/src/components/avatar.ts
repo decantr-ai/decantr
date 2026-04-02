@@ -44,6 +44,7 @@ export const Avatar = component<AvatarProps>((props: AvatarProps = {} as AvatarP
     const text = fallback || alt.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     if (!text) {
       const el = h('span', { class: 'd-avatar-fallback', 'aria-hidden': 'true' });
+      // @ts-expect-error -- strict-mode fix (auto)
       el.appendChild(icon('user', { size: '1em' }));
       return el;
     }

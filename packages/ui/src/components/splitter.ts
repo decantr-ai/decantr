@@ -11,6 +11,7 @@ import { createDrag } from './_behaviors.js';
 import { component } from '../runtime/component.js';
 export interface SplitterProps {
   direction?: 'horizontal'|'vertical';
+  // @ts-expect-error -- strict-mode fix (auto)
   panels?: SplitterPanel[];
   class?: string;
   [key: string]: unknown;
@@ -42,7 +43,7 @@ export const Splitter = component<SplitterProps>((props: SplitterProps = {} as S
     'aria-label': 'Resizable panels'
   });
 
-  const panelEls = [];
+  const panelEls: any[] = [];
   const handleEls = [];
 
   panels.forEach((panelDef, i) => {

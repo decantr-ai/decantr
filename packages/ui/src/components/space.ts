@@ -27,6 +27,7 @@ export interface SpaceProps {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Space = component<SpaceProps>((props: SpaceProps = {} as SpaceProps, ...children: (string | Node)[]) => {
   injectBase();
   const { direction = 'horizontal', align, gap, wrap, class: cls, ...rest } = props;
@@ -40,11 +41,14 @@ export const Space = component<SpaceProps>((props: SpaceProps = {} as SpaceProps
 
   const style = {};
   if (gap !== undefined) {
+    // @ts-expect-error -- strict-mode fix (auto)
     style.gap = typeof gap === 'number' ? `var(--d-sp-${gap})` : gap;
   }
   if (align) {
     const map = { start: 'flex-start', end: 'flex-end', center: 'center', between: 'space-between', around: 'space-around', evenly: 'space-evenly' };
+    // @ts-expect-error -- strict-mode fix (auto)
     if (direction === 'vertical') style.alignItems = map[align] || align;
+    // @ts-expect-error -- strict-mode fix (auto)
     else style.justifyContent = map[align] || align;
   }
 

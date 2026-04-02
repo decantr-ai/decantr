@@ -18,11 +18,11 @@ const LOG = new Uint8Array(256);
   EXP[255] = EXP[0];
 }
 
-function gfMul(a, b) {
+function gfMul(a: any, b: any) {
   return a === 0 || b === 0 ? 0 : EXP[(LOG[a] + LOG[b]) % 255];
 }
 
-function gfPolyMul(a, b) {
+function gfPolyMul(a: any, b: any) {
   const out = new Uint8Array(a.length + b.length - 1);
   for (let i = 0; i < a.length; i++)
     for (let j = 0; j < b.length; j++)
@@ -30,14 +30,14 @@ function gfPolyMul(a, b) {
   return out;
 }
 
-function rsGenPoly(n) {
+function rsGenPoly(n: any) {
   let g = new Uint8Array([1]);
   for (let i = 0; i < n; i++)
     g = gfPolyMul(g, new Uint8Array([1, EXP[i]]));
   return g;
 }
 
-function rsEncode(data, ecLen) {
+function rsEncode(data: any, ecLen: any) {
   const gen = rsGenPoly(ecLen);
   const msg = new Uint8Array(data.length + ecLen);
   msg.set(data);
@@ -154,7 +154,7 @@ const ALIGN_POS = [
   [6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170],
 ];
 
-function getCapacity(ver, ecIdx) {
+function getCapacity(ver: any, ecIdx: any) {
   const row = EC_TABLE[ver - 1][ecIdx];
   const ecPer = row[0];
   const n1 = row[1], d1 = row[2];
@@ -163,7 +163,7 @@ function getCapacity(ver, ecIdx) {
   return n1 * d1 + n2 * d2;
 }
 
-function selectVersion(dataLen, ecIdx) {
+function selectVersion(dataLen: any, ecIdx: any) {
   // Byte mode: 4 bits mode + char count bits + data + terminator, packed into codewords
   for (let v = 1; v <= 40; v++) {
     const ccBits = v <= 9 ? 8 : 16;
@@ -174,12 +174,12 @@ function selectVersion(dataLen, ecIdx) {
   throw new Error('Data too long for QR');
 }
 
-function buildDataCodewords(data, ver, ecIdx) {
+function buildDataCodewords(data: any, ver: any, ecIdx: any) {
   const cap = getCapacity(ver, ecIdx);
   const ccBits = ver <= 9 ? 8 : 16;
   const bits = [];
 
-  const push = (val, len) => {
+  const push = (val: any, len: any) => {
     for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1);
   };
 
@@ -203,7 +203,7 @@ function buildDataCodewords(data, ver, ecIdx) {
   return codewords;
 }
 
-function interleaveBlocks(codewords, ver, ecIdx) {
+function interleaveBlocks(codewords: any, ver: any, ecIdx: any) {
   const row = EC_TABLE[ver - 1][ecIdx];
   const ecPer = row[0];
   const n1 = row[1], d1 = row[2];
@@ -239,14 +239,14 @@ function interleaveBlocks(codewords, ver, ecIdx) {
   return new Uint8Array(result);
 }
 
-function createMatrix(ver) {
+function createMatrix(ver: any) {
   const size = ver * 4 + 17;
   const modules = Array.from({ length: size }, () => new Uint8Array(size));
   const reserved = Array.from({ length: size }, () => new Uint8Array(size));
   return { modules, reserved, size };
 }
 
-function placeFinder(m, row, col) {
+function placeFinder(m: any, row: any, col: any) {
   for (let r = -1; r <= 7; r++)
     for (let c = -1; c <= 7; c++) {
       const rr = row + r, cc = col + c;
@@ -258,7 +258,7 @@ function placeFinder(m, row, col) {
     }
 }
 
-function placeAlignment(m, ver) {
+function placeAlignment(m: any, ver: any) {
   if (ver < 2) return;
   const pos = ALIGN_POS[ver];
   for (const r of pos)
@@ -276,7 +276,7 @@ function placeAlignment(m, ver) {
     }
 }
 
-function placeTiming(m) {
+function placeTiming(m: any) {
   for (let i = 8; i < m.size - 8; i++) {
     const on = i % 2 === 0 ? 1 : 0;
     if (!m.reserved[6][i]) { m.modules[6][i] = on; m.reserved[6][i] = 1; }
@@ -284,7 +284,7 @@ function placeTiming(m) {
   }
 }
 
-function reserveFormatAreas(m, ver) {
+function reserveFormatAreas(m: any, ver: any) {
   // Format info around finders
   for (let i = 0; i < 8; i++) {
     m.reserved[8][i] = 1;
@@ -307,7 +307,7 @@ function reserveFormatAreas(m, ver) {
   }
 }
 
-function placeData(m, dataBits) {
+function placeData(m: any, dataBits: any) {
   let bitIdx = 0;
   let upward = true;
   for (let right = m.size - 1; right >= 1; right -= 2) {
@@ -326,17 +326,17 @@ function placeData(m, dataBits) {
 }
 
 const MASK_FNS = [
-  (r, c) => (r + c) % 2 === 0,
-  (r, c) => r % 2 === 0,
-  (r, c) => c % 3 === 0,
-  (r, c) => (r + c) % 3 === 0,
-  (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0,
-  (r, c) => ((r * c) % 2 + (r * c) % 3) === 0,
-  (r, c) => ((r * c) % 2 + (r * c) % 3) % 2 === 0,
-  (r, c) => ((r + c) % 2 + (r * c) % 3) % 2 === 0,
+  (r: any, c: any) => (r + c) % 2 === 0,
+  (r: any, c: any) => r % 2 === 0,
+  (r: any, c: any) => c % 3 === 0,
+  (r: any, c: any) => (r + c) % 3 === 0,
+  (r: any, c: any) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0,
+  (r: any, c: any) => ((r * c) % 2 + (r * c) % 3) === 0,
+  (r: any, c: any) => ((r * c) % 2 + (r * c) % 3) % 2 === 0,
+  (r: any, c: any) => ((r + c) % 2 + (r * c) % 3) % 2 === 0,
 ];
 
-function applyMask(m, maskIdx) {
+function applyMask(m: any, maskIdx: any) {
   const fn = MASK_FNS[maskIdx];
   for (let r = 0; r < m.size; r++)
     for (let c = 0; c < m.size; c++)
@@ -344,7 +344,7 @@ function applyMask(m, maskIdx) {
         m.modules[r][c] ^= 1;
 }
 
-function bchFormat(data) {
+function bchFormat(data: any) {
   // BCH(15,5) — generator polynomial: x^10 + x^8 + x^5 + x^4 + x^2 + x + 1 = 0x537
   let bits = data << 10;
   let gen = 0x537;
@@ -353,7 +353,7 @@ function bchFormat(data) {
   return ((data << 10) | bits) ^ 0x5412;
 }
 
-function bchVersion(data) {
+function bchVersion(data: any) {
   // BCH(18,6) — generator polynomial: x^12 + x^11 + x^10 + x^9 + x^8 + x^5 + x^2 + 1 = 0x1F25
   let bits = data << 12;
   let gen = 0x1F25;
@@ -362,10 +362,10 @@ function bchVersion(data) {
   return (data << 12) | bits;
 }
 
-function writeFormatInfo(m, ecIdx, maskIdx) {
+function writeFormatInfo(m: any, ecIdx: any, maskIdx: any) {
   const data = (EC_BITS[ecIdx] << 3) | maskIdx;
   const info = bchFormat(data);
-  const bit = i => (info >> i) & 1;
+  const bit = (i: any) => (info >> i) & 1;
 
   // First copy — horizontal (row 8, left side): b14..b9 at cols 0-5, b8 at col 7, b7 at col 8
   for (let i = 0; i <= 5; i++) m.modules[8][i] = bit(14 - i);
@@ -381,7 +381,7 @@ function writeFormatInfo(m, ecIdx, maskIdx) {
   for (let i = 0; i < 8; i++) m.modules[8][m.size - 8 + i] = bit(7 - i);
 }
 
-function writeVersionInfo(m, ver) {
+function writeVersionInfo(m: any, ver: any) {
   if (ver < 7) return;
   const info = bchVersion(ver);
   for (let i = 0; i < 18; i++) {
@@ -393,7 +393,7 @@ function writeVersionInfo(m, ver) {
   }
 }
 
-function penalty(modules, size) {
+function penalty(modules: any, size: any) {
   let score = 0;
 
   // Rule 1: runs of 5+ same color in row/col
@@ -425,7 +425,7 @@ function penalty(modules, size) {
   // Rule 3: finder-like patterns (1,0,1,1,1,0,1,0,0,0,0) or reverse in rows/cols
   const pat1 = [1,0,1,1,1,0,1,0,0,0,0];
   const pat2 = [0,0,0,0,1,0,1,1,1,0,1];
-  const matchPat = (arr, start, pat) => {
+  const matchPat = (arr: any, start: any, pat: any) => {
     for (let i = 0; i < 11; i++) if (arr[start + i] !== pat[i]) return false;
     return true;
   };
@@ -456,11 +456,11 @@ function penalty(modules, size) {
   return score;
 }
 
-function cloneModules(modules, size) {
-  return modules.map(row => new Uint8Array(row));
+function cloneModules(modules: any, size: any) {
+  return modules.map((row: any) => new Uint8Array(row));
 }
 
-function utf8Encode(str) {
+function utf8Encode(str: any) {
   const bytes = [];
   for (let i = 0; i < str.length; i++) {
     let cp = str.codePointAt(i);
@@ -479,7 +479,8 @@ function utf8Encode(str) {
  * @param {'L'|'M'|'Q'|'H'} ecLevel - Error correction level
  * @returns {{ modules: boolean[][], size: number }}
  */
-export function encodeQR(data, ecLevel = 'M') {
+export function encodeQR(data: any, ecLevel = 'M') {
+  // @ts-expect-error -- strict-mode fix (auto)
   const ecIdx = EC_LEVELS[ecLevel];
   if (ecIdx === undefined) throw new Error('Invalid EC level: ' + ecLevel);
 

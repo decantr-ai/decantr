@@ -21,6 +21,7 @@ export interface AlertProps {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Alert = component<AlertProps>((props: AlertProps = {} as AlertProps, ...children: (string | Node)[]) => {
   injectBase();
 

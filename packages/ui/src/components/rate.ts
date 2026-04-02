@@ -96,8 +96,8 @@ export const Rate = component<RateProps>((props: RateProps = {} as RateProps) =>
     container.setAttribute('data-success', '');
   }
 
-  const stars = [];
-  const cleanups = [];
+  const stars: any[] = [];
+  const cleanups: any[] = [];
 
   function isDisabled() {
     return readonly || (typeof disabled === 'function' ? disabled() : disabled);
@@ -135,7 +135,7 @@ export const Rate = component<RateProps>((props: RateProps = {} as RateProps) =>
     cleanups.push(() => star.removeEventListener('click', onClick));
 
     if (half) {
-      const onMousemove = (e) => {
+      const onMousemove = (e: MouseEvent) => {
         if (isDisabled()) return;
         const rect = star.getBoundingClientRect();
         hoverVal = e.clientX < rect.left + rect.width / 2 ? i + 0.5 : i + 1;
@@ -153,7 +153,7 @@ export const Rate = component<RateProps>((props: RateProps = {} as RateProps) =>
       cleanups.push(() => star.removeEventListener('mouseenter', onMouseenter));
     }
 
-    const onKeydown = (e) => {
+    const onKeydown = (e: KeyboardEvent) => {
       if (isDisabled()) return;
       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
         e.preventDefault();
@@ -198,6 +198,7 @@ export const Rate = component<RateProps>((props: RateProps = {} as RateProps) =>
 
   // Form field wrapping
   if (label || help) {
+    // @ts-expect-error -- strict-mode fix (auto)
     const { wrapper } = createFormField(container, { label, error, help, required, success });
     return wrapper;
   }

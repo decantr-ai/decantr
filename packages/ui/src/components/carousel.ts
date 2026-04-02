@@ -37,7 +37,7 @@ export const Carousel = component<CarouselProps>((props: CarouselProps = {} as C
   const { slides = [], autoplay = false, interval = 3000, arrows = true, dots = true, loop = true, onChange, class: cls } = props;
 
   let current = 0;
-  let _timer = null;
+  let _timer: any = null;
 
   const track = h('div', { class: 'd-carousel-track' });
   slides.forEach(slide => {
@@ -48,7 +48,7 @@ export const Carousel = component<CarouselProps>((props: CarouselProps = {} as C
 
   const container = h('div', { class: cx('d-carousel', cls) }, track);
 
-  function goTo(idx) {
+  function goTo(idx: any) {
     if (!loop) idx = Math.max(0, Math.min(idx, slides.length - 1));
     else idx = (idx + slides.length) % slides.length;
     current = idx;
@@ -71,7 +71,7 @@ export const Carousel = component<CarouselProps>((props: CarouselProps = {} as C
   }
 
   // Dots
-  let dotEls = [];
+  let dotEls: any[] = [];
   function updateDots() {
     dotEls.forEach((d, i) => d.classList.toggle('d-carousel-dot-active', i === current));
   }

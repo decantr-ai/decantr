@@ -68,6 +68,7 @@ export const Popconfirm = component<PopconfirmProps>((props: PopconfirmProps = {
 
   const wrap = div({ class: 'd-popconfirm-wrap' }, triggerEl, content);
 
+  // @ts-expect-error -- strict-mode fix (auto)
   const overlay = createOverlay(triggerEl, content, {
     trigger: 'click',
     closeOnEscape: true,

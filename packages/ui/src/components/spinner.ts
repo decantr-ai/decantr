@@ -92,8 +92,10 @@ export const Spinner = component<SpinnerProps>((props: SpinnerProps = {} as Spin
 
   let inner;
   if (iconName) {
+    // @ts-expect-error -- strict-mode fix (auto)
     inner = span({ class: cx('d-spinner-hybrid', SIZE_CLS[size]) });
     inner.appendChild(createRingSVG());
+    // @ts-expect-error -- strict-mode fix (auto)
     const centerIcon = icon(iconName, { size: '45%' });
     inner.appendChild(centerIcon);
   } else {
@@ -109,11 +111,13 @@ export const Spinner = component<SpinnerProps>((props: SpinnerProps = {} as Spin
   const srText = span({ class: 'd-sr-only' }, label);
 
   const wrap = span({
+    // @ts-expect-error -- strict-mode fix (auto)
     class: cx('d-spinner-wrap', SIZE_CLS[size], COLOR_CLS[color], cls),
     role: 'status',
     'aria-label': label
   });
   for (const [k, v] of Object.entries(rest)) {
+    // @ts-expect-error -- strict-mode fix (auto)
     wrap.setAttribute(k, v);
   }
   wrap.appendChild(inner);

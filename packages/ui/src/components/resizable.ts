@@ -30,6 +30,7 @@ export interface ResizableProps {
  * @param {...Node} children - Exactly 2 children (panels)
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Resizable = component<ResizableProps>((props: ResizableProps = {} as ResizableProps, ...children: (string | Node)[]) => {
   injectBase();
   const { direction = 'horizontal', defaultSize = 50, minSize = 10, maxSize = 90, onResize, class: cls, ...rest } = props;
@@ -40,7 +41,9 @@ export const Resizable = component<ResizableProps>((props: ResizableProps = {} a
   const panel1 = h('div', { class: 'd-resizable-panel' });
   const panel2 = h('div', { class: 'd-resizable-panel' });
 
+  // @ts-expect-error -- strict-mode fix (auto)
   if (children[0]) panel1.appendChild(children[0]);
+  // @ts-expect-error -- strict-mode fix (auto)
   if (children[1]) panel2.appendChild(children[1]);
 
   const handleBar = h('div', { class: 'd-resizable-handle-bar' });

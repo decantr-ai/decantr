@@ -43,18 +43,18 @@ export const RangeSlider = component<RangeSliderProps>((props: RangeSliderProps 
   let low = pMin;
   let high = pMax;
 
-  function parseValue(v) {
+  function parseValue(v: any) {
     if (!v || !Array.isArray(v)) return;
     low = clamp(v[0] ?? pMin);
     high = clamp(v[1] ?? pMax);
     if (low > high) { const t = low; low = high; high = t; }
   }
 
-  function clamp(v) {
+  function clamp(v: any) {
     return Math.min(pMax, Math.max(pMin, Math.round(v / step) * step));
   }
 
-  function pct(v) {
+  function pct(v: any) {
     return ((v - pMin) / (pMax - pMin)) * 100;
   }
 
@@ -104,7 +104,7 @@ export const RangeSlider = component<RangeSliderProps>((props: RangeSliderProps 
     if (onchange) onchange([low, high]);
   }
 
-  function valueFromX(clientX) {
+  function valueFromX(clientX: any) {
     const rect = container.getBoundingClientRect();
     const ratio = (clientX - rect.left) / rect.width;
     return clamp(pMin + ratio * (pMax - pMin));
@@ -146,7 +146,7 @@ export const RangeSlider = component<RangeSliderProps>((props: RangeSliderProps 
   });
 
   // Keyboard
-  function handleKey(e, isLow) {
+  function handleKey(e: any, isLow: any) {
     let delta = 0;
     if (e.key === 'ArrowRight' || e.key === 'ArrowUp') delta = step;
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') delta = -step;

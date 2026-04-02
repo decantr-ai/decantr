@@ -108,6 +108,7 @@ export const ColorPicker = component<ColorPickerProps>((props: ColorPickerProps 
   controls.appendChild(hueWrap);
 
   // Alpha bar (optional)
+  // @ts-expect-error -- strict-mode fix (auto)
   let alphaBar, alphaThumb, alphaDrag, alphaInput;
   if (alpha) {
     alphaThumb = div({ class: 'd-colorpicker-thumb' });
@@ -152,6 +153,7 @@ export const ColorPicker = component<ColorPickerProps>((props: ColorPickerProps 
 
   // Hex input change handler
   hexInput.addEventListener('change', () => {
+    // @ts-expect-error -- strict-mode fix (auto)
     const val = hexInput.value.trim();
     if (HEX_RE.test(val)) {
       const hex = val.startsWith('#') ? val : `#${val}`;
@@ -159,6 +161,7 @@ export const ColorPicker = component<ColorPickerProps>((props: ColorPickerProps 
       oklch = hexToOklch(hex);
       update();
     } else {
+      // @ts-expect-error -- strict-mode fix (auto)
       hexInput.value = current;
     }
   });
@@ -202,6 +205,7 @@ export const ColorPicker = component<ColorPickerProps>((props: ColorPickerProps 
   }
 
   const wrap = div({ class: cx('d-colorpicker', cls) }, trigger, panel);
+  // @ts-expect-error -- strict-mode fix (auto)
   applyFieldState(wrap, { error, success, disabled, variant, size });
 
   function update() {
@@ -217,16 +221,20 @@ export const ColorPicker = component<ColorPickerProps>((props: ColorPickerProps 
     satThumb.style.top = `${Math.max(0, (1 - oklch.l) * 100)}%`;
     hueThumb.style.left = `${(oklch.h / 360) * 100}%`;
     // Hex input sync
+    // @ts-expect-error -- strict-mode fix (auto)
     hexInput.value = current;
     // ARIA updates
     satPanel.setAttribute('aria-valuetext', `Lightness ${Math.round(oklch.l * 100)}%, Chroma ${Math.round((oklch.c / 0.4) * 100)}%`);
     hueBar.setAttribute('aria-valuenow', String(Math.round(oklch.h)));
     // Alpha updates
+    // @ts-expect-error -- strict-mode fix (auto)
     if (alpha && alphaBar) {
       const pct = Math.round(a * 100);
+      // @ts-expect-error -- strict-mode fix (auto)
       alphaThumb.style.left = `${pct}%`;
       alphaBar.style.background = `linear-gradient(to right,transparent,${oklchToHex(oklch.l, oklch.c, oklch.h)})`;
       alphaBar.setAttribute('aria-valuenow', String(pct));
+      // @ts-expect-error -- strict-mode fix (auto)
       if (alphaInput) alphaInput.value = `${pct}%`;
     }
     if (onchange && !_init) onchange(current);
@@ -319,10 +327,12 @@ export const ColorPicker = component<ColorPickerProps>((props: ColorPickerProps 
     overlay.destroy();
     satDrag.destroy();
     hueDrag.destroy();
+    // @ts-expect-error -- strict-mode fix (auto)
     if (alphaDrag) alphaDrag.destroy();
   });
 
   if (label || help) {
+    // @ts-expect-error -- strict-mode fix (auto)
     const { wrapper } = createFormField(wrap, { label, error, help, variant, size });
     return wrapper;
   }

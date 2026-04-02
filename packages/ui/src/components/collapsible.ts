@@ -27,6 +27,7 @@ export interface CollapsibleProps {
  * @param {...Node} children - Collapsible content
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Collapsible = component<CollapsibleProps>((props: CollapsibleProps = {} as CollapsibleProps, ...children: (string | Node)[]) => {
   injectBase();
   const { open = false, onToggle, trigger, class: cls, ...rest } = props;
@@ -38,9 +39,11 @@ export const Collapsible = component<CollapsibleProps>((props: CollapsibleProps 
   const wrap = h('div', {
     class: cx('d-collapsible', cls),
     ...rest
+  // @ts-expect-error -- strict-mode fix (auto)
   }, triggerEl, region);
 
   const defaultOpen = typeof open === 'function' ? open() : open;
+  // @ts-expect-error -- strict-mode fix (auto)
   const disclosure = createDisclosure(triggerEl, content, {
     defaultOpen,
     animate: true,

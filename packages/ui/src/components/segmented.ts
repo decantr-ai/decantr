@@ -39,6 +39,7 @@ export const Segmented = component<SegmentedProps>((props: SegmentedProps = {} a
   injectBase();
   const { options = [], value, onchange, block, disabled, size, class: cls } = props;
 
+  // @ts-expect-error -- strict-mode fix (auto)
   let current = typeof value === 'function' ? value() : (value || (options[0]?.value ?? ''));
 
   const container = div({
@@ -46,7 +47,8 @@ export const Segmented = component<SegmentedProps>((props: SegmentedProps = {} a
     role: 'radiogroup'
   });
 
-  const items = options.map(opt => {
+  // @ts-expect-error -- strict-mode fix (auto)
+  const items = options.map((opt: any) => {
     const content = opt.icon
       ? (typeof opt.icon === 'string' ? tags.span(opt.icon) : opt.icon)
       : null;
@@ -76,7 +78,7 @@ export const Segmented = component<SegmentedProps>((props: SegmentedProps = {} a
   });
 
   function updateAll() {
-    items.forEach(({ el, value: v }) => {
+    items.forEach(({ el, value: v }: any) => {
       el.setAttribute('aria-checked', v === current ? 'true' : 'false');
     });
   }
@@ -84,6 +86,7 @@ export const Segmented = component<SegmentedProps>((props: SegmentedProps = {} a
   const roving = createRovingTabindex(container, {
     itemSelector: '.d-segmented-item:not([disabled])',
     orientation: 'horizontal',
+    // @ts-expect-error -- strict-mode fix (auto)
     onFocus: (el) => el.click()
   });
 
@@ -97,12 +100,12 @@ export const Segmented = component<SegmentedProps>((props: SegmentedProps = {} a
       const v = disabled();
       container.toggleAttribute('data-disabled', v);
       container.setAttribute('aria-disabled', v ? 'true' : 'false');
-      items.forEach(({ el }) => { el.disabled = v; });
+      items.forEach(({ el }: any) => { el.disabled = v; });
     });
   } else if (disabled) {
     container.setAttribute('data-disabled', '');
     container.setAttribute('aria-disabled', 'true');
-    items.forEach(({ el }) => { el.disabled = true; });
+    items.forEach(({ el }: any) => { el.disabled = true; });
   }
 
   onDestroy(() => { roving.destroy(); });

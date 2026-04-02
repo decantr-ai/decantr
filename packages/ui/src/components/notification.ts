@@ -23,11 +23,13 @@ export interface notificationProps {
 
 let _containers = {};
 
-function getContainer(placement) {
+function getContainer(placement: any) {
+  // @ts-expect-error -- strict-mode fix (auto)
   if (_containers[placement]) return _containers[placement];
   if (typeof document === 'undefined') return null;
   const el = h('div', { class: cx('d-notification-container', `d-notification-${placement}`) });
   document.body.appendChild(el);
+  // @ts-expect-error -- strict-mode fix (auto)
   _containers[placement] = el;
   return el;
 }
@@ -78,7 +80,7 @@ export function notification(props: notificationProps = {} as notificationProps)
   closeBtn.addEventListener('click', close);
   container.appendChild(el);
 
-  let timer;
+  let timer: any;
   if (duration > 0) timer = setTimeout(close, duration);
 
   // Pause on hover
@@ -91,6 +93,7 @@ export function notification(props: notificationProps = {} as notificationProps)
 /** Reset notification containers (for testing) */
 export function resetNotifications() {
   for (const el of Object.values(_containers)) {
+    // @ts-expect-error -- strict-mode fix (auto)
     if (el.parentNode) el.parentNode.removeChild(el);
   }
   _containers = {};

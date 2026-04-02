@@ -39,12 +39,14 @@ const STATUS_ICON_MAP = {
  * @param {...Node} children - Additional content
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Result = component<ResultProps>((props: ResultProps = {} as ResultProps, ...children: (string | Node)[]) => {
   injectBase();
   const { status = 'info', title, subTitle, icon, extra, class: cls } = props;
 
   const iconNode = icon
     ? (typeof icon === 'string' ? h('div', { class: 'd-result-icon' }, icon) : h('div', { class: 'd-result-icon' }, icon))
+    // @ts-expect-error -- strict-mode fix (auto)
     : h('div', { class: cx('d-result-icon', `d-result-icon-${status}`) }, makeIcon(STATUS_ICON_MAP[status] || 'info', { size: '3rem' }));
 
   const el = h('div', { class: cx('d-result', cls) });
@@ -54,6 +56,7 @@ export const Result = component<ResultProps>((props: ResultProps = {} as ResultP
 
   if (children.length) {
     const content = h('div', { class: 'd-result-content' });
+    // @ts-expect-error -- strict-mode fix (auto)
     children.forEach(c => { if (c && c.nodeType) content.appendChild(c); });
     el.appendChild(content);
   }

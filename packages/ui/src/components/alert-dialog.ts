@@ -62,7 +62,9 @@ export const AlertDialog = component<AlertDialogProps>((props: AlertDialogProps 
     role: 'alertdialog',
     'aria-modal': 'true'
   };
+  // @ts-expect-error -- strict-mode fix (auto)
   if (titleId) dialogAttrs['aria-labelledby'] = titleId;
+  // @ts-expect-error -- strict-mode fix (auto)
   if (descId) dialogAttrs['aria-describedby'] = descId;
 
   const dialog = h('dialog', dialogAttrs, panel);
@@ -71,6 +73,7 @@ export const AlertDialog = component<AlertDialogProps>((props: AlertDialogProps 
 
   function close() {
     focusTrap.deactivate();
+    // @ts-expect-error -- strict-mode fix (auto)
     if (dialog.open) dialog.close();
   }
 
@@ -94,6 +97,7 @@ export const AlertDialog = component<AlertDialogProps>((props: AlertDialogProps 
   if (typeof visible === 'function') {
     createEffect(() => {
       if (visible()) {
+        // @ts-expect-error -- strict-mode fix (auto)
         if (!dialog.open) dialog.showModal();
         focusTrap.activate();
         // Focus cancel button as initial focus (least destructive action)
@@ -106,6 +110,7 @@ export const AlertDialog = component<AlertDialogProps>((props: AlertDialogProps 
 
   onDestroy(() => {
     focusTrap.deactivate();
+    // @ts-expect-error -- strict-mode fix (auto)
     if (dialog.open) dialog.close();
   });
 

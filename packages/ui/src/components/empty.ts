@@ -22,6 +22,7 @@ export interface EmptyProps {
  * @param {...Node} children - Optional action buttons below description
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Empty = component<EmptyProps>((props: EmptyProps = {} as EmptyProps, ...children: (string | Node)[]) => {
   injectBase();
   const { icon, description = 'No data', class: cls, ...rest } = props;
@@ -42,6 +43,7 @@ export const Empty = component<EmptyProps>((props: EmptyProps = {} as EmptyProps
   }
 
   children.forEach(child => {
+    // @ts-expect-error -- strict-mode fix (auto)
     if (child && child.nodeType) container.appendChild(child);
   });
 

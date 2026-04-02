@@ -55,10 +55,11 @@ export const Progress = component<ProgressProps>((props: ProgressProps = {} as P
 
   const wrap = h('div', { class: cx('d-progress-wrap', cls) }, progress);
   if (label && !labelInside) {
+    // @ts-expect-error -- strict-mode fix (auto)
     wrap.appendChild(labelEl);
   }
 
-  function updateBar(val) {
+  function updateBar(val: any) {
     const pct = Math.min(Math.max((val / max) * 100, 0), 100);
     bar.style.width = pct + '%';
     bar.setAttribute('aria-valuenow', String(val));

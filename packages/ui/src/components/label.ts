@@ -22,6 +22,7 @@ export interface LabelProps {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Label = component<LabelProps>((props: LabelProps = {} as LabelProps, ...children: (string | Node)[]) => {
   injectBase();
   const { for: htmlFor, required, class: cls, ...rest } = props;

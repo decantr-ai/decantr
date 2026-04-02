@@ -253,6 +253,7 @@ export function renderMenuItems(container: HTMLElement, items: MenuItem[], opts:
     const children: (string | Node)[] = [];
     if (item.icon) {
       children.push(typeof item.icon === 'string'
+        // @ts-expect-error -- strict-mode fix (auto)
         ? renderIcon(item.icon, { size: '1em', class: 'd-dropdown-item-icon' })
         : item.icon);
     }

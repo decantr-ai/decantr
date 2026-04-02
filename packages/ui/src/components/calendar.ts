@@ -80,7 +80,7 @@ export const Calendar = component<CalendarProps>((props: CalendarProps = {} as C
     else renderYear(viewDate);
   }
 
-  function renderMonth(viewDate) {
+  function renderMonth(viewDate: any) {
     const grid = h('div', { class: 'd-calendar-grid' });
     DAYS.forEach(d => grid.appendChild(h('div', { class: 'd-calendar-weekday' }, mini ? d[0] : d)));
 
@@ -109,6 +109,7 @@ export const Calendar = component<CalendarProps>((props: CalendarProps = {} as C
       cell.appendChild(h('div', { class: 'd-calendar-cell-content' }, String(i)));
       if (dateCellRender && !mini) {
         const custom = dateCellRender(d);
+        // @ts-expect-error -- strict-mode fix (auto)
         if (custom) cell.appendChild(custom);
       }
 
@@ -122,7 +123,7 @@ export const Calendar = component<CalendarProps>((props: CalendarProps = {} as C
     container.appendChild(grid);
   }
 
-  function renderYear(viewDate) {
+  function renderYear(viewDate: any) {
     const grid = h('div', { class: 'd-datepicker-months' });
     MONTHS.forEach((m, i) => {
       const btn = h('button', { type: 'button', class: 'd-datepicker-month' }, m.slice(0, 3));

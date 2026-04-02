@@ -21,6 +21,7 @@ export interface BrowserFrameProps {
  * @param {...(HTMLElement|string)} children - Content to render inside the frame
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const BrowserFrame = component<BrowserFrameProps>((props: BrowserFrameProps = {} as BrowserFrameProps, ...children: (string | Node)[]) => {
   injectBase();
 

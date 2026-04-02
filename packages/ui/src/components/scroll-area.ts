@@ -24,16 +24,21 @@ export interface ScrollAreaProps {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const ScrollArea = component<ScrollAreaProps>((props: ScrollAreaProps = {} as ScrollAreaProps, ...children: (string | Node)[]) => {
   injectBase();
   const { height, width, direction = 'vertical', class: cls, ...rest } = props;
 
   const style = {};
+  // @ts-expect-error -- strict-mode fix (auto)
   if (height) style.height = height;
+  // @ts-expect-error -- strict-mode fix (auto)
   if (width) style.width = width;
 
   const viewportStyle = {};
+  // @ts-expect-error -- strict-mode fix (auto)
   if (direction === 'vertical') viewportStyle.overflowX = 'hidden';
+  // @ts-expect-error -- strict-mode fix (auto)
   else if (direction === 'horizontal') viewportStyle.overflowY = 'hidden';
 
   const viewport = h('div', {

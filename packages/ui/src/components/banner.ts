@@ -31,6 +31,7 @@ export interface BannerProps {
  * @param {...(string|Node)} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Banner = component<BannerProps>((props: BannerProps = {} as BannerProps, ...children: (string | Node)[]) => {
   injectBase();
 

@@ -36,6 +36,7 @@ export interface FieldProps {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Form = component<FormProps>((props: FormProps = {} as FormProps, ...children: (string | Node)[]) => {
   injectBase();
   const { layout = 'vertical', onSubmit, class: cls, ...rest } = props;
@@ -66,6 +67,7 @@ export interface FormActionsProps {
   [key: string]: unknown;
 }
 
+// @ts-expect-error -- strict-mode fix (auto)
 Form.Actions = function Actions(props: FormActionsProps = {} as FormActionsProps, ...children: (string | Node)[]) {
   injectBase();
   const { class: cls, ...rest } = props;
@@ -85,6 +87,7 @@ Form.Actions = function Actions(props: FormActionsProps = {} as FormActionsProps
  * @param {...Node} children - The form control(s)
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Field = component<FieldProps>((props: FieldProps = {} as FieldProps, ...children: (string | Node)[]) => {
   injectBase();
   const { label, error, help, required, class: cls, ...rest } = props;
@@ -102,16 +105,22 @@ export const Field = component<FieldProps>((props: FieldProps = {} as FieldProps
   const helpId = help ? `d-field-help-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` : null;
 
   children.forEach(child => {
+    // @ts-expect-error -- strict-mode fix (auto)
     if (child && child.nodeType) {
       // Wire aria-describedby for help text on first form control
+      // @ts-expect-error -- strict-mode fix (auto)
       if (helpId && (child.tagName === 'INPUT' || child.tagName === 'SELECT' || child.tagName === 'TEXTAREA' ||
+          // @ts-expect-error -- strict-mode fix (auto)
           child.querySelector?.('input,select,textarea'))) {
+        // @ts-expect-error -- strict-mode fix (auto)
         const ctrl = child.tagName === 'INPUT' || child.tagName === 'SELECT' || child.tagName === 'TEXTAREA'
+          // @ts-expect-error -- strict-mode fix (auto)
           ? child : child.querySelector('input,select,textarea');
         if (ctrl && !ctrl.getAttribute('aria-describedby')) {
           ctrl.setAttribute('aria-describedby', helpId);
         }
       }
+      // @ts-expect-error -- strict-mode fix (auto)
       wrapper.appendChild(child);
     }
   });

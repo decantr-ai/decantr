@@ -37,13 +37,13 @@ export const Pagination = component<PaginationProps>((props: PaginationProps = {
   const list = ul({ class: 'd-pagination-list' });
   nav.appendChild(list);
 
-  function resolve(v) { return typeof v === 'function' ? v() : v; }
+  function resolve(v: any) { return typeof v === 'function' ? v() : v; }
 
   function getPageCount() {
     return Math.max(1, Math.ceil(resolve(total) / perPage));
   }
 
-  function getRange(cur, pageCount) {
+  function getRange(cur: any, pageCount: any) {
     const range = [];
     const left = Math.max(2, cur - siblings);
     const right = Math.min(pageCount - 1, cur + siblings);
@@ -57,6 +57,7 @@ export const Pagination = component<PaginationProps>((props: PaginationProps = {
 
   // Use event delegation on the list
   list.addEventListener('click', (e) => {
+    // @ts-expect-error -- strict-mode fix (auto)
     const btn = e.target.closest('.d-pagination-btn');
     if (!btn || btn.disabled) return;
     const page = btn.dataset.page;

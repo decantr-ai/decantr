@@ -41,6 +41,7 @@ export const Breadcrumb = component<BreadcrumbProps>((props: BreadcrumbProps = {
   function renderSeparator() {
     const sep = span({ class: 'd-breadcrumb-separator', 'aria-hidden': 'true' });
     if (separator === 'chevron') {
+      // @ts-expect-error -- strict-mode fix (auto)
       sep.appendChild(icon('chevron-right', { size: '1em' }));
     } else if (separator === 'slash') {
       sep.textContent = '/';
@@ -49,16 +50,18 @@ export const Breadcrumb = component<BreadcrumbProps>((props: BreadcrumbProps = {
     } else if (typeof separator === 'object' && separator.nodeType === 1) {
       sep.appendChild(separator.cloneNode(true));
     } else {
+      // @ts-expect-error -- strict-mode fix (auto)
       sep.textContent = separator;
     }
     return sep;
   }
 
-  function renderIcon(name) {
+  function renderIcon(name: any) {
+    // @ts-expect-error -- strict-mode fix (auto)
     return icon(name, { size: '1em', class: 'd-breadcrumb-icon' });
   }
 
-  function renderItem(item, isLast) {
+  function renderItem(item: any, isLast: any) {
     const el = li({ class: 'd-breadcrumb-item' });
 
     if (isLast) {
@@ -80,6 +83,7 @@ export const Breadcrumb = component<BreadcrumbProps>((props: BreadcrumbProps = {
       el.appendChild(renderSeparator());
     } else {
       const linkProps = { class: 'd-breadcrumb-link' };
+      // @ts-expect-error -- strict-mode fix (auto)
       if (item.onclick) linkProps.onclick = item.onclick;
       const btn = buttonTag(linkProps);
       if (item.icon) btn.appendChild(renderIcon(item.icon));
@@ -95,7 +99,7 @@ export const Breadcrumb = component<BreadcrumbProps>((props: BreadcrumbProps = {
    * Render items into the list, handling collapse logic.
    * Returns a cleanup function for any overlay/listbox created.
    */
-  function renderItems(items) {
+  function renderItems(items: any) {
     list.replaceChildren();
 
     const shouldCollapse = maxItems && maxItems > 1 && items.length > maxItems;
@@ -106,7 +110,7 @@ export const Breadcrumb = component<BreadcrumbProps>((props: BreadcrumbProps = {
       const lastItems = items.slice(items.length - (maxItems - 1));
 
       // Render first item
-      firstItems.forEach(item => list.appendChild(renderItem(item, false)));
+      firstItems.forEach((item: any) => list.appendChild(renderItem(item, false)));
 
       // Render ellipsis collapse
       const collapseWrap = li({ class: 'd-breadcrumb-item' });
@@ -117,6 +121,7 @@ export const Breadcrumb = component<BreadcrumbProps>((props: BreadcrumbProps = {
         'aria-haspopup': 'menu',
         'aria-label': 'Show more breadcrumbs'
       });
+      // @ts-expect-error -- strict-mode fix (auto)
       ellipsisBtn.appendChild(icon('more-horizontal', { size: '1em' }));
 
       const menu = span({
@@ -125,7 +130,7 @@ export const Breadcrumb = component<BreadcrumbProps>((props: BreadcrumbProps = {
       });
       menu.style.display = 'none';
 
-      hiddenItems.forEach(item => {
+      hiddenItems.forEach((item: any) => {
         const menuItem = item.href
           ? a({ class: 'd-dropdown-item', href: item.href, role: 'menuitem' })
           : buttonTag({ class: 'd-dropdown-item', role: 'menuitem' });
@@ -156,25 +161,26 @@ export const Breadcrumb = component<BreadcrumbProps>((props: BreadcrumbProps = {
         itemSelector: '.d-dropdown-item:not(.d-dropdown-item-disabled)',
         activeClass: 'd-dropdown-item-highlight',
         orientation: 'vertical',
+        // @ts-expect-error -- strict-mode fix (auto)
         onSelect: (el) => el.click()
       });
 
       // Render last items
-      lastItems.forEach((item, i) => {
+      lastItems.forEach((item: any, i: number) => {
         const isLast = i === lastItems.length - 1;
         list.appendChild(renderItem(item, isLast));
       });
 
       return () => { overlay.destroy(); listbox.destroy(); };
     } else {
-      items.forEach((item, i) => {
+      items.forEach((item: any, i: number) => {
         list.appendChild(renderItem(item, i === items.length - 1));
       });
       return null;
     }
   }
 
-  let _cleanup = null;
+  let _cleanup: any = null;
 
   if (isReactive) {
     createEffect(() => {

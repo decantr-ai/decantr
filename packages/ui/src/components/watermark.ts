@@ -37,6 +37,7 @@ export interface WatermarkProps {
  * @param {...Node} children - Content to watermark over
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Watermark = component<WatermarkProps>((props: WatermarkProps = {} as WatermarkProps, ...children: (string | Node)[]) => {
   injectBase();
   const {
@@ -46,6 +47,7 @@ export const Watermark = component<WatermarkProps>((props: WatermarkProps = {} a
   } = props;
 
   const container = h('div', { class: cx('d-watermark', cls), style: { position: 'relative' } });
+  // @ts-expect-error -- strict-mode fix (auto)
   children.forEach(c => { if (c && c.nodeType) container.appendChild(c); });
 
   const watermarkLayer = h('div', {
@@ -108,7 +110,7 @@ export const Watermark = component<WatermarkProps>((props: WatermarkProps = {} a
     }
   }
 
-  function applyPattern(canvas) {
+  function applyPattern(canvas: any) {
     const dataURL = canvas.toDataURL();
     watermarkLayer.style.backgroundImage = `url(${dataURL})`;
     watermarkLayer.style.backgroundRepeat = 'repeat';

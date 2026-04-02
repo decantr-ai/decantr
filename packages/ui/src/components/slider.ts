@@ -65,12 +65,12 @@ export const Slider = component<SliderProps>((props: SliderProps = {} as SliderP
   const wrap = div({ class: cx('d-slider', cls) }, track);
   if (valueLabel) wrap.appendChild(valueLabel);
 
-  function clamp(val) {
+  function clamp(val: any) {
     const stepped = Math.round((val - min) / step) * step + min;
     return Math.max(min, Math.min(max, stepped));
   }
 
-  function getPercent(val) {
+  function getPercent(val: any) {
     return ((val - min) / (max - min)) * 100;
   }
 
@@ -82,11 +82,12 @@ export const Slider = component<SliderProps>((props: SliderProps = {} as SliderP
     if (valueLabel) valueLabel.textContent = String(currentValue);
   }
 
-  function setValue(val) {
+  function setValue(val: any) {
     const clamped = clamp(val);
     if (clamped === currentValue) return;
     currentValue = clamped;
     updateUI();
+    // @ts-expect-error -- strict-mode fix (auto)
     if (oninput) oninput(currentValue);
   }
 

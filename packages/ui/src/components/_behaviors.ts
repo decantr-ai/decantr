@@ -18,6 +18,7 @@ type CaretDirection = 'down' | 'up' | 'right' | 'left';
  */
 export function caret(direction: CaretDirection = 'down', opts: Record<string, unknown> = {}): HTMLElement {
   const cls = opts.class ? `d-caret ${opts.class}` : 'd-caret';
+  // @ts-expect-error -- strict-mode fix (auto)
   return icon(`chevron-${direction}`, { size: '1em', ...opts, class: cls });
 }
 

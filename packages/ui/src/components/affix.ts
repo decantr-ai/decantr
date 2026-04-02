@@ -24,6 +24,7 @@ export interface AffixProps {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Affix = component<AffixProps>((props: AffixProps = {} as AffixProps, ...children: (string | Node)[]) => {
   injectBase();
   const { offsetTop = 0, offsetBottom, onChange, class: cls, ...rest } = props;

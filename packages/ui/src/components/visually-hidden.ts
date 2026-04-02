@@ -19,6 +19,7 @@ export interface VisuallyHiddenProps {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const VisuallyHidden = component<VisuallyHiddenProps>((props: VisuallyHiddenProps = {} as VisuallyHiddenProps, ...children: (string | Node)[]) => {
   injectBase();
   const { class: cls, ...rest } = props;

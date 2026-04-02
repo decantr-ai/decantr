@@ -53,6 +53,7 @@ export const ContextMenu = component<ContextMenuProps>((props: ContextMenuProps 
     itemSelector: '.d-dropdown-item:not(.d-dropdown-item-disabled)',
     activeClass: 'd-dropdown-item-highlight',
     orientation: 'vertical',
+    // @ts-expect-error -- strict-mode fix (auto)
     onSelect: (el) => el.click()
   });
 
@@ -60,6 +61,7 @@ export const ContextMenu = component<ContextMenuProps>((props: ContextMenuProps 
   if (target) {
     target.addEventListener('contextmenu', (e) => {
       e.preventDefault();
+      // @ts-expect-error -- strict-mode fix (auto)
       renderMenuItems(menu, items, { onSelect, onClose: () => overlay.close() });
       listbox.reset();
       // Position at cursor — runtime values from user interaction

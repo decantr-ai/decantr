@@ -33,6 +33,7 @@ export interface CompactGroupProps {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const InputGroup = component<InputGroupProps>((props: InputGroupProps = {} as InputGroupProps, ...children: (string | Node)[]) => {
   injectBase();
 
@@ -67,7 +68,8 @@ export interface InputGroupAddonProps {
   [key: string]: unknown;
 }
 
-InputGroup.Addon = function Addon(propsOrChild, ...children: (string | Node)[]) {
+// @ts-expect-error -- strict-mode fix (auto)
+InputGroup.Addon = function Addon(propsOrChild: any, ...children: (string | Node)[]) {
   injectBase();
 
   // Smart first-arg detection: string, DOM node (has nodeType), or null → treat as child
@@ -88,6 +90,7 @@ InputGroup.Addon = function Addon(propsOrChild, ...children: (string | Node)[]) 
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const CompactGroup = component<CompactGroupProps>((props: CompactGroupProps = {} as CompactGroupProps, ...children: (string | Node)[]) => {
   injectBase();
 

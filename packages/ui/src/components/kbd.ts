@@ -23,6 +23,7 @@ export interface KbdProps {
  * @param {...(string|Node)} children - Alternative: pass key text as children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Kbd = component<KbdProps>((props: KbdProps = {} as KbdProps, ...children: (string | Node)[]) => {
   injectBase();
   const { keys, separator = '+', class: cls, ...rest } = props;

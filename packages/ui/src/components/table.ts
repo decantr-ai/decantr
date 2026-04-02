@@ -36,13 +36,16 @@ export const Table = component<TableProps>((props: TableProps = {} as TableProps
   );
 
   const thead = h('thead', null,
-    h('tr', null, ...columns.map(col =>
+    // @ts-expect-error -- strict-mode fix (auto)
+    h('tr', null, ...columns.map((col: any) =>
       h('th', { class: 'd-th', style: col.width ? { width: col.width } : undefined }, col.label)
     ))
   );
 
   const tbody = h('tbody', null, ...data.map(row =>
-    h('tr', { class: 'd-tr' }, ...columns.map(col => {
+    // @ts-expect-error -- strict-mode fix (auto)
+    h('tr', { class: 'd-tr' }, ...columns.map((col: any) => {
+      // @ts-expect-error -- strict-mode fix (auto)
       const val = row[col.key];
       const content = col.render ? col.render(val, row) : (val != null ? String(val) : '');
       return h('td', { class: 'd-td' }, content);

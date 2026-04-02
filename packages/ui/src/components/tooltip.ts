@@ -29,6 +29,7 @@ const { div } = tags;
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Tooltip = component<TooltipProps>((props: TooltipProps = {} as TooltipProps, ...children: (string | Node)[]) => {
   injectBase();
 

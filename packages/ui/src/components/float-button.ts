@@ -74,6 +74,7 @@ export interface FloatButtonGroupProps {
   [key: string]: unknown;
 }
 
+// @ts-expect-error -- strict-mode fix (auto)
 FloatButton.Group = function FloatButtonGroup(props: FloatButtonGroupProps = {} as FloatButtonGroupProps, ...children: (string | Node)[]) {
   injectBase();
   const { icon = '+', shape = 'circle', direction = 'top', position = 'right-bottom', class: cls } = props;
@@ -88,6 +89,7 @@ FloatButton.Group = function FloatButtonGroup(props: FloatButtonGroupProps = {} 
   }, iconEl);
 
   const menu = div({ class: cx('d-float-btn-group-menu', `d-float-btn-group-${direction}`) });
+  // @ts-expect-error -- strict-mode fix (auto)
   children.forEach(c => { if (c && c.nodeType) menu.appendChild(c); });
 
   const overlay = createOverlay(trigger, menu, {

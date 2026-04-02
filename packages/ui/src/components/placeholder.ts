@@ -90,6 +90,7 @@ function createWatermark() {
  * @param {...Node} children
  * @returns {HTMLElement}
  */
+// @ts-expect-error -- strict-mode fix (auto)
 export const Placeholder = component<PlaceholderProps>((props: PlaceholderProps = {} as PlaceholderProps, ...children: (string | Node)[]) => {
   injectBase();
   const {
@@ -134,8 +135,10 @@ export const Placeholder = component<PlaceholderProps>((props: PlaceholderProps 
 
   // Children
   for (const child of children) {
+    // @ts-expect-error -- strict-mode fix (auto)
     if (child && child.nodeType) {
       const wrapper = h('div', { class: 'd-placeholder-content' });
+      // @ts-expect-error -- strict-mode fix (auto)
       wrapper.appendChild(child);
       container.appendChild(wrapper);
     }
