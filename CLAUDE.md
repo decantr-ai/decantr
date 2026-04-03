@@ -26,7 +26,7 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 | App | Path | Description |
 |-----|------|-------------|
 | `decantr-api` | `apps/api/` | Registry API (Hono + Supabase + Stripe) |
-| `decantr-web` | `apps/web/` | Registry web app (Next.js + Supabase) |
+| `decantr-registry` | `apps/registry/` | Registry web app (Next.js + Supabase) |
 | `decantr-workbench` | `apps/workbench/` | Component dev workbench (Decantr-native SPA) |
 
 ## Terminology
