@@ -1163,6 +1163,81 @@
       margin-bottom: 12px;
       color: var(--fg);
     }
+    .tier-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .tier-flow-node {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--accent, rgba(255,255,255,0.1));
+      border-radius: 12px;
+      padding: 14px 16px;
+      flex: 1;
+      min-width: 140px;
+      text-align: center;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    .tier-flow-node:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+    .tier-flow-icon {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+    }
+    .tier-flow-label {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent, var(--fg));
+      margin-bottom: 4px;
+    }
+    .tier-flow-detail {
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .tier-flow-arrow {
+      color: var(--muted);
+      font-size: 1.2rem;
+      padding: 0 8px;
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+    .tier-flow-result {
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed var(--accent, var(--green));
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-width: 100px;
+      text-align: center;
+    }
+    .tier-flow-result .tier-flow-icon { font-size: 1.8rem; }
+    .tier-flow-result .tier-flow-label {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent, var(--green));
+    }
+
+    @media (max-width: 768px) {
+      .tier-flow {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .tier-flow-arrow {
+        transform: rotate(90deg);
+        padding: 4px 0;
+      }
+      .tier-flow-node, .tier-flow-result {
+        width: 100%;
+      }
+    }
+
     .showcase-code {
       background: var(--code-bg);
       border: 1px solid rgba(255,255,255,0.08);
@@ -1698,7 +1773,30 @@ Start with the shell layouts, then build each section's pages.</div>
         <div class="showcase-step-num showcase-step-num-3">3</div>
         <div class="showcase-step-body">
           <h3>What the AI receives</h3>
-          <p style="color:var(--muted); margin-top:0.5rem; font-size:0.95rem; line-height:1.6;">Three tiers of self-contained context files — design rules, app topology, and per-section specs with shell layouts, decorator definitions, composition algebra, motion specs, and more. The AI knows exactly what to build and how it should look.</p>
+          <div class="tier-flow">
+            <div class="tier-flow-node" style="--accent:var(--pink)">
+              <div class="tier-flow-icon">📐</div>
+              <div class="tier-flow-label">DECANTR.md</div>
+              <div class="tier-flow-detail">Guard rules · CSS atoms · Layout rules · Motion philosophy · Interactivity</div>
+            </div>
+            <div class="tier-flow-arrow">→</div>
+            <div class="tier-flow-node" style="--accent:var(--cyan)">
+              <div class="tier-flow-icon">🗺</div>
+              <div class="tier-flow-label">scaffold.md</div>
+              <div class="tier-flow-detail">Topology · Routes · Voice & copy · Shared components · Dev mode</div>
+            </div>
+            <div class="tier-flow-arrow">→</div>
+            <div class="tier-flow-node" style="--accent:var(--amber)">
+              <div class="tier-flow-icon">⚡</div>
+              <div class="tier-flow-label">section-*.md</div>
+              <div class="tier-flow-detail">Shell layout · Decorators · Tokens · Composition · Motion · Responsive</div>
+            </div>
+            <div class="tier-flow-arrow">→</div>
+            <div class="tier-flow-result" style="--accent:var(--green)">
+              <div class="tier-flow-icon">✨</div>
+              <div class="tier-flow-label">Production UI</div>
+            </div>
+          </div>
         </div>
       </div>
 
