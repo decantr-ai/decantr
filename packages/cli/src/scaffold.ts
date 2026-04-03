@@ -2599,6 +2599,9 @@ export async function refreshDerivedFiles(
               regions: (inner.config?.regions as string[]) || [],
               layout: (inner.layout as string) || undefined,
               guidance: (inner.guidance as Record<string, string>) || undefined,
+              atoms: (inner.atoms as string) || undefined,
+              config: inner.config || undefined,
+              internal_layout: inner.internal_layout || undefined,
             };
           }
         } catch { /* continue without shell info */ }
@@ -2657,6 +2660,7 @@ export async function refreshDerivedFiles(
         shellInfo: shellInfoCache[section.shell as string],
         themeData,
         themeMode: mode,
+        voiceTone: storedVoice?.tone ? storedVoice.tone.split('.')[0] + '.' : undefined,
       });
 
       const sectionContextPath = join(contextDir, `section-${section.id}.md`);
@@ -2736,6 +2740,9 @@ export async function refreshDerivedFiles(
           regions: (inner.config?.regions as string[]) || [],
           layout: (inner.layout as string) || undefined,
           guidance: (inner.guidance as Record<string, string>) || undefined,
+          atoms: (inner.atoms as string) || undefined,
+          config: inner.config || undefined,
+          internal_layout: inner.internal_layout || undefined,
         };
       }
     } catch { /* continue without shell info */ }
@@ -2764,6 +2771,7 @@ export async function refreshDerivedFiles(
       shellInfo: v30ShellInfo,
       themeData,
       themeMode: mode,
+      voiceTone: storedVoice?.tone ? storedVoice.tone.split('.')[0] + '.' : undefined,
     });
 
     const sectionContextPath = join(contextDir, `section-${syntheticSection.id}.md`);
@@ -2901,6 +2909,15 @@ export interface ShellInfo {
   regions: string[];
   layout?: string;
   guidance?: Record<string, string>;
+  atoms?: string;
+  config?: {
+    grid?: { areas?: string[][] };
+    nav?: { position?: string; width?: string; collapseTo?: string; collapseBelow?: string; defaultState?: string };
+    header?: { height?: string; sticky?: boolean };
+    body?: { scroll?: boolean; inputAnchored?: boolean };
+    footer?: { height?: string; sticky?: boolean };
+  };
+  internal_layout?: Record<string, any>;
 }
 
 export interface SectionContextInput {
@@ -2917,6 +2934,7 @@ export interface SectionContextInput {
   shellInfo?: ShellInfo;
   themeData?: any;
   themeMode?: string;
+  voiceTone?: string;
 }
 
 export interface ScaffoldContextInput {
