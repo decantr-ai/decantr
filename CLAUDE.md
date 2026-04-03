@@ -102,8 +102,23 @@ Patterns, blueprints, themes, and archetypes now support enriched fields for vis
 | `personality` | Blueprint | Visual personality narrative (min 100 chars) |
 | `responsive_strategy` | Blueprint | Global responsive breakpoint strategy |
 | `decorator_definitions` | Theme | Structured decorator data (intent, properties, usage) |
+| `internal_layout` | Shell | Semantic spatial specs per region (width, height, padding, gap, scroll) |
 | `page_briefs` | Archetype | Per-page visual descriptions |
 | `role` | Archetype | Section role: primary, gateway, public, auxiliary |
+
+## Section Context Enrichments
+
+Section contexts (`.decantr/context/section-*.md`) now include additional blocks generated from shell `internal_layout` data:
+
+- **Quick Start** -- A summary block at the top of each section context with the shell name, primary region, and key spatial dimensions
+- **Shell Implementation** -- Full spatial layout block with region dimensions (width, height, padding, gap), scroll container designation, and responsive behavior
+- **Spacing Guide** -- Computed spacing values table mapping density tokens to pixel values for the section's shell regions
+- **Layout Rules** -- Nesting anti-patterns section in DECANTR.md documenting 5 rules:
+  1. Never nest a scroll container inside another scroll container
+  2. Never place a fixed/sticky element inside an overflow:hidden container
+  3. Never use viewport units (vh/vw) inside a flex/grid child
+  4. Never nest grid layouts more than 2 levels deep
+  5. Never apply padding to a container that also uses gap for the same axis
 
 ## Design Pipeline
 

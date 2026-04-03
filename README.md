@@ -68,22 +68,21 @@ Decantr is a 7-stage design pipeline:
 
 The AI reads a **three-tier context model**:
 
-1. `DECANTR.md` — methodology primer (~170 lines, constant)
+1. `DECANTR.md` — methodology primer with Layout Rules (nesting anti-patterns)
 2. `decantr.essence.json` — source of truth (theme, routes, features)
-3. `.decantr/context/section-*.md` — per-section specs with patterns and layouts
+3. `.decantr/context/section-*.md` — per-section specs with Quick Start summary, Shell Implementation block (full spatial layout), Spacing Guide table, patterns, and layouts
 
 ---
 
 ## Registry
 
-| Content | Count | Examples |
-|---------|-------|---------|
-| Patterns | 97+ | hero, chat-thread, agent-swarm-canvas, pricing-tiers |
-| Archetypes | 52+ | ai-chatbot, saas-dashboard, agent-orchestrator |
-| Blueprints | 17+ | carbon-ai-portal, terminal-dashboard, agent-marketplace |
-| Themes | 17 | carbon, neon-dark, aurora, glassmorphism |
-| Recipes | 11 | glassmorphism, carbon, terminal, clean |
-| Shells | 13 | chat-portal, top-nav-footer, centered |
+| Content | Count | Highlights |
+|---------|-------|-----------|
+| Patterns | 116 | visual_brief, composition algebra, motion specs, responsive strategies, a11y patterns |
+| Archetypes | 60 | page_briefs, role-based topology (primary/gateway/public/auxiliary) |
+| Blueprints | 19 | personality narratives (100+ chars), voice & copy blocks |
+| Themes | 20 | decorator_definitions (structured intent + properties + usage) |
+| Shells | 13 | internal_layout (semantic spatial specs per region with dimensions, scroll, position) |
 
 ---
 

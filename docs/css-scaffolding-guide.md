@@ -857,6 +857,63 @@ When implementing CSS for a Decantr project:
 
 ---
 
+## Shell Spatial Guidance
+
+Shells define `internal_layout` -- semantic spatial specifications for each region of the shell (sidebar, main, header, footer, etc.). These specs flow into section context files and provide the AI with precise layout dimensions.
+
+### How It Works
+
+Shell `internal_layout` provides per-region specs using semantic properties and `@decantr/css` atoms (not framework-specific classes like Tailwind):
+
+```json
+{
+  "internal_layout": {
+    "sidebar": {
+      "width": "280px",
+      "padding": "var(--gap4)",
+      "gap": "var(--gap2)",
+      "scroll": true,
+      "position": "fixed"
+    },
+    "main": {
+      "padding": "var(--gap6)",
+      "gap": "var(--gap4)",
+      "max_width": "1200px",
+      "scroll": true
+    },
+    "header": {
+      "height": "64px",
+      "padding": "0 var(--gap4)",
+      "position": "sticky"
+    }
+  }
+}
+```
+
+### Region Dimensions in Section Contexts
+
+Region dimensions from `internal_layout` flow into section context files as:
+
+- **Shell Implementation block** -- Full spatial layout with region names, dimensions, and scroll behavior
+- **Spacing Guide table** -- Computed values mapping density tokens to pixel values per region
+- **Quick Start summary** -- Shell name + primary region at top of each section context
+
+### Nesting Rules (Layout Anti-Patterns)
+
+These 5 rules are enforced in DECANTR.md Layout Rules and section context anti-patterns blocks:
+
+1. **No nested scroll containers** -- Never nest a scroll container inside another scroll container. Designate ONE scroll region per shell.
+2. **No fixed inside overflow:hidden** -- Never place a fixed/sticky element inside an `overflow: hidden` container. It silently clips.
+3. **No viewport units in flex/grid children** -- Never use `vh`/`vw` inside a flex or grid child. Use `100%` or flex-based sizing instead.
+4. **Max 2 levels of grid nesting** -- Never nest grid layouts more than 2 levels deep. Flatten with named grid areas.
+5. **No padding + gap on same axis** -- Never apply padding to a container that also uses gap for the same axis. Use one or the other.
+
+### Key Principle
+
+Shell data uses **semantic properties** (`width`, `padding`, `gap`, `scroll`) and **`@decantr/css` atoms** (`_flex`, `_gap4`, `_p6`), NOT framework-specific utility classes. This keeps shells framework-agnostic -- the AI translates semantic specs to whatever CSS approach the project uses.
+
+---
+
 ## Further Reading
 
 - [CSS Cascade Layers (MDN)](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer)
