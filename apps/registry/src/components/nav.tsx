@@ -16,7 +16,7 @@ export function Nav({ user }: { user?: NavUser | null }) {
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="text-2xl font-extrabold tracking-tight text-[var(--fg)]">
-            decantr<span className="text-[#FE4474]">.</span>a<span className="text-[#FE4474] relative top-[2px]">i</span>
+            decantr<span className="text-[#FE4474]">.</span>a<span className="text-[#FE4474] relative -top-[1px]">i</span>
           </Link>
           <Link
             href="/"
