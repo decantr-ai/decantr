@@ -12,7 +12,7 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-[var(--fg)] mb-3 text-sm">Product</h4>
             <ul className="space-y-2 text-sm text-[var(--fg-muted)]">
-              <li><Link href="/registry" className="hover:text-[var(--fg)]">Registry</Link></li>
+              <li><Link href="/" className="hover:text-[var(--fg)]">Registry</Link></li>
               <li><Link href="/#pricing" className="hover:text-[var(--fg)]">Pricing</Link></li>
             </ul>
           </div>

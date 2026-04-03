@@ -9,7 +9,7 @@ export function ContentCard({ item }: { item: ContentItem }) {
   const description = item.description || (item.data?.description as string) || '';
 
   return (
-    <Link href={`/registry/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`}>
+    <Link href={`/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`}>
       <Card hover className="h-full">
         <div className="mb-3 flex items-center justify-between">
           <Badge>{item.type}</Badge>

@@ -29,7 +29,7 @@ export function SearchFilterBar() {
       });
       params.delete('offset'); // Reset pagination on filter change
       startTransition(() => {
-        router.push(`/registry?${params.toString()}`);
+        router.push(`/?${params.toString()}`);
       });
     },
     [router, searchParams]

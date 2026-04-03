@@ -9,7 +9,7 @@ export default function NotFound() {
         <p className="text-xl mb-8" style={{ color: 'var(--fg-muted)' }}>Page not found</p>
         <div className="flex gap-4 justify-center">
           <Link href="/"><Button>Home</Button></Link>
-          <Link href="/registry"><Button variant="secondary">Registry</Button></Link>
+          <Link href="/"><Button variant="secondary">Registry</Button></Link>
         </div>
       </div>
     </div>

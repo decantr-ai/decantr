@@ -16,10 +16,10 @@ export function Nav({ user }: { user?: NavUser | null }) {
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="text-xl font-bold text-[var(--fg)]">
-            Decantr
+            decantr.ai
           </Link>
           <Link
-            href="/registry"
+            href="/"
             className="hidden md:inline text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors text-sm"
           >
             Registry

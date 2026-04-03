@@ -19,7 +19,7 @@ export function Pagination({ total }: { total: number }) {
     } else {
       params.set('offset', String(newOffset));
     }
-    router.push(`/registry?${params.toString()}`);
+    router.push(`/?${params.toString()}`);
   }
 
   if (totalPages <= 1) return null;

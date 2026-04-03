@@ -81,7 +81,7 @@ export default async function DashboardPage() {
           <Link href="/dashboard/api-keys">
             <Button variant="secondary">Manage API Keys</Button>
           </Link>
-          <Link href="/registry">
+          <Link href="/">
             <Button variant="ghost">Browse Registry</Button>
           </Link>
         </div>

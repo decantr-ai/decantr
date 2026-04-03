@@ -58,7 +58,7 @@ export function MobileMenu({ user }: MobileMenuProps) {
     <div className="fixed inset-0 top-16 z-[9999] overflow-y-auto bg-[#0D0D1A]">
       <nav className="flex flex-col px-6 py-8 space-y-1">
         <Link
-          href="/registry"
+          href="/"
           onClick={() => setOpen(false)}
           className="flex items-center px-3 py-3 text-lg font-medium text-[#9898A8] hover:text-[#FAFAFA] transition-colors rounded-xl hover:bg-[#1A1A36]"
         >
