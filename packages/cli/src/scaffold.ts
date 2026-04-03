@@ -1621,6 +1621,30 @@ function generateDecantrMdV31(params: {
     briefLines.push('');
   }
 
+  // Development Workflow section
+  briefLines.push('## Development Workflow');
+  briefLines.push('');
+  briefLines.push('The essence file (`decantr.essence.json`) is the source of truth for your project\'s structure. Context files in `.decantr/context/` are derived from it. When you need to add, remove, or modify pages, sections, or features:');
+  briefLines.push('');
+  briefLines.push('**1. Update the essence** (use CLI commands for consistency):');
+  briefLines.push('- `decantr add page {section}/{page} --route /{path}`');
+  briefLines.push('- `decantr add section {archetype}`');
+  briefLines.push('- `decantr add feature {name}` (or `--section {id}` for scoped)');
+  briefLines.push('- `decantr remove page {section}/{page}`');
+  briefLines.push('- `decantr remove section {id}`');
+  briefLines.push('- `decantr remove feature {name}`');
+  briefLines.push('- `decantr theme switch {name}`');
+  briefLines.push('');
+  briefLines.push('**2. Regenerate context:** `decantr refresh`');
+  briefLines.push('');
+  briefLines.push('**3. Read the updated context files**, then build.');
+  briefLines.push('');
+  briefLines.push('**Rules:**');
+  briefLines.push('- Never create page components for routes that don\'t exist in the essence');
+  briefLines.push('- Never delete pages without removing them from the essence');
+  briefLines.push('- Always refresh after mutations — stale context files lead to drift');
+  briefLines.push('- If you edit the essence directly, run `decantr refresh` before building');
+  briefLines.push('');
   briefLines.push('---');
   briefLines.push('');
 
