@@ -404,6 +404,9 @@ Evaluate the richness of generated context files against v2 expectations:
 | Dimension | Present? | Quality (1-5) | Notes |
 |-----------|----------|---------------|-------|
 | **Section contexts** | | | |
+| Quick Start block at top | Y/N | N | Shell name, primary region, key dimensions present? |
+| Shell Implementation block (region dimensions, scroll container, anti-patterns) | Y/N | N | Region width/height/padding/gap specified? Scroll container designated? |
+| Spacing Guide table (computed density values) | Y/N | N | Computed pixel values for density tokens? |
 | Decorator table (structured: Intent + Key CSS + Pairs with columns) | Y/N | N | Are descriptions useful or just names? |
 | Token palette table (Token/Value/Role) | Y/N | N | Semantic roles assigned? |
 | Theme hints (preferred patterns, compositions, spatial) | Y/N | N | Actionable or vague? |
@@ -415,6 +418,7 @@ Evaluate the richness of generated context files against v2 expectations:
 | Voice & Copy section | Y/N | N | Tone, CTA verbs, avoid words present? |
 | **DECANTR.md** | | | |
 | Project Brief section | Y/N | N | Blueprint, theme, personality, features listed? |
+| Layout Rules (nesting anti-patterns) | Y/N | N | 5 anti-patterns listed (nested scroll, fixed in overflow:hidden, vh in flex, grid depth, padding+gap)? |
 | **CSS files** | | | |
 | tokens.css @layer tokens | Y/N | N | Wrapped in @layer? |
 | treatments.css @layer (treatments, decorators, utilities) | Y/N | N | All three layers present? |
