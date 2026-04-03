@@ -125,7 +125,8 @@ export function SearchFilterBar({
   }
 
   function handleTypeChange(label: string) {
-    navigate({ type: label === 'All' ? '' : label.toLowerCase() });
+    setQuery('');
+    navigate({ type: label === 'All' ? '' : label.toLowerCase(), q: '' });
   }
 
   function handleSortChange(e: React.ChangeEvent<HTMLSelectElement>) {
