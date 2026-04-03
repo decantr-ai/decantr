@@ -13,13 +13,12 @@ export function Footer() {
             <h4 className="font-semibold text-[var(--fg)] mb-3 text-sm">Product</h4>
             <ul className="space-y-2 text-sm text-[var(--fg-muted)]">
               <li><Link href="/" className="hover:text-[var(--fg)]">Registry</Link></li>
-              <li><Link href="/#pricing" className="hover:text-[var(--fg)]">Pricing</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold text-[var(--fg)] mb-3 text-sm">Developers</h4>
             <ul className="space-y-2 text-sm text-[var(--fg-muted)]">
-              <li><a href="https://github.com/decantr/decantr-monorepo" className="hover:text-[var(--fg)]">GitHub</a></li>
+              <li><a href="https://github.com/decantr/decantr" className="hover:text-[var(--fg)]">GitHub</a></li>
               <li><a href="https://npmjs.com/org/decantr" className="hover:text-[var(--fg)]">npm</a></li>
             </ul>
           </div>
