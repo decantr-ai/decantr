@@ -1,0 +1,481 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "healthcare",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": 1.25,
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 12
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Calming, trust-building health portal with emphasis on clarity and accessibility. Soft blues and teals on warm white backgrounds. Large, readable typography — nothing small or dense. Vitals use color-coded status indicators always supplemented with text labels. Appointment booking is straightforward. Telehealth rooms are calm and functional. Document vault feels secure. Every interaction prioritizes patient confidence. Lucide icons. WCAG AAA compliance throughout."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "patient-dashboard",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "vitals",
+          "medications",
+          "appointments",
+          "health-records"
+        ],
+        "description": "Patient overview dashboard with appointments, vitals tracking, and medication management. Central hub for health and wellness portal users.",
+        "pages": [
+          {
+            "id": "overview",
+            "layout": [
+              "kpi-grid",
+              "calendar-view"
+            ],
+            "route": "/dashboard"
+          },
+          {
+            "id": "vitals",
+            "layout": [
+              "chart-grid",
+              "data-table",
+              "sparkline-cell"
+            ],
+            "route": "/vitals"
+          },
+          {
+            "id": "medications",
+            "layout": [
+              "data-table",
+              "calendar-view"
+            ],
+            "route": "/medications"
+          }
+        ]
+      },
+      {
+        "id": "appointment-center",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "appointments",
+          "booking",
+          "telehealth"
+        ],
+        "description": "Appointment management hub with list view, booking flow, and appointment details with telehealth join capability.",
+        "pages": [
+          {
+            "id": "appointments",
+            "layout": [
+              "data-table"
+            ],
+            "route": "/appointments"
+          },
+          {
+            "id": "book",
+            "layout": [
+              "booking-calendar"
+            ],
+            "route": "/appointments/book"
+          },
+          {
+            "id": "appointment-detail",
+            "layout": [
+              "detail-header"
+            ],
+            "route": "/appointments/:id"
+          }
+        ]
+      },
+      {
+        "id": "telehealth-room",
+        "role": "auxiliary",
+        "shell": "minimal-header",
+        "features": [
+          "telehealth",
+          "video",
+          "notes"
+        ],
+        "description": "Video consultation room for telehealth appointments with speaker-focused layout, session controls, and provider notes.",
+        "pages": [
+          {
+            "id": "session",
+            "layout": [
+              "video-room"
+            ],
+            "route": "/telehealth"
+          }
+        ]
+      },
+      {
+        "id": "health-records",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "records",
+          "documents",
+          "intake-forms"
+        ],
+        "description": "Health records vault for browsing, viewing, and managing patient documents including lab results, imaging, and intake forms.",
+        "pages": [
+          {
+            "id": "records",
+            "layout": [
+              "file-browser"
+            ],
+            "route": "/records"
+          },
+          {
+            "id": "record-detail",
+            "layout": [
+              "detail-header"
+            ],
+            "route": "/records/:id"
+          },
+          {
+            "id": "intake",
+            "layout": [
+              "intake-form-wizard"
+            ],
+            "route": "/intake"
+          }
+        ]
+      },
+      {
+        "id": "marketing-health",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Public marketing landing page for a health and wellness portal. Split hero, feature highlights, patient testimonials, and call-to-action sections.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero-split",
+              "features",
+              "testimonials",
+              "cta-section"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "vitals",
+      "medications",
+      "appointments",
+      "health-records",
+      "booking",
+      "telehealth",
+      "video",
+      "notes",
+      "records",
+      "documents",
+      "intake-forms",
+      "marketing",
+      "seo",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-health",
+        "page": "home"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/intake": {
+        "section": "health-records",
+        "page": "intake"
+      },
+      "/vitals": {
+        "section": "patient-dashboard",
+        "page": "vitals"
+      },
+      "/records": {
+        "section": "health-records",
+        "page": "records"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/dashboard": {
+        "section": "patient-dashboard",
+        "page": "overview"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/telehealth": {
+        "section": "telehealth-room",
+        "page": "session"
+      },
+      "/medications": {
+        "section": "patient-dashboard",
+        "page": "medications"
+      },
+      "/records/:id": {
+        "section": "health-records",
+        "page": "record-detail"
+      },
+      "/appointments": {
+        "section": "appointment-center",
+        "page": "appointments"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/appointments/:id": {
+        "section": "appointment-center",
+        "page": "appointment-detail"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/appointments/book": {
+        "section": "appointment-center",
+        "page": "book"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "patient-dashboard",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "MedicalOrganization",
+        "WebApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g d",
+          "label": "Go to Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "key": "g a",
+          "label": "Go to Appointments",
+          "route": "/appointments"
+        },
+        {
+          "key": "g r",
+          "label": "Go to Records",
+          "route": "/records"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

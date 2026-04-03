@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:46:34.508Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:46:34.508Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=gaming-platform --theme=gaming-guild --mode=dark --guard=strict"
+  },
+  "blueprintId": "gaming-platform",
+  "voice": {
+    "tone": "Energetic and direct. Speaks like a fellow gamer. Uses gaming vernacular where natural but stays readable.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Purchase",
+      "Subscribe now"
+    ],
+    "errors": "Brief and in-character. Connection failures can use gaming metaphors (lag, disconnect). Always offer a retry.",
+    "loading": "Pulsing skeleton cards with neon accent borders. Progress bars use the accent palette. Leaderboard rows animate in sequentially.",
+    "cta_verbs": [
+      "Play",
+      "Join",
+      "Challenge",
+      "Explore",
+      "Claim",
+      "Unlock"
+    ],
+    "empty_states": "Motivational and challenge-oriented. An empty leaderboard should dare the user to be the first to claim the top spot."
+  }
+}

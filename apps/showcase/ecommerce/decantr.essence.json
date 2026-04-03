@@ -1,0 +1,431 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "auradecantism",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Warm, inviting storefront where product imagery takes center stage. Clean white backgrounds with accent pops on CTAs. Typography hierarchy guides the eye from product name to price to action. Cart feels lightweight and frictionless. Checkout is a calm, focused 3-step flow. Order history is clean and scannable. Product cards use generous image space with subtle hover zoom. Comparison tools help shoppers decide. Lucide icons. Mobile-first, touch-friendly."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "storefront-browse",
+        "role": "primary",
+        "shell": "top-nav-main",
+        "features": [
+          "search",
+          "filtering",
+          "cart",
+          "wishlist",
+          "product-comparison"
+        ],
+        "description": "Product browsing experience with search, filtering, product detail pages, and shopping cart. Core storefront interface for e-commerce applications.",
+        "pages": [
+          {
+            "id": "browse",
+            "layout": [
+              "product-filters",
+              "product-grid"
+            ],
+            "route": "/shop"
+          },
+          {
+            "id": "product-detail",
+            "layout": [
+              "product-hero",
+              "product-specs"
+            ],
+            "route": "/shop/:id"
+          },
+          {
+            "id": "cart",
+            "layout": [
+              "cart-items",
+              "order-summary"
+            ],
+            "route": "/cart"
+          }
+        ]
+      },
+      {
+        "id": "ecommerce-checkout",
+        "role": "auxiliary",
+        "shell": "minimal-header",
+        "features": [
+          "payments",
+          "address-autocomplete",
+          "saved-payments"
+        ],
+        "description": "Multi-step checkout flow with shipping, payment, and order confirmation. Minimal chrome for a focused, distraction-free purchase experience.",
+        "pages": [
+          {
+            "id": "checkout",
+            "layout": [
+              "checkout-stepper",
+              "checkout-form"
+            ],
+            "route": "/checkout"
+          }
+        ]
+      },
+      {
+        "id": "order-management",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "order-tracking",
+          "notifications"
+        ],
+        "description": "Customer-facing order history and tracking. Lists past orders with status, and provides detailed order views with delivery timeline.",
+        "pages": [
+          {
+            "id": "orders",
+            "layout": [
+              "order-list"
+            ],
+            "route": "/orders"
+          },
+          {
+            "id": "order-detail",
+            "layout": [
+              "order-header",
+              "delivery-timeline"
+            ],
+            "route": "/orders/:id"
+          }
+        ]
+      },
+      {
+        "id": "marketing-ecommerce",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Public marketing landing page for an e-commerce storefront with hero, feature highlights, social proof, and conversion CTAs.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "landing-hero",
+              "feature-highlights",
+              "social-proof",
+              "bottom-cta"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "search",
+      "filtering",
+      "cart",
+      "wishlist",
+      "product-comparison",
+      "payments",
+      "address-autocomplete",
+      "saved-payments",
+      "order-tracking",
+      "notifications",
+      "marketing",
+      "seo",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-ecommerce",
+        "page": "home"
+      },
+      "/cart": {
+        "section": "storefront-browse",
+        "page": "cart"
+      },
+      "/shop": {
+        "section": "storefront-browse",
+        "page": "browse"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/orders": {
+        "section": "order-management",
+        "page": "orders"
+      },
+      "/checkout": {
+        "section": "ecommerce-checkout",
+        "page": "checkout"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/shop/:id": {
+        "section": "storefront-browse",
+        "page": "product-detail"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/orders/:id": {
+        "section": "order-management",
+        "page": "order-detail"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "storefront-browse",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication",
+        "Store",
+        "Product"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g h",
+          "label": "Go to Home",
+          "route": "/"
+        },
+        {
+          "key": "g s",
+          "label": "Go to Shop",
+          "route": "/shop"
+        },
+        {
+          "key": "g c",
+          "label": "Go to Cart",
+          "route": "/cart"
+        },
+        {
+          "key": "g o",
+          "label": "Go to Orders",
+          "route": "/orders"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

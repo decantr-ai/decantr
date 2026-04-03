@@ -1,0 +1,50 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:48:16.058Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:48:16.058Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=ecommerce --theme=auradecantism --mode=light --guard=strict"
+  },
+  "blueprintId": "ecommerce",
+  "voice": {
+    "tone": "Friendly and confident. Product-focused, not pushy.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Purchase immediately"
+    ],
+    "errors": "Reassuring and solution-focused. If a payment fails, suggest alternatives. Never alarm the customer.",
+    "loading": "Show product card skeletons with image placeholders. Subtle shimmer animation to signal progress.",
+    "cta_verbs": [
+      "Shop",
+      "Add",
+      "Compare",
+      "Checkout",
+      "Track",
+      "Browse"
+    ],
+    "empty_states": "Warm and inviting. Suggest popular items or categories when a search returns no results. Keep the shopper browsing."
+  }
+}

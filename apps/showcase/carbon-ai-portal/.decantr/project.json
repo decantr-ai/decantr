@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:50:01.653Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:50:01.653Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=carbon-ai-portal --theme=carbon --mode=dark --guard=strict"
+  },
+  "blueprintId": "carbon-ai-portal",
+  "voice": {
+    "tone": "Intelligent and measured. Speaks like a premium developer tool. Technical accuracy matters. Warm but never casual.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Hey there",
+      "Awesome"
+    ],
+    "errors": "Calm and specific. AI response failures should explain rate limits or model availability. Form errors use inline validation with specific guidance.",
+    "loading": "Chat messages stream token-by-token with a blinking cursor. Conversation list shows skeleton cards. Settings forms show field outlines while preferences load.",
+    "cta_verbs": [
+      "Start chat",
+      "New conversation",
+      "Send",
+      "Export",
+      "Configure",
+      "Upgrade"
+    ],
+    "empty_states": "Thoughtful and inviting. An empty conversation list should welcome the user and suggest a first prompt or use case. Settings pages show clear descriptions of each option."
+  }
+}

@@ -1,0 +1,497 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "dopamine",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "moderate",
+      "duration_scale": 1,
+      "reduce_motion": false
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "High-energy community hub with bold, vibrant visuals. Y2K-inspired maximalism with saturated event imagery. Event cards are punchy — bold titles, gradient accents, clear date badges. Community feed is social and lively with reactions and comments. Ticket selection is fun, not transactional. Live streams feel immersive with floating chat. Organizer dashboard balances energy with clarity. Lucide icons. Every interaction feels like joining a party."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "event-discovery",
+        "role": "primary",
+        "shell": "top-nav-main",
+        "features": [
+          "events",
+          "search",
+          "calendar",
+          "map",
+          "filters"
+        ],
+        "description": "Event browsing and discovery interface with search, calendar, map, and detail views. Core exploration surface for event and community platforms.",
+        "pages": [
+          {
+            "id": "events",
+            "layout": [
+              "search-filters",
+              "event-cards",
+              "calendar",
+              "map"
+            ],
+            "route": "/events"
+          },
+          {
+            "id": "event-detail",
+            "layout": [
+              "event-hero",
+              "schedule",
+              "related-events"
+            ],
+            "route": "/events/:id"
+          }
+        ]
+      },
+      {
+        "id": "community-feed",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "feed",
+          "discussions",
+          "reactions",
+          "comments"
+        ],
+        "description": "Social community feed with posts, discussions, reactions, comments, and a member directory. Drives engagement and connection in event and community platforms.",
+        "pages": [
+          {
+            "id": "feed",
+            "layout": [
+              "posts",
+              "activity",
+              "reactions"
+            ],
+            "route": "/feed"
+          },
+          {
+            "id": "post-detail",
+            "layout": [
+              "comments",
+              "reactions"
+            ],
+            "route": "/feed/:id"
+          },
+          {
+            "id": "members",
+            "layout": [
+              "member-cards"
+            ],
+            "route": "/members"
+          }
+        ]
+      },
+      {
+        "id": "ticket-checkout",
+        "role": "auxiliary",
+        "shell": "minimal-header",
+        "features": [
+          "tickets",
+          "checkout",
+          "payment"
+        ],
+        "description": "Ticket selection and checkout flow for events. Guides users through tier selection, attendee info, and payment in a focused, distraction-free interface.",
+        "pages": [
+          {
+            "id": "tickets",
+            "layout": [
+              "stepper",
+              "checkout"
+            ],
+            "route": "/tickets"
+          }
+        ]
+      },
+      {
+        "id": "organizer-dashboard",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "event-management",
+          "attendees",
+          "analytics",
+          "revenue"
+        ],
+        "description": "Event organizer management hub with event editing, attendee management, revenue analytics, and performance dashboards.",
+        "pages": [
+          {
+            "id": "org-overview",
+            "layout": [
+              "metrics",
+              "upcoming-events"
+            ],
+            "route": "/organizer"
+          },
+          {
+            "id": "org-event-edit",
+            "layout": [
+              "event-form"
+            ],
+            "route": "/organizer/events/:id/edit"
+          },
+          {
+            "id": "org-attendees",
+            "layout": [
+              "attendee-table"
+            ],
+            "route": "/organizer/attendees"
+          },
+          {
+            "id": "org-analytics",
+            "layout": [
+              "summary-kpis",
+              "charts",
+              "earnings"
+            ],
+            "route": "/organizer/analytics"
+          }
+        ]
+      },
+      {
+        "id": "marketing-events",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Public-facing marketing and landing page for an event and community platform. Highlights featured events, testimonials, and sign-up CTAs.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "social-proof",
+              "cta"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "events",
+      "search",
+      "calendar",
+      "map",
+      "filters",
+      "feed",
+      "discussions",
+      "reactions",
+      "comments",
+      "tickets",
+      "checkout",
+      "payment",
+      "event-management",
+      "attendees",
+      "analytics",
+      "revenue",
+      "marketing",
+      "seo",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-events",
+        "page": "home"
+      },
+      "/feed": {
+        "section": "community-feed",
+        "page": "feed"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/events": {
+        "section": "event-discovery",
+        "page": "events"
+      },
+      "/members": {
+        "section": "community-feed",
+        "page": "members"
+      },
+      "/tickets": {
+        "section": "ticket-checkout",
+        "page": "tickets"
+      },
+      "/feed/:id": {
+        "section": "community-feed",
+        "page": "post-detail"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/organizer": {
+        "section": "organizer-dashboard",
+        "page": "org-overview"
+      },
+      "/events/:id": {
+        "section": "event-discovery",
+        "page": "event-detail"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/organizer/analytics": {
+        "section": "organizer-dashboard",
+        "page": "org-analytics"
+      },
+      "/organizer/attendees": {
+        "section": "organizer-dashboard",
+        "page": "org-attendees"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      },
+      "/organizer/events/:id/edit": {
+        "section": "organizer-dashboard",
+        "page": "org-event-edit"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "event-discovery",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "Event",
+        "WebApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g e",
+          "label": "Go to Events",
+          "route": "/events"
+        },
+        {
+          "key": "g f",
+          "label": "Go to Feed",
+          "route": "/feed"
+        },
+        {
+          "key": "g o",
+          "label": "Go to Organizer",
+          "route": "/organizer"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

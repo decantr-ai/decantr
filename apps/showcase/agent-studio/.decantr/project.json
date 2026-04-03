@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:52:53.803Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:52:53.803Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=agent-studio --theme=carbon-neon --mode=dark --guard=strict"
+  },
+  "blueprintId": "agent-studio",
+  "voice": {
+    "tone": "Technical and precise. Speaks to AI engineers and prompt designers.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Easy",
+      "Simple"
+    ],
+    "errors": "Diagnostic and developer-friendly. Include error codes, stack context, and suggested fixes. Link to documentation when available.",
+    "loading": "Skeleton panes with blinking cursor placeholders in monospace fields. Split panels show loading shimmer. Progress bars for long operations.",
+    "cta_verbs": [
+      "Build",
+      "Test",
+      "Deploy",
+      "Trace",
+      "Iterate",
+      "Compare"
+    ],
+    "empty_states": "IDE-style emptiness. An empty workspace should guide the user to create their first agent with a clear setup wizard. Minimal and purposeful."
+  }
+}

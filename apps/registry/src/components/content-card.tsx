@@ -1,13 +1,17 @@
 import Link from 'next/link';
 import type { ContentItem } from '@/lib/api';
 
-const TYPE_BADGE_COLORS: Record<string, string> = {
-  patterns: 'bg-d-coral/15 text-d-coral',
-  themes: 'bg-d-amber/15 text-d-amber',
-  blueprints: 'bg-d-cyan/15 text-d-cyan',
-  shells: 'bg-d-green/15 text-d-green',
-  archetypes: 'bg-d-purple/15 text-d-purple',
+const TYPE_COLORS: Record<string, string> = {
+  pattern: 'var(--d-coral)',
+  theme: 'var(--d-amber)',
+  blueprint: 'var(--d-cyan)',
+  shell: 'var(--d-green)',
+  archetype: 'var(--d-purple)',
 };
+
+function singularType(type: string): string {
+  return type.endsWith('s') ? type.slice(0, -1) : type;
+}
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return '';
@@ -15,50 +19,121 @@ function formatDate(dateStr?: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function ContentCard({ item }: { item: ContentItem }) {
-  const href = `/${item.type}/${item.namespace}/${item.slug}`;
-  const badgeColor = TYPE_BADGE_COLORS[item.type] ?? 'bg-d-surface text-d-muted';
+function formatId(id: string): string {
+  return id.length > 12 ? id.slice(0, 12) : id;
+}
+
+export function ContentCard({ item, editable }: { item: ContentItem; editable?: boolean }) {
+  const singular = singularType(item.type);
+  const typeColor = TYPE_COLORS[singular] ?? 'var(--d-primary)';
+  const href = `/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`;
 
   return (
-    <Link
-      href={href}
-      className="lum-card-outlined block no-underline"
-      data-type={item.type}
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <span className={`d-annotation ${badgeColor}`}>
-          {item.type.replace(/s$/, '')}
+    <div className="lum-card-outlined" data-type={singular}>
+      {/* Header badges */}
+      <div className="flex items-center gap-2" style={{ marginBottom: '0.75rem' }}>
+        <span
+          className="d-annotation"
+          style={{
+            background: `color-mix(in srgb, ${typeColor} 15%, transparent)`,
+            color: typeColor,
+          }}
+        >
+          {singular}
         </span>
-        <span className="d-annotation">
-          {item.namespace}
-        </span>
+        <span className="d-annotation">{item.namespace}</span>
       </div>
 
-      <h3 className="text-base font-semibold text-d-text mb-1.5 leading-snug">
+      {/* Title */}
+      <Link
+        href={href}
+        className="font-semibold block no-underline"
+        style={{
+          color: 'var(--d-text)',
+          fontSize: '1rem',
+          marginBottom: '0.375rem',
+        }}
+      >
         {item.name || item.slug}
-      </h3>
+      </Link>
 
+      {/* Description */}
       {item.description && (
-        <p className="text-sm text-d-muted line-clamp-2 mb-3">
+        <p
+          className="text-sm"
+          style={{
+            color: 'var(--d-text-muted)',
+            marginBottom: '0.75rem',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
           {item.description}
         </p>
       )}
 
-      <div className="flex items-center gap-3 text-xs text-d-muted font-mono mt-auto pt-2 border-t border-d-border/50">
-        <span>v{item.version}</span>
-        {item.owner_username && (
-          <>
-            <span className="opacity-40">|</span>
-            <span>{item.owner_username}</span>
-          </>
-        )}
-        {item.published_at && (
-          <>
-            <span className="opacity-40">|</span>
-            <span>{formatDate(item.published_at)}</span>
-          </>
+      {/* Footer */}
+      <div
+        className="flex items-center justify-between"
+        style={{ fontSize: '0.75rem', color: 'var(--d-text-muted)' }}
+      >
+        <div className="flex items-center gap-3">
+          <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>
+            v{item.version}
+          </span>
+          {item.owner_username && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>
+                {item.owner_username}
+              </span>
+            </span>
+          )}
+          {!item.owner_username && item.id && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>
+                {formatId(item.id)}
+              </span>
+            </span>
+          )}
+          {item.published_at && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <span>{formatDate(item.published_at)}</span>
+            </span>
+          )}
+        </div>
+
+        {editable && (
+          <div className="flex items-center gap-1">
+            <button
+              className="d-interactive"
+              data-variant="ghost"
+              style={{ padding: '0.25rem' }}
+              aria-label="Edit"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
+            <button
+              className="d-interactive"
+              data-variant="ghost"
+              style={{ padding: '0.25rem', color: 'var(--d-error)' }}
+              aria-label="Delete"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
+          </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 }

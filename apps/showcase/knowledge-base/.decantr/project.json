@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:47:22.257Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:47:22.257Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=knowledge-base --theme=paper --mode=light --guard=strict"
+  },
+  "blueprintId": "knowledge-base",
+  "voice": {
+    "tone": "Helpful and clear. Teacher energy.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Obviously"
+    ],
+    "errors": "Gentle and helpful. Suggest alternative search terms or related pages. Never blame the user.",
+    "loading": "Content skeleton with paragraph-shaped placeholders. Search results show shimmer cards. Table of contents loads progressively.",
+    "cta_verbs": [
+      "Learn",
+      "Explore",
+      "Try",
+      "Read",
+      "Search",
+      "Contribute"
+    ],
+    "empty_states": "Welcoming and educational. Empty search results suggest related topics. New sections invite contributions. Warm and encouraging."
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:46:46.618Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:46:46.618Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=workbench --theme=auradecantism --mode=dark --guard=strict"
+  },
+  "blueprintId": "workbench",
+  "voice": {
+    "tone": "Technical and efficient. Speaks to design system engineers.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy",
+      "Subscribe"
+    ],
+    "errors": "Developer-friendly. Show error codes, stack traces for component render failures, and link to relevant docs.",
+    "loading": "Code skeleton blocks with line-height placeholders. Component preview areas show a subtle grid pattern while loading.",
+    "cta_verbs": [
+      "Inspect",
+      "Browse",
+      "Preview",
+      "Configure",
+      "Export",
+      "Search"
+    ],
+    "empty_states": "Technical and helpful. An empty component list should explain how to register components or link to documentation."
+  }
+}

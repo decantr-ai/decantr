@@ -1,0 +1,308 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "gaming-guild",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "High-energy gaming hub with bold, immersive visuals. Dark backgrounds with vibrant neon accents (electric blue, hot pink, lime green). Leaderboard tables use rank-colored highlights. Profile cards show achievement badges and stat bars. Game catalog uses large cover-art cards with hover-zoom effects. Competitive elements (rankings, win rates) are front and center. The vibe is Discord meets Steam — social, loud, and unapologetically gamer."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "gaming-community",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "guild-state",
+          "achievements",
+          "realtime-data"
+        ],
+        "description": "Guild hub, news feed, hall of fame, and member profiles for social gaming communities",
+        "pages": [
+          {
+            "id": "main",
+            "layout": [
+              {
+                "as": "guild-hero",
+                "preset": "landing",
+                "pattern": "hero"
+              },
+              "kpi-grid",
+              {
+                "at": "lg",
+                "cols": [
+                  "activity-feed",
+                  "top-players"
+                ]
+              }
+            ],
+            "route": "/community"
+          },
+          {
+            "id": "news",
+            "layout": [
+              "notifications",
+              "filter-bar",
+              "post-list",
+              "reactions"
+            ],
+            "route": "/community/news"
+          },
+          {
+            "id": "hall-of-fame",
+            "layout": [
+              "stats-bar",
+              {
+                "as": "guild-leaderboard",
+                "preset": "ranked",
+                "pattern": "leaderboard"
+              },
+              "timeline"
+            ],
+            "route": "/community/hall-of-fame"
+          },
+          {
+            "id": "member-profile",
+            "layout": [
+              {
+                "as": "player-header",
+                "preset": "profile",
+                "pattern": "detail-header"
+              },
+              "kpi-grid",
+              {
+                "at": "lg",
+                "cols": [
+                  "achievements",
+                  "activity-feed"
+                ],
+                "span": {
+                  "achievements": 2
+                }
+              },
+              "timeline"
+            ],
+            "route": "/community/members/:id"
+          }
+        ]
+      },
+      {
+        "id": "game-catalog",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "search"
+        ],
+        "description": "Game discovery and browsing with search, filters, and guild recruitment pages",
+        "pages": [
+          {
+            "id": "games",
+            "layout": [
+              "search-filter-bar",
+              "filter-bar",
+              {
+                "as": "game-catalog",
+                "preset": "collection",
+                "pattern": "card-grid"
+              }
+            ],
+            "route": "/games"
+          },
+          {
+            "id": "join-guild",
+            "layout": [
+              {
+                "as": "join-hero",
+                "preset": "landing",
+                "pattern": "hero"
+              },
+              {
+                "as": "perks-grid",
+                "preset": "icon",
+                "pattern": "card-grid"
+              },
+              "testimonials",
+              "cta-section"
+            ],
+            "route": "/join"
+          }
+        ]
+      },
+      {
+        "id": "auth-flow",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth"
+        ],
+        "description": "Login, registration, and password recovery with OAuth support",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "auth-form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              {
+                "preset": "register",
+                "pattern": "auth-form"
+              }
+            ],
+            "route": "/register"
+          }
+        ]
+      },
+      {
+        "id": "settings",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [],
+        "description": "Application settings and preferences page",
+        "pages": [
+          {
+            "id": "settings",
+            "layout": [
+              {
+                "preset": "settings",
+                "pattern": "form-sections"
+              }
+            ],
+            "route": "/settings"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "guild-state",
+      "achievements",
+      "realtime-data",
+      "search",
+      "auth",
+      "notifications"
+    ],
+    "routes": {
+      "/join": {
+        "section": "game-catalog",
+        "page": "join-guild"
+      },
+      "/games": {
+        "section": "game-catalog",
+        "page": "games"
+      },
+      "/login": {
+        "section": "auth-flow",
+        "page": "login"
+      },
+      "/register": {
+        "section": "auth-flow",
+        "page": "register"
+      },
+      "/settings": {
+        "section": "settings",
+        "page": "settings"
+      },
+      "/community": {
+        "section": "gaming-community",
+        "page": "main"
+      },
+      "/community/news": {
+        "section": "gaming-community",
+        "page": "news"
+      },
+      "/community/members/:id": {
+        "section": "gaming-community",
+        "page": "member-profile"
+      },
+      "/community/hall-of-fame": {
+        "section": "gaming-community",
+        "page": "hall-of-fame"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "gaming-community",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:description"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g g",
+          "label": "Go to Games",
+          "route": "/games"
+        },
+        {
+          "key": "g c",
+          "label": "Go to Community",
+          "route": "/community"
+        },
+        {
+          "key": "g h",
+          "label": "Go to Hall of Fame",
+          "route": "/community/hall-of-fame"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

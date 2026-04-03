@@ -1,0 +1,194 @@
+# Section: eval-suite
+
+**Role:** auxiliary | **Shell:** sidebar-main | **Archetype:** eval-suite
+**Description:** Model evaluation test suite for running, reviewing, and comparing evaluation results with per-test breakdowns and regression detection.
+
+## Quick Start
+
+**Shell:** Collapsible sidebar with header bar and scrollable main content area. Used by saas-dashboard, financial-dashboard, workbench, ecommerce (account pages). (nav: 240px, header: 52px)
+**Pages:** 4 (evals, eval-detail, eval-compare, eval-create)
+**CSS classes:** `.carbon-card`, `.carbon-code`, `.carbon-glass`, `.neon-glow`, `.mono-data`
+**Density:** comfortable
+**Voice:** Technical and precise.
+
+## Shell Implementation (sidebar-main)
+
+### body
+
+- **flex:** 1
+- **note:** Sole scroll container. Page content renders directly here. No wrapper div around outlet.
+- **atoms:** _flex1 _overflow[auto] _p6
+- **padding:** 1.5rem
+- **overflow_y:** auto
+
+### root
+
+- **atoms:** _flex _h[100vh]
+- **height:** 100vh
+- **display:** flex
+- **direction:** row
+
+### header
+
+- **align:** center
+- **border:** bottom
+- **height:** 52px
+- **display:** flex
+- **justify:** space-between
+- **padding:** 0 1.5rem
+- **left_content:** Breadcrumb — omit segment when it equals page title
+- **button_sizing:** Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar — default d-interactive padding is too large here.
+- **right_content:** Theme toggle (sun/moon icon) + Search/command trigger. Theme toggle toggles light/dark class on html element.
+
+### sidebar
+
+- **nav:**
+  - flex: 1
+  - padding: 0.5rem
+  - item_gap: 2px
+  - group_gap: 0.5rem
+  - overflow_y: auto
+  - item_content: icon (16px) + label text. Collapsed: icon only, text hidden.
+  - item_padding: 0.375rem 0.75rem
+  - item_treatment: d-interactive[ghost]
+  - group_header_treatment: d-label
+- **atoms:** _flex _col _borderR
+- **brand:**
+  - align: center
+  - border: bottom
+  - height: 52px
+  - content: Logo/brand + collapse toggle
+  - display: flex
+  - padding: 0 1rem
+- **width:** 240px
+- **border:** right
+- **footer:**
+  - border: top
+  - content: User avatar + settings link
+  - padding: 0.5rem
+  - position_within: bottom (mt-auto)
+- **position:** left
+- **direction:** column
+- **background:** var(--d-surface)
+- **collapsed_width:** 64px
+- **collapse_breakpoint:** md
+
+### main_wrapper
+
+- **flex:** 1
+- **atoms:** _flex _col _flex1 _overflow[hidden]
+- **overflow:** hidden
+- **direction:** column
+
+### Anti-patterns
+
+- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.
+- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.
+- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.
+
+## Shell Notes (sidebar-main)
+
+- **Hotkeys:** Navigation hotkeys defined in the essence are keyboard shortcuts. Implement as useEffect keydown event listeners — do NOT render hotkey text in the sidebar UI.
+- **Collapse:** Sidebar collapse toggle should be integrated into the sidebar header area (next to the brand/logo), not floating at the bottom of the sidebar.
+- **Breadcrumbs:** For nested routes (e.g., /resource/:id), show a breadcrumb trail above the page heading inside the main content area.
+- **Empty States:** When a section has zero data, show a centered empty state: 48px muted icon + descriptive message + optional CTA button.
+- **Section Labels:** Dashboard section labels should use the d-label class. Anchor with a left accent border: border-left: 2px solid var(--d-accent); padding-left: 0.5rem.
+- **Section Density:** Dashboard sections use compact spacing. Apply data-density='compact' on d-section elements for tighter vertical rhythm than marketing pages.
+- **Page Transitions:** Apply the entrance-fade class (if generated) to the main content area for smooth page transitions.
+
+## Spacing Guide
+
+| Context | Token | Value | Usage |
+|---------|-------|-------|-------|
+| Content gap | `--d-content-gap` | `1rem` | Gap between sibling elements |
+| Section padding | `--d-section-py` | `5rem` | Vertical padding on d-section |
+| Surface padding | `--d-surface-p` | `1.25rem` | Inner padding for d-surface |
+| Interactive V | `--d-interactive-py` | `0.5rem` | Vertical padding on buttons |
+| Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
+| Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
+| Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
+
+---
+
+**Guard:** strict mode | DNA violations = error | Blueprint violations = warn
+
+**Key palette tokens:**
+
+| Token | Value | Role |
+|-------|-------|------|
+| `--d-text` | `#FAFAFA` | Body text, headings, primary content |
+| `--d-border` | `#3F3F46` | Dividers, card borders, separators |
+| `--d-primary` | `#6366F1` | Brand color, key interactive, selected states |
+| `--d-surface` | `#1F1F23` | Cards, panels, containers |
+| `--d-secondary` | `#A78BFA` | Secondary brand color, supporting elements |
+| `--d-bg` | `#18181B` | Page canvas / base layer |
+| `--d-text-muted` | `#A1A1AA` | Secondary text, placeholders, labels |
+| `--d-accent-glow` | `rgba(0, 212, 255, 0.3)` | Ambient glow effect for accent-colored elements |
+| `--d-primary-hover` | `#818CF8` | Hover state for primary elements |
+| `--d-surface-raised` | `#27272A` | Elevated containers, modals, popovers |
+| `--d-accent` | `#00D4FF` | CTAs, links, active states, glow effects |
+
+Full token set: `src/styles/tokens.css`
+
+**Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).
+**Theme decorators:**
+
+| Class | Usage |
+|-------|-------|
+| `.carbon-card` | Surface background, subtle border, 8px radius, hover shadow transition. |
+| `.carbon-code` | Monospace font, surface-raised background, subtle 3px left border accent in primary color. |
+| `.carbon-glass` | Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels. |
+| `.carbon-input` | Soft border with gentle focus ring using primary blue. Border transitions on focus. |
+| `.carbon-canvas` | Background color using theme background token. Clean, minimal foundation. |
+| `.carbon-divider` | Hairline separator using border-color token. |
+| `.carbon-skeleton` | Loading placeholder with subtle pulse animation for skeleton states. |
+| `.carbon-bubble-ai` | Left-aligned message bubble with surface background for AI responses. |
+| `.carbon-fade-slide` | Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out. |
+| `.carbon-bubble-user` | Right-aligned message bubble with primary-tinted background for user messages. |
+
+**Compositions:** **auth:** Centered auth forms with clean card styling.
+**chat:** Chat interface with conversation list sidebar and message thread. Anchored input at bottom.
+**marketing:** Marketing pages with top nav and footer. Clean sections with subtle separators.
+**Spatial hints:** Density bias: none. Section padding: 80px. Card wrapping: minimal.
+
+
+Usage: `className={css('_flex _col _gap4') + ' d-surface carbon-glass'}` — atoms via css(), treatments and theme decorators as plain class strings.
+
+---
+
+**Zone:** App (auxiliary) — sidebar-main shell
+Supporting section within App zone. Shares navigation with primary.
+For full app topology, see `.decantr/context/scaffold.md`
+
+## Features
+
+evaluation, comparison, regression-detection
+
+---
+
+## Visual Direction
+
+**Personality:** Precision engineering studio for AI agents. Carbon-dark surfaces with neon cyan highlights on active elements. Monospace typography for all prompts, traces, and model outputs. Split-pane interfaces reminiscent of an IDE — left tree, center editor, right preview. Think VS Code meets Langsmith. Interactions are immediate and keyboard-first. Every surface exists to reduce iteration cycles. Lucide icons. No decoration — every pixel serves the builder.
+
+**Personality utilities available in treatments.css:**
+- `neon-glow`, `neon-glow-hover`, `neon-text-glow`, `neon-border-glow` — Apply to elements needing accent emphasis
+- `mono-data` — Monospace + tabular-nums for metrics, IDs, timestamps
+- `status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation
+
+## Pages
+
+### evals (/evals)
+
+Layout: eval-list
+
+### eval-detail (/evals/:id)
+
+Layout: eval-results
+
+### eval-compare (/evals/compare)
+
+Layout: model-comparison
+
+### eval-create (/evals/create)
+
+Layout: eval-config → test-case-table

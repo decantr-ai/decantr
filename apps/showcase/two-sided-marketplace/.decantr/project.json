@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:53:31.957Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:53:31.957Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=two-sided-marketplace --theme=clean --mode=light --guard=strict"
+  },
+  "blueprintId": "two-sided-marketplace",
+  "voice": {
+    "tone": "Friendly and trustworthy. Speaks to both buyers and sellers.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Hurry"
+    ],
+    "errors": "Friendly and reassuring. Never lose user progress. Offer clear recovery steps.",
+    "loading": "Image-forward skeleton cards for listings. Smooth progressive loading. Seller dashboard shows shimmer tables.",
+    "cta_verbs": [
+      "Browse",
+      "Book",
+      "List",
+      "Compare",
+      "Message",
+      "Review"
+    ],
+    "empty_states": "Encouraging and helpful. Empty listings invite sellers to create their first. Empty favorites encourage browsing. Always warm."
+  }
+}

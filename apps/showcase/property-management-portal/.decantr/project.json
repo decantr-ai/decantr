@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:54:25.743Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:54:25.743Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=property-management-portal --theme=estate --mode=light --guard=strict"
+  },
+  "blueprintId": "property-management-portal",
+  "voice": {
+    "tone": "Professional and reassuring. Speaks to property owners with authority and to tenants with warmth and clarity.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy",
+      "Deploy"
+    ],
+    "errors": "Professional and specific. Payment processing errors include next steps. Maintenance submission failures offer alternative contact methods.",
+    "loading": "Property card skeletons with address line placeholders. Financial tables show column headers while data loads. Tenant portal uses gentle fade-in transitions.",
+    "cta_verbs": [
+      "Add property",
+      "View details",
+      "Submit request",
+      "Pay rent",
+      "Export",
+      "Schedule"
+    ],
+    "empty_states": "Helpful and onboarding-oriented. An empty property list should guide through adding the first property with clear steps. Tenant portal empty states should reassure that everything is in order."
+  }
+}

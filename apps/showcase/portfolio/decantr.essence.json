@@ -1,0 +1,310 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "auradecantism",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Bold, expressive portfolio that lets the work shine. Large hero with confident typography and strong CTA. Project showcases use generous whitespace and large imagery. Dark backgrounds make visual work pop. Case studies flow like stories with full-bleed images and concise text blocks. The about page is personal but professional — one strong photo, concise bio, skill badges. Blog posts use comfortable reading typography. Lucide icons. Every pixel showcases craft."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "portfolio-showcase",
+        "role": "primary",
+        "shell": "full-bleed",
+        "features": [
+          "gallery",
+          "lightbox",
+          "lazy-loading"
+        ],
+        "description": "Project grid and detail views for portfolio work. Full-bleed layouts with large imagery and generous whitespace to let creative work shine.",
+        "pages": [
+          {
+            "id": "projects",
+            "layout": [
+              "project-grid"
+            ],
+            "route": "/projects"
+          },
+          {
+            "id": "project-detail",
+            "layout": [
+              "project-hero",
+              "project-header"
+            ],
+            "route": "/projects/:id"
+          }
+        ]
+      },
+      {
+        "id": "portfolio-about",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "contact-form",
+          "social-links"
+        ],
+        "description": "Bio, skills, and contact pages for a personal portfolio. Professional yet personal presentation with skill badges and a contact form.",
+        "pages": [
+          {
+            "id": "about",
+            "layout": [
+              "about-hero"
+            ],
+            "route": "/about"
+          },
+          {
+            "id": "skills",
+            "layout": [
+              "skill-grid"
+            ],
+            "route": "/skills"
+          },
+          {
+            "id": "contact-page",
+            "layout": [
+              "contact"
+            ],
+            "route": "/contact"
+          }
+        ]
+      },
+      {
+        "id": "portfolio-blog",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "markdown",
+          "syntax-highlight",
+          "reading-time"
+        ],
+        "description": "Blog listing and post detail pages for a portfolio site. Comfortable reading typography with breadcrumb navigation.",
+        "pages": [
+          {
+            "id": "blog",
+            "layout": [
+              "blog-grid"
+            ],
+            "route": "/blog"
+          },
+          {
+            "id": "blog-post",
+            "layout": [
+              "breadcrumbs",
+              "post-content"
+            ],
+            "route": "/blog/:id"
+          }
+        ]
+      },
+      {
+        "id": "auth-flow",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth"
+        ],
+        "description": "Login, registration, and password recovery with OAuth support",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "auth-form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              {
+                "preset": "register",
+                "pattern": "auth-form"
+              }
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              {
+                "preset": "reset",
+                "pattern": "auth-form"
+              }
+            ],
+            "route": "/forgot-password"
+          }
+        ]
+      },
+      {
+        "id": "settings",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [],
+        "description": "Application settings and preferences page",
+        "pages": [
+          {
+            "id": "settings",
+            "layout": [
+              {
+                "preset": "settings",
+                "pattern": "form-sections"
+              }
+            ],
+            "route": "/settings"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "gallery",
+      "lightbox",
+      "lazy-loading",
+      "contact-form",
+      "social-links",
+      "markdown",
+      "syntax-highlight",
+      "reading-time",
+      "auth"
+    ],
+    "routes": {
+      "/blog": {
+        "section": "portfolio-blog",
+        "page": "blog"
+      },
+      "/about": {
+        "section": "portfolio-about",
+        "page": "about"
+      },
+      "/login": {
+        "section": "auth-flow",
+        "page": "login"
+      },
+      "/skills": {
+        "section": "portfolio-about",
+        "page": "skills"
+      },
+      "/contact": {
+        "section": "portfolio-about",
+        "page": "contact-page"
+      },
+      "/blog/:id": {
+        "section": "portfolio-blog",
+        "page": "blog-post"
+      },
+      "/projects": {
+        "section": "portfolio-showcase",
+        "page": "projects"
+      },
+      "/register": {
+        "section": "auth-flow",
+        "page": "register"
+      },
+      "/settings": {
+        "section": "settings",
+        "page": "settings"
+      },
+      "/projects/:id": {
+        "section": "portfolio-showcase",
+        "page": "project-detail"
+      },
+      "/forgot-password": {
+        "section": "auth-flow",
+        "page": "forgot-password"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "portfolio-showcase",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebSite",
+        "Person",
+        "ProfilePage",
+        "Blog"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g p",
+          "label": "Go to Projects",
+          "route": "/projects"
+        },
+        {
+          "key": "g a",
+          "label": "Go to About",
+          "route": "/about"
+        },
+        {
+          "key": "g s",
+          "label": "Go to Skills",
+          "route": "/skills"
+        },
+        {
+          "key": "g c",
+          "label": "Go to Contact",
+          "route": "/contact"
+        },
+        {
+          "key": "g b",
+          "label": "Go to Blog",
+          "route": "/blog"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

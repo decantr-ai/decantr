@@ -1,0 +1,191 @@
+# Section: order-management
+
+**Role:** auxiliary | **Shell:** sidebar-main | **Archetype:** order-management
+**Description:** Customer-facing order history and tracking. Lists past orders with status, and provides detailed order views with delivery timeline.
+
+## Quick Start
+
+**Shell:** Collapsible sidebar with header bar and scrollable main content area. Used by saas-dashboard, financial-dashboard, workbench, ecommerce (account pages). (nav: 240px, header: 52px)
+**Pages:** 2 (orders, order-detail)
+**CSS classes:** `.d-mesh`, `.d-glass`, `.aura-orb`
+**Density:** comfortable
+**Voice:** Friendly and confident.
+
+## Shell Implementation (sidebar-main)
+
+### body
+
+- **flex:** 1
+- **note:** Sole scroll container. Page content renders directly here. No wrapper div around outlet.
+- **atoms:** _flex1 _overflow[auto] _p6
+- **padding:** 1.5rem
+- **overflow_y:** auto
+
+### root
+
+- **atoms:** _flex _h[100vh]
+- **height:** 100vh
+- **display:** flex
+- **direction:** row
+
+### header
+
+- **align:** center
+- **border:** bottom
+- **height:** 52px
+- **display:** flex
+- **justify:** space-between
+- **padding:** 0 1.5rem
+- **left_content:** Breadcrumb — omit segment when it equals page title
+- **button_sizing:** Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar — default d-interactive padding is too large here.
+- **right_content:** Theme toggle (sun/moon icon) + Search/command trigger. Theme toggle toggles light/dark class on html element.
+
+### sidebar
+
+- **nav:**
+  - flex: 1
+  - padding: 0.5rem
+  - item_gap: 2px
+  - group_gap: 0.5rem
+  - overflow_y: auto
+  - item_content: icon (16px) + label text. Collapsed: icon only, text hidden.
+  - item_padding: 0.375rem 0.75rem
+  - item_treatment: d-interactive[ghost]
+  - group_header_treatment: d-label
+- **atoms:** _flex _col _borderR
+- **brand:**
+  - align: center
+  - border: bottom
+  - height: 52px
+  - content: Logo/brand + collapse toggle
+  - display: flex
+  - padding: 0 1rem
+- **width:** 240px
+- **border:** right
+- **footer:**
+  - border: top
+  - content: User avatar + settings link
+  - padding: 0.5rem
+  - position_within: bottom (mt-auto)
+- **position:** left
+- **direction:** column
+- **background:** var(--d-surface)
+- **collapsed_width:** 64px
+- **collapse_breakpoint:** md
+
+### main_wrapper
+
+- **flex:** 1
+- **atoms:** _flex _col _flex1 _overflow[hidden]
+- **overflow:** hidden
+- **direction:** column
+
+### Anti-patterns
+
+- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.
+- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.
+- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.
+
+## Shell Notes (sidebar-main)
+
+- **Hotkeys:** Navigation hotkeys defined in the essence are keyboard shortcuts. Implement as useEffect keydown event listeners — do NOT render hotkey text in the sidebar UI.
+- **Collapse:** Sidebar collapse toggle should be integrated into the sidebar header area (next to the brand/logo), not floating at the bottom of the sidebar.
+- **Breadcrumbs:** For nested routes (e.g., /resource/:id), show a breadcrumb trail above the page heading inside the main content area.
+- **Empty States:** When a section has zero data, show a centered empty state: 48px muted icon + descriptive message + optional CTA button.
+- **Section Labels:** Dashboard section labels should use the d-label class. Anchor with a left accent border: border-left: 2px solid var(--d-accent); padding-left: 0.5rem.
+- **Section Density:** Dashboard sections use compact spacing. Apply data-density='compact' on d-section elements for tighter vertical rhythm than marketing pages.
+- **Page Transitions:** Apply the entrance-fade class (if generated) to the main content area for smooth page transitions.
+
+## Spacing Guide
+
+| Context | Token | Value | Usage |
+|---------|-------|-------|-------|
+| Content gap | `--d-content-gap` | `1rem` | Gap between sibling elements |
+| Section padding | `--d-section-py` | `5rem` | Vertical padding on d-section |
+| Surface padding | `--d-surface-p` | `1.25rem` | Inner padding for d-surface |
+| Interactive V | `--d-interactive-py` | `0.5rem` | Vertical padding on buttons |
+| Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
+| Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
+| Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
+
+---
+
+**Guard:** strict mode | DNA violations = error | Blueprint violations = warn
+
+**Key palette tokens:**
+
+| Token | Value | Role |
+|-------|-------|------|
+| `--d-cyan` | `#` |  |
+| `--d-pink` | `#` |  |
+| `--d-indigo` | `#` |  |
+| `--d-purple` | `#` |  |
+| `--d-violet` | `#` |  |
+| `--d-magenta` | `#` |  |
+| `--d-accent` | `#EC4899` | CTAs, links, active states, glow effects |
+
+Full token set: `src/styles/tokens.css`
+
+**Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).
+**Theme decorators:**
+
+| Class | Usage |
+|-------|-------|
+| `.d-mesh` | Radial mesh gradient background with pink, cyan, and purple overlays. Apply to page-level containers. |
+| `.d-glass` | Frosted glass panel — backdrop-blur, semi-transparent bg, subtle border highlight. Apply to cards and panels. |
+| `.aura-orb` | Floating decorative gradient orb. Position absolutely as background decoration. |
+| `.aura-glow` | Soft glow shadow using primary color. Apply to featured cards or active elements. |
+| `.aura-ring` | Animated ring highlight on focus/active state. Pill-shaped glow border. |
+| `.d-icon-glow` | Glowing icon container with gradient background. |
+| `.d-stat-glow` | Text-shadow glow for large numbers and metrics. |
+| `.aura-shimmer` | Subtle shimmer animation across surface. Use sparingly for loading or premium feel. |
+| `.d-glow-accent` | Box-shadow glow using accent color. For secondary highlights. |
+| `.d-glass-strong` | Stronger glass effect with more opacity and thicker blur. For elevated overlays and modals. |
+| `.d-glow-primary` | Box-shadow glow using primary color. Apply to stats, featured cards. |
+| `.d-gradient-text` | Gradient text using primary brand colors (pink → cyan). Apply to headings and hero text. |
+| `.aura-glow-strong` | Intense glow for hero KPIs and primary CTAs. 20px spread. |
+| `.d-terminal-chrome` | macOS-style terminal window with traffic light dots and gradient background. |
+| `.d-gradient-text-alt` | Alternate gradient text (purple → pink → cyan). For secondary headings and accents. |
+| `.d-gradient-hint-accent` | Subtle gradient background toward accent color. |
+| `.d-gradient-hint-primary` | Subtle gradient background toward primary color. |
+
+**Compositions:** **kpi:** KPI metric with glass background and gradient value text.
+**card:** Card with glass surface and glow on hover.
+**form:** Form in a glass card with gradient submit button.
+**alert:** Alert with glass background.
+**chart:** Chart in glass panel with gradient title.
+**modal:** Modal with strong glass backdrop and gradient title.
+**panel:** Glass panel with subtle border and backdrop blur.
+**table:** DataTable with glass wrapper and subtle border.
+**layout:** Full page layout with mesh background, glass sidebar, and content area.
+**sidebar:** Glass sidebar with gradient brand and nav items.
+**Spatial hints:** Density bias: none. Section padding: default. Card wrapping: minimal.
+
+
+Usage: `className={css('_flex _col _gap4') + ' d-surface auradecantism-glass'}` — atoms via css(), treatments and theme decorators as plain class strings.
+
+---
+
+**Zone:** App (auxiliary) — sidebar-main shell
+Supporting section within App zone. Shares navigation with primary.
+For full app topology, see `.decantr/context/scaffold.md`
+
+## Features
+
+order-tracking, notifications
+
+---
+
+## Visual Direction
+
+**Personality:** Warm, inviting storefront where product imagery takes center stage. Clean white backgrounds with accent pops on CTAs. Typography hierarchy guides the eye from product name to price to action. Cart feels lightweight and frictionless. Checkout is a calm, focused 3-step flow. Order history is clean and scannable. Product cards use generous image space with subtle hover zoom. Comparison tools help shoppers decide. Lucide icons. Mobile-first, touch-friendly.
+
+## Pages
+
+### orders (/orders)
+
+Layout: order-list
+
+### order-detail (/orders/:id)
+
+Layout: order-header → delivery-timeline

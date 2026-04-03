@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:52:23.075Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:52:23.075Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=ai-native-crm --theme=glassmorphism --mode=dark --guard=strict"
+  },
+  "blueprintId": "ai-native-crm",
+  "voice": {
+    "tone": "Confident and helpful. Assumes sales professionals.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Synergy"
+    ],
+    "errors": "Clear and recovery-focused. Show what went wrong and offer retry. Never lose user data.",
+    "loading": "Frosted glass skeleton cards. Pipeline columns show placeholder deal cards. Contact details shimmer progressively.",
+    "cta_verbs": [
+      "Close",
+      "Schedule",
+      "Follow Up",
+      "Enrich",
+      "Connect",
+      "Forecast"
+    ],
+    "empty_states": "Motivational and action-oriented. An empty pipeline encourages importing contacts or adding the first deal. No clutter."
+  }
+}

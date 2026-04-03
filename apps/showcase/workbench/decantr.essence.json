@@ -1,0 +1,299 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "auradecantism",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Technical design-system workbench for power users. Dense, IDE-like layout with multi-panel navigation. Monospace typography for code and data, system fonts for UI labels. The workspace splits into resizable panes — component tree on the left, live preview center, property inspector right. Catalog is a browsable grid with instant search. Everything responds to keyboard shortcuts. Command palette for quick navigation. Think VS Code crossed with Storybook. Lucide icons. No wasted space."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "workbench-core",
+        "role": "primary",
+        "shell": "sidebar-aside",
+        "features": [
+          "keyboard-shortcuts",
+          "split-pane",
+          "command-palette"
+        ],
+        "description": "Multi-panel IDE workspace with split-pane layout, command palette, and component detail view. The primary workspace for design system power users.",
+        "pages": [
+          {
+            "id": "workspace",
+            "layout": [
+              "main-panes",
+              "command-palette"
+            ],
+            "route": "/workspace"
+          },
+          {
+            "id": "component-detail",
+            "layout": [
+              "detail-panes",
+              "component-data"
+            ],
+            "route": "/workspace/:id"
+          }
+        ]
+      },
+      {
+        "id": "workbench-catalog",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "search",
+          "filtering"
+        ],
+        "description": "Component and pattern catalog browser for the design-system workbench. Browsable grid with instant search, detail views with JSON inspection.",
+        "pages": [
+          {
+            "id": "catalog",
+            "layout": [
+              "catalog-search",
+              "component-grid"
+            ],
+            "route": "/catalog"
+          },
+          {
+            "id": "catalog-detail",
+            "layout": [
+              "component-header",
+              "component-spec"
+            ],
+            "route": "/catalog/:id"
+          }
+        ]
+      },
+      {
+        "id": "workbench-inspector",
+        "role": "auxiliary",
+        "shell": "sidebar-aside",
+        "features": [
+          "live-preview",
+          "editing"
+        ],
+        "description": "Property inspector and live preview for the design-system workbench. Editable form sections for component properties with real-time preview in split-pane layout.",
+        "pages": [
+          {
+            "id": "inspector",
+            "layout": [
+              "property-form",
+              "property-data"
+            ],
+            "route": "/inspector"
+          },
+          {
+            "id": "preview",
+            "layout": [
+              "preview-panes"
+            ],
+            "route": "/preview"
+          }
+        ]
+      },
+      {
+        "id": "auth-flow",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth"
+        ],
+        "description": "Login, registration, and password recovery with OAuth support",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "auth-form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              {
+                "preset": "register",
+                "pattern": "auth-form"
+              }
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              {
+                "preset": "reset",
+                "pattern": "auth-form"
+              }
+            ],
+            "route": "/forgot-password"
+          }
+        ]
+      },
+      {
+        "id": "settings",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [],
+        "description": "Application settings and preferences page",
+        "pages": [
+          {
+            "id": "settings",
+            "layout": [
+              {
+                "preset": "settings",
+                "pattern": "form-sections"
+              }
+            ],
+            "route": "/settings"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "keyboard-shortcuts",
+      "split-pane",
+      "command-palette",
+      "search",
+      "filtering",
+      "live-preview",
+      "editing",
+      "auth",
+      "theme-toggle"
+    ],
+    "routes": {
+      "/login": {
+        "section": "auth-flow",
+        "page": "login"
+      },
+      "/catalog": {
+        "section": "workbench-catalog",
+        "page": "catalog"
+      },
+      "/preview": {
+        "section": "workbench-inspector",
+        "page": "preview"
+      },
+      "/register": {
+        "section": "auth-flow",
+        "page": "register"
+      },
+      "/settings": {
+        "section": "settings",
+        "page": "settings"
+      },
+      "/inspector": {
+        "section": "workbench-inspector",
+        "page": "inspector"
+      },
+      "/workspace": {
+        "section": "workbench-core",
+        "page": "workspace"
+      },
+      "/catalog/:id": {
+        "section": "workbench-catalog",
+        "page": "catalog-detail"
+      },
+      "/workspace/:id": {
+        "section": "workbench-core",
+        "page": "component-detail"
+      },
+      "/forgot-password": {
+        "section": "auth-flow",
+        "page": "forgot-password"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "workbench-core",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:description"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g w",
+          "label": "Go to Workspace",
+          "route": "/workspace"
+        },
+        {
+          "key": "g c",
+          "label": "Go to Catalog",
+          "route": "/catalog"
+        },
+        {
+          "key": "g i",
+          "label": "Go to Inspector",
+          "route": "/inspector"
+        },
+        {
+          "key": "g p",
+          "label": "Go to Preview",
+          "route": "/preview"
+        },
+        {
+          "key": "g s",
+          "label": "Go to Settings",
+          "route": "/settings"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

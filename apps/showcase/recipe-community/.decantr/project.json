@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:49:12.513Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:49:12.513Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=recipe-community --theme=auradecantism --mode=light --guard=strict"
+  },
+  "blueprintId": "recipe-community",
+  "voice": {
+    "tone": "Warm and encouraging. Celebrates food and creativity.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Execute",
+      "Deploy"
+    ],
+    "errors": "Gentle and understanding. If a recipe upload fails, offer to retry. Keep the kitchen metaphor alive without being cheesy.",
+    "loading": "Recipe card skeletons with image placeholders showing a subtle plate outline. Shimmer animation in warm tones.",
+    "cta_verbs": [
+      "Cook",
+      "Save",
+      "Share",
+      "Follow",
+      "Create",
+      "Collect"
+    ],
+    "empty_states": "Inviting and appetizing. An empty cookbook should inspire the user to save their first recipe, not feel like an error. Use food-related metaphors."
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:51:32.651Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:51:32.651Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=multi-tenant-platform --theme=launchpad --mode=dark --guard=strict"
+  },
+  "blueprintId": "multi-tenant-platform",
+  "voice": {
+    "tone": "Professional, developer-friendly. Assumes technical audience.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Exciting"
+    ],
+    "errors": "Precise and actionable. Include request IDs, error codes, and remediation steps. Link to API docs when relevant.",
+    "loading": "Skeleton tables and card placeholders. Monospace fields show blinking cursors. Progress indicators for long operations.",
+    "cta_verbs": [
+      "Create",
+      "Configure",
+      "Deploy",
+      "Monitor",
+      "Manage",
+      "Explore"
+    ],
+    "empty_states": "Professional onboarding. Empty states guide users to create their first resource with clear documentation links. No whimsy."
+  }
+}

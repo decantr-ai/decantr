@@ -1,0 +1,464 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "auradecantism",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Clean, data-driven SaaS dashboard. Neutral tones with a single accent color for CTAs and active states. Card-based layout with consistent spacing. Charts use smooth gradients. KPIs are prominent with trend indicators. Team management is clear with role badges. Usage meters show consumption at a glance. Notification center keeps users informed. Audit trail for compliance. Lucide icons. Everything scannable in 3 seconds."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "saas-overview",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "real-time",
+          "charts",
+          "kpi",
+          "activity-feed"
+        ],
+        "description": "KPI dashboard overview with activity feed, chart grid, and quick actions. The primary landing surface for SaaS dashboard users.",
+        "pages": [
+          {
+            "id": "dashboard",
+            "layout": [
+              "kpis",
+              "charts",
+              "activity"
+            ],
+            "route": "/dashboard"
+          },
+          {
+            "id": "quick-actions",
+            "layout": [
+              "action-grid"
+            ],
+            "route": "/dashboard/actions"
+          }
+        ]
+      },
+      {
+        "id": "team-workspace",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "invite",
+          "roles",
+          "permissions",
+          "search"
+        ],
+        "description": "Team member management and permission configuration. Data table of members with role badges and a permission matrix for fine-grained access control.",
+        "pages": [
+          {
+            "id": "team",
+            "layout": [
+              "team-table"
+            ],
+            "route": "/team"
+          },
+          {
+            "id": "permissions",
+            "layout": [
+              "permissions-grid"
+            ],
+            "route": "/team/permissions"
+          }
+        ]
+      },
+      {
+        "id": "saas-analytics",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "charts",
+          "export",
+          "date-range",
+          "real-time"
+        ],
+        "description": "Deep analytics with charts, sparklines, and usage meters. Detailed breakdowns of product metrics, user behavior, and resource consumption.",
+        "pages": [
+          {
+            "id": "analytics",
+            "layout": [
+              "analytics-kpis",
+              "analytics-charts",
+              "sparklines",
+              "usage-breakdown"
+            ],
+            "route": "/analytics"
+          }
+        ]
+      },
+      {
+        "id": "saas-billing-v2",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "billing",
+          "invoices",
+          "usage-tracking"
+        ],
+        "description": "Billing management with plan selection, usage meters, invoice history, and payment management for SaaS products.",
+        "pages": [
+          {
+            "id": "billing",
+            "layout": [
+              "plan-selector",
+              "usage-bar"
+            ],
+            "route": "/billing"
+          },
+          {
+            "id": "invoices",
+            "layout": [
+              "invoice-table",
+              "payments"
+            ],
+            "route": "/billing/invoices"
+          }
+        ]
+      },
+      {
+        "id": "marketing-saas-v2",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo",
+          "conversion"
+        ],
+        "description": "Public marketing landing page for SaaS products with hero, features, pricing, testimonials, and conversion CTAs.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "landing-hero",
+              "feature-grid",
+              "pricing-tiers",
+              "social-proof",
+              "bottom-cta"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "real-time",
+      "charts",
+      "kpi",
+      "activity-feed",
+      "invite",
+      "roles",
+      "permissions",
+      "search",
+      "export",
+      "date-range",
+      "billing",
+      "invoices",
+      "usage-tracking",
+      "marketing",
+      "seo",
+      "conversion",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-saas-v2",
+        "page": "home"
+      },
+      "/team": {
+        "section": "team-workspace",
+        "page": "team"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/billing": {
+        "section": "saas-billing-v2",
+        "page": "billing"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/analytics": {
+        "section": "saas-analytics",
+        "page": "analytics"
+      },
+      "/dashboard": {
+        "section": "saas-overview",
+        "page": "dashboard"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/billing/invoices": {
+        "section": "saas-billing-v2",
+        "page": "invoices"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/team/permissions": {
+        "section": "team-workspace",
+        "page": "permissions"
+      },
+      "/dashboard/actions": {
+        "section": "saas-overview",
+        "page": "quick-actions"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "saas-overview",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g d",
+          "label": "Go to Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "key": "g t",
+          "label": "Go to Team",
+          "route": "/team"
+        },
+        {
+          "key": "g a",
+          "label": "Go to Analytics",
+          "route": "/analytics"
+        },
+        {
+          "key": "g b",
+          "label": "Go to Billing",
+          "route": "/billing"
+        },
+        {
+          "key": "g s",
+          "label": "Go to Settings",
+          "route": "/settings/profile"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

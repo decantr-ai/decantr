@@ -50,45 +50,167 @@
 /* ── Luminarum Theme Decorators ── */
 @layer decorators {
 
-  /* Glass panel — subtle transparency, no heavy blur */
+  /* ── Breathing gradient orbs ── */
+  .lum-orbs {
+    position: relative;
+    overflow: hidden;
+  }
+  .lum-orbs::before,
+  .lum-orbs::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(80px);
+    animation: lum-orb-drift 12s ease-in-out infinite alternate;
+  }
+  .lum-orbs::before {
+    width: 500px;
+    height: 500px;
+    top: -150px;
+    left: -100px;
+    background: radial-gradient(circle, rgba(254,68,116,0.18) 0%, transparent 70%);
+  }
+  .lum-orbs::after {
+    width: 400px;
+    height: 400px;
+    bottom: -100px;
+    right: -80px;
+    background: radial-gradient(circle, rgba(253,163,3,0.15) 0%, transparent 70%);
+    animation-delay: -4s;
+  }
+  @keyframes lum-orb-drift {
+    0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+    50% { transform: translate(30px, -20px) scale(1.1); opacity: 1; }
+    100% { transform: translate(-20px, 15px) scale(0.95); opacity: 0.7; }
+  }
+
+  /* ── Brand text with accent punctuation ── */
+  .lum-brand { font-weight: 600; }
+  .lum-brand .punct { color: var(--d-primary); }
+  .lum-brand .accent-i { color: var(--d-accent); }
+
+  /* ── Subtle glass panel ── */
   .lum-glass {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: var(--d-radius);
+    backdrop-filter: blur(2px);
   }
   html.light .lum-glass {
     background: rgba(0,0,0,0.02);
     border-color: rgba(0,0,0,0.06);
   }
 
-  /* Outlined card — transparent bg, colored left border by content type */
-  .lum-card-outlined {
-    background: transparent;
-    border: 1px solid var(--d-border);
-    border-left: 3px solid var(--d-primary);
-    border-radius: var(--d-radius);
-    padding: var(--d-surface-p);
-    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  /* ── Particle network canvas background ── */
+  .lum-canvas {
+    position: relative;
+    background: var(--d-bg);
   }
-  .lum-card-outlined:hover {
-    border-left-color: var(--d-primary-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--d-shadow-md);
+  .lum-canvas::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1.5px 1.5px at 10% 20%, rgba(254,68,116,0.12) 50%, transparent 50%),
+      radial-gradient(1px 1px at 30% 65%, rgba(253,163,3,0.1) 50%, transparent 50%),
+      radial-gradient(2px 2px at 55% 15%, rgba(10,243,235,0.08) 50%, transparent 50%),
+      radial-gradient(1.5px 1.5px at 75% 45%, rgba(254,68,116,0.1) 50%, transparent 50%),
+      radial-gradient(1px 1px at 90% 80%, rgba(253,163,3,0.08) 50%, transparent 50%),
+      radial-gradient(1.5px 1.5px at 45% 85%, rgba(10,243,235,0.1) 50%, transparent 50%),
+      radial-gradient(1px 1px at 20% 50%, rgba(254,68,116,0.06) 50%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
   }
-  .lum-card-outlined[data-type="patterns"] { border-left-color: #F58882; }
-  .lum-card-outlined[data-type="patterns"]:hover { border-left-color: #FF9E99; }
-  .lum-card-outlined[data-type="themes"] { border-left-color: #FDA303; }
-  .lum-card-outlined[data-type="themes"]:hover { border-left-color: #FFBD47; }
-  .lum-card-outlined[data-type="blueprints"] { border-left-color: #0AF3EB; }
-  .lum-card-outlined[data-type="blueprints"]:hover { border-left-color: #4DFFF8; }
-  .lum-card-outlined[data-type="shells"] { border-left-color: #00E0AB; }
-  .lum-card-outlined[data-type="shells"]:hover { border-left-color: #33FFCA; }
-  .lum-card-outlined[data-type="archetypes"] { border-left-color: #6500C6; }
-  .lum-card-outlined[data-type="archetypes"]:hover { border-left-color: #8B33E0; }
+  .lum-canvas > * {
+    position: relative;
+    z-index: 1;
+  }
 
-  /* Vibrant card — gradient fill, white text, corner brackets */
+  /* ── Section divider with centered dot ── */
+  .lum-divider {
+    position: relative;
+    height: 1px;
+    background: var(--d-border);
+    margin: 2rem 0;
+  }
+  .lum-divider::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--d-accent);
+  }
+
+  /* ── Scroll-reveal fade up ── */
+  .lum-fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: lum-fade-up-anim 0.6s ease-out forwards;
+  }
+  @keyframes lum-fade-up-anim {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Fixed-position particles ── */
+  .lum-particles { position: relative; }
+  .lum-particles::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(2px 2px at 5% 10%, rgba(254,68,116,0.15) 50%, transparent 50%),
+      radial-gradient(3px 3px at 15% 40%, rgba(253,163,3,0.12) 50%, transparent 50%),
+      radial-gradient(2px 2px at 25% 70%, rgba(10,243,235,0.1) 50%, transparent 50%),
+      radial-gradient(4px 4px at 40% 20%, rgba(254,68,116,0.08) 50%, transparent 50%),
+      radial-gradient(2px 2px at 55% 55%, rgba(253,163,3,0.1) 50%, transparent 50%),
+      radial-gradient(3px 3px at 70% 85%, rgba(10,243,235,0.12) 50%, transparent 50%),
+      radial-gradient(2px 2px at 85% 30%, rgba(254,68,116,0.1) 50%, transparent 50%),
+      radial-gradient(5px 5px at 95% 60%, rgba(253,163,3,0.08) 50%, transparent 50%);
+    animation: lum-particle-pulse 6s ease-in-out infinite alternate;
+  }
+  @keyframes lum-particle-pulse {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+  }
+
+  /* ── Stat glow badge ── */
+  .lum-stat-glow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--d-accent);
+    color: #141414;
+    font-weight: 700;
+    font-size: 1.125rem;
+    font-family: var(--d-font-mono, ui-monospace, monospace);
+  }
+
+  /* ── Code block ── */
+  .lum-code-block {
+    background: #111113;
+    border: 1px solid var(--d-border);
+    border-top: 2px solid var(--d-accent);
+    border-radius: var(--d-radius);
+    font-family: var(--d-font-mono, ui-monospace, monospace);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+  html.light .lum-code-block { background: #F5F5F4; }
+
+  /* ── Vibrant filled card ── */
   .lum-card-vibrant {
-    background: linear-gradient(135deg, var(--d-primary), var(--d-accent));
+    background: linear-gradient(135deg, var(--d-primary) 0%, var(--d-accent) 100%);
     color: #fff;
     border-radius: var(--d-radius);
     padding: var(--d-surface-p);
@@ -99,115 +221,40 @@
   .lum-card-vibrant::after {
     content: "";
     position: absolute;
-    width: 12px;
-    height: 12px;
-    border: 2px solid rgba(255,255,255,0.4);
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
   }
-  .lum-card-vibrant::before { top: 8px; left: 8px; border-right: none; border-bottom: none; }
-  .lum-card-vibrant::after { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+  .lum-card-vibrant::before { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+  .lum-card-vibrant::after { bottom: 12px; right: 12px; border-left: none; border-top: none; }
 
-  /* Code block — dark bg, colored top border, monospace */
-  .lum-code-block {
-    background: #111113;
-    border-top: 2px solid var(--d-accent);
+  /* ── Outlined card with colored border ── */
+  .lum-card-outlined {
+    background: transparent;
+    border: 1px solid var(--d-border);
+    border-left: 3px solid var(--card-accent, var(--d-primary));
     border-radius: var(--d-radius);
-    font-family: ui-monospace, "Cascadia Code", "JetBrains Mono", monospace;
-    font-size: 0.875rem;
-    line-height: 1.7;
-    overflow-x: auto;
-    padding: 1rem 1.25rem;
+    padding: var(--d-surface-p);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   }
-  html.light .lum-code-block { background: #F5F5F4; }
-
-  /* Stat glow — filled accent circle with number */
-  .lum-stat-glow {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 48px;
-    height: 48px;
-    border-radius: var(--d-radius-full);
-    background: var(--d-accent);
-    color: #141414;
-    font-weight: 700;
-    font-family: ui-monospace, monospace;
-    padding: 0 0.75rem;
+  .lum-card-outlined:hover {
+    border-left-color: var(--card-accent, var(--d-primary));
+    border-color: var(--card-accent, var(--d-primary));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .lum-card-outlined .card-heading {
+    color: var(--card-accent, var(--d-primary));
   }
 
-  /* Breathing gradient orbs */
-  .lum-orbs {
-    position: relative;
-    overflow: hidden;
-  }
-  .lum-orbs::before,
-  .lum-orbs::after {
-    content: "";
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    pointer-events: none;
-    animation: lum-breathe 8s ease-in-out infinite;
-  }
-  .lum-orbs::before {
-    width: 400px;
-    height: 400px;
-    background: var(--d-primary);
-    opacity: 0.15;
-    top: -100px;
-    left: -100px;
-  }
-  .lum-orbs::after {
-    width: 350px;
-    height: 350px;
-    background: var(--d-accent);
-    opacity: 0.12;
-    bottom: -80px;
-    right: -80px;
-    animation-delay: 4s;
-  }
-  @keyframes lum-breathe {
-    0%, 100% { opacity: 0.15; transform: scale(1); }
-    50% { opacity: 0.22; transform: scale(1.05); }
-  }
+  /* ── Type-specific card accent colors (singular names) ── */
+  [data-type="pattern"] { --card-accent: var(--d-coral); }
+  [data-type="theme"] { --card-accent: var(--d-amber); }
+  [data-type="blueprint"] { --card-accent: var(--d-cyan); }
+  [data-type="shell"] { --card-accent: var(--d-green); }
+  [data-type="archetype"] { --card-accent: var(--d-purple); }
 
-  /* Canvas background */
-  .lum-canvas { background: var(--d-bg); }
-  html.light .lum-canvas { background: #FAFAF9; }
-
-  /* Brand text with colored punctuation */
-  .lum-brand { font-weight: 700; letter-spacing: -0.02em; }
-  .lum-brand .punct { color: var(--d-accent); }
-
-  /* Section divider with centered dot */
-  .lum-divider {
-    position: relative;
-    height: 1px;
-    background: var(--d-border);
-    margin: 2rem 0;
-  }
-  .lum-divider::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--d-accent);
-  }
-
-  /* Scroll-reveal fade up */
-  .lum-fade-up {
-    opacity: 0;
-    transform: translateY(24px);
-    animation: lum-fade-up-anim 0.6s ease forwards;
-  }
-  @keyframes lum-fade-up-anim {
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Stagger children animation */
+  /* ── Stagger children ── */
   .lum-stagger > * {
     opacity: 0;
     transform: translateY(12px);
@@ -228,14 +275,33 @@
 @media (prefers-reduced-motion: reduce) {
   .lum-orbs::before,
   .lum-orbs::after,
+  .lum-particles::before,
   .lum-fade-up,
   .lum-stagger > *,
   .entrance-fade {
     animation: none !important;
+  }
+  .lum-fade-up,
+  .lum-stagger > * {
     opacity: 1 !important;
     transform: none !important;
   }
   .lum-card-outlined:hover {
     transform: none;
+  }
+}
+
+/* ── Content card responsive grid ── */
+@layer app {
+  .content-card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .content-card-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .content-card-grid { grid-template-columns: repeat(3, 1fr); }
   }
 }

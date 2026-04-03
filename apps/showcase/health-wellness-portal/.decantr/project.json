@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:51:09.761Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:51:09.761Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=health-wellness-portal --theme=healthcare --mode=light --guard=strict"
+  },
+  "blueprintId": "health-wellness-portal",
+  "voice": {
+    "tone": "Caring, clear, and professional. Speaks to patients.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Urgent"
+    ],
+    "errors": "Gentle and supportive. Never alarming. Always offer a way to contact support. Never use medical jargon in errors.",
+    "loading": "Calm skeleton placeholders with soft rounded shapes. Vitals cards show gentle pulse animations. Progressive content reveal.",
+    "cta_verbs": [
+      "Book",
+      "View",
+      "Download",
+      "Upload",
+      "Connect",
+      "Schedule"
+    ],
+    "empty_states": "Reassuring and clear. No appointments? Show a friendly prompt to schedule one. No records? Explain the intake process warmly."
+  }
+}

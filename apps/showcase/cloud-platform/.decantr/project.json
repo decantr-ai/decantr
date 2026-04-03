@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:47:26.958Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:47:26.958Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=cloud-platform --theme=launchpad --mode=dark --guard=strict"
+  },
+  "blueprintId": "cloud-platform",
+  "voice": {
+    "tone": "Technical and trustworthy. Speaks to infrastructure engineers and DevOps teams. Precise about states and operations.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy",
+      "Amazing"
+    ],
+    "errors": "Precise and diagnostic. Include request IDs, timestamps, and affected resources. Link to status page for platform issues.",
+    "loading": "Resource list skeletons with status dot placeholders. Deploy logs show a blinking cursor. Metrics charts show axis labels while data loads.",
+    "cta_verbs": [
+      "Deploy",
+      "Create",
+      "Scale",
+      "Monitor",
+      "Configure",
+      "Migrate"
+    ],
+    "empty_states": "Helpful and onboarding-oriented. An empty project list should walk users through creating their first app with clear steps."
+  }
+}

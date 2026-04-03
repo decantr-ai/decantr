@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:52:07.267Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:52:07.267Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=realtime-collaboration-workspace --theme=paper --mode=light --guard=strict"
+  },
+  "blueprintId": "realtime-collaboration-workspace",
+  "voice": {
+    "tone": "Warm, collaborative, and productivity-focused. Speaks in we/us language. Celebrates team accomplishments.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy",
+      "Deploy"
+    ],
+    "errors": "Calm and recovery-focused. Sync conflicts should show both versions and let the user choose. Never lose work silently.",
+    "loading": "Document outline skeletons with line-height placeholders. Presence avatars fade in as connections establish. Page tree shows structure while content loads.",
+    "cta_verbs": [
+      "Create",
+      "Share",
+      "Invite",
+      "Comment",
+      "Publish",
+      "Export"
+    ],
+    "empty_states": "Inviting and action-oriented. An empty workspace should feel like a fresh notebook — exciting, not barren. Suggest creating a first page or importing content."
+  }
+}

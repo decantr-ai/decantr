@@ -1,0 +1,485 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "auradecantism",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Efficient, no-nonsense admin dashboard built for store operators. Dense table-heavy layouts with inline editing. Status badges use semantic colors. Order fulfillment uses a Kanban board for visual pipeline tracking. Revenue charts update in real-time. Product management has bulk actions and inventory alerts. Customer profiles show purchase history and lifetime value. Lucide icons. Dark mode for long operational sessions."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "admin-overview",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "analytics-state",
+          "notifications",
+          "quick-actions"
+        ],
+        "description": "Store operations dashboard with KPIs, sales charts, activity feed, and quick action cards. Central hub for e-commerce administrators.",
+        "pages": [
+          {
+            "id": "dashboard",
+            "layout": [
+              "store-kpis",
+              "sales-charts",
+              "recent-activity"
+            ],
+            "route": "/dashboard"
+          },
+          {
+            "id": "quick-actions",
+            "layout": [
+              "action-cards"
+            ],
+            "route": "/dashboard/actions"
+          }
+        ]
+      },
+      {
+        "id": "product-management",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "bulk-actions",
+          "search",
+          "inline-editing",
+          "image-upload"
+        ],
+        "description": "Product catalog CRUD and inventory management with data tables, edit forms, and Kanban-style inventory boards for e-commerce admin operations.",
+        "pages": [
+          {
+            "id": "products",
+            "layout": [
+              "product-table"
+            ],
+            "route": "/products"
+          },
+          {
+            "id": "product-edit",
+            "layout": [
+              "product-form"
+            ],
+            "route": "/products/:id"
+          },
+          {
+            "id": "inventory",
+            "layout": [
+              "stock-table",
+              "stock-board"
+            ],
+            "route": "/inventory"
+          }
+        ]
+      },
+      {
+        "id": "order-fulfillment",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "order-tracking",
+          "bulk-actions",
+          "notifications"
+        ],
+        "description": "Admin order processing and shipping management with data tables, Kanban pipeline boards, order detail views, and fulfillment action forms.",
+        "pages": [
+          {
+            "id": "orders",
+            "layout": [
+              "order-table",
+              "fulfillment-board"
+            ],
+            "route": "/orders"
+          },
+          {
+            "id": "order-detail",
+            "layout": [
+              "order-header",
+              "order-timeline",
+              "fulfillment-form"
+            ],
+            "route": "/orders/:id"
+          }
+        ]
+      },
+      {
+        "id": "customer-management",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "search",
+          "filtering",
+          "export",
+          "tagging"
+        ],
+        "description": "Customer relationship management for e-commerce with customer list, profile detail views, activity feeds, and purchase history.",
+        "pages": [
+          {
+            "id": "customers",
+            "layout": [
+              "customer-table"
+            ],
+            "route": "/customers"
+          },
+          {
+            "id": "customer-detail",
+            "layout": [
+              "customer-header",
+              "customer-activity",
+              "purchase-history"
+            ],
+            "route": "/customers/:id"
+          }
+        ]
+      },
+      {
+        "id": "admin-analytics",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "analytics-state",
+          "data-export",
+          "date-range-picker"
+        ],
+        "description": "Revenue and sales analytics for e-commerce administrators with KPI dashboards, trend charts, and inline sparkline data tables.",
+        "pages": [
+          {
+            "id": "analytics",
+            "layout": [
+              "revenue-kpis",
+              "analytics-charts",
+              "trend-sparklines"
+            ],
+            "route": "/analytics"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "analytics-state",
+      "notifications",
+      "quick-actions",
+      "bulk-actions",
+      "search",
+      "inline-editing",
+      "image-upload",
+      "order-tracking",
+      "filtering",
+      "export",
+      "tagging",
+      "data-export",
+      "date-range-picker",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/orders": {
+        "section": "order-fulfillment",
+        "page": "orders"
+      },
+      "/products": {
+        "section": "product-management",
+        "page": "products"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/analytics": {
+        "section": "admin-analytics",
+        "page": "analytics"
+      },
+      "/customers": {
+        "section": "customer-management",
+        "page": "customers"
+      },
+      "/dashboard": {
+        "section": "admin-overview",
+        "page": "dashboard"
+      },
+      "/inventory": {
+        "section": "product-management",
+        "page": "inventory"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/orders/:id": {
+        "section": "order-fulfillment",
+        "page": "order-detail"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/products/:id": {
+        "section": "product-management",
+        "page": "product-edit"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/customers/:id": {
+        "section": "customer-management",
+        "page": "customer-detail"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/dashboard/actions": {
+        "section": "admin-overview",
+        "page": "quick-actions"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "admin-overview",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:description"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g d",
+          "label": "Go to Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "key": "g p",
+          "label": "Go to Products",
+          "route": "/products"
+        },
+        {
+          "key": "g o",
+          "label": "Go to Orders",
+          "route": "/orders"
+        },
+        {
+          "key": "g c",
+          "label": "Go to Customers",
+          "route": "/customers"
+        },
+        {
+          "key": "g a",
+          "label": "Go to Analytics",
+          "route": "/analytics"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

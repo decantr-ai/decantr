@@ -1,0 +1,450 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "auradecantism",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Authoritative financial dashboard built for trust and precision. Conservative color palette with green for gains, red for losses, neutral grays for context. Large numbers in monospace font dominate the viewport. Charts are clean with minimal gridlines. Sparklines inline in tables show trends at a glance. Budget views use clear bar comparisons. Transaction history is filterable and fast. Lucide icons. Every number precise to two decimal places."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "portfolio-overview",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "analytics-state",
+          "data-export"
+        ],
+        "description": "Financial portfolio dashboard with net worth KPIs, allocation charts, and asset data tables. Primary view for wealth management and investment tracking.",
+        "pages": [
+          {
+            "id": "overview",
+            "layout": [
+              "portfolio-kpis",
+              "performance-charts"
+            ],
+            "route": "/dashboard"
+          },
+          {
+            "id": "allocations",
+            "layout": [
+              "allocation-charts",
+              "allocation-table"
+            ],
+            "route": "/allocations"
+          }
+        ]
+      },
+      {
+        "id": "transaction-history",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "filtering",
+          "search",
+          "data-export"
+        ],
+        "description": "Financial transaction ledger with filterable data tables, sparkline trend indicators, and transaction detail views.",
+        "pages": [
+          {
+            "id": "transactions",
+            "layout": [
+              "transaction-filters",
+              "transaction-table",
+              "trend-sparklines"
+            ],
+            "route": "/transactions"
+          },
+          {
+            "id": "transaction-detail",
+            "layout": [
+              "transaction-header"
+            ],
+            "route": "/transactions/:id"
+          }
+        ]
+      },
+      {
+        "id": "budget-planner",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "analytics-state",
+          "data-export"
+        ],
+        "description": "Budget planning and tracking with budget vs actual comparisons, category charts, and compact spending data tables.",
+        "pages": [
+          {
+            "id": "budgets",
+            "layout": [
+              "budget-charts",
+              "budget-vs-actual",
+              "category-breakdown"
+            ],
+            "route": "/budgets"
+          }
+        ]
+      },
+      {
+        "id": "investment-tracker",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "analytics-state",
+          "data-export",
+          "real-time-data"
+        ],
+        "description": "Investment holdings tracker with position tables, sparkline price trends, performance charts, and individual holding detail views.",
+        "pages": [
+          {
+            "id": "investments",
+            "layout": [
+              "holdings-table",
+              "price-sparklines",
+              "portfolio-charts"
+            ],
+            "route": "/investments"
+          },
+          {
+            "id": "holding-detail",
+            "layout": [
+              "holding-header",
+              "holding-charts"
+            ],
+            "route": "/investments/:id"
+          }
+        ]
+      },
+      {
+        "id": "marketing-finance",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Public marketing landing page for a financial dashboard product with hero, feature highlights, social proof, and conversion CTAs.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "landing-hero",
+              "feature-highlights",
+              "social-proof",
+              "bottom-cta"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "analytics-state",
+      "data-export",
+      "filtering",
+      "search",
+      "real-time-data",
+      "marketing",
+      "seo",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-finance",
+        "page": "home"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/budgets": {
+        "section": "budget-planner",
+        "page": "budgets"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/dashboard": {
+        "section": "portfolio-overview",
+        "page": "overview"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/allocations": {
+        "section": "portfolio-overview",
+        "page": "allocations"
+      },
+      "/investments": {
+        "section": "investment-tracker",
+        "page": "investments"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/transactions": {
+        "section": "transaction-history",
+        "page": "transactions"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/investments/:id": {
+        "section": "investment-tracker",
+        "page": "holding-detail"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/transactions/:id": {
+        "section": "transaction-history",
+        "page": "transaction-detail"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "portfolio-overview",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication",
+        "FinancialProduct"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g d",
+          "label": "Go to Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "key": "g t",
+          "label": "Go to Transactions",
+          "route": "/transactions"
+        },
+        {
+          "key": "g b",
+          "label": "Go to Budgets",
+          "route": "/budgets"
+        },
+        {
+          "key": "g i",
+          "label": "Go to Investments",
+          "route": "/investments"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

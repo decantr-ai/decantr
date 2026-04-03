@@ -77,30 +77,26 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-d-text">{TYPE_LABELS[type]}</h1>
-        <p className="text-sm text-d-muted">{TYPE_DESCRIPTIONS[type]}</p>
+    <div style={{ padding: '2rem 1.5rem', maxWidth: 1200, margin: '0 auto' }}>
+      <div className="flex flex-col gap-1" style={{ marginBottom: '1.5rem' }}>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--d-text)' }}>{TYPE_LABELS[type]}</h1>
+        <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>{TYPE_DESCRIPTIONS[type]}</p>
       </div>
 
       <Suspense>
-        <SearchFilterBar baseUrl={`/browse/${type}`} />
+        <SearchFilterBar baseUrl={`/browse/${type}`} resultCount={total} />
       </Suspense>
 
-      {q && (
-        <p className="text-sm text-d-muted">
-          {total} result{total !== 1 ? 's' : ''} for &ldquo;{q}&rdquo;
-        </p>
-      )}
-
-      <ContentCardGrid
-        items={items}
-        emptyMessage={
-          q
-            ? `No ${type} found matching "${q}".`
-            : `No ${type} published yet. Check back soon.`
-        }
-      />
+      <div style={{ marginTop: '2rem' }}>
+        <ContentCardGrid
+          items={items}
+          emptyMessage={
+            q
+              ? `No ${type} found matching "${q}".`
+              : `No ${type} published yet. Check back soon.`
+          }
+        />
+      </div>
 
       <Suspense>
         <Pagination total={total} limit={LIMIT} offset={offset} />

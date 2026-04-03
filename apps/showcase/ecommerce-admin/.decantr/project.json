@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:50:20.712Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:50:20.712Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=ecommerce-admin --theme=auradecantism --mode=dark --guard=strict"
+  },
+  "blueprintId": "ecommerce-admin",
+  "voice": {
+    "tone": "Direct and operational. Speaks to store managers.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Shop now",
+      "Discover"
+    ],
+    "errors": "Specific and actionable. Include affected item IDs. For inventory conflicts, show current vs. attempted values.",
+    "loading": "Table row skeletons matching column widths. Show row count estimate if available. No full-page spinners.",
+    "cta_verbs": [
+      "Fulfill",
+      "Ship",
+      "Edit",
+      "Restock",
+      "Export",
+      "Analyze"
+    ],
+    "empty_states": "Practical and forward-looking. An empty orders page should say when orders will appear and link to store setup. No whimsy."
+  }
+}

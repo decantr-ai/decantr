@@ -1,0 +1,50 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:47:01.531Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:47:01.531Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=portfolio --theme=auradecantism --mode=dark --guard=strict"
+  },
+  "blueprintId": "portfolio",
+  "voice": {
+    "tone": "Confident and personal. Shows, doesn't tell.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now"
+    ],
+    "errors": "Brief and low-key. Contact form errors should guide without breaking the creative flow.",
+    "loading": "Fade-in content blocks with subtle opacity transitions. No spinners — the portfolio should feel curated, not loading.",
+    "cta_verbs": [
+      "View",
+      "Explore",
+      "Read",
+      "Connect",
+      "Download",
+      "Browse"
+    ],
+    "empty_states": "Minimal and intentional. A portfolio with no projects yet should feel like a canvas waiting to be filled, with a prompt to add the first piece."
+  }
+}

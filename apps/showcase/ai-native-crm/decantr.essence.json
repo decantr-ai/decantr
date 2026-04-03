@@ -1,0 +1,516 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "glassmorphism",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Intelligent CRM with AI enrichment at every touch. Frosted glass panels on cool-toned dark backgrounds. Contact cards show AI-gathered insights alongside manual data. Pipeline board is the center of gravity — wide, draggable, value-weighted. Email composer has AI ghost text suggestions. Meeting recaps auto-populate with action items. Relationship graph makes hidden connections visible. Smooth transitions. Lucide icons. This CRM feels alive."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "crm-dashboard",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "pipeline",
+          "contacts",
+          "deals",
+          "ai-enrichment",
+          "forecasting"
+        ],
+        "description": "Primary sales overview dashboard with pipeline visualization, contact management, deal tracking, AI-powered enrichment, and revenue forecasting.",
+        "pages": [
+          {
+            "id": "dashboard",
+            "layout": [
+              "kpi-grid",
+              "deal-pipeline-board",
+              "activity-feed"
+            ],
+            "route": "/dashboard"
+          },
+          {
+            "id": "pipeline",
+            "layout": [
+              "deal-pipeline-board"
+            ],
+            "route": "/pipeline"
+          },
+          {
+            "id": "contacts",
+            "layout": [
+              "data-table"
+            ],
+            "route": "/contacts"
+          },
+          {
+            "id": "contact-detail",
+            "layout": [
+              "creator-profile",
+              "activity-feed",
+              "relationship-graph"
+            ],
+            "route": "/contacts/:id"
+          },
+          {
+            "id": "deals",
+            "layout": [
+              "kpi-grid",
+              "data-table"
+            ],
+            "route": "/deals"
+          },
+          {
+            "id": "deal-detail",
+            "layout": [
+              "detail-header",
+              "timeline",
+              "activity-feed",
+              "form-sections"
+            ],
+            "route": "/deals/:id"
+          }
+        ]
+      },
+      {
+        "id": "crm-email",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "email",
+          "ai-compose",
+          "categorization"
+        ],
+        "description": "AI-assisted email interface integrated with the CRM. Features smart inbox with auto-categorization and an AI-powered compose experience for personalized outreach.",
+        "pages": [
+          {
+            "id": "inbox",
+            "layout": [
+              "conversation-list"
+            ],
+            "route": "/inbox"
+          },
+          {
+            "id": "compose",
+            "layout": [
+              "chat-input"
+            ],
+            "route": "/compose"
+          }
+        ]
+      },
+      {
+        "id": "crm-meetings",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "meetings",
+          "ai-recap",
+          "transcription",
+          "action-items"
+        ],
+        "description": "Meeting management interface with calendar views, AI-generated recaps, transcription, and automatic action item extraction linked to CRM contacts and deals.",
+        "pages": [
+          {
+            "id": "meetings",
+            "layout": [
+              "calendar-view"
+            ],
+            "route": "/meetings"
+          },
+          {
+            "id": "meeting-detail",
+            "layout": [
+              "detail-header",
+              "timeline"
+            ],
+            "route": "/meetings/:id"
+          }
+        ]
+      },
+      {
+        "id": "crm-intelligence",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "ai-insights",
+          "forecasting",
+          "analytics"
+        ],
+        "description": "AI-generated sales intelligence dashboard with win/loss analysis, revenue forecasting, relationship mapping, and actionable insights derived from CRM data.",
+        "pages": [
+          {
+            "id": "insights",
+            "layout": [
+              "kpi-grid",
+              "chart-grid",
+              "relationship-graph"
+            ],
+            "route": "/insights"
+          }
+        ]
+      },
+      {
+        "id": "marketing-crm",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Public marketing landing page for the AI-native CRM. Showcases AI-powered sales features, pipeline management, pricing, and customer testimonials with strong conversion CTAs.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "features",
+              "testimonials",
+              "pricing",
+              "cta-section"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "pipeline",
+      "contacts",
+      "deals",
+      "ai-enrichment",
+      "forecasting",
+      "email",
+      "ai-compose",
+      "categorization",
+      "meetings",
+      "ai-recap",
+      "transcription",
+      "action-items",
+      "ai-insights",
+      "analytics",
+      "marketing",
+      "seo",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-crm",
+        "page": "home"
+      },
+      "/deals": {
+        "section": "crm-dashboard",
+        "page": "deals"
+      },
+      "/inbox": {
+        "section": "crm-email",
+        "page": "inbox"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/compose": {
+        "section": "crm-email",
+        "page": "compose"
+      },
+      "/contacts": {
+        "section": "crm-dashboard",
+        "page": "contacts"
+      },
+      "/insights": {
+        "section": "crm-intelligence",
+        "page": "insights"
+      },
+      "/meetings": {
+        "section": "crm-meetings",
+        "page": "meetings"
+      },
+      "/pipeline": {
+        "section": "crm-dashboard",
+        "page": "pipeline"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/dashboard": {
+        "section": "crm-dashboard",
+        "page": "dashboard"
+      },
+      "/deals/:id": {
+        "section": "crm-dashboard",
+        "page": "deal-detail"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/contacts/:id": {
+        "section": "crm-dashboard",
+        "page": "contact-detail"
+      },
+      "/meetings/:id": {
+        "section": "crm-meetings",
+        "page": "meeting-detail"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "crm-dashboard",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g d",
+          "label": "Go to Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "key": "g p",
+          "label": "Go to Pipeline",
+          "route": "/pipeline"
+        },
+        {
+          "key": "g c",
+          "label": "Go to Contacts",
+          "route": "/contacts"
+        },
+        {
+          "key": "g i",
+          "label": "Go to Inbox",
+          "route": "/inbox"
+        },
+        {
+          "key": "g m",
+          "label": "Go to Meetings",
+          "route": "/meetings"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

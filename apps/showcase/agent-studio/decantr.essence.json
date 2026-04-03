@@ -1,0 +1,572 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Precision engineering studio for AI agents. Carbon-dark surfaces with neon cyan highlights on active elements. Monospace typography for all prompts, traces, and model outputs. Split-pane interfaces reminiscent of an IDE — left tree, center editor, right preview. Think VS Code meets Langsmith. Interactions are immediate and keyboard-first. Every surface exists to reduce iteration cycles. Lucide icons. No decoration — every pixel serves the builder."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "agent-studio",
+        "role": "primary",
+        "shell": "sidebar-aside",
+        "features": [
+          "agents",
+          "tools",
+          "prompts",
+          "real-time-preview",
+          "keyboard-shortcuts"
+        ],
+        "description": "Core agent building workspace for designing, configuring, and testing AI agents with a three-panel editor, tool management, and live preview.",
+        "pages": [
+          {
+            "id": "agents",
+            "layout": [
+              "agent-cards"
+            ],
+            "route": "/agents"
+          },
+          {
+            "id": "agent-detail",
+            "layout": [
+              "editor-layout",
+              "live-preview"
+            ],
+            "route": "/agents/:id"
+          },
+          {
+            "id": "agent-config",
+            "layout": [
+              "config-form"
+            ],
+            "route": "/agents/config"
+          },
+          {
+            "id": "agent-tools",
+            "layout": [
+              "tool-manager",
+              "tool-schema-editor"
+            ],
+            "route": "/agents/tools"
+          }
+        ]
+      },
+      {
+        "id": "prompt-library",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "versioning",
+          "diff",
+          "search",
+          "tags"
+        ],
+        "description": "Version-controlled prompt library for authoring, searching, comparing, and testing prompts with full diff history and evaluation results.",
+        "pages": [
+          {
+            "id": "prompts",
+            "layout": [
+              "prompt-table"
+            ],
+            "route": "/prompts"
+          },
+          {
+            "id": "prompt-detail",
+            "layout": [
+              "prompt-editor",
+              "version-timeline"
+            ],
+            "route": "/prompts/:id"
+          },
+          {
+            "id": "prompt-compare",
+            "layout": [
+              "prompt-diff",
+              "test-results"
+            ],
+            "route": "/prompts/compare"
+          }
+        ]
+      },
+      {
+        "id": "tool-registry",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "tools",
+          "schemas",
+          "analytics"
+        ],
+        "description": "Centralized registry of agent tools with JSON schema editing, interactive test playground, and usage analytics.",
+        "pages": [
+          {
+            "id": "tools",
+            "layout": [
+              "tool-catalog"
+            ],
+            "route": "/tools"
+          },
+          {
+            "id": "tool-detail",
+            "layout": [
+              "schema-editor",
+              "test-playground"
+            ],
+            "route": "/tools/:id"
+          }
+        ]
+      },
+      {
+        "id": "eval-suite",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "evaluation",
+          "comparison",
+          "regression-detection"
+        ],
+        "description": "Model evaluation test suite for running, reviewing, and comparing evaluation results with per-test breakdowns and regression detection.",
+        "pages": [
+          {
+            "id": "evals",
+            "layout": [
+              "eval-list"
+            ],
+            "route": "/evals"
+          },
+          {
+            "id": "eval-detail",
+            "layout": [
+              "eval-results"
+            ],
+            "route": "/evals/:id"
+          },
+          {
+            "id": "eval-compare",
+            "layout": [
+              "model-comparison"
+            ],
+            "route": "/evals/compare"
+          },
+          {
+            "id": "eval-create",
+            "layout": [
+              "eval-config",
+              "test-case-table"
+            ],
+            "route": "/evals/create"
+          }
+        ]
+      },
+      {
+        "id": "trace-viewer",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "traces",
+          "observability",
+          "replay"
+        ],
+        "description": "Agent execution trace viewer for inspecting request waterfalls, step timelines, and replaying agent interactions with full observability.",
+        "pages": [
+          {
+            "id": "traces",
+            "layout": [
+              "trace-list"
+            ],
+            "route": "/traces"
+          },
+          {
+            "id": "trace-detail",
+            "layout": [
+              "waterfall",
+              "step-timeline"
+            ],
+            "route": "/traces/:id"
+          }
+        ]
+      },
+      {
+        "id": "marketing-ai-studio",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Marketing landing page for the AI Agent Studio, showcasing features, workflow demos, pricing tiers, and conversion CTAs.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "landing-hero",
+              "feature-showcase",
+              "workflow-steps",
+              "pricing-tiers",
+              "bottom-cta"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-aside",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "agents",
+      "tools",
+      "prompts",
+      "real-time-preview",
+      "keyboard-shortcuts",
+      "versioning",
+      "diff",
+      "search",
+      "tags",
+      "schemas",
+      "analytics",
+      "evaluation",
+      "comparison",
+      "regression-detection",
+      "traces",
+      "observability",
+      "replay",
+      "marketing",
+      "seo",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-ai-studio",
+        "page": "home"
+      },
+      "/evals": {
+        "section": "eval-suite",
+        "page": "evals"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/tools": {
+        "section": "tool-registry",
+        "page": "tools"
+      },
+      "/agents": {
+        "section": "agent-studio",
+        "page": "agents"
+      },
+      "/traces": {
+        "section": "trace-viewer",
+        "page": "traces"
+      },
+      "/prompts": {
+        "section": "prompt-library",
+        "page": "prompts"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/evals/:id": {
+        "section": "eval-suite",
+        "page": "eval-detail"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/tools/:id": {
+        "section": "tool-registry",
+        "page": "tool-detail"
+      },
+      "/agents/:id": {
+        "section": "agent-studio",
+        "page": "agent-detail"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/traces/:id": {
+        "section": "trace-viewer",
+        "page": "trace-detail"
+      },
+      "/prompts/:id": {
+        "section": "prompt-library",
+        "page": "prompt-detail"
+      },
+      "/agents/tools": {
+        "section": "agent-studio",
+        "page": "agent-tools"
+      },
+      "/evals/create": {
+        "section": "eval-suite",
+        "page": "eval-create"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/agents/config": {
+        "section": "agent-studio",
+        "page": "agent-config"
+      },
+      "/evals/compare": {
+        "section": "eval-suite",
+        "page": "eval-compare"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/prompts/compare": {
+        "section": "prompt-library",
+        "page": "prompt-compare"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "agent-studio",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g a",
+          "label": "Go to Agents",
+          "route": "/agents"
+        },
+        {
+          "key": "g p",
+          "label": "Go to Prompts",
+          "route": "/prompts"
+        },
+        {
+          "key": "g t",
+          "label": "Go to Tools",
+          "route": "/tools"
+        },
+        {
+          "key": "g e",
+          "label": "Go to Evals",
+          "route": "/evals"
+        },
+        {
+          "key": "g r",
+          "label": "Go to Traces",
+          "route": "/traces"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

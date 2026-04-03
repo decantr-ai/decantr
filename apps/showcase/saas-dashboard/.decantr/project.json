@@ -1,0 +1,50 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:48:41.310Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:48:41.310Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=saas-dashboard --theme=auradecantism --mode=dark --guard=strict"
+  },
+  "blueprintId": "saas-dashboard",
+  "voice": {
+    "tone": "Clear and professional. Data-forward.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Dear user"
+    ],
+    "errors": "Direct and helpful. State what went wrong and suggest a fix. No blame language.",
+    "loading": "Show skeleton placeholders matching the content shape. No spinner text — let the layout speak.",
+    "cta_verbs": [
+      "Analyze",
+      "Configure",
+      "Invite",
+      "Upgrade",
+      "Export",
+      "Monitor"
+    ],
+    "empty_states": "Friendly and action-oriented. Explain what will appear here and provide a single clear next step."
+  }
+}

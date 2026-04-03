@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:52:27.497Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:52:27.497Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=observability-platform --theme=fintech --mode=dark --guard=strict"
+  },
+  "blueprintId": "observability-platform",
+  "voice": {
+    "tone": "Operational and direct. Speaks to SREs and platform engineers.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Exciting"
+    ],
+    "errors": "Diagnostic and precise. Include timestamps, request IDs, and suggested remediation. Link to runbooks.",
+    "loading": "Chart skeleton placeholders with axis lines. Metric cards show pulsing number placeholders. Log lines stream in progressively.",
+    "cta_verbs": [
+      "Investigate",
+      "Filter",
+      "Drill Down",
+      "Acknowledge",
+      "Resolve",
+      "Silence"
+    ],
+    "empty_states": "Operational calm. No data means no incidents — show a green status indicator and guide users to configure their first data source."
+  }
+}

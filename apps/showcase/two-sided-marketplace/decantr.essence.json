@@ -1,0 +1,561 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "clean",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Clean, trustworthy marketplace that serves both sides fairly. White/light surfaces with a single accent color for CTAs. Listing cards are image-forward with clean typography. Search and filtering are powerful but never overwhelming. Reviews are prominent — social proof drives conversion. Messaging is simple and contextual. Seller dashboard is data-rich but not intimidating. Comparison tools help buyers decide. Lucide icons. Mobile-first thinking."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "listing-browser",
+        "role": "primary",
+        "shell": "top-nav-main",
+        "features": [
+          "search",
+          "filters",
+          "map-view",
+          "image-gallery"
+        ],
+        "description": "Browse and search marketplace listings with grid, map, and detail views. Core discovery interface for two-sided marketplaces.",
+        "pages": [
+          {
+            "id": "browse",
+            "layout": [
+              "search-filters",
+              "listings",
+              "map"
+            ],
+            "route": "/browse"
+          },
+          {
+            "id": "listing-detail",
+            "layout": [
+              "header",
+              "details",
+              "availability"
+            ],
+            "route": "/listings/:id"
+          },
+          {
+            "id": "search",
+            "layout": [
+              "search-filters",
+              "results"
+            ],
+            "route": "/search"
+          }
+        ]
+      },
+      {
+        "id": "buyer-dashboard",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "bookings",
+          "favorites",
+          "messaging"
+        ],
+        "description": "Buyer account hub with bookings, saved favorites, and messaging. Centralizes the buyer experience in a two-sided marketplace.",
+        "pages": [
+          {
+            "id": "bookings",
+            "layout": [
+              "booking-list"
+            ],
+            "route": "/bookings"
+          },
+          {
+            "id": "favorites",
+            "layout": [
+              "saved-listings"
+            ],
+            "route": "/favorites"
+          },
+          {
+            "id": "messages",
+            "layout": [
+              "threads",
+              "active-thread"
+            ],
+            "route": "/buyer/messages"
+          }
+        ]
+      },
+      {
+        "id": "seller-dashboard",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "listings",
+          "analytics",
+          "earnings",
+          "reviews"
+        ],
+        "description": "Seller management hub with listing management, performance analytics, earnings tracking, and review monitoring for marketplace sellers.",
+        "pages": [
+          {
+            "id": "seller-overview",
+            "layout": [
+              "metrics",
+              "recent-activity"
+            ],
+            "route": "/seller"
+          },
+          {
+            "id": "seller-listings",
+            "layout": [
+              "listings-table"
+            ],
+            "route": "/seller/listings"
+          },
+          {
+            "id": "seller-listing-edit",
+            "layout": [
+              "listing-form"
+            ],
+            "route": "/seller/listings/:id/edit"
+          },
+          {
+            "id": "seller-analytics",
+            "layout": [
+              "summary-kpis",
+              "charts",
+              "trends"
+            ],
+            "route": "/seller/analytics"
+          },
+          {
+            "id": "seller-reviews",
+            "layout": [
+              "reviews-table"
+            ],
+            "route": "/seller/reviews"
+          }
+        ]
+      },
+      {
+        "id": "marketplace-messaging",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "messaging",
+          "contextual-listing-cards"
+        ],
+        "description": "Dedicated message center for marketplace buyer-seller communication with conversation list and threaded chat views.",
+        "pages": [
+          {
+            "id": "messages",
+            "layout": [
+              "inbox",
+              "active-thread"
+            ],
+            "route": "/messages"
+          },
+          {
+            "id": "thread",
+            "layout": [
+              "conversation"
+            ],
+            "route": "/messages/:id"
+          }
+        ]
+      },
+      {
+        "id": "review-system",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "reviews",
+          "ratings",
+          "photos"
+        ],
+        "description": "Review submission flow for marketplace transactions. Allows buyers to rate, write text reviews, and upload photos after a completed booking.",
+        "pages": [
+          {
+            "id": "write-review",
+            "layout": [
+              "review-form"
+            ],
+            "route": "/reviews/write"
+          }
+        ]
+      },
+      {
+        "id": "marketing-marketplace",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo",
+          "featured-listings"
+        ],
+        "description": "Public-facing marketing and landing pages for a two-sided marketplace. Showcases featured listings, categories, testimonials, and conversion CTAs.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "featured-listings",
+              "social-proof",
+              "cta"
+            ],
+            "route": "/"
+          },
+          {
+            "id": "about",
+            "layout": [
+              "about-hero"
+            ],
+            "route": "/about"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "search",
+      "filters",
+      "map-view",
+      "image-gallery",
+      "bookings",
+      "favorites",
+      "messaging",
+      "listings",
+      "analytics",
+      "earnings",
+      "reviews",
+      "contextual-listing-cards",
+      "ratings",
+      "photos",
+      "marketing",
+      "seo",
+      "featured-listings",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-marketplace",
+        "page": "home"
+      },
+      "/about": {
+        "section": "marketing-marketplace",
+        "page": "about"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/browse": {
+        "section": "listing-browser",
+        "page": "browse"
+      },
+      "/search": {
+        "section": "listing-browser",
+        "page": "search"
+      },
+      "/seller": {
+        "section": "seller-dashboard",
+        "page": "seller-overview"
+      },
+      "/bookings": {
+        "section": "buyer-dashboard",
+        "page": "bookings"
+      },
+      "/messages": {
+        "section": "marketplace-messaging",
+        "page": "messages"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/favorites": {
+        "section": "buyer-dashboard",
+        "page": "favorites"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/listings/:id": {
+        "section": "listing-browser",
+        "page": "listing-detail"
+      },
+      "/messages/:id": {
+        "section": "marketplace-messaging",
+        "page": "thread"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reviews/write": {
+        "section": "review-system",
+        "page": "write-review"
+      },
+      "/buyer/messages": {
+        "section": "buyer-dashboard",
+        "page": "messages"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/seller/reviews": {
+        "section": "seller-dashboard",
+        "page": "seller-reviews"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/seller/listings": {
+        "section": "seller-dashboard",
+        "page": "seller-listings"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/seller/analytics": {
+        "section": "seller-dashboard",
+        "page": "seller-analytics"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      },
+      "/seller/listings/:id/edit": {
+        "section": "seller-dashboard",
+        "page": "seller-listing-edit"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "listing-browser",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication",
+        "Product",
+        "Review"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g b",
+          "label": "Go to Browse",
+          "route": "/browse"
+        },
+        {
+          "key": "g s",
+          "label": "Go to Seller Dashboard",
+          "route": "/seller"
+        },
+        {
+          "key": "g m",
+          "label": "Go to Messages",
+          "route": "/messages"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

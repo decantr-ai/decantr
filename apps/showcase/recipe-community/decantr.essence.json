@@ -1,0 +1,479 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "auradecantism",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Warm, appetite-driven recipe community with rich food photography as the visual anchor. Earthy tones with pops of warm orange and herb green. Card-based recipe grid where each card is a gorgeous food photo with overlaid title. Recipe detail pages flow: hero image, ingredient list with drag-to-reorder, step-by-step instructions with the stepper pattern. Cook mode is distraction-free with large text and step navigation. Social features include emoji reactions, collections, and creator profiles. Lucide icons. Everything makes you hungry."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "recipe-browser",
+        "role": "primary",
+        "shell": "top-nav-main",
+        "features": [
+          "search",
+          "filter",
+          "gallery",
+          "sharing"
+        ],
+        "description": "Browse and search recipes with filterable card grid and rich recipe detail pages with step-by-step instructions.",
+        "pages": [
+          {
+            "id": "recipes",
+            "layout": [
+              "recipe-search",
+              "recipe-grid"
+            ],
+            "route": "/recipes"
+          },
+          {
+            "id": "recipe-detail",
+            "layout": [
+              "recipe-hero",
+              "recipe-header",
+              "recipe-steps"
+            ],
+            "route": "/recipes/:id"
+          }
+        ]
+      },
+      {
+        "id": "cook-mode",
+        "role": "auxiliary",
+        "shell": "minimal-header",
+        "features": [
+          "timer",
+          "voice-control",
+          "wake-lock"
+        ],
+        "description": "Distraction-free step-by-step cooking interface with large text, step navigation, and minimal chrome for hands-free kitchen use.",
+        "pages": [
+          {
+            "id": "cooking",
+            "layout": [
+              "step-nav",
+              "step-carousel"
+            ],
+            "route": "/recipes/:id/cook"
+          }
+        ]
+      },
+      {
+        "id": "recipe-creator",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "drag-drop",
+          "image-upload",
+          "autosave",
+          "preview"
+        ],
+        "description": "Recipe creation editor with sectioned forms, drag-and-drop ingredient and step ordering, and a personal recipe management table.",
+        "pages": [
+          {
+            "id": "create",
+            "layout": [
+              "recipe-form",
+              "ingredient-list"
+            ],
+            "route": "/recipes/create"
+          },
+          {
+            "id": "my-recipes",
+            "layout": [
+              "recipe-table"
+            ],
+            "route": "/my-recipes"
+          }
+        ]
+      },
+      {
+        "id": "recipe-social",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "follow",
+          "reactions",
+          "collections",
+          "sharing"
+        ],
+        "description": "Social features for the recipe community: activity feed, emoji reactions, recipe collections, and creator profiles with follow functionality.",
+        "pages": [
+          {
+            "id": "feed",
+            "layout": [
+              "feed-grid",
+              "social-feed",
+              "reactions"
+            ],
+            "route": "/feed"
+          },
+          {
+            "id": "collections",
+            "layout": [
+              "collection-grid"
+            ],
+            "route": "/collections"
+          },
+          {
+            "id": "profile",
+            "layout": [
+              "chef-profile",
+              "profile-recipes"
+            ],
+            "route": "/profile/:id"
+          }
+        ]
+      },
+      {
+        "id": "marketing-recipe",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Public marketing landing page for the recipe community platform with hero, featured recipes, testimonials, and conversion CTAs.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "landing-hero",
+              "featured-recipes",
+              "community-quotes",
+              "join-cta"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "search",
+      "filter",
+      "gallery",
+      "sharing",
+      "timer",
+      "voice-control",
+      "wake-lock",
+      "drag-drop",
+      "image-upload",
+      "autosave",
+      "preview",
+      "follow",
+      "reactions",
+      "collections",
+      "marketing",
+      "seo",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-recipe",
+        "page": "home"
+      },
+      "/feed": {
+        "section": "recipe-social",
+        "page": "feed"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/recipes": {
+        "section": "recipe-browser",
+        "page": "recipes"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/my-recipes": {
+        "section": "recipe-creator",
+        "page": "my-recipes"
+      },
+      "/collections": {
+        "section": "recipe-social",
+        "page": "collections"
+      },
+      "/profile/:id": {
+        "section": "recipe-social",
+        "page": "profile"
+      },
+      "/recipes/:id": {
+        "section": "recipe-browser",
+        "page": "recipe-detail"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/recipes/create": {
+        "section": "recipe-creator",
+        "page": "create"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/recipes/:id/cook": {
+        "section": "cook-mode",
+        "page": "cooking"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "recipe-browser",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication",
+        "Recipe",
+        "CollectionPage"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g r",
+          "label": "Go to Recipes",
+          "route": "/recipes"
+        },
+        {
+          "key": "g f",
+          "label": "Go to Feed",
+          "route": "/feed"
+        },
+        {
+          "key": "g c",
+          "label": "Go to Collections",
+          "route": "/collections"
+        },
+        {
+          "key": "g n",
+          "label": "New Recipe",
+          "route": "/recipes/create"
+        },
+        {
+          "key": "g m",
+          "label": "My Recipes",
+          "route": "/my-recipes"
+        },
+        {
+          "key": "g p",
+          "label": "Go to Profile",
+          "route": "/profile/me"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

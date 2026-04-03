@@ -1,0 +1,50 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:49:42.826Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:49:42.826Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=financial-dashboard --theme=auradecantism --mode=dark --guard=strict"
+  },
+  "blueprintId": "financial-dashboard",
+  "voice": {
+    "tone": "Precise and trustworthy. Speaks to investors and financial planners.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Exciting opportunity"
+    ],
+    "errors": "Clear and specific. Include error codes where applicable. For data sync failures, show last-known-good timestamp.",
+    "loading": "Skeleton rows in tables and chart outlines. Show stale data with a subtle 'Updating...' badge rather than blank screens.",
+    "cta_verbs": [
+      "Invest",
+      "Track",
+      "Analyze",
+      "Budget",
+      "Compare",
+      "Export"
+    ],
+    "empty_states": "Matter-of-fact. Explain what data will appear and how to configure the data source. No playful language."
+  }
+}

@@ -47,36 +47,34 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       total = result.total;
     }
   } catch {
-    // API unavailable — empty state rendered below
+    // API unavailable
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-d-text">Browse</h1>
-        <p className="text-sm text-d-muted">
+    <div style={{ padding: '2rem 1.5rem', maxWidth: 1200, margin: '0 auto' }}>
+      <div className="flex flex-col gap-1" style={{ marginBottom: '1.5rem' }}>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--d-text)' }}>
+          Browse
+        </h1>
+        <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
           Explore the design intelligence registry.
         </p>
       </div>
 
       <Suspense>
-        <SearchFilterBar />
+        <SearchFilterBar resultCount={total} />
       </Suspense>
 
-      {q && (
-        <p className="text-sm text-d-muted">
-          {total} result{total !== 1 ? 's' : ''} for &ldquo;{q}&rdquo;
-        </p>
-      )}
-
-      <ContentCardGrid
-        items={items}
-        emptyMessage={
-          q
-            ? `No results found for "${q}". Try a different search.`
-            : 'No content available yet. Check back soon.'
-        }
-      />
+      <div style={{ marginTop: '2rem' }}>
+        <ContentCardGrid
+          items={items}
+          emptyMessage={
+            q
+              ? `No results found for "${q}". Try a different search.`
+              : 'No content available yet. Check back soon.'
+          }
+        />
+      </div>
 
       <Suspense>
         <Pagination total={total} limit={LIMIT} offset={offset} />

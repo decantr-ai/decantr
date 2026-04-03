@@ -3,42 +3,104 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 
-const CONTENT_TYPES = [
-  { value: '', label: 'All' },
-  { value: 'patterns', label: 'Patterns' },
-  { value: 'themes', label: 'Themes' },
-  { value: 'blueprints', label: 'Blueprints' },
-  { value: 'shells', label: 'Shells' },
-  { value: 'archetypes', label: 'Archetypes' },
-] as const;
+// Inline SVG icons (14px, stroke-based) to avoid adding lucide-react dependency
+function IconGrid(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+    </svg>
+  );
+}
+function IconComponent(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l2 2L13 7M17 13l2 2-2 2" />
+      <path d="M20 3h1v1M20 7h1v1M14 13h1v1M14 17h1v1" />
+    </svg>
+  );
+}
+function IconPalette(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="13.5" cy="6.5" r="0.5" fill="currentColor" /><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor" />
+      <circle cx="8.5" cy="7.5" r="0.5" fill="currentColor" /><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor" />
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+    </svg>
+  );
+}
+function IconLayers(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
+      <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
+      <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
+    </svg>
+  );
+}
+function IconBox(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+      <path d="m3.3 7 8.7 5 8.7-5M12 22V12" />
+    </svg>
+  );
+}
+function IconCube(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+    </svg>
+  );
+}
+
+const TYPES: { label: string; icon: React.ReactNode }[] = [
+  { label: 'All', icon: <IconGrid /> },
+  { label: 'Patterns', icon: <IconComponent /> },
+  { label: 'Themes', icon: <IconPalette /> },
+  { label: 'Blueprints', icon: <IconLayers /> },
+  { label: 'Shells', icon: <IconBox /> },
+  { label: 'Archetypes', icon: <IconCube /> },
+];
 
 const SORT_OPTIONS = [
-  { value: 'relevance', label: 'Relevance' },
-  { value: 'newest', label: 'Newest' },
   { value: 'popular', label: 'Popular' },
+  { value: 'newest', label: 'Most Downloaded' },
+  { value: 'recent', label: 'Recently Updated' },
+  { value: 'name', label: 'Name A-Z' },
 ] as const;
 
 interface SearchFilterBarProps {
   baseUrl?: string;
   showSort?: boolean;
+  resultCount?: number;
 }
 
-export function SearchFilterBar({ baseUrl = '/browse', showSort = true }: SearchFilterBarProps) {
+export function SearchFilterBar({
+  baseUrl = '/browse',
+  showSort = true,
+  resultCount,
+}: SearchFilterBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const currentQuery = searchParams.get('q') ?? '';
   const currentType = searchParams.get('type') ?? '';
-  const currentSort = searchParams.get('sort') ?? 'relevance';
+  const currentSort = searchParams.get('sort') ?? 'popular';
 
   const [query, setQuery] = useState(currentQuery);
+
+  // Map URL type param back to display label
+  const activeLabel = currentType
+    ? TYPES.find(
+        (t) => t.label.toLowerCase() === currentType || t.label.toLowerCase().replace(/s$/, '') === currentType,
+      )?.label ?? 'All'
+    : 'All';
 
   const navigate = useCallback(
     (updates: Record<string, string>) => {
       const params = new URLSearchParams(searchParams.toString());
-
-      // Reset offset on any filter change
       params.delete('offset');
 
       for (const [key, value] of Object.entries(updates)) {
@@ -62,8 +124,8 @@ export function SearchFilterBar({ baseUrl = '/browse', showSort = true }: Search
     navigate({ q: query });
   }
 
-  function handleTypeChange(type: string) {
-    navigate({ type });
+  function handleTypeChange(label: string) {
+    navigate({ type: label === 'All' ? '' : label.toLowerCase() });
   }
 
   function handleSortChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -71,8 +133,8 @@ export function SearchFilterBar({ baseUrl = '/browse', showSort = true }: Search
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Search row */}
+    <div className="flex flex-col gap-4">
+      {/* Search input */}
       <form onSubmit={handleSubmit} className="relative">
         <svg
           width="16"
@@ -83,7 +145,14 @@ export function SearchFilterBar({ baseUrl = '/browse', showSort = true }: Search
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-d-muted pointer-events-none"
+          className="pointer-events-none"
+          style={{
+            position: 'absolute',
+            left: '0.75rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--d-text-muted)',
+          }}
         >
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -93,60 +162,72 @@ export function SearchFilterBar({ baseUrl = '/browse', showSort = true }: Search
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search patterns, themes, blueprints..."
-          className="d-control pl-10 pr-4 w-full focus:border-d-accent"
+          className="d-control w-full"
+          style={{ paddingLeft: '2.25rem' }}
           aria-label="Search registry content"
         />
         {isPending && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div
+            className="absolute"
+            style={{ right: '0.75rem', top: '50%', transform: 'translateY(-50%)' }}
+          >
             <div className="w-4 h-4 border-2 border-d-muted border-t-d-primary rounded-full animate-spin" />
           </div>
         )}
       </form>
 
-      {/* Filter row */}
-      <div className="flex flex-wrap items-center gap-3">
+      {/* Filters row */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         {/* Type tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto">
-          {CONTENT_TYPES.map((ct) => {
-            const isActive = currentType === ct.value;
-            return (
-              <button
-                key={ct.value}
-                onClick={() => handleTypeChange(ct.value)}
-                className={`d-interactive py-1 px-3 text-xs rounded-full whitespace-nowrap transition-colors ${
-                  isActive
-                    ? 'bg-d-primary text-white border-d-primary'
-                    : ''
-                }`}
-                data-variant={isActive ? 'primary' : 'ghost'}
-                aria-pressed={isActive}
-              >
-                {ct.label}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2 flex-wrap">
+          {TYPES.map(({ label, icon }) => (
+            <button
+              key={label}
+              className="d-interactive"
+              data-variant={activeLabel === label ? 'primary' : 'ghost'}
+              onClick={() => handleTypeChange(label)}
+              style={{
+                borderRadius: 'var(--d-radius-full)',
+                fontSize: '0.8125rem',
+                padding: '0.25rem 0.75rem',
+                gap: '0.375rem',
+              }}
+            >
+              {icon}
+              {label}
+            </button>
+          ))}
         </div>
 
-        {/* Sort dropdown */}
-        {showSort && (
-          <div className="ml-auto flex items-center gap-2">
-            <label htmlFor="sort-select" className="text-xs text-d-muted whitespace-nowrap">
-              Sort by
-            </label>
-            <select
-              id="sort-select"
-              value={currentSort}
-              onChange={handleSortChange}
-              className="d-control py-1 px-2 text-xs w-auto min-w-[120px]"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {resultCount !== undefined && (
+            <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              {resultCount} results
+            </span>
+          )}
+          {showSort && (
+            <div className="flex items-center gap-2">
+              <span
+                className="text-sm whitespace-nowrap"
+                style={{ color: 'var(--d-text-muted)' }}
+              >
+                Sort by
+              </span>
+              <select
+                value={currentSort}
+                onChange={handleSortChange}
+                className="d-control"
+                style={{ width: 'auto', minWidth: 160 }}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

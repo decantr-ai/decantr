@@ -1,0 +1,159 @@
+/* Auradecantism theme decorators */
+@layer decorators {
+
+/* ── Mesh gradient background ── */
+.d-mesh {
+  position: relative;
+  background-color: var(--d-bg);
+  background-image:
+    radial-gradient(ellipse at 20% 0%, color-mix(in srgb, var(--d-accent) 12%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, color-mix(in srgb, var(--d-primary) 10%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, color-mix(in srgb, var(--d-secondary, #0EA5E9) 6%, transparent) 0%, transparent 50%);
+}
+
+/* ── Frosted glass panel ── */
+.d-glass {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Strong glass (overlays, modals) ── */
+.d-glass-strong {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* ── Floating gradient orb decoration ── */
+.aura-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  animation: aura-float 12s ease-in-out infinite;
+}
+
+.aura-orb--pink {
+  width: 400px;
+  height: 400px;
+  background: color-mix(in srgb, var(--d-accent) 25%, transparent);
+}
+
+.aura-orb--purple {
+  width: 350px;
+  height: 350px;
+  background: color-mix(in srgb, var(--d-primary) 20%, transparent);
+}
+
+.aura-orb--cyan {
+  width: 300px;
+  height: 300px;
+  background: color-mix(in srgb, var(--d-secondary, #0EA5E9) 18%, transparent);
+}
+
+@keyframes aura-float {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  33% { transform: translate(15px, -20px) scale(1.05); opacity: 1; }
+  66% { transform: translate(-10px, 10px) scale(0.95); opacity: 0.8; }
+}
+
+/* ── Glow effects ── */
+.aura-glow {
+  box-shadow: 0 0 30px color-mix(in srgb, var(--d-primary) 20%, transparent);
+}
+
+.aura-glow-strong {
+  box-shadow: 0 0 40px color-mix(in srgb, var(--d-primary) 35%, transparent);
+}
+
+.d-glow-primary {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--d-primary) 25%, transparent);
+}
+
+.d-glow-accent {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--d-accent) 25%, transparent);
+}
+
+/* ── Animated ring on focus/active ── */
+.aura-ring {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--d-primary) 40%, transparent);
+  transition: box-shadow 0.2s ease;
+}
+
+.aura-ring:hover {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-primary) 60%, transparent);
+}
+
+/* ── Gradient text ── */
+.d-gradient-text {
+  background: linear-gradient(135deg, var(--d-accent), var(--d-secondary, #0EA5E9));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.d-gradient-text-alt {
+  background: linear-gradient(135deg, var(--d-primary), var(--d-accent), var(--d-secondary, #0EA5E9));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Icon glow container ── */
+.d-icon-glow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--d-radius);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--d-primary) 20%, transparent), color-mix(in srgb, var(--d-accent) 15%, transparent));
+}
+
+/* ── Stat glow ── */
+.d-stat-glow {
+  text-shadow: 0 0 20px color-mix(in srgb, var(--d-primary) 40%, transparent);
+}
+
+/* ── Shimmer animation ── */
+.aura-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.aura-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+  animation: aura-shimmer-move 3s ease-in-out infinite;
+}
+
+@keyframes aura-shimmer-move {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ── Subtle gradient hints ── */
+.d-gradient-hint-primary {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--d-primary) 6%, var(--d-surface)), var(--d-surface));
+}
+
+.d-gradient-hint-accent {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--d-accent) 6%, var(--d-surface)), var(--d-surface));
+}
+
+} /* end @layer decorators */
+
+@media (prefers-reduced-motion: reduce) {
+  .aura-orb,
+  .aura-shimmer::after {
+    animation: none !important;
+  }
+}

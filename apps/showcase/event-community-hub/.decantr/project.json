@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:50:51.268Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:50:51.268Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=event-community-hub --theme=dopamine --mode=dark --guard=strict"
+  },
+  "blueprintId": "event-community-hub",
+  "voice": {
+    "tone": "Enthusiastic and inclusive. Celebratory.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Corporate"
+    ],
+    "errors": "Friendly and reassuring. Never kill the vibe. Offer quick recovery and keep the energy up.",
+    "loading": "Vibrant gradient skeleton cards. Event images load progressively. Feed items animate in with subtle bounce.",
+    "cta_verbs": [
+      "Join",
+      "RSVP",
+      "Share",
+      "Watch",
+      "Connect",
+      "Discover"
+    ],
+    "empty_states": "Inviting and energetic. No events yet? Show trending communities and upcoming highlights. Always feel alive."
+  }
+}

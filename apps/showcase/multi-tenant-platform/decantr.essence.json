@@ -1,0 +1,516 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "launchpad",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Enterprise-grade platform console built for trust and scale. Navy-to-violet gradient accents on clean white/dark surfaces. Organization switcher prominent in the top-left. Dense data tables with inline actions. API console feels like Stripe's — polished, developer-friendly. Billing shows clear usage breakdowns. Audit logs are prominent. Lucide icons. System sans with monospace for IDs, keys, and code."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "tenant-switcher-dashboard",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "multi-tenant",
+          "org-switcher",
+          "team-management",
+          "roles"
+        ],
+        "description": "Org-scoped dashboard with tenant switching, KPI overview, team management, and organization settings for multi-tenant SaaS platforms.",
+        "pages": [
+          {
+            "id": "overview",
+            "layout": [
+              "kpis",
+              "activity",
+              "quick-actions"
+            ],
+            "route": "/overview"
+          },
+          {
+            "id": "members",
+            "layout": [
+              "members-table",
+              "permissions"
+            ],
+            "route": "/members"
+          },
+          {
+            "id": "org-settings",
+            "layout": [
+              "org-form",
+              "account"
+            ],
+            "route": "/org-settings"
+          }
+        ]
+      },
+      {
+        "id": "api-console",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "api-console",
+          "api-keys",
+          "webhooks",
+          "documentation"
+        ],
+        "description": "Interactive API documentation, key management, and webhook configuration console for developer-facing SaaS platforms.",
+        "pages": [
+          {
+            "id": "api-docs",
+            "layout": [
+              "explorer"
+            ],
+            "route": "/api/docs"
+          },
+          {
+            "id": "api-keys",
+            "layout": [
+              "keys-table"
+            ],
+            "route": "/api/keys"
+          },
+          {
+            "id": "webhooks",
+            "layout": [
+              "webhooks-table",
+              "debugger"
+            ],
+            "route": "/api/webhooks"
+          }
+        ]
+      },
+      {
+        "id": "usage-billing",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "billing",
+          "usage-metering",
+          "invoices",
+          "plans"
+        ],
+        "description": "Usage metering dashboard, plan management, payment configuration, and invoice history for consumption-based SaaS billing.",
+        "pages": [
+          {
+            "id": "usage",
+            "layout": [
+              "meters",
+              "charts",
+              "usage-details"
+            ],
+            "route": "/usage"
+          },
+          {
+            "id": "billing",
+            "layout": [
+              "plan-selector",
+              "payment-form",
+              "recent-payments"
+            ],
+            "route": "/billing"
+          },
+          {
+            "id": "invoices",
+            "layout": [
+              "invoices-table"
+            ],
+            "route": "/invoices"
+          }
+        ]
+      },
+      {
+        "id": "webhook-manager",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "webhooks",
+          "event-filtering",
+          "retry-logic"
+        ],
+        "description": "Webhook endpoint configuration, event filtering, delivery monitoring, and retry management for platform integrations.",
+        "pages": [
+          {
+            "id": "endpoints",
+            "layout": [
+              "endpoints-table"
+            ],
+            "route": "/webhooks"
+          },
+          {
+            "id": "endpoint-detail",
+            "layout": [
+              "endpoint-config",
+              "delivery-log"
+            ],
+            "route": "/webhooks/:id"
+          }
+        ]
+      },
+      {
+        "id": "audit-center",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "audit-trail",
+          "compliance",
+          "export",
+          "retention"
+        ],
+        "description": "Compliance audit trail with searchable event log, retention policies, export capabilities, and notification configuration for enterprise governance.",
+        "pages": [
+          {
+            "id": "audit-log",
+            "layout": [
+              "trail"
+            ],
+            "route": "/audit"
+          },
+          {
+            "id": "audit-settings",
+            "layout": [
+              "settings-form"
+            ],
+            "route": "/audit/settings"
+          }
+        ]
+      },
+      {
+        "id": "marketing-platform",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Platform marketing landing page with hero, feature showcase, pricing tiers, testimonials, and documentation hub for multi-tenant SaaS products.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "features",
+              "pricing",
+              "testimonials",
+              "cta"
+            ],
+            "route": "/"
+          },
+          {
+            "id": "docs",
+            "layout": [
+              "doc-categories"
+            ],
+            "route": "/docs"
+          }
+        ]
+      },
+      {
+        "id": "auth-flow-enterprise",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "sso",
+          "mfa",
+          "invite-flow"
+        ],
+        "description": "Enterprise authentication flow with SSO, MFA, org creation during registration, and team invitation acceptance for multi-tenant SaaS platforms.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "login-form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "register-form",
+              "org-setup"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "sso",
+            "layout": [
+              "sso-form"
+            ],
+            "route": "/sso"
+          },
+          {
+            "id": "invite-accept",
+            "layout": [
+              "invite-form"
+            ],
+            "route": "/invite"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "multi-tenant",
+      "org-switcher",
+      "team-management",
+      "roles",
+      "api-console",
+      "api-keys",
+      "webhooks",
+      "documentation",
+      "billing",
+      "usage-metering",
+      "invoices",
+      "plans",
+      "event-filtering",
+      "retry-logic",
+      "audit-trail",
+      "compliance",
+      "export",
+      "retention",
+      "marketing",
+      "seo",
+      "auth",
+      "sso",
+      "mfa",
+      "invite-flow",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-platform",
+        "page": "home"
+      },
+      "/sso": {
+        "section": "auth-flow-enterprise",
+        "page": "sso"
+      },
+      "/docs": {
+        "section": "marketing-platform",
+        "page": "docs"
+      },
+      "/audit": {
+        "section": "audit-center",
+        "page": "audit-log"
+      },
+      "/login": {
+        "section": "auth-flow-enterprise",
+        "page": "login"
+      },
+      "/usage": {
+        "section": "usage-billing",
+        "page": "usage"
+      },
+      "/invite": {
+        "section": "auth-flow-enterprise",
+        "page": "invite-accept"
+      },
+      "/billing": {
+        "section": "usage-billing",
+        "page": "billing"
+      },
+      "/members": {
+        "section": "tenant-switcher-dashboard",
+        "page": "members"
+      },
+      "/api/docs": {
+        "section": "api-console",
+        "page": "api-docs"
+      },
+      "/api/keys": {
+        "section": "api-console",
+        "page": "api-keys"
+      },
+      "/invoices": {
+        "section": "usage-billing",
+        "page": "invoices"
+      },
+      "/overview": {
+        "section": "tenant-switcher-dashboard",
+        "page": "overview"
+      },
+      "/register": {
+        "section": "auth-flow-enterprise",
+        "page": "register"
+      },
+      "/webhooks": {
+        "section": "webhook-manager",
+        "page": "endpoints"
+      },
+      "/api/webhooks": {
+        "section": "api-console",
+        "page": "webhooks"
+      },
+      "/org-settings": {
+        "section": "tenant-switcher-dashboard",
+        "page": "org-settings"
+      },
+      "/webhooks/:id": {
+        "section": "webhook-manager",
+        "page": "endpoint-detail"
+      },
+      "/audit/settings": {
+        "section": "audit-center",
+        "page": "audit-settings"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "tenant-switcher-dashboard",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g o",
+          "label": "Go to Overview",
+          "route": "/overview"
+        },
+        {
+          "key": "g a",
+          "label": "Go to API Console",
+          "route": "/api/docs"
+        },
+        {
+          "key": "g b",
+          "label": "Go to Billing",
+          "route": "/billing"
+        },
+        {
+          "key": "g u",
+          "label": "Go to Audit Log",
+          "route": "/audit"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

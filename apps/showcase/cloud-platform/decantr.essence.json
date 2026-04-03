@@ -1,0 +1,421 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "launchpad",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Enterprise-grade cloud console built for reliability and scale. Clean, systematic layout with a left sidebar for service navigation. Status indicators use semantic colors — green healthy, amber degraded, red incident. Deploy logs stream in monospace with ANSI color support. Usage charts are functional, not decorative. Dense data tables with sort, filter, and bulk actions. Think AWS Console meets Vercel — powerful but approachable. Every view should feel like a control plane."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "cloud-marketing",
+        "role": "public",
+        "shell": "full-bleed",
+        "features": [],
+        "description": "Marketing landing page for cloud and infrastructure platforms",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              {
+                "as": "brand-hero",
+                "preset": "brand",
+                "pattern": "hero"
+              },
+              {
+                "as": "feature-grid",
+                "preset": "icon",
+                "pattern": "card-grid"
+              },
+              {
+                "as": "tech-logos",
+                "preset": "marquee",
+                "pattern": "logo-strip"
+              },
+              {
+                "as": "capability-grid",
+                "preset": "icon",
+                "pattern": "card-grid"
+              },
+              {
+                "as": "platform-stats",
+                "preset": "hero",
+                "pattern": "stats-section"
+              },
+              {
+                "as": "enterprise-cta",
+                "preset": "brand",
+                "pattern": "cta-section"
+              },
+              {
+                "as": "footer",
+                "preset": "minimal",
+                "pattern": "footer"
+              }
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "cloud-infrastructure",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "realtime-data",
+          "team-management"
+        ],
+        "description": "Infrastructure management pages: apps, deployments, teams, services, tokens, usage monitoring, status, and compliance",
+        "pages": [
+          {
+            "id": "apps",
+            "layout": [
+              "filter-bar",
+              {
+                "at": "lg",
+                "cols": [
+                  {
+                    "as": "app-grid",
+                    "preset": "resource",
+                    "pattern": "card-grid"
+                  },
+                  "activity-feed"
+                ],
+                "span": {
+                  "app-grid": 2
+                }
+              }
+            ],
+            "route": "/apps"
+          },
+          {
+            "id": "app-detail",
+            "layout": [
+              "detail-header",
+              "kpi-grid",
+              {
+                "at": "lg",
+                "cols": [
+                  {
+                    "as": "log-stream",
+                    "preset": "live",
+                    "pattern": "log-stream"
+                  },
+                  "data-table"
+                ]
+              },
+              "request-trace"
+            ],
+            "route": "/apps/:id"
+          },
+          {
+            "id": "team",
+            "layout": [
+              "filter-bar",
+              {
+                "as": "team-grid",
+                "preset": "user",
+                "pattern": "card-grid"
+              }
+            ],
+            "route": "/team"
+          },
+          {
+            "id": "activity",
+            "layout": [
+              "filter-bar",
+              "activity-feed"
+            ],
+            "route": "/activity"
+          },
+          {
+            "id": "services",
+            "layout": [
+              {
+                "as": "service-grid",
+                "preset": "grid",
+                "pattern": "service-catalog"
+              },
+              "topology"
+            ],
+            "route": "/services"
+          },
+          {
+            "id": "tokens",
+            "layout": [
+              {
+                "as": "token-toolbar",
+                "preset": "toolbar",
+                "pattern": "filter-bar"
+              },
+              "data-table"
+            ],
+            "route": "/tokens"
+          },
+          {
+            "id": "usage",
+            "layout": [
+              {
+                "as": "resource-gauges",
+                "preset": "gauge-grid",
+                "pattern": "stats-overview"
+              },
+              "chart-grid"
+            ],
+            "route": "/usage"
+          },
+          {
+            "id": "status",
+            "layout": [
+              "status-board"
+            ],
+            "route": "/status"
+          },
+          {
+            "id": "compliance",
+            "layout": [
+              {
+                "as": "compliance-checklist",
+                "preset": "onboarding",
+                "pattern": "checklist-card"
+              },
+              "data-table"
+            ],
+            "route": "/compliance"
+          }
+        ]
+      },
+      {
+        "id": "billing",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "billing"
+        ],
+        "description": "Billing, payment, and subscription management",
+        "pages": [
+          {
+            "id": "billing",
+            "layout": [
+              "kpi-grid",
+              "pricing",
+              "payment-history"
+            ],
+            "default_layout": [
+              "kpi-grid",
+              "pricing-table"
+            ],
+            "route": "/billing"
+          }
+        ]
+      },
+      {
+        "id": "auth-flow",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth"
+        ],
+        "description": "Login, registration, and password recovery with OAuth support",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "auth-form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              {
+                "preset": "register",
+                "pattern": "auth-form"
+              }
+            ],
+            "route": "/register"
+          }
+        ]
+      },
+      {
+        "id": "settings",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [],
+        "description": "Application settings and preferences page",
+        "pages": [
+          {
+            "id": "settings",
+            "layout": [
+              {
+                "preset": "settings",
+                "pattern": "form-sections"
+              }
+            ],
+            "default_layout": [
+              {
+                "as": "org-settings",
+                "preset": "settings",
+                "pattern": "form-sections"
+              }
+            ],
+            "route": "/settings"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "realtime-data",
+      "team-management",
+      "billing",
+      "auth",
+      "search"
+    ],
+    "routes": {
+      "/": {
+        "section": "cloud-marketing",
+        "page": "home"
+      },
+      "/apps": {
+        "section": "cloud-infrastructure",
+        "page": "apps"
+      },
+      "/team": {
+        "section": "cloud-infrastructure",
+        "page": "team"
+      },
+      "/login": {
+        "section": "auth-flow",
+        "page": "login"
+      },
+      "/usage": {
+        "section": "cloud-infrastructure",
+        "page": "usage"
+      },
+      "/status": {
+        "section": "cloud-infrastructure",
+        "page": "status"
+      },
+      "/tokens": {
+        "section": "cloud-infrastructure",
+        "page": "tokens"
+      },
+      "/billing": {
+        "section": "billing",
+        "page": "billing"
+      },
+      "/activity": {
+        "section": "cloud-infrastructure",
+        "page": "activity"
+      },
+      "/apps/:id": {
+        "section": "cloud-infrastructure",
+        "page": "app-detail"
+      },
+      "/register": {
+        "section": "auth-flow",
+        "page": "register"
+      },
+      "/services": {
+        "section": "cloud-infrastructure",
+        "page": "services"
+      },
+      "/settings": {
+        "section": "settings",
+        "page": "settings"
+      },
+      "/compliance": {
+        "section": "cloud-infrastructure",
+        "page": "compliance"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "cloud-marketing",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:description"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g h",
+          "label": "Go to Home",
+          "route": "/"
+        },
+        {
+          "key": "g a",
+          "label": "Go to Apps",
+          "route": "/apps"
+        },
+        {
+          "key": "g u",
+          "label": "Go to Usage",
+          "route": "/usage"
+        },
+        {
+          "key": "g s",
+          "label": "Go to Status",
+          "route": "/status"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

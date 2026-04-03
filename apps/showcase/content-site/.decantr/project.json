@@ -1,0 +1,50 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:47:44.104Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:47:44.104Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=content-site --theme=editorial --mode=light --guard=strict"
+  },
+  "blueprintId": "content-site",
+  "voice": {
+    "tone": "Clear and editorial. Respects the reader's time.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now"
+    ],
+    "errors": "Minimal and unobtrusive. A 404 should suggest similar articles. Search with no results should offer alternative queries.",
+    "loading": "Article card skeletons with headline and excerpt placeholders. Subtle fade-in for content blocks. Reading experience never shows spinners.",
+    "cta_verbs": [
+      "Read",
+      "Subscribe",
+      "Browse",
+      "Share",
+      "Bookmark",
+      "Explore"
+    ],
+    "empty_states": "Editorially appropriate. An empty category should suggest related topics or popular articles to keep readers engaged."
+  }
+}

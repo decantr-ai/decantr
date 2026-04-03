@@ -1,0 +1,515 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "fintech",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": 1.15,
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "sharp",
+      "base": 4
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "minimal",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Data-dense monitoring command center. Dark backgrounds with accent-colored metric highlights. Multiple visualization types per screen — line charts, heatmaps, sparklines, gauge rings. Monospace for all metric values, timestamps, and trace IDs. Universal green/yellow/red status. Think Datadog meets Grafana. Alert system feels urgent but not panic-inducing. Lucide icons. Every millisecond matters."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "metrics-overview-dashboard",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "metrics",
+          "charts",
+          "slo-tracking",
+          "real-time"
+        ],
+        "description": "Top-level observability dashboard with KPI summaries, real-time charts, and service health maps. Primary entry point for platform-wide metrics monitoring.",
+        "pages": [
+          {
+            "id": "overview",
+            "layout": [
+              "kpi-grid",
+              "chart-grid",
+              "service-map"
+            ],
+            "route": "/metrics"
+          },
+          {
+            "id": "service-detail",
+            "layout": [
+              "kpi-grid",
+              "chart-grid",
+              "usage-meter"
+            ],
+            "route": "/metrics/:service"
+          }
+        ]
+      },
+      {
+        "id": "log-explorer-pro",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "logs",
+          "search",
+          "structured-queries",
+          "context"
+        ],
+        "description": "Advanced log search and analysis interface with streaming log viewer, structured query filters, and contextual log detail inspection.",
+        "pages": [
+          {
+            "id": "logs",
+            "layout": [
+              "filter-bar",
+              "log-stream",
+              "data-table"
+            ],
+            "route": "/logs"
+          },
+          {
+            "id": "log-detail",
+            "layout": [
+              "json-viewer",
+              "trace-waterfall"
+            ],
+            "route": "/logs/:id"
+          }
+        ]
+      },
+      {
+        "id": "trace-explorer",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "traces",
+          "service-map",
+          "latency-analysis"
+        ],
+        "description": "Distributed tracing viewer with trace search, latency histograms, full waterfall visualization, and service topology mapping.",
+        "pages": [
+          {
+            "id": "traces",
+            "layout": [
+              "chart-grid",
+              "data-table"
+            ],
+            "route": "/traces"
+          },
+          {
+            "id": "trace-detail",
+            "layout": [
+              "trace-waterfall"
+            ],
+            "route": "/traces/:id"
+          },
+          {
+            "id": "service-topology",
+            "layout": [
+              "service-map"
+            ],
+            "route": "/traces/topology"
+          }
+        ]
+      },
+      {
+        "id": "alert-manager-pro",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "alerts",
+          "incidents",
+          "rules",
+          "on-call"
+        ],
+        "description": "Alert and incident management interface with active alert views, rule builder, incident timelines, and war-room detail pages for coordinated response.",
+        "pages": [
+          {
+            "id": "alerts",
+            "layout": [
+              "kpi-grid",
+              "data-table"
+            ],
+            "route": "/alerts"
+          },
+          {
+            "id": "alert-rules",
+            "layout": [
+              "alert-rule-builder",
+              "data-table"
+            ],
+            "route": "/alerts/rules"
+          },
+          {
+            "id": "incidents",
+            "layout": [
+              "timeline",
+              "activity-feed"
+            ],
+            "route": "/incidents"
+          },
+          {
+            "id": "incident-detail",
+            "layout": [
+              "kpi-grid",
+              "chart-grid",
+              "activity-feed",
+              "timeline"
+            ],
+            "route": "/incidents/:id"
+          }
+        ]
+      },
+      {
+        "id": "marketing-observability",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Public marketing landing page for the observability platform. Showcases product vision, feature highlights, pricing tiers, testimonials, and call-to-action sections.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "features",
+              "pricing",
+              "testimonials",
+              "cta-section"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "metrics",
+      "charts",
+      "slo-tracking",
+      "real-time",
+      "logs",
+      "search",
+      "structured-queries",
+      "context",
+      "traces",
+      "service-map",
+      "latency-analysis",
+      "alerts",
+      "incidents",
+      "rules",
+      "on-call",
+      "marketing",
+      "seo",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-observability",
+        "page": "home"
+      },
+      "/logs": {
+        "section": "log-explorer-pro",
+        "page": "logs"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/alerts": {
+        "section": "alert-manager-pro",
+        "page": "alerts"
+      },
+      "/traces": {
+        "section": "trace-explorer",
+        "page": "traces"
+      },
+      "/metrics": {
+        "section": "metrics-overview-dashboard",
+        "page": "overview"
+      },
+      "/logs/:id": {
+        "section": "log-explorer-pro",
+        "page": "log-detail"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/incidents": {
+        "section": "alert-manager-pro",
+        "page": "incidents"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/traces/:id": {
+        "section": "trace-explorer",
+        "page": "trace-detail"
+      },
+      "/alerts/rules": {
+        "section": "alert-manager-pro",
+        "page": "alert-rules"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/incidents/:id": {
+        "section": "alert-manager-pro",
+        "page": "incident-detail"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/traces/topology": {
+        "section": "trace-explorer",
+        "page": "service-topology"
+      },
+      "/metrics/:service": {
+        "section": "metrics-overview-dashboard",
+        "page": "service-detail"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "metrics-overview-dashboard",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g m",
+          "label": "Go to Metrics",
+          "route": "/metrics"
+        },
+        {
+          "key": "g l",
+          "label": "Go to Logs",
+          "route": "/logs"
+        },
+        {
+          "key": "g t",
+          "label": "Go to Traces",
+          "route": "/traces"
+        },
+        {
+          "key": "g a",
+          "label": "Go to Alerts",
+          "route": "/alerts"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

@@ -4,9 +4,10 @@ import { ContentCard } from '@/components/content-card';
 interface ContentCardGridProps {
   items: ContentItem[];
   emptyMessage?: string;
+  editable?: boolean;
 }
 
-export function ContentCardGrid({ items, emptyMessage }: ContentCardGridProps) {
+export function ContentCardGrid({ items, emptyMessage, editable }: ContentCardGridProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -29,9 +30,9 @@ export function ContentCardGrid({ items, emptyMessage }: ContentCardGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lum-stagger">
+    <div className="content-card-grid">
       {items.map((item) => (
-        <ContentCard key={item.id} item={item} />
+        <ContentCard key={item.id} item={item} editable={editable} />
       ))}
     </div>
   );

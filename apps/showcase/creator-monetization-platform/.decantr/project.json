@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:54:02.840Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:54:02.840Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=creator-monetization-platform --theme=studio --mode=light --guard=strict"
+  },
+  "blueprintId": "creator-monetization-platform",
+  "voice": {
+    "tone": "Warm, encouraging, and creator-supportive. Celebrates milestones. Speaks differently to creators (empowering) vs fans (appreciative).",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Deploy"
+    ],
+    "errors": "Gentle and solution-oriented. Payment failures should reassure that no charges were made and offer alternative methods.",
+    "loading": "Content card skeletons with rounded corners and warm shimmer. Earnings charts show axis labels while data populates.",
+    "cta_verbs": [
+      "Create",
+      "Publish",
+      "Subscribe",
+      "Support",
+      "Unlock",
+      "Share"
+    ],
+    "empty_states": "Encouraging and aspirational. An empty subscriber list should celebrate that the creator is getting started and offer tips for their first post."
+  }
+}
