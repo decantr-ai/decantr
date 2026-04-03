@@ -3151,10 +3151,6 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push('');
   lines.push(`**Role:** ${section.role} | **Shell:** ${section.shell} | **Archetype:** ${section.id}`);
   lines.push(`**Description:** ${section.description}`);
-  if (shellInfo) {
-    lines.push(`**Shell structure:** ${shellInfo.description}`);
-    lines.push(`**Regions:** ${shellInfo.regions.join(', ')}`);
-  }
   if (section.dna_overrides) {
     const parts: string[] = [];
     if (section.dna_overrides.density) parts.push(`density: ${section.dna_overrides.density}`);
@@ -3164,6 +3160,14 @@ export function generateSectionContext(input: SectionContextInput): string {
     }
   }
   lines.push('');
+
+  // Quick Start
+  lines.push(...generateQuickStart(input));
+
+  // Shell Implementation
+  if (shellInfo) {
+    lines.push(...generateShellImplementation(section.shell as string, shellInfo));
+  }
 
   // Shell Notes — guidance from the shell definition
   if (shellInfo?.guidance && Object.keys(shellInfo.guidance).length > 0) {
@@ -3175,6 +3179,10 @@ export function generateSectionContext(input: SectionContextInput): string {
     }
     lines.push('');
   }
+
+  // Spacing Guide
+  const density = (section.dna_overrides?.density as string) || 'comfortable';
+  lines.push(...generateSpacingGuide(density));
 
   lines.push('---');
   lines.push('');
