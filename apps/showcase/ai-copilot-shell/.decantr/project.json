@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:44:53.247Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:44:53.247Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=ai-copilot-shell --theme=carbon --mode=dark --guard=strict"
+  },
+  "blueprintId": "ai-copilot-shell",
+  "voice": {
+    "tone": "Concise and helpful. Like a knowledgeable colleague.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Magic"
+    ],
+    "errors": "Brief and actionable. Show what went wrong and how to retry. Never verbose.",
+    "loading": "Ghost text shimmer for suggestions. Subtle pulse animation on the copilot icon. Typing indicator dots for AI responses.",
+    "cta_verbs": [
+      "Apply",
+      "Accept",
+      "Dismiss",
+      "Refine",
+      "Ask",
+      "Explain"
+    ],
+    "empty_states": "Quiet and inviting. An empty copilot panel shows a subtle prompt to ask a question or start a task. No clutter."
+  }
+}

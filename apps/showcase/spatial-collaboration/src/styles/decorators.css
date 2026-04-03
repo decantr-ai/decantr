@@ -1,0 +1,161 @@
+/* AI-generated decorator CSS from structured definitions in section context files. */
+@layer decorators {
+
+.carbon-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  transition: box-shadow var(--d-duration-hover) var(--d-easing);
+}
+.carbon-card:hover {
+  box-shadow: var(--d-shadow-md);
+}
+
+.carbon-code {
+  font-family: var(--d-font-mono);
+  background: var(--d-surface-raised);
+  border-left: 3px solid var(--d-primary);
+  padding: 0.75rem 1rem;
+  border-radius: var(--d-radius-sm);
+}
+
+.carbon-glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(31, 31, 35, 0.6);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+}
+
+.carbon-input {
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  transition: border-color var(--d-duration-hover) var(--d-easing), box-shadow var(--d-duration-hover) var(--d-easing);
+}
+.carbon-input:focus {
+  border-color: var(--d-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-primary) 25%, transparent);
+}
+
+.carbon-canvas {
+  background: var(--d-bg);
+}
+
+.carbon-divider {
+  border: none;
+  border-top: 1px solid var(--d-border);
+  margin: 0;
+}
+
+.carbon-skeleton {
+  background: var(--d-surface);
+  border-radius: var(--d-radius);
+  animation: decantr-pulse 1.5s ease-in-out infinite;
+}
+
+.carbon-bubble-ai {
+  background: var(--d-surface);
+  border-radius: var(--d-radius-lg) var(--d-radius-lg) var(--d-radius-lg) var(--d-radius-sm);
+  padding: 0.75rem 1rem;
+  max-width: 80%;
+  align-self: flex-start;
+}
+
+.carbon-bubble-user {
+  background: color-mix(in srgb, var(--d-primary) 20%, var(--d-surface));
+  border-radius: var(--d-radius-lg) var(--d-radius-lg) var(--d-radius-sm) var(--d-radius-lg);
+  padding: 0.75rem 1rem;
+  max-width: 80%;
+  align-self: flex-end;
+}
+
+.carbon-fade-slide {
+  animation: carbon-fade-slide-in var(--d-duration-entrance) var(--d-easing) both;
+}
+
+@keyframes carbon-fade-slide-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Spatial workspace decorators ── */
+
+.spatial-depth-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, color-mix(in srgb, var(--d-accent) 6%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 30%, color-mix(in srgb, var(--d-primary) 5%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, color-mix(in srgb, var(--d-accent) 4%, transparent) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.spatial-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--d-border) 30%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--d-border) 30%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.spatial-panel {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(31, 31, 35, 0.7);
+  border: 1px solid color-mix(in srgb, var(--d-border) 60%, transparent);
+  border-radius: var(--d-radius-lg);
+  box-shadow: var(--d-shadow-lg), 0 0 40px rgba(0, 0, 0, 0.3);
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 300ms var(--d-easing);
+}
+
+.spatial-panel:hover {
+  box-shadow: var(--d-shadow-lg), 0 0 60px rgba(0, 0, 0, 0.4);
+}
+
+.spatial-toolbar {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(31, 31, 35, 0.75);
+  border: 1px solid color-mix(in srgb, var(--d-border) 50%, transparent);
+  border-radius: var(--d-radius-xl);
+  box-shadow: var(--d-shadow-lg);
+}
+
+.presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.presence-dot[data-status="active"] {
+  background: var(--d-success);
+  box-shadow: 0 0 6px var(--d-success);
+}
+
+.presence-dot[data-status="idle"] {
+  background: var(--d-warning);
+}
+
+.presence-dot[data-status="away"] {
+  background: var(--d-text-muted);
+}
+
+@keyframes spatial-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes presence-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--d-success) 40%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--d-success) 0%, transparent); }
+}
+
+.spatial-float {
+  animation: spatial-float 6s ease-in-out infinite;
+}
+
+}

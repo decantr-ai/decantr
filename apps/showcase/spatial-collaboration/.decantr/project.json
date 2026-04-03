@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:45:18.284Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:45:18.284Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=spatial-collaboration --theme=carbon --mode=dark --guard=strict"
+  },
+  "blueprintId": "spatial-collaboration",
+  "voice": {
+    "tone": "Minimal and spatial-aware. UI text is brief — the canvas is the focus. Status messages are contextual to the user's position in the workspace.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy",
+      "Subscribe"
+    ],
+    "errors": "Non-intrusive. Connection drops show a subtle reconnecting indicator at the canvas edge. Conflict resolution uses visual diffing on the affected object.",
+    "loading": "Canvas grid renders immediately. Objects fade in as data arrives. Presence rings pulse gently during connection establishment. No blocking loading screens.",
+    "cta_verbs": [
+      "Create",
+      "Place",
+      "Connect",
+      "Share",
+      "Focus",
+      "Navigate"
+    ],
+    "empty_states": "Spatial and inviting. An empty canvas should show a subtle grid with a centered prompt to place the first element. Presence dots should appear as collaborators join."
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T18:45:04.501Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T18:45:04.501Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=product-landing --theme=luminarum --mode=dark --guard=strict"
+  },
+  "blueprintId": "product-landing",
+  "voice": {
+    "tone": "Confident and compelling. Sells the vision, not features.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Sign up today"
+    ],
+    "errors": "Minimal. Form submission errors should be inline and specific. Never break the conversion flow.",
+    "loading": "Hero content loads instantly (SSR/SSG). Below-fold sections fade in on scroll intersection. No loading states visible to users.",
+    "cta_verbs": [
+      "Start",
+      "Try",
+      "Explore",
+      "See",
+      "Learn",
+      "Get Started"
+    ],
+    "empty_states": "N/A for landing pages — all content is authored, not user-generated."
+  }
+}

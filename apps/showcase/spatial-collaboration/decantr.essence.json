@@ -1,0 +1,274 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "carbon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Immersive spatial workspace with depth and presence. Glassmorphic floating panels over depth-layered backgrounds. Smooth spring animations for all transitions. Presence indicators use warm accent colors. Think Figma meets a sci-fi command bridge. System sans-serif typography. Minimal chrome, maximum canvas."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "spatial-workspace",
+        "role": "primary",
+        "shell": "canvas-overlay",
+        "features": [
+          "spatial",
+          "collaboration",
+          "drag-drop",
+          "real-time",
+          "presence"
+        ],
+        "description": "Immersive spatial workspace with depth-layered canvases, holographic controls, and real-time presence indicators for collaborative creative work.",
+        "pages": [
+          {
+            "id": "workspace",
+            "layout": [
+              {
+                "as": "main-canvas",
+                "pattern": "depth-layered-canvas"
+              },
+              {
+                "as": "tool-bar",
+                "pattern": "holographic-control-bar"
+              },
+              {
+                "as": "collaborators",
+                "pattern": "spatial-presence-ring"
+              }
+            ],
+            "route": "/"
+          },
+          {
+            "id": "workspace-settings",
+            "layout": [
+              "nav-header",
+              {
+                "as": "workspace-preferences",
+                "preset": "structured",
+                "pattern": "form-sections"
+              }
+            ],
+            "route": "/settings"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ]
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ]
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "about-hybrid",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "team-grid",
+          "values-display"
+        ],
+        "description": "About page combining hero, company story, team grid, values, and call-to-action sections.",
+        "pages": [
+          {
+            "id": "about",
+            "layout": [
+              "hero",
+              "story",
+              "team",
+              "values",
+              "cta"
+            ],
+            "route": "/about"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "spatial",
+      "collaboration",
+      "drag-drop",
+      "real-time",
+      "presence",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "team-grid",
+      "values-display",
+      "theme-toggle"
+    ],
+    "routes": {
+      "/": {
+        "section": "spatial-workspace",
+        "page": "workspace"
+      },
+      "/about": {
+        "section": "about-hybrid",
+        "page": "about"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/settings": {
+        "section": "spatial-workspace",
+        "page": "workspace-settings"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "spatial-workspace",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g w",
+          "label": "Go to Workspace",
+          "route": "/"
+        },
+        {
+          "key": "g s",
+          "label": "Go to Settings",
+          "route": "/settings"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

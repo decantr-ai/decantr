@@ -1,0 +1,270 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "carbon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Minimal, unobtrusive AI assistant that enhances without overwhelming. The copilot panel is a sleek right-side drawer — dark carbon surface with soft shadows. Suggestions appear as ghost text or subtle card overlays near the user's focus. Main app takes center stage; AI is always available but never demands attention. Actions have clear accept/reject affordances. Context breadcrumbs show what the AI sees. Think GitHub Copilot meets Linear's command palette. Lucide icons. Geist Mono for AI outputs."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "copilot-workspace",
+        "role": "primary",
+        "shell": "copilot-overlay",
+        "features": [
+          "copilot",
+          "ai-suggestions",
+          "context-awareness",
+          "keyboard-shortcuts"
+        ],
+        "description": "Main application workspace with an AI copilot overlay. Features a toggleable copilot panel that provides context-aware suggestions and chat alongside the primary work surface.",
+        "pages": [
+          {
+            "id": "workspace",
+            "layout": [
+              "chat-thread",
+              "chat-input"
+            ],
+            "route": "/workspace"
+          },
+          {
+            "id": "workspace-detail",
+            "layout": [
+              "detail-header",
+              "chat-thread"
+            ],
+            "route": "/workspace/:id"
+          }
+        ]
+      },
+      {
+        "id": "copilot-settings",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "settings",
+          "model-config",
+          "permissions"
+        ],
+        "description": "Configuration interface for AI copilot preferences, model selection, permissions, and behavior tuning. Auxiliary archetype for copilot-powered applications.",
+        "pages": [
+          {
+            "id": "copilot-config",
+            "layout": [
+              "form-sections",
+              "account-settings"
+            ],
+            "route": "/copilot/config"
+          }
+        ]
+      },
+      {
+        "id": "marketing-copilot",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "demo",
+          "seo"
+        ],
+        "description": "Marketing landing page showcasing an AI copilot product. Features a split hero with live demo, feature breakdown, how-it-works flow, and conversion CTAs.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "features",
+              "how-it-works",
+              "cta-section"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-flow",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth"
+        ],
+        "description": "Login, registration, and password recovery with OAuth support",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "auth-form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              {
+                "preset": "register",
+                "pattern": "auth-form"
+              }
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              {
+                "preset": "reset",
+                "pattern": "auth-form"
+              }
+            ],
+            "route": "/forgot-password"
+          }
+        ]
+      },
+      {
+        "id": "settings",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [],
+        "description": "Application settings and preferences page",
+        "pages": [
+          {
+            "id": "settings",
+            "layout": [
+              {
+                "preset": "settings",
+                "pattern": "form-sections"
+              }
+            ],
+            "route": "/settings"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "copilot",
+      "ai-suggestions",
+      "context-awareness",
+      "keyboard-shortcuts",
+      "settings",
+      "model-config",
+      "permissions",
+      "marketing",
+      "demo",
+      "seo",
+      "auth",
+      "command-palette"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-copilot",
+        "page": "home"
+      },
+      "/login": {
+        "section": "auth-flow",
+        "page": "login"
+      },
+      "/register": {
+        "section": "auth-flow",
+        "page": "register"
+      },
+      "/settings": {
+        "section": "settings",
+        "page": "settings"
+      },
+      "/workspace": {
+        "section": "copilot-workspace",
+        "page": "workspace"
+      },
+      "/workspace/:id": {
+        "section": "copilot-workspace",
+        "page": "workspace-detail"
+      },
+      "/copilot/config": {
+        "section": "copilot-settings",
+        "page": "copilot-config"
+      },
+      "/forgot-password": {
+        "section": "auth-flow",
+        "page": "forgot-password"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "copilot-workspace",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g w",
+          "label": "Go to Workspace",
+          "route": "/workspace"
+        },
+        {
+          "key": "g c",
+          "label": "Go to Copilot Config",
+          "route": "/copilot/config"
+        }
+      ],
+      "command_palette": true
+    }
+  }
+}

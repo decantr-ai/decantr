@@ -1,0 +1,222 @@
+/* Luminarum theme decorators */
+@layer decorators {
+
+/* ── Breathing gradient orbs ── */
+.lum-orbs {
+  position: relative;
+  overflow: hidden;
+}
+
+.lum-orbs::before,
+.lum-orbs::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: lum-breathe 8s ease-in-out infinite;
+}
+
+.lum-orbs::before {
+  width: 600px;
+  height: 600px;
+  top: -200px;
+  left: -100px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--d-primary) 18%, transparent), transparent 70%);
+}
+
+.lum-orbs::after {
+  width: 500px;
+  height: 500px;
+  bottom: -150px;
+  right: -80px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--d-secondary, #0AF3EB) 15%, transparent), transparent 70%);
+  animation-delay: -4s;
+}
+
+@keyframes lum-breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1) translate(0, 0); }
+  50% { opacity: 1; transform: scale(1.08) translate(10px, -10px); }
+}
+
+/* ── Brand text with accent punctuation ── */
+.lum-brand span.accent {
+  color: var(--d-accent);
+}
+
+/* ── Glass panel ── */
+.lum-glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(2px);
+}
+
+/* ── Canvas background ── */
+.lum-canvas {
+  background-color: var(--d-bg);
+  background-image:
+    radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--d-primary) 4%, transparent) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--d-secondary, #0AF3EB) 3%, transparent) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--d-accent) 2%, transparent) 0%, transparent 60%);
+}
+
+/* ── Section divider ── */
+.lum-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--d-border), transparent);
+  position: relative;
+}
+
+.lum-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--d-accent);
+}
+
+/* ── Scroll-reveal fade up ── */
+.lum-fade-up {
+  animation: lum-fade-up-anim 0.6s ease-out both;
+}
+
+@keyframes lum-fade-up-anim {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Particles ── */
+.lum-particles {
+  position: relative;
+}
+
+.lum-particles::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(2px 2px at 10% 20%, color-mix(in srgb, var(--d-primary) 15%, transparent), transparent),
+    radial-gradient(3px 3px at 30% 60%, color-mix(in srgb, var(--d-accent) 12%, transparent), transparent),
+    radial-gradient(2px 2px at 50% 10%, color-mix(in srgb, var(--d-secondary, #0AF3EB) 10%, transparent), transparent),
+    radial-gradient(4px 4px at 70% 80%, color-mix(in srgb, var(--d-primary) 8%, transparent), transparent),
+    radial-gradient(2px 2px at 90% 40%, color-mix(in srgb, var(--d-accent) 12%, transparent), transparent),
+    radial-gradient(3px 3px at 15% 85%, color-mix(in srgb, var(--d-secondary, #0AF3EB) 10%, transparent), transparent),
+    radial-gradient(2px 2px at 60% 50%, color-mix(in srgb, var(--d-primary) 6%, transparent), transparent),
+    radial-gradient(5px 5px at 85% 15%, color-mix(in srgb, var(--d-accent) 8%, transparent), transparent);
+  animation: lum-particle-drift 20s linear infinite;
+}
+
+@keyframes lum-particle-drift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-20px); }
+}
+
+/* ── Stat glow badge ── */
+.lum-stat-glow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--d-accent);
+  color: #000;
+  font-weight: 700;
+  font-size: 1.125rem;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--d-accent) 40%, transparent);
+}
+
+/* ── Code block ── */
+.lum-code-block {
+  background: #111113;
+  border-top: 2px solid var(--d-accent);
+  border-radius: var(--d-radius);
+  padding: 1.25rem;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
+}
+
+/* ── Vibrant card ── */
+.lum-card-vibrant {
+  background: linear-gradient(135deg, var(--card-color, var(--d-primary)), color-mix(in srgb, var(--card-color, var(--d-primary)) 70%, #000));
+  color: #fff;
+  border-radius: var(--d-radius-lg);
+  padding: var(--d-surface-p);
+  position: relative;
+  overflow: hidden;
+}
+
+.lum-card-vibrant::before,
+.lum-card-vibrant::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: rgba(255, 255, 255, 0.3);
+  border-style: solid;
+}
+
+.lum-card-vibrant::before {
+  top: 12px;
+  left: 12px;
+  border-width: 2px 0 0 2px;
+}
+
+.lum-card-vibrant::after {
+  bottom: 12px;
+  right: 12px;
+  border-width: 0 2px 2px 0;
+}
+
+/* ── Outlined card ── */
+.lum-card-outlined {
+  background: transparent;
+  border: 1px solid var(--card-color, var(--d-border));
+  border-radius: var(--d-radius-lg);
+  padding: var(--d-surface-p);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lum-card-outlined:hover {
+  border-color: var(--card-color, var(--d-primary));
+  box-shadow: 0 0 20px color-mix(in srgb, var(--card-color, var(--d-primary)) 15%, transparent);
+}
+
+/* ── Gradient button glow ── */
+.lum-btn-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.lum-btn-glow::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--d-primary), var(--d-accent));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: blur(8px);
+}
+
+.lum-btn-glow:hover::after {
+  opacity: 0.6;
+}
+
+} /* end @layer decorators */
+
+@media (prefers-reduced-motion: reduce) {
+  .lum-orbs::before,
+  .lum-orbs::after,
+  .lum-particles::before,
+  .lum-fade-up {
+    animation: none !important;
+  }
+}
