@@ -246,6 +246,12 @@ ActionButtons = Row(d-interactive, gap-2) > [LoginButton(variant: ghost) + SignU
 - **Tablet (640-1024px):** Navigation links may remain visible if few (3-4 items), otherwise collapse to hamburger. Action buttons stay visible next to hamburger. Padding reduces to px4.
 - **Desktop (>1024px):** Full horizontal layout with all links visible. Logo left, links center, actions right. Hover states on links. Dropdown menus open on hover or click for nested navigation.
 
+**Accessibility:**
+- Role: `navigation`
+- Keyboard: Tab navigates between navigation links and action buttons; Enter activates the focused link or button; Escape closes the mobile menu or open dropdown; Arrow Left/Right navigates between top-level links; Arrow Down opens a dropdown menu on focused link
+- Announcements: Navigation menu expanded; Navigation menu collapsed; Submenu {name} opened
+- Focus: Mobile menu button uses aria-expanded to reflect open/closed state. On menu open, focus moves to first link. On Escape, focus returns to the hamburger button.
+
 
 ### form-sections
 
@@ -277,6 +283,18 @@ ActionButtons = Row(d-interactive) > [SaveButton(variant: primary) + CancelButto
   - label_position: stacked
   - select_styling: Apply d-control to ALL form elements including <select>. Add appearance: none and a custom SVG chevron for consistent styling.
   - section_grouping: Group related fields under section headers. Use a SINGLE d-surface card for the entire form, OR no card at all. Do NOT wrap each section in its own separate card.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Collapsible sections expand/collapse with 250ms ease height transition. Validation errors shake the invalid field with a 300ms horizontal oscillation (translateX +/-4px). |
+| transitions | Section content fades in on expand with 200ms ease. Step transitions in creation preset cross-fade over 250ms. |
+
+**Accessibility:**
+- Role: `form`
+- Keyboard: Tab navigates between form fields; Shift+Tab navigates backwards between fields; Enter submits when focus is on submit button; Space toggles checkboxes and switches; Arrow keys navigate within radio groups
+- Announcements: Validation error: {field} — {message}; Section {name} expanded; Section {name} collapsed; Form submitted successfully
+- Focus: First invalid field receives focus on failed validation. On section expand, focus moves to first field in the section. On step change in creation preset, focus moves to first field of new step.
+
 
 ### hero
 

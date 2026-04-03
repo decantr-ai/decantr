@@ -103,10 +103,21 @@ StatsOverview = Row(d-section, responsive: wrap) > StatItem[]
 - `trend`: Badge with percentage change and directional icon
 - `value`: Primary value with _heading2 _fontbold
 - `stat-card`: Card containing label, value, and optional trend
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Stat values animate with counter effect (number rolls up from 0) over 800ms ease-out on viewport enter. Trend badges fade in after value completes. |
+| transitions | Value text transitions smoothly on data change with 300ms ease. Trend arrow rotates on direction change. |
+
 **Responsive:**
 - **Mobile (<640px):** Two-column grid (2x2 or 2x3). Compact preset wraps to two rows. Value text reduces to heading3 scale. Trend badges stack below values instead of inline.
 - **Tablet (640-1024px):** Three or four columns depending on stat count. Compact preset stays single row if 4 or fewer items. Standard padding.
 - **Desktop (>1024px):** Full single-row layout with all stats visible. Four columns standard. Highlighted preset shows featured stat at 2x width. Generous gap4 spacing.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tab navigates between stat cards; Shift+Tab navigates backwards
+- Announcements: {label}: {value}, {trend_direction} {trend_percent}; Statistics updated
 
 
 ### neural-feedback-loop

@@ -126,10 +126,21 @@ Feature showcase grid with icon, heading, and description for each feature
 - `feature-icon`: Icon in a rounded background circle (48px) with muted primary fill
 - `feature-title`: Feature name with _heading4 _fontmedium
 - `feature-description`: Short explanation with _bodysm _fgmuted, 2-3 lines
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Feature cards lift on hover with translateY(-2px) and subtle shadow increase over 200ms ease. |
+| transitions | Cards stagger in on section enter with fade-up (translateY(12px) to 0) at 300ms ease, 80ms stagger delay per card. |
+
 **Responsive:**
 - **Mobile (<640px):** Single column. Feature cards stack vertically full-width. Icons center above text or align left in a row layout. Alternating preset stacks to single column with image above text. Gap reduces to gap4.
 - **Tablet (640-1024px):** Two-column grid. Alternating preset activates side-by-side layout. Icon-list stays single column. Comfortable spacing.
 - **Desktop (>1024px):** Three-column grid for standard. Alternating preset at full two-column width with generous gap8. Icon-list centered at 640px max-width.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tab navigates between feature cards; Shift+Tab navigates backwards between feature cards
+- Announcements: Feature section with {count} items; Feature: {title}
 
 
 ### how-it-works
@@ -147,10 +158,21 @@ Step-by-step process section with numbered steps, descriptions, and optional con
 - `step-title`: Step heading with _heading4 _fontmedium
 - `step-number`: Circled number (48px) with primary background and white text, or bordered circle with primary text
 - `step-description`: Step explanation with _bodysm _fgmuted
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Step connector lines draw in from left to right with 400ms ease as each step enters viewport. |
+| transitions | Steps stagger in on section enter with fade-up (translateY(12px) to 0) at 300ms ease, 120ms stagger delay per step. |
+
 **Responsive:**
 - **Mobile (<640px):** Steps stack vertically regardless of preset. Number circles align left with content to the right (timeline style). Connecting lines become vertical. Horizontal connectors hidden. Text left-aligned. Gap reduces to gap6.
 - **Tablet (640-1024px):** Horizontal preset shows 3 columns. Connectors visible. Vertical preset centered at comfortable width. Standard spacing.
 - **Desktop (>1024px):** Full horizontal row with visible connecting lines between step circles. Generous gap8 spacing. Section centered with py12 padding.
+
+**Accessibility:**
+- Role: `list`
+- Keyboard: Tab navigates between steps; Shift+Tab navigates backwards between steps
+- Announcements: Step {number} of {total}: {title}; Process overview with {total} steps
 
 
 ### pricing
@@ -186,6 +208,12 @@ PricingSection = Container(d-section, centered) > [Heading(heading2) + BillingTo
 - **Tablet (640-1024px):** Three columns at reduced gap. Cards may be slightly narrower. Toggle and heading stay centered. Feature lists may truncate to top 5 items with 'See all features' link.
 - **Desktop (>1024px):** Full three-column row with comfortable gap6 spacing. Recommended tier elevated. All features visible. Toggle and heading centered above. Section padding at py16.
 
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tab navigates between tier cards and their CTA buttons; Shift+Tab navigates backwards; Enter or Space activates billing toggle or CTA button; Arrow Left/Right navigates between tiers
+- Announcements: {plan_name} plan: {price} per {period}; Billing changed to {period}, price updated to {price}; Recommended plan: {plan_name}
+- Focus: On billing toggle change, price values are announced via aria-live polite region. Focus remains on the toggle after change.
+
 
 ### testimonials
 
@@ -207,10 +235,22 @@ TestimonialCard = Card(d-surface) > [QuoteIcon(d-annotation) + QuoteText(italic)
 - `quote-icon`: Large decorative open-quote icon in muted primary color at top
 - `quote-text`: Testimonial paragraph with _body _italic _leading[relaxed]
 - `testimonial-card`: Card with quote icon, testimonial text, and author row
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Carousel slides transition with 400ms ease translateX. Auto-play advances every 5s. |
+| transitions | Testimonial cards fade in on section enter with 300ms ease. Carousel dot indicators pulse on active transition. |
+
 **Responsive:**
 - **Mobile (<640px):** Grid collapses to single column. Cards go full-width. Carousel shows one testimonial with swipe gesture support and dot indicators. Featured preset reduces quote text size. Padding to px4 py8.
 - **Tablet (640-1024px):** Two-column grid. Carousel controls visible. Featured preset centered with comfortable max-width.
 - **Desktop (>1024px):** Three-column grid with gap6. Carousel shows prev/next buttons on hover. Featured preset at 720px max-width centered.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tab moves to next/previous carousel controls; Enter or Space activates carousel navigation buttons; Arrow Left/Right navigates between slides in carousel preset
+- Announcements: Testimonial {number} of {total}; Slide changed to testimonial by {author}
+- Focus: Carousel pauses auto-play when any element within receives focus. Resumes on blur after 3s delay.
 
 
 ### cta
@@ -225,10 +265,22 @@ Prominent call-to-action section with headline, supporting text, and action butt
 - `headline`: Section heading with _heading2, centered
 - `cta-group`: Horizontal Button group with _flex _gap3, primary + secondary
 - `description`: Supporting paragraph with _body _fgmuted _mw[640px]
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | CTA button pulses with subtle scale(1.02) and shadow increase on idle after 3s, 1.5s duration loop. Button brightens on hover over 150ms. |
+| transitions | Section content fades up (translateY(16px) to 0, opacity 0 to 1) on viewport enter with 400ms ease. |
+
 **Responsive:**
 - **Mobile (<640px):** Standard: content stacks vertically, full-width. CTA buttons stack vertically at full width, primary on top. Split: becomes single column with image below text. Banner: wraps text and button vertically with centered alignment. Padding reduces to py8 px4.
 - **Tablet (640-1024px):** Standard stays centered with comfortable width. Split activates two-column grid. Banner remains horizontal. Padding at py10.
 - **Desktop (>1024px):** Full layout — standard centered with py12. Split shows side-by-side columns with gap6. Banner compact horizontal with accent background.
+
+**Accessibility:**
+- Role: `complementary`
+- Keyboard: Tab navigates to CTA buttons; Enter or Space activates the focused CTA button
+- Announcements: Call to action section; Primary action: {button_text}
+- Focus: Primary CTA button receives visible focus ring on Tab. Focus order: headline, description, primary button, secondary button.
 
 
 ---
