@@ -318,6 +318,7 @@ export function generatePersonalityCSS(personality: string[], themeData: { motio
     rules.push(`.status-ring[data-status="error"] { border-color: var(--d-error); box-shadow: 0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent); }`);
     rules.push(`.status-ring[data-status="warning"] { border-color: var(--d-warning); }`);
     rules.push(`.status-ring[data-status="idle"] { border-color: var(--d-text-muted); }`);
+    rules.push(`.status-ring[data-status="processing"] { border-color: var(--d-primary); }`);
     rules.push(`@keyframes pulse-ring { 0% { opacity: 0.6; transform: scale(1); } 100% { opacity: 0; transform: scale(1.3); } }`);
     rules.push(`.status-ring[data-status="active"]::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--d-success); opacity: 0; animation: pulse-ring 2s ease-out infinite; }`);
   }

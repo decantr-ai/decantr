@@ -537,7 +537,7 @@ export function generateTokensCSS(themeData: ThemeData | undefined, mode: string
     return {
       // Seed colors
       '--d-primary': seed.primary || '#6366f1',
-      '--d-secondary': seed.secondary || '#a1a1aa',
+      '--d-secondary': palette.secondary?.[tokenMode] || palette.secondary?.dark || seed.secondary || '#A1A1AA',
       '--d-accent': seed.accent || '#f59e0b',
 
       // Palette colors (mode-aware)
@@ -1574,10 +1574,8 @@ function generateDecantrMdV31(params: {
   briefLines.push('## Project Brief');
   briefLines.push('');
   briefLines.push(`- **Blueprint:** ${params.blueprintId || 'custom'}`);
-  const themeParts = [params.themeName || 'default'];
-  if (params.themeMode) themeParts.push(`${params.themeMode} mode`);
-  if (params.themeShape) themeParts.push(params.themeShape);
-  briefLines.push(`- **Theme:** ${themeParts.join(' (').replace(/ \($/, '') + (themeParts.length > 1 ? ')' : '')}`);
+  const themeDesc = `${params.themeName || 'default'} (${params.themeMode || 'dark'} mode${params.themeShape ? `, ${params.themeShape} shape` : ''})`;
+  briefLines.push(`- **Theme:** ${themeDesc}`);
   if (params.personality && params.personality.length > 0) {
     briefLines.push(`- **Personality:** ${params.personality.join('. ')}`);
   }
@@ -1627,7 +1625,7 @@ function generateProjectJson(
 ): string {
   const now = new Date().toISOString();
 
-  const data = {
+  const data: Record<string, unknown> = {
     detected: {
       framework: detected.framework,
       version: detected.version || null,
@@ -1656,6 +1654,11 @@ function generateProjectJson(
       flags: buildFlagsString(options),
     },
   };
+
+  // Store blueprint ID for later use by refreshDerivedFiles
+  if (options.blueprint) {
+    data.blueprintId = options.blueprint;
+  }
 
   return JSON.stringify(data, null, 2);
 }
@@ -1712,19 +1715,31 @@ function generateTaskContext(
 function generateTaskContextV3(templateName: string, essence: EssenceV3): string {
   const template = loadTemplate(templateName);
 
-  const pages = essence.blueprint.sections && essence.blueprint.sections.length > 0
-    ? essence.blueprint.sections.flatMap(s => s.pages)
+  const sections = essence.blueprint.sections && essence.blueprint.sections.length > 0
+    ? essence.blueprint.sections
+    : [];
+  const pages = sections.length > 0
+    ? sections.flatMap(s => s.pages)
     : essence.blueprint.pages || [];
-  const defaultShell = essence.blueprint.sections?.[0]?.shell
+  const defaultShell = sections[0]?.shell
     || (essence.blueprint as any).shell
     || 'sidebar-main';
   const layout = pages[0]?.layout?.map(serializeLayoutItem).join(', ') || 'none';
 
+  // Build a page-to-shell map from sections so each page shows its section's shell
+  const pageShellMap = new Map<string, string>();
+  for (const s of sections) {
+    for (const p of s.pages) {
+      pageShellMap.set(p.id, s.shell as string);
+    }
+  }
+
   const scaffoldStructure = pages.map(p => {
+    const shell = pageShellMap.get(p.id) || defaultShell;
     const patterns = p.layout.length > 0
       ? `\n  - Patterns: ${p.layout.map(serializeLayoutItem).join(', ')}`
       : '';
-    return `- **${p.id}** (${defaultShell})${patterns}`;
+    return `- **${p.id}** (${shell})${patterns}`;
   }).join('\n');
 
   const densityLevel = essence.dna.spacing?.density || 'comfortable';
@@ -1903,7 +1918,13 @@ export async function scaffoldProject(
 
   // Write project.json
   const projectJsonPath = join(decantrDir, 'project.json');
-  writeFileSync(projectJsonPath, generateProjectJson(detected, options, registrySource));
+  const projectJsonStr = generateProjectJson(detected, options, registrySource);
+  const projectJsonObj = JSON.parse(projectJsonStr);
+  // Store voice from blueprint for use by refreshDerivedFiles
+  if (blueprintData?.voice) {
+    projectJsonObj.voice = blueprintData.voice;
+  }
+  writeFileSync(projectJsonPath, JSON.stringify(projectJsonObj, null, 2));
 
   // Write task context files using v3 essence directly
   // Note: task-modify.md and task-add-page.md are skipped during initial scaffold
@@ -2283,6 +2304,16 @@ export async function refreshDerivedFiles(
   const contextDir = join(decantrDir, 'context');
   mkdirSync(contextDir, { recursive: true });
 
+  // ── Read project.json for stored metadata (blueprintId, voice) ──
+  let storedBlueprintId: string | undefined;
+  const projectJsonFilePath = join(decantrDir, 'project.json');
+  if (existsSync(projectJsonFilePath)) {
+    try {
+      const projData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8'));
+      if (projData.blueprintId) storedBlueprintId = projData.blueprintId;
+    } catch { /* ignore parse errors */ }
+  }
+
   // ── Extract info from essence ──
   const themeName = ((essence.dna.theme as any).id || (essence.dna.theme as any).style || 'default') as string;
   const mode = essence.dna.theme.mode as string;
@@ -2423,7 +2454,7 @@ export async function refreshDerivedFiles(
   writeFileSync(decantrMdPath, generateDecantrMdV31({
     guardMode,
     cssApproach: CSS_APPROACH_CONTENT,
-    blueprintId: (essence.meta as any).blueprint || undefined,
+    blueprintId: storedBlueprintId || (essence.meta as any).blueprint || undefined,
     themeName,
     themeMode: mode,
     themeShape: (essence.dna.theme as any).shape || undefined,
@@ -2614,11 +2645,20 @@ export async function refreshDerivedFiles(
       contextFiles.push(sectionContextPath);
     }
 
+    // ── Read voice from project.json for scaffold context ──
+    let projectVoice: ScaffoldContextInput['voice'] | undefined;
+    if (existsSync(projectJsonFilePath)) {
+      try {
+        const projData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8'));
+        if (projData.voice) projectVoice = projData.voice;
+      } catch { /* ignore parse errors */ }
+    }
+
     // ── Generate scaffold.md ──
     const routes = blueprint.routes || {};
     const scaffoldContent = generateScaffoldContext({
       appName: essence.meta.archetype || 'Application',
-      blueprintId: '',
+      blueprintId: storedBlueprintId || (essence.meta as any).blueprint || '',
       themeName,
       personality,
       topologyMarkdown,
@@ -2627,6 +2667,7 @@ export async function refreshDerivedFiles(
       constraints: essence.dna.constraints as Record<string, unknown> | undefined,
       seo: essence.meta.seo as { schema_org?: string[]; meta_priorities?: string[] } | undefined,
       navigation: essence.meta.navigation as { hotkeys?: unknown[]; command_palette?: boolean } | undefined,
+      voice: projectVoice,
     });
 
     const scaffoldMdPath = join(contextDir, 'scaffold.md');
@@ -2951,6 +2992,7 @@ export function generateSectionContext(input: SectionContextInput): string {
     'text-muted': 'Secondary text, placeholders, labels',
     primary: 'Brand color, key interactive, selected states',
     'primary-hover': 'Hover state for primary elements',
+    secondary: 'Secondary brand color, supporting elements',
   };
   if (input.themeData?.palette) {
     const modeKey = input.themeMode || 'dark';
@@ -2961,6 +3003,12 @@ export function generateSectionContext(input: SectionContextInput): string {
   }
   if (input.themeData?.seed?.accent) {
     lines.push(`| \`--d-accent\` | \`${input.themeData.seed.accent}\` | CTAs, links, active states, glow effects |`);
+    // Add accent-glow if theme provides it
+    const accentGlowVal = input.themeData?.palette?.['accent-glow']?.[input.themeMode || 'dark']
+      || input.themeData?.tokens?.base?.['accent-glow'];
+    if (accentGlowVal) {
+      lines.push(`| \`--d-accent-glow\` | \`${accentGlowVal}\` | Ambient glow effect around accent elements |`);
+    }
   }
   lines.push('');
   lines.push('Full token set: `src/styles/tokens.css`');
@@ -3009,7 +3057,12 @@ export function generateSectionContext(input: SectionContextInput): string {
   }
   if (themeHints) {
     if (themeHints.preferred && themeHints.preferred.length > 0) {
-      lines.push(`**Preferred:** ${themeHints.preferred.join(', ')}`);
+      // Filter to patterns relevant to this section
+      const sectionPatterns = new Set(section.pages.flatMap(p => p.layout.map((l: LayoutItem) => typeof l === 'string' ? l : (l as Record<string, unknown>).pattern as string)));
+      const relevant = themeHints.preferred.filter(p => sectionPatterns.has(p));
+      if (relevant.length > 0) {
+        lines.push(`**Preferred:** ${relevant.join(', ')}`);
+      }
     }
     if (themeHints.compositions) {
       lines.push(`**Compositions:** ${themeHints.compositions}`);
