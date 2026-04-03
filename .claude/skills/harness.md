@@ -97,6 +97,7 @@ Pay special attention to:
 Build ALL pages the blueprint defines (check scaffold.md route map for the full list). For EACH page:
 - Use theme tokens from tokens.css (wrapped in @layer tokens)
 - Use treatment classes from treatments.css (wrapped in @layer treatments, decorators, utilities)
+- Verify @layer decorators is EMPTY (comment only) — flag as ERROR if it contains generated CSS rules. Decorator CSS is AI-generated from structured definitions in section context files.
 - Verify global.css has @layer order: reset > tokens > treatments > decorators > utilities > app
 - Follow the personality directive for visual quality
 - Install any packages the personality requests (e.g., lucide-react)
@@ -139,6 +140,8 @@ For each dimension, rate 1-5 and note gaps:
 | Voice presence | YES/NO (scaffold.md Voice & Copy section) |
 | @layer cascade | VALID/INVALID (global.css layer order) |
 | Personality materialization | YES/NO (section contexts contain Visual Direction) |
+| Composition algebra coverage | 76/107 patterns (100% of those with 3+ components) |
+| Content quality | 0 warnings expected |
 
 ### B: Build Metrics
 
@@ -401,7 +404,7 @@ Evaluate the richness of generated context files against v2 expectations:
 | Dimension | Present? | Quality (1-5) | Notes |
 |-----------|----------|---------------|-------|
 | **Section contexts** | | | |
-| Decorator table (Class + Usage) | Y/N | N | Are descriptions useful or just names? |
+| Decorator table (structured: Intent + Key CSS + Pairs with columns) | Y/N | N | Are descriptions useful or just names? |
 | Token palette table (Token/Value/Role) | Y/N | N | Semantic roles assigned? |
 | Theme hints (preferred patterns, compositions, spatial) | Y/N | N | Actionable or vague? |
 | Visual Direction section | Y/N | N | Personality materialized with utility refs? |
