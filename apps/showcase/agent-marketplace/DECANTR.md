@@ -173,6 +173,14 @@ Atoms + treatment + theme decorator:
 - **Theme decorators:** `carbon-glass`, `carbon-code` — theme-specific decoration from treatments.css
 - **Combined:** `css('_flex _col') + ' d-surface carbon-card'`
 
+```tsx
+// Responsive prefix — applies at breakpoint and above:
+css('_col sm:_row')
+
+// Pseudo prefix:
+css('hover:_opacity80')
+```
+
 ### Atom Reference
 
 #### Display
@@ -383,3 +391,11 @@ Check `decantr.essence.json` → `meta.platform.routing` for the routing strateg
 - `"history"` → use `BrowserRouter` (e.g., for server-rendered apps)
 
 Routes are defined in `decantr.essence.json` → `blueprint.routes` and listed in `.decantr/context/scaffold.md`.
+
+### Layout Rules
+
+1. **Never nest d-surface inside d-surface.** Inner sections use plain containers with padding atoms.
+2. **Shell regions are frames, not surfaces.** Sidebar and header use var(--d-surface) or var(--d-bg) directly. Apply d-surface only to content cards within the body region.
+3. **One scroll container per region.** Body has overflow-y-auto. Sidebar nav has its own overflow-y-auto. Never nest additional scrollable wrappers.
+4. **d-section spacing is self-contained.** Each d-section owns its padding. The d-section + d-section rule adds a separator. Do NOT add extra margin between adjacent sections.
+5. **Responsive nav rules.** Hamburger menus appear ONLY below the shell collapse breakpoint. Full nav shows above it.

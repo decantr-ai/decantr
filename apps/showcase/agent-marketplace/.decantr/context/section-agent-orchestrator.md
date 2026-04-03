@@ -2,8 +2,89 @@
 
 **Role:** primary | **Shell:** sidebar-main | **Archetype:** agent-orchestrator
 **Description:** Multi-agent management dashboard for monitoring, configuring, and orchestrating autonomous agent swarms with real-time status and marketplace discovery.
-**Shell structure:** Collapsible sidebar with header bar and scrollable main content area. Used by saas-dashboard, financial-dashboard, workbench, ecommerce (account pages).
-**Regions:** header, nav, body
+
+## Quick Start
+
+**Shell:** Collapsible sidebar with header bar and scrollable main content area. Used by saas-dashboard, financial-dashboard, workbench, ecommerce (account pages). (nav: 240px, header: 52px)
+**Pages:** 4 (agent-overview, agent-detail, agent-config, agent-marketplace)
+**Key patterns:** agent-swarm-canvas [moderate], agent-timeline [moderate], neural-feedback-loop [moderate], nav-header, form-sections [complex], hero, generative-card-grid [moderate]
+**CSS classes:** `.carbon-card`, `.carbon-code`, `.carbon-glass`, `.neon-glow`, `.mono-data`
+**Density:** comfortable
+**Voice:** Operational and precise.
+
+## Shell Implementation (sidebar-main)
+
+### body
+
+- **flex:** 1
+- **note:** Sole scroll container. Page content renders directly here. No wrapper div around outlet.
+- **atoms:** _flex1 _overflow[auto] _p6
+- **padding:** 1.5rem
+- **overflow_y:** auto
+
+### root
+
+- **atoms:** _flex _h[100vh]
+- **height:** 100vh
+- **display:** flex
+- **direction:** row
+
+### header
+
+- **align:** center
+- **border:** bottom
+- **height:** 52px
+- **display:** flex
+- **justify:** space-between
+- **padding:** 0 1.5rem
+- **left_content:** Breadcrumb — omit segment when it equals page title
+- **right_content:** Search/command trigger
+
+### sidebar
+
+- **nav:**
+  - flex: 1
+  - padding: 0.5rem
+  - item_gap: 2px
+  - group_gap: 0.5rem
+  - overflow_y: auto
+  - item_content: icon (16px) + label text. Collapsed: icon only, text hidden.
+  - item_padding: 0.375rem 0.75rem
+  - item_treatment: d-interactive[ghost]
+  - group_header_treatment: d-label
+- **atoms:** _flex _col _borderR
+- **brand:**
+  - align: center
+  - border: bottom
+  - height: 52px
+  - content: Logo/brand + collapse toggle
+  - display: flex
+  - padding: 0 1rem
+- **width:** 240px
+- **border:** right
+- **footer:**
+  - border: top
+  - content: User avatar + settings link
+  - padding: 0.5rem
+  - position_within: bottom (mt-auto)
+- **position:** left
+- **direction:** column
+- **background:** var(--d-surface)
+- **collapsed_width:** 64px
+- **collapse_breakpoint:** md
+
+### main_wrapper
+
+- **flex:** 1
+- **atoms:** _flex _col _flex1 _overflow[hidden]
+- **overflow:** hidden
+- **direction:** column
+
+### Anti-patterns
+
+- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.
+- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.
+- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.
 
 ## Shell Notes (sidebar-main)
 
@@ -14,6 +95,18 @@
 - **Section Labels:** Dashboard section labels should use the d-label class. Anchor with a left accent border: border-left: 2px solid var(--d-accent); padding-left: 0.5rem.
 - **Section Density:** Dashboard sections use compact spacing. Apply data-density='compact' on d-section elements for tighter vertical rhythm than marketing pages.
 - **Page Transitions:** Apply the entrance-fade class (if generated) to the main content area for smooth page transitions.
+
+## Spacing Guide
+
+| Context | Token | Value | Usage |
+|---------|-------|-------|-------|
+| Content gap | `--d-content-gap` | `1rem` | Gap between sibling elements |
+| Section padding | `--d-section-py` | `5rem` | Vertical padding on d-section |
+| Surface padding | `--d-surface-p` | `1.25rem` | Inner padding for d-surface |
+| Interactive V | `--d-interactive-py` | `0.5rem` | Vertical padding on buttons |
+| Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
+| Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
+| Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
 
 ---
 

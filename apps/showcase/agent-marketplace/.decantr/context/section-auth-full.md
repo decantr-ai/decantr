@@ -2,13 +2,59 @@
 
 **Role:** gateway | **Shell:** centered | **Archetype:** auth-full
 **Description:** Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.
-**Shell structure:** Centered card on a background. Used for auth flows (login, register, forgot password) across all archetypes.
-**Regions:** body
+
+## Quick Start
+
+**Shell:** Centered card on a background. Used for auth flows (login, register, forgot password) across all archetypes.
+**Pages:** 8 (login, register, forgot-password, reset-password, verify-email, mfa-setup, mfa-verify, phone-verify)
+**Key patterns:** form [complex]
+**CSS classes:** `.carbon-card`, `.carbon-code`, `.carbon-glass`, `.neon-glow`, `.mono-data`
+**Density:** comfortable
+**Voice:** Operational and precise.
+
+## Shell Implementation (centered)
+
+### body
+
+- **note:** Single centered card. No sidebar, no header. Auth forms use 28rem, wider content 36rem.
+- **width:** 100%
+- **padding:** 1.5rem
+- **treatment:** d-surface
+- **border_radius:** var(--d-radius-lg)
+- **max_width_auth:** 28rem
+- **max_width_wide:** 36rem
+
+### root
+
+- **align:** center
+- **atoms:** _flex _center _minh[100vh]
+- **display:** flex
+- **justify:** center
+- **background:** var(--d-bg)
+- **min_height:** 100vh
+
+### Anti-patterns
+
+- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.
+- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.
+- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.
 
 ## Shell Notes (centered)
 
 - **Max Width:** Centered content should be constrained to max-width: 28rem (448px) for auth forms, 36rem (576px) for wider content.
 - **Vertical Centering:** Center the content card vertically using min-height: 100dvh with flexbox centering.
+
+## Spacing Guide
+
+| Context | Token | Value | Usage |
+|---------|-------|-------|-------|
+| Content gap | `--d-content-gap` | `1rem` | Gap between sibling elements |
+| Section padding | `--d-section-py` | `5rem` | Vertical padding on d-section |
+| Surface padding | `--d-surface-p` | `1.25rem` | Inner padding for d-surface |
+| Interactive V | `--d-interactive-py` | `0.5rem` | Vertical padding on buttons |
+| Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
+| Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
+| Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
 
 ---
 

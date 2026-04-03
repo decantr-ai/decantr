@@ -14,8 +14,6 @@
 **Errors:** Diagnostic and actionable. Include agent IDs, error codes, and timestamps. Suggest remediation steps or link to runbooks.
 **Loading states:** Status ring skeletons with pulse animation. Agent cards show placeholder rings while data streams in. Monospace data fields use blinking cursor placeholders.
 
-## App Topology
-
 ## Composition Topology
 
 **Intent:** agent-orchestrator + auth-full + marketing-saas + ai-transparency

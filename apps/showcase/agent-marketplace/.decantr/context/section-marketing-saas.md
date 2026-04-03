@@ -2,14 +2,76 @@
 
 **Role:** public | **Shell:** top-nav-footer | **Archetype:** marketing-saas
 **Description:** SaaS marketing landing page with hero, features, how-it-works timeline, pricing, testimonials, and CTA sections.
-**Shell structure:** Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer.
-**Regions:** header, body, footer
+
+## Quick Start
+
+**Shell:** Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer. (header: 52px)
+**Pages:** 1 (home)
+**Key patterns:** hero, features, how-it-works, pricing [moderate], testimonials [moderate], cta
+**CSS classes:** `.carbon-card`, `.carbon-code`, `.carbon-glass`, `.neon-glow`, `.mono-data`
+**Density:** comfortable
+**Voice:** Operational and precise.
+
+## Shell Implementation (top-nav-footer)
+
+### body
+
+- **flex:** 1
+- **note:** Full-width sections stack vertically. Each section uses d-section with --d-section-py. Body has NO padding — sections own their spacing. Natural document scroll.
+- **padding:** none
+
+### root
+
+- **atoms:** _flex _col _minh[100vh]
+- **display:** flex
+- **direction:** column
+- **min_height:** 100vh
+
+### footer
+
+- **note:** Multi-column footer with link groups and legal.
+- **border:** top
+- **padding:** 2rem 1.5rem
+- **position_within:** bottom (mt-auto for short pages)
+
+### header
+
+- **align:** center
+- **border:** bottom
+- **height:** 52px
+- **sticky:** true
+- **display:** flex
+- **justify:** space-between
+- **padding:** 0 1.5rem
+- **z_index:** 10
+- **background:** var(--d-bg)
+- **left_content:** Brand/logo
+- **right_content:** CTA button + mobile hamburger. Hamburger ONLY below md breakpoint.
+- **center_content:** Nav links — flex with gap 1.5rem. Hidden below md, visible above.
+
+### Anti-patterns
+
+- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.
+- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.
+- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.
 
 ## Shell Notes (top-nav-footer)
 
 - **Cta Sections:** CTA sections at the bottom of marketing pages should stand out visually — subtle background gradient or glass effect, not just a plain card.
 - **Section Labels:** Section overline labels (CAPABILITIES, HOW IT WORKS) should be uppercase, small, accent-colored, center-aligned, with letter-spacing: 0.1em. Use d-label class with text-align: center.
 - **Section Spacing:** Marketing sections use spacious density. Each d-section uses full --d-section-py padding.
+
+## Spacing Guide
+
+| Context | Token | Value | Usage |
+|---------|-------|-------|-------|
+| Content gap | `--d-content-gap` | `1rem` | Gap between sibling elements |
+| Section padding | `--d-section-py` | `5rem` | Vertical padding on d-section |
+| Surface padding | `--d-surface-p` | `1.25rem` | Inner padding for d-surface |
+| Interactive V | `--d-interactive-py` | `0.5rem` | Vertical padding on buttons |
+| Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
+| Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
+| Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
 
 ---
 
