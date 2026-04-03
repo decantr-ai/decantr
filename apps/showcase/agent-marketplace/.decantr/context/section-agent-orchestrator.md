@@ -118,13 +118,13 @@
 |-------|-------|------|
 | `--d-text` | `#FAFAFA` | Body text, headings, primary content |
 | `--d-border` | `#3F3F46` | Dividers, card borders, separators |
-| `--d-primary` | `#7C93B0` | Brand color, key interactive, selected states |
+| `--d-primary` | `#6366F1` | Brand color, key interactive, selected states |
 | `--d-surface` | `#1F1F23` | Cards, panels, containers |
 | `--d-secondary` | `#A78BFA` | Secondary brand color, supporting elements |
 | `--d-bg` | `#18181B` | Page canvas / base layer |
 | `--d-text-muted` | `#A1A1AA` | Secondary text, placeholders, labels |
 | `--d-accent-glow` | `rgba(0, 212, 255, 0.3)` | Ambient glow effect for accent-colored elements |
-| `--d-primary-hover` | `#8CA3C0` | Hover state for primary elements |
+| `--d-primary-hover` | `#818CF8` | Hover state for primary elements |
 | `--d-surface-raised` | `#27272A` | Elevated containers, modals, popovers |
 | `--d-accent` | `#00D4FF` | CTAs, links, active states, glow effects |
 
@@ -200,7 +200,9 @@ AgentSwarmCanvas = Viewport(d-section, spatial, full-bleed) > [CanvasLayer + Sta
   - note: This is a full-bleed visualization. Do NOT wrap in a d-surface card. Agent nodes float freely within the canvas area.
   - metrics: Display agent metrics with LABELED text, not icon-only. Good: 'Requests: 142 | Latency: 120ms'. Bad: '⚡ 142 ⬇ 120ms'. Icons without labels are unparseable.
   - container: borderless
+  - node_card: Agent node cards: min-width 200px, max-width 260px. Layout must be: Row 1: avatar (40px circle) + column(name + agent-id). Row 2: status badge (FULL WIDTH, not beside the name). Row 3+: metrics stacked vertically. The status badge must NEVER share a row with the agent name — it goes on its own row below the name/id, spanning the full card width. Use d-annotation for the badge.
   - error_escalation: Agents with error status should have a subtle red border glow on their card: box-shadow: 0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent).
+  - node_card_sizing: The name text uses text-sm font-semibold with text-ellipsis overflow-hidden whitespace-nowrap. The agent-id uses text-xs text-muted. Status badge row: flex with gap-2, badge pill-shaped. Metrics: mono-data text-xs, one line per metric. Card padding: 12px. Gap between rows: 8px.
   - node_interaction: Each agent node card MUST have cursor: pointer. Use d-surface[data-interactive] for clickable nodes. Clicking navigates to agent detail.
   - status_consistency: All status badges MUST use d-annotation[data-status]. Every status includes a colored dot (8px circle) prefix for visual scanning. Consistent across all agents.
 **Motion:**
@@ -406,7 +408,9 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
   - note: Hero sections should NOT wrap content in d-surface cards. The hero IS the section. Use d-section for spacing.
   - subtitle: Subtitle line-height should be 1.6-1.8. Use text-muted color, smaller font than heading.
   - container: none
+  - background: Hero sections should have a subtle radial or mesh gradient background using the theme palette — not a flat color. Use the primary and accent colors at very low opacity (5-10%) to create depth. Example: radial-gradient(ellipse at top center, rgba(var(--d-accent-rgb), 0.08) 0%, transparent 60%), or a soft gradient from primary to transparent. The gradient should fade to var(--d-bg) at the edges so it blends seamlessly with the page.
   - cta_sizing: Primary and secondary CTAs should have equal padding and height. Primary is filled (d-interactive[data-variant=primary]), secondary is ghost (d-interactive[data-variant=ghost]).
+  - ambient_glow: For themes with neon/glow personality, add a soft ambient glow behind the hero heading or CTA area. Use a blurred pseudo-element or box-shadow with the accent color at 10-15% opacity, radius 200-400px. This creates a focal point without overwhelming the content.
   - announcement: If showing an announcement badge above the heading, use d-annotation with prominent styling — not a tiny muted pill. Accent border or accent background at 15% opacity.
   - visual_proof: The visual element below CTAs should be an ambient visualization (animated gradient, particle effect, blurred screenshot) — NOT a data widget wrapped in a card. If showing product data (agents, metrics), render as floating elements without card containment. Omit entirely if no meaningful visual is available.
 **Motion:**

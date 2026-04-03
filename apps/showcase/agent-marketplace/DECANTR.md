@@ -306,16 +306,26 @@ css('hover:_opacity80')
 | Atom | CSS |
 |------|-----|
 | `_bgprimary` | `background:var(--d-primary)` |
+| `_bgaccent` | `background:var(--d-accent)` |
+| `_bgsecondary` | `background:var(--d-secondary)` |
 | `_bgsurface` | `background:var(--d-surface)` |
 | `_bgsurface0`-`_bgsurface2` | surface elevation layers |
 | `_bgmuted` | `background:var(--d-muted)` |
 | `_bgbg` | `background:var(--d-bg)` |
+| `_bgtransparent` | `background:transparent` |
 | `_bgsuccess`, `_bgerror`, `_bgwarning`, `_bginfo` | status backgrounds |
 | `_fgprimary` | `color:var(--d-primary)` |
+| `_fgaccent` | `color:var(--d-accent)` |
+| `_fgsecondary` | `color:var(--d-secondary)` |
 | `_fgtext` | `color:var(--d-text)` |
 | `_fgmuted` | `color:var(--d-text-muted)` |
+| `_fgwhite`, `_fgblack`, `_fginherit` | absolute/inherited text colors |
 | `_fgsuccess`, `_fgerror`, `_fgwarning`, `_fginfo` | status text |
+| `_bcprimary` | `border-color:var(--d-primary)` |
+| `_bcaccent` | `border-color:var(--d-accent)` |
 | `_bcborder` | `border-color:var(--d-border)` |
+| `_bcmuted` | `border-color:var(--d-muted)` |
+| `_bctransparent` | `border-color:transparent` |
 
 #### Overflow & Whitespace
 | Atom | CSS |

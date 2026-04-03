@@ -83,13 +83,13 @@
 |-------|-------|------|
 | `--d-text` | `#FAFAFA` | Body text, headings, primary content |
 | `--d-border` | `#3F3F46` | Dividers, card borders, separators |
-| `--d-primary` | `#7C93B0` | Brand color, key interactive, selected states |
+| `--d-primary` | `#6366F1` | Brand color, key interactive, selected states |
 | `--d-surface` | `#1F1F23` | Cards, panels, containers |
 | `--d-secondary` | `#A78BFA` | Secondary brand color, supporting elements |
 | `--d-bg` | `#18181B` | Page canvas / base layer |
 | `--d-text-muted` | `#A1A1AA` | Secondary text, placeholders, labels |
 | `--d-accent-glow` | `rgba(0, 212, 255, 0.3)` | Ambient glow effect for accent-colored elements |
-| `--d-primary-hover` | `#8CA3C0` | Hover state for primary elements |
+| `--d-primary-hover` | `#818CF8` | Hover state for primary elements |
 | `--d-surface-raised` | `#27272A` | Elevated containers, modals, popovers |
 | `--d-accent` | `#00D4FF` | CTAs, links, active states, glow effects |
 
@@ -159,7 +159,9 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
   - note: Hero sections should NOT wrap content in d-surface cards. The hero IS the section. Use d-section for spacing.
   - subtitle: Subtitle line-height should be 1.6-1.8. Use text-muted color, smaller font than heading.
   - container: none
+  - background: Hero sections should have a subtle radial or mesh gradient background using the theme palette — not a flat color. Use the primary and accent colors at very low opacity (5-10%) to create depth. Example: radial-gradient(ellipse at top center, rgba(var(--d-accent-rgb), 0.08) 0%, transparent 60%), or a soft gradient from primary to transparent. The gradient should fade to var(--d-bg) at the edges so it blends seamlessly with the page.
   - cta_sizing: Primary and secondary CTAs should have equal padding and height. Primary is filled (d-interactive[data-variant=primary]), secondary is ghost (d-interactive[data-variant=ghost]).
+  - ambient_glow: For themes with neon/glow personality, add a soft ambient glow behind the hero heading or CTA area. Use a blurred pseudo-element or box-shadow with the accent color at 10-15% opacity, radius 200-400px. This creates a focal point without overwhelming the content.
   - announcement: If showing an announcement badge above the heading, use d-annotation with prominent styling — not a tiny muted pill. Accent border or accent background at 15% opacity.
   - visual_proof: The visual element below CTAs should be an ambient visualization (animated gradient, particle effect, blurred screenshot) — NOT a data widget wrapped in a card. If showing product data (agents, metrics), render as floating elements without card containment. Omit entirely if no meaningful visual is available.
 **Motion:**
@@ -194,6 +196,10 @@ Feature showcase grid with icon, heading, and description for each feature
 - `feature-icon`: Icon in a rounded background circle (48px) with muted primary fill
 - `feature-title`: Feature name with _heading4 _fontmedium
 - `feature-description`: Short explanation with _bodysm _fgmuted, 2-3 lines
+  **Layout guidance:**
+  - card_treatment: Feature cards should use a subtle border (1px solid var(--d-border)) with a soft hover effect: translateY(-2px) + border-color transitions to primary on hover. Do NOT use heavy shadows — keep it flat and clean with border-based elevation.
+  - icon_treatment: Feature icons should sit inside a rounded-lg container with a tinted background: background: color-mix(in srgb, var(--d-accent) 10%, transparent). The icon itself uses var(--d-accent) color. This creates a subtle brand-tinted icon well.
+  - section_background: Alternate section background from the hero — if hero fades to var(--d-bg), features should have a slightly elevated background: var(--d-surface) or a 2% lighter shade, creating visual rhythm between sections.
 **Motion:**
 | Interaction | Animation |
 |-------------|-----------|
@@ -226,6 +232,10 @@ Step-by-step process section with numbered steps, descriptions, and optional con
 - `step-title`: Step heading with _heading4 _fontmedium
 - `step-number`: Circled number (48px) with primary background and white text, or bordered circle with primary text
 - `step-description`: Step explanation with _bodysm _fgmuted
+  **Layout guidance:**
+  - step_numbers: Step number circles should use background: var(--d-primary) with white text (or accent bg with dark text for neon themes). Size: 48px diameter, font-weight: bold. Active/current step should pulse subtly.
+  - connector_line: Draw a horizontal connecting line (2px, var(--d-border)) between the step circles. On mobile (stacked), use a vertical line on the left side. The line should be dashed or use a gradient fade at the ends.
+  - section_background: Use var(--d-bg) background (same as hero) to create a visual pairing with the hero section. This groups hero + how-it-works as the "above the fold" narrative.
 **Motion:**
 | Interaction | Animation |
 |-------------|-----------|
@@ -265,6 +275,10 @@ PricingSection = Container(d-section, centered) > [Heading(heading2) + BillingTo
 - `heading`: Section title with _heading2 _textCenter and optional subtext
 - `tier-card`: Individual Card: plan name (_heading4), price (_heading1 _fontmono), billing period, feature checklist, CTA Button
 - `feature-list`: Checklist of features with checkmark icons and _textsm
+  **Layout guidance:**
+  - card_glow: For neon/glow themes, the recommended tier gets a subtle box-shadow glow: 0 0 30px rgba(var(--d-primary-rgb), 0.15). This draws the eye without being garish.
+  - toggle_treatment: The annual/monthly toggle should be a pill-style toggle with the active option using var(--d-primary) background. Show the savings percentage ("Save 20%") as a small accent-colored badge next to the annual option.
+  - recommended_treatment: The recommended/popular tier card should be visually elevated: scale(1.02) or extra top padding, a primary-colored top border (3px solid var(--d-primary)), and the Popular badge using d-annotation[data-status=info]. The other tier cards should be subtly muted in comparison.
 **Motion:**
 | Interaction | Animation |
 |-------------|-----------|
@@ -303,6 +317,10 @@ TestimonialCard = Card(d-surface) > [QuoteIcon(d-annotation) + QuoteText(italic)
 - `quote-icon`: Large decorative open-quote icon in muted primary color at top
 - `quote-text`: Testimonial paragraph with _body _italic _leading[relaxed]
 - `testimonial-card`: Card with quote icon, testimonial text, and author row
+  **Layout guidance:**
+  - card_treatment: Testimonial cards should use d-surface with a thin left border (3px solid) that rotates through accent/primary colors per card. This creates visual variety without inconsistency. Include a large decorative open-quote mark in low-opacity accent color.
+  - avatar_treatment: Avatars should have a subtle ring: 2px solid var(--d-primary) with 2px gap (outline-offset). This frames the person and adds polish.
+  - section_background: Use a very subtle gradient background: linear-gradient(180deg, var(--d-bg), color-mix(in srgb, var(--d-surface) 30%, var(--d-bg))). This creates visual separation from pricing above without being heavy.
 **Motion:**
 | Interaction | Animation |
 |-------------|-----------|
@@ -333,6 +351,10 @@ Prominent call-to-action section with headline, supporting text, and action butt
 - `headline`: Section heading with _heading2, centered
 - `cta-group`: Horizontal Button group with _flex _gap3, primary + secondary
 - `description`: Supporting paragraph with _body _fgmuted _mw[640px]
+  **Layout guidance:**
+  - urgency: Add a subtle visual urgency element — a small line of muted text below the button like "Free for teams up to 5 agents" or a trust indicator row (logos or badges). This prevents the CTA from feeling empty.
+  - button_treatment: The primary CTA button should be larger than standard buttons (py-3 px-8, text-lg). For neon themes, add a subtle glow on hover: box-shadow: 0 0 20px rgba(var(--d-primary-rgb), 0.3).
+  - background_treatment: CTA section should stand out from the rest of the page. Use a gradient background: linear-gradient(135deg, color-mix(in srgb, var(--d-primary) 8%, var(--d-bg)), color-mix(in srgb, var(--d-accent) 5%, var(--d-bg))). Or use a glassmorphic surface with backdrop-blur.
 **Motion:**
 | Interaction | Animation |
 |-------------|-----------|

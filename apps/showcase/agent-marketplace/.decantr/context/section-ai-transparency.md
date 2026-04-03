@@ -118,13 +118,13 @@
 |-------|-------|------|
 | `--d-text` | `#FAFAFA` | Body text, headings, primary content |
 | `--d-border` | `#3F3F46` | Dividers, card borders, separators |
-| `--d-primary` | `#7C93B0` | Brand color, key interactive, selected states |
+| `--d-primary` | `#6366F1` | Brand color, key interactive, selected states |
 | `--d-surface` | `#1F1F23` | Cards, panels, containers |
 | `--d-secondary` | `#A78BFA` | Secondary brand color, supporting elements |
 | `--d-bg` | `#18181B` | Page canvas / base layer |
 | `--d-text-muted` | `#A1A1AA` | Secondary text, placeholders, labels |
 | `--d-accent-glow` | `rgba(0, 212, 255, 0.3)` | Ambient glow effect for accent-colored elements |
-| `--d-primary-hover` | `#8CA3C0` | Hover state for primary elements |
+| `--d-primary-hover` | `#818CF8` | Hover state for primary elements |
 | `--d-surface-raised` | `#27272A` | Elevated containers, modals, popovers |
 | `--d-accent` | `#00D4FF` | CTAs, links, active states, glow effects |
 

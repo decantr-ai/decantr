@@ -1,0 +1,81 @@
+/* AI-generated decorator CSS from structured definitions in section context files. */
+@layer decorators {
+
+.carbon-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  transition: box-shadow var(--d-duration-hover) var(--d-easing);
+}
+.carbon-card:hover {
+  box-shadow: var(--d-shadow-md);
+}
+
+.carbon-code {
+  font-family: var(--d-font-mono);
+  background: var(--d-surface-raised);
+  border-left: 3px solid var(--d-primary);
+  padding: 0.75rem 1rem;
+  border-radius: var(--d-radius-sm);
+}
+
+.carbon-glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(31, 31, 35, 0.6);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+}
+
+.carbon-input {
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  transition: border-color var(--d-duration-hover) var(--d-easing), box-shadow var(--d-duration-hover) var(--d-easing);
+}
+.carbon-input:focus {
+  border-color: var(--d-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-primary) 25%, transparent);
+}
+
+.carbon-canvas {
+  background: var(--d-bg);
+}
+
+.carbon-divider {
+  border: none;
+  border-top: 1px solid var(--d-border);
+  margin: 0;
+}
+
+.carbon-skeleton {
+  background: var(--d-surface);
+  border-radius: var(--d-radius);
+  animation: decantr-pulse 1.5s ease-in-out infinite;
+}
+
+.carbon-bubble-ai {
+  background: var(--d-surface);
+  border-radius: var(--d-radius-lg) var(--d-radius-lg) var(--d-radius-lg) var(--d-radius-sm);
+  padding: 0.75rem 1rem;
+  max-width: 80%;
+  align-self: flex-start;
+}
+
+.carbon-bubble-user {
+  background: color-mix(in srgb, var(--d-primary) 20%, var(--d-surface));
+  border-radius: var(--d-radius-lg) var(--d-radius-lg) var(--d-radius-sm) var(--d-radius-lg);
+  padding: 0.75rem 1rem;
+  max-width: 80%;
+  align-self: flex-end;
+}
+
+.carbon-fade-slide {
+  animation: carbon-fade-slide-in var(--d-duration-entrance) var(--d-easing) both;
+}
+
+@keyframes carbon-fade-slide-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+}
