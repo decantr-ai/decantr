@@ -1,0 +1,214 @@
+/* Gaming Guild — Theme Decorators */
+
+@layer decorators {
+
+/* ── gg-dark: Near-black background with subtle grid pattern ── */
+.gg-dark {
+  background-color: #0A0A0F;
+  background-image:
+    linear-gradient(rgba(42, 42, 64, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 42, 64, 0.15) 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: var(--d-text);
+  min-height: 100vh;
+}
+
+/* ── gg-hero: Hero with animated gradient background ── */
+.gg-hero {
+  position: relative;
+  padding: 5rem 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 214, 160, 0.1), rgba(168, 85, 247, 0.1));
+}
+
+.gg-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+  animation: gg-hero-shift 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes gg-hero-shift {
+  0% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
+/* ── gg-sidebar: Dark sidebar with accent-colored active states ── */
+.gg-sidebar {
+  background: var(--d-surface);
+  border-right: 1px solid var(--d-border);
+}
+
+.gg-sidebar [data-active="true"] {
+  background: color-mix(in srgb, var(--d-primary) 15%, transparent);
+  color: var(--d-primary);
+  border-left: 2px solid var(--d-primary);
+}
+
+/* ── gg-slide-in: Entrance slide from left with slight bounce ── */
+.gg-slide-in {
+  animation: gg-slide-in 300ms ease-out both;
+}
+
+@keyframes gg-slide-in {
+  0% { opacity: 0; transform: translateX(-20px); }
+  70% { transform: translateX(3px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* ── gg-neon-glow: Neon glow effect behind hero elements ── */
+.gg-neon-glow {
+  position: relative;
+}
+
+.gg-neon-glow::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.2) 0%, rgba(6, 214, 160, 0.1) 40%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ── gg-rank-badge: Rank position with metallic gradient ── */
+.gg-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--d-radius);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gg-rank-badge[data-rank="1"] {
+  background: linear-gradient(135deg, #ffd700, #ffaa00);
+  color: #1a1a00;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+}
+
+.gg-rank-badge[data-rank="2"] {
+  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+  color: #1a1a1a;
+  box-shadow: 0 0 12px rgba(192, 192, 192, 0.3);
+}
+
+.gg-rank-badge[data-rank="3"] {
+  background: linear-gradient(135deg, #cd7f32, #e8a860);
+  color: #1a1200;
+  box-shadow: 0 0 12px rgba(205, 127, 50, 0.3);
+}
+
+.gg-rank-badge[data-rank="default"] {
+  background: var(--d-surface-raised);
+  color: var(--d-text-muted);
+}
+
+/* ── gg-stat-pulse: Stats with subtle pulse animation ── */
+.gg-stat-pulse {
+  animation: gg-pulse 2s ease-in-out infinite;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes gg-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* ── gg-achievement-shine: Achievement cards with shine animation on hover ── */
+.gg-achievement-shine {
+  position: relative;
+  overflow: hidden;
+  background: var(--d-surface-raised);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+}
+
+.gg-achievement-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.05) 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 55%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.gg-achievement-shine:hover::after {
+  transform: translateX(100%);
+}
+
+/* ── Rarity borders for achievements ── */
+.gg-achievement-shine[data-rarity="common"] {
+  border-color: #6b7280;
+}
+
+.gg-achievement-shine[data-rarity="rare"] {
+  border-color: #3b82f6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.15);
+}
+
+.gg-achievement-shine[data-rarity="epic"] {
+  border-color: #a855f7;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.15);
+}
+
+.gg-achievement-shine[data-rarity="legendary"] {
+  border-color: #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+/* ── Event type dots ── */
+.gg-event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gg-event-dot[data-type="achievement"] { background: #f59e0b; }
+.gg-event-dot[data-type="match"] { background: #3b82f6; }
+.gg-event-dot[data-type="rank"] { background: #a855f7; }
+.gg-event-dot[data-type="social"] { background: #06d6a0; }
+.gg-event-dot[data-type="milestone"] { background: #ec4899; }
+
+/* ── XP progress bar ── */
+.gg-xp-bar {
+  height: 6px;
+  background: var(--d-surface);
+  border-radius: var(--d-radius-full);
+  overflow: hidden;
+}
+
+.gg-xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--d-primary), var(--d-accent));
+  border-radius: var(--d-radius-full);
+  transition: width 0.6s ease-out;
+}
+
+/* ── Category badge colors ── */
+.gg-category[data-category="news"] { background: color-mix(in srgb, #3b82f6 15%, transparent); color: #60a5fa; }
+.gg-category[data-category="patch"] { background: color-mix(in srgb, #f59e0b 15%, transparent); color: #fbbf24; }
+.gg-category[data-category="event"] { background: color-mix(in srgb, #a855f7 15%, transparent); color: #c084fc; }
+.gg-category[data-category="community"] { background: color-mix(in srgb, #06d6a0 15%, transparent); color: #34d399; }
+
+} /* end @layer decorators */
