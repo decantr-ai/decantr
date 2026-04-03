@@ -2,6 +2,18 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  redirects: async () => [
+    {
+      source: '/registry',
+      destination: '/',
+      permanent: true,
+    },
+    {
+      source: '/registry/:path*',
+      destination: '/:path*',
+      permanent: true,
+    },
+  ],
   images: {
     remotePatterns: [
       {
