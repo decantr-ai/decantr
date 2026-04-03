@@ -1554,7 +1554,18 @@ Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and list
 2. **Shell regions are frames, not surfaces.** Sidebar and header use var(--d-surface) or var(--d-bg) directly. Apply d-surface only to content cards within the body region.
 3. **One scroll container per region.** Body has overflow-y-auto. Sidebar nav has its own overflow-y-auto. Never nest additional scrollable wrappers.
 4. **d-section spacing is self-contained.** Each d-section owns its padding. The d-section + d-section rule adds a separator. Do NOT add extra margin between adjacent sections.
-5. **Responsive nav rules.** Hamburger menus appear ONLY below the shell collapse breakpoint. Full nav shows above it.`;
+5. **Responsive nav rules.** Hamburger menus appear ONLY below the shell collapse breakpoint. Full nav shows above it.
+
+### Motion Philosophy
+
+Every interaction should feel responsive and polished. Apply motion by default, not as an afterthought:
+
+- **Page transitions:** Apply entrance-fade (or the personality entrance animation) to the main content area on route change
+- **Stagger children:** Lists, grids, and card groups should stagger-animate on mount (50-100ms delay per item)
+- **Data visualization:** Charts, gauges, progress bars, and counters should animate to their values on mount — never render static
+- **Micro-interactions:** All interactive elements (buttons, toggles, cards, nav items) need hover/press transitions. Use the motion tokens (--d-duration-hover, --d-easing) for consistency.
+- **Scroll reveals:** Sections below the fold should fade-in on scroll intersection (IntersectionObserver, once)
+- **Reduced motion:** Wrap all animations in \`prefers-reduced-motion\` media query — skip animation, keep state changes instant`;
 
 /**
  * Generate DECANTR.md for v3.1 essences.
@@ -3539,6 +3550,17 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
     if (input.voice.metrics_format) lines.push(`**Metrics format:** ${input.voice.metrics_format}`);
     lines.push('');
   }
+
+  // Development Mode
+  lines.push('## Development Mode');
+  lines.push('');
+  lines.push('For local development and showcases, wire all zone transitions with mock data:');
+  lines.push('');
+  lines.push('- **Auth bypass:** Auth pages should accept any input and redirect to the primary section\'s default route');
+  lines.push('- **Route guards:** Check a simple localStorage flag (e.g., `decantr_authenticated`). Login sets it → redirect to app zone entry. Logout clears it → redirect to public/gateway zone.');
+  lines.push('- **Mock data on every page:** All pages should render with simulated data on first load — never show empty states during development');
+  lines.push('- **Zone transitions:** CTA links on marketing pages should route to the gateway (login/register). Successful auth should route to the primary section default page.');
+  lines.push('');
 
   // Topology
   lines.push(topologyMarkdown);
