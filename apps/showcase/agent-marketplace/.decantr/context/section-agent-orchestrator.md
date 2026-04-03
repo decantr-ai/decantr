@@ -28,9 +28,9 @@
 | `--d-primary` | `#7C93B0` | Brand color, key interactive, selected states |
 | `--d-surface` | `#1F1F23` | Cards, panels, containers |
 | `--d-secondary` | `#A78BFA` | Secondary brand color, supporting elements |
-| `--d-background` | `#18181B` | Page canvas / base layer |
+| `--d-bg` | `#18181B` | Page canvas / base layer |
 | `--d-text-muted` | `#A1A1AA` | Secondary text, placeholders, labels |
-| `--d-accent-glow` | `rgba(0, 212, 255, 0.3)` |  |
+| `--d-accent-glow` | `rgba(0, 212, 255, 0.3)` | Ambient glow effect for accent-colored elements |
 | `--d-primary-hover` | `#8CA3C0` | Hover state for primary elements |
 | `--d-surface-raised` | `#27272A` | Elevated containers, modals, popovers |
 | `--d-accent` | `#00D4FF` | CTAs, links, active states, glow effects |
@@ -110,6 +110,17 @@ AgentSwarmCanvas = Viewport(d-section, spatial, full-bleed) > [CanvasLayer + Sta
   - error_escalation: Agents with error status should have a subtle red border glow on their card: box-shadow: 0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent).
   - node_interaction: Each agent node card MUST have cursor: pointer. Use d-surface[data-interactive] for clickable nodes. Clicking navigates to agent detail.
   - status_consistency: All status badges MUST use d-annotation[data-status]. Every status includes a colored dot (8px circle) prefix for visual scanning. Consistent across all agents.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| node-hover | scale(1.05) + glow-intensity 200ms ease-out |
+| connection-pulse | opacity 0.3→1→0.3 along path 2s linear infinite |
+| node-add | scale(0) to scale(1) + fade 300ms spring |
+| node-remove | scale(1) to scale(0) + fade 200ms ease-in |
+| layout-shift | position lerp 500ms ease-in-out |
+| status-glow | border-color pulse matching status 2s ease-in-out infinite |
+| connection-flow | dash-offset animate along path 3s linear infinite |
+
 **Responsive:**
 - **Mobile (<640px):** Canvas remains spatial but disables drag-to-connect (use tap-to-select then tap-target-to-connect two-step flow). Minimap hidden. Control bar simplifies to zoom + play/pause. Agent nodes render at minimum 64px width with truncated labels.
 - **Tablet (640-1024px):** Full spatial canvas with minimap collapsed by default (toggle via control bar). Touch gestures: two-finger pan, pinch-to-zoom. Connection drag uses long-press to initiate.
@@ -146,6 +157,15 @@ TimelineSummary = Card(d-surface, sticky) > [AgentName + ModelId + Status(d-anno
   - badge_size: Event type badges use d-annotation with at least 0.7rem font and enough padding to be scannable at speed.
   - event_colors: Each event TYPE must have a DISTINCT color. No two types share the same color. Suggested: action=cyan(accent), decision=green(success), error=red(error), warning=amber(warning), tool_call=purple, reasoning=amber/gold, info=blue(info).
   - vertical_line: A continuous 2px vertical line runs the FULL height of the timeline, 16px from the left edge. Color: var(--d-border). The line MUST NOT have gaps between events — it connects all events visually.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| orb-pulse | scale(1→1.2→1) 2s ease-in-out infinite on active events |
+| event-hover | translateX(2px) + border-accent 150ms ease-out |
+| new-event | slide-in-from-top + fade 400ms ease-out |
+| event-expand | max-height 0→auto + fade 300ms ease-out |
+| event-collapse | max-height auto→0 + fade 200ms ease-in |
+
 **Responsive:**
 - **Mobile (<640px):** Timeline track moves to a thin left-edge gutter (8px inset). Event cards span full width with reduced padding. Filter bar scrolls horizontally with momentum. Summary header stacks stats in a 2×2 grid. Event details render in a bottom sheet on tap rather than inline expansion to save vertical space.
 - **Tablet (640-1024px):** Standard vertical layout maintained. Filter bar remains fully visible without scrolling (wraps to second row if needed). Event cards maintain comfortable padding. Summary header displays stats in a single row.
@@ -176,6 +196,16 @@ NeuralFeedbackLoop = Container(d-section, centered) > [PulseCore + IntensityRing
 
 **Layout slots:**
 - `values`: Value cards (icon/emoji, title, description)
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| gauge-update | value transition 500ms ease-out with number counter |
+| threshold-cross | flash border-color 300ms + scale(1.02) on threshold breach |
+| panel-toggle | height 0→auto + fade 300ms ease-out |
+| metric-refresh | cross-fade 200ms ease-in-out |
+| data-stream | translateY scroll-like 1s linear infinite on live data |
+| confidence-pulse | opacity oscillate 0.7→1 3s ease-in-out infinite |
+
 **Responsive:**
 - **Mobile (<640px):** Use inline-flow or static-gauge preset. Radial preset requires minimum 160px container. FlowTrack particle count reduced for performance. FeedbackTooltip appears as a bottom sheet on tap rather than hover tooltip.
 - **Tablet (640-1024px):** All presets available. Radial preset scales to container. Touch targets for tooltip activation are 44px minimum. Ambient preset works well as a page background on tablet.
@@ -303,6 +333,16 @@ GenerativeCardGrid = Grid(d-section, auto-fill, responsive) > [PreviewCard[] + E
   - grid: Use CSS grid with auto-fill: grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)). Cards should be equal height within each row.
   - filtering: If filter tabs or category pills are shown, they MUST be functional. Clicking a tab/pill filters the grid. Use React state to filter. Non-functional filter UI is worse than no filters.
   - empty_state: When filters produce 0 results, show an empty state: centered icon (48px, muted) + descriptive message + 'Clear filters' action.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| card-hover | translateY(-4px) + shadow-lg 200ms ease-out |
+| card-press | scale(0.98) 100ms ease-out |
+| card-enter | fade-up + scale(0.95→1) 300ms ease-out, stagger 50ms per card |
+| card-remove | scale(1→0.9) + fade-out 200ms ease-in |
+| grid-reflow | position + size lerp 400ms ease-in-out |
+| shimmer-loading | gradient-sweep left-to-right 1.5s ease-in-out infinite on skeleton |
+
 **Responsive:**
 - **Mobile (<640px):** Single column layout regardless of preset. Cards full-width. Preview area maintains 16:9 aspect ratio. ActionBar always visible (no hover state on touch). Skeleton state simplified to a single pulsing block. Maximum 10 cards before 'Load more' button.
 - **Tablet (640-1024px):** Two-column grid for uniform and masonry presets. Featured preset uses 2-column with featured card spanning full width at top. List preset unchanged. Touch targets for ActionBar buttons are 44px minimum.

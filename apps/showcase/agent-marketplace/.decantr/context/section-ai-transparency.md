@@ -28,9 +28,9 @@
 | `--d-primary` | `#7C93B0` | Brand color, key interactive, selected states |
 | `--d-surface` | `#1F1F23` | Cards, panels, containers |
 | `--d-secondary` | `#A78BFA` | Secondary brand color, supporting elements |
-| `--d-background` | `#18181B` | Page canvas / base layer |
+| `--d-bg` | `#18181B` | Page canvas / base layer |
 | `--d-text-muted` | `#A1A1AA` | Secondary text, placeholders, labels |
-| `--d-accent-glow` | `rgba(0, 212, 255, 0.3)` |  |
+| `--d-accent-glow` | `rgba(0, 212, 255, 0.3)` | Ambient glow effect for accent-colored elements |
 | `--d-primary-hover` | `#8CA3C0` | Hover state for primary elements |
 | `--d-surface-raised` | `#27272A` | Elevated containers, modals, popovers |
 | `--d-accent` | `#00D4FF` | CTAs, links, active states, glow effects |
@@ -129,6 +129,16 @@ NeuralFeedbackLoop = Container(d-section, centered) > [PulseCore + IntensityRing
 
 **Layout slots:**
 - `values`: Value cards (icon/emoji, title, description)
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| gauge-update | value transition 500ms ease-out with number counter |
+| threshold-cross | flash border-color 300ms + scale(1.02) on threshold breach |
+| panel-toggle | height 0→auto + fade 300ms ease-out |
+| metric-refresh | cross-fade 200ms ease-in-out |
+| data-stream | translateY scroll-like 1s linear infinite on live data |
+| confidence-pulse | opacity oscillate 0.7→1 3s ease-in-out infinite |
+
 **Responsive:**
 - **Mobile (<640px):** Use inline-flow or static-gauge preset. Radial preset requires minimum 160px container. FlowTrack particle count reduced for performance. FeedbackTooltip appears as a bottom sheet on tap rather than hover tooltip.
 - **Tablet (640-1024px):** All presets available. Radial preset scales to container. Touch targets for tooltip activation are 44px minimum. Ambient preset works well as a page background on tablet.
@@ -165,6 +175,15 @@ TimelineSummary = Card(d-surface, sticky) > [AgentName + ModelId + Status(d-anno
   - badge_size: Event type badges use d-annotation with at least 0.7rem font and enough padding to be scannable at speed.
   - event_colors: Each event TYPE must have a DISTINCT color. No two types share the same color. Suggested: action=cyan(accent), decision=green(success), error=red(error), warning=amber(warning), tool_call=purple, reasoning=amber/gold, info=blue(info).
   - vertical_line: A continuous 2px vertical line runs the FULL height of the timeline, 16px from the left edge. Color: var(--d-border). The line MUST NOT have gaps between events — it connects all events visually.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| orb-pulse | scale(1→1.2→1) 2s ease-in-out infinite on active events |
+| event-hover | translateX(2px) + border-accent 150ms ease-out |
+| new-event | slide-in-from-top + fade 400ms ease-out |
+| event-expand | max-height 0→auto + fade 300ms ease-out |
+| event-collapse | max-height auto→0 + fade 200ms ease-in |
+
 **Responsive:**
 - **Mobile (<640px):** Timeline track moves to a thin left-edge gutter (8px inset). Event cards span full width with reduced padding. Filter bar scrolls horizontally with momentum. Summary header stacks stats in a 2×2 grid. Event details render in a bottom sheet on tap rather than inline expansion to save vertical space.
 - **Tablet (640-1024px):** Standard vertical layout maintained. Filter bar remains fully visible without scrolling (wraps to second row if needed). Event cards maintain comfortable padding. Summary header displays stats in a single row.
@@ -193,6 +212,16 @@ SuggestionRings = Layer > Ring(d-annotation, dashed, opacity-low)[]
 ```
 
 **Layout slots:**
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| label-reveal | fade + translateY(4px→0) 200ms ease-out on hover |
+| segment-hover | opacity 0.7→1 + scale(1.02) 150ms ease-out |
+| data-update | segment-size lerp 500ms ease-out |
+| focus-shift | highlight-ring transition 300ms ease-out |
+| pulse-ring | scale(1→1.3) + opacity(1→0) 2s ease-out infinite |
+| radar-sweep | rotation 8s linear infinite on scan indicator |
+
 **Responsive:**
 - **Mobile (<640px):** Switches to compact semi-circular mode automatically. Suggestion chips render as a vertically scrollable list below the half-radar rather than on the arc. Touch-friendly chip sizes (min 44px tap target). Confidence arcs simplified to solid fills.
 - **Tablet (640-1024px):** Full radial radar with slightly reduced radius. Suggestion chips remain on the outer ring but increase tap target size. Two-column chip overflow if more than 6 suggestions.

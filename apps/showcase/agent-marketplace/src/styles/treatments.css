@@ -253,7 +253,7 @@
 
 .status-ring[data-status="idle"] { border-color: var(--d-text-muted); }
 
-.status-ring[data-status="processing"] { border-color: var(--d-primary); }
+.status-ring[data-status="processing"] { border-color: var(--d-primary); animation: pulse-ring 2s ease-in-out infinite; }
 
 @keyframes pulse-ring { 0% { opacity: 0.6; transform: scale(1); } 100% { opacity: 0; transform: scale(1.3); } }
 

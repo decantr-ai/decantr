@@ -22,8 +22,6 @@
 
 ### Zones
 
-**Personality:** Confident cyber-minimal agent marketplace. Neon accent glows on dark void backgrounds. Monospace data typography. Agent status shown through color-coded rings and pulse animations. Think Linear meets a mission control center. Lucide icons. No decorative elements — every pixel serves the operator.
-
 **Public** — top-nav-footer shell
   Archetypes: marketing-saas
   Purpose: SaaS marketing landing page with hero, features, how-it-works timeline, pricing, testimonials, and CTA sections.
