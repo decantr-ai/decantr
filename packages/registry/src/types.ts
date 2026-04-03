@@ -153,6 +153,12 @@ export interface Shell {
     navWidth?: string;
     headerHeight?: string;
   };
+  internal_layout?: Record<string, any>;
+  layout?: string;
+  atoms?: string;
+  config?: Record<string, any>;
+  guidance?: Record<string, string>;
+  code?: { imports?: string; example?: string };
 }
 
 // --- Content Resolution ---
