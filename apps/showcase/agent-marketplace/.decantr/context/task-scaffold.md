@@ -12,29 +12,29 @@
   - Patterns: nav-header, form-sections (structured) as agent-parameters
 - **agent-marketplace** (sidebar-main)
   - Patterns: hero (standard) as marketplace-hero, generative-card-grid as agent-catalog
-- **login** (centered)
+- **auth-full-login** (sidebar-main)
   - Patterns: form
-- **register** (centered)
+- **auth-full-register** (sidebar-main)
   - Patterns: form
-- **forgot-password** (centered)
+- **auth-full-forgot-password** (sidebar-main)
   - Patterns: form
-- **reset-password** (centered)
+- **auth-full-reset-password** (sidebar-main)
   - Patterns: form
-- **verify-email** (centered)
+- **auth-full-verify-email** (sidebar-main)
   - Patterns: form
-- **mfa-setup** (centered)
+- **auth-full-mfa-setup** (sidebar-main)
   - Patterns: form
-- **mfa-verify** (centered)
+- **auth-full-mfa-verify** (sidebar-main)
   - Patterns: form
-- **phone-verify** (centered)
+- **auth-full-phone-verify** (sidebar-main)
   - Patterns: form
-- **home** (top-nav-footer)
+- **marketing-saas-home** (sidebar-main)
   - Patterns: hero, features, how-it-works, pricing, testimonials, cta
-- **model-overview** (sidebar-main)
+- **ai-transparency-model-overview** (sidebar-main)
   - Patterns: stats-overview as model-kpis, neural-feedback-loop as feedback-summary
-- **inference-log** (sidebar-main)
+- **ai-transparency-inference-log** (sidebar-main)
   - Patterns: agent-timeline as inference-trace
-- **confidence-explorer** (sidebar-main)
+- **ai-transparency-confidence-explorer** (sidebar-main)
   - Patterns: intent-radar as confidence-distribution, stats-overview as metric-breakdown
 
 Post-scaffold enforcement mode: **strict**.

@@ -422,3 +422,25 @@ Routes are defined in `decantr.essence.json` → `blueprint.routes` and listed i
 3. **One scroll container per region.** Body has overflow-y-auto. Sidebar nav has its own overflow-y-auto. Never nest additional scrollable wrappers.
 4. **d-section spacing is self-contained.** Each d-section owns its padding. The d-section + d-section rule adds a separator. Do NOT add extra margin between adjacent sections.
 5. **Responsive nav rules.** Hamburger menus appear ONLY below the shell collapse breakpoint. Full nav shows above it.
+
+### Motion Philosophy
+
+Every interaction should feel responsive and polished. Apply motion by default, not as an afterthought:
+
+- **Page transitions:** Apply entrance-fade (or the personality entrance animation) to the main content area on route change
+- **Stagger children:** Lists, grids, and card groups should stagger-animate on mount (50-100ms delay per item)
+- **Data visualization:** Charts, gauges, progress bars, and counters should animate to their values on mount — never render static
+- **Micro-interactions:** All interactive elements (buttons, toggles, cards, nav items) need hover/press transitions. Use the motion tokens (--d-duration-hover, --d-easing) for consistency.
+- **Scroll reveals:** Sections below the fold should fade-in on scroll intersection (IntersectionObserver, once)
+- **Reduced motion:** Wrap all animations in `prefers-reduced-motion` media query — skip animation, keep state changes instant
+
+### Interactivity Philosophy
+
+Build for wow factor. When a pattern describes a canvas, graph, map, or spatial visualization, implement it as a **fully interactive surface**, not a static illustration:
+
+- **Drag and drop:** Nodes, cards, and items on spatial canvases should be draggable. Use pointer events with proper grab/grabbing cursors.
+- **Pan and zoom:** Canvases and large visualizations should support pan (click-drag on background) and zoom (scroll wheel or pinch). Show zoom level indicator.
+- **Connections:** When nodes exist in a graph/topology view, they should have visible connection lines. Implement click-to-select + click-target for connecting nodes.
+- **Live state:** Data-driven visualizations should update in real-time with simulated data. Status changes should animate (color transitions, pulse effects).
+- **Direct manipulation:** Prefer drag-to-reorder over dropdown menus. Prefer inline editing over modal forms. Prefer resize handles over fixed layouts.
+- **Hover reveals:** Show contextual information (tooltips, expanded cards, action menus) on hover — don't require clicks to discover functionality.

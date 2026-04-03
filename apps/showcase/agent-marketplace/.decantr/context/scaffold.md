@@ -14,6 +14,15 @@
 **Errors:** Diagnostic and actionable. Include agent IDs, error codes, and timestamps. Suggest remediation steps or link to runbooks.
 **Loading states:** Status ring skeletons with pulse animation. Agent cards show placeholder rings while data streams in. Monospace data fields use blinking cursor placeholders.
 
+## Development Mode
+
+For local development and showcases, wire all zone transitions with mock data:
+
+- **Auth bypass:** Auth pages should accept any input and redirect to the primary section's default route
+- **Route guards:** Check a simple localStorage flag (e.g., `decantr_authenticated`). Login sets it → redirect to app zone entry. Logout clears it → redirect to public/gateway zone.
+- **Mock data on every page:** All pages should render with simulated data on first load — never show empty states during development
+- **Zone transitions:** CTA links on marketing pages should route to the gateway (login/register). Successful auth should route to the primary section default page.
+
 ## Composition Topology
 
 **Intent:** agent-orchestrator + auth-full + marketing-saas + ai-transparency
