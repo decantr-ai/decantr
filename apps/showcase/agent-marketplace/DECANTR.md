@@ -21,6 +21,29 @@
 | `.carbon-fade-slide` | Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out. |
 | `.carbon-bubble-user` | Right-aligned message bubble with primary-tinted background for user messages. |
 
+## Development Workflow
+
+The essence file (`decantr.essence.json`) is the source of truth for your project's structure. Context files in `.decantr/context/` are derived from it. When you need to add, remove, or modify pages, sections, or features:
+
+**1. Update the essence** (use CLI commands for consistency):
+- `decantr add page {section}/{page} --route /{path}`
+- `decantr add section {archetype}`
+- `decantr add feature {name}` (or `--section {id}` for scoped)
+- `decantr remove page {section}/{page}`
+- `decantr remove section {id}`
+- `decantr remove feature {name}`
+- `decantr theme switch {name}`
+
+**2. Regenerate context:** `decantr refresh`
+
+**3. Read the updated context files**, then build.
+
+**Rules:**
+- Never create page components for routes that don't exist in the essence
+- Never delete pages without removing them from the essence
+- Always refresh after mutations — stale context files lead to drift
+- If you edit the essence directly, run `decantr refresh` before building
+
 ---
 # DECANTR.md
 
