@@ -88,6 +88,15 @@ Structured form with labeled field groups, validation states, and action buttons
 
 **Components:** Card, Input, Select, Switch, Checkbox, Button, Label, Textarea, RadioGroup
 
+**Composition:**
+```
+Form = Container(d-section, flex-col, gap-6, max-width) > [FormSection[] + ActionButtons]
+Field = Stack(flex-col) > [Label(d-control, font-medium) + Input(d-control) + ValidationError?(d-annotation, text-destructive)]
+FieldGroup = Grid > Field[]
+FormSection = Card(d-surface) > [SectionTitle(heading4) + SectionDescription?(text-muted) + FieldGroup(d-control, grid: 1/2-col)]
+ActionButtons = Row(d-interactive, gap-2) > [SaveButton(variant: primary) + CancelButton(variant: ghost)]
+```
+
 **Layout slots:**
 - `actions`: Bottom-aligned save/cancel buttons
 - `section`: Card with 2-column layout: labels left, fields right

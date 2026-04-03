@@ -225,102 +225,10 @@
 } /* end @layer treatments */
 
 @layer decorators {
-
-/* ── Layer 3: Theme Decorators (carbon-neon) ── */
-
-.carbon-card {
-  background: var(--d-surface);
-  border: 1px solid var(--d-border);
-  border-radius: 8px;
-  box-shadow: var(--d-shadow);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  /* Decorator CSS is AI-generated from structured definitions in section context files. */
+  /* See .decantr/context/section-*.md for intent, suggested properties, and usage guidance. */
 }
 
-.carbon-card:hover {
-  border-color: var(--d-primary-hover, var(--d-border));
-  box-shadow: var(--d-shadow-md);
-}
-
-.carbon-code {
-  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
-  background: var(--d-surface-raised);
-  border-left: 3px solid var(--d-primary);
-  padding: 0.75rem 1rem;
-  border-radius: var(--d-radius-sm);
-  overflow-x: auto;
-}
-
-.carbon-glass {
-  background: rgba(31, 31, 35, 0.8);
-  border: 1px solid var(--d-border);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.carbon-glass:hover {
-  border-color: var(--d-primary-hover, var(--d-border));
-  box-shadow: var(--d-shadow-md);
-}
-
-.carbon-input {
-  background: var(--d-surface);
-  color: var(--d-text);
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--d-radius);
-  width: 100%;
-  outline: none;
-  border: 1px solid var(--d-border);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-}
-
-.carbon-input:focus {
-  border-color: var(--d-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-primary) 25%, transparent);
-}
-
-.carbon-input::placeholder {
-  color: var(--d-text-muted);
-}
-
-.carbon-input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.carbon-canvas {
-  background: var(--d-bg);
-}
-
-.carbon-divider {
-  border: 1px solid var(--d-border);
-}
-
-.carbon-skeleton {
-  animation: decantr-pulse 1.5s ease-in-out infinite;
-}
-
-.carbon-bubble-ai {
-  background: var(--d-surface);
-  margin-right: auto;
-  padding: var(--d-gap-3) var(--d-gap-4);
-  border-radius: var(--d-radius-lg);
-  max-width: 80%;
-}
-
-.carbon-fade-slide {
-  animation: decantr-fade-in 0.2s ease-out;
-}
-
-.carbon-bubble-user {
-  background: color-mix(in srgb, var(--d-primary) 15%, var(--d-surface));
-  margin-left: auto;
-  padding: var(--d-gap-3) var(--d-gap-4);
-  border-radius: var(--d-radius-lg);
-  max-width: 80%;
-}
-
-} /* end @layer decorators */
 @layer utilities {
 
 /* ── Personality-Derived Utilities ── */

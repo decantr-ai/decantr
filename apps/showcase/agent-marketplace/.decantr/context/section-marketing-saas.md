@@ -162,6 +162,13 @@ Pricing tier cards with plan comparison, billing toggle, and CTA buttons
 
 **Components:** Card, Button, Badge, Switch, icon
 
+**Composition:**
+```
+PricingTier = Card(d-surface, elevated?: tier.recommended) > [PlanName(heading4) + Badge?(d-annotation, show: tier.recommended) + Price(mono-data, heading1) + Period(text-muted) + FeatureList > CheckItem(icon: check)[] + CTAButton(d-interactive, variant: tier.recommended ? primary : ghost, full-width)]
+BillingToggle = Toggle(d-control) > [MonthlyLabel + Switch + AnnualLabel + SaveBadge?(d-annotation)]
+PricingSection = Container(d-section, centered) > [Heading(heading2) + BillingToggle(d-control, pill) + TierGrid > PricingTier[]]
+```
+
 **Layout slots:**
 - `cta`: Full-width Button per tier — primary variant for recommended, ghost for others
 - `tiers`: Horizontal row of tier Cards: _grid _gc1 _md:gc3 _gap4 _aic
@@ -188,6 +195,12 @@ Customer testimonial quotes with avatars, names, roles, and optional company log
 **Visual brief:** Section displaying customer testimonials in a grid of cards. Each card has a large decorative open-quote icon (in muted primary color) at the top-left, followed by the testimonial text in italic body-size type with relaxed line-height. At the bottom of each card, an author row shows a circular avatar (40px), the person's name in medium-weight small text, and their role/company in muted small text. Cards have consistent padding (p6), rounded corners, and subtle border or shadow. The carousel preset shows one testimonial at a time with large centered text, prev/next arrow buttons on either side, and dot navigation indicators below. The featured preset centers a single prominent testimonial with the company logo above the quote.
 
 **Components:** Card, Avatar, Image, icon
+
+**Composition:**
+```
+Testimonials = Grid(d-section, responsive: 1/2/3-col) > TestimonialCard[]
+TestimonialCard = Card(d-surface) > [QuoteIcon(d-annotation) + QuoteText(italic) + AuthorRow > [Avatar + AuthorInfo > [Name(font-medium) + Role(text-muted)] + CompanyLogo?]]
+```
 
 **Layout slots:**
 - `author`: Row: Avatar (40px) + name (_textsm _fontmedium) + role/company (_textsm _fgmuted)

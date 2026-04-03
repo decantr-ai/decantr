@@ -93,6 +93,12 @@ Summary row of key statistics with labels, values, and optional trend indicators
 
 **Components:** Card, Badge, icon
 
+**Composition:**
+```
+StatItem = Card(d-surface) > [Icon?(d-annotation, rounded-bg) + Label(text-muted, text-sm) + Value(heading3, mono-data) + TrendBadge?(d-annotation, variant: positive|negative)]
+StatsOverview = Row(d-section, responsive: wrap) > StatItem[]
+```
+
 **Layout slots:**
 - `label`: Metric label with _textsm _fgmuted
 - `trend`: Badge with percentage change and directional icon
@@ -108,7 +114,19 @@ Summary row of key statistics with labels, values, and optional trend indicators
 
 A bio-mimetic visualization that renders AI processing state through organic pulsing, color shifts, and flow animations. Displays model confidence, token consumption rate, processing stage, or any continuous metric as a living, breathing visual element. PulseCore radiates outward with intensity mapped to metric values. FlowTrack shows directional particle flow representing throughput. IntensityRing provides a clean circular gauge. For AI transparency UIs, model monitoring dashboards, and any interface that needs to make invisible AI processes tangible and legible.
 
+**Visual brief:** Bio-mimetic circular visualization with a central PulseCore element that expands and contracts with breathing animation, its frequency mapped to processing state (slow idle pulse, rapid active pulse). Surrounding the core, an IntensityRing provides a clean circular gauge with fill level indicating the current metric value. FlowTrack renders directional particle animations flowing along arc paths to represent throughput. A MetricDisplay overlay shows the numeric value and label. The inline-flow preset linearizes the visualization as a horizontal pulsing bar. The ambient preset uses large subtle background pulses. Static-gauge renders as a simple circular progress ring without animation.
+
 **Components:** PulseCore, FlowTrack, MetricDisplay, IntensityRing, FeedbackTooltip
+
+**Composition:**
+```
+FlowTrack = Track(d-data, particle-animation, speed: rate) > Particle[]
+PulseCore = Core(d-data, radial-gradient, pulsing: frequency-mapped, color-shift: metric)
+DetailTooltip = Tooltip(d-surface, on-hover) > [CurrentValue + Range + Trend + Interpretation]
+IntensityRing = Ring(d-data, conic-gradient, fill: 0-100%)
+MetricDisplay = Label(d-annotation, mono-data, tabular-nums) > [Value + Unit + TrendArrow?]
+NeuralFeedbackLoop = Container(d-section, centered) > [PulseCore + IntensityRing + MetricDisplay + DetailTooltip?]
+```
 
 **Layout slots:**
 - `values`: Value cards (icon/emoji, title, description)
@@ -127,6 +145,16 @@ A bio-mimetic visualization that renders AI processing state through organic pul
 A vertical timeline for agent observability that displays actions, decisions, tool calls, and reasoning steps as collapsible color-coded events with filtering, detail expansion, and summary statistics.
 
 **Components:** TimelineEvent, EventDetail, ToolCallCard, ReasoningStep, FilterChip, TimelineSummary
+
+**Composition:**
+```
+EventList = Track(d-data, vertical-line) > EventNode[]
+EventNode = Card(d-surface, color-left-border: event-type, collapsible) > [TypeIcon + Summary + Timestamp(mono-data) + ChevronToggle + EventDetail?]
+FilterBar = Row(d-control, scrollable) > FilterChip(toggleable, color: event-type)[]
+EventDetail = Panel(d-data, expandable) > [Content(variant: event-type)]
+AgentTimeline = Container(d-section, flex-col, gap-4) > [TimelineSummary + FilterBar + EventList]
+TimelineSummary = Card(d-surface, sticky) > [AgentName + ModelId + Status(d-annotation) + EventCounts(d-data) + ElapsedTime(mono-data) + TokenUsage]
+```
 
 **Layout slots:**
 - `steps`: Numbered steps (step number, title, description)
@@ -150,7 +178,18 @@ A vertical timeline for agent observability that displays actions, decisions, to
 
 A radial polar interface that visualizes user intent as vectors radiating from a center point, with suggestions pulsing outward based on confidence scores — used for AI command palettes, intent disambiguation, and contextual action discovery.
 
+**Visual brief:** Circular radial display with a glowing center point showing the current input query. Intent suggestion vectors radiate outward as labeled lines with lengths proportional to confidence scores. High-confidence suggestions appear closer to the edge with brighter colors; low-confidence ones are shorter and dimmer. SuggestionChip components sit at the end of each vector as clickable pill labels. The radar has subtle concentric circle gridlines. Compact preset renders as a smaller inline widget. The inline preset displays a horizontal confidence bar instead of the radial layout.
+
 **Components:** RadarDisplay, IntentVector, SuggestionChip, ConfidenceIndicator, ActionButton
+
+**Composition:**
+```
+ActionZone = Ring(d-interactive, outer) > SuggestionChip(d-interactive, confidence-pulse)[]
+IntentRadar = Display(d-section, spatial, aspect-square) > [SuggestionRings + IntentVectors + RadarCenter + ActionZone]
+RadarCenter = Core(d-interactive, glowing, pulsing: interpreting) > [QueryText | SearchIcon]
+IntentVectors = Layer > IntentVector(d-data, radial, length: confidence, color: category)[]
+SuggestionRings = Layer > Ring(d-annotation, dashed, opacity-low)[]
+```
 
 **Layout slots:**
 **Responsive:**

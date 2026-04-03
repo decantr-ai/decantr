@@ -91,6 +91,16 @@ A spatial node-graph canvas where AI agents appear as interactive nodes with rea
 
 **Components:** AgentNode, ConnectionPath, StatusBadge, CanvasControls, Minimap, TaskTooltip
 
+**Composition:**
+```
+AgentNode = Card(d-surface, data-interactive, positioned) > [Name + Avatar + StatusRing(pulse?: running) + TaskTooltip?]
+ControlBar = Bar(d-control, bottom-center) > [ZoomIn + ZoomOut + FitView + ToggleMinimap + PlayPause + ResetLayout]
+CanvasLayer = Canvas(zoomable, pannable) > [AgentNode[] + ConnectionPath[]]
+StatusOverlay = Panel(d-annotation, backdrop-blur, top-right) > [AgentCount + RunningCount + ErrorCount + ProgressBar]
+ConnectionPath = SVG(bezier, animated-dash) > Path(color: status)
+AgentSwarmCanvas = Viewport(d-section, spatial, full-bleed) > [CanvasLayer + StatusOverlay + ControlBar + Minimap?]
+```
+
 **Layout slots:**
   **Layout guidance:**
   - note: This is a full-bleed visualization. Do NOT wrap in a d-surface card. Agent nodes float freely within the canvas area.
@@ -115,6 +125,16 @@ A vertical timeline for agent observability that displays actions, decisions, to
 
 **Components:** TimelineEvent, EventDetail, ToolCallCard, ReasoningStep, FilterChip, TimelineSummary
 
+**Composition:**
+```
+EventList = Track(d-data, vertical-line) > EventNode[]
+EventNode = Card(d-surface, color-left-border: event-type, collapsible) > [TypeIcon + Summary + Timestamp(mono-data) + ChevronToggle + EventDetail?]
+FilterBar = Row(d-control, scrollable) > FilterChip(toggleable, color: event-type)[]
+EventDetail = Panel(d-data, expandable) > [Content(variant: event-type)]
+AgentTimeline = Container(d-section, flex-col, gap-4) > [TimelineSummary + FilterBar + EventList]
+TimelineSummary = Card(d-surface, sticky) > [AgentName + ModelId + Status(d-annotation) + EventCounts(d-data) + ElapsedTime(mono-data) + TokenUsage]
+```
+
 **Layout slots:**
 - `steps`: Numbered steps (step number, title, description)
   **Layout guidance:**
@@ -137,7 +157,19 @@ A vertical timeline for agent observability that displays actions, decisions, to
 
 A bio-mimetic visualization that renders AI processing state through organic pulsing, color shifts, and flow animations. Displays model confidence, token consumption rate, processing stage, or any continuous metric as a living, breathing visual element. PulseCore radiates outward with intensity mapped to metric values. FlowTrack shows directional particle flow representing throughput. IntensityRing provides a clean circular gauge. For AI transparency UIs, model monitoring dashboards, and any interface that needs to make invisible AI processes tangible and legible.
 
+**Visual brief:** Bio-mimetic circular visualization with a central PulseCore element that expands and contracts with breathing animation, its frequency mapped to processing state (slow idle pulse, rapid active pulse). Surrounding the core, an IntensityRing provides a clean circular gauge with fill level indicating the current metric value. FlowTrack renders directional particle animations flowing along arc paths to represent throughput. A MetricDisplay overlay shows the numeric value and label. The inline-flow preset linearizes the visualization as a horizontal pulsing bar. The ambient preset uses large subtle background pulses. Static-gauge renders as a simple circular progress ring without animation.
+
 **Components:** PulseCore, FlowTrack, MetricDisplay, IntensityRing, FeedbackTooltip
+
+**Composition:**
+```
+FlowTrack = Track(d-data, particle-animation, speed: rate) > Particle[]
+PulseCore = Core(d-data, radial-gradient, pulsing: frequency-mapped, color-shift: metric)
+DetailTooltip = Tooltip(d-surface, on-hover) > [CurrentValue + Range + Trend + Interpretation]
+IntensityRing = Ring(d-data, conic-gradient, fill: 0-100%)
+MetricDisplay = Label(d-annotation, mono-data, tabular-nums) > [Value + Unit + TrendArrow?]
+NeuralFeedbackLoop = Container(d-section, centered) > [PulseCore + IntensityRing + MetricDisplay + DetailTooltip?]
+```
 
 **Layout slots:**
 - `values`: Value cards (icon/emoji, title, description)
@@ -165,6 +197,15 @@ A bio-mimetic visualization that renders AI processing state through organic pul
 Grouped form fields organized in labeled sections with validation
 
 **Components:** Card, Input, Select, Switch, Checkbox, Button, Label, Textarea, RadioGroup
+
+**Composition:**
+```
+Field = Stack(flex-col) > [Label(font-medium) + Input(d-control) + ErrorText?(d-annotation, text-destructive)]
+Section = Card(d-surface) > [SectionTitle(heading4) + Description?(text-muted) + FieldGroup(d-control, grid: 1/2-col)]
+FieldGroup = Grid > Field[]
+FormSections = Container(d-section, flex-col, gap-6) > [Section[] + ActionButtons]
+ActionButtons = Row(d-interactive) > [SaveButton(variant: primary) + CancelButton(variant: ghost)]
+```
 
 **Layout slots:**
 - `actions`: Bottom-aligned save/cancel buttons
@@ -217,6 +258,15 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 A grid of cards where each card shows a procedurally generated preview of what an AI would build from a given prompt. Cards display live micro-renders, placeholder sketches, or wireframe thumbnails that materialize from skeleton states. The grid itself is generative: card sizes, positions, and visual weights adapt to content relevance and user interaction history. For AI generation galleries, prompt exploration interfaces, template browsers, and any context where users browse and compare multiple AI outputs.
 
 **Components:** PreviewCard, GenerationBadge, PromptTag, ActionBar, SkeletonPreview, RegenerateButton
+
+**Composition:**
+```
+ActionBar = Row(d-interactive, show-on-hover) > [RegenerateButton(labeled) + FavoriteButton + ExpandButton + CopyButton + DeleteButton]
+PreviewCard = Card(d-surface, hoverable, lift-on-hover) > [SkeletonPreview | Preview + GenerationBadge(d-annotation, top-right) + PromptTag(d-data, line-clamp-2) + ActionBar]
+GenerationBadge = Badge(d-annotation, semi-transparent) > [ModelName + GenerationTime + ConfidenceScore?]
+SkeletonPreview = Placeholder(shimmer, animated)
+GenerativeCardGrid = Grid(d-section, auto-fill, responsive) > [PreviewCard[] + EmptyState?]
+```
 
 **Layout slots:**
 - `content`: Story/about narrative text content
