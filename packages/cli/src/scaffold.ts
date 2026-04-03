@@ -1565,7 +1565,18 @@ Every interaction should feel responsive and polished. Apply motion by default, 
 - **Data visualization:** Charts, gauges, progress bars, and counters should animate to their values on mount — never render static
 - **Micro-interactions:** All interactive elements (buttons, toggles, cards, nav items) need hover/press transitions. Use the motion tokens (--d-duration-hover, --d-easing) for consistency.
 - **Scroll reveals:** Sections below the fold should fade-in on scroll intersection (IntersectionObserver, once)
-- **Reduced motion:** Wrap all animations in \`prefers-reduced-motion\` media query — skip animation, keep state changes instant`;
+- **Reduced motion:** Wrap all animations in \`prefers-reduced-motion\` media query — skip animation, keep state changes instant
+
+### Interactivity Philosophy
+
+Build for wow factor. When a pattern describes a canvas, graph, map, or spatial visualization, implement it as a **fully interactive surface**, not a static illustration:
+
+- **Drag and drop:** Nodes, cards, and items on spatial canvases should be draggable. Use pointer events with proper grab/grabbing cursors.
+- **Pan and zoom:** Canvases and large visualizations should support pan (click-drag on background) and zoom (scroll wheel or pinch). Show zoom level indicator.
+- **Connections:** When nodes exist in a graph/topology view, they should have visible connection lines. Implement click-to-select + click-target for connecting nodes.
+- **Live state:** Data-driven visualizations should update in real-time with simulated data. Status changes should animate (color transitions, pulse effects).
+- **Direct manipulation:** Prefer drag-to-reorder over dropdown menus. Prefer inline editing over modal forms. Prefer resize handles over fixed layouts.
+- **Hover reveals:** Show contextual information (tooltips, expanded cards, action menus) on hover — don't require clicks to discover functionality.`;
 
 /**
  * Generate DECANTR.md for v3.1 essences.
