@@ -76,32 +76,14 @@ function extractPatternName(item: unknown): string {
 function generateCuratedPrompt(ctx: PromptContext): string {
   const lines: string[] = [];
 
-  lines.push(`I'm building a ${ctx.archetype} application using ${ctx.target}.`);
+  lines.push('Build this application using the Decantr design system.');
   lines.push('');
-
-  if (ctx.blueprint) {
-    lines.push(`Blueprint: ${ctx.blueprint}`);
-  }
-  lines.push(`Theme: ${ctx.theme} (${ctx.mode} mode)`);
-  lines.push(`Personality: ${ctx.personality.join(', ')}`);
-  lines.push(`Guard mode: ${ctx.guard}`);
+  lines.push('Read DECANTR.md for the design spec, CSS approach, and guard rules.');
+  lines.push('Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.');
+  lines.push('Read each .decantr/context/section-*.md file before building that section\'s pages.');
+  lines.push('Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
   lines.push('');
-
-  lines.push('Pages to build:');
-  for (const page of ctx.pages) {
-    const patternNames = page.layout.map(extractPatternName);
-    const patterns = patternNames.length > 0 ? patternNames.join(', ') : 'custom';
-    lines.push(`  - ${page.id}: ${page.shell} shell with ${patterns}`);
-  }
-
-  if (ctx.features.length > 0) {
-    lines.push('');
-    lines.push(`Features: ${ctx.features.join(', ')}`);
-  }
-
-  lines.push('');
-  lines.push('Please read DECANTR.md for the full design spec and methodology.');
-  lines.push('Follow the guard rules and use the patterns from decantr.essence.json.');
+  lines.push('Start with the shell layouts, then build each section\'s pages.');
 
   return lines.join('\n');
 }
