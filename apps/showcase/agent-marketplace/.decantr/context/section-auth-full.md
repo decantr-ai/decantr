@@ -109,6 +109,15 @@ ActionButtons = Row(d-interactive, gap-2) > [SaveButton(variant: primary) + Canc
   - label_position: stacked
   - select_styling: Apply d-control to ALL form elements including <select>. Add appearance: none and a custom SVG chevron for consistent styling.
   - section_grouping: Group related fields under section headers. Use a SINGLE d-surface card for the entire form, OR no card at all. Do NOT wrap each section in its own separate card.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| error-shake | translateX(-4px, 4px, -2px, 2px, 0) 300ms ease-out on validation error |
+| field-focus | border-color transition 150ms ease-out |
+| button-press | scale(0.97) 100ms ease-out |
+| success-submit | fade-out form + fade-in success message 300ms ease-out |
+| validation-error | fade + slideDown 200ms ease-out for error message |
+
 **Responsive:**
 - **Mobile (<640px):** Single column for all field groups. Fields go full-width. Action buttons stack vertically at full width, primary on top. Section headings go full-width above fields. Padding reduces to p3.
 - **Tablet (640-1024px):** Two-column field grid activates for shorter fields (name, email). Textareas span full width. Action buttons stay horizontal, right-aligned.

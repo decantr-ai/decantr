@@ -225,8 +225,91 @@
 } /* end @layer treatments */
 
 @layer decorators {
-  /* Decorator CSS is AI-generated from structured definitions in section context files. */
-  /* See .decantr/context/section-*.md for intent, suggested properties, and usage guidance. */
+
+  .carbon-card {
+    background: var(--d-surface);
+    border: 1px solid var(--d-border);
+    border-radius: 8px;
+    transition: box-shadow 0.15s ease;
+  }
+
+  .carbon-card:hover {
+    box-shadow: var(--d-shadow-md);
+  }
+
+  .carbon-code {
+    font-family: var(--d-font-mono);
+    background: var(--d-surface-raised);
+    border-left: 3px solid var(--d-primary);
+    padding: 1rem;
+    border-radius: var(--d-radius);
+  }
+
+  .carbon-glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(31, 31, 35, 0.6);
+    border: 1px solid var(--d-border);
+    border-radius: var(--d-radius);
+  }
+
+  .carbon-input {
+    border: 1px solid var(--d-border);
+    border-radius: var(--d-radius);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .carbon-input:focus-within {
+    border-color: var(--d-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-primary) 25%, transparent);
+  }
+
+  .carbon-canvas {
+    background: var(--d-bg);
+  }
+
+  .carbon-divider {
+    border: none;
+    border-bottom: 1px solid var(--d-border);
+    width: 100%;
+  }
+
+  .carbon-skeleton {
+    background: var(--d-surface);
+    border-radius: var(--d-radius);
+    animation: decantr-pulse 2s ease-in-out infinite;
+  }
+
+  .carbon-bubble-ai {
+    background: var(--d-surface);
+    border-radius: var(--d-radius) var(--d-radius) var(--d-radius) 0;
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+  }
+
+  .carbon-bubble-user {
+    background: color-mix(in srgb, var(--d-primary) 20%, var(--d-surface));
+    border-radius: var(--d-radius) var(--d-radius) 0 var(--d-radius);
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+    margin-left: auto;
+  }
+
+  .carbon-fade-slide {
+    animation: carbon-fade-slide var(--d-duration-entrance, 200ms) ease-out;
+  }
+
+  @keyframes carbon-fade-slide {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
 }
 
 @layer utilities {

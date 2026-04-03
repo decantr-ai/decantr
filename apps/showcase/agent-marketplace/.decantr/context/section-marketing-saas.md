@@ -111,6 +111,12 @@ Full-width hero with headline, subtext, CTA buttons, and optional media. Entry p
 - **Tablet (640-1024px):** Content remains centered or stacked. Headline at heading1 scale. CTAs stay horizontal. Split preset still single-column. Padding at py12 px6.
 - **Desktop (>1024px):** Full layout as designed — centered or split two-column. Headline at display scale for brand/vision. Generous py16-py24 padding. Split preset activates side-by-side grid. Decorative elements visible.
 
+**Accessibility:**
+- Role: `banner`
+- Keyboard: Tab to CTA button; Enter activates CTA
+- Announcements: Page title announced on load
+- Focus: CTA button is the primary focus target
+
 
 ### features
 
