@@ -10,6 +10,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://decantr.ai">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>D</text></svg>">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root {
       --bg: #0D0D1A;
@@ -769,6 +770,41 @@
     .tool-item:nth-child(14) .tool-name { color: var(--yellow); }
     .tool-item:nth-child(15) .tool-name { color: var(--orange); }
 
+    .tool-icon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    .section-heading-icon {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+      opacity: 0.6;
+    }
+
+    .stat-icon {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .tier-card-icon {
+      margin-bottom: 12px;
+    }
+
+    .blueprint-icon {
+      margin-bottom: 10px;
+    }
+
+    .cli-icon {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
     .tool-dot {
       width: 6px;
       height: 6px;
@@ -1170,13 +1206,16 @@
       margin-top: 12px;
       flex-wrap: wrap;
     }
+    .tier-flow-node, .tier-flow-result {
+      flex: 1;
+      min-width: 150px;
+      max-width: 220px;
+    }
     .tier-flow-node {
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--accent, rgba(255,255,255,0.1));
       border-radius: 12px;
       padding: 14px 16px;
-      flex: 1;
-      min-width: 140px;
       text-align: center;
       transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
     }
@@ -1210,13 +1249,18 @@
     }
     .tier-flow-result {
       background: rgba(255,255,255,0.03);
-      border: 1px dashed var(--accent, var(--green));
+      border: 1px solid var(--accent, var(--green));
       border-radius: 12px;
       padding: 14px 16px;
-      min-width: 100px;
       text-align: center;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
     }
-    .tier-flow-result .tier-flow-icon { font-size: 1.8rem; }
+    .tier-flow-result:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+    .tier-flow-result .tier-flow-icon { font-size: 1.5rem; }
     .tier-flow-result .tier-flow-label {
       font-family: var(--mono);
       font-size: 0.8rem;
@@ -1235,6 +1279,7 @@
       }
       .tier-flow-node, .tier-flow-result {
         width: 100%;
+        max-width: none;
       }
     }
 
@@ -1613,7 +1658,7 @@
 <!-- ==================== PROBLEM ==================== -->
 <section id="problem" class="section">
   <div class="container">
-    <h2 class="section-heading reveal">Every AI-generated app has an expiration date</h2>
+    <h2 class="section-heading reveal"><i data-lucide="alert-triangle" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Every AI-generated app has an expiration date</h2>
     <p class="section-sub reveal">AI coding assistants have no memory of design intent. Every prompt is a fresh start. By prompt 10, your app looks like it was built by 10 different people.</p>
 
     <div class="problem-grid">
@@ -1775,26 +1820,27 @@ Start with the shell layouts, then build each section's pages.</div>
           <h3>What the AI receives</h3>
           <div class="tier-flow">
             <div class="tier-flow-node" style="--accent:var(--pink)">
-              <div class="tier-flow-icon">📐</div>
+              <div class="tier-flow-icon"><i data-lucide="ruler" style="width:24px;height:24px;color:var(--accent)"></i></div>
               <div class="tier-flow-label">DECANTR.md</div>
               <div class="tier-flow-detail">Guard rules · CSS atoms · Layout rules · Motion philosophy · Interactivity</div>
             </div>
             <div class="tier-flow-arrow">→</div>
             <div class="tier-flow-node" style="--accent:var(--cyan)">
-              <div class="tier-flow-icon">🗺</div>
+              <div class="tier-flow-icon"><i data-lucide="map" style="width:24px;height:24px;color:var(--accent)"></i></div>
               <div class="tier-flow-label">scaffold.md</div>
               <div class="tier-flow-detail">Topology · Routes · Voice & copy · Shared components · Dev mode</div>
             </div>
             <div class="tier-flow-arrow">→</div>
             <div class="tier-flow-node" style="--accent:var(--amber)">
-              <div class="tier-flow-icon">⚡</div>
+              <div class="tier-flow-icon"><i data-lucide="zap" style="width:24px;height:24px;color:var(--accent)"></i></div>
               <div class="tier-flow-label">section-*.md</div>
               <div class="tier-flow-detail">Shell layout · Decorators · Tokens · Composition · Motion · Responsive</div>
             </div>
             <div class="tier-flow-arrow">→</div>
             <div class="tier-flow-result" style="--accent:var(--green)">
-              <div class="tier-flow-icon">✨</div>
+              <div class="tier-flow-icon"><i data-lucide="sparkles" style="width:24px;height:24px;color:var(--accent)"></i></div>
               <div class="tier-flow-label">Production UI</div>
+              <div class="tier-flow-detail">Visually stunning, consistent, production-ready code</div>
             </div>
           </div>
         </div>
@@ -1816,6 +1862,7 @@ Start with the shell layouts, then build each section's pages.</div>
     <div class="tier-grid">
 
       <div class="tier-card tier-card-1 card-decorated reveal reveal-d1">
+        <div class="tier-card-icon"><i data-lucide="shield" style="width:22px;height:22px;color:var(--pink)"></i></div>
         <div class="tier-label">DECANTR.md</div>
         <ul class="tier-items">
           <li>Design rules</li>
@@ -1829,6 +1876,7 @@ Start with the shell layouts, then build each section's pages.</div>
       </div>
 
       <div class="tier-card tier-card-2 card-decorated reveal reveal-d2">
+        <div class="tier-card-icon"><i data-lucide="map" style="width:22px;height:22px;color:var(--cyan)"></i></div>
         <div class="tier-label">scaffold.md</div>
         <ul class="tier-items">
           <li>App topology</li>
@@ -1841,6 +1889,7 @@ Start with the shell layouts, then build each section's pages.</div>
       </div>
 
       <div class="tier-card tier-card-3 card-decorated reveal reveal-d3">
+        <div class="tier-card-icon"><i data-lucide="layers" style="width:22px;height:22px;color:var(--amber)"></i></div>
         <div class="tier-label">section-*.md</div>
         <ul class="tier-items">
           <li>Shell implementation specs</li>
@@ -1901,68 +1950,68 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== MCP TOOLS ==================== -->
 <section class="section" id="tools">
   <div class="container">
-    <h2 class="section-heading reveal">15 tools for your AI assistant</h2>
+    <h2 class="section-heading reveal"><i data-lucide="wrench" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>15 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
 
     <div class="tools-list reveal">
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_create_essence</div>
+        <div class="tool-name"><i data-lucide="file-plus" class="tool-icon" style="color:var(--coral)"></i>decantr_create_essence</div>
         <p class="tool-desc">Generate a design spec from a description</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_suggest_patterns</div>
+        <div class="tool-name"><i data-lucide="lightbulb" class="tool-icon" style="color:var(--amber)"></i>decantr_suggest_patterns</div>
         <p class="tool-desc">Get pattern recommendations for any page</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_pattern</div>
+        <div class="tool-name"><i data-lucide="puzzle" class="tool-icon" style="color:var(--cyan)"></i>decantr_resolve_pattern</div>
         <p class="tool-desc">Full pattern details with layout specs</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_archetype</div>
+        <div class="tool-name"><i data-lucide="boxes" class="tool-icon" style="color:var(--green)"></i>decantr_resolve_archetype</div>
         <p class="tool-desc">App templates with page maps</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_blueprint</div>
+        <div class="tool-name"><i data-lucide="layout-template" class="tool-icon" style="color:var(--yellow)"></i>decantr_resolve_blueprint</div>
         <p class="tool-desc">Composed templates with topology, zones, and transitions</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_resolve_recipe</div>
+        <div class="tool-name"><i data-lucide="cooking-pot" class="tool-icon" style="color:var(--orange)"></i>decantr_resolve_recipe</div>
         <p class="tool-desc">Visual decoration rules and spatial hints</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_check_drift</div>
+        <div class="tool-name"><i data-lucide="shield-check" class="tool-icon" style="color:var(--purple)"></i>decantr_check_drift</div>
         <p class="tool-desc">Detect design spec violations</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_validate</div>
+        <div class="tool-name"><i data-lucide="file-check" class="tool-icon" style="color:var(--pink)"></i>decantr_validate</div>
         <p class="tool-desc">Validate Essence against the schema</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_read_essence</div>
+        <div class="tool-name"><i data-lucide="file-text" class="tool-icon" style="color:var(--crimson)"></i>decantr_read_essence</div>
         <p class="tool-desc">Read the current design spec</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_search_registry</div>
+        <div class="tool-name"><i data-lucide="search" class="tool-icon" style="color:var(--coral)"></i>decantr_search_registry</div>
         <p class="tool-desc">Search patterns, archetypes, themes</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_accept_drift</div>
+        <div class="tool-name"><i data-lucide="check-circle" class="tool-icon" style="color:var(--amber)"></i>decantr_accept_drift</div>
         <p class="tool-desc">Accept detected drift as intentional</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_update_essence</div>
+        <div class="tool-name"><i data-lucide="pencil" class="tool-icon" style="color:var(--cyan)"></i>decantr_update_essence</div>
         <p class="tool-desc">Apply structured updates to the design spec</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_get_section_context</div>
+        <div class="tool-name"><i data-lucide="book-open" class="tool-icon" style="color:var(--green)"></i>decantr_get_section_context</div>
         <p class="tool-desc">Get scoped context for a specific app section</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_component_api</div>
+        <div class="tool-name"><i data-lucide="component" class="tool-icon" style="color:var(--yellow)"></i>decantr_component_api</div>
         <p class="tool-desc">Query component specs and usage patterns</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><span class="tool-dot"></span>decantr_critique</div>
+        <div class="tool-name"><i data-lucide="star" class="tool-icon" style="color:var(--orange)"></i>decantr_critique</div>
         <p class="tool-desc">Evaluate generated code for visual quality scoring</p>
       </div>
     </div>
@@ -1972,31 +2021,31 @@ Start with the shell layouts, then build each section's pages.</div>
 
     <div class="cli-grid reveal">
       <div class="cli-item">
-        <div class="cli-name">init --blueprint=X</div>
+        <div class="cli-name"><i data-lucide="rocket" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>init --blueprint=X</div>
         <p class="cli-desc">Scaffold a new project from a blueprint</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name">refresh</div>
+        <div class="cli-name"><i data-lucide="refresh-cw" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>refresh</div>
         <p class="cli-desc">Regenerate context files from the essence</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name">add page</div>
+        <div class="cli-name"><i data-lucide="plus-circle" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>add page</div>
         <p class="cli-desc">Add a new page to a section</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name">remove page</div>
+        <div class="cli-name"><i data-lucide="minus-circle" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>remove page</div>
         <p class="cli-desc">Remove a page from a section</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name">theme switch</div>
+        <div class="cli-name"><i data-lucide="palette" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>theme switch</div>
         <p class="cli-desc">Switch to a different theme</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name">check</div>
+        <div class="cli-name"><i data-lucide="shield" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>check</div>
         <p class="cli-desc">Detect and fix drift issues</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name">status</div>
+        <div class="cli-name"><i data-lucide="activity" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>status</div>
         <p class="cli-desc">Show project health and drift status</p>
       </div>
     </div>
@@ -2009,28 +2058,32 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== GET STARTED ==================== -->
 <section class="section" id="quickstart">
   <div class="container">
-    <h2 class="section-heading reveal">Get started</h2>
+    <h2 class="section-heading reveal"><i data-lucide="rocket" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Get started</h2>
     <p class="section-sub reveal">Pick a blueprint, scaffold, build. Three steps to a production-quality app.</p>
 
     <div class="reveal">
       <h3 style="text-align:center; color:var(--coral); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 1: Pick a blueprint</h3>
       <div class="blueprint-grid">
         <div class="blueprint-card blueprint-card-1 card-decorated reveal reveal-d1">
+          <div class="blueprint-icon"><i data-lucide="bot" style="width:22px;height:22px;color:var(--cyan)"></i></div>
           <div class="blueprint-name" style="color:var(--cyan)">agent-marketplace</div>
           <div class="blueprint-theme">carbon-neon theme</div>
           <p class="blueprint-desc">AI agent orchestration platform</p>
         </div>
         <div class="blueprint-card blueprint-card-2 card-decorated reveal reveal-d2">
+          <div class="blueprint-icon"><i data-lucide="database" style="width:22px;height:22px;color:var(--coral)"></i></div>
           <div class="blueprint-name" style="color:var(--coral)">registry-platform</div>
           <div class="blueprint-theme">luminarum theme</div>
           <p class="blueprint-desc">Design intelligence registry</p>
         </div>
         <div class="blueprint-card blueprint-card-3 card-decorated reveal reveal-d3">
+          <div class="blueprint-icon"><i data-lucide="terminal" style="width:22px;height:22px;color:var(--green)"></i></div>
           <div class="blueprint-name" style="color:var(--green)">terminal-dashboard</div>
           <div class="blueprint-theme">terminal theme</div>
           <p class="blueprint-desc">Developer monitoring dashboard</p>
         </div>
         <div class="blueprint-card blueprint-card-4 card-decorated reveal reveal-d4">
+          <div class="blueprint-icon"><i data-lucide="message-circle" style="width:22px;height:22px;color:var(--amber)"></i></div>
           <div class="blueprint-name" style="color:var(--amber)">carbon-ai-portal</div>
           <div class="blueprint-theme">carbon theme</div>
           <p class="blueprint-desc">AI chatbot with transparency</p>
@@ -2056,23 +2109,27 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== REGISTRY ==================== -->
 <section class="section">
   <div class="container">
-    <h2 class="section-heading reveal">116 patterns. 20 themes. 19 blueprints.</h2>
+    <h2 class="section-heading reveal"><i data-lucide="database" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>116 patterns. 20 themes. 19 blueprints.</h2>
     <p class="section-sub reveal">A growing library of community-contributed design intelligence. Browse what's available — or publish your own patterns, themes, and blueprints for others to use.</p>
 
     <div class="stats-grid">
       <div class="stat-card stat-card-1 reveal reveal-d1">
+        <div class="stat-icon"><i data-lucide="puzzle" style="width:24px;height:24px;color:var(--coral)"></i></div>
         <div class="stat-number">116</div>
         <div class="stat-label">Patterns</div>
       </div>
       <div class="stat-card stat-card-2 reveal reveal-d2">
+        <div class="stat-icon"><i data-lucide="palette" style="width:24px;height:24px;color:var(--amber)"></i></div>
         <div class="stat-number">20</div>
         <div class="stat-label">Themes</div>
       </div>
       <div class="stat-card stat-card-3 reveal reveal-d3">
+        <div class="stat-icon"><i data-lucide="layout-template" style="width:24px;height:24px;color:var(--cyan)"></i></div>
         <div class="stat-number">19</div>
         <div class="stat-label">Blueprints</div>
       </div>
       <div class="stat-card stat-card-4 reveal reveal-d4">
+        <div class="stat-icon"><i data-lucide="boxes" style="width:24px;height:24px;color:var(--green)"></i></div>
         <div class="stat-number">60</div>
         <div class="stat-label">Archetypes</div>
       </div>
@@ -2090,7 +2147,7 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== PACKAGES ==================== -->
 <section class="section" id="packages">
   <div class="container">
-    <h2 class="section-heading reveal">Open source. MIT licensed.</h2>
+    <h2 class="section-heading reveal"><i data-lucide="package" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Open source. MIT licensed.</h2>
     <p class="section-sub reveal">Six packages, one mission: make AI-generated UI not suck.</p>
 
     <div class="packages-grid">
@@ -2195,6 +2252,8 @@ Start with the shell layouts, then build each section's pages.</div>
     });
   })();
 </script>
+
+<script>lucide.createIcons();</script>
 
 </body>
 </html>
