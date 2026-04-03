@@ -87,10 +87,14 @@ Pay special attention to:
 - The **Personality** section — it contains visual direction. Follow it precisely.
 - The **Project Brief** in DECANTR.md — blueprint, theme, personality, sections, features, decorators.
 - The **Voice & Copy** section in scaffold.md — tone, CTA verbs, avoid words, empty states, errors, loading.
+- The **Development Mode** section in scaffold.md — mock auth bypass, route guards, mock data, zone transitions.
 - The **Visual Direction** section in each section-*.md — personality utilities, decorator table, token palette.
 - The **decorator table** (Class + Usage columns) in each section context.
 - The **semantic token palette** (Token/Value/Role) in each section context.
 - The **theme hints** (preferred patterns, compositions, spatial) in each section context.
+- The **Motion Philosophy** in DECANTR.md — page transitions, stagger, data viz animation, scroll reveals.
+- The **Interactivity Philosophy** in DECANTR.md — drag/drop, pan/zoom, connections, live state, hover reveals.
+- The **Development Workflow** in DECANTR.md — mutation commands, refresh flow, guard rules.
 
 ## PHASE 3: BUILD
 
@@ -416,9 +420,13 @@ Evaluate the richness of generated context files against v2 expectations:
 | Motion specs (if in content) | Y/N | N | Entrance, exit, hover animations defined? |
 | **Scaffold.md** | | | |
 | Voice & Copy section | Y/N | N | Tone, CTA verbs, avoid words present? |
+| Development Mode section | Y/N | N | Mock auth bypass, route guards, mock data, zone transitions? |
 | **DECANTR.md** | | | |
 | Project Brief section | Y/N | N | Blueprint, theme, personality, features listed? |
-| Layout Rules (nesting anti-patterns) | Y/N | N | 5 anti-patterns listed (nested scroll, fixed in overflow:hidden, vh in flex, grid depth, padding+gap)? |
+| Layout Rules (nesting anti-patterns) | Y/N | N | 5 anti-patterns listed? |
+| Motion Philosophy | Y/N | N | Page transitions, stagger, data viz, micro-interactions, scroll reveals, reduced-motion? |
+| Interactivity Philosophy | Y/N | N | Drag/drop, pan/zoom, connections, live state, direct manipulation, hover reveals? |
+| Development Workflow | Y/N | N | Mutation commands (add/remove), refresh flow, guard rules? |
 | **CSS files** | | | |
 | tokens.css @layer tokens | Y/N | N | Wrapped in @layer? |
 | treatments.css @layer (treatments, decorators, utilities) | Y/N | N | All three layers present? |
