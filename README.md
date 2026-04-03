@@ -15,78 +15,79 @@ Every AI coding tool (Cursor, v0, Claude, Copilot) generates UI that:
 ## The Fix
 
 ```bash
-npx decantr magic "AI agent marketplace — dark cyber-minimal, confident personality"
+npx @decantr/cli init --blueprint=agent-marketplace --yes
 ```
 
-Decantr gives your AI a structured design contract (`essence.json`) that enforces:
+Decantr gives your AI a structured design contract (`decantr.essence.json`) that enforces:
 - **Theme consistency** — tokens, colors, typography locked to your palette
-- **Layout coherence** — patterns, shells, and topology define the structure
-- **Visual personality** — "glassmorphic depth, Lucide icons, think Claude meets Linear"
+- **Layout coherence** — shell implementation specs, patterns, topology define the structure
+- **Visual personality** — "glassmorphic depth, neon accents, think Linear meets mission control"
+- **Motion & interactivity** — animations, drag/drop, pan/zoom built by default
+- **Voice & copy** — consistent tone, CTA verbs, error messages, loading states
 - **Drift prevention** — guard rules catch violations before they ship
 
 ---
 
-## Quick Start (2 minutes)
+## Quick Start
 
 ### 1. Scaffold
 
 ```bash
-npx decantr init --blueprint=carbon-ai-portal
+npx @decantr/cli init --blueprint=agent-marketplace --yes
 ```
 
-### 2. Read the contract
+### 2. Paste the prompt
 
-Your AI reads `DECANTR.md` + `.decantr/context/scaffold.md` — that's the design system.
+The CLI outputs a prompt for your AI assistant. Paste it into Claude Code, Cursor, or any AI coding tool:
+
+```
+Build this application using the Decantr design system.
+
+Read DECANTR.md for the design spec, CSS approach, and guard rules.
+Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.
+Read each .decantr/context/section-*.md file before building that section's pages.
+Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.
+
+Start with the shell layouts, then build each section's pages.
+```
 
 ### 3. Build
 
-Ask your AI to build pages. Decantr's context ensures every page matches.
+The AI reads three tiers of context and builds a production-quality app:
+
+| Tier | File | What the AI Gets |
+|------|------|-----------------|
+| 1 | `DECANTR.md` | Design rules, guard system, CSS atoms, Layout Rules, Motion Philosophy, Interactivity Philosophy, Development Workflow |
+| 2 | `scaffold.md` | App topology, route map, voice & copy, shared components, zone transitions, development mode |
+| 3 | `section-*.md` | Quick Start summary, shell implementation (dimensions, regions, anti-patterns), spacing guide, decorator table, token palette, visual direction, pattern specs (composition algebra, motion, responsive, accessibility) |
 
 ### 4. Guard
 
 ```bash
-npx decantr check
+npx @decantr/cli check
 ```
 
 Catches design drift before it ships.
 
 ---
 
-## How It Works
-
-Decantr is a 7-stage design pipeline:
-
-| Stage | What happens |
-|-------|-------------|
-| **Intent** | You describe what you want |
-| **Interpret** | CLI parses into structured form |
-| **Decompose** | Splits into theme + structure + features |
-| **Specify** | Writes `decantr.essence.json` |
-| **Compose** | Resolves patterns, shells, topology |
-| **Generate** | Your AI builds code from the spec |
-| **Guard** | Validates every change against the spec |
-
-The AI reads a **three-tier context model**:
-
-1. `DECANTR.md` — methodology primer with Layout Rules (nesting anti-patterns)
-2. `decantr.essence.json` — source of truth (theme, routes, features)
-3. `.decantr/context/section-*.md` — per-section specs with Quick Start summary, Shell Implementation block (full spatial layout), Spacing Guide table, patterns, and layouts
-
----
-
 ## Registry
+
+Browse the community registry at [registry.decantr.ai](https://registry.decantr.ai).
 
 | Content | Count | Highlights |
 |---------|-------|-----------|
-| Patterns | 116 | visual_brief, composition algebra, motion specs, responsive strategies, a11y patterns |
+| Patterns | 116 | visual_brief, composition algebra, motion specs, responsive strategies, accessibility patterns |
 | Archetypes | 60 | page_briefs, role-based topology (primary/gateway/public/auxiliary) |
-| Blueprints | 19 | personality narratives (100+ chars), voice & copy blocks |
-| Themes | 20 | decorator_definitions (structured intent + properties + usage) |
-| Shells | 13 | internal_layout (semantic spatial specs per region with dimensions, scroll, position) |
+| Blueprints | 19 | personality narratives (100+ chars), voice & copy blocks, routes, navigation |
+| Themes | 20 | decorator_definitions (structured: intent, suggested CSS, usage, pairs_with) |
+| Shells | 13 | internal_layout (semantic spatial specs: dimensions, scroll, position, anti-patterns) |
+
+All content passes quality validation with **0 warnings**.
 
 ---
 
-## MCP Server (14 tools)
+## MCP Server (15 tools)
 
 Add to **Claude Desktop** (`claude_desktop_config.json`):
 
@@ -113,9 +114,9 @@ claude mcp add decantr -- npx @decantr/mcp-server
 | `decantr_resolve_blueprint` | Get full blueprint with topology and routes |
 | `decantr_resolve_pattern` | Get pattern layout spec, components, presets |
 | `decantr_resolve_archetype` | Get archetype pages, features, suggested theme |
-| `decantr_resolve_recipe` | Get recipe decorators, spatial hints, effects |
 | `decantr_suggest_patterns` | Suggest patterns for a page description |
 | `decantr_get_section_context` | Get scoped context for a blueprint section |
+| `decantr_critique` | Evaluate generated code for visual quality scoring |
 | `decantr_check_drift` | Check code against the design spec |
 | `decantr_accept_drift` | Resolve drift by accepting, scoping, or deferring |
 | `decantr_update_essence` | Apply structured mutations to DNA or blueprint |
@@ -130,20 +131,20 @@ claude mcp add decantr -- npx @decantr/mcp-server
 
 ```bash
 # Scaffold
-decantr init --blueprint=carbon-ai-portal    # From a blueprint
-decantr magic "describe your app"            # From natural language
+decantr init --blueprint=agent-marketplace    # From a blueprint
+decantr magic "describe your app"             # From natural language
 
 # Build progressively
-decantr add section billing-portal           # Compose new archetype
-decantr add page settings/webhooks           # Add page to section
-decantr add feature payments                 # Enable a feature
-decantr theme switch terminal                # Change visual direction
+decantr add section billing-portal            # Compose new archetype
+decantr add page settings/webhooks            # Add page to section
+decantr add feature payments                  # Enable a feature
+decantr theme switch terminal                 # Change visual direction
 
 # Validate & sync
-decantr check                                # Guard validation
-decantr refresh                              # Regenerate all context files
-decantr upgrade --apply                      # Pull registry updates
-decantr analyze                              # Brownfield: scan existing project
+decantr check                                 # Guard validation
+decantr refresh                               # Regenerate all context files
+decantr upgrade --apply                       # Pull registry updates
+decantr status                                # Project health
 ```
 
 ---
@@ -153,12 +154,12 @@ decantr analyze                              # Brownfield: scan existing project
 | Package | npm | Description |
 |---------|-----|-------------|
 | `@decantr/cli` | [![npm](https://img.shields.io/npm/v/@decantr/cli)](https://www.npmjs.com/package/@decantr/cli) | CLI for init, scaffold, mutations, and validation |
-| `@decantr/mcp-server` | [![npm](https://img.shields.io/npm/v/@decantr/mcp-server)](https://www.npmjs.com/package/@decantr/mcp-server) | 14 MCP tools for AI coding assistants |
+| `@decantr/mcp-server` | [![npm](https://img.shields.io/npm/v/@decantr/mcp-server)](https://www.npmjs.com/package/@decantr/mcp-server) | 15 MCP tools for AI coding assistants |
 | `@decantr/essence-spec` | [![npm](https://img.shields.io/npm/v/@decantr/essence-spec)](https://www.npmjs.com/package/@decantr/essence-spec) | Schema, validator, guard rules, TypeScript types |
-| `@decantr/registry` | [![npm](https://img.shields.io/npm/v/@decantr/registry)](https://www.npmjs.com/package/@decantr/registry) | Content resolver and pattern preset resolution |
+| `@decantr/registry` | [![npm](https://img.shields.io/npm/v/@decantr/registry)](https://www.npmjs.com/package/@decantr/registry) | Content resolver and API client |
 | `@decantr/core` | [![npm](https://img.shields.io/npm/v/@decantr/core)](https://www.npmjs.com/package/@decantr/core) | Design Pipeline IR engine |
 | `@decantr/css` | [![npm](https://img.shields.io/npm/v/@decantr/css)](https://www.npmjs.com/package/@decantr/css) | Framework-agnostic CSS atoms runtime |
-| `@decantr/ui` | [![npm](https://img.shields.io/npm/v/@decantr/ui)](https://www.npmjs.com/package/@decantr/ui) | Signal-based UI framework with 100+ components |
+| `@decantr/ui` | [![npm](https://img.shields.io/npm/v/@decantr/ui)](https://www.npmjs.com/package/@decantr/ui) | Signal-based UI framework |
 | `@decantr/ui-chart` | [![npm](https://img.shields.io/npm/v/@decantr/ui-chart)](https://www.npmjs.com/package/@decantr/ui-chart) | Chart library (SVG, Canvas, WebGPU renderers) |
 | `@decantr/vite-plugin` | [![npm](https://img.shields.io/npm/v/@decantr/vite-plugin)](https://www.npmjs.com/package/@decantr/vite-plugin) | Real-time design drift detection |
 
@@ -166,9 +167,9 @@ decantr analyze                              # Brownfield: scan existing project
 
 ## Guard Rules
 
-Eight rules in two tiers prevent design drift:
+Seven rules in two tiers prevent design drift:
 
-**DNA guards (errors):** style, recipe, density, accessibility, theme-mode compatibility
+**DNA guards (errors):** style, density, accessibility, theme-mode compatibility
 **Blueprint guards (warnings):** structure, layout, pattern existence
 
 Three modes: **creative** (off) → **guided** (core rules) → **strict** (all rules)
