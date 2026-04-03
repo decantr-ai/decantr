@@ -16,23 +16,28 @@ You are adding new pages or features to an existing Decantr project. Guided mode
 | 4 | DNA | **Theme-mode** | ENFORCED | Theme/mode combination must be compatible |
 | 5 | Blueprint | **Structure** | ENFORCED | Page MUST exist in essence before generating code |
 | 6 | Blueprint | Layout | advisory | Pattern order is flexible |
-| 8 | Blueprint | **Pattern-exists** | ENFORCED | All patterns must exist in the registry |
+| 7 | Blueprint | **Pattern-exists** | ENFORCED | All patterns must exist in the registry |
 
 ## Before You Start
 
 ### 1. Update the Essence
 
-Before generating code for a new page, add it to the essence:
+Before generating code for a new page, add it to the relevant section in the essence:
 
 ```json
 {
   "blueprint": {
-    "shell": "{{DEFAULT_SHELL}}",
-    "pages": [
-      // ... existing pages ...
+    "sections": [
       {
-        "id": "new-page-id",
-        "layout": ["pattern-1", "pattern-2"]
+        "id": "section-id",
+        "shell": "{{DEFAULT_SHELL}}",
+        "pages": [
+          // ... existing pages ...
+          {
+            "id": "new-page-id",
+            "layout": ["pattern-1", "pattern-2"]
+          }
+        ]
       }
     ]
   }
@@ -55,8 +60,8 @@ Only after the page exists in the essence should you generate code for it.
 
 Before adding a page:
 
-- [ ] The page ID is added to `blueprint.pages[]` in essence
-- [ ] The page has a `shell` defined
+- [ ] The page ID is added to the target `blueprint.sections[].pages[]` in essence
+- [ ] The section has a `shell` defined
 - [ ] The page has a `layout[]` with pattern IDs
 - [ ] Validation passes (`npx @decantr/cli validate`)
 
@@ -64,7 +69,7 @@ During code generation:
 
 - [ ] Use theme `{{THEME_STYLE}}` for all styling
 - [ ] Use theme `{{THEME_RECIPE}}` decorators for decoration
-- [ ] Follow the shell structure ({{DEFAULT_SHELL}})
+- [ ] Follow the shell structure for the target section (see section context file for shell notes)
 - [ ] Include patterns from the layout array
 
 After generation:
@@ -95,7 +100,7 @@ Please confirm how you'd like to proceed.
 When adding features (auth, search, payments, etc.):
 
 1. Add the feature to `features[]` in the essence
-2. Update relevant pages in `blueprint.pages[]`
+2. Update relevant pages in `blueprint.sections[].pages[]`
 3. Then implement the feature
 
 ## Pattern Selection

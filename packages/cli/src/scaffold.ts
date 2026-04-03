@@ -425,12 +425,6 @@ export function generateTopologySection(data: TopologyData, personality: string[
   lines.push('### Zones');
   lines.push('');
 
-  // Show personality once, then reference it per zone
-  if (personality.length > 0) {
-    lines.push(`**Personality:** ${personality.join(', ')}`);
-    lines.push('');
-  }
-
   for (const zone of data.zones) {
     const label = ZONE_LABELS[zone.role] || zone.role;
     lines.push(`**${label}** — ${zone.shell} shell`);
@@ -3005,6 +2999,11 @@ export function generateSectionContext(input: SectionContextInput): string {
     primary: 'Brand color, key interactive, selected states',
     'primary-hover': 'Hover state for primary elements',
     secondary: 'Secondary brand color, supporting elements',
+    'accent-glow': 'Ambient glow effect for accent-colored elements',
+  };
+  // Map palette keys to CSS variable names to match generateTokensCSS output
+  const paletteToTokenName: Record<string, string> = {
+    'background': 'bg',
   };
   const addedTokens = new Set<string>();
   if (input.themeData?.palette) {
@@ -3012,8 +3011,9 @@ export function generateSectionContext(input: SectionContextInput): string {
     for (const [name, values] of Object.entries(input.themeData.palette as Record<string, Record<string, string>>)) {
       if (!addedTokens.has(name)) {
         addedTokens.add(name);
+        const tokenName = paletteToTokenName[name] || name;
         const val = values[modeKey] || values.dark || values.light || Object.values(values)[0];
-        lines.push(`| \`--d-${name}\` | \`${val}\` | ${semanticRoles[name] || ''} |`);
+        lines.push(`| \`--d-${tokenName}\` | \`${val}\` | ${semanticRoles[name] || ''} |`);
       }
     }
   }
