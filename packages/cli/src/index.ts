@@ -825,7 +825,13 @@ async function cmdInit(args: InitArgs) {
   };
 
   const curatedPrompt = generateCuratedPrompt(promptCtx);
-  console.log(boxedPrompt(curatedPrompt, 'Copy this prompt for your AI assistant'));
+  console.log('');
+  console.log(`${BOLD}Prompt for your AI assistant:${RESET}`);
+  console.log(dim('─'.repeat(50)));
+  console.log('');
+  console.log(curatedPrompt);
+  console.log('');
+  console.log(dim('─'.repeat(50)));
   console.log('');
 
   if (registrySource === 'cache') {
