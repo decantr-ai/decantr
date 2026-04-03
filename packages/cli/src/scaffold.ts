@@ -2493,6 +2493,10 @@ export async function refreshDerivedFiles(
 
   // ── Generate mutation task contexts (skipped during init, generated on refresh/add/remove) ──
   if (!options?.isInitialScaffold) {
+    const scaffoldTaskPath = join(contextDir, 'task-scaffold.md');
+    writeFileSync(scaffoldTaskPath, generateTaskContextV3('task-scaffold.md.template', essence));
+    contextFiles.push(scaffoldTaskPath);
+
     const addPagePath = join(contextDir, 'task-add-page.md');
     writeFileSync(addPagePath, generateTaskContextV3('task-add-page.md.template', essence));
     contextFiles.push(addPagePath);
