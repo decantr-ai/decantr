@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T02:12:49.552Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T02:12:49.552Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=agent-marketplace --theme=carbon-neon --mode=dark --guard=strict"
+  },
+  "blueprintId": "agent-marketplace",
+  "voice": {
+    "tone": "Operational and precise. Speaks to agent operators and platform engineers. Data-first, minimal prose.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Exciting"
+    ],
+    "errors": "Diagnostic and actionable. Include agent IDs, error codes, and timestamps. Suggest remediation steps or link to runbooks.",
+    "loading": "Status ring skeletons with pulse animation. Agent cards show placeholder rings while data streams in. Monospace data fields use blinking cursor placeholders.",
+    "cta_verbs": [
+      "Deploy",
+      "Monitor",
+      "Configure",
+      "Browse",
+      "Inspect",
+      "Activate"
+    ],
+    "empty_states": "Mission-control style. An empty agent fleet should prompt deployment of the first agent with a clear setup flow. No whimsy."
+  }
+}
