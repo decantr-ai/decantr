@@ -2,7 +2,7 @@
 
 **Enforcement Tier: Guided**
 
-You are adding new pages or features to an existing Decantr project. Guided mode enforces rules 1-5 (DNA) + 6, 8 (Blueprint).
+You are adding new pages or features to an existing Decantr project. Guided mode enforces rules 1-5 (DNA) + 6, 7 (Blueprint).
 
 ---
 
@@ -11,29 +11,33 @@ You are adding new pages or features to an existing Decantr project. Guided mode
 | # | Layer | Rule | Enforcement | What It Means |
 |---|-------|------|-------------|---------------|
 | 1 | DNA | **Style** | ENFORCED | You MUST use theme `terminal` |
-| 2 | DNA | **Recipe** | ENFORCED | You MUST use recipe `terminal` |
-| 3 | DNA | **Density** | ENFORCED | You MUST follow density `comfortable` |
-| 4 | DNA | **Accessibility** | ENFORCED | You MUST meet WCAG level from essence |
-| 5 | DNA | **Theme-mode** | ENFORCED | Theme/mode combination must be compatible |
-| 6 | Blueprint | **Structure** | ENFORCED | Page MUST exist in essence before generating code |
-| 7 | Blueprint | Layout | advisory | Pattern order is flexible |
-| 8 | Blueprint | **Pattern-exists** | ENFORCED | All patterns must exist in the registry |
+| 2 | DNA | **Density** | ENFORCED | You MUST follow density `comfortable` |
+| 3 | DNA | **Accessibility** | ENFORCED | You MUST meet WCAG level from essence |
+| 4 | DNA | **Theme-mode** | ENFORCED | Theme/mode combination must be compatible |
+| 5 | Blueprint | **Structure** | ENFORCED | Page MUST exist in essence before generating code |
+| 6 | Blueprint | Layout | advisory | Pattern order is flexible |
+| 7 | Blueprint | **Pattern-exists** | ENFORCED | All patterns must exist in the registry |
 
 ## Before You Start
 
 ### 1. Update the Essence
 
-Before generating code for a new page, add it to the essence:
+Before generating code for a new page, add it to the relevant section in the essence:
 
 ```json
 {
   "blueprint": {
-    "shell": "terminal-split",
-    "pages": [
-      // ... existing pages ...
+    "sections": [
       {
-        "id": "new-page-id",
-        "layout": ["pattern-1", "pattern-2"]
+        "id": "section-id",
+        "shell": "terminal-split",
+        "pages": [
+          // ... existing pages ...
+          {
+            "id": "new-page-id",
+            "layout": ["pattern-1", "pattern-2"]
+          }
+        ]
       }
     ]
   }
@@ -56,23 +60,23 @@ Only after the page exists in the essence should you generate code for it.
 
 Before adding a page:
 
-- [ ] The page ID is added to `blueprint.pages[]` in essence
-- [ ] The page has a `shell` defined
+- [ ] The page ID is added to the target `blueprint.sections[].pages[]` in essence
+- [ ] The section has a `shell` defined
 - [ ] The page has a `layout[]` with pattern IDs
 - [ ] Validation passes (`npx @decantr/cli validate`)
 
 During code generation:
 
 - [ ] Use theme `terminal` for all styling
-- [ ] Use recipe `terminal` for decorations
-- [ ] Follow the shell structure (terminal-split)
+- [ ] Use theme `terminal` decorators for decoration
+- [ ] Follow the shell structure for the target section (see section context file for shell notes)
 - [ ] Include patterns from the layout array
 
 After generation:
 
 - [ ] Run `npx @decantr/cli validate`
 - [ ] Verify the page matches the theme
-- [ ] Check that the recipe styles are applied
+- [ ] Check that the theme decorator styles are applied
 
 ## Violation Response
 
@@ -96,7 +100,7 @@ Please confirm how you'd like to proceed.
 When adding features (auth, search, payments, etc.):
 
 1. Add the feature to `features[]` in the essence
-2. Update relevant pages in `blueprint.pages[]`
+2. Update relevant pages in `blueprint.sections[].pages[]`
 3. Then implement the feature
 
 ## Pattern Selection

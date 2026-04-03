@@ -1,0 +1,99 @@
+{
+  "version": "2.0.0",
+  "blueprint": "registry-platform",
+  "archetype": "registry-browser",
+  "theme": {
+    "style": "luminarum",
+    "mode": "dark",
+    "recipe": "luminarum",
+    "shape": "pill"
+  },
+  "personality": ["technical", "clean", "professional", "accessible"],
+  "platform": {
+    "type": "spa",
+    "routing": "app-router",
+    "framework": "next"
+  },
+  "structure": [
+    {
+      "id": "landing",
+      "shell": "full-bleed",
+      "layout": [
+        { "pattern": "hero-split", "preset": "standard" },
+        { "pattern": "pipeline-cards", "preset": "outlined" },
+        { "pattern": "before-after", "preset": "browser-frames" },
+        { "pattern": "tier-upgrade-card", "preset": "highlighted" },
+        { "pattern": "quick-start", "preset": "cards" },
+        { "pattern": "cta-banner", "preset": "gradient" }
+      ]
+    },
+    {
+      "id": "registry",
+      "shell": "top-nav-main",
+      "layout": [
+        { "pattern": "search-filter-bar", "preset": "standard" },
+        { "pattern": "content-card-grid", "preset": "standard" }
+      ]
+    },
+    {
+      "id": "content-detail",
+      "shell": "top-nav-main",
+      "layout": [
+        { "pattern": "content-detail-hero", "preset": "standard" },
+        { "pattern": "json-viewer", "preset": "collapsible" }
+      ]
+    },
+    {
+      "id": "dashboard",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "stats-bar", "preset": "minimal" },
+        { "pattern": "reputation-badge", "preset": "large" },
+        { "pattern": "activity-feed", "preset": "compact" }
+      ]
+    },
+    {
+      "id": "dashboard-content",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "content-card-grid", "preset": "editable" }
+      ]
+    },
+    {
+      "id": "dashboard-api-keys",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "api-key-row", "preset": "standard" }
+      ]
+    },
+    {
+      "id": "dashboard-team",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "team-member-row", "preset": "standard" }
+      ]
+    },
+    {
+      "id": "admin-moderation",
+      "shell": "sidebar-main",
+      "layout": [
+        { "pattern": "moderation-queue-item", "preset": "standard" }
+      ]
+    }
+  ],
+  "features": ["auth", "billing"],
+  "guard": {
+    "enforce_style": true,
+    "enforce_recipe": true,
+    "mode": "strict"
+  },
+  "density": {
+    "level": "comfortable",
+    "content_gap": "_gap6"
+  },
+  "target": "react",
+  "_meta": {
+    "project": "Decantr Registry Platform",
+    "description": "The Decantr registry web UI — dogfooding the design intelligence system"
+  }
+}

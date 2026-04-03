@@ -1,106 +1,51 @@
 # Task Context: Scaffolding
 
-**Enforcement Tier: Creative**
-
-You are scaffolding a new Decantr project. Guard rules are advisory only during initial scaffolding.
-
----
-
-## Your Task
-
-Generate the initial project structure based on the essence specification.
-
-## Rules (Advisory)
-
-During scaffolding, the following rules are recommendations, not requirements:
-
-| # | Layer | Rule | Status | Guidance |
-|---|-------|------|--------|----------|
-| 1 | DNA | Style | Advisory | Use the theme from essence, but creative variations are acceptable |
-| 2 | DNA | Recipe | Advisory | Apply recipe styles where possible |
-| 3 | DNA | Density | Advisory | Follow spacing guidelines loosely |
-| 4 | DNA | Accessibility | Advisory | Meet WCAG level from essence where possible |
-| 5 | DNA | Theme-mode | Advisory | Use the specified theme/mode combination |
-| 6 | Blueprint | Structure | Advisory | Follow the page structure, add placeholder content |
-| 7 | Blueprint | Layout | Advisory | Use suggested patterns, order can be adjusted |
-| 8 | Blueprint | Pattern-exists | Advisory | Use patterns that exist in the registry |
-
-## Checklist
-
-Before scaffolding:
-
-- [ ] Read `decantr.essence.json`
-- [ ] Understand the target framework (react)
-- [ ] Know the theme (terminal) and mode (dark)
-- [ ] Review the page structure
-
-During scaffolding:
-
-- [ ] Create the shell layout (terminal-split)
-- [ ] Generate pages from `blueprint.pages[]`
-- [ ] Add pattern placeholders for each page's `layout[]`
-- [ ] Apply theme colors and typography
-- [ ] Set up routing based on page IDs
-
-After scaffolding:
-
-- [ ] Run `npx @decantr/cli validate` to check the essence
-- [ ] Verify each page renders correctly
-- [ ] Check theme consistency across pages
+**Enforcement Tier: Creative** — Guard rules are advisory during initial scaffolding.
 
 ## What to Generate
 
-- **home** (terminal-split)
+- **home** (top-nav-footer)
   - Patterns: status, main-split, hotkeys
-- **log-viewer-logs** (terminal-split)
+- **logs** (terminal-split)
   - Patterns: status, log-stream, hotkeys
-- **log-viewer-grouped** (terminal-split)
+- **grouped** (terminal-split)
   - Patterns: status, grouped-logs, hotkeys
-- **metrics-monitor-metrics** (terminal-split)
+- **metrics** (terminal-split)
   - Patterns: status, quad-split, hotkeys
-- **metrics-monitor-detail** (terminal-split)
+- **detail** (terminal-split)
   - Patterns: status, detailed-chart, metric-detail, hotkeys
-- **config-editor-config** (terminal-split)
+- **config** (terminal-split)
   - Patterns: main-split, status, hotkeys
-- **config-editor-diff** (terminal-split)
+- **diff** (terminal-split)
   - Patterns: status, diff, hotkeys
-- **marketing-devtool-home** (top-nav-footer)
+- **home** (top-nav-footer)
   - Patterns: hero, features, demo-terminal, demo-chart, cta
-- **marketing-devtool-docs** (top-nav-footer)
+- **docs** (top-nav-footer)
   - Patterns: documentation, code-examples
-- **auth-full-login** (centered)
+- **login** (centered)
   - Patterns: form
-- **auth-full-register** (centered)
+- **register** (centered)
   - Patterns: form
-- **auth-full-forgot-password** (centered)
+- **forgot-password** (centered)
   - Patterns: form
-- **auth-full-reset-password** (centered)
+- **reset-password** (centered)
   - Patterns: form
-- **auth-full-verify-email** (centered)
+- **verify-email** (centered)
   - Patterns: form
-- **auth-full-mfa-setup** (centered)
+- **mfa-setup** (centered)
   - Patterns: form
-- **auth-full-mfa-verify** (centered)
+- **mfa-verify** (centered)
   - Patterns: form
-- **auth-full-phone-verify** (centered)
+- **phone-verify** (centered)
   - Patterns: form
-- **legal-privacy** (top-nav-footer)
+- **privacy** (top-nav-footer)
   - Patterns: content
-- **legal-terms** (top-nav-footer)
+- **terms** (top-nav-footer)
   - Patterns: content
-- **legal-cookies** (top-nav-footer)
+- **cookies** (top-nav-footer)
   - Patterns: content
 
-## Next Steps
-
-After scaffolding is complete:
-
-1. Run the development server
-2. Verify all pages load
-3. Check theme consistency
-4. Run `npx @decantr/cli validate`
-
-Once verified, subsequent changes will use **strict** enforcement mode.
+Post-scaffold enforcement mode: **strict**.
 
 ---
 

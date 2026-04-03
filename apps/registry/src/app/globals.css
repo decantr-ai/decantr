@@ -1,0 +1,241 @@
+@import "tailwindcss";
+
+/* Decantr Design System */
+@import "../styles/global.css";
+@import "../styles/tokens.css";
+@import "../styles/treatments.css";
+
+/* ── Tailwind ↔ Decantr token bridge ── */
+@theme {
+  --color-d-primary: var(--d-primary);
+  --color-d-primary-hover: var(--d-primary-hover);
+  --color-d-accent: var(--d-accent);
+  --color-d-secondary: var(--d-secondary, #0AF3EB);
+  --color-d-bg: var(--d-bg);
+  --color-d-surface: var(--d-surface);
+  --color-d-surface-raised: var(--d-surface-raised);
+  --color-d-border: var(--d-border);
+  --color-d-text: var(--d-text);
+  --color-d-muted: var(--d-text-muted);
+  --color-d-success: var(--d-success);
+  --color-d-error: var(--d-error);
+  --color-d-warning: var(--d-warning);
+  --color-d-info: var(--d-info);
+  --color-d-coral: #F58882;
+  --color-d-amber: #FDA303;
+  --color-d-cyan: #0AF3EB;
+  --color-d-green: #00E0AB;
+  --color-d-purple: #6500C6;
+  --font-family-mono: ui-monospace, "Cascadia Code", "JetBrains Mono", monospace;
+}
+
+/* ── Light mode token overrides ── */
+@layer tokens {
+  html.light {
+    color-scheme: light;
+    --d-bg: #FAFAF9;
+    --d-surface: #FFFFFF;
+    --d-surface-raised: #F5F5F4;
+    --d-border: #E4E4E7;
+    --d-text: #18181B;
+    --d-text-muted: #71717A;
+    --d-primary-hover: #E83D6A;
+    --d-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --d-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --d-shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --d-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  }
+}
+
+/* ── Luminarum Theme Decorators ── */
+@layer decorators {
+
+  /* Glass panel — subtle transparency, no heavy blur */
+  .lum-glass {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--d-radius);
+  }
+  html.light .lum-glass {
+    background: rgba(0,0,0,0.02);
+    border-color: rgba(0,0,0,0.06);
+  }
+
+  /* Outlined card — transparent bg, colored left border by content type */
+  .lum-card-outlined {
+    background: transparent;
+    border: 1px solid var(--d-border);
+    border-left: 3px solid var(--d-primary);
+    border-radius: var(--d-radius);
+    padding: var(--d-surface-p);
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .lum-card-outlined:hover {
+    border-left-color: var(--d-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--d-shadow-md);
+  }
+  .lum-card-outlined[data-type="patterns"] { border-left-color: #F58882; }
+  .lum-card-outlined[data-type="patterns"]:hover { border-left-color: #FF9E99; }
+  .lum-card-outlined[data-type="themes"] { border-left-color: #FDA303; }
+  .lum-card-outlined[data-type="themes"]:hover { border-left-color: #FFBD47; }
+  .lum-card-outlined[data-type="blueprints"] { border-left-color: #0AF3EB; }
+  .lum-card-outlined[data-type="blueprints"]:hover { border-left-color: #4DFFF8; }
+  .lum-card-outlined[data-type="shells"] { border-left-color: #00E0AB; }
+  .lum-card-outlined[data-type="shells"]:hover { border-left-color: #33FFCA; }
+  .lum-card-outlined[data-type="archetypes"] { border-left-color: #6500C6; }
+  .lum-card-outlined[data-type="archetypes"]:hover { border-left-color: #8B33E0; }
+
+  /* Vibrant card — gradient fill, white text, corner brackets */
+  .lum-card-vibrant {
+    background: linear-gradient(135deg, var(--d-primary), var(--d-accent));
+    color: #fff;
+    border-radius: var(--d-radius);
+    padding: var(--d-surface-p);
+    position: relative;
+    overflow: hidden;
+  }
+  .lum-card-vibrant::before,
+  .lum-card-vibrant::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255,255,255,0.4);
+  }
+  .lum-card-vibrant::before { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+  .lum-card-vibrant::after { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+  /* Code block — dark bg, colored top border, monospace */
+  .lum-code-block {
+    background: #111113;
+    border-top: 2px solid var(--d-accent);
+    border-radius: var(--d-radius);
+    font-family: ui-monospace, "Cascadia Code", "JetBrains Mono", monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    padding: 1rem 1.25rem;
+  }
+  html.light .lum-code-block { background: #F5F5F4; }
+
+  /* Stat glow — filled accent circle with number */
+  .lum-stat-glow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    height: 48px;
+    border-radius: var(--d-radius-full);
+    background: var(--d-accent);
+    color: #141414;
+    font-weight: 700;
+    font-family: ui-monospace, monospace;
+    padding: 0 0.75rem;
+  }
+
+  /* Breathing gradient orbs */
+  .lum-orbs {
+    position: relative;
+    overflow: hidden;
+  }
+  .lum-orbs::before,
+  .lum-orbs::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    animation: lum-breathe 8s ease-in-out infinite;
+  }
+  .lum-orbs::before {
+    width: 400px;
+    height: 400px;
+    background: var(--d-primary);
+    opacity: 0.15;
+    top: -100px;
+    left: -100px;
+  }
+  .lum-orbs::after {
+    width: 350px;
+    height: 350px;
+    background: var(--d-accent);
+    opacity: 0.12;
+    bottom: -80px;
+    right: -80px;
+    animation-delay: 4s;
+  }
+  @keyframes lum-breathe {
+    0%, 100% { opacity: 0.15; transform: scale(1); }
+    50% { opacity: 0.22; transform: scale(1.05); }
+  }
+
+  /* Canvas background */
+  .lum-canvas { background: var(--d-bg); }
+  html.light .lum-canvas { background: #FAFAF9; }
+
+  /* Brand text with colored punctuation */
+  .lum-brand { font-weight: 700; letter-spacing: -0.02em; }
+  .lum-brand .punct { color: var(--d-accent); }
+
+  /* Section divider with centered dot */
+  .lum-divider {
+    position: relative;
+    height: 1px;
+    background: var(--d-border);
+    margin: 2rem 0;
+  }
+  .lum-divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--d-accent);
+  }
+
+  /* Scroll-reveal fade up */
+  .lum-fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: lum-fade-up-anim 0.6s ease forwards;
+  }
+  @keyframes lum-fade-up-anim {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Stagger children animation */
+  .lum-stagger > * {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: lum-fade-up-anim 0.4s ease forwards;
+  }
+  .lum-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .lum-stagger > *:nth-child(2) { animation-delay: 60ms; }
+  .lum-stagger > *:nth-child(3) { animation-delay: 120ms; }
+  .lum-stagger > *:nth-child(4) { animation-delay: 180ms; }
+  .lum-stagger > *:nth-child(5) { animation-delay: 240ms; }
+  .lum-stagger > *:nth-child(6) { animation-delay: 300ms; }
+  .lum-stagger > *:nth-child(7) { animation-delay: 360ms; }
+  .lum-stagger > *:nth-child(8) { animation-delay: 420ms; }
+  .lum-stagger > *:nth-child(n+9) { animation-delay: 480ms; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .lum-orbs::before,
+  .lum-orbs::after,
+  .lum-fade-up,
+  .lum-stagger > *,
+  .entrance-fade {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .lum-card-outlined:hover {
+    transform: none;
+  }
+}

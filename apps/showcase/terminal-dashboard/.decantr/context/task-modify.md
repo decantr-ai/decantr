@@ -2,7 +2,7 @@
 
 **Enforcement Tier: Strict**
 
-You are modifying existing code in a Decantr project. ALL 8 guard rules are enforced exactly.
+You are modifying existing code in a Decantr project. ALL 7 guard rules are enforced exactly.
 
 ---
 
@@ -11,13 +11,12 @@ You are modifying existing code in a Decantr project. ALL 8 guard rules are enfo
 | # | Layer | Rule | Enforcement | Consequence of Violation |
 |---|-------|------|-------------|--------------------------|
 | 1 | DNA | **Style** | STRICT | ERROR — Code rejected |
-| 2 | DNA | **Recipe** | STRICT | ERROR — Code rejected |
-| 3 | DNA | **Density** | STRICT | WARNING — Flagged for review |
-| 4 | DNA | **Accessibility** | STRICT | ERROR — Code rejected |
-| 5 | DNA | **Theme-mode** | STRICT | ERROR — Code rejected |
-| 6 | Blueprint | **Structure** | STRICT | ERROR — Code rejected |
-| 7 | Blueprint | **Layout** | STRICT | ERROR — Pattern order must match exactly |
-| 8 | Blueprint | **Pattern-exists** | STRICT | ERROR — Code rejected |
+| 2 | DNA | **Density** | STRICT | WARNING — Flagged for review |
+| 3 | DNA | **Accessibility** | STRICT | ERROR — Code rejected |
+| 4 | DNA | **Theme-mode** | STRICT | ERROR — Code rejected |
+| 5 | Blueprint | **Structure** | STRICT | ERROR — Code rejected |
+| 6 | Blueprint | **Layout** | STRICT | ERROR — Pattern order must match exactly |
+| 7 | Blueprint | **Pattern-exists** | STRICT | ERROR — Code rejected |
 
 ## Violation Response Protocol
 
@@ -71,11 +70,11 @@ decantr_read_essence()
 
 For the page you're modifying, verify:
 
-- Page ID exists in `blueprint.pages[]`
+- Page ID exists in `blueprint.sections[].pages[]`
 - Shell matches the page's `shell` property
 - Patterns match the page's `layout[]` in order
 - Theme matches `theme.style`
-- Recipe matches `theme.recipe`
+- Theme decorators match `theme.id`
 
 ### 3. Plan Changes
 
@@ -91,9 +90,8 @@ Before writing code:
 Before modifying:
 
 - [ ] Page exists in essence structure
-- [ ] I know the exact layout order: `status, main-split, hotkeys`
+- [ ] I know the layout order for the target page (check `blueprint.sections[].pages[]`)
 - [ ] I will use theme: `terminal`
-- [ ] I will use recipe: `terminal`
 - [ ] I will follow density: `comfortable`
 
 During modification:
@@ -144,7 +142,7 @@ Swapping `chart-grid` and `data-table` is a Layout guard violation.
 | "Theme mismatch" | Used different theme | Revert to `terminal` |
 | "Page undefined" | Edited undeclared page | Add page to essence first |
 | "Layout order wrong" | Patterns out of order | Match `layout[]` exactly |
-| "Recipe mismatch" | Wrong decoration style | Use `terminal` |
+| "Theme mismatch" | Wrong decoration style | Use `terminal` |
 | "Density drift" | Wrong spacing values | Use `_gap4` tokens |
 
 ## Proposing Essence Changes

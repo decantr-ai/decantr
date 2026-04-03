@@ -1,0 +1,51 @@
+{
+  "detected": {
+    "framework": "react",
+    "version": "19.0.0",
+    "packageManager": "unknown",
+    "hasTypeScript": true,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": null
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-03T16:34:19.390Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-03T16:34:19.390Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=registry-platform --theme=luminarum --mode=dark --guard=guided"
+  },
+  "blueprintId": "registry-platform",
+  "voice": {
+    "tone": "Welcoming and developer-friendly. Uses design-system terminology naturally. Celebrates community contributions.",
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Amazing"
+    ],
+    "errors": "Precise with error codes and affected resource IDs. Validation errors quote the failing field.",
+    "loading": "Content card skeletons with type-colored top borders. Registry stats use counter animations. Search results stream in as they resolve.",
+    "cta_verbs": [
+      "Browse",
+      "Publish",
+      "Install",
+      "Preview",
+      "Fork",
+      "Explore"
+    ],
+    "empty_states": "Encouraging and constructive. Empty content list links to publishing guide. No results suggests broadening filters or browsing popular items."
+  }
+}

@@ -1,11 +1,18 @@
 # Scaffold: terminal-home
 
 **Blueprint:** 
-**Theme:** terminal | **Recipe:** terminal
+**Theme:** terminal
 **Personality:** technical, retro, focused, immersive
 **Guard mode:** creative (no enforcement during initial scaffolding)
 
-## App Topology
+## Development Mode
+
+For local development and showcases, wire all zone transitions with mock data:
+
+- **Auth bypass:** Auth pages should accept any input and redirect to the primary section's default route
+- **Route guards:** Check a simple localStorage flag (e.g., `decantr_authenticated`). Login sets it → redirect to app zone entry. Logout clears it → redirect to public/gateway zone.
+- **Mock data on every page:** All pages should render with simulated data on first load — never show empty states during development
+- **Zone transitions:** CTA links on marketing pages should route to the gateway (login/register). Successful auth should route to the primary section default page.
 
 ## Composition Topology
 
@@ -16,25 +23,21 @@
 **Public** — top-nav-footer shell
   Archetypes: marketing-devtool, legal
   Purpose: Developer tool landing page with terminal-styled hero, feature highlights, and ASCII art elements. Marketing page that maintains the terminal aesthetic. Legal pages including privacy policy, terms of service, and cookie policy with sticky TOC and print-friendly layout.
-  Tone: technical, retro, focused, immersive
   Features: terminal-hero, ascii-demo, code-examples, installation-guide, toc-navigation, print-friendly, smooth-scroll
 
 **Gateway** — centered shell
   Archetypes: auth-full
   Purpose: Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.
-  Tone: technical, retro, focused, immersive
   Features: auth, mfa, oauth, email-verification, password-reset
 
 **App** — terminal-split shell
   Archetypes: terminal-home
   Purpose: Main terminal dashboard view with split panes, log streaming, metrics, and command input. Core interface for CLI-style developer tools.
-  Tone: technical, retro, focused, immersive
   Features: split-panes, log-streaming, metrics, command-input, keyboard-shortcuts, command-palette
 
 **App (auxiliary)** — terminal-split shell
   Archetypes: log-viewer, metrics-monitor, config-editor
   Purpose: Dedicated log streaming interface with filtering, search, and real-time updates. Focus view for log analysis and monitoring. System metrics dashboard with ASCII charts, gauges, and real-time updates. Terminal-style monitoring interface. Configuration file editor with tree navigation, diff view, and terminal integration. For managing app configuration in a terminal interface.
-  Tone: technical, retro, focused, immersive
   Features: log-streaming, log-filtering, log-search, log-levels, auto-scroll, export-logs, realtime-metrics, ascii-charts, sparklines, threshold-alerts, historical-data, file-tree, syntax-highlight, diff-view, search-replace, undo-redo, auto-save
 
 ### Zone Transitions
