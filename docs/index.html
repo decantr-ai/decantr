@@ -738,6 +738,7 @@
     .tool-item:nth-child(12)::before { background: var(--cyan); }
     .tool-item:nth-child(13)::before { background: var(--green); }
     .tool-item:nth-child(14)::before { background: var(--yellow); }
+    .tool-item:nth-child(15)::before { background: var(--orange); }
 
     .tool-item:hover {
       background: rgba(255,255,255,0.05);
@@ -766,6 +767,7 @@
     .tool-item:nth-child(12) .tool-name { color: var(--cyan); }
     .tool-item:nth-child(13) .tool-name { color: var(--green); }
     .tool-item:nth-child(14) .tool-name { color: var(--yellow); }
+    .tool-item:nth-child(15) .tool-name { color: var(--orange); }
 
     .tool-dot {
       width: 6px;
@@ -788,6 +790,7 @@
     .tool-item:nth-child(12) .tool-dot { background: var(--cyan); }
     .tool-item:nth-child(13) .tool-dot { background: var(--green); }
     .tool-item:nth-child(14) .tool-dot { background: var(--yellow); }
+    .tool-item:nth-child(15) .tool-dot { background: var(--orange); }
 
     .tool-desc {
       font-size: 0.82rem;
@@ -1124,6 +1127,311 @@
     @media (min-width: 1200px) {
       .packages-grid { grid-template-columns: repeat(4, 1fr); }
     }
+
+    /* ===== SHOWCASE SECTION ===== */
+    .showcase-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    .showcase-step {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .showcase-step-num {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      font-family: var(--mono);
+    }
+    .showcase-step-num-1 { background: var(--pink); color: #fff; }
+    .showcase-step-num-2 { background: var(--cyan); color: #0D0D1A; }
+    .showcase-step-num-3 { background: var(--amber); color: #0D0D1A; }
+    .showcase-step-body { flex: 1; }
+    .showcase-step-body h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--fg);
+    }
+    .showcase-code {
+      background: var(--code-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 18px 20px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: var(--muted);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .showcase-code .k { color: var(--coral); }
+    .showcase-code .s { color: var(--green); }
+    .showcase-code .c { color: var(--muted); }
+    .showcase-prompt {
+      background: var(--code-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 20px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.75);
+    }
+    .showcase-prompt strong {
+      color: var(--fg);
+    }
+
+    /* ===== THREE-TIER CARDS ===== */
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .tier-card {
+      border-radius: 16px;
+      padding: 28px 24px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+      border: 2px solid;
+      background: transparent;
+    }
+    .tier-card:hover {
+      transform: translateY(-4px);
+    }
+    .tier-card-1 {
+      border-color: var(--pink);
+    }
+    .tier-card-1:hover { box-shadow: 0 12px 40px rgba(254,68,116,0.2); background: rgba(254,68,116,0.04); }
+    .tier-card-1 .tier-label { color: var(--pink); }
+    .tier-card-2 {
+      border-color: var(--cyan);
+    }
+    .tier-card-2:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.2); background: rgba(10,243,235,0.04); }
+    .tier-card-2 .tier-label { color: var(--cyan); }
+    .tier-card-3 {
+      border-color: var(--amber);
+    }
+    .tier-card-3:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.2); background: rgba(253,163,3,0.04); }
+    .tier-card-3 .tier-label { color: var(--amber); }
+    .tier-label {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .tier-items {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .tier-items li {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.7);
+      padding: 4px 0;
+      line-height: 1.5;
+    }
+
+    /* ===== CONTEXT VIEWER ===== */
+    .context-viewer {
+      background: var(--code-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 24px 28px;
+      max-width: 780px;
+      margin: 0 auto;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.65);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .context-viewer .ctx-heading {
+      color: var(--cyan);
+      font-weight: 700;
+    }
+    .context-viewer .ctx-key {
+      color: var(--amber);
+    }
+    .context-viewer .ctx-value {
+      color: var(--green);
+    }
+    .context-viewer .ctx-comment {
+      color: rgba(255,255,255,0.35);
+      font-style: italic;
+    }
+    .context-viewer .ctx-dim {
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ===== REGISTRY STATS ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      max-width: 780px;
+      margin: 0 auto 32px;
+    }
+    .stat-card {
+      border-radius: 16px;
+      padding: 32px 20px;
+      text-align: center;
+      transition: transform 0.25s;
+      border: 2px solid;
+      background: transparent;
+    }
+    .stat-card:hover {
+      transform: translateY(-4px);
+    }
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0.8;
+    }
+    .stat-card-1 { border-color: var(--coral); }
+    .stat-card-1:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.2); background: rgba(245,136,130,0.04); }
+    .stat-card-1 .stat-number { color: var(--coral); }
+    .stat-card-1 .stat-label { color: var(--coral); }
+    .stat-card-2 { border-color: var(--amber); }
+    .stat-card-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.2); background: rgba(253,163,3,0.04); }
+    .stat-card-2 .stat-number { color: var(--amber); }
+    .stat-card-2 .stat-label { color: var(--amber); }
+    .stat-card-3 { border-color: var(--cyan); }
+    .stat-card-3:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.2); background: rgba(10,243,235,0.04); }
+    .stat-card-3 .stat-number { color: var(--cyan); }
+    .stat-card-3 .stat-label { color: var(--cyan); }
+    .stat-card-4 { border-color: var(--green); }
+    .stat-card-4:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.2); background: rgba(0,224,171,0.04); }
+    .stat-card-4 .stat-number { color: var(--green); }
+    .stat-card-4 .stat-label { color: var(--green); }
+
+    /* ===== BLUEPRINT CARDS ===== */
+    .blueprint-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 780px;
+      margin: 0 auto 40px;
+    }
+    .blueprint-card {
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+      color: #fff;
+    }
+    .blueprint-card:hover {
+      transform: translateY(-4px);
+    }
+    .blueprint-card-1 {
+      background: linear-gradient(135deg, #1a1a2e, #0D0D1A);
+      border: 2px solid var(--cyan);
+    }
+    .blueprint-card-1:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.2); }
+    .blueprint-card-2 {
+      background: linear-gradient(135deg, #1a1520, #0D0D1A);
+      border: 2px solid var(--coral);
+    }
+    .blueprint-card-2:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.2); }
+    .blueprint-card-3 {
+      background: linear-gradient(135deg, #111a14, #0D0D1A);
+      border: 2px solid var(--green);
+    }
+    .blueprint-card-3:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.2); }
+    .blueprint-card-4 {
+      background: linear-gradient(135deg, #1a1a14, #0D0D1A);
+      border: 2px solid var(--amber);
+    }
+    .blueprint-card-4:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.2); }
+    .blueprint-name {
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .blueprint-theme {
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      opacity: 0.5;
+      margin-bottom: 10px;
+    }
+    .blueprint-desc {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+    }
+
+    /* ===== CLI COMMANDS ===== */
+    .cli-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .cli-item {
+      padding: 12px 20px;
+      padding-left: 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      position: relative;
+    }
+    .cli-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--amber);
+    }
+    .cli-name {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--amber);
+      margin-bottom: 2px;
+    }
+    .cli-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ===== PKG VERSION ===== */
+    .pkg-version {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      opacity: 0.6;
+      margin-top: 8px;
+    }
+
+    /* ===== RESPONSIVE ADDITIONS ===== */
+    @media (max-width: 768px) {
+      .tier-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .showcase-step { flex-direction: column; gap: 12px; }
+      .blueprint-grid { grid-template-columns: 1fr; }
+      .cli-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -1355,122 +1663,135 @@
 <!-- ===== DIVIDER ===== -->
 <div class="section-divider"><span class="divider-dot" style="background:var(--cyan)"></span></div>
 
-<!-- ==================== PIPELINE ==================== -->
+<!-- ==================== SHOWCASE ==================== -->
 <section class="section">
   <div class="container">
-    <h2 class="section-heading reveal">From intent to production-quality code</h2>
-    <p class="section-sub reveal">The Design Pipeline transforms what you say into what you see -- in seven stages.</p>
+    <h2 class="section-heading reveal">From blueprint to production in one command</h2>
+    <p class="section-sub reveal">Scaffold a complete design system, then paste one prompt. The AI reads the context files and builds a visually stunning, production-quality app.</p>
 
-    <div class="pipeline-grid">
+    <div class="showcase-steps">
 
-      <div class="pipeline-card pipeline-card-1 card-decorated reveal reveal-d1">
-        <div class="pipeline-num">01</div>
-        <div class="pipeline-name">Intent</div>
-        <div class="pipeline-desc">You describe what you want to build, in plain language. No config files. No setup.</div>
-        <div class="pipeline-visual">
-          <div class="chat-bubble">Build me a SaaS dashboard with analytics and user management</div>
+      <div class="showcase-step reveal reveal-d1">
+        <div class="showcase-step-num showcase-step-num-1">1</div>
+        <div class="showcase-step-body">
+          <h3>Initialize</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli init --blueprint=agent-marketplace --yes</span></div>
         </div>
       </div>
 
-      <div class="pipeline-card pipeline-card-2 card-decorated reveal reveal-d2">
-        <div class="pipeline-num">02</div>
-        <div class="pipeline-name">Interpret</div>
-        <div class="pipeline-desc">Your intent is parsed into structured signals: app type, features, and design personality.</div>
-        <div class="pipeline-visual">
-          <div class="tag-list">
-            <span class="tag">archetype: saas-dashboard</span>
-            <span class="tag">features: analytics, auth</span>
-            <span class="tag">personality: professional</span>
-          </div>
+      <div class="showcase-step reveal reveal-d2">
+        <div class="showcase-step-num showcase-step-num-2">2</div>
+        <div class="showcase-step-body">
+          <h3>Paste the prompt</h3>
+          <div class="showcase-prompt"><strong>Build this application using the Decantr design system.</strong>
+
+Read DECANTR.md for the design spec, CSS approach, and guard rules.
+Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.
+Read each .decantr/context/section-*.md file before building that section's pages.
+Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.
+
+Start with the shell layouts, then build each section's pages.</div>
         </div>
       </div>
 
-      <div class="pipeline-card pipeline-card-3 card-decorated reveal reveal-d3">
-        <div class="pipeline-num">03</div>
-        <div class="pipeline-name">Decompose</div>
-        <div class="pipeline-desc">The structured intent is separated into three independent layers that can evolve separately.</div>
-        <div class="pipeline-visual">
-          <div class="layer-stack">
-            <div class="layer">Theme</div>
-            <div class="layer">Structure</div>
-            <div class="layer">Features</div>
-          </div>
+      <div class="showcase-step reveal reveal-d3">
+        <div class="showcase-step-num showcase-step-num-3">3</div>
+        <div class="showcase-step-body">
+          <h3>What the AI receives</h3>
         </div>
       </div>
 
-      <div class="pipeline-card pipeline-card-4 card-decorated reveal reveal-d4">
-        <div class="pipeline-num">04</div>
-        <div class="pipeline-name">Specify</div>
-        <div class="pipeline-desc">A machine-readable spec is written -- your decantr.essence.json -- the single source of truth.</div>
-        <div class="pipeline-visual">
-          <div class="mini-code"><span class="k">{</span>
-  <span class="s">"theme"</span>: <span class="s">"clean"</span>,
-  <span class="s">"personality"</span>: <span class="s">"professional"</span>,
-  <span class="s">"sections"</span>: [<span class="k">{</span>
-    <span class="s">"id"</span>: <span class="s">"dashboard"</span>,
-    <span class="s">"role"</span>: <span class="s">"primary"</span>,
-    <span class="s">"pages"</span>: [...]
-  <span class="k">}</span>]
-<span class="k">}</span></div>
-        </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--green)"></span></div>
+
+<!-- ==================== THREE-TIER MODEL ==================== -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading reveal">How Decantr works</h2>
+    <p class="section-sub reveal">Three tiers of context, each more specific than the last. The AI gets everything it needs to build every page correctly.</p>
+
+    <div class="tier-grid">
+
+      <div class="tier-card tier-card-1 card-decorated reveal reveal-d1">
+        <div class="tier-label">DECANTR.md</div>
+        <ul class="tier-items">
+          <li>Design rules</li>
+          <li>Guard system</li>
+          <li>CSS approach</li>
+          <li>Layout rules</li>
+          <li>Motion philosophy</li>
+          <li>Interactivity philosophy</li>
+          <li>Development workflow</li>
+        </ul>
       </div>
 
-      <div class="pipeline-card pipeline-card-5 card-decorated reveal reveal-d5">
-        <div class="pipeline-num">05</div>
-        <div class="pipeline-name">Compose</div>
-        <div class="pipeline-desc">Patterns are resolved and composed into complete page layouts, ready for code generation.</div>
-        <div class="pipeline-visual">
-          <div class="pattern-compose">
-            <span class="pattern-chip">kpi-grid</span>
-            <span class="compose-arrow">+</span>
-            <span class="pattern-chip">chart-grid</span>
-            <span class="compose-arrow">+</span>
-            <span class="pattern-chip">data-table</span>
-            <span class="compose-arrow">&rarr;</span>
-            <span class="compose-result">page layout</span>
-          </div>
-        </div>
+      <div class="tier-card tier-card-2 card-decorated reveal reveal-d2">
+        <div class="tier-label">scaffold.md</div>
+        <ul class="tier-items">
+          <li>App topology</li>
+          <li>Route map</li>
+          <li>Voice &amp; copy guidance</li>
+          <li>Shared components</li>
+          <li>Zone transitions</li>
+          <li>Development mode</li>
+        </ul>
       </div>
 
-      <div class="pipeline-card pipeline-card-6 card-decorated reveal reveal-d6">
-        <div class="pipeline-num">06</div>
-        <div class="pipeline-name">Generate</div>
-        <div class="pipeline-desc">Your AI assistant generates code using the resolved composition. Decantr doesn't generate code -- your AI does, better.</div>
-        <div class="pipeline-visual">
-          <div class="mini-code"><span class="k">export default</span> <span class="n">function</span> <span class="s">Dashboard</span>() {
-  <span class="k">return</span> (
-    &lt;<span class="n">div</span> <span class="s">className</span>=<span class="s">"grid gap-6"</span>&gt;
-      &lt;<span class="n">KpiGrid</span> /&gt;
-      &lt;<span class="n">ChartGrid</span> /&gt;
-    &lt;/<span class="n">div</span>&gt;
-  );
-}</div>
-          <p class="code-label">powered by your AI</p>
-        </div>
+      <div class="tier-card tier-card-3 card-decorated reveal reveal-d3">
+        <div class="tier-label">section-*.md</div>
+        <ul class="tier-items">
+          <li>Shell implementation specs</li>
+          <li>Quick start guide</li>
+          <li>Spacing guide</li>
+          <li>Decorator tables</li>
+          <li>Token palette</li>
+          <li>Visual briefs</li>
+          <li>Composition algebra</li>
+          <li>Motion specs</li>
+          <li>Responsive strategies</li>
+        </ul>
       </div>
 
-      <div class="pipeline-card pipeline-card-7 card-decorated reveal reveal-d7">
-        <div class="pipeline-num">07</div>
-        <div class="pipeline-name">Guard</div>
-        <div class="pipeline-desc">Every change is validated against the spec. Drift is detected before it ships.</div>
-        <div class="pipeline-visual">
-          <div class="check-result">
-            <div class="check-pass">
-              <span class="check-icon check-icon-pass">&#10003;</span>
-              Theme: clean
-            </div>
-            <div class="check-pass">
-              <span class="check-icon check-icon-pass">&#10003;</span>
-              Structure: valid
-            </div>
-            <div class="check-fail">
-              <span class="check-icon check-icon-fail">&#10005;</span>
-              Style mismatch detected
-            </div>
-          </div>
-        </div>
-      </div>
+    </div>
+  </div>
+</section>
 
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--pink)"></span></div>
+
+<!-- ==================== WHAT THE AI READS ==================== -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading reveal">Rich, actionable context -- not vague instructions</h2>
+    <p class="section-sub reveal">Every section context is self-contained. The AI gets everything it needs for each page in one file.</p>
+
+    <div class="reveal">
+      <div class="context-viewer"><span class="ctx-heading">## Quick Start</span>
+
+<span class="ctx-comment"># From section-agent-orchestrator.md:</span>
+
+<span class="ctx-key">Shell:</span>       <span class="ctx-value">SidebarMainLayout</span>  (sidebar 260px, main fluid)
+<span class="ctx-key">Sidebar:</span>     <span class="ctx-value">fixed, dark bg, 60px header zone, nav groups with icons</span>
+<span class="ctx-key">Tokens:</span>      <span class="ctx-value">import tokens.css</span> -- surfaces, borders, text, accents
+<span class="ctx-key">Treatments:</span>  <span class="ctx-value">import treatments.css</span> -- cards, code blocks, data rows
+
+<span class="ctx-heading">## Pattern: Agent Timeline</span>
+
+<span class="ctx-key">Visual brief:</span>
+  <span class="ctx-dim">Vertical feed of agent execution events. Each node shows</span>
+  <span class="ctx-dim">timestamp, agent name, action type, and status badge.</span>
+  <span class="ctx-dim">Connected by a thin vertical line (border-left on</span>
+  <span class="ctx-dim">the timeline track).</span>
+
+<span class="ctx-key">Composition:</span>  <span class="ctx-value">timeline-track</span> > <span class="ctx-value">timeline-node[]</span> > <span class="ctx-value">{ icon, meta, detail }</span>
+
+<span class="ctx-key">Spacing:</span>     <span class="ctx-value">gap-4 between nodes, p-4 inside cards</span>
+<span class="ctx-key">Motion:</span>      <span class="ctx-value">nodes fade-in staggered 50ms on mount</span>
+<span class="ctx-key">Responsive:</span>  <span class="ctx-value">single-column, full-width at all breakpoints</span></div>
     </div>
   </div>
 </section>
@@ -1481,7 +1802,7 @@
 <!-- ==================== MCP TOOLS ==================== -->
 <section class="section" id="tools">
   <div class="container">
-    <h2 class="section-heading reveal">14 tools for your AI assistant</h2>
+    <h2 class="section-heading reveal">15 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
 
     <div class="tools-list reveal">
@@ -1541,6 +1862,44 @@
         <div class="tool-name"><span class="tool-dot"></span>decantr_component_api</div>
         <p class="tool-desc">Query component specs and usage patterns</p>
       </div>
+      <div class="tool-item">
+        <div class="tool-name"><span class="tool-dot"></span>decantr_critique</div>
+        <p class="tool-desc">Evaluate generated code for visual quality scoring</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 2rem; color: var(--amber); text-align: center; font-size: 1.15rem;" class="reveal">CLI Commands</h3>
+    <p class="tool-desc reveal" style="margin-bottom: 1rem; text-align: center;">Manage your project from the terminal</p>
+
+    <div class="cli-grid reveal">
+      <div class="cli-item">
+        <div class="cli-name">init --blueprint=X</div>
+        <p class="cli-desc">Scaffold a new project from a blueprint</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name">refresh</div>
+        <p class="cli-desc">Regenerate context files from the essence</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name">add page</div>
+        <p class="cli-desc">Add a new page to a section</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name">remove page</div>
+        <p class="cli-desc">Remove a page from a section</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name">theme switch</div>
+        <p class="cli-desc">Switch to a different theme</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name">check</div>
+        <p class="cli-desc">Detect and fix drift issues</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name">status</div>
+        <p class="cli-desc">Show project health and drift status</p>
+      </div>
     </div>
   </div>
 </section>
@@ -1548,81 +1907,75 @@
 <!-- ===== DIVIDER ===== -->
 <div class="section-divider"><span class="divider-dot" style="background:var(--purple)"></span></div>
 
-<!-- ==================== QUICK START ==================== -->
+<!-- ==================== GET STARTED ==================== -->
 <section class="section" id="quickstart">
   <div class="container">
-    <h2 class="section-heading reveal">Get started in 30 seconds</h2>
-    <p class="section-sub reveal">Three steps. No build tools. No configuration rabbit holes.</p>
+    <h2 class="section-heading reveal">Get started</h2>
+    <p class="section-sub reveal">Pick a blueprint, scaffold, build. Three steps to a production-quality app.</p>
 
-    <div class="qs-steps">
-      <div class="qs-step qs-step-1 card-decorated reveal reveal-d1">
-        <div class="qs-num">1</div>
-        <h3>Add Decantr to your AI</h3>
-        <div class="qs-code-block"><span class="k">{</span>
-  <span class="s">"mcpServers"</span>: <span class="k">{</span>
-    <span class="s">"decantr"</span>: <span class="k">{</span>
-      <span class="s">"command"</span>: <span class="s">"npx"</span>,
-      <span class="s">"args"</span>: [<span class="s">"@decantr/mcp-server"</span>]
-    <span class="k">}</span>
-  <span class="k">}</span>
-<span class="k">}</span></div>
-      </div>
-
-      <div class="qs-step qs-step-2 card-decorated reveal reveal-d2">
-        <div class="qs-num">2</div>
-        <h3>Describe your project</h3>
-        <div class="qs-chat">Build me a SaaS analytics dashboard with dark theme, KPI cards, and chart grids</div>
-      </div>
-
-      <div class="qs-step qs-step-3 card-decorated reveal reveal-d3">
-        <div class="qs-num">3</div>
-        <h3>Get consistent code</h3>
-        <div class="qs-output"><span class="c">// Generated with design intelligence</span>
-<span class="k">export default</span> <span class="s">function</span> Dashboard() {
-  <span class="k">return</span> (
-    &lt;<span class="s">Layout</span> theme=<span class="s">"dark"</span>&gt;
-      &lt;<span class="s">KpiGrid</span> /&gt;
-      &lt;<span class="s">ChartGrid</span> /&gt;
-    &lt;/<span class="s">Layout</span>&gt;
-  );
-}</div>
+    <div class="reveal">
+      <h3 style="text-align:center; color:var(--coral); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 1: Pick a blueprint</h3>
+      <div class="blueprint-grid">
+        <div class="blueprint-card blueprint-card-1 card-decorated reveal reveal-d1">
+          <div class="blueprint-name" style="color:var(--cyan)">agent-marketplace</div>
+          <div class="blueprint-theme">carbon-neon theme</div>
+          <p class="blueprint-desc">AI agent orchestration platform</p>
+        </div>
+        <div class="blueprint-card blueprint-card-2 card-decorated reveal reveal-d2">
+          <div class="blueprint-name" style="color:var(--coral)">registry-platform</div>
+          <div class="blueprint-theme">luminarum theme</div>
+          <p class="blueprint-desc">Design intelligence registry</p>
+        </div>
+        <div class="blueprint-card blueprint-card-3 card-decorated reveal reveal-d3">
+          <div class="blueprint-name" style="color:var(--green)">terminal-dashboard</div>
+          <div class="blueprint-theme">terminal theme</div>
+          <p class="blueprint-desc">Developer monitoring dashboard</p>
+        </div>
+        <div class="blueprint-card blueprint-card-4 card-decorated reveal reveal-d4">
+          <div class="blueprint-name" style="color:var(--amber)">carbon-ai-portal</div>
+          <div class="blueprint-theme">carbon theme</div>
+          <p class="blueprint-desc">AI chatbot with transparency</p>
+        </div>
       </div>
     </div>
 
-    <div class="config-tabs reveal">
-      <div class="tab-buttons">
-        <button class="tab-btn active" data-tab="claude-desktop">Claude Desktop</button>
-        <button class="tab-btn" data-tab="claude-code">Claude Code</button>
-        <button class="tab-btn" data-tab="cursor">Cursor</button>
-      </div>
+    <div class="reveal" style="max-width:780px; margin:0 auto 40px;">
+      <h3 style="text-align:center; color:var(--cyan); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 2: Scaffold</h3>
+      <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli init --blueprint=agent-marketplace --yes</span></div>
+    </div>
 
-      <div class="tab-content active" id="tab-claude-desktop">
-        <div class="tab-code"><span class="s">// ~/Library/Application Support/Claude/claude_desktop_config.json</span>
-<span class="k">{</span>
-  <span class="s">"mcpServers"</span>: <span class="k">{</span>
-    <span class="s">"decantr"</span>: <span class="k">{</span>
-      <span class="s">"command"</span>: <span class="s">"npx"</span>,
-      <span class="s">"args"</span>: [<span class="s">"@decantr/mcp-server"</span>]
-    <span class="k">}</span>
-  <span class="k">}</span>
-<span class="k">}</span></div>
-      </div>
+    <div class="reveal" style="max-width:780px; margin:0 auto;">
+      <h3 style="text-align:center; color:var(--amber); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 3: Build</h3>
+      <p style="text-align:center; color:var(--muted); font-size:1rem; line-height:1.7; max-width:580px; margin:0 auto;">Paste the generated prompt into Claude Code, Cursor, or any AI coding assistant. The AI reads your context files and builds a production-quality app.</p>
+    </div>
+  </div>
+</section>
 
-      <div class="tab-content" id="tab-claude-code">
-        <div class="tab-code"><span class="s">// Run in your terminal:</span>
-claude mcp add decantr -- npx @decantr/mcp-server</div>
-      </div>
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--yellow)"></span></div>
 
-      <div class="tab-content" id="tab-cursor">
-        <div class="tab-code"><span class="s">// .cursor/mcp.json</span>
-<span class="k">{</span>
-  <span class="s">"mcpServers"</span>: <span class="k">{</span>
-    <span class="s">"decantr"</span>: <span class="k">{</span>
-      <span class="s">"command"</span>: <span class="s">"npx"</span>,
-      <span class="s">"args"</span>: [<span class="s">"@decantr/mcp-server"</span>]
-    <span class="k">}</span>
-  <span class="k">}</span>
-<span class="k">}</span></div>
+<!-- ==================== REGISTRY ==================== -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading reveal">116 patterns. 20 themes. 19 blueprints.</h2>
+    <p class="section-sub reveal">Browse the community registry at <a href="https://registry.decantr.ai" target="_blank" rel="noopener">registry.decantr.ai</a></p>
+
+    <div class="stats-grid">
+      <div class="stat-card stat-card-1 reveal reveal-d1">
+        <div class="stat-number">116</div>
+        <div class="stat-label">Patterns</div>
+      </div>
+      <div class="stat-card stat-card-2 reveal reveal-d2">
+        <div class="stat-number">20</div>
+        <div class="stat-label">Themes</div>
+      </div>
+      <div class="stat-card stat-card-3 reveal reveal-d3">
+        <div class="stat-number">19</div>
+        <div class="stat-label">Blueprints</div>
+      </div>
+      <div class="stat-card stat-card-4 reveal reveal-d4">
+        <div class="stat-number">60</div>
+        <div class="stat-label">Archetypes</div>
       </div>
     </div>
   </div>
@@ -1635,40 +1988,38 @@ claude mcp add decantr -- npx @decantr/mcp-server</div>
 <section class="section" id="packages">
   <div class="container">
     <h2 class="section-heading reveal">Open source. MIT licensed.</h2>
-    <p class="section-sub reveal">Eight packages, one mission: make AI-generated UI not suck.</p>
+    <p class="section-sub reveal">Six packages, one mission: make AI-generated UI not suck.</p>
 
     <div class="packages-grid">
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
-        <div class="pkg-name">@decantr/mcp-server</div>
-        <p class="pkg-desc">MCP server exposing 14 design intelligence tools to AI assistants</p>
+        <div class="pkg-name">@decantr/cli</div>
+        <p class="pkg-desc">Project scaffolding, mutation commands, brownfield analysis, and registry sync</p>
+        <div class="pkg-version">v1.7.5</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
-        <div class="pkg-name">@decantr/essence-spec</div>
-        <p class="pkg-desc">Schema, validator, guard rules, and TypeScript types for the Essence format</p>
+        <div class="pkg-name">@decantr/mcp-server</div>
+        <p class="pkg-desc">MCP server exposing 15 design intelligence tools to AI assistants</p>
+        <div class="pkg-version">v1.0.0-beta.12</div>
       </div>
       <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
-        <div class="pkg-name">@decantr/core</div>
-        <p class="pkg-desc">Design Pipeline IR engine -- the brain behind intent-to-composition</p>
+        <div class="pkg-name">@decantr/essence-spec</div>
+        <p class="pkg-desc">Schema, validator, guard rules, and TypeScript types for the Essence format</p>
+        <div class="pkg-version">v1.0.0-beta.11</div>
       </div>
       <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d4">
         <div class="pkg-name">@decantr/registry</div>
         <p class="pkg-desc">Content resolver for patterns, archetypes, themes, and recipes</p>
+        <div class="pkg-version">v1.0.0-beta.12</div>
       </div>
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
-        <div class="pkg-name">@decantr/cli</div>
-        <p class="pkg-desc">Project scaffolding, mutation commands, brownfield analysis, and registry sync</p>
+        <div class="pkg-name">@decantr/core</div>
+        <p class="pkg-desc">Design Pipeline IR engine -- the brain behind intent-to-composition</p>
+        <div class="pkg-version">v1.0.0-beta.9</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/css</div>
         <p class="pkg-desc">Framework-agnostic CSS atoms runtime for layout utilities</p>
-      </div>
-      <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
-        <div class="pkg-name">@decantr/ui</div>
-        <p class="pkg-desc">Signal-based UI framework with 100+ components and reactive state</p>
-      </div>
-      <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d4">
-        <div class="pkg-name">@decantr/ui-catalog</div>
-        <p class="pkg-desc">Component stories, pattern stories, and demo definitions</p>
+        <div class="pkg-version">v1.0.2</div>
       </div>
     </div>
   </div>
