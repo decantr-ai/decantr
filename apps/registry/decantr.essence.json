@@ -1,99 +1,344 @@
 {
-  "version": "2.0.0",
-  "blueprint": "registry-platform",
-  "archetype": "registry-browser",
-  "theme": {
-    "style": "luminarum",
-    "mode": "dark",
-    "recipe": "luminarum",
-    "shape": "pill"
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "luminarum",
+      "mode": "dark",
+      "shape": "pill"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Vibrant design intelligence registry. Warm coral and amber accents on a rich dark canvas (or crisp warm-white in light mode). Content cards are the hero — outlined with colored type borders, hovering with purpose. Search is instant and faceted. Publishing feels like sharing art. The Decantr dogfood app — built with its own system, proudly showing what the platform produces. Think Figma Community meets shadcn/ui registry."
+    ]
   },
-  "personality": ["technical", "clean", "professional", "accessible"],
-  "platform": {
-    "type": "spa",
-    "routing": "app-router",
-    "framework": "next"
-  },
-  "structure": [
-    {
-      "id": "landing",
-      "shell": "full-bleed",
-      "layout": [
-        { "pattern": "hero-split", "preset": "standard" },
-        { "pattern": "pipeline-cards", "preset": "outlined" },
-        { "pattern": "before-after", "preset": "browser-frames" },
-        { "pattern": "tier-upgrade-card", "preset": "highlighted" },
-        { "pattern": "quick-start", "preset": "cards" },
-        { "pattern": "cta-banner", "preset": "gradient" }
-      ]
-    },
-    {
-      "id": "registry",
-      "shell": "top-nav-main",
-      "layout": [
-        { "pattern": "search-filter-bar", "preset": "standard" },
-        { "pattern": "content-card-grid", "preset": "standard" }
-      ]
-    },
-    {
-      "id": "content-detail",
-      "shell": "top-nav-main",
-      "layout": [
-        { "pattern": "content-detail-hero", "preset": "standard" },
-        { "pattern": "json-viewer", "preset": "collapsible" }
-      ]
-    },
-    {
-      "id": "dashboard",
-      "shell": "sidebar-main",
-      "layout": [
-        { "pattern": "stats-bar", "preset": "minimal" },
-        { "pattern": "reputation-badge", "preset": "large" },
-        { "pattern": "activity-feed", "preset": "compact" }
-      ]
-    },
-    {
-      "id": "dashboard-content",
-      "shell": "sidebar-main",
-      "layout": [
-        { "pattern": "content-card-grid", "preset": "editable" }
-      ]
-    },
-    {
-      "id": "dashboard-api-keys",
-      "shell": "sidebar-main",
-      "layout": [
-        { "pattern": "api-key-row", "preset": "standard" }
-      ]
-    },
-    {
-      "id": "dashboard-team",
-      "shell": "sidebar-main",
-      "layout": [
-        { "pattern": "team-member-row", "preset": "standard" }
-      ]
-    },
-    {
-      "id": "admin-moderation",
-      "shell": "sidebar-main",
-      "layout": [
-        { "pattern": "moderation-queue-item", "preset": "standard" }
-      ]
+  "blueprint": {
+    "sections": [
+      {
+        "id": "registry-browser",
+        "role": "primary",
+        "shell": "top-nav-main",
+        "features": [
+          "search",
+          "pagination"
+        ],
+        "description": "Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, recipes, and shells.",
+        "pages": [
+          {
+            "id": "homepage",
+            "layout": [
+              "search-filter-bar",
+              "content-card-grid",
+              "kpi-grid"
+            ],
+            "route": "/"
+          },
+          {
+            "id": "browse",
+            "layout": [
+              "search-filter-bar",
+              "content-card-grid"
+            ],
+            "route": "/browse"
+          },
+          {
+            "id": "browse-type",
+            "layout": [
+              "search-filter-bar",
+              "content-card-grid"
+            ],
+            "route": "/browse/:type"
+          },
+          {
+            "id": "detail",
+            "layout": [
+              "content-detail-hero",
+              "json-viewer"
+            ],
+            "route": "/:type/:namespace/:slug"
+          },
+          {
+            "id": "profile",
+            "layout": [
+              "detail-header",
+              "content-card-grid",
+              "activity-feed"
+            ],
+            "route": "/profile/:username"
+          }
+        ]
+      },
+      {
+        "id": "user-dashboard",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "auth",
+          "api-keys"
+        ],
+        "description": "Authenticated user area with content management, API key management, account settings, and activity overview.",
+        "pages": [
+          {
+            "id": "overview",
+            "layout": [
+              "kpi-grid",
+              "reputation-badge",
+              "activity-feed"
+            ],
+            "route": "/dashboard"
+          },
+          {
+            "id": "content",
+            "layout": [
+              "content-card-grid"
+            ],
+            "route": "/dashboard/content"
+          },
+          {
+            "id": "content-new",
+            "layout": [
+              "form",
+              "json-viewer"
+            ],
+            "route": "/dashboard/content/new"
+          },
+          {
+            "id": "api-keys",
+            "layout": [
+              "api-key-row"
+            ],
+            "route": "/dashboard/api-keys"
+          },
+          {
+            "id": "settings",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/dashboard/settings"
+          },
+          {
+            "id": "billing",
+            "layout": [
+              "tier-upgrade-card",
+              "kpi-grid"
+            ],
+            "route": "/dashboard/billing"
+          },
+          {
+            "id": "team",
+            "layout": [
+              "kpi-grid",
+              "team-member-row"
+            ],
+            "route": "/dashboard/team"
+          }
+        ]
+      },
+      {
+        "id": "admin-moderation",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "auth",
+          "admin"
+        ],
+        "description": "Admin moderation queue for reviewing, approving, and rejecting community-submitted registry content.",
+        "pages": [
+          {
+            "id": "moderation-queue",
+            "layout": [
+              "search-filter-bar",
+              "moderation-queue-item"
+            ],
+            "route": "/admin/moderation"
+          },
+          {
+            "id": "moderation-detail",
+            "layout": [
+              "content-detail-hero",
+              "json-viewer",
+              "moderation-queue-item"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "auth-flow",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth"
+        ],
+        "description": "Login, registration, and password recovery with OAuth support",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "auth-form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              {
+                "preset": "register",
+                "pattern": "auth-form"
+              }
+            ]
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              {
+                "preset": "reset",
+                "pattern": "auth-form"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "features": [
+      "search",
+      "pagination",
+      "auth",
+      "api-keys",
+      "admin"
+    ],
+    "routes": {
+      "/": {
+        "section": "registry-browser",
+        "page": "homepage"
+      },
+      "/login": {
+        "section": "auth-flow",
+        "page": "login"
+      },
+      "/browse": {
+        "section": "registry-browser",
+        "page": "browse"
+      },
+      "/dashboard": {
+        "section": "user-dashboard",
+        "page": "overview"
+      },
+      "/browse/:type": {
+        "section": "registry-browser",
+        "page": "browse-type"
+      },
+      "/dashboard/team": {
+        "section": "user-dashboard",
+        "page": "team"
+      },
+      "/admin/moderation": {
+        "section": "admin-moderation",
+        "page": "moderation-queue"
+      },
+      "/dashboard/billing": {
+        "section": "user-dashboard",
+        "page": "billing"
+      },
+      "/dashboard/content": {
+        "section": "user-dashboard",
+        "page": "content"
+      },
+      "/profile/:username": {
+        "section": "registry-browser",
+        "page": "profile"
+      },
+      "/dashboard/api-keys": {
+        "section": "user-dashboard",
+        "page": "api-keys"
+      },
+      "/dashboard/settings": {
+        "section": "user-dashboard",
+        "page": "settings"
+      },
+      "/dashboard/content/new": {
+        "section": "user-dashboard",
+        "page": "content-new"
+      },
+      "/:type/:namespace/:slug": {
+        "section": "registry-browser",
+        "page": "detail"
+      }
     }
-  ],
-  "features": ["auth", "billing"],
-  "guard": {
-    "enforce_style": true,
-    "enforce_recipe": true,
-    "mode": "strict"
   },
-  "density": {
-    "level": "comfortable",
-    "content_gap": "_gap6"
-  },
-  "target": "react",
-  "_meta": {
-    "project": "Decantr Registry Platform",
-    "description": "The Decantr registry web UI — dogfooding the design intelligence system"
+  "meta": {
+    "archetype": "registry-browser",
+    "target": "nextjs",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [
+        {
+          "key": "g b",
+          "label": "Browse Registry",
+          "route": "/browse"
+        },
+        {
+          "key": "g d",
+          "label": "Dashboard",
+          "route": "/dashboard"
+        },
+        {
+          "key": "g s",
+          "label": "Settings",
+          "route": "/dashboard/settings"
+        }
+      ],
+      "command_palette": true
+    }
   }
 }
