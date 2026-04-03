@@ -425,15 +425,17 @@ export function generateTopologySection(data: TopologyData, personality: string[
   lines.push('### Zones');
   lines.push('');
 
+  // Show personality once, then reference it per zone
+  if (personality.length > 0) {
+    lines.push(`**Personality:** ${personality.join(', ')}`);
+    lines.push('');
+  }
+
   for (const zone of data.zones) {
     const label = ZONE_LABELS[zone.role] || zone.role;
     lines.push(`**${label}** — ${zone.shell} shell`);
     lines.push(`  Archetypes: ${zone.archetypes.join(', ')}`);
     lines.push(`  Purpose: ${zone.descriptions.join(' ')}`);
-
-    if (personality.length > 0) {
-      lines.push(`  Tone: ${personality.join(', ')}`);
-    }
 
     if (zone.features.length > 0) {
       lines.push(`  Features: ${zone.features.join(', ')}`);
@@ -2306,12 +2308,31 @@ export async function refreshDerivedFiles(
 
   // ── Read project.json for stored metadata (blueprintId, voice) ──
   let storedBlueprintId: string | undefined;
+  let storedVoice: ScaffoldContextInput['voice'] | undefined;
   const projectJsonFilePath = join(decantrDir, 'project.json');
+  let projectJsonData: Record<string, any> = {};
   if (existsSync(projectJsonFilePath)) {
     try {
-      const projData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8'));
-      if (projData.blueprintId) storedBlueprintId = projData.blueprintId;
+      projectJsonData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8'));
+      if (projectJsonData.blueprintId) storedBlueprintId = projectJsonData.blueprintId;
+      if (projectJsonData.voice) storedVoice = projectJsonData.voice;
     } catch { /* ignore parse errors */ }
+  }
+
+  // If voice is missing but blueprintId is available, fetch from blueprint
+  if (!storedVoice && storedBlueprintId) {
+    try {
+      const bpResult = await registry.fetchBlueprint(storedBlueprintId);
+      if (bpResult?.data) {
+        const bpData = bpResult.data as Record<string, any>;
+        if (bpData.voice) {
+          storedVoice = bpData.voice;
+          // Persist voice to project.json for future refreshes
+          projectJsonData.voice = bpData.voice;
+          writeFileSync(projectJsonFilePath, JSON.stringify(projectJsonData, null, 2));
+        }
+      }
+    } catch { /* blueprint fetch failed — continue without voice */ }
   }
 
   // ── Extract info from essence ──
@@ -2645,15 +2666,6 @@ export async function refreshDerivedFiles(
       contextFiles.push(sectionContextPath);
     }
 
-    // ── Read voice from project.json for scaffold context ──
-    let projectVoice: ScaffoldContextInput['voice'] | undefined;
-    if (existsSync(projectJsonFilePath)) {
-      try {
-        const projData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8'));
-        if (projData.voice) projectVoice = projData.voice;
-      } catch { /* ignore parse errors */ }
-    }
-
     // ── Generate scaffold.md ──
     const routes = blueprint.routes || {};
     const scaffoldContent = generateScaffoldContext({
@@ -2667,7 +2679,7 @@ export async function refreshDerivedFiles(
       constraints: essence.dna.constraints as Record<string, unknown> | undefined,
       seo: essence.meta.seo as { schema_org?: string[]; meta_priorities?: string[] } | undefined,
       navigation: essence.meta.navigation as { hotkeys?: unknown[]; command_palette?: boolean } | undefined,
-      voice: projectVoice,
+      voice: storedVoice,
     });
 
     const scaffoldMdPath = join(contextDir, 'scaffold.md');
@@ -2994,19 +3006,27 @@ export function generateSectionContext(input: SectionContextInput): string {
     'primary-hover': 'Hover state for primary elements',
     secondary: 'Secondary brand color, supporting elements',
   };
+  const addedTokens = new Set<string>();
   if (input.themeData?.palette) {
     const modeKey = input.themeMode || 'dark';
     for (const [name, values] of Object.entries(input.themeData.palette as Record<string, Record<string, string>>)) {
-      const val = values[modeKey] || values.dark || values.light || Object.values(values)[0];
-      lines.push(`| \`--d-${name}\` | \`${val}\` | ${semanticRoles[name] || ''} |`);
+      if (!addedTokens.has(name)) {
+        addedTokens.add(name);
+        const val = values[modeKey] || values.dark || values.light || Object.values(values)[0];
+        lines.push(`| \`--d-${name}\` | \`${val}\` | ${semanticRoles[name] || ''} |`);
+      }
     }
   }
-  if (input.themeData?.seed?.accent) {
+  if (input.themeData?.seed?.accent && !addedTokens.has('accent')) {
+    addedTokens.add('accent');
     lines.push(`| \`--d-accent\` | \`${input.themeData.seed.accent}\` | CTAs, links, active states, glow effects |`);
-    // Add accent-glow if theme provides it
+  }
+  // Add accent-glow if theme provides it and not already added from palette loop
+  if (!addedTokens.has('accent-glow')) {
     const accentGlowVal = input.themeData?.palette?.['accent-glow']?.[input.themeMode || 'dark']
       || input.themeData?.tokens?.base?.['accent-glow'];
     if (accentGlowVal) {
+      addedTokens.add('accent-glow');
       lines.push(`| \`--d-accent-glow\` | \`${accentGlowVal}\` | Ambient glow effect around accent elements |`);
     }
   }

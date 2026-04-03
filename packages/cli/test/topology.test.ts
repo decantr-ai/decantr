@@ -148,7 +148,7 @@ describe('generateTopologySection', () => {
     expect(result).toContain('Gateway → App');
     expect(result).toContain('Anonymous users enter: /');
     expect(result).toContain('Authenticated users enter: /chat');
-    expect(result).toContain('Tone: professional');
+    expect(result).toContain('**Personality:** professional');
   });
 
   it('omits transitions section when no transitions', () => {

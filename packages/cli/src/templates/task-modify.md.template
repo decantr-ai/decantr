@@ -2,7 +2,7 @@
 
 **Enforcement Tier: Strict**
 
-You are modifying existing code in a Decantr project. ALL 8 guard rules are enforced exactly.
+You are modifying existing code in a Decantr project. ALL 7 guard rules are enforced exactly.
 
 ---
 
@@ -16,7 +16,7 @@ You are modifying existing code in a Decantr project. ALL 8 guard rules are enfo
 | 4 | DNA | **Theme-mode** | STRICT | ERROR — Code rejected |
 | 5 | Blueprint | **Structure** | STRICT | ERROR — Code rejected |
 | 6 | Blueprint | **Layout** | STRICT | ERROR — Pattern order must match exactly |
-| 8 | Blueprint | **Pattern-exists** | STRICT | ERROR — Code rejected |
+| 7 | Blueprint | **Pattern-exists** | STRICT | ERROR — Code rejected |
 
 ## Violation Response Protocol
 
@@ -90,9 +90,8 @@ Before writing code:
 Before modifying:
 
 - [ ] Page exists in essence structure
-- [ ] I know the exact layout order: `{{LAYOUT}}`
+- [ ] I know the layout order for the target page (check `blueprint.pages[]` or `blueprint.sections[]`)
 - [ ] I will use theme: `{{THEME_STYLE}}`
-- [ ] I will use theme: `{{THEME_RECIPE}}`
 - [ ] I will follow density: `{{DENSITY}}`
 
 During modification:

@@ -24,7 +24,16 @@ export function generateTreatmentCSS(
   lines.push('/* ── Layer 1: Base Treatments ── */');
   lines.push('');
 
-  // Helper: merge overrides into a property map, then emit rule
+  // Properties that are theme-specific effects and should not merge into the base rule.
+  // These are emitted in a separate theme-scoped block instead.
+  const THEME_ONLY_PROPS = new Set(['backdrop-filter', '-webkit-backdrop-filter']);
+
+  // Collect theme-scoped overrides to emit after base rules
+  const themeOverrideRules: string[] = [];
+
+  // Helper: merge overrides into a property map, then emit rule.
+  // Theme-specific properties (e.g. backdrop-filter) are separated and
+  // emitted later in a theme-scoped block so they don't leak into the base.
   function emitRule(selector: string, props: [string, string][]): void {
     const treatmentName = selector.replace(/^\./, '').replace(/[:[\s].+$/, '');
     const overrides = treatmentOverrides?.[treatmentName];
@@ -33,8 +42,19 @@ export function generateTreatmentCSS(
       merged.set(prop, val);
     }
     if (overrides && selector === `.${treatmentName}`) {
+      const themeProps: [string, string][] = [];
       for (const [prop, val] of Object.entries(overrides)) {
-        merged.set(prop, val);
+        if (THEME_ONLY_PROPS.has(prop)) {
+          themeProps.push([prop, val]);
+        } else {
+          merged.set(prop, val);
+        }
+      }
+      // Emit theme-only properties in a separate scoped rule
+      if (themeProps.length > 0 && themeName) {
+        const themeSelector = `[data-theme="${themeName}"] ${selector}`;
+        const themeBody = themeProps.map(([p, v]) => `  ${p}: ${v};`).join('\n');
+        themeOverrideRules.push(`${themeSelector} {\n${themeBody}\n}`);
       }
     }
     const body = Array.from(merged.entries())
@@ -266,14 +286,19 @@ export function generateTreatmentCSS(
     ['font-family', 'var(--d-font-mono, ui-monospace, monospace)'],
   ]);
 
+  // ── Theme-scoped overrides (e.g. backdrop-filter) ──
+  if (themeOverrideRules.length > 0) {
+    lines.push('/* ── Theme-scoped Treatment Overrides ── */');
+    lines.push('');
+    for (const rule of themeOverrideRules) {
+      lines.push(rule);
+      lines.push('');
+    }
+  }
+
   // ── Keyframes (inside treatments layer) ──
 
   lines.push('/* ── Keyframes ── */');
-  lines.push('');
-  lines.push('@keyframes decantr-fade-in {');
-  lines.push('  from { opacity: 0; transform: translateY(4px); }');
-  lines.push('  to { opacity: 1; transform: translateY(0); }');
-  lines.push('}');
   lines.push('');
   lines.push('@keyframes decantr-pulse {');
   lines.push('  0%, 100% { opacity: 1; }');

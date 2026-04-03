@@ -139,11 +139,15 @@ describe('generateTreatmentCSS', () => {
         'backdrop-filter': 'blur(12px)',
       },
     };
-    const css = generateTreatmentCSS(baseSpatialTokens, overrides);
+    const css = generateTreatmentCSS(baseSpatialTokens, overrides, undefined, 'carbon-neon');
     expect(css).toContain('background: rgba(31, 31, 35, 0.8)');
+    // backdrop-filter is theme-only — should appear in a theme-scoped block, not base
     expect(css).toContain('backdrop-filter: blur(12px)');
-    // The original var(--d-surface) background should NOT appear for .d-surface base rule
+    expect(css).toContain('[data-theme="carbon-neon"] .d-surface');
+    // The base .d-surface block should NOT contain backdrop-filter
     const surfaceBlock = css.split('.d-surface {')[1]?.split('}')[0] ?? '';
+    expect(surfaceBlock).not.toContain('backdrop-filter');
+    // The original var(--d-surface) background should NOT appear for .d-surface base rule
     expect(surfaceBlock).not.toContain('background: var(--d-surface)');
   });
 
@@ -168,7 +172,6 @@ describe('generateTreatmentCSS', () => {
     expect(css).not.toContain('undefined');
     expect(css).not.toContain('NaN');
     expect(css).toContain('Layer 1: Base Treatments');
-    expect(css).toContain('@keyframes decantr-fade-in');
     expect(css).toContain('@keyframes decantr-pulse');
     expect(css).toContain('@layer decorators');
   });
@@ -183,7 +186,6 @@ describe('generateTreatmentCSS', () => {
 
   it('includes keyframes', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
-    expect(css).toContain('@keyframes decantr-fade-in');
     expect(css).toContain('@keyframes decantr-pulse');
   });
 
