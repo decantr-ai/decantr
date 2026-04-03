@@ -2959,6 +2959,183 @@ export interface ScaffoldContextInput {
   };
 }
 
+// ── Shell Implementation Generator ──
+
+/**
+ * Generate a shell implementation block from internal_layout.
+ * For each region, outputs its semantic properties as a structured list.
+ * Handles nested sub-regions (e.g., sidebar.brand, sidebar.nav).
+ * Ends with anti-patterns block.
+ */
+function generateShellImplementation(shellId: string, shellInfo: ShellInfo): string[] {
+  const lines: string[] = [];
+
+  lines.push(`## Shell Implementation (${shellId})`);
+  lines.push('');
+
+  if (shellInfo.internal_layout && Object.keys(shellInfo.internal_layout).length > 0) {
+    for (const [region, props] of Object.entries(shellInfo.internal_layout)) {
+      lines.push(`### ${region}`);
+      lines.push('');
+      if (typeof props === 'object' && props !== null) {
+        for (const [key, value] of Object.entries(props as Record<string, any>)) {
+          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            // Nested sub-region (e.g., sidebar.brand, sidebar.nav)
+            lines.push(`- **${key}:**`);
+            for (const [subKey, subValue] of Object.entries(value as Record<string, any>)) {
+              lines.push(`  - ${subKey}: ${subValue}`);
+            }
+          } else {
+            lines.push(`- **${key}:** ${value}`);
+          }
+        }
+      } else {
+        lines.push(`- ${props}`);
+      }
+      lines.push('');
+    }
+
+    // Anti-patterns
+    lines.push('### Anti-patterns');
+    lines.push('');
+    lines.push('- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.');
+    lines.push('- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.');
+    lines.push('- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.');
+    lines.push('');
+  } else {
+    // Fallback: basic info from layout/atoms/config
+    if (shellInfo.layout) {
+      lines.push(`**Layout:** ${shellInfo.layout}`);
+      lines.push('');
+    }
+    if (shellInfo.atoms) {
+      lines.push(`**Atoms:** \`${shellInfo.atoms}\``);
+      lines.push('');
+    }
+    if (shellInfo.config) {
+      const cfg = shellInfo.config;
+      if (cfg.nav) {
+        const navParts: string[] = [];
+        if (cfg.nav.position) navParts.push(`position: ${cfg.nav.position}`);
+        if (cfg.nav.width) navParts.push(`width: ${cfg.nav.width}`);
+        if (cfg.nav.collapseTo) navParts.push(`collapses to: ${cfg.nav.collapseTo}`);
+        if (cfg.nav.collapseBelow) navParts.push(`below: ${cfg.nav.collapseBelow}`);
+        if (navParts.length > 0) lines.push(`**Nav:** ${navParts.join(', ')}`);
+      }
+      if (cfg.header) {
+        const headerParts: string[] = [];
+        if (cfg.header.height) headerParts.push(`height: ${cfg.header.height}`);
+        if (cfg.header.sticky) headerParts.push('sticky');
+        if (headerParts.length > 0) lines.push(`**Header:** ${headerParts.join(', ')}`);
+      }
+      if (cfg.body) {
+        const bodyParts: string[] = [];
+        if (cfg.body.scroll) bodyParts.push('overflow-y: auto');
+        if (cfg.body.inputAnchored) bodyParts.push('input anchored to bottom');
+        if (bodyParts.length > 0) lines.push(`**Body:** ${bodyParts.join(', ')}`);
+      }
+      if (cfg.footer) {
+        const footerParts: string[] = [];
+        if (cfg.footer.height) footerParts.push(`height: ${cfg.footer.height}`);
+        if (cfg.footer.sticky) footerParts.push('sticky');
+        if (footerParts.length > 0) lines.push(`**Footer:** ${footerParts.join(', ')}`);
+      }
+      lines.push('');
+    }
+  }
+
+  return lines;
+}
+
+// ── Quick Start Generator ──
+
+/**
+ * Generate an 8-line summary for the section context.
+ * Shell with dimensions, page count + names, key patterns,
+ * CSS classes, density level, voice tone first sentence.
+ */
+function generateQuickStart(input: SectionContextInput): string[] {
+  const { section, shellInfo, decorators, personality, voiceTone } = input;
+  const lines: string[] = [];
+
+  lines.push('## Quick Start');
+  lines.push('');
+
+  // Shell with dimensions
+  const shellDesc = shellInfo?.description || `${section.shell} shell`;
+  const dims: string[] = [];
+  if (shellInfo?.config?.nav?.width) dims.push(`nav: ${shellInfo.config.nav.width}`);
+  if (shellInfo?.config?.header?.height) dims.push(`header: ${shellInfo.config.header.height}`);
+  lines.push(`**Shell:** ${shellDesc}${dims.length > 0 ? ` (${dims.join(', ')})` : ''}`);
+
+  // Page count + names
+  const pageNames = section.pages.map(p => p.id);
+  lines.push(`**Pages:** ${section.pages.length} (${pageNames.join(', ')})`);
+
+  // Key patterns (complex=8+ components, moderate=4-7)
+  const patternLabels: string[] = [];
+  const specEntries = Object.entries(input.patternSpecs);
+  for (const [name, spec] of specEntries) {
+    const count = spec.components.length;
+    if (count >= 8) patternLabels.push(`${name} [complex]`);
+    else if (count >= 4) patternLabels.push(`${name} [moderate]`);
+    else patternLabels.push(name);
+  }
+  if (patternLabels.length > 0) {
+    lines.push(`**Key patterns:** ${patternLabels.join(', ')}`);
+  }
+
+  // CSS classes (top 3 decorators + personality utilities)
+  const cssClasses: string[] = [];
+  const topDecorators = decorators.slice(0, 3).map(d => d.name);
+  cssClasses.push(...topDecorators);
+  const pLower = personality.join(' ').toLowerCase();
+  if (pLower.includes('neon') || pLower.includes('glow')) cssClasses.push('neon-glow');
+  if (pLower.includes('mono') || pLower.includes('monospace')) cssClasses.push('mono-data');
+  if (cssClasses.length > 0) {
+    lines.push(`**CSS classes:** ${cssClasses.map(c => `\`.${c}\``).join(', ')}`);
+  }
+
+  // Density level
+  const density = section.dna_overrides?.density || 'comfortable';
+  lines.push(`**Density:** ${density}`);
+
+  // Voice tone first sentence
+  if (voiceTone) {
+    lines.push(`**Voice:** ${voiceTone}`);
+  }
+
+  lines.push('');
+  return lines;
+}
+
+// ── Spacing Guide Generator ──
+
+/**
+ * Generate a spacing guide from density level.
+ * Computes actual token values and renders as a markdown table.
+ */
+function generateSpacingGuide(density: string): string[] {
+  const lines: string[] = [];
+  const level = (density === 'compact' || density === 'spacious') ? density : 'comfortable';
+  const tokens = computeSpatialTokens(level as 'compact' | 'comfortable' | 'spacious');
+
+  lines.push('## Spacing Guide');
+  lines.push('');
+  lines.push('| Context | Token | Value | Usage |');
+  lines.push('|---------|-------|-------|-------|');
+  lines.push(`| Content gap | \`--d-content-gap\` | \`${tokens['--d-content-gap']}\` | Gap between sibling elements |`);
+  lines.push(`| Section padding | \`--d-section-py\` | \`${tokens['--d-section-py']}\` | Vertical padding on d-section |`);
+  lines.push(`| Surface padding | \`--d-surface-p\` | \`${tokens['--d-surface-p']}\` | Inner padding for d-surface |`);
+  lines.push(`| Interactive V | \`--d-interactive-py\` | \`${tokens['--d-interactive-py']}\` | Vertical padding on buttons |`);
+  lines.push(`| Interactive H | \`--d-interactive-px\` | \`${tokens['--d-interactive-px']}\` | Horizontal padding on buttons |`);
+  lines.push(`| Control | \`--d-control-py\` | \`${tokens['--d-control-py']}\` | Vertical padding on inputs |`);
+  lines.push(`| Data row | \`--d-data-py\` | \`${tokens['--d-data-py']}\` | Vertical padding on table rows |`);
+  lines.push('');
+
+  return lines;
+}
+
 /**
  * Generate a compact markdown context file for a single section.
  * Includes guard mode, zone context, decorators, pattern specs,
