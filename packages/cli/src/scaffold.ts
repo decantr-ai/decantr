@@ -3298,8 +3298,6 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
   }
 
   // Topology
-  lines.push('## App Topology');
-  lines.push('');
   lines.push(topologyMarkdown);
   lines.push('');
 

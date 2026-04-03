@@ -191,8 +191,7 @@ describe('generateScaffoldContext', () => {
     expect(result).toContain('**Personality:** professional, clean');
     expect(result).toContain('**Guard mode:** creative');
 
-    // Topology
-    expect(result).toContain('## App Topology');
+    // Topology (topologyMarkdown is inlined without a wrapper heading)
     expect(result).toContain('Public zone -> Gateway -> App zone');
 
     // Sections table

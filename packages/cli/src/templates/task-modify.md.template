@@ -70,7 +70,7 @@ decantr_read_essence()
 
 For the page you're modifying, verify:
 
-- Page ID exists in `blueprint.pages[]`
+- Page ID exists in `blueprint.sections[].pages[]`
 - Shell matches the page's `shell` property
 - Patterns match the page's `layout[]` in order
 - Theme matches `theme.style`
@@ -90,7 +90,7 @@ Before writing code:
 Before modifying:
 
 - [ ] Page exists in essence structure
-- [ ] I know the layout order for the target page (check `blueprint.pages[]` or `blueprint.sections[]`)
+- [ ] I know the layout order for the target page (check `blueprint.sections[].pages[]`)
 - [ ] I will use theme: `{{THEME_STYLE}}`
 - [ ] I will follow density: `{{DENSITY}}`
 
