@@ -1,0 +1,154 @@
+/* Carbon theme decorators — refined glassmorphic depth, muted stormy-blue */
+@layer decorators {
+
+.carbon-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  box-shadow: var(--d-shadow);
+  transition: box-shadow 0.2s var(--d-easing), border-color 0.2s var(--d-easing);
+}
+
+.carbon-card:hover {
+  box-shadow: var(--d-shadow-md);
+}
+
+.carbon-code {
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.8125rem;
+  background: var(--d-surface-raised);
+  border-left: 3px solid var(--d-primary);
+  padding: 0.75rem 1rem;
+  border-radius: var(--d-radius-sm);
+  overflow-x: auto;
+  color: var(--d-text);
+  line-height: 1.6;
+}
+
+.carbon-glass {
+  background: color-mix(in srgb, var(--d-surface) 70%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid color-mix(in srgb, var(--d-border) 60%, transparent);
+}
+
+.carbon-input {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  color: var(--d-text);
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s var(--d-easing), box-shadow 0.15s var(--d-easing);
+}
+
+.carbon-input:focus {
+  border-color: var(--d-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-primary) 20%, transparent);
+}
+
+.carbon-input::placeholder {
+  color: var(--d-text-muted);
+}
+
+.carbon-canvas {
+  background: var(--d-bg);
+}
+
+.carbon-divider {
+  height: 1px;
+  background: var(--d-border);
+  border: none;
+  width: 100%;
+}
+
+.carbon-skeleton {
+  background: linear-gradient(90deg,
+    var(--d-surface) 0%,
+    var(--d-surface-raised) 50%,
+    var(--d-surface) 100%);
+  background-size: 200% 100%;
+  animation: carbon-shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--d-radius-sm);
+}
+
+@keyframes carbon-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.carbon-bubble-ai {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: 0.875rem 1.125rem;
+  max-width: 680px;
+  color: var(--d-text);
+  line-height: 1.65;
+  box-shadow: var(--d-shadow-sm);
+}
+
+.carbon-bubble-user {
+  background: color-mix(in srgb, var(--d-primary) 18%, var(--d-surface));
+  border: 1px solid color-mix(in srgb, var(--d-primary) 35%, var(--d-border));
+  border-radius: var(--d-radius-lg);
+  padding: 0.875rem 1.125rem;
+  max-width: 640px;
+  color: var(--d-text);
+  line-height: 1.65;
+  box-shadow: var(--d-shadow-sm);
+}
+
+.carbon-fade-slide {
+  animation: carbon-fade-slide 0.2s var(--d-easing);
+}
+
+@keyframes carbon-fade-slide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.carbon-typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--d-text-muted);
+  animation: carbon-typing 1.4s ease-in-out infinite;
+}
+
+.carbon-typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.carbon-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes carbon-typing {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+.carbon-conv-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--d-radius-sm);
+  color: var(--d-text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.12s var(--d-easing), color 0.12s var(--d-easing);
+  border: 1px solid transparent;
+}
+
+.carbon-conv-item:hover {
+  background: color-mix(in srgb, var(--d-surface-raised) 60%, transparent);
+  color: var(--d-text);
+}
+
+.carbon-conv-item[data-active="true"] {
+  background: color-mix(in srgb, var(--d-primary) 14%, var(--d-surface-raised));
+  color: var(--d-text);
+  border-color: color-mix(in srgb, var(--d-primary) 28%, var(--d-border));
+}
+
+} /* end @layer decorators */
