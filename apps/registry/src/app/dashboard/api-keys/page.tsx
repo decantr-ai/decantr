@@ -1,17 +1,19 @@
 'use client';
 
 import { useEffect, useState, useCallback, useTransition } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import { createApiKeyAction, revokeApiKeyAction } from './actions';
 
 interface ApiKeyDisplay {
   id: string;
   name: string;
-  key?: string;
   scopes: string[];
   created_at: string;
   last_used_at: string | null;
   revoked_at: string | null;
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return 'Never';
@@ -23,98 +25,46 @@ function formatDate(dateStr: string | null): string {
 }
 
 function maskKey(id: string): string {
-  if (id.length <= 8) return id;
-  return id.slice(0, 4) + '…' + id.slice(-4);
+  const tail = id.slice(-4);
+  return `sk-****-${tail}`;
 }
 
 /* ── Icons ── */
 
 function PlusIcon({ size = 16 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" /><path d="M12 5v14" />
     </svg>
   );
 }
-
 function KeyIcon({ size = 16 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
-      <path d="m21 2-9.6 9.6" />
-      <circle cx="7.5" cy="15.5" r="5.5" />
+      <path d="m21 2-9.6 9.6" /><circle cx="7.5" cy="15.5" r="5.5" />
     </svg>
   );
 }
-
 function CopyIcon({ size = 14 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
       <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
     </svg>
   );
 }
-
 function CheckIcon({ size = 14 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }
-
 function TrashIcon({ size = 14 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 6h18" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
       <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
   );
@@ -128,7 +78,6 @@ function CopyButton({ text }: { text: string }) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [text]);
-
   return (
     <button
       type="button"
@@ -145,6 +94,7 @@ function CopyButton({ text }: { text: string }) {
 
 export default function ApiKeysPage() {
   const [keys, setKeys] = useState<ApiKeyDisplay[]>([]);
+  const [showForm, setShowForm] = useState(false);
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [scopes, setScopes] = useState<Set<string>>(new Set(['read']));
@@ -152,32 +102,26 @@ export default function ApiKeysPage() {
   const [isCreating, startCreate] = useTransition();
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const { createBrowserClient } = await import('@supabase/ssr');
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token ?? '';
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1'}/api-keys`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setKeys(Array.isArray(data) ? data : data?.items ?? []);
-        }
-      } catch {
-        // silently fail
+  const loadKeys = useCallback(async () => {
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token ?? '';
+      const res = await fetch(`${API_URL}/api-keys`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setKeys(Array.isArray(data) ? data : data?.items ?? []);
       }
+    } catch {
+      // silently fail
     }
-    load();
   }, []);
+
+  useEffect(() => {
+    loadKeys();
+  }, [loadKeys]);
 
   function toggleScope(scope: string) {
     setScopes((prev) => {
@@ -203,27 +147,8 @@ export default function ApiKeysPage() {
       } else if ('key' in result && result.key) {
         setNewKeyValue(result.key);
         setName('');
-        try {
-          const { createBrowserClient } = await import('@supabase/ssr');
-          const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-          );
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-          const token = session?.access_token ?? '';
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1'}/api-keys`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            setKeys(Array.isArray(data) ? data : data?.items ?? []);
-          }
-        } catch {
-          // ignore
-        }
+        setShowForm(false);
+        await loadKeys();
       }
     });
   }
@@ -234,11 +159,7 @@ export default function ApiKeysPage() {
     if (result?.error) {
       setError(result.error);
     } else {
-      setKeys((prev) =>
-        prev.map((k) =>
-          k.id === id ? { ...k, revoked_at: new Date().toISOString() } : k
-        )
-      );
+      setKeys((prev) => prev.filter((k) => k.id !== id));
     }
     setRevokingId(null);
   }
@@ -250,72 +171,76 @@ export default function ApiKeysPage() {
       {/* Header row */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">API Keys</h3>
-      </div>
-
-      {/* Create form */}
-      <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
+        <button
+          className="d-interactive"
+          data-variant="primary"
+          style={{ fontSize: '0.875rem' }}
+          onClick={() => {
+            setShowForm(!showForm);
+            setError(null);
           }}
         >
-          Create New Key
-        </span>
+          <PlusIcon size={16} />
+          Generate New Key
+        </button>
+      </div>
 
-        <form onSubmit={handleCreate} className="d-surface">
-          {error && (
-            <div
-              className="d-annotation"
-              data-status="error"
-              style={{ marginBottom: '1rem', display: 'block' }}
-            >
-              {error}
+      {/* Newly created key banner */}
+      {newKeyValue && (
+        <div
+          className="d-surface"
+          style={{
+            borderColor: 'var(--d-success)',
+            background: 'color-mix(in srgb, var(--d-success) 8%, var(--d-surface))',
+          }}
+        >
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <CheckIcon size={14} />
+              <span className="text-sm font-semibold">Key created — save it now, it won&apos;t be shown again</span>
             </div>
-          )}
-
-          {newKeyValue && (
-            <div
-              className="d-annotation"
-              data-status="success"
-              style={{
-                marginBottom: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                flexWrap: 'wrap',
-              }}
-            >
-              <span style={{ fontWeight: 600 }}>New key:</span>
+            <div className="flex items-center gap-2">
               <code
                 style={{
                   fontFamily: 'var(--d-font-mono, monospace)',
-                  fontSize: '0.75rem',
-                  padding: '0.125rem 0.5rem',
+                  fontSize: '0.8125rem',
+                  padding: '0.5rem 0.75rem',
                   background: 'var(--d-bg)',
                   borderRadius: 'var(--d-radius-sm)',
+                  flex: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {newKeyValue}
               </code>
-              <span
-                className="text-xs"
-                style={{ color: 'var(--d-text-muted)' }}
+              <CopyButton text={newKeyValue} />
+              <button
+                type="button"
+                className="d-interactive"
+                data-variant="ghost"
+                onClick={() => setNewKeyValue(null)}
+                style={{ fontSize: '0.75rem' }}
               >
-                Save this — it won&apos;t be shown again.
-              </span>
+                Dismiss
+              </button>
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          <div className="flex flex-col sm:flex-row gap-3 items-end">
-            <div className="flex flex-col gap-1 flex-1">
-              <label
-                className="text-sm font-semibold"
-                htmlFor="key-name"
-              >
-                Name
-              </label>
+      {/* Inline create form — toggled by header button */}
+      {showForm && (
+        <form onSubmit={handleCreate} className="d-surface">
+          <div className="flex flex-col gap-3">
+            {error && (
+              <span className="d-annotation" data-status="error">
+                {error}
+              </span>
+            )}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium" htmlFor="key-name">Name</label>
               <input
                 id="key-name"
                 className="d-control"
@@ -324,116 +249,108 @@ export default function ApiKeysPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                autoFocus
               />
             </div>
-
-            <div className="flex items-center gap-3">
-              <label
-                className="flex items-center gap-1.5 text-sm cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={scopes.has('read')}
-                  onChange={() => toggleScope('read')}
-                />
-                Read
-              </label>
-              <label
-                className="flex items-center gap-1.5 text-sm cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={scopes.has('write')}
-                  onChange={() => toggleScope('write')}
-                />
-                Write
-              </label>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">Scopes</span>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+                  <input type="checkbox" checked={scopes.has('read')} onChange={() => toggleScope('read')} />
+                  Read
+                </label>
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+                  <input type="checkbox" checked={scopes.has('write')} onChange={() => toggleScope('write')} />
+                  Write
+                </label>
+              </div>
             </div>
-
-            <button
-              type="submit"
-              className="d-interactive"
-              data-variant="primary"
-              disabled={isCreating}
-              style={{
-                fontSize: '0.875rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
-            >
-              <PlusIcon size={16} />
-              {isCreating ? 'Creating...' : 'Create'}
-            </button>
+            <div className="flex items-center gap-2 justify-end">
+              <button
+                type="button"
+                className="d-interactive"
+                data-variant="ghost"
+                onClick={() => { setShowForm(false); setError(null); }}
+                style={{ fontSize: '0.875rem' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="d-interactive"
+                data-variant="primary"
+                disabled={isCreating}
+                style={{ fontSize: '0.875rem' }}
+              >
+                {isCreating ? 'Creating...' : 'Create'}
+              </button>
+            </div>
           </div>
         </form>
-      </section>
+      )}
 
-      {/* List */}
+      {/* Table */}
       <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
-          }}
-        >
-          Active Keys ({activeKeys.length})
-        </span>
+        {activeKeys.length > 0 ? (
+          <div className="d-data" role="table">
+            {/* Header row */}
+            <div
+              className="grid items-center"
+              style={{ gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1fr 0.75fr' }}
+              role="row"
+            >
+              <span className="d-data-header" role="columnheader">Name</span>
+              <span className="d-data-header" role="columnheader">Key</span>
+              <span className="d-data-header" role="columnheader">Scopes</span>
+              <span className="d-data-header" role="columnheader">Created</span>
+              <span className="d-data-header" role="columnheader">Last Used</span>
+              <span className="d-data-header" role="columnheader">Actions</span>
+            </div>
 
-        {activeKeys.length === 0 ? (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.75rem',
-              padding: '3rem 0',
-            }}
-          >
-            <span style={{ color: 'var(--d-text-muted)', opacity: 0.5 }}>
-              <KeyIcon size={48} />
-            </span>
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              No API keys yet.
-            </p>
-          </div>
-        ) : (
-          <div className="d-data">
+            {/* Data rows */}
             {activeKeys.map((apiKey) => (
               <div
                 key={apiKey.id}
-                className="d-data-row flex items-center gap-3"
+                className="d-data-row grid items-center"
                 style={{
+                  gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1fr 0.75fr',
                   padding: 'var(--d-data-py) var(--d-content-gap)',
                 }}
+                role="row"
               >
-                <div
-                  className="flex items-center gap-3"
-                  style={{ flex: 1, minWidth: 0 }}
-                >
+                {/* Name */}
+                <div className="flex items-center gap-2" style={{ minWidth: 0 }}>
                   <span style={{ color: 'var(--d-accent)', flexShrink: 0 }}>
                     <KeyIcon size={16} />
                   </span>
-                  <div style={{ minWidth: 0 }}>
-                    <div className="font-medium text-sm">{apiKey.name}</div>
-                    <div
-                      className="text-sm"
-                      style={{
-                        fontFamily: 'var(--d-font-mono, monospace)',
-                        color: 'var(--d-text-muted)',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {maskKey(apiKey.id)}
-                    </div>
-                  </div>
+                  <span
+                    className="text-sm font-medium"
+                    style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {apiKey.name}
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-1">
+                {/* Key (masked) */}
+                <span
+                  className="text-sm"
+                  style={{
+                    fontFamily: 'var(--d-font-mono, monospace)',
+                    color: 'var(--d-text-muted)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {maskKey(apiKey.id)}
+                </span>
+
+                {/* Scopes */}
+                <div className="flex items-center gap-1 flex-wrap">
                   {apiKey.scopes.map((scope) => (
                     <span key={scope} className="d-annotation">
                       {scope}
@@ -441,20 +358,25 @@ export default function ApiKeysPage() {
                   ))}
                 </div>
 
-                <div
-                  className="flex flex-col"
-                  style={{
-                    fontSize: '0.75rem',
-                    color: 'var(--d-text-muted)',
-                    flexShrink: 0,
-                  }}
+                {/* Created */}
+                <span
+                  className="text-xs"
+                  style={{ color: 'var(--d-text-muted)' }}
                 >
-                  <span>Created: {formatDate(apiKey.created_at)}</span>
-                  <span>Last used: {formatDate(apiKey.last_used_at)}</span>
-                </div>
+                  {formatDate(apiKey.created_at)}
+                </span>
 
+                {/* Last Used */}
+                <span
+                  className="text-xs"
+                  style={{ color: 'var(--d-text-muted)' }}
+                >
+                  {formatDate(apiKey.last_used_at)}
+                </span>
+
+                {/* Actions */}
                 <div className="flex items-center gap-1">
-                  <CopyButton text={apiKey.id} />
+                  <CopyButton text={maskKey(apiKey.id)} />
                   <button
                     type="button"
                     className="d-interactive"
@@ -469,6 +391,26 @@ export default function ApiKeysPage() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : (
+          <div
+            className="flex flex-col items-center justify-center gap-3"
+            style={{ padding: '3rem 0' }}
+          >
+            <span style={{ color: 'var(--d-text-muted)', opacity: 0.5 }}>
+              <KeyIcon size={48} />
+            </span>
+            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              No API keys yet.
+            </p>
+            <button
+              className="d-interactive"
+              data-variant="primary"
+              style={{ fontSize: '0.875rem' }}
+              onClick={() => { setShowForm(true); setError(null); }}
+            >
+              Generate Your First Key
+            </button>
           </div>
         )}
       </section>
