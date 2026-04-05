@@ -1,0 +1,173 @@
+/* auradecantism LIGHT decorators — warm, appetite-driven */
+@layer decorators {
+
+/* Page wash with warm cream mesh */
+.warm-wash {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(234, 88, 12, 0.08), transparent 45%),
+    radial-gradient(circle at 90% 20%, rgba(77, 124, 15, 0.07), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(217, 119, 6, 0.06), transparent 55%),
+    var(--d-bg);
+}
+
+/* Recipe card — photo anchored with rich shadow */
+.recipe-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--d-shadow);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  cursor: pointer;
+}
+.recipe-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--d-shadow-lg);
+}
+
+/* Food photo with warm gradient overlay */
+.food-photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  background: linear-gradient(135deg, #F5E6D0, #E7C9A3);
+}
+
+.food-photo-overlay {
+  position: relative;
+}
+.food-photo-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(42, 31, 20, 0.65) 100%);
+  pointer-events: none;
+}
+
+/* Chip / pill tag */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--d-surface-raised);
+  color: var(--d-text);
+  border-radius: var(--d-radius-full);
+  border: 1px solid var(--d-border);
+}
+.tag-chip[data-tone="accent"] {
+  background: color-mix(in srgb, var(--d-accent) 14%, transparent);
+  color: var(--d-primary-hover);
+  border-color: color-mix(in srgb, var(--d-accent) 30%, transparent);
+}
+.tag-chip[data-tone="herb"] {
+  background: color-mix(in srgb, var(--d-secondary) 14%, transparent);
+  color: var(--d-secondary);
+  border-color: color-mix(in srgb, var(--d-secondary) 28%, transparent);
+}
+
+/* Accent bar on featured items */
+.accent-stripe {
+  position: relative;
+}
+.accent-stripe::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--d-accent), var(--d-primary));
+  border-radius: var(--d-radius-sm);
+}
+
+/* Hero heading — warm serif display */
+.serif-display {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+/* Emoji reaction pill */
+.reaction-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-full);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.reaction-pill:hover {
+  background: var(--d-surface-raised);
+  border-color: color-mix(in srgb, var(--d-accent) 35%, var(--d-border));
+  transform: translateY(-1px);
+}
+.reaction-pill[data-active="true"] {
+  background: color-mix(in srgb, var(--d-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--d-accent) 40%, transparent);
+  color: var(--d-primary-hover);
+}
+
+/* Step indicator dot */
+.step-dot {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--d-radius-full);
+  background: var(--d-surface-raised);
+  color: var(--d-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+.step-dot[data-state="active"] {
+  background: var(--d-primary);
+  color: #fff;
+}
+.step-dot[data-state="done"] {
+  background: var(--d-secondary);
+  color: #fff;
+}
+
+/* Warm gradient text */
+.gradient-warm {
+  background: linear-gradient(135deg, var(--d-primary), var(--d-accent) 60%, var(--d-warning));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Divider */
+.warm-divider {
+  border: none;
+  border-top: 1px solid var(--d-border);
+  margin: 1.5rem 0;
+}
+
+/* Feature/elevated tile */
+.feature-tile {
+  background: var(--d-surface-raised);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: var(--d-surface-p);
+}
+
+/* Cook mode dark chrome (still light mode page, just focused) */
+.cook-stage {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-xl);
+  padding: 2.5rem;
+  box-shadow: var(--d-shadow-md);
+}
+
+} /* end @layer decorators */

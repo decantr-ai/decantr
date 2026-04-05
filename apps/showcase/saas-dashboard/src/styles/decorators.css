@@ -1,0 +1,289 @@
+/* SaaS Dashboard — auradecantism dark theme decorators */
+
+@layer decorators {
+
+/* ── sd-nav: Sticky top navigation for marketing ── */
+.sd-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  z-index: 40;
+  background: color-mix(in srgb, var(--d-bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--d-border) 50%, transparent);
+}
+
+/* ── sd-hero: Marketing hero mesh backdrop ── */
+.sd-hero {
+  position: relative;
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 7rem 2rem 4rem;
+  overflow: hidden;
+}
+
+.sd-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(236, 72, 153, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 40%, rgba(168, 85, 247, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.08) 0%, transparent 50%);
+  animation: sd-mesh-drift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes sd-mesh-drift {
+  0% { opacity: 0.85; transform: scale(1) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1.06) rotate(0.8deg); }
+}
+
+/* ── sd-orb: Floating accent orbs ── */
+.sd-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(64px);
+  opacity: 0.35;
+}
+
+.sd-orb-1 {
+  width: 420px;
+  height: 420px;
+  background: var(--d-accent);
+  top: -12%;
+  left: -6%;
+  animation: sd-orb-float 9s ease-in-out infinite alternate;
+}
+
+.sd-orb-2 {
+  width: 340px;
+  height: 340px;
+  background: var(--d-primary);
+  bottom: -8%;
+  right: -6%;
+  animation: sd-orb-float 11s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes sd-orb-float {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(24px, -24px); }
+}
+
+/* ── sd-sidebar: App shell sidebar ── */
+.sd-sidebar {
+  background: var(--d-surface);
+  border-right: 1px solid var(--d-border);
+}
+
+.sd-sidebar [data-active="true"] {
+  background: color-mix(in srgb, var(--d-accent) 12%, transparent);
+  color: var(--d-accent);
+}
+
+.sd-sidebar [data-active="true"]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--d-accent);
+  border-radius: 0 2px 2px 0;
+}
+
+/* ── sd-card: Elevated card with hover lift ── */
+.sd-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  box-shadow: var(--d-shadow);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.sd-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--d-shadow-md);
+  border-color: color-mix(in srgb, var(--d-accent) 40%, var(--d-border));
+}
+
+/* ── sd-kpi-accent: KPI card with accent top border ── */
+.sd-kpi-accent {
+  position: relative;
+  overflow: hidden;
+}
+
+.sd-kpi-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--d-accent), color-mix(in srgb, var(--d-accent) 60%, var(--d-primary)));
+  border-radius: var(--d-radius) var(--d-radius) 0 0;
+}
+
+/* ── sd-button-accent: Solid accent button ── */
+.sd-button-accent {
+  background: var(--d-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--d-radius);
+  padding: var(--d-interactive-py) var(--d-interactive-px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  text-decoration: none;
+}
+
+.sd-button-accent:hover {
+  background: color-mix(in srgb, var(--d-accent) 85%, #fff);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--d-accent) 30%, transparent);
+}
+
+.sd-button-accent:focus-visible {
+  outline: 2px solid var(--d-accent);
+  outline-offset: 2px;
+}
+
+/* ── sd-fade-in: Fade in entrance ── */
+.sd-fade-in {
+  animation: sd-fade-in 0.4s ease-out both;
+}
+
+@keyframes sd-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── sd-gauge ── */
+.sd-gauge-track {
+  height: 8px;
+  background: var(--d-surface-raised);
+  border-radius: var(--d-radius-full);
+  overflow: hidden;
+}
+
+.sd-gauge-fill {
+  height: 100%;
+  border-radius: var(--d-radius-full);
+  transition: width 600ms ease-out;
+  background: linear-gradient(90deg, var(--d-accent), color-mix(in srgb, var(--d-accent) 60%, var(--d-primary)));
+}
+
+.sd-gauge-fill[data-level="safe"] {
+  background: linear-gradient(90deg, var(--d-success), color-mix(in srgb, var(--d-success) 70%, var(--d-accent)));
+}
+
+.sd-gauge-fill[data-level="warn"] {
+  background: linear-gradient(90deg, var(--d-warning), color-mix(in srgb, var(--d-warning) 70%, var(--d-error)));
+}
+
+.sd-gauge-fill[data-level="critical"] {
+  background: var(--d-error);
+}
+
+/* ── sd-sparkline ── */
+.sd-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 32px;
+}
+
+.sd-sparkline-bar {
+  flex: 1;
+  background: linear-gradient(180deg, var(--d-accent), color-mix(in srgb, var(--d-accent) 40%, transparent));
+  border-radius: 1px;
+  min-width: 3px;
+  transition: opacity 150ms ease;
+}
+
+.sd-sparkline:hover .sd-sparkline-bar {
+  opacity: 0.7;
+}
+
+/* ── sd-chart-bar: Chart column ── */
+.sd-chart-bar {
+  background: linear-gradient(180deg, var(--d-accent), color-mix(in srgb, var(--d-accent) 50%, transparent));
+  border-radius: var(--d-radius-sm) var(--d-radius-sm) 0 0;
+  transition: height 400ms ease-out, opacity 150ms ease;
+  min-width: 8px;
+}
+
+.sd-chart-bar:hover {
+  opacity: 0.8;
+}
+
+/* ── sd-event-dot ── */
+.sd-event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.sd-event-dot[data-type="deploy"] { background: var(--d-success); }
+.sd-event-dot[data-type="config"] { background: var(--d-info); }
+.sd-event-dot[data-type="team"] { background: var(--d-accent); }
+.sd-event-dot[data-type="billing"] { background: var(--d-primary); }
+.sd-event-dot[data-type="incident"] { background: var(--d-error); }
+.sd-event-dot[data-type="security"] { background: var(--d-warning); }
+
+/* ── sd-role-badge: Role badge coloring ── */
+.sd-role-badge[data-role="owner"] {
+  background: color-mix(in srgb, var(--d-accent) 18%, transparent);
+  color: var(--d-accent);
+}
+.sd-role-badge[data-role="admin"] {
+  background: color-mix(in srgb, var(--d-primary) 18%, transparent);
+  color: var(--d-primary);
+}
+.sd-role-badge[data-role="member"] {
+  background: color-mix(in srgb, var(--d-info) 18%, transparent);
+  color: var(--d-info);
+}
+.sd-role-badge[data-role="viewer"] {
+  background: var(--d-surface-raised);
+  color: var(--d-text-muted);
+}
+
+/* ── sd-gradient-text ── */
+.sd-gradient-text {
+  background: linear-gradient(135deg, var(--d-accent), var(--d-primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── sd-avatar: Gradient avatar circle ── */
+.sd-avatar {
+  border-radius: var(--d-radius-full);
+  background: linear-gradient(135deg, var(--d-accent), var(--d-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+} /* end @layer decorators */

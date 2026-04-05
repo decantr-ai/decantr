@@ -1,0 +1,267 @@
+/* Ecommerce — auradecantism LIGHT mode decorators */
+
+@layer decorators {
+
+/* ── ec-nav: Top nav with soft backdrop ── */
+.ec-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 1.5rem;
+  background: color-mix(in srgb, var(--d-surface) 85%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--d-border);
+}
+
+/* ── ec-hero: Warm inviting hero ── */
+.ec-hero {
+  position: relative;
+  padding: 6rem 2rem 5rem;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 10%, color-mix(in srgb, var(--d-primary) 10%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, color-mix(in srgb, var(--d-accent) 10%, transparent) 0%, transparent 50%),
+    var(--d-bg);
+}
+
+/* ── ec-gradient-text: Brand gradient text ── */
+.ec-gradient-text {
+  background: linear-gradient(135deg, var(--d-primary), var(--d-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── ec-product-card: Soft product card with hover lift ── */
+.ec-product-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  overflow: hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.ec-product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--d-shadow-lg);
+  border-color: var(--d-border-strong);
+}
+
+.ec-product-card .ec-product-image {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--d-surface-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  transition: transform 300ms ease;
+}
+
+.ec-product-card:hover .ec-product-image {
+  transform: scale(1.05);
+}
+
+/* ── ec-button-primary: Warm accent CTA ── */
+.ec-button-primary {
+  background: linear-gradient(135deg, var(--d-primary), var(--d-accent));
+  color: #fff;
+  border: none;
+  border-radius: var(--d-radius);
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ec-button-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--d-primary) 25%, transparent);
+}
+
+.ec-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── ec-badge: Small pill badge ── */
+.ec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--d-radius-full);
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--d-primary) 10%, transparent);
+  color: var(--d-primary);
+}
+
+.ec-badge[data-tone="accent"] { background: color-mix(in srgb, var(--d-accent) 12%, transparent); color: var(--d-accent); }
+.ec-badge[data-tone="success"] { background: color-mix(in srgb, var(--d-success) 12%, transparent); color: var(--d-success); }
+.ec-badge[data-tone="warning"] { background: color-mix(in srgb, var(--d-warning) 12%, transparent); color: var(--d-warning); }
+.ec-badge[data-tone="muted"] { background: var(--d-surface-muted); color: var(--d-text-muted); }
+
+/* ── ec-price: Price display ── */
+.ec-price {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--d-text);
+}
+
+.ec-price[data-size="lg"] { font-size: 1.75rem; }
+.ec-price[data-was] {
+  text-decoration: line-through;
+  color: var(--d-text-muted);
+  font-weight: 500;
+}
+
+/* ── ec-stars: Star rating row ── */
+.ec-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  color: #f59e0b;
+}
+
+/* ── ec-step: Checkout stepper ── */
+.ec-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--d-radius-full);
+  font-size: 0.8rem;
+  color: var(--d-text-muted);
+  background: transparent;
+  font-weight: 500;
+}
+
+.ec-step[data-active="true"] {
+  background: color-mix(in srgb, var(--d-primary) 10%, transparent);
+  color: var(--d-primary);
+}
+
+.ec-step[data-done="true"] {
+  color: var(--d-success);
+}
+
+.ec-step-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--d-radius-full);
+  background: var(--d-surface-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--d-text-muted);
+}
+
+.ec-step[data-active="true"] .ec-step-dot {
+  background: var(--d-primary);
+  color: #fff;
+}
+
+.ec-step[data-done="true"] .ec-step-dot {
+  background: var(--d-success);
+  color: #fff;
+}
+
+/* ── ec-timeline: Delivery timeline ── */
+.ec-timeline {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.ec-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 0.25rem;
+  bottom: 0.25rem;
+  width: 2px;
+  background: var(--d-border);
+}
+
+.ec-timeline-dot {
+  position: absolute;
+  left: 0;
+  width: 1rem;
+  height: 1rem;
+  border-radius: var(--d-radius-full);
+  background: var(--d-surface);
+  border: 2px solid var(--d-border);
+}
+
+.ec-timeline-dot[data-done="true"] {
+  background: var(--d-success);
+  border-color: var(--d-success);
+}
+
+.ec-timeline-dot[data-current="true"] {
+  background: var(--d-primary);
+  border-color: var(--d-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--d-primary) 20%, transparent);
+}
+
+/* ── ec-sidenav: Sidebar nav ── */
+.ec-sidenav {
+  background: var(--d-surface);
+  border-right: 1px solid var(--d-border);
+}
+
+.ec-sidenav [data-active="true"] {
+  background: color-mix(in srgb, var(--d-primary) 10%, transparent);
+  color: var(--d-primary);
+  font-weight: 600;
+}
+
+/* ── ec-input: Override d-control for inputs with white bg ── */
+.ec-input {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9rem;
+  width: 100%;
+  color: var(--d-text);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.ec-input:focus {
+  outline: none;
+  border-color: var(--d-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-primary) 15%, transparent);
+}
+
+.ec-input::placeholder { color: var(--d-text-muted); }
+
+/* ── ec-card: clean soft card ── */
+.ec-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: 1.5rem;
+}
+
+/* ── Entrance fade (overrides utilities) ── */
+
+} /* end @layer decorators */
