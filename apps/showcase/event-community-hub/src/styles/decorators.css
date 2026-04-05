@@ -1,0 +1,399 @@
+/* dopamine DARK decorators — Y2K maximalism, saturated gradients, bouncy motion */
+@layer decorators {
+
+/* Mesh-gradient page wash — saturated Y2K */
+.dopamine-wash {
+  background:
+    radial-gradient(circle at 8% 12%, rgba(255, 0, 229, 0.22), transparent 42%),
+    radial-gradient(circle at 92% 18%, rgba(0, 255, 136, 0.16), transparent 48%),
+    radial-gradient(circle at 52% 92%, rgba(255, 234, 0, 0.14), transparent 52%),
+    radial-gradient(circle at 20% 80%, rgba(122, 0, 255, 0.18), transparent 50%),
+    var(--d-bg);
+}
+
+.dopamine-wash-soft {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255, 0, 229, 0.12), transparent 45%),
+    radial-gradient(circle at 85% 100%, rgba(0, 255, 136, 0.08), transparent 50%),
+    var(--d-bg);
+}
+
+/* Event card — punchy with gradient accent bar */
+.event-card {
+  position: relative;
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--d-shadow);
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 220ms ease, border-color 220ms ease;
+  cursor: pointer;
+}
+.event-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px -12px rgba(255, 0, 229, 0.35), 0 0 0 1px var(--d-primary);
+  border-color: var(--d-primary);
+}
+.event-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--d-primary), var(--d-accent), var(--d-secondary));
+  z-index: 2;
+}
+
+/* Event photo with gradient overlay */
+.event-photo {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  display: block;
+  background: linear-gradient(135deg, #ff00e5, #7a00ff);
+}
+
+.event-photo-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.event-photo-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 45%, rgba(26, 0, 24, 0.85) 100%);
+  pointer-events: none;
+}
+
+/* Date badge — punchy stamp */
+.date-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: var(--d-bg);
+  border: 2px solid var(--d-primary);
+  border-radius: var(--d-radius);
+  padding: 0.375rem 0.625rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(255, 0, 229, 0.4);
+  z-index: 3;
+  line-height: 1;
+}
+.date-badge-month {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--d-primary);
+  display: block;
+}
+.date-badge-day {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--d-text);
+  font-family: 'Inter', sans-serif;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Category chip */
+.cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--d-surface-raised);
+  color: var(--d-text);
+  border-radius: var(--d-radius-full);
+  border: 1px solid var(--d-border);
+}
+.cat-chip[data-tone="primary"] {
+  background: linear-gradient(135deg, var(--d-primary), #7a00ff);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(255, 0, 229, 0.4);
+}
+.cat-chip[data-tone="accent"] {
+  background: linear-gradient(135deg, var(--d-accent), var(--d-primary));
+  color: #000;
+  border-color: transparent;
+}
+.cat-chip[data-tone="green"] {
+  background: color-mix(in srgb, var(--d-secondary) 18%, transparent);
+  color: var(--d-secondary);
+  border-color: color-mix(in srgb, var(--d-secondary) 40%, transparent);
+}
+.cat-chip[data-tone="soft"] {
+  background: var(--d-surface);
+  color: var(--d-text-muted);
+}
+
+/* Gradient hero text */
+.gradient-dopamine {
+  background: linear-gradient(135deg, var(--d-primary) 0%, var(--d-accent) 45%, var(--d-secondary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.gradient-pink-violet {
+  background: linear-gradient(135deg, var(--d-primary), #7a00ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Display heading — bold punchy */
+.display-heading {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.display-label {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  color: var(--d-accent);
+}
+
+/* Reaction pill — bouncy */
+.reaction-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background 150ms ease, border-color 150ms ease;
+}
+.reaction-pill:hover {
+  background: var(--d-surface-raised);
+  border-color: var(--d-primary);
+  transform: translateY(-2px) scale(1.05);
+}
+.reaction-pill[data-active="true"] {
+  background: color-mix(in srgb, var(--d-primary) 18%, transparent);
+  border-color: var(--d-primary);
+  color: var(--d-primary-hover);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--d-primary) 25%, transparent);
+}
+
+/* Feature tile — raised with gradient edge */
+.feature-tile {
+  background: var(--d-surface-raised);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: var(--d-surface-p);
+  position: relative;
+}
+
+.feature-tile[data-glow="true"] {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--d-primary) 30%, transparent),
+              0 10px 30px -10px rgba(255, 0, 229, 0.3);
+}
+
+/* Post card — feed item */
+.post-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: 1.125rem;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+.post-card:hover {
+  border-color: color-mix(in srgb, var(--d-primary) 40%, var(--d-border));
+}
+
+/* Stepper dot */
+.step-dot {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--d-radius-full);
+  background: var(--d-surface-raised);
+  color: var(--d-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  border: 2px solid var(--d-border);
+  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.step-dot[data-state="active"] {
+  background: linear-gradient(135deg, var(--d-primary), #7a00ff);
+  color: #fff;
+  border-color: var(--d-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--d-primary) 25%, transparent);
+  transform: scale(1.1);
+}
+.step-dot[data-state="done"] {
+  background: var(--d-secondary);
+  color: #000;
+  border-color: var(--d-secondary);
+}
+
+/* Ticket tier card */
+.tier-card {
+  background: var(--d-surface);
+  border: 2px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+.tier-card:hover {
+  border-color: var(--d-primary);
+  transform: translateY(-2px);
+}
+.tier-card[data-selected="true"] {
+  border-color: var(--d-primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--d-primary) 12%, var(--d-surface)), var(--d-surface));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--d-primary) 25%, transparent);
+}
+
+.tier-card[data-featured="true"]::before {
+  content: "POPULAR";
+  position: absolute;
+  top: -10px;
+  right: 1rem;
+  background: linear-gradient(135deg, var(--d-accent), var(--d-primary));
+  color: #000;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--d-radius-full);
+}
+
+/* Divider */
+.dopamine-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--d-border), transparent);
+  margin: 1.5rem 0;
+}
+
+/* KPI tile with gradient number */
+.kpi-tile {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-tile::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%; height: 3px;
+  background: linear-gradient(90deg, var(--d-primary), var(--d-accent));
+}
+
+/* Avatar stack */
+.avatar-stack {
+  display: inline-flex;
+}
+.avatar-stack > img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--d-bg);
+  margin-left: -8px;
+  object-fit: cover;
+}
+.avatar-stack > img:first-child { margin-left: 0; }
+
+/* Bouncy entrance */
+.entrance-bounce {
+  animation: decantr-bounce-in 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes decantr-bounce-in {
+  0% { opacity: 0; transform: translateY(16px) scale(0.95); }
+  60% { opacity: 1; transform: translateY(-4px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Pulse dot for live events */
+.live-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--d-error);
+}
+.live-dot::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--d-error);
+  box-shadow: 0 0 0 0 var(--d-error);
+  animation: live-pulse 1.5s ease-out infinite;
+}
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--d-error) 70%, transparent); }
+  100% { box-shadow: 0 0 0 10px transparent; }
+}
+
+/* Section title with gradient bar */
+.section-title {
+  position: relative;
+  padding-left: 0.875rem;
+}
+.section-title::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.25em; bottom: 0.25em;
+  width: 4px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--d-primary), var(--d-accent));
+}
+
+/* Member/attendee card */
+.member-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: 1.125rem;
+  text-align: center;
+  transition: all 200ms ease;
+}
+.member-card:hover {
+  border-color: var(--d-primary);
+  transform: translateY(-2px);
+}
+
+/* Glossy CTA button */
+.cta-glossy {
+  background: linear-gradient(135deg, var(--d-primary), #7a00ff) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 6px 20px -4px rgba(255, 0, 229, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  font-weight: 700 !important;
+  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.cta-glossy:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 10px 30px -4px rgba(255, 0, 229, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+} /* end @layer decorators */

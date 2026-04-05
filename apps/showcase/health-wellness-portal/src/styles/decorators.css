@@ -1,0 +1,352 @@
+/* Health & Wellness Portal — healthcare light theme decorators */
+
+@layer decorators {
+
+/* ── hw-nav: Sticky top navigation for marketing ── */
+.hw-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  z-index: 40;
+  background: color-mix(in srgb, var(--d-bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--d-border);
+}
+
+/* ── hw-hero: Split hero section ── */
+.hw-hero {
+  position: relative;
+  padding: 8rem 2rem 5rem;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 85% 20%, color-mix(in srgb, var(--d-primary) 10%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse at 10% 85%, color-mix(in srgb, var(--d-secondary) 10%, transparent) 0%, transparent 50%);
+}
+
+.hw-hero-illus {
+  background:
+    radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--d-primary) 20%, transparent), transparent 60%),
+    radial-gradient(circle at 70% 70%, color-mix(in srgb, var(--d-secondary) 20%, transparent), transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--d-primary) 8%, var(--d-surface)), var(--d-surface));
+  border-radius: var(--d-radius-xl);
+  border: 1px solid var(--d-border);
+  min-height: 360px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── hw-sidebar: App shell sidebar ── */
+.hw-sidebar {
+  background: var(--d-surface);
+  border-right: 1px solid var(--d-border);
+}
+
+.hw-sidebar [data-active="true"] {
+  background: color-mix(in srgb, var(--d-primary) 10%, transparent);
+  color: var(--d-primary);
+  font-weight: 600;
+}
+
+.hw-sidebar [data-active="true"]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: var(--d-primary);
+  border-radius: 0 3px 3px 0;
+}
+
+/* ── hw-card: Soft card with hover lift ── */
+.hw-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  box-shadow: var(--d-shadow-sm);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.hw-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--d-shadow-md);
+  border-color: color-mix(in srgb, var(--d-primary) 30%, var(--d-border));
+}
+
+/* ── hw-kpi: KPI card with accent-left ── */
+.hw-kpi {
+  position: relative;
+  overflow: hidden;
+  padding: 1.25rem;
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  border-left: 4px solid var(--d-primary);
+}
+
+.hw-kpi[data-tone="teal"] { border-left-color: var(--d-secondary); }
+.hw-kpi[data-tone="success"] { border-left-color: var(--d-success); }
+.hw-kpi[data-tone="warning"] { border-left-color: var(--d-warning); }
+
+/* ── hw-button-primary: Primary CTA button ── */
+.hw-button-primary {
+  background: var(--d-primary);
+  color: #fff;
+  border: 1px solid var(--d-primary);
+  border-radius: var(--d-radius);
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: background 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  text-decoration: none;
+}
+
+.hw-button-primary:hover {
+  background: var(--d-primary-hover);
+  border-color: var(--d-primary-hover);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--d-primary) 25%, transparent);
+}
+
+.hw-button-primary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--d-primary) 40%, transparent);
+  outline-offset: 2px;
+}
+
+/* ── hw-fade-in: Gentle fade entrance ── */
+.hw-fade-in {
+  animation: hw-fade-in 0.35s ease-out both;
+}
+
+@keyframes hw-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── hw-vital-status: Color-coded status indicators (always paired with text) ── */
+.hw-vital-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--d-radius-full);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.hw-vital-status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: currentColor;
+}
+
+.hw-vital-status[data-status="normal"] {
+  background: color-mix(in srgb, var(--d-success) 12%, transparent);
+  color: var(--d-success);
+}
+
+.hw-vital-status[data-status="elevated"] {
+  background: color-mix(in srgb, var(--d-warning) 14%, transparent);
+  color: var(--d-warning);
+}
+
+.hw-vital-status[data-status="high"] {
+  background: color-mix(in srgb, var(--d-error) 12%, transparent);
+  color: var(--d-error);
+}
+
+.hw-vital-status[data-status="low"] {
+  background: color-mix(in srgb, var(--d-info) 14%, transparent);
+  color: var(--d-info);
+}
+
+/* ── hw-avatar: Circle avatar ── */
+.hw-avatar {
+  border-radius: var(--d-radius-full);
+  background: linear-gradient(135deg, var(--d-primary), var(--d-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+/* ── hw-sparkline ── */
+.hw-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 36px;
+}
+
+.hw-sparkline-bar {
+  flex: 1;
+  background: linear-gradient(180deg, var(--d-primary), color-mix(in srgb, var(--d-primary) 30%, transparent));
+  border-radius: 2px 2px 0 0;
+  min-width: 3px;
+}
+
+/* ── hw-chart-bar ── */
+.hw-chart-bar {
+  background: linear-gradient(180deg, var(--d-primary), color-mix(in srgb, var(--d-primary) 55%, transparent));
+  border-radius: var(--d-radius-sm) var(--d-radius-sm) 0 0;
+  min-width: 10px;
+  transition: opacity 150ms ease;
+}
+
+.hw-chart-bar:hover { opacity: 0.82; }
+
+/* ── hw-progress ── */
+.hw-progress-track {
+  height: 10px;
+  background: var(--d-surface-raised);
+  border-radius: var(--d-radius-full);
+  overflow: hidden;
+}
+
+.hw-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--d-primary), var(--d-secondary));
+  border-radius: var(--d-radius-full);
+  transition: width 500ms ease-out;
+}
+
+/* ── hw-calendar-day ── */
+.hw-calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--d-radius);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 150ms ease, border-color 150ms ease;
+  position: relative;
+}
+
+.hw-calendar-day:hover {
+  background: color-mix(in srgb, var(--d-primary) 8%, transparent);
+  border-color: var(--d-border);
+}
+
+.hw-calendar-day[data-today="true"] {
+  border-color: var(--d-primary);
+  color: var(--d-primary);
+  font-weight: 700;
+}
+
+.hw-calendar-day[data-selected="true"] {
+  background: var(--d-primary);
+  color: #fff;
+  border-color: var(--d-primary);
+}
+
+.hw-calendar-day[data-has-event="true"]::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--d-secondary);
+}
+
+.hw-calendar-day[data-selected="true"][data-has-event="true"]::after { background: #fff; }
+
+.hw-calendar-day[data-muted="true"] {
+  color: var(--d-text-muted);
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── hw-video-tile ── */
+.hw-video-tile {
+  background: #0F172A;
+  border-radius: var(--d-radius-lg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.hw-video-tile[data-speaker="true"] {
+  outline: 3px solid var(--d-primary);
+  outline-offset: 2px;
+}
+
+/* ── hw-pulse-dot: Live indicator ── */
+.hw-pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--d-error);
+  border-radius: 50%;
+  display: inline-block;
+  animation: hw-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes hw-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ── hw-file-row ── */
+.hw-file-row {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--d-radius);
+  cursor: pointer;
+  transition: background 120ms ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.hw-file-row:hover {
+  background: color-mix(in srgb, var(--d-primary) 6%, transparent);
+}
+
+.hw-file-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--d-radius);
+  background: color-mix(in srgb, var(--d-primary) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--d-primary);
+  flex-shrink: 0;
+}
+
+/* ── hw-med-dose: Medication dose schedule pill ── */
+.hw-med-dose {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--d-radius-full);
+  background: color-mix(in srgb, var(--d-secondary) 12%, transparent);
+  color: var(--d-secondary);
+  font-weight: 600;
+}
+
+} /* end @layer decorators */

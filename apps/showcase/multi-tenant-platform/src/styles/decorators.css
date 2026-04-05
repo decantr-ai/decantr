@@ -1,0 +1,345 @@
+/* Launchpad — Theme Decorators */
+
+@layer decorators {
+
+/* ── lp-nav: Sticky navigation with blur backdrop ── */
+.lp-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  z-index: 40;
+  background: color-mix(in srgb, var(--d-bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--d-border) 50%, transparent);
+}
+
+/* ── lp-header: Large hero with gradient mesh background ── */
+.lp-header {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6rem 2rem 4rem;
+  overflow: hidden;
+}
+
+.lp-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(124, 58, 237, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 90%, rgba(124, 58, 237, 0.06) 0%, transparent 40%);
+  animation: lp-mesh-drift 12s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes lp-mesh-drift {
+  0% { opacity: 0.8; transform: scale(1) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1.05) rotate(1deg); }
+}
+
+/* ── lp-fade-in: Simple fade-in on scroll ── */
+.lp-fade-in {
+  animation: lp-fade-in 0.4s ease-out both;
+}
+
+@keyframes lp-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── lp-surface: Base surface with subtle texture ── */
+.lp-surface {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+}
+
+/* ── lp-card-elevated: Card with elevation and hover lift ── */
+.lp-card-elevated {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  box-shadow: var(--d-shadow);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.lp-card-elevated:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--d-shadow-md);
+  border-color: var(--d-primary-hover);
+}
+
+/* ── lp-gradient-mesh: Subtle gradient mesh background ── */
+.lp-gradient-mesh {
+  position: relative;
+}
+
+.lp-gradient-mesh::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 25% 25%, rgba(124, 58, 237, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 75%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── lp-button-primary: Solid primary button with hover glow ── */
+.lp-button-primary {
+  background: linear-gradient(135deg, var(--d-primary), color-mix(in srgb, var(--d-primary) 80%, var(--d-accent)));
+  color: #fff;
+  border: none;
+  border-radius: var(--d-radius);
+  padding: var(--d-interactive-py) var(--d-interactive-px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.lp-button-primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 24px rgba(124, 58, 237, 0.25);
+}
+
+/* ── lp-sidebar ── */
+.lp-sidebar {
+  background: var(--d-surface);
+  border-right: 1px solid var(--d-border);
+}
+
+.lp-sidebar [data-active="true"] {
+  background: color-mix(in srgb, var(--d-primary) 15%, transparent);
+  color: var(--d-primary);
+  border-left: 2px solid var(--d-primary);
+}
+
+/* ── lp-glow ── */
+.lp-glow {
+  position: relative;
+}
+
+.lp-glow::after {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  background: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.15) 0%, rgba(6, 182, 212, 0.08) 40%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ── lp-stat-glow ── */
+.lp-stat-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.lp-stat-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--d-primary), var(--d-accent));
+  border-radius: var(--d-radius) var(--d-radius) 0 0;
+}
+
+/* ── lp-log-line ── */
+.lp-log-line {
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  padding: 1px 0;
+}
+
+.lp-log-line[data-level="error"] { color: var(--d-error); }
+.lp-log-line[data-level="warn"] { color: var(--d-warning); }
+.lp-log-line[data-level="info"] { color: var(--d-text-muted); }
+.lp-log-line[data-level="debug"] { color: color-mix(in srgb, var(--d-text-muted) 60%, transparent); }
+
+/* ── Status dot ── */
+.lp-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.lp-status-dot[data-status="active"],
+.lp-status-dot[data-status="healthy"],
+.lp-status-dot[data-status="operational"],
+.lp-status-dot[data-status="delivered"],
+.lp-status-dot[data-status="paid"],
+.lp-status-dot[data-status="passed"],
+.lp-status-dot[data-status="success"] { background: var(--d-success); box-shadow: 0 0 6px color-mix(in srgb, var(--d-success) 40%, transparent); }
+
+.lp-status-dot[data-status="pending"],
+.lp-status-dot[data-status="degraded"],
+.lp-status-dot[data-status="retry"],
+.lp-status-dot[data-status="warning"] { background: var(--d-warning); box-shadow: 0 0 6px color-mix(in srgb, var(--d-warning) 40%, transparent); }
+
+.lp-status-dot[data-status="failed"],
+.lp-status-dot[data-status="incident"],
+.lp-status-dot[data-status="revoked"],
+.lp-status-dot[data-status="error"] { background: var(--d-error); box-shadow: 0 0 6px color-mix(in srgb, var(--d-error) 40%, transparent); }
+
+.lp-status-dot[data-status="inactive"],
+.lp-status-dot[data-status="draft"] { background: var(--d-text-muted); }
+
+/* ── Event type dots ── */
+.lp-event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lp-event-dot[data-type="deploy"],
+.lp-event-dot[data-type="create"] { background: var(--d-success); }
+.lp-event-dot[data-type="config"],
+.lp-event-dot[data-type="update"] { background: var(--d-info); }
+.lp-event-dot[data-type="team"],
+.lp-event-dot[data-type="invite"] { background: var(--d-accent); }
+.lp-event-dot[data-type="billing"],
+.lp-event-dot[data-type="api"] { background: var(--d-primary); }
+.lp-event-dot[data-type="incident"],
+.lp-event-dot[data-type="delete"] { background: var(--d-error); }
+.lp-event-dot[data-type="security"],
+.lp-event-dot[data-type="auth"] { background: var(--d-warning); }
+
+/* ── Gauge ── */
+.lp-gauge-track {
+  height: 8px;
+  background: var(--d-surface-raised);
+  border-radius: var(--d-radius-full);
+  overflow: hidden;
+}
+
+.lp-gauge-fill {
+  height: 100%;
+  border-radius: var(--d-radius-full);
+  transition: width 600ms ease-out;
+}
+
+.lp-gauge-fill[data-level="safe"] { background: linear-gradient(90deg, var(--d-success), color-mix(in srgb, var(--d-success) 80%, var(--d-accent))); }
+.lp-gauge-fill[data-level="warn"] { background: linear-gradient(90deg, var(--d-warning), color-mix(in srgb, var(--d-warning) 80%, var(--d-error))); }
+.lp-gauge-fill[data-level="critical"] { background: var(--d-error); }
+
+/* ── Chart bar ── */
+.lp-chart-bar {
+  background: linear-gradient(180deg, var(--d-primary), color-mix(in srgb, var(--d-primary) 60%, transparent));
+  border-radius: var(--d-radius-sm) var(--d-radius-sm) 0 0;
+  transition: height 400ms ease-out;
+  min-width: 8px;
+}
+
+/* ── Method badges for API endpoints ── */
+.lp-method {
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--d-radius-sm);
+  letter-spacing: 0.02em;
+  display: inline-block;
+  min-width: 46px;
+  text-align: center;
+}
+
+.lp-method[data-method="GET"] { background: color-mix(in srgb, var(--d-info) 15%, transparent); color: var(--d-info); }
+.lp-method[data-method="POST"] { background: color-mix(in srgb, var(--d-success) 15%, transparent); color: var(--d-success); }
+.lp-method[data-method="PUT"] { background: color-mix(in srgb, var(--d-warning) 15%, transparent); color: var(--d-warning); }
+.lp-method[data-method="PATCH"] { background: color-mix(in srgb, var(--d-accent) 15%, transparent); color: var(--d-accent); }
+.lp-method[data-method="DELETE"] { background: color-mix(in srgb, var(--d-error) 15%, transparent); color: var(--d-error); }
+
+/* ── Code blocks ── */
+.lp-code {
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  background: var(--d-bg);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  padding: 0.75rem 1rem;
+  color: var(--d-text);
+  overflow-x: auto;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.lp-code-inline {
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 0.8em;
+  background: var(--d-bg);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-sm);
+  padding: 1px 5px;
+  color: var(--d-primary);
+}
+
+/* ── Org avatar ── */
+.lp-org-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--d-radius-sm);
+  background: linear-gradient(135deg, var(--d-primary), var(--d-accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* ── Floating orb decorations for hero ── */
+.lp-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(60px);
+  opacity: 0.4;
+}
+
+.lp-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: var(--d-primary);
+  top: -10%;
+  left: -5%;
+  animation: lp-orb-float 8s ease-in-out infinite alternate;
+}
+
+.lp-orb-2 {
+  width: 300px;
+  height: 300px;
+  background: var(--d-accent);
+  bottom: -5%;
+  right: -5%;
+  animation: lp-orb-float 10s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes lp-orb-float {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(20px, -20px); }
+}
+
+} /* end @layer decorators */
