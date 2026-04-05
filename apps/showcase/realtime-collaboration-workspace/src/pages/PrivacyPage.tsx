@@ -3,7 +3,7 @@ import { LegalPage } from '../components/LegalPage';
 export function PrivacyPage() {
   return (
     <LegalPage title="Privacy Policy" lastUpdated="March 1, 2026" sections={[
-      { id: 'overview', title: 'Overview', body: 'We collect only what we need to run Lumen and keep your team\'s work safe.' },
+      { id: 'overview', title: 'Overview', body: "We collect only what we need to run Lumen and keep your team's work safe." },
       { id: 'data', title: 'What we collect', body: 'Account details, workspace content, and usage telemetry to improve the product.' },
       { id: 'use', title: 'How we use data', body: 'We use data to operate the service, prevent abuse, and improve Lumen. We do not sell it.' },
       { id: 'sharing', title: 'Sharing', body: 'We share data with processors required to run Lumen (hosting, email, analytics). Full list on request.' },

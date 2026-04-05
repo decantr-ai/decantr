@@ -63,7 +63,7 @@ export function PricingPage() {
 
       <section style={{ padding: '4rem 1.5rem', textAlign: 'center', maxWidth: '48rem', margin: '0 auto' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.75rem' }}>Questions about pricing?</h2>
-        <p style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}>We\'re happy to chat. No pressure, no pitch.</p>
+        <p style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}>We're happy to chat. No pressure, no pitch.</p>
         <Link to="/contact" className="d-interactive" style={{ padding: '0.5rem 1rem', textDecoration: 'none' }}>Contact us</Link>
       </section>
     </div>

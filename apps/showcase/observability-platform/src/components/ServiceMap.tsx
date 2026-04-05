@@ -77,7 +77,7 @@ export function ServiceMap({ nodes, height = 500 }: ServiceMapProps) {
               fill={n.health === 'healthy' ? 'var(--d-success)' : n.health === 'degraded' ? 'var(--d-warning)' : n.health === 'critical' ? 'var(--d-error)' : 'var(--d-text-muted)'}
             />
             <text x={12} y={18} fontFamily="ui-monospace, monospace" fontSize="11" fontWeight="600" fill="var(--d-text)">{n.name}</text>
-            <text x={12} y={32} fontFamily="ui-monospace, monospace" fontSize="9" fill="var(--d-text-muted)" textTransform="uppercase">{n.type}</text>
+            <text x={12} y={32} fontFamily="ui-monospace, monospace" fontSize="9" fill="var(--d-text-muted)" style={{ textTransform: 'uppercase' }}>{n.type}</text>
             <text x={12} y={46} fontFamily="ui-monospace, monospace" fontSize="9" fill="var(--d-text-muted)">
               <tspan fill="var(--d-text)">{n.p99}ms</tspan> p99 · <tspan fill={n.errorRate > 1 ? 'var(--d-error)' : n.errorRate > 0.5 ? 'var(--d-warning)' : 'var(--d-success)'}>{n.errorRate.toFixed(2)}%</tspan>
             </text>

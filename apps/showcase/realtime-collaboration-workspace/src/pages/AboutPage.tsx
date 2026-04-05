@@ -71,7 +71,7 @@ export function AboutPage() {
 
       <section style={{ padding: '3rem 1.5rem 6rem', textAlign: 'center', maxWidth: '48rem', margin: '0 auto' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.75rem' }}>Join us on the journey.</h2>
-        <p style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}>We\'re hiring kind, curious people who love craft.</p>
+        <p style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}>We're hiring kind, curious people who love craft.</p>
         <Link to="/contact" className="d-interactive" style={{ padding: '0.5rem 1rem', textDecoration: 'none' }}>Get in touch</Link>
       </section>
     </div>

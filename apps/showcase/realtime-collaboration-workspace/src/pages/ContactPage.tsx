@@ -21,7 +21,7 @@ export function ContactPage() {
         >
           {sent && (
             <div style={{ padding: '0.75rem 1rem', background: 'color-mix(in srgb, var(--d-success) 12%, transparent)', borderRadius: 'var(--d-radius)', fontSize: '0.875rem', color: 'var(--d-success)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Check size={15} /> Thanks — we\'ll reply within one business day.
+              <Check size={15} /> Thanks — we'll reply within one business day.
             </div>
           )}
           <div>
@@ -33,8 +33,8 @@ export function ContactPage() {
             <input className="paper-input" type="email" placeholder="you@team.com" required />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 500, marginBottom: '0.375rem' }}>What\'s on your mind?</label>
-            <textarea className="paper-input" rows={5} placeholder="Tell us what you\'re working on…" required style={{ fontFamily: 'inherit', resize: 'vertical' }} />
+            <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 500, marginBottom: '0.375rem' }}>What's on your mind?</label>
+            <textarea className="paper-input" rows={5} placeholder="Tell us what you're working on…" required style={{ fontFamily: 'inherit', resize: 'vertical' }} />
           </div>
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', color: 'var(--d-text-muted)', cursor: 'pointer' }}>
             <Paperclip size={14} />
@@ -42,7 +42,7 @@ export function ContactPage() {
             <input type="file" style={{ display: 'none' }} />
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--d-text-muted)' }}>
-            <input type="checkbox" required /> I\'m not a robot
+            <input type="checkbox" required /> I'm not a robot
           </label>
           <button type="submit" className="d-interactive" style={{ justifyContent: 'center', padding: '0.5rem 1rem', fontSize: '0.875rem', background: 'var(--d-primary)', color: '#fff', borderColor: 'var(--d-primary)' }}>
             <Send size={14} /> Send message

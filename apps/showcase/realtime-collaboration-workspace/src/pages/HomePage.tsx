@@ -38,7 +38,7 @@ export function HomePage() {
       <section style={{ padding: '3rem 1.5rem', maxWidth: '64rem', margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
           {[
-            { icon: Users, title: 'Live presence', body: 'See who\'s reading, writing, and thinking alongside you — every cursor has a name.' },
+            { icon: Users, title: 'Live presence', body: "See who's reading, writing, and thinking alongside you — every cursor has a name." },
             { icon: MessageSquare, title: 'Inline comments', body: 'Talk in the margins. Resolve threads together. Never lose context.' },
             { icon: Clock, title: 'Version history', body: 'Every change is captured. Restore any moment. Never lose work silently.' },
             { icon: Zap, title: 'Slash commands', body: 'Type / anywhere. Insert headings, lists, quotes, and more without leaving the keyboard.' },
