@@ -14,80 +14,212 @@ interface BillingStatus {
   };
 }
 
-interface PlanTier {
-  name: string;
-  price: string;
-  priceNote: string;
-  description: string;
-  features: { label: string; included: boolean }[];
-  highlighted?: boolean;
-  planId?: 'pro' | 'team';
+/* ── Icons ── */
+
+function CreditCardIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="20" height="14" x="2" y="5" rx="2" />
+      <line x1="2" x2="22" y1="10" y2="10" />
+    </svg>
+  );
 }
 
-const PLANS: PlanTier[] = [
-  {
-    name: 'Free',
-    price: '$0',
-    priceNote: 'forever',
-    description: 'For individual developers getting started.',
-    features: [
-      { label: '50 API calls/day', included: true },
-      { label: '5 published items', included: true },
-      { label: 'Community namespace', included: true },
-      { label: 'Custom namespace', included: false },
-      { label: 'Priority support', included: false },
-      { label: 'Team features', included: false },
-    ],
-  },
-  {
-    name: 'Pro',
-    price: '$29',
-    priceNote: '/mo',
-    description: 'For professionals shipping production apps.',
-    highlighted: true,
-    planId: 'pro',
-    features: [
-      { label: '5,000 API calls/day', included: true },
-      { label: '100 published items', included: true },
-      { label: 'Community namespace', included: true },
-      { label: 'Custom namespace', included: true },
-      { label: 'Priority support', included: true },
-      { label: 'Team features', included: false },
-    ],
-  },
-  {
-    name: 'Team',
-    price: '$99',
-    priceNote: '/mo',
-    description: 'For teams collaborating on design systems.',
-    planId: 'team',
-    features: [
-      { label: '50,000 API calls/day', included: true },
-      { label: 'Unlimited published items', included: true },
-      { label: 'Community namespace', included: true },
-      { label: 'Custom namespace', included: true },
-      { label: 'Priority support', included: true },
-      { label: 'Team features', included: true },
-    ],
-  },
-];
-
-function UsageIcon() {
+function ActivityIcon({ size = 18 }: { size?: number }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
     </svg>
   );
 }
 
-function ContentIcon() {
+function HardDriveIcon({ size = 18 }: { size?: number }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m16.5 9.4-9-5.19" />
-      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-      <polyline points="3.29 7 12 12 20.71 7" />
-      <line x1="12" y1="22" x2="12" y2="12" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="22" x2="2" y1="12" y2="12" />
+      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+      <line x1="6" x2="6.01" y1="16" y2="16" />
+      <line x1="10" x2="10.01" y1="16" y2="16" />
     </svg>
+  );
+}
+
+function UsersIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function CheckIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--d-success)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+/* ── Tier Upgrade Card ── */
+
+interface TierDef {
+  name: string;
+  price: number;
+  description: string;
+  features: string[];
+  planId?: 'pro' | 'team';
+  highlighted?: boolean;
+  current?: boolean;
+}
+
+function TierUpgradeCard({
+  tier,
+  highlighted,
+  isPending,
+  onUpgrade,
+}: {
+  tier: TierDef;
+  highlighted: boolean;
+  isPending: boolean;
+  onUpgrade: (plan: 'pro' | 'team') => void;
+}) {
+  return (
+    <div
+      className="d-surface"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        borderColor: highlighted ? 'var(--d-primary)' : undefined,
+        borderTopWidth: highlighted ? 3 : undefined,
+        borderTopColor: highlighted ? 'var(--d-primary)' : undefined,
+        position: 'relative',
+      }}
+    >
+      <div
+        className="flex items-center justify-between"
+        style={{ marginBottom: '0.5rem' }}
+      >
+        <h4 style={{ fontSize: '1.125rem', fontWeight: 600 }}>{tier.name}</h4>
+        {tier.current && (
+          <span className="d-annotation" data-status="success">
+            Current
+          </span>
+        )}
+        {highlighted && !tier.current && (
+          <span className="d-annotation" data-status="info">
+            Popular
+          </span>
+        )}
+      </div>
+
+      <div
+        className="flex items-center"
+        style={{ marginBottom: '0.5rem' }}
+      >
+        <span
+          style={{ fontSize: '2.5rem', fontWeight: 700, lineHeight: 1 }}
+        >
+          ${tier.price}
+        </span>
+        <span
+          className="text-sm"
+          style={{ color: 'var(--d-text-muted)', marginLeft: '0.25rem' }}
+        >
+          /mo
+        </span>
+      </div>
+
+      <p
+        className="text-sm"
+        style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}
+      >
+        {tier.description}
+      </p>
+
+      <ul
+        className="flex flex-col gap-2"
+        style={{
+          listStyle: 'none',
+          marginBottom: '1.5rem',
+          flex: 1,
+          padding: 0,
+        }}
+      >
+        {tier.features.map((feature) => (
+          <li
+            key={feature}
+            className="flex items-center gap-2"
+            style={{ fontSize: '0.875rem' }}
+          >
+            <CheckIcon size={14} />
+            {feature}
+          </li>
+        ))}
+      </ul>
+
+      <button
+        type="button"
+        className="d-interactive"
+        data-variant={tier.current ? undefined : 'primary'}
+        disabled={tier.current || isPending || !tier.planId}
+        onClick={() => tier.planId && onUpgrade(tier.planId)}
+        style={{ width: '100%', justifyContent: 'center' }}
+      >
+        {tier.current
+          ? 'Current Plan'
+          : isPending
+          ? 'Loading...'
+          : 'Upgrade'}
+      </button>
+    </div>
   );
 }
 
@@ -108,7 +240,6 @@ export default function BillingPage() {
           data: { session },
         } = await supabase.auth.getSession();
         const token = session?.access_token ?? '';
-
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1'}/billing/status`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -117,34 +248,80 @@ export default function BillingPage() {
           setBilling(await res.json());
         }
       } catch {
-        // Use defaults
+        // defaults
       }
     }
     load();
   }, []);
 
-  const currentTier = billing?.tier ?? 'free';
+  const currentTier = (billing?.tier ?? 'free').toLowerCase();
+
+  const planName =
+    currentTier.charAt(0).toUpperCase() + currentTier.slice(1);
+  const apiCalls = billing?.usage?.api_calls ?? 0;
+  const storageUsed = 0;
 
   const kpiItems = [
     {
-      label: 'API Calls Today',
-      value: billing?.usage?.api_calls ?? 0,
-      icon: <UsageIcon />,
+      label: 'Current Plan',
+      value: planName === 'Free' ? 0 : planName === 'Pro' ? 1 : 2,
+      icon: <CreditCardIcon size={18} />,
     },
     {
-      label: 'API Limit',
-      value: billing?.usage?.api_limit ?? 50,
-      icon: <UsageIcon />,
+      label: 'API Usage',
+      value: apiCalls,
+      icon: <ActivityIcon size={18} />,
     },
     {
-      label: 'Content Items',
-      value: billing?.usage?.content_items ?? 0,
-      icon: <ContentIcon />,
+      label: 'Storage Used',
+      value: storageUsed,
+      icon: <HardDriveIcon size={18} />,
     },
     {
-      label: 'Content Limit',
-      value: billing?.usage?.content_limit ?? 5,
-      icon: <ContentIcon />,
+      label: 'Team Seats',
+      value: currentTier === 'team' ? 5 : 1,
+      icon: <UsersIcon size={18} />,
+    },
+  ];
+
+  const tiers: TierDef[] = [
+    {
+      name: 'Free',
+      price: 0,
+      description: 'For individual developers getting started.',
+      features: [
+        '50 API calls/day',
+        '5 published items',
+        'Community namespace',
+      ],
+      current: currentTier === 'free',
+    },
+    {
+      name: 'Pro',
+      price: 29,
+      description: 'For professionals shipping production apps.',
+      features: [
+        '5,000 API calls/day',
+        '100 published items',
+        'Custom namespace',
+        'Priority support',
+      ],
+      planId: 'pro',
+      highlighted: true,
+      current: currentTier === 'pro',
+    },
+    {
+      name: 'Team',
+      price: 99,
+      description: 'For teams collaborating on design systems.',
+      features: [
+        '50,000 API calls/day',
+        'Unlimited published items',
+        'Team features',
+        'Priority support',
+      ],
+      planId: 'team',
+      current: currentTier === 'team',
     },
   ];
 
@@ -169,156 +346,71 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="d-section max-w-5xl" data-density="compact">
-      <h1 className="d-label border-l-2 border-d-accent pl-2 text-lg mb-6">
-        Billing &amp; Plans
-      </h1>
+    <div className="flex flex-col gap-6">
+      <h3 className="text-lg font-semibold">Billing &amp; Plans</h3>
 
       {error && (
-        <div
-          className="d-annotation px-3 py-2 rounded text-sm mb-6"
-          data-status="error"
-        >
+        <div className="d-annotation" data-status="error" style={{ display: 'block' }}>
           {error}
         </div>
       )}
 
-      {/* Usage KPIs */}
-      <div className="mb-8">
+      {/* Current Usage */}
+      <section className="d-section" data-density="compact">
+        <span
+          className="d-label block mb-4"
+          style={{
+            paddingLeft: '0.75rem',
+            borderLeft: '2px solid var(--d-accent)',
+          }}
+        >
+          Current Usage
+        </span>
         <KPIGrid items={kpiItems} />
-      </div>
+      </section>
 
-      {/* Manage billing link for paying customers */}
+      {/* Manage billing for paying customers */}
       {currentTier !== 'free' && (
-        <div className="mb-6">
+        <section className="d-section" data-density="compact">
           <button
             type="button"
+            className="d-interactive"
+            data-variant="ghost"
             onClick={handleManageBilling}
             disabled={isPending}
-            className="d-interactive py-1.5 px-4 text-sm rounded-md disabled:opacity-50"
-            data-variant="ghost"
+            style={{ fontSize: '0.875rem' }}
           >
             {isPending ? 'Loading...' : 'Manage Billing in Stripe'}
           </button>
-        </div>
+        </section>
       )}
 
-      {/* Tier Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {PLANS.map((plan) => {
-          const isCurrent =
-            currentTier.toLowerCase() === plan.name.toLowerCase();
-
-          return (
-            <div
-              key={plan.name}
-              className={`d-surface rounded-lg p-5 flex flex-col ${
-                plan.highlighted
-                  ? 'ring-2 ring-d-primary'
-                  : 'border border-d-border'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-lg font-semibold text-d-text">
-                  {plan.name}
-                </h3>
-                {plan.highlighted && (
-                  <span className="d-annotation text-xs" data-status="info">
-                    Popular
-                  </span>
-                )}
-                {isCurrent && (
-                  <span
-                    className="d-annotation text-xs"
-                    data-status="success"
-                  >
-                    Current
-                  </span>
-                )}
-              </div>
-
-              <div className="mb-2">
-                <span className="text-3xl font-bold font-mono text-d-text">
-                  {plan.price}
-                </span>
-                <span className="text-sm text-d-muted ml-1">
-                  {plan.priceNote}
-                </span>
-              </div>
-
-              <p className="text-sm text-d-muted mb-4">{plan.description}</p>
-
-              {/* Features */}
-              <ul className="flex flex-col gap-2 mb-6 flex-1">
-                {plan.features.map((feature) => (
-                  <li
-                    key={feature.label}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    {feature.included ? (
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="var(--d-success)"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="shrink-0"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    ) : (
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="shrink-0 text-d-muted"
-                      >
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                    )}
-                    <span
-                      className={
-                        feature.included ? 'text-d-text' : 'text-d-muted'
-                      }
-                    >
-                      {feature.label}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              {isCurrent ? (
-                <button
-                  disabled
-                  className="d-interactive w-full py-2 text-sm rounded-md opacity-60"
-                  data-variant="ghost"
-                >
-                  Current Plan
-                </button>
-              ) : plan.planId ? (
-                <button
-                  type="button"
-                  onClick={() => handleUpgrade(plan.planId!)}
-                  disabled={isPending}
-                  className="d-interactive w-full py-2 text-sm rounded-md disabled:opacity-50"
-                  data-variant={plan.highlighted ? 'primary' : 'ghost'}
-                >
-                  {isPending ? 'Loading...' : `Upgrade to ${plan.name}`}
-                </button>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
+      {/* Plans */}
+      <section className="d-section" data-density="compact">
+        <span
+          className="d-label block mb-4"
+          style={{
+            paddingLeft: '0.75rem',
+            borderLeft: '2px solid var(--d-accent)',
+          }}
+        >
+          Plans
+        </span>
+        <div
+          className="grid gap-4"
+          style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}
+        >
+          {tiers.map((tier) => (
+            <TierUpgradeCard
+              key={tier.name}
+              tier={tier}
+              highlighted={!!tier.highlighted}
+              isPending={isPending}
+              onUpgrade={handleUpgrade}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,31 +1,45 @@
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
-import Link from 'next/link';
+import { ContentCardGrid } from '@/components/content-card-grid';
 
-const TYPE_BORDER_COLORS: Record<string, string> = {
-  patterns: 'border-l-d-coral',
-  themes: 'border-l-d-amber',
-  blueprints: 'border-l-d-cyan',
-  shells: 'border-l-d-green',
-  archetypes: 'border-l-d-purple',
-};
+function PlusIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </svg>
+  );
+}
 
-const TYPE_BADGE_COLORS: Record<string, string> = {
-  patterns: 'bg-d-coral/15 text-d-coral',
-  themes: 'bg-d-amber/15 text-d-amber',
-  blueprints: 'bg-d-cyan/15 text-d-cyan',
-  shells: 'bg-d-green/15 text-d-green',
-  archetypes: 'bg-d-purple/15 text-d-purple',
-};
-
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+function PackageIcon({ size = 48 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m7.5 4.27 9 5.15" />
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+      <path d="m3.3 7 8.7 5 8.7-5" />
+      <path d="M12 22V12" />
+    </svg>
+  );
 }
 
 export default async function ContentPage() {
@@ -40,111 +54,75 @@ export default async function ContentPage() {
     const result = await api.getMyContent(token);
     items = Array.isArray(result) ? result : result?.items ?? [];
   } catch {
-    // Fallback to empty
+    items = [];
   }
 
   return (
-    <div className="d-section max-w-5xl" data-density="compact">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="d-label border-l-2 border-d-accent pl-2 text-lg">
-          My Content
-        </h1>
+    <div className="flex flex-col gap-6">
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Content</h3>
         <Link
           href="/dashboard/content/new"
-          className="d-interactive inline-flex items-center gap-2 py-1.5 px-4 text-sm rounded-md no-underline"
+          className="d-interactive"
           data-variant="primary"
+          style={{
+            fontSize: '0.875rem',
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+          }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <PlusIcon size={16} />
           New Content
         </Link>
       </div>
 
-      {items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-d-muted mb-3"
+      {/* Content grid */}
+      <section className="d-section" data-density="compact">
+        <span
+          className="d-label block mb-4"
+          style={{
+            paddingLeft: '0.75rem',
+            borderLeft: '2px solid var(--d-accent)',
+          }}
+        >
+          Published ({items.length})
+        </span>
+        {items.length > 0 ? (
+          <ContentCardGrid items={items} editable />
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.75rem',
+              padding: '3rem 0',
+            }}
           >
-            <path d="m16.5 9.4-9-5.19" />
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-            <polyline points="3.29 7 12 12 20.71 7" />
-            <line x1="12" y1="22" x2="12" y2="12" />
-          </svg>
-          <p className="text-sm text-d-muted mb-4">
-            No content yet. Publish your first item.
-          </p>
-          <Link
-            href="/dashboard/content/new"
-            className="d-interactive inline-flex items-center gap-2 py-1.5 px-4 text-sm rounded-md no-underline"
-            data-variant="primary"
-          >
-            Publish Content
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {items.map((item) => {
-            const borderColor =
-              TYPE_BORDER_COLORS[item.type] ?? 'border-l-d-border';
-            const badgeColor =
-              TYPE_BADGE_COLORS[item.type] ?? 'bg-d-surface text-d-muted';
-
-            return (
-              <div
-                key={item.id}
-                className={`lum-card-outlined border-l-[3px] ${borderColor} flex flex-col`}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <span className={`d-annotation text-xs ${badgeColor}`}>
-                    {item.type.replace(/s$/, '')}
-                  </span>
-                  <span className="d-annotation text-xs">
-                    {item.namespace}
-                  </span>
-                  {item.status && item.status !== 'published' && (
-                    <span
-                      className="d-annotation text-xs"
-                      data-status="warning"
-                    >
-                      {item.status}
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-base font-semibold text-d-text mb-1 leading-snug">
-                  {item.name || item.slug}
-                </h3>
-
-                {item.description && (
-                  <p className="text-sm text-d-muted line-clamp-2 mb-3">
-                    {item.description}
-                  </p>
-                )}
-
-                <div className="flex items-center gap-3 text-xs text-d-muted font-mono mt-auto pt-3 border-t border-d-border/50">
-                  <span>v{item.version}</span>
-                  {item.published_at && (
-                    <>
-                      <span className="opacity-40">|</span>
-                      <span>{formatDate(item.published_at)}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+            <span style={{ color: 'var(--d-text-muted)', opacity: 0.5 }}>
+              <PackageIcon size={48} />
+            </span>
+            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              No content published yet.
+            </p>
+            <Link
+              href="/dashboard/content/new"
+              className="d-interactive"
+              data-variant="primary"
+              style={{
+                fontSize: '0.875rem',
+                textDecoration: 'none',
+              }}
+            >
+              Publish Your First Item
+            </Link>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -1,81 +1,140 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 interface KPIItem {
   label: string;
-  value: string | number;
-  trend?: { value: number; positive: boolean };
+  value: number;
+  trend?: number;
   icon?: ReactNode;
 }
 
-function AnimatedValue({ value }: { value: string | number }) {
-  const ref = useRef<HTMLSpanElement>(null);
+interface KPIGridProps {
+  items: KPIItem[];
+}
+
+function formatNumber(n: number): string {
+  if (n >= 1_000_000) {
+    return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  if (n >= 1_000) {
+    return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
+  }
+  return n.toLocaleString();
+}
+
+function AnimatedValue({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0);
+  const rafRef = useRef<number>(0);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const numeric = typeof value === 'number' ? value : parseFloat(value);
-    if (isNaN(numeric)) {
-      el.textContent = String(value);
-      return;
-    }
-
-    const duration = 500;
     const start = performance.now();
-    const isInt = Number.isInteger(numeric);
+    const duration = 500;
 
     function tick(now: number) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const current = numeric * eased;
-
-      if (el) {
-        el.textContent = isInt
-          ? Math.round(current).toLocaleString()
-          : current.toFixed(1);
-      }
-
+      // ease-out quad
+      const eased = 1 - (1 - progress) * (1 - progress);
+      setDisplay(Math.round(eased * value));
       if (progress < 1) {
-        requestAnimationFrame(tick);
+        rafRef.current = requestAnimationFrame(tick);
       }
     }
 
-    requestAnimationFrame(tick);
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
   }, [value]);
 
-  return <span ref={ref}>{typeof value === 'number' ? '0' : value}</span>;
+  return <>{formatNumber(display)}</>;
 }
 
-export function KPIGrid({ items }: { items: KPIItem[] }) {
+export function KPIGrid({ items }: KPIGridProps) {
   return (
-    <div className="lum-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {items.map((item) => (
-        <div key={item.label} className="d-surface p-4 sm:p-4 rounded-lg">
-          <div className="flex items-start justify-between mb-3">
-            {item.icon && (
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-d-surface-raised text-d-muted">
-                {item.icon}
-              </div>
-            )}
-            {item.trend && (
-              <span
-                className="d-annotation text-xs"
-                data-status={item.trend.positive ? 'success' : 'error'}
+    <>
+      <div className="kpi-grid">
+        {items.map((item) => {
+          const trend = item.trend;
+          const positive = trend !== undefined && trend >= 0;
+          return (
+            <div key={item.label} className="d-surface">
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                }}
               >
-                {item.trend.positive ? '+' : ''}
-                {item.trend.value}%
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-d-muted mb-1">{item.label}</p>
-          <p className="text-2xl font-bold font-mono text-d-text">
-            <AnimatedValue value={item.value} />
-          </p>
-        </div>
-      ))}
-    </div>
+                {item.icon && (
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 'var(--d-radius)',
+                      background:
+                        'color-mix(in srgb, var(--d-accent) 12%, transparent)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.icon}
+                  </div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <div
+                    className="text-sm"
+                    style={{
+                      color: 'var(--d-text-muted)',
+                      marginBottom: '0.125rem',
+                    }}
+                  >
+                    {item.label}
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '1.5rem',
+                        fontWeight: 700,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      <AnimatedValue value={item.value} />
+                    </span>
+                    {trend !== undefined && trend !== 0 && (
+                      <span
+                        className="d-annotation"
+                        data-status={positive ? 'success' : 'error'}
+                      >
+                        {positive ? '+' : ''}
+                        {trend}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <style>{`
+        .kpi-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+        @media (min-width: 1024px) {
+          .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+      `}</style>
+    </>
   );
 }

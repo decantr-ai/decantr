@@ -2,46 +2,83 @@ import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
 import { KPIGrid } from '@/components/kpi-grid';
 import { ActivityFeed } from '@/components/activity-feed';
-import Link from 'next/link';
 
 /* ── Inline icons for KPI cards ── */
 
-function ContentIcon() {
+function PackageIcon({ size = 18 }: { size?: number }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m16.5 9.4-9-5.19" />
-      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-      <polyline points="3.29 7 12 12 20.71 7" />
-      <line x1="12" y1="22" x2="12" y2="12" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m7.5 4.27 9 5.15" />
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+      <path d="m3.3 7 8.7 5 8.7-5" />
+      <path d="M12 22V12" />
     </svg>
   );
 }
 
-function KeyIcon() {
+function DownloadIcon({ size = 18 }: { size?: number }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" x2="12" y1="15" y2="3" />
     </svg>
   );
 }
 
-function StarIcon() {
+function ActivityIcon({ size = 18 }: { size?: number }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </svg>
+  );
+}
+
+function StarIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   );
 }
 
-function TierIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-    </svg>
-  );
-}
-
-/* ── Reputation helpers ── */
+/* ── Reputation badge ── */
 
 function reputationLevel(score: number): string {
   if (score > 200) return 'Expert';
@@ -50,31 +87,93 @@ function reputationLevel(score: number): string {
   return 'Newcomer';
 }
 
+const LEVEL_STYLES: Record<string, { bg: string; color: string }> = {
+  Newcomer: {
+    bg: 'var(--d-surface)',
+    color: 'var(--d-text-muted)',
+  },
+  Contributor: {
+    bg: 'color-mix(in srgb, var(--d-info) 15%, transparent)',
+    color: 'var(--d-info)',
+  },
+  Trusted: {
+    bg: 'color-mix(in srgb, var(--d-warning) 15%, transparent)',
+    color: 'var(--d-warning)',
+  },
+  Expert: {
+    bg: 'color-mix(in srgb, var(--d-success) 15%, transparent)',
+    color: 'var(--d-success)',
+  },
+};
+
+function ReputationBadge({ score, level }: { score: number; level: string }) {
+  const style = LEVEL_STYLES[level] || LEVEL_STYLES.Newcomer;
+  return (
+    <span
+      className="flex items-center gap-1"
+      style={{
+        display: 'inline-flex',
+        padding: '0.125rem 0.5rem',
+        borderRadius: 'var(--d-radius-full)',
+        background: style.bg,
+        fontSize: '0.75rem',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <svg
+        width={10}
+        height={10}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={style.color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      </svg>
+      <span style={{ fontWeight: 600, color: style.color }}>{score}</span>
+      <span style={{ color: 'var(--d-text-muted)' }}>{level}</span>
+    </span>
+  );
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
   const token = session?.access_token ?? '';
-  const email = session?.user?.email ?? 'there';
 
   let profile: {
     reputation_score: number;
     tier: string;
     content_count: number;
   } = { reputation_score: 0, tier: 'free', content_count: 0 };
-  let apiKeyCount = 0;
+  let apiCallsLast30d = 0;
+  let totalDownloads = 0;
 
   try {
-    const [me, keys] = await Promise.all([
+    const [me, keys, myContent] = await Promise.all([
       api.getMe(token),
-      api.getApiKeys(token),
+      api.getApiKeys(token).catch(() => null),
+      api.getMyContent(token).catch(() => null),
     ]);
-    profile = me;
+    profile = me ?? profile;
+
     const keyItems = Array.isArray(keys) ? keys : keys?.items ?? [];
-    apiKeyCount = keyItems.filter(
-      (k: { revoked_at?: string | null }) => !k.revoked_at
-    ).length;
+    apiCallsLast30d = keyItems.reduce(
+      (acc: number, k: { usage_30d?: number }) => acc + (k.usage_30d ?? 0),
+      0
+    );
+
+    const contentItems = Array.isArray(myContent)
+      ? myContent
+      : myContent?.items ?? [];
+    totalDownloads = contentItems.reduce(
+      (acc: number, item: { downloads?: number }) => acc + (item.downloads ?? 0),
+      0
+    );
   } catch {
     // Fallback to defaults on API error
   }
@@ -83,101 +182,68 @@ export default async function DashboardPage() {
 
   const kpiItems = [
     {
-      label: 'Content Items',
+      label: 'Published Items',
       value: profile.content_count,
-      icon: <ContentIcon />,
+      icon: <PackageIcon size={18} />,
     },
     {
-      label: 'API Keys',
-      value: apiKeyCount,
-      icon: <KeyIcon />,
+      label: 'Total Downloads',
+      value: totalDownloads,
+      icon: <DownloadIcon size={18} />,
+    },
+    {
+      label: 'API Calls (30d)',
+      value: apiCallsLast30d,
+      icon: <ActivityIcon size={18} />,
     },
     {
       label: 'Reputation',
       value: profile.reputation_score,
-      icon: <StarIcon />,
-    },
-    {
-      label: 'Tier',
-      value: profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1),
-      icon: <TierIcon />,
+      icon: <StarIcon size={18} />,
     },
   ];
 
   return (
-    <div className="d-section max-w-5xl" data-density="compact">
-      {/* Heading */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-d-text">Welcome back</h1>
-        <p className="text-sm text-d-muted mt-1">{email}</p>
-      </div>
+    <div className="flex flex-col gap-6">
+      <h3 className="text-lg font-semibold">Dashboard</h3>
 
-      {/* KPI Grid */}
-      <div className="mb-8">
-        <KPIGrid items={kpiItems} />
-      </div>
-
-      {/* Reputation Badge */}
-      <div className="mb-8">
-        <span className="inline-flex items-center gap-2 rounded-full bg-d-primary/10 px-3 py-1.5 text-sm">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--d-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-          <span className="font-semibold text-d-text">{profile.reputation_score}</span>
-          <span className="text-d-muted">{level}</span>
+      {/* Overview */}
+      <section className="d-section" data-density="compact">
+        <span
+          className="d-label block mb-4"
+          style={{
+            paddingLeft: '0.75rem',
+            borderLeft: '2px solid var(--d-accent)',
+          }}
+        >
+          Overview
         </span>
-      </div>
+        <KPIGrid items={kpiItems} />
+      </section>
 
-      {/* Activity Feed */}
-      <div className="mb-8">
-        <h2 className="d-label border-l-2 border-d-accent pl-2 mb-4">
+      {/* Reputation */}
+      <section className="d-section" data-density="compact">
+        <div className="flex items-center gap-4">
+          <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            Your Reputation
+          </span>
+          <ReputationBadge score={profile.reputation_score} level={level} />
+        </div>
+      </section>
+
+      {/* Recent Activity */}
+      <section className="d-section" data-density="compact">
+        <span
+          className="d-label block mb-4"
+          style={{
+            paddingLeft: '0.75rem',
+            borderLeft: '2px solid var(--d-accent)',
+          }}
+        >
           Recent Activity
-        </h2>
-        <div className="d-surface rounded-lg p-4">
-          <ActivityFeed items={[]} />
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div>
-        <h2 className="d-label border-l-2 border-d-accent pl-2 mb-4">
-          Quick Actions
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/dashboard/content/new"
-            className="d-interactive inline-flex items-center gap-2 py-1.5 px-4 text-sm rounded-md no-underline"
-            data-variant="primary"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Create Content
-          </Link>
-          <Link
-            href="/dashboard/api-keys"
-            className="d-interactive inline-flex items-center gap-2 py-1.5 px-4 text-sm rounded-md no-underline"
-            data-variant="ghost"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4" />
-            </svg>
-            Manage API Keys
-          </Link>
-          <Link
-            href="/"
-            className="d-interactive inline-flex items-center gap-2 py-1.5 px-4 text-sm rounded-md no-underline"
-            data-variant="ghost"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            Browse Registry
-          </Link>
-        </div>
-      </div>
+        </span>
+        <ActivityFeed events={[]} />
+      </section>
     </div>
   );
 }

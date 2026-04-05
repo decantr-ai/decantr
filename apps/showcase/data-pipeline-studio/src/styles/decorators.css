@@ -1,0 +1,213 @@
+/* Terminal theme decorators — phosphor green/amber on black */
+
+@layer decorators {
+
+/* ── term-glow: Phosphor bloom effect ── */
+.term-glow {
+  text-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+}
+
+/* ── term-panel: ASCII box-drawing border ── */
+.term-panel {
+  border: 1px solid var(--d-border);
+  background: var(--d-surface);
+  border-radius: 0;
+}
+
+/* ── term-canvas: Pure CRT black background ── */
+.term-canvas {
+  background: #000000;
+}
+
+/* ── term-status: Inverse color status bar ── */
+.term-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--d-primary);
+  color: var(--d-bg);
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ── term-hotkey: Function key button style ── */
+.term-hotkey {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+}
+.term-hotkey kbd {
+  padding: 1px 6px;
+  background: var(--d-text-muted);
+  color: var(--d-bg);
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: 0;
+}
+.term-hotkey span {
+  color: var(--d-text);
+}
+.term-hotkey:hover kbd,
+.term-hotkey[data-active] kbd {
+  background: var(--d-primary);
+}
+
+/* ── term-input: Terminal prompt style ── */
+.term-input {
+  display: flex;
+  align-items: center;
+  background: var(--d-bg);
+  border: 1px solid var(--d-border);
+  border-radius: 0;
+  padding: 0.25rem 0.5rem;
+  font-family: inherit;
+  color: var(--d-text);
+}
+.term-input::before {
+  content: '> ';
+  color: var(--d-primary);
+  flex-shrink: 0;
+}
+.term-input input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  font: inherit;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── term-table: ASCII table borders ── */
+.term-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+.term-table th,
+.term-table td {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--d-border);
+  text-align: left;
+}
+.term-table th {
+  background: var(--d-surface);
+  color: var(--d-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+}
+.term-table tr:hover td {
+  background: var(--d-surface);
+}
+
+/* ── term-tree: ASCII tree connectors ── */
+.term-tree {
+  list-style: none;
+  padding: 0;
+  font-size: 0.8125rem;
+}
+.term-tree li {
+  position: relative;
+  padding-left: 1.5rem;
+  line-height: 1.8;
+}
+.term-tree li::before {
+  content: '\251C\2500\2500 ';
+  position: absolute;
+  left: 0;
+  color: var(--d-border);
+}
+.term-tree li:last-child::before {
+  content: '\2514\2500\2500 ';
+}
+
+/* ── term-diff-add ── */
+.term-diff-add {
+  background: rgba(0, 255, 0, 0.12);
+  color: #00CC00;
+}
+
+/* ── term-diff-del ── */
+.term-diff-del {
+  background: rgba(255, 0, 0, 0.12);
+  color: #CC3333;
+}
+
+/* ── term-progress ── */
+.term-progress {
+  font-family: inherit;
+  font-size: 0.8125rem;
+  color: var(--d-text-muted);
+}
+
+/* ── term-scanlines ── */
+.term-scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.08) 0px,
+    rgba(0, 0, 0, 0.08) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── term-sparkline ── */
+.term-sparkline {
+  font-family: inherit;
+  letter-spacing: 0;
+  white-space: nowrap;
+  color: var(--d-primary);
+}
+
+/* ── term-blink ── */
+.term-blink::after {
+  content: '\2588';
+  animation: term-blink-kf 1s steps(1) infinite;
+}
+@keyframes term-blink-kf {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── term-type: typewriter ── */
+.term-type {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid var(--d-primary);
+  animation:
+    term-type-kf 2s steps(40) forwards,
+    term-blink-kf 0.75s steps(1) infinite;
+}
+@keyframes term-type-kf {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* Base body font override for terminal theme */
+body {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', 'Consolas', ui-monospace, monospace !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .term-type {
+    animation: none;
+    width: 100%;
+    border-right: none;
+  }
+  .term-blink::after {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+}
