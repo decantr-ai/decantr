@@ -1,0 +1,124 @@
+{
+  "id": "investor-portal",
+  "name": "Investor Portal",
+  "role": "auxiliary",
+  "tags": [
+    "investors",
+    "portal",
+    "nda",
+    "bidders",
+    "limited-partners",
+    "roster"
+  ],
+  "pages": [
+    {
+      "id": "investors",
+      "path": "/investors",
+      "shell": "sidebar-main",
+      "patterns": [
+        {
+          "as": "investor-table",
+          "preset": "standard",
+          "pattern": "data-table"
+        },
+        {
+          "as": "investor-row",
+          "preset": "standard",
+          "pattern": "team-member-row"
+        }
+      ],
+      "default_layout": [
+        "investor-table",
+        "investor-row"
+      ]
+    },
+    {
+      "id": "investor-detail",
+      "path": "/investors/:id",
+      "shell": "sidebar-main",
+      "patterns": [
+        {
+          "as": "investor-header",
+          "preset": "standard",
+          "pattern": "detail-header"
+        },
+        {
+          "as": "investor-activity",
+          "preset": "standard",
+          "pattern": "activity-feed"
+        },
+        {
+          "as": "investor-documents",
+          "preset": "list",
+          "pattern": "file-browser"
+        }
+      ],
+      "default_layout": [
+        "investor-header",
+        "investor-activity",
+        "investor-documents"
+      ]
+    }
+  ],
+  "shells": {
+    "sidebar-main": "Left sidebar with investor groupings and main content area"
+  },
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "version": "1.0.0",
+  "features": [
+    "investor-management",
+    "nda-tracking"
+  ],
+  "description": "Investor management portal tracking NDA status, access history, and document activity per investor. Centralizes the bidder and limited-partner roster for deal rooms.",
+  "page_briefs": {
+    "investors": "Investor list page presents a sortable data table of all investors and bidders with columns for firm name, primary contact, NDA status, invited date, last-active date, documents viewed count, and access tier. Each row is rendered as a team-member-style row with firm avatar, contact chips, and status pills for at-a-glance scanning.",
+    "investor-detail": "Investor detail page opens with a detail header showing firm name, logo, primary contact, NDA signed date, and access tier badge. An activity feed lists every document view, download request, Q&A post, and login event with timestamps. Below, a list-mode file browser shows all documents this investor has viewed, requested, or been granted access to."
+  },
+  "dependencies": {
+    "styles": {},
+    "patterns": {
+      "data-table": ">=1.0.0",
+      "file-browser": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "detail-header": ">=1.0.0",
+      "team-member-row": ">=1.0.0"
+    }
+  },
+  "classification": {
+    "tier": "recommended",
+    "weight": 0.8,
+    "implies": [
+      "investor-management",
+      "nda-tracking"
+    ],
+    "triggers": {
+      "primary": [
+        "investor portal",
+        "investor management",
+        "bidder list",
+        "lp portal",
+        "investor roster"
+      ],
+      "negative": [
+        "consumer",
+        "social"
+      ],
+      "secondary": [
+        "nda tracking",
+        "investor access",
+        "bidder management"
+      ]
+    }
+  },
+  "decantr_compat": ">=1.5.0",
+  "suggested_theme": {
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "styles": [
+      "carbon",
+      "professional"
+    ]
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "id": "deal-workspace",
+  "name": "Deal Workspace",
+  "role": "primary",
+  "tags": [
+    "private-equity",
+    "deal-room",
+    "m-and-a",
+    "workspace",
+    "stage-gates",
+    "investment"
+  ],
+  "pages": [
+    {
+      "id": "overview",
+      "path": "/deal",
+      "shell": "sidebar-main",
+      "patterns": [
+        {
+          "as": "deal-metrics",
+          "preset": "dashboard",
+          "pattern": "kpi-grid"
+        },
+        {
+          "as": "stage-progress",
+          "preset": "horizontal",
+          "pattern": "deal-stage-gates"
+        },
+        {
+          "as": "deal-activity",
+          "preset": "standard",
+          "pattern": "activity-feed"
+        }
+      ],
+      "default_layout": [
+        "deal-metrics",
+        "stage-progress",
+        "deal-activity"
+      ]
+    },
+    {
+      "id": "stage-detail",
+      "path": "/deal/stages/:id",
+      "shell": "sidebar-main",
+      "patterns": [
+        {
+          "as": "stage-timeline",
+          "preset": "vertical",
+          "pattern": "deal-stage-gates"
+        },
+        {
+          "as": "stage-requirements",
+          "preset": "standard",
+          "pattern": "form-sections"
+        }
+      ],
+      "default_layout": [
+        "stage-timeline",
+        "stage-requirements"
+      ]
+    }
+  ],
+  "shells": {
+    "sidebar-main": "Left navigation sidebar with deal list and main content area for workspace views"
+  },
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "version": "1.0.0",
+  "features": [
+    "deal-tracking",
+    "stage-gates"
+  ],
+  "description": "Private equity deal workspace with dashboard, stage gate tracking, and per-stage detail views. Core interface for managing active M&A and investment transactions through structured stage progression.",
+  "page_briefs": {
+    "overview": "Deal dashboard opens with a KPI grid showing deal value, IRR projection, close probability, and days to target close. Below, a horizontal stage-gates ribbon displays the full deal lifecycle with the current stage highlighted and completed gates checked. An activity feed on the right streams recent document uploads, Q&A posts, and investor actions with timestamps.",
+    "stage-detail": "Stage detail view shows the vertical stage-gates rail on the left indicating context within the overall deal lifecycle. The main area presents a form-sections layout containing this stage's required deliverables, checklists, approvals, and sign-off fields. Stage owner, due date, and blocking dependencies surface at the top."
+  },
+  "dependencies": {
+    "styles": {},
+    "patterns": {
+      "kpi-grid": ">=1.0.0",
+      "activity-feed": ">=1.0.0",
+      "form-sections": ">=1.0.0",
+      "deal-stage-gates": ">=1.0.0"
+    }
+  },
+  "classification": {
+    "tier": "recommended",
+    "weight": 1,
+    "implies": [
+      "deal-tracking",
+      "stage-gates"
+    ],
+    "triggers": {
+      "primary": [
+        "deal workspace",
+        "deal dashboard",
+        "private equity deal",
+        "m&a workspace",
+        "transaction workspace"
+      ],
+      "negative": [
+        "consumer",
+        "social",
+        "gaming"
+      ],
+      "secondary": [
+        "deal tracking",
+        "stage gates",
+        "deal pipeline",
+        "investment workspace",
+        "transaction management"
+      ]
+    }
+  },
+  "decantr_compat": ">=1.5.0",
+  "suggested_theme": {
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "styles": [
+      "carbon",
+      "professional"
+    ]
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "id": "top-nav-footer",
+  "code": {
+    "example": "Shell({ config: 'top-nav-footer' },\n  Shell.Header({}, headerContent),\n  Shell.Nav({}, navItems),\n  Shell.Body({}, mainContent),\n  Shell.Footer({}, footerContent)\n)",
+    "imports": "import { Shell } from 'decantr/components';"
+  },
+  "name": "Top Nav + Footer",
+  "atoms": "_flex _col _h[100vh]",
+  "config": {
+    "nav": {
+      "position": "top"
+    },
+    "body": {
+      "scroll": true
+    },
+    "grid": {
+      "areas": [
+        [
+          "header"
+        ],
+        [
+          "body"
+        ],
+        [
+          "footer"
+        ]
+      ]
+    },
+    "footer": {
+      "height": "auto",
+      "sticky": false
+    },
+    "header": {
+      "height": "52px",
+      "sticky": true
+    },
+    "regions": [
+      "header",
+      "body",
+      "footer"
+    ]
+  },
+  "layout": "stack",
+  "$schema": "https://decantr.ai/schemas/shell.v1.json",
+  "guidance": {
+    "cta_sections": "CTA sections at the bottom of marketing pages should stand out visually — subtle background gradient or glass effect, not just a plain card.",
+    "section_labels": "Section overline labels (CAPABILITIES, HOW IT WORKS) should be uppercase, small, accent-colored, center-aligned, with letter-spacing: 0.1em. Use d-label class with text-align: center.",
+    "section_spacing": "Marketing sections use spacious density. Each d-section uses full --d-section-py padding."
+  },
+  "description": "Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer.",
+  "configurable": {
+    "nav": {
+      "modes": [
+        "full"
+      ],
+      "positions": [
+        "top",
+        "left"
+      ]
+    },
+    "footer": {
+      "toggleable": true
+    },
+    "header": {
+      "toggleable": true
+    },
+    "sizing": {
+      "headerHeight": {
+        "max": 80,
+        "min": 36,
+        "default": 52
+      }
+    }
+  },
+  "internal_layout": {
+    "body": {
+      "flex": "1",
+      "note": "Full-width sections stack vertically. Each section uses d-section with --d-section-py. Body has NO padding — sections own their spacing. Natural document scroll.",
+      "padding": "none"
+    },
+    "root": {
+      "atoms": "_flex _col _minh[100vh]",
+      "display": "flex",
+      "direction": "column",
+      "min_height": "100vh"
+    },
+    "footer": {
+      "note": "Multi-column footer with link groups and legal.",
+      "border": "top",
+      "padding": "2rem 1.5rem",
+      "position_within": "bottom (mt-auto for short pages)"
+    },
+    "header": {
+      "align": "center",
+      "border": "bottom",
+      "height": "52px",
+      "sticky": true,
+      "display": "flex",
+      "justify": "space-between",
+      "padding": "0 1.5rem",
+      "z_index": "10",
+      "background": "var(--d-bg)",
+      "left_content": "Brand/logo",
+      "button_sizing": "Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar — default d-interactive padding is too large here.",
+      "right_content": "CTA button + mobile hamburger. Hamburger ONLY below md breakpoint.",
+      "center_content": "Nav links — flex with gap 1.5rem. Hidden below md, visible above."
+    }
+  }
+}

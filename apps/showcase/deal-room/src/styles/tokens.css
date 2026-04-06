@@ -1,0 +1,48 @@
+/* Deal Room — Deep Navy + Gold tokens */
+@layer tokens {
+:root {
+  --d-primary: #C9A54E;
+  --d-secondary: #8B7332;
+  --d-accent: #D4AF37;
+  --d-bg: #0A0E1A;
+  --d-surface: #111827;
+  --d-surface-raised: #1A2236;
+  --d-border: #1E2A42;
+  --d-text: #F0ECE2;
+  --d-text-muted: #8B95A8;
+  --d-primary-hover: #DDB95A;
+  --d-gap-1: 0.25rem;
+  --d-gap-2: 0.5rem;
+  --d-gap-3: 0.75rem;
+  --d-gap-4: 1rem;
+  --d-gap-6: 1.5rem;
+  --d-gap-8: 2rem;
+  --d-gap-12: 3rem;
+  --d-radius: 0.375rem;
+  --d-radius-sm: 0.25rem;
+  --d-radius-lg: 0.5rem;
+  --d-radius-xl: 0.75rem;
+  --d-radius-full: 9999px;
+  --d-shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --d-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  --d-shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+  --d-shadow-lg: 0 10px 15px rgba(0,0,0,0.5);
+  --d-success: #22c55e;
+  --d-error: #ef4444;
+  --d-warning: #f59e0b;
+  --d-info: #3b82f6;
+  --d-duration-hover: 150ms;
+  --d-duration-entrance: 400ms;
+  --d-easing: ease-out;
+  --d-section-py: 5rem;
+  --d-interactive-py: 0.5rem;
+  --d-interactive-px: 1rem;
+  --d-surface-p: 1.25rem;
+  --d-data-py: 0.625rem;
+  --d-control-py: 0.5rem;
+  --d-content-gap: 1rem;
+  --d-font-display: 'Georgia', 'Palatino Linotype', 'Book Antiqua', serif;
+  --d-font-body: 'Georgia', 'Times New Roman', serif;
+  --d-font-mono: ui-monospace, 'Cascadia Code', monospace;
+}
+}

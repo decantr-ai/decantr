@@ -1,0 +1,116 @@
+{
+  "id": "qa-workflow",
+  "name": "Q&A Workflow",
+  "role": "auxiliary",
+  "tags": [
+    "qa",
+    "questions",
+    "due-diligence",
+    "assignments",
+    "workflow",
+    "threads"
+  ],
+  "pages": [
+    {
+      "id": "questions",
+      "path": "/qa",
+      "shell": "sidebar-main",
+      "patterns": [
+        {
+          "as": "question-table",
+          "preset": "standard",
+          "pattern": "data-table"
+        },
+        {
+          "as": "thread-preview",
+          "preset": "full",
+          "pattern": "qa-thread"
+        }
+      ],
+      "default_layout": [
+        "question-table",
+        "thread-preview"
+      ]
+    },
+    {
+      "id": "question-detail",
+      "path": "/qa/:id",
+      "shell": "sidebar-main",
+      "patterns": [
+        {
+          "as": "question-thread",
+          "preset": "full",
+          "pattern": "qa-thread"
+        },
+        {
+          "as": "question-meta",
+          "preset": "standard",
+          "pattern": "detail-header"
+        }
+      ],
+      "default_layout": [
+        "question-meta",
+        "question-thread"
+      ]
+    }
+  ],
+  "shells": {
+    "sidebar-main": "Left sidebar with question categories and main content area"
+  },
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "version": "1.0.0",
+  "features": [
+    "qa",
+    "assignments"
+  ],
+  "description": "Structured Q&A workflow for due diligence with threaded questions, role assignments, and response tracking. Manages bidder and investor inquiries through assignment and resolution cycles.",
+  "page_briefs": {
+    "questions": "All Q&A dashboard with a sortable and filterable data table listing every question with columns for title, asker, assignee, category, status (open/answered/clarification), priority, and age. Selecting a row opens a thread preview pane showing the full question, prior replies, and attached documents without leaving the list view.",
+    "question-detail": "Dedicated question thread page with a detail header containing question title, submitter, assigned responder, status pill, due date, and category tags. Below, the full Q&A thread renders the original question, all replies, internal clarifications, attached documents, and an anchored reply composer for the assigned responder."
+  },
+  "dependencies": {
+    "styles": {},
+    "patterns": {
+      "qa-thread": ">=1.0.0",
+      "data-table": ">=1.0.0",
+      "detail-header": ">=1.0.0"
+    }
+  },
+  "classification": {
+    "tier": "recommended",
+    "weight": 0.8,
+    "implies": [
+      "qa",
+      "assignments"
+    ],
+    "triggers": {
+      "primary": [
+        "q&a workflow",
+        "due diligence qa",
+        "deal room questions",
+        "bidder questions",
+        "investor questions"
+      ],
+      "negative": [
+        "social",
+        "marketing"
+      ],
+      "secondary": [
+        "question assignments",
+        "qa tracking",
+        "inquiry management"
+      ]
+    }
+  },
+  "decantr_compat": ">=1.5.0",
+  "suggested_theme": {
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "styles": [
+      "carbon",
+      "professional"
+    ]
+  }
+}

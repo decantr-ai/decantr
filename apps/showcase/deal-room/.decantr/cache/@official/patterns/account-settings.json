@@ -1,0 +1,117 @@
+{
+  "id": "account-settings",
+  "name": "Account Settings",
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "presets": {
+    "profile": {
+      "layout": {
+        "atoms": "_flex _col _gap8",
+        "slots": {
+          "form": "Name, email, bio inputs with inline edit",
+          "save": "Save changes button",
+          "avatar": "Avatar with upload/change button"
+        },
+        "layout": "stack"
+      },
+      "components": [
+        "Button",
+        "Avatar",
+        "icon"
+      ],
+      "description": "Profile editing with avatar upload, name, email, bio"
+    },
+    "security": {
+      "layout": {
+        "atoms": "_flex _col _gap8",
+        "slots": {
+          "mfa": "MFA enable/disable toggle with status",
+          "password": "Change password form",
+          "sessions": "Session manager component"
+        },
+        "layout": "stack"
+      },
+      "components": [
+        "Button",
+        "Badge",
+        "icon"
+      ],
+      "description": "Security settings with password change and MFA controls"
+    },
+    "danger-zone": {
+      "layout": {
+        "atoms": "_flex _col _gap6",
+        "slots": {
+          "delete": "Delete account button",
+          "confirm": "Typed confirmation input",
+          "warning": "Deletion warning message"
+        },
+        "layout": "stack"
+      },
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "description": "Account deletion with typed confirmation"
+    },
+    "preferences": {
+      "layout": {
+        "atoms": "_flex _col _gap8",
+        "slots": {
+          "theme": "Theme selector (light/dark/auto)",
+          "language": "Language/locale selector",
+          "notifications": "Notification toggles"
+        },
+        "layout": "stack"
+      },
+      "components": [
+        "Button",
+        "icon"
+      ],
+      "description": "User preferences for theme, notifications, language"
+    }
+  },
+  "version": "1.0.0",
+  "components": [
+    "Button",
+    "Avatar",
+    "Badge",
+    "icon"
+  ],
+  "composition": {
+    "SettingsNav": "TabList(d-control) > Tab(active?: accent-border)[]",
+    "AccountSettings": "Container(d-section, flex-col) > [SettingsNav(vertical-tabs, d-interactive) + SettingsContent]",
+    "SettingsContent": "Panel(d-surface, flex-col, gap-8) > [AvatarUpload? + FormFields + SaveButton(d-interactive, variant: primary)]"
+  },
+  "description": "Account management forms with presets for profile, security, preferences, and danger zone (account deletion).",
+  "dependencies": {
+    "styles": {},
+    "patterns": {
+      "session-manager": "^1.0.0"
+    },
+    "requires_core": {
+      "charts": [],
+      "components": [
+        "Button",
+        "Avatar",
+        "Badge",
+        "icon"
+      ]
+    }
+  },
+  "layout_hints": {
+    "spacing": "Nav items have consistent padding. Active item stands out but doesn't shift layout.",
+    "active_state": "Active nav/tab item should have a visible indicator: accent-colored left border (for vertical nav) or bottom border (for horizontal tabs), plus accent text color.",
+    "nav_position": "For settings pages, vertical tab nav on the left. Content area scrolls independently."
+  },
+  "visual_brief": "Settings page with vertical navigation tabs on the left (Profile, Security, Notifications, Danger Zone) and form content on the right. Active tab highlighted with primary left-border. Each settings section is a d-surface card with grouped form fields, section heading, and Save button at bottom-right.",
+  "decantr_compat": ">=1.0.0",
+  "default_layout": {
+    "atoms": "_flex _col _gap8",
+    "slots": {
+      "form": "Settings form fields",
+      "save": "Save button"
+    },
+    "layout": "stack"
+  },
+  "default_preset": "profile"
+}

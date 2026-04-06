@@ -1,0 +1,206 @@
+{
+  "id": "deal-room",
+  "name": "Deal Room",
+  "tags": [
+    "pe",
+    "ma",
+    "deal-room",
+    "due-diligence",
+    "finance",
+    "2026"
+  ],
+  "theme": {
+    "id": "bespoke",
+    "mode": "dark",
+    "shape": "rounded"
+  },
+  "voice": {
+    "tone": "Formal and authoritative. Speaks to PE partners, LPs, counsel.",
+    "avoid": [
+      "Click",
+      "Submit",
+      "Try"
+    ],
+    "errors": "Access denied — NDA signature required for this document.",
+    "loading": "Verifying access credentials...",
+    "cta_verbs": [
+      "Review",
+      "Approve",
+      "Escalate",
+      "Sign",
+      "Request",
+      "Execute"
+    ],
+    "empty_states": "No documents uploaded yet. Invite your deal team to contribute."
+  },
+  "routes": {
+    "/": {
+      "page": "home",
+      "shell": "top-nav-footer",
+      "archetype": "marketing-deal-room"
+    },
+    "/qa": {
+      "page": "questions",
+      "shell": "sidebar-main",
+      "archetype": "qa-workflow"
+    },
+    "/deal": {
+      "page": "overview",
+      "shell": "sidebar-main",
+      "archetype": "deal-workspace"
+    },
+    "/login": {
+      "page": "login",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/qa/:id": {
+      "page": "question-detail",
+      "shell": "sidebar-main",
+      "archetype": "qa-workflow"
+    },
+    "/register": {
+      "page": "register",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/documents": {
+      "page": "documents",
+      "shell": "sidebar-main",
+      "archetype": "document-vault"
+    },
+    "/investors": {
+      "page": "investors",
+      "shell": "sidebar-main",
+      "archetype": "investor-portal"
+    },
+    "/mfa-setup": {
+      "page": "mfa-setup",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/mfa-verify": {
+      "page": "mfa-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/phone-verify": {
+      "page": "phone-verify",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/verify-email": {
+      "page": "verify-email",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/documents/:id": {
+      "page": "document-view",
+      "shell": "sidebar-main",
+      "archetype": "document-vault"
+    },
+    "/investors/:id": {
+      "page": "investor-detail",
+      "shell": "sidebar-main",
+      "archetype": "investor-portal"
+    },
+    "/reset-password": {
+      "page": "reset-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/deal/stages/:id": {
+      "page": "stage-detail",
+      "shell": "sidebar-main",
+      "archetype": "deal-workspace"
+    },
+    "/forgot-password": {
+      "page": "forgot-password",
+      "shell": "centered",
+      "archetype": "auth-full"
+    },
+    "/settings/danger": {
+      "page": "danger",
+      "shell": "sidebar-aside",
+      "archetype": "settings-full"
+    },
+    "/settings/profile": {
+      "page": "profile",
+      "shell": "sidebar-aside",
+      "archetype": "settings-full"
+    },
+    "/settings/security": {
+      "page": "security",
+      "shell": "sidebar-aside",
+      "archetype": "settings-full"
+    },
+    "/settings/preferences": {
+      "page": "preferences",
+      "shell": "sidebar-aside",
+      "archetype": "settings-full"
+    }
+  },
+  "$schema": "https://decantr.ai/schemas/blueprint.v1.json",
+  "compose": [
+    "deal-workspace",
+    "document-vault",
+    "qa-workflow",
+    "investor-portal",
+    "marketing-deal-room",
+    "auth-full",
+    "settings-full"
+  ],
+  "version": "1.0.0",
+  "features": [
+    "deals",
+    "documents",
+    "qa",
+    "investors",
+    "watermark",
+    "auth",
+    "mfa",
+    "oauth",
+    "marketing",
+    "seo"
+  ],
+  "overrides": {
+    "pages": {},
+    "features_add": [],
+    "pages_remove": [],
+    "features_remove": []
+  },
+  "seo_hints": {
+    "schema_org": [
+      "Organization",
+      "WebApplication"
+    ],
+    "meta_priorities": [
+      "description",
+      "og:image"
+    ]
+  },
+  "navigation": {
+    "hotkeys": [],
+    "command_palette": true
+  },
+  "description": "Secure private equity deal room with document vault, Q&A workflow, investor portal, stage-gated deal workspace, and full auth with marketing landing.",
+  "personality": "Secure private equity deal room with authoritative quiet-luxury aesthetics. Deep navy surfaces bordered with gold hairlines. Serif display typography on titles, monospace on financial figures. Document viewer has diagonal watermarks showing viewer name and timestamp. Stage gates track deal progression with approval checkpoints. Q&A threads attach to specific document paragraphs. Investors see only what they're cleared for. Lucide icons. Refined.",
+  "dependencies": {
+    "archetypes": {
+      "auth-full": ">=1.0.0",
+      "qa-workflow": ">=1.0.0",
+      "settings-full": ">=1.0.0",
+      "deal-workspace": ">=1.0.0",
+      "document-vault": ">=1.0.0",
+      "investor-portal": ">=1.0.0",
+      "marketing-deal-room": ">=1.0.0"
+    }
+  },
+  "decantr_compat": ">=1.5.0",
+  "suggested_themes": [
+    "bespoke",
+    "counsel",
+    "carbon",
+    "fintech"
+  ]
+}

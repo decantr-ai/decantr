@@ -1,0 +1,61 @@
+{
+  "id": "centered",
+  "code": {
+    "example": "function Centered({ children, width = '400px' }) {\n  const { div } = tags;\n\n  return div({ class: css('_flex _center _h[100vh] _bgmuted _p4') },\n    Card({ class: css(`_w[${width}] _mw[100%]`) },\n      ...children\n    )\n  );\n}",
+    "imports": "import { tags } from 'decantr/tags';\nimport { css } from 'decantr/css';\nimport { Card } from 'decantr/components';"
+  },
+  "name": "Centered",
+  "atoms": "_flex _center _h[100vh] _bgmuted",
+  "config": {
+    "nav": {
+      "position": "left",
+      "defaultState": "hidden"
+    },
+    "body": {
+      "scroll": false
+    },
+    "grid": {
+      "areas": [
+        [
+          "body"
+        ]
+      ]
+    },
+    "regions": [
+      "body"
+    ]
+  },
+  "layout": "center",
+  "$schema": "https://decantr.ai/schemas/shell.v1.json",
+  "guidance": {
+    "max_width": "Centered content should be constrained to max-width: 28rem (448px) for auth forms, 36rem (576px) for wider content.",
+    "vertical_centering": "Center the content card vertically using min-height: 100dvh with flexbox centering."
+  },
+  "description": "Centered card on a background. Used for auth flows (login, register, forgot password) across all archetypes.",
+  "configurable": {
+    "nav": {
+      "modes": [],
+      "positions": []
+    },
+    "sizing": {}
+  },
+  "internal_layout": {
+    "body": {
+      "note": "Single centered card. No sidebar, no header. Auth forms use 28rem, wider content 36rem.",
+      "width": "100%",
+      "padding": "1.5rem",
+      "treatment": "d-surface",
+      "border_radius": "var(--d-radius-lg)",
+      "max_width_auth": "28rem",
+      "max_width_wide": "36rem"
+    },
+    "root": {
+      "align": "center",
+      "atoms": "_flex _center _minh[100vh]",
+      "display": "flex",
+      "justify": "center",
+      "background": "var(--d-bg)",
+      "min_height": "100vh"
+    }
+  }
+}

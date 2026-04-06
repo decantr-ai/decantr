@@ -1,0 +1,186 @@
+{
+  "id": "auth-full",
+  "name": "Auth Full",
+  "role": "gateway",
+  "tags": [
+    "auth",
+    "authentication",
+    "login",
+    "register",
+    "mfa"
+  ],
+  "pages": [
+    {
+      "id": "login",
+      "shell": "centered",
+      "patterns": [
+        {
+          "as": "form",
+          "preset": "login",
+          "pattern": "auth-form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ]
+    },
+    {
+      "id": "register",
+      "shell": "centered",
+      "patterns": [
+        {
+          "as": "form",
+          "preset": "register",
+          "pattern": "auth-form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ]
+    },
+    {
+      "id": "forgot-password",
+      "shell": "centered",
+      "patterns": [
+        {
+          "as": "form",
+          "preset": "forgot-password",
+          "pattern": "auth-form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ]
+    },
+    {
+      "id": "reset-password",
+      "shell": "centered",
+      "patterns": [
+        {
+          "as": "form",
+          "preset": "reset-password",
+          "pattern": "auth-form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ]
+    },
+    {
+      "id": "verify-email",
+      "shell": "centered",
+      "patterns": [
+        {
+          "as": "form",
+          "preset": "verify-email",
+          "pattern": "auth-form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ]
+    },
+    {
+      "id": "mfa-setup",
+      "shell": "centered",
+      "patterns": [
+        {
+          "as": "form",
+          "preset": "mfa-setup",
+          "pattern": "auth-form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ]
+    },
+    {
+      "id": "mfa-verify",
+      "shell": "centered",
+      "patterns": [
+        {
+          "as": "form",
+          "preset": "mfa-verify",
+          "pattern": "auth-form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ]
+    },
+    {
+      "id": "phone-verify",
+      "shell": "centered",
+      "patterns": [
+        {
+          "as": "form",
+          "preset": "phone-verify",
+          "pattern": "auth-form"
+        }
+      ],
+      "default_layout": [
+        "form"
+      ]
+    }
+  ],
+  "shells": {
+    "centered": "Centered card layout for focused auth forms"
+  },
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "version": "1.0.0",
+  "features": [
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset"
+  ],
+  "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+  "page_briefs": {
+    "login": "Centered card on a clean background. Email and password fields, primary sign-in button, OAuth provider row, and links to register and forgot-password.",
+    "register": "Centered card with name, email, password fields and strength meter. Terms checkbox, register button, and link back to login.",
+    "mfa-setup": "Centered card with QR code display for authenticator app, manual key fallback, and a 6-digit code input to confirm setup.",
+    "mfa-verify": "Minimal centered card with a 6-digit code input, verify button, and a link to use backup codes as an alternative.",
+    "phone-verify": "Centered card with phone number display, 6-digit SMS code input field, verify button, and resend code link.",
+    "verify-email": "Centered status card showing a verification message with animated checkmark on success or a resend-link button if pending.",
+    "reset-password": "Centered card with new password and confirm password fields, strength indicator, and save button. Token-authenticated view reached from email link.",
+    "forgot-password": "Minimal centered card with email field and submit button. Brief instructional text above explaining the password reset email process."
+  },
+  "dependencies": {
+    "styles": {},
+    "patterns": {
+      "auth-form": "^1.0.0"
+    }
+  },
+  "classification": {
+    "tier": "core",
+    "weight": 1,
+    "implies": [],
+    "triggers": {
+      "primary": [
+        "authentication",
+        "login",
+        "sign in",
+        "register",
+        "sign up"
+      ],
+      "negative": [],
+      "secondary": [
+        "forgot password",
+        "mfa",
+        "two-factor",
+        "email verification"
+      ]
+    }
+  },
+  "decantr_compat": ">=1.0.0",
+  "suggested_theme": {
+    "modes": [
+      "dark",
+      "light"
+    ],
+    "styles": [
+      "carbon"
+    ]
+  }
+}

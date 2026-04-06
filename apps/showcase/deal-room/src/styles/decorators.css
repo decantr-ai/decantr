@@ -1,0 +1,352 @@
+/* Deal Room — Bespoke Theme Decorators: Deep Navy + Gold */
+
+@layer decorators {
+
+/* -- dr-nav: Fixed top nav with gold accent border -- */
+.dr-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  z-index: 40;
+  background: color-mix(in srgb, var(--d-bg) 90%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--d-border);
+}
+
+.dr-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--d-primary), transparent);
+  opacity: 0.3;
+}
+
+/* -- dr-hero: Prestigious hero with gold gradient -- */
+.dr-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6rem 2rem 4rem;
+  overflow: hidden;
+}
+
+.dr-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(201, 165, 78, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, rgba(201, 165, 78, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(10, 14, 26, 0.8) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* -- dr-fade-in: Entrance animation -- */
+.dr-fade-in {
+  animation: dr-fade-in 0.4s ease-out both;
+}
+
+@keyframes dr-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* -- dr-card: Card with gold top accent -- */
+.dr-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  box-shadow: var(--d-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.dr-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 10%, var(--d-primary) 50%, transparent 90%);
+  opacity: 0.6;
+}
+
+.dr-card:hover {
+  border-color: color-mix(in srgb, var(--d-primary) 40%, var(--d-border));
+  box-shadow: var(--d-shadow-md);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+/* -- dr-sidebar: Sidebar with subtle gold accents -- */
+.dr-sidebar {
+  background: var(--d-surface);
+  border-right: 1px solid var(--d-border);
+}
+
+.dr-sidebar [data-active="true"] {
+  background: color-mix(in srgb, var(--d-primary) 10%, transparent);
+  color: var(--d-primary);
+  border-right: 2px solid var(--d-primary);
+}
+
+/* -- dr-button-primary: Gold CTA button -- */
+.dr-button-primary {
+  background: linear-gradient(135deg, var(--d-primary), var(--d-secondary));
+  color: #0A0E1A;
+  border: none;
+  border-radius: var(--d-radius);
+  padding: var(--d-interactive-py) var(--d-interactive-px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--d-font-body);
+  letter-spacing: 0.02em;
+}
+
+.dr-button-primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 24px rgba(201, 165, 78, 0.2);
+}
+
+/* -- dr-watermark: Document watermark overlay -- */
+.dr-watermark {
+  position: relative;
+  overflow: hidden;
+}
+
+.dr-watermark::after {
+  content: 'CONFIDENTIAL';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 4rem;
+  font-weight: 700;
+  color: rgba(201, 165, 78, 0.04);
+  letter-spacing: 0.15em;
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: var(--d-font-display);
+}
+
+/* -- dr-stage-gate: Stage gate indicator -- */
+.dr-stage-gate {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.dr-stage-gate-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--d-text-muted);
+  position: relative;
+}
+
+.dr-stage-gate-step[data-status="complete"] {
+  color: var(--d-success);
+}
+
+.dr-stage-gate-step[data-status="active"] {
+  color: var(--d-primary);
+}
+
+.dr-stage-gate-step[data-status="pending"] {
+  color: var(--d-text-muted);
+  opacity: 0.5;
+}
+
+.dr-stage-gate-connector {
+  width: 32px;
+  height: 2px;
+  background: var(--d-border);
+  flex-shrink: 0;
+}
+
+.dr-stage-gate-connector[data-complete="true"] {
+  background: var(--d-success);
+}
+
+/* -- dr-status-dot: Status indicators -- */
+.dr-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.dr-status-dot[data-status="active"],
+.dr-status-dot[data-status="approved"],
+.dr-status-dot[data-status="signed"],
+.dr-status-dot[data-status="closed"] {
+  background: var(--d-success);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--d-success) 40%, transparent);
+}
+
+.dr-status-dot[data-status="pending"],
+.dr-status-dot[data-status="review"],
+.dr-status-dot[data-status="negotiation"] {
+  background: var(--d-warning);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--d-warning) 40%, transparent);
+}
+
+.dr-status-dot[data-status="rejected"],
+.dr-status-dot[data-status="expired"],
+.dr-status-dot[data-status="overdue"] {
+  background: var(--d-error);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--d-error) 40%, transparent);
+}
+
+.dr-status-dot[data-status="draft"],
+.dr-status-dot[data-status="inactive"] {
+  background: var(--d-text-muted);
+}
+
+/* -- dr-gold-divider: Gold accent divider -- */
+.dr-gold-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--d-primary) 30%, transparent), transparent);
+  border: none;
+  margin: 1.5rem 0;
+}
+
+/* -- dr-monogram: Firm/investor avatar -- */
+.dr-monogram {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--d-radius-sm);
+  background: linear-gradient(135deg, var(--d-primary), var(--d-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #0A0E1A;
+  flex-shrink: 0;
+  font-family: var(--d-font-display);
+}
+
+/* -- dr-confidential-badge -- */
+.dr-confidential-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--d-primary) 30%, var(--d-border));
+  border-radius: var(--d-radius-sm);
+  color: var(--d-primary);
+  background: color-mix(in srgb, var(--d-primary) 5%, transparent);
+}
+
+/* -- dr-gauge: Progress bar for deal metrics -- */
+.dr-gauge-track {
+  height: 6px;
+  background: var(--d-surface-raised);
+  border-radius: var(--d-radius-full);
+  overflow: hidden;
+}
+
+.dr-gauge-fill {
+  height: 100%;
+  border-radius: var(--d-radius-full);
+  transition: width 600ms ease-out;
+  background: linear-gradient(90deg, var(--d-primary), var(--d-accent));
+}
+
+/* -- dr-thread: Q&A thread styling -- */
+.dr-thread-line {
+  width: 2px;
+  background: var(--d-border);
+  flex-shrink: 0;
+  margin-left: 15px;
+}
+
+/* -- dr-document-icon: Document type indicators -- */
+.dr-doc-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--d-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dr-doc-icon[data-type="pdf"] { background: color-mix(in srgb, var(--d-error) 12%, transparent); color: var(--d-error); }
+.dr-doc-icon[data-type="spreadsheet"] { background: color-mix(in srgb, var(--d-success) 12%, transparent); color: var(--d-success); }
+.dr-doc-icon[data-type="presentation"] { background: color-mix(in srgb, var(--d-warning) 12%, transparent); color: var(--d-warning); }
+.dr-doc-icon[data-type="legal"] { background: color-mix(in srgb, var(--d-primary) 12%, transparent); color: var(--d-primary); }
+.dr-doc-icon[data-type="image"] { background: color-mix(in srgb, var(--d-info) 12%, transparent); color: var(--d-info); }
+
+/* -- Orb decorations -- */
+.dr-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  opacity: 0.25;
+}
+
+.dr-orb-1 {
+  width: 500px;
+  height: 500px;
+  background: var(--d-primary);
+  top: -15%;
+  left: -10%;
+  animation: dr-orb-float 10s ease-in-out infinite alternate;
+}
+
+.dr-orb-2 {
+  width: 350px;
+  height: 350px;
+  background: var(--d-secondary);
+  bottom: -10%;
+  right: -5%;
+  animation: dr-orb-float 12s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes dr-orb-float {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(15px, -15px); }
+}
+
+} /* end @layer decorators */
+
+@layer utilities {
+
+/* -- Personality-Derived Utilities -- */
+
+.mono-data { font-family: var(--d-font-mono); font-variant-numeric: tabular-nums; }
+.serif-display { font-family: var(--d-font-display); }
+.entrance-fade { animation: dr-fade-in var(--d-duration-entrance, 0.2s) var(--d-easing, ease-out); }
+
+} /* end @layer utilities */

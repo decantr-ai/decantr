@@ -1,0 +1,439 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "studio-dark",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 700,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 6
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "expressive",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Electric music production workspace with cyan waveforms pulsing across deep purple canvases. Multi-track DAW layout with stem-stack channel strips, meter bars glowing on transients, and automation lanes curving below. Split-royalty calculators with real-time percentage validation. Live session rooms with voice chat and collaborative scrubbing. Think Ableton meets Splice. Lucide icons. Electric."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "music-workspace",
+        "role": "primary",
+        "shell": "sidebar-aside",
+        "features": [
+          "session-editing",
+          "stems",
+          "mixing"
+        ],
+        "description": "Music producer session workspace with multi-track waveform editing, stem stacking, and split-pane arrangement for audio production flows.",
+        "pages": [
+          {
+            "id": "session",
+            "layout": [
+              "split-pane",
+              "waveform-track",
+              "stem-stack"
+            ],
+            "route": "/session"
+          },
+          {
+            "id": "session-detail",
+            "layout": [
+              "waveform-track",
+              "stem-stack"
+            ],
+            "route": "/session/:id"
+          }
+        ]
+      },
+      {
+        "id": "track-library",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "track-management",
+          "versions"
+        ],
+        "description": "Producer track catalog with searchable table of finished and in-progress tracks plus a per-track detail view with waveform preview and version history.",
+        "pages": [
+          {
+            "id": "tracks",
+            "layout": [
+              "search-filter-bar",
+              "data-table"
+            ],
+            "route": "/tracks"
+          },
+          {
+            "id": "track-detail",
+            "layout": [
+              "waveform-track",
+              "version-history"
+            ],
+            "route": "/tracks/:id"
+          }
+        ]
+      },
+      {
+        "id": "collaboration-hub",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "collaboration",
+          "royalties"
+        ],
+        "description": "Producer collaborator directory and royalty split management surface with contributor cards and split calculators.",
+        "pages": [
+          {
+            "id": "collaborators",
+            "layout": [
+              "card-grid",
+              "team-member-row"
+            ],
+            "route": "/collab"
+          },
+          {
+            "id": "splits",
+            "layout": [
+              "split-calculator",
+              "data-table"
+            ],
+            "route": "/collab/splits"
+          }
+        ]
+      },
+      {
+        "id": "session-rooms",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "live-sessions",
+          "voice-chat"
+        ],
+        "description": "Live producer session rooms for real-time co-creation with voice, video, and chat.",
+        "pages": [
+          {
+            "id": "rooms",
+            "layout": [
+              "card-grid",
+              "activity-feed"
+            ],
+            "route": "/rooms"
+          },
+          {
+            "id": "room-detail",
+            "layout": [
+              "video-room",
+              "chat-thread"
+            ],
+            "route": "/rooms/:id"
+          }
+        ]
+      },
+      {
+        "id": "marketing-producer",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing"
+        ],
+        "description": "Public marketing landing page for a music producer studio product with vision hero, feature rundown, pricing, and testimonials.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "features",
+              "pricing",
+              "testimonials",
+              "cta-section"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-aside",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "session-editing",
+      "stems",
+      "mixing",
+      "track-management",
+      "versions",
+      "collaboration",
+      "royalties",
+      "live-sessions",
+      "voice-chat",
+      "marketing",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-producer",
+        "page": "home"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/rooms": {
+        "section": "session-rooms",
+        "page": "rooms"
+      },
+      "/collab": {
+        "section": "collaboration-hub",
+        "page": "collaborators"
+      },
+      "/tracks": {
+        "section": "track-library",
+        "page": "tracks"
+      },
+      "/session": {
+        "section": "music-workspace",
+        "page": "session"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/rooms/:id": {
+        "section": "session-rooms",
+        "page": "room-detail"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/tracks/:id": {
+        "section": "track-library",
+        "page": "track-detail"
+      },
+      "/session/:id": {
+        "section": "music-workspace",
+        "page": "session-detail"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/collab/splits": {
+        "section": "collaboration-hub",
+        "page": "splits"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "music-workspace",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [],
+      "command_palette": true
+    }
+  }
+}

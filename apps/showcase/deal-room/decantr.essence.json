@@ -1,0 +1,439 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "bespoke",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 500,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "sharp",
+      "base": 2
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "minimal",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Secure private equity deal room with authoritative quiet-luxury aesthetics. Deep navy surfaces bordered with gold hairlines. Serif display typography on titles, monospace on financial figures. Document viewer has diagonal watermarks showing viewer name and timestamp. Stage gates track deal progression with approval checkpoints. Q&A threads attach to specific document paragraphs. Investors see only what they're cleared for. Lucide icons. Refined."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "deal-workspace",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "deal-tracking",
+          "stage-gates"
+        ],
+        "description": "Private equity deal workspace with dashboard, stage gate tracking, and per-stage detail views. Core interface for managing active M&A and investment transactions through structured stage progression.",
+        "pages": [
+          {
+            "id": "overview",
+            "layout": [
+              "deal-metrics",
+              "stage-progress",
+              "deal-activity"
+            ],
+            "route": "/deal"
+          },
+          {
+            "id": "stage-detail",
+            "layout": [
+              "stage-timeline",
+              "stage-requirements"
+            ],
+            "route": "/deal/stages/:id"
+          }
+        ]
+      },
+      {
+        "id": "document-vault",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "secure-documents",
+          "watermarks",
+          "audit"
+        ],
+        "description": "Secure document repository for deal rooms with watermarked viewing, granular access audit, and inline Q&A threads. Provides due-diligence document management with full audit trail.",
+        "pages": [
+          {
+            "id": "documents",
+            "layout": [
+              "document-filters",
+              "document-list"
+            ],
+            "route": "/documents"
+          },
+          {
+            "id": "document-view",
+            "layout": [
+              "doc-viewer",
+              "doc-questions"
+            ],
+            "route": "/documents/:id"
+          }
+        ]
+      },
+      {
+        "id": "qa-workflow",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "qa",
+          "assignments"
+        ],
+        "description": "Structured Q&A workflow for due diligence with threaded questions, role assignments, and response tracking. Manages bidder and investor inquiries through assignment and resolution cycles.",
+        "pages": [
+          {
+            "id": "questions",
+            "layout": [
+              "question-table",
+              "thread-preview"
+            ],
+            "route": "/qa"
+          },
+          {
+            "id": "question-detail",
+            "layout": [
+              "question-meta",
+              "question-thread"
+            ],
+            "route": "/qa/:id"
+          }
+        ]
+      },
+      {
+        "id": "investor-portal",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "investor-management",
+          "nda-tracking"
+        ],
+        "description": "Investor management portal tracking NDA status, access history, and document activity per investor. Centralizes the bidder and limited-partner roster for deal rooms.",
+        "pages": [
+          {
+            "id": "investors",
+            "layout": [
+              "investor-table",
+              "investor-row"
+            ],
+            "route": "/investors"
+          },
+          {
+            "id": "investor-detail",
+            "layout": [
+              "investor-header",
+              "investor-activity",
+              "investor-documents"
+            ],
+            "route": "/investors/:id"
+          }
+        ]
+      },
+      {
+        "id": "marketing-deal-room",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing"
+        ],
+        "description": "Public marketing landing page for deal-room software positioning trust, security, and workflow velocity. Primary acquisition surface for enterprise sales.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "marketing-hero",
+              "feature-grid",
+              "customer-quotes",
+              "request-demo"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "deal-tracking",
+      "stage-gates",
+      "secure-documents",
+      "watermarks",
+      "audit",
+      "qa",
+      "assignments",
+      "investor-management",
+      "nda-tracking",
+      "marketing",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-deal-room",
+        "page": "home"
+      },
+      "/qa": {
+        "section": "qa-workflow",
+        "page": "questions"
+      },
+      "/deal": {
+        "section": "deal-workspace",
+        "page": "overview"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/qa/:id": {
+        "section": "qa-workflow",
+        "page": "question-detail"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/documents": {
+        "section": "document-vault",
+        "page": "documents"
+      },
+      "/investors": {
+        "section": "investor-portal",
+        "page": "investors"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/documents/:id": {
+        "section": "document-vault",
+        "page": "document-view"
+      },
+      "/investors/:id": {
+        "section": "investor-portal",
+        "page": "investor-detail"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/deal/stages/:id": {
+        "section": "deal-workspace",
+        "page": "stage-detail"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "deal-workspace",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [],
+      "command_palette": true
+    }
+  }
+}

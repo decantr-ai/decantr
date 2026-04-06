@@ -1,0 +1,396 @@
+{
+  "id": "bespoke",
+  "name": "Bespoke",
+  "seed": {
+    "accent": "#B8941F",
+    "primary": "#D4AF37",
+    "secondary": "#0F172A",
+    "background": "#0F172A"
+  },
+  "tags": [
+    "dark",
+    "premium",
+    "finance",
+    "luxury",
+    "private-equity",
+    "serif"
+  ],
+  "modes": [
+    "dark"
+  ],
+  "shell": {
+    "nav": "bespoke-card",
+    "root": "bespoke-canvas",
+    "avoid": [
+      "chat-portal",
+      "full-bleed"
+    ],
+    "brand": "bespoke-monogram",
+    "header": "bespoke-serif-display",
+    "navLabel": "",
+    "nav_style": "minimal",
+    "preferred": [
+      "sidebar-main",
+      "top-nav-footer"
+    ],
+    "dimensions": null,
+    "default_nav_state": "expanded"
+  },
+  "motion": {
+    "micro": "smooth",
+    "timing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "entrance": "bespoke-fade",
+    "durations": {
+      "page": "350ms",
+      "hover": "150ms",
+      "modal": "300ms",
+      "entrance": "400ms"
+    },
+    "preference": "minimal",
+    "reduce_motion": true
+  },
+  "radius": {
+    "base": 2,
+    "philosophy": "sharp"
+  },
+  "shapes": [
+    "sharp"
+  ],
+  "source": "core",
+  "tokens": {
+    "base": {
+      "info": "#64748B",
+      "danger": "#B91C1C",
+      "success": "#22C55E",
+      "warning": "#D4AF37"
+    }
+  },
+  "$schema": "https://decantr.ai/schemas/style-metadata.v1.json",
+  "effects": {
+    "enabled": true,
+    "intensity": "subtle",
+    "type_mapping": {
+      "card": [
+        "bespoke-card"
+      ],
+      "badge": [
+        "bespoke-seal"
+      ],
+      "table": [
+        "bespoke-ledger"
+      ],
+      "divider": [
+        "bespoke-divider"
+      ],
+      "heading": [
+        "bespoke-serif-display"
+      ]
+    },
+    "optional_effects": {
+      "stamp": false,
+      "leather": false
+    },
+    "component_fallback": {
+      "Card": "card",
+      "Badge": "badge",
+      "Table": "table",
+      "Divider": "divider",
+      "Heading": "heading"
+    }
+  },
+  "palette": {
+    "text": {
+      "dark": "#F1E9D2"
+    },
+    "accent": {
+      "dark": "#D4AF37"
+    },
+    "border": {
+      "dark": "#2D3B52"
+    },
+    "primary": {
+      "dark": "#D4AF37"
+    },
+    "surface": {
+      "dark": "#1A2332"
+    },
+    "secondary": {
+      "dark": "#1E293B"
+    },
+    "background": {
+      "dark": "#0F172A"
+    },
+    "text-muted": {
+      "dark": "#94A3B8"
+    },
+    "accent-hover": {
+      "dark": "#E8C252"
+    },
+    "primary-hover": {
+      "dark": "#B8941F"
+    },
+    "surface-raised": {
+      "dark": "#22304A"
+    },
+    "secondary-hover": {
+      "dark": "#334155"
+    }
+  },
+  "spatial": {
+    "density_bias": -1,
+    "card_wrapping": "subtle",
+    "section_padding": "96px",
+    "surface_override": null,
+    "content_gap_shift": 1
+  },
+  "decorators": {
+    "bespoke-card": "Gold-bordered cards with deep navy background and generous interior padding for premium content presentation.",
+    "bespoke-seal": "Wax-seal style circular badge with gold border and embossed emblem. Formal authority indicator.",
+    "bespoke-stamp": "Approval stamp overlay with rotated serif text in gold. Executive sign-off aesthetic.",
+    "bespoke-ledger": "Formal table styling with hairline dividers, tabular-nums, and right-aligned figures.",
+    "bespoke-divider": "Thin gold hairline separator (1px #D4AF37 at 40% opacity) for elegant section breaks.",
+    "bespoke-leather": "Subtle leather texture overlay using fine noise pattern. Adds tactile richness to surfaces.",
+    "bespoke-monogram": "Large serif monogram displays using Playfair or Cormorant. Single-letter or initial typography.",
+    "bespoke-serif-display": "Large serif titles in Playfair Display with refined letter-spacing. Authoritative headlines."
+  },
+  "typography": {
+    "scale": "modular",
+    "body_weight": 400,
+    "heading_weight": 500
+  },
+  "cvd_support": [],
+  "description": "Premium private equity and M&A theme with deep navy foundations and gold accents. Serif display typography, minimal motion, and quiet luxury aesthetic for authoritative financial and advisory interfaces.",
+  "personality": "refined + authoritative + quiet luxury + gold-accented",
+  "compositions": {
+    "dealroom": {
+      "shell": "sidebar-main",
+      "effects": [
+        "bespoke-card",
+        "bespoke-ledger",
+        "bespoke-divider"
+      ],
+      "description": "Deal room dashboard with portfolio metrics, transaction ledger, and executive summaries."
+    },
+    "marketing": {
+      "shell": "top-nav-footer",
+      "effects": [
+        "bespoke-monogram",
+        "bespoke-serif-display"
+      ],
+      "description": "Advisory firm marketing page with quiet luxury aesthetic and monogram branding."
+    },
+    "portfolio": {
+      "shell": "sidebar-main",
+      "effects": [
+        "bespoke-card",
+        "bespoke-ledger"
+      ],
+      "description": "Portfolio summary with gold-accented cards and ledger-style financial tables."
+    },
+    "prospectus": {
+      "shell": "top-nav-footer",
+      "effects": [
+        "bespoke-serif-display",
+        "bespoke-divider",
+        "bespoke-monogram"
+      ],
+      "description": "Investment prospectus presentation with serif headlines and formal document layout."
+    }
+  },
+  "decantr_compat": ">=1.5.0",
+  "pattern_preferences": {
+    "avoid": [
+      "chat-portal"
+    ],
+    "prefer": [
+      "executive-summary",
+      "ledger-table",
+      "prospectus",
+      "portfolio-grid",
+      "transaction-log"
+    ],
+    "default_presets": {
+      "portfolio-grid": "cards",
+      "transaction-log": "table"
+    }
+  },
+  "decorator_definitions": {
+    "bespoke-card": {
+      "usage": [
+        "Executive summaries",
+        "Portfolio cards",
+        "Deal summaries",
+        "Investment briefs"
+      ],
+      "intent": "Use for content containers that communicate authority and value. The gold border signals premium status.",
+      "pairs_with": [
+        "bespoke-divider",
+        "bespoke-serif-display",
+        "bespoke-ledger"
+      ],
+      "description": "Gold-bordered cards with deep navy background and generous interior padding for premium content presentation.",
+      "suggested_properties": {
+        "border": "1px solid rgba(212, 175, 55, 0.3)",
+        "padding": "32px",
+        "background": "#1A2332",
+        "box-shadow": "0 4px 24px rgba(0, 0, 0, 0.4)",
+        "border-radius": "2px"
+      }
+    },
+    "bespoke-seal": {
+      "usage": [
+        "Certification badges",
+        "Approval marks",
+        "Authority indicators",
+        "Premium tier labels"
+      ],
+      "intent": "Use for formal certifications, approvals, and marks of authority. Evokes the gravitas of historic wax seals.",
+      "pairs_with": [
+        "bespoke-card",
+        "bespoke-monogram"
+      ],
+      "description": "Wax-seal style circular badge with gold border and embossed emblem. Formal authority indicator.",
+      "suggested_properties": {
+        "color": "#0F172A",
+        "width": "64px",
+        "border": "2px solid #B8941F",
+        "height": "64px",
+        "display": "inline-flex",
+        "background": "radial-gradient(circle at 30% 30%, #E8C252, #D4AF37 60%, #B8941F)",
+        "align-items": "center",
+        "font-family": "'Playfair Display', serif",
+        "font-weight": "700",
+        "border-radius": "50%",
+        "justify-content": "center"
+      }
+    },
+    "bespoke-stamp": {
+      "usage": [
+        "Approval stamps",
+        "Review completion marks",
+        "Status overlays",
+        "Certification indicators"
+      ],
+      "intent": "Use as overlay badge to signal approval, review completion, or executive endorsement.",
+      "pairs_with": [
+        "bespoke-seal",
+        "bespoke-card"
+      ],
+      "description": "Approval stamp overlay with rotated serif text in gold. Executive sign-off aesthetic.",
+      "suggested_properties": {
+        "color": "#D4AF37",
+        "border": "2px solid #D4AF37",
+        "display": "inline-block",
+        "padding": "8px 16px",
+        "transform": "rotate(-8deg)",
+        "font-family": "'Playfair Display', serif",
+        "font-weight": "700",
+        "letter-spacing": "0.1em",
+        "text-transform": "uppercase"
+      }
+    },
+    "bespoke-ledger": {
+      "usage": [
+        "Financial tables",
+        "Transaction logs",
+        "Portfolio holdings",
+        "Fee schedules"
+      ],
+      "intent": "Use for financial tables and formal data listings. Professional accounting aesthetic.",
+      "pairs_with": [
+        "bespoke-card",
+        "bespoke-divider"
+      ],
+      "description": "Formal table styling with hairline dividers, tabular-nums, and right-aligned figures.",
+      "suggested_properties": {
+        "color": "#F1E9D2",
+        "width": "100%",
+        "font-size": "14px",
+        "border-collapse": "collapse",
+        "font-variant-numeric": "tabular-nums"
+      }
+    },
+    "bespoke-divider": {
+      "usage": [
+        "Section separators",
+        "Content breaks",
+        "List dividers"
+      ],
+      "intent": "Use to separate sections with restraint and refinement. The gold hairline signals quality without shouting.",
+      "pairs_with": [
+        "bespoke-card",
+        "bespoke-serif-display"
+      ],
+      "description": "Thin gold hairline separator (1px #D4AF37 at 40% opacity) for elegant section breaks.",
+      "suggested_properties": {
+        "border": "none",
+        "margin": "32px 0",
+        "border-top": "1px solid rgba(212, 175, 55, 0.4)"
+      }
+    },
+    "bespoke-leather": {
+      "usage": [
+        "Premium surface texture",
+        "Hero section backgrounds",
+        "Executive portal surfaces"
+      ],
+      "intent": "Apply to surface containers sparingly to add tactile warmth. Should remain subtle and never distract.",
+      "pairs_with": [
+        "bespoke-card",
+        "bespoke-divider"
+      ],
+      "description": "Subtle leather texture overlay using fine noise pattern. Adds tactile richness to surfaces.",
+      "suggested_properties": {
+        "opacity": "0.08",
+        "background-image": "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='l'%3E%3CfeTurbulence baseFrequency='0.7' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23l)' opacity='0.3'/%3E%3C/svg%3E\")",
+        "background-blend-mode": "overlay"
+      }
+    },
+    "bespoke-monogram": {
+      "usage": [
+        "Brand marks",
+        "Document headers",
+        "Letterhead displays",
+        "Hero initials"
+      ],
+      "intent": "Use for brand marks and personalized document headers. Creates instantly recognizable identity.",
+      "pairs_with": [
+        "bespoke-seal",
+        "bespoke-serif-display",
+        "bespoke-divider"
+      ],
+      "description": "Large serif monogram displays using Playfair or Cormorant. Single-letter or initial typography.",
+      "suggested_properties": {
+        "color": "#D4AF37",
+        "font-size": "clamp(3rem, 8vw, 6rem)",
+        "font-family": "'Playfair Display', 'Cormorant Garamond', serif",
+        "font-weight": "500",
+        "line-height": "1",
+        "letter-spacing": "-0.02em"
+      }
+    },
+    "bespoke-serif-display": {
+      "usage": [
+        "Page headlines",
+        "Section titles",
+        "Hero text",
+        "Chapter headings"
+      ],
+      "intent": "Use for primary headlines and section titles. The serif weight communicates authority and tradition.",
+      "pairs_with": [
+        "bespoke-divider",
+        "bespoke-monogram",
+        "bespoke-card"
+      ],
+      "description": "Large serif titles in Playfair Display with refined letter-spacing. Authoritative headlines.",
+      "suggested_properties": {
+        "color": "#F1E9D2",
+        "font-size": "clamp(2rem, 4vw, 3.5rem)",
+        "font-family": "'Playfair Display', 'Cormorant Garamond', Georgia, serif",
+        "font-weight": "500",
+        "line-height": "1.2",
+        "letter-spacing": "-0.01em"
+      }
+    }
+  }
+}

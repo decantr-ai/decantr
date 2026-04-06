@@ -1,0 +1,476 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "government",
+      "mode": "light",
+      "shape": "sharp"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": 1.25,
+      "heading_weight": 700,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "sharp",
+      "base": 2
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "minimal",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Accessible civic engagement platform built for trust and clarity. High-contrast government-standard typography with generous spacing. Budget Sankey flows show taxpayer dollars from source to category to line item. Petition cards display signature progress prominently. Council meeting archives have full video with synchronized transcripts. WCAG AAA compliance throughout. Lucide icons. Accessible."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "engagement-hub",
+        "role": "primary",
+        "shell": "top-nav-main",
+        "features": [
+          "petitions",
+          "voting",
+          "comments"
+        ],
+        "description": "Citizen engagement hub with dashboards, petitions, voting, and threaded comments. Primary entry point for civic participation platforms enabling residents to track and influence local decisions.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "civic-metrics",
+              "civic-activity",
+              "active-items"
+            ],
+            "route": "/engage"
+          },
+          {
+            "id": "petitions",
+            "layout": [
+              "petition-filters",
+              "petition-grid"
+            ],
+            "route": "/engage/petitions"
+          },
+          {
+            "id": "petition-detail",
+            "layout": [
+              "petition-hero",
+              "petition-votes",
+              "petition-comments"
+            ],
+            "route": "/engage/petitions/:id"
+          }
+        ]
+      },
+      {
+        "id": "budget-transparency",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "budget-transparency",
+          "drill-down"
+        ],
+        "description": "Public budget transparency dashboard with sankey visualizations, category drill-down, and expenditure tables. Exposes municipal budget flows to citizens in navigable detail.",
+        "pages": [
+          {
+            "id": "budget",
+            "layout": [
+              "budget-kpis",
+              "budget-flow"
+            ],
+            "route": "/budget"
+          },
+          {
+            "id": "budget-category",
+            "layout": [
+              "category-charts",
+              "expenditure-table"
+            ],
+            "route": "/budget/:category"
+          }
+        ]
+      },
+      {
+        "id": "meeting-archive",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "meetings",
+          "archives"
+        ],
+        "description": "Public archive of government meetings with searchable records, calendar browsing, and per-meeting timelines of votes and agenda items. Provides citizens long-term access to council and committee proceedings.",
+        "pages": [
+          {
+            "id": "meetings",
+            "layout": [
+              "meeting-filters",
+              "meeting-calendar",
+              "meeting-table"
+            ],
+            "route": "/meetings"
+          },
+          {
+            "id": "meeting-detail",
+            "layout": [
+              "meeting-header",
+              "agenda-timeline",
+              "meeting-votes"
+            ],
+            "route": "/meetings/:id"
+          }
+        ]
+      },
+      {
+        "id": "service-requests",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "service-requests",
+          "mapping"
+        ],
+        "description": "Citizen service request system with submission forms, map pin placement, kanban tracking, and status timelines. Enables residents to report issues and track resolution.",
+        "pages": [
+          {
+            "id": "requests",
+            "layout": [
+              "request-table",
+              "request-board"
+            ],
+            "route": "/requests"
+          },
+          {
+            "id": "new-request",
+            "layout": [
+              "request-form",
+              "location-picker"
+            ],
+            "route": "/requests/new"
+          },
+          {
+            "id": "request-detail",
+            "layout": [
+              "request-header",
+              "status-timeline"
+            ],
+            "route": "/requests/:id"
+          }
+        ]
+      },
+      {
+        "id": "marketing-civic",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing"
+        ],
+        "description": "Public marketing surface for civic engagement platforms with landing and about pages. Positions the platform to municipal buyers and citizen communities.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "civic-hero",
+              "feature-grid",
+              "community-quotes",
+              "join-cta"
+            ],
+            "route": "/"
+          },
+          {
+            "id": "about",
+            "layout": [
+              "about-hero"
+            ],
+            "route": "/about"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "petitions",
+      "voting",
+      "comments",
+      "budget-transparency",
+      "drill-down",
+      "meetings",
+      "archives",
+      "service-requests",
+      "mapping",
+      "marketing",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-civic",
+        "page": "home"
+      },
+      "/about": {
+        "section": "marketing-civic",
+        "page": "about"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/budget": {
+        "section": "budget-transparency",
+        "page": "budget"
+      },
+      "/engage": {
+        "section": "engagement-hub",
+        "page": "home"
+      },
+      "/meetings": {
+        "section": "meeting-archive",
+        "page": "meetings"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/requests": {
+        "section": "service-requests",
+        "page": "requests"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/meetings/:id": {
+        "section": "meeting-archive",
+        "page": "meeting-detail"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/requests/:id": {
+        "section": "service-requests",
+        "page": "request-detail"
+      },
+      "/requests/new": {
+        "section": "service-requests",
+        "page": "new-request"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/budget/:category": {
+        "section": "budget-transparency",
+        "page": "budget-category"
+      },
+      "/engage/petitions": {
+        "section": "engagement-hub",
+        "page": "petitions"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/engage/petitions/:id": {
+        "section": "engagement-hub",
+        "page": "petition-detail"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "engagement-hub",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "GovernmentOrganization",
+        "WebSite"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [],
+      "command_palette": false
+    }
+  }
+}

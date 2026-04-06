@@ -1,0 +1,185 @@
+{
+  "id": "form",
+  "io": {
+    "actions": [
+      "save",
+      "cancel",
+      "reset"
+    ],
+    "consumes": [
+      "data"
+    ],
+    "produces": [
+      "form-data"
+    ]
+  },
+  "name": "Form",
+  "motion": {
+    "micro": {
+      "error-shake": "translateX(-4px, 4px, -2px, 2px, 0) 300ms ease-out on validation error",
+      "field-focus": "border-color transition 150ms ease-out",
+      "button-press": "scale(0.97) 100ms ease-out"
+    },
+    "transitions": {
+      "success-submit": "fade-out form + fade-in success message 300ms ease-out",
+      "validation-error": "fade + slideDown 200ms ease-out for error message"
+    }
+  },
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "presets": {
+    "creation": {
+      "layout": {
+        "atoms": "_flex _col _gap6 _p4 _mw[640px] _mx[auto]",
+        "slots": {
+          "progress": "Step indicator bar at top showing current/total steps",
+          "step-card": "Single Card containing current step fields",
+          "navigation": "Prev/Next buttons at bottom",
+          "step-title": "Step heading with _heading4",
+          "field-group": "Vertical stack of form fields with _flex _col _gap4"
+        },
+        "layout": "stack"
+      },
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Checkbox",
+        "Button",
+        "Label",
+        "Textarea"
+      ],
+      "description": "Single-column wizard-like form with sections as steps. Progress indicator at top, prev/next buttons."
+    },
+    "settings": {
+      "layout": {
+        "atoms": "_flex _col _gap6 _p4",
+        "slots": {
+          "actions": "Bottom-aligned save/cancel buttons",
+          "section": "Card with 2-column layout: labels left, fields right",
+          "field-group": "Grid of form fields with _grid _gc1 _lg:gc2 _gap4",
+          "section-title": "Section heading with _heading4 and description with _bodysm _fgmuted"
+        },
+        "layout": "stack"
+      },
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Switch",
+        "Button",
+        "Label",
+        "Textarea"
+      ],
+      "description": "Vertical stack of sections, each with a title/description on the left and form fields on the right (2-column layout per section). Save button at bottom."
+    },
+    "structured": {
+      "layout": {
+        "atoms": "_flex _col _gap4 _p4",
+        "slots": {
+          "actions": "Button group with save, cancel, reset",
+          "fieldset": "Collapsible Card section with border and legend-style title",
+          "field-row": "Horizontal field groups with _grid _gc2 _gap4 for dense layout",
+          "inline-validation": "Error text below fields with _textsm _fgdestructive"
+        },
+        "layout": "stack"
+      },
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Checkbox",
+        "RadioGroup",
+        "Button",
+        "Label",
+        "Textarea"
+      ],
+      "description": "Dense form with fieldsets, collapsible sections, and inline validation. Good for complex data entry."
+    }
+  },
+  "version": "1.0.0",
+  "components": [
+    "Card",
+    "Input",
+    "Select",
+    "Switch",
+    "Checkbox",
+    "Button",
+    "Label",
+    "Textarea",
+    "RadioGroup"
+  ],
+  "responsive": {
+    "mobile": "Single column for all field groups. Fields go full-width. Action buttons stack vertically at full width, primary on top. Section headings go full-width above fields. Padding reduces to p3.",
+    "tablet": "Two-column field grid activates for shorter fields (name, email). Textareas span full width. Action buttons stay horizontal, right-aligned.",
+    "desktop": "Full two-column grid for field groups. Settings preset shows section label column on the left, fields on the right. Generous p4 spacing. Inline validation visible without layout shift."
+  },
+  "composition": {
+    "Form": "Container(d-section, flex-col, gap-6, max-width) > [FormSection[] + ActionButtons]",
+    "Field": "Stack(flex-col) > [Label(d-control, font-medium) + Input(d-control) + ValidationError?(d-annotation, text-destructive)]",
+    "FieldGroup": "Grid > Field[]",
+    "FormSection": "Card(d-surface) > [SectionTitle(heading4) + SectionDescription?(text-muted) + FieldGroup(d-control, grid: 1/2-col)]",
+    "ActionButtons": "Row(d-interactive, gap-2) > [SaveButton(variant: primary) + CancelButton(variant: ghost)]"
+  },
+  "description": "Structured form with labeled field groups, validation states, and action buttons",
+  "dependencies": {
+    "styles": {},
+    "patterns": {},
+    "requires_core": {
+      "charts": [],
+      "components": [
+        "Card",
+        "Input",
+        "Select",
+        "Switch",
+        "Checkbox",
+        "Button",
+        "Label",
+        "Textarea",
+        "RadioGroup"
+      ]
+    }
+  },
+  "layout_hints": {
+    "note": "Labels go ABOVE their field, not side-by-side. This prevents the label-field gap problem at wide viewports.",
+    "textarea": "Textareas should have min-height: 6rem to visually differentiate from single-line inputs.",
+    "max_width": "Form content should be constrained to max-width: 40rem (640px). Full-width forms are hard to read.",
+    "icon_placement": "Section header icons render INLINE with the heading text (icon left of heading, vertically centered), not floating outside the card border.",
+    "label_position": "stacked",
+    "select_styling": "Apply d-control to ALL form elements including <select>. Add appearance: none and a custom SVG chevron for consistent styling.",
+    "section_grouping": "Group related fields under section headers. Use a SINGLE d-surface card for the entire form, OR no card at all. Do NOT wrap each section in its own separate card."
+  },
+  "visual_brief": "Well-organized form with clear field grouping under section headings. Each section has a heading in heading4 weight and a muted description line, followed by form fields arranged in a one- or two-column grid. Labels sit above their respective fields (stacked, never side-by-side) in small medium-weight text. Input fields use consistent height (~40px), rounded corners (r2), and border styling that brightens on focus with a primary-color ring. Select dropdowns match input styling with a custom chevron. Textareas have a taller minimum height (6rem). Required fields show a small asterisk. Validation errors display below the field in small destructive-red text. The form is constrained to 640px max-width for readability. Action buttons (Save, Cancel) sit at the bottom right, separated by a top border or spacing from the form fields.",
+  "accessibility": {
+    "role": "form",
+    "labels": "Every input has an associated <label> element with matching htmlFor/id. Labels are always visible — no placeholder-only fields.",
+    "keyboard": [
+      "Tab navigates between fields",
+      "Shift+Tab navigates backwards between fields",
+      "Enter submits when focus is on submit button",
+      "Escape cancels or closes modal forms",
+      "Arrow keys navigate within radio groups",
+      "Space toggles checkboxes and switches"
+    ],
+    "aria-label": "Form",
+    "validation": "Error messages are linked to inputs via aria-describedby. Invalid fields use aria-invalid='true'. Error text uses role='alert' for screen reader announcement.",
+    "announcements": [
+      "Validation errors announced on field blur",
+      "Required field indicator announced on focus",
+      "Success confirmation announced on submit",
+      "Field group label announced on section entry"
+    ],
+    "focus_management": "First invalid field receives focus on failed validation. On successful submit, focus moves to success message or next logical action."
+  },
+  "decantr_compat": ">=0.9.0",
+  "default_layout": {
+    "atoms": "_flex _col _gap6 _p4",
+    "slots": {
+      "actions": "Save/cancel buttons",
+      "section": "Card with labeled field groups",
+      "field-group": "Grid of form fields",
+      "section-title": "Section heading with description"
+    },
+    "layout": "stack"
+  },
+  "default_preset": "settings"
+}

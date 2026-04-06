@@ -1,0 +1,100 @@
+{
+  "id": "marketing-deal-room",
+  "name": "Marketing Deal Room",
+  "role": "public",
+  "tags": [
+    "marketing",
+    "landing",
+    "deal-room",
+    "enterprise",
+    "public"
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "path": "/",
+      "shell": "top-nav-footer",
+      "patterns": [
+        {
+          "as": "marketing-hero",
+          "preset": "brand",
+          "pattern": "hero"
+        },
+        {
+          "as": "feature-grid",
+          "preset": "standard",
+          "pattern": "features"
+        },
+        {
+          "as": "customer-quotes",
+          "preset": "standard",
+          "pattern": "testimonials"
+        },
+        {
+          "as": "request-demo",
+          "preset": "standard",
+          "pattern": "cta-section"
+        }
+      ],
+      "default_layout": [
+        "marketing-hero",
+        "feature-grid",
+        "customer-quotes",
+        "request-demo"
+      ]
+    }
+  ],
+  "shells": {
+    "top-nav-footer": "Top navigation with marketing links and footer with company info"
+  },
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "version": "1.0.0",
+  "features": [
+    "marketing"
+  ],
+  "description": "Public marketing landing page for deal-room software positioning trust, security, and workflow velocity. Primary acquisition surface for enterprise sales.",
+  "page_briefs": {
+    "home": "Brand-variant hero anchors the page with bold headline on institutional trust and transaction velocity, supporting subhead, primary CTA for demo request, and a secondary CTA for security whitepaper. Below the hero, a features grid surfaces differentiators like granular permissions, watermarking, and audit trail. A testimonials band shows logos and quotes from PE and investment banking customers. The closing CTA section drives toward booking an enterprise demo."
+  },
+  "dependencies": {
+    "styles": {},
+    "patterns": {
+      "hero": ">=1.0.0",
+      "features": ">=1.0.0",
+      "cta-section": ">=1.0.0",
+      "testimonials": ">=1.0.0"
+    }
+  },
+  "classification": {
+    "tier": "recommended",
+    "weight": 0.7,
+    "implies": [
+      "marketing"
+    ],
+    "triggers": {
+      "primary": [
+        "deal room marketing",
+        "deal room landing",
+        "vdr marketing site",
+        "enterprise landing"
+      ],
+      "negative": [],
+      "secondary": [
+        "marketing page",
+        "homepage",
+        "landing page"
+      ]
+    }
+  },
+  "decantr_compat": ">=1.5.0",
+  "suggested_theme": {
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "styles": [
+      "professional",
+      "carbon"
+    ]
+  }
+}

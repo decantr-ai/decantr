@@ -1,0 +1,133 @@
+{
+  "id": "settings-full",
+  "name": "Settings Full",
+  "role": "auxiliary",
+  "tags": [
+    "settings",
+    "account",
+    "profile",
+    "security",
+    "preferences"
+  ],
+  "pages": [
+    {
+      "id": "profile",
+      "shell": "inherit",
+      "patterns": [
+        {
+          "as": "settings",
+          "preset": "profile",
+          "pattern": "account-settings"
+        }
+      ],
+      "default_layout": [
+        "account-settings"
+      ]
+    },
+    {
+      "id": "security",
+      "shell": "inherit",
+      "patterns": [
+        {
+          "as": "security-settings",
+          "preset": "security",
+          "pattern": "account-settings"
+        },
+        {
+          "as": "sessions",
+          "preset": "standard",
+          "pattern": "session-manager"
+        }
+      ],
+      "default_layout": [
+        "account-settings",
+        "sessions"
+      ]
+    },
+    {
+      "id": "preferences",
+      "shell": "inherit",
+      "patterns": [
+        {
+          "as": "settings",
+          "preset": "preferences",
+          "pattern": "account-settings"
+        }
+      ],
+      "default_layout": [
+        "account-settings"
+      ]
+    },
+    {
+      "id": "danger",
+      "shell": "inherit",
+      "patterns": [
+        {
+          "as": "settings",
+          "preset": "danger-zone",
+          "pattern": "account-settings"
+        }
+      ],
+      "default_layout": [
+        "account-settings"
+      ]
+    }
+  ],
+  "shells": {
+    "inherit": "Inherits shell from parent archetype or app context"
+  },
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "version": "1.0.0",
+  "features": [
+    "profile-edit",
+    "password-change",
+    "mfa-management",
+    "session-management",
+    "theme-toggle",
+    "account-deletion"
+  ],
+  "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+  "page_briefs": {
+    "danger": "Danger zone section with red-bordered cards for destructive actions. Export data button, deactivate account toggle, and delete account button with confirmation dialog warning.",
+    "profile": "Profile settings form with avatar upload, display name, email, and bio fields. Save button at the bottom of each section. Clean grouped form layout.",
+    "security": "Security settings with password change form (current + new password fields), MFA toggle with setup flow, and active sessions table showing device, location, and last-active with revoke buttons.",
+    "preferences": "Preferences form with theme selector (light/dark/auto toggle), notification preference checkboxes, language dropdown, and timezone selector."
+  },
+  "dependencies": {
+    "styles": {},
+    "patterns": {
+      "session-manager": "^1.0.0",
+      "account-settings": "^1.0.0"
+    }
+  },
+  "classification": {
+    "tier": "core",
+    "weight": 1,
+    "implies": [],
+    "triggers": {
+      "primary": [
+        "settings",
+        "account settings",
+        "user settings",
+        "preferences"
+      ],
+      "negative": [],
+      "secondary": [
+        "profile",
+        "security",
+        "password",
+        "theme"
+      ]
+    }
+  },
+  "decantr_compat": ">=1.0.0",
+  "suggested_theme": {
+    "modes": [
+      "dark",
+      "light"
+    ],
+    "styles": [
+      "carbon"
+    ]
+  }
+}

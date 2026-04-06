@@ -1,0 +1,119 @@
+{
+  "id": "document-vault",
+  "name": "Document Vault",
+  "role": "auxiliary",
+  "tags": [
+    "documents",
+    "vault",
+    "secure",
+    "watermarks",
+    "audit",
+    "due-diligence"
+  ],
+  "pages": [
+    {
+      "id": "documents",
+      "path": "/documents",
+      "shell": "sidebar-main",
+      "patterns": [
+        {
+          "as": "document-list",
+          "preset": "list",
+          "pattern": "file-browser"
+        },
+        {
+          "as": "document-filters",
+          "preset": "standard",
+          "pattern": "filter-bar"
+        }
+      ],
+      "default_layout": [
+        "document-filters",
+        "document-list"
+      ]
+    },
+    {
+      "id": "document-view",
+      "path": "/documents/:id",
+      "shell": "sidebar-main",
+      "patterns": [
+        {
+          "as": "doc-viewer",
+          "preset": "standard",
+          "pattern": "secure-document-viewer"
+        },
+        {
+          "as": "doc-questions",
+          "preset": "sidebar",
+          "pattern": "qa-thread"
+        }
+      ],
+      "default_layout": [
+        "doc-viewer",
+        "doc-questions"
+      ]
+    }
+  ],
+  "shells": {
+    "sidebar-main": "Folder tree sidebar with main content area for document browsing and viewing"
+  },
+  "$schema": "https://decantr.ai/schemas/archetype.v2.json",
+  "version": "1.0.0",
+  "features": [
+    "secure-documents",
+    "watermarks",
+    "audit"
+  ],
+  "description": "Secure document repository for deal rooms with watermarked viewing, granular access audit, and inline Q&A threads. Provides due-diligence document management with full audit trail.",
+  "page_briefs": {
+    "documents": "Document list page with a filter bar at top for document type, folder, access level, upload date, and keyword search. Below, a list-mode file browser displays folders and documents with columns for name, size, uploaded-by, last-viewed, and watermark status. Right-click context actions include download request, share, and view audit log.",
+    "document-view": "Secure document viewer fills the main canvas with dynamic watermark overlay showing viewer identity and timestamp, disabled download or print where gated, and a page navigator. A collapsible Q&A thread sidebar docks on the right allowing viewers to pose questions anchored to specific pages or passages, with assigned responders and status."
+  },
+  "dependencies": {
+    "styles": {},
+    "patterns": {
+      "qa-thread": ">=1.0.0",
+      "filter-bar": ">=1.0.0",
+      "file-browser": ">=1.0.0",
+      "secure-document-viewer": ">=1.0.0"
+    }
+  },
+  "classification": {
+    "tier": "recommended",
+    "weight": 0.9,
+    "implies": [
+      "secure-documents",
+      "audit"
+    ],
+    "triggers": {
+      "primary": [
+        "document vault",
+        "secure documents",
+        "virtual data room",
+        "vdr",
+        "document repository"
+      ],
+      "negative": [
+        "social",
+        "marketing"
+      ],
+      "secondary": [
+        "watermarked documents",
+        "document audit",
+        "due diligence docs",
+        "secure file sharing"
+      ]
+    }
+  },
+  "decantr_compat": ">=1.5.0",
+  "suggested_theme": {
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "styles": [
+      "carbon",
+      "professional"
+    ]
+  }
+}
