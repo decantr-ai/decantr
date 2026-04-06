@@ -1,0 +1,464 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "counsel",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "traditional",
+      "heading_weight": 700,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "sharp",
+      "base": 4
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "minimal",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Authoritative legal research workspace with warm cream backgrounds and deep navy accents. Serif body typography with monospace case citations. Citation graphs visualize case law networks showing which decisions cite which. Contract diffs reveal redlining with author attribution in margins. Matter cards track billable hours and deadlines with urgency indicators. Lucide icons. Scholarly."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "research-workspace",
+        "role": "primary",
+        "shell": "sidebar-aside",
+        "features": [
+          "case-law",
+          "citations",
+          "research"
+        ],
+        "description": "Primary legal research workspace for searching case law, inspecting case detail with citation graphs, and drafting research memos side-by-side with supporting briefs.",
+        "pages": [
+          {
+            "id": "search",
+            "layout": [
+              "search-filter-bar",
+              "data-table",
+              "citation-graph"
+            ],
+            "route": "/research"
+          },
+          {
+            "id": "case-detail",
+            "layout": [
+              "case-brief-card",
+              "citation-graph"
+            ],
+            "route": "/research/cases/:id"
+          },
+          {
+            "id": "research-memo",
+            "layout": [
+              "doc-editor",
+              "case-brief-card"
+            ],
+            "route": "/research/memo"
+          }
+        ]
+      },
+      {
+        "id": "contract-center",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "contracts",
+          "redlining",
+          "diffs"
+        ],
+        "description": "Auxiliary contract management surface for browsing the contract library, reviewing redlined documents with tracked changes, and comparing versions side-by-side.",
+        "pages": [
+          {
+            "id": "contracts",
+            "layout": [
+              "filter-bar",
+              "data-table"
+            ],
+            "route": "/contracts"
+          },
+          {
+            "id": "contract-detail",
+            "layout": [
+              "redline-track-changes",
+              "contract-diff"
+            ],
+            "route": "/contracts/:id"
+          },
+          {
+            "id": "contract-compare",
+            "layout": [
+              "contract-diff",
+              "diff-view"
+            ],
+            "route": "/contracts/compare"
+          }
+        ]
+      },
+      {
+        "id": "matter-management",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "matters",
+          "billing-tracking"
+        ],
+        "description": "Auxiliary matter management surface for tracking legal matters across lifecycle stages, inspecting matter detail with activity and billing context.",
+        "pages": [
+          {
+            "id": "matters",
+            "layout": [
+              "data-table",
+              "kanban-board"
+            ],
+            "route": "/matters"
+          },
+          {
+            "id": "matter-detail",
+            "layout": [
+              "matter-card",
+              "activity-feed",
+              "timeline"
+            ],
+            "route": "/matters/:id"
+          }
+        ]
+      },
+      {
+        "id": "citation-tools",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "citations",
+          "shepardize"
+        ],
+        "description": "Auxiliary citation management surface for organizing a citation library and running Shepardize-style validity checks with visual citation graphs.",
+        "pages": [
+          {
+            "id": "citations",
+            "layout": [
+              "data-table",
+              "citation-graph"
+            ],
+            "route": "/citations"
+          },
+          {
+            "id": "citation-check",
+            "layout": [
+              "citation-graph",
+              "data-table"
+            ],
+            "route": "/citations/check"
+          }
+        ]
+      },
+      {
+        "id": "marketing-legal",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing"
+        ],
+        "description": "Public marketing landing surface for a legal research platform with hero, feature grid, testimonials, and final call to action.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "features",
+              "testimonials",
+              "cta-section"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-aside",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "case-law",
+      "citations",
+      "research",
+      "contracts",
+      "redlining",
+      "diffs",
+      "matters",
+      "billing-tracking",
+      "shepardize",
+      "marketing",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-legal",
+        "page": "home"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/matters": {
+        "section": "matter-management",
+        "page": "matters"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/research": {
+        "section": "research-workspace",
+        "page": "search"
+      },
+      "/citations": {
+        "section": "citation-tools",
+        "page": "citations"
+      },
+      "/contracts": {
+        "section": "contract-center",
+        "page": "contracts"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/matters/:id": {
+        "section": "matter-management",
+        "page": "matter-detail"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/contracts/:id": {
+        "section": "contract-center",
+        "page": "contract-detail"
+      },
+      "/research/memo": {
+        "section": "research-workspace",
+        "page": "research-memo"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/citations/check": {
+        "section": "citation-tools",
+        "page": "citation-check"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/contracts/compare": {
+        "section": "contract-center",
+        "page": "contract-compare"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/research/cases/:id": {
+        "section": "research-workspace",
+        "page": "case-detail"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "research-workspace",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [],
+      "command_palette": true
+    }
+  }
+}

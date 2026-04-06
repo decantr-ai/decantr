@@ -1,0 +1,468 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "earth",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": 1.3,
+      "heading_weight": 700,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 10
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "smooth",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Carbon accounting and emissions dashboard with organic earth-tone palette. Sankey diagrams show emissions flowing from sources through Scope 1/2/3 categories. Supply chain maps pin suppliers with tier rings showing Scope 3 complexity. Target progress rings track reduction commitments against science-based targets. Regulatory reporting for CSRD, SEC climate rules, Scope 3 disclosure. Lucide icons. Grounded."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "emissions-dashboard",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "emissions-tracking",
+          "scope-123",
+          "targets"
+        ],
+        "description": "Climate emissions tracking dashboard with scope 1/2/3 breakdown, Sankey flows, and reduction target progress rings.",
+        "pages": [
+          {
+            "id": "overview",
+            "layout": [
+              "kpi-grid",
+              "emissions-sankey",
+              "target-progress-ring"
+            ],
+            "route": "/emissions"
+          },
+          {
+            "id": "scope-detail",
+            "layout": [
+              "scope-breakdown",
+              "chart-grid"
+            ],
+            "route": "/emissions/scope/:id"
+          },
+          {
+            "id": "targets",
+            "layout": [
+              "target-progress-ring",
+              "chart-grid"
+            ],
+            "route": "/emissions/targets"
+          }
+        ]
+      },
+      {
+        "id": "supply-chain",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "supply-chain",
+          "tier-tracking"
+        ],
+        "description": "Supplier directory and per-supplier emissions profile with tier tracking and geographic mapping for supply chain climate programs.",
+        "pages": [
+          {
+            "id": "suppliers",
+            "layout": [
+              "supply-chain-map",
+              "data-table"
+            ],
+            "route": "/suppliers"
+          },
+          {
+            "id": "supplier-detail",
+            "layout": [
+              "detail-header",
+              "kpi-grid",
+              "chart-grid"
+            ],
+            "route": "/suppliers/:id"
+          }
+        ]
+      },
+      {
+        "id": "offset-marketplace",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "offsets",
+          "marketplace",
+          "purchasing"
+        ],
+        "description": "Carbon offset marketplace for browsing verified projects, reviewing details, and completing offset purchases with cart-based checkout.",
+        "pages": [
+          {
+            "id": "marketplace",
+            "layout": [
+              "search-filter-bar",
+              "card-grid",
+              "offset-cart"
+            ],
+            "route": "/offsets"
+          },
+          {
+            "id": "project-detail",
+            "layout": [
+              "detail-header",
+              "card-grid"
+            ],
+            "route": "/offsets/:id"
+          },
+          {
+            "id": "checkout",
+            "layout": [
+              "checkout-flow",
+              "offset-cart"
+            ],
+            "route": "/offsets/checkout"
+          }
+        ]
+      },
+      {
+        "id": "reporting-center",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "reporting",
+          "csrd",
+          "compliance"
+        ],
+        "description": "Climate disclosure reporting workspace for CSRD and compliance reports with list browsing and guided report building.",
+        "pages": [
+          {
+            "id": "reports",
+            "layout": [
+              "filter-bar",
+              "data-table"
+            ],
+            "route": "/reports"
+          },
+          {
+            "id": "report-builder",
+            "layout": [
+              "form-sections",
+              "chart-grid"
+            ],
+            "route": "/reports/builder"
+          }
+        ]
+      },
+      {
+        "id": "marketing-climate",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing"
+        ],
+        "description": "Public marketing landing page for a climate dashboard product with vision hero, feature highlights, testimonials, and primary CTA.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "features",
+              "testimonials",
+              "cta-section"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "emissions-tracking",
+      "scope-123",
+      "targets",
+      "supply-chain",
+      "tier-tracking",
+      "offsets",
+      "marketplace",
+      "purchasing",
+      "reporting",
+      "csrd",
+      "compliance",
+      "marketing",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-climate",
+        "page": "home"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/offsets": {
+        "section": "offset-marketplace",
+        "page": "marketplace"
+      },
+      "/reports": {
+        "section": "reporting-center",
+        "page": "reports"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/emissions": {
+        "section": "emissions-dashboard",
+        "page": "overview"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/suppliers": {
+        "section": "supply-chain",
+        "page": "suppliers"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/offsets/:id": {
+        "section": "offset-marketplace",
+        "page": "project-detail"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/suppliers/:id": {
+        "section": "supply-chain",
+        "page": "supplier-detail"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/reports/builder": {
+        "section": "reporting-center",
+        "page": "report-builder"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/offsets/checkout": {
+        "section": "offset-marketplace",
+        "page": "checkout"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/emissions/targets": {
+        "section": "emissions-dashboard",
+        "page": "targets"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/emissions/scope/:id": {
+        "section": "emissions-dashboard",
+        "page": "scope-detail"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "emissions-dashboard",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [],
+      "command_palette": true
+    }
+  }
+}

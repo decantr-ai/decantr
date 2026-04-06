@@ -1,0 +1,166 @@
+/* Counsel theme decorators — Legal workspace */
+@layer decorators {
+
+/* Warm cream document page with generous margins and serif body text */
+.counsel-page {
+  background: #FAF7F2;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.7;
+}
+
+/* Official seal with ribbon embellishment in navy and oxblood */
+.counsel-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--d-primary), #14284A);
+  color: #FAF7F2;
+  font-weight: 700;
+  font-family: Georgia, serif;
+  box-shadow: 0 0 0 3px var(--d-secondary), 0 0 0 6px var(--d-primary);
+}
+
+/* Georgia or Garamond serif heading with deep navy color */
+.counsel-header {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--d-primary);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Annotation margin area with dashed divider for notes and references */
+.counsel-margin {
+  border-left: 2px dashed var(--d-border);
+  padding-left: 1rem;
+  font-size: 0.8125rem;
+  color: var(--d-text-muted);
+  font-style: italic;
+}
+
+/* Thin horizontal rule with warm border tone */
+.counsel-divider {
+  border: none;
+  border-top: 1px solid var(--d-border);
+  margin: 1.25rem 0;
+}
+
+/* Deep oxblood red accent elements */
+.counsel-oxblood {
+  color: var(--d-secondary);
+}
+
+/* Indented citation blocks with left border accent and italic serif type */
+.counsel-citation {
+  border-left: 3px solid var(--d-primary);
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 0.875rem;
+  color: var(--d-text);
+  background: color-mix(in srgb, var(--d-primary) 4%, transparent);
+  border-radius: 0 var(--d-radius-sm) var(--d-radius-sm) 0;
+}
+
+/* Subtle highlight on key text using warm cream background tint */
+.counsel-highlight {
+  background: color-mix(in srgb, var(--d-warning) 15%, transparent);
+  padding: 0.0625rem 0.25rem;
+  border-radius: 2px;
+}
+
+/* Monospace data display for citations and case numbers */
+.mono-data {
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  font-size: 0.8125rem;
+  letter-spacing: -0.02em;
+}
+
+/* Card surface for matters and cases */
+.counsel-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.counsel-card:hover {
+  border-color: var(--d-primary);
+  box-shadow: var(--d-shadow-md);
+}
+
+/* Redline insertion styling */
+.counsel-redline-add {
+  background: color-mix(in srgb, var(--d-success) 15%, transparent);
+  color: var(--d-success);
+  text-decoration: none;
+}
+
+/* Redline deletion styling */
+.counsel-redline-del {
+  background: color-mix(in srgb, var(--d-error) 15%, transparent);
+  color: var(--d-error);
+  text-decoration: line-through;
+}
+
+/* Status urgency indicators */
+.counsel-urgent {
+  border-left: 3px solid var(--d-error);
+  padding-left: 0.75rem;
+}
+
+.counsel-moderate {
+  border-left: 3px solid var(--d-warning);
+  padding-left: 0.75rem;
+}
+
+.counsel-low {
+  border-left: 3px solid var(--d-success);
+  padding-left: 0.75rem;
+}
+
+/* Prose for legal documents */
+.counsel-prose {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+  line-height: 1.8;
+  max-width: 720px;
+  color: var(--d-text);
+}
+
+.counsel-prose h1 { font-size: 1.75rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; color: var(--d-primary); }
+.counsel-prose h2 { font-size: 1.375rem; font-weight: 700; margin-top: 1.75rem; margin-bottom: 0.5rem; color: var(--d-primary); }
+.counsel-prose h3 { font-size: 1.125rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+.counsel-prose p { margin-bottom: 0.875rem; }
+
+/* Graph node styling */
+.counsel-node {
+  fill: var(--d-surface);
+  stroke: var(--d-primary);
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: stroke-width 0.15s ease;
+}
+
+.counsel-node:hover {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+
+/* Graph edge styling */
+.counsel-edge {
+  stroke: var(--d-border);
+  stroke-width: 1;
+  fill: none;
+}
+
+} /* end @layer decorators */
+
+@media (prefers-reduced-motion: reduce) {
+  .entrance-fade {
+    animation: none !important;
+  }
+}
