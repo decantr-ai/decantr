@@ -4,6 +4,29 @@ import { useState, useTransition } from 'react';
 import { approveSubmission, rejectSubmission } from './actions';
 import type { ModerationQueueItem } from '@/lib/api';
 
+function CheckIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+function XIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+function ExternalLinkIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  );
+}
+
 export function ModerationCard({ item }: { item: ModerationQueueItem }) {
   const [isPending, startTransition] = useTransition();
   const [showReject, setShowReject] = useState(false);
@@ -40,88 +63,91 @@ export function ModerationCard({ item }: { item: ModerationQueueItem }) {
 
   if (feedback?.type === 'success') {
     return (
-      <div className="flex items-center gap-2 pt-2 border-t border-d-border/50">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          className="text-d-green"
-        >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-        <span className="text-sm text-d-green">{feedback.message}</span>
+      <div className="flex items-center gap-2">
+        <span style={{ color: 'var(--d-success)' }}>
+          <CheckIcon size={14} />
+        </span>
+        <span className="text-sm" style={{ color: 'var(--d-success)' }}>
+          {feedback.message}
+        </span>
+      </div>
+    );
+  }
+
+  if (showReject) {
+    return (
+      <div className="flex flex-col gap-2" style={{ minWidth: '20rem' }}>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Rejection reason (required)"
+          className="d-control w-full"
+          style={{ resize: 'none', fontSize: '0.8125rem' }}
+          rows={2}
+          autoFocus
+        />
+        <div className="flex items-center gap-2 justify-end">
+          <button
+            className="d-interactive"
+            data-variant="ghost"
+            onClick={() => { setShowReject(false); setReason(''); }}
+            disabled={isPending}
+            style={{ fontSize: '0.8125rem' }}
+          >
+            Cancel
+          </button>
+          <button
+            className="d-interactive"
+            data-variant="ghost"
+            onClick={handleReject}
+            disabled={isPending || !reason.trim()}
+            style={{ color: 'var(--d-error)', fontSize: '0.8125rem' }}
+          >
+            {isPending ? 'Rejecting...' : 'Confirm Reject'}
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="pt-2 border-t border-d-border/50">
+    <div className="flex flex-col gap-1 items-end">
       {feedback?.type === 'error' && (
-        <p className="text-sm text-d-error mb-2">{feedback.message}</p>
+        <p className="text-xs" style={{ color: 'var(--d-error)' }}>
+          {feedback.message}
+        </p>
       )}
-
-      {showReject ? (
-        <div className="flex flex-col gap-2">
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Rejection reason (required)"
-            className="d-control w-full text-sm rounded-md resize-none"
-            rows={3}
-          />
-          <div className="flex items-center gap-2">
-            <button
-              className="d-interactive text-sm py-1.5 px-3"
-              data-variant="danger"
-              onClick={handleReject}
-              disabled={isPending || !reason.trim()}
-            >
-              {isPending ? 'Rejecting...' : 'Confirm Reject'}
-            </button>
-            <button
-              className="d-interactive text-sm py-1.5 px-3"
-              data-variant="ghost"
-              onClick={() => {
-                setShowReject(false);
-                setReason('');
-              }}
-              disabled={isPending}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          <button
-            className="d-interactive text-sm py-1.5 px-3"
-            data-variant="primary"
-            style={{ background: 'var(--d-green)', borderColor: 'var(--d-green)' }}
-            onClick={handleApprove}
-            disabled={isPending}
-          >
-            {isPending ? 'Approving...' : 'Approve'}
-          </button>
-          <button
-            className="d-interactive text-sm py-1.5 px-3"
-            data-variant="danger"
-            onClick={() => setShowReject(true)}
-            disabled={isPending}
-          >
-            Reject
-          </button>
-          <a
-            href={`/admin/moderation/${item.id}`}
-            className="d-interactive text-sm py-1.5 px-3 ml-auto"
-            data-variant="ghost"
-          >
-            View Detail
-          </a>
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <button
+          className="d-interactive"
+          data-variant="ghost"
+          onClick={handleApprove}
+          disabled={isPending}
+          style={{ color: 'var(--d-success)', fontSize: '0.8125rem' }}
+        >
+          <CheckIcon size={14} />
+          {isPending ? 'Approving...' : 'Approve'}
+        </button>
+        <button
+          className="d-interactive"
+          data-variant="ghost"
+          onClick={() => setShowReject(true)}
+          disabled={isPending}
+          style={{ color: 'var(--d-error)', fontSize: '0.8125rem' }}
+        >
+          <XIcon size={14} />
+          Reject
+        </button>
+        <a
+          href={`/admin/moderation/${item.id}`}
+          className="d-interactive"
+          data-variant="ghost"
+          style={{ fontSize: '0.8125rem', textDecoration: 'none' }}
+        >
+          <ExternalLinkIcon size={14} />
+          Details
+        </a>
+      </div>
     </div>
   );
 }
