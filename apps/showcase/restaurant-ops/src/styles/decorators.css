@@ -1,0 +1,205 @@
+/* bistro LIGHT decorators — warm terracotta + cream, hospitable */
+@layer decorators {
+
+/* Warm wash background with terracotta radials */
+.bistro-wash {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(194, 65, 12, 0.06), transparent 45%),
+    radial-gradient(circle at 90% 20%, rgba(234, 88, 12, 0.05), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(124, 45, 18, 0.04), transparent 55%),
+    var(--d-bg);
+}
+
+/* Menu card — artisanal dividers, warm cream */
+.bistro-menu {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: var(--d-surface-p);
+  box-shadow: var(--d-shadow);
+  position: relative;
+}
+.bistro-menu::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 1.5rem; right: 1.5rem;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--d-accent), transparent);
+  border-radius: 1px;
+}
+
+/* Ceramic tile pattern */
+.bistro-tile {
+  background:
+    linear-gradient(45deg, var(--d-surface-raised) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--d-surface-raised) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--d-surface-raised) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--d-surface-raised) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  border-radius: var(--d-radius);
+  padding: var(--d-surface-p);
+}
+
+/* Daily special callout — chalkboard ribbon */
+.bistro-daily {
+  background: linear-gradient(135deg, #2D1B0E, #3D2B1E);
+  color: #FFF7ED;
+  border-radius: var(--d-radius-lg);
+  padding: 1.25rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--d-shadow-md);
+}
+.bistro-daily::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='rgba(255,255,255,0.03)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Vintage stamp badge */
+.bistro-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--d-primary);
+  border: 2px solid var(--d-primary);
+  border-radius: var(--d-radius-sm);
+  transform: rotate(-2deg);
+  opacity: 0.85;
+}
+
+/* Warm cream card */
+.bistro-warm-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: var(--d-surface-p);
+  box-shadow: 0 2px 8px rgba(194, 65, 12, 0.06);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.bistro-warm-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(194, 65, 12, 0.1);
+}
+
+/* Chalkboard header */
+.bistro-chalkboard {
+  background: linear-gradient(135deg, #1C1108, #2D1B0E);
+  color: #FFF7ED;
+  padding: 1rem 1.25rem;
+  border-radius: var(--d-radius);
+  font-family: 'Georgia', serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Handwritten accent */
+.bistro-handwritten {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* Table status shape on floor map */
+.table-shape {
+  border-radius: var(--d-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  user-select: none;
+  border: 2px solid transparent;
+}
+.table-shape:hover {
+  transform: scale(1.05);
+  box-shadow: var(--d-shadow-md);
+}
+.table-shape[data-status="available"] {
+  background: color-mix(in srgb, var(--d-success) 15%, white);
+  border-color: var(--d-success);
+  color: var(--d-success);
+}
+.table-shape[data-status="occupied"] {
+  background: color-mix(in srgb, var(--d-primary) 15%, white);
+  border-color: var(--d-primary);
+  color: var(--d-primary);
+}
+.table-shape[data-status="reserved"] {
+  background: color-mix(in srgb, var(--d-info) 15%, white);
+  border-color: var(--d-info);
+  color: var(--d-info);
+}
+.table-shape[data-status="cleaning"] {
+  background: color-mix(in srgb, var(--d-warning) 15%, white);
+  border-color: var(--d-warning);
+  color: var(--d-warning);
+}
+
+/* KDS ticket */
+.kds-ticket {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  padding: 0.75rem;
+  min-width: 220px;
+  box-shadow: var(--d-shadow-sm);
+  transition: border-color 150ms ease;
+}
+.kds-ticket[data-priority="rush"] {
+  border-left: 3px solid var(--d-error);
+}
+.kds-ticket[data-priority="normal"] {
+  border-left: 3px solid var(--d-success);
+}
+.kds-ticket[data-priority="fire"] {
+  border-left: 3px solid var(--d-warning);
+  animation: ticket-pulse 2s ease-in-out infinite;
+}
+@keyframes ticket-pulse {
+  0%, 100% { box-shadow: var(--d-shadow-sm); }
+  50% { box-shadow: 0 0 12px color-mix(in srgb, var(--d-warning) 30%, transparent); }
+}
+
+/* Depletion bar */
+.depletion-bar {
+  height: 8px;
+  border-radius: var(--d-radius-full);
+  background: var(--d-surface-raised);
+  overflow: hidden;
+  position: relative;
+}
+.depletion-bar-fill {
+  height: 100%;
+  border-radius: var(--d-radius-full);
+  transition: width 600ms var(--d-easing);
+}
+
+/* Warm divider */
+.bistro-divider {
+  border: none;
+  border-top: 1px solid var(--d-border);
+  margin: 1.5rem 0;
+}
+
+/* Feature tile */
+.bistro-feature-tile {
+  background: var(--d-surface-raised);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius-lg);
+  padding: var(--d-surface-p);
+}
+
+} /* end @layer decorators */

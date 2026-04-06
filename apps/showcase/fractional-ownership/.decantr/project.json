@@ -1,0 +1,48 @@
+{
+  "detected": {
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
+    "hasTailwind": false,
+    "existingRuleFiles": []
+  },
+  "overrides": {
+    "framework": "react"
+  },
+  "sync": {
+    "status": "synced",
+    "lastSync": "2026-04-06T16:36:12.000Z",
+    "registrySource": "api",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-04-06T16:36:12.000Z",
+    "via": "cli",
+    "version": "1.0.0",
+    "flags": "--blueprint=fractional-ownership --theme=fintech --mode=dark --guard=strict"
+  },
+  "blueprintId": "fractional-ownership",
+  "voice": {
+    "tone": "Financial and precise. Speaks to investors and token holders.",
+    "avoid": [
+      "Buy now",
+      "Click"
+    ],
+    "errors": "Trade rejected — insufficient funds. Deposit required: ${amount}",
+    "loading": "Settling transaction on-chain...",
+    "cta_verbs": [
+      "Invest",
+      "Trade",
+      "Vote",
+      "Distribute",
+      "Allocate",
+      "Verify"
+    ],
+    "empty_states": "No assets in your portfolio. Browse featured listings to begin."
+  }
+}

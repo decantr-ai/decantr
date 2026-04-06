@@ -1,0 +1,467 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "fintech",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": 1.15,
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "sharp",
+      "base": 4
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "minimal",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Fractional asset ownership platform with institutional-grade financial visualizations. Cap tables display share classes with vesting chips and fully-diluted percentages. Valuation charts project with confidence bands. Secondary market shows order books with live spreads. Governance ballots let token holders vote on major decisions with weighted voting. Dividend ledgers track distributions with tax treatments. Think Carta meets Rally. Lucide icons. Sharp."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "asset-browser",
+        "role": "primary",
+        "shell": "top-nav-main",
+        "features": [
+          "browse",
+          "valuation",
+          "search",
+          "filters"
+        ],
+        "description": "Primary discovery surface for a fractional ownership platform. Investors browse tokenized assets, filter by class and yield, and drill into detailed valuation, cap table, and dividend history.",
+        "pages": [
+          {
+            "id": "browse",
+            "layout": [
+              "search-filter-bar",
+              "card-grid"
+            ],
+            "route": "/browse"
+          },
+          {
+            "id": "asset-detail",
+            "layout": [
+              "detail-header",
+              "valuation-chart",
+              "cap-table",
+              "dividend-ledger"
+            ],
+            "route": "/browse/:id"
+          }
+        ]
+      },
+      {
+        "id": "ownership-dashboard",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "ownership",
+          "distributions",
+          "portfolio",
+          "cap-table"
+        ],
+        "description": "Authenticated investor workspace for managing fractional holdings. Shows portfolio KPIs, cap tables per asset, and distribution history with performance charts.",
+        "pages": [
+          {
+            "id": "portfolio",
+            "layout": [
+              "kpi-grid",
+              "data-table",
+              "chart-grid"
+            ],
+            "route": "/portfolio"
+          },
+          {
+            "id": "cap-table",
+            "layout": [
+              "cap-table",
+              "chart-grid"
+            ],
+            "route": "/portfolio/cap-table"
+          },
+          {
+            "id": "distributions",
+            "layout": [
+              "dividend-ledger",
+              "chart-grid"
+            ],
+            "route": "/portfolio/distributions"
+          }
+        ]
+      },
+      {
+        "id": "secondary-market",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "trading",
+          "order-book",
+          "market-data"
+        ],
+        "description": "Peer-to-peer trading surface for fractional asset tokens. Investors view order books, place buy and sell orders, and watch live price action.",
+        "pages": [
+          {
+            "id": "market",
+            "layout": [
+              "data-table",
+              "chart-grid"
+            ],
+            "route": "/market"
+          },
+          {
+            "id": "trade",
+            "layout": [
+              "valuation-chart",
+              "trade-modal"
+            ],
+            "route": "/market/trade"
+          }
+        ]
+      },
+      {
+        "id": "governance-center",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "governance",
+          "voting",
+          "proposals"
+        ],
+        "description": "DAO-style governance surface for fractional asset holders. Members review active proposals, cast weighted votes, and follow discussion activity.",
+        "pages": [
+          {
+            "id": "proposals",
+            "layout": [
+              "card-grid",
+              "data-table"
+            ],
+            "route": "/governance"
+          },
+          {
+            "id": "proposal-detail",
+            "layout": [
+              "governance-ballot",
+              "activity-feed"
+            ],
+            "route": "/governance/:id"
+          }
+        ]
+      },
+      {
+        "id": "marketing-fractional",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "landing",
+          "conversion"
+        ],
+        "description": "Public marketing landing page for a fractional ownership platform. Explains tokenized investing, trust signals, and drives visitors to sign up and browse assets.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "hero",
+              "features",
+              "how-it-works",
+              "testimonials",
+              "cta-section"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "top-nav-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "browse",
+      "valuation",
+      "search",
+      "filters",
+      "ownership",
+      "distributions",
+      "portfolio",
+      "cap-table",
+      "trading",
+      "order-book",
+      "market-data",
+      "governance",
+      "voting",
+      "proposals",
+      "marketing",
+      "landing",
+      "conversion",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-fractional",
+        "page": "home"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/browse": {
+        "section": "asset-browser",
+        "page": "browse"
+      },
+      "/market": {
+        "section": "secondary-market",
+        "page": "market"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/portfolio": {
+        "section": "ownership-dashboard",
+        "page": "portfolio"
+      },
+      "/browse/:id": {
+        "section": "asset-browser",
+        "page": "asset-detail"
+      },
+      "/governance": {
+        "section": "governance-center",
+        "page": "proposals"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/market/trade": {
+        "section": "secondary-market",
+        "page": "trade"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/governance/:id": {
+        "section": "governance-center",
+        "page": "proposal-detail"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/portfolio/cap-table": {
+        "section": "ownership-dashboard",
+        "page": "cap-table"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      },
+      "/portfolio/distributions": {
+        "section": "ownership-dashboard",
+        "page": "distributions"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "asset-browser",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "FinancialProduct"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [],
+      "command_palette": true
+    }
+  }
+}

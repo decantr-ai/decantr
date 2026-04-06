@@ -1,0 +1,215 @@
+/* Lab theme decorators — sharp, precise, scientific */
+@layer decorators {
+
+/* Precise 8px grid panel — sharp corners, thin borders */
+.lab-grid {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: 2px;
+}
+
+/* White panel with precise 1px border, sharp corners */
+.lab-panel {
+  background: #fff;
+  border: 1px solid var(--d-border);
+  border-radius: 2px;
+  box-shadow: var(--d-shadow-sm);
+}
+
+/* Scientific iconography accent */
+.lab-beaker {
+  color: var(--d-primary);
+  stroke-width: 1.5px;
+}
+
+/* Yellow/black hazard stripes for warnings */
+.lab-hazard {
+  background: repeating-linear-gradient(
+    -45deg,
+    #F59E0B,
+    #F59E0B 8px,
+    #18181B 8px,
+    #18181B 16px
+  );
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Monospace barcode-style display */
+.lab-barcode {
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.15em;
+  font-variant-numeric: tabular-nums;
+  background: var(--d-surface-raised);
+  border: 1px solid var(--d-border);
+  border-radius: 2px;
+  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Monospace data reading */
+.lab-reading {
+  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+  color: var(--d-text);
+}
+
+/* Protocol step markers with numbered circles */
+.lab-protocol {
+  position: relative;
+  padding-left: 2.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.lab-protocol::before {
+  content: attr(data-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--d-primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lab-protocol::after {
+  content: '';
+  position: absolute;
+  left: calc(0.875rem - 0.5px);
+  top: 2rem;
+  bottom: -0.5rem;
+  width: 1px;
+  background: var(--d-border);
+}
+
+.lab-protocol:last-child::after {
+  display: none;
+}
+
+/* Cyan accent for active states and highlights */
+.lab-cyan-accent {
+  border-left: 3px solid var(--d-primary);
+  padding-left: 0.75rem;
+}
+
+/* LaTeX block styling */
+.lab-latex {
+  font-family: 'Computer Modern', 'Latin Modern Math', 'STIX Two Math', serif;
+  font-size: 1rem;
+  text-align: center;
+  padding: 1rem;
+  background: var(--d-surface-raised);
+  border: 1px solid var(--d-border);
+  border-radius: 2px;
+  margin: 0.75rem 0;
+  font-style: italic;
+}
+
+/* Status indicator dot */
+.lab-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.lab-status-dot[data-status="active"] { background: var(--d-success); }
+.lab-status-dot[data-status="pending"] { background: var(--d-warning); }
+.lab-status-dot[data-status="error"] { background: var(--d-error); }
+.lab-status-dot[data-status="idle"] { background: var(--d-border); }
+
+/* Reagent chip */
+.lab-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--d-border);
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--d-surface);
+  color: var(--d-text);
+  white-space: nowrap;
+}
+
+.lab-chip[data-color="cyan"] {
+  border-color: var(--d-primary);
+  background: color-mix(in srgb, var(--d-primary) 10%, transparent);
+  color: var(--d-primary);
+}
+
+.lab-chip[data-color="amber"] {
+  border-color: var(--d-warning);
+  background: color-mix(in srgb, var(--d-warning) 10%, transparent);
+  color: #92400E;
+}
+
+.lab-chip[data-color="red"] {
+  border-color: var(--d-error);
+  background: color-mix(in srgb, var(--d-error) 10%, transparent);
+  color: var(--d-error);
+}
+
+/* Schedule grid slot */
+.lab-slot {
+  border: 1px solid var(--d-border);
+  border-radius: 2px;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+  transition: background 100ms linear, border-color 100ms linear;
+}
+
+.lab-slot[data-booked="true"] {
+  background: color-mix(in srgb, var(--d-primary) 12%, transparent);
+  border-color: var(--d-primary);
+  color: var(--d-primary);
+}
+
+.lab-slot:hover {
+  border-color: var(--d-primary);
+}
+
+/* Data quality indicator */
+.lab-quality {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.lab-quality[data-level="high"] { color: var(--d-success); }
+.lab-quality[data-level="medium"] { color: var(--d-warning); }
+.lab-quality[data-level="low"] { color: var(--d-error); }
+
+/* Schema tree connector lines */
+.lab-schema-tree {
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--d-border);
+  margin-left: 0.5rem;
+}
+
+} /* end @layer decorators */
+
+@media (prefers-reduced-motion: reduce) {
+  .entrance-fade {
+    animation: none !important;
+  }
+}

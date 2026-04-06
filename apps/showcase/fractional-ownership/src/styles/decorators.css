@@ -1,0 +1,340 @@
+/* Fractionel — Fractional Ownership fintech dark decorators */
+
+@layer decorators {
+
+/* -- fo-nav: Sticky top navigation for marketing -- */
+.fo-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  z-index: 40;
+  background: color-mix(in srgb, var(--d-bg) 85%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid color-mix(in srgb, var(--d-border) 50%, transparent);
+}
+
+/* -- fo-hero: Marketing hero with grid overlay -- */
+.fo-hero {
+  position: relative;
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6rem 2rem 4rem;
+  overflow: hidden;
+}
+
+.fo-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 25% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 85%, rgba(20, 184, 166, 0.06) 0%, transparent 50%);
+  animation: fo-mesh-drift 18s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.fo-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--d-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--d-border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+@keyframes fo-mesh-drift {
+  0% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.04); }
+}
+
+/* -- fo-orb -- */
+.fo-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(72px);
+  opacity: 0.22;
+}
+
+.fo-orb-1 {
+  width: 380px;
+  height: 380px;
+  background: var(--d-primary);
+  top: -10%;
+  left: -4%;
+  animation: fo-orb-float 11s ease-in-out infinite alternate;
+}
+
+.fo-orb-2 {
+  width: 320px;
+  height: 320px;
+  background: var(--d-secondary);
+  bottom: -6%;
+  right: -4%;
+  animation: fo-orb-float 13s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes fo-orb-float {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(16px, -16px); }
+}
+
+/* -- fo-sidebar: App shell sidebar -- */
+.fo-sidebar {
+  background: var(--d-surface);
+  border-right: 1px solid var(--d-border);
+}
+
+.fo-sidebar [data-active="true"] {
+  background: color-mix(in srgb, var(--d-primary) 12%, transparent);
+  color: var(--d-primary-hover);
+}
+
+.fo-sidebar [data-active="true"]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--d-primary);
+  border-radius: 0 2px 2px 0;
+}
+
+/* -- fo-card: Card with sharp edges and hover lift -- */
+.fo-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--d-radius);
+  box-shadow: var(--d-shadow);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.fo-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--d-shadow-md);
+  border-color: color-mix(in srgb, var(--d-primary) 35%, var(--d-border));
+}
+
+/* -- fo-kpi-accent: KPI card with left accent border -- */
+.fo-kpi-accent {
+  position: relative;
+  overflow: hidden;
+}
+
+.fo-kpi-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--d-primary), var(--d-secondary));
+  border-radius: var(--d-radius) 0 0 var(--d-radius);
+}
+
+/* -- fo-button-primary -- */
+.fo-button-primary {
+  background: var(--d-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--d-radius);
+  padding: var(--d-interactive-py) var(--d-interactive-px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  text-decoration: none;
+}
+
+.fo-button-primary:hover {
+  background: var(--d-primary-hover);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--d-primary) 25%, transparent);
+}
+
+.fo-button-primary:focus-visible {
+  outline: 2px solid var(--d-primary);
+  outline-offset: 2px;
+}
+
+/* -- fo-fade-in -- */
+.fo-fade-in {
+  animation: fo-fade-in 0.35s ease-out both;
+}
+
+@keyframes fo-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* -- fo-gradient-text -- */
+.fo-gradient-text {
+  background: linear-gradient(135deg, var(--d-primary), var(--d-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* -- fo-avatar -- */
+.fo-avatar {
+  border-radius: var(--d-radius);
+  background: linear-gradient(135deg, var(--d-primary), var(--d-accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+/* -- fo-mono: Monospace numbers -- */
+.fo-mono {
+  font-family: var(--d-font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -- fo-gain / fo-loss: Semantic financial color -- */
+.fo-gain { color: var(--d-success); }
+.fo-loss { color: var(--d-error); }
+
+/* -- fo-share-bar: Share class allocation bar -- */
+.fo-share-stack {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  border-radius: var(--d-radius-sm);
+  overflow: hidden;
+  background: var(--d-surface-raised);
+}
+
+.fo-share-segment {
+  height: 100%;
+  transition: opacity 150ms ease;
+}
+
+.fo-share-segment:hover {
+  opacity: 0.75;
+}
+
+/* -- fo-confidence-band: SVG confidence band -- */
+.fo-confidence-band {
+  opacity: 0.12;
+}
+
+/* -- fo-order-row: Order book row flash -- */
+.fo-order-row {
+  transition: background 0.2s ease;
+}
+
+.fo-order-row:hover {
+  background: var(--d-surface);
+}
+
+/* -- fo-bid -- */
+.fo-bid-bar {
+  background: color-mix(in srgb, var(--d-success) 12%, transparent);
+  height: 100%;
+  transition: width 300ms ease-out;
+}
+
+/* -- fo-ask -- */
+.fo-ask-bar {
+  background: color-mix(in srgb, var(--d-error) 12%, transparent);
+  height: 100%;
+  transition: width 300ms ease-out;
+}
+
+/* -- fo-ballot: Governance ballot card -- */
+.fo-ballot-progress {
+  height: 4px;
+  background: var(--d-surface-raised);
+  border-radius: var(--d-radius-sm);
+  overflow: hidden;
+}
+
+.fo-ballot-fill {
+  height: 100%;
+  border-radius: var(--d-radius-sm);
+  transition: width 500ms ease-out;
+}
+
+/* -- fo-pill: Status pill -- */
+.fo-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--d-radius-sm);
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: var(--d-surface-raised);
+  color: var(--d-text-muted);
+  white-space: nowrap;
+}
+
+.fo-pill[data-status="active"] {
+  background: color-mix(in srgb, var(--d-success) 14%, transparent);
+  color: var(--d-success);
+}
+
+.fo-pill[data-status="pending"] {
+  background: color-mix(in srgb, var(--d-warning) 14%, transparent);
+  color: var(--d-warning);
+}
+
+.fo-pill[data-status="closed"] {
+  background: color-mix(in srgb, var(--d-info) 14%, transparent);
+  color: var(--d-info);
+}
+
+.fo-pill[data-status="rejected"] {
+  background: color-mix(in srgb, var(--d-error) 14%, transparent);
+  color: var(--d-error);
+}
+
+/* -- fo-sector-dot -- */
+.fo-sector-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--d-radius-sm);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* -- fo-icon-chip -- */
+.fo-icon-chip {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--d-radius);
+  background: color-mix(in srgb, var(--d-primary) 12%, transparent);
+  color: var(--d-primary-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* -- fo-dividend-row: alternating -- */
+.fo-dividend-row:nth-child(even) {
+  background: color-mix(in srgb, var(--d-surface-raised) 40%, transparent);
+}
+
+} /* end @layer decorators */

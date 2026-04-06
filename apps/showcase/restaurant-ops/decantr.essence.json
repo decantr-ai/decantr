@@ -1,0 +1,605 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "bistro",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 700,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 12
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Warm restaurant operations hub with terracotta accents and handwritten chalkboard headers. Floor map shows live table status as colored shapes with party sizes. Kitchen display system rail shows order tickets flowing through stations with prep timers. Menu engineering grid highlights profitability per dish. Inventory depletion bars warn on low stock. Tip pool calculators split fairly. Think Toast meets Resy. Lucide icons. Hospitable."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "restaurant-floor",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": [
+          "floor-map",
+          "reservations",
+          "walk-ins"
+        ],
+        "description": "Live floor map and reservations workspace for front-of-house staff. Real-time table status, reservation calendar, and guest seating.",
+        "pages": [
+          {
+            "id": "floor",
+            "layout": [
+              "floor-kpis",
+              "floor-map",
+              "floor-activity"
+            ],
+            "route": "/floor"
+          },
+          {
+            "id": "reservations",
+            "layout": [
+              "reservation-calendar",
+              "reservation-list"
+            ],
+            "route": "/floor/reservations"
+          },
+          {
+            "id": "new-reservation",
+            "layout": [
+              "reservation-form",
+              "table-picker"
+            ],
+            "route": "/floor/reservations/new"
+          }
+        ]
+      },
+      {
+        "id": "kitchen-display",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "kds",
+          "tickets",
+          "station-routing"
+        ],
+        "description": "Kitchen display system (KDS) for restaurant ticket routing. Horizontal ticket rail with station-specific views and fire timers.",
+        "pages": [
+          {
+            "id": "kitchen",
+            "layout": [
+              "kitchen-kpis",
+              "ticket-rail"
+            ],
+            "route": "/kitchen"
+          },
+          {
+            "id": "stations",
+            "layout": [
+              "station-tickets"
+            ],
+            "route": "/kitchen/stations"
+          }
+        ]
+      },
+      {
+        "id": "menu-management",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "menu-editing",
+          "engineering"
+        ],
+        "description": "Menu editor and engineering workspace. Manages menus, sections, items, pricing, modifiers, and profitability analysis.",
+        "pages": [
+          {
+            "id": "menus",
+            "layout": [
+              "menu-list",
+              "menu-cards"
+            ],
+            "route": "/menus"
+          },
+          {
+            "id": "menu-detail",
+            "layout": [
+              "menu-editor",
+              "item-order"
+            ],
+            "route": "/menus/:id"
+          },
+          {
+            "id": "menu-engineering",
+            "layout": [
+              "profit-charts",
+              "item-matrix"
+            ],
+            "route": "/menus/engineering"
+          }
+        ]
+      },
+      {
+        "id": "inventory-supplies",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "inventory",
+          "purchasing"
+        ],
+        "description": "Restaurant inventory and purchasing workspace. Tracks ingredients, par levels, usage, and purchase orders across suppliers.",
+        "pages": [
+          {
+            "id": "inventory",
+            "layout": [
+              "par-levels",
+              "ingredient-list"
+            ],
+            "route": "/inventory"
+          },
+          {
+            "id": "ingredient-detail",
+            "layout": [
+              "ingredient-header",
+              "usage-charts"
+            ],
+            "route": "/inventory/:id"
+          },
+          {
+            "id": "orders",
+            "layout": [
+              "po-board",
+              "po-list"
+            ],
+            "route": "/inventory/orders"
+          }
+        ]
+      },
+      {
+        "id": "server-station",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "shifts",
+          "tips"
+        ],
+        "description": "Server-facing shift workspace. Tracks active tables, shift performance, sales, and tips across the current shift.",
+        "pages": [
+          {
+            "id": "shift",
+            "layout": [
+              "shift-kpis",
+              "shift-activity"
+            ],
+            "route": "/shift"
+          },
+          {
+            "id": "tips",
+            "layout": [
+              "tip-charts",
+              "tip-history"
+            ],
+            "route": "/shift/tips"
+          }
+        ]
+      },
+      {
+        "id": "customer-loyalty",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "loyalty",
+          "customer-tracking"
+        ],
+        "description": "Customer relationship and loyalty program management. Tracks guest history, preferences, tier status, and rewards.",
+        "pages": [
+          {
+            "id": "customers",
+            "layout": [
+              "customer-filters",
+              "customer-list"
+            ],
+            "route": "/customers"
+          },
+          {
+            "id": "customer-detail",
+            "layout": [
+              "customer-header",
+              "visit-history",
+              "relationship-timeline"
+            ],
+            "route": "/customers/:id"
+          },
+          {
+            "id": "loyalty-program",
+            "layout": [
+              "loyalty-kpis",
+              "tiers"
+            ],
+            "route": "/customers/loyalty"
+          }
+        ]
+      },
+      {
+        "id": "daily-operations",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "operations",
+          "reports",
+          "pnl"
+        ],
+        "description": "Daily operations dashboard and reporting for restaurant managers. Covers, sales, labor, and P&L at a glance.",
+        "pages": [
+          {
+            "id": "dashboard",
+            "layout": [
+              "daily-kpis",
+              "daily-charts",
+              "ops-activity"
+            ],
+            "route": "/ops"
+          },
+          {
+            "id": "reports",
+            "layout": [
+              "report-charts",
+              "report-list"
+            ],
+            "route": "/ops/reports"
+          }
+        ]
+      },
+      {
+        "id": "marketing-restaurant",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing"
+        ],
+        "description": "Public-facing marketing landing page for the restaurant operations platform. Hero, features, testimonials, and conversion CTA.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              "landing-hero",
+              "platform-features",
+              "social-proof",
+              "signup-cta"
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              "form"
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/forgot-password"
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              "form"
+            ],
+            "route": "/reset-password"
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              "form"
+            ],
+            "route": "/verify-email"
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-setup"
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/mfa-verify"
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              "form"
+            ],
+            "route": "/phone-verify"
+          }
+        ]
+      },
+      {
+        "id": "settings-full",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "profile-edit",
+          "password-change",
+          "mfa-management",
+          "session-management",
+          "theme-toggle",
+          "account-deletion"
+        ],
+        "description": "Complete account settings with profile, security (password, MFA, sessions), preferences (theme, notifications, language), and danger zone.",
+        "pages": [
+          {
+            "id": "profile",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/profile"
+          },
+          {
+            "id": "security",
+            "layout": [
+              "account-settings",
+              "sessions"
+            ],
+            "route": "/settings/security"
+          },
+          {
+            "id": "preferences",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/preferences"
+          },
+          {
+            "id": "danger",
+            "layout": [
+              "account-settings"
+            ],
+            "route": "/settings/danger"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "floor-map",
+      "reservations",
+      "walk-ins",
+      "kds",
+      "tickets",
+      "station-routing",
+      "menu-editing",
+      "engineering",
+      "inventory",
+      "purchasing",
+      "shifts",
+      "tips",
+      "loyalty",
+      "customer-tracking",
+      "operations",
+      "reports",
+      "pnl",
+      "marketing",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "profile-edit",
+      "password-change",
+      "mfa-management",
+      "session-management",
+      "theme-toggle",
+      "account-deletion"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-restaurant",
+        "page": "home"
+      },
+      "/ops": {
+        "section": "daily-operations",
+        "page": "dashboard"
+      },
+      "/floor": {
+        "section": "restaurant-floor",
+        "page": "floor"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/menus": {
+        "section": "menu-management",
+        "page": "menus"
+      },
+      "/shift": {
+        "section": "server-station",
+        "page": "shift"
+      },
+      "/kitchen": {
+        "section": "kitchen-display",
+        "page": "kitchen"
+      },
+      "/register": {
+        "section": "auth-full",
+        "page": "register"
+      },
+      "/customers": {
+        "section": "customer-loyalty",
+        "page": "customers"
+      },
+      "/inventory": {
+        "section": "inventory-supplies",
+        "page": "inventory"
+      },
+      "/menus/:id": {
+        "section": "menu-management",
+        "page": "menu-detail"
+      },
+      "/mfa-setup": {
+        "section": "auth-full",
+        "page": "mfa-setup"
+      },
+      "/mfa-verify": {
+        "section": "auth-full",
+        "page": "mfa-verify"
+      },
+      "/shift/tips": {
+        "section": "server-station",
+        "page": "tips"
+      },
+      "/ops/reports": {
+        "section": "daily-operations",
+        "page": "reports"
+      },
+      "/phone-verify": {
+        "section": "auth-full",
+        "page": "phone-verify"
+      },
+      "/verify-email": {
+        "section": "auth-full",
+        "page": "verify-email"
+      },
+      "/customers/:id": {
+        "section": "customer-loyalty",
+        "page": "customer-detail"
+      },
+      "/inventory/:id": {
+        "section": "inventory-supplies",
+        "page": "ingredient-detail"
+      },
+      "/reset-password": {
+        "section": "auth-full",
+        "page": "reset-password"
+      },
+      "/forgot-password": {
+        "section": "auth-full",
+        "page": "forgot-password"
+      },
+      "/settings/danger": {
+        "section": "settings-full",
+        "page": "danger"
+      },
+      "/inventory/orders": {
+        "section": "inventory-supplies",
+        "page": "orders"
+      },
+      "/kitchen/stations": {
+        "section": "kitchen-display",
+        "page": "stations"
+      },
+      "/settings/profile": {
+        "section": "settings-full",
+        "page": "profile"
+      },
+      "/customers/loyalty": {
+        "section": "customer-loyalty",
+        "page": "loyalty-program"
+      },
+      "/menus/engineering": {
+        "section": "menu-management",
+        "page": "menu-engineering"
+      },
+      "/settings/security": {
+        "section": "settings-full",
+        "page": "security"
+      },
+      "/floor/reservations": {
+        "section": "restaurant-floor",
+        "page": "reservations"
+      },
+      "/settings/preferences": {
+        "section": "settings-full",
+        "page": "preferences"
+      },
+      "/floor/reservations/new": {
+        "section": "restaurant-floor",
+        "page": "new-reservation"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "restaurant-floor",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "hash"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Restaurant",
+        "Organization"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image"
+      ]
+    },
+    "navigation": {
+      "hotkeys": [],
+      "command_palette": true
+    }
+  }
+}
