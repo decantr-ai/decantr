@@ -2,34 +2,46 @@
 
 import { useEffect, useState } from 'react';
 
-export function ThemeToggle() {
+export function ThemeToggle({ compact }: { compact?: boolean }) {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
-    const stored = localStorage.getItem('decantr-theme');
-    if (stored === 'light' || stored === 'dark') {
-      setTheme(stored);
-      document.documentElement.className = stored;
-    }
+    const stored = localStorage.getItem('decantr_theme') as
+      | 'dark'
+      | 'light'
+      | null;
+    const initial = stored || 'dark';
+    setTheme(initial);
+    document.documentElement.className = initial;
   }, []);
 
   function toggle() {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
     document.documentElement.className = next;
-    localStorage.setItem('decantr-theme', next);
+    localStorage.setItem('decantr_theme', next);
   }
+
+  const size = compact ? 'p-1' : 'p-1.5';
 
   return (
     <button
-      className="d-interactive"
-      data-variant="ghost"
       onClick={toggle}
-      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-      style={{ padding: '0.375rem' }}
+      className={`d-interactive rounded-full ${size}`}
+      data-variant="ghost"
+      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       {theme === 'dark' ? (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <circle cx="12" cy="12" r="5" />
           <line x1="12" y1="1" x2="12" y2="3" />
           <line x1="12" y1="21" x2="12" y2="23" />
@@ -41,7 +53,16 @@ export function ThemeToggle() {
           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
         </svg>
       ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
       )}

@@ -1,154 +1,153 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import type { ModerationQueueItem } from '@/lib/api';
+import { useState, useTransition } from 'react';
 import { approveSubmission, rejectSubmission } from './actions';
+import type { ModerationQueueItem } from '@/lib/api';
 
-const TYPE_COLORS: Record<string, string> = {
-  pattern: 'var(--d-coral)',
-  theme: 'var(--d-amber)',
-  blueprint: 'var(--d-cyan)',
-  shell: 'var(--d-green)',
-  archetype: 'var(--d-purple)',
-};
-
-interface Props {
-  item: ModerationQueueItem;
-  onUpdated: (id: string, status: 'approved' | 'rejected') => void;
+function CheckIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+function XIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+function ExternalLinkIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  );
 }
 
-export function ModerationCard({ item, onUpdated }: Props) {
+export function ModerationCard({ item }: { item: ModerationQueueItem }) {
+  const [isPending, startTransition] = useTransition();
   const [showReject, setShowReject] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
-  const [loading, setLoading] = useState('');
-  const [error, setError] = useState('');
+  const [reason, setReason] = useState('');
+  const [feedback, setFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
-  const singularType = item.content.type.endsWith('s') ? item.content.type.slice(0, -1) : item.content.type;
-  const typeColor = TYPE_COLORS[singularType] || 'var(--d-primary)';
-
-  async function handleApprove() {
-    setLoading('approve');
-    setError('');
-    const result = await approveSubmission(item.id);
-    setLoading('');
-    if (result.success) {
-      onUpdated(item.id, 'approved');
-    } else {
-      setError(result.message);
-    }
+  function handleApprove() {
+    startTransition(async () => {
+      const result = await approveSubmission(item.id);
+      setFeedback({
+        type: result.success ? 'success' : 'error',
+        message: result.message,
+      });
+    });
   }
 
-  async function handleReject() {
-    if (!rejectReason.trim()) {
-      setError('Rejection reason is required');
-      return;
-    }
-    setLoading('reject');
-    setError('');
-    const result = await rejectSubmission(item.id, rejectReason);
-    setLoading('');
-    if (result.success) {
-      onUpdated(item.id, 'rejected');
-    } else {
-      setError(result.message);
-    }
+  function handleReject() {
+    if (!reason.trim()) return;
+    startTransition(async () => {
+      const result = await rejectSubmission(item.id, reason);
+      setFeedback({
+        type: result.success ? 'success' : 'error',
+        message: result.message,
+      });
+      if (result.success) {
+        setShowReject(false);
+        setReason('');
+      }
+    });
   }
 
-  return (
-    <div
-      className="lum-card-outlined"
-      data-type={singularType}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span
-            className="d-annotation"
-            style={{
-              background: `color-mix(in srgb, ${typeColor} 15%, transparent)`,
-              color: typeColor,
-            }}
-          >
-            {singularType}
-          </span>
-          <span className="font-semibold text-sm">{item.content.slug}</span>
-          <span className="d-annotation">{item.content.namespace}</span>
-        </div>
-        <span className="text-xs" style={{ color: 'var(--d-text-muted)' }}>
-          {new Date(item.submitted_at).toLocaleDateString()}
+  if (feedback?.type === 'success') {
+    return (
+      <div className="flex items-center gap-2">
+        <span style={{ color: 'var(--d-success)' }}>
+          <CheckIcon size={14} />
+        </span>
+        <span className="text-sm" style={{ color: 'var(--d-success)' }}>
+          {feedback.message}
         </span>
       </div>
+    );
+  }
 
-      {/* Submitter */}
-      <div className="flex items-center gap-2 mb-3 text-sm" style={{ color: 'var(--d-text-muted)' }}>
-        <span>Submitted by <strong>{item.submitted_by}</strong></span>
-        <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>v{item.content.version}</span>
-      </div>
-
-      {error && <p className="text-sm mb-2" style={{ color: 'var(--d-error)' }}>{error}</p>}
-
-      {/* Reject reason textarea */}
-      {showReject && (
-        <div className="mb-3">
-          <textarea
-            className="d-control"
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-            placeholder="Reason for rejection..."
-            style={{ minHeight: '4rem' }}
-          />
-        </div>
-      )}
-
-      {/* Actions */}
-      {item.status === 'pending' && (
-        <div className="flex items-center gap-2">
+  if (showReject) {
+    return (
+      <div className="flex flex-col gap-2" style={{ minWidth: '20rem' }}>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Rejection reason (required)"
+          className="d-control w-full"
+          style={{ resize: 'none', fontSize: '0.8125rem' }}
+          rows={2}
+          autoFocus
+        />
+        <div className="flex items-center gap-2 justify-end">
           <button
             className="d-interactive"
             data-variant="ghost"
-            onClick={handleApprove}
-            disabled={loading === 'approve'}
-            style={{ fontSize: '0.8125rem', color: 'var(--d-success)' }}
+            onClick={() => { setShowReject(false); setReason(''); }}
+            disabled={isPending}
+            style={{ fontSize: '0.8125rem' }}
           >
-            {loading === 'approve' ? 'Approving...' : 'Approve'}
+            Cancel
           </button>
-          {!showReject ? (
-            <button
-              className="d-interactive"
-              data-variant="ghost"
-              onClick={() => setShowReject(true)}
-              style={{ fontSize: '0.8125rem', color: 'var(--d-error)' }}
-            >
-              Reject
-            </button>
-          ) : (
-            <button
-              className="d-interactive"
-              data-variant="ghost"
-              onClick={handleReject}
-              disabled={loading === 'reject'}
-              style={{ fontSize: '0.8125rem', color: 'var(--d-error)' }}
-            >
-              {loading === 'reject' ? 'Rejecting...' : 'Confirm Reject'}
-            </button>
-          )}
-          <Link
-            href={`/admin/moderation/${item.id}`}
+          <button
             className="d-interactive"
             data-variant="ghost"
-            style={{ fontSize: '0.8125rem', textDecoration: 'none', marginLeft: 'auto' }}
+            onClick={handleReject}
+            disabled={isPending || !reason.trim()}
+            style={{ color: 'var(--d-error)', fontSize: '0.8125rem' }}
           >
-            Details
-          </Link>
+            {isPending ? 'Rejecting...' : 'Confirm Reject'}
+          </button>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {item.status === 'rejected' && item.rejection_reason && (
-        <p className="text-sm" style={{ color: 'var(--d-text-muted)', fontStyle: 'italic' }}>
-          Rejected: {item.rejection_reason}
+  return (
+    <div className="flex flex-col gap-1 items-end">
+      {feedback?.type === 'error' && (
+        <p className="text-xs" style={{ color: 'var(--d-error)' }}>
+          {feedback.message}
         </p>
       )}
+      <div className="flex items-center gap-2">
+        <button
+          className="d-interactive"
+          data-variant="ghost"
+          onClick={handleApprove}
+          disabled={isPending}
+          style={{ color: 'var(--d-success)', fontSize: '0.8125rem' }}
+        >
+          <CheckIcon size={14} />
+          {isPending ? 'Approving...' : 'Approve'}
+        </button>
+        <button
+          className="d-interactive"
+          data-variant="ghost"
+          onClick={() => setShowReject(true)}
+          disabled={isPending}
+          style={{ color: 'var(--d-error)', fontSize: '0.8125rem' }}
+        >
+          <XIcon size={14} />
+          Reject
+        </button>
+        <a
+          href={`/admin/moderation/${item.id}`}
+          className="d-interactive"
+          data-variant="ghost"
+          style={{ fontSize: '0.8125rem', textDecoration: 'none' }}
+        >
+          <ExternalLinkIcon size={14} />
+          Details
+        </a>
+      </div>
     </div>
   );
 }
