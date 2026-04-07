@@ -2,14 +2,6 @@
 
 import { useRef, useEffect, useCallback, type ReactNode } from 'react';
 
-const TYPE_ACCENTS: Record<string, string> = {
-  pattern: '#F58882',
-  theme: '#FDA303',
-  blueprint: '#0AF3EB',
-  shell: '#00E0AB',
-  archetype: '#6500C6',
-};
-
 interface BentoGridProps {
   type: string;
   children: ReactNode;
@@ -18,7 +10,6 @@ interface BentoGridProps {
 export function BentoGrid({ type, children }: BentoGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
-  const accent = TYPE_ACCENTS[type] || '#FDA303';
 
   const handlePointerMove = useCallback((e: PointerEvent) => {
     if (e.pointerType === 'touch') return;
@@ -59,7 +50,6 @@ export function BentoGrid({ type, children }: BentoGridProps) {
     <div
       ref={gridRef}
       className="lum-bento-grid lum-stagger"
-      style={{ '--lum-type-accent': accent } as React.CSSProperties}
     >
       {children}
     </div>

@@ -47,7 +47,7 @@ function getInstallCommand(singularType: string, namespace: string, slug: string
 
 function getScreenshotUrl(singularType: string, slug: string): string | null {
   if (singularType !== 'blueprint') return null;
-  return `/showcases/${slug}/screenshot.png`;
+  return `/showcase/${slug}/preview.png`;
 }
 
 function getDataCount(singularType: string, data: Record<string, unknown>): number {
@@ -105,20 +105,20 @@ export default async function ContentDetailPage({ params }: Props) {
 
       {/* Breadcrumb */}
       <nav
-        className="relative z-10 max-w-5xl mx-auto flex items-center gap-1 py-4"
+        className="relative z-10 max-w-[1200px] mx-auto px-6 flex items-center gap-1.5 py-4"
         aria-label="Breadcrumb"
       >
-        <Link href="/" className="text-sm text-d-muted no-underline hover:text-d-text transition-colors">
+        <Link href="/" className="text-xs text-d-muted no-underline hover:text-d-text transition-colors">
           Registry
         </Link>
-        <span className="text-sm text-d-muted">/</span>
-        <Link href={`/browse/${type}`} className="text-sm text-d-muted no-underline hover:text-d-text transition-colors">
+        <span className="text-xs text-d-muted opacity-60">/</span>
+        <Link href={`/browse/${type}`} className="text-xs text-d-muted no-underline hover:text-d-text transition-colors">
           {type.charAt(0).toUpperCase() + type.slice(1)}
         </Link>
-        <span className="text-sm text-d-muted">/</span>
-        <span className="text-sm text-d-muted">{namespace}</span>
-        <span className="text-sm text-d-muted">/</span>
-        <span className="text-sm text-d-text">{slug}</span>
+        <span className="text-xs text-d-muted opacity-60">/</span>
+        <span className="text-xs text-d-muted">{namespace}</span>
+        <span className="text-xs text-d-muted opacity-60">/</span>
+        <span className="text-xs text-d-text">{slug}</span>
       </nav>
 
       <BentoGrid type={singularType}>

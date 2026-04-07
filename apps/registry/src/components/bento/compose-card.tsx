@@ -8,7 +8,14 @@ interface ComposeItem {
 }
 
 interface ComposeCardProps {
-  compose?: ComposeItem[];
+  compose?: (string | ComposeItem)[];
+}
+
+function prettifyName(raw: string): string {
+  return raw
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 export function ComposeCard({ compose }: ComposeCardProps) {
@@ -18,31 +25,40 @@ export function ComposeCard({ compose }: ComposeCardProps) {
     <BentoCard span={2} label="Composition">
       <p className="d-label mb-3">Archetypes</p>
       <div className="flex flex-col gap-3">
-        {compose.map((item, i) => (
-          <div
-            key={item.id || item.archetype || i}
-            className="flex items-start gap-3 pb-3 border-b border-d-border last:border-b-0 last:pb-0"
-          >
-            {item.role && (
-              <span
-                className="d-annotation role-badge shrink-0 mt-0.5"
-                data-role={item.role}
-              >
-                {item.role}
-              </span>
-            )}
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-d-text">
-                {item.archetype || item.id || `Archetype ${i + 1}`}
-              </p>
-              {item.description && (
-                <p className="text-xs text-d-muted truncate mt-0.5">
-                  {item.description}
-                </p>
+        {compose.map((item, i) => {
+          const name = typeof item === 'string'
+            ? item
+            : (item.archetype || item.id || `Archetype ${i + 1}`);
+          const role = typeof item === 'string' ? undefined : item.role;
+          const description = typeof item === 'string' ? undefined : item.description;
+          const key = typeof item === 'string' ? item : (item.id || item.archetype || i);
+
+          return (
+            <div
+              key={key}
+              className="flex items-start gap-3 pb-3 border-b border-d-border last:border-b-0 last:pb-0"
+            >
+              {role && (
+                <span
+                  className="d-annotation role-badge shrink-0 mt-0.5"
+                  data-role={role}
+                >
+                  {role}
+                </span>
               )}
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-d-text">
+                  {prettifyName(name)}
+                </p>
+                {description && (
+                  <p className="text-xs text-d-muted truncate mt-0.5">
+                    {description}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </BentoCard>
   );
