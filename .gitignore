@@ -25,8 +25,12 @@ apps/api/.env.local
 # Generated showcase build output (copied by scripts/copy-showcase-dist.js)
 apps/web/public/showcase/
 
-# Generated showcase screenshots (build artifacts)
-apps/registry/public/showcase/
+# Generated showcase builds (large SPA dist files — not committed)
+apps/registry/public/showcase/*/assets/
+apps/registry/public/showcase/*/index.html
+# Keep screenshot PNGs (small, needed for deployment)
+!apps/registry/public/showcase/*/preview.png
+!apps/registry/public/showcase/*/preview-thumb.png
 
 # Registry backups (local only)
 apps/registry-backup/
