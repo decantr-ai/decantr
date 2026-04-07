@@ -1,55 +1,49 @@
 'use client';
 
-import { useRef, useEffect, useCallback, type ReactNode } from 'react';
+import { useRef, useCallback, useEffect, type ReactNode } from 'react';
 
-interface BentoGridProps {
+interface Props {
   type: string;
   children: ReactNode;
 }
 
-export function BentoGrid({ type, children }: BentoGridProps) {
+export function BentoGrid({ type, children }: Props) {
   const gridRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
 
   const handlePointerMove = useCallback((e: PointerEvent) => {
-    if (e.pointerType === 'touch') return;
-    cancelAnimationFrame(rafRef.current);
+    if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       const el = gridRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
       el.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
       el.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      rafRef.current = 0;
     });
-  }, []);
-
-  const handlePointerLeave = useCallback(() => {
-    const el = gridRef.current;
-    if (!el) return;
-    el.style.setProperty('--mouse-x', '-200px');
-    el.style.setProperty('--mouse-y', '-200px');
   }, []);
 
   useEffect(() => {
     const el = gridRef.current;
     if (!el) return;
 
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mq.matches) return;
+    // Disable cursor glow on touch devices or reduced motion
+    const isTouch = matchMedia('(pointer: coarse)').matches;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isTouch || reducedMotion) return;
 
     el.addEventListener('pointermove', handlePointerMove);
-    el.addEventListener('pointerleave', handlePointerLeave);
     return () => {
       el.removeEventListener('pointermove', handlePointerMove);
-      el.removeEventListener('pointerleave', handlePointerLeave);
-      cancelAnimationFrame(rafRef.current);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [handlePointerMove, handlePointerLeave]);
+  }, [handlePointerMove]);
 
   return (
     <div
       ref={gridRef}
-      className="lum-bento-grid lum-stagger"
+      className="lum-bento-grid lum-stagger relative z-10"
+      data-content-type={type}
     >
       {children}
     </div>

@@ -1,62 +1,75 @@
-import { BentoCard } from './bento-card';
-
-interface ResponsiveInfo {
+interface ResponsiveBreakpoints {
   mobile?: string;
   tablet?: string;
   desktop?: string;
 }
 
-interface ResponsiveCardProps {
-  responsive?: ResponsiveInfo;
+interface Props {
+  responsive?: ResponsiveBreakpoints;
 }
 
-function DeviceIcon({ device }: { device: 'mobile' | 'tablet' | 'desktop' }) {
-  if (device === 'mobile') {
-    return (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--d-text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" />
+const BREAKPOINTS = [
+  {
+    key: 'mobile' as const,
+    label: 'Mobile',
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+        <line x1="12" y1="18" x2="12.01" y2="18" />
       </svg>
-    );
-  }
-  if (device === 'tablet') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--d-text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" />
+    ),
+  },
+  {
+    key: 'tablet' as const,
+    label: 'Tablet',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+        <line x1="12" y1="18" x2="12.01" y2="18" />
       </svg>
-    );
-  }
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--d-text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
-    </svg>
-  );
-}
+    ),
+  },
+  {
+    key: 'desktop' as const,
+    label: 'Desktop',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+        <line x1="8" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="17" x2="12" y2="21" />
+      </svg>
+    ),
+  },
+];
 
-export function ResponsiveCard({ responsive }: ResponsiveCardProps) {
+export function ResponsiveCard({ responsive }: Props) {
   if (!responsive) return null;
 
-  const breakpoints = [
-    { key: 'mobile' as const, label: 'Mobile', text: responsive.mobile },
-    { key: 'tablet' as const, label: 'Tablet', text: responsive.tablet },
-    { key: 'desktop' as const, label: 'Desktop', text: responsive.desktop },
-  ].filter((bp) => bp.text);
-
-  if (breakpoints.length === 0) return null;
+  const hasData = Object.values(responsive).some(Boolean);
+  if (!hasData) return null;
 
   return (
-    <BentoCard span={1} label="Responsive">
-      <p className="d-label mb-3">Responsive</p>
+    <div
+      className="lum-bento-card flex flex-col gap-3"
+      role="region"
+      aria-label="Responsive behavior"
+    >
+      <h3 className="d-label accent-left-border">Responsive</h3>
       <div className="flex flex-col gap-3">
-        {breakpoints.map((bp) => (
-          <div key={bp.key} className="flex items-start gap-2">
-            <DeviceIcon device={bp.key} />
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-d-text">{bp.label}</p>
-              <p className="text-xs text-d-muted line-clamp-2">{bp.text}</p>
+        {BREAKPOINTS.map(({ key, label, icon }) => {
+          const text = responsive[key];
+          if (!text) return null;
+          return (
+            <div key={key} className="flex items-start gap-2">
+              <span className="text-d-muted shrink-0 mt-0.5">{icon}</span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-medium text-d-text">{label}</span>
+                <span className="text-xs text-d-muted line-clamp-2">{text}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-    </BentoCard>
+    </div>
   );
 }

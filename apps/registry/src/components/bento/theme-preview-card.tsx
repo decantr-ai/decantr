@@ -1,39 +1,36 @@
-import { BentoCard } from './bento-card';
-
-interface ThemeInfo {
+interface ThemeRef {
   id?: string;
-  name?: string;
   mode?: string;
   shape?: string;
   seed?: Record<string, string>;
 }
 
-interface ThemePreviewCardProps {
-  theme?: ThemeInfo;
+interface Props {
+  theme?: ThemeRef;
 }
 
-export function ThemePreviewCard({ theme }: ThemePreviewCardProps) {
+export function ThemePreviewCard({ theme }: Props) {
   if (!theme) return null;
 
-  const seedColors = theme.seed
-    ? Object.values(theme.seed).slice(0, 5)
-    : [];
+  const seedColors = theme.seed ? Object.entries(theme.seed).slice(0, 5) : [];
 
   return (
-    <BentoCard span={1} label="Theme">
-      <p className="d-label mb-3">Theme</p>
-      <p className="text-sm font-medium text-d-text mb-2">
-        {theme.name || theme.id || 'Default'}
-      </p>
+    <div
+      className="lum-bento-card flex flex-col gap-3"
+      role="region"
+      aria-label="Theme preview"
+    >
+      <h3 className="d-label accent-left-border">Theme</h3>
+      <span className="text-sm font-medium text-d-text">{theme.id || 'Unknown'}</span>
 
       {seedColors.length > 0 && (
-        <div className="lum-swatch-strip mb-3">
-          {seedColors.map((color, i) => (
+        <div className="lum-swatch-strip">
+          {seedColors.map(([name, color]) => (
             <span
-              key={i}
-              className="lum-swatch"
-              style={{ backgroundColor: color }}
-              title={color}
+              key={name}
+              className="lum-swatch palette-swatch-anim"
+              title={`${name}: ${color}`}
+              data-swatch-bg={color}
             />
           ))}
         </div>
@@ -44,9 +41,22 @@ export function ThemePreviewCard({ theme }: ThemePreviewCardProps) {
           <span className="d-annotation">{theme.mode}</span>
         )}
         {theme.shape && (
-          <span className="d-annotation">{theme.shape}</span>
+          <>
+            <span className="d-annotation">{theme.shape}</span>
+            <span className="shape-preview" data-shape={theme.shape} />
+          </>
         )}
       </div>
-    </BentoCard>
+
+      {/* Dynamic swatch background colors */}
+      {seedColors.length > 0 && (
+        <style>{`
+          ${seedColors.map(
+            ([, color]) =>
+              `.lum-swatch[data-swatch-bg="${color}"] { background-color: ${color}; }`
+          ).join('\n')}
+        `}</style>
+      )}
+    </div>
   );
 }

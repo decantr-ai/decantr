@@ -27,13 +27,7 @@ import {
   ModesShapesCard,
 } from '@/components/bento';
 
-const TYPE_ACCENTS: Record<string, string> = {
-  pattern: '#F58882',
-  theme: '#FDA303',
-  blueprint: '#0AF3EB',
-  shell: '#00E0AB',
-  archetype: '#6500C6',
-};
+/* Type accent colors now driven by [data-content-type] CSS rules in globals.css */
 
 interface Props {
   params: Promise<{ type: string; namespace: string; slug: string }>;
@@ -90,12 +84,12 @@ export default async function ContentDetailPage({ params }: Props) {
   const installCmd = getInstallCommand(singularType, namespace, slug);
   const screenshotUrl = getScreenshotUrl(singularType, content.slug || slug);
   const dataCount = getDataCount(singularType, data);
-  const accent = TYPE_ACCENTS[singularType] || '#FDA303';
 
   const pageContent = (
     <div
       data-type={singularType}
-      style={{ position: 'relative', minHeight: '100vh', '--lum-type-accent': accent } as React.CSSProperties}
+      data-content-type={singularType}
+      className="relative min-h-screen"
     >
       <BentoBackdrop
         type={singularType}

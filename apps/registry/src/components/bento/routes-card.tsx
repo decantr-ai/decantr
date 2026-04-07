@@ -1,50 +1,73 @@
-import { BentoCard } from './bento-card';
-
-interface RoutesCardProps {
-  routes?: Record<string, unknown>;
-  sections?: Array<{ id: string; pages?: Array<{ path?: string }> }>;
+interface ComposeItem {
+  archetype: string;
+  role?: string;
 }
 
-export function RoutesCard({ routes, sections }: RoutesCardProps) {
-  /* Try to group routes by section from the compose/sections data */
-  if (sections && sections.length > 0) {
-    return (
-      <BentoCard span={1} label="Routes">
-        <p className="d-label mb-3">Routes</p>
-        <div className="flex flex-col gap-3">
-          {sections.map((section) => (
-            <div key={section.id}>
-              <p className="d-label accent-left-border mb-1">
-                {section.id}
-                <span className="d-annotation ml-2 text-[0.625rem]">
-                  {section.pages?.length || 0}
-                </span>
-              </p>
-              {section.pages?.map((page, i) => (
-                <p key={i} className="text-xs font-mono text-d-muted pl-3">
-                  {page.path || '/'}
-                </p>
-              ))}
-            </div>
-          ))}
-        </div>
-      </BentoCard>
-    );
+interface Props {
+  routes?: Record<string, unknown>;
+  sections?: (string | ComposeItem)[];
+}
+
+function groupRoutes(
+  routes: Record<string, unknown>,
+  sections?: (string | ComposeItem)[]
+): Record<string, string[]> {
+  const grouped: Record<string, string[]> = {};
+
+  for (const [path, value] of Object.entries(routes)) {
+    const section =
+      typeof value === 'object' && value !== null && 'section' in value
+        ? (value as { section: string }).section
+        : 'other';
+
+    if (!grouped[section]) grouped[section] = [];
+    grouped[section].push(path);
   }
 
-  /* Fallback: render raw route keys */
+  // If sections are provided, include any sections without routes
+  if (sections) {
+    for (const s of sections) {
+      const name = typeof s === 'string' ? s : s.archetype;
+      if (!grouped[name]) grouped[name] = [];
+    }
+  }
+
+  return grouped;
+}
+
+export function RoutesCard({ routes, sections }: Props) {
   if (!routes || Object.keys(routes).length === 0) return null;
 
+  const grouped = groupRoutes(routes, sections);
+
   return (
-    <BentoCard span={1} label="Routes">
-      <p className="d-label mb-3">Routes</p>
-      <div className="flex flex-col gap-1">
-        {Object.keys(routes).map((route) => (
-          <p key={route} className="text-xs font-mono text-d-muted">
-            {route}
-          </p>
+    <div
+      className="lum-bento-card flex flex-col gap-3"
+      role="region"
+      aria-label="Routes"
+    >
+      <h3 className="d-label accent-left-border">
+        Routes
+        <span className="d-annotation ml-2">{Object.keys(routes).length}</span>
+      </h3>
+      <div className="flex flex-col gap-3">
+        {Object.entries(grouped).map(([section, paths]) => (
+          <div key={section} className="flex flex-col gap-1">
+            <span className="d-label accent-left-border flex items-center gap-2">
+              {section}
+              <span className="d-annotation">{paths.length}</span>
+            </span>
+            {paths.map((path) => (
+              <span
+                key={path}
+                className="text-xs font-mono text-d-muted pl-3"
+              >
+                {path}
+              </span>
+            ))}
+          </div>
         ))}
       </div>
-    </BentoCard>
+    </div>
   );
 }

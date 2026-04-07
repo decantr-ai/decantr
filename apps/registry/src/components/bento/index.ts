@@ -1,7 +1,5 @@
 export { BentoGrid } from './bento-grid';
-export { BentoCard } from './bento-card';
 export { BentoBackdrop } from './bento-backdrop';
-export { GeoPattern } from './geo-pattern';
 export { TerminalCard } from './terminal-card';
 export { IdentityCard } from './identity-card';
 export { TagsCard } from './tags-card';

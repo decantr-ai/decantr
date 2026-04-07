@@ -1,21 +1,21 @@
-import { BentoCard } from './bento-card';
-
-interface ModesShapesCardProps {
+interface Props {
   modes?: string[];
   shapes?: string[];
 }
 
-export function ModesShapesCard({ modes, shapes }: ModesShapesCardProps) {
-  if ((!modes || modes.length === 0) && (!shapes || shapes.length === 0)) {
-    return null;
-  }
+export function ModesShapesCard({ modes, shapes }: Props) {
+  if ((!modes || modes.length === 0) && (!shapes || shapes.length === 0)) return null;
 
   return (
-    <BentoCard span={1} label="Modes and shapes">
+    <div
+      className="lum-bento-card flex flex-col gap-4"
+      role="region"
+      aria-label="Modes and shapes"
+    >
       {modes && modes.length > 0 && (
-        <div className="mb-4">
-          <p className="d-label mb-2">Modes</p>
-          <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
+          <h3 className="d-label accent-left-border">Modes</h3>
+          <div className="flex flex-wrap gap-2">
             {modes.map((mode) => (
               <span key={mode} className="d-annotation">
                 {mode}
@@ -26,22 +26,18 @@ export function ModesShapesCard({ modes, shapes }: ModesShapesCardProps) {
       )}
 
       {shapes && shapes.length > 0 && (
-        <div>
-          <p className="d-label mb-2">Shapes</p>
-          <div className="flex gap-3">
+        <div className="flex flex-col gap-2">
+          <h3 className="d-label accent-left-border">Shapes</h3>
+          <div className="flex flex-wrap gap-2">
             {shapes.map((shape) => (
-              <div key={shape} className="flex flex-col items-center gap-1">
-                <div
-                  className="shape-preview"
-                  data-shape={shape}
-                  aria-hidden="true"
-                />
-                <span className="text-[0.625rem] text-d-muted">{shape}</span>
+              <div key={shape} className="flex items-center gap-2">
+                <span className="shape-preview" data-shape={shape} />
+                <span className="d-annotation">{shape}</span>
               </div>
             ))}
           </div>
         </div>
       )}
-    </BentoCard>
+    </div>
   );
 }

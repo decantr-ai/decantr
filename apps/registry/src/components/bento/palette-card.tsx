@@ -1,78 +1,98 @@
-import { BentoCard } from './bento-card';
-
-interface PaletteCardProps {
+interface Props {
   palette?: Record<string, string>;
   seed?: Record<string, string>;
 }
 
-const ROLE_GROUPS: Record<string, string[]> = {
-  Brand: ['primary', 'accent', 'secondary'],
-  Surfaces: ['bg', 'surface', 'surface-raised', 'surface_raised'],
-  Text: ['text', 'text-muted', 'text_muted'],
-  Border: ['border'],
-  Status: ['success', 'error', 'warning', 'info'],
-};
+interface ColorGroup {
+  label: string;
+  colors: { name: string; value: string }[];
+}
 
-export function PaletteCard({ palette, seed }: PaletteCardProps) {
-  const colors = { ...seed, ...palette };
-  if (!colors || Object.keys(colors).length === 0) return null;
+function groupColors(
+  palette: Record<string, string>,
+  seed: Record<string, string>
+): ColorGroup[] {
+  const merged = { ...seed, ...palette };
+  const groups: ColorGroup[] = [];
+
+  const brand: { name: string; value: string }[] = [];
+  const surfaces: { name: string; value: string }[] = [];
+  const text: { name: string; value: string }[] = [];
+  const status: { name: string; value: string }[] = [];
+  const other: { name: string; value: string }[] = [];
+
+  for (const [name, value] of Object.entries(merged)) {
+    const lower = name.toLowerCase();
+    if (['primary', 'accent', 'secondary'].some((k) => lower.includes(k))) {
+      brand.push({ name, value });
+    } else if (['bg', 'surface'].some((k) => lower.includes(k))) {
+      surfaces.push({ name, value });
+    } else if (['text', 'muted'].some((k) => lower.includes(k))) {
+      text.push({ name, value });
+    } else if (['success', 'error', 'warning', 'info'].some((k) => lower.includes(k))) {
+      status.push({ name, value });
+    } else {
+      other.push({ name, value });
+    }
+  }
+
+  if (brand.length) groups.push({ label: 'Brand', colors: brand });
+  if (surfaces.length) groups.push({ label: 'Surfaces', colors: surfaces });
+  if (text.length) groups.push({ label: 'Text', colors: text });
+  if (status.length) groups.push({ label: 'Status', colors: status });
+  if (other.length) groups.push({ label: 'Other', colors: other });
+
+  return groups;
+}
+
+export function PaletteCard({ palette, seed }: Props) {
+  if ((!palette || Object.keys(palette).length === 0) && (!seed || Object.keys(seed).length === 0)) {
+    return null;
+  }
+
+  const groups = groupColors(palette || {}, seed || {});
 
   return (
-    <BentoCard span={2} label="Color palette">
-      <p className="d-label mb-3">Palette</p>
-      <div className="flex flex-col gap-4">
-        {Object.entries(ROLE_GROUPS).map(([group, keys]) => {
-          const groupColors = keys
-            .filter((k) => colors[k])
-            .map((k) => ({ name: k, value: colors[k] }));
-          if (groupColors.length === 0) return null;
-          return (
-            <div key={group}>
-              <p className="text-xs font-medium text-d-muted mb-2">{group}</p>
-              <div className="flex flex-wrap gap-3">
-                {groupColors.map(({ name, value }) => (
-                  <div key={name} className="flex flex-col items-center gap-1">
-                    <div
-                      className="palette-swatch"
-                      style={{ backgroundColor: value }}
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">{name}: {value}</span>
-                    <span className="text-[0.625rem] text-d-muted">{name}</span>
-                    <span className="text-[0.625rem] font-mono text-d-muted">{value}</span>
-                  </div>
-                ))}
+    <div
+      className="lum-bento-card col-span-2 flex flex-col gap-4"
+      role="region"
+      aria-label="Color palette"
+    >
+      <h3 className="d-label accent-left-border">Palette</h3>
+      {groups.map((group) => (
+        <div key={group.label} className="flex flex-col gap-2">
+          <span className="text-xs font-medium text-d-muted">{group.label}</span>
+          <div className="flex flex-wrap gap-3">
+            {group.colors.map(({ name, value }, i) => (
+              <div
+                key={name}
+                className="flex flex-col items-center gap-1"
+              >
+                <span
+                  className="palette-swatch palette-swatch-anim"
+                  title={`${name}: ${value}`}
+                  data-swatch-bg={value}
+                >
+                  <span className="sr-only">{name}: {value}</span>
+                </span>
+                <span className="text-[0.625rem] font-mono text-d-muted text-center max-w-[48px] truncate">
+                  {name}
+                </span>
               </div>
-            </div>
-          );
-        })}
+            ))}
+          </div>
+        </div>
+      ))}
 
-        {/* Show remaining colors not in groups */}
-        {(() => {
-          const grouped = new Set(Object.values(ROLE_GROUPS).flat());
-          const remaining = Object.entries(colors).filter(([k]) => !grouped.has(k));
-          if (remaining.length === 0) return null;
-          return (
-            <div>
-              <p className="text-xs font-medium text-d-muted mb-2">Other</p>
-              <div className="flex flex-wrap gap-3">
-                {remaining.map(([name, value]) => (
-                  <div key={name} className="flex flex-col items-center gap-1">
-                    <div
-                      className="palette-swatch"
-                      style={{ backgroundColor: value }}
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">{name}: {value}</span>
-                    <span className="text-[0.625rem] text-d-muted">{name}</span>
-                    <span className="text-[0.625rem] font-mono text-d-muted">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })()}
-      </div>
-    </BentoCard>
+      {/* Inline style tag for dynamic swatch backgrounds */}
+      <style>{`
+        ${groups.flatMap((g) =>
+          g.colors.map(
+            ({ name, value }) =>
+              `.palette-swatch[data-swatch-bg="${value}"] { background-color: ${value}; }`
+          )
+        ).join('\n')}
+      `}</style>
+    </div>
   );
 }

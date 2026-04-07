@@ -1,13 +1,11 @@
-import { BentoCard } from './bento-card';
-
-interface IdentityCardProps {
+interface Props {
   type: string;
   namespace: string;
   name: string;
   version: string;
-  description?: string | null;
-  publishedAt?: string | null;
-  ownerName?: string | null;
+  description?: string;
+  publishedAt?: string;
+  ownerName?: string;
 }
 
 export function IdentityCard({
@@ -18,35 +16,47 @@ export function IdentityCard({
   description,
   publishedAt,
   ownerName,
-}: IdentityCardProps) {
+}: Props) {
+  const formattedDate = publishedAt
+    ? new Date(publishedAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    : null;
+
   return (
-    <BentoCard span={2} label="Content identity">
-      <div className="flex items-center gap-2 mb-3">
-        <span
-          className="d-annotation font-semibold type-badge-filled"
-          data-type={type}
-        >
+    <div
+      className="lum-bento-card col-span-2 flex flex-col gap-3"
+      role="region"
+      aria-label="Content identity"
+    >
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="type-badge-filled d-annotation" data-type={type}>
           {type}
         </span>
         <span className="d-annotation">{namespace}</span>
       </div>
 
-      <h1 className="text-2xl font-bold mb-1 text-d-text">{name}</h1>
+      <h1 className="text-2xl font-bold text-d-text">{name}</h1>
 
-      <p className="text-xs font-mono text-d-muted mb-3">v{version}</p>
+      <span className="font-mono text-sm text-d-muted">{version}</span>
 
       {description && (
-        <p className="text-sm text-d-muted mb-3 max-w-prose">
+        <p className="text-d-muted max-w-[70ch] leading-relaxed">
           {description}
         </p>
       )}
 
-      <div className="flex items-center gap-3 flex-wrap text-xs text-d-muted">
-        {ownerName && <span>{ownerName}</span>}
-        {publishedAt && (
-          <span>{new Date(publishedAt).toLocaleDateString()}</span>
-        )}
-      </div>
-    </BentoCard>
+      {(formattedDate || ownerName) && (
+        <div className="flex items-center gap-3 text-xs text-d-muted">
+          {ownerName && <span>{ownerName}</span>}
+          {ownerName && formattedDate && (
+            <span className="opacity-40">&#183;</span>
+          )}
+          {formattedDate && <span>{formattedDate}</span>}
+        </div>
+      )}
+    </div>
   );
 }

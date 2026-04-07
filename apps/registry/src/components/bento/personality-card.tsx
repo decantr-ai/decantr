@@ -1,34 +1,31 @@
-import { BentoCard } from './bento-card';
-
-interface PersonalityCardProps {
+interface Props {
   personality?: string;
 }
 
-export function PersonalityCard({ personality }: PersonalityCardProps) {
+export function PersonalityCard({ personality }: Props) {
   if (!personality) return null;
 
-  const span = personality.length > 200 ? 2 : 1;
+  // Highlight first sentence in accent color
+  const firstPeriod = personality.indexOf('.');
+  const firstSentence = firstPeriod > 0 ? personality.slice(0, firstPeriod + 1) : '';
+  const rest = firstPeriod > 0 ? personality.slice(firstPeriod + 1) : personality;
 
-  /* Highlight the first sentence */
-  const dotIdx = personality.indexOf('.');
-  const firstSentence = dotIdx > 0 ? personality.slice(0, dotIdx + 1) : '';
-  const rest = dotIdx > 0 ? personality.slice(dotIdx + 1) : personality;
+  // Spans 2 columns if text is long (>200 chars)
+  const spanClass = personality.length > 200 ? 'col-span-2' : '';
 
   return (
-    <BentoCard span={span as 1 | 2} label="Personality">
-      <p className="d-label mb-3">Personality</p>
-      <div className="lum-quote">
-        {firstSentence ? (
-          <p>
-            <span className="accent-type-text">
-              {firstSentence}
-            </span>
-            {rest}
-          </p>
-        ) : (
-          <p>{personality}</p>
+    <div
+      className={`lum-bento-card ${spanClass} flex flex-col gap-3`}
+      role="region"
+      aria-label="Personality"
+    >
+      <h3 className="d-label accent-left-border">Personality</h3>
+      <blockquote className="lum-quote">
+        {firstSentence && (
+          <span className="accent-type-text">{firstSentence}</span>
         )}
-      </div>
-    </BentoCard>
+        {rest}
+      </blockquote>
+    </div>
   );
 }

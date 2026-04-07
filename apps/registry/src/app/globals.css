@@ -715,4 +715,54 @@
   @media (min-width: 1024px) {
     .kpi-grid { grid-template-columns: repeat(4, 1fr); }
   }
+
+  /* ── Type accent via data-content-type attribute ── */
+  [data-content-type="pattern"] { --lum-type-accent: #F58882; }
+  [data-content-type="theme"] { --lum-type-accent: #FDA303; }
+  [data-content-type="blueprint"] { --lum-type-accent: #0AF3EB; }
+  [data-content-type="shell"] { --lum-type-accent: #00E0AB; }
+  [data-content-type="archetype"] { --lum-type-accent: #6500C6; }
+
+  /* ── Terminal dot colors ── */
+  .terminal-dot[data-color="red"] { background: #FF5F57; }
+  .terminal-dot[data-color="yellow"] { background: #FFBD2E; }
+  .terminal-dot[data-color="green"] { background: #27C93F; }
+
+  /* ── Terminal cursor blink ── */
+  .terminal-cursor {
+    animation: lum-cursor-blink 1s step-end infinite;
+    color: var(--lum-type-accent, var(--d-accent));
+    font-size: 0.75em;
+  }
+
+  /* ── Schema expand/collapse ── */
+  .schema-expand-wrapper {
+    transition: max-height 300ms ease, opacity 300ms ease;
+    max-height: 0;
+    opacity: 0;
+  }
+  .schema-expand-wrapper[data-expanded="true"] {
+    max-height: 100vh;
+    opacity: 1;
+    overflow: auto;
+  }
+
+  /* ── Route map node pulse ── */
+  .route-map-node {
+    animation: route-node-pulse 3s ease-in-out infinite;
+  }
+  @keyframes route-node-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  /* ── Palette swatch bounce ── */
+  .palette-swatch-anim {
+    animation: palette-bounce 300ms ease-out both;
+  }
+  @keyframes palette-bounce {
+    0% { transform: scale(0); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
 }

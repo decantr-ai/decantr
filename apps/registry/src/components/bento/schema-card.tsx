@@ -1,49 +1,63 @@
 'use client';
 
 import { useState } from 'react';
-import { BentoCard } from './bento-card';
 import { JsonViewer } from '@/components/json-viewer';
 
-interface SchemaCardProps {
-  data: unknown;
+interface Props {
+  data: Record<string, unknown>;
   title: string;
 }
 
-export function SchemaCard({ data, title }: SchemaCardProps) {
+export function SchemaCard({ data, title }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <BentoCard span="full" label="Source schema">
-      <div className="flex items-center justify-between mb-2">
-        <p className="d-label">Source</p>
-        <button
-          className="d-interactive text-xs px-3 py-1"
-          data-variant="ghost"
-          onClick={() => setExpanded(!expanded)}
-          aria-expanded={expanded}
+    <div
+      className="lum-bento-card col-span-full flex flex-col gap-3"
+      role="region"
+      aria-label="Content schema"
+    >
+      <button
+        className="d-interactive w-full justify-center"
+        data-variant="ghost"
+        onClick={() => setExpanded(!expanded)}
+        aria-expanded={expanded}
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points={expanded ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
-          </svg>
-          <span>{expanded ? 'Hide Source' : 'View Source'}</span>
-        </button>
-      </div>
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </svg>
+        {expanded ? 'Hide Source' : 'View Source'}
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
 
       <div
-        className="overflow-hidden transition-all duration-300"
-        style={{ maxHeight: expanded ? '80vh' : 0 }}
+        className="schema-expand-wrapper overflow-hidden"
+        data-expanded={expanded ? 'true' : 'false'}
       >
         {expanded && <JsonViewer data={data} title={title} />}
       </div>
-    </BentoCard>
+    </div>
   );
 }

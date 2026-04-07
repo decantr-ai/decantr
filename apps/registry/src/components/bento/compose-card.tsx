@@ -1,65 +1,52 @@
-import { BentoCard } from './bento-card';
-
 interface ComposeItem {
-  id?: string;
-  archetype?: string;
+  archetype: string;
   role?: string;
   description?: string;
 }
 
-interface ComposeCardProps {
+interface Props {
   compose?: (string | ComposeItem)[];
 }
 
-function prettifyName(raw: string): string {
-  return raw
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
+function normalizeCompose(compose: (string | ComposeItem)[]): ComposeItem[] {
+  return compose.map((item) => {
+    if (typeof item === 'string') {
+      return { archetype: item, role: 'primary' };
+    }
+    return item;
+  });
 }
 
-export function ComposeCard({ compose }: ComposeCardProps) {
+export function ComposeCard({ compose }: Props) {
   if (!compose || compose.length === 0) return null;
 
-  return (
-    <BentoCard span={2} label="Composition">
-      <p className="d-label mb-3">Archetypes</p>
-      <div className="flex flex-col gap-3">
-        {compose.map((item, i) => {
-          const name = typeof item === 'string'
-            ? item
-            : (item.archetype || item.id || `Archetype ${i + 1}`);
-          const role = typeof item === 'string' ? undefined : item.role;
-          const description = typeof item === 'string' ? undefined : item.description;
-          const key = typeof item === 'string' ? item : (item.id || item.archetype || i);
+  const items = normalizeCompose(compose);
 
-          return (
-            <div
-              key={key}
-              className="flex items-start gap-3 pb-3 border-b border-d-border last:border-b-0 last:pb-0"
+  return (
+    <div
+      className="lum-bento-card col-span-2 flex flex-col gap-3"
+      role="region"
+      aria-label="Blueprint composition"
+    >
+      <h3 className="d-label accent-left-border">Composition</h3>
+      <div className="flex flex-col divide-y divide-d-border">
+        {items.map((item) => (
+          <div key={item.archetype} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+            <span
+              className="role-badge d-annotation"
+              data-role={item.role || 'primary'}
             >
-              {role && (
-                <span
-                  className="d-annotation role-badge shrink-0 mt-0.5"
-                  data-role={role}
-                >
-                  {role}
-                </span>
-              )}
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-d-text">
-                  {prettifyName(name)}
-                </p>
-                {description && (
-                  <p className="text-xs text-d-muted truncate mt-0.5">
-                    {description}
-                  </p>
-                )}
-              </div>
-            </div>
-          );
-        })}
+              {item.role || 'primary'}
+            </span>
+            <span className="font-medium text-sm text-d-text">{item.archetype}</span>
+            {item.description && (
+              <span className="text-xs text-d-muted truncate flex-1">
+                {item.description}
+              </span>
+            )}
+          </div>
+        ))}
       </div>
-    </BentoCard>
+    </div>
   );
 }

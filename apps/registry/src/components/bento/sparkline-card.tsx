@@ -1,57 +1,54 @@
-import { BentoCard } from './bento-card';
-
-const TYPE_ACCENTS: Record<string, string> = {
-  pattern: '#F58882',
-  theme: '#FDA303',
-  blueprint: '#0AF3EB',
-  shell: '#00E0AB',
-  archetype: '#6500C6',
-};
-
-interface SparklineCardProps {
+interface Props {
   type: string;
 }
 
-export function SparklineCard({ type }: SparklineCardProps) {
-  const accent = TYPE_ACCENTS[type] || '#FDA303';
-
-  /* Generate placeholder sine wave points */
-  const points: string[] = [];
-  const areaPoints: string[] = [];
-  const w = 200;
-  const h = 50;
-
-  for (let i = 0; i <= w; i += 4) {
-    const y = h / 2 + Math.sin((i / w) * Math.PI * 3 + 1) * (h * 0.35);
-    points.push(`${i},${y}`);
-    areaPoints.push(`${i},${y}`);
+function generateSinePoints(width: number, height: number, points: number): string {
+  const coords: string[] = [];
+  for (let i = 0; i <= points; i++) {
+    const x = (i / points) * width;
+    const y = height / 2 + Math.sin((i / points) * Math.PI * 3) * (height * 0.35);
+    coords.push(`${x},${y}`);
   }
-  areaPoints.push(`${w},${h}`, `0,${h}`);
+  return coords.join(' ');
+}
+
+export function SparklineCard({ type }: Props) {
+  const width = 200;
+  const height = 60;
+  const points = generateSinePoints(width, height, 40);
 
   return (
-    <BentoCard span={1} label="Install trend">
-      <p className="d-label mb-2">30 day trend</p>
+    <div
+      className="lum-bento-card flex flex-col gap-2"
+      role="region"
+      aria-label="Install trend"
+    >
+      <h3 className="d-label accent-left-border">30 day trend</h3>
       <div className="lum-sparkline">
         <svg
-          viewBox={`0 0 ${w} ${h}`}
+          viewBox={`0 0 ${width} ${height}`}
           preserveAspectRatio="none"
           className="w-full h-full"
-          aria-label="Install trend sparkline showing placeholder data"
         >
+          <defs>
+            <linearGradient id={`spark-fill-${type}`} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="var(--lum-type-accent, var(--d-accent))" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="var(--lum-type-accent, var(--d-accent))" stopOpacity="0" />
+            </linearGradient>
+          </defs>
           <polygon
-            points={areaPoints.join(' ')}
-            fill={accent}
-            opacity="0.1"
+            points={`0,${height} ${points} ${width},${height}`}
+            fill={`url(#spark-fill-${type})`}
           />
           <polyline
-            points={points.join(' ')}
+            points={points}
             fill="none"
-            stroke={accent}
-            strokeWidth="1.5"
+            stroke="var(--lum-type-accent, var(--d-accent))"
+            strokeWidth="2"
             vectorEffect="non-scaling-stroke"
           />
         </svg>
       </div>
-    </BentoCard>
+    </div>
   );
 }

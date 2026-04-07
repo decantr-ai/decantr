@@ -1,180 +1,134 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { BentoCard } from './bento-card';
 
-interface TerminalCardProps {
+interface Props {
   command: string;
 }
 
-export function TerminalCard({ command }: TerminalCardProps) {
-  const [displayedChars, setDisplayedChars] = useState(0);
+export function TerminalCard({ command }: Props) {
+  const [displayedText, setDisplayedText] = useState('');
   const [typingDone, setTypingDone] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [dotsGreen, setDotsGreen] = useState(false);
-  const [ripple, setRipple] = useState(false);
-  const [stepsOpen, setStepsOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const hasAnimated = useRef(false);
-  const reducedMotion = useRef(false);
 
   useEffect(() => {
-    reducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion.current) {
-      setDisplayedChars(command.length);
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      setDisplayedText(command);
       setTypingDone(true);
       return;
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated.current) {
+      (entries) => {
+        if (entries[0].isIntersecting && !hasAnimated.current) {
           hasAnimated.current = true;
           let i = 0;
           const interval = setInterval(() => {
             i++;
-            setDisplayedChars(i);
+            setDisplayedText(command.slice(0, i));
             if (i >= command.length) {
               clearInterval(interval);
               setTypingDone(true);
             }
-          }, 30);
+          }, Math.max(30, 1500 / command.length));
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
+    if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, [command]);
 
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(command);
-      setCopied(true);
-      setDotsGreen(true);
-      setRipple(true);
-
-      setTimeout(() => setRipple(false), 600);
-      setTimeout(() => setDotsGreen(false), 1500);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard may be blocked */
-    }
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(command);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }, [command]);
 
-  const dotColors = dotsGreen
-    ? ['#27C93F', '#27C93F', '#27C93F']
-    : ['#FF5F57', '#FFBD2E', '#27C93F'];
-
   return (
-    <BentoCard span={2} label="Install command">
-      <div
-        ref={containerRef}
-        className={`lum-terminal ${ripple ? 'lum-terminal-ripple' : ''}`}
-      >
+    <div
+      ref={containerRef}
+      className={`lum-bento-card col-span-2 p-0 overflow-hidden ${copied ? 'lum-terminal-ripple' : ''}`}
+      role="region"
+      aria-label="Install command"
+    >
+      <div className="lum-terminal">
         {/* Title bar */}
         <div className="lum-terminal-titlebar">
           <div className="lum-terminal-dots">
-            {dotColors.map((color, i) => (
-              <span
-                key={i}
-                className="terminal-dot inline-block rounded-full shrink-0"
-                data-color={dotsGreen ? 'green' : ['red', 'yellow', 'green'][i]}
-                style={{ backgroundColor: color }}
-              />
-            ))}
+            <span
+              className="terminal-dot rounded-full"
+              data-color={copied ? 'green' : 'red'}
+            />
+            <span
+              className="terminal-dot rounded-full"
+              data-color={copied ? 'green' : 'yellow'}
+            />
+            <span
+              className="terminal-dot rounded-full"
+              data-color={copied ? 'green' : 'green'}
+            />
           </div>
           <span className="flex-1 text-center text-xs font-mono text-d-muted">
             decantr
           </span>
           {typingDone && (
             <button
-              className="d-interactive text-xs px-2 py-1"
+              className="d-interactive text-xs py-1 px-2.5"
               data-variant="ghost"
               onClick={handleCopy}
-              aria-label={copied ? 'Copied' : 'Copy command'}
             >
-              {copied ? (
-                <>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#27C93F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                  <span className="text-d-success">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
-                  <span>Copy</span>
-                </>
-              )}
+              {copied ? 'Copied!' : 'Copy'}
             </button>
           )}
         </div>
 
-        {/* Terminal body */}
-        <div className="lum-terminal-body">
-          <span className="text-d-green mr-1">$</span>
-          {/* Full command for screen readers */}
-          <span className="sr-only" aria-live="polite">{command}</span>
-          {/* Animated typing */}
-          <span aria-hidden="true">
-            {command.slice(0, displayedChars)}
-          </span>
-          {!typingDone && (
-            <span
-              className="inline-block w-2 h-4 bg-white/80 align-middle ml-px animate-[lum-cursor-blink_1s_step-end_infinite]"
-              aria-hidden="true"
-            />
-          )}
+        {/* Body */}
+        <div className="lum-terminal-body" aria-live="polite">
+          <span className="accent-type-text">$</span>{' '}
+          <span aria-hidden="true">{displayedText}</span>
+          {!typingDone && <span className="terminal-cursor">&#9608;</span>}
+          <span className="sr-only">{command}</span>
         </div>
       </div>
 
-      {/* What happens next? */}
-      <div className="mt-3">
+      {/* What happens next */}
+      <div className="px-5 pb-4 pt-2">
         <button
           className="d-interactive text-xs w-full justify-center"
           data-variant="ghost"
-          onClick={() => setStepsOpen(!stepsOpen)}
-          aria-expanded={stepsOpen}
+          onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
         >
+          {expanded ? 'Hide steps' : 'What happens next?'}
           <svg
-            width="14"
-            height="14"
+            width="12"
+            height="12"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`transition-transform duration-200 ${stepsOpen ? 'rotate-180' : ''}`}
+            className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
           >
             <polyline points="6 9 12 15 18 9" />
           </svg>
-          <span>What happens next?</span>
         </button>
 
-        <div
-          className="overflow-hidden transition-all duration-300"
-          style={{ maxHeight: stepsOpen ? '12rem' : 0 }}
-        >
-          <ol className="flex flex-col gap-2 pt-3 pl-1 text-xs text-d-muted list-none">
-            <li className="flex items-start gap-2">
-              <span className="d-annotation shrink-0 text-[0.625rem] tabular-nums">1</span>
-              <span>Run the command in your project directory</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="d-annotation shrink-0 text-[0.625rem] tabular-nums">2</span>
-              <span>Read the generated DECANTR.md for the design spec</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="d-annotation shrink-0 text-[0.625rem] tabular-nums">3</span>
-              <span>Let your AI assistant build from the context files</span>
-            </li>
+        {expanded && (
+          <ol className="mt-3 flex flex-col gap-2 text-xs text-d-muted list-decimal list-inside">
+            <li>Run the command in your project directory</li>
+            <li>Read the generated DECANTR.md for the design spec</li>
+            <li>Let your AI assistant build from the context files</li>
           </ol>
-        </div>
+        )}
       </div>
-
-    </BentoCard>
+    </div>
   );
 }

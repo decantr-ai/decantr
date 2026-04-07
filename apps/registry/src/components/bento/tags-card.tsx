@@ -1,15 +1,17 @@
-import { BentoCard } from './bento-card';
-
-interface TagsCardProps {
+interface Props {
   tags?: string[];
 }
 
-export function TagsCard({ tags }: TagsCardProps) {
+export function TagsCard({ tags }: Props) {
   if (!tags || tags.length === 0) return null;
 
   return (
-    <BentoCard span={1} label="Tags">
-      <p className="d-label mb-3">Tags</p>
+    <div
+      className="lum-bento-card flex flex-col gap-3"
+      role="region"
+      aria-label="Tags"
+    >
+      <h3 className="d-label accent-left-border">Tags</h3>
       <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
           <span key={tag} className="d-annotation">
@@ -17,6 +19,6 @@ export function TagsCard({ tags }: TagsCardProps) {
           </span>
         ))}
       </div>
-    </BentoCard>
+    </div>
   );
 }

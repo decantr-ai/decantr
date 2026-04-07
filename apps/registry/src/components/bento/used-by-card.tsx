@@ -1,70 +1,73 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { BentoCard } from './bento-card';
+import { useState, useEffect, useRef } from 'react';
 
-interface UsedByCardProps {
-  count?: number;
+interface Props {
+  count: number;
 }
 
-export function UsedByCard({ count = 0 }: UsedByCardProps) {
-  const [displayed, setDisplayed] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
+export function UsedByCard({ count }: Props) {
+  const [displayCount, setDisplayCount] = useState(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
 
   useEffect(() => {
     if (count === 0) return;
 
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mq.matches) {
-      setDisplayed(count);
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      setDisplayCount(count);
       return;
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          observer.disconnect();
-          const start = performance.now();
+      (entries) => {
+        if (entries[0].isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          const startTime = performance.now();
           const duration = 500;
-          const tick = (now: number) => {
-            const progress = Math.min((now - start) / duration, 1);
-            setDisplayed(Math.round(progress * count));
-            if (progress < 1) requestAnimationFrame(tick);
+          const animate = (now: number) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setDisplayCount(Math.round(eased * count));
+            if (progress < 1) requestAnimationFrame(animate);
           };
-          requestAnimationFrame(tick);
+          requestAnimationFrame(animate);
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
 
-    if (ref.current) observer.observe(ref.current);
+    if (cardRef.current) observer.observe(cardRef.current);
     return () => observer.disconnect();
   }, [count]);
 
   return (
-    <BentoCard span={1} label="Used by">
-      <div ref={ref}>
-        <p className="d-label mb-2">Installs</p>
-
-        {count === 0 ? (
-          <p className="text-sm text-d-muted">Be the first to use this</p>
-        ) : (
-          <>
-            <p className="text-3xl font-bold font-mono text-d-text mb-2">
-              {displayed.toLocaleString()}
-            </p>
-            <div className="flex -space-x-2">
-              {Array.from({ length: Math.min(5, count) }, (_, i) => (
-                <div
-                  key={i}
-                  className="w-7 h-7 rounded-full border-2 border-d-bg bg-d-surface-raised"
-                  aria-hidden="true"
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </BentoCard>
+    <div
+      ref={cardRef}
+      className="lum-bento-card flex flex-col gap-3 items-center justify-center text-center"
+      role="region"
+      aria-label="Install count"
+    >
+      {count > 0 ? (
+        <>
+          <span className="lum-stat-glow">{displayCount}</span>
+          <span className="text-xs text-d-muted">installs</span>
+          <div className="flex gap-1 mt-1">
+            {Array.from({ length: Math.min(5, count) }).map((_, i) => (
+              <span
+                key={i}
+                className="w-6 h-6 rounded-full bg-d-surface-raised border border-d-border"
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <span className="lum-stat-glow">0</span>
+          <span className="text-xs text-d-muted">Be the first to use this</span>
+        </>
+      )}
+    </div>
   );
 }
