@@ -13,6 +13,15 @@ export function getStripe(): Stripe {
   return _stripe;
 }
 
-export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
+/** Lazily validated — throws on first use if missing, not on import */
+let _webhookSecret: string | null = null;
+export function getStripeWebhookSecret(): string {
+  if (_webhookSecret === null) {
+    const secret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!secret) throw new Error('Missing required STRIPE_WEBHOOK_SECRET environment variable');
+    _webhookSecret = secret;
+  }
+  return _webhookSecret;
+}
 export const STRIPE_PRO_PRICE_ID = process.env.STRIPE_PRO_PRICE_ID || '';
 export const STRIPE_TEAM_PRICE_ID = process.env.STRIPE_TEAM_PRICE_ID || '';

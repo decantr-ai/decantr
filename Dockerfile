@@ -24,12 +24,20 @@ RUN npx tsup
 FROM node:24-slim
 WORKDIR /app
 
-COPY --from=builder /app/dist/ ./dist/
-COPY --from=builder /app/node_modules/ ./node_modules/
-COPY --from=builder /app/package.json ./
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser -d /app appuser
+
+COPY --from=builder --chown=appuser:appuser /app/dist/ ./dist/
+COPY --from=builder --chown=appuser:appuser /app/node_modules/ ./node_modules/
+COPY --from=builder --chown=appuser:appuser /app/package.json ./
 
 # Ensure essence-spec is available with its schema files
-COPY --from=builder /app/local-deps/essence-spec/ ./node_modules/@decantr/essence-spec/
+COPY --from=builder --chown=appuser:appuser /app/local-deps/essence-spec/ ./node_modules/@decantr/essence-spec/
 
+USER appuser
 EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "const http = require('http'); http.get('http://localhost:3000/health', r => { if (r.statusCode !== 200) process.exit(1); }).on('error', () => process.exit(1));"
+
 CMD ["node", "dist/index.js"]

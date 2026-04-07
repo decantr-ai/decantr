@@ -257,7 +257,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
 
   const { data: userRow } = await adminClient
     .from('users')
-    .select('id, email')
+    .select('id')
     .eq('stripe_customer_id', customerId)
     .single();
 
@@ -269,7 +269,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
   // Log the payment failure for monitoring/alerting
   // In production, this would trigger an email notification or alert
   console.warn(
-    `invoice.payment_failed: user ${userRow.id} (${userRow.email}) -- ` +
+    `invoice.payment_failed: user ${userRow.id} -- ` +
     `invoice ${invoice.id}, attempt ${invoice.attempt_count}`
   );
 }

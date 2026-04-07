@@ -34,6 +34,7 @@ contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}/:namespa
       return c.json({ error: `${singularType} "${namespace}/${slug}" not found` }, 404);
     }
 
+  c.header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
   return c.json({
     id: data.id,
     type: data.type,
@@ -89,6 +90,7 @@ contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}', async 
     return c.json({ error: 'Failed to fetch content' }, 500);
   }
 
+  c.header('Cache-Control', 'public, max-age=60, stale-while-revalidate=3600');
   return c.json({
     total: count ?? 0,
     limit,

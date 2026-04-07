@@ -40,7 +40,12 @@ function getRateLimitKey(c: Context<Env>): string {
   if (auth?.isAuthenticated && auth.user) {
     return `user:${auth.user.id}`;
   }
-  return `ip:${c.req.header('x-forwarded-for') || c.req.header('cf-connecting-ip') || 'unknown'}`;
+  // Use first IP from x-forwarded-for (client origin), not full chain
+  const xff = c.req.header('x-forwarded-for');
+  const ip = xff
+    ? (xff.split(',')[0]?.trim() || 'unknown')
+    : (c.req.header('x-real-ip') || 'unknown');
+  return `ip:${ip}`;
 }
 
 function getMaxRequests(c: Context<Env>): number {

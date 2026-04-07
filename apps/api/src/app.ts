@@ -13,6 +13,18 @@ import { userRoutes } from './routes/users.js';
 import { optionalAuth } from './middleware/auth.js';
 import { rateLimiter } from './middleware/rate-limit.js';
 
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+  : null; // null = allow all (public API default)
+
+const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10 MB
+
+function getAllowedOrigin(requestOrigin: string | undefined): string {
+  if (!ALLOWED_ORIGINS) return '*';
+  if (requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin)) return requestOrigin;
+  return ALLOWED_ORIGINS[0] ?? '*';
+}
+
 export function createApp(): Hono<Env> {
   const app = new Hono<Env>();
 
@@ -22,12 +34,36 @@ export function createApp(): Hono<Env> {
     return c.json({ error: 'Internal server error' }, 500);
   });
 
+  // Security headers + CORS origin on all responses
+  app.use('*', async (c, next) => {
+    await next();
+    c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    c.header('X-Frame-Options', 'DENY');
+    c.header('X-Content-Type-Options', 'nosniff');
+    c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+    c.header('Access-Control-Allow-Origin', getAllowedOrigin(c.req.header('origin')));
+  });
+
+  // Body size limit on all non-GET/HEAD/OPTIONS requests
+  app.use('*', async (c, next) => {
+    const method = c.req.method;
+    if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
+      return next();
+    }
+    const contentLength = c.req.header('content-length');
+    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_SIZE) {
+      return c.json({ error: 'Request body too large' }, 413);
+    }
+    await next();
+  });
+
   // Preflight handler only — no response modification after next()
   app.options('*', (c) => {
+    const origin = getAllowedOrigin(c.req.header('origin'));
     return new Response(null, {
       status: 204,
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key, X-Admin-Key',
       },

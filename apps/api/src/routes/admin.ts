@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { timingSafeEqual } from 'node:crypto';
 import type { Env } from '../types.js';
 import { parsePagination, CONTENT_TYPES } from '../types.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -6,6 +7,16 @@ import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 
 export const adminRoutes = new Hono<Env>();
+
+/** Timing-safe string comparison to prevent timing attacks on admin key */
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    // Compare against b to burn constant time, then return false
+    timingSafeEqual(Buffer.from(b), Buffer.from(b));
+    return false;
+  }
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 // Admin check middleware — requires both user auth AND admin key
 function requireAdmin() {
@@ -15,8 +26,9 @@ function requireAdmin() {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    const adminKey = c.req.header('X-Admin-Key');
-    if (adminKey !== process.env.DECANTR_ADMIN_KEY) {
+    const adminKey = c.req.header('X-Admin-Key') ?? '';
+    const expected = process.env.DECANTR_ADMIN_KEY ?? '';
+    if (!expected || !adminKey || !safeCompare(adminKey, expected)) {
       return c.json({ error: 'Admin access required' }, 403);
     }
 
@@ -27,8 +39,9 @@ function requireAdmin() {
 // Admin key-only middleware — for CI/CD sync (no user auth required)
 function requireAdminKeyOnly() {
   return async (c: any, next: any) => {
-    const adminKey = c.req.header('X-Admin-Key');
-    if (!adminKey || adminKey !== process.env.DECANTR_ADMIN_KEY) {
+    const adminKey = c.req.header('X-Admin-Key') ?? '';
+    const expected = process.env.DECANTR_ADMIN_KEY ?? '';
+    if (!expected || !adminKey || !safeCompare(adminKey, expected)) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
@@ -199,7 +212,7 @@ adminRoutes.post('/admin/moderation/:id/reject', async (c) => {
       status: 'rejected',
       reviewed_by: auth.user!.id,
       reviewed_at: new Date().toISOString(),
-      rejection_reason: body.reason || null,
+      rejection_reason: body.reason ? String(body.reason).slice(0, 1000).trim() : null,
     })
     .eq('id', queueId);
 
@@ -262,7 +275,7 @@ adminRoutes.post('/admin/sync', async (c) => {
         type: body.type,
         slug,
         namespace: '@official',
-        owner_id: 'dd68f50d-fda3-4223-b250-43f2a0d29210', // system@decantr.ai
+        owner_id: process.env.DECANTR_SYSTEM_USER_ID || 'dd68f50d-fda3-4223-b250-43f2a0d29210',
         visibility: 'public',
         status: 'published',
         version: item.version || '1.0.0',
@@ -277,7 +290,8 @@ adminRoutes.post('/admin/sync', async (c) => {
     .single();
 
   if (error) {
-    return c.json({ error: `Sync failed: ${error.message}` }, 500);
+    console.error('Admin sync error:', error.message);
+    return c.json({ error: 'Sync failed' }, 500);
   }
 
   return c.json({ message: 'Synced', id: data.id, slug });

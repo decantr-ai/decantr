@@ -5,7 +5,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import {
   getStripe,
-  STRIPE_WEBHOOK_SECRET,
+  getStripeWebhookSecret,
   STRIPE_PRO_PRICE_ID,
   STRIPE_TEAM_PRICE_ID,
 } from '../stripe/index.js';
@@ -205,7 +205,7 @@ billingRoutes.post('/billing/webhooks', async (c) => {
   const stripe = getStripe();
   let event;
   try {
-    event = stripe.webhooks.constructEvent(rawBody, signature, STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(rawBody, signature, getStripeWebhookSecret());
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error(`Webhook signature verification failed: ${message}`);
