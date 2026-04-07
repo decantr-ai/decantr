@@ -378,6 +378,291 @@
     align-items: center;
     gap: 0.75rem;
   }
+
+  /* ── Bento grid container ── */
+  .lum-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    padding: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .lum-bento-grid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: var(--d-radius-lg);
+    background: radial-gradient(
+      200px circle at var(--mouse-x, -200px) var(--mouse-y, -200px),
+      color-mix(in srgb, var(--lum-type-accent, var(--d-accent)) 15%, transparent),
+      transparent
+    );
+    transition: opacity 0.3s ease;
+  }
+
+  /* ── Bento card ── */
+  .lum-bento-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--d-radius);
+    padding: 1.25rem;
+    transition: transform 200ms ease-out, border-color 200ms ease-out, box-shadow 200ms ease-out;
+    position: relative;
+    z-index: 1;
+  }
+  .lum-bento-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--lum-type-accent, var(--d-accent));
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+  html.light .lum-bento-card {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+
+  /* ── Terminal window chrome ── */
+  .lum-terminal {
+    background-color: #111113;
+    border-radius: var(--d-radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+  }
+
+  /* ── Terminal title bar ── */
+  .lum-terminal-titlebar {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* ── Terminal traffic light dots ── */
+  .lum-terminal-dots {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lum-terminal-dots .terminal-dot {
+    width: 12px;
+    height: 12px;
+    transition: background-color 300ms ease;
+  }
+
+  /* ── Terminal copy ripple ── */
+  .lum-terminal-ripple {
+    animation: lum-copy-ripple 600ms ease-out;
+  }
+
+  /* ── Terminal body ── */
+  .lum-terminal-body {
+    padding: 1rem 1.25rem;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* ── Backdrop animated orbs (type-colored) ── */
+  .lum-backdrop-orbs {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .lum-backdrop-orbs::before,
+  .lum-backdrop-orbs::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(80px);
+    animation: lum-orb-drift 12s ease-in-out infinite alternate;
+  }
+  .lum-backdrop-orbs::before {
+    width: 500px;
+    height: 500px;
+    top: -150px;
+    left: -100px;
+    background: radial-gradient(circle, color-mix(in srgb, var(--lum-type-accent, var(--d-accent)) 18%, transparent) 0%, transparent 70%);
+  }
+  .lum-backdrop-orbs::after {
+    width: 400px;
+    height: 400px;
+    bottom: -100px;
+    right: -80px;
+    background: radial-gradient(circle, color-mix(in srgb, var(--lum-type-accent, var(--d-accent)) 12%, transparent) 0%, transparent 70%);
+    animation-delay: -4s;
+  }
+
+  /* ── Geometric SVG backdrop overlay ── */
+  .lum-backdrop-geo {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.06;
+  }
+
+  /* ── Screenshot backdrop ── */
+  .lum-backdrop-screenshot {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: top center;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .lum-backdrop-screenshot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, var(--d-bg) 70%);
+    pointer-events: none;
+  }
+
+  /* ── Pull-quote treatment ── */
+  .lum-quote {
+    border-left: 3px solid var(--lum-type-accent, var(--d-accent));
+    padding: 1.25rem 1.5rem;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--d-text-muted);
+    position: relative;
+  }
+  .lum-quote::before {
+    content: "\201C";
+    position: absolute;
+    top: -0.25rem;
+    left: 0.5rem;
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--lum-type-accent, var(--d-accent));
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ── Sparkline container ── */
+  .lum-sparkline {
+    height: 60px;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  /* ── Cursor blink keyframe ── */
+  @keyframes lum-cursor-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* ── Copy ripple keyframe ── */
+  @keyframes lum-copy-ripple {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, #27C93F 40%, transparent);
+    }
+    100% {
+      box-shadow: 0 0 0 12px transparent;
+    }
+  }
+
+  /* ── Type badge filled (accent bg, dark text) ── */
+  .type-badge-filled {
+    color: #141414;
+  }
+  .type-badge-filled[data-type="pattern"] {
+    background: var(--d-coral);
+  }
+  .type-badge-filled[data-type="theme"] {
+    background: var(--d-amber);
+  }
+  .type-badge-filled[data-type="blueprint"] {
+    background: var(--d-cyan);
+  }
+  .type-badge-filled[data-type="shell"] {
+    background: var(--d-green);
+  }
+  .type-badge-filled[data-type="archetype"] {
+    background: var(--d-purple);
+    color: #FAFAFA;
+  }
+
+  /* ── Accent text from type context ── */
+  .accent-type-text {
+    color: var(--lum-type-accent, var(--d-accent));
+  }
+
+  /* ── Role badge colors ── */
+  .role-badge[data-role="primary"] {
+    background: color-mix(in srgb, #F58882 15%, transparent);
+    color: #F58882;
+  }
+  .role-badge[data-role="gateway"] {
+    background: color-mix(in srgb, #FDA303 15%, transparent);
+    color: #FDA303;
+  }
+  .role-badge[data-role="auxiliary"] {
+    background: color-mix(in srgb, #00E0AB 15%, transparent);
+    color: #00E0AB;
+  }
+  .role-badge[data-role="public"] {
+    background: color-mix(in srgb, #0AF3EB 15%, transparent);
+    color: #0AF3EB;
+  }
+
+  /* ── Preset with accent border (default/active) ── */
+  .preset-active {
+    border: 1px solid var(--lum-type-accent, var(--d-accent));
+  }
+
+  /* ── Accent left border (routes, labels) ── */
+  .accent-left-border {
+    border-left: 2px solid var(--lum-type-accent, var(--d-accent));
+    padding-left: 0.5rem;
+  }
+
+  /* ── Shape preview box ── */
+  .shape-preview {
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--d-border);
+    background: var(--d-surface);
+  }
+  .shape-preview[data-shape="pill"] { border-radius: 9999px; }
+  .shape-preview[data-shape="rounded"] { border-radius: 8px; }
+  .shape-preview[data-shape="sharp"] { border-radius: 0; }
+
+  /* ── Palette swatch (40px) ── */
+  .palette-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+  }
+  html.light .palette-swatch {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ── Bento grid responsive ── */
+@media (max-width: 1024px) {
+  .lum-bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .lum-bento-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Reduced motion ── */
@@ -387,6 +672,8 @@
   .lum-particles::before,
   .lum-fade-up,
   .lum-stagger > *,
+  .lum-backdrop-orbs::before,
+  .lum-backdrop-orbs::after,
   .entrance-fade {
     animation: none !important;
   }
@@ -397,6 +684,12 @@
   }
   .lum-card-outlined:hover {
     transform: none;
+  }
+  .lum-bento-card:hover {
+    transform: none;
+  }
+  .lum-bento-grid::before {
+    opacity: 0 !important;
   }
 }
 
