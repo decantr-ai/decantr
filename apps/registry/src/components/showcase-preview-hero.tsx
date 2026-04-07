@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 interface Props {
   slug: string;
   title: string;
@@ -29,14 +27,6 @@ export function ShowcasePreviewHero({ slug, title }: Props) {
             style={{ width: '100%', display: 'block' }}
           />
         </div>
-        <Link
-          href={`/showcase/${slug}`}
-          className="d-interactive"
-          data-variant="primary"
-          style={{ fontSize: '0.875rem' }}
-        >
-          View Demo
-        </Link>
       </div>
     </div>
   );

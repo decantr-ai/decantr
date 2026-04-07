@@ -2,16 +2,16 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useThemeLab } from './theme-lab-provider';
-import { api } from '@/lib/api';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 
 interface ThemeData {
   slug: string;
+  namespace: string;
   name: string;
-  description?: string;
-  data?: {
-    tokens?: Record<string, string>;
-    palette?: Record<string, string>;
-  };
+  description: string;
+  seed: Record<string, string>;  // primary, accent, secondary, background
+  colors: Record<string, string>; // full palette flattened to dark mode values
 }
 
 export function ThemeLabDrawer() {
@@ -23,9 +23,10 @@ export function ThemeLabDrawer() {
   useEffect(() => {
     if (drawerOpen && themes.length === 0) {
       setLoading(true);
-      api.listContent('themes', { limit: '20' })
-        .then((res) => {
-          setThemes(res.items || []);
+      fetch(`${API_URL}/themes/lab`)
+        .then((res) => res.json())
+        .then((data) => {
+          setThemes(data.items || []);
         })
         .catch(() => {})
         .finally(() => setLoading(false));
@@ -48,8 +49,10 @@ export function ThemeLabDrawer() {
   }, [drawerOpen]);
 
   const palette = (theme: ThemeData) => {
-    const colors = theme.data?.palette || theme.data?.tokens || {};
-    return Object.entries(colors).slice(0, 6).map(([, v]) => v);
+    // Show seed colors first (primary, accent, secondary, background), then top palette colors
+    const seedColors = Object.values(theme.seed);
+    const paletteColors = Object.values(theme.colors).filter(c => !seedColors.includes(c));
+    return [...seedColors, ...paletteColors].slice(0, 6);
   };
 
   return (
@@ -90,17 +93,28 @@ export function ThemeLabDrawer() {
             <div
               key={theme.slug}
               className="lum-theme-card"
-              data-active={activeTheme?.name === (theme.name || theme.slug) ? 'true' : 'false'}
+              data-active={activeTheme?.name === theme.name ? 'true' : 'false'}
               onClick={() => {
-                const tokens = theme.data?.tokens || {};
-                setActiveTheme({
-                  name: theme.name || theme.slug,
-                  tokens,
-                });
+                // Map palette colors to CSS token variables
+                const tokens: Record<string, string> = {};
+                if (theme.seed.primary) tokens['--d-primary'] = theme.seed.primary;
+                if (theme.seed.accent) tokens['--d-accent'] = theme.seed.accent;
+                if (theme.seed.secondary) tokens['--d-secondary'] = theme.seed.secondary;
+                if (theme.seed.background) tokens['--d-bg'] = theme.seed.background;
+                if (theme.colors.surface) tokens['--d-surface'] = theme.colors.surface;
+                if (theme.colors['surface-raised']) tokens['--d-surface-raised'] = theme.colors['surface-raised'];
+                if (theme.colors.border) tokens['--d-border'] = theme.colors.border;
+                if (theme.colors.text) tokens['--d-text'] = theme.colors.text;
+                if (theme.colors['text-muted']) tokens['--d-text-muted'] = theme.colors['text-muted'];
+                if (theme.colors.primary) tokens['--d-primary'] = theme.colors.primary;
+                // Also map named colors
+                if (theme.seed.primary) tokens['--d-primary-hover'] = theme.seed.primary;
+
+                setActiveTheme({ name: theme.name, tokens });
               }}
             >
               <div className="font-medium text-sm" style={{ color: '#FAFAFA', marginBottom: '0.25rem' }}>
-                {theme.name || theme.slug}
+                {theme.name}
               </div>
               {theme.description && (
                 <p className="text-xs" style={{ color: '#A1A1AA', marginBottom: '0.5rem' }}>

@@ -7,6 +7,60 @@ import { logger } from '../lib/logger.js';
 
 export const contentRoutes = new Hono<Env>();
 
+// GET /v1/themes/lab - All themes with seed/palette for Theme Lab
+contentRoutes.get('/themes/lab', async (c) => {
+  try {
+    const client = createAdminClient();
+
+    const { data, error } = await client
+      .from('content')
+      .select('id, slug, namespace, version, data, published_at')
+      .eq('type', 'theme')
+      .eq('visibility', 'public')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      return c.json({ error: 'Failed to fetch themes' }, 500);
+    }
+
+    c.header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+    return c.json({
+      items: (data ?? []).map((item) => {
+        const d = item.data as Record<string, unknown> | null;
+        const seed = (d?.seed ?? {}) as Record<string, string>;
+        const palette = d?.palette as Record<string, Record<string, string> | string> | undefined;
+
+        // Extract flat color map from palette (prefer dark mode values)
+        const colors: Record<string, string> = {};
+        if (palette) {
+          for (const [key, val] of Object.entries(palette)) {
+            if (typeof val === 'string') {
+              colors[key] = val;
+            } else if (val && typeof val === 'object' && 'dark' in val) {
+              colors[key] = (val as Record<string, string>).dark;
+            }
+          }
+        }
+
+        return {
+          slug: item.slug,
+          namespace: item.namespace,
+          version: item.version,
+          name: (d?.name as string) ?? item.slug,
+          description: (d?.description as string) ?? '',
+          seed,
+          colors,
+        };
+      }),
+    });
+  } catch (e) {
+    logger.error({ err: e }, 'Theme lab route error');
+    return c.json({ error: 'Internal server error' }, 500);
+  }
+});
+
 // GET /v1/:type/:namespace/:slug - Get single item (must be before list route)
 contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}/:namespace/:slug', async (c) => {
   try {
