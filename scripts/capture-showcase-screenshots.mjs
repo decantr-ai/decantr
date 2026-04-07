@@ -39,10 +39,15 @@ const MIME_TYPES = {
  * Spin up a static file server for a given directory.
  * Returns { url, close } where close() shuts down the server.
  */
-function serveStatic(dir, port) {
+function serveStatic(dir, port, basePath = '/') {
   return new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
-      const urlPath = req.url === '/' ? '/index.html' : req.url.split('?')[0];
+      let urlPath = req.url.split('?')[0];
+      // Strip the Vite base path prefix so /showcase/slug/assets/... maps to dist/assets/...
+      if (basePath !== '/' && urlPath.startsWith(basePath)) {
+        urlPath = urlPath.slice(basePath.length) || '/';
+      }
+      if (urlPath === '/') urlPath = '/index.html';
       const filePath = join(dir, urlPath);
 
       try {
@@ -111,9 +116,14 @@ async function main() {
       // Ensure output directory exists
       mkdirSync(outDir, { recursive: true });
 
-      // Start static server
+      // Detect Vite base path from the built index.html
+      const indexHtml = readFileSync(join(distDir, 'index.html'), 'utf-8');
+      const baseMatch = indexHtml.match(/src="(\/[^"]*?)assets\//);
+      const basePath = baseMatch ? baseMatch[1] : '/';
+
+      // Start static server with base path stripping
       const port = getPort();
-      server = await serveStatic(distDir, port);
+      server = await serveStatic(distDir, port, basePath);
 
       // Full-size screenshot
       const page = await browser.newPage();
@@ -122,6 +132,20 @@ async function main() {
         waitUntil: 'networkidle',
         timeout: NAV_TIMEOUT,
       });
+
+      // Wait for React/Vite SPA to hydrate — the empty #root div gets children
+      await page.waitForFunction(
+        () => {
+          const root = document.getElementById('root') || document.getElementById('app');
+          return root && root.children.length > 0 && root.innerHTML.length > 100;
+        },
+        { timeout: 10_000 },
+      ).catch(() => {
+        // Fallback: wait a fixed delay if no #root found (non-SPA or different structure)
+      });
+
+      // Extra settle time for CSS animations, font loading, lazy images
+      await page.waitForTimeout(1500);
 
       await page.screenshot({
         path: join(outDir, 'preview.png'),
