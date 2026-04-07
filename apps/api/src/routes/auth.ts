@@ -4,6 +4,8 @@ import type { Env } from '../types.js';
 import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
+import { getStripe } from '../stripe/client.js';
+import { logger } from '../lib/logger.js';
 
 export const authRoutes = new Hono<Env>();
 
@@ -190,4 +192,104 @@ authRoutes.delete('/api-keys/:id', async (c) => {
   }
 
   return c.json({ message: 'API key revoked' });
+});
+
+// ---------------------------------------------------------------------------
+// GDPR: Data Export (Right to Access — Article 15)
+// ---------------------------------------------------------------------------
+authRoutes.get('/me/export', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const userId = auth.user!.id;
+  const client = createAdminClient();
+
+  // Collect all user data in parallel
+  const [
+    userResult,
+    contentResult,
+    apiKeysResult,
+    orgMembershipsResult,
+    moderationResult,
+  ] = await Promise.all([
+    client.from('users').select('*').eq('id', userId).single(),
+    client.from('content').select('id, type, slug, namespace, version, visibility, status, data, created_at, updated_at, published_at').eq('owner_id', userId),
+    client.from('api_keys').select('id, name, scopes, created_at, last_used_at, revoked_at').eq('user_id', userId),
+    client.from('org_members').select('org_id, role, created_at, organizations(name, slug)').eq('user_id', userId),
+    client.from('moderation_queue').select('id, content_id, submitted_at, status, reviewed_at, rejection_reason').eq('submitted_by', userId),
+  ]);
+
+  return c.json({
+    exported_at: new Date().toISOString(),
+    user: userResult.data ?? null,
+    content: contentResult.data ?? [],
+    api_keys: apiKeysResult.data ?? [],
+    organizations: orgMembershipsResult.data ?? [],
+    moderation_history: moderationResult.data ?? [],
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GDPR: Account Deletion (Right to Be Forgotten — Article 17)
+// ---------------------------------------------------------------------------
+authRoutes.delete('/me', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const userId = auth.user!.id;
+  const client = createAdminClient();
+
+  // 1. Look up user for Stripe customer ID
+  const { data: user } = await client
+    .from('users')
+    .select('id, stripe_customer_id, tier')
+    .eq('id', userId)
+    .single();
+
+  if (!user) {
+    return c.json({ error: 'User not found' }, 404);
+  }
+
+  // 2. Cancel Stripe subscription if active
+  if (user.stripe_customer_id) {
+    try {
+      const stripe = getStripe();
+      const subscriptions = await stripe.subscriptions.list({
+        customer: user.stripe_customer_id,
+        status: 'active',
+      });
+      for (const sub of subscriptions.data) {
+        await stripe.subscriptions.cancel(sub.id);
+      }
+    } catch (e) {
+      logger.error({ userId, err: e }, 'Failed to cancel Stripe subscriptions');
+      // Continue with deletion — don't block GDPR on Stripe failure
+    }
+  }
+
+  // 3. Clear moderation_queue references
+  //    - submitted_by: delete rows (user's submissions)
+  //    - reviewed_by: nullify (preserve audit trail)
+  await client
+    .from('moderation_queue')
+    .delete()
+    .eq('submitted_by', userId);
+
+  await client
+    .from('moderation_queue')
+    .update({ reviewed_by: null })
+    .eq('reviewed_by', userId);
+
+  // 4. Delete all user content (content_versions cascade from content)
+  await client
+    .from('content')
+    .delete()
+    .eq('owner_id', userId);
+
+  // 5. Delete the Supabase auth user — this cascades to:
+  //    public.users → api_keys, organizations, org_members
+  const { error: authError } = await client.auth.admin.deleteUser(userId);
+
+  if (authError) {
+    logger.error({ userId, error: authError.message }, 'Failed to delete auth user');
+    return c.json({ error: 'Account deletion partially failed. Contact support.' }, 500);
+  }
+
+  return c.json({ message: 'Account deleted successfully' });
 });

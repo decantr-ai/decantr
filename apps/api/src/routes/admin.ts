@@ -5,6 +5,7 @@ import { parsePagination, CONTENT_TYPES } from '../types.js';
 import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
+import { logger } from '../lib/logger.js';
 
 export const adminRoutes = new Hono<Env>();
 
@@ -290,7 +291,7 @@ adminRoutes.post('/admin/sync', async (c) => {
     .single();
 
   if (error) {
-    console.error('Admin sync error:', error.message);
+    logger.error({ error: error.message }, 'Admin sync error');
     return c.json({ error: 'Sync failed' }, 500);
   }
 

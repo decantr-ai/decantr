@@ -12,6 +12,8 @@ import { billingRoutes } from './routes/billing.js';
 import { userRoutes } from './routes/users.js';
 import { optionalAuth } from './middleware/auth.js';
 import { rateLimiter } from './middleware/rate-limit.js';
+import { requestLogger } from './middleware/request-logger.js';
+import { logger } from './lib/logger.js';
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
@@ -30,9 +32,12 @@ export function createApp(): Hono<Env> {
 
   // Global error handler — prevents "Context is not finalized" crashes
   app.onError((err, c) => {
-    console.error('Unhandled error:', err.message, err.stack);
+    logger.error({ err, path: c.req.path, method: c.req.method }, 'Unhandled error');
     return c.json({ error: 'Internal server error' }, 500);
   });
+
+  // Request logging — logs method, path, status, duration for every request
+  app.use('*', requestLogger());
 
   // Security headers + CORS origin on all responses
   app.use('*', async (c, next) => {

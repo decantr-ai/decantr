@@ -3,6 +3,7 @@ import type { Env } from '../types.js';
 import { parsePagination } from '../types.js';
 import type { ContentType } from '../types.js';
 import { createAdminClient } from '../db/client.js';
+import { logger } from '../lib/logger.js';
 
 export const searchRoutes = new Hono<Env>();
 
@@ -43,7 +44,7 @@ searchRoutes.get('/search', async (c) => {
   });
 
   if (error) {
-    console.error('Search error:', error);
+    logger.error({ err: error }, 'Search error');
     return c.json({ error: 'Search failed' }, 500);
   }
 

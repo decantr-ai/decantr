@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Pre-commit hook: block commits containing secrets or sensitive patterns.
+# Scans only staged files (not the whole repo).
+
+set -euo pipefail
+
+PATTERNS=(
+  'SUPABASE_SERVICE_ROLE_KEY\s*='
+  'SUPABASE_ANON_KEY\s*='
+  'STRIPE_SECRET_KEY\s*='
+  'STRIPE_WEBHOOK_SECRET\s*='
+  'sk_live_[a-zA-Z0-9]'
+  'sk_test_[a-zA-Z0-9]'
+  'whsec_[a-zA-Z0-9]'
+  'eyJhbGciOi'
+  'AKIA[0-9A-Z]{16}'
+  'ghp_[a-zA-Z0-9]{36}'
+  'npm_[a-zA-Z0-9]{36}'
+)
+
+# Files to always skip (example files are fine)
+SKIP_PATTERN='\.env\.example$|\.githooks/|pnpm-lock\.yaml$'
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+
+FOUND=0
+
+for file in $STAGED; do
+  # Skip allowed files
+  if echo "$file" | grep -qE "$SKIP_PATTERN"; then
+    continue
+  fi
+
+  # Get staged content (not working tree)
+  CONTENT=$(git show ":$file" 2>/dev/null || true)
+  if [ -z "$CONTENT" ]; then
+    continue
+  fi
+
+  for pattern in "${PATTERNS[@]}"; do
+    if echo "$CONTENT" | grep -qE "$pattern"; then
+      echo "ERROR: Potential secret found in $file"
+      echo "  Pattern: $pattern"
+      echo ""
+      FOUND=1
+    fi
+  done
+done
+
+if [ "$FOUND" -eq 1 ]; then
+  echo "Commit blocked. Remove secrets from staged files before committing."
+  echo "If this is a false positive, use: git commit --no-verify"
+  exit 1
+fi
+
+exit 0

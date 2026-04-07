@@ -3,6 +3,7 @@ import type { Env } from '../types.js';
 import { PLURAL_TO_SINGULAR, parsePagination } from '../types.js';
 import { createAdminClient } from '../db/client.js';
 import { validateEssence, isV3 } from '@decantr/essence-spec';
+import { logger } from '../lib/logger.js';
 
 export const contentRoutes = new Hono<Env>();
 
@@ -51,7 +52,7 @@ contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}/:namespa
     owner_username: (data as any).owner?.username || null,
   });
   } catch (e) {
-    console.error('Content route error:', (e as Error).message);
+    logger.error({ err: e }, 'Content route error');
     return c.json({ error: 'Internal server error' }, 500);
   }
 });
@@ -109,7 +110,7 @@ contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}', async 
     })),
   });
   } catch (e) {
-    console.error('Content list error:', (e as Error).message);
+    logger.error({ err: e }, 'Content list error');
     return c.json({ error: 'Internal server error' }, 500);
   }
 });

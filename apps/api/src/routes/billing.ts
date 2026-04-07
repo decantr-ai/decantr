@@ -3,6 +3,7 @@ import type { Env } from '../types.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { requireAuth } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
+import { logger } from '../lib/logger.js';
 import {
   getStripe,
   getStripeWebhookSecret,
@@ -208,15 +209,31 @@ billingRoutes.post('/billing/webhooks', async (c) => {
     event = stripe.webhooks.constructEvent(rawBody, signature, getStripeWebhookSecret());
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error(`Webhook signature verification failed: ${message}`);
+    logger.error({ error: message }, 'Webhook signature verification failed');
     return c.json({ error: `Webhook signature verification failed: ${message}` }, 400);
+  }
+
+  // Idempotency: skip if we've already processed this event
+  const adminClient = createAdminClient();
+  const { error: insertError } = await adminClient
+    .from('stripe_events')
+    .insert({ event_id: event.id, event_type: event.type });
+
+  if (insertError) {
+    // Unique constraint violation = already processed
+    if (insertError.code === '23505') {
+      logger.info({ eventId: event.id }, 'Webhook event already processed, skipping');
+      return c.json({ received: true, deduplicated: true });
+    }
+    // Other DB error — log but still try to process (fail open)
+    logger.error({ eventId: event.id, error: insertError.message }, 'Failed to record webhook event');
   }
 
   try {
     await handleStripeWebhook(event);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error(`Webhook handler error for ${event.type}: ${message}`);
+    logger.error({ eventType: event.type, error: message }, 'Webhook handler error');
     return c.json({ error: 'Webhook handler failed.' }, 500);
   }
 

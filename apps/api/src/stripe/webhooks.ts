@@ -1,6 +1,7 @@
 import type Stripe from 'stripe';
 import { STRIPE_PRO_PRICE_ID, STRIPE_TEAM_PRICE_ID } from './client.js';
 import { createAdminClient } from '../db/client.js';
+import { logger } from '../lib/logger.js';
 
 type UserTier = 'free' | 'pro' | 'team' | 'enterprise';
 
@@ -22,7 +23,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
       await handlePaymentFailed(event.data.object as Stripe.Invoice);
       break;
     default:
-      console.log(`Unhandled Stripe event type: ${event.type}`);
+      logger.info({ eventType: event.type }, 'Unhandled Stripe event type');
   }
 }
 
@@ -36,7 +37,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   const plan = session.metadata?.plan as 'pro' | 'team' | undefined;
 
   if (!userId || !plan) {
-    console.error('checkout.session.completed: missing metadata (supabase_user_id or plan)');
+    logger.error('checkout.session.completed: missing metadata (supabase_user_id or plan)');
     return;
   }
 
@@ -44,7 +45,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     typeof session.customer === 'string' ? session.customer : session.customer?.id;
 
   if (!stripeCustomerId) {
-    console.error('checkout.session.completed: missing customer ID');
+    logger.error('checkout.session.completed: missing customer ID');
     return;
   }
 
@@ -55,7 +56,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       : session.subscription?.id;
 
   if (!subscriptionId) {
-    console.error('checkout.session.completed: missing subscription ID');
+    logger.error('checkout.session.completed: missing subscription ID');
     return;
   }
 
@@ -123,7 +124,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     }
   }
 
-  console.log(`checkout.session.completed: user ${userId} upgraded to ${newTier}`);
+  logger.info({ userId, tier: newTier }, 'checkout.session.completed: user upgraded');
 }
 
 // ---------------------------------------------------------------------------
@@ -143,13 +144,13 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     .single();
 
   if (!userRow) {
-    console.error(`subscription.updated: no user found for customer ${customerId}`);
+    logger.error({ customerId }, 'subscription.updated: no user found');
     return;
   }
 
   const item = subscription.items.data[0];
   if (!item) {
-    console.error(`subscription.updated: no line items on subscription ${subscription.id}`);
+    logger.error({ subscriptionId: subscription.id }, 'subscription.updated: no line items');
     return;
   }
 
@@ -162,7 +163,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
   } else if (priceId === STRIPE_TEAM_PRICE_ID) {
     newTier = 'team';
   } else {
-    console.log(`subscription.updated: unrecognized price ${priceId}, skipping tier sync`);
+    logger.info({ priceId }, 'subscription.updated: unrecognized price, skipping');
     return;
   }
 
@@ -186,10 +187,10 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
       })
       .eq('owner_id', userRow.id);
 
-    console.log(`subscription.updated: user ${userRow.id} team seats = ${seatQuantity}`);
+    logger.info({ userId: userRow.id, seats: seatQuantity }, 'subscription.updated: team seats synced');
   }
 
-  console.log(`subscription.updated: user ${userRow.id} tier synced to ${newTier}`);
+  logger.info({ userId: userRow.id, tier: newTier }, 'subscription.updated: tier synced');
 }
 
 // ---------------------------------------------------------------------------
@@ -209,7 +210,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
     .single();
 
   if (!userRow) {
-    console.error(`subscription.deleted: no user found for customer ${customerId}`);
+    logger.error({ customerId }, 'subscription.deleted: no user found');
     return;
   }
 
@@ -238,7 +239,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
       .eq('owner_id', userRow.id);
   }
 
-  console.log(`subscription.deleted: user ${userRow.id} downgraded to free`);
+  logger.info({ userId: userRow.id }, 'subscription.deleted: user downgraded to free');
 }
 
 // ---------------------------------------------------------------------------
@@ -251,7 +252,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
 
   if (!customerId) {
-    console.error('invoice.payment_failed: missing customer ID');
+    logger.error('invoice.payment_failed: missing customer ID');
     return;
   }
 
@@ -262,14 +263,11 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     .single();
 
   if (!userRow) {
-    console.error(`invoice.payment_failed: no user found for customer ${customerId}`);
+    logger.error({ customerId }, 'invoice.payment_failed: no user found');
     return;
   }
 
   // Log the payment failure for monitoring/alerting
   // In production, this would trigger an email notification or alert
-  console.warn(
-    `invoice.payment_failed: user ${userRow.id} -- ` +
-    `invoice ${invoice.id}, attempt ${invoice.attempt_count}`
-  );
+  logger.warn({ userId: userRow.id, invoiceId: invoice.id, attempt: invoice.attempt_count }, 'invoice.payment_failed');
 }
