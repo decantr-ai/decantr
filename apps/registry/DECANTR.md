@@ -4,7 +4,7 @@
 - **Theme:** luminarum (dark mode, pill shape)
 - **Personality:** Vibrant design intelligence registry. Warm coral and amber accents on a rich dark canvas (or crisp warm-white in light mode). Content cards are the hero — outlined with colored type borders, hovering with purpose. Search is instant and faceted. Publishing feels like sharing art. The Decantr dogfood app — built with its own system, proudly showing what the platform produces. Think Figma Community meets shadcn/ui registry.
 - **Sections:** 4 (registry-browser [primary], user-dashboard [primary], admin-moderation [auxiliary], auth-flow [gateway])
-- **Features:** search, pagination, auth, api-keys, admin
+- **Features:** search, pagination, auth, api-keys, admin, validation, team, billing, theme-toggle, content-management, password-change, theme-preview, showcase-preview
 - **Guard mode:** strict
 
 ### Decorator Quick Reference
@@ -14,13 +14,21 @@
 | `.lum-brand` | Brand text with accent color on punctuation (e.g. 'decantr.ai' with coral period and 'i'). |
 | `.lum-glass` | Subtle glass panel (dark: rgba(255,255,255,0.03), light: rgba(0,0,0,0.02)) with soft border. No heavy blur — clean transparency. |
 | `.lum-canvas` | Particle network background (dark: #141414, light: #FAFAF9). Scattered small dots and thin connecting lines in brand colors at low opacity. Apply to page root. |
+| `.lum-drawer` | Right-side drawer panel. Fixed colors (#1E1E1E bg, #2E2E2E border-left) not tokens. Width 380px, full height, z-50, slide-in transition 200ms. |
+| `.lum-swatch` | Single color circle. 24px width/height, rounded-full, border 1px solid rgba(255,255,255,0.1), inline-flex, align/justify center. |
 | `.lum-divider` | Section divider: thin horizontal line with centered colored dot. Dot color matches the next section's accent. |
 | `.lum-fade-up` | Scroll-reveal animation: fade in + translate up 24px over 0.6s. |
 | `.lum-particles` | Fixed-position small dots (2-8px) in brand colors scattered across the viewport at 15% opacity with subtle pulse animation. |
 | `.lum-stat-glow` | Number badge with filled circle in accent color, contrasting text inside. |
 | `.lum-code-block` | Code block (dark: #111113, light: #F5F5F4) with colored top border (2px) matching section accent. Monospace font, syntax highlighting. |
+| `.lum-theme-card` | Theme card in drawer. Fixed bg #1E1E1E. Border 1px solid #2E2E2E, rounded, padding, cursor pointer. Hover: border brightens. Active: border-color var(--d-accent). |
 | `.lum-card-vibrant` | Filled card with vibrant gradient background, white text, corner accent brackets. |
+| `.lum-drawer-scrim` | Overlay behind drawer. Fixed inset-0, bg rgba(0,0,0,0.4), z-40, fade-in transition. |
+| `.lum-preview-hero` | Screenshot backdrop section. Position relative, overflow hidden, min-height 300px. Pseudo-element gradient overlay from transparent to var(--d-bg). |
+| `.lum-swatch-strip` | Row of color swatches. Display flex, gap 0.375rem, overflow hidden. |
 | `.lum-card-outlined` | Outlined card with colored border stroke, transparent bg, colored heading. The stroke color comes from the section's accent. |
+| `.lum-preview-image` | Crisp screenshot container. Border-radius var(--d-radius-lg), border 1px solid var(--d-border), box-shadow var(--d-shadow-lg), overflow hidden, max-width 100%. |
+| `.lum-preview-banner` | Floating preview indicator. Position fixed, bottom 1.5rem, left 50%, translateX(-50%). Pill shape, bg var(--d-surface), border var(--d-accent), z-50, box-shadow var(--d-shadow-md). |
 
 ## Development Workflow
 

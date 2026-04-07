@@ -236,7 +236,15 @@
       "pagination",
       "auth",
       "api-keys",
-      "admin"
+      "admin",
+      "validation",
+      "team",
+      "billing",
+      "theme-toggle",
+      "content-management",
+      "password-change",
+      "theme-preview",
+      "showcase-preview"
     ],
     "routes": {
       "/": {

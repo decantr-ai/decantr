@@ -25,6 +25,16 @@ apps/api/.env.local
 # Generated showcase build output (copied by scripts/copy-showcase-dist.js)
 apps/web/public/showcase/
 
+# Generated showcase screenshots (build artifacts)
+apps/registry/public/showcase/
+
+# Registry backups (local only)
+apps/registry-backup/
+apps/registry-backup-2/
+
+# Next.js build output
+apps/registry/.next/
+
 # Decantr cache
 .decantr/cache/
 

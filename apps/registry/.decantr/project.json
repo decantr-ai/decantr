@@ -1,21 +1,18 @@
 {
   "detected": {
-    "framework": "nextjs",
-    "version": "16.2.1",
-    "packageManager": "pnpm",
-    "hasTypeScript": true,
+    "framework": "unknown",
+    "version": null,
+    "packageManager": "unknown",
+    "hasTypeScript": false,
     "hasTailwind": false,
-    "existingRuleFiles": [
-      "CLAUDE.md",
-      "AGENTS.md"
-    ]
+    "existingRuleFiles": []
   },
   "overrides": {
-    "framework": null
+    "framework": "nextjs"
   },
   "sync": {
     "status": "synced",
-    "lastSync": "2026-04-03T17:53:03.215Z",
+    "lastSync": "2026-04-07T20:08:39.037Z",
     "registrySource": "api",
     "cachedContent": {
       "archetypes": [],
@@ -24,7 +21,7 @@
     }
   },
   "initialized": {
-    "at": "2026-04-03T17:53:03.215Z",
+    "at": "2026-04-07T20:08:39.037Z",
     "via": "cli",
     "version": "1.0.0",
     "flags": "--blueprint=registry-platform --theme=luminarum --mode=dark --guard=strict"

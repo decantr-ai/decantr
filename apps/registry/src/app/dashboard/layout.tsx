@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { isAdmin } from '@/lib/admin';
 import { Sidebar } from '@/components/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
 
@@ -9,28 +10,20 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login');
   }
 
-  const email = user.email ?? '';
-  const display_name =
-    (user.user_metadata?.display_name as string | undefined) ?? undefined;
+  const admin = isAdmin(user.email);
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-      <Sidebar user={{ email, display_name }} />
-
-      <div className="flex flex-col flex-1 overflow-hidden">
+    <div className="flex" style={{ height: '100vh' }}>
+      <Sidebar isAdmin={admin} />
+      <div className="flex flex-col flex-1" style={{ overflow: 'hidden' }}>
         <DashboardHeader />
-        <main
-          className="entrance-fade"
-          style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}
-        >
+        <main className="entrance-fade" style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
           {children}
         </main>
       </div>

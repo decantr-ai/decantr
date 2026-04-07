@@ -1,62 +1,57 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
 
-interface PaginationProps {
+interface Props {
   total: number;
   limit: number;
-  offset: number;
+  baseUrl: string;
 }
 
-export function Pagination({ total, limit, offset }: PaginationProps) {
+export function Pagination({ total, limit, baseUrl }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const offset = parseInt(searchParams.get('offset') || '0', 10);
 
-  const currentPage = Math.floor(offset / limit) + 1;
-  const totalPages = Math.ceil(total / limit);
-  const showingFrom = total === 0 ? 0 : offset + 1;
-  const showingTo = Math.min(offset + limit, total);
+  const start = offset + 1;
+  const end = Math.min(offset + limit, total);
+  const hasPrev = offset > 0;
+  const hasNext = offset + limit < total;
 
-  const navigate = useCallback(
-    (newOffset: number) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (newOffset > 0) {
-        params.set('offset', String(newOffset));
-      } else {
-        params.delete('offset');
-      }
-      router.push(`?${params.toString()}`);
-    },
-    [router, searchParams],
-  );
+  function navigate(newOffset: number) {
+    const sp = new URLSearchParams(searchParams.toString());
+    if (newOffset > 0) {
+      sp.set('offset', String(newOffset));
+    } else {
+      sp.delete('offset');
+    }
+    const qs = sp.toString();
+    router.push(qs ? `${baseUrl}?${qs}` : baseUrl);
+  }
 
   if (total <= limit) return null;
 
   return (
-    <div className="flex items-center justify-between pt-4">
-      <p className="text-sm text-d-muted">
-        Showing <span className="font-medium text-d-text">{showingFrom}&#8211;{showingTo}</span> of{' '}
-        <span className="font-medium text-d-text">{total}</span>
-      </p>
-
+    <div className="flex items-center justify-between" style={{ paddingTop: '1rem' }}>
+      <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+        Showing {start}-{end} of {total}
+      </span>
       <div className="flex items-center gap-2">
         <button
-          className="d-interactive py-1.5 px-3 text-sm"
+          className="d-interactive"
           data-variant="ghost"
-          disabled={currentPage <= 1}
-          onClick={() => navigate(offset - limit)}
+          disabled={!hasPrev}
+          onClick={() => navigate(Math.max(0, offset - limit))}
+          style={{ fontSize: '0.875rem' }}
         >
           Previous
         </button>
-        <span className="text-sm text-d-muted tabular-nums">
-          {currentPage} / {totalPages}
-        </span>
         <button
-          className="d-interactive py-1.5 px-3 text-sm"
+          className="d-interactive"
           data-variant="ghost"
-          disabled={currentPage >= totalPages}
+          disabled={!hasNext}
           onClick={() => navigate(offset + limit)}
+          style={{ fontSize: '0.875rem' }}
         >
           Next
         </button>

@@ -9,27 +9,26 @@ const TYPE_COLORS: Record<string, string> = {
   archetype: 'var(--d-purple)',
 };
 
-function singularType(type: string): string {
-  return type.endsWith('s') ? type.slice(0, -1) : type;
+function formatNumber(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return n.toString();
 }
 
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+interface Props {
+  item: ContentItem;
+  editable?: boolean;
+  onDelete?: (id: string) => void;
 }
 
-function formatId(id: string): string {
-  return id.length > 12 ? id.slice(0, 12) : id;
-}
-
-export function ContentCard({ item, editable }: { item: ContentItem; editable?: boolean }) {
-  const singular = singularType(item.type);
-  const typeColor = TYPE_COLORS[singular] ?? 'var(--d-primary)';
-  const href = `/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`;
+export function ContentCard({ item, editable, onDelete }: Props) {
+  const singularType = item.type.endsWith('s') ? item.type.slice(0, -1) : item.type;
+  const typeColor = TYPE_COLORS[singularType] || 'var(--d-primary)';
 
   return (
-    <div className="lum-card-outlined" data-type={singular}>
+    <div
+      className="lum-card-outlined"
+      data-type={singularType}
+    >
       {/* Header badges */}
       <div className="flex items-center gap-2" style={{ marginBottom: '0.75rem' }}>
         <span
@@ -39,18 +38,20 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
             color: typeColor,
           }}
         >
-          {singular}
+          {singularType}
         </span>
         <span className="d-annotation">{item.namespace}</span>
       </div>
 
       {/* Title */}
       <Link
-        href={href}
-        className="font-semibold block no-underline"
+        href={`/${singularType}/${item.namespace}/${item.slug}`}
+        className="font-semibold"
         style={{
           color: 'var(--d-text)',
+          textDecoration: 'none',
           fontSize: '1rem',
+          display: 'block',
           marginBottom: '0.375rem',
         }}
       >
@@ -58,82 +59,51 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
       </Link>
 
       {/* Description */}
-      {item.description && (
-        <p
-          className="text-sm"
-          style={{
-            color: 'var(--d-text-muted)',
-            marginBottom: '0.75rem',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {item.description}
-        </p>
-      )}
+      <p
+        className="text-sm"
+        style={{
+          color: 'var(--d-text-muted)',
+          marginBottom: '0.75rem',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}
+      >
+        {item.description || 'No description available.'}
+      </p>
 
       {/* Footer */}
-      <div
-        className="flex items-center justify-between"
-        style={{ fontSize: '0.75rem', color: 'var(--d-text-muted)' }}
-      >
+      <div className="flex items-center justify-between" style={{ fontSize: '0.75rem', color: 'var(--d-text-muted)' }}>
         <div className="flex items-center gap-3">
-          <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>
-            v{item.version}
-          </span>
-          {item.owner_username && (
-            <span className="flex items-center gap-1">
-              <span className="opacity-40">|</span>
-              <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>
-                {item.owner_username}
-              </span>
-            </span>
-          )}
-          {!item.owner_username && item.id && (
-            <span className="flex items-center gap-1">
-              <span className="opacity-40">|</span>
-              <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>
-                {formatId(item.id)}
-              </span>
-            </span>
-          )}
+          <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>v{item.version}</span>
+          {item.owner_name && <span>{item.owner_name}</span>}
           {item.published_at && (
             <span className="flex items-center gap-1">
-              <span className="opacity-40">|</span>
-              <span>{formatDate(item.published_at)}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              {new Date(item.published_at).toLocaleDateString()}
             </span>
           )}
         </div>
 
-        {editable && (
-          <div className="flex items-center gap-1">
-            <button
-              className="d-interactive"
-              data-variant="ghost"
-              style={{ padding: '0.25rem' }}
-              aria-label="Edit"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </button>
-            <button
-              className="d-interactive"
-              data-variant="ghost"
-              style={{ padding: '0.25rem', color: 'var(--d-error)' }}
-              aria-label="Delete"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-              </svg>
-            </button>
-          </div>
+        {editable && onDelete && (
+          <button
+            className="d-interactive"
+            data-variant="ghost"
+            onClick={() => onDelete(item.id)}
+            style={{ padding: '0.25rem', color: 'var(--d-error)' }}
+            aria-label="Delete"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+          </button>
         )}
       </div>
     </div>
   );
 }
+
+export { TYPE_COLORS, formatNumber };

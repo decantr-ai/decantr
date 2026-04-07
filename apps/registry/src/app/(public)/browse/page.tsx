@@ -1,84 +1,76 @@
 import { Suspense } from 'react';
 import { listContent, searchContent } from '@/lib/api';
-import type { ContentItem } from '@/lib/api';
-import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
+import { ContentCardGrid } from '@/components/content-card-grid';
 import { Pagination } from '@/components/pagination';
 
-export const revalidate = 300; // ISR: revalidate every 5 minutes
+const LIMIT = 12;
 
-const LIMIT = 18;
-
-interface BrowsePageProps {
-  searchParams: Promise<{
-    q?: string;
-    type?: string;
-    namespace?: string;
-    sort?: string;
-    offset?: string;
-  }>;
+interface Props {
+  searchParams: Promise<{ q?: string; type?: string; sort?: string; offset?: string }>;
 }
 
-export default async function BrowsePage({ searchParams }: BrowsePageProps) {
+async function BrowseResults({ searchParams }: Props) {
   const params = await searchParams;
-  const q = params.q ?? '';
-  const type = params.type || 'patterns';
-  const namespace = params.namespace;
-  const offset = parseInt(params.offset ?? '0', 10) || 0;
+  const q = params.q || '';
+  const type = params.type || '';
+  const offset = parseInt(params.offset || '0', 10);
 
-  let items: ContentItem[] = [];
   let total = 0;
+  let items: any[] = [];
 
   try {
     if (q) {
-      const result = await searchContent(q, {
-        type: type || undefined,
-        namespace: namespace || undefined,
-      });
-      items = result.items;
-      total = result.total;
+      const res = await searchContent(q, { type: type || undefined });
+      total = res.total;
+      items = res.items;
     } else {
-      const result = await listContent(type, {
-        namespace: namespace || undefined,
-        limit: LIMIT,
-        offset,
-      });
-      items = result.items;
-      total = result.total;
+      const contentType = type || 'patterns';
+      const res = await listContent(contentType, { limit: LIMIT, offset });
+      total = res.total;
+      items = res.items;
+
+      // Also try other types if no specific type
+      if (!type) {
+        const [themes, blueprints, shells] = await Promise.all([
+          listContent('themes', { limit: LIMIT, offset }),
+          listContent('blueprints', { limit: LIMIT, offset }),
+          listContent('shells', { limit: LIMIT, offset }),
+        ]);
+        items = [...items, ...themes.items, ...blueprints.items, ...shells.items].slice(0, LIMIT);
+        total = res.total + themes.total + blueprints.total + shells.total;
+      }
     }
   } catch {
     // API unavailable
   }
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: 1200, margin: '0 auto' }}>
-      <div className="flex flex-col gap-1" style={{ marginBottom: '1.5rem' }}>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--d-text)' }}>
-          Browse
-        </h1>
-        <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-          Explore the design intelligence registry.
-        </p>
+    <>
+      <ContentCardGrid items={items} />
+      <Pagination total={total} limit={LIMIT} baseUrl="/browse" />
+    </>
+  );
+}
+
+export default function BrowsePage({ searchParams }: Props) {
+  return (
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem' }}>
+      <div className="flex flex-col gap-6">
+        <h2 className="text-2xl font-semibold">Browse Registry</h2>
+
+        <Suspense fallback={null}>
+          <SearchFilterBar baseUrl="/browse" />
+        </Suspense>
+
+        <Suspense fallback={
+          <div className="flex items-center justify-center" style={{ padding: '3rem 0' }}>
+            <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>Loading content...</span>
+          </div>
+        }>
+          <BrowseResults searchParams={searchParams} />
+        </Suspense>
       </div>
-
-      <Suspense>
-        <SearchFilterBar resultCount={total} />
-      </Suspense>
-
-      <div style={{ marginTop: '2rem' }}>
-        <ContentCardGrid
-          items={items}
-          emptyMessage={
-            q
-              ? `No results found for "${q}". Try a different search.`
-              : 'No content available yet. Check back soon.'
-          }
-        />
-      </div>
-
-      <Suspense>
-        <Pagination total={total} limit={LIMIT} offset={offset} />
-      </Suspense>
     </div>
   );
 }

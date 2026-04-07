@@ -11,10 +11,12 @@
     "mcp": "node packages/mcp-server/dist/index.js",
     "showcase:build": "pnpm --filter './apps/showcase/*' build",
     "showcase:copy": "node scripts/copy-showcase-dist.mjs",
-    "showcase": "pnpm run showcase:build && pnpm run showcase:copy"
+    "showcase": "pnpm run showcase:build && pnpm run showcase:copy",
+    "showcase:screenshots": "node scripts/capture-showcase-screenshots.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    "playwright": "^1.59.1",
     "tsup": "^8.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.7.0",
