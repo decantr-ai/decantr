@@ -18,9 +18,9 @@ searchRoutes.get('/search', async (c) => {
   }
 
   // Map plural type filter to singular
-  let singularType: string | null = null;
+  let singularType: ContentType | null = null;
   if (typeFilter) {
-    const typeMap: Record<string, string> = {
+    const typeMap: Record<string, ContentType> = {
       patterns: 'pattern', pattern: 'pattern',
       themes: 'theme', theme: 'theme',
       blueprints: 'blueprint', blueprint: 'blueprint',
@@ -49,7 +49,7 @@ searchRoutes.get('/search', async (c) => {
   }
 
   const rows = data ?? [];
-  const total = rows.length > 0 ? Number(rows[0].total_count) : 0;
+  const total = rows[0] ? Number(rows[0].total_count) : 0;
 
   return c.json({
     total,

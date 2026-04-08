@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import type { Env } from '../types.js';
 import { parsePagination } from '../types.js';
+import { CONTENT_TYPES } from '../types.js';
+import type { ContentType } from '../types.js';
 import { createAdminClient } from '../db/client.js';
 
 export const userRoutes = new Hono<Env>();
@@ -51,8 +53,14 @@ userRoutes.get('/users/:username', async (c) => {
 // GET /v1/users/:username/content - User's published public content (paginated)
 userRoutes.get('/users/:username/content', async (c) => {
   const username = c.req.param('username').toLowerCase();
-  const typeFilter = c.req.query('type');
+  const rawTypeFilter = c.req.query('type');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+
+  if (rawTypeFilter && !CONTENT_TYPES.includes(rawTypeFilter as ContentType)) {
+    return c.json({ error: `Invalid type filter: ${rawTypeFilter}` }, 400);
+  }
+
+  const typeFilter = rawTypeFilter as ContentType | undefined;
 
   const client = createAdminClient();
 

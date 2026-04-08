@@ -310,6 +310,24 @@ export interface Database {
           },
         ];
       };
+      stripe_events: {
+        Row: {
+          event_id: string;
+          event_type: string;
+          processed_at: string;
+        };
+        Insert: {
+          event_id: string;
+          event_type: string;
+          processed_at?: string;
+        };
+        Update: {
+          event_id?: string;
+          event_type?: string;
+          processed_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -321,6 +339,27 @@ export interface Database {
           amount: number;
         };
         Returns: void;
+      };
+      search_content: {
+        Args: {
+          search_query: string;
+          content_type?: string | null;
+          content_namespace?: string | null;
+          result_limit?: number;
+          result_offset?: number;
+        };
+        Returns: Array<{
+          id: string;
+          type: string;
+          slug: string;
+          namespace: string;
+          version: string;
+          data: Record<string, unknown>;
+          published_at: string | null;
+          owner_display_name: string | null;
+          owner_username: string | null;
+          total_count: number;
+        }>;
       };
     };
     Enums: {
