@@ -7,11 +7,11 @@ export const metadata: Metadata = {
     template: '%s — Decantr Registry',
   },
   description:
-    'Browse patterns, themes, blueprints, and more in the Decantr design intelligence registry.',
+    'Browse patterns, themes, blueprints, archetypes, and shells in the Decantr design intelligence registry.',
   openGraph: {
     title: 'Decantr Registry — Design Intelligence for AI-Generated UI',
     description:
-      'Browse patterns, themes, blueprints, and more in the Decantr design intelligence registry.',
+      'Browse patterns, themes, blueprints, archetypes, and shells in the Decantr design intelligence registry.',
     type: 'website',
   },
 };

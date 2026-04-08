@@ -5,27 +5,15 @@ import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { Pagination } from '@/components/pagination';
+import {
+  CONTENT_TYPE_DESCRIPTIONS,
+  CONTENT_TYPE_LABELS,
+  CONTENT_TYPES,
+  isRegistryContentType,
+  type RegistryContentType,
+} from '@/lib/content-types';
 
 export const dynamic = 'force-dynamic';
-
-const VALID_TYPES = ['patterns', 'themes', 'blueprints', 'shells', 'archetypes'] as const;
-type ContentType = (typeof VALID_TYPES)[number];
-
-const TYPE_LABELS: Record<ContentType, string> = {
-  patterns: 'Patterns',
-  themes: 'Themes',
-  blueprints: 'Blueprints',
-  shells: 'Shells',
-  archetypes: 'Archetypes',
-};
-
-const TYPE_DESCRIPTIONS: Record<ContentType, string> = {
-  patterns: 'Composable UI sections — hero, nav, footer, data tables, and more.',
-  themes: 'Complete visual themes with tokens, decorators, and personality.',
-  blueprints: 'Full application templates built from patterns and archetypes.',
-  shells: 'App shell layouts defining spatial regions and navigation.',
-  archetypes: 'High-level app categories with default pages and features.',
-};
 
 const LIMIT = 18;
 
@@ -39,8 +27,8 @@ interface BrowseTypePageProps {
   }>;
 }
 
-function isValidType(type: string): type is ContentType {
-  return VALID_TYPES.includes(type as ContentType);
+function isValidType(type: string): type is RegistryContentType {
+  return CONTENT_TYPES.includes(type as RegistryContentType);
 }
 
 export default async function BrowseTypePage({ params, searchParams }: BrowseTypePageProps) {
@@ -77,17 +65,21 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
   }
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: 1200, margin: '0 auto' }}>
-      <div className="flex flex-col gap-1" style={{ marginBottom: '1.5rem' }}>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--d-text)' }}>{TYPE_LABELS[type]}</h1>
-        <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>{TYPE_DESCRIPTIONS[type]}</p>
+    <div className="mx-auto max-w-6xl px-6 py-8">
+      <div className="mb-6 flex flex-col gap-1">
+        <h1 className="text-2xl font-bold">{CONTENT_TYPE_LABELS[type]}</h1>
+        <p className="text-sm text-d-muted">{CONTENT_TYPE_DESCRIPTIONS[type]}</p>
       </div>
 
       <Suspense>
-        <SearchFilterBar baseUrl={`/browse/${type}`} resultCount={total} />
+        <SearchFilterBar
+          baseUrl={`/browse/${type}`}
+          resultCount={total}
+          activeType={type}
+        />
       </Suspense>
 
-      <div style={{ marginTop: '2rem' }}>
+      <div className="mt-8">
         <ContentCardGrid
           items={items}
           emptyMessage={

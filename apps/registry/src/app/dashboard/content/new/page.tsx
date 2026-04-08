@@ -4,14 +4,7 @@ import { useState, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { JsonViewer } from '@/components/json-viewer';
 import { api } from '@/lib/api';
-
-const CONTENT_TYPES = [
-  'patterns',
-  'themes',
-  'blueprints',
-  'shells',
-  'archetypes',
-];
+import { CONTENT_TYPES } from '@/lib/content-types';
 
 function toSlug(name: string): string {
   return name

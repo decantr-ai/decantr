@@ -4,6 +4,11 @@ import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { KPIGrid } from '@/components/kpi-grid';
+import {
+  CONTENT_TYPES,
+  CONTENT_TYPE_LABELS,
+  type RegistryContentType,
+} from '@/lib/content-types';
 
 async function FeaturedContent() {
   let items: ContentItem[] = [];
@@ -19,36 +24,38 @@ async function FeaturedContent() {
 }
 
 async function RegistryStats() {
-  const counts = { patterns: 0, themes: 0, blueprints: 0, shells: 0 };
+  const counts: Record<RegistryContentType, number> = {
+    patterns: 0,
+    themes: 0,
+    blueprints: 0,
+    archetypes: 0,
+    shells: 0,
+  };
 
   try {
-    const results = await Promise.allSettled([
-      listContent('patterns', { limit: 1 }),
-      listContent('themes', { limit: 1 }),
-      listContent('blueprints', { limit: 1 }),
-      listContent('shells', { limit: 1 }),
-    ]);
+    const results = await Promise.allSettled(
+      CONTENT_TYPES.map((type) => listContent(type, { limit: 1 }))
+    );
 
-    const types = ['patterns', 'themes', 'blueprints', 'shells'] as const;
     results.forEach((r, i) => {
       if (r.status === 'fulfilled') {
-        counts[types[i]] = r.value.total;
+        counts[CONTENT_TYPES[i]] = r.value.total;
       }
     });
   } catch {
     // Silently fail
   }
 
-  const total = counts.patterns + counts.themes + counts.blueprints + counts.shells;
+  const total = CONTENT_TYPES.reduce((sum, type) => sum + counts[type], 0);
 
   return (
     <KPIGrid
-      items={[
-        { label: 'Total Items', value: total },
-        { label: 'Patterns', value: counts.patterns },
-        { label: 'Themes', value: counts.themes },
-        { label: 'Blueprints', value: counts.blueprints },
-      ]}
+      items={[{ label: 'Total Items', value: total }].concat(
+        CONTENT_TYPES.map((type) => ({
+          label: CONTENT_TYPE_LABELS[type],
+          value: counts[type],
+        }))
+      )}
     />
   );
 }
@@ -73,28 +80,23 @@ function CardGridSkeleton() {
 
 export default function HomePage() {
   return (
-    <div className="lum-canvas" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem' }}>
-      {/* Search section */}
+    <div className="lum-canvas mx-auto max-w-6xl px-6 py-8">
       <section className="entrance-fade">
-        <h2 className="font-semibold" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+        <h2 className="mb-2 text-2xl font-semibold">
           Explore the Registry
         </h2>
-        <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}>
-          Browse, install, and publish patterns, themes, blueprints, and shells.
+        <p className="mb-6 text-sm text-d-muted">
+          Browse, install, and publish patterns, themes, blueprints, archetypes, and shells.
         </p>
         <Suspense>
-          <SearchFilterBar baseUrl="/browse" showSort={false} />
+          <SearchFilterBar baseUrl="/browse" showSort={false} activeType="all" />
         </Suspense>
       </section>
 
       <div className="lum-divider" />
 
-      {/* Featured Content */}
       <section>
-        <span
-          className="d-label block mb-4"
-          style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
-        >
+        <span className="d-label mb-4 block border-l-2 border-[var(--d-accent)] pl-3">
           Featured
         </span>
         <Suspense fallback={<CardGridSkeleton />}>
@@ -104,12 +106,8 @@ export default function HomePage() {
 
       <div className="lum-divider" />
 
-      {/* Registry Stats */}
-      <section className="d-section" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
-        <span
-          className="d-label block mb-4"
-          style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
-        >
+      <section className="d-section py-8">
+        <span className="d-label mb-4 block border-l-2 border-[var(--d-accent)] pl-3">
           Registry Stats
         </span>
         <Suspense>

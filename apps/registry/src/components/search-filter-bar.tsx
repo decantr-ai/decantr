@@ -2,6 +2,11 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
+import {
+  CONTENT_TYPES,
+  CONTENT_TYPE_LABELS,
+  type RegistryContentType,
+} from '@/lib/content-types';
 
 // Inline SVG icons (14px, stroke-based) to avoid adding lucide-react dependency
 function IconGrid(props: React.SVGProps<SVGSVGElement>) {
@@ -54,13 +59,21 @@ function IconCube(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-const TYPES: { label: string; icon: React.ReactNode }[] = [
+const TYPE_ICONS: Record<RegistryContentType, React.ReactNode> = {
+  patterns: <IconComponent />,
+  themes: <IconPalette />,
+  blueprints: <IconLayers />,
+  archetypes: <IconCube />,
+  shells: <IconBox />,
+};
+
+const TYPES: { type?: RegistryContentType; label: string; icon: React.ReactNode }[] = [
   { label: 'All', icon: <IconGrid /> },
-  { label: 'Patterns', icon: <IconComponent /> },
-  { label: 'Themes', icon: <IconPalette /> },
-  { label: 'Blueprints', icon: <IconLayers /> },
-  { label: 'Shells', icon: <IconBox /> },
-  { label: 'Archetypes', icon: <IconCube /> },
+  ...CONTENT_TYPES.map((type) => ({
+    type,
+    label: CONTENT_TYPE_LABELS[type],
+    icon: TYPE_ICONS[type],
+  })),
 ];
 
 const SORT_OPTIONS = [
@@ -74,29 +87,25 @@ interface SearchFilterBarProps {
   baseUrl?: string;
   showSort?: boolean;
   resultCount?: number;
+  activeType?: RegistryContentType | 'all';
 }
 
 export function SearchFilterBar({
   baseUrl = '/browse',
   showSort = true,
   resultCount,
+  activeType = 'all',
 }: SearchFilterBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const currentQuery = searchParams.get('q') ?? '';
-  const currentType = searchParams.get('type') ?? '';
   const currentSort = searchParams.get('sort') ?? 'popular';
 
   const [query, setQuery] = useState(currentQuery);
-
-  // Map URL type param back to display label
-  const activeLabel = currentType
-    ? TYPES.find(
-        (t) => t.label.toLowerCase() === currentType || t.label.toLowerCase().replace(/s$/, '') === currentType,
-      )?.label ?? 'All'
-    : 'All';
+  const activeLabel =
+    activeType === 'all' ? 'All' : CONTENT_TYPE_LABELS[activeType];
 
   const navigate = useCallback(
     (updates: Record<string, string>) => {
@@ -124,9 +133,18 @@ export function SearchFilterBar({
     navigate({ q: query });
   }
 
-  function handleTypeChange(label: string) {
+  function handleTypeChange(type?: RegistryContentType) {
     setQuery('');
-    navigate({ type: label === 'All' ? '' : label.toLowerCase(), q: '' });
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('offset');
+    params.delete('q');
+    params.delete('type');
+
+    const nextBase = type ? `/browse/${type}` : '/browse';
+    const qs = params.toString();
+    startTransition(() => {
+      router.push(qs ? `${nextBase}?${qs}` : nextBase);
+    });
   }
 
   function handleSortChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -162,7 +180,7 @@ export function SearchFilterBar({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search patterns, themes, blueprints..."
+          placeholder="Search patterns, themes, blueprints, archetypes, or shells..."
           className="d-control w-full"
           style={{ paddingLeft: '2.25rem' }}
           aria-label="Search registry content"
@@ -181,12 +199,13 @@ export function SearchFilterBar({
       <div className="flex items-center justify-between flex-wrap gap-3">
         {/* Type tabs */}
         <div className="flex items-center gap-2 flex-wrap">
-          {TYPES.map(({ label, icon }) => (
+          {TYPES.map(({ type, label, icon }) => (
             <button
               key={label}
               className="d-interactive"
               data-variant={activeLabel === label ? 'primary' : 'ghost'}
-              onClick={() => handleTypeChange(label)}
+              onClick={() => handleTypeChange(type)}
+              type="button"
               style={{
                 borderRadius: 'var(--d-radius-full)',
                 fontSize: '0.8125rem',
