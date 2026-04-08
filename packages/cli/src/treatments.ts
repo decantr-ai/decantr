@@ -72,7 +72,7 @@ export function generateTreatmentCSS(
     ['display', 'inline-flex'],
     ['align-items', 'center'],
     ['gap', '0.5em'],
-    ['padding', 'var(--d-interactive-py) var(--d-interactive-px)'],
+    ['padding', 'calc(var(--d-interactive-py) * var(--d-density-scale, 1)) var(--d-interactive-px)'],
     ['border', '1px solid var(--d-border)'],
     ['border-radius', 'var(--d-radius)'],
     ['background', 'transparent'],
@@ -132,7 +132,7 @@ export function generateTreatmentCSS(
     ['border', '1px solid var(--d-border)'],
     ['border-radius', 'var(--d-radius)'],
     ['box-shadow', 'var(--d-shadow)'],
-    ['padding', 'var(--d-surface-p)'],
+    ['padding', 'calc(var(--d-surface-p) * var(--d-density-scale, 1))'],
   ]);
 
   emitRule('.d-surface[data-elevation="raised"]', [
@@ -166,7 +166,7 @@ export function generateTreatmentCSS(
   ]);
 
   emitRule('.d-data-header', [
-    ['padding', 'var(--d-data-py) var(--d-content-gap)'],
+    ['padding', 'calc(var(--d-data-py) * var(--d-density-scale, 1)) var(--d-content-gap)'],
     ['font-weight', '500'],
     ['color', 'var(--d-text-muted)'],
     ['border-bottom', '1px solid var(--d-border)'],
@@ -185,7 +185,7 @@ export function generateTreatmentCSS(
   ]);
 
   emitRule('.d-data-cell', [
-    ['padding', 'var(--d-data-py) var(--d-content-gap)'],
+    ['padding', 'calc(var(--d-data-py) * var(--d-density-scale, 1)) var(--d-content-gap)'],
     ['vertical-align', 'middle'],
   ]);
 
@@ -194,7 +194,7 @@ export function generateTreatmentCSS(
   emitRule('.d-control', [
     ['background', 'var(--d-surface)'],
     ['color', 'var(--d-text)'],
-    ['padding', 'var(--d-control-py) 0.75rem'],
+    ['padding', 'calc(var(--d-control-py) * var(--d-density-scale, 1)) 0.75rem'],
     ['border-radius', 'var(--d-radius)'],
     ['border', '1px solid var(--d-border)'],
     ['width', '100%'],
@@ -262,6 +262,7 @@ export function generateTreatmentCSS(
     ['background', 'var(--d-surface)'],
     ['color', 'var(--d-text-muted)'],
     ['white-space', 'nowrap'],
+    ['margin-top', 'calc(var(--d-annotation-mt) * var(--d-density-scale, 1))'],
   ]);
 
   emitRule('.d-annotation[data-status="success"]', [

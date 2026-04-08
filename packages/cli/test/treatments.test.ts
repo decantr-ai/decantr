@@ -158,7 +158,7 @@ describe('generateTreatmentCSS', () => {
 
   // ── 10. Spatial tokens referenced in CSS values ──
 
-  it('references spatial tokens in CSS values', () => {
+  it('references spatial tokens with density-scale calc in CSS values', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).toContain('var(--d-interactive-py)');
     expect(css).toContain('var(--d-interactive-px)');
@@ -167,6 +167,48 @@ describe('generateTreatmentCSS', () => {
     expect(css).toContain('var(--d-section-py)');
     expect(css).toContain('var(--d-data-py)');
     expect(css).toContain('var(--d-content-gap)');
+    expect(css).toContain('var(--d-label-mb)');
+    expect(css).toContain('var(--d-section-gap)');
+    expect(css).toContain('var(--d-annotation-mt)');
+    expect(css).toContain('var(--d-density-scale');
+  });
+
+  // ── Density-aware spatial on all treatments ──
+
+  it('uses density-scale in d-surface padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const surfaceBlock = css.split('.d-surface {')[1]?.split('}')[0] ?? '';
+    expect(surfaceBlock).toContain('calc(var(--d-surface-p) * var(--d-density-scale, 1))');
+  });
+
+  it('uses density-scale in d-interactive vertical padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const interactiveBlock = css.split('.d-interactive {')[1]?.split('}')[0] ?? '';
+    expect(interactiveBlock).toContain('calc(var(--d-interactive-py) * var(--d-density-scale, 1))');
+  });
+
+  it('uses density-scale in d-control vertical padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const controlBlock = css.split('.d-control {')[1]?.split('}')[0] ?? '';
+    expect(controlBlock).toContain('calc(var(--d-control-py) * var(--d-density-scale, 1))');
+  });
+
+  it('uses density-scale in d-data-header vertical padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const headerBlock = css.split('.d-data-header {')[1]?.split('}')[0] ?? '';
+    expect(headerBlock).toContain('calc(var(--d-data-py) * var(--d-density-scale, 1))');
+  });
+
+  it('uses density-scale in d-data-cell vertical padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const cellBlock = css.split('.d-data-cell {')[1]?.split('}')[0] ?? '';
+    expect(cellBlock).toContain('calc(var(--d-data-py) * var(--d-density-scale, 1))');
+  });
+
+  it('includes density-aware margin-top on d-annotation', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const annotationBlock = css.split('.d-annotation {')[1]?.split('}')[0] ?? '';
+    expect(annotationBlock).toContain('calc(var(--d-annotation-mt) * var(--d-density-scale, 1))');
   });
 
   // ── 11. Theme treatment overrides ──
