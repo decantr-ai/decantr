@@ -2,6 +2,15 @@
 
 Do not add Co-Authored-By lines to commits.
 
+> Reset-branch note: on `codex/decantr-vnext-reset`, the active strategic source of truth is
+> `docs/programs/2026-04-08-decantr-vnext-master-program.md`.
+>
+> Treat the Decantr product nucleus as `decantr-content`, `apps/api`, `apps/registry`, `docs/`,
+> `@decantr/essence-spec`, `@decantr/registry`, `@decantr/mcp-server`, `@decantr/cli`,
+> `@decantr/css`, and `@decantr/core`. Treat the standalone UI runtime line
+> (`@decantr/ui`, `@decantr/ui-chart`, `@decantr/ui-catalog`, `apps/workbench`) as experimental
+> and likely archive / extract candidates rather than the center of product planning.
+
 ## Project
 
 Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI for UI) and design intelligence layer that AI coding assistants use to generate consistent, production-quality web applications. Decantr does not generate code.
