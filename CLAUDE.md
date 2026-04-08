@@ -7,9 +7,8 @@ Do not add Co-Authored-By lines to commits.
 >
 > Treat the Decantr product nucleus as `decantr-content`, `apps/api`, `apps/registry`, `docs/`,
 > `@decantr/essence-spec`, `@decantr/registry`, `@decantr/mcp-server`, `@decantr/cli`,
-> `@decantr/css`, and `@decantr/core`. Treat the standalone UI runtime line
-> (`@decantr/ui`, `@decantr/ui-chart`, `@decantr/ui-catalog`, `apps/workbench`) as experimental
-> and likely archive / extract candidates rather than the center of product planning.
+> `@decantr/css`, and `@decantr/core`. The legacy standalone UI runtime line has been removed
+> from this reset branch and should not shape product planning or implementation decisions here.
 
 ## Project
 
@@ -24,10 +23,7 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 | `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing tools to AI assistants |
 | `@decantr/css` | `packages/css/` | Framework-agnostic CSS atoms runtime for layout utilities |
-| `@decantr/ui` | `packages/ui/` | UI framework — signal-based reactivity, atomic CSS, components (TypeScript, tree-scoped context) |
-| `@decantr/ui-chart` | `packages/ui-chart/` | Charting library — SVG, Canvas, WebGPU renderers |
 | `@decantr/vite-plugin` | `packages/vite-plugin/` | Vite plugin for real-time design drift detection |
-| `@decantr/ui-catalog` | `packages/ui-catalog/` | Component stories, demo definitions, and metadata |
 | `decantr` | `packages/cli/` | CLI for project initialization, registry queries, validation |
 
 ## Apps
@@ -36,7 +32,6 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 |-----|------|-------------|
 | `decantr-api` | `apps/api/` | Registry API (Hono + Supabase + Stripe) |
 | `decantr-registry` | `apps/registry/` | Registry web app (Next.js + Supabase) |
-| `decantr-workbench` | `apps/workbench/` | Component dev workbench (Decantr-native SPA) |
 
 ## Terminology
 
@@ -166,14 +161,10 @@ Guard modes: `creative` (no enforcement), `guided` (rules 1, 3, 4, 5, 7), `stric
 
 ```bash
 pnpm install        # Install all dependencies
-pnpm build          # Build all packages (essence-spec and registry first, then core and mcp-server)
+pnpm build          # Build active packages and product apps
 pnpm test           # Run all tests via vitest
-pnpm lint           # Type-check with tsc --noEmit
+pnpm lint           # Type-check active product surfaces
 pnpm clean          # Remove all dist/ directories
-
-pnpm --filter @decantr/ui build    # Build @decantr/ui (TypeScript → JS + .d.ts)
-pnpm --filter @decantr/ui test     # Run @decantr/ui tests
-pnpm --filter @decantr/ui typecheck # Type-check without emit
 ```
 
 Requires Node.js >= 20 and pnpm >= 9.

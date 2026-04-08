@@ -96,14 +96,11 @@ The official curated content source lives in `decantr-content` and syncs to the 
 | `@decantr/core` | Internal pipeline and compiler-adjacent foundation |
 | `@decantr/css` | Framework-agnostic CSS atom runtime |
 
-### Secondary / experimental surfaces
+### Secondary surfaces
 
 | Package | Current status |
 |---|---|
 | `@decantr/vite-plugin` | Verification-adjacent and still evolving |
-| `@decantr/ui` | Experimental / not part of the core Decantr product direction |
-| `@decantr/ui-chart` | Experimental / tied to the UI runtime line |
-| `@decantr/ui-catalog` | Experimental / tied to the UI runtime line |
 
 ## Repo Layout
 
@@ -113,7 +110,7 @@ The official curated content source lives in `decantr-content` and syncs to the 
 | `apps/registry` | Registry portal |
 | `docs/` | Public docs and product documentation |
 | `apps/showcase/*` | Benchmark and evidence corpus of generated blueprint scaffolds |
-| `packages/*` | Core packages and experimental package surfaces |
+| `packages/*` | Core packages and supporting runtime surfaces |
 
 ## Development
 
@@ -137,8 +134,6 @@ The repo is currently being refocused around the Decantr vNext product boundary:
 - registry and content intelligence
 - MCP and CLI delivery
 - verification and drift prevention
-
-Some experimental surfaces remain in the repo for now, but they are not the primary product direction.
 
 ## Contributing
 
