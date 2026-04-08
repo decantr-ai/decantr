@@ -4,6 +4,8 @@ export type {
   Pattern,
   PatternReferenceObject,
   PatternReference,
+  LayoutGroup,
+  LayoutItem,
   ContentDependencies,
   ArchetypePage,
   ArchetypeSuggestedTheme,

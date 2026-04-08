@@ -57,16 +57,24 @@ export interface PatternReferenceObject {
 
 export type PatternReference = string | PatternReferenceObject;
 
+export interface LayoutGroup {
+  cols: PatternReference[];
+  at?: string;
+  span?: Record<string, number>;
+}
+
+export type LayoutItem = PatternReference | LayoutGroup;
+
 export interface ContentDependencies {
   [kind: string]: Record<string, string>;
 }
 
 export interface ArchetypePage {
   id: string;
-  default_layout: PatternReference[];
+  default_layout: LayoutItem[];
   shell: string;
   description?: string;
-  patterns?: PatternReferenceObject[];
+  patterns?: PatternReference[];
 }
 
 export interface SeoHints {
