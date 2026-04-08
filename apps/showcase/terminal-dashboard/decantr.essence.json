@@ -4,7 +4,6 @@
     "theme": {
       "style": "terminal",
       "mode": "dark",
-      "recipe": "terminal",
       "shape": "sharp"
     },
     "spacing": {

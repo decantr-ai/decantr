@@ -1,6 +1,6 @@
 CREATE TABLE public.content (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  type TEXT NOT NULL CHECK (type IN ('pattern', 'recipe', 'theme', 'blueprint', 'archetype', 'shell')),
+  type TEXT NOT NULL CHECK (type IN ('pattern', 'theme', 'blueprint', 'archetype', 'shell')),
   slug TEXT NOT NULL,
   namespace TEXT NOT NULL,
   owner_id UUID NOT NULL REFERENCES public.users(id),
