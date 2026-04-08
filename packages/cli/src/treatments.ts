@@ -224,19 +224,28 @@ export function generateTreatmentCSS(
 
   // ── 5. Section Rhythm — .d-section ──
 
+  // ── Section Rhythm ──
   emitRule('.d-section', [
-    ['padding', 'var(--d-section-py) 0'],
+    ['--d-density-scale', '1'],
+    ['padding', 'calc(var(--d-section-py) * var(--d-density-scale)) 0'],
   ]);
 
-  lines.push('.d-section + .d-section {');
-  lines.push('  border-top: 1px solid transparent;');
-  lines.push('  border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;');
-  lines.push('  margin-top: var(--d-gap-2);');
+  // Density variants — broadcast scale to descendants
+  lines.push('.d-section[data-density="compact"] {');
+  lines.push('  --d-density-scale: 0.65;');
   lines.push('}');
   lines.push('');
 
-  lines.push('.d-section[data-density="compact"] {');
-  lines.push('  padding: calc(var(--d-section-py) * 0.5) 0;');
+  lines.push('.d-section[data-density="spacious"] {');
+  lines.push('  --d-density-scale: 1.4;');
+  lines.push('}');
+  lines.push('');
+
+  // Adjacent section separator — density-aware gap
+  lines.push('.d-section + .d-section {');
+  lines.push('  border-top: 1px solid transparent;');
+  lines.push('  border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;');
+  lines.push('  margin-top: calc(var(--d-section-gap) * var(--d-density-scale, 1));');
   lines.push('}');
   lines.push('');
 

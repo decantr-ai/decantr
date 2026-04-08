@@ -9,6 +9,10 @@ const baseSpatialTokens: Record<string, string> = {
   '--d-control-py': '0.5rem',
   '--d-surface-p': '1.5rem',
   '--d-data-py': '0.75rem',
+  '--d-label-mb': '0.75rem',
+  '--d-label-px': '0.75rem',
+  '--d-section-gap': '1.5rem',
+  '--d-annotation-mt': '0.5rem',
 };
 
 describe('generateTreatmentCSS', () => {
@@ -91,17 +95,52 @@ describe('generateTreatmentCSS', () => {
 
   // ── 8. Section rhythm with adjacent separator ──
 
-  it('includes section rhythm with gradient divider and compact density variant', () => {
+  it('includes section rhythm with density inheritance and adjacent separator', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).toContain('.d-section');
     expect(css).toContain('.d-section + .d-section');
     // Gradient fade divider
     expect(css).toContain('border-top: 1px solid transparent');
     expect(css).toContain('border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1');
-    expect(css).toContain('margin-top: var(--d-gap-2)');
-    // Compact density variant
+    // Density-aware gap (replaces old fixed --d-gap-2)
+    expect(css).toContain('calc(var(--d-section-gap) * var(--d-density-scale, 1))');
+    // Density variants
     expect(css).toContain('.d-section[data-density="compact"]');
-    expect(css).toContain('calc(var(--d-section-py) * 0.5)');
+    expect(css).toContain('.d-section[data-density="spacious"]');
+  });
+
+  // ── Density inheritance ──
+
+  it('sets --d-density-scale on d-section base rule', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const sectionBlock = css.split('.d-section {')[1]?.split('}')[0] ?? '';
+    expect(sectionBlock).toContain('--d-density-scale: 1');
+  });
+
+  it('sets --d-density-scale: 0.65 for compact density', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    expect(css).toContain('.d-section[data-density="compact"]');
+    const compactBlock = css.split('.d-section[data-density="compact"] {')[1]?.split('}')[0] ?? '';
+    expect(compactBlock).toContain('--d-density-scale: 0.65');
+  });
+
+  it('sets --d-density-scale: 1.4 for spacious density', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    expect(css).toContain('.d-section[data-density="spacious"]');
+    const spaciousBlock = css.split('.d-section[data-density="spacious"] {')[1]?.split('}')[0] ?? '';
+    expect(spaciousBlock).toContain('--d-density-scale: 1.4');
+  });
+
+  it('uses density-scale in section padding calc', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const sectionBlock = css.split('.d-section {')[1]?.split('}')[0] ?? '';
+    expect(sectionBlock).toContain('calc(var(--d-section-py) * var(--d-density-scale))');
+  });
+
+  it('uses density-aware gap for adjacent sections', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const adjBlock = css.split('.d-section + .d-section {')[1]?.split('}')[0] ?? '';
+    expect(adjBlock).toContain('calc(var(--d-section-gap) * var(--d-density-scale, 1))');
   });
 
   // ── 9. Annotation status variants ──
