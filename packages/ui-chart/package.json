@@ -1,7 +1,7 @@
 {
   "name": "@decantr/ui-chart",
   "version": "0.1.0",
-  "description": "Decantr Chart Library - SVG, Canvas, and WebGPU chart renderers",
+  "description": "Experimental chart library for the Decantr UI runtime",
   "type": "module",
   "main": "./src/index.js",
   "exports": {

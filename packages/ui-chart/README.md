@@ -2,6 +2,9 @@
 
 Decantr Chart Library - SVG, Canvas, and WebGPU chart renderers.
 
+> Status: experimental. On the `codex/decantr-vnext-reset` branch, this package is tied to the
+> standalone UI runtime line and is a likely archive / extraction candidate.
+
 ## Chart Types
 
 - **Bar** - Vertical and horizontal bar charts, stacked and grouped variants

@@ -1,7 +1,7 @@
 {
   "name": "@decantr/ui-catalog",
   "version": "0.1.0",
-  "description": "Component stories, demo definitions, and metadata for @decantr/ui",
+  "description": "Experimental story and demo metadata for the Decantr UI runtime line",
   "type": "module",
   "main": "./src/index.js",
   "exports": {

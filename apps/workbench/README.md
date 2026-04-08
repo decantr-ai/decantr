@@ -2,6 +2,9 @@
 
 This is a placeholder for the unified Decantr Workbench tool.
 
+> Status: experimental. On the `codex/decantr-vnext-reset` branch, this app is not part of the
+> core Decantr product direction and is a likely archive / extraction candidate.
+
 ## Planned Features
 
 The workbench will include:

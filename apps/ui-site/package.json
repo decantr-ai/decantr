@@ -2,7 +2,7 @@
   "name": "@decantr/ui-site",
   "version": "0.1.0",
   "private": true,
-  "description": "Public showcase site for @decantr/ui — built with Decantr, deployed to GitHub Pages",
+  "description": "Experimental showcase site for the Decantr UI runtime line",
   "type": "module",
   "scripts": {
     "dev": "vite",

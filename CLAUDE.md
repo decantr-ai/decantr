@@ -195,7 +195,7 @@ All generated CSS uses `@layer` declarations for deterministic cascade ordering:
 
 ## MCP Server Tools
 
-The MCP server (`@decantr/mcp-server`) exposes 14 tools:
+The MCP server (`@decantr/mcp-server`) exposes 13 tools:
 
 | Tool | Description |
 |------|-------------|
@@ -211,7 +211,6 @@ The MCP server (`@decantr/mcp-server`) exposes 14 tools:
 | `decantr_accept_drift` | Resolve drift violations by accepting, scoping, rejecting, or deferring |
 | `decantr_update_essence` | Apply structured updates to DNA or Blueprint layers |
 | `decantr_get_section_context` | Get self-contained context for a specific blueprint section (guard rules, theme tokens, visual treatments, pattern specs) |
-| `decantr_component_api` | Query @decantr/ui component API (props, usage, examples) |
 | `decantr_critique` | Evaluate generated code for visual quality (treatment usage, decorator coverage, personality alignment, motion, a11y, responsiveness) |
 
 ## CLI Commands

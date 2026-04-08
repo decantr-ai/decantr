@@ -2,6 +2,9 @@
 
 Decantr UI Framework - signal-based reactivity, atomic CSS, 100+ components.
 
+> Status: experimental. On the `codex/decantr-vnext-reset` branch, this package is not part of the
+> core Decantr product direction and is a likely archive / extraction candidate.
+
 ## Installation
 
 ```bash

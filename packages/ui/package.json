@@ -1,7 +1,7 @@
 {
   "name": "@decantr/ui",
   "version": "0.1.0",
-  "description": "Decantr UI Framework - signal-based reactivity, atomic CSS, 100+ components",
+  "description": "Experimental Decantr UI runtime - signal-based reactivity, atomic CSS, and components",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
