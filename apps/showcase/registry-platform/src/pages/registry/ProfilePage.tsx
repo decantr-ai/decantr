@@ -1,127 +1,138 @@
-import { useParams } from 'react-router-dom';
-import { css } from '@decantr/css';
-import { ContentCardGrid } from '@/components/ContentCardGrid';
-import { ActivityFeed } from '@/components/ActivityFeed';
-import { CONTENT_ITEMS, ACTIVITY_EVENTS, getInitials, formatNumber } from '@/data/mock';
-import { Package, Download, Star } from 'lucide-react';
+import { useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ContentCardGrid } from '../../components/ContentCardGrid';
+import { ActivityFeed } from '../../components/ActivityFeed';
+import { contentItems, recentActivity, type ContentItem } from '../../data/mock';
 
-export function ProfilePage() {
+function getInitials(name: string): string {
+  return name
+    .split(/[\s_]+/)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .slice(0, 2)
+    .join('');
+}
+
+export default function ProfilePage() {
+  const navigate = useNavigate();
   const { username } = useParams<{ username: string }>();
-  const displayName = username ?? 'decantr';
 
-  // Find items by this author (fallback to "decantr")
-  const authorItems = CONTENT_ITEMS.filter(
-    (i) => i.author === displayName || (displayName === 'decantr' && i.author === 'decantr'),
-  );
+  const userItems = useMemo(() => {
+    const byAuthor = contentItems.filter((i) => i.author === username);
+    return byAuthor.length > 0 ? byAuthor : contentItems.slice(0, 4);
+  }, [username]);
 
-  const totalDownloads = authorItems.reduce((sum, i) => sum + i.downloads, 0);
+  const totalDownloads = userItems.reduce((sum, i) => sum + i.downloads, 0);
+  const displayName = username ?? 'Unknown';
+  const initials = getInitials(displayName);
+
+  function handleItemClick(item: ContentItem) {
+    navigate(`/browse/${item.type}/${item.namespace}/${item.slug}`);
+  }
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Profile header */}
       <div
-        className={css('_flex _aic _gap6 _wrap')}
-        style={{ marginBottom: '2.5rem' }}
+        className="d-section"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--d-gap-6)',
+          flexWrap: 'wrap',
+        }}
       >
         {/* Avatar */}
         <div
-          className={css('_flex _aic _jcc _shrink0')}
           style={{
-            width: 96,
-            height: 96,
+            width: 64,
+            height: 64,
             borderRadius: '50%',
-            background: 'var(--d-primary)',
-            color: '#fff',
-            fontSize: '2rem',
+            background: 'var(--d-surface-raised)',
+            border: '2px solid var(--d-border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.25rem',
             fontWeight: 700,
+            color: 'var(--d-text-muted)',
+            letterSpacing: '0.02em',
+            flexShrink: 0,
           }}
         >
-          {getInitials(displayName)}
+          {initials}
         </div>
 
         {/* Info */}
-        <div className={css('_flex _col _gap2')} style={{ flex: 1, minWidth: 200 }}>
-          <h2
-            className={css('_fontbold')}
-            style={{ fontSize: '1.75rem', color: 'var(--d-text)', lineHeight: 1.2 }}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--d-gap-2)' }}>
+          <h1
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+            }}
           >
             {displayName}
-          </h2>
-          <p style={{ color: 'var(--d-text-muted)', fontSize: '0.9375rem' }}>
-            @{displayName}
-          </p>
-          <p style={{ color: 'var(--d-text-muted)', fontSize: '0.875rem', maxWidth: 480 }}>
-            Building the design intelligence layer for AI-native applications.
-            Creator and maintainer of official registry content.
+          </h1>
+          <p
+            style={{
+              fontSize: '0.875rem',
+              color: 'var(--d-text-muted)',
+              lineHeight: 1.5,
+            }}
+          >
+            Building design intelligence tools and patterns for the community.
           </p>
 
           {/* Stats row */}
-          <div className={css('_flex _aic _gap6')} style={{ marginTop: '0.5rem' }}>
-            <div className={css('_flex _aic _gap2')}>
-              <Package size={14} style={{ color: 'var(--d-text-muted)' }} />
-              <span className={css('_fontsemi _textsm')} style={{ color: 'var(--d-text)' }}>
-                {authorItems.length}
-              </span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-                published
-              </span>
-            </div>
-            <div className={css('_flex _aic _gap2')}>
-              <Download size={14} style={{ color: 'var(--d-text-muted)' }} />
-              <span className={css('_fontsemi _textsm')} style={{ color: 'var(--d-text)' }}>
-                {formatNumber(totalDownloads)}
-              </span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-                downloads
-              </span>
-            </div>
-            <div className={css('_flex _aic _gap2')}>
-              <Star size={14} style={{ color: 'var(--d-text-muted)' }} />
-              <span className={css('_fontsemi _textsm')} style={{ color: 'var(--d-text)' }}>
-                142
-              </span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-                reputation
-              </span>
-            </div>
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--d-gap-6)',
+              fontSize: '0.8125rem',
+              color: 'var(--d-text-muted)',
+              marginTop: 'var(--d-gap-1)',
+            }}
+          >
+            <span>
+              <strong style={{ color: 'var(--d-text)' }}>{userItems.length}</strong> items published
+            </span>
+            <span>
+              <strong style={{ color: 'var(--d-text)' }}>{totalDownloads.toLocaleString()}</strong> downloads
+            </span>
+            <span>
+              <strong style={{ color: 'var(--d-text)' }}>187</strong> reputation
+            </span>
           </div>
         </div>
-
-        {/* Follow button */}
-        <button
-          className="d-interactive"
-          data-variant="primary"
-          style={{ alignSelf: 'flex-start' }}
-        >
-          Follow
-        </button>
       </div>
 
-      <div className="lum-divider" />
-
       {/* Published content */}
-      <section style={{ marginTop: '2rem' }}>
-        <h3
-          className={css('_fontsemi')}
-          style={{ fontSize: '1.25rem', color: 'var(--d-text)', marginBottom: '1.25rem' }}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--d-gap-4)' }}>
+        <h2
+          style={{
+            fontSize: '1.125rem',
+            fontWeight: 600,
+            letterSpacing: '-0.01em',
+          }}
         >
           Published Content
-        </h3>
-        <ContentCardGrid items={authorItems} />
-      </section>
+        </h2>
+        <ContentCardGrid items={userItems} onItemClick={handleItemClick} />
+      </div>
 
-      <div className="lum-divider" style={{ margin: '2.5rem 0' }} />
-
-      {/* Recent activity */}
-      <section>
-        <h3
-          className={css('_fontsemi')}
-          style={{ fontSize: '1.25rem', color: 'var(--d-text)', marginBottom: '1.25rem' }}
+      {/* Activity feed */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--d-gap-4)' }}>
+        <h2
+          style={{
+            fontSize: '1.125rem',
+            fontWeight: 600,
+            letterSpacing: '-0.01em',
+          }}
         >
           Recent Activity
-        </h3>
-        <ActivityFeed events={ACTIVITY_EVENTS} />
-      </section>
+        </h2>
+        <ActivityFeed events={recentActivity} />
+      </div>
     </div>
   );
 }

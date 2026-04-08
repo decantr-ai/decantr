@@ -1,31 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
 
-type Theme = 'dark' | 'light';
-
 export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(() => {
+  const [mode, setMode] = useState<'dark' | 'light'>(() => {
     const stored = localStorage.getItem('decantr_theme');
-    return stored === 'light' ? 'light' : 'dark';
+    return (stored === 'light' ? 'light' : 'dark');
   });
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    } else {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    }
-  }, [theme]);
+    const html = document.documentElement;
+    html.classList.remove('dark', 'light');
+    html.classList.add(mode);
+    html.style.colorScheme = mode;
+    localStorage.setItem('decantr_theme', mode);
+  }, [mode]);
 
   const toggle = useCallback(() => {
-    setThemeState(prev => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('decantr_theme', next);
-      return next;
-    });
+    setMode(m => (m === 'dark' ? 'light' : 'dark'));
   }, []);
 
-  return { theme, toggle };
+  return { mode, toggle };
 }

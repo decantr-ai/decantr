@@ -262,7 +262,6 @@ export function generateTreatmentCSS(
     ['background', 'var(--d-surface)'],
     ['color', 'var(--d-text-muted)'],
     ['white-space', 'nowrap'],
-    ['margin-top', 'calc(var(--d-annotation-mt) * var(--d-density-scale, 1))'],
   ]);
 
   emitRule('.d-annotation[data-status="success"]', [

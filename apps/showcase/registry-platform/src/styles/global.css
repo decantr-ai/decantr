@@ -16,10 +16,6 @@ html {
   text-rendering: optimizeLegibility;
 }
 
-html.light {
-  color-scheme: light;
-}
-
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--d-bg);

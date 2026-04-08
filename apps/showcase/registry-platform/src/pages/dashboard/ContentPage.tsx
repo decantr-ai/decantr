@@ -1,49 +1,35 @@
-import { css } from '@decantr/css';
-import { Link } from 'react-router-dom';
-import { Plus, Package } from 'lucide-react';
-import { ContentCardGrid } from '@/components/ContentCardGrid';
-import { CONTENT_ITEMS } from '@/data/mock';
+import { useNavigate } from 'react-router-dom';
+import { ContentCardGrid } from '../../components/ContentCardGrid';
+import { contentItems } from '../../data/mock';
 
-export function ContentPage() {
-  const userItems = CONTENT_ITEMS.filter((item) => item.author === 'decantr');
+export default function ContentPage() {
+  const navigate = useNavigate();
+  const userItems = contentItems.filter((item) => item.namespace === '@official');
 
   return (
-    <div className={css('_flex _col _gap6')}>
-      {/* Header row */}
-      <div className={css('_flex _aic _jcsb')}>
-        <h3 className={css('_textlg _fontsemi')}>My Content</h3>
-        <Link
-          to="/dashboard/content/new"
-          className="d-interactive"
-          data-variant="primary"
-          style={{ fontSize: '0.875rem', textDecoration: 'none' }}
-        >
-          <Plus size={16} />
-          New Item
-        </Link>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="d-label" data-anchor="">
+        My Content
       </div>
 
-      {/* Content grid */}
-      <section className="d-section" data-density="compact">
-        {userItems.length > 0 ? (
-          <ContentCardGrid items={userItems} editable />
-        ) : (
-          <div className={css('_flex _col _aic _jcc _gap3')} style={{ padding: '3rem 0' }}>
-            <Package size={48} style={{ color: 'var(--d-text-muted)', opacity: 0.5 }} />
-            <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-              You haven't published any content yet.
-            </p>
-            <Link
-              to="/dashboard/content/new"
-              className="d-interactive"
-              data-variant="primary"
-              style={{ fontSize: '0.875rem', textDecoration: 'none' }}
-            >
-              Publish Your First Item
-            </Link>
-          </div>
-        )}
-      </section>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>My Content</h2>
+        <button
+          type="button"
+          className="d-interactive"
+          data-variant="primary"
+          onClick={() => navigate('/dashboard/content/new')}
+          style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+        >
+          Publish New
+        </button>
+      </div>
+
+      <ContentCardGrid
+        items={userItems}
+        onItemClick={(item) => navigate(`/registry/${item.type}/${item.slug}`)}
+        editable
+      />
     </div>
   );
 }

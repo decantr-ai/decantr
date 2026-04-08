@@ -1,14 +1,13 @@
-import { css } from '@decantr/css';
-import { AccountSettings } from '@/components/AccountSettings';
+import AccountSettings from '../../components/AccountSettings';
 
-export function SettingsPage() {
+export default function SettingsPage() {
   return (
-    <div className={css('_flex _col _gap6')}>
-      <h3 className={css('_textlg _fontsemi')}>Settings</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="d-label" data-anchor="">
+        Settings
+      </div>
 
-      <section className="d-section" data-density="compact">
-        <AccountSettings />
-      </section>
+      <AccountSettings />
     </div>
   );
 }

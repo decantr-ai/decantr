@@ -1,67 +1,109 @@
-import { css } from '@decantr/css';
-import { Check, X } from 'lucide-react';
-import type { PRICING_TIERS } from '@/data/mock';
+import type { TierPlan } from '../data/mock';
 
-interface Props {
-  tier: (typeof PRICING_TIERS)[0];
-  highlighted?: boolean;
+interface TierUpgradeCardProps {
+  plan: TierPlan;
+  onUpgrade?: (planId: string) => void;
 }
 
-export function TierUpgradeCard({ tier, highlighted }: Props) {
-  const isHighlighted = highlighted ?? tier.highlighted;
+export default function TierUpgradeCard({ plan, onUpgrade }: TierUpgradeCardProps) {
   return (
     <div
       className="d-surface"
       style={{
         display: 'flex',
         flexDirection: 'column',
-        borderColor: isHighlighted ? 'var(--d-primary)' : undefined,
-        borderTopWidth: isHighlighted ? 3 : undefined,
-        borderTopColor: isHighlighted ? 'var(--d-primary)' : undefined,
+        padding: '1.5rem',
+        borderTop: plan.popular ? '2px solid var(--d-accent)' : undefined,
         position: 'relative',
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
       }}
     >
       {/* Header */}
-      <div className={css('_flex _aic _jcsb')} style={{ marginBottom: '0.5rem' }}>
-        <h4 style={{ fontSize: '1.125rem', fontWeight: 600 }}>{tier.name}</h4>
-        {tier.current && (
-          <span className="d-annotation" data-status="success">Current</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+        <h4 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>{plan.name}</h4>
+        {plan.popular && (
+          <span
+            className="d-annotation"
+            style={{
+              background: 'rgba(253, 163, 3, 0.15)',
+              color: 'var(--d-accent)',
+              fontWeight: 600,
+            }}
+          >
+            Popular
+          </span>
         )}
-        {isHighlighted && !tier.current && (
-          <span className="d-annotation" data-status="info">Popular</span>
+        {plan.current && (
+          <span
+            className="d-annotation"
+            style={{
+              background: 'rgba(34, 197, 94, 0.15)',
+              color: 'var(--d-success)',
+              fontWeight: 600,
+            }}
+          >
+            Current
+          </span>
         )}
       </div>
 
       {/* Price */}
-      <div className={css('_flex _aic')} style={{ marginBottom: '0.5rem' }}>
-        <span style={{ fontSize: '2.5rem', fontWeight: 700, lineHeight: 1 }}>
-          ${tier.price}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem', marginBottom: '0.75rem' }}>
+        <span style={{ fontSize: '2.25rem', fontWeight: 700, lineHeight: 1, color: 'var(--d-text)' }}>
+          ${plan.price}
         </span>
-        <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)', marginLeft: '0.25rem' }}>/mo</span>
+        <span style={{ fontSize: '0.875rem', color: 'var(--d-text-muted)' }}>/mo</span>
       </div>
 
-      <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}>
-        {tier.description}
+      {/* Description */}
+      <p style={{ fontSize: '0.8125rem', color: 'var(--d-text-muted)', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+        {plan.description}
       </p>
 
       {/* Features */}
-      <ul className={css('_flex _col _gap2')} style={{ listStyle: 'none', marginBottom: '1.5rem', flex: 1 }}>
-        {tier.features.map((feature) => (
-          <li key={feature} className={css('_flex _aic _gap2')} style={{ fontSize: '0.875rem' }}>
-            <Check size={14} style={{ color: 'var(--d-success)', flexShrink: 0 }} />
-            {feature}
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+        {plan.features.map((feature) => (
+          <li
+            key={feature}
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.5rem',
+              fontSize: '0.8125rem',
+              lineHeight: 1.5,
+            }}
+          >
+            <span
+              style={{
+                color: 'var(--d-success)',
+                fontWeight: 700,
+                fontSize: '0.875rem',
+                lineHeight: '1.3',
+                flexShrink: 0,
+              }}
+            >
+              {'\u2713'}
+            </span>
+            <span style={{ color: 'var(--d-text)' }}>{feature}</span>
           </li>
         ))}
       </ul>
 
       {/* CTA */}
       <button
+        type="button"
         className="d-interactive"
-        data-variant={tier.current ? undefined : 'primary'}
-        disabled={tier.current}
-        style={{ width: '100%', justifyContent: 'center' }}
+        data-variant={plan.current ? undefined : plan.popular ? 'primary' : 'ghost'}
+        disabled={plan.current}
+        onClick={() => onUpgrade?.(plan.id)}
+        style={{
+          width: '100%',
+          justifyContent: 'center',
+          marginTop: '1.5rem',
+          padding: '0.625rem 1rem',
+        }}
       >
-        {tier.current ? 'Current Plan' : 'Upgrade'}
+        {plan.current ? 'Current Plan' : 'Upgrade'}
       </button>
     </div>
   );
