@@ -2995,7 +2995,7 @@ export function generateSectionContext(input: SectionContextInput): string {
   if (themeHints) {
     if (themeHints.preferred && themeHints.preferred.length > 0) {
       // Filter to patterns relevant to this section
-      const sectionPatterns = new Set(section.pages.flatMap(p => p.layout.map((l: LayoutItem) => typeof l === 'string' ? l : (l as Record<string, unknown>).pattern as string)));
+      const sectionPatterns = new Set(section.pages.flatMap(p => p.layout.flatMap(extractPatternNames)));
       const relevant = themeHints.preferred.filter(p => sectionPatterns.has(p));
       if (relevant.length > 0) {
         lines.push(`**Preferred:** ${relevant.join(', ')}`);
