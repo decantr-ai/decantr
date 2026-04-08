@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@decantr/essence-spec": "workspace:*",
+    "@decantr/registry": "workspace:*",
     "@hono/node-server": "^1.19.12",
     "@supabase/supabase-js": "^2.101.1",
     "ajv": "^8.18.0",

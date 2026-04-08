@@ -1,5 +1,5 @@
 {
-  "$schema": "https://decantr.ai/schemas/theme.v3.json",
+  "$schema": "https://decantr.ai/schemas/theme.v1.json",
   "id": "auradecantism",
   "version": "1.0.0",
   "decantr_compat": ">=0.9.0",

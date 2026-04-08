@@ -1,20 +1,7 @@
 import Ajv2020 from 'ajv/dist/2020.js';
 import type { ErrorObject } from 'ajv';
 import type { ContentType } from '../types.js';
-import commonSchema from '../schemas/common.v1.json';
-import patternSchema from '../schemas/pattern.v2.json';
-import themeSchema from '../schemas/theme.v1.json';
-import blueprintSchema from '../schemas/blueprint.v1.json';
-import archetypeSchema from '../schemas/archetype.v2.json';
-import shellSchema from '../schemas/shell.v1.json';
-
-const EXPECTED_SCHEMA_URLS: Record<ContentType, string> = {
-  pattern: 'https://decantr.ai/schemas/pattern.v2.json',
-  theme: 'https://decantr.ai/schemas/theme.v1.json',
-  blueprint: 'https://decantr.ai/schemas/blueprint.v1.json',
-  archetype: 'https://decantr.ai/schemas/archetype.v2.json',
-  shell: 'https://decantr.ai/schemas/shell.v1.json',
-};
+import { COMMON_SCHEMA, EXPECTED_REGISTRY_SCHEMA_URLS, REGISTRY_SCHEMAS } from './schema-catalog.js';
 
 const ajv = new Ajv2020({
   allErrors: true,
@@ -22,14 +9,14 @@ const ajv = new Ajv2020({
   allowUnionTypes: true,
 });
 
-ajv.addSchema(commonSchema);
+ajv.addSchema(COMMON_SCHEMA);
 
 const validators = {
-  pattern: ajv.compile(patternSchema),
-  theme: ajv.compile(themeSchema),
-  blueprint: ajv.compile(blueprintSchema),
-  archetype: ajv.compile(archetypeSchema),
-  shell: ajv.compile(shellSchema),
+  pattern: ajv.compile(REGISTRY_SCHEMAS.pattern),
+  theme: ajv.compile(REGISTRY_SCHEMAS.theme),
+  blueprint: ajv.compile(REGISTRY_SCHEMAS.blueprint),
+  archetype: ajv.compile(REGISTRY_SCHEMAS.archetype),
+  shell: ajv.compile(REGISTRY_SCHEMAS.shell),
 };
 
 function formatSchemaError(error: ErrorObject): string {
@@ -50,7 +37,7 @@ export function validateRegistryContent(type: ContentType, data: unknown): { val
   }
 
   const errors: string[] = [];
-  const expectedSchema = EXPECTED_SCHEMA_URLS[type];
+  const expectedSchema = EXPECTED_REGISTRY_SCHEMA_URLS[type];
   if (data.$schema !== expectedSchema) {
     errors.push(`$schema must be "${expectedSchema}"`);
   }

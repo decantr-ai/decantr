@@ -1,10 +1,11 @@
 export function getThemeSkeleton(id: string, name: string): object {
   return {
-    $schema: 'https://decantr.ai/schemas/style-metadata.v1.json',
+    $schema: 'https://decantr.ai/schemas/theme.v1.json',
     id,
     name,
     description: '',
     tags: [],
+    personality: '',
     seed: {
       primary: '#6366F1',
       secondary: '#8B5CF6',
@@ -38,6 +39,7 @@ decantr theme create mytheme
 | name | Yes | Display name |
 | description | No | Brief description |
 | tags | No | Searchable tags |
+| personality | No | Short visual summary for LLMs |
 | seed | Yes | Core colors: primary, secondary, accent, background |
 | palette | No | Extended color palette |
 | modes | Yes | Supported modes: ["light"], ["dark"], or both |

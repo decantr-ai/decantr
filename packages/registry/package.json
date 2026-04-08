@@ -16,9 +16,15 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./schema/common.v1.json": "./schema/common.v1.json",
+    "./schema/pattern.v2.json": "./schema/pattern.v2.json",
+    "./schema/theme.v1.json": "./schema/theme.v1.json",
+    "./schema/blueprint.v1.json": "./schema/blueprint.v1.json",
+    "./schema/archetype.v2.json": "./schema/archetype.v2.json",
+    "./schema/shell.v1.json": "./schema/shell.v1.json"
   },
-  "files": ["dist"],
+  "files": ["dist", "schema"],
   "publishConfig": {
     "access": "public"
   },

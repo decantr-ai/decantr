@@ -65,11 +65,13 @@ Because there are no commercial users to preserve, the priority is not seamless 
 #### `@decantr/essence-spec`
 - keep as a core vNext package
 - likely evolve schema and validation interfaces
+- treat package schema exports as the canonical essence contract source
 - publish with the new contract direction once stable
 
 #### `@decantr/registry`
 - keep as a core vNext package
 - align with the new canonical content contract
+- treat package schema exports as the canonical registry contract source
 - remove any assumptions tied to deprecated taxonomy or framework leakage
 
 #### `@decantr/mcp-server`

@@ -19,7 +19,9 @@
     },
     "./schema": {
       "import": "./schema/essence.v2.json"
-    }
+    },
+    "./schema/essence.v2.json": "./schema/essence.v2.json",
+    "./schema/essence.v3.json": "./schema/essence.v3.json"
   },
   "files": ["dist", "schema"],
   "publishConfig": {

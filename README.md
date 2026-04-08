@@ -84,6 +84,7 @@ The official curated content source lives in `decantr-content` and syncs to the 
 - shells
 
 Canonical Decantr schemas are published at `https://decantr.ai/schemas/`.
+Registry schemas are owned by `@decantr/registry/schema/*` and essence schemas by `@decantr/essence-spec/schema/*`.
 
 ## Packages
 

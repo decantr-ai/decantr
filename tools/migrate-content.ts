@@ -2,7 +2,7 @@
 /**
  * Content Migration Tool for Decantr v3
  *
- * Normalizes content items (patterns, archetypes, recipes, themes, blueprints, shells)
+ * Normalizes content items (patterns, archetypes, themes, blueprints, shells)
  * for v3 compatibility. Changes are purely additive — new optional fields and schema
  * normalization. No breaking changes to existing structure.
  *
@@ -26,7 +26,6 @@ type ContentType =
   | "archetypes"
   | "blueprints"
   | "themes"
-  | "recipes"
   | "patterns"
   | "shells";
 
@@ -48,7 +47,6 @@ function discoverContentFiles(
     "archetypes",
     "blueprints",
     "themes",
-    "recipes",
     "patterns",
     "shells",
   ];
@@ -99,7 +97,6 @@ const SCHEMA_URLS: Record<ContentType, string> = {
   archetypes: "https://decantr.ai/schemas/archetype.v2.json",
   blueprints: "https://decantr.ai/schemas/blueprint.v1.json",
   themes: "https://decantr.ai/schemas/theme.v1.json",
-  recipes: "https://decantr.ai/schemas/recipe.v2.json",
   patterns: "https://decantr.ai/schemas/pattern.v2.json",
   shells: "https://decantr.ai/schemas/shell.v1.json",
 };
@@ -198,29 +195,6 @@ function migrateTheme(
   return { data, changes };
 }
 
-function migrateRecipe(
-  data: Record<string, unknown>
-): { data: Record<string, unknown>; changes: string[] } {
-  const changes: string[] = [];
-
-  // Add $schema if missing
-  if (!data.$schema) {
-    data.$schema = SCHEMA_URLS.recipes;
-    changes.push("added $schema");
-  }
-
-  // Add radius_hints if missing
-  if (!data.radius_hints) {
-    data.radius_hints = {
-      philosophy: "rounded",
-      base: 8,
-    };
-    changes.push("added radius_hints");
-  }
-
-  return { data, changes };
-}
-
 function migratePattern(
   data: Record<string, unknown>
 ): { data: Record<string, unknown>; changes: string[] } {
@@ -258,7 +232,6 @@ const MIGRATORS: Record<
   archetypes: migrateArchetype,
   blueprints: migrateBlueprint,
   themes: migrateTheme,
-  recipes: migrateRecipe,
   patterns: migratePattern,
   shells: migrateShell,
 };
@@ -308,12 +281,6 @@ function validateItem(
       }
       break;
 
-    case "recipes":
-      if (!data.style) {
-        errors.push("recipes must have a style field");
-      }
-      break;
-
     case "patterns":
       if (!data.default_layout && !data.presets && !data.layout) {
         errors.push("patterns must have default_layout, presets, or layout");
@@ -349,7 +316,7 @@ function migrateContentDirectory(rootDir: string): void {
 
   if (files.length === 0) {
     console.log(
-      "No content files found. Expected subdirectories: archetypes/, blueprints/, themes/, recipes/, patterns/, shells/"
+      "No content files found. Expected subdirectories: archetypes/, blueprints/, themes/, patterns/, shells/"
     );
     process.exit(0);
   }
@@ -455,7 +422,6 @@ Migration rules:
   archetypes   Add $schema, decantr_compat where missing
   blueprints   Normalize suggested_theme -> theme, ensure personality is array, add $schema
   themes       Add typography_hints, motion_hints
-  recipes      Add radius_hints
   patterns     Add $schema where missing (no structural changes)
   shells       Add $schema where missing (no structural changes)
 

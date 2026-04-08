@@ -1,21 +1,21 @@
 import { copyFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const contentSourceDir = join(process.cwd(), 'docs', 'schemas');
+const registrySourceDir = join(process.cwd(), 'packages', 'registry', 'schema');
 const essenceSourceDir = join(process.cwd(), 'packages', 'essence-spec', 'schema');
 const publicSchemaDir = join(process.cwd(), 'docs', 'schemas');
-const targetDir = join(process.cwd(), 'apps', 'api', 'src', 'schemas');
 
 mkdirSync(publicSchemaDir, { recursive: true });
-mkdirSync(targetDir, { recursive: true });
 
-for (const file of readdirSync(contentSourceDir).filter(name => name.endsWith('.json'))) {
-  copyFileSync(join(contentSourceDir, file), join(targetDir, file));
+function copyJsonFiles(sourceDir, destinationDirs) {
+  for (const file of readdirSync(sourceDir).filter(name => name.endsWith('.json'))) {
+    for (const destinationDir of destinationDirs) {
+      copyFileSync(join(sourceDir, file), join(destinationDir, file));
+    }
+  }
 }
 
-for (const file of readdirSync(essenceSourceDir).filter(name => name.endsWith('.json'))) {
-  copyFileSync(join(essenceSourceDir, file), join(publicSchemaDir, file));
-  copyFileSync(join(essenceSourceDir, file), join(targetDir, file));
-}
+copyJsonFiles(registrySourceDir, [publicSchemaDir]);
+copyJsonFiles(essenceSourceDir, [publicSchemaDir]);
 
-console.log('Synced public and API schema copies');
+console.log('Synced public schema copies from package sources');
