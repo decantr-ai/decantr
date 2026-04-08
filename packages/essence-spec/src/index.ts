@@ -42,7 +42,7 @@ export { validateEssence } from './validate.js';
 export type { ValidationResult } from './validate.js';
 
 export { computeDensity, computeSpatialTokens } from './density.js';
-export type { SpatialTokens } from './types.js';
+export type { SpatialTokens, SpatialTokenHints, ShellGuidance } from './types.js';
 
 export { evaluateGuard } from './guard.js';
 export type { GuardViolation, GuardContext, AutoFix } from './guard.js';

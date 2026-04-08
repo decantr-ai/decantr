@@ -93,6 +93,23 @@ export interface SpatialTokens {
   '--d-data-py': string;
   '--d-control-py': string;
   '--d-content-gap': string;
+  '--d-label-mb': string;
+  '--d-label-px': string;
+  '--d-section-gap': string;
+  '--d-annotation-mt': string;
+}
+
+export interface SpatialTokenHints {
+  section_padding?: string | null;
+  density_bias?: number;
+  content_gap_shift?: number;
+  label_content_gap?: string | null;
+}
+
+export interface ShellGuidance {
+  section_label_treatment?: string;
+  section_density?: 'compact' | 'comfortable' | 'spacious';
+  [key: string]: string | 'compact' | 'comfortable' | 'spacious' | undefined;
 }
 
 // --- Guard ---
