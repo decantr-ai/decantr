@@ -43,9 +43,7 @@ export async function cmdUpgrade(projectRoot: string = process.cwd(), options: {
   if (themeId) {
     const theme = await client.fetchTheme(themeId);
     if (theme) {
-      const themeData = theme.data as Record<string, unknown>;
-      const inner = ((themeData.data ?? themeData) as Record<string, unknown>);
-      const latestVersion = (inner.version as string) || (themeData.version as string);
+      const latestVersion = theme.data.version;
       if (latestVersion) {
         const current = essence.dna?.theme?.version || essence.theme?.version || '0.0.0';
         if (latestVersion !== current) {
@@ -54,7 +52,7 @@ export async function cmdUpgrade(projectRoot: string = process.cwd(), options: {
             id: themeId,
             currentVersion: current,
             latestVersion,
-            data: themeData,
+            data: theme.data,
           });
         }
       }
@@ -65,9 +63,7 @@ export async function cmdUpgrade(projectRoot: string = process.cwd(), options: {
   if (essence.blueprint && typeof essence.blueprint === 'string') {
     const blueprint = await client.fetchBlueprint(essence.blueprint);
     if (blueprint) {
-      const bpData = blueprint.data as Record<string, unknown>;
-      const inner = ((bpData.data ?? bpData) as Record<string, unknown>);
-      const latestVersion = (inner.version as string) || (bpData.version as string);
+      const latestVersion = blueprint.data.version;
       if (latestVersion) {
         const current = essence.blueprintVersion || '0.0.0';
         if (latestVersion !== current) {
@@ -76,7 +72,7 @@ export async function cmdUpgrade(projectRoot: string = process.cwd(), options: {
             id: essence.blueprint,
             currentVersion: current,
             latestVersion,
-            data: bpData,
+            data: blueprint.data,
           });
         }
       }

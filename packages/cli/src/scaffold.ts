@@ -10,6 +10,7 @@ import type {
   Archetype as RegistryArchetype,
   Theme as RegistryTheme,
   Pattern as RegistryPattern,
+  Shell as RegistryShell,
   PatternReference,
   PatternReferenceObject,
   LayoutItem as RegistryLayoutItem,
@@ -2265,16 +2266,7 @@ export async function refreshDerivedFiles(
         try {
           const shellResult = await registry.fetchShell(shellId);
           if (shellResult?.data) {
-            const inner = shellResult.data as Record<string, any>;
-            shellInfoCache[shellId] = {
-              description: (inner.description as string) || '',
-              regions: (inner.config?.regions as string[]) || [],
-              layout: (inner.layout as string) || undefined,
-              guidance: (inner.guidance as Record<string, string>) || undefined,
-              atoms: (inner.atoms as string) || undefined,
-              config: inner.config || undefined,
-              internal_layout: inner.internal_layout || undefined,
-            };
+            shellInfoCache[shellId] = mapRegistryShellToShellInfo(shellResult.data);
           }
         } catch { /* continue without shell info */ }
       }
@@ -2406,16 +2398,7 @@ export async function refreshDerivedFiles(
     try {
       const shellResult = await registry.fetchShell(shell);
       if (shellResult?.data) {
-        const inner = shellResult.data as Record<string, any>;
-        v30ShellInfo = {
-          description: (inner.description as string) || '',
-          regions: (inner.config?.regions as string[]) || [],
-          layout: (inner.layout as string) || undefined,
-          guidance: (inner.guidance as Record<string, string>) || undefined,
-          atoms: (inner.atoms as string) || undefined,
-          config: inner.config || undefined,
-          internal_layout: inner.internal_layout || undefined,
-        };
+        v30ShellInfo = mapRegistryShellToShellInfo(shellResult.data);
       }
     } catch { /* continue without shell info */ }
 
@@ -2631,6 +2614,20 @@ export interface ShellInfo {
     footer?: { height?: string; sticky?: boolean };
   };
   internal_layout?: Record<string, any>;
+}
+
+export function mapRegistryShellToShellInfo(shell: RegistryShell): ShellInfo {
+  return {
+    description: shell.description || '',
+    regions: Array.isArray((shell.config as Record<string, unknown> | undefined)?.regions)
+      ? ((shell.config as Record<string, unknown>).regions as string[])
+      : [],
+    layout: shell.layout || undefined,
+    guidance: shell.guidance,
+    atoms: shell.atoms,
+    config: shell.config as ShellInfo['config'] | undefined,
+    internal_layout: shell.internal_layout,
+  };
 }
 
 export interface SectionContextInput {

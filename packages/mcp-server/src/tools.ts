@@ -4,7 +4,7 @@ import { join, dirname } from 'node:path';
 import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import { resolvePatternPreset } from '@decantr/registry';
-import type { Pattern, ArchetypeRole } from '@decantr/registry';
+import type { Pattern, ArchetypeRole, ComposeEntry } from '@decantr/registry';
 import {
   validateStringArg,
   fuzzyScore,
@@ -485,15 +485,14 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
         // Derive topology from composed archetypes
         let topology = null;
-        const composeEntries = (blueprint as any).compose;
+        const composeEntries = blueprint.compose;
         if (composeEntries && Array.isArray(composeEntries) && composeEntries.length > 0) {
           const zoneInputs: ZoneInput[] = [];
-          const archetypePromises = composeEntries.map(async (entry: any) => {
+          const archetypePromises = composeEntries.map(async (entry: ComposeEntry) => {
             const arcId = typeof entry === 'string' ? entry : entry.archetype;
             try {
-              const arch = await apiClient.getContent('archetypes', namespace, arcId);
-              const archData = arch as any;
-              const explicitRole = typeof entry === 'object' ? entry.role : undefined;
+              const archData = await apiClient.getArchetype(namespace, arcId);
+              const explicitRole = typeof entry === 'string' ? undefined : entry.role;
               zoneInputs.push({
                 archetypeId: arcId,
                 role: explicitRole || archData.role || 'auxiliary',

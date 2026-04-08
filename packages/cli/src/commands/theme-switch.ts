@@ -91,13 +91,11 @@ export async function cmdThemeSwitch(
   try {
     const themeResult = await registryClient.fetchTheme(themeName);
     if (themeResult?.data) {
-      const raw = themeResult.data as Record<string, unknown>;
-      const inner = (raw.data ?? raw) as Record<string, any>;
-      if (inner.radius) {
+      if (themeResult.data.radius) {
         essence.dna.radius = {
           ...essence.dna.radius,
-          philosophy: inner.radius.philosophy || essence.dna.radius.philosophy,
-          base: inner.radius.base ?? essence.dna.radius.base,
+          philosophy: themeResult.data.radius.philosophy || essence.dna.radius.philosophy,
+          base: themeResult.data.radius.base ?? essence.dna.radius.base,
         };
       }
     }
