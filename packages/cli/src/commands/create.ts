@@ -29,7 +29,7 @@ function getSkeleton(type: ContentType, id: string, name: string): Record<string
     case 'blueprint':
       return { ...base, compose: [], theme: {}, personality: [] };
     case 'archetype':
-      return { ...base, pages: [], features: [], suggested_theme: '' };
+      return { ...base, pages: [], features: [], suggested_theme: { ids: [], modes: [], shapes: [] } };
     case 'shell':
       return { ...base, regions: [], layout: 'sidebar-main' };
   }

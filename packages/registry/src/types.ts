@@ -60,6 +60,12 @@ export interface SeoHints {
   meta_priorities?: string[];
 }
 
+export interface ArchetypeSuggestedTheme {
+  ids?: string[];
+  modes?: string[];
+  shapes?: string[];
+}
+
 export interface Archetype {
   id: string;
   version: string;
@@ -78,6 +84,7 @@ export interface Archetype {
     tier: string;
   };
   page_briefs?: Record<string, string>;
+  suggested_theme?: ArchetypeSuggestedTheme;
 }
 
 // --- Theme substructures (absorbed from former Recipe type) ---
