@@ -37,6 +37,22 @@ export interface RegistryAPIClientOptions {
   cacheTtlMs?: number;
 }
 
+export class RegistryAPIError extends Error {
+  status: number;
+  details?: unknown;
+
+  constructor(status: number, message: string, details?: unknown) {
+    super(message);
+    this.name = 'RegistryAPIError';
+    this.status = status;
+    this.details = details;
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 export class RegistryAPIClient {
   private baseUrl: string;
   private apiKey: string | undefined;
@@ -80,8 +96,24 @@ export class RegistryAPIClient {
       headers: { ...this.buildHeaders(), ...init?.headers },
     });
     if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      throw new Error(`API ${response.status}: ${body || response.statusText}`);
+      const bodyText = await response.text().catch(() => '');
+      let details: unknown;
+      let message = response.statusText;
+
+      if (bodyText) {
+        try {
+          details = JSON.parse(bodyText) as unknown;
+          if (isRecord(details) && typeof details.error === 'string') {
+            message = details.error;
+          } else {
+            message = bodyText;
+          }
+        } catch {
+          message = bodyText;
+        }
+      }
+
+      throw new RegistryAPIError(response.status, `API ${response.status}: ${message}`, details);
     }
     return response.json() as Promise<T>;
   }

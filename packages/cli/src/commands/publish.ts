@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { RegistryAPIClient } from '@decantr/registry';
+import { RegistryAPIClient, RegistryAPIError } from '@decantr/registry';
 import type { ApiContentType } from '@decantr/registry';
 import { getApiKeyOrToken } from '../auth.js';
 
@@ -69,7 +69,18 @@ export async function cmdPublish(
     console.log(`Published ${singularType}/${name} to @community`);
     console.log(`Status: ${result.status}`);
   } catch (err) {
-    console.error(`Failed to publish: ${(err as Error).message}`);
+    if (err instanceof RegistryAPIError) {
+      console.error(`Failed to publish: ${err.message}`);
+      const details = err.details as { validationErrors?: unknown } | undefined;
+      if (Array.isArray(details?.validationErrors) && details.validationErrors.length > 0) {
+        console.error('Validation errors:');
+        for (const validationError of details.validationErrors) {
+          console.error(`  - ${String(validationError)}`);
+        }
+      }
+    } else {
+      console.error(`Failed to publish: ${(err as Error).message}`);
+    }
     process.exitCode = 1;
   }
 }
