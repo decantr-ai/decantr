@@ -108,8 +108,8 @@ export interface SpatialTokenHints {
 
 export interface ShellGuidance {
   section_label_treatment?: string;
-  section_density?: 'compact' | 'comfortable' | 'spacious';
-  [key: string]: string | 'compact' | 'comfortable' | 'spacious' | undefined;
+  section_density?: DensityLevel;
+  [key: string]: string | DensityLevel | undefined;
 }
 
 // --- Guard ---
