@@ -46,7 +46,7 @@ Because this is a greenfield reset, the bias should be toward clarity, not prese
 | `packages/ui-catalog` | Extract / archive | Supports framework ecosystem rather than core control-plane product | Separate repo or archive branch |
 | `apps/ui-site` | Extract / archive | Showcase site for `@decantr/ui`, not Decantr vNext product | Archive with UI line |
 | `apps/workbench` | Extract / archive | Framework workbench, not core product surface | Archive with UI line |
-| `decantr_component_api` MCP surface | Extract / archive candidate | Only strategically relevant if the UI framework stays in-scope | Remove from default product if UI line is archived |
+| `decantr_component_api` MCP surface | Removed from default product | Only strategically relevant if the UI framework stays in-scope | Removed from `@decantr/mcp-server` on the reset branch |
 
 ## 5. Delete or Replace Candidates
 
