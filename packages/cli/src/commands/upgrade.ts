@@ -38,8 +38,8 @@ export async function cmdUpgrade(projectRoot: string = process.cwd(), options: {
 
   const upgrades: Upgrade[] = [];
 
-  // Check theme using the normalized theme id, with legacy fallback while content is being reset.
-  const themeId = essence.dna?.theme?.id || essence.dna?.theme?.style || essence.theme?.id || essence.theme?.style;
+  // Check theme using the normalized theme id.
+  const themeId = essence.dna?.theme?.id || essence.theme?.id;
   if (themeId) {
     const theme = await client.fetchTheme(themeId);
     if (theme) {

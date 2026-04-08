@@ -561,8 +561,8 @@ async function cmdInit(args: InitArgs) {
 
       // Apply blueprint theme settings (unless user explicitly provided flags)
       if (blueprint.theme) {
-        if (!userExplicit.theme && (blueprint.theme.id || blueprint.theme.style)) {
-          options.theme = blueprint.theme.id || blueprint.theme.style!;
+        if (!userExplicit.theme && blueprint.theme.id) {
+          options.theme = blueprint.theme.id;
         }
         if (!userExplicit.mode && blueprint.theme.mode) {
           options.mode = blueprint.theme.mode as 'dark' | 'light' | 'auto';
@@ -895,7 +895,7 @@ async function cmdStatus() {
       const theme = e.theme as Record<string, string> | undefined;
       const guard = e.guard as Record<string, string> | undefined;
       const structure = e.structure as unknown[] | undefined;
-      console.log(`  Theme: ${theme?.style || 'unknown'} (${theme?.mode || 'unknown'})`);
+      console.log(`  Theme: ${theme?.id || 'unknown'} (${theme?.mode || 'unknown'})`);
       console.log(`  Guard: ${guard?.mode || 'unknown'}`);
       console.log(`  Pages: ${(structure || []).length}`);
       console.log(`  ${YELLOW}Tip: Run \`decantr migrate\` to upgrade to v3.${RESET}`);

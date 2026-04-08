@@ -386,7 +386,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
 
   // Apply blueprint overrides
   if (blueprintData) {
-    if (blueprintData.theme?.id || blueprintData.theme?.style) initOptions.theme = blueprintData.theme.id || blueprintData.theme.style;
+    if (blueprintData.theme?.id) initOptions.theme = blueprintData.theme.id;
     if (blueprintData.theme?.mode) initOptions.mode = blueprintData.theme.mode;
     if (blueprintData.theme?.shape) initOptions.shape = blueprintData.theme.shape;
     if (blueprintData.personality) {
