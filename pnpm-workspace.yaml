@@ -1,4 +1,9 @@
 packages:
   - "packages/*"
+  - "!packages/ui"
+  - "!packages/ui-catalog"
+  - "!packages/ui-chart"
   - "apps/*"
+  - "!apps/ui-site"
+  - "!apps/workbench"
   - "apps/showcase/*"
