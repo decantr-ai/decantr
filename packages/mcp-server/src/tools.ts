@@ -41,6 +41,12 @@ interface ZoneTransition {
   trigger: string;
 }
 
+interface RegistryPatternListItem {
+  slug?: string;
+  name?: string;
+  description?: string;
+}
+
 const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
 
 function deriveZones(inputs: ZoneInput[]): ComposedZone[] {
@@ -539,7 +545,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const desc = (args.description as string).toLowerCase();
 
       try {
-        const patternsResponse = await apiClient.listContent<Record<string, unknown>>('patterns', {
+        const patternsResponse = await apiClient.listContent<RegistryPatternListItem>('patterns', {
           namespace: '@official',
           limit: 100,
         });
@@ -548,9 +554,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const prelimScores: { slug: string; score: number; name: string; description: string }[] = [];
 
         for (const p of patternsResponse.items) {
-          const slug = (p as any).slug || '';
-          const name = (p as any).name || slug;
-          const description = (p as any).description || '';
+          const slug = p.slug || '';
+          const name = p.name || slug;
+          const description = p.description || '';
           const searchable = [name, description].join(' ').toLowerCase();
 
           let score = 0;

@@ -242,8 +242,8 @@ function buildPersonality(intent: MagicIntent): string[] {
  */
 function buildRichPersonality(
   intent: MagicIntent,
-  blueprintData?: any,
-  themeData?: any,
+  blueprintData?: RegistryBlueprint,
+  themeData?: ThemeData,
 ): string {
   const parts: string[] = [];
   if (blueprintData?.personality && typeof blueprintData.personality === 'string')

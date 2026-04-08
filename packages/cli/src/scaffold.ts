@@ -8,6 +8,7 @@ import type {
   ComposeEntry,
   ArchetypeRole,
   Archetype as RegistryArchetype,
+  Blueprint as RegistryBlueprint,
   Theme as RegistryTheme,
   Pattern as RegistryPattern,
   Shell as RegistryShell,
@@ -45,6 +46,33 @@ export interface ArchetypeData {
     schema_org?: string[];
     meta_priorities?: string[];
   };
+}
+
+type LegacyThemeCompat = EssenceV3['dna']['theme'] & {
+  style?: string;
+  recipe?: string;
+};
+
+type LegacyMetaCompat = EssenceV3['meta'] & {
+  blueprint?: string;
+};
+
+function getLegacyThemeCompat(theme: EssenceV3['dna']['theme']): LegacyThemeCompat {
+  return theme as LegacyThemeCompat;
+}
+
+function getLegacyBlueprintId(meta: EssenceV3['meta']): string | undefined {
+  return (meta as LegacyMetaCompat).blueprint;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function getStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
 }
 
 function toPatternReferenceObject(ref: PatternReference): PatternReferenceObject {
@@ -1481,7 +1509,7 @@ function generateTaskContextV3(templateName: string, essence: EssenceV3): string
     ? sections.flatMap(s => s.pages)
     : essence.blueprint.pages || [];
   const defaultShell = sections[0]?.shell
-    || (essence.blueprint as any).shell
+    || essence.blueprint.shell
     || 'sidebar-main';
   const layout = pages[0]?.layout?.map(serializeLayoutItem).join(', ') || 'none';
 
@@ -1613,7 +1641,7 @@ export async function scaffoldProject(
   composedSections?: ComposeSectionsResult,
   routeMap?: Record<string, { section: string; page: string }>,
   patternSpecs?: Record<string, PatternSpecSummary>,
-  blueprintData?: Record<string, any>,
+  blueprintData?: RegistryBlueprint,
 ): Promise<ScaffoldResult> {
   // Build v3 essence (v2 build removed — Spec 5.9)
   const essenceV3 = buildEssenceV3(options, archetypeData, themeData);
@@ -1651,7 +1679,7 @@ export async function scaffoldProject(
 
   // V3.1 upgrade: if composedSections is provided, upgrade the essence
   if (composedSections) {
-    essenceV3.version = '3.1.0' as any;
+    essenceV3.version = '3.1.0';
     essenceV3.blueprint = {
       sections: composedSections.sections,
       features: composedSections.features,
@@ -1991,13 +2019,19 @@ export async function refreshDerivedFiles(
   mkdirSync(contextDir, { recursive: true });
 
   // ── Read project.json for stored metadata (blueprintId, voice) ──
+  type StoredProjectJson = {
+    blueprintId?: string;
+    voice?: RegistryBlueprint['voice'];
+    [key: string]: unknown;
+  };
+
   let storedBlueprintId: string | undefined;
   let storedVoice: ScaffoldContextInput['voice'] | undefined;
   const projectJsonFilePath = join(decantrDir, 'project.json');
-  let projectJsonData: Record<string, any> = {};
+  let projectJsonData: StoredProjectJson = {};
   if (existsSync(projectJsonFilePath)) {
     try {
-      projectJsonData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8'));
+      projectJsonData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8')) as StoredProjectJson;
       if (projectJsonData.blueprintId) storedBlueprintId = projectJsonData.blueprintId;
       if (projectJsonData.voice) storedVoice = projectJsonData.voice;
     } catch { /* ignore parse errors */ }
@@ -2019,7 +2053,8 @@ export async function refreshDerivedFiles(
   }
 
   // ── Extract info from essence ──
-  const themeName = ((essence.dna.theme as any).id || (essence.dna.theme as any).style || 'default') as string;
+  const themeCompat = getLegacyThemeCompat(essence.dna.theme);
+  const themeName = themeCompat.id || themeCompat.style || 'default';
   const mode = essence.dna.theme.mode as string;
   const guardMode = essence.meta.guard.mode;
   const guardConfig = {
@@ -2043,7 +2078,7 @@ export async function refreshDerivedFiles(
   // Fallback: direct API fetch if registry client returned incomplete data
   if (!themeData?.seed?.primary) {
     try {
-      const apiUrl = (registry as any).apiUrl || 'https://api.decantr.ai/v1';
+      const apiUrl = registry.getApiUrl();
       const resp = await fetch(`${apiUrl}/themes/@official/${themeName}`);
       if (resp.ok) {
         const apiData = await resp.json() as Record<string, unknown>;
@@ -2142,10 +2177,10 @@ export async function refreshDerivedFiles(
   writeFileSync(decantrMdPath, generateDecantrMdV31({
     guardMode,
     cssApproach: CSS_APPROACH_CONTENT,
-    blueprintId: storedBlueprintId || (essence.meta as any).blueprint || undefined,
+    blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || undefined,
     themeName,
     themeMode: mode,
-    themeShape: (essence.dna.theme as any).shape || undefined,
+    themeShape: themeCompat.shape || undefined,
     personality,
     sections: sectionSummaries.length > 0 ? sectionSummaries : undefined,
     features: allFeatures.length > 0 ? allFeatures : undefined,
@@ -2336,7 +2371,7 @@ export async function refreshDerivedFiles(
     const routes = blueprint.routes || {};
     const scaffoldContent = generateScaffoldContext({
       appName: essence.meta.archetype || 'Application',
-      blueprintId: storedBlueprintId || (essence.meta as any).blueprint || '',
+      blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || '',
       themeName,
       personality,
       topologyMarkdown,
@@ -2613,20 +2648,19 @@ export interface ShellInfo {
     body?: { scroll?: boolean; inputAnchored?: boolean };
     footer?: { height?: string; sticky?: boolean };
   };
-  internal_layout?: Record<string, any>;
+  internal_layout?: Record<string, unknown>;
 }
 
 export function mapRegistryShellToShellInfo(shell: RegistryShell): ShellInfo {
+  const config = isRecord(shell.config) ? shell.config : undefined;
   return {
     description: shell.description || '',
-    regions: Array.isArray((shell.config as Record<string, unknown> | undefined)?.regions)
-      ? ((shell.config as Record<string, unknown>).regions as string[])
-      : [],
+    regions: getStringArray(config?.regions),
     layout: shell.layout || undefined,
     guidance: shell.guidance,
     atoms: shell.atoms,
-    config: shell.config as ShellInfo['config'] | undefined,
-    internal_layout: shell.internal_layout,
+    config: config as ShellInfo['config'] | undefined,
+    internal_layout: isRecord(shell.internal_layout) ? shell.internal_layout : undefined,
   };
 }
 
@@ -2642,7 +2676,7 @@ export interface SectionContextInput {
   themeHints?: { preferred?: string[]; compositions?: string; spatialHints?: string };
   constraints?: Record<string, unknown>;
   shellInfo?: ShellInfo;
-  themeData?: any;
+  themeData?: ThemeData;
   themeMode?: string;
   voiceTone?: string;
 }
@@ -2658,15 +2692,7 @@ export interface ScaffoldContextInput {
   constraints?: Record<string, unknown>;
   seo?: { schema_org?: string[]; meta_priorities?: string[] };
   navigation?: { hotkeys?: unknown[]; command_palette?: boolean };
-  voice?: {
-    tone?: string;
-    cta_verbs?: string[];
-    avoid?: string[];
-    empty_states?: string;
-    errors?: string;
-    loading?: string;
-    metrics_format?: string;
-  };
+  voice?: RegistryBlueprint['voice'];
 }
 
 // ── Shell Implementation Generator ──
@@ -2687,12 +2713,12 @@ function generateShellImplementation(shellId: string, shellInfo: ShellInfo): str
     for (const [region, props] of Object.entries(shellInfo.internal_layout)) {
       lines.push(`### ${region}`);
       lines.push('');
-      if (typeof props === 'object' && props !== null) {
-        for (const [key, value] of Object.entries(props as Record<string, any>)) {
-          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      if (isRecord(props)) {
+        for (const [key, value] of Object.entries(props)) {
+          if (isRecord(value)) {
             // Nested sub-region (e.g., sidebar.brand, sidebar.nav)
             lines.push(`- **${key}:**`);
-            for (const [subKey, subValue] of Object.entries(value as Record<string, any>)) {
+            for (const [subKey, subValue] of Object.entries(value)) {
               lines.push(`  - ${subKey}: ${subValue}`);
             }
           } else {

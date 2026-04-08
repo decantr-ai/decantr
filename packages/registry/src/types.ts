@@ -236,10 +236,10 @@ export interface Shell {
     navWidth?: string;
     headerHeight?: string;
   };
-  internal_layout?: Record<string, any>;
+  internal_layout?: Record<string, unknown>;
   layout?: string;
   atoms?: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   guidance?: Record<string, string>;
   code?: { imports?: string; example?: string };
 }

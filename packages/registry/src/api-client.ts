@@ -23,6 +23,13 @@ interface CacheEntry<T> {
   timestamp: number;
 }
 
+function unwrapDataEnvelope<T>(value: T): T {
+  if (typeof value === 'object' && value !== null && 'data' in value) {
+    return value.data as T;
+  }
+  return value;
+}
+
 export interface RegistryAPIClientOptions {
   baseUrl?: string;
   apiKey?: string;
@@ -144,7 +151,7 @@ export class RegistryAPIClient {
 
     const raw = await this.request<T>(`/${type}/${namespace}/${slug}`);
     // API returns { id, type, slug, data: {...actual content...} } — unwrap
-    const unwrapped = ((raw as any).data ?? raw) as T;
+    const unwrapped = unwrapDataEnvelope(raw);
     this.setCache(cacheKey, unwrapped);
     return unwrapped;
   }

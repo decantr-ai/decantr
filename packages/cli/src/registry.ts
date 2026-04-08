@@ -107,6 +107,10 @@ export class RegistryClient {
     });
   }
 
+  getApiUrl(): string {
+    return this.apiUrl;
+  }
+
   /**
    * Load content from .decantr/custom/{contentType}/{id}.json
    * Works for ALL content types, not just themes.

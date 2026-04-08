@@ -64,12 +64,22 @@ const RED = '\x1b[31m';
 const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
+const GET_CONTENT_TYPES = ['pattern', 'archetype', 'theme', 'blueprint', 'shell'] as const;
+const LIST_CONTENT_TYPES: readonly ApiContentType[] = ['patterns', 'archetypes', 'themes', 'blueprints', 'shells'];
 
 function heading(text: string): string { return `\n${BOLD}${text}${RESET}\n`; }
 function success(text: string): string { return `${GREEN}${text}${RESET}`; }
 function error(text: string): string { return `${RED}${text}${RESET}`; }
 function dim(text: string): string { return `${DIM}${text}${RESET}`; }
 function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
+
+function isGetContentType(value: string): value is typeof GET_CONTENT_TYPES[number] {
+  return (GET_CONTENT_TYPES as readonly string[]).includes(value);
+}
+
+function isApiContentType(value: string): value is ApiContentType {
+  return (LIST_CONTENT_TYPES as readonly string[]).includes(value);
+}
 
 interface PromptContext {
   archetype: string;
@@ -206,9 +216,8 @@ async function cmdSuggest(query: string, type?: string) {
 }
 
 async function cmdGet(type: string, id: string) {
-  const validTypes = ['pattern', 'archetype', 'theme', 'blueprint', 'shell'] as const;
-  if (!validTypes.includes(type as any)) {
-    console.error(error(`Invalid type "${type}". Must be one of: ${validTypes.join(', ')}`));
+  if (!isGetContentType(type)) {
+    console.error(error(`Invalid type "${type}". Must be one of: ${GET_CONTENT_TYPES.join(', ')}`));
     process.exitCode = 1;
     return;
   }
@@ -363,9 +372,8 @@ async function cmdValidate(path?: string) {
 }
 
 async function cmdList(type: string) {
-  const validTypes = ['patterns', 'archetypes', 'themes', 'blueprints', 'shells'] as const;
-  if (!validTypes.includes(type as any)) {
-    console.error(error(`Invalid type "${type}". Must be one of: ${validTypes.join(', ')}`));
+  if (!isApiContentType(type)) {
+    console.error(error(`Invalid type "${type}". Must be one of: ${LIST_CONTENT_TYPES.join(', ')}`));
     process.exitCode = 1;
     return;
   }
@@ -374,7 +382,7 @@ async function cmdList(type: string) {
     cacheDir: join(process.cwd(), '.decantr', 'cache'),
   });
 
-  const result = await registryClient.fetchContentList(type as ApiContentType);
+  const result = await registryClient.fetchContentList(type);
   const items = result.data.items;
 
   if (items.length === 0) {
@@ -1601,7 +1609,11 @@ async function main() {
 
     case 'magic': {
       // Collect all non-flag args after 'magic' as the prompt
-      const magicFlags: Record<string, boolean> = {};
+      const magicFlags: {
+        dryRun?: boolean;
+        offline?: boolean;
+        registry?: string;
+      } = {};
       const promptParts: string[] = [];
       for (let i = 1; i < args.length; i++) {
         if (args[i] === '--dry-run') {
@@ -1609,9 +1621,9 @@ async function main() {
         } else if (args[i] === '--offline') {
           magicFlags.offline = true;
         } else if (args[i].startsWith('--registry=')) {
-          magicFlags.registry = args[i].split('=')[1] as any;
+          magicFlags.registry = args[i].split('=')[1];
         } else if (args[i].startsWith('--registry') && args[i + 1]) {
-          magicFlags.registry = args[++i] as any;
+          magicFlags.registry = args[++i];
         } else {
           promptParts.push(args[i]);
         }
@@ -1628,7 +1640,7 @@ async function main() {
       await cmdMagic(magicPrompt, process.cwd(), {
         dryRun: magicFlags.dryRun,
         offline: magicFlags.offline,
-        registry: magicFlags.registry as any as string | undefined,
+        registry: magicFlags.registry,
       });
       break;
     }
