@@ -83,7 +83,7 @@ The official curated content source lives in `decantr-content` and syncs to the 
 - archetypes
 - shells
 
-Canonical content schemas are published at `https://decantr.ai/schemas/`.
+Canonical Decantr schemas are published at `https://decantr.ai/schemas/`.
 
 ## Packages
 
