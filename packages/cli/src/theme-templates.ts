@@ -52,7 +52,7 @@ In \`decantr.essence.json\`:
 \`\`\`json
 {
   "theme": {
-    "style": "custom:mytheme",
+    "id": "custom:mytheme",
     "mode": "dark"
   }
 }

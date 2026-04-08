@@ -170,7 +170,7 @@ export function parseMagicPrompt(prompt: string): MagicIntent {
 async function resolveTheme(
   intent: MagicIntent,
   registryClient?: any,
-): Promise<{ style: string; mode: 'dark' | 'light' | 'auto' }> {
+): Promise<{ id: string; mode: 'dark' | 'light' | 'auto' }> {
   const hints = intent.themeHints;
 
   // Try registry-based scoring first
@@ -195,7 +195,7 @@ async function resolveTheme(
           const mode: 'dark' | 'light' | 'auto' = intent.themeHints.includes('light') ? 'light'
             : intent.themeHints.includes('dark') ? 'dark'
             : scored[0].modes?.includes('dark') ? 'dark' : 'light';
-          return { style: scored[0].id, mode };
+          return { id: scored[0].id, mode };
         }
       }
     } catch { /* fall through to hardcoded map */ }
@@ -206,16 +206,16 @@ async function resolveTheme(
   if (hints.includes('light')) mode = 'light';
 
   // Map hints to known theme IDs
-  if (hints.includes('neon') || hints.includes('glass')) return { style: 'obsidianite', mode };
-  if (hints.includes('warm') || hints.includes('elegant')) return { style: 'aurealis', mode };
-  if (hints.includes('cool') || hints.includes('minimal')) return { style: 'glacialis', mode };
-  if (hints.includes('brutalist')) return { style: 'ferrocrete', mode };
-  if (hints.includes('corporate')) return { style: 'luminarum', mode };
-  if (hints.includes('playful')) return { style: 'solstice', mode };
-  if (hints.includes('retro')) return { style: 'oxidian', mode };
+  if (hints.includes('neon') || hints.includes('glass')) return { id: 'obsidianite', mode };
+  if (hints.includes('warm') || hints.includes('elegant')) return { id: 'aurealis', mode };
+  if (hints.includes('cool') || hints.includes('minimal')) return { id: 'glacialis', mode };
+  if (hints.includes('brutalist')) return { id: 'ferrocrete', mode };
+  if (hints.includes('corporate')) return { id: 'luminarum', mode };
+  if (hints.includes('playful')) return { id: 'solstice', mode };
+  if (hints.includes('retro')) return { id: 'oxidian', mode };
 
   // Default
-  return { style: 'luminarum', mode };
+  return { id: 'luminarum', mode };
 }
 
 /**
@@ -372,7 +372,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   const initOptions: InitOptions = {
     blueprint: matchedBlueprint,
     archetype: intent.archetype || blueprintData?.compose?.[0]?.archetype || blueprintData?.compose?.[0] || 'dashboard-analytics',
-    theme: themeResolved.style,
+    theme: themeResolved.id,
     mode: themeResolved.mode,
     shape: 'rounded',
     target: 'react',

@@ -1004,7 +1004,8 @@ async function cmdAudit() {
     console.log(`${BOLD}Summary:${RESET}`);
     console.log(`  Pages defined: ${(essence.structure as Array<unknown>).length}`);
     console.log(`  Guard mode: ${(essence.guard as Record<string, string>).mode}`);
-    console.log(`  Theme: ${(essence.theme as Record<string, string>).style}`);
+    const theme = essence.theme as Record<string, string>;
+    console.log(`  Theme: ${theme.id ?? theme.style ?? ''}`);
 
   } catch (e) {
     console.log(`${RED}Error: ${(e as Error).message}${RESET}`);
@@ -1054,7 +1055,7 @@ ${BOLD}Examples:${RESET}
         console.log(success(`Created custom theme "${name}"`));
         console.log(dim(`  Path: ${result.path}`));
         console.log('');
-        console.log(`Use in essence: ${cyan(`"style": "custom:${name}"`)}`);
+        console.log(`Use in essence: ${cyan(`"id": "custom:${name}"`)}`);
       } else {
         console.error(error(result.error || 'Failed to create theme'));
         process.exitCode = 1;
