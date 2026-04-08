@@ -82,17 +82,15 @@ export async function cmdAddSection(
     return;
   }
 
-  // Unwrap API wrapper
-  const raw = result.data as Record<string, unknown>;
-  const inner = (raw.data ?? raw) as Record<string, any>;
+  const archetype = result.data;
 
   const newSection: EssenceV31Section = {
-    id: inner.id || archetypeId,
-    role: inner.role || 'auxiliary',
-    shell: inner.pages?.[0]?.shell || essence.blueprint.shell || 'top-nav-main',
-    features: inner.features || [],
-    description: inner.description || '',
-    pages: (inner.pages || []).map((p: any) => ({
+    id: archetype.id || archetypeId,
+    role: archetype.role || 'auxiliary',
+    shell: archetype.pages?.[0]?.shell || essence.blueprint.shell || 'top-nav-main',
+    features: archetype.features || [],
+    description: archetype.description || '',
+    pages: (archetype.pages || []).map(p => ({
       id: p.id,
       layout: p.default_layout?.length ? p.default_layout : ['hero'],
     })),
