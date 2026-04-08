@@ -286,6 +286,7 @@ export function generateTreatmentCSS(
 
   // ── 7. Label Utility — .d-label ──
 
+  // ── Label ──
   emitRule('.d-label', [
     ['font-size', '0.7rem'],
     ['font-weight', '600'],
@@ -293,6 +294,14 @@ export function generateTreatmentCSS(
     ['letter-spacing', '0.08em'],
     ['color', 'var(--d-text-muted)'],
     ['font-family', 'var(--d-font-mono, ui-monospace, monospace)'],
+    ['display', 'block'],
+    ['margin-bottom', 'calc(var(--d-label-mb) * var(--d-density-scale, 1))'],
+  ]);
+
+  // Anchored section header variant — accent border
+  emitRule('.d-label[data-anchor]', [
+    ['padding-left', 'var(--d-label-px)'],
+    ['border-left', '2px solid var(--d-accent)'],
   ]);
 
   // ── Theme-scoped overrides (e.g. backdrop-filter) ──

@@ -259,15 +259,41 @@ describe('generateTreatmentCSS', () => {
 
   // ── d-label utility ──
 
-  it('includes d-label utility class', () => {
+  it('includes d-label utility class with spatial contract', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).toContain('.d-label');
+    // Visual contract
     expect(css).toContain('font-size: 0.7rem');
     expect(css).toContain('font-weight: 600');
     expect(css).toContain('text-transform: uppercase');
     expect(css).toContain('letter-spacing: 0.08em');
     expect(css).toContain('color: var(--d-text-muted)');
     expect(css).toContain('font-family: var(--d-font-mono, ui-monospace, monospace)');
+    // Spatial contract
+    expect(css).toContain('display: block');
+    expect(css).toContain('var(--d-label-mb)');
+  });
+
+  // ── d-label spatial contract ──
+
+  it('includes display: block on d-label', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const labelBlock = css.split('.d-label {')[1]?.split('}')[0] ?? '';
+    expect(labelBlock).toContain('display: block');
+  });
+
+  it('includes density-aware margin-bottom on d-label', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const labelBlock = css.split('.d-label {')[1]?.split('}')[0] ?? '';
+    expect(labelBlock).toContain('calc(var(--d-label-mb) * var(--d-density-scale, 1))');
+  });
+
+  it('includes d-label[data-anchor] variant with accent border', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    expect(css).toContain('.d-label[data-anchor]');
+    const anchorBlock = css.split('.d-label[data-anchor] {')[1]?.split('}')[0] ?? '';
+    expect(anchorBlock).toContain('padding-left: var(--d-label-px)');
+    expect(anchorBlock).toContain('border-left: 2px solid var(--d-accent)');
   });
 
   // ── Override stacking with pseudo-selectors ──
