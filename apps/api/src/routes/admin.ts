@@ -6,6 +6,7 @@ import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
+import { validateRegistryContent } from '../lib/content-validation.js';
 
 export const adminRoutes = new Hono<Env>();
 
@@ -266,6 +267,14 @@ adminRoutes.post('/admin/sync', async (c) => {
 
   if (!slug) {
     return c.json({ error: 'item must have id or slug' }, 400);
+  }
+
+  const contentValidation = validateRegistryContent(body.type, item);
+  if (!contentValidation.valid) {
+    return c.json({
+      error: 'Official content failed registry schema validation',
+      validationErrors: contentValidation.errors,
+    }, 400);
   }
 
   // Upsert into content table
