@@ -49,10 +49,24 @@ export interface Pattern {
 // --- Archetype ---
 export type ArchetypeRole = 'primary' | 'gateway' | 'public' | 'auxiliary';
 
+export interface PatternReferenceObject {
+  pattern: string;
+  preset?: string;
+  as?: string;
+}
+
+export type PatternReference = string | PatternReferenceObject;
+
+export interface ContentDependencies {
+  [kind: string]: Record<string, string>;
+}
+
 export interface ArchetypePage {
   id: string;
-  default_layout: (string | { pattern: string; preset?: string; as?: string })[];
+  default_layout: PatternReference[];
   shell: string;
+  description?: string;
+  patterns?: PatternReferenceObject[];
 }
 
 export interface SeoHints {
@@ -66,16 +80,25 @@ export interface ArchetypeSuggestedTheme {
   shapes?: string[];
 }
 
+export interface ArchetypeHeroCustomization {
+  style?: string;
+  elements?: string[];
+  background?: string;
+  [key: string]: unknown;
+}
+
 export interface Archetype {
+  $schema?: string;
   id: string;
   version: string;
+  decantr_compat?: string;
   name: string;
   description: string;
   tags: string[];
   role: ArchetypeRole;
   pages: ArchetypePage[];
   features: string[];
-  dependencies: { patterns: Record<string, string> };
+  dependencies?: ContentDependencies;
   seo_hints?: SeoHints;
   classification?: {
     triggers: { primary: string[]; secondary: string[]; negative: string[] };
@@ -85,6 +108,9 @@ export interface Archetype {
   };
   page_briefs?: Record<string, string>;
   suggested_theme?: ArchetypeSuggestedTheme;
+  shells?: Record<string, string>;
+  personality?: string[];
+  hero_customization?: ArchetypeHeroCustomization;
 }
 
 // --- Theme substructures (absorbed from former Recipe type) ---
@@ -116,21 +142,50 @@ export interface ThemeShell {
 // --- Blueprint ---
 export type ComposeEntry = string | { archetype: string; prefix: string; role?: ArchetypeRole };
 
+export interface BlueprintRoute {
+  shell?: string;
+  archetype?: string;
+  page?: string;
+}
+
+export interface BlueprintNavigationHotkey {
+  key: string;
+  route?: string;
+  label?: string;
+}
+
+export interface BlueprintNavigation {
+  command_palette?: boolean;
+  hotkeys?: BlueprintNavigationHotkey[];
+}
+
+export interface BlueprintOverrides {
+  features_add?: string[];
+  features_remove?: string[];
+  pages_remove?: string[];
+  pages?: Record<string, Record<string, unknown>>;
+}
+
 export interface Blueprint {
+  $schema?: string;
   id: string;
+  version?: string;
+  decantr_compat?: string;
   name: string;
   description?: string;
-  archetype: string;
+  tags?: string[];
+  archetype?: string;
   compose?: ComposeEntry[];
   theme: { id: string; mode?: string; shape?: string };
-  personality?: string;
-  pages: Array<{
-    id: string;
-    layout: string[];
-    shell?: string;
-  }>;
+  personality?: string | string[];
   features?: string[];
-  version?: string;
+  routes?: Record<string, BlueprintRoute>;
+  overrides?: BlueprintOverrides;
+  seo_hints?: SeoHints;
+  navigation?: BlueprintNavigation;
+  dependencies?: ContentDependencies;
+  suggested_themes?: string[];
+  design_constraints?: Record<string, unknown>;
   voice?: {
     tone?: string;
     cta_verbs?: string[];

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { validateEssence, evaluateGuard, isV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
 import { RegistryAPIClient } from '@decantr/registry';
-import type { ApiContentType, ComposeEntry } from '@decantr/registry';
+import type { ApiContentType, Blueprint as RegistryBlueprint, ComposeEntry } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
 import { scaffoldProject, scaffoldMinimal, refreshDerivedFiles, composeArchetypes, composeSections, generateSectionContext, generateScaffoldContext, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type LayoutItem, type ZoneInput, type TopologyData, type ComposeSectionsResult, type PatternSpecSummary, type BlueprintOverrides, type RefreshResult } from './scaffold.js';
@@ -540,24 +540,7 @@ async function cmdInit(args: InitArgs) {
     // Fetch the blueprint to get its primary archetype and theme
     const blueprintResult = await registryClient.fetchBlueprint(options.blueprint);
     if (blueprintResult) {
-      const blueprint = blueprintResult.data as {
-        id: string;
-        description?: string;
-        compose?: ComposeEntry[];
-        features?: string[];
-        theme?: { style?: string; id?: string; mode?: string; shape?: string };
-        personality?: string | string[];
-        routes?: Record<string, { shell?: string; archetype?: string; page?: string }>;
-        overrides?: {
-          features_add?: string[];
-          features_remove?: string[];
-          pages_remove?: string[];
-          pages?: Record<string, any>;
-        };
-        seo_hints?: { schema_org?: string[]; meta_priorities?: string[] };
-        navigation?: { hotkeys?: any[]; command_palette?: boolean };
-        design_constraints?: Record<string, string>;
-      };
+      const blueprint = blueprintResult.data as RegistryBlueprint;
 
       // Apply blueprint theme settings (unless user explicitly provided flags)
       if (blueprint.theme) {
