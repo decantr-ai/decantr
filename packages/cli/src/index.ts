@@ -994,7 +994,7 @@ async function cmdAudit() {
     console.log(`  Pages defined: ${(essence.structure as Array<unknown>).length}`);
     console.log(`  Guard mode: ${(essence.guard as Record<string, string>).mode}`);
     const theme = essence.theme as Record<string, string>;
-    console.log(`  Theme: ${theme.id ?? theme.style ?? ''}`);
+    console.log(`  Theme: ${theme.id ?? ''}`);
 
   } catch (e) {
     console.log(`${RED}Error: ${(e as Error).message}${RESET}`);
