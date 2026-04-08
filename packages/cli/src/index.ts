@@ -7,7 +7,30 @@ import { RegistryAPIClient } from '@decantr/registry';
 import type { ApiContentType, Blueprint as RegistryBlueprint, ComposeEntry } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
-import { scaffoldProject, scaffoldMinimal, refreshDerivedFiles, composeArchetypes, composeSections, generateSectionContext, generateScaffoldContext, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type LayoutItem, type ZoneInput, type TopologyData, type ComposeSectionsResult, type PatternSpecSummary, type BlueprintOverrides, type RefreshResult } from './scaffold.js';
+import {
+  scaffoldProject,
+  scaffoldMinimal,
+  refreshDerivedFiles,
+  composeArchetypes,
+  composeSections,
+  generateSectionContext,
+  generateScaffoldContext,
+  deriveZones,
+  deriveTransitions,
+  generateTopologySection,
+  mapRegistryArchetypeToArchetypeData,
+  mapRegistryThemeToThemeData,
+  mapRegistryPatternToPatternSpecSummary,
+  collectPatternIdsFromItems,
+  type ThemeData,
+  type LayoutItem,
+  type ZoneInput,
+  type TopologyData,
+  type ComposeSectionsResult,
+  type PatternSpecSummary,
+  type BlueprintOverrides,
+  type RefreshResult,
+} from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
   createTheme,
@@ -534,7 +557,7 @@ async function cmdInit(args: InitArgs) {
   let composedSections: ComposeSectionsResult | undefined;
   let routeMap: Record<string, { section: string; page: string }> | undefined;
   let patternSpecs: Record<string, PatternSpecSummary> | undefined;
-  let blueprintData: Record<string, any> | undefined;
+  let blueprintData: RegistryBlueprint | undefined;
 
   if (options.blueprint) {
     // Fetch the blueprint to get its primary archetype and theme
@@ -567,13 +590,13 @@ async function cmdInit(args: InitArgs) {
         // Fetch all archetypes in parallel
         const entries = blueprint.compose;
         // Fetch archetypes sequentially to avoid overwhelming the API
-        const results: (readonly [string, unknown])[] = [];
+        const results: Array<readonly [string, ReturnType<typeof mapRegistryArchetypeToArchetypeData> | null]> = [];
         for (const entry of entries) {
           const id = typeof entry === 'string' ? entry : entry.archetype;
           const r = await registryClient.fetchArchetype(id);
-          results.push([id, r?.data ?? null] as const);
+          results.push([id, r?.data ? mapRegistryArchetypeToArchetypeData(r.data) : null] as const);
         }
-        const archetypeMap = new Map(results.map(([id, data]) => [id, (data || null) as any]));
+        const archetypeMap = new Map(results);
 
         // Compose pages from all archetypes
         const composed = composeArchetypes(entries, archetypeMap);
@@ -594,7 +617,7 @@ async function cmdInit(args: InitArgs) {
         composedSections = composeSections(entries, archetypeMap, blueprint.overrides);
 
         // Store blueprint data for V3.1 essence enrichment
-        blueprintData = blueprint as Record<string, any>;
+        blueprintData = blueprint;
 
         // Map blueprint routes to section pages
         routeMap = {};
@@ -619,9 +642,7 @@ async function cmdInit(args: InitArgs) {
             if (page.patterns) {
               for (const ref of page.patterns) allPatternIds.add(ref.pattern);
             }
-            for (const item of page.layout) {
-              if (typeof item === 'string') allPatternIds.add(item);
-            }
+            for (const patternId of collectPatternIdsFromItems(page.layout)) allPatternIds.add(patternId);
           }
         }
 
@@ -632,14 +653,7 @@ async function cmdInit(args: InitArgs) {
             try {
               const result = await registryClient.fetchPattern(pid);
               if (result) {
-                const inner = result.data as Record<string, any>;
-                const defaultPreset = inner.default_preset || 'standard';
-                const preset = inner.presets?.[defaultPreset];
-                patternSpecs[pid] = {
-                  description: (inner.description as string) || '',
-                  components: (inner.components as string[]) || [],
-                  slots: preset?.layout?.slots || {},
-                };
+                patternSpecs[pid] = mapRegistryPatternToPatternSpecSummary(result.data, undefined, false);
               }
             } catch { /* pattern not found — skip */ }
           }
@@ -649,15 +663,15 @@ async function cmdInit(args: InitArgs) {
         const zoneInputs: ZoneInput[] = [];
         for (const entry of entries) {
           const arcId = typeof entry === 'string' ? entry : entry.archetype;
-          const explicitRole = typeof entry === 'object' && 'role' in entry ? (entry as any).role : undefined;
-          const archData = archetypeMap.get(arcId) as Record<string, unknown> | null;
+          const explicitRole = typeof entry === 'string' ? undefined : entry.role;
+          const archData = archetypeMap.get(arcId);
           if (archData) {
             zoneInputs.push({
               archetypeId: arcId,
-              role: explicitRole || (archData.role as string) || 'auxiliary',
-              shell: ((archData.pages as any[])?.[0]?.shell) || options.shell || 'sidebar-main',
-              features: (archData.features as string[]) || [],
-              description: (archData.description as string) || '',
+              role: explicitRole || archData.role || 'auxiliary',
+              shell: archData.pages?.[0]?.shell || options.shell || 'sidebar-main',
+              features: archData.features || [],
+              description: archData.description || '',
             });
           }
         }
@@ -671,7 +685,7 @@ async function cmdInit(args: InitArgs) {
         topologyMarkdown = zones.length > 0
           ? generateTopologySection(
               {
-                intent: (archetypeMap.get(primaryId) as any)?.description || options.blueprint || 'Application',
+                intent: archetypeMap.get(primaryId)?.description || options.blueprint || 'Application',
                 zones,
                 transitions,
                 entryPoints: {
@@ -690,7 +704,7 @@ async function cmdInit(args: InitArgs) {
     // Direct archetype selection
     const archetypeResult = await registryClient.fetchArchetype(options.archetype);
     if (archetypeResult) {
-      archetypeData = archetypeResult.data as typeof archetypeData;
+      archetypeData = mapRegistryArchetypeToArchetypeData(archetypeResult.data);
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch archetype "${options.archetype}". Using defaults.${RESET}`);
     }
@@ -702,23 +716,7 @@ async function cmdInit(args: InitArgs) {
   if (options.theme) {
     const themeResult = await registryClient.fetchTheme(options.theme);
     if (themeResult) {
-      const theme = themeResult.data as Record<string, any>;
-      themeData = {
-        seed: theme.seed,
-        palette: theme.palette,
-        tokens: theme.tokens,
-        cvd_support: theme.cvd_support,
-        typography: theme.typography,
-        motion: theme.motion,
-        decorators: theme.decorators,
-        treatments: theme.treatments,
-        spatial: theme.spatial,
-        radius: theme.radius,
-        shell: theme.shell,
-        effects: theme.effects,
-        compositions: theme.compositions,
-        pattern_preferences: theme.pattern_preferences,
-      };
+      themeData = mapRegistryThemeToThemeData(themeResult.data);
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch theme "${options.theme}". Using defaults.${RESET}`);
     }

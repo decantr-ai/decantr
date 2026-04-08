@@ -4,7 +4,16 @@ import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
-import type { ComposeEntry, ArchetypeRole } from '@decantr/registry';
+import type {
+  ComposeEntry,
+  ArchetypeRole,
+  Archetype as RegistryArchetype,
+  Theme as RegistryTheme,
+  Pattern as RegistryPattern,
+  PatternReference,
+  PatternReferenceObject,
+  LayoutItem as RegistryLayoutItem,
+} from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 import type { RegistryClient } from './registry.js';
@@ -17,7 +26,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * - A pattern object: { pattern: "hero", preset: "landing", as?: "guild-hero" }
  * - A column layout: { cols: ["a", "b"], at: "lg" }
  */
-export type LayoutItem = string | Record<string, unknown>;
+export type LayoutItem = RegistryLayoutItem | Record<string, unknown>;
 
 export interface ArchetypeData {
   id: string;
@@ -28,16 +37,56 @@ export interface ArchetypeData {
     id: string;
     shell: string;
     default_layout: LayoutItem[];
-    patterns?: Array<{
-      pattern: string;
-      preset?: string;
-      as?: string;
-    }>;
+    patterns?: PatternReferenceObject[];
   }>;
   features?: string[];
   seo_hints?: {
     schema_org?: string[];
     meta_priorities?: string[];
+  };
+}
+
+function toPatternReferenceObject(ref: PatternReference): PatternReferenceObject {
+  return typeof ref === 'string' ? { pattern: ref } : ref;
+}
+
+function collectPatternIdsFromValue(value: unknown, ids: Set<string>): void {
+  if (typeof value === 'string') {
+    ids.add(value);
+    return;
+  }
+
+  if (!value || typeof value !== 'object') return;
+
+  if ('pattern' in value && typeof value.pattern === 'string') {
+    ids.add(value.pattern);
+  }
+
+  if ('cols' in value && Array.isArray(value.cols)) {
+    for (const col of value.cols) collectPatternIdsFromValue(col, ids);
+  }
+}
+
+export function collectPatternIdsFromItems(items: unknown[]): string[] {
+  const ids = new Set<string>();
+  for (const item of items) collectPatternIdsFromValue(item, ids);
+  return [...ids];
+}
+
+export function mapRegistryArchetypeToArchetypeData(archetype: RegistryArchetype): ArchetypeData {
+  return {
+    id: archetype.id,
+    name: archetype.name,
+    role: archetype.role,
+    description: archetype.description,
+    pages: archetype.pages?.map(page => ({
+      id: page.id,
+      shell: page.shell,
+      default_layout: page.default_layout?.length ? page.default_layout : ['hero'],
+      patterns: page.patterns?.map(toPatternReferenceObject),
+    })),
+    features: archetype.features,
+    seo_hints: archetype.seo_hints,
   };
 }
 
@@ -455,6 +504,25 @@ export interface ThemeData {
   effects?: { enabled?: boolean; intensity?: string; type_mapping?: Record<string, string[]> };
   compositions?: Record<string, unknown>;
   pattern_preferences?: { prefer?: string[]; avoid?: string[] };
+}
+
+export function mapRegistryThemeToThemeData(theme: RegistryTheme): ThemeData {
+  return {
+    seed: theme.seed,
+    palette: theme.palette,
+    tokens: theme.tokens,
+    cvd_support: theme.cvd_support,
+    typography: theme.typography,
+    motion: theme.motion,
+    decorators: theme.decorators,
+    treatments: theme.treatments,
+    spatial: theme.spatial,
+    radius: theme.radius,
+    shell: theme.shell,
+    effects: theme.effects,
+    compositions: theme.compositions,
+    pattern_preferences: theme.pattern_preferences,
+  };
 }
 
 /**
@@ -1873,35 +1941,7 @@ async function resolvePatternSpec(
   try {
     const patResult = await registry.fetchPattern(name);
     if (patResult?.data) {
-      const inner = patResult.data as Record<string, any>;
-      const defaultPreset = inner.default_preset || 'standard';
-      const preset = inner.presets?.[defaultPreset];
-      let slots = preset?.layout?.slots || {};
-
-      if (Object.keys(slots).length === 0) {
-        const synthetic = generateSyntheticSlots(name, (inner.description as string) || '');
-        if (Object.keys(synthetic).length > 0) slots = synthetic;
-      }
-
-      const spec: PatternSpecSummary = {
-        description: (inner.description as string) || prefetched?.description || '',
-        components: (inner.components as string[]) || prefetched?.components || [],
-        slots,
-        layout_hints: inner.layout_hints as Record<string, string> | undefined,
-        ...(includeExtendedFields ? {
-          visual_brief: inner.visual_brief as string | undefined,
-          composition: inner.composition as Record<string, string> | undefined,
-          motion: inner.motion as PatternSpecSummary['motion'],
-          responsive: inner.responsive as PatternSpecSummary['responsive'],
-          accessibility: inner.accessibility as PatternSpecSummary['accessibility'],
-        } : {}),
-      };
-
-      if (!spec.components || spec.components.length === 0) {
-        const syntheticComps = generateSyntheticComponents(name, spec.description);
-        if (syntheticComps.length > 0) spec.components = syntheticComps;
-      }
-      return spec;
+      return mapRegistryPatternToPatternSpecSummary(patResult.data, prefetched, includeExtendedFields);
     }
   } catch { /* fetch failed */ }
 
@@ -1967,11 +2007,10 @@ export async function refreshDerivedFiles(
     try {
       const bpResult = await registry.fetchBlueprint(storedBlueprintId);
       if (bpResult?.data) {
-        const bpData = bpResult.data as Record<string, any>;
-        if (bpData.voice) {
-          storedVoice = bpData.voice;
+        if (bpResult.data.voice) {
+          storedVoice = bpResult.data.voice;
           // Persist voice to project.json for future refreshes
-          projectJsonData.voice = bpData.voice;
+          projectJsonData.voice = bpResult.data.voice;
           writeFileSync(projectJsonFilePath, JSON.stringify(projectJsonData, null, 2));
         }
       }
@@ -1996,23 +2035,7 @@ export async function refreshDerivedFiles(
   if (!themeData) try {
     const themeResult = await registry.fetchTheme(themeName);
     if (themeResult?.data) {
-      const t = themeResult.data as Record<string, unknown>;
-      themeData = {
-        seed: t.seed as ThemeData['seed'],
-        palette: t.palette as ThemeData['palette'],
-        cvd_support: t.cvd_support as ThemeData['cvd_support'],
-        tokens: t.tokens as ThemeData['tokens'],
-        typography: t.typography as ThemeData['typography'],
-        motion: t.motion as ThemeData['motion'],
-        decorators: t.decorators as ThemeData['decorators'],
-        treatments: t.treatments as ThemeData['treatments'],
-        spatial: t.spatial as ThemeData['spatial'],
-        radius: t.radius as ThemeData['radius'],
-        shell: t.shell as ThemeData['shell'],
-        effects: t.effects as ThemeData['effects'],
-        compositions: t.compositions as ThemeData['compositions'],
-        pattern_preferences: t.pattern_preferences as ThemeData['pattern_preferences'],
-      };
+      themeData = mapRegistryThemeToThemeData(themeResult.data);
     }
   } catch { /* continue without theme data */ }
 
@@ -2551,6 +2574,47 @@ export interface PatternSpecSummary {
   motion?: { micro?: Record<string, string>; transitions?: Record<string, string>; ambient?: Record<string, string> };
   responsive?: { mobile?: string; tablet?: string; desktop?: string };
   accessibility?: { role?: string; keyboard?: string[]; announcements?: string[]; focus_management?: string };
+}
+
+export function mapRegistryPatternToPatternSpecSummary(
+  pattern: RegistryPattern,
+  prefetched?: PatternSpecSummary,
+  includeExtendedFields = true,
+): PatternSpecSummary {
+  const defaultPreset = pattern.default_preset || 'standard';
+  const preset = pattern.presets?.[defaultPreset];
+  let slots = preset?.layout?.slots || pattern.default_layout?.slots || prefetched?.slots || {};
+
+  if (Object.keys(slots).length === 0) {
+    const synthetic = generateSyntheticSlots(pattern.id, pattern.description || prefetched?.description || '');
+    if (Object.keys(synthetic).length > 0) slots = synthetic;
+  }
+
+  const spec: PatternSpecSummary = {
+    description: pattern.description || prefetched?.description || '',
+    components: pattern.components || prefetched?.components || [],
+    slots,
+    layout_hints: pattern.layout_hints,
+    ...(includeExtendedFields ? {
+      visual_brief: pattern.visual_brief,
+      composition: pattern.composition,
+      motion: pattern.motion,
+      responsive: pattern.responsive,
+      accessibility: pattern.accessibility ? {
+        role: pattern.accessibility.role,
+        keyboard: pattern.accessibility.keyboard,
+        announcements: pattern.accessibility.announcements,
+        focus_management: pattern.accessibility.focus_management,
+      } : undefined,
+    } : {}),
+  };
+
+  if (!spec.components || spec.components.length === 0) {
+    const syntheticComps = generateSyntheticComponents(pattern.id, spec.description);
+    if (syntheticComps.length > 0) spec.components = syntheticComps;
+  }
+
+  return spec;
 }
 
 export interface ShellInfo {

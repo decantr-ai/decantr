@@ -1,8 +1,20 @@
 // --- Pattern ---
+export interface PatternLayoutSpec {
+  layout: string;
+  atoms: string;
+  slots?: Record<string, string>;
+}
+
+export interface PatternCodeSpec {
+  imports?: string;
+  example?: string;
+}
+
 export interface PatternPreset {
   description: string;
-  layout: { layout: 'row' | 'column' | 'grid' | 'hero'; atoms: string };
-  code: { imports: string; example: string };
+  components?: string[];
+  layout: PatternLayoutSpec;
+  code?: PatternCodeSpec;
 }
 
 export interface PatternIO {
@@ -22,7 +34,8 @@ export interface Pattern {
   presets: Record<string, PatternPreset>;
   contained?: boolean;
   io?: PatternIO;
-  code?: { imports: string; example: string };
+  code?: PatternCodeSpec;
+  default_layout?: PatternLayoutSpec;
   visual_brief?: string;
   composition?: Record<string, string>;
   motion?: {

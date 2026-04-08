@@ -11,6 +11,10 @@ import {
   deriveZones,
   deriveTransitions,
   generateTopologySection,
+  mapRegistryArchetypeToArchetypeData,
+  mapRegistryThemeToThemeData,
+  mapRegistryPatternToPatternSpecSummary,
+  collectPatternIdsFromItems,
   type ArchetypeData,
   type ThemeData,
   type ComposeSectionsResult,
@@ -18,7 +22,7 @@ import {
   type ZoneInput,
   type LayoutItem,
 } from '../scaffold.js';
-import type { ComposeEntry } from '@decantr/registry';
+import type { Blueprint as RegistryBlueprint, ComposeEntry } from '@decantr/registry';
 
 // ── ANSI helpers ──
 
@@ -307,7 +311,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
 
   // 4. Try to match a blueprint
   let matchedBlueprint: string | undefined;
-  let blueprintData: Record<string, any> | undefined;
+  let blueprintData: RegistryBlueprint | undefined;
 
   if (apiAvailable) {
     console.log(dim('  Searching registry for matching blueprints...'));
@@ -355,8 +359,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       // Fetch the full blueprint
       const bpResult = await registryClient.fetchBlueprint(best.id);
       if (bpResult) {
-        const rawBp = bpResult.data as Record<string, unknown>;
-        blueprintData = (rawBp.data ?? rawBp) as Record<string, any>;
+        blueprintData = bpResult.data;
       }
     } else {
       console.log(dim('  No strong blueprint match found. Using archetype-based scaffold.'));
@@ -452,8 +455,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       const id = typeof entry === 'string' ? entry : entry.archetype;
       const result = await registryClient.fetchArchetype(id);
       if (result) {
-        const raw = result.data as Record<string, unknown>;
-        archetypeMap.set(id, (raw.data ?? raw) as ArchetypeData);
+        archetypeMap.set(id, mapRegistryArchetypeToArchetypeData(result.data));
       } else {
         archetypeMap.set(id, null);
       }
@@ -486,7 +488,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     // Map routes
     routeMap = {};
     if (blueprintData.routes) {
-      for (const [path, entry] of Object.entries(blueprintData.routes as Record<string, any>)) {
+      for (const [path, entry] of Object.entries(blueprintData.routes)) {
         if (entry.archetype && entry.page) {
           routeMap[path] = { section: entry.archetype, page: entry.page };
           const section = composedSections.sections.find(s => s.id === entry.archetype);
@@ -503,9 +505,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
         if (page.patterns) {
           for (const ref of page.patterns) allPatternIds.add(ref.pattern);
         }
-        for (const item of page.layout) {
-          if (typeof item === 'string') allPatternIds.add(item);
-        }
+        for (const patternId of collectPatternIdsFromItems(page.layout)) allPatternIds.add(patternId);
       }
     }
 
@@ -514,15 +514,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       try {
         const result = await registryClient.fetchPattern(pid);
         if (result) {
-          const raw = result.data as Record<string, unknown>;
-          const inner = (raw.data ?? raw) as Record<string, any>;
-          const defaultPreset = inner.default_preset || 'standard';
-          const preset = inner.presets?.[defaultPreset];
-          patternSpecs[pid] = {
-            description: (inner.description as string) || '',
-            components: (inner.components as string[]) || [],
-            slots: preset?.layout?.slots || {},
-          };
+          patternSpecs[pid] = mapRegistryPatternToPatternSpecSummary(result.data, undefined, false);
         }
       } catch { /* skip */ }
     }
@@ -533,11 +525,11 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       const arcId = typeof entry === 'string' ? entry : entry.archetype;
       const archData = archetypeMap.get(arcId);
       if (archData) {
-        const explicitRole = typeof entry === 'object' && 'role' in entry ? (entry as any).role : undefined;
+        const explicitRole = typeof entry === 'string' ? undefined : entry.role;
         zoneInputs.push({
           archetypeId: arcId,
-          role: explicitRole || (archData as any).role || 'auxiliary',
-          shell: (archData.pages as any)?.[0]?.shell || initOptions.shell,
+          role: explicitRole || archData.role || 'auxiliary',
+          shell: archData.pages?.[0]?.shell || initOptions.shell,
           features: archData.features || [],
           description: archData.description || '',
         });
@@ -573,8 +565,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     // No blueprint match — try direct archetype fetch
     const archResult = await registryClient.fetchArchetype(initOptions.archetype!);
     if (archResult) {
-      const raw = archResult.data as Record<string, unknown>;
-      archetypeData = (raw.data ?? raw) as ArchetypeData;
+      archetypeData = mapRegistryArchetypeToArchetypeData(archResult.data);
     }
   }
 
@@ -582,24 +573,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   if (apiAvailable && initOptions.theme) {
     const themeResult = await registryClient.fetchTheme(initOptions.theme);
     if (themeResult) {
-      const rawTheme = themeResult.data as Record<string, unknown>;
-      const theme = (rawTheme.data ?? rawTheme) as Record<string, any>;
-      themeData = {
-        seed: theme.seed,
-        palette: theme.palette,
-        tokens: theme.tokens,
-        cvd_support: theme.cvd_support,
-        typography: theme.typography,
-        motion: theme.motion,
-        decorators: theme.decorators,
-        treatments: theme.treatments,
-        spatial: theme.spatial,
-        radius: theme.radius,
-        shell: theme.shell,
-        effects: theme.effects,
-        compositions: theme.compositions,
-        pattern_preferences: theme.pattern_preferences,
-      };
+      themeData = mapRegistryThemeToThemeData(themeResult.data);
     }
   }
 

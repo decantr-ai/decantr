@@ -1,4 +1,6 @@
 export type {
+  PatternLayoutSpec,
+  PatternCodeSpec,
   PatternPreset,
   PatternIO,
   Pattern,
