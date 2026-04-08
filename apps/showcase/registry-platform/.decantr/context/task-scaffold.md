@@ -5,7 +5,7 @@
 ## What to Generate
 
 - **homepage** (top-nav-main)
-  - Patterns: hero, search-filter-bar, content-card-grid, kpi-grid
+  - Patterns: search-filter-bar, content-card-grid, kpi-grid
 - **browse** (top-nav-main)
   - Patterns: search-filter-bar, content-card-grid
 - **browse-type** (top-nav-main)
@@ -14,32 +14,32 @@
   - Patterns: content-detail-hero, json-viewer
 - **profile** (top-nav-main)
   - Patterns: detail-header, content-card-grid, activity-feed
-- **overview** (sidebar-main)
+- **user-dashboard-overview** (top-nav-main)
   - Patterns: kpi-grid, reputation-badge, activity-feed
-- **content** (sidebar-main)
+- **user-dashboard-content** (top-nav-main)
   - Patterns: content-card-grid
-- **content-new** (sidebar-main)
+- **user-dashboard-content-new** (top-nav-main)
   - Patterns: form, json-viewer
-- **api-keys** (sidebar-main)
+- **user-dashboard-api-keys** (top-nav-main)
   - Patterns: api-key-row
-- **settings** (sidebar-main)
+- **user-dashboard-settings** (top-nav-main)
   - Patterns: account-settings
-- **billing** (sidebar-main)
+- **user-dashboard-billing** (top-nav-main)
   - Patterns: tier-upgrade-card, kpi-grid
-- **team** (sidebar-main)
+- **user-dashboard-team** (top-nav-main)
   - Patterns: kpi-grid, team-member-row
-- **moderation-queue** (sidebar-main)
+- **admin-moderation-moderation-queue** (top-nav-main)
   - Patterns: search-filter-bar, moderation-queue-item
-- **moderation-detail** (sidebar-main)
+- **admin-moderation-moderation-detail** (top-nav-main)
   - Patterns: content-detail-hero, json-viewer, moderation-queue-item
-- **login** (centered)
+- **auth-login** (top-nav-main)
   - Patterns: auth-form
-- **register** (centered)
+- **auth-register** (top-nav-main)
   - Patterns: auth-form (register)
-- **forgot-password** (centered)
+- **auth-forgot-password** (top-nav-main)
   - Patterns: auth-form (reset)
 
-Post-scaffold enforcement mode: **guided**.
+Post-scaffold enforcement mode: **strict**.
 
 ---
 

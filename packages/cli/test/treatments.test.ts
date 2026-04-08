@@ -9,6 +9,10 @@ const baseSpatialTokens: Record<string, string> = {
   '--d-control-py': '0.5rem',
   '--d-surface-p': '1.5rem',
   '--d-data-py': '0.75rem',
+  '--d-label-mb': '0.75rem',
+  '--d-label-px': '0.75rem',
+  '--d-section-gap': '1.5rem',
+  '--d-annotation-mt': '0.5rem',
 };
 
 describe('generateTreatmentCSS', () => {
@@ -91,17 +95,52 @@ describe('generateTreatmentCSS', () => {
 
   // ── 8. Section rhythm with adjacent separator ──
 
-  it('includes section rhythm with gradient divider and compact density variant', () => {
+  it('includes section rhythm with density inheritance and adjacent separator', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).toContain('.d-section');
     expect(css).toContain('.d-section + .d-section');
     // Gradient fade divider
     expect(css).toContain('border-top: 1px solid transparent');
     expect(css).toContain('border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1');
-    expect(css).toContain('margin-top: var(--d-gap-2)');
-    // Compact density variant
+    // Density-aware gap (replaces old fixed --d-gap-2)
+    expect(css).toContain('calc(var(--d-section-gap) * var(--d-density-scale, 1))');
+    // Density variants
     expect(css).toContain('.d-section[data-density="compact"]');
-    expect(css).toContain('calc(var(--d-section-py) * 0.5)');
+    expect(css).toContain('.d-section[data-density="spacious"]');
+  });
+
+  // ── Density inheritance ──
+
+  it('sets --d-density-scale on d-section base rule', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const sectionBlock = css.split('.d-section {')[1]?.split('}')[0] ?? '';
+    expect(sectionBlock).toContain('--d-density-scale: 1');
+  });
+
+  it('sets --d-density-scale: 0.65 for compact density', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    expect(css).toContain('.d-section[data-density="compact"]');
+    const compactBlock = css.split('.d-section[data-density="compact"] {')[1]?.split('}')[0] ?? '';
+    expect(compactBlock).toContain('--d-density-scale: 0.65');
+  });
+
+  it('sets --d-density-scale: 1.4 for spacious density', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    expect(css).toContain('.d-section[data-density="spacious"]');
+    const spaciousBlock = css.split('.d-section[data-density="spacious"] {')[1]?.split('}')[0] ?? '';
+    expect(spaciousBlock).toContain('--d-density-scale: 1.4');
+  });
+
+  it('uses density-scale in section padding calc', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const sectionBlock = css.split('.d-section {')[1]?.split('}')[0] ?? '';
+    expect(sectionBlock).toContain('calc(var(--d-section-py) * var(--d-density-scale))');
+  });
+
+  it('uses density-aware gap for adjacent sections', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const adjBlock = css.split('.d-section + .d-section {')[1]?.split('}')[0] ?? '';
+    expect(adjBlock).toContain('calc(var(--d-section-gap) * var(--d-density-scale, 1))');
   });
 
   // ── 9. Annotation status variants ──
@@ -119,7 +158,7 @@ describe('generateTreatmentCSS', () => {
 
   // ── 10. Spatial tokens referenced in CSS values ──
 
-  it('references spatial tokens in CSS values', () => {
+  it('references spatial tokens with density-scale calc in CSS values', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).toContain('var(--d-interactive-py)');
     expect(css).toContain('var(--d-interactive-px)');
@@ -128,6 +167,48 @@ describe('generateTreatmentCSS', () => {
     expect(css).toContain('var(--d-section-py)');
     expect(css).toContain('var(--d-data-py)');
     expect(css).toContain('var(--d-content-gap)');
+    expect(css).toContain('var(--d-label-mb)');
+    expect(css).toContain('var(--d-section-gap)');
+    expect(css).toContain('var(--d-annotation-mt)');
+    expect(css).toContain('var(--d-density-scale');
+  });
+
+  // ── Density-aware spatial on all treatments ──
+
+  it('uses density-scale in d-surface padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const surfaceBlock = css.split('.d-surface {')[1]?.split('}')[0] ?? '';
+    expect(surfaceBlock).toContain('calc(var(--d-surface-p) * var(--d-density-scale, 1))');
+  });
+
+  it('uses density-scale in d-interactive vertical padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const interactiveBlock = css.split('.d-interactive {')[1]?.split('}')[0] ?? '';
+    expect(interactiveBlock).toContain('calc(var(--d-interactive-py) * var(--d-density-scale, 1))');
+  });
+
+  it('uses density-scale in d-control vertical padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const controlBlock = css.split('.d-control {')[1]?.split('}')[0] ?? '';
+    expect(controlBlock).toContain('calc(var(--d-control-py) * var(--d-density-scale, 1))');
+  });
+
+  it('uses density-scale in d-data-header vertical padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const headerBlock = css.split('.d-data-header {')[1]?.split('}')[0] ?? '';
+    expect(headerBlock).toContain('calc(var(--d-data-py) * var(--d-density-scale, 1))');
+  });
+
+  it('uses density-scale in d-data-cell vertical padding', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const cellBlock = css.split('.d-data-cell {')[1]?.split('}')[0] ?? '';
+    expect(cellBlock).toContain('calc(var(--d-data-py) * var(--d-density-scale, 1))');
+  });
+
+  it('includes density-aware margin-top on d-annotation', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const annotationBlock = css.split('.d-annotation {')[1]?.split('}')[0] ?? '';
+    expect(annotationBlock).toContain('calc(var(--d-annotation-mt) * var(--d-density-scale, 1))');
   });
 
   // ── 11. Theme treatment overrides ──
@@ -220,15 +301,41 @@ describe('generateTreatmentCSS', () => {
 
   // ── d-label utility ──
 
-  it('includes d-label utility class', () => {
+  it('includes d-label utility class with spatial contract', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).toContain('.d-label');
+    // Visual contract
     expect(css).toContain('font-size: 0.7rem');
     expect(css).toContain('font-weight: 600');
     expect(css).toContain('text-transform: uppercase');
     expect(css).toContain('letter-spacing: 0.08em');
     expect(css).toContain('color: var(--d-text-muted)');
     expect(css).toContain('font-family: var(--d-font-mono, ui-monospace, monospace)');
+    // Spatial contract
+    expect(css).toContain('display: block');
+    expect(css).toContain('var(--d-label-mb)');
+  });
+
+  // ── d-label spatial contract ──
+
+  it('includes display: block on d-label', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const labelBlock = css.split('.d-label {')[1]?.split('}')[0] ?? '';
+    expect(labelBlock).toContain('display: block');
+  });
+
+  it('includes density-aware margin-bottom on d-label', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const labelBlock = css.split('.d-label {')[1]?.split('}')[0] ?? '';
+    expect(labelBlock).toContain('calc(var(--d-label-mb) * var(--d-density-scale, 1))');
+  });
+
+  it('includes d-label[data-anchor] variant with accent border', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    expect(css).toContain('.d-label[data-anchor]');
+    const anchorBlock = css.split('.d-label[data-anchor] {')[1]?.split('}')[0] ?? '';
+    expect(anchorBlock).toContain('padding-left: var(--d-label-px)');
+    expect(anchorBlock).toContain('border-left: 2px solid var(--d-accent)');
   });
 
   // ── Override stacking with pseudo-selectors ──

@@ -1,173 +1,123 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { css } from '@decantr/css';
-import { Hexagon, Search, Menu, X, Sun, Moon } from 'lucide-react';
-import { useState } from 'react';
-import { useAuth } from '../App';
-import { useTheme } from '../hooks/useTheme';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 
-export function TopNavMain() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+interface Props {
+  onThemeToggle: () => void;
+  themeMode: 'dark' | 'light';
+  isAuthenticated: boolean;
+  onLogout: () => void;
+}
+
+export default function TopNavMain({ onThemeToggle, themeMode, isAuthenticated, onLogout }: Props) {
   const navigate = useNavigate();
-  const { theme, toggle: toggleTheme } = useTheme();
 
   return (
-    <div className={css('_flex _col')} style={{ minHeight: '100vh' }}>
-      {/* Header — sticky, 52px, border-bottom */}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* Header — 52px sticky nav */}
       <header
-        className={css('_flex _aic _jcsb _shrink0')}
         style={{
           height: 52,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           padding: '0 1.5rem',
           borderBottom: '1px solid var(--d-border)',
           background: 'var(--d-bg)',
           position: 'sticky',
           top: 0,
-          zIndex: 10,
+          zIndex: 40,
+          flexShrink: 0,
         }}
       >
-        <Link to="/" className={css('_flex _aic _gap2')} style={{ textDecoration: 'none', color: 'var(--d-text)' }}>
-          <Hexagon size={20} style={{ color: 'var(--d-accent)' }} />
-          <span className={css('_fontsemi _textlg') + ' lum-brand'}>decantr</span>
-        </Link>
+        {/* Left: Brand */}
+        <NavLink to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span className="lum-brand" style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--d-text)' }}>
+            decantr<span className="brand-dot">.</span>
+          </span>
+        </NavLink>
 
-        {/* Desktop nav */}
-        <nav className={css('_flex _aic _gap6')} style={{ display: 'var(--nav-display, flex)' }}>
-          <a href="#/browse" className={css('_textsm _fontmedium')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none', transition: 'color 150ms' }}>Browse</a>
-          <a href="#/explore" className={css('_textsm _fontmedium')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none', transition: 'color 150ms' }}>Explore</a>
-          <a href="#/pricing" className={css('_textsm _fontmedium')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none', transition: 'color 150ms' }}>Pricing</a>
+        {/* Center: Nav links */}
+        <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+          <NavLink to="/" end style={navLinkStyle}>Home</NavLink>
+          <NavLink to="/browse" style={navLinkStyle}>Browse</NavLink>
+          {isAuthenticated && <NavLink to="/dashboard" style={navLinkStyle}>Dashboard</NavLink>}
         </nav>
 
-        <div className={css('_flex _aic _gap2')}>
+        {/* Right: Theme toggle + auth */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <button
+            onClick={onThemeToggle}
             className="d-interactive"
             data-variant="ghost"
-            onClick={toggleTheme}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            style={{ padding: '0.375rem' }}
+            style={{ padding: '0.375rem 0.5rem', fontSize: '0.875rem', border: 'none' }}
+            aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-          <button
-            className="d-interactive"
-            data-variant="ghost"
-            style={{ gap: '0.5rem', fontSize: '0.8125rem', color: 'var(--d-text-muted)', padding: '0.375rem' }}
-            aria-label="Search"
-          >
-            <Search size={16} />
+            {themeMode === 'dark' ? '☀️' : '🌙'}
           </button>
           {isAuthenticated ? (
-            <button className="d-interactive" data-variant="primary" onClick={() => navigate('/dashboard')} style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}>Dashboard</button>
-          ) : (
             <>
-              <button className="d-interactive" data-variant="ghost" onClick={() => navigate('/login')} style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}>Log in</button>
-              <button className="d-interactive" data-variant="primary" onClick={() => navigate('/register')} style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}>Sign up</button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="d-interactive"
+                style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                data-variant="ghost"
+              >
+                <span style={{
+                  width: 24, height: 24, borderRadius: '50%', background: 'var(--d-primary)',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.6875rem', color: '#fff', fontWeight: 600,
+                }}>YO</span>
+              </button>
+              <button
+                onClick={onLogout}
+                className="d-interactive"
+                data-variant="ghost"
+                style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+              >
+                Sign out
+              </button>
             </>
+          ) : (
+            <button
+              onClick={() => navigate('/login')}
+              className="d-interactive"
+              data-variant="primary"
+              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+            >
+              Sign in
+            </button>
           )}
-          <button
-            className={css('_none') + ' d-interactive mobile-menu-btn'}
-            data-variant="ghost"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-expanded={menuOpen}
-            aria-label="Toggle navigation menu"
-          >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
         </div>
       </header>
 
-      {/* Mobile menu overlay */}
-      {menuOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 52,
-            right: 0,
-            bottom: 0,
-            width: 280,
-            zIndex: 20,
-            padding: '1.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-            background: 'var(--d-surface)',
-            borderLeft: '1px solid var(--d-border)',
-          }}
-        >
-          <a href="#/browse" className="d-interactive" data-variant="ghost" onClick={() => setMenuOpen(false)} style={{ width: '100%', justifyContent: 'flex-start', textDecoration: 'none' }}>Browse</a>
-          <a href="#/explore" className="d-interactive" data-variant="ghost" onClick={() => setMenuOpen(false)} style={{ width: '100%', justifyContent: 'flex-start', textDecoration: 'none' }}>Explore</a>
-          <a href="#/pricing" className="d-interactive" data-variant="ghost" onClick={() => setMenuOpen(false)} style={{ width: '100%', justifyContent: 'flex-start', textDecoration: 'none' }}>Pricing</a>
-          <hr style={{ border: 'none', borderTop: '1px solid var(--d-border)', margin: '0.5rem 0' }} />
-          {isAuthenticated ? (
-            <button className="d-interactive" data-variant="primary" onClick={() => { navigate('/dashboard'); setMenuOpen(false); }} style={{ width: '100%' }}>Dashboard</button>
-          ) : (
-            <>
-              <button className="d-interactive" data-variant="ghost" onClick={() => { navigate('/login'); setMenuOpen(false); }} style={{ width: '100%' }}>Log in</button>
-              <button className="d-interactive" data-variant="primary" onClick={() => { navigate('/register'); setMenuOpen(false); }} style={{ width: '100%' }}>Sign up</button>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Body — flex:1, no padding (sections own their spacing) */}
-      <main style={{ flex: 1, overflowY: 'auto' }}>
-        <Outlet />
-      </main>
-
-      {/* Footer */}
-      <footer
+      {/* Body — scrollable main content */}
+      <main
+        className="lum-canvas"
         style={{
-          borderTop: '1px solid var(--d-border)',
-          padding: '2rem 1.5rem',
-          marginTop: 'auto',
+          flex: 1,
+          overflowY: 'auto',
+          padding: '1.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+          position: 'relative',
         }}
       >
-        <div className={css('_flex _jcsb _wrap _gap8')} style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className={css('_flex _col _gap2')}>
-            <div className={css('_flex _aic _gap2')}>
-              <Hexagon size={16} style={{ color: 'var(--d-accent)' }} />
-              <span className={css('_fontsemi') + ' lum-brand'}>decantr</span>
-            </div>
-            <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)', maxWidth: 280 }}>
-              Design Intelligence API for AI-native applications.
-            </p>
-          </div>
-          <div className={css('_flex _gap12 _wrap')}>
-            <div className={css('_flex _col _gap2')}>
-              <span className="d-label">Registry</span>
-              <a href="#/browse" className={css('_textsm')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none' }}>Browse</a>
-              <a href="#/explore" className={css('_textsm')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none' }}>Explore</a>
-              <a href="#/pricing" className={css('_textsm')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none' }}>Pricing</a>
-            </div>
-            <div className={css('_flex _col _gap2')}>
-              <span className="d-label">Resources</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Documentation</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>API Reference</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Changelog</span>
-            </div>
-            <div className={css('_flex _col _gap2')}>
-              <span className="d-label">Company</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>About</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Blog</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Careers</span>
-            </div>
-          </div>
+        <div className="entrance-fade" style={{ position: 'relative', zIndex: 1, flex: 1 }}>
+          <Outlet />
         </div>
-        <div style={{ borderTop: '1px solid var(--d-border)', margin: '1.5rem 0' }}></div>
-        <p className={css('_textsm _textc')} style={{ color: 'var(--d-text-muted)' }}>
-          &copy; 2026 Decantr. All rights reserved.
-        </p>
-      </footer>
-
-      <style>{`
-        @media (min-width: 768px) {
-          .mobile-menu-btn { display: none !important; }
-        }
-        @media (max-width: 767px) {
-          nav { display: none !important; }
-          .mobile-menu-btn { display: inline-flex !important; }
-        }
-      `}</style>
+      </main>
     </div>
   );
+}
+
+function navLinkStyle({ isActive }: { isActive: boolean }) {
+  return {
+    fontSize: '0.875rem',
+    fontWeight: isActive ? 600 : 500,
+    color: isActive ? 'var(--d-primary)' : 'var(--d-text-muted)',
+    textDecoration: isActive ? 'none' : 'none',
+    borderBottom: isActive ? '2px solid var(--d-primary)' : '2px solid transparent',
+    paddingBottom: '2px',
+    transition: 'color 0.15s ease, border-color 0.15s ease',
+  };
 }

@@ -38,20 +38,9 @@
   --d-data-py: 0.625rem;
   --d-control-py: 0.5rem;
   --d-content-gap: 1rem;
-}
-
-html.light {
-  color-scheme: light;
-  --d-bg: #FAFAF9;
-  --d-surface: #FFFFFF;
-  --d-surface-raised: #F5F5F4;
-  --d-border: #E4E4E7;
-  --d-text: #18181B;
-  --d-text-muted: #71717A;
-  --d-primary-hover: #E03A66;
-  --d-shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
-  --d-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  --d-shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --d-shadow-lg: 0 10px 15px rgba(0,0,0,0.12);
+  --d-label-mb: 0.75rem;
+  --d-label-px: 0.75rem;
+  --d-section-gap: 1.5rem;
+  --d-annotation-mt: 0.5rem;
 }
 }

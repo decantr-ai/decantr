@@ -14,29 +14,29 @@
   - Patterns: content-detail-hero, json-viewer
 - **profile** (top-nav-main)
   - Patterns: detail-header, content-card-grid, activity-feed
-- **user-dashboard-overview** (top-nav-main)
+- **overview** (sidebar-main)
   - Patterns: kpi-grid, reputation-badge, activity-feed
-- **user-dashboard-content** (top-nav-main)
+- **content** (sidebar-main)
   - Patterns: content-card-grid
-- **user-dashboard-content-new** (top-nav-main)
+- **content-new** (sidebar-main)
   - Patterns: form, json-viewer
-- **user-dashboard-api-keys** (top-nav-main)
+- **api-keys** (sidebar-main)
   - Patterns: api-key-row
-- **user-dashboard-settings** (top-nav-main)
+- **settings** (sidebar-main)
   - Patterns: account-settings
-- **user-dashboard-billing** (top-nav-main)
+- **billing** (sidebar-main)
   - Patterns: tier-upgrade-card, kpi-grid
-- **user-dashboard-team** (top-nav-main)
+- **team** (sidebar-main)
   - Patterns: kpi-grid, team-member-row
-- **admin-moderation-moderation-queue** (top-nav-main)
+- **moderation-queue** (sidebar-main)
   - Patterns: search-filter-bar, moderation-queue-item
-- **admin-moderation-moderation-detail** (top-nav-main)
+- **moderation-detail** (sidebar-main)
   - Patterns: content-detail-hero, json-viewer, moderation-queue-item
-- **auth-login** (top-nav-main)
+- **login** (centered)
   - Patterns: auth-form
-- **auth-register** (top-nav-main)
+- **register** (centered)
   - Patterns: auth-form (register)
-- **auth-forgot-password** (top-nav-main)
+- **forgot-password** (centered)
   - Patterns: auth-form (reset)
 
 Post-scaffold enforcement mode: **strict**.

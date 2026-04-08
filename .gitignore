@@ -5,6 +5,7 @@ dist/
 .worktrees
 .worktrees/
 .claude/
+.claude/*
 docs/superpowers/
 # Decantr test artifacts
 packages/cli/decantr.essence.json

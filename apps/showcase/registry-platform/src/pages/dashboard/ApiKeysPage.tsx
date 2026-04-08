@@ -1,55 +1,121 @@
-import { css } from '@decantr/css';
-import { Plus, Key } from 'lucide-react';
-import { ApiKeyRow } from '@/components/ApiKeyRow';
-import { API_KEYS } from '@/data/mock';
+import { useState, useCallback } from 'react';
+import ApiKeyRow from '../../components/ApiKeyRow';
+import { apiKeys as initialKeys } from '../../data/mock';
 
-export function ApiKeysPage() {
+export default function ApiKeysPage() {
+  const [keys, setKeys] = useState(initialKeys);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('');
+
+  const handleRevoke = useCallback((id: string) => {
+    setKeys((prev) => prev.filter((k) => k.id !== id));
+  }, []);
+
+  const handleCreate = useCallback(() => {
+    if (!newKeyName.trim()) return;
+    const id = String(Date.now());
+    setKeys((prev) => [
+      ...prev,
+      {
+        id,
+        name: newKeyName.trim(),
+        maskedKey: `sk-****...${id.slice(-4)}`,
+        fullKey: `sk-new-${id}`,
+        scopes: ['read'],
+        createdAt: new Date().toISOString().split('T')[0] ?? '',
+        lastUsed: 'never',
+      },
+    ]);
+    setNewKeyName('');
+    setShowCreate(false);
+  }, [newKeyName]);
+
   return (
-    <div className={css('_flex _col _gap6')}>
-      {/* Header row */}
-      <div className={css('_flex _aic _jcsb')}>
-        <h3 className={css('_textlg _fontsemi')}>API Keys</h3>
-        <button className="d-interactive" data-variant="primary" style={{ fontSize: '0.875rem' }}>
-          <Plus size={16} />
-          Generate New Key
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="d-label" data-anchor="">
+        API Keys
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>API Keys</h2>
+        <button
+          type="button"
+          className="d-interactive"
+          data-variant="primary"
+          onClick={() => setShowCreate((v) => !v)}
+          style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+        >
+          New API Key
         </button>
       </div>
 
-      {/* Table */}
-      <section className="d-section" data-density="compact">
-        {API_KEYS.length > 0 ? (
-          <div className="d-data" role="table">
-            {/* Header row */}
-            <div
-              className={css('_grid _aic')}
-              style={{ gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1fr 0.75fr' }}
-              role="row"
-            >
-              <span className="d-data-header" role="columnheader">Name</span>
-              <span className="d-data-header" role="columnheader">Key</span>
-              <span className="d-data-header" role="columnheader">Scopes</span>
-              <span className="d-data-header" role="columnheader">Created</span>
-              <span className="d-data-header" role="columnheader">Last Used</span>
-              <span className="d-data-header" role="columnheader">Actions</span>
-            </div>
+      {showCreate && (
+        <div
+          className="d-surface"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '1rem',
+          }}
+        >
+          <input
+            type="text"
+            className="d-control"
+            value={newKeyName}
+            onChange={(e) => setNewKeyName(e.target.value)}
+            placeholder="Key name (e.g. Staging)"
+            style={{ flex: 1, maxWidth: '320px' }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleCreate();
+            }}
+          />
+          <button
+            type="button"
+            className="d-interactive"
+            data-variant="primary"
+            onClick={handleCreate}
+            style={{ fontSize: '0.8125rem', padding: '0.375rem 0.875rem' }}
+          >
+            Create
+          </button>
+          <button
+            type="button"
+            className="d-interactive"
+            data-variant="ghost"
+            onClick={() => setShowCreate(false)}
+            style={{ fontSize: '0.8125rem', padding: '0.375rem 0.875rem' }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
 
-            {/* Data rows */}
-            {API_KEYS.map((apiKey) => (
-              <ApiKeyRow key={apiKey.id} apiKey={apiKey} />
-            ))}
-          </div>
-        ) : (
-          <div className={css('_flex _col _aic _jcc _gap3')} style={{ padding: '3rem 0' }}>
-            <Key size={48} style={{ color: 'var(--d-text-muted)', opacity: 0.5 }} />
-            <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-              No API keys yet.
-            </p>
-            <button className="d-interactive" data-variant="primary" style={{ fontSize: '0.875rem' }}>
-              Generate Your First Key
-            </button>
+      <div
+        className="d-surface"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 0,
+          overflow: 'hidden',
+        }}
+      >
+        {keys.map((key) => (
+          <ApiKeyRow key={key.id} apiKey={key} onRevoke={handleRevoke} />
+        ))}
+        {keys.length === 0 && (
+          <div
+            style={{
+              padding: '2rem',
+              textAlign: 'center',
+              color: 'var(--d-text-muted)',
+              fontSize: '0.875rem',
+            }}
+          >
+            No API keys yet. Create one to get started.
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 }

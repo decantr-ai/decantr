@@ -1,10 +1,8 @@
-// Centralized mock data for the registry-platform showcase
-
-export type ContentType = 'pattern' | 'theme' | 'blueprint' | 'shell' | 'archetype';
+// Mock data for the registry platform showcase
 
 export interface ContentItem {
   id: string;
-  type: ContentType;
+  type: 'pattern' | 'theme' | 'blueprint' | 'shell' | 'archetype';
   name: string;
   slug: string;
   namespace: string;
@@ -13,10 +11,9 @@ export interface ContentItem {
   downloads: number;
   updatedAt: string;
   author: string;
-  tags?: string[];
 }
 
-export interface KPIStat {
+export interface KPI {
   label: string;
   value: number;
   trend: number;
@@ -26,17 +23,18 @@ export interface KPIStat {
 export interface ActivityEvent {
   id: string;
   user: string;
-  avatar?: string;
+  initials: string;
   action: string;
-  target: string;
   timestamp: string;
-  type: 'publish' | 'update' | 'review' | 'download' | 'comment';
+  date: string;
+  dotColor: string;
 }
 
 export interface ApiKey {
   id: string;
   name: string;
-  key: string;
+  maskedKey: string;
+  fullKey: string;
   scopes: string[];
   createdAt: string;
   lastUsed: string;
@@ -48,198 +46,182 @@ export interface TeamMember {
   email: string;
   role: 'owner' | 'admin' | 'member';
   joinedAt: string;
-  avatar?: string;
+  initials: string;
 }
 
 export interface ModerationItem {
   id: string;
   content: ContentItem;
-  submitter: { name: string; email: string; reputation: number; level: string };
+  submitter: { name: string; initials: string; reputation: number; level: string };
   submittedAt: string;
   status: 'pending' | 'approved' | 'rejected';
-  notes?: string;
+  notes: string;
 }
 
-// ── Content items ──
-export const CONTENT_ITEMS: ContentItem[] = [
-  { id: '1', type: 'pattern', name: 'Hero Section', slug: 'hero', namespace: '@official', description: 'Full-width hero with headline, subtext, CTA buttons, and optional media.', version: '2.1.0', downloads: 12840, updatedAt: '2026-03-28', author: 'decantr', tags: ['landing', 'marketing'] },
-  { id: '2', type: 'pattern', name: 'Search Filter Bar', slug: 'search-filter-bar', namespace: '@official', description: 'Search input with type and namespace dropdown filters for browsing registry content.', version: '1.4.0', downloads: 9210, updatedAt: '2026-03-30', author: 'decantr', tags: ['search', 'filter'] },
-  { id: '3', type: 'theme', name: 'Luminarum', slug: 'luminarum', namespace: '@official', description: 'Vibrant dark theme with warm coral and amber accents. Pill-shaped elements.', version: '3.0.0', downloads: 18500, updatedAt: '2026-04-01', author: 'decantr', tags: ['dark', 'vibrant'] },
-  { id: '4', type: 'blueprint', name: 'Registry Platform', slug: 'registry-platform', namespace: '@official', description: 'Complete design registry with browsing, publishing, API keys, and admin moderation.', version: '1.0.0', downloads: 3420, updatedAt: '2026-04-02', author: 'decantr', tags: ['registry', 'platform'] },
-  { id: '5', type: 'pattern', name: 'Content Card Grid', slug: 'content-card-grid', namespace: '@official', description: 'Responsive grid of registry content cards with type badges and quick actions.', version: '1.2.0', downloads: 7650, updatedAt: '2026-03-25', author: 'decantr', tags: ['grid', 'cards'] },
-  { id: '6', type: 'shell', name: 'Sidebar Main', slug: 'sidebar-main', namespace: '@official', description: 'Collapsible sidebar with header bar and scrollable main content area.', version: '1.1.0', downloads: 11200, updatedAt: '2026-03-20', author: 'decantr', tags: ['dashboard', 'sidebar'] },
-  { id: '7', type: 'theme', name: 'Carbon Neon', slug: 'carbon-neon', namespace: '@official', description: 'High-contrast dark theme with neon green accents and glassmorphic surfaces.', version: '2.5.0', downloads: 15300, updatedAt: '2026-03-22', author: 'decantr', tags: ['dark', 'neon'] },
-  { id: '8', type: 'pattern', name: 'KPI Grid', slug: 'kpi-grid', namespace: '@official', description: 'Grid of key performance indicator cards with metrics, trends, and sparklines.', version: '1.3.0', downloads: 6800, updatedAt: '2026-03-18', author: 'decantr', tags: ['dashboard', 'metrics'] },
-  { id: '9', type: 'blueprint', name: 'Agent Marketplace', slug: 'agent-marketplace', namespace: '@official', description: 'AI agent deployment platform with marketplace, monitoring, and transparency views.', version: '1.2.0', downloads: 4100, updatedAt: '2026-03-15', author: 'decantr', tags: ['ai', 'agents'] },
-  { id: '10', type: 'archetype', name: 'SaaS Dashboard', slug: 'saas-dashboard', namespace: '@official', description: 'Full-featured SaaS dashboard with analytics, user management, and settings.', version: '2.0.0', downloads: 8900, updatedAt: '2026-03-28', author: 'decantr', tags: ['saas', 'dashboard'] },
-  { id: '11', type: 'pattern', name: 'Auth Form', slug: 'auth-form', namespace: '@official', description: 'Unified authentication form with login, register, forgot-password, and MFA presets.', version: '1.5.0', downloads: 14200, updatedAt: '2026-04-01', author: 'decantr', tags: ['auth', 'form'] },
-  { id: '12', type: 'pattern', name: 'Activity Feed', slug: 'activity-feed', namespace: '@official', description: 'Chronological list of activity events with avatars, timestamps, and actions.', version: '1.1.0', downloads: 5300, updatedAt: '2026-03-12', author: 'decantr', tags: ['feed', 'timeline'] },
-  { id: '13', type: 'shell', name: 'Top Nav Main', slug: 'top-nav-main', namespace: '@official', description: 'Horizontal navigation bar with full-width main content below.', version: '1.0.0', downloads: 10800, updatedAt: '2026-03-10', author: 'decantr', tags: ['nav', 'public'] },
-  { id: '14', type: 'theme', name: 'Terminal Glow', slug: 'terminal-glow', namespace: '@community', description: 'Retro terminal aesthetic with phosphor green on deep black. Monospace everything.', version: '1.0.0', downloads: 2100, updatedAt: '2026-03-08', author: 'alex_dev', tags: ['retro', 'terminal'] },
-  { id: '15', type: 'pattern', name: 'JSON Viewer', slug: 'json-viewer', namespace: '@official', description: 'Collapsible JSON viewer with syntax highlighting and copy-to-clipboard.', version: '1.2.0', downloads: 4500, updatedAt: '2026-03-05', author: 'decantr', tags: ['code', 'json'] },
-  { id: '16', type: 'blueprint', name: 'Portfolio Starter', slug: 'portfolio-starter', namespace: '@community', description: 'Minimal portfolio with project showcase, about section, and contact form.', version: '1.1.0', downloads: 6700, updatedAt: '2026-03-01', author: 'maria_ui', tags: ['portfolio', 'personal'] },
-  { id: '17', type: 'pattern', name: 'Tier Upgrade Card', slug: 'tier-upgrade-card', namespace: '@official', description: 'Pricing tier card with plan name, feature list, and upgrade CTA.', version: '1.0.0', downloads: 3200, updatedAt: '2026-02-28', author: 'decantr', tags: ['pricing', 'billing'] },
-  { id: '18', type: 'pattern', name: 'Team Member Row', slug: 'team-member-row', namespace: '@official', description: 'Team member display row with avatar, name, role badge, and management actions.', version: '1.0.0', downloads: 2800, updatedAt: '2026-02-25', author: 'decantr', tags: ['team', 'settings'] },
+export interface TierPlan {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  features: string[];
+  popular: boolean;
+  current: boolean;
+}
+
+const TYPE_COLORS: Record<string, string> = {
+  pattern: '#F58882',
+  theme: '#FDA303',
+  blueprint: '#0AF3EB',
+  shell: '#00E0AB',
+  archetype: '#6500C6',
+};
+
+export function getTypeColor(type: string): string {
+  return TYPE_COLORS[type] ?? '#A1A1AA';
+}
+
+export const contentItems: ContentItem[] = [
+  { id: '1', type: 'pattern', name: 'Hero Section', slug: 'hero-section', namespace: '@official', description: 'Full-width hero with headline, subtext, and CTA buttons. Supports background image and gradient overlays.', version: '2.1.0', downloads: 12847, updatedAt: '2026-04-01', author: 'decantr' },
+  { id: '2', type: 'pattern', name: 'Search Filter Bar', slug: 'search-filter-bar', namespace: '@official', description: 'Search input with type and namespace dropdown filters for browsing registry content.', version: '1.8.0', downloads: 9432, updatedAt: '2026-03-28', author: 'decantr' },
+  { id: '3', type: 'theme', name: 'Luminarum', slug: 'luminarum', namespace: '@official', description: 'Warm coral and amber accents on rich dark canvas. Vibrant yet refined.', version: '3.0.0', downloads: 18291, updatedAt: '2026-04-05', author: 'decantr' },
+  { id: '4', type: 'blueprint', name: 'SaaS Dashboard', slug: 'saas-dashboard', namespace: '@official', description: 'Complete SaaS admin dashboard with analytics, user management, and billing.', version: '1.5.0', downloads: 7623, updatedAt: '2026-03-30', author: 'decantr' },
+  { id: '5', type: 'shell', name: 'Sidebar Main', slug: 'sidebar-main', namespace: '@official', description: 'Collapsible sidebar with header bar and scrollable main content area.', version: '2.0.0', downloads: 14102, updatedAt: '2026-04-02', author: 'decantr' },
+  { id: '6', type: 'pattern', name: 'Content Card Grid', slug: 'content-card-grid', namespace: '@official', description: 'Responsive grid of content cards with type badges, metadata, and quick actions.', version: '1.6.0', downloads: 11205, updatedAt: '2026-03-25', author: 'decantr' },
+  { id: '7', type: 'theme', name: 'Carbon', slug: 'carbon', namespace: '@official', description: 'Deep charcoal surfaces with electric blue accents. Designed for data-heavy interfaces.', version: '2.4.0', downloads: 15678, updatedAt: '2026-04-03', author: 'decantr' },
+  { id: '8', type: 'pattern', name: 'KPI Grid', slug: 'kpi-grid', namespace: '@official', description: 'Grid of key performance indicator cards with trend indicators and sparklines.', version: '1.3.0', downloads: 8901, updatedAt: '2026-03-20', author: 'decantr' },
+  { id: '9', type: 'blueprint', name: 'Registry Platform', slug: 'registry-platform', namespace: '@official', description: 'Design registry with browsing, publishing, and moderation workflows.', version: '1.0.0', downloads: 3421, updatedAt: '2026-04-06', author: 'decantr' },
+  { id: '10', type: 'archetype', name: 'Auth Flow', slug: 'auth-flow', namespace: '@official', description: 'Login, registration, and password recovery with OAuth support.', version: '2.2.0', downloads: 6789, updatedAt: '2026-03-22', author: 'decantr' },
+  { id: '11', type: 'pattern', name: 'Activity Feed', slug: 'activity-feed', namespace: '@community', description: 'Chronological timeline of events with avatars and timestamps.', version: '1.1.0', downloads: 4523, updatedAt: '2026-03-18', author: 'sarah_dev' },
+  { id: '12', type: 'pattern', name: 'JSON Viewer', slug: 'json-viewer', namespace: '@community', description: 'Collapsible JSON viewer with syntax highlighting and copy-to-clipboard.', version: '1.4.0', downloads: 5678, updatedAt: '2026-03-15', author: 'alex_code' },
 ];
 
-// ── Registry KPIs ──
-export const REGISTRY_KPIS: KPIStat[] = [
-  { label: 'Total Items', value: 116, trend: 12.5, icon: 'Package' },
-  { label: 'Downloads (30d)', value: 48200, trend: 8.3, icon: 'Download' },
-  { label: 'Contributors', value: 34, trend: 15.0, icon: 'Users' },
-  { label: 'Themes', value: 20, trend: 5.0, icon: 'Palette' },
+export const registryKPIs: KPI[] = [
+  { label: 'Total Patterns', value: 116, trend: 12.5, icon: 'grid' },
+  { label: 'Active Themes', value: 20, trend: 5.0, icon: 'palette' },
+  { label: 'Blueprints', value: 19, trend: 8.3, icon: 'layout' },
+  { label: 'Total Downloads', value: 142891, trend: 23.7, icon: 'download' },
 ];
 
-// ── Dashboard KPIs ──
-export const DASHBOARD_KPIS: KPIStat[] = [
-  { label: 'Published Items', value: 12, trend: 20.0, icon: 'Package' },
-  { label: 'Total Downloads', value: 8420, trend: 14.2, icon: 'Download' },
-  { label: 'API Calls (30d)', value: 15600, trend: -3.1, icon: 'Activity' },
-  { label: 'Reputation', value: 142, trend: 8.5, icon: 'Star' },
+export const dashboardKPIs: KPI[] = [
+  { label: 'Published Items', value: 14, trend: 16.7, icon: 'package' },
+  { label: 'Total Downloads', value: 34521, trend: 12.3, icon: 'download' },
+  { label: 'API Calls (30d)', value: 8943, trend: -3.2, icon: 'activity' },
+  { label: 'Reputation Score', value: 187, trend: 8.1, icon: 'star' },
 ];
 
-// ── Billing KPIs ──
-export const BILLING_KPIS: KPIStat[] = [
-  { label: 'Current Plan', value: 29, trend: 0, icon: 'CreditCard' },
-  { label: 'API Usage', value: 78, trend: 12.0, icon: 'Activity' },
-  { label: 'Storage Used', value: 64, trend: 5.0, icon: 'HardDrive' },
-  { label: 'Team Seats', value: 3, trend: 0, icon: 'Users' },
+export const billingKPIs: KPI[] = [
+  { label: 'Current Spend', value: 29, trend: 0, icon: 'dollar' },
+  { label: 'API Calls', value: 8943, trend: 12.3, icon: 'activity' },
+  { label: 'Storage Used', value: 2.4, trend: 5.1, icon: 'database' },
+  { label: 'Team Members', value: 4, trend: 0, icon: 'users' },
 ];
 
-// ── Team KPIs ──
-export const TEAM_KPIS: KPIStat[] = [
-  { label: 'Members', value: 5, trend: 25.0, icon: 'Users' },
-  { label: 'Active This Week', value: 4, trend: 0, icon: 'Activity' },
-  { label: 'Items Published', value: 23, trend: 10.0, icon: 'Package' },
-  { label: 'Pending Invites', value: 2, trend: 0, icon: 'Mail' },
+export const teamKPIs: KPI[] = [
+  { label: 'Team Members', value: 4, trend: 0, icon: 'users' },
+  { label: 'Pending Invites', value: 2, trend: 100, icon: 'mail' },
+  { label: 'Active This Week', value: 3, trend: -25, icon: 'activity' },
+  { label: 'Items Published', value: 14, trend: 16.7, icon: 'package' },
 ];
 
-// ── Activity events ──
-export const ACTIVITY_EVENTS: ActivityEvent[] = [
-  { id: '1', user: 'Sarah Chen', action: 'published', target: 'hero pattern v2.1.0', timestamp: '2h ago', type: 'publish' },
-  { id: '2', user: 'Alex Rivera', action: 'updated', target: 'carbon-neon theme', timestamp: '4h ago', type: 'update' },
-  { id: '3', user: 'Jordan Park', action: 'reviewed', target: 'sidebar-main shell', timestamp: '6h ago', type: 'review' },
-  { id: '4', user: 'You', action: 'published', target: 'search-filter-bar v1.4.0', timestamp: '1d ago', type: 'publish' },
-  { id: '5', user: 'Maria Santos', action: 'downloaded', target: 'luminarum theme', timestamp: '1d ago', type: 'download' },
-  { id: '6', user: 'Sam Wilson', action: 'commented on', target: 'auth-form pattern', timestamp: '2d ago', type: 'comment' },
-  { id: '7', user: 'You', action: 'updated', target: 'kpi-grid v1.3.0', timestamp: '3d ago', type: 'update' },
-  { id: '8', user: 'Lin Zhang', action: 'published', target: 'terminal-glow theme', timestamp: '3d ago', type: 'publish' },
+export const recentActivity: ActivityEvent[] = [
+  { id: '1', user: 'You', initials: 'YO', action: 'published pattern hero-section v2.1.0', timestamp: '2h ago', date: 'Today', dotColor: '#00E0AB' },
+  { id: '2', user: 'Sarah Chen', initials: 'SC', action: 'forked blueprint saas-dashboard', timestamp: '4h ago', date: 'Today', dotColor: '#0AF3EB' },
+  { id: '3', user: 'You', initials: 'YO', action: 'updated theme luminarum to v3.0.0', timestamp: '6h ago', date: 'Today', dotColor: '#FDA303' },
+  { id: '4', user: 'Alex Rivera', initials: 'AR', action: 'downloaded pattern search-filter-bar', timestamp: '8h ago', date: 'Today', dotColor: '#FE4474' },
+  { id: '5', user: 'You', initials: 'YO', action: 'created API key "CI Pipeline"', timestamp: '1d ago', date: 'Yesterday', dotColor: '#6500C6' },
+  { id: '6', user: 'Jordan Kim', initials: 'JK', action: 'submitted pattern nav-sidebar for review', timestamp: '1d ago', date: 'Yesterday', dotColor: '#FDA303' },
+  { id: '7', user: 'You', initials: 'YO', action: 'approved pattern activity-feed v1.1.0', timestamp: '2d ago', date: '2026-04-06', dotColor: '#00E0AB' },
 ];
 
-// ── API Keys ──
-export const API_KEYS: ApiKey[] = [
-  { id: '1', name: 'Production', key: 'sk-prod-****...3f2a', scopes: ['read', 'write'], createdAt: '2026-01-15', lastUsed: '2h ago' },
-  { id: '2', name: 'CI/CD Pipeline', key: 'sk-ci-****...8b1c', scopes: ['read'], createdAt: '2026-02-20', lastUsed: '1d ago' },
-  { id: '3', name: 'Development', key: 'sk-dev-****...5e4d', scopes: ['read', 'write', 'admin'], createdAt: '2026-03-01', lastUsed: '5m ago' },
+export const apiKeys: ApiKey[] = [
+  { id: '1', name: 'Production API', maskedKey: 'sk-****...8f3a', fullKey: 'sk-prod-a1b2c3d4e5f6g7h8f3a', scopes: ['read', 'write'], createdAt: '2026-01-15', lastUsed: '2h ago' },
+  { id: '2', name: 'CI Pipeline', maskedKey: 'sk-****...2d7e', fullKey: 'sk-ci-z9y8x7w6v5u4t3s2d7e', scopes: ['read'], createdAt: '2026-03-01', lastUsed: '1d ago' },
+  { id: '3', name: 'Local Development', maskedKey: 'sk-****...9b1c', fullKey: 'sk-dev-m1n2o3p4q5r6s7t9b1c', scopes: ['read', 'write', 'admin'], createdAt: '2026-02-20', lastUsed: '5m ago' },
 ];
 
-// ── Team Members ──
-export const TEAM_MEMBERS: TeamMember[] = [
-  { id: '1', name: 'You', email: 'you@decantr.dev', role: 'owner', joinedAt: '2025-06-01' },
-  { id: '2', name: 'Sarah Chen', email: 'sarah@decantr.dev', role: 'admin', joinedAt: '2025-09-15' },
-  { id: '3', name: 'Alex Rivera', email: 'alex@decantr.dev', role: 'member', joinedAt: '2025-11-20' },
-  { id: '4', name: 'Jordan Park', email: 'jordan@decantr.dev', role: 'member', joinedAt: '2026-01-10' },
-  { id: '5', name: 'Lin Zhang', email: 'lin@decantr.dev', role: 'member', joinedAt: '2026-03-05' },
+export const teamMembers: TeamMember[] = [
+  { id: '1', name: 'You', email: 'you@decantr.ai', role: 'owner', joinedAt: '2025-11-01', initials: 'YO' },
+  { id: '2', name: 'Sarah Chen', email: 'sarah@decantr.ai', role: 'admin', joinedAt: '2025-12-15', initials: 'SC' },
+  { id: '3', name: 'Alex Rivera', email: 'alex@decantr.ai', role: 'member', joinedAt: '2026-01-20', initials: 'AR' },
+  { id: '4', name: 'Jordan Kim', email: 'jordan@decantr.ai', role: 'member', joinedAt: '2026-02-10', initials: 'JK' },
 ];
 
-// ── Moderation queue ──
-export const MODERATION_ITEMS: ModerationItem[] = [
+export const moderationQueue: ModerationItem[] = [
   {
     id: '1',
-    content: { id: 'm1', type: 'pattern', name: 'Data Table Pro', slug: 'data-table-pro', namespace: '@community', description: 'Advanced data table with sorting, filtering, pagination, and inline editing.', version: '1.0.0', downloads: 0, updatedAt: '2026-04-02', author: 'dev_marcus' },
-    submitter: { name: 'Marcus Johnson', email: 'marcus@dev.io', reputation: 45, level: 'Contributor' },
-    submittedAt: '2026-04-02',
+    content: { id: 'm1', type: 'pattern', name: 'Data Table Pro', slug: 'data-table-pro', namespace: '@community', description: 'Advanced data table with sorting, filtering, virtual scroll, and column resizing.', version: '1.0.0', downloads: 0, updatedAt: '2026-04-07', author: 'alex_code' },
+    submitter: { name: 'Alex Rivera', initials: 'AR', reputation: 87, level: 'Trusted' },
+    submittedAt: '3h ago',
     status: 'pending',
+    notes: '',
   },
   {
     id: '2',
-    content: { id: 'm2', type: 'theme', name: 'Ocean Breeze', slug: 'ocean-breeze', namespace: '@community', description: 'Calming blue palette with subtle wave-inspired gradients and soft shadows.', version: '1.0.0', downloads: 0, updatedAt: '2026-04-01', author: 'aria_design' },
-    submitter: { name: 'Aria Kim', email: 'aria@design.co', reputation: 128, level: 'Trusted' },
-    submittedAt: '2026-04-01',
+    content: { id: 'm2', type: 'theme', name: 'Midnight Bloom', slug: 'midnight-bloom', namespace: '@community', description: 'Deep purple palette with pink accent gradients. Feminine and modern.', version: '1.0.0', downloads: 0, updatedAt: '2026-04-06', author: 'jordan_designs' },
+    submitter: { name: 'Jordan Kim', initials: 'JK', reputation: 42, level: 'Contributor' },
+    submittedAt: '8h ago',
     status: 'pending',
+    notes: '',
   },
   {
     id: '3',
-    content: { id: 'm3', type: 'blueprint', name: 'E-commerce Starter', slug: 'ecommerce-starter', namespace: '@community', description: 'Complete e-commerce template with product listing, cart, checkout, and order management.', version: '0.9.0', downloads: 0, updatedAt: '2026-03-30', author: 'shop_dev' },
-    submitter: { name: 'Tom Baker', email: 'tom@shop.dev', reputation: 8, level: 'Newcomer' },
-    submittedAt: '2026-03-30',
+    content: { id: 'm3', type: 'pattern', name: 'Notification Center', slug: 'notification-center', namespace: '@community', description: 'Dropdown notification panel with read/unread states and action buttons.', version: '1.0.0', downloads: 0, updatedAt: '2026-04-05', author: 'new_dev_42' },
+    submitter: { name: 'New Developer', initials: 'ND', reputation: 5, level: 'Newcomer' },
+    submittedAt: '1d ago',
     status: 'pending',
-  },
-  {
-    id: '4',
-    content: { id: 'm4', type: 'pattern', name: 'Kanban Board', slug: 'kanban-board', namespace: '@community', description: 'Drag-and-drop kanban board with columns, cards, labels, and assignees.', version: '1.0.0', downloads: 0, updatedAt: '2026-03-29', author: 'pm_tools' },
-    submitter: { name: 'Nina Patel', email: 'nina@pm.tools', reputation: 210, level: 'Expert' },
-    submittedAt: '2026-03-29',
-    status: 'pending',
+    notes: '',
   },
 ];
 
-// ── Pricing tiers ──
-export const PRICING_TIERS = [
+export const tierPlans: TierPlan[] = [
   {
+    id: 'free',
     name: 'Free',
     price: 0,
-    description: 'For individuals exploring the registry.',
-    features: ['Browse all content', '100 API calls/month', '1 published item', 'Community support'],
+    description: 'For individuals exploring the registry',
+    features: ['Browse all content', '5 downloads/day', '1 API key', 'Community support'],
+    popular: false,
     current: false,
-    highlighted: false,
   },
   {
+    id: 'pro',
     name: 'Pro',
     price: 29,
-    description: 'For developers building with Decantr.',
-    features: ['Everything in Free', '10,000 API calls/month', 'Unlimited published items', 'API key management', 'Priority support', 'Custom namespaces'],
+    description: 'For developers building with Decantr',
+    features: ['Unlimited downloads', '10 API keys', 'Publish content', 'Priority support', 'Private namespaces'],
+    popular: true,
     current: true,
-    highlighted: true,
   },
   {
+    id: 'team',
     name: 'Team',
     price: 79,
-    description: 'For teams and organizations.',
-    features: ['Everything in Pro', '100,000 API calls/month', 'Team management', 'Admin moderation', 'SSO integration', 'SLA guarantee', 'Dedicated support'],
+    description: 'For teams shipping design systems',
+    features: ['Everything in Pro', 'Unlimited API keys', 'Team management', 'Admin moderation', 'SSO/SAML', 'SLA guarantee'],
+    popular: false,
     current: false,
-    highlighted: false,
   },
 ];
 
-// ── Sample JSON for detail pages ──
-export const SAMPLE_JSON = {
-  name: "hero",
-  type: "pattern",
+export const sampleJson = {
+  name: "hero-section",
   version: "2.1.0",
+  type: "pattern",
   namespace: "@official",
-  description: "Full-width hero with headline, subtext, CTA buttons, and optional media.",
-  components: ["Button", "icon"],
-  slots: {
-    headline: { type: "heading", level: 1 },
-    description: { type: "paragraph", muted: true },
-    "cta-group": { type: "button-group", direction: "row" },
-    media: { type: "media", optional: true }
-  },
-  presets: ["brand", "split", "vision", "minimal"],
-  responsive: {
-    mobile: "single-column, stacked",
-    tablet: "centered, heading1 scale",
-    desktop: "full layout, display scale"
+  data: {
+    components: ["Hero", "Headline", "Subtext", "CTAButton", "BackgroundImage"],
+    slots: {
+      headline: { type: "text", required: true },
+      subtext: { type: "text", required: false },
+      cta_primary: { type: "button", required: true },
+      cta_secondary: { type: "button", required: false },
+      background: { type: "image", required: false }
+    },
+    layout: "Stack(center) > [Headline + Subtext + Row > [CTA_Primary + CTA_Secondary]]",
+    responsive: {
+      mobile: "Stack padding-x-4",
+      tablet: "Stack padding-x-8",
+      desktop: "Stack padding-x-16 max-width-1200"
+    }
   }
-};
-
-// ── Helper: format number ──
-export function formatNumber(n: number): string {
-  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-  return n.toString();
-}
-
-// ── Helper: get initials ──
-export function getInitials(name: string): string {
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-}
-
-// ── Type color map ──
-export const TYPE_COLORS: Record<ContentType, string> = {
-  pattern: 'var(--d-coral)',
-  theme: 'var(--d-amber)',
-  blueprint: 'var(--d-cyan)',
-  shell: 'var(--d-green)',
-  archetype: 'var(--d-purple)',
 };

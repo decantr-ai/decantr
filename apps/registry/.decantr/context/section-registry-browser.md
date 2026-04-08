@@ -58,12 +58,16 @@
 | Context | Token | Value | Usage |
 |---------|-------|-------|-------|
 | Content gap | `--d-content-gap` | `1rem` | Gap between sibling elements |
-| Section padding | `--d-section-py` | `5rem` | Vertical padding on d-section |
+| Section padding | `--d-section-py` | `7.5rem` | Vertical padding on d-section |
 | Surface padding | `--d-surface-p` | `1.25rem` | Inner padding for d-surface |
 | Interactive V | `--d-interactive-py` | `0.5rem` | Vertical padding on buttons |
 | Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
 | Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
 | Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
+| Label gap | `--d-label-mb` | `0.75rem` | Gap below d-label section headers |
+| Label indent | `--d-label-px` | `0.75rem` | Anchor indent for d-label[data-anchor] |
+| Section gap | `--d-section-gap` | `1.5rem` | Gap between adjacent d-sections |
+| Annotation gap | `--d-annotation-mt` | `0.5rem` | Top margin on d-annotation |
 
 ---
 

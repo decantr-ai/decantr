@@ -1,196 +1,232 @@
-import { css } from '@decantr/css';
-import { useState } from 'react';
-import { User, Shield, Bell, AlertTriangle } from 'lucide-react';
+import { useState, useCallback } from 'react';
 
-const TABS = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
-] as const;
+const TABS = ['Profile', 'Security', 'Notifications', 'Danger Zone'] as const;
+type Tab = (typeof TABS)[number];
 
-type TabId = (typeof TABS)[number]['id'];
+export default function AccountSettings() {
+  const [activeTab, setActiveTab] = useState<Tab>('Profile');
+  const [name, setName] = useState('You');
+  const [email, setEmail] = useState('you@decantr.ai');
+  const [bio, setBio] = useState('');
 
-export function AccountSettings() {
-  const [activeTab, setActiveTab] = useState<TabId>('profile');
+  const handleTabClick = useCallback((tab: Tab) => {
+    setActiveTab(tab);
+  }, []);
 
   return (
-    <>
-      <div className="account-settings-layout">
-        {/* Sidebar tabs */}
-        <nav className={css('_flex _col _gap1')}>
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={css('_flex _aic _gap2')}
+    <div style={{ display: 'flex', gap: '2rem', minHeight: '480px' }}>
+      {/* Tab nav */}
+      <nav
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25rem',
+          width: '180px',
+          flexShrink: 0,
+          paddingTop: '0.25rem',
+        }}
+      >
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab;
+          const isDanger = tab === 'Danger Zone';
+          return (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => handleTabClick(tab)}
+              style={{
+                display: 'block',
+                textAlign: 'left',
+                padding: '0.5rem 0.75rem',
+                fontSize: '0.875rem',
+                fontWeight: isActive ? 600 : 400,
+                color: isDanger
+                  ? 'var(--d-error)'
+                  : isActive
+                    ? 'var(--d-accent)'
+                    : 'var(--d-text-muted)',
+                background: isActive ? 'rgba(253, 163, 3, 0.06)' : 'transparent',
+                border: 'none',
+                borderLeft: isActive ? '2px solid var(--d-accent)' : '2px solid transparent',
+                borderRadius: '0 var(--d-radius-sm) var(--d-radius-sm) 0',
+                cursor: 'pointer',
+                transition: 'color 0.15s ease, background 0.15s ease, border-color 0.15s ease',
+              }}
+            >
+              {tab}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Content */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {activeTab === 'Profile' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Profile</h3>
+
+            {/* Avatar upload */}
+            <div>
+              <label className="d-label">Avatar</label>
+              <div
                 style={{
-                  padding: '0.5rem 0.75rem',
-                  border: 'none',
-                  borderLeft: `2px solid ${active ? 'var(--d-accent)' : 'transparent'}`,
-                  background: active ? 'var(--d-surface)' : 'transparent',
-                  color: active ? 'var(--d-accent)' : 'var(--d-text-muted)',
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: 'var(--d-surface)',
+                  border: '2px dashed var(--d-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.5rem',
+                  fontWeight: 700,
+                  color: 'var(--d-text-muted)',
                   cursor: 'pointer',
-                  borderRadius: '0 var(--d-radius-sm) var(--d-radius-sm) 0',
-                  fontSize: '0.875rem',
-                  fontWeight: active ? 500 : 400,
-                  textAlign: 'left',
-                  transition: 'color 0.15s, background 0.15s',
+                  transition: 'border-color 0.15s ease',
                 }}
               >
-                <Icon size={16} />
-                {tab.label}
+                YO
+              </div>
+            </div>
+
+            {/* Name */}
+            <div>
+              <label className="d-label" htmlFor="settings-name">
+                Display Name
+              </label>
+              <input
+                id="settings-name"
+                type="text"
+                className="d-control"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{ maxWidth: '360px' }}
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="d-label" htmlFor="settings-email">
+                Email
+              </label>
+              <input
+                id="settings-email"
+                type="email"
+                className="d-control"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{ maxWidth: '360px' }}
+              />
+            </div>
+
+            {/* Bio */}
+            <div>
+              <label className="d-label" htmlFor="settings-bio">
+                Bio
+              </label>
+              <textarea
+                id="settings-bio"
+                className="d-control"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={4}
+                placeholder="Tell us about yourself..."
+                style={{ maxWidth: '360px', resize: 'vertical' }}
+              />
+            </div>
+
+            <div>
+              <button type="button" className="d-interactive" data-variant="primary">
+                Save Changes
               </button>
-            );
-          })}
-        </nav>
+            </div>
+          </div>
+        )}
 
-        {/* Content */}
-        <div style={{ flex: 1 }}>
-          {activeTab === 'profile' && <ProfileTab />}
-          {activeTab === 'security' && <SecurityTab />}
-          {activeTab === 'notifications' && <NotificationsTab />}
-          {activeTab === 'danger' && <DangerTab />}
-        </div>
+        {activeTab === 'Security' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Security</h3>
+            <div>
+              <label className="d-label" htmlFor="settings-current-pw">
+                Current Password
+              </label>
+              <input
+                id="settings-current-pw"
+                type="password"
+                className="d-control"
+                placeholder="Enter current password"
+                style={{ maxWidth: '360px' }}
+              />
+            </div>
+            <div>
+              <label className="d-label" htmlFor="settings-new-pw">
+                New Password
+              </label>
+              <input
+                id="settings-new-pw"
+                type="password"
+                className="d-control"
+                placeholder="Enter new password"
+                style={{ maxWidth: '360px' }}
+              />
+            </div>
+            <div>
+              <button type="button" className="d-interactive" data-variant="primary">
+                Update Password
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'Notifications' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Notifications</h3>
+            <p style={{ color: 'var(--d-text-muted)', fontSize: '0.875rem' }}>
+              Configure how you receive notifications about registry activity.
+            </p>
+            {['Email on new download', 'Email on content approved', 'Weekly digest', 'Security alerts'].map(
+              (label) => (
+                <label
+                  key={label}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    defaultChecked
+                    style={{ accentColor: 'var(--d-primary)', width: '1rem', height: '1rem' }}
+                  />
+                  {label}
+                </label>
+              ),
+            )}
+          </div>
+        )}
+
+        {activeTab === 'Danger Zone' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0, color: 'var(--d-error)' }}>
+              Danger Zone
+            </h3>
+            <div
+              className="d-surface"
+              style={{ borderColor: 'var(--d-error)', borderLeftWidth: '3px' }}
+            >
+              <p style={{ fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+                Permanently delete your account and all associated content. This action cannot be undone.
+              </p>
+              <button type="button" className="d-interactive" data-variant="danger">
+                Delete Account
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-
-      <style>{`
-        .account-settings-layout {
-          display: flex;
-          gap: 2rem;
-        }
-        .account-settings-layout > nav {
-          min-width: 180px;
-        }
-        @media (max-width: 639px) {
-          .account-settings-layout {
-            flex-direction: column;
-          }
-          .account-settings-layout > nav {
-            flex-direction: row;
-            overflow-x: auto;
-            min-width: unset;
-          }
-          .account-settings-layout > nav > button {
-            border-left: none !important;
-            border-bottom: 2px solid transparent;
-            white-space: nowrap;
-          }
-        }
-      `}</style>
-    </>
-  );
-}
-
-function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className={css('_flex _col _gap1')} style={{ marginBottom: '1rem' }}>
-      <label className="d-label">{label}</label>
-      {children}
-    </div>
-  );
-}
-
-function ProfileTab() {
-  return (
-    <div className={css('_flex _col _gap4')}>
-      <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Profile</h3>
-
-      {/* Avatar placeholder */}
-      <div className={css('_flex _aic _gap3')}>
-        <div
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            background: 'var(--d-surface-raised)',
-            border: '2px solid var(--d-border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.25rem',
-            fontWeight: 600,
-          }}
-        >
-          YO
-        </div>
-        <button className="d-interactive" data-variant="ghost" style={{ fontSize: '0.8125rem' }}>
-          Change avatar
-        </button>
-      </div>
-
-      <FieldGroup label="Name">
-        <input className="d-control" type="text" defaultValue="You" />
-      </FieldGroup>
-      <FieldGroup label="Email">
-        <input className="d-control" type="email" defaultValue="you@decantr.dev" />
-      </FieldGroup>
-      <FieldGroup label="Bio">
-        <textarea
-          className="d-control"
-          rows={3}
-          defaultValue="Building with Decantr."
-          style={{ resize: 'vertical' }}
-        />
-      </FieldGroup>
-
-      <button className="d-interactive" data-variant="primary" style={{ alignSelf: 'flex-start' }}>
-        Save changes
-      </button>
-    </div>
-  );
-}
-
-function SecurityTab() {
-  return (
-    <div className={css('_flex _col _gap4')}>
-      <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Security</h3>
-
-      <FieldGroup label="Current Password">
-        <input className="d-control" type="password" placeholder="Enter current password" />
-      </FieldGroup>
-      <FieldGroup label="New Password">
-        <input className="d-control" type="password" placeholder="Enter new password" />
-      </FieldGroup>
-      <FieldGroup label="Confirm New Password">
-        <input className="d-control" type="password" placeholder="Confirm new password" />
-      </FieldGroup>
-
-      <button className="d-interactive" data-variant="primary" style={{ alignSelf: 'flex-start' }}>
-        Update password
-      </button>
-    </div>
-  );
-}
-
-function NotificationsTab() {
-  return (
-    <div className={css('_flex _col _gap4')}>
-      <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Notifications</h3>
-
-      {(['Email notifications', 'Download alerts', 'Review requests', 'Newsletter'] as const).map((label) => (
-        <div key={label} className={css('_flex _aic _jcsb')} style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--d-border)' }}>
-          <span className={css('_textsm')}>{label}</span>
-          <input type="checkbox" defaultChecked style={{ accentColor: 'var(--d-primary)' }} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function DangerTab() {
-  return (
-    <div className={css('_flex _col _gap4')}>
-      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--d-error)' }}>Danger Zone</h3>
-      <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-        Once you delete your account, there is no going back. Please be certain.
-      </p>
-      <button className="d-interactive" data-variant="danger" style={{ alignSelf: 'flex-start' }}>
-        Delete account
-      </button>
     </div>
   );
 }

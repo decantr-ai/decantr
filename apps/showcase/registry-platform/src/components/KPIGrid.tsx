@@ -1,103 +1,133 @@
-import { css } from '@decantr/css';
-import { useEffect, useRef, useState } from 'react';
-import { Package, Download, Users, Palette, Activity, Star, CreditCard, HardDrive, Mail } from 'lucide-react';
-import type { KPIStat } from '@/data/mock';
-import { formatNumber } from '@/data/mock';
+import { useState, useEffect, useRef } from 'react';
+import { type KPI } from '../data/mock';
 
-const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
-  Package, Download, Users, Palette, Activity, Star, CreditCard, HardDrive, Mail,
-};
-
-interface Props {
-  stats?: KPIStat[];
-  kpis?: KPIStat[];
+interface KPIGridProps {
+  kpis: KPI[];
 }
 
-function AnimatedValue({ value }: { value: number }) {
-  const [display, setDisplay] = useState(0);
-  const rafRef = useRef<number>(0);
+const ICON_MAP: Record<string, string> = {
+  grid: '▦',
+  palette: '◆',
+  layout: '⊞',
+  download: '↓',
+  package: '◫',
+  activity: '⚡',
+  star: '★',
+  dollar: '$',
+  database: '⬡',
+  users: '⊕',
+  mail: '✉',
+};
+
+function useCountUp(target: number, duration: number = 500): number {
+  const [value, setValue] = useState(0);
+  const frameRef = useRef<number>(0);
 
   useEffect(() => {
     const start = performance.now();
-    const duration = 500;
 
     function tick(now: number) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      // ease-out quad
-      const eased = 1 - (1 - progress) * (1 - progress);
-      setDisplay(Math.round(eased * value));
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(target * eased));
+
       if (progress < 1) {
-        rafRef.current = requestAnimationFrame(tick);
+        frameRef.current = requestAnimationFrame(tick);
       }
     }
 
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [value]);
+    frameRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [target, duration]);
 
-  return <>{formatNumber(display)}</>;
+  return value;
 }
 
-export function KPIGrid({ stats, kpis }: Props) {
-  const items = stats ?? kpis ?? [];
+function KPICard({ kpi, index }: { kpi: KPI; index: number }) {
+  const animatedValue = useCountUp(kpi.value, 500);
+  const isPositive = kpi.trend >= 0;
+  const trendStatus = isPositive ? 'success' : 'error';
+
+  function formatValue(val: number): string {
+    if (kpi.value >= 10000) {
+      return `${(val / 1000).toFixed(val >= kpi.value ? 1 : 0)}k`;
+    }
+    if (kpi.label.includes('Storage')) {
+      return `${(val / kpi.value * kpi.value).toFixed(1)}`;
+    }
+    return String(val);
+  }
+
   return (
-    <>
-      <div className="kpi-grid">
-        {items.map((stat) => {
-          const Icon = ICON_MAP[stat.icon] || Package;
-          const positive = stat.trend >= 0;
-          return (
-            <div key={stat.label} className="d-surface">
-              <div className={css('_flex _aic _gap3')}>
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 'var(--d-radius)',
-                    background: 'color-mix(in srgb, var(--d-accent) 12%, transparent)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Icon size={18} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div className={css('_textsm')} style={{ color: 'var(--d-text-muted)', marginBottom: '0.125rem' }}>
-                    {stat.label}
-                  </div>
-                  <div className={css('_flex _aic _gap2')}>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.2 }}>
-                      <AnimatedValue value={stat.value} />
-                    </span>
-                    {stat.trend !== 0 && (
-                      <span
-                        className="d-annotation"
-                        data-status={positive ? 'success' : 'error'}
-                      >
-                        {positive ? '+' : ''}{stat.trend}%
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+    <div
+      className="d-surface lum-fade-up"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--d-gap-3)',
+        animationDelay: `${index * 80}ms`,
+        animationFillMode: 'backwards',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        {/* Icon circle */}
+        <div className="lum-stat-glow" style={{ width: 44, height: 44, fontSize: '1rem' }}>
+          {ICON_MAP[kpi.icon] ?? '●'}
+        </div>
+
+        {/* Trend badge */}
+        <span className="d-annotation" data-status={trendStatus}>
+          {isPositive ? '↑' : '↓'} {Math.abs(kpi.trend)}%
+        </span>
       </div>
 
-      <style>{`
-        .kpi-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1rem;
-        }
-        @media (min-width: 1024px) {
-          .kpi-grid { grid-template-columns: repeat(4, 1fr); }
-        }
-      `}</style>
-    </>
+      {/* Value */}
+      <div
+        style={{
+          fontSize: '1.75rem',
+          fontWeight: 700,
+          fontFamily: 'ui-monospace, monospace',
+          letterSpacing: '-0.03em',
+          lineHeight: 1.1,
+        }}
+      >
+        {kpi.label.includes('Spend') && '$'}
+        {kpi.value >= 10000
+          ? `${(animatedValue / 1000).toFixed(animatedValue >= kpi.value ? 1 : 0)}k`
+          : kpi.label.includes('Storage')
+            ? kpi.value.toFixed(1)
+            : animatedValue.toLocaleString()}
+        {kpi.label.includes('Storage') && ' GB'}
+      </div>
+
+      {/* Label */}
+      <div
+        style={{
+          fontSize: '0.8125rem',
+          color: 'var(--d-text-muted)',
+          fontWeight: 400,
+        }}
+      >
+        {kpi.label}
+      </div>
+    </div>
+  );
+}
+
+export function KPIGrid({ kpis }: KPIGridProps) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: 'var(--d-gap-4)',
+      }}
+    >
+      {kpis.map((kpi, i) => (
+        <KPICard key={kpi.label} kpi={kpi} index={i} />
+      ))}
+    </div>
   );
 }

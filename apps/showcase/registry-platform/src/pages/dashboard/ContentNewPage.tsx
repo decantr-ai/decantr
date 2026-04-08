@@ -1,73 +1,69 @@
 import { useState, useMemo } from 'react';
-import { css } from '@decantr/css';
 import { useNavigate } from 'react-router-dom';
-import { JsonViewer } from '@/components/JsonViewer';
+import { JsonViewer } from '../../components/JsonViewer';
 
-function toSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+type ContentType = 'pattern' | 'theme' | 'blueprint' | 'shell';
 
-export function ContentNewPage() {
+export default function ContentNewPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    type: 'pattern' as string,
-    name: '',
-    slug: '',
-    namespace: '@official',
-    description: '',
-    version: '1.0.0',
-    tags: '',
-  });
-  const [slugEdited, setSlugEdited] = useState(false);
+  const [name, setName] = useState('');
+  const [type, setType] = useState<ContentType>('pattern');
+  const [namespace, setNamespace] = useState('@official');
+  const [description, setDescription] = useState('');
+  const [version, setVersion] = useState('1.0.0');
 
-  function update(field: string, value: string) {
-    setForm((prev) => {
-      const next = { ...prev, [field]: value };
-      if (field === 'name' && !slugEdited) {
-        next.slug = toSlug(value);
-      }
-      return next;
-    });
-  }
-
-  const preview = useMemo(
+  const previewData = useMemo(
     () => ({
-      type: form.type,
-      name: form.name || undefined,
-      slug: form.slug || undefined,
-      namespace: form.namespace,
-      description: form.description || undefined,
-      version: form.version || undefined,
-      tags: form.tags ? form.tags.split(',').map((t) => t.trim()).filter(Boolean) : undefined,
+      name: name || 'untitled',
+      type,
+      namespace,
+      version,
+      description: description || '',
+      status: 'draft',
+      createdAt: new Date().toISOString().split('T')[0],
     }),
-    [form],
+    [name, type, namespace, version, description],
   );
 
   return (
-    <div className={css('_flex _col _gap6')}>
-      <h3 className={css('_textlg _fontsemi')}>Publish New Content</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="d-label" data-anchor="">
+        Publish Content
+      </div>
 
-      {/* Form card */}
-      <div className="d-surface" style={{ maxWidth: '40rem' }}>
-        {/* Basic Info */}
-        <section className={css('_flex _col _gap4')}>
-          <span
-            className={css('_db _mb2') + ' d-label'}
-            style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
-          >
-            Basic Info
-          </span>
-
-          <div className={css('_flex _col _gap1')}>
-            <label className={css('_textsm _fontsemi')} htmlFor="type">Type</label>
-            <select
-              id="type"
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '2rem',
+          alignItems: 'start',
+        }}
+      >
+        {/* Form */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div>
+            <label className="d-label" htmlFor="content-name">
+              Name
+            </label>
+            <input
+              id="content-name"
+              type="text"
               className="d-control"
-              value={form.type}
-              onChange={(e) => update('type', e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Hero Section"
+            />
+          </div>
+
+          <div>
+            <label className="d-label" htmlFor="content-type">
+              Type
+            </label>
+            <select
+              id="content-type"
+              className="d-control"
+              value={type}
+              onChange={(e) => setType(e.target.value as ContentType)}
             >
               <option value="pattern">Pattern</option>
               <option value="theme">Theme</option>
@@ -76,118 +72,73 @@ export function ContentNewPage() {
             </select>
           </div>
 
-          <div className={css('_flex _col _gap1')}>
-            <label className={css('_textsm _fontsemi')} htmlFor="name">Name</label>
+          <div>
+            <label className="d-label" htmlFor="content-namespace">
+              Namespace
+            </label>
             <input
-              id="name"
-              className="d-control"
+              id="content-namespace"
               type="text"
-              placeholder="My Pattern"
-              value={form.name}
-              onChange={(e) => update('name', e.target.value)}
+              className="d-control"
+              value={namespace}
+              onChange={(e) => setNamespace(e.target.value)}
             />
           </div>
 
-          <div className={css('_flex _col _gap1')}>
-            <label className={css('_textsm _fontsemi')} htmlFor="slug">Slug</label>
-            <input
-              id="slug"
-              className="d-control"
-              type="text"
-              placeholder="my-pattern"
-              value={form.slug}
-              onChange={(e) => {
-                setSlugEdited(true);
-                update('slug', e.target.value);
-              }}
-            />
-          </div>
-
-          <div className={css('_flex _col _gap1')}>
-            <label className={css('_textsm _fontsemi')} htmlFor="namespace">Namespace</label>
-            <select
-              id="namespace"
-              className="d-control"
-              value={form.namespace}
-              onChange={(e) => update('namespace', e.target.value)}
-            >
-              <option value="@official">@official</option>
-              <option value="@community">@community</option>
-            </select>
-          </div>
-        </section>
-
-        {/* Details */}
-        <section className={css('_flex _col _gap4')} style={{ marginTop: '1.5rem' }}>
-          <span
-            className={css('_db _mb2') + ' d-label'}
-            style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
-          >
-            Details
-          </span>
-
-          <div className={css('_flex _col _gap1')}>
-            <label className={css('_textsm _fontsemi')} htmlFor="description">Description</label>
+          <div>
+            <label className="d-label" htmlFor="content-description">
+              Description
+            </label>
             <textarea
-              id="description"
+              id="content-description"
               className="d-control"
-              placeholder="Describe your content item..."
-              value={form.description}
-              onChange={(e) => update('description', e.target.value)}
-              style={{ minHeight: '6rem', resize: 'vertical' }}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              placeholder="Describe what this content does..."
+              style={{ resize: 'vertical' }}
             />
           </div>
 
-          <div className={css('_flex _col _gap1')}>
-            <label className={css('_textsm _fontsemi')} htmlFor="version">Version</label>
+          <div>
+            <label className="d-label" htmlFor="content-version">
+              Version
+            </label>
             <input
-              id="version"
-              className="d-control"
+              id="content-version"
               type="text"
-              placeholder="1.0.0"
-              value={form.version}
-              onChange={(e) => update('version', e.target.value)}
+              className="d-control"
+              value={version}
+              onChange={(e) => setVersion(e.target.value)}
+              style={{ maxWidth: '160px' }}
             />
           </div>
 
-          <div className={css('_flex _col _gap1')}>
-            <label className={css('_textsm _fontsemi')} htmlFor="tags">Tags</label>
-            <input
-              id="tags"
-              className="d-control"
-              type="text"
-              placeholder="tag1, tag2, tag3"
-              value={form.tags}
-              onChange={(e) => update('tags', e.target.value)}
-            />
+          <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.5rem' }}>
+            <button
+              type="button"
+              className="d-interactive"
+              data-variant="primary"
+              style={{ padding: '0.5rem 1.25rem' }}
+            >
+              Publish
+            </button>
+            <button
+              type="button"
+              className="d-interactive"
+              data-variant="ghost"
+              onClick={() => navigate(-1)}
+              style={{ padding: '0.5rem 1.25rem' }}
+            >
+              Cancel
+            </button>
           </div>
-        </section>
-
-        {/* Actions */}
-        <div className={css('_flex _aic _gap3')} style={{ marginTop: '1.5rem' }}>
-          <button className="d-interactive" data-variant="primary" style={{ fontSize: '0.875rem' }}>
-            Publish
-          </button>
-          <button
-            className="d-interactive"
-            data-variant="ghost"
-            style={{ fontSize: '0.875rem' }}
-            onClick={() => navigate(-1)}
-          >
-            Cancel
-          </button>
         </div>
-      </div>
 
-      {/* Live JSON preview */}
-      <div style={{ maxWidth: '40rem' }}>
-        <span
-          className={css('_db _mb3') + ' d-label'}
-          style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
-        >
-          Preview
-        </span>
-        <JsonViewer data={preview} />
+        {/* JSON preview */}
+        <div>
+          <JsonViewer data={previewData} title="Preview" />
+        </div>
       </div>
     </div>
   );

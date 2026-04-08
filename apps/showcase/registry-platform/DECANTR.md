@@ -5,7 +5,7 @@
 - **Personality:** Vibrant design intelligence registry. Warm coral and amber accents on a rich dark canvas (or crisp warm-white in light mode). Content cards are the hero — outlined with colored type borders, hovering with purpose. Search is instant and faceted. Publishing feels like sharing art. The Decantr dogfood app — built with its own system, proudly showing what the platform produces. Think Figma Community meets shadcn/ui registry.
 - **Sections:** 4 (registry-browser [primary], user-dashboard [primary], admin-moderation [auxiliary], auth-flow [gateway])
 - **Features:** search, pagination, auth, api-keys, admin
-- **Guard mode:** guided
+- **Guard mode:** strict
 
 ### Decorator Quick Reference
 | Class | Purpose |
@@ -96,7 +96,7 @@ Blueprint includes: Sections (grouped by archetype with role, shell, and scoped 
 | **Guided** | Adding pages or features | Error | Off |
 | **Strict** | Modifying existing code | Error | Warn |
 
-This project uses **guided** mode.
+This project uses **strict** mode.
 
 ### Violation Response Protocol
 
