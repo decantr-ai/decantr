@@ -23,9 +23,9 @@ This audit defines how package surfaces should be handled during the vNext reset
 | `@decantr/css` | `1.0.2` | framework-agnostic atom runtime | Keep |
 | `@decantr/core` | `1.0.0-beta.9` | internal pipeline / IR foundation | Keep pending scope cleanup |
 | `@decantr/vite-plugin` | `0.1.0` | verification-related integration | Keep but defer |
-| `@decantr/ui` | `0.1.0` | standalone framework experiment | Archive / extract candidate |
-| `@decantr/ui-chart` | `0.1.0` | charting library tied to UI line | Archive / extract candidate |
-| `@decantr/ui-catalog` | `0.1.0` | component stories / metadata for UI line | Archive / extract candidate |
+| `@decantr/ui` | `0.1.0` | standalone framework experiment | Removed from monorepo on reset branch |
+| `@decantr/ui-chart` | `0.1.0` | charting library tied to UI line | Removed from monorepo on reset branch |
+| `@decantr/ui-catalog` | `0.1.0` | component stories / metadata for UI line | Removed from monorepo on reset branch |
 
 ## 3. Package Governance Rules
 
@@ -96,19 +96,19 @@ Because there are no commercial users to preserve, the priority is not seamless 
 - should not drive architecture today
 - keep in a parked state until verification engine requirements are clear
 
-### 4.3 Packages to archive or extract
+### 4.3 Legacy packages already removed from the reset branch
 
 #### `@decantr/ui`
-- strongest archive / extraction candidate
-- off the critical product path
+- removed from this reset branch
+- public npm/deprecation handling still needs an explicit follow-up decision
 - should not shape Decantr’s public identity during the reset
 
 #### `@decantr/ui-chart`
-- likely archive or extract with the UI line
+- removed from this reset branch with the UI line
 - not part of the control-plane product story
 
 #### `@decantr/ui-catalog`
-- likely archive or extract with the UI line
+- removed from this reset branch with the UI line
 - useful only if the UI framework ecosystem remains active elsewhere
 
 ## 5. Release Strategy for the Reset

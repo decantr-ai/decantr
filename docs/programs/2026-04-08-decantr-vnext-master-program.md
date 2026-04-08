@@ -28,7 +28,7 @@ The following decisions are considered locked unless explicitly reopened:
 4. `decantr-content` remains the official content source of truth for curated registry content.
 5. `apps/api`, `apps/registry`, the docs site, and the core npm packages are the product nucleus.
 6. `apps/showcase/*` is a benchmark and evidence corpus, not the core product.
-7. `@decantr/ui`, `@decantr/ui-chart`, `@decantr/ui-catalog`, `apps/ui-site`, and `apps/workbench` are de-scope / extract / archive candidates, not strategic anchors.
+7. `@decantr/ui`, `@decantr/ui-chart`, `@decantr/ui-catalog`, `apps/ui-site`, and `apps/workbench` have been removed from this reset branch and are no longer strategic anchors.
 8. `decantr-meta` is strategic inspiration and future compatibility context, not current delivery scope.
 9. Decantr should be UI-first, not UI-locked. Future domain expansion must remain possible, but may not bloat the near-term UI program.
 10. Aggressive pruning is allowed. If a surface does not clearly serve the vNext product, it can be archived or deleted.
@@ -73,7 +73,7 @@ Decantr currently spans multiple repos and deployed surfaces.
 | `@decantr/css` | Framework-agnostic atom runtime | Keep as core UI utility |
 | `@decantr/core` | Internal design pipeline / IR layer | Keep, but tighten scope |
 | `apps/showcase/*` | 39 attempted full blueprint scaffolds with mixed provenance | Reclassify as benchmark corpus |
-| `@decantr/ui` line + related apps | Standalone framework experiment | De-scope / extract / archive candidate |
+| `@decantr/ui` line + related apps | Standalone framework experiment | Removed from reset branch; legacy line only |
 
 ## 5. vNext Architecture
 

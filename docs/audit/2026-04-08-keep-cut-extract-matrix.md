@@ -41,11 +41,11 @@ Because this is a greenfield reset, the bias should be toward clarity, not prese
 
 | Surface | Decision | Why | Likely destination |
 |---|---|---|---|
-| `packages/ui` | Extract / archive | Standalone framework direction is off the critical product path | Separate repo or archive branch |
-| `packages/ui-chart` | Extract / archive | Depends on `@decantr/ui` line, not core Decantr mission | Separate repo or archive branch |
-| `packages/ui-catalog` | Extract / archive | Supports framework ecosystem rather than core control-plane product | Separate repo or archive branch |
-| `apps/ui-site` | Extract / archive | Showcase site for `@decantr/ui`, not Decantr vNext product | Archive with UI line |
-| `apps/workbench` | Extract / archive | Framework workbench, not core product surface | Archive with UI line |
+| `packages/ui` | Removed on reset branch | Standalone framework direction is off the critical product path | Historical main branch / future archive repo if ever needed |
+| `packages/ui-chart` | Removed on reset branch | Depends on `@decantr/ui` line, not core Decantr mission | Historical main branch / future archive repo if ever needed |
+| `packages/ui-catalog` | Removed on reset branch | Supports framework ecosystem rather than core control-plane product | Historical main branch / future archive repo if ever needed |
+| `apps/ui-site` | Removed on reset branch | Showcase site for `@decantr/ui`, not Decantr vNext product | Historical main branch / future archive repo if ever needed |
+| `apps/workbench` | Removed on reset branch | Framework workbench, not core product surface | Historical main branch / future archive repo if ever needed |
 | `decantr_component_api` MCP surface | Removed from default product | Only strategically relevant if the UI framework stays in-scope | Removed from `@decantr/mcp-server` on the reset branch |
 
 ## 5. Delete or Replace Candidates
@@ -61,20 +61,17 @@ Because this is a greenfield reset, the bias should be toward clarity, not prese
 
 ### 6.1 Phase 0 actions
 
-- keep all code in place until archive boundaries are documented
 - stop treating `@decantr/ui` ecosystem work as a dependency for Decantr product planning
 - treat showcase apps as audit input, not roadmap proof
 - update docs so the product nucleus is obvious
 
 ### 6.2 Phase 1 actions
 
-- decide whether the UI framework line is archived in-place or extracted to a separate repository
 - remove UI-framework-first messaging from public surfaces
 - remove or gate MCP and docs surfaces that only exist for the UI framework
 
 ### 6.3 Phase 2 actions
 
-- trim the workspace and build paths once extraction or archival decisions are complete
 - remove npm/package references that no longer belong in the vNext story
 
 ## 7. Guiding Principle

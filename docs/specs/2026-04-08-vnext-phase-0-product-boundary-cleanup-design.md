@@ -1,7 +1,7 @@
 # Decantr vNext Phase 0 — Product Boundary Cleanup and Archive Plan
 
 **Date:** 2026-04-08
-**Status:** Draft
+**Status:** In progress on `codex/decantr-vnext-reset`
 **Author:** Codex
 **Depends on:** `docs/programs/2026-04-08-decantr-vnext-master-program.md`
 **Companion audits:**
@@ -26,6 +26,10 @@ Decantr currently has too many simultaneous identities:
 This phase establishes a hard product boundary before deeper architecture work begins.
 
 The objective is not merely cleanup. The objective is to make the repo, package surface, docs, and roadmap all agree on what Decantr is and what it is not.
+
+Implementation note:
+- the legacy UI runtime line (`packages/ui`, `packages/ui-chart`, `packages/ui-catalog`, `apps/ui-site`, `apps/workbench`) has already been removed from this reset branch
+- remaining Phase 0 work is now mostly documentation, package-surface, and roadmap cleanup
 
 ## Goals
 

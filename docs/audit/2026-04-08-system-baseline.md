@@ -81,9 +81,9 @@ Observed facts:
 | `packages/essence-spec` | `@decantr/essence-spec` | `1.0.0-beta.11` | Keep as core |
 | `packages/mcp-server` | `@decantr/mcp-server` | `1.0.0-beta.12` | Keep as core |
 | `packages/registry` | `@decantr/registry` | `1.0.0-beta.12` | Keep as core |
-| `packages/ui` | `@decantr/ui` | `0.1.0` | Extract / archive candidate |
-| `packages/ui-catalog` | `@decantr/ui-catalog` | `0.1.0` | Extract / archive candidate |
-| `packages/ui-chart` | `@decantr/ui-chart` | `0.1.0` | Extract / archive candidate |
+| `packages/ui` | `@decantr/ui` | `0.1.0` | Removed on reset branch; historical publish surface |
+| `packages/ui-catalog` | `@decantr/ui-catalog` | `0.1.0` | Removed on reset branch; historical publish surface |
+| `packages/ui-chart` | `@decantr/ui-chart` | `0.1.0` | Removed on reset branch; historical publish surface |
 | `packages/vite-plugin` | `@decantr/vite-plugin` | `0.1.0` | Re-evaluate after core reset |
 
 ### 3.2 Private apps
@@ -92,8 +92,8 @@ Observed facts:
 |---|---|---:|---|
 | `apps/api` | `decantr-api` | `2.0.0` | Keep |
 | `apps/registry` | `registry` | `0.1.0` | Keep |
-| `apps/ui-site` | `@decantr/ui-site` | `0.1.0` | Extract / archive candidate |
-| `apps/workbench` | `@decantr/workbench` | `0.1.0` | Extract / archive candidate |
+| `apps/ui-site` | `@decantr/ui-site` | `0.1.0` | Removed on reset branch; historical app surface |
+| `apps/workbench` | `@decantr/workbench` | `0.1.0` | Removed on reset branch; historical app surface |
 
 ## 4. Root Workspace and Build Reality
 
@@ -101,7 +101,7 @@ Observed facts from the root workspace:
 
 - workspace includes `packages/*`, `apps/*`, and `apps/showcase/*`
 - root build script prioritizes `@decantr/essence-spec`, `@decantr/registry`, `@decantr/css`, `@decantr/core`, `@decantr/mcp-server`, `@decantr/cli`, and `@decantr/vite-plugin`
-- the standalone UI framework packages are not part of the primary root build path
+- the standalone UI framework packages were removed from the reset branch after this baseline was captured
 
 Implication:
 - the repo already behaves as if some surfaces are secondary, even if the docs still market them as first-class
