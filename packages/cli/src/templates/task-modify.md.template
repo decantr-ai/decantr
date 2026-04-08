@@ -73,7 +73,7 @@ For the page you're modifying, verify:
 - Page ID exists in `blueprint.sections[].pages[]`
 - Shell matches the page's `shell` property
 - Patterns match the page's `layout[]` in order
-- Theme matches `theme.style`
+- Theme matches `theme.id`
 - Theme decorators match `theme.id`
 
 ### 3. Plan Changes

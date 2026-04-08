@@ -38,10 +38,10 @@ export async function cmdUpgrade(projectRoot: string = process.cwd(), options: {
 
   const upgrades: Upgrade[] = [];
 
-  // Check theme (v3 uses dna.theme.style, v2 uses theme.style)
-  const themeStyle = essence.dna?.theme?.style || essence.theme?.style;
-  if (themeStyle) {
-    const theme = await client.fetchTheme(themeStyle);
+  // Check theme using the normalized theme id, with legacy fallback while content is being reset.
+  const themeId = essence.dna?.theme?.id || essence.dna?.theme?.style || essence.theme?.id || essence.theme?.style;
+  if (themeId) {
+    const theme = await client.fetchTheme(themeId);
     if (theme) {
       const themeData = theme.data as Record<string, unknown>;
       const inner = ((themeData.data ?? themeData) as Record<string, unknown>);
@@ -51,7 +51,7 @@ export async function cmdUpgrade(projectRoot: string = process.cwd(), options: {
         if (latestVersion !== current) {
           upgrades.push({
             type: 'theme',
-            id: themeStyle,
+            id: themeId,
             currentVersion: current,
             latestVersion,
             data: themeData,

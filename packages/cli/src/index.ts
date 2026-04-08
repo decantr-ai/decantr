@@ -872,7 +872,7 @@ async function cmdStatus() {
       const v3 = essence as EssenceV3;
       // DNA axioms
       console.log(`  ${BOLD}DNA:${RESET}`);
-      console.log(`    Theme: ${v3.dna.theme.style} (${v3.dna.theme.mode})`);
+      console.log(`    Theme: ${v3.dna.theme.id} (${v3.dna.theme.mode})`);
       console.log(`    Spacing: ${v3.dna.spacing.density} density, ${v3.dna.spacing.content_gap} gap`);
       console.log(`    Typography: ${v3.dna.typography.scale} scale`);
       console.log(`    Radius: ${v3.dna.radius.philosophy} (base ${v3.dna.radius.base}px)`);

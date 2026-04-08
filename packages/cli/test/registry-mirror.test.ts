@@ -15,7 +15,6 @@ const mockListContent = vi.fn().mockImplementation((type: string) => {
     themes: [
       { slug: 'carbon', id: 'carbon', name: 'Carbon' },
     ],
-    recipes: [],
     blueprints: [],
     shells: [
       { slug: 'top-nav-footer', id: 'top-nav-footer', name: 'Top Nav Footer' },

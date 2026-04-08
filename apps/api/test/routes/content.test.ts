@@ -70,9 +70,8 @@ describe('POST /v1/validate', () => {
         version: '2.0.0',
         archetype: 'dashboard',
         theme: {
-          style: 'clean',
+          id: 'clean',
           mode: 'light',
-          recipe: 'minimal',
         },
         personality: ['professional'],
         platform: {

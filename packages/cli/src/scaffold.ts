@@ -19,47 +19,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 export type LayoutItem = string | Record<string, unknown>;
 
-/**
- * V2 EssenceFile shape (kept for backward compatibility of buildEssence signature).
- * New code generates v3 EssenceV3 via buildEssenceV3().
- */
-export interface EssenceFile {
-  version: string;
-  archetype: string;
-  blueprint?: string;
-  theme: {
-    style: string;
-    mode: string;
-    recipe: string;
-    shape: string;
-  };
-  personality: string[];
-  platform: {
-    type: string;
-    routing: string;
-  };
-  structure: Array<{
-    id: string;
-    shell: string;
-    layout: LayoutItem[];
-  }>;
-  features: string[];
-  guard: {
-    enforce_style: boolean;
-    enforce_recipe: boolean;
-    mode: string;
-  };
-  density: {
-    level: string;
-    content_gap: string;
-  };
-  target: string;
-  accessibility?: {
-    wcag_level?: string;
-    cvd_preference?: string;
-  };
-}
-
 export interface ArchetypeData {
   id: string;
   name?: string;
@@ -860,81 +819,6 @@ function resolvePatternAlias(
 }
 
 /**
- * Build the essence file from options and blueprint data.
- */
-export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData): EssenceFile {
-  // Default structure if no archetype - must have at least one pattern in layout
-  let structure: EssenceFile['structure'] = [
-    { id: 'home', shell: options.shell, layout: ['hero'] }
-  ];
-  let features: string[] = options.features;
-
-  // Use archetype structure if available
-  if (archetypeData?.pages) {
-    structure = archetypeData.pages.map(p => {
-      // Resolve aliases to actual pattern IDs
-      const resolvedLayout = (p.default_layout?.length ? p.default_layout : ['hero'])
-        .map(item => resolvePatternAlias(item, p.patterns));
-
-      return {
-        id: p.id,
-        shell: p.shell || options.shell,
-        layout: resolvedLayout,
-      };
-    });
-  }
-
-  if (archetypeData?.features) {
-    features = [...new Set([...features, ...archetypeData.features])];
-  }
-
-  // Map density to content gap
-  const contentGapMap: Record<string, string> = {
-    compact: '_gap2',
-    comfortable: '_gap4',
-    spacious: '_gap6',
-  };
-
-  // Use resolved archetype (from blueprint's compose or direct selection)
-  const archetype = options.archetype || 'custom';
-
-  const essence: EssenceFile = {
-    version: '2.0.0',
-    archetype,
-    theme: {
-      style: options.theme,
-      mode: options.mode,
-      recipe: options.theme, // Legacy v2 field — kept for backward compatibility
-      shape: options.shape,
-    },
-    personality: options.personality,
-    platform: {
-      type: 'spa',
-      routing: 'hash',
-    },
-    structure,
-    features,
-    guard: {
-      enforce_style: true,
-      enforce_recipe: true, // Legacy v2 field — kept for backward compatibility
-      mode: options.guard,
-    },
-    density: {
-      level: options.density,
-      content_gap: contentGapMap[options.density] || '_gap4',
-    },
-    target: options.target,
-  };
-
-  // Add accessibility if specified in options
-  if (options.accessibility) {
-    essence.accessibility = options.accessibility;
-  }
-
-  return essence;
-}
-
-/**
  * Build a v3 essence from options, producing DNA/Blueprint/Meta structure.
  */
 export function buildEssenceV3(
@@ -1049,232 +933,6 @@ export function buildEssenceV3(
     blueprint,
     meta,
   };
-}
-
-/**
- * Generate the accessibility section for DECANTR.md.
- */
-function generateAccessibilitySection(
-  essence: EssenceFile,
-  themeData?: ThemeData
-): string {
-  const accessibility = essence.accessibility;
-
-  if (!accessibility?.wcag_level || accessibility.wcag_level === 'none') {
-    return '';
-  }
-
-  const wcagLevel = accessibility.wcag_level;
-  const cvdPreference = accessibility.cvd_preference || 'none';
-  const cvdSupport = themeData?.cvd_support || [];
-
-  let section = `---
-
-## Accessibility
-
-**WCAG Level:** ${wcagLevel}
-`;
-
-  if (cvdSupport.length > 0) {
-    section += `**CVD Support:** Theme supports ${cvdSupport.join(', ')}
-**CVD Preference:** ${cvdPreference}
-`;
-  }
-
-  section += `
-### What This Means
-
-This project requires WCAG 2.1 Level ${wcagLevel} compliance. You already know these rules — apply them:
-
-- Semantic HTML structure
-- Sufficient color contrast (4.5:1 for normal text, 3:1 for large text)
-- Keyboard navigability for all interactive elements
-- Visible focus indicators
-- Meaningful alt text for images
-- Proper heading hierarchy
-`;
-
-  if (cvdSupport.length > 0) {
-    section += `
-### CVD Implementation
-
-The theme provides these data attributes:
-
-\`\`\`html
-<html data-theme="${essence.theme.style}" data-mode="${essence.theme.mode}" data-cvd="none">
-\`\`\`
-
-Valid \`data-cvd\` values for this theme: \`none\`, ${cvdSupport.map(m => `\`${m}\``).join(', ')}
-`;
-
-    if (cvdPreference === 'auto') {
-      section += `
-Detect user preference via \`prefers-contrast\` or user settings and apply accordingly.
-`;
-    }
-  }
-
-  section += `
----
-`;
-
-  return section;
-}
-
-/**
- * Generate the SEO guidance section for DECANTR.md.
- */
-function generateSeoSection(
-  essence: EssenceFile,
-  archetypeData?: ArchetypeData
-): string {
-  const seoHints = archetypeData?.seo_hints;
-
-  if (!seoHints) {
-    return '';
-  }
-
-  const schemaOrg = seoHints.schema_org || [];
-  const metaPriorities = seoHints.meta_priorities || [];
-
-  if (schemaOrg.length === 0 && metaPriorities.length === 0) {
-    return '';
-  }
-
-  let section = `---
-
-## SEO Guidance
-
-This archetype (\`${essence.archetype}\`) typically benefits from:
-
-`;
-
-  if (schemaOrg.length > 0) {
-    section += `- **Schema.org:** ${schemaOrg.join(', ')}
-`;
-  }
-
-  if (metaPriorities.length > 0) {
-    section += `- **Meta priorities:** ${metaPriorities.join(', ')}
-`;
-  }
-
-  section += `
-These are suggestions, not requirements. Apply where appropriate for the page content.
-
----
-`;
-
-  return section;
-}
-
-/**
- * Generate the DECANTR.md file from template and essence.
- */
-function generateDecantrMd(
-  essence: EssenceFile,
-  detected: DetectedProject,
-  themeData?: ThemeData,
-  archetypeData?: ArchetypeData,
-  topologyMarkdown?: string
-): string {
-  const template = loadTemplate('DECANTR.md.template');
-
-  // Build pages table with proper serialization of layout items
-  const pagesTable = essence.structure.map(p => {
-    const layoutStr = p.layout.map(serializeLayoutItem).join(', ') || 'none';
-    return `| ${p.id} | ${p.shell} | ${layoutStr} |`;
-  }).join('\n');
-
-  // Build patterns list - extract unique pattern names
-  const allPatternNames = [...new Set(essence.structure.flatMap(p => p.layout.flatMap(extractPatternNames)))];
-  const patternsList = allPatternNames.length > 0
-    ? allPatternNames.map(p => `- \`${p}\``).join('\n')
-    : '- No patterns specified yet';
-
-  // Build project summary
-  const projectSummary = [
-    `**Archetype:** ${essence.archetype || 'custom'}`,
-    `**Target:** ${essence.target}`,
-    `**Theme:** ${essence.theme.style} (${essence.theme.mode} mode)`,
-    `**Guard Mode:** ${essence.guard.mode}`,
-    `**Pages:** ${essence.structure.map(s => s.id).join(', ')}`,
-  ].join('\n');
-
-  // Shell structure description
-  const shellStructures: Record<string, string> = {
-    'sidebar-main': 'nav (left) | header (top) | body (scrollable)',
-    'top-nav-main': 'header (full width) | body (scrollable)',
-    'centered': 'body (centered card)',
-    'full-bleed': 'header (floating) | body (full page sections)',
-    'minimal-header': 'header (slim) | body (centered)',
-  };
-
-  const defaultShell = essence.structure[0]?.shell || 'sidebar-main';
-  const shellStructure = shellStructures[defaultShell] || 'Custom shell layout';
-
-  // Build theme quick reference
-  let themeQuickRef = '';
-  if (themeData?.seed) {
-    const colors = Object.entries(themeData.seed)
-      .map(([name, hex]) => `- **${name}:** \`${hex}\``)
-      .join('\n');
-    themeQuickRef = `**Seed Colors:**\n${colors}`;
-  }
-
-  // Add key treatments (base treatments + theme decorators)
-  const baseTreatments = '- `d-interactive`, `d-surface`, `d-data`, `d-control`, `d-section`, `d-annotation`';
-  if (themeData?.decorators) {
-    const themeDecorators = Object.entries(themeData.decorators)
-      .slice(0, 5)  // Top 5 theme decorators
-      .map(([name, desc]) => `- \`${name}\` — ${desc}`)
-      .join('\n');
-    const treatments = `${baseTreatments}\n${themeDecorators}`;
-    if (themeQuickRef) {
-      themeQuickRef += `\n\n**Key Treatments:**\n${treatments}`;
-    } else {
-      themeQuickRef = `**Key Treatments:**\n${treatments}`;
-    }
-  } else {
-    if (themeQuickRef) {
-      themeQuickRef += `\n\n**Key Treatments:**\n${baseTreatments}`;
-    } else {
-      themeQuickRef = `**Key Treatments:**\n${baseTreatments}`;
-    }
-  }
-
-  // Default if no theme data
-  if (!themeQuickRef) {
-    themeQuickRef = `See \`decantr get theme ${essence.theme.style}\` for details.`;
-  }
-
-  const accessibilitySection = generateAccessibilitySection(essence, themeData);
-  const seoSection = generateSeoSection(essence, archetypeData);
-
-  const vars: Record<string, string> = {
-    GUARD_MODE: essence.guard.mode,
-    PROJECT_SUMMARY: projectSummary,
-    THEME_STYLE: essence.theme.style,
-    THEME_MODE: essence.theme.mode,
-    THEME_RECIPE: essence.theme.style,
-    TARGET: essence.target,
-    PAGES_TABLE: `| Page | Shell | Layout |\n|------|-------|--------|\n${pagesTable}`,
-    PATTERNS_LIST: patternsList,
-    DEFAULT_SHELL: defaultShell,
-    SHELL_STRUCTURE: shellStructure,
-    PERSONALITY: essence.personality.join(', '),
-    DENSITY: essence.density.level,
-    AVAILABLE_PATTERNS: '(See registry or .decantr/cache/patterns/)',
-    AVAILABLE_THEMES: '(See registry or .decantr/cache/themes/)',
-    AVAILABLE_SHELLS: 'sidebar-main, top-nav-main, centered, full-bleed, minimal-header',
-    VERSION: CLI_VERSION,
-    THEME_QUICK_REFERENCE: themeQuickRef,
-    ACCESSIBILITY_SECTION: accessibilitySection,
-    SEO_SECTION: seoSection,
-    COMPOSITION_TOPOLOGY: topologyMarkdown || '',
-  };
-
-  return renderTemplate(template, vars);
 }
 
 /**
@@ -1741,42 +1399,6 @@ function buildFlagsString(options: InitOptions): string {
 }
 
 /**
- * Generate a task context file.
- */
-function generateTaskContext(
-  templateName: string,
-  essence: EssenceFile
-): string {
-  const template = loadTemplate(templateName);
-
-  const defaultShell = essence.structure[0]?.shell || 'sidebar-main';
-  const layout = essence.structure[0]?.layout.map(serializeLayoutItem).join(', ') || 'none';
-
-  // Build scaffold structure description
-  const scaffoldStructure = essence.structure.map(p => {
-    const patterns = p.layout.length > 0
-      ? `\n  - Patterns: ${p.layout.map(serializeLayoutItem).join(', ')}`
-      : '';
-    return `- **${p.id}** (${p.shell})${patterns}`;
-  }).join('\n');
-
-  const vars: Record<string, string> = {
-    TARGET: essence.target,
-    THEME_STYLE: essence.theme.style,
-    THEME_MODE: essence.theme.mode,
-    THEME_RECIPE: essence.theme.style,
-    DEFAULT_SHELL: defaultShell,
-    GUARD_MODE: essence.guard.mode,
-    LAYOUT: layout,
-    DENSITY: essence.density.level,
-    CONTENT_GAP: essence.density.content_gap,
-    SCAFFOLD_STRUCTURE: scaffoldStructure,
-  };
-
-  return renderTemplate(template, vars);
-}
-
-/**
  * Generate task context from a V3 essence (used by refreshDerivedFiles).
  * Extracts the same template variables as the v2 version.
  */
@@ -1815,60 +1437,15 @@ function generateTaskContextV3(templateName: string, essence: EssenceV3): string
 
   const vars: Record<string, string> = {
     TARGET: essence.meta.target || 'react',
-    THEME_STYLE: (essence.dna.theme as any).id || (essence.dna.theme as any).style || '',
+    THEME_STYLE: essence.dna.theme.id || '',
     THEME_MODE: essence.dna.theme.mode,
-    THEME_RECIPE: (essence.dna.theme as any).id || (essence.dna.theme as any).style || '',
+    THEME_RECIPE: essence.dna.theme.id || '',
     DEFAULT_SHELL: defaultShell as string,
     GUARD_MODE: essence.meta.guard.mode,
     LAYOUT: layout,
     DENSITY: densityLevel,
     CONTENT_GAP: contentGap,
     SCAFFOLD_STRUCTURE: scaffoldStructure,
-  };
-
-  return renderTemplate(template, vars);
-}
-
-/**
- * Generate essence summary markdown.
- */
-function generateEssenceSummary(essence: EssenceFile): string {
-  const template = loadTemplate('essence-summary.md.template');
-
-  // Build pages table with proper serialization
-  const pagesTable = `| Page | Shell | Layout |
-|------|-------|--------|
-${essence.structure.map(p => `| ${p.id} | ${p.shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`).join('\n')}`;
-
-  // Build features list
-  const featuresList = essence.features.length > 0
-    ? essence.features.map(f => `- ${f}`).join('\n')
-    : '- No features specified';
-
-  // Derive enforcement levels from guard config
-  // V2 essences have enforce_style/enforce_recipe booleans, map to v3 enforcement strings
-  const dnaEnforcement = essence.guard.enforce_style ? 'error' : 'off';
-  const blueprintEnforcement = essence.guard.enforce_recipe ? 'warn' : 'off';
-
-  const vars: Record<string, string> = {
-    ARCHETYPE: essence.archetype || 'custom',
-    BLUEPRINT: essence.blueprint || 'none',
-    PERSONALITY: essence.personality.join(', '),
-    TARGET: essence.target,
-    THEME_STYLE: essence.theme.style,
-    THEME_MODE: essence.theme.mode,
-    THEME_RECIPE: essence.theme.style,
-    SHAPE: essence.theme.shape,
-    PAGES_TABLE: pagesTable,
-    FEATURES_LIST: featuresList,
-    GUARD_MODE: essence.guard.mode,
-    ENFORCE_STYLE: String(essence.guard.enforce_style),
-    ENFORCE_RECIPE: String(essence.guard.enforce_recipe),
-    DNA_ENFORCEMENT: dnaEnforcement,
-    BLUEPRINT_ENFORCEMENT: blueprintEnforcement,
-    DENSITY: essence.density.level,
-    CONTENT_GAP: essence.density.content_gap,
-    LAST_UPDATED: new Date().toISOString(),
   };
 
   return renderTemplate(template, vars);
@@ -1909,9 +1486,9 @@ function generateEssenceSummaryV3(essence: EssenceV3): string {
     BLUEPRINT: '',
     PERSONALITY: (essence.dna.personality || []).join(', '),
     TARGET: (essence.meta.target ?? '') as string,
-    THEME_STYLE: ((essence.dna.theme as any).id ?? (essence.dna.theme as any).style ?? '') as string,
+    THEME_STYLE: (essence.dna.theme.id ?? '') as string,
     THEME_MODE: essence.dna.theme.mode as string,
-    THEME_RECIPE: ((essence.dna.theme as any).id ?? (essence.dna.theme as any).style ?? '') as string,
+    THEME_RECIPE: (essence.dna.theme.id ?? '') as string,
     SHAPE: (essence.dna.theme.shape ?? '') as string,
     PAGES_TABLE: pagesTable,
     FEATURES_LIST: featuresList,

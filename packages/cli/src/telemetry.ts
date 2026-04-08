@@ -115,6 +115,6 @@ export function collectMetrics(
     resolution_rate: 0,
     sections_count: sections.length,
     routes_count: Object.keys(routes).length,
-    theme: (theme.style as string) ?? 'unknown',
+    theme: (theme.id as string) ?? (theme.style as string) ?? 'unknown',
   };
 }
