@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/blueprint.v1.json",
+  "title": "Decantr Blueprint",
+  "type": "object",
+  "required": [
+    "$schema",
+    "id",
+    "version",
+    "name",
+    "theme",
+    "routes"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/blueprint.v1.json"
+    },
+    "id": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "version": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "decantr_compat": {
+      "type": "string"
+    },
+    "name": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "description": {
+      "type": "string"
+    },
+    "tags": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "archetype": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "compose": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+          },
+          {
+            "type": "object",
+            "required": [
+              "archetype",
+              "prefix"
+            ],
+            "properties": {
+              "archetype": {
+                "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+              },
+              "prefix": {
+                "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+              },
+              "role": {
+                "enum": [
+                  "primary",
+                  "gateway",
+                  "public",
+                  "auxiliary"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "theme": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/themeRef"
+    },
+    "personality": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+        }
+      ]
+    },
+    "voice": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/voice"
+    },
+    "features": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "routes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "shell": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+          },
+          "archetype": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+          },
+          "page": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "overrides": {
+      "type": "object",
+      "properties": {
+        "features_add": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+        },
+        "features_remove": {
+          "type": "array",
+          "items": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+          }
+        },
+        "pages_remove": {
+          "type": "array",
+          "items": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+          }
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "seo_hints": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/seoHints"
+    },
+    "navigation": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/navigation"
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    },
+    "suggested_themes": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "design_constraints": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "responsive_strategy": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
