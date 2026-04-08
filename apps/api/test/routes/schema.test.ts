@@ -1,0 +1,32 @@
+import { describe, expect, it } from 'vitest';
+import { Hono } from 'hono';
+import type { Env } from '../../src/types.js';
+import { schemaRoutes } from '../../src/routes/schema.js';
+
+function createTestApp() {
+  const app = new Hono<Env>();
+  app.route('/v1', schemaRoutes);
+  return app;
+}
+
+describe('GET /v1/schema/:name', () => {
+  it('serves known schemas', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/schema/theme.v1.json');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$id).toBe('https://decantr.ai/schemas/theme.v1.json');
+  });
+
+  it('returns 404 for unknown schemas', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/schema/nope.json');
+
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toBe('Schema not found');
+    expect(Array.isArray(json.available)).toBe(true);
+    expect(json.available).toContain('theme.v1.json');
+  });
+});
