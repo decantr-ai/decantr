@@ -3,9 +3,12 @@ import { mkdirSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node
 import { join } from 'node:path';
 import { validateCustomTheme, createTheme, listCustomThemes, deleteTheme, importTheme } from '../src/theme-commands.js';
 
+const THEME_SCHEMA_URL = 'https://decantr.ai/schemas/theme.v1.json';
+
 describe('validateCustomTheme', () => {
   it('returns valid for complete theme', () => {
     const theme = {
+      $schema: THEME_SCHEMA_URL,
       id: 'test',
       name: 'Test',
       seed: { primary: '#000', secondary: '#111', accent: '#222', background: '#fff' },
@@ -208,6 +211,7 @@ describe('importTheme', () => {
 
   it('imports valid theme file', () => {
     const theme = {
+      $schema: THEME_SCHEMA_URL,
       id: 'imported',
       name: 'Imported Theme',
       seed: { primary: '#000', secondary: '#111', accent: '#222', background: '#fff' },
