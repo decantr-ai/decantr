@@ -74,6 +74,10 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     titleOk: runtimeAudit.titleOk,
     langOk: runtimeAudit.langOk,
     viewportOk: runtimeAudit.viewportOk,
+    charsetOk: runtimeAudit.charsetOk,
+    cspSignalOk: runtimeAudit.cspSignalOk,
+    inlineScriptCount: runtimeAudit.inlineScriptCount,
+    externalScriptsWithoutIntegrityCount: runtimeAudit.externalScriptsWithoutIntegrityCount,
     assetCount: runtimeAudit.assetCount,
     assetsPassed: runtimeAudit.assetsPassed,
     routeHintsChecked: runtimeAudit.routeHintsChecked,
@@ -170,6 +174,10 @@ async function main() {
     appsWithTitleOkCount: results.filter(entry => entry.smoke.titleOk).length,
     appsWithLangOkCount: results.filter(entry => entry.smoke.langOk).length,
     appsWithViewportOkCount: results.filter(entry => entry.smoke.viewportOk).length,
+    appsWithCharsetOkCount: results.filter(entry => entry.smoke.charsetOk).length,
+    appsWithoutInlineScriptsCount: results.filter(entry => entry.smoke.inlineScriptCount === 0).length,
+    appsWithCspSignalCount: results.filter(entry => entry.smoke.cspSignalOk).length,
+    appsWithExternalScriptIntegrityCount: results.filter(entry => entry.smoke.externalScriptsWithoutIntegrityCount === 0).length,
     appsWithRouteCoverageCount: results.filter(entry => {
       const minimumRoutes = Math.min(2, entry.smoke.routeDocumentsChecked);
       return entry.smoke.routeDocumentsChecked === 0 || entry.smoke.routeDocumentsPassed >= minimumRoutes;
@@ -214,6 +222,10 @@ async function main() {
   console.log(`Title checks passed: ${summary.appsWithTitleOkCount}/${summary.appCount}`);
   console.log(`Lang checks passed: ${summary.appsWithLangOkCount}/${summary.appCount}`);
   console.log(`Viewport checks passed: ${summary.appsWithViewportOkCount}/${summary.appCount}`);
+  console.log(`Charset checks passed: ${summary.appsWithCharsetOkCount}/${summary.appCount}`);
+  console.log(`No inline scripts: ${summary.appsWithoutInlineScriptsCount}/${summary.appCount}`);
+  console.log(`CSP signals present: ${summary.appsWithCspSignalCount}/${summary.appCount}`);
+  console.log(`External script integrity ok: ${summary.appsWithExternalScriptIntegrityCount}/${summary.appCount}`);
   console.log(`Route coverage checks passed: ${summary.appsWithRouteCoverageCount}/${summary.appCount}`);
   console.log(`Average built assets: total ${summary.averageTotalAssetBytes} B, js ${summary.averageJsAssetBytes} B, css ${summary.averageCssAssetBytes} B`);
   console.log(`Drift signals: lower ${summary.lowerDriftCount}, moderate ${summary.moderateDriftCount}, elevated ${summary.elevatedDriftCount}`);

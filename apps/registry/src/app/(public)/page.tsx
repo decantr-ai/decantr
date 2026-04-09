@@ -80,8 +80,9 @@ async function ShowcaseShortlistSummary() {
         { label: 'Build Verified', value: summary.passedBuilds },
         { label: 'Smoke Verified', value: summary.passedSmokes },
         { label: 'Route Coverage', value: summary.appsWithRouteCoverageCount },
+        { label: 'No Inline Scripts', value: summary.appsWithoutInlineScriptsCount },
+        { label: 'CSP Signals', value: summary.appsWithCspSignalCount },
         { label: 'Lower Drift', value: summary.lowerDriftCount },
-        { label: 'Moderate Drift', value: summary.moderateDriftCount },
         { label: 'Elevated Drift', value: summary.elevatedDriftCount },
         { label: 'Avg Smoke (ms)', value: summary.averageSmokeDurationMs },
       ]}

@@ -178,8 +178,12 @@ Tracked shortlist verification baseline on 2026-04-09 after moving the shortlist
 - 8/8 shortlisted apps passed HTML title checks
 - 8/8 shortlisted apps passed HTML `lang` checks
 - 8/8 shortlisted apps passed viewport checks
+- 8/8 shortlisted apps passed charset checks
+- 8/8 shortlisted apps shipped with no inline script tags
+- 0/8 shortlisted apps emitted a CSP signal in the built root document
+- 8/8 shortlisted apps avoided external scripts without integrity
 - 8/8 shortlisted apps passed route-document coverage checks
-- average build duration: `1748ms`
+- average build duration: `1604ms`
 - average smoke duration: `9ms`
 - average built assets: `335362 B total`, `325759 B JS`, `9602 B CSS`
 - drift signals: `2 lower`, `4 moderate`, `2 elevated`
@@ -188,6 +192,10 @@ Tracked shortlist verification baseline on 2026-04-09 after moving the shortlist
 The shortlist verification report now runs through the shared `@decantr/verifier` built-dist runtime audit and records more than root-document and asset presence. It also records:
 - HTML title presence
 - HTML `lang` and viewport metadata presence
+- charset declaration presence
+- inline script counts
+- external script integrity gaps
+- CSP signal presence
 - route-document coverage counts
 - route-hint coverage from bundled JS
 - built asset payload sizes for total, JS, and CSS output

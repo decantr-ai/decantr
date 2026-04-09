@@ -23,6 +23,10 @@ export interface RuntimeAudit {
   titleOk: boolean;
   langOk: boolean;
   viewportOk: boolean;
+  charsetOk: boolean;
+  cspSignalOk: boolean;
+  inlineScriptCount: number;
+  externalScriptsWithoutIntegrityCount: number;
   assetCount: number;
   assetsPassed: number;
   routeHintsChecked: string[];
@@ -52,6 +56,10 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     titleOk: false,
     langOk: false,
     viewportOk: false,
+    charsetOk: false,
+    cspSignalOk: false,
+    inlineScriptCount: 0,
+    externalScriptsWithoutIntegrityCount: 0,
     assetCount: 0,
     assetsPassed: 0,
     routeHintsChecked: [],
@@ -82,6 +90,23 @@ function extractAssetPaths(indexHtml: string): string[] {
   }
 
   return [...assetPaths];
+}
+
+function countInlineScriptTags(html: string): number {
+  return html.match(/<script\b(?:(?!\bsrc=)[^>])*>/gi)?.length ?? 0;
+}
+
+function countExternalScriptsWithoutIntegrity(html: string): number {
+  return [...html.matchAll(/<script\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi)]
+    .map((match) => {
+      const attrs = `${match[1] ?? ''} ${match[4] ?? ''}`;
+      return {
+        src: match[3],
+        hasIntegrity: /\bintegrity\s*=/i.test(attrs),
+      };
+    })
+    .filter((entry) => /^https?:\/\//i.test(entry.src) && !entry.hasIntegrity)
+    .length;
 }
 
 function normalizeRouteHint(route: string | null | undefined): string {
@@ -174,6 +199,10 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const titleOk = /<title>[^<]+<\/title>/i.test(rootHtml);
     const langOk = /<html[^>]*\slang=(["'])[^"']+\1/i.test(rootHtml);
     const viewportOk = /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(rootHtml);
+    const charsetOk = /<meta[^>]+charset=/i.test(rootHtml);
+    const cspSignalOk = /<meta[^>]+http-equiv=(["'])Content-Security-Policy\1/i.test(rootHtml);
+    const inlineScriptCount = countInlineScriptTags(rootHtml);
+    const externalScriptsWithoutIntegrityCount = countExternalScriptsWithoutIntegrity(rootHtml);
 
     if (!rootDocumentOk) {
       failures.push('root-document-invalid');
@@ -263,6 +292,10 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       titleOk,
       langOk,
       viewportOk,
+      charsetOk,
+      cspSignalOk,
+      inlineScriptCount,
+      externalScriptsWithoutIntegrityCount,
       assetCount: assetPaths.length,
       assetsPassed,
       routeHintsChecked: routeHints,

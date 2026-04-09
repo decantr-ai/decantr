@@ -111,6 +111,10 @@ export interface ShowcaseShortlistVerificationEntry {
     titleOk: boolean;
     langOk: boolean;
     viewportOk: boolean;
+    charsetOk: boolean;
+    cspSignalOk: boolean;
+    inlineScriptCount: number;
+    externalScriptsWithoutIntegrityCount: number;
     assetCount: number;
     assetsPassed: number;
     routeHintsChecked: string[];
@@ -147,15 +151,19 @@ export interface ShowcaseShortlistVerificationReport {
     averageDurationMs: number;
     passedSmokes: number;
     failedSmokes: number;
-  averageSmokeDurationMs: number;
-  appsWithTitleOkCount: number;
-  appsWithLangOkCount: number;
-  appsWithViewportOkCount: number;
-  appsWithRouteCoverageCount: number;
-  averageTotalAssetBytes: number;
-  averageJsAssetBytes: number;
-  averageCssAssetBytes: number;
-  lowerDriftCount: number;
+    averageSmokeDurationMs: number;
+    appsWithTitleOkCount: number;
+    appsWithLangOkCount: number;
+    appsWithViewportOkCount: number;
+    appsWithCharsetOkCount: number;
+    appsWithoutInlineScriptsCount: number;
+    appsWithCspSignalCount: number;
+    appsWithExternalScriptIntegrityCount: number;
+    appsWithRouteCoverageCount: number;
+    averageTotalAssetBytes: number;
+    averageJsAssetBytes: number;
+    averageCssAssetBytes: number;
+    lowerDriftCount: number;
     moderateDriftCount: number;
     elevatedDriftCount: number;
     withPackManifestCount: number;
@@ -479,7 +487,6 @@ async function runRuntimeAudit(projectRoot: string, essence: EssenceFile | null)
 function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudit: RuntimeAudit, projectRoot: string): void {
   const distPath = join(projectRoot, 'dist');
   const indexPath = join(distPath, 'index.html');
-  const rootDocument = readTextIfExists(indexPath);
 
   if (!runtimeAudit.distPresent) {
     findings.push(makeFinding({
@@ -549,52 +556,48 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
     }));
   }
 
-  if (rootDocument) {
-    if (!/<meta[^>]+charset=/i.test(rootDocument)) {
-      findings.push(makeFinding({
-        id: 'runtime-charset-missing',
-        category: 'Document Hardening',
-        severity: 'info',
-        message: 'The built root document is missing an explicit charset declaration.',
-        evidence: [indexPath],
-        suggestedFix: 'Emit `<meta charset="utf-8">` from the entry document so encoding expectations stay explicit across hosts.',
-      }));
-    }
+  if (runtimeAudit.charsetOk === false) {
+    findings.push(makeFinding({
+      id: 'runtime-charset-missing',
+      category: 'Document Hardening',
+      severity: 'info',
+      message: 'The built root document is missing an explicit charset declaration.',
+      evidence: [indexPath],
+      suggestedFix: 'Emit `<meta charset="utf-8">` from the entry document so encoding expectations stay explicit across hosts.',
+    }));
+  }
 
-    const inlineScriptCount = countInlineScriptTags(rootDocument);
-    if (inlineScriptCount > 0) {
-      findings.push(makeFinding({
-        id: 'runtime-inline-scripts-present',
-        category: 'Security Hygiene',
-        severity: 'warn',
-        message: 'Inline `<script>` blocks were detected in the built root document.',
-        evidence: [indexPath, `Inline script tags: ${inlineScriptCount}`],
-        suggestedFix: 'Prefer bundled external assets and avoid inline scripts so CSP headers or nonces remain practical.',
-      }));
-    }
+  if (runtimeAudit.inlineScriptCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-inline-scripts-present',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Inline `<script>` blocks were detected in the built root document.',
+      evidence: [indexPath, `Inline script tags: ${runtimeAudit.inlineScriptCount}`],
+      suggestedFix: 'Prefer bundled external assets and avoid inline scripts so CSP headers or nonces remain practical.',
+    }));
+  }
 
-    const missingIntegrity = findExternalScriptTags(rootDocument).filter(entry => !entry.hasIntegrity);
-    if (missingIntegrity.length > 0) {
-      findings.push(makeFinding({
-        id: 'runtime-external-scripts-without-integrity',
-        category: 'Security Hygiene',
-        severity: 'warn',
-        message: 'Remote script tags were detected without Subresource Integrity metadata.',
-        evidence: missingIntegrity.slice(0, 4).map(entry => entry.src),
-        suggestedFix: 'Pin remote script tags with integrity/crossorigin metadata or serve the dependency through the trusted build pipeline.',
-      }));
-    }
+  if (runtimeAudit.externalScriptsWithoutIntegrityCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-scripts-without-integrity',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Remote script tags were detected without Subresource Integrity metadata.',
+      evidence: [indexPath, `Remote scripts missing integrity: ${runtimeAudit.externalScriptsWithoutIntegrityCount}`],
+      suggestedFix: 'Pin remote script tags with integrity/crossorigin metadata or serve the dependency through the trusted build pipeline.',
+    }));
+  }
 
-    if (!/<meta[^>]+http-equiv=(["'])Content-Security-Policy\1/i.test(rootDocument)) {
-      findings.push(makeFinding({
-        id: 'runtime-csp-signal-missing',
-        category: 'Security Hygiene',
-        severity: 'info',
-        message: 'No document-level Content Security Policy signal was detected in the built root document.',
-        evidence: [indexPath],
-        suggestedFix: 'Prefer a CSP response header, or emit a CSP meta policy for static hosts that cannot add security headers.',
-      }));
-    }
+  if (runtimeAudit.cspSignalOk === false) {
+    findings.push(makeFinding({
+      id: 'runtime-csp-signal-missing',
+      category: 'Security Hygiene',
+      severity: 'info',
+      message: 'No document-level Content Security Policy signal was detected in the built root document.',
+      evidence: [indexPath],
+      suggestedFix: 'Prefer a CSP response header, or emit a CSP meta policy for static hosts that cannot add security headers.',
+    }));
   }
 
   if (runtimeAudit.assetCount === 0) {
@@ -882,22 +885,6 @@ function findHardcodedColors(code: string): string[] {
 function findUtilityFrameworkSignals(code: string): string[] {
   const matches = code.match(/\b(?:bg|text|border|shadow|rounded|px|py|mx|my|gap|grid-cols|col-span|row-span|sm|md|lg|xl|hover):[-\w/.[\]]+/g) ?? [];
   return [...new Set(matches)];
-}
-
-function countInlineScriptTags(html: string): number {
-  return html.match(/<script\b(?:(?!\bsrc=)[^>])*>/gi)?.length ?? 0;
-}
-
-function findExternalScriptTags(html: string): Array<{ src: string; hasIntegrity: boolean }> {
-  return [...html.matchAll(/<script\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi)]
-    .map((match) => {
-      const attrs = `${match[1] ?? ''} ${match[4] ?? ''}`;
-      return {
-        src: match[3],
-        hasIntegrity: /\bintegrity\s*=/i.test(attrs),
-      };
-    })
-    .filter((entry) => /^https?:\/\//i.test(entry.src));
 }
 
 export function critiqueSource({

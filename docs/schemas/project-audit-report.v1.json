@@ -58,6 +58,10 @@
         "titleOk",
         "langOk",
         "viewportOk",
+        "charsetOk",
+        "cspSignalOk",
+        "inlineScriptCount",
+        "externalScriptsWithoutIntegrityCount",
         "assetCount",
         "assetsPassed",
         "routeHintsChecked",
@@ -95,6 +99,20 @@
         },
         "viewportOk": {
           "type": "boolean"
+        },
+        "charsetOk": {
+          "type": "boolean"
+        },
+        "cspSignalOk": {
+          "type": "boolean"
+        },
+        "inlineScriptCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalScriptsWithoutIntegrityCount": {
+          "type": "integer",
+          "minimum": 0
         },
         "assetCount": {
           "type": "integer",

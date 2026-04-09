@@ -231,6 +231,7 @@ describe('v3-aware tool tests', () => {
   describe('verification tools', () => {
     it('returns a schema-backed project audit report', async () => {
       await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
 
       process.chdir(testDir);
       const result = await handleTool('decantr_audit_project', {}) as {
@@ -270,6 +271,10 @@ describe('v3-aware tool tests', () => {
             titleOk: true,
             langOk: true,
             viewportOk: true,
+            charsetOk: true,
+            cspSignalOk: true,
+            inlineScriptCount: 0,
+            externalScriptsWithoutIntegrityCount: 0,
             assetCount: 1,
             assetsPassed: 1,
             routeHintsChecked: ['/'],
@@ -420,7 +425,16 @@ describe('v3-aware tool tests', () => {
             failedSmokes: 0,
             averageSmokeDurationMs: 4,
             appsWithTitleOkCount: 1,
+            appsWithLangOkCount: 1,
+            appsWithViewportOkCount: 1,
+            appsWithCharsetOkCount: 1,
+            appsWithoutInlineScriptsCount: 1,
+            appsWithCspSignalCount: 1,
+            appsWithExternalScriptIntegrityCount: 1,
             appsWithRouteCoverageCount: 1,
+            averageTotalAssetBytes: 42000,
+            averageJsAssetBytes: 31000,
+            averageCssAssetBytes: 11000,
             lowerDriftCount: 1,
             moderateDriftCount: 0,
             elevatedDriftCount: 0,
@@ -438,12 +452,23 @@ describe('v3-aware tool tests', () => {
                 durationMs: 4,
                 rootDocumentOk: true,
                 titleOk: true,
+                langOk: true,
+                viewportOk: true,
+                charsetOk: true,
+                cspSignalOk: true,
+                inlineScriptCount: 0,
+                externalScriptsWithoutIntegrityCount: 0,
                 assetCount: 2,
                 assetsPassed: 2,
                 routeHintsChecked: ['/'],
                 routeHintsMatched: 1,
                 routeDocumentsChecked: 1,
                 routeDocumentsPassed: 1,
+                totalAssetBytes: 42000,
+                jsAssetBytes: 31000,
+                cssAssetBytes: 11000,
+                largestAssetPath: '/assets/app.js',
+                largestAssetBytes: 31000,
                 failures: [],
               },
               drift: {

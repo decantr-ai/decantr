@@ -104,6 +104,10 @@ if (reportResults.length > 0) {
       'appsWithTitleOkCount',
       'appsWithLangOkCount',
       'appsWithViewportOkCount',
+      'appsWithCharsetOkCount',
+      'appsWithoutInlineScriptsCount',
+      'appsWithCspSignalCount',
+      'appsWithExternalScriptIntegrityCount',
       'appsWithRouteCoverageCount',
       'averageTotalAssetBytes',
       'averageJsAssetBytes',
@@ -174,7 +178,13 @@ if (reportResults.length > 0) {
       if (typeof entry.smoke.viewportOk !== 'boolean') {
         errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.viewportOk must be boolean.`);
       }
-      for (const key of ['assetCount', 'assetsPassed', 'routeHintsMatched', 'routeDocumentsChecked', 'routeDocumentsPassed', 'totalAssetBytes', 'jsAssetBytes', 'cssAssetBytes', 'largestAssetBytes']) {
+      if (typeof entry.smoke.charsetOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.charsetOk must be boolean.`);
+      }
+      if (typeof entry.smoke.cspSignalOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.cspSignalOk must be boolean.`);
+      }
+      for (const key of ['inlineScriptCount', 'externalScriptsWithoutIntegrityCount', 'assetCount', 'assetsPassed', 'routeHintsMatched', 'routeDocumentsChecked', 'routeDocumentsPassed', 'totalAssetBytes', 'jsAssetBytes', 'cssAssetBytes', 'largestAssetBytes']) {
         if (!Number.isFinite(entry.smoke[key]) || entry.smoke[key] < 0) {
           errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.${key} must be a non-negative number.`);
         }

@@ -206,6 +206,10 @@ describe('verifier', () => {
       writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/");\n');
 
       const report = await auditProject(projectRoot);
+      expect(report.runtimeAudit.charsetOk).toBe(false);
+      expect(report.runtimeAudit.cspSignalOk).toBe(false);
+      expect(report.runtimeAudit.inlineScriptCount).toBe(1);
+      expect(report.runtimeAudit.externalScriptsWithoutIntegrityCount).toBe(1);
       expect(report.findings.some(finding => finding.id === 'runtime-charset-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-inline-scripts-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-external-scripts-without-integrity')).toBe(true);
@@ -284,6 +288,10 @@ describe('verifier', () => {
       expect(report.passed).toBe(true);
       expect(report.langOk).toBe(true);
       expect(report.viewportOk).toBe(true);
+      expect(report.charsetOk).toBe(false);
+      expect(report.cspSignalOk).toBe(false);
+      expect(report.inlineScriptCount).toBe(0);
+      expect(report.externalScriptsWithoutIntegrityCount).toBe(0);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

@@ -1,18 +1,22 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-09T15:47:05.827Z",
+  "generatedAt": "2026-04-09T16:58:39.414Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1748,
+    "averageDurationMs": 1604,
     "passedSmokes": 8,
     "failedSmokes": 0,
     "averageSmokeDurationMs": 9,
     "appsWithTitleOkCount": 8,
     "appsWithLangOkCount": 8,
     "appsWithViewportOkCount": 8,
+    "appsWithCharsetOkCount": 8,
+    "appsWithoutInlineScriptsCount": 8,
+    "appsWithCspSignalCount": 0,
+    "appsWithExternalScriptIntegrityCount": 8,
     "appsWithRouteCoverageCount": 8,
     "averageTotalAssetBytes": 335362,
     "averageJsAssetBytes": 325759,
@@ -30,15 +34,19 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1733
+        "durationMs": 1665
       },
       "smoke": {
         "passed": true,
-        "durationMs": 34,
+        "durationMs": 32,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
         "viewportOk": true,
+        "charsetOk": true,
+        "cspSignalOk": false,
+        "inlineScriptCount": 0,
+        "externalScriptsWithoutIntegrityCount": 0,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -79,15 +87,19 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1774
+        "durationMs": 1640
       },
       "smoke": {
         "passed": true,
-        "durationMs": 8,
+        "durationMs": 7,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
         "viewportOk": true,
+        "charsetOk": true,
+        "cspSignalOk": false,
+        "inlineScriptCount": 0,
+        "externalScriptsWithoutIntegrityCount": 0,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -128,15 +140,19 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1770
+        "durationMs": 1571
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 11,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
         "viewportOk": true,
+        "charsetOk": true,
+        "cspSignalOk": false,
+        "inlineScriptCount": 0,
+        "externalScriptsWithoutIntegrityCount": 0,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -177,7 +193,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1661
+        "durationMs": 1525
       },
       "smoke": {
         "passed": true,
@@ -186,6 +202,10 @@
         "titleOk": true,
         "langOk": true,
         "viewportOk": true,
+        "charsetOk": true,
+        "cspSignalOk": false,
+        "inlineScriptCount": 0,
+        "externalScriptsWithoutIntegrityCount": 0,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -226,7 +246,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1605
+        "durationMs": 1490
       },
       "smoke": {
         "passed": true,
@@ -235,6 +255,10 @@
         "titleOk": true,
         "langOk": true,
         "viewportOk": true,
+        "charsetOk": true,
+        "cspSignalOk": false,
+        "inlineScriptCount": 0,
+        "externalScriptsWithoutIntegrityCount": 0,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -274,7 +298,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1855
+        "durationMs": 1699
       },
       "smoke": {
         "passed": true,
@@ -283,6 +307,10 @@
         "titleOk": true,
         "langOk": true,
         "viewportOk": true,
+        "charsetOk": true,
+        "cspSignalOk": false,
+        "inlineScriptCount": 0,
+        "externalScriptsWithoutIntegrityCount": 0,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -323,7 +351,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1843
+        "durationMs": 1655
       },
       "smoke": {
         "passed": true,
@@ -332,6 +360,10 @@
         "titleOk": true,
         "langOk": true,
         "viewportOk": true,
+        "charsetOk": true,
+        "cspSignalOk": false,
+        "inlineScriptCount": 0,
+        "externalScriptsWithoutIntegrityCount": 0,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -372,15 +404,19 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1740
+        "durationMs": 1585
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 3,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
         "viewportOk": true,
+        "charsetOk": true,
+        "cspSignalOk": false,
+        "inlineScriptCount": 0,
+        "externalScriptsWithoutIntegrityCount": 0,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [

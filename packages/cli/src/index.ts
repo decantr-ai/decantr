@@ -335,6 +335,10 @@ async function printShowcaseBenchmarks(
       console.log(`  Title checks: ${report.summary.appsWithTitleOkCount}/${report.summary.appCount}`);
       console.log(`  Lang checks: ${report.summary.appsWithLangOkCount}/${report.summary.appCount}`);
       console.log(`  Viewport checks: ${report.summary.appsWithViewportOkCount}/${report.summary.appCount}`);
+      console.log(`  Charset checks: ${report.summary.appsWithCharsetOkCount}/${report.summary.appCount}`);
+      console.log(`  No inline scripts: ${report.summary.appsWithoutInlineScriptsCount}/${report.summary.appCount}`);
+      console.log(`  CSP signals: ${report.summary.appsWithCspSignalCount}/${report.summary.appCount}`);
+      console.log(`  External script integrity ok: ${report.summary.appsWithExternalScriptIntegrityCount}/${report.summary.appCount}`);
       console.log(`  Route coverage: ${report.summary.appsWithRouteCoverageCount}/${report.summary.appCount}`);
       console.log(`  Avg assets: total ${fmtBytes(report.summary.averageTotalAssetBytes)} | js ${fmtBytes(report.summary.averageJsAssetBytes)} | css ${fmtBytes(report.summary.averageCssAssetBytes)}`);
       console.log(`  Drift: lower ${report.summary.lowerDriftCount}, moderate ${report.summary.moderateDriftCount}, elevated ${report.summary.elevatedDriftCount}`);
@@ -1422,6 +1426,12 @@ function printProjectAuditReport(report: ProjectAuditReport) {
       : `${Math.round(bytes / 1_000)} KB`;
     console.log(
       `  Built assets: total ${fmt(report.runtimeAudit.totalAssetBytes)} | js ${fmt(report.runtimeAudit.jsAssetBytes)} | css ${fmt(report.runtimeAudit.cssAssetBytes)}`,
+    );
+    console.log(
+      `  Document hardening: lang ${report.runtimeAudit.langOk ? 'ok' : 'missing'} | viewport ${report.runtimeAudit.viewportOk ? 'ok' : 'missing'} | charset ${report.runtimeAudit.charsetOk ? 'ok' : 'missing'} | csp ${report.runtimeAudit.cspSignalOk ? 'present' : 'missing'}`,
+    );
+    console.log(
+      `  Script hygiene: inline ${report.runtimeAudit.inlineScriptCount} | external without integrity ${report.runtimeAudit.externalScriptsWithoutIntegrityCount}`,
     );
   }
   console.log(`  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`);

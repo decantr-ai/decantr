@@ -27,6 +27,10 @@
         "appsWithTitleOkCount",
         "appsWithLangOkCount",
         "appsWithViewportOkCount",
+        "appsWithCharsetOkCount",
+        "appsWithoutInlineScriptsCount",
+        "appsWithCspSignalCount",
+        "appsWithExternalScriptIntegrityCount",
         "appsWithRouteCoverageCount",
         "averageTotalAssetBytes",
         "averageJsAssetBytes",
@@ -47,6 +51,10 @@
         "appsWithTitleOkCount": { "type": "number", "minimum": 0 },
         "appsWithLangOkCount": { "type": "number", "minimum": 0 },
         "appsWithViewportOkCount": { "type": "number", "minimum": 0 },
+        "appsWithCharsetOkCount": { "type": "number", "minimum": 0 },
+        "appsWithoutInlineScriptsCount": { "type": "number", "minimum": 0 },
+        "appsWithCspSignalCount": { "type": "number", "minimum": 0 },
+        "appsWithExternalScriptIntegrityCount": { "type": "number", "minimum": 0 },
         "appsWithRouteCoverageCount": { "type": "number", "minimum": 0 },
         "averageTotalAssetBytes": { "type": "number", "minimum": 0 },
         "averageJsAssetBytes": { "type": "number", "minimum": 0 },
@@ -107,6 +115,10 @@
             "titleOk",
             "langOk",
             "viewportOk",
+            "charsetOk",
+            "cspSignalOk",
+            "inlineScriptCount",
+            "externalScriptsWithoutIntegrityCount",
             "assetCount",
             "assetsPassed",
             "routeHintsChecked",
@@ -139,6 +151,20 @@
             },
             "viewportOk": {
               "type": "boolean"
+            },
+            "charsetOk": {
+              "type": "boolean"
+            },
+            "cspSignalOk": {
+              "type": "boolean"
+            },
+            "inlineScriptCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalScriptsWithoutIntegrityCount": {
+              "type": "number",
+              "minimum": 0
             },
             "assetCount": {
               "type": "number",

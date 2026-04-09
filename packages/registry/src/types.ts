@@ -526,6 +526,10 @@ export interface ShowcaseVerificationEntry {
     titleOk: boolean;
     langOk: boolean;
     viewportOk: boolean;
+    charsetOk: boolean;
+    cspSignalOk: boolean;
+    inlineScriptCount: number;
+    externalScriptsWithoutIntegrityCount: number;
     assetCount: number;
     assetsPassed: number;
     routeHintsChecked: string[];
@@ -562,6 +566,10 @@ export interface ShowcaseShortlistSummary {
   appsWithTitleOkCount: number;
   appsWithLangOkCount: number;
   appsWithViewportOkCount: number;
+  appsWithCharsetOkCount: number;
+  appsWithoutInlineScriptsCount: number;
+  appsWithCspSignalCount: number;
+  appsWithExternalScriptIntegrityCount: number;
   appsWithRouteCoverageCount: number;
   averageTotalAssetBytes: number;
   averageJsAssetBytes: number;
@@ -864,6 +872,10 @@ export interface ProjectAuditRuntimeAudit {
   titleOk: boolean;
   langOk: boolean;
   viewportOk: boolean;
+  charsetOk: boolean;
+  cspSignalOk: boolean;
+  inlineScriptCount: number;
+  externalScriptsWithoutIntegrityCount: number;
   assetCount: number;
   assetsPassed: number;
   routeHintsChecked: string[];

@@ -105,12 +105,26 @@ commit archaeology.
 - Deepened shortlist verification beyond root/asset smoke with:
   - HTML title checks
   - HTML `lang` and viewport checks
+  - charset checks
+  - inline script counts
+  - external script integrity checks
+  - CSP signal checks
   - route-document coverage checks
   - total / JS / CSS asset payload reporting
   - richer shortlist summary/report fields surfaced through shared contracts
 - Registry homepage and blueprint detail surfaces expose showcase benchmark metadata.
 - API, CLI, and MCP all expose showcase benchmark surfaces.
 - Registry app now dogfoods public showcase metadata from the hosted API path.
+- Current tracked shortlist baseline on 2026-04-09:
+  - 8/8 builds passing
+  - 8/8 smoke checks passing
+  - 8/8 title / `lang` / viewport / charset checks passing
+  - 8/8 with no inline script tags
+  - 8/8 with no external scripts missing integrity
+  - 0/8 with CSP signals present
+  - average build duration `1604ms`
+  - average smoke duration `9ms`
+  - average assets `335362 B total`, `325759 B JS`, `9602 B CSS`
 
 ### Registry intelligence
 
