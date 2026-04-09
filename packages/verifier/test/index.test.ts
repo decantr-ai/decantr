@@ -784,4 +784,48 @@ describe('verifier', () => {
 
     expect(report.findings.some(finding => finding.id === 'security-auth-autocomplete-missing')).toBe(true);
   });
+
+  it('flags buttons inside forms that omit an explicit type', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/ProfileForm.tsx',
+      code: `
+        export function ProfileForm() {
+          return (
+            <form>
+              <button>Open help</button>
+              <button type="submit">Save</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['profile'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'profile', path: '/profile', patternIds: ['form'] }],
+          focusAreas: ['motion-interaction'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'interaction-button-type-missing')).toBe(true);
+  });
 });

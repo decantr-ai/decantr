@@ -975,6 +975,7 @@ interface AstCritiqueSignals {
   placeholderNavigationTargetCount: number;
   emailAutocompleteMissingCount: number;
   passwordAutocompleteMissingCount: number;
+  buttonInFormWithoutTypeCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -1101,6 +1102,17 @@ function isWrappedInJsxLabel(node: ts.Node): boolean {
   return false;
 }
 
+function hasAncestorJsxTag(node: ts.Node, tagName: string): boolean {
+  let current: ts.Node | undefined = node.parent;
+  while (current) {
+    if (ts.isJsxElement(current) && getJsxTagName(current.openingElement) === tagName) {
+      return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
 function isLabelableFormControl(tagName: string | null, attributes: ts.JsxAttributes): boolean {
   if (!tagName) return false;
   if (tagName === 'select' || tagName === 'textarea') return true;
@@ -1173,6 +1185,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     placeholderNavigationTargetCount: 0,
     emailAutocompleteMissingCount: 0,
     passwordAutocompleteMissingCount: 0,
+    buttonInFormWithoutTypeCount: 0,
   };
   const labelForIds = collectLabelForIds(sourceFile);
 
@@ -1227,6 +1240,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
     if (ts.isJsxSelfClosingElement(node)) {
       const tagName = getJsxTagName(node);
+      if (tagName === 'button' && hasAncestorJsxTag(node, 'form') && !getJsxAttribute(node.attributes, 'type')) {
+        signals.buttonInFormWithoutTypeCount += 1;
+      }
       if (tagName === 'button' && !hasAccessibleLabel(node.attributes, '')) {
         signals.iconOnlyButtonWithoutLabelCount += 1;
       }
@@ -1266,6 +1282,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       const tagName = getJsxTagName(node.openingElement);
       const textContent = getJsxTextContent(node).replace(/\s+/g, ' ').trim();
 
+      if (tagName === 'button' && hasAncestorJsxTag(node, 'form') && !getJsxAttribute(node.openingElement.attributes, 'type')) {
+        signals.buttonInFormWithoutTypeCount += 1;
+      }
       if (tagName === 'button' && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
         signals.iconOnlyButtonWithoutLabelCount += 1;
       }
@@ -1498,13 +1517,28 @@ export function critiqueSource({
 
   const hasTransition = codeLower.includes('transition') || codeLower.includes('animate') || codeLower.includes('keyframe') || codeLower.includes('framer');
   const hasHover = codeLower.includes(':hover') || codeLower.includes('onmouseenter') || codeLower.includes('hover:');
+  const buttonInFormWithoutTypeCount = astSignals.buttonInFormWithoutTypeCount;
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
-    score: Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0)),
-    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}`,
-    suggestions: !hasTransition ? ['Add transitions for interactive state changes where appropriate.'] : [],
+    score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0))),
+    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}`,
+    suggestions: [
+      ...(!hasTransition ? ['Add transitions for interactive state changes where appropriate.'] : []),
+      ...(buttonInFormWithoutTypeCount > 0 ? ['Add explicit button types inside forms so non-submit actions do not accidentally submit.'] : []),
+    ],
   });
+  if (buttonInFormWithoutTypeCount > 0) {
+    findings.push(makeFinding({
+      id: 'interaction-button-type-missing',
+      category: 'Interaction Safety',
+      severity: 'warn',
+      message: 'Buttons inside forms were detected without an explicit `type` attribute.',
+      evidence: [filePath, `Buttons inside forms without type: ${buttonInFormWithoutTypeCount}`],
+      file: filePath,
+      suggestedFix: 'Set `type=\"button\"` for non-submit actions and `type=\"submit\"` for the intended submit control.',
+    }));
+  }
 
   const knownRoutes = reviewPack?.data.routes.length ?? packManifest?.pages.length ?? 0;
   const placeholderNavigationTargets = astSignals.placeholderNavigationTargetCount;
