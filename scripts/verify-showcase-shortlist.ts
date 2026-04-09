@@ -82,6 +82,7 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     jsEvalSignalCount: runtimeAudit.jsEvalSignalCount,
     jsHtmlInjectionSignalCount: runtimeAudit.jsHtmlInjectionSignalCount,
     jsInsecureTransportSignalCount: runtimeAudit.jsInsecureTransportSignalCount,
+    jsSecretSignalCount: runtimeAudit.jsSecretSignalCount,
     assetCount: runtimeAudit.assetCount,
     assetsPassed: runtimeAudit.assetsPassed,
     routeHintsChecked: runtimeAudit.routeHintsChecked,

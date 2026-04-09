@@ -208,7 +208,7 @@ describe('verifier', () => {
       );
       writeFileSync(
         join(projectRoot, 'dist', 'assets', 'app.js'),
-        'eval("boot()"); document.write("<p>unsafe</p>"); fetch("http://legacy.example.com/api"); console.log("/");\n',
+        'eval("boot()"); document.write("<p>unsafe</p>"); fetch("http://legacy.example.com/api"); const leaked = "SUPABASE_SERVICE_ROLE_KEY"; const stripe = "sk_live_1234567890"; console.log("/");\n',
       );
 
       const report = await auditProject(projectRoot);
@@ -220,6 +220,7 @@ describe('verifier', () => {
       expect(report.runtimeAudit.jsEvalSignalCount).toBe(1);
       expect(report.runtimeAudit.jsHtmlInjectionSignalCount).toBe(1);
       expect(report.runtimeAudit.jsInsecureTransportSignalCount).toBe(1);
+      expect(report.runtimeAudit.jsSecretSignalCount).toBe(2);
       expect(report.findings.some(finding => finding.id === 'runtime-charset-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-inline-scripts-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-external-scripts-without-integrity')).toBe(true);
@@ -227,6 +228,7 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'runtime-js-dynamic-code-signals')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-js-html-injection-signals')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-js-insecure-transport-signals')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-js-secret-signals')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-csp-signal-missing')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
@@ -2195,6 +2197,7 @@ describe('verifier', () => {
       expect(report.jsEvalSignalCount).toBe(0);
       expect(report.jsHtmlInjectionSignalCount).toBe(0);
       expect(report.jsInsecureTransportSignalCount).toBe(0);
+      expect(report.jsSecretSignalCount).toBe(0);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

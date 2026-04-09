@@ -160,6 +160,7 @@ export function buildShowcaseVerificationResult(entry, options = {}) {
       jsEvalSignalCount: Number.isFinite(options.smoke?.jsEvalSignalCount) ? options.smoke.jsEvalSignalCount : 0,
       jsHtmlInjectionSignalCount: Number.isFinite(options.smoke?.jsHtmlInjectionSignalCount) ? options.smoke.jsHtmlInjectionSignalCount : 0,
       jsInsecureTransportSignalCount: Number.isFinite(options.smoke?.jsInsecureTransportSignalCount) ? options.smoke.jsInsecureTransportSignalCount : 0,
+      jsSecretSignalCount: Number.isFinite(options.smoke?.jsSecretSignalCount) ? options.smoke.jsSecretSignalCount : 0,
       assetCount: Number.isFinite(options.smoke?.assetCount) ? options.smoke.assetCount : 0,
       assetsPassed: Number.isFinite(options.smoke?.assetsPassed) ? options.smoke.assetsPassed : 0,
       routeHintsChecked: Array.isArray(options.smoke?.routeHintsChecked) ? options.smoke.routeHintsChecked : [],

@@ -66,6 +66,7 @@
         "jsEvalSignalCount",
         "jsHtmlInjectionSignalCount",
         "jsInsecureTransportSignalCount",
+        "jsSecretSignalCount",
         "assetCount",
         "assetsPassed",
         "routeHintsChecked",
@@ -134,6 +135,10 @@
           "minimum": 0
         },
         "jsInsecureTransportSignalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jsSecretSignalCount": {
           "type": "integer",
           "minimum": 0
         },

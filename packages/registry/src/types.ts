@@ -533,6 +533,10 @@ export interface ShowcaseVerificationEntry {
     inlineScriptCount: number;
     externalScriptsWithoutIntegrityCount: number;
     externalStylesheetsWithoutIntegrityCount: number;
+    jsEvalSignalCount: number;
+    jsHtmlInjectionSignalCount: number;
+    jsInsecureTransportSignalCount: number;
+    jsSecretSignalCount: number;
     assetCount: number;
     assetsPassed: number;
     routeHintsChecked: string[];
@@ -915,6 +919,8 @@ export interface ProjectAuditRuntimeAudit {
   externalStylesheetsWithoutIntegrityCount: number;
   jsEvalSignalCount: number;
   jsHtmlInjectionSignalCount: number;
+  jsInsecureTransportSignalCount: number;
+  jsSecretSignalCount: number;
   assetCount: number;
   assetsPassed: number;
   routeHintsChecked: string[];

@@ -116,6 +116,11 @@ export interface ShowcaseShortlistVerificationEntry {
     cspSignalOk: boolean;
     inlineScriptCount: number;
     externalScriptsWithoutIntegrityCount: number;
+    externalStylesheetsWithoutIntegrityCount: number;
+    jsEvalSignalCount: number;
+    jsHtmlInjectionSignalCount: number;
+    jsInsecureTransportSignalCount: number;
+    jsSecretSignalCount: number;
     assetCount: number;
     assetsPassed: number;
     routeHintsChecked: string[];
@@ -1053,6 +1058,17 @@ function appendRuntimeAuditFindings(
       message: 'Built JavaScript includes plain HTTP or insecure websocket transport markers.',
       evidence: [distPath, `Insecure transport signals in built JS: ${runtimeAudit.jsInsecureTransportSignalCount}`],
       suggestedFix: 'Remove plain HTTP and ws:// endpoints from shipped bundles; prefer HTTPS/WSS or route transport through a trusted server boundary.',
+    }));
+  }
+
+  if (runtimeAudit.jsSecretSignalCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-js-secret-signals',
+      category: 'Security Hygiene',
+      severity: 'error',
+      message: 'Built JavaScript includes secret-like markers such as service-role keys, live secret keys, or private-key material.',
+      evidence: [distPath, `Secret-like signals in built JS: ${runtimeAudit.jsSecretSignalCount}`],
+      suggestedFix: 'Remove server-only secrets from client bundles immediately, rotate any exposed credentials, and keep privileged keys behind a trusted server boundary.',
     }));
   }
 

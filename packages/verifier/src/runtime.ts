@@ -31,6 +31,7 @@ export interface RuntimeAudit {
   jsEvalSignalCount: number;
   jsHtmlInjectionSignalCount: number;
   jsInsecureTransportSignalCount: number;
+  jsSecretSignalCount: number;
   assetCount: number;
   assetsPassed: number;
   routeHintsChecked: string[];
@@ -71,6 +72,7 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     jsEvalSignalCount: 0,
     jsHtmlInjectionSignalCount: 0,
     jsInsecureTransportSignalCount: 0,
+    jsSecretSignalCount: 0,
     assetCount: 0,
     assetsPassed: 0,
     routeHintsChecked: [],
@@ -149,6 +151,16 @@ function countHtmlInjectionSignals(js: string): number {
 
 function countInsecureTransportSignals(js: string): number {
   return js.match(/\b(?:http|ws):\/\//g)?.length ?? 0;
+}
+
+function countSecretLeakSignals(js: string): number {
+  const patterns = [
+    /\b(?:SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE|SERVICE_ROLE_KEY)\b/g,
+    /\bsk_live_[0-9A-Za-z]+\b/g,
+    /-----BEGIN [A-Z ]*PRIVATE KEY-----/g,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (js.match(pattern)?.length ?? 0), 0);
 }
 
 function normalizeRouteHint(route: string | null | undefined): string {
@@ -303,6 +315,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const jsEvalSignalCount = countDynamicCodeSignals(combinedJs);
     const jsHtmlInjectionSignalCount = countHtmlInjectionSignals(combinedJs);
     const jsInsecureTransportSignalCount = countInsecureTransportSignals(combinedJs);
+    const jsSecretSignalCount = countSecretLeakSignals(combinedJs);
     if (routeHints.length > 0 && routeHintsMatched < Math.min(2, routeHints.length)) {
       failures.push('route-hints-missing');
     }
@@ -349,6 +362,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       jsEvalSignalCount,
       jsHtmlInjectionSignalCount,
       jsInsecureTransportSignalCount,
+      jsSecretSignalCount,
       assetCount: assetPaths.length,
       assetsPassed,
       routeHintsChecked: routeHints,
