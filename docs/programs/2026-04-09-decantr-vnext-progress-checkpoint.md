@@ -64,6 +64,7 @@ commit archaeology.
 - CLI now emits pack artifacts into scaffolded projects.
 - Shared core now compiles execution-pack bundles from essence as a reusable runtime primitive instead of only inside CLI scaffold glue.
 - MCP can read scaffold, section, page, mutation, and review pack context.
+- MCP context readers now fall back to hosted pack compilation when local `.decantr/context` artifacts are missing or incomplete.
 - Generated project guidance now points operators to packs first.
 - Hosted API now compiles execution packs from essence documents through:
   - `POST /v1/packs/compile`

@@ -58,6 +58,160 @@ function makeV2Essence() {
   };
 }
 
+function makeHostedPackBundle() {
+  return {
+    $schema: 'https://decantr.ai/schemas/execution-pack-bundle.v1.json',
+    generatedAt: '2026-04-09T00:00:00.000Z',
+    sourceEssenceVersion: '3.0.0',
+    manifest: {
+      $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+      version: '1.0.0',
+      generatedAt: '2026-04-09T00:00:00.000Z',
+      scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+      review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+      sections: [
+        { id: 'dashboard', markdown: 'section-dashboard-pack.md', json: 'section-dashboard-pack.json', pageIds: ['overview'] },
+      ],
+      pages: [
+        { id: 'overview', markdown: 'page-overview-pack.md', json: 'page-overview-pack.json', sectionId: 'dashboard', sectionRole: 'primary' },
+      ],
+      mutations: [
+        { id: 'modify', markdown: 'mutation-modify-pack.md', json: 'mutation-modify-pack.json', mutationType: 'modify' },
+      ],
+    },
+    scaffold: {
+      $schema: 'https://decantr.ai/schemas/scaffold-pack.v1.json',
+      packVersion: '1.0.0',
+      packType: 'scaffold',
+      objective: 'Scaffold the app shell and declared routes.',
+      target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+      preset: null,
+      scope: { appId: 'app', pageIds: ['overview'], patternIds: ['kpi-grid'] },
+      requiredSetup: [],
+      allowedVocabulary: [],
+      examples: [],
+      antiPatterns: [],
+      successChecks: [],
+      tokenBudget: { target: 1400, max: 2200, strategy: [] },
+      data: {
+        shell: 'sidebar-main',
+        theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
+        routing: 'hash',
+        features: ['auth'],
+        routes: [{ pageId: 'overview', path: '/', patternIds: ['kpi-grid'] }],
+      },
+      renderedMarkdown: '# Scaffold Pack\n',
+    },
+    review: {
+      $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+      packVersion: '1.0.0',
+      packType: 'review',
+      objective: 'Review generated output against the compiled Decantr contract.',
+      target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+      preset: null,
+      scope: { appId: 'app', pageIds: ['overview'], patternIds: ['kpi-grid'] },
+      requiredSetup: [],
+      allowedVocabulary: [],
+      examples: [],
+      antiPatterns: [],
+      successChecks: [],
+      tokenBudget: { target: 1400, max: 2200, strategy: [] },
+      data: {
+        reviewType: 'app',
+        shell: 'sidebar-main',
+        theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
+        routing: 'hash',
+        features: ['auth'],
+        routes: [{ pageId: 'overview', path: '/', patternIds: ['kpi-grid'] }],
+        focusAreas: ['theme-consistency', 'responsive-design'],
+        workflow: [],
+      },
+      renderedMarkdown: '# Review Pack\n',
+    },
+    sections: [
+      {
+        $schema: 'https://decantr.ai/schemas/section-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'section',
+        objective: 'Implement the dashboard section.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['overview'], patternIds: ['kpi-grid'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 900, max: 1400, strategy: [] },
+        data: {
+          sectionId: 'dashboard',
+          role: 'primary',
+          shell: 'sidebar-main',
+          features: ['auth'],
+          pages: [{ pageId: 'overview', path: '/', patternIds: ['kpi-grid'] }],
+          workflow: [],
+        },
+        renderedMarkdown: '# Section Pack\n',
+      },
+    ],
+    pages: [
+      {
+        $schema: 'https://decantr.ai/schemas/page-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'page',
+        objective: 'Implement the overview page.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['overview'], patternIds: ['kpi-grid'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 900, max: 1400, strategy: [] },
+        data: {
+          pageId: 'overview',
+          sectionId: 'dashboard',
+          sectionRole: 'primary',
+          path: '/',
+          shell: 'sidebar-main',
+          features: ['auth'],
+          patternIds: ['kpi-grid'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Page Pack\n',
+      },
+    ],
+    mutations: [
+      {
+        $schema: 'https://decantr.ai/schemas/mutation-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'mutation',
+        objective: 'Modify the existing routes.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['overview'], patternIds: ['kpi-grid'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 700, max: 1100, strategy: [] },
+        data: {
+          mutationType: 'modify',
+          shell: 'sidebar-main',
+          theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'overview', path: '/', patternIds: ['kpi-grid'] }],
+          workflow: [],
+        },
+        renderedMarkdown: '# Mutation Pack\n',
+      },
+    ],
+  };
+}
+
 let testDir: string;
 const originalCwd = process.cwd();
 
@@ -503,6 +657,49 @@ describe('v3-aware tool tests', () => {
       expect(result.available_mutations).toEqual([{ id: 'add-page', mutation_type: 'add-page' }]);
     });
 
+    it('falls back to hosted scaffold packs when local context artifacts are missing', async () => {
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence({
+        blueprint: {
+          sections: [
+            {
+              id: 'dashboard',
+              role: 'primary',
+              shell: 'sidebar-main',
+              features: ['auth'],
+              description: 'Primary dashboard section',
+              pages: [
+                { id: 'overview', route: '/', layout: ['kpi-grid'] },
+              ],
+            },
+          ],
+          features: ['auth'],
+        },
+      })));
+
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify(makeHostedPackBundle()), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_scaffold_context', {}) as {
+        source: string;
+        execution_pack: { markdown: string; json: { packType: string } };
+        review_pack: { markdown: string; json: { packType: string } };
+        pack_manifest: { version: string };
+        note: string;
+      };
+
+      expect(result.source).toBe('hosted_fallback');
+      expect(result.execution_pack.markdown).toContain('# Scaffold Pack');
+      expect(result.execution_pack.json.packType).toBe('scaffold');
+      expect(result.review_pack.json.packType).toBe('review');
+      expect(result.pack_manifest.version).toBe('1.0.0');
+      expect(result.note).toContain('hosted compiled execution packs');
+    });
+
     it('returns the pack manifest by default', async () => {
       const contextDir = join(testDir, '.decantr', 'context');
       await mkdir(contextDir, { recursive: true });
@@ -583,6 +780,51 @@ describe('v3-aware tool tests', () => {
       expect(result.section_context).toContain('# Section Context');
       expect(result.manifest.page.id).toBe('overview');
       expect(result.manifest.section.id).toBe('dashboard');
+    });
+
+    it('falls back to hosted page packs when the local manifest is missing', async () => {
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence({
+        blueprint: {
+          features: ['auth'],
+          sections: [
+            {
+              id: 'dashboard',
+              role: 'primary',
+              shell: 'sidebar-main',
+              features: ['auth'],
+              description: 'Primary dashboard section',
+              pages: [
+                { id: 'overview', route: '/', layout: ['kpi-grid'] },
+              ],
+            },
+          ],
+        },
+      })));
+
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify(makeHostedPackBundle()), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_page_context', { page_id: 'overview' }) as {
+        manifest_source: string;
+        execution_pack_source: string;
+        section_execution_pack_source: string;
+        execution_pack: { markdown: string; json: { packType: string; data: { pageId: string } } };
+        section_execution_pack: { markdown: string; json: { packType: string; data: { sectionId: string } } };
+        note: string;
+      };
+
+      expect(result.manifest_source).toBe('hosted_fallback');
+      expect(result.execution_pack_source).toBe('hosted_fallback');
+      expect(result.section_execution_pack_source).toBe('hosted_fallback');
+      expect(result.execution_pack.markdown).toContain('# Page Pack');
+      expect(result.execution_pack.json.data.pageId).toBe('overview');
+      expect(result.section_execution_pack.json.data.sectionId).toBe('dashboard');
+      expect(result.note).toContain('hosted compiled execution-pack data');
     });
 
     it('returns a specific page pack in markdown and json', async () => {
@@ -672,6 +914,48 @@ describe('v3-aware tool tests', () => {
       expect(result.json.data.mutationType).toBe('modify');
     });
 
+    it('falls back to hosted execution packs when the local manifest is missing', async () => {
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence({
+        blueprint: {
+          sections: [
+            {
+              id: 'dashboard',
+              role: 'primary',
+              shell: 'sidebar-main',
+              features: ['auth'],
+              description: 'Primary dashboard section',
+              pages: [
+                { id: 'overview', route: '/', layout: ['kpi-grid'] },
+              ],
+            },
+          ],
+          features: ['auth'],
+        },
+      })));
+
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify(makeHostedPackBundle()), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_execution_pack', {
+        pack_type: 'review',
+      }) as {
+        source: string;
+        pack_type: string;
+        markdown: string;
+        json: { packType: string };
+      };
+
+      expect(result.source).toBe('hosted_fallback');
+      expect(result.pack_type).toBe('review');
+      expect(result.markdown).toContain('# Review Pack');
+      expect(result.json.packType).toBe('review');
+    });
+
     it('returns the review pack in markdown and json', async () => {
       const contextDir = join(testDir, '.decantr', 'context');
       await mkdir(contextDir, { recursive: true });
@@ -755,6 +1039,49 @@ describe('v3-aware tool tests', () => {
       expect(result.execution_pack.markdown).toContain('# Section Pack');
       expect(result.execution_pack.json.packType).toBe('section');
       expect(result.execution_pack.json.data.sectionId).toBe('dashboard');
+    });
+
+    it('falls back to hosted section packs when local section artifacts are missing', async () => {
+      const essencePath = join(testDir, 'decantr.essence.json');
+      await writeFile(essencePath, JSON.stringify(makeV3Essence({
+        blueprint: {
+          features: ['auth'],
+          sections: [
+            {
+              id: 'dashboard',
+              role: 'primary',
+              shell: 'sidebar-main',
+              features: ['auth'],
+              description: 'Primary dashboard section',
+              pages: [
+                { id: 'overview', route: '/', layout: ['kpi-grid'] },
+              ],
+            },
+          ],
+        },
+      })));
+
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify(makeHostedPackBundle()), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_section_context', {
+        section_id: 'dashboard',
+      }) as {
+        execution_pack_source: string;
+        execution_pack: { markdown: string; json: { packType: string; data: { sectionId: string } } };
+        note: string;
+      };
+
+      expect(result.execution_pack_source).toBe('hosted_fallback');
+      expect(result.execution_pack.markdown).toContain('# Section Pack');
+      expect(result.execution_pack.json.packType).toBe('section');
+      expect(result.execution_pack.json.data.sectionId).toBe('dashboard');
+      expect(result.note).toContain('hosted compiled execution pack fallback');
     });
   });
 });
