@@ -72,12 +72,19 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     durationMs,
     rootDocumentOk: runtimeAudit.rootDocumentOk,
     titleOk: runtimeAudit.titleOk,
+    langOk: runtimeAudit.langOk,
+    viewportOk: runtimeAudit.viewportOk,
     assetCount: runtimeAudit.assetCount,
     assetsPassed: runtimeAudit.assetsPassed,
     routeHintsChecked: runtimeAudit.routeHintsChecked,
     routeHintsMatched: runtimeAudit.routeHintsMatched,
     routeDocumentsChecked: runtimeAudit.routeDocumentsChecked,
     routeDocumentsPassed: runtimeAudit.routeDocumentsPassed,
+    totalAssetBytes: runtimeAudit.totalAssetBytes,
+    jsAssetBytes: runtimeAudit.jsAssetBytes,
+    cssAssetBytes: runtimeAudit.cssAssetBytes,
+    largestAssetPath: runtimeAudit.largestAssetPath,
+    largestAssetBytes: runtimeAudit.largestAssetBytes,
     failures: runtimeAudit.failures,
   };
 }
@@ -161,10 +168,36 @@ async function main() {
       )
       : 0,
     appsWithTitleOkCount: results.filter(entry => entry.smoke.titleOk).length,
+    appsWithLangOkCount: results.filter(entry => entry.smoke.langOk).length,
+    appsWithViewportOkCount: results.filter(entry => entry.smoke.viewportOk).length,
     appsWithRouteCoverageCount: results.filter(entry => {
       const minimumRoutes = Math.min(2, entry.smoke.routeDocumentsChecked);
       return entry.smoke.routeDocumentsChecked === 0 || entry.smoke.routeDocumentsPassed >= minimumRoutes;
     }).length,
+    averageTotalAssetBytes: results.filter(entry => entry.smoke.passed !== null).length > 0
+      ? Math.round(
+        results
+          .filter(entry => entry.smoke.passed !== null)
+          .reduce((sum, entry) => sum + entry.smoke.totalAssetBytes, 0)
+        / results.filter(entry => entry.smoke.passed !== null).length
+      )
+      : 0,
+    averageJsAssetBytes: results.filter(entry => entry.smoke.passed !== null).length > 0
+      ? Math.round(
+        results
+          .filter(entry => entry.smoke.passed !== null)
+          .reduce((sum, entry) => sum + entry.smoke.jsAssetBytes, 0)
+        / results.filter(entry => entry.smoke.passed !== null).length
+      )
+      : 0,
+    averageCssAssetBytes: results.filter(entry => entry.smoke.passed !== null).length > 0
+      ? Math.round(
+        results
+          .filter(entry => entry.smoke.passed !== null)
+          .reduce((sum, entry) => sum + entry.smoke.cssAssetBytes, 0)
+        / results.filter(entry => entry.smoke.passed !== null).length
+      )
+      : 0,
     lowerDriftCount: results.filter(entry => entry.drift.signal === 'lower').length,
     moderateDriftCount: results.filter(entry => entry.drift.signal === 'moderate').length,
     elevatedDriftCount: results.filter(entry => entry.drift.signal === 'elevated').length,
@@ -179,7 +212,10 @@ async function main() {
   console.log(`Smoke failed: ${summary.failedSmokes}`);
   console.log(`Average smoke duration: ${summary.averageSmokeDurationMs}ms`);
   console.log(`Title checks passed: ${summary.appsWithTitleOkCount}/${summary.appCount}`);
+  console.log(`Lang checks passed: ${summary.appsWithLangOkCount}/${summary.appCount}`);
+  console.log(`Viewport checks passed: ${summary.appsWithViewportOkCount}/${summary.appCount}`);
   console.log(`Route coverage checks passed: ${summary.appsWithRouteCoverageCount}/${summary.appCount}`);
+  console.log(`Average built assets: total ${summary.averageTotalAssetBytes} B, js ${summary.averageJsAssetBytes} B, css ${summary.averageCssAssetBytes} B`);
   console.log(`Drift signals: lower ${summary.lowerDriftCount}, moderate ${summary.moderateDriftCount}, elevated ${summary.elevatedDriftCount}`);
   console.log(`Pack manifests present: ${summary.withPackManifestCount}/${summary.appCount}`);
 

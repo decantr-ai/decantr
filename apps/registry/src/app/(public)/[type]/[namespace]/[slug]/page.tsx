@@ -33,6 +33,13 @@ function formatDate(dateStr?: string): string {
   });
 }
 
+function formatBytes(bytes: number): string {
+  if (bytes >= 1_000_000) {
+    return `${(bytes / 1_000_000).toFixed(2)} MB`;
+  }
+  return `${Math.round(bytes / 1_000)} KB`;
+}
+
 function prettifyName(slug: string): string {
   return slug
     .split('-')
@@ -345,7 +352,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
               </p>
               {showcaseVerification && (
                 <p className={styles.supportingCopy}>
-                  Shortlist verification recorded a {showcaseVerification.build.passed ? 'passing' : 'failing'} build in {showcaseVerification.build.durationMs} ms and a {showcaseVerification.smoke.passed ? 'passing' : 'failing'} smoke check in {showcaseVerification.smoke.durationMs} ms, covering {showcaseVerification.smoke.routeDocumentsPassed}/{showcaseVerification.smoke.routeDocumentsChecked} audited route documents with {showcaseVerification.drift.inlineStyleCount} inline-style signals and {showcaseVerification.drift.hardcodedColorCount} hardcoded-color signals.
+                  Shortlist verification recorded a {showcaseVerification.build.passed ? 'passing' : 'failing'} build in {showcaseVerification.build.durationMs} ms and a {showcaseVerification.smoke.passed ? 'passing' : 'failing'} smoke check in {showcaseVerification.smoke.durationMs} ms, covering {showcaseVerification.smoke.routeDocumentsPassed}/{showcaseVerification.smoke.routeDocumentsChecked} audited route documents. The current build ships {formatBytes(showcaseVerification.smoke.totalAssetBytes)} total assets ({formatBytes(showcaseVerification.smoke.jsAssetBytes)} JS, {formatBytes(showcaseVerification.smoke.cssAssetBytes)} CSS) with {showcaseVerification.smoke.langOk ? 'an explicit language hint' : 'no language hint'} and {showcaseVerification.smoke.viewportOk ? 'a viewport tag present' : 'no viewport tag'}, alongside {showcaseVerification.drift.inlineStyleCount} inline-style signals and {showcaseVerification.drift.hardcodedColorCount} hardcoded-color signals.
                 </p>
               )}
             </div>

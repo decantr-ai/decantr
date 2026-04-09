@@ -102,7 +102,12 @@ if (reportResults.length > 0) {
       'failedSmokes',
       'averageSmokeDurationMs',
       'appsWithTitleOkCount',
+      'appsWithLangOkCount',
+      'appsWithViewportOkCount',
       'appsWithRouteCoverageCount',
+      'averageTotalAssetBytes',
+      'averageJsAssetBytes',
+      'averageCssAssetBytes',
       'lowerDriftCount',
       'moderateDriftCount',
       'elevatedDriftCount',
@@ -163,10 +168,19 @@ if (reportResults.length > 0) {
       if (typeof entry.smoke.titleOk !== 'boolean') {
         errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.titleOk must be boolean.`);
       }
-      for (const key of ['assetCount', 'assetsPassed', 'routeHintsMatched', 'routeDocumentsChecked', 'routeDocumentsPassed']) {
+      if (typeof entry.smoke.langOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.langOk must be boolean.`);
+      }
+      if (typeof entry.smoke.viewportOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.viewportOk must be boolean.`);
+      }
+      for (const key of ['assetCount', 'assetsPassed', 'routeHintsMatched', 'routeDocumentsChecked', 'routeDocumentsPassed', 'totalAssetBytes', 'jsAssetBytes', 'cssAssetBytes', 'largestAssetBytes']) {
         if (!Number.isFinite(entry.smoke[key]) || entry.smoke[key] < 0) {
           errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.${key} must be a non-negative number.`);
         }
+      }
+      if (entry.smoke.largestAssetPath !== null && typeof entry.smoke.largestAssetPath !== 'string') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.largestAssetPath must be string or null.`);
       }
       if (!Array.isArray(entry.smoke.routeHintsChecked) || !entry.smoke.routeHintsChecked.every(value => typeof value === 'string')) {
         errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.routeHintsChecked must be a string array.`);
@@ -214,5 +228,5 @@ const classificationCounts = manifest.apps.reduce((acc, entry) => {
   return acc;
 }, {});
 
-console.log(`Validated ${manifest.apps.length} showcase manifest entries.`);
-console.log(`Classification counts: ${JSON.stringify(classificationCounts)}`);
+  console.log(`Validated ${manifest.apps.length} showcase manifest entries.`);
+  console.log(`Classification counts: ${JSON.stringify(classificationCounts)}`);

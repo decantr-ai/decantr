@@ -1,17 +1,22 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-09T15:16:26.800Z",
+  "generatedAt": "2026-04-09T15:47:05.827Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1790,
+    "averageDurationMs": 1748,
     "passedSmokes": 8,
     "failedSmokes": 0,
-    "averageSmokeDurationMs": 8,
+    "averageSmokeDurationMs": 9,
     "appsWithTitleOkCount": 8,
+    "appsWithLangOkCount": 8,
+    "appsWithViewportOkCount": 8,
     "appsWithRouteCoverageCount": 8,
+    "averageTotalAssetBytes": 335362,
+    "averageJsAssetBytes": 325759,
+    "averageCssAssetBytes": 9602,
     "lowerDriftCount": 2,
     "moderateDriftCount": 4,
     "elevatedDriftCount": 2,
@@ -25,13 +30,15 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1785
+        "durationMs": 1733
       },
       "smoke": {
         "passed": true,
-        "durationMs": 33,
+        "durationMs": 34,
         "rootDocumentOk": true,
         "titleOk": true,
+        "langOk": true,
+        "viewportOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -47,6 +54,11 @@
         "routeHintsMatched": 8,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "totalAssetBytes": 307899,
+        "jsAssetBytes": 299799,
+        "cssAssetBytes": 8100,
+        "largestAssetPath": "/assets/index-BYJrzHsI.js",
+        "largestAssetBytes": 299799,
         "failures": []
       },
       "drift": {
@@ -67,13 +79,15 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1773
+        "durationMs": 1774
       },
       "smoke": {
         "passed": true,
-        "durationMs": 7,
+        "durationMs": 8,
         "rootDocumentOk": true,
         "titleOk": true,
+        "langOk": true,
+        "viewportOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -89,6 +103,11 @@
         "routeHintsMatched": 8,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "totalAssetBytes": 323107,
+        "jsAssetBytes": 312723,
+        "cssAssetBytes": 10384,
+        "largestAssetPath": "/assets/index-UpbtDZxH.js",
+        "largestAssetBytes": 312723,
         "failures": []
       },
       "drift": {
@@ -109,13 +128,15 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1824
+        "durationMs": 1770
       },
       "smoke": {
         "passed": true,
         "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
+        "langOk": true,
+        "viewportOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -131,6 +152,11 @@
         "routeHintsMatched": 8,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "totalAssetBytes": 340557,
+        "jsAssetBytes": 333523,
+        "cssAssetBytes": 7034,
+        "largestAssetPath": "/assets/index-Df5VCkgv.js",
+        "largestAssetBytes": 333523,
         "failures": []
       },
       "drift": {
@@ -151,13 +177,15 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1676
+        "durationMs": 1661
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
+        "langOk": true,
+        "viewportOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -173,6 +201,11 @@
         "routeHintsMatched": 8,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "totalAssetBytes": 331565,
+        "jsAssetBytes": 322435,
+        "cssAssetBytes": 9130,
+        "largestAssetPath": "/assets/index-DIoI0xec.js",
+        "largestAssetBytes": 322435,
         "failures": []
       },
       "drift": {
@@ -193,13 +226,15 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1665
+        "durationMs": 1605
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
+        "langOk": true,
+        "viewportOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -214,6 +249,11 @@
         "routeHintsMatched": 7,
         "routeDocumentsChecked": 7,
         "routeDocumentsPassed": 7,
+        "totalAssetBytes": 332075,
+        "jsAssetBytes": 321571,
+        "cssAssetBytes": 10504,
+        "largestAssetPath": "/assets/index-C3dAy3Ox.js",
+        "largestAssetBytes": 321571,
         "failures": []
       },
       "drift": {
@@ -234,13 +274,15 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1935
+        "durationMs": 1855
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
+        "langOk": true,
+        "viewportOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -256,6 +298,11 @@
         "routeHintsMatched": 8,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "totalAssetBytes": 356330,
+        "jsAssetBytes": 344077,
+        "cssAssetBytes": 12253,
+        "largestAssetPath": "/assets/index-CzGzTqFt.js",
+        "largestAssetBytes": 344077,
         "failures": []
       },
       "drift": {
@@ -276,13 +323,15 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1874
+        "durationMs": 1843
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
+        "langOk": true,
+        "viewportOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -298,6 +347,11 @@
         "routeHintsMatched": 8,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "totalAssetBytes": 333301,
+        "jsAssetBytes": 322630,
+        "cssAssetBytes": 10671,
+        "largestAssetPath": "/assets/index-CsU3jmIr.js",
+        "largestAssetBytes": 322630,
         "failures": []
       },
       "drift": {
@@ -318,13 +372,15 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1790
+        "durationMs": 1740
       },
       "smoke": {
         "passed": true,
         "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
+        "langOk": true,
+        "viewportOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -340,6 +396,11 @@
         "routeHintsMatched": 8,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "totalAssetBytes": 358058,
+        "jsAssetBytes": 349315,
+        "cssAssetBytes": 8743,
+        "largestAssetPath": "/assets/index-BvVfDAyw.js",
+        "largestAssetBytes": 349315,
         "failures": []
       },
       "drift": {

@@ -25,7 +25,12 @@
         "failedSmokes",
         "averageSmokeDurationMs",
         "appsWithTitleOkCount",
+        "appsWithLangOkCount",
+        "appsWithViewportOkCount",
         "appsWithRouteCoverageCount",
+        "averageTotalAssetBytes",
+        "averageJsAssetBytes",
+        "averageCssAssetBytes",
         "lowerDriftCount",
         "moderateDriftCount",
         "elevatedDriftCount",
@@ -40,7 +45,12 @@
         "failedSmokes": { "type": "number", "minimum": 0 },
         "averageSmokeDurationMs": { "type": "number", "minimum": 0 },
         "appsWithTitleOkCount": { "type": "number", "minimum": 0 },
+        "appsWithLangOkCount": { "type": "number", "minimum": 0 },
+        "appsWithViewportOkCount": { "type": "number", "minimum": 0 },
         "appsWithRouteCoverageCount": { "type": "number", "minimum": 0 },
+        "averageTotalAssetBytes": { "type": "number", "minimum": 0 },
+        "averageJsAssetBytes": { "type": "number", "minimum": 0 },
+        "averageCssAssetBytes": { "type": "number", "minimum": 0 },
         "lowerDriftCount": { "type": "number", "minimum": 0 },
         "moderateDriftCount": { "type": "number", "minimum": 0 },
         "elevatedDriftCount": { "type": "number", "minimum": 0 },
@@ -95,12 +105,19 @@
             "durationMs",
             "rootDocumentOk",
             "titleOk",
+            "langOk",
+            "viewportOk",
             "assetCount",
             "assetsPassed",
             "routeHintsChecked",
             "routeHintsMatched",
             "routeDocumentsChecked",
             "routeDocumentsPassed",
+            "totalAssetBytes",
+            "jsAssetBytes",
+            "cssAssetBytes",
+            "largestAssetPath",
+            "largestAssetBytes",
             "failures"
           ],
           "properties": {
@@ -115,6 +132,12 @@
               "type": "boolean"
             },
             "titleOk": {
+              "type": "boolean"
+            },
+            "langOk": {
+              "type": "boolean"
+            },
+            "viewportOk": {
               "type": "boolean"
             },
             "assetCount": {
@@ -137,6 +160,25 @@
               "minimum": 0
             },
             "routeDocumentsPassed": {
+              "type": "number",
+              "minimum": 0
+            },
+            "totalAssetBytes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "jsAssetBytes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cssAssetBytes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "largestAssetPath": {
+              "type": ["string", "null"]
+            },
+            "largestAssetBytes": {
               "type": "number",
               "minimum": 0
             },

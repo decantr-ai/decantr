@@ -95,7 +95,9 @@ commit archaeology.
 - Moved shortlist verification onto the shared `@decantr/verifier` built-dist runtime audit path instead of keeping a showcase-only smoke helper.
 - Deepened shortlist verification beyond root/asset smoke with:
   - HTML title checks
+  - HTML `lang` and viewport checks
   - route-document coverage checks
+  - total / JS / CSS asset payload reporting
   - richer shortlist summary/report fields surfaced through shared contracts
 - Registry homepage and blueprint detail surfaces expose showcase benchmark metadata.
 - API, CLI, and MCP all expose showcase benchmark surfaces.

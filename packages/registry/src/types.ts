@@ -522,12 +522,19 @@ export interface ShowcaseVerificationEntry {
     durationMs: number;
     rootDocumentOk: boolean;
     titleOk: boolean;
+    langOk: boolean;
+    viewportOk: boolean;
     assetCount: number;
     assetsPassed: number;
     routeHintsChecked: string[];
     routeHintsMatched: number;
     routeDocumentsChecked: number;
     routeDocumentsPassed: number;
+    totalAssetBytes: number;
+    jsAssetBytes: number;
+    cssAssetBytes: number;
+    largestAssetPath: string | null;
+    largestAssetBytes: number;
     failures: string[];
   };
   drift: {
@@ -551,7 +558,12 @@ export interface ShowcaseShortlistSummary {
   failedSmokes: number;
   averageSmokeDurationMs: number;
   appsWithTitleOkCount: number;
+  appsWithLangOkCount: number;
+  appsWithViewportOkCount: number;
   appsWithRouteCoverageCount: number;
+  averageTotalAssetBytes: number;
+  averageJsAssetBytes: number;
+  averageCssAssetBytes: number;
   lowerDriftCount: number;
   moderateDriftCount: number;
   elevatedDriftCount: number;

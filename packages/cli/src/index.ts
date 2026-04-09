@@ -254,6 +254,9 @@ async function printShowcaseBenchmarks(
   view: 'manifest' | 'shortlist' | 'verification',
   jsonOutput: boolean,
 ) {
+  const fmtBytes = (bytes: number) => bytes >= 1_000_000
+    ? `${(bytes / 1_000_000).toFixed(2)} MB`
+    : `${Math.round(bytes / 1_000)} KB`;
   const data = await getShowcaseBenchmarkView(view);
 
   if (jsonOutput) {
@@ -289,13 +292,16 @@ async function printShowcaseBenchmarks(
       console.log(`  Passed smokes: ${report.summary.passedSmokes}/${report.summary.appCount}`);
       console.log(`  Avg smoke: ${report.summary.averageSmokeDurationMs} ms`);
       console.log(`  Title checks: ${report.summary.appsWithTitleOkCount}/${report.summary.appCount}`);
+      console.log(`  Lang checks: ${report.summary.appsWithLangOkCount}/${report.summary.appCount}`);
+      console.log(`  Viewport checks: ${report.summary.appsWithViewportOkCount}/${report.summary.appCount}`);
       console.log(`  Route coverage: ${report.summary.appsWithRouteCoverageCount}/${report.summary.appCount}`);
+      console.log(`  Avg assets: total ${fmtBytes(report.summary.averageTotalAssetBytes)} | js ${fmtBytes(report.summary.averageJsAssetBytes)} | css ${fmtBytes(report.summary.averageCssAssetBytes)}`);
       console.log(`  Drift: lower ${report.summary.lowerDriftCount}, moderate ${report.summary.moderateDriftCount}, elevated ${report.summary.elevatedDriftCount}`);
       console.log(`  Pack manifests: ${report.summary.withPackManifestCount}/${report.summary.appCount}`);
       console.log('');
     }
     for (const entry of report.results) {
-      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | routes ${entry.smoke.routeDocumentsPassed}/${entry.smoke.routeDocumentsChecked} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`);
+      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | routes ${entry.smoke.routeDocumentsPassed}/${entry.smoke.routeDocumentsChecked} | js ${fmtBytes(entry.smoke.jsAssetBytes)} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`);
     }
     return;
   }
