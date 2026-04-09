@@ -73,6 +73,7 @@ Because there are no commercial users to preserve, the priority is not seamless 
 - keep as a core vNext package
 - align with the new canonical content contract
 - treat package schema exports as the canonical registry contract source
+- keep browser and Next.js consumers on a web-safe `@decantr/registry/client` entrypoint instead of the Node-oriented root resolver bundle
 - remove any assumptions tied to deprecated taxonomy or framework leakage
 
 #### `@decantr/mcp-server`

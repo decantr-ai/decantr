@@ -97,7 +97,7 @@ Registry schemas are owned by `@decantr/registry/schema/*`, essence schemas by `
 | `@decantr/cli` | Local scaffold, validation, and maintenance workflows |
 | `@decantr/mcp-server` | MCP surface for AI coding assistants |
 | `@decantr/essence-spec` | Schema, validation, and core Decantr types |
-| `@decantr/registry` | Registry model, resolution, and content access |
+| `@decantr/registry` | Registry model, resolution, and content access, with `@decantr/registry/client` as the web-safe API client entrypoint |
 | `@decantr/core` | Internal pipeline and compiler-adjacent foundation |
 | `@decantr/verifier` | Shared audit and critique engine with schema-backed reports |
 | `@decantr/css` | Framework-agnostic CSS atom runtime |
