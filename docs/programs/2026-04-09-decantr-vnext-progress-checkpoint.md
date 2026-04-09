@@ -153,6 +153,8 @@ commit archaeology.
   - `POST /v1/packs/compile`
   - audit coverage for hosted execution-pack compilation
   - public docs/reference coverage for the hosted compiler surface
+  - direct Fly redeploy from `codex/decantr-vnext-reset` completed successfully
+  - `POST /v1/packs/compile` now returns `200` in live public audits
 - Completed the official content rollout on 2026-04-09:
   - content workflow run `24192386163` synced `codex/decantr-vnext-resetmai` into the live registry
   - live `@official` content count is now `480`
@@ -210,9 +212,8 @@ Observed from live audits against `https://api.decantr.ai/v1` on 2026-04-09:
 - live `@official` content count matches repo count
 - live registry drift is clean after the official-content sync
 - showcase shortlist verification is publicly reachable
-- the newly added hosted execution-pack compiler is not deployed yet:
-  - `POST /v1/packs/compile` still returns `401` on the live API
-  - local reset-branch code is green, so the remaining gap is rollout rather than implementation
+- hosted execution-pack compilation is publicly reachable
+- `POST /v1/packs/compile` returns `200`
 
 The hosted API path is explicit and exercised in production. The registry portal deploy path is
 now explicit in-repo as well through the Vercel workflow, portal audit, and runbook surfaces.

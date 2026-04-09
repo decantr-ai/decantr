@@ -39,6 +39,7 @@ As of 2026-04-09, the hosted rollout completed successfully:
 - Fly is serving the API from image `runtime-intelligence-fix-20260409-0916`
 - `pnpm audit:public-api` passes against `https://api.decantr.ai/v1`
 - hosted execution-pack compilation now responds from `POST /v1/packs/compile`
+- live public API audit is fully green, including the hosted compiler endpoint
 - `decantr-content` workflow run `24192386163` completed successfully and synced official content from `codex/decantr-vnext-resetmai`
 - live `@official` content no longer includes stale `workbench`-era extras
 - live registry drift now reports:
@@ -53,8 +54,9 @@ As of 2026-04-09, the hosted rollout completed successfully:
   - `intelligence: 480`
   - `recommended: 224`
 - after the hosted compiler extension landed locally later on 2026-04-09:
-  - `pnpm audit:public-api` reports `POST /v1/packs/compile` as `401 Unauthorized`
-  - this is a deployment gap, not a local implementation gap, because the reset branch passes root build/test/lint with the new endpoint enabled
+  - the API was redeployed from `codex/decantr-vnext-reset` via `flyctl deploy --config apps/api/fly.toml --remote-only`
+  - `pnpm audit:public-api` now reports `POST /v1/packs/compile` as `200`
+  - the hosted compiler gap is closed
 
 Key fixes required during rollout:
 
