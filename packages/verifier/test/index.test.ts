@@ -503,4 +503,49 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-raw-html-injection')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'security-dynamic-code-eval')).toBe(true);
   });
+
+  it('flags unlabeled icon buttons and clickable non-semantic containers during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/Toolbar.tsx',
+      code: `
+        export function Toolbar() {
+          return (
+            <div>
+              <button><IconMenu /></button>
+              <div onClick={() => openPanel()}>Open</div>
+            </div>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['toolbar'], patternIds: ['nav'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'toolbar', path: '/', patternIds: ['nav'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-icon-button-label-missing')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'accessibility-clickable-non-semantic')).toBe(true);
+  });
 });

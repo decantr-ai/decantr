@@ -915,6 +915,8 @@ interface AstCritiqueSignals {
   dangerousHtmlCount: number;
   rawHtmlInjectionCount: number;
   dynamicEvalCount: number;
+  iconOnlyButtonWithoutLabelCount: number;
+  clickableNonSemanticCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -946,6 +948,54 @@ function isPropertyNamed(node: ts.Node | undefined, ...names: string[]): boolean
   return false;
 }
 
+function getJsxAttribute(
+  attributes: ts.JsxAttributes,
+  ...names: string[]
+): ts.JsxAttribute | undefined {
+  return attributes.properties.find((property): property is ts.JsxAttribute =>
+    ts.isJsxAttribute(property) && isPropertyNamed(property.name, ...names)
+  );
+}
+
+function getJsxTagName(node: ts.JsxOpeningLikeElement): string | null {
+  if (ts.isIdentifier(node.tagName)) {
+    return node.tagName.text;
+  }
+  if (ts.isPropertyAccessExpression(node.tagName)) {
+    return node.tagName.name.text;
+  }
+  return null;
+}
+
+function getJsxTextContent(node: ts.Node): string {
+  if (ts.isJsxText(node)) {
+    return node.getText();
+  }
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    return node.text;
+  }
+  if (ts.isJsxExpression(node)) {
+    return node.expression ? getJsxTextContent(node.expression) : '';
+  }
+
+  let text = '';
+  node.forEachChild((child) => {
+    text += getJsxTextContent(child);
+  });
+  return text;
+}
+
+function hasAccessibleLabel(attributes: ts.JsxAttributes, textContent: string): boolean {
+  return Boolean(
+    getJsxAttribute(attributes, 'aria-label', 'aria-labelledby', 'title')
+    || textContent.trim().length > 0,
+  );
+}
+
+function isNonSemanticInteractiveTag(tagName: string | null): boolean {
+  return ['div', 'span', 'section', 'article', 'li'].includes(tagName ?? '');
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -959,6 +1009,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     dangerousHtmlCount: 0,
     rawHtmlInjectionCount: 0,
     dynamicEvalCount: 0,
+    iconOnlyButtonWithoutLabelCount: 0,
+    clickableNonSemanticCount: 0,
   };
 
   const walk = (node: ts.Node) => {
@@ -1008,6 +1060,39 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       && node.expression.text === 'Function'
     ) {
       signals.dynamicEvalCount += 1;
+    }
+
+    if (ts.isJsxSelfClosingElement(node)) {
+      const tagName = getJsxTagName(node);
+      if (tagName === 'button' && !hasAccessibleLabel(node.attributes, '')) {
+        signals.iconOnlyButtonWithoutLabelCount += 1;
+      }
+      if (
+        isNonSemanticInteractiveTag(tagName)
+        && getJsxAttribute(node.attributes, 'onClick')
+        && !getJsxAttribute(node.attributes, 'role')
+        && !getJsxAttribute(node.attributes, 'tabIndex')
+      ) {
+        signals.clickableNonSemanticCount += 1;
+      }
+    }
+
+    if (ts.isJsxElement(node)) {
+      const tagName = getJsxTagName(node.openingElement);
+      const textContent = getJsxTextContent(node).replace(/\s+/g, ' ').trim();
+
+      if (tagName === 'button' && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
+        signals.iconOnlyButtonWithoutLabelCount += 1;
+      }
+
+      if (
+        isNonSemanticInteractiveTag(tagName)
+        && getJsxAttribute(node.openingElement.attributes, 'onClick')
+        && !getJsxAttribute(node.openingElement.attributes, 'role')
+        && !getJsxAttribute(node.openingElement.attributes, 'tabIndex')
+      ) {
+        signals.clickableNonSemanticCount += 1;
+      }
     }
 
     ts.forEachChild(node, walk);
@@ -1082,15 +1167,30 @@ export function critiqueSource({
   const hasAria = codeLower.includes('aria-') || codeLower.includes('role=');
   const hasFocus = codeLower.includes('focus-visible') || codeLower.includes('focusvisible');
   const hasKeyboard = codeLower.includes('onkeydown') || codeLower.includes('onkeyup');
+  const iconButtonIssues = astSignals.iconOnlyButtonWithoutLabelCount;
+  const clickableNonSemanticIssues = astSignals.clickableNonSemanticCount;
   scores.push({
     category: 'Accessibility',
     focusArea: 'accessibility',
-    score: Math.min(5, 1 + (hasAria ? 2 : 0) + (hasFocus ? 1 : 0) + (hasKeyboard ? 1 : 0)),
-    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}`,
+    score: Math.max(
+      1,
+      Math.min(
+        5,
+        1
+        + (hasAria ? 2 : 0)
+        + (hasFocus ? 1 : 0)
+        + (hasKeyboard ? 1 : 0)
+        - (iconButtonIssues > 0 ? 1 : 0)
+        - (clickableNonSemanticIssues > 0 ? 1 : 0),
+      ),
+    ),
+    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}`,
     suggestions: [
       ...(!hasAria ? ['Add ARIA roles or labels to interactive regions.'] : []),
       ...(!hasFocus ? ['Add visible focus styling for keyboard navigation.'] : []),
       ...(!hasKeyboard ? ['Add keyboard handling where interactive behavior depends on pointer events.'] : []),
+      ...(iconButtonIssues > 0 ? ['Add accessible labels to icon-only buttons via visible text or aria-label.'] : []),
+      ...(clickableNonSemanticIssues > 0 ? ['Use semantic interactive elements or add role/tabIndex and keyboard handling to clickable non-semantic containers.'] : []),
     ],
   });
   if (focusAreas.includes('accessibility')) {
@@ -1114,6 +1214,28 @@ export function critiqueSource({
         evidence: [filePath],
         file: filePath,
         suggestedFix: 'Verify interactive elements remain usable from the keyboard.',
+      }));
+    }
+    if (iconButtonIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-icon-button-label-missing',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+        message: 'Icon-only button elements were detected without an accessible label.',
+        evidence: [filePath, `Unlabeled icon buttons: ${iconButtonIssues}`],
+        file: filePath,
+        suggestedFix: 'Add visible text or an aria-label/aria-labelledby attribute to icon-only buttons.',
+      }));
+    }
+    if (clickableNonSemanticIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-clickable-non-semantic',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-remediation', 'review-contract-baseline']),
+        message: 'Clickable non-semantic elements were detected without the semantic/keyboard affordances accessibility tools expect.',
+        evidence: [filePath, `Clickable non-semantic elements without role/tabIndex: ${clickableNonSemanticIssues}`],
+        file: filePath,
+        suggestedFix: 'Prefer semantic controls like button/link, or add role, tabIndex, and keyboard handlers to non-semantic interactive containers.',
       }));
     }
   }
