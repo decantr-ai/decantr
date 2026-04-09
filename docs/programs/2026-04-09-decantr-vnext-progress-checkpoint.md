@@ -122,6 +122,7 @@ commit archaeology.
 - Source audit now also flags auth-enabled apps that still expose no obvious entry surface at all, even when the blueprint forgot to declare gateway routes.
 - File critique and source audit now also flag auth-like forms without any submit control, so credential surfaces are not accidentally left non-functional.
 - File critique now also treats `autocomplete=\"off\"` on auth inputs as a credential-flow issue, not just missing autocomplete hints.
+- File critique now also treats auth-like inputs with the wrong semantic type (`text` instead of `email`/`password`) as a credential-flow issue.
 
 ### Showcase / golden corpus
 
