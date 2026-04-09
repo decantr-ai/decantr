@@ -169,6 +169,7 @@ Tracked shortlist verification baseline on 2026-04-08:
 - pack manifests present: `0/8`
 - tracked report: `apps/showcase/reports/shortlist-verification.json`
 - verification command: `pnpm showcase:verify:shortlist`
+- CI now runs shortlist verification and uploads the tracked report as an artifact on the primary Node 20 lane
 - surfaced through: registry homepage, `decantr showcase`, `/v1/showcase/*`, and `decantr_get_showcase_benchmarks`
 
 ### Phase 2: Classification

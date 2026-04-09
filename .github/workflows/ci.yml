@@ -22,6 +22,15 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm run showcase:build
-      - run: pnpm run showcase:copy
       - run: pnpm test
+      - run: pnpm run showcase:validate
+        if: matrix.node-version == 20
+      - run: pnpm run showcase:verify:shortlist
+        if: matrix.node-version == 20
+      - run: SHOWCASE_GOLDEN_ONLY=1 node scripts/copy-showcase-dist.mjs --dry-run
+        if: matrix.node-version == 20
+      - uses: actions/upload-artifact@v4
+        if: matrix.node-version == 20
+        with:
+          name: showcase-shortlist-verification
+          path: apps/showcase/reports/shortlist-verification.json
