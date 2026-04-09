@@ -976,6 +976,7 @@ interface AstCritiqueSignals {
   emailAutocompleteMissingCount: number;
   passwordAutocompleteMissingCount: number;
   buttonInFormWithoutTypeCount: number;
+  authStorageWriteCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -1164,6 +1165,18 @@ function hasPlaceholderNavigationTarget(attributes: ts.JsxAttributes): boolean {
     || normalized === 'javascript:void(0);';
 }
 
+function isAuthStorageKeyLiteral(node: ts.Expression | undefined): boolean {
+  if (!node) return false;
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    return /\b(?:token|auth|jwt|session|access_token|refresh_token)\b/i.test(node.text);
+  }
+  return false;
+}
+
+function isBrowserStorageObject(node: ts.Expression): boolean {
+  return ts.isIdentifier(node) && (node.text === 'localStorage' || node.text === 'sessionStorage');
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -1186,6 +1199,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     emailAutocompleteMissingCount: 0,
     passwordAutocompleteMissingCount: 0,
     buttonInFormWithoutTypeCount: 0,
+    authStorageWriteCount: 0,
   };
   const labelForIds = collectLabelForIds(sourceFile);
 
@@ -1208,6 +1222,26 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       signals.rawHtmlInjectionCount += 1;
     }
 
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && ts.isPropertyAccessExpression(node.left)
+      && isBrowserStorageObject(node.left.expression)
+      && /(?:token|auth|jwt|session)/i.test(node.left.name.text)
+    ) {
+      signals.authStorageWriteCount += 1;
+    }
+
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && ts.isElementAccessExpression(node.left)
+      && isBrowserStorageObject(node.left.expression)
+      && isAuthStorageKeyLiteral(node.left.argumentExpression)
+    ) {
+      signals.authStorageWriteCount += 1;
+    }
+
     if (ts.isCallExpression(node)) {
       if (ts.isIdentifier(node.expression) && node.expression.text === 'eval') {
         signals.dynamicEvalCount += 1;
@@ -1216,6 +1250,13 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (ts.isPropertyAccessExpression(node.expression)) {
         if (isPropertyNamed(node.expression.name, 'insertAdjacentHTML')) {
           signals.rawHtmlInjectionCount += 1;
+        }
+        if (
+          isBrowserStorageObject(node.expression.expression)
+          && isPropertyNamed(node.expression.name, 'setItem')
+          && isAuthStorageKeyLiteral(node.arguments[0])
+        ) {
+          signals.authStorageWriteCount += 1;
         }
         if (
           ts.isIdentifier(node.expression.expression)
@@ -1624,11 +1665,13 @@ export function critiqueSource({
   const externalBlankLinkWithoutRelCount = astSignals.externalBlankLinkWithoutRelCount;
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
+  const authStorageWriteCount = astSignals.authStorageWriteCount;
   const hasDangerousHtml = dangerousHtmlCount > 0;
   const hasRawHtmlInjection = rawHtmlInjectionCount > 0;
   const hasDynamicEval = dynamicEvalCount > 0;
   const hasExternalBlankLinkWithoutRel = externalBlankLinkWithoutRelCount > 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0 || passwordAutocompleteMissingCount > 0;
+  const hasAuthStorageWrites = authStorageWriteCount > 0;
   scores.push({
     category: 'Security Hygiene',
     focusArea: 'security-hygiene',
@@ -1639,14 +1682,16 @@ export function critiqueSource({
       - (hasRawHtmlInjection ? 2 : 0)
       - (hasDynamicEval ? 2 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
-      - (hasAuthAutocompleteIssues ? 1 : 0),
+      - (hasAuthAutocompleteIssues ? 1 : 0)
+      - (hasAuthStorageWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth storage writes: ${authStorageWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
       ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, or `new-password` on auth-related inputs.'] : []),
+      ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
     ],
   });
 
@@ -1711,6 +1756,18 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'Add `autocomplete=\"email\"` or `autocomplete=\"username\"` to identity fields and `autocomplete=\"current-password\"` or `autocomplete=\"new-password\"` to password fields.',
+    }));
+  }
+
+  if (hasAuthStorageWrites) {
+    findings.push(makeFinding({
+      id: 'security-auth-storage-write',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Potential auth credentials were written into browser storage.',
+      evidence: [filePath, `Auth-like local/session storage writes: ${authStorageWriteCount}`],
+      file: filePath,
+      suggestedFix: 'Avoid writing tokens or sessions to localStorage/sessionStorage; prefer secure server-managed sessions or hardened cookie flows.',
     }));
   }
 

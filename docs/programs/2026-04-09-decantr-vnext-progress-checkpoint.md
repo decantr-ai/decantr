@@ -294,6 +294,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - AST-backed route/security checks now catch external `_blank` links missing `rel="noopener noreferrer"`, placeholder navigation targets such as `href="#"` or `javascript:void(0)`, and auth-related inputs missing explicit `autocomplete` hints.
 - Project audit now also flags suspicious auth topology, including gateway sections that expose protected-looking routes and primary sections that only expose auth-like destinations.
 - Critique now also flags buttons inside forms that omit `type`, helping catch accidental-submit behavior before generated UI reaches review.
+- Critique now flags auth-like writes into `localStorage` and `sessionStorage`, helping catch insecure client-side token/session persistence earlier in review.
 - Registry app lint now rebuilds `@decantr/registry` before typechecking so clean-checkout verification does not depend on stale generated package artifacts.
 
 ## Highest-Value Next Streams
