@@ -12,6 +12,8 @@ This reset branch treats only the vNext program, audits, and active implementati
   - Active implementation specs for the reset program.
 - `reference/`
   - Human-readable references for active public/runtime contracts such as registry API surfaces.
+- `runbooks/`
+  - Operational rollout and verification procedures for hosted surfaces.
 
 Current active phase specs:
 - `specs/2026-04-08-vnext-phase-0-product-boundary-cleanup-design.md`
