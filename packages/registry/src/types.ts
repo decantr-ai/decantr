@@ -386,6 +386,8 @@ export interface ContentIntelligenceMetadata {
   confidence_score: number | null;
   recommended: boolean;
   evidence: string[];
+  recommendation_reasons: string[];
+  recommendation_blockers: string[];
   benchmark?: {
     classification?: ShowcaseVerificationEntry['classification'];
     target?: string | null;

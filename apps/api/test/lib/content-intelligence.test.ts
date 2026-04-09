@@ -21,6 +21,9 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.evidence).toContain('runtime-hardening-verified');
     expect(intelligence?.evidence).toContain('full-route-coverage-verified');
     expect(intelligence?.evidence).toContain('asset-budget-ok');
+    expect(intelligence?.recommendation_reasons).toContain('Shortlisted showcase benchmark');
+    expect(intelligence?.recommendation_reasons).toContain('Smoke verification passed');
+    expect(intelligence?.recommendation_blockers).toEqual([]);
   });
 
   it('returns null for non-blueprint content', () => {
@@ -69,6 +72,8 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.quality_score).toBeGreaterThanOrEqual(74);
     expect(intelligence?.evidence).toContain('official-source');
     expect(intelligence?.evidence).toContain('code-example');
+    expect(intelligence?.recommendation_reasons).toContain('Official registry source');
+    expect(intelligence?.recommendation_blockers).toEqual([]);
   });
 
   it('derives non-recommended authored intelligence for community content when registry data is present', () => {
@@ -88,6 +93,7 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.golden_usage).toBe('none');
     expect(intelligence?.confidence_tier).toBe('low');
     expect(intelligence?.confidence_score).toBeLessThan(68);
+    expect(intelligence?.recommendation_blockers).toContain('Only official registry items are recommended from authored signals alone');
   });
 
   it('derives hybrid intelligence when authored blueprint data and showcase evidence both exist', () => {
@@ -110,5 +116,7 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.evidence).toContain('document-metadata-verified');
     expect(intelligence?.evidence).toContain('runtime-hardening-verified');
     expect(intelligence?.evidence).toContain('full-route-coverage-verified');
+    expect(intelligence?.recommendation_reasons).toContain('Official registry source');
+    expect(intelligence?.recommendation_reasons).toContain('Live showcase evidence is available');
   });
 });

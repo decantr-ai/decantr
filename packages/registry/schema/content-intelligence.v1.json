@@ -13,7 +13,9 @@
     "quality_score",
     "confidence_score",
     "recommended",
-    "evidence"
+    "evidence",
+    "recommendation_reasons",
+    "recommendation_blockers"
   ],
   "properties": {
     "source": {
@@ -82,6 +84,18 @@
     },
     "evidence": {
       "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "recommendation_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommendation_blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "benchmark": {
       "type": "object",

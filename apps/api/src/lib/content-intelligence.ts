@@ -19,6 +19,9 @@ interface AuthoredIntelligenceSignals {
   recommended: boolean;
 }
 
+const AUTHORED_QUALITY_RECOMMEND_THRESHOLD = 74;
+const AUTHORED_CONFIDENCE_RECOMMEND_THRESHOLD = 68;
+
 const SHOWCASE_RUNTIME_BUDGETS = {
   largestJsAssetWarnBytes: 350_000,
   totalCssWarnBytes: 150_000,
@@ -27,6 +30,10 @@ const SHOWCASE_RUNTIME_BUDGETS = {
 
 function clampScore(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function toUniqueList(values: Iterable<string>): string[] {
+  return [...new Set([...values].filter((value) => value.trim().length > 0))];
 }
 
 function hasDocumentMetadataBaseline(verification: ShowcaseVerificationEntry | null): boolean {
@@ -345,13 +352,147 @@ function deriveAuthoredSignals(
     Math.round((evidence.length / 8) * 46) +
     (evidence.includes('presets') || evidence.includes('tokens') || evidence.includes('layout-contract') ? 8 : 0),
     );
-  const recommended = official && qualityScore >= 74 && confidenceScore >= 68;
+  const recommended =
+    official
+    && qualityScore >= AUTHORED_QUALITY_RECOMMEND_THRESHOLD
+    && confidenceScore >= AUTHORED_CONFIDENCE_RECOMMEND_THRESHOLD;
 
   return {
     evidence: official ? ['official-source', ...evidence] : evidence,
     qualityScore,
     confidenceScore,
     recommended,
+  };
+}
+
+function deriveAuthoredRecommendationReasons(
+  namespace: string,
+  authoredSignals: AuthoredIntelligenceSignals | null,
+): string[] {
+  if (!authoredSignals) {
+    return [];
+  }
+
+  const reasons: string[] = [];
+  const authoredEvidence = authoredSignals.evidence.filter((signal) => signal !== 'official-source');
+
+  if (namespace === '@official') {
+    reasons.push('Official registry source');
+  }
+  if (authoredEvidence.length >= 5) {
+    reasons.push('Structured authored contract coverage is strong');
+  }
+  if (authoredSignals.evidence.some((signal) => ['code-example', 'layout-contract', 'tokens', 'presets'].includes(signal))) {
+    reasons.push('Copyable implementation guidance is present');
+  }
+  if (authoredSignals.qualityScore >= AUTHORED_QUALITY_RECOMMEND_THRESHOLD) {
+    reasons.push('Authored quality score meets the recommendation threshold');
+  }
+  if (authoredSignals.confidenceScore >= AUTHORED_CONFIDENCE_RECOMMEND_THRESHOLD) {
+    reasons.push('Authored confidence score meets the recommendation threshold');
+  }
+
+  return toUniqueList(reasons);
+}
+
+function deriveAuthoredRecommendationBlockers(
+  namespace: string,
+  authoredSignals: AuthoredIntelligenceSignals | null,
+): string[] {
+  if (!authoredSignals) {
+    return [];
+  }
+
+  const blockers: string[] = [];
+  const authoredEvidence = authoredSignals.evidence.filter((signal) => signal !== 'official-source');
+
+  if (namespace !== '@official') {
+    blockers.push('Only official registry items are recommended from authored signals alone');
+  }
+  if (authoredEvidence.length < 5) {
+    blockers.push('Structured authored contract coverage is still thin');
+  }
+  if (authoredSignals.qualityScore < AUTHORED_QUALITY_RECOMMEND_THRESHOLD) {
+    blockers.push('Authored quality score is below the recommendation threshold');
+  }
+  if (authoredSignals.confidenceScore < AUTHORED_CONFIDENCE_RECOMMEND_THRESHOLD) {
+    blockers.push('Authored confidence score is below the recommendation threshold');
+  }
+
+  return toUniqueList(blockers);
+}
+
+function deriveBenchmarkRecommendationExplanation(input: {
+  namespace: string;
+  authoredSignals: AuthoredIntelligenceSignals | null;
+  goldenUsage: ContentIntelligenceMetadata['golden_usage'];
+  verificationStatus: ContentIntelligenceMetadata['verification_status'];
+  benchmarkConfidence: ContentIntelligenceMetadata['benchmark_confidence'];
+  verification: ShowcaseVerificationEntry | null;
+  runtimeHardeningOk: boolean;
+  fullRouteCoverageOk: boolean;
+  runtimeBudgetOk: boolean;
+}): Pick<ContentIntelligenceMetadata, 'recommendation_reasons' | 'recommendation_blockers'> {
+  const reasons = deriveAuthoredRecommendationReasons(input.namespace, input.authoredSignals);
+  const blockers: string[] = [];
+
+  reasons.push('Live showcase evidence is available');
+
+  if (input.goldenUsage === 'shortlisted') {
+    reasons.push('Shortlisted showcase benchmark');
+  } else {
+    blockers.push('Showcase benchmark is not shortlisted yet');
+  }
+
+  switch (input.verificationStatus) {
+    case 'smoke-green':
+      reasons.push('Smoke verification passed');
+      break;
+    case 'build-green':
+      blockers.push('Runtime smoke verification has not passed yet');
+      break;
+    case 'build-red':
+    case 'smoke-red':
+      blockers.push('Latest showcase verification is failing');
+      break;
+    default:
+      blockers.push('Showcase verification is still pending');
+      break;
+  }
+
+  if (input.runtimeHardeningOk) {
+    reasons.push('Runtime hardening baseline passed');
+  } else {
+    blockers.push('Runtime hardening baseline is incomplete');
+  }
+
+  if (input.fullRouteCoverageOk) {
+    reasons.push('Full route coverage survived the build');
+  } else {
+    blockers.push('Full route coverage is not preserved in the build');
+  }
+
+  if (input.runtimeBudgetOk) {
+    reasons.push('Runtime asset budgets are within target');
+  } else {
+    blockers.push('Runtime asset budgets exceed the preferred thresholds');
+  }
+
+  if (input.verification?.drift.signal === 'lower') {
+    reasons.push('Benchmark drift is low');
+  } else if (input.verification?.drift.signal === 'moderate') {
+    reasons.push('Benchmark drift is moderate but acceptable');
+  } else if (input.verification?.drift.signal === 'elevated') {
+    blockers.push('Benchmark drift is elevated');
+  }
+
+  if (input.benchmarkConfidence === 'high') {
+    reasons.push('Benchmark confidence is high');
+  }
+
+  return {
+    recommendation_reasons: toUniqueList(reasons),
+    recommendation_blockers: toUniqueList(blockers),
   };
 }
 
@@ -369,6 +510,11 @@ export function getContentIntelligence(
     if (!authoredSignals) {
       return null;
     }
+
+    const recommendationReasons = deriveAuthoredRecommendationReasons(namespace, authoredSignals);
+    const recommendationBlockers = authoredSignals.recommended
+      ? []
+      : deriveAuthoredRecommendationBlockers(namespace, authoredSignals);
 
     return {
       source: 'authored',
@@ -390,6 +536,8 @@ export function getContentIntelligence(
       confidence_score: authoredSignals.confidenceScore,
       recommended: authoredSignals.recommended,
       evidence: authoredSignals.evidence,
+      recommendation_reasons: recommendationReasons,
+      recommendation_blockers: recommendationBlockers,
     };
   }
 
@@ -458,6 +606,17 @@ export function getContentIntelligence(
     fullRouteCoverageOk: hasFullRouteCoverage(verification),
     runtimeBudgetOk: isWithinRuntimeBudget(verification),
   });
+  const recommendationExplanation = deriveBenchmarkRecommendationExplanation({
+    namespace,
+    authoredSignals,
+    goldenUsage,
+    verificationStatus,
+    benchmarkConfidence,
+    verification,
+    runtimeHardeningOk: hasRuntimeHardeningBaseline(verification),
+    fullRouteCoverageOk: hasFullRouteCoverage(verification),
+    runtimeBudgetOk: isWithinRuntimeBudget(verification),
+  });
 
   return {
     source,
@@ -471,6 +630,8 @@ export function getContentIntelligence(
     confidence_score: confidenceScore,
     recommended,
     evidence: [...evidence],
+    recommendation_reasons: recommendationExplanation.recommendation_reasons,
+    recommendation_blockers: recommended ? [] : recommendationExplanation.recommendation_blockers,
     benchmark: {
       classification: normalizeClassification(
         verification?.classification ?? showcase.classification,

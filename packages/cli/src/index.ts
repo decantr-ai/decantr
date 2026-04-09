@@ -107,6 +107,8 @@ function formatIntelligenceSummary(
   }
 
   const parts: string[] = [];
+  const recommendationReasons = intelligence.recommendation_reasons ?? [];
+  const recommendationBlockers = intelligence.recommendation_blockers ?? [];
 
   if (intelligence.recommended) {
     parts.push('recommended');
@@ -155,6 +157,12 @@ function formatIntelligenceSummary(
 
   if (intelligence.quality_score != null) {
     parts.push(`quality ${intelligence.quality_score}`);
+  }
+
+  if (intelligence.recommended && recommendationReasons.length > 0) {
+    parts.push(`because ${recommendationReasons[0]}`);
+  } else if (!intelligence.recommended && recommendationBlockers.length > 0) {
+    parts.push(`held back by ${recommendationBlockers[0]}`);
   }
 
   return parts.length > 0 ? parts.join(' | ') : null;

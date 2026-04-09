@@ -118,6 +118,8 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const installCmd = `decantr get ${singular} ${namespace}/${slug}`;
   const tags = (content.data?.tags as string[] | undefined) ?? [];
   const intelligence = content.intelligence ?? null;
+  const recommendationReasons = intelligence?.recommendation_reasons ?? [];
+  const recommendationBlockers = intelligence?.recommendation_blockers ?? [];
   const benchmarkBackedIntelligence = intelligence ? hasBenchmarkBackedIntelligence(intelligence) : false;
   const showcaseMeta = singular === 'blueprint' ? await getShowcaseMetadata(slug) : null;
   const showcaseVerification = showcaseMeta?.verification ?? null;
@@ -316,6 +318,12 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                 )}
                 {intelligence.evidence.length > 0 && (
                   <span>Evidence: {intelligence.evidence.join(', ')}</span>
+                )}
+                {recommendationReasons.length > 0 && (
+                  <span>Recommended because: {recommendationReasons.join(', ')}</span>
+                )}
+                {!intelligence.recommended && recommendationBlockers.length > 0 && (
+                  <span>Holding back: {recommendationBlockers.join(', ')}</span>
                 )}
               </div>
             </div>

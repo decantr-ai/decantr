@@ -180,6 +180,7 @@ commit archaeology.
   - `medium`
   - `high`
   - `verified`
+- Added explainable intelligence metadata so API, CLI, and registry detail views can surface recommendation reasons and blockers instead of only raw scores.
 - Intelligence scoring now rewards shortlist runtime hardening evidence:
   - document `lang` / viewport metadata
   - charset presence
@@ -280,6 +281,7 @@ commit archaeology.
   - adding real landmark ARIA metadata
   - adding explicit focus-visible signals
   - adding responsive CSS-module breakpoints
+- Made the registry portal `build` path clean-checkout safe by rebuilding `@decantr/registry` before Next.js typechecking, matching the existing lint discipline.
 
 ### Package surface governance
 
