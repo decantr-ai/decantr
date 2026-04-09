@@ -275,6 +275,8 @@ describe('v3-aware tool tests', () => {
             cspSignalOk: true,
             inlineScriptCount: 0,
             externalScriptsWithoutIntegrityCount: 0,
+            jsEvalSignalCount: 0,
+            jsHtmlInjectionSignalCount: 0,
             assetCount: 1,
             assetsPassed: 1,
             routeHintsChecked: ['/'],

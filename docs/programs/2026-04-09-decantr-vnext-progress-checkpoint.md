@@ -90,6 +90,8 @@ commit archaeology.
   - inline script detection
   - external script integrity checks
   - CSP signal detection
+  - built-JS dynamic code execution markers
+  - built-JS HTML injection markers
 - Project audit now also records built asset byte totals and warns on oversized JS/CSS/total bundle budgets.
 - Project audit now warns when an auth-declared essence lacks a clear gateway section or anonymous entry route.
 - File critique now flags higher-risk code patterns including:

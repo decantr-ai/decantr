@@ -1433,6 +1433,9 @@ function printProjectAuditReport(report: ProjectAuditReport) {
     console.log(
       `  Script hygiene: inline ${report.runtimeAudit.inlineScriptCount} | external without integrity ${report.runtimeAudit.externalScriptsWithoutIntegrityCount}`,
     );
+    console.log(
+      `  JS risk signals: dynamic code ${report.runtimeAudit.jsEvalSignalCount} | html injection ${report.runtimeAudit.jsHtmlInjectionSignalCount}`,
+    );
   }
   console.log(`  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`);
 

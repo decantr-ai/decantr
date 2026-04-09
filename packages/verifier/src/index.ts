@@ -589,6 +589,28 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
     }));
   }
 
+  if (runtimeAudit.jsEvalSignalCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-js-dynamic-code-signals',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Built JavaScript includes dynamic code execution markers such as `eval` or `new Function`.',
+      evidence: [distPath, `Dynamic code signals in built JS: ${runtimeAudit.jsEvalSignalCount}`],
+      suggestedFix: 'Remove runtime code evaluation from shipped bundles and replace it with explicit data transforms or static dispatch logic.',
+    }));
+  }
+
+  if (runtimeAudit.jsHtmlInjectionSignalCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-js-html-injection-signals',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Built JavaScript includes HTML-injection markers such as `innerHTML`, `insertAdjacentHTML`, or `document.write`.',
+      evidence: [distPath, `HTML injection signals in built JS: ${runtimeAudit.jsHtmlInjectionSignalCount}`],
+      suggestedFix: 'Prefer explicit DOM node creation or framework-safe rendering paths instead of writing raw HTML into the document at runtime.',
+    }));
+  }
+
   if (runtimeAudit.cspSignalOk === false) {
     findings.push(makeFinding({
       id: 'runtime-csp-signal-missing',

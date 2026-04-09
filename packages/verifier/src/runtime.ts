@@ -27,6 +27,8 @@ export interface RuntimeAudit {
   cspSignalOk: boolean;
   inlineScriptCount: number;
   externalScriptsWithoutIntegrityCount: number;
+  jsEvalSignalCount: number;
+  jsHtmlInjectionSignalCount: number;
   assetCount: number;
   assetsPassed: number;
   routeHintsChecked: string[];
@@ -60,6 +62,8 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     cspSignalOk: false,
     inlineScriptCount: 0,
     externalScriptsWithoutIntegrityCount: 0,
+    jsEvalSignalCount: 0,
+    jsHtmlInjectionSignalCount: 0,
     assetCount: 0,
     assetsPassed: 0,
     routeHintsChecked: [],
@@ -107,6 +111,14 @@ function countExternalScriptsWithoutIntegrity(html: string): number {
     })
     .filter((entry) => /^https?:\/\//i.test(entry.src) && !entry.hasIntegrity)
     .length;
+}
+
+function countDynamicCodeSignals(js: string): number {
+  return js.match(/\beval\s*\(|\bnew Function\s*\(/g)?.length ?? 0;
+}
+
+function countHtmlInjectionSignals(js: string): number {
+  return js.match(/\bdangerouslySetInnerHTML\b|\b(?:innerHTML|outerHTML)\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/g)?.length ?? 0;
 }
 
 function normalizeRouteHint(route: string | null | undefined): string {
@@ -256,6 +268,8 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     }
 
     const routeHintsMatched = routeHints.filter(routeHint => combinedJs.includes(routeHint)).length;
+    const jsEvalSignalCount = countDynamicCodeSignals(combinedJs);
+    const jsHtmlInjectionSignalCount = countHtmlInjectionSignals(combinedJs);
     if (routeHints.length > 0 && routeHintsMatched < Math.min(2, routeHints.length)) {
       failures.push('route-hints-missing');
     }
@@ -296,6 +310,8 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       cspSignalOk,
       inlineScriptCount,
       externalScriptsWithoutIntegrityCount,
+      jsEvalSignalCount,
+      jsHtmlInjectionSignalCount,
       assetCount: assetPaths.length,
       assetsPassed,
       routeHintsChecked: routeHints,

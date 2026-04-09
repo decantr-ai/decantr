@@ -876,6 +876,8 @@ export interface ProjectAuditRuntimeAudit {
   cspSignalOk: boolean;
   inlineScriptCount: number;
   externalScriptsWithoutIntegrityCount: number;
+  jsEvalSignalCount: number;
+  jsHtmlInjectionSignalCount: number;
   assetCount: number;
   assetsPassed: number;
   routeHintsChecked: string[];
