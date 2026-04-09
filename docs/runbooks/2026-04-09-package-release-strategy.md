@@ -55,6 +55,7 @@ The npm publish workflow now uses `scripts/publish-packages.mjs`, backed by `con
 Release planning now also has an executable source:
 
 - `pnpm release:plan`
+- `pnpm audit:npm-surface`
 - `node scripts/release-plan.mjs --json`
 - `node scripts/release-plan.mjs --summary-markdown=/tmp/package-release-plan.md`
 
@@ -70,6 +71,25 @@ Retired package handling now uses `config/package-retirements.json` plus:
 
 - `pnpm package:retire:dry-run`
 - `node scripts/deprecate-retired-packages.mjs`
+
+The live npm dist-tag surface now also has an executable audit:
+
+- `pnpm audit:npm-surface`
+- `pnpm npm-surface:normalize:dry-run`
+
+That audit compares `config/package-surface.json` against the real npm registry and flags:
+
+- beta packages promoted on `latest`
+- missing expected `beta` dist-tags
+- unexpected stray dist-tags
+- packages marked `publish: true` that are not published yet
+
+The normalization script is intentionally dry-run first. It can safely automate:
+
+- adding missing `beta` dist-tags when npm `latest` already points to the intended prerelease
+- removing stray unexpected dist-tags
+
+It does not automatically retag `latest`; that remains a deliberate manual release-wave decision.
 
 ## Stable Graduation Rule
 
@@ -92,6 +112,10 @@ When a package graduates:
 
 This runbook improves forward release discipline, and retired-package handling is now executable, but a few package-surface tasks still remain:
 
+- fix current live npm drift observed on April 9, 2026:
+  - `@decantr/essence-spec`, `@decantr/registry`, `@decantr/core`, and `@decantr/mcp-server` are still beta packages effectively riding `latest`
+  - `@decantr/cli` has stray npm dist-tags (`latestnpm`, `latest.`)
+  - `@decantr/verifier` is now part of the planned public surface but is not yet published
 - decide whether `@decantr/core` remains a public low-level package long-term or becomes a more intentionally documented integration surface
 - decide whether `@decantr/vite-plugin` should graduate, stay experimental, or be archived
 
@@ -105,6 +129,7 @@ pnpm test
 pnpm lint
 pnpm audit:package-surface
 pnpm audit:release-readiness
+pnpm audit:npm-surface
 ```
 
 Dry-run the publish selection locally:
@@ -114,4 +139,5 @@ pnpm release:plan
 node scripts/release-plan.mjs --json
 node scripts/publish-packages.mjs --dry-run
 node scripts/publish-packages.mjs --dry-run --include-experimental
+pnpm npm-surface:normalize:dry-run
 ```
