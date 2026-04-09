@@ -28,6 +28,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
     "@decantr/registry": "workspace:*"
   }

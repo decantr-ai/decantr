@@ -22,6 +22,20 @@ export type {
   IRGridNode,
   IRStoreNode,
 } from './types.js';
+export type {
+  ExecutionPackType,
+  ExecutionPackTarget,
+  ExecutionPackScope,
+  ExecutionPackExample,
+  ExecutionPackAntiPattern,
+  ExecutionPackSuccessCheck,
+  ExecutionPackTokenBudget,
+  ExecutionPackBase,
+  ScaffoldPackRoute,
+  ScaffoldPackData,
+  ScaffoldExecutionPack,
+  ScaffoldPackBuilderOptions,
+} from './packs.js';
 
 export type { PipelineOptions, PipelineResult } from './pipeline.js';
 export { runPipeline } from './pipeline.js';
@@ -30,3 +44,4 @@ export { resolveEssence, resolveVisualEffects } from './resolve.js';
 export type { ResolvedPage, ResolvedEssence } from './resolve.js';
 export { walkIR, findNodes, countPatterns, validateIR } from './ir-helpers.js';
 export { pascalCase } from './utils.js';
+export { buildScaffoldPack, renderExecutionPackMarkdown } from './packs.js';

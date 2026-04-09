@@ -3,6 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
+import { buildScaffoldPack, runPipeline } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
 import type {
   ComposeEntry,
@@ -1928,6 +1929,48 @@ export interface RefreshResult {
   cssFiles: string[];
 }
 
+function resolvePackAdapter(target: string | undefined, platformType: string | undefined): string {
+  if (target === 'react' && platformType === 'spa') return 'react-vite';
+  if (target === 'react') return 'react-web';
+  if (target === 'vue' && platformType === 'spa') return 'vue-vite';
+  if (target === 'svelte' && platformType === 'spa') return 'sveltekit';
+  if (target) return target;
+  return 'generic-web';
+}
+
+async function generateScaffoldPackContext(
+  projectRoot: string,
+  contextDir: string,
+  essence: EssenceV3,
+): Promise<string | null> {
+  const cacheRoot = join(projectRoot, '.decantr', 'cache', '@official');
+  if (!existsSync(cacheRoot)) return null;
+
+  const customRoot = join(projectRoot, '.decantr', 'custom');
+  const overridePaths = existsSync(customRoot) ? [customRoot] : undefined;
+
+  try {
+    const pipeline = await runPipeline(essence, {
+      contentRoot: cacheRoot,
+      overridePaths,
+    });
+
+    const pack = buildScaffoldPack(pipeline.ir, {
+      target: {
+        framework: essence.meta.target || null,
+        runtime: essence.meta.platform.type || null,
+        adapter: resolvePackAdapter(essence.meta.target, essence.meta.platform.type),
+      },
+    });
+
+    const scaffoldPackPath = join(contextDir, 'scaffold-pack.md');
+    writeFileSync(scaffoldPackPath, pack.renderedMarkdown);
+    return scaffoldPackPath;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Resolve a single pattern spec: use prefetched data if available and complete,
  * otherwise fetch from registry and enrich. Falls back to synthetic generation.
@@ -2456,6 +2499,11 @@ export async function refreshDerivedFiles(
     const sectionContextPath = join(contextDir, `section-${syntheticSection.id}.md`);
     writeFileSync(sectionContextPath, contextContent);
     contextFiles.push(sectionContextPath);
+  }
+
+  const scaffoldPackPath = await generateScaffoldPackContext(projectRoot, contextDir, essence);
+  if (scaffoldPackPath) {
+    contextFiles.push(scaffoldPackPath);
   }
 
   return {

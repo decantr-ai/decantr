@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { scaffoldProject, scaffoldMinimal, buildEssenceV3 } from '../src/scaffold.js';
 import type { ThemeData } from '../src/scaffold.js';
@@ -208,5 +208,48 @@ describe('v3 scaffold', () => {
     // Mutation task contexts should NOT exist during initial scaffold
     expect(existsSync(join(contextDir, 'task-modify.md'))).toBe(false);
     expect(existsSync(join(contextDir, 'task-add-page.md'))).toBe(false);
+  });
+
+  it('scaffoldProject emits scaffold-pack.md when cache contains required registry content', async () => {
+    const cacheRoot = join(testDir, '.decantr', 'cache', '@official');
+    mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
+    mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });
+
+    writeFileSync(join(cacheRoot, 'themes', 'luminarum.json'), JSON.stringify({
+      id: 'luminarum',
+      name: 'Luminarum',
+      spatial: {
+        card_wrapping: 'always',
+      },
+    }, null, 2));
+
+    writeFileSync(join(cacheRoot, 'patterns', 'hero.json'), JSON.stringify({
+      id: 'hero',
+      name: 'Hero',
+      contained: false,
+      components: [],
+      presets: {
+        default: {
+          layout: {
+            layout: 'hero',
+            atoms: '',
+          },
+          code: {
+            imports: '',
+            example: '<section />',
+          },
+        },
+      },
+    }, null, 2));
+
+    await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
+
+    const packPath = join(testDir, '.decantr', 'context', 'scaffold-pack.md');
+    expect(existsSync(packPath)).toBe(true);
+
+    const content = readFileSync(packPath, 'utf-8');
+    expect(content).toContain('# Scaffold Pack');
+    expect(content).toContain('react-vite (react)');
+    expect(content).toContain('- / -> home [hero]');
   });
 });
