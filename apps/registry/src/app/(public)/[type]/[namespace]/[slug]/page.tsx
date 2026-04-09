@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { JsonViewer } from '@/components/json-viewer';
+import { getShowcaseMetadata, getShowcaseUrl } from '@/lib/showcase';
 import { CopyInstallButton } from './copy-install-button';
 
 const TYPE_COLORS: Record<string, string> = {
@@ -68,6 +69,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
     content.description || (content.data?.description as string | undefined);
   const installCmd = `decantr get ${singular} ${namespace}/${slug}`;
   const tags = (content.data?.tags as string[] | undefined) ?? [];
+  const showcaseMeta = singular === 'blueprint' ? getShowcaseMetadata(slug) : null;
 
   return (
     <div
@@ -226,9 +228,37 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                   variant="ghost"
                 />
               )}
+              {showcaseMeta && (
+                <Link
+                  href={getShowcaseUrl(slug)}
+                  className="d-interactive no-underline"
+                  data-variant="ghost"
+                >
+                  Open Showcase
+                </Link>
+              )}
             </div>
           </div>
         </div>
+
+        {showcaseMeta && (
+          <div className="d-surface" data-elevation="raised" style={{ marginTop: '1.25rem' }}>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="d-annotation" data-status={showcaseMeta.goldenCandidate ? 'success' : undefined}>
+                  {showcaseMeta.goldenCandidate ? 'shortlisted showcase candidate' : 'live showcase available'}
+                </span>
+                <span className="d-annotation">classification {showcaseMeta.classification}</span>
+                {showcaseMeta.target && (
+                  <span className="d-annotation">{showcaseMeta.target}</span>
+                )}
+              </div>
+              <p style={{ margin: 0, color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
+                {showcaseMeta.notes || 'This blueprint has a live showcase build in the audited Decantr corpus.'}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* JSON viewer */}
         {content.data && (

@@ -4,6 +4,7 @@ import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { KPIGrid } from '@/components/kpi-grid';
+import { listShortlistedShowcases } from '@/lib/showcase';
 import {
   CONTENT_TYPES,
   CONTENT_TYPE_LABELS,
@@ -21,6 +22,32 @@ async function FeaturedContent() {
   }
 
   return <ContentCardGrid items={items} emptyMessage="No patterns published yet." />;
+}
+
+async function ShowcaseShortlist() {
+  const shortlist = listShortlistedShowcases();
+  if (shortlist.length === 0) {
+    return null;
+  }
+
+  let items: ContentItem[] = [];
+
+  try {
+    const result = await listContent('blueprints', { limit: 100 });
+    const shortlistOrder = new Map(shortlist.map((entry, index) => [entry.slug, index]));
+    items = result.items
+      .filter((item) => shortlistOrder.has(item.slug))
+      .sort((a, b) => (shortlistOrder.get(a.slug) ?? 999) - (shortlistOrder.get(b.slug) ?? 999));
+  } catch {
+    // API unavailable
+  }
+
+  return (
+    <ContentCardGrid
+      items={items}
+      emptyMessage="No shortlisted showcase blueprints are available yet."
+    />
+  );
 }
 
 async function RegistryStats() {
@@ -97,6 +124,20 @@ export default function HomePage() {
         </span>
         <Suspense fallback={<CardGridSkeleton />}>
           <FeaturedContent />
+        </Suspense>
+      </section>
+
+      <div className="lum-divider" />
+
+      <section>
+        <span className="d-label mb-4 block border-l-2 border-[var(--d-success)] pl-3">
+          Showcase Shortlist
+        </span>
+        <p className="mb-4 max-w-3xl text-sm text-d-muted">
+          Provisional benchmark candidates from the Decantr showcase corpus. These blueprints currently have live showcase builds and passed the first shortlist verification sweep.
+        </p>
+        <Suspense fallback={<CardGridSkeleton />}>
+          <ShowcaseShortlist />
         </Suspense>
       </section>
 

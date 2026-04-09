@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ContentItem } from '@/lib/api';
+import { getShowcaseMetadata, getShowcaseUrl } from '@/lib/showcase';
 
 const TYPE_COLORS: Record<string, string> = {
   pattern: 'var(--d-coral)',
@@ -27,6 +28,8 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
   const singular = singularType(item.type);
   const typeColor = TYPE_COLORS[singular] ?? 'var(--d-primary)';
   const href = `/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`;
+  const showcaseMeta = singular === 'blueprint' ? getShowcaseMetadata(item.slug) : null;
+  const hasShortlistedShowcase = Boolean(showcaseMeta?.goldenCandidate);
 
   return (
     <div className="lum-card-outlined" data-type={singular}>
@@ -42,6 +45,11 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
           {singular}
         </span>
         <span className="d-annotation">{item.namespace}</span>
+        {showcaseMeta && (
+          <span className="d-annotation" data-status={hasShortlistedShowcase ? 'success' : undefined}>
+            {hasShortlistedShowcase ? 'shortlisted showcase' : 'live showcase'}
+          </span>
+        )}
       </div>
 
       {/* Title */}
@@ -103,6 +111,18 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
             <span className="flex items-center gap-1">
               <span className="opacity-40">|</span>
               <span>{formatDate(item.published_at)}</span>
+            </span>
+          )}
+          {showcaseMeta && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <Link
+                href={getShowcaseUrl(item.slug)}
+                className="no-underline transition-colors hover:text-d-primary"
+                style={{ color: 'var(--d-text)' }}
+              >
+                Open showcase
+              </Link>
             </span>
           )}
         </div>
