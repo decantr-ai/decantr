@@ -56,6 +56,11 @@ The workflow:
 - skips experimental packages unless `include_experimental=true`
 - supports a manual `dist_tag` override for coordinated release waves
 
+Retired package handling now uses `config/package-retirements.json` plus:
+
+- `pnpm package:retire:dry-run`
+- `node scripts/deprecate-retired-packages.mjs`
+
 ## Stable Graduation Rule
 
 A package should move from `beta` to `latest` only when all of the following are true:
@@ -74,9 +79,8 @@ When a package graduates:
 
 ## Remaining Cleanup After This Runbook
 
-This runbook improves forward release discipline, but a few package-surface tasks still remain:
+This runbook improves forward release discipline, and retired-package handling is now executable, but a few package-surface tasks still remain:
 
-- deprecate or archive removed npm lines such as `@decantr/ui`
 - decide whether `@decantr/core` remains a public low-level package long-term or becomes a more intentionally documented integration surface
 - decide whether `@decantr/vite-plugin` should graduate, stay experimental, or be archived
 

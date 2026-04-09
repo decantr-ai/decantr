@@ -3,14 +3,18 @@ import { join } from 'node:path';
 import {
   getRepoRoot,
   listPublicPackages,
+  loadPackageRetirements,
   loadPackageSurface,
+  validatePackageRetirements,
   validatePackageSurface,
 } from './package-surface-lib.mjs';
 
 const root = getRepoRoot();
 const surface = loadPackageSurface(root);
+const retirements = loadPackageRetirements(root);
 const publicPackages = listPublicPackages(root);
 const findings = validatePackageSurface(surface, publicPackages);
+findings.push(...validatePackageRetirements(surface, retirements));
 
 for (const pkg of publicPackages) {
   const readmePath = join(root, pkg.path, 'README.md');
@@ -35,6 +39,7 @@ const supportCounts = surface.packages.reduce((acc, entry) => {
 console.log('Package surface audit passed.');
 console.log(`Public packages: ${publicPackages.length}`);
 console.log(`Manifest packages: ${surface.packages.length}`);
+console.log(`Retired package entries: ${(retirements.packages ?? []).length}`);
 for (const [support, count] of Object.entries(supportCounts)) {
   console.log(`- ${support}: ${count}`);
 }

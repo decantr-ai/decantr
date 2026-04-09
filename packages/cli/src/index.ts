@@ -1,8 +1,9 @@
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateEssence, evaluateGuard, isV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
+import type { ExecutionPackBundle } from '@decantr/core';
 import {
   RegistryAPIClient,
   CONTENT_TYPES as GET_CONTENT_TYPES,
@@ -41,6 +42,7 @@ import {
   mapRegistryThemeToThemeData,
   mapRegistryPatternToPatternSpecSummary,
   collectPatternIdsFromItems,
+  writeExecutionPackBundleArtifacts,
   type ThemeData,
   type LayoutItem,
   type ZoneInput,
@@ -360,6 +362,7 @@ async function printHostedExecutionPackBundle(
   essencePath?: string,
   namespace?: string,
   jsonOutput: boolean = false,
+  writeContext: boolean = false,
 ) {
   const client = getPublicAPIClient();
   const resolvedPath = essencePath ? join(process.cwd(), essencePath) : join(process.cwd(), 'decantr.essence.json');
@@ -373,6 +376,17 @@ async function printHostedExecutionPackBundle(
     essence,
     namespace ? { namespace } : undefined,
   );
+
+  let writtenContextPaths: string[] = [];
+  if (writeContext) {
+    const contextDir = join(process.cwd(), '.decantr', 'context');
+    mkdirSync(contextDir, { recursive: true });
+    const written = writeExecutionPackBundleArtifacts(
+      contextDir,
+      bundle as unknown as ExecutionPackBundle,
+    );
+    writtenContextPaths = written.paths;
+  }
 
   if (jsonOutput) {
     console.log(JSON.stringify(bundle, null, 2));
@@ -390,6 +404,10 @@ async function printHostedExecutionPackBundle(
   console.log(`  Pages: ${typedBundle.pages.length}`);
   console.log(`  Sections: ${typedBundle.sections.length}`);
   console.log(`  Mutations: ${typedBundle.mutations.length}`);
+  if (writeContext) {
+    console.log(`  Context bundle: ${join(process.cwd(), '.decantr', 'context')}`);
+    console.log(`  Files written: ${writtenContextPaths.length}`);
+  }
   console.log('');
   console.log(`${BOLD}Route Plan:${RESET}`);
   for (const route of typedBundle.scaffold.data.routes) {
@@ -1493,7 +1511,7 @@ ${BOLD}Usage:${RESET}
   decantr list <type> [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr showcase [manifest|shortlist|verification] [--json]
   decantr registry summary [--namespace <namespace>] [--json]
-  decantr registry compile-packs [path] [--namespace <namespace>] [--json]
+  decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
   decantr validate [path]
   decantr theme <subcommand>
   decantr create <type> <name>
@@ -1562,6 +1580,7 @@ ${BOLD}Examples:${RESET}
   decantr showcase verification --json
   decantr registry summary --namespace @official
   decantr registry compile-packs decantr.essence.json --json
+  decantr registry compile-packs decantr.essence.json --write-context
   decantr create pattern my-card
 `);
 }
@@ -1884,10 +1903,11 @@ async function main() {
         const namespaceIdx = args.indexOf('--namespace');
         const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
         const jsonOutput = args.includes('--json');
+        const writeContext = args.includes('--write-context');
         const essencePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
-        await printHostedExecutionPackBundle(essencePath, namespace, jsonOutput);
+        await printHostedExecutionPackBundle(essencePath, namespace, jsonOutput, writeContext);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]${RESET}`);
         process.exitCode = 1;
       }
       break;

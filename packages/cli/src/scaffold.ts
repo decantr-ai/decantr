@@ -2136,6 +2136,13 @@ export interface RefreshResult {
   cssFiles: string[];
 }
 
+export interface WrittenPackBundleArtifacts {
+  paths: string[];
+  scaffoldPackPath: string;
+  reviewPackPath: string;
+  manifestPath: string;
+}
+
 function writeExecutionPackArtifacts(
   basePathWithoutExtension: string,
   pack: ExecutionPackBase<unknown>,
@@ -2145,6 +2152,55 @@ function writeExecutionPackArtifacts(
   writeFileSync(markdownPath, pack.renderedMarkdown);
   writeFileSync(jsonPath, JSON.stringify(pack, null, 2) + '\n');
   return markdownPath;
+}
+
+export function writeExecutionPackBundleArtifacts(
+  contextDir: string,
+  bundle: ExecutionPackBundle,
+): WrittenPackBundleArtifacts {
+  mkdirSync(contextDir, { recursive: true });
+
+  const outputPaths: string[] = [];
+  const scaffoldPackPath = writeExecutionPackArtifacts(join(contextDir, 'scaffold-pack'), bundle.scaffold);
+  outputPaths.push(scaffoldPackPath);
+
+  const reviewPackPath = writeExecutionPackArtifacts(join(contextDir, 'review-pack'), bundle.review);
+  outputPaths.push(reviewPackPath);
+
+  for (const sectionPack of bundle.sections) {
+    const sectionPackPath = writeExecutionPackArtifacts(
+      join(contextDir, `section-${sectionPack.data.sectionId}-pack`),
+      sectionPack,
+    );
+    outputPaths.push(sectionPackPath);
+  }
+
+  for (const pagePack of bundle.pages) {
+    const pagePackPath = writeExecutionPackArtifacts(
+      join(contextDir, `page-${pagePack.data.pageId}-pack`),
+      pagePack,
+    );
+    outputPaths.push(pagePackPath);
+  }
+
+  for (const mutationPack of bundle.mutations) {
+    const mutationPackPath = writeExecutionPackArtifacts(
+      join(contextDir, `mutation-${mutationPack.data.mutationType}-pack`),
+      mutationPack,
+    );
+    outputPaths.push(mutationPackPath);
+  }
+
+  const manifestPath = join(contextDir, 'pack-manifest.json');
+  writeFileSync(manifestPath, JSON.stringify(bundle.manifest, null, 2) + '\n');
+  outputPaths.push(manifestPath);
+
+  return {
+    paths: outputPaths,
+    scaffoldPackPath,
+    reviewPackPath,
+    manifestPath,
+  };
 }
 
 interface GeneratedPackContexts {
@@ -2176,43 +2232,10 @@ async function generatePackContexts(
       overridePaths,
     });
 
-    const outputPaths: string[] = [];
-    const scaffoldPackPath = writeExecutionPackArtifacts(join(contextDir, 'scaffold-pack'), bundle.scaffold);
-    outputPaths.push(scaffoldPackPath);
-
-    const reviewPackPath = writeExecutionPackArtifacts(join(contextDir, 'review-pack'), bundle.review);
-    outputPaths.push(reviewPackPath);
-
-    for (const sectionPack of bundle.sections) {
-      const sectionPackPath = writeExecutionPackArtifacts(
-        join(contextDir, `section-${sectionPack.data.sectionId}-pack`),
-        sectionPack,
-      );
-      outputPaths.push(sectionPackPath);
-    }
-
-    for (const pagePack of bundle.pages) {
-      const pagePackPath = writeExecutionPackArtifacts(
-        join(contextDir, `page-${pagePack.data.pageId}-pack`),
-        pagePack,
-      );
-      outputPaths.push(pagePackPath);
-    }
-
-    for (const mutationPack of bundle.mutations) {
-      const mutationPackPath = writeExecutionPackArtifacts(
-        join(contextDir, `mutation-${mutationPack.data.mutationType}-pack`),
-        mutationPack,
-      );
-      outputPaths.push(mutationPackPath);
-    }
-
-    const manifestPath = join(contextDir, 'pack-manifest.json');
-    writeFileSync(manifestPath, JSON.stringify(bundle.manifest, null, 2) + '\n');
-    outputPaths.push(manifestPath);
+    const writtenArtifacts = writeExecutionPackBundleArtifacts(contextDir, bundle);
 
     return {
-      paths: outputPaths,
+      paths: writtenArtifacts.paths,
       scaffoldPack: bundle.scaffold,
       manifest: bundle.manifest,
     };

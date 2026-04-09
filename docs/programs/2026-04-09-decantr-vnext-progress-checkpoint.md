@@ -71,6 +71,7 @@ commit archaeology.
 - Public registry client and CLI now expose that hosted compiler surface:
   - `RegistryAPIClient.compileExecutionPacks()`
   - `decantr registry compile-packs`
+- `decantr registry compile-packs --write-context` can now materialize the hosted pack bundle into local `.decantr/context` artifacts without waiting for a full refresh cycle.
 
 ### Verification foundation
 
@@ -191,6 +192,7 @@ commit archaeology.
 ### Package surface governance
 
 - Added `config/package-surface.json` as the package support and dist-tag source of truth.
+- Added `config/package-retirements.json` plus a retirement/deprecation script for removed npm lines such as `@decantr/ui`.
 - Added `pnpm audit:package-surface` and wired it into CI.
 - Replaced the hardcoded publish loop with a manifest-backed publish script.
 - Added package-level README coverage for all active public packages.

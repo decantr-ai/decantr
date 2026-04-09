@@ -10,6 +10,7 @@ const SUPPORT_VALUES = new Set([
 ]);
 
 const MATURITY_VALUES = new Set(['stable', 'beta', 'experimental']);
+const RETIREMENT_STATUS_VALUES = new Set(['retired', 'deprecated']);
 
 export function getRepoRoot() {
   return resolve(new URL('..', import.meta.url).pathname);
@@ -17,6 +18,11 @@ export function getRepoRoot() {
 
 export function loadPackageSurface(root = getRepoRoot()) {
   const path = join(root, 'config', 'package-surface.json');
+  return JSON.parse(readFileSync(path, 'utf8'));
+}
+
+export function loadPackageRetirements(root = getRepoRoot()) {
+  const path = join(root, 'config', 'package-retirements.json');
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
@@ -72,6 +78,43 @@ export function validatePackageSurface(surface, publicPackages) {
   for (const pkg of publicPackages) {
     if (!byName.has(pkg.name)) {
       findings.push(`Public package ${pkg.name} is missing from config/package-surface.json.`);
+    }
+  }
+
+  return findings;
+}
+
+export function validatePackageRetirements(surface, retirements) {
+  const findings = [];
+  const activeNames = new Set(surface.packages.map((entry) => entry.name));
+  const seen = new Set();
+
+  for (const entry of retirements.packages ?? []) {
+    if (!entry || typeof entry !== 'object') {
+      findings.push('Retirement manifest entries must be objects.');
+      continue;
+    }
+
+    if (typeof entry.name !== 'string' || entry.name.length === 0) {
+      findings.push('Retirement manifest entries must include a non-empty package name.');
+      continue;
+    }
+
+    if (seen.has(entry.name)) {
+      findings.push(`Retirement manifest contains duplicate package entry: ${entry.name}`);
+    }
+    seen.add(entry.name);
+
+    if (!RETIREMENT_STATUS_VALUES.has(entry.status)) {
+      findings.push(`Unsupported retirement status for ${entry.name}: ${entry.status}`);
+    }
+
+    if (activeNames.has(entry.name)) {
+      findings.push(`Retired package ${entry.name} is still listed in config/package-surface.json.`);
+    }
+
+    if (typeof entry.message !== 'string' || entry.message.length < 20) {
+      findings.push(`Retired package ${entry.name} must include a meaningful deprecation message.`);
     }
   }
 

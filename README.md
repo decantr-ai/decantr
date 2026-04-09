@@ -56,6 +56,7 @@ decantr refresh
 decantr status
 decantr registry summary --namespace @official --json
 decantr registry compile-packs decantr.essence.json --json
+decantr registry compile-packs decantr.essence.json --write-context
 decantr showcase verification --json
 ```
 

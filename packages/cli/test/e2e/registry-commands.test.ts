@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { execFile, execSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -447,6 +447,208 @@ describe('registry commands (e2e)', () => {
         }
       }),
     ).toBe(true);
+  });
+
+  it('registry compile-packs can write hosted pack artifacts into .decantr/context', async () => {
+    const server = createServer((req, res) => {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        if (req.method === 'POST' && req.url?.startsWith('/v1/packs/compile')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            $schema: 'https://decantr.ai/schemas/execution-pack-bundle.v1.json',
+            generatedAt: '2026-04-09T00:00:00.000Z',
+            sourceEssenceVersion: '2.0.0',
+            manifest: {
+              $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+              version: '1.0.0',
+              generatedAt: '2026-04-09T00:00:00.000Z',
+              scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+              review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+              sections: [{ id: 'dashboard', markdown: 'section-dashboard-pack.md', json: 'section-dashboard-pack.json', pageIds: ['home'] }],
+              pages: [{ id: 'home', markdown: 'page-home-pack.md', json: 'page-home-pack.json', sectionId: 'dashboard', sectionRole: 'primary' }],
+              mutations: [{ id: 'modify', markdown: 'mutation-modify-pack.md', json: 'mutation-modify-pack.json', mutationType: 'modify' }],
+            },
+            scaffold: {
+              $schema: 'https://decantr.ai/schemas/scaffold-pack.v1.json',
+              packVersion: '1.0.0',
+              packType: 'scaffold',
+              objective: 'Scaffold the clean app shell and declared routes.',
+              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+              preset: null,
+              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+              requiredSetup: [],
+              allowedVocabulary: [],
+              examples: [],
+              antiPatterns: [],
+              successChecks: [],
+              tokenBudget: { target: 1400, max: 2200, strategy: ['compact'] },
+              data: {
+                shell: 'sidebar-main',
+                theme: { id: 'clean', mode: 'light', shape: null },
+                routing: 'history',
+                features: ['auth'],
+                routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+              },
+              renderedMarkdown: '# Scaffold Pack\n',
+            },
+            review: {
+              $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+              packVersion: '1.0.0',
+              packType: 'review',
+              objective: 'Review generated output against the compiled Decantr contract.',
+              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+              preset: null,
+              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+              requiredSetup: [],
+              allowedVocabulary: [],
+              examples: [],
+              antiPatterns: [],
+              successChecks: [],
+              tokenBudget: { target: 1400, max: 2200, strategy: ['compact'] },
+              data: {
+                reviewType: 'app',
+                shell: 'sidebar-main',
+                theme: { id: 'clean', mode: 'light', shape: null },
+                routing: 'history',
+                features: ['auth'],
+                routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+                focusAreas: ['route-topology'],
+                workflow: ['Read the scaffold pack first.'],
+              },
+              renderedMarkdown: '# Review Pack\n',
+            },
+            sections: [{
+              $schema: 'https://decantr.ai/schemas/section-pack.v1.json',
+              packVersion: '1.0.0',
+              packType: 'section',
+              objective: 'Implement the dashboard section.',
+              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+              preset: null,
+              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+              requiredSetup: [],
+              allowedVocabulary: [],
+              examples: [],
+              antiPatterns: [],
+              successChecks: [],
+              tokenBudget: { target: 1000, max: 1600, strategy: ['compact'] },
+              data: {
+                sectionId: 'dashboard',
+                role: 'primary',
+                shell: 'sidebar-main',
+                features: ['auth'],
+                pages: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+                workflow: [],
+              },
+              renderedMarkdown: '# Section Pack\n',
+            }],
+            pages: [{
+              $schema: 'https://decantr.ai/schemas/page-pack.v1.json',
+              packVersion: '1.0.0',
+              packType: 'page',
+              objective: 'Implement the home route using the compiled page contract.',
+              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+              preset: null,
+              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+              requiredSetup: [],
+              allowedVocabulary: [],
+              examples: [],
+              antiPatterns: [],
+              successChecks: [],
+              tokenBudget: { target: 1200, max: 1800, strategy: ['compact'] },
+              data: {
+                pageId: 'home',
+                path: '/',
+                shell: 'sidebar-main',
+                sectionId: 'dashboard',
+                sectionRole: 'primary',
+                features: ['auth'],
+                surface: 'default',
+                theme: { id: 'clean', mode: 'light', shape: null },
+                wiringSignals: [],
+                patterns: [{ id: 'hero', alias: 'hero', preset: 'landing', layout: 'stack' }],
+              },
+              renderedMarkdown: '# Page Pack\n',
+            }],
+            mutations: [{
+              $schema: 'https://decantr.ai/schemas/mutation-pack.v1.json',
+              packVersion: '1.0.0',
+              packType: 'mutation',
+              objective: 'Execute the modify workflow against the compiled app contract.',
+              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+              preset: null,
+              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+              requiredSetup: [],
+              allowedVocabulary: [],
+              examples: [],
+              antiPatterns: [],
+              successChecks: [],
+              tokenBudget: { target: 1400, max: 2200, strategy: ['compact'] },
+              data: {
+                mutationType: 'modify',
+                shell: 'sidebar-main',
+                theme: { id: 'clean', mode: 'light', shape: null },
+                routing: 'history',
+                features: ['auth'],
+                routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+                workflow: ['Read the page pack first.'],
+              },
+              renderedMarkdown: '# Mutation Pack\n',
+            }],
+          }));
+          return;
+        }
+
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not found' }));
+      });
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const { port } = server.address() as AddressInfo;
+
+    const essencePath = join(testDir, 'decantr.essence.json');
+    writeFileSync(essencePath, JSON.stringify({
+      version: '2.0.0',
+      archetype: 'dashboard',
+      theme: { id: 'clean', mode: 'light' },
+      personality: ['professional'],
+      platform: { type: 'spa', routing: 'history' },
+      structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+      features: ['auth'],
+      density: { level: 'comfortable', content_gap: '1.5rem' },
+      guard: { mode: 'guided' },
+      target: 'react',
+    }, null, 2));
+
+    const output = await runCliAsync(testDir, 'registry compile-packs decantr.essence.json --namespace @official --write-context', {
+      DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
+      DECANTR_API_KEY: '',
+    });
+
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+
+    const contextDir = join(testDir, '.decantr', 'context');
+    const manifestPath = join(contextDir, 'pack-manifest.json');
+    const scaffoldPackPath = join(contextDir, 'scaffold-pack.md');
+    const reviewPackPath = join(contextDir, 'review-pack.md');
+    const pagePackPath = join(contextDir, 'page-home-pack.md');
+    const sectionPackPath = join(contextDir, 'section-dashboard-pack.md');
+    const mutationPackPath = join(contextDir, 'mutation-modify-pack.md');
+
+    expect(output).toContain('Hosted Execution Packs');
+    expect(output).toContain('Context bundle:');
+    expect(existsSync(manifestPath)).toBe(true);
+    expect(existsSync(scaffoldPackPath)).toBe(true);
+    expect(existsSync(reviewPackPath)).toBe(true);
+    expect(existsSync(pagePackPath)).toBe(true);
+    expect(existsSync(sectionPackPath)).toBe(true);
+    expect(existsSync(mutationPackPath)).toBe(true);
+    expect(JSON.parse(readFileSync(manifestPath, 'utf-8')).version).toBe('1.0.0');
+    expect(readFileSync(scaffoldPackPath, 'utf-8')).toContain('# Scaffold Pack');
   });
 
   it('forwards sort parameters for search and list commands', async () => {

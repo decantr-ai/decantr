@@ -2,6 +2,7 @@
 
 Date: 2026-04-09
 Source of truth: `config/package-surface.json`
+Retirement manifest: `config/package-retirements.json`
 
 This matrix defines which npm packages are part of the active Decantr vNext product surface on the reset branch.
 
@@ -48,11 +49,18 @@ These lines were removed from the monorepo reset branch and should not be treate
 
 They still need npm deprecation/archive handling as a separate release-governance task, but they are no longer part of the active vNext story.
 
+That retirement path is now executable through:
+
+1. `config/package-retirements.json`
+2. `pnpm package:retire:dry-run`
+3. `node scripts/deprecate-retired-packages.mjs`
+
 ## Working Rule
 
 Any future public package change should update all of:
 
 1. `config/package-surface.json`
-2. this matrix
-3. the relevant package README
-4. publish/deprecation workflow behavior
+2. `config/package-retirements.json` when a line is being removed
+3. this matrix
+4. the relevant package README
+5. publish/deprecation workflow behavior
