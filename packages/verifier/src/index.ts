@@ -740,7 +740,19 @@ async function runRuntimeAudit(projectRoot: string, essence: EssenceFile | null)
   });
 }
 
-function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudit: RuntimeAudit, projectRoot: string): void {
+function extractFailedRouteDocuments(runtimeAudit: RuntimeAudit): string[] {
+  return runtimeAudit.failures
+    .filter((failure) => failure.startsWith('route-document-failed:'))
+    .map((failure) => normalizeRouteHint(failure.slice('route-document-failed:'.length)))
+    .filter(Boolean);
+}
+
+function appendRuntimeAuditFindings(
+  findings: VerificationFinding[],
+  runtimeAudit: RuntimeAudit,
+  projectRoot: string,
+  topology?: TopologySummary,
+): void {
   const distPath = join(projectRoot, 'dist');
   const indexPath = join(distPath, 'index.html');
 
@@ -951,6 +963,40 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
       ],
       suggestedFix: 'Fix the failing route outputs so every declared destination resolves to the same usable root document contract.',
     }));
+  }
+
+  if (topology?.hasAuthFeature) {
+    const failedRouteDocuments = new Set(extractFailedRouteDocuments(runtimeAudit));
+    const failedGatewayRoutes = topology.gatewayRoutes.filter((route) => failedRouteDocuments.has(normalizeRouteHint(route)));
+    const failedPrimaryRoutes = topology.primaryRoutes.filter((route) => failedRouteDocuments.has(normalizeRouteHint(route)));
+
+    if (failedGatewayRoutes.length > 0) {
+      findings.push(makeFinding({
+        id: 'runtime-auth-gateway-routes-failed',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message: 'One or more gateway auth routes did not return a valid root document from the built output.',
+        evidence: [
+          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+          `Failed gateway routes: ${failedGatewayRoutes.join(', ')}`,
+        ],
+        suggestedFix: 'Ensure login, registration, and recovery routes resolve to the same usable root document contract as the rest of the app build.',
+      }));
+    }
+
+    if (failedPrimaryRoutes.length > 0) {
+      findings.push(makeFinding({
+        id: 'runtime-auth-primary-routes-failed',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message: 'One or more primary authenticated routes did not return a valid root document from the built output.',
+        evidence: [
+          `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+          `Failed primary routes: ${failedPrimaryRoutes.join(', ')}`,
+        ],
+        suggestedFix: 'Ensure authenticated app routes like `/dashboard` or `/app` survive the build output and resolve to a valid root document.',
+      }));
+    }
   }
 
   const largestIsJs = typeof runtimeAudit.largestAssetPath === 'string' && runtimeAudit.largestAssetPath.endsWith('.js');
@@ -1296,7 +1342,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   }
 
   const checkedRuntimeAudit = await runRuntimeAudit(projectRoot, essence);
-  appendRuntimeAuditFindings(findings, checkedRuntimeAudit, projectRoot);
+  appendRuntimeAuditFindings(findings, checkedRuntimeAudit, projectRoot, summarizeTopology(essence, reviewPack));
   appendSourceAuditFindings(findings, auditProjectSourceTree(projectRoot), essence, reviewPack);
 
   const summary = {

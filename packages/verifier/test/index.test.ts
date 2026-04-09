@@ -292,6 +292,65 @@ describe('verifier', () => {
     }
   });
 
+  it('reports auth-specific runtime route failures when gateway and primary routes do not return valid documents', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'login', route: '/login', layout: ['hero'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Auth Routes</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/login"); console.log("/dashboard");\n');
+      writeFileSync(join(projectRoot, 'dist', 'login'), '<!doctype html><html><body><p>broken login route</p></body></html>\n');
+      writeFileSync(join(projectRoot, 'dist', 'dashboard'), '<!doctype html><html><body><p>broken dashboard route</p></body></html>\n');
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'runtime-auth-gateway-routes-failed')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-auth-primary-routes-failed')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('aggregates source-level risk findings during project audit', async () => {
     const projectRoot = createProjectRoot();
     try {

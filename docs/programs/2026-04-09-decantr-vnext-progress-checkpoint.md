@@ -93,6 +93,7 @@ commit archaeology.
   - document `lang` and `viewport` metadata checks
   - built asset fetch checks
   - route-document coverage checks
+- Runtime verification now also calls out auth route failures by role, so broken gateway login routes and broken primary app routes are surfaced explicitly instead of only as generic partial route coverage.
 - Project audit now adds document-hardening and runtime-security heuristics:
   - charset declaration presence
   - inline script detection
