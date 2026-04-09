@@ -35,6 +35,9 @@ importers:
       '@decantr/registry':
         specifier: workspace:*
         version: link:../../packages/registry
+      '@decantr/verifier':
+        specifier: workspace:*
+        version: link:../../packages/verifier
       '@hono/node-server':
         specifier: ^1.19.12
         version: 1.19.12(hono@4.12.9)
