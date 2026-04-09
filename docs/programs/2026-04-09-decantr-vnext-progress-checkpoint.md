@@ -42,6 +42,13 @@ commit archaeology.
 - API schema serving reads from package exports instead of private copies.
 - Public schema copies in `docs/schemas` are synced from package sources.
 - `decantr-content` has a schema sync path back to the monorepo package source.
+- `essence.v3.json` now matches the actual sectioned v3.1 contract already used by the compiler and guard stack:
+  - sectioned blueprints
+  - route maps
+  - route-bearing blueprint pages
+  - `meta.seo`
+  - `meta.navigation`
+- `migrateV30ToV31()` now emits a schema-valid section description instead of producing an invalid v3.1 artifact.
 
 ### Execution packs
 
@@ -104,6 +111,26 @@ commit archaeology.
 - Added a GitHub Actions workflow for scheduled/manual public API audit reporting.
 - Added a human-readable public API reference page under `docs/reference/`.
 
+### Registry portal dogfooding
+
+- The registry portal now validates as a schema-correct Decantr v3.1 project instead of carrying a stale essence shape.
+- `apps/registry` now has compiled pack artifacts checked into `.decantr/context`, including:
+  - scaffold pack
+  - section packs
+  - page packs
+  - mutation packs
+  - review pack
+  - pack manifest
+- Added a CI-visible dogfood audit command:
+  - `pnpm audit:registry-dogfood`
+- Wired that audit into the main CI workflow.
+- Reduced verifier findings on the public homepage and detail page by:
+  - removing inline style literals
+  - removing hardcoded color literals
+  - adding real landmark ARIA metadata
+  - adding explicit focus-visible signals
+  - adding responsive CSS-module breakpoints
+
 ## Verification Baseline
 
 The reset branch has repeatedly been verified with:
@@ -111,6 +138,7 @@ The reset branch has repeatedly been verified with:
 - `pnpm test`
 - `pnpm build`
 - `pnpm lint`
+- `pnpm audit:registry-dogfood`
 - `pnpm showcase:validate`
 - `pnpm showcase:verify:shortlist`
 - `node validate.js` in `decantr-content`
