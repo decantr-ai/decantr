@@ -143,7 +143,7 @@ function buildThemeDecoration(theme: RegistryTheme): IRThemeDecoration | null {
     header: shell.header || '',
     brand: (shellAny['brand'] as string) || '',
     navLabel: (shellAny['navLabel'] as string) || '',
-    // AUTO: default nav style is 'pill' per Decantr framework convention
+    // AUTO: default nav style is 'pill' when the theme does not declare one
     navStyle: shell.nav_style || 'pill',
     defaultNavState: (shellAny['default_nav_state'] as string) || 'expanded',
     dimensions: shell.dimensions || null,

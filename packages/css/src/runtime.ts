@@ -1,6 +1,5 @@
 /**
  * Decantr CSS Runtime - CSS injection and extraction.
- * Ported from decantr-framework/src/css/runtime.js
  */
 
 /** Set of injected class names (prevents duplicates) */

@@ -789,7 +789,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const archetypeIds = [
         'saas-dashboard', 'ecommerce', 'portfolio', 'content-site',
         'financial-dashboard', 'cloud-platform', 'gaming-platform',
-        'ecommerce-admin', 'workbench',
+        'ecommerce-admin',
       ];
 
       for (const id of archetypeIds) {
@@ -806,7 +806,6 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         if (desc.includes('game') && id.includes('gaming')) score += 15;
         if (desc.includes('admin') && id.includes('admin')) score += 15;
         if (desc.includes('analytics') && id.includes('dashboard')) score += 10;
-        if (desc.includes('tool') && id === 'workbench') score += 10;
         if (score > 0) archetypeScores.push({ id, score });
       }
 
