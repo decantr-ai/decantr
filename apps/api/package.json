@@ -16,10 +16,10 @@
     "@decantr/essence-spec": "workspace:*",
     "@decantr/registry": "workspace:*",
     "@decantr/verifier": "workspace:*",
-    "@hono/node-server": "^1.19.12",
+    "@hono/node-server": "^1.19.13",
     "@supabase/supabase-js": "^2.101.1",
     "ajv": "^8.18.0",
-    "hono": "^4.12.9",
+    "hono": "^4.12.12",
     "pino": "^10.3.1",
     "stripe": "^21.0.1"
   },

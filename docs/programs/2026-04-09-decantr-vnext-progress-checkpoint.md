@@ -263,6 +263,7 @@ commit archaeology.
 - Updated the GitHub npm publish workflow so manual runs can select a release wave, emit the computed release plan into the Actions summary, and rehearse with `dry_run_only=true`.
 - Added package-level README coverage for all active public packages.
 - Added a package support matrix and release-strategy runbook for the npm surface.
+- Cleared the remaining workspace dependency advisories by upgrading `hono`, `@hono/node-server`, and `@modelcontextprotocol/sdk`, then pinning patched `vite` and `path-to-regexp` resolutions through root `pnpm` overrides so `pnpm audit` now returns zero vulnerabilities.
 
 ## Verification Baseline
 
@@ -271,6 +272,7 @@ The reset branch has repeatedly been verified with:
 - `pnpm test`
 - `pnpm build`
 - `pnpm lint`
+- `pnpm audit`
 - `pnpm audit:registry-dogfood`
 - `pnpm showcase:validate`
 - `pnpm showcase:verify:shortlist`
@@ -294,6 +296,15 @@ Observed from live audits against `https://api.decantr.ai/v1` on 2026-04-09:
 
 The hosted API path is explicit and exercised in production. The registry portal deploy path is
 now explicit in-repo as well through the Vercel workflow, portal audit, and runbook surfaces.
+
+The local dependency graph is also green again on 2026-04-09:
+
+- `pnpm audit` reports `0` vulnerabilities
+- `hono` is resolved at `4.12.12`
+- `@hono/node-server` is resolved at `1.19.13`
+- `@modelcontextprotocol/sdk` is resolved at `1.29.0`
+- `vite` is resolved at `6.4.2`
+- `path-to-regexp` is resolved at `8.4.0`
 
 The verifier layer has also moved beyond heuristic-only critique in this branch:
 

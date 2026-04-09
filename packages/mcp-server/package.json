@@ -15,7 +15,9 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -25,9 +27,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
     "@decantr/essence-spec": "workspace:*",
     "@decantr/registry": "workspace:*",
-    "@decantr/verifier": "workspace:*"
+    "@decantr/verifier": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0"
   }
 }
