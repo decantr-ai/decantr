@@ -149,6 +149,14 @@ commit archaeology.
   - adding explicit focus-visible signals
   - adding responsive CSS-module breakpoints
 
+### Package surface governance
+
+- Added `config/package-surface.json` as the package support and dist-tag source of truth.
+- Added `pnpm audit:package-surface` and wired it into CI.
+- Replaced the hardcoded publish loop with a manifest-backed publish script.
+- Added package-level README coverage for all active public packages.
+- Added a package support matrix and release-strategy runbook for the npm surface.
+
 ## Verification Baseline
 
 The reset branch has repeatedly been verified with:

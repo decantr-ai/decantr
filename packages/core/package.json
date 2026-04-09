@@ -1,7 +1,7 @@
 {
   "name": "@decantr/core",
   "version": "1.0.0-beta.9",
-  "description": "Decantr core — Design Pipeline IR engine for AI-generated UI",
+  "description": "Decantr core — execution-pack compiler primitives and shared Decantr utilities",
   "license": "MIT",
   "repository": {
     "type": "git",

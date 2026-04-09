@@ -1,0 +1,76 @@
+{
+  "packages": [
+    {
+      "name": "@decantr/cli",
+      "path": "packages/cli",
+      "support": "core-supported",
+      "maturity": "stable",
+      "publish": true,
+      "defaultDistTag": "latest",
+      "summary": "Local scaffold, audit, registry, and maintenance workflows for Decantr projects."
+    },
+    {
+      "name": "@decantr/core",
+      "path": "packages/core",
+      "support": "core-supported",
+      "maturity": "beta",
+      "publish": true,
+      "defaultDistTag": "beta",
+      "summary": "Execution-pack compiler primitives and shared Decantr core utilities."
+    },
+    {
+      "name": "@decantr/css",
+      "path": "packages/css",
+      "support": "core-supported",
+      "maturity": "stable",
+      "publish": true,
+      "defaultDistTag": "latest",
+      "summary": "Framework-agnostic CSS atom runtime for Decantr projects."
+    },
+    {
+      "name": "@decantr/essence-spec",
+      "path": "packages/essence-spec",
+      "support": "core-supported",
+      "maturity": "beta",
+      "publish": true,
+      "defaultDistTag": "beta",
+      "summary": "Essence schemas, validation, migration, and TypeScript types."
+    },
+    {
+      "name": "@decantr/mcp-server",
+      "path": "packages/mcp-server",
+      "support": "core-supported",
+      "maturity": "beta",
+      "publish": true,
+      "defaultDistTag": "beta",
+      "summary": "MCP delivery surface for Decantr design intelligence, packs, and verification."
+    },
+    {
+      "name": "@decantr/registry",
+      "path": "packages/registry",
+      "support": "core-supported",
+      "maturity": "beta",
+      "publish": true,
+      "defaultDistTag": "beta",
+      "summary": "Registry contracts, schemas, API client, and public content utilities."
+    },
+    {
+      "name": "@decantr/verifier",
+      "path": "packages/verifier",
+      "support": "core-supported",
+      "maturity": "beta",
+      "publish": true,
+      "defaultDistTag": "beta",
+      "summary": "Shared verification, critique, and report-schema engine."
+    },
+    {
+      "name": "@decantr/vite-plugin",
+      "path": "packages/vite-plugin",
+      "support": "supported-secondary",
+      "maturity": "experimental",
+      "publish": false,
+      "defaultDistTag": "beta",
+      "summary": "Experimental Vite overlay for Decantr guard feedback during local development."
+    }
+  ]
+}

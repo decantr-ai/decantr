@@ -1,5 +1,8 @@
 # @decantr/mcp-server
 
+Support status: `core-supported`  
+Release channel: `beta`
+
 Design intelligence for AI-generated UI. Make Claude, Cursor, and Windsurf generate better code.
 
 - **Structured design context** -- gives your AI assistant patterns, layouts, and component specs instead of letting it guess
@@ -57,7 +60,9 @@ Add to your Windsurf MCP config (`~/.windsurf/mcp.json`):
 }
 ```
 
-## Tools
+## Key Tools
+
+The server exposes Decantr registry, context, benchmark, and verification tools. Highlights:
 
 | Tool | Description | Example Input |
 |------|-------------|---------------|
@@ -74,6 +79,8 @@ Add to your Windsurf MCP config (`~/.windsurf/mcp.json`):
 | `decantr_audit_project` | Run the schema-backed Decantr project audit against essence and compiled packs | `{}` |
 | `decantr_critique` | Critique a file against the compiled review contract | `{ "file_path": "./src/pages/Overview.tsx" }` |
 | `decantr_get_showcase_benchmarks` | Read the audited showcase corpus manifest, shortlist, or verification report | `{ "view": "verification" }` |
+
+For the broader product surface and support policy, see the root Decantr docs and package support matrix.
 
 ## How It Works
 

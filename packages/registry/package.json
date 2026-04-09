@@ -1,7 +1,7 @@
 {
   "name": "@decantr/registry",
   "version": "1.0.0-beta.12",
-  "description": "Registry format, content resolver, and wiring rules for Decantr",
+  "description": "Registry contracts, schemas, API client, and content utilities for Decantr",
   "license": "MIT",
   "repository": {
     "type": "git",

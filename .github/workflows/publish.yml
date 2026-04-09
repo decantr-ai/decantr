@@ -2,6 +2,17 @@ name: Publish
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dist_tag:
+        description: Optional dist-tag override for all selected packages
+        required: false
+        default: ''
+      include_experimental:
+        description: Include experimental packages such as @decantr/vite-plugin
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   publish:
@@ -21,11 +32,17 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
+      - run: pnpm audit:package-surface
       - name: Publish packages with OIDC provenance
+        env:
+          DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
+          INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
         run: |
-          for pkg in essence-spec registry css core mcp-server cli; do
-            echo "--- Publishing @decantr/$pkg ---"
-            cd packages/$pkg
-            npm publish --access public --provenance --tag beta 2>&1 || echo "Failed or already published: $pkg"
-            cd $GITHUB_WORKSPACE
-          done
+          ARGS=""
+          if [ -n "$DIST_TAG_OVERRIDE" ]; then
+            ARGS="$ARGS --tag-override=$DIST_TAG_OVERRIDE"
+          fi
+          if [ "$INCLUDE_EXPERIMENTAL" = "true" ]; then
+            ARGS="$ARGS --include-experimental"
+          fi
+          node scripts/publish-packages.mjs $ARGS

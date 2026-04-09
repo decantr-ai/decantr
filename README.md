@@ -94,6 +94,8 @@ Public registry API/filter examples live in `docs/reference/registry-public-api.
 
 ## Packages
 
+Support matrix: [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md)
+
 ### Core packages
 
 | Package | Description |
@@ -111,6 +113,8 @@ Public registry API/filter examples live in `docs/reference/registry-public-api.
 | Package | Current status |
 |---|---|
 | `@decantr/vite-plugin` | Verification-adjacent and still evolving |
+
+Release policy and dist-tag strategy live in [docs/runbooks/2026-04-09-package-release-strategy.md](docs/runbooks/2026-04-09-package-release-strategy.md).
 
 ## Repo Layout
 

@@ -1,7 +1,7 @@
 # Package and Release Surface Audit
 
 Date: 2026-04-08
-Status: Draft
+Status: In progress on `codex/decantr-vnext-reset`
 Scope: publishable npm packages and their role in the Decantr vNext reset
 
 ## 1. Objective
@@ -11,6 +11,13 @@ Decantr already has multiple public npm packages. Even though this reset does no
 Without a package-level plan, the reset would create public confusion by leaving outdated or off-strategy packages looking current.
 
 This audit defines how package surfaces should be handled during the vNext reset.
+
+Progress checkpoint on 2026-04-09:
+
+- package support is now captured in `config/package-surface.json`
+- public package README coverage is now complete for active package surfaces
+- CI now audits the package surface
+- the publish workflow now follows a manifest-backed package list instead of a stale hardcoded loop
 
 ## 2. Current Publishable Package Surface
 

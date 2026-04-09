@@ -1,5 +1,8 @@
 # @decantr/css
 
+Support status: `core-supported`  
+Release channel: `stable`
+
 Framework-agnostic CSS atoms runtime for Decantr projects.
 
 ## Installation
@@ -120,7 +123,7 @@ When you scaffold a project with `@decantr/cli`, it generates:
 
 - `src/styles/tokens.css` - Theme tokens (colors, spacing, radii)
 - `src/styles/treatments.css` - Visual treatment classes (interactive, surface, data, control, section, annotation)
-- `src/styles/decorators.css` - Recipe decorator classes
+- `src/styles/decorators.css` - Optional decorator classes
 
 Import these alongside @decantr/css:
 

@@ -1,7 +1,7 @@
 {
   "name": "@decantr/cli",
   "version": "1.7.5",
-  "description": "Decantr CLI — search the registry, validate essence files, and access design intelligence from the terminal",
+  "description": "Decantr CLI — scaffold, audit, and maintain Decantr projects from the terminal",
   "license": "MIT",
   "repository": {
     "type": "git",

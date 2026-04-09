@@ -13,6 +13,7 @@
     "mcp": "node packages/mcp-server/dist/index.js",
     "schemas:sync": "node scripts/sync-schema-copies.mjs",
     "audit:docs-marketing": "node scripts/audit-docs-marketing.mjs",
+    "audit:package-surface": "node scripts/audit-package-surface.mjs",
     "audit:public-api": "node scripts/audit-public-api.mjs",
     "audit:registry-dogfood": "pnpm --filter ./apps/registry exec node ../../packages/cli/dist/index.js audit",
     "showcase:build": "node scripts/build-showcases.mjs",
