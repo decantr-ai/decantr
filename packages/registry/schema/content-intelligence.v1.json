@@ -4,6 +4,7 @@
   "title": "Decantr Content Intelligence Metadata",
   "type": "object",
   "required": [
+    "source",
     "verification_status",
     "target_coverage",
     "benchmark_confidence",
@@ -14,6 +15,13 @@
     "evidence"
   ],
   "properties": {
+    "source": {
+      "enum": [
+        "authored",
+        "benchmark",
+        "hybrid"
+      ]
+    },
     "verification_status": {
       "enum": [
         "unknown",

@@ -359,7 +359,10 @@ export type ContentBenchmarkConfidence = 'none' | 'low' | 'medium' | 'high';
 
 export type ContentGoldenUsage = 'none' | 'showcase' | 'shortlisted';
 
+export type ContentIntelligenceSource = 'authored' | 'benchmark' | 'hybrid';
+
 export interface ContentIntelligenceMetadata {
+  source: ContentIntelligenceSource;
   verification_status: ContentVerificationStatus;
   last_verified_at?: string | null;
   target_coverage: string[];

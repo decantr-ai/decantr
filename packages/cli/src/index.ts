@@ -106,6 +106,20 @@ function formatIntelligenceSummary(
     parts.push('recommended');
   }
 
+  switch (intelligence.source) {
+    case 'authored':
+      parts.push('authored intelligence');
+      break;
+    case 'hybrid':
+      parts.push('hybrid intelligence');
+      break;
+    case 'benchmark':
+      parts.push('benchmark-backed');
+      break;
+    default:
+      break;
+  }
+
   switch (intelligence.verification_status) {
     case 'smoke-green':
       parts.push('smoke verified');

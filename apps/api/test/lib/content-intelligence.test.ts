@@ -6,6 +6,7 @@ describe('getContentIntelligence', () => {
     const intelligence = getContentIntelligence('blueprint', '@official', 'portfolio');
 
     expect(intelligence).not.toBeNull();
+    expect(intelligence?.source).toBe('benchmark');
     expect(intelligence?.golden_usage).toBe('shortlisted');
     expect(intelligence?.verification_status).toBe('smoke-green');
     expect(intelligence?.benchmark_confidence).toBe('high');
@@ -52,6 +53,7 @@ describe('getContentIntelligence', () => {
     });
 
     expect(intelligence).not.toBeNull();
+    expect(intelligence?.source).toBe('authored');
     expect(intelligence?.verification_status).toBe('unknown');
     expect(intelligence?.golden_usage).toBe('none');
     expect(intelligence?.benchmark_confidence).toBe('none');
@@ -72,9 +74,28 @@ describe('getContentIntelligence', () => {
     });
 
     expect(intelligence).not.toBeNull();
+    expect(intelligence?.source).toBe('authored');
     expect(intelligence?.recommended).toBe(false);
     expect(intelligence?.benchmark_confidence).toBe('none');
     expect(intelligence?.golden_usage).toBe('none');
     expect(intelligence?.confidence_score).toBeLessThan(68);
+  });
+
+  it('derives hybrid intelligence when authored blueprint data and showcase evidence both exist', () => {
+    const intelligence = getContentIntelligence('blueprint', '@official', 'portfolio', {
+      description: 'Creator portfolio',
+      theme: { id: 'clean' },
+      compose: ['portfolio-home'],
+      routes: {
+        home: {
+          shell: 'shell-main',
+        },
+      },
+    });
+
+    expect(intelligence).not.toBeNull();
+    expect(intelligence?.source).toBe('hybrid');
+    expect(intelligence?.evidence).toContain('official-source');
+    expect(intelligence?.evidence).toContain('live-showcase');
   });
 });

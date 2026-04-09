@@ -105,6 +105,7 @@ describe('RegistryAPIClient showcase endpoints', () => {
         owner_name: 'Decantr',
         owner_username: 'decantr',
         intelligence: {
+          source: 'hybrid',
           verification_status: 'smoke-green',
           benchmark_confidence: 'high',
           golden_usage: 'shortlisted',

@@ -207,6 +207,7 @@ describe('POST /v1/validate', () => {
     const json = await res.json();
     assertMatchesSchema('public-content-record.v1.json', json);
     expect(json.slug).toBe('portfolio');
+    expect(json.intelligence?.source).toBe('hybrid');
   });
 
   it('serves public content list responses that match the published schema', async () => {
@@ -236,6 +237,7 @@ describe('POST /v1/validate', () => {
     assertMatchesSchema('public-content-list.v1.json', json);
     expect(json.total).toBe(1);
     expect(json.items[0]?.slug).toBe('portfolio');
+    expect(json.items[0]?.intelligence?.source).toBe('hybrid');
   });
 
   it('applies shared name sorting to public content lists before pagination', async () => {

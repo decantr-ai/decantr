@@ -100,6 +100,7 @@ describe('MCP tool handlers', () => {
             name: 'Portfolio',
             description: 'Creator portfolio',
             intelligence: {
+              source: 'hybrid',
               verification_status: 'smoke-green',
               benchmark_confidence: 'high',
               golden_usage: 'shortlisted',

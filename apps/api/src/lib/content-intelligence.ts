@@ -259,6 +259,7 @@ export function getContentIntelligence(
     }
 
     return {
+      source: 'authored',
       verification_status: 'unknown',
       last_verified_at: null,
       target_coverage: [],
@@ -301,8 +302,10 @@ export function getContentIntelligence(
     goldenUsage === 'shortlisted' &&
     verificationStatus === 'smoke-green' &&
     (verification?.drift.signal ?? 'elevated') !== 'elevated';
+  const source: ContentIntelligenceMetadata['source'] = authoredSignals ? 'hybrid' : 'benchmark';
 
   return {
+    source,
     verification_status: verificationStatus,
     last_verified_at: verification ? SHOWCASE_SHORTLIST_REPORT.generatedAt ?? null : null,
     target_coverage: targetCoverage,

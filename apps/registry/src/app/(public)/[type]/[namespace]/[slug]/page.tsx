@@ -57,25 +57,27 @@ function formatVerificationLabel(status?: string | null): string | null {
 }
 
 function hasBenchmarkBackedIntelligence(intelligence: NonNullable<ContentRecord['intelligence']>): boolean {
-  return (
-    intelligence.golden_usage !== 'none' ||
-    intelligence.benchmark_confidence !== 'none' ||
-    intelligence.evidence.includes('live-showcase')
-  );
+  return intelligence.source === 'benchmark' || intelligence.source === 'hybrid';
 }
 
 function getIntelligenceDescription(
   intelligence: NonNullable<ContentRecord['intelligence']>,
 ): string {
-  if (hasBenchmarkBackedIntelligence(intelligence)) {
-    return intelligence.recommended
-      ? 'This item is currently one of the strongest Decantr benchmark-backed references for its workflow.'
-      : 'This item has benchmark evidence attached in the Decantr corpus, but it is not currently marked as a recommended reference.';
+  switch (intelligence.source) {
+    case 'benchmark':
+      return intelligence.recommended
+        ? 'This item is currently one of the strongest Decantr benchmark-backed references for its workflow.'
+        : 'This item has benchmark evidence attached in the Decantr corpus, but it is not currently marked as a recommended reference.';
+    case 'hybrid':
+      return intelligence.recommended
+        ? 'This item combines strong authored registry signals with live Decantr benchmark evidence for its workflow.'
+        : 'This item combines authored registry signals with benchmark evidence in the Decantr corpus, but it is not currently marked as a recommended reference.';
+    case 'authored':
+    default:
+      return intelligence.recommended
+        ? 'This item is currently one of the strongest curated Decantr references based on authored completeness and registry intelligence signals.'
+        : 'This item carries registry intelligence metadata based on authored completeness and structured evidence, but it is not currently a recommended reference.';
   }
-
-  return intelligence.recommended
-    ? 'This item is currently one of the strongest curated Decantr references based on authored completeness and registry intelligence signals.'
-    : 'This item carries registry intelligence metadata based on authored completeness and structured evidence, but it is not currently a recommended reference.';
 }
 
 interface DetailPageProps {
@@ -303,7 +305,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                   </span>
                 ) : (
                   <span className="d-annotation">
-                    registry intelligence
+                    authored intelligence
                   </span>
                 )}
                 {formatVerificationLabel(intelligence.verification_status) && (
