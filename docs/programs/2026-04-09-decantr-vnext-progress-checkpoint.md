@@ -118,6 +118,10 @@ commit archaeology.
   - `medium`
   - `high`
   - `verified`
+- Intelligence scoring now rewards shortlist runtime hardening evidence:
+  - document `lang` / viewport metadata
+  - healthy built asset budgets
+  - not just build/smoke pass state
 - Added a hosted schema-backed registry intelligence rollup endpoint:
   - `/v1/intelligence/summary`
 - Added intelligence-source filtering across:

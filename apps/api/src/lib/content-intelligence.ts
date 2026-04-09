@@ -19,15 +19,43 @@ interface AuthoredIntelligenceSignals {
   recommended: boolean;
 }
 
+const SHOWCASE_RUNTIME_BUDGETS = {
+  largestJsAssetWarnBytes: 350_000,
+  totalCssWarnBytes: 150_000,
+  totalAssetsWarnBytes: 1_500_000,
+} as const;
+
 function clampScore(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function hasRuntimeHardeningBaseline(verification: ShowcaseVerificationEntry | null): boolean {
+  return Boolean(
+    verification?.smoke.passed
+    && verification.smoke.rootDocumentOk
+    && verification.smoke.titleOk
+    && verification.smoke.langOk
+    && verification.smoke.viewportOk,
+  );
+}
+
+function isWithinRuntimeBudget(verification: ShowcaseVerificationEntry | null): boolean {
+  return Boolean(
+    verification?.smoke.passed
+    && verification.smoke.largestAssetBytes <= SHOWCASE_RUNTIME_BUDGETS.largestJsAssetWarnBytes
+    && verification.smoke.cssAssetBytes <= SHOWCASE_RUNTIME_BUDGETS.totalCssWarnBytes
+    && verification.smoke.totalAssetBytes <= SHOWCASE_RUNTIME_BUDGETS.totalAssetsWarnBytes,
+  );
 }
 
 function deriveBenchmarkConfidence(
   showcase: ShowcaseManifestEntry,
   verification: ShowcaseVerificationEntry | null,
 ): ContentIntelligenceMetadata['benchmark_confidence'] {
-  if (verification?.verificationStatus === 'smoke-green') return 'high';
+  if (verification?.verificationStatus === 'smoke-green' && hasRuntimeHardeningBaseline(verification) && isWithinRuntimeBudget(verification)) {
+    return 'high';
+  }
+  if (verification?.verificationStatus === 'smoke-green') return 'medium';
   if (verification?.verificationStatus === 'build-green') return 'medium';
   if (showcase.classification === 'A' || showcase.classification === 'B') return 'medium';
   if (showcase.classification === 'C' || showcase.classification === 'D') return 'low';
@@ -61,6 +89,8 @@ function deriveQualityScore(
 
   if (verification?.build.passed) score += 15;
   if (verification?.smoke.passed) score += 20;
+  if (hasRuntimeHardeningBaseline(verification)) score += 6;
+  if (isWithinRuntimeBudget(verification)) score += 6;
 
   switch (verification?.drift.signal) {
     case 'lower':
@@ -85,18 +115,22 @@ function deriveConfidenceTier(input: {
   verificationStatus: ContentIntelligenceMetadata['verification_status'];
   goldenUsage: ContentIntelligenceMetadata['golden_usage'];
   driftSignal?: ShowcaseVerificationEntry['drift']['signal'];
+  runtimeHardeningOk: boolean;
+  runtimeBudgetOk: boolean;
 }): ContentIntelligenceMetadata['confidence_tier'] {
   if (
     input.goldenUsage === 'shortlisted'
     && input.verificationStatus === 'smoke-green'
     && input.driftSignal !== 'elevated'
+    && input.runtimeHardeningOk
+    && input.runtimeBudgetOk
   ) {
     return 'verified';
   }
 
   if (
     input.confidenceScore >= 82
-    || input.verificationStatus === 'smoke-green'
+    || (input.verificationStatus === 'smoke-green' && input.runtimeHardeningOk)
     || input.benchmarkConfidence === 'high'
   ) {
     return 'high';
@@ -152,6 +186,9 @@ function deriveConfidenceScore(
     default:
       break;
   }
+
+  if (hasRuntimeHardeningBaseline(verification)) score += 8;
+  if (isWithinRuntimeBudget(verification)) score += 8;
 
   return clampScore(score);
 }
@@ -303,6 +340,8 @@ export function getContentIntelligence(
         confidenceScore: authoredSignals.confidenceScore,
         verificationStatus: 'unknown',
         goldenUsage: 'none',
+        runtimeHardeningOk: false,
+        runtimeBudgetOk: false,
       }),
       golden_usage: 'none',
       quality_score: authoredSignals.qualityScore,
@@ -327,6 +366,12 @@ export function getContentIntelligence(
   if (verification?.smoke.passed) {
     evidence.add('smoke-verified');
   }
+  if (hasRuntimeHardeningBaseline(verification)) {
+    evidence.add('document-metadata-verified');
+  }
+  if (isWithinRuntimeBudget(verification)) {
+    evidence.add('asset-budget-ok');
+  }
 
   const verificationStatus = verification?.verificationStatus ?? 'pending';
   const benchmarkConfidence = deriveBenchmarkConfidence(showcase, verification);
@@ -341,6 +386,8 @@ export function getContentIntelligence(
   const recommended =
     goldenUsage === 'shortlisted' &&
     verificationStatus === 'smoke-green' &&
+    hasRuntimeHardeningBaseline(verification) &&
+    isWithinRuntimeBudget(verification) &&
     (verification?.drift.signal ?? 'elevated') !== 'elevated';
   const source: ContentIntelligenceMetadata['source'] = authoredSignals ? 'hybrid' : 'benchmark';
   const confidenceTier = deriveConfidenceTier({
@@ -349,6 +396,8 @@ export function getContentIntelligence(
     verificationStatus,
     goldenUsage,
     driftSignal: verification?.drift.signal,
+    runtimeHardeningOk: hasRuntimeHardeningBaseline(verification),
+    runtimeBudgetOk: isWithinRuntimeBudget(verification),
   });
 
   return {

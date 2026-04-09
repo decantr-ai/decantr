@@ -15,6 +15,8 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.target_coverage).toContain('react-vite');
     expect(intelligence?.evidence).toContain('live-showcase');
     expect(intelligence?.evidence).toContain('smoke-verified');
+    expect(intelligence?.evidence).toContain('document-metadata-verified');
+    expect(intelligence?.evidence).toContain('asset-budget-ok');
   });
 
   it('returns null for non-blueprint content', () => {
@@ -101,5 +103,6 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.confidence_tier).toBe('verified');
     expect(intelligence?.evidence).toContain('official-source');
     expect(intelligence?.evidence).toContain('live-showcase');
+    expect(intelligence?.evidence).toContain('document-metadata-verified');
   });
 });
