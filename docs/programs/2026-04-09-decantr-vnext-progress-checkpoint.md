@@ -81,6 +81,12 @@ commit archaeology.
 - `decantr registry compile-packs --write-context` can now materialize the hosted pack bundle into local `.decantr/context` artifacts without waiting for a full refresh cycle.
 - `decantr_get_execution_pack` now uses the hosted selected-pack surface for targeted remote pack reads instead of recompiling the full hosted bundle when local artifacts are missing.
 - Plain `decantr audit` now opportunistically hydrates missing local execution-pack artifacts from the hosted compiler before running local critique or project audit, so pack-first verification still works on partially initialized projects.
+- Live hosted rollout is now green for all current public pack and verification surfaces:
+  - `POST /v1/packs/compile`
+  - `POST /v1/packs/select`
+  - `POST /v1/critique/file`
+  - `POST /v1/audit/project`
+  - `pnpm audit:public-api --include-hosted-pack-select --include-hosted-critique --include-hosted-project-audit` passes against `https://api.decantr.ai/v1`
 
 ### Verification foundation
 

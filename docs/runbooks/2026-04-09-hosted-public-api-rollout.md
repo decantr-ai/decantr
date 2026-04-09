@@ -8,6 +8,7 @@ This runbook covers the safe rollout order for the Decantr vNext hosted public A
 It originally covered the public-read rollout for schema, showcase, and intelligence surfaces, and it now also tracks the hosted execution-pack compiler endpoint plus the hosted verification surfaces:
 
 - `POST /v1/packs/compile`
+- `POST /v1/packs/select`
 - `POST /v1/critique/file`
 - `POST /v1/audit/project`
 
@@ -65,6 +66,13 @@ As of 2026-04-09, the hosted rollout completed successfully:
     - `POST /v1/critique/file` as `200`
     - `POST /v1/audit/project` as `200`
   - the hosted verification rollout gap is closed
+- after the hosted selected-pack surface landed later on 2026-04-09:
+  - the API was redeployed again from `codex/decantr-vnext-reset` via `flyctl deploy --config apps/api/fly.toml --remote-only`
+  - `pnpm audit:public-api --include-hosted-pack-select --include-hosted-critique --include-hosted-project-audit` now reports:
+    - `POST /v1/packs/select` as `200`
+    - `POST /v1/critique/file` as `200`
+    - `POST /v1/audit/project` as `200`
+  - the hosted selected-pack rollout gap is closed
 
 Key fixes required during rollout:
 
@@ -156,6 +164,7 @@ Surfaces included in this rollout:
   - `/v1/showcase/*`
   - `/v1/intelligence/summary`
   - `/v1/packs/compile`
+  - `/v1/packs/select`
   - `/v1/critique/file`
   - `/v1/audit/project`
 
