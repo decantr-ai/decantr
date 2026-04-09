@@ -5,6 +5,7 @@ import type {
   PublicContentRecord,
   PublicContentSummary,
   PublicUserProfile,
+  RegistryIntelligenceSummaryResponse,
   SearchResponse,
   OwnedContentSummary,
 } from '@decantr/registry/client';
@@ -136,6 +137,8 @@ export const api = {
         intelligenceSource: (params?.intelligence_source as ContentIntelligenceSource | undefined) ?? undefined,
       })
       .then((result): SearchResponse => ({ total: result.total, results: result.results })),
+  getRegistryIntelligenceSummary: (params?: { namespace?: string }) =>
+    getPublicRegistryClient().getRegistryIntelligenceSummary(params),
 
   // Authenticated
   getMe: (token: string) => apiFetch<any>('/me', { token }),
@@ -248,6 +251,12 @@ export function getContent(type: string, namespace: string, slug: string) {
 
 export function getUserProfile(username: string) {
   return getPublicRegistryClient().getPublicUserProfile(username);
+}
+
+export function getRegistryIntelligenceSummary(
+  params?: { namespace?: string },
+): Promise<RegistryIntelligenceSummaryResponse> {
+  return getPublicRegistryClient().getRegistryIntelligenceSummary(params);
 }
 
 export function getUserContent(

@@ -1,4 +1,8 @@
-import { API_CONTENT_TYPES, isApiContentType } from '@decantr/registry/content-types';
+import {
+  API_CONTENT_TYPES,
+  API_CONTENT_TYPE_TO_CONTENT_TYPE,
+  isApiContentType,
+} from '@decantr/registry/content-types';
 
 export const CONTENT_TYPES = API_CONTENT_TYPES;
 
@@ -22,4 +26,8 @@ export const CONTENT_TYPE_DESCRIPTIONS: Record<RegistryContentType, string> = {
 
 export function isRegistryContentType(value: string): value is RegistryContentType {
   return isApiContentType(value);
+}
+
+export function toSingularRegistryContentType(value: RegistryContentType) {
+  return API_CONTENT_TYPE_TO_CONTENT_TYPE[value];
 }

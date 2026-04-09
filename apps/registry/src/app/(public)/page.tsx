@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { listContent } from '@/lib/api';
+import { getRegistryIntelligenceSummary, listContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
@@ -13,6 +13,7 @@ import {
   CONTENT_TYPES,
   CONTENT_TYPE_LABELS,
   type RegistryContentType,
+  toSingularRegistryContentType,
 } from '@/lib/content-types';
 
 async function FeaturedContent() {
@@ -90,26 +91,46 @@ async function RegistryStats() {
   const counts = Object.fromEntries(
     CONTENT_TYPES.map((type) => [type, 0])
   ) as Record<RegistryContentType, number>;
+  let intelligenceSummary: Awaited<ReturnType<typeof getRegistryIntelligenceSummary>> | null = null;
 
   try {
-    const results = await Promise.allSettled(
-      CONTENT_TYPES.map((type) => listContent(type, { limit: 1 }))
-    );
-
-    results.forEach((r, i) => {
-      if (r.status === 'fulfilled') {
-        counts[CONTENT_TYPES[i]] = r.value.total;
-      }
+    intelligenceSummary = await getRegistryIntelligenceSummary({ namespace: '@official' });
+    CONTENT_TYPES.forEach((type) => {
+      counts[type] = intelligenceSummary?.by_type?.[toSingularRegistryContentType(type)]?.total_public_items ?? 0;
     });
   } catch {
-    // Silently fail
+    try {
+      const results = await Promise.allSettled(
+        CONTENT_TYPES.map((type) => listContent(type, { limit: 1 }))
+      );
+
+      results.forEach((r, i) => {
+        if (r.status === 'fulfilled') {
+          counts[CONTENT_TYPES[i]] = r.value.total;
+        }
+      });
+    } catch {
+      // Silently fail
+    }
   }
 
   const total = CONTENT_TYPES.reduce((sum, type) => sum + counts[type], 0);
+  const intelligenceItems = intelligenceSummary?.totals.with_intelligence ?? 0;
+  const recommendedItems = intelligenceSummary?.totals.recommended ?? 0;
+  const buildGreenItems = intelligenceSummary?.totals.build_green ?? 0;
+  const smokeGreenItems = intelligenceSummary?.totals.smoke_green ?? 0;
+  const highConfidenceItems = intelligenceSummary?.totals.high_confidence ?? 0;
 
   return (
     <KPIGrid
-      items={[{ label: 'Total Items', value: total }].concat(
+      items={[
+        { label: 'Total Items', value: total },
+        { label: 'With Intelligence', value: intelligenceItems },
+        { label: 'Recommended', value: recommendedItems },
+        { label: 'Build Verified', value: buildGreenItems },
+        { label: 'Smoke Verified', value: smokeGreenItems },
+        { label: 'High Confidence', value: highConfidenceItems },
+      ].concat(
         CONTENT_TYPES.map((type) => ({
           label: CONTENT_TYPE_LABELS[type],
           value: counts[type],
@@ -187,6 +208,9 @@ export default function HomePage() {
         <span className="d-label mb-4 block border-l-2 border-[var(--d-accent)] pl-3">
           Registry Stats
         </span>
+        <p className="mb-4 max-w-3xl text-sm text-d-muted">
+          Live totals are sourced from the hosted public registry contracts, including aggregate intelligence and verification coverage where available.
+        </p>
         <Suspense>
           <RegistryStats />
         </Suspense>
