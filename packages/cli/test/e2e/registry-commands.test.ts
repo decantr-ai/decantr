@@ -42,4 +42,12 @@ describe('registry commands (e2e)', () => {
     // Either "N shells found" or "No shells found."
     expect(output).toContain('shells');
   });
+
+  it('showcase verification returns schema-backed JSON', () => {
+    const output = runCli('showcase verification --json');
+    const json = JSON.parse(output);
+    expect(json.$schema).toBe('https://decantr.ai/schemas/showcase-shortlist-report.v1.json');
+    expect(Array.isArray(json.results)).toBe(true);
+    expect(json.results.some((entry: { slug: string }) => entry.slug === 'portfolio')).toBe(true);
+  });
 });

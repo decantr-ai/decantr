@@ -68,6 +68,8 @@ import { cmdExport } from './commands/export.js';
 import type { ExportTarget } from './commands/export.js';
 import { cmdRegistryMirror } from './commands/registry-mirror.js';
 import { cmdNewProject } from './commands/new-project.js';
+import showcaseManifest from '../../../apps/showcase/manifest.json';
+import shortlistVerificationReport from '../../../apps/showcase/reports/shortlist-verification.json';
 
 // ── Helpers ──
 
@@ -95,6 +97,34 @@ interface PromptContext {
   personality: string[];
   features: string[];
   guard: string;
+}
+
+interface ShowcaseManifestEntry {
+  slug: string;
+  status: string;
+  classification: string;
+  target?: string;
+  goldenCandidate?: string | boolean;
+  notes?: string;
+}
+
+interface ShowcaseVerificationEntry {
+  slug: string;
+  verificationStatus: string;
+  build: {
+    passed: boolean | null;
+    durationMs: number;
+  };
+  drift: {
+    signal: string;
+    penalty: number;
+    inlineStyleCount: number;
+    hardcodedColorCount: number;
+    utilityLeakageCount: number;
+    decantrTreatmentCount: number;
+    hasPackManifest: boolean;
+    hasDist: boolean;
+  };
 }
 
 function extractPatternName(item: unknown): string {
@@ -151,6 +181,129 @@ function getAPIClient(): RegistryAPIClient {
     baseUrl: process.env.DECANTR_API_URL || undefined,
     apiKey: process.env.DECANTR_API_KEY || undefined,
   });
+}
+
+function getShowcaseBenchmarkView(view: 'manifest' | 'shortlist' | 'verification' = 'shortlist') {
+  const activeEntries = (showcaseManifest.apps as ShowcaseManifestEntry[]).filter(entry => entry.status === 'active');
+  const verificationResults = (shortlistVerificationReport.results as ShowcaseVerificationEntry[] | undefined) ?? [];
+  const verificationMap = new Map(verificationResults.map(entry => [entry.slug, entry]));
+  const shortlisted = activeEntries
+    .filter(entry => Boolean(entry.goldenCandidate))
+    .map(entry => ({
+      ...entry,
+      verification: verificationMap.get(entry.slug) ?? null,
+    }));
+
+  if (view === 'manifest') {
+    return {
+      total: activeEntries.length,
+      shortlisted: shortlisted.length,
+      apps: activeEntries.map(entry => ({
+        ...entry,
+        verification: verificationMap.get(entry.slug) ?? null,
+      })),
+    };
+  }
+
+  if (view === 'verification') {
+    return shortlistVerificationReport;
+  }
+
+  return {
+    generatedAt: shortlistVerificationReport.generatedAt ?? null,
+    summary: shortlistVerificationReport.summary ?? null,
+    apps: shortlisted,
+  };
+}
+
+function printShowcaseBenchmarks(view: 'manifest' | 'shortlist' | 'verification', jsonOutput: boolean) {
+  const data = getShowcaseBenchmarkView(view);
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(data, null, 2));
+    return;
+  }
+
+  if (view === 'manifest') {
+    const manifest = data as {
+      total: number;
+      shortlisted: number;
+      apps: Array<ShowcaseManifestEntry & { verification?: ShowcaseVerificationEntry | null }>;
+    };
+    console.log(heading('Showcase Corpus'));
+    console.log(`  Active apps: ${manifest.total}`);
+    console.log(`  Shortlisted apps: ${manifest.shortlisted}`);
+    console.log('');
+    for (const entry of manifest.apps) {
+      const verification = entry.verification;
+      const verificationSummary = verification
+        ? ` | ${verification.verificationStatus} | drift ${verification.drift.signal}`
+        : '';
+      console.log(`  ${cyan(entry.slug)}  class ${entry.classification}${verificationSummary}`);
+    }
+    return;
+  }
+
+  if (view === 'verification') {
+    const report = data as {
+      generatedAt?: string | null;
+      summary?: {
+        appCount: number;
+        passedBuilds: number;
+        failedBuilds: number;
+        averageDurationMs: number;
+        lowerDriftCount: number;
+        moderateDriftCount: number;
+        elevatedDriftCount: number;
+        withPackManifestCount: number;
+      } | null;
+      results: ShowcaseVerificationEntry[];
+    };
+    console.log(heading('Showcase Verification'));
+    if (report.generatedAt) {
+      console.log(`  Generated: ${report.generatedAt}`);
+    }
+    if (report.summary) {
+      console.log(`  Passed builds: ${report.summary.passedBuilds}/${report.summary.appCount}`);
+      console.log(`  Avg build: ${report.summary.averageDurationMs} ms`);
+      console.log(`  Drift: lower ${report.summary.lowerDriftCount}, moderate ${report.summary.moderateDriftCount}, elevated ${report.summary.elevatedDriftCount}`);
+      console.log(`  Pack manifests: ${report.summary.withPackManifestCount}/${report.summary.appCount}`);
+      console.log('');
+    }
+    for (const entry of report.results) {
+      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | drift ${entry.drift.signal} | ${entry.build.durationMs} ms`);
+    }
+    return;
+  }
+
+  const shortlist = data as {
+    generatedAt?: string | null;
+    summary?: {
+      passedBuilds: number;
+      appCount: number;
+      lowerDriftCount: number;
+      moderateDriftCount: number;
+      elevatedDriftCount: number;
+    } | null;
+    apps: Array<ShowcaseManifestEntry & { verification?: ShowcaseVerificationEntry | null }>;
+  };
+
+  console.log(heading('Showcase Shortlist'));
+  if (shortlist.generatedAt) {
+    console.log(`  Generated: ${shortlist.generatedAt}`);
+  }
+  if (shortlist.summary) {
+    console.log(`  Passed builds: ${shortlist.summary.passedBuilds}/${shortlist.summary.appCount}`);
+    console.log(`  Drift mix: lower ${shortlist.summary.lowerDriftCount}, moderate ${shortlist.summary.moderateDriftCount}, elevated ${shortlist.summary.elevatedDriftCount}`);
+    console.log('');
+  }
+  for (const entry of shortlist.apps) {
+    const verification = entry.verification;
+    const verificationSummary = verification
+      ? `${verification.verificationStatus} | drift ${verification.drift.signal}`
+      : 'verification pending';
+    console.log(`  ${cyan(entry.slug)}  class ${entry.classification} | ${verificationSummary}`);
+  }
 }
 
 // ── Commands ──
@@ -1209,6 +1362,7 @@ ${BOLD}Usage:${RESET}
   decantr suggest <query> [--type <type>]
   decantr get <type> <id>
   decantr list <type>
+  decantr showcase [manifest|shortlist|verification] [--json]
   decantr validate [path]
   decantr theme <subcommand>
   decantr create <type> <name>
@@ -1246,6 +1400,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('suggest')}     Suggest patterns or alternatives for a query
   ${cyan('get')}         Get full details of a registry item
   ${cyan('list')}        List items by type
+  ${cyan('showcase')}    Inspect audited showcase benchmark metadata
   ${cyan('validate')}    Validate essence file (v2 and v3)
   ${cyan('theme')}       Manage custom themes (create, list, validate, delete, import)
   ${cyan('create')}      Create a custom content item (pattern, theme, blueprint, etc.)
@@ -1272,6 +1427,8 @@ ${BOLD}Examples:${RESET}
   decantr search dashboard
   decantr suggest leaderboard
   decantr list patterns
+  decantr showcase shortlist
+  decantr showcase verification --json
   decantr create pattern my-card
 `);
 }
@@ -1459,6 +1616,28 @@ async function main() {
         return;
       }
       await cmdList(type);
+      break;
+    }
+
+    case 'showcase': {
+      const requestedView = args[1];
+      const view = (requestedView === 'manifest' || requestedView === 'shortlist' || requestedView === 'verification')
+        ? requestedView
+        : 'shortlist';
+      const jsonOutput = args.includes('--json');
+
+      if (requestedView && requestedView.startsWith('--')) {
+        printShowcaseBenchmarks('shortlist', jsonOutput);
+        break;
+      }
+
+      if (requestedView && !['manifest', 'shortlist', 'verification'].includes(requestedView)) {
+        console.error(error('Usage: decantr showcase [manifest|shortlist|verification] [--json]'));
+        process.exitCode = 1;
+        break;
+      }
+
+      printShowcaseBenchmarks(view, jsonOutput);
       break;
     }
 
