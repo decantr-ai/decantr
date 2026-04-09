@@ -61,7 +61,12 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, async (c)
       published_at: data.published_at,
       owner_name: (data as any).owner?.display_name || null,
       owner_username: (data as any).owner?.username || null,
-      intelligence: getContentIntelligence(singularType, data.namespace, data.slug),
+      intelligence: getContentIntelligence(
+        singularType,
+        data.namespace,
+        data.slug,
+        data.data as Record<string, unknown> | null | undefined,
+      ),
     });
   } catch (e) {
     logger.error({ err: e }, 'Content route error');
@@ -117,7 +122,12 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
         published_at: item.published_at ?? undefined,
         owner_name: (item as any).owner?.display_name || null,
         owner_username: (item as any).owner?.username || null,
-        intelligence: getContentIntelligence(singularType, item.namespace, item.slug),
+        intelligence: getContentIntelligence(
+          singularType,
+          item.namespace,
+          item.slug,
+          itemData,
+        ),
       };
     });
     const ordered = applyPublicContentOrdering(mappedItems, sort, limit, offset);

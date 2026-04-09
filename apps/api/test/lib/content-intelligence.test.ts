@@ -22,4 +22,59 @@ describe('getContentIntelligence', () => {
   it('returns null for non-official namespaces even when a slug matches showcase corpus', () => {
     expect(getContentIntelligence('blueprint', '@community', 'portfolio')).toBeNull();
   });
+
+  it('derives authored intelligence for official patterns when registry data is present', () => {
+    const intelligence = getContentIntelligence('pattern', '@official', 'hero', {
+      description: 'A hero section',
+      tags: ['marketing'],
+      components: ['Hero'],
+      presets: {
+        default: {
+          description: 'Default hero',
+          layout: {
+            layout: 'stack',
+            atoms: '_flex _col',
+          },
+          code: {
+            example: 'Hero()',
+          },
+        },
+      },
+      io: {
+        consumes: ['copy'],
+      },
+      responsive: {
+        mobile: 'stack',
+      },
+      accessibility: {
+        role: 'region',
+      },
+    });
+
+    expect(intelligence).not.toBeNull();
+    expect(intelligence?.verification_status).toBe('unknown');
+    expect(intelligence?.golden_usage).toBe('none');
+    expect(intelligence?.benchmark_confidence).toBe('none');
+    expect(intelligence?.recommended).toBe(true);
+    expect(intelligence?.quality_score).toBeGreaterThanOrEqual(74);
+    expect(intelligence?.evidence).toContain('official-source');
+    expect(intelligence?.evidence).toContain('code-example');
+  });
+
+  it('derives non-recommended authored intelligence for community content when registry data is present', () => {
+    const intelligence = getContentIntelligence('shell', '@community', 'sidebar', {
+      description: 'Sidebar shell',
+      root: 'd-shell',
+      nav: 'd-nav',
+      guidance: {
+        layout: 'Use a sidebar',
+      },
+    });
+
+    expect(intelligence).not.toBeNull();
+    expect(intelligence?.recommended).toBe(false);
+    expect(intelligence?.benchmark_confidence).toBe('none');
+    expect(intelligence?.golden_usage).toBe('none');
+    expect(intelligence?.confidence_score).toBeLessThan(68);
+  });
 });

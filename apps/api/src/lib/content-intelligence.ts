@@ -10,6 +10,15 @@ import {
   SHOWCASE_SHORTLIST_REPORT,
 } from './showcase-benchmarks.js';
 
+type ContentData = Record<string, unknown> | null | undefined;
+
+interface AuthoredIntelligenceSignals {
+  evidence: string[];
+  qualityScore: number;
+  confidenceScore: number;
+  recommended: boolean;
+}
+
 function clampScore(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
@@ -128,39 +137,166 @@ function normalizeClassification(
   }
 }
 
+function hasString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function hasArray(value: unknown): value is unknown[] {
+  return Array.isArray(value) && value.length > 0;
+}
+
+function hasRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) && Object.keys(value).length > 0;
+}
+
+function collectSignals(type: ContentType, data: ContentData): string[] {
+  if (!data) {
+    return [];
+  }
+
+  const signals = new Set<string>();
+
+  if (hasString(data.description)) signals.add('description');
+  if (hasArray(data.tags)) signals.add('tags');
+
+  switch (type) {
+    case 'pattern':
+      if (hasArray(data.components)) signals.add('components');
+      if (hasRecord(data.presets)) signals.add('presets');
+      if (hasRecord(data.code) || Object.values(data.presets ?? {}).some((preset) => hasRecord(preset) && hasRecord(preset.code))) {
+        signals.add('code-example');
+      }
+      if (hasRecord(data.io)) signals.add('io-contract');
+      if (hasRecord(data.responsive)) signals.add('responsive-hints');
+      if (hasRecord(data.accessibility)) signals.add('accessibility');
+      break;
+    case 'theme':
+      if (hasRecord(data.tokens)) signals.add('tokens');
+      if (hasRecord(data.decorators) || hasRecord(data.treatments)) signals.add('decorators');
+      if (hasRecord(data.spatial)) signals.add('spatial-contract');
+      if (hasRecord(data.shell)) signals.add('shell-guidance');
+      if (hasRecord(data.effects) || hasRecord(data.motion)) signals.add('effects');
+      if (hasRecord(data.pattern_preferences)) signals.add('pattern-preferences');
+      break;
+    case 'blueprint':
+      if (hasRecord(data.theme)) signals.add('theme-binding');
+      if (hasArray(data.compose) || hasString(data.archetype)) signals.add('composition');
+      if (hasArray(data.features)) signals.add('features');
+      if (hasRecord(data.routes)) signals.add('routes');
+      if (hasRecord(data.navigation)) signals.add('navigation');
+      if (hasRecord(data.responsive_strategy)) signals.add('responsive-strategy');
+      if (hasRecord(data.seo_hints)) signals.add('seo-hints');
+      break;
+    case 'archetype':
+      if (hasString(data.role)) signals.add('role');
+      if (hasArray(data.pages)) signals.add('pages');
+      if (hasArray(data.features)) signals.add('features');
+      if (hasRecord(data.suggested_theme)) signals.add('suggested-theme');
+      if (hasRecord(data.dependencies)) signals.add('dependencies');
+      if (hasRecord(data.page_briefs)) signals.add('page-briefs');
+      if (hasRecord(data.classification)) signals.add('classification');
+      break;
+    case 'shell':
+      if (hasString(data.layout) || hasString(data.atoms)) signals.add('layout-contract');
+      if (hasString(data.root) || hasString(data.nav) || hasString(data.header)) signals.add('regions');
+      if (hasRecord(data.guidance)) signals.add('guidance');
+      if (hasRecord(data.code)) signals.add('code-example');
+      if (hasRecord(data.dimensions)) signals.add('dimensions');
+      break;
+    default:
+      break;
+  }
+
+  return [...signals];
+}
+
+function deriveAuthoredSignals(
+  type: ContentType,
+  namespace: string,
+  data: ContentData,
+): AuthoredIntelligenceSignals | null {
+  const evidence = collectSignals(type, data);
+
+  if (evidence.length === 0) {
+    return null;
+  }
+
+  const official = namespace === '@official';
+  const qualityScore = clampScore(
+    (official ? 20 : 10) +
+    Math.round((evidence.length / 8) * 60) +
+    (evidence.includes('code-example') ? 8 : 0) +
+    (evidence.includes('routes') || evidence.includes('pages') ? 6 : 0),
+  );
+  const confidenceScore = clampScore(
+    (official ? 28 : 12) +
+    Math.round((evidence.length / 8) * 46) +
+    (evidence.includes('presets') || evidence.includes('tokens') || evidence.includes('layout-contract') ? 8 : 0),
+    );
+  const recommended = official && qualityScore >= 74 && confidenceScore >= 68;
+
+  return {
+    evidence: official ? ['official-source', ...evidence] : evidence,
+    qualityScore,
+    confidenceScore,
+    recommended,
+  };
+}
+
 export function getContentIntelligence(
   type: ContentType,
   namespace: string,
   slug: string,
+  data?: ContentData,
 ): ContentIntelligenceMetadata | null {
-  if (type !== 'blueprint' || namespace !== '@official') {
-    return null;
-  }
-
+  const authoredSignals = deriveAuthoredSignals(type, namespace, data);
   const showcase = getShowcaseManifestEntry(slug);
-  if (!showcase) {
-    return null;
+  const verification = getShowcaseVerificationEntry(slug);
+
+  if (type !== 'blueprint' || namespace !== '@official' || !showcase) {
+    if (!authoredSignals) {
+      return null;
+    }
+
+    return {
+      verification_status: 'unknown',
+      last_verified_at: null,
+      target_coverage: [],
+      benchmark_confidence: 'none',
+      golden_usage: 'none',
+      quality_score: authoredSignals.qualityScore,
+      confidence_score: authoredSignals.confidenceScore,
+      recommended: authoredSignals.recommended,
+      evidence: authoredSignals.evidence,
+    };
   }
 
-  const verification = getShowcaseVerificationEntry(slug);
   const targetCoverage = showcase.target ? [showcase.target] : [];
   const goldenUsage = showcase.goldenCandidate ? 'shortlisted' : 'showcase';
-  const evidence = ['live-showcase'];
+  const evidence = new Set<string>(authoredSignals?.evidence ?? []);
+
+  evidence.add('live-showcase');
 
   if (showcase.goldenCandidate) {
-    evidence.push('shortlisted-showcase');
+    evidence.add('shortlisted-showcase');
   }
   if (verification?.build.passed) {
-    evidence.push('build-verified');
+    evidence.add('build-verified');
   }
   if (verification?.smoke.passed) {
-    evidence.push('smoke-verified');
+    evidence.add('smoke-verified');
   }
 
   const verificationStatus = verification?.verificationStatus ?? 'pending';
   const benchmarkConfidence = deriveBenchmarkConfidence(showcase, verification);
-  const qualityScore = deriveQualityScore(showcase, verification);
-  const confidenceScore = deriveConfidenceScore(showcase, verification);
+  const qualityScore = Math.max(
+    deriveQualityScore(showcase, verification),
+    authoredSignals?.qualityScore ?? 0,
+  );
+  const confidenceScore = Math.max(
+    deriveConfidenceScore(showcase, verification),
+    authoredSignals?.confidenceScore ?? 0,
+  );
   const recommended =
     goldenUsage === 'shortlisted' &&
     verificationStatus === 'smoke-green' &&
@@ -175,7 +311,7 @@ export function getContentIntelligence(
     quality_score: qualityScore,
     confidence_score: confidenceScore,
     recommended,
-    evidence,
+    evidence: [...evidence],
     benchmark: {
       classification: normalizeClassification(
         verification?.classification ?? showcase.classification,

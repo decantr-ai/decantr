@@ -115,7 +115,12 @@ userRoutes.get('/users/:username/content', async (c) => {
       name: getSummaryText(itemData, 'name'),
       description: getSummaryText(itemData, 'description'),
       published_at: item.published_at ?? undefined,
-      intelligence: getContentIntelligence(item.type as ContentType, item.namespace, item.slug),
+      intelligence: getContentIntelligence(
+        item.type as ContentType,
+        item.namespace,
+        item.slug,
+        itemData,
+      ),
     };
   });
   const ordered = applyPublicContentOrdering(mappedItems, sort, limit, offset);

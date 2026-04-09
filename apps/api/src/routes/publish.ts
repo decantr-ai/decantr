@@ -58,7 +58,12 @@ publishRoutes.get('/my/content', async (c) => {
       published_at: item.published_at,
       intelligence:
         item.visibility === 'public' && item.status === 'published'
-          ? getContentIntelligence(item.type, item.namespace, item.slug)
+          ? getContentIntelligence(
+            item.type,
+            item.namespace,
+            item.slug,
+            item.data as Record<string, unknown> | null | undefined,
+          )
           : null,
     })),
   });

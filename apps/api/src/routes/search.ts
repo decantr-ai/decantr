@@ -62,7 +62,12 @@ searchRoutes.get('/search', async (c) => {
     published_at: item.published_at ?? undefined,
     owner_name: item.owner_display_name || null,
     owner_username: item.owner_username || null,
-    intelligence: getContentIntelligence(item.type as ContentType, item.namespace, item.slug),
+    intelligence: getContentIntelligence(
+      item.type as ContentType,
+      item.namespace,
+      item.slug,
+      item.data as Record<string, unknown> | null | undefined,
+    ),
   }));
   const ordered = applyPublicContentOrdering(mappedResults, sort, limit, offset);
 
