@@ -372,6 +372,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     const code = readFileSync(sourceFile, 'utf-8');
     const signals = analyzeAstSignals(relativePath, code);
     const accessibilityIssueCount = signals.iconOnlyButtonWithoutLabelCount
+      + signals.iconOnlyLinkWithoutLabelCount
       + signals.clickableNonSemanticCount
       + signals.imageWithoutAltCount
       + signals.formControlWithoutLabelCount;
@@ -1578,6 +1579,7 @@ interface AstCritiqueSignals {
   rawHtmlInjectionCount: number;
   dynamicEvalCount: number;
   iconOnlyButtonWithoutLabelCount: number;
+  iconOnlyLinkWithoutLabelCount: number;
   clickableNonSemanticCount: number;
   imageWithoutAltCount: number;
   externalBlankLinkWithoutRelCount: number;
@@ -1671,6 +1673,12 @@ function getJsxTextContent(node: ts.Node): string {
   }
   if (ts.isJsxExpression(node)) {
     return node.expression ? getJsxTextContent(node.expression) : '';
+  }
+  if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
+    return '';
+  }
+  if (ts.isJsxElement(node) || ts.isJsxFragment(node)) {
+    return node.children.map(child => getJsxTextContent(child)).join('');
   }
 
   let text = '';
@@ -1916,6 +1924,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     rawHtmlInjectionCount: 0,
     dynamicEvalCount: 0,
     iconOnlyButtonWithoutLabelCount: 0,
+    iconOnlyLinkWithoutLabelCount: 0,
     clickableNonSemanticCount: 0,
     imageWithoutAltCount: 0,
     externalBlankLinkWithoutRelCount: 0,
@@ -2067,6 +2076,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'button' && !hasAccessibleLabel(node.attributes, '')) {
         signals.iconOnlyButtonWithoutLabelCount += 1;
       }
+      if (tagName === 'a' && !hasAccessibleLabel(node.attributes, '')) {
+        signals.iconOnlyLinkWithoutLabelCount += 1;
+      }
       if (tagName === 'img' && !getJsxAttribute(node.attributes, 'alt')) {
         signals.imageWithoutAltCount += 1;
       }
@@ -2119,6 +2131,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (tagName === 'button' && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
         signals.iconOnlyButtonWithoutLabelCount += 1;
+      }
+      if (tagName === 'a' && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
+        signals.iconOnlyLinkWithoutLabelCount += 1;
       }
       if (tagName === 'img' && !getJsxAttribute(node.openingElement.attributes, 'alt')) {
         signals.imageWithoutAltCount += 1;
@@ -2226,6 +2241,7 @@ export function critiqueSource({
   const hasFocus = codeLower.includes('focus-visible') || codeLower.includes('focusvisible');
   const hasKeyboard = codeLower.includes('onkeydown') || codeLower.includes('onkeyup');
   const iconButtonIssues = astSignals.iconOnlyButtonWithoutLabelCount;
+  const iconLinkIssues = astSignals.iconOnlyLinkWithoutLabelCount;
   const clickableNonSemanticIssues = astSignals.clickableNonSemanticCount;
   const imageAltIssues = astSignals.imageWithoutAltCount;
   const formControlLabelIssues = astSignals.formControlWithoutLabelCount;
@@ -2241,17 +2257,19 @@ export function critiqueSource({
         + (hasFocus ? 1 : 0)
         + (hasKeyboard ? 1 : 0)
         - (iconButtonIssues > 0 ? 1 : 0)
+        - (iconLinkIssues > 0 ? 1 : 0)
         - (clickableNonSemanticIssues > 0 ? 1 : 0)
         - (imageAltIssues > 0 ? 1 : 0)
         - (formControlLabelIssues > 0 ? 1 : 0),
       ),
     ),
-    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}, form controls without labels: ${formControlLabelIssues}`,
+    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}, form controls without labels: ${formControlLabelIssues}`,
     suggestions: [
       ...(!hasAria ? ['Add ARIA roles or labels to interactive regions.'] : []),
       ...(!hasFocus ? ['Add visible focus styling for keyboard navigation.'] : []),
       ...(!hasKeyboard ? ['Add keyboard handling where interactive behavior depends on pointer events.'] : []),
       ...(iconButtonIssues > 0 ? ['Add accessible labels to icon-only buttons via visible text or aria-label.'] : []),
+      ...(iconLinkIssues > 0 ? ['Add accessible labels to icon-only links via visible text or aria-label.'] : []),
       ...(clickableNonSemanticIssues > 0 ? ['Use semantic interactive elements or add role/tabIndex and keyboard handling to clickable non-semantic containers.'] : []),
       ...(imageAltIssues > 0 ? ['Add alt text to meaningful images and use alt="" only for decorative ones.'] : []),
       ...(formControlLabelIssues > 0 ? ['Add programmatic labels to form controls instead of relying on placeholders alone.'] : []),
@@ -2289,6 +2307,17 @@ export function critiqueSource({
         evidence: [filePath, `Unlabeled icon buttons: ${iconButtonIssues}`],
         file: filePath,
         suggestedFix: 'Add visible text or an aria-label/aria-labelledby attribute to icon-only buttons.',
+      }));
+    }
+    if (iconLinkIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-icon-link-label-missing',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+        message: 'Icon-only link elements were detected without an accessible label.',
+        evidence: [filePath, `Unlabeled icon links: ${iconLinkIssues}`],
+        file: filePath,
+        suggestedFix: 'Add visible text or an aria-label/aria-labelledby attribute to icon-only links.',
       }));
     }
     if (clickableNonSemanticIssues > 0) {

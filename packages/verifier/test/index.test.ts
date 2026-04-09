@@ -1614,6 +1614,49 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-target-blank-rel-missing')).toBe(true);
   });
 
+  it('flags unlabeled icon-only links during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/AppNav.tsx',
+      code: `
+        export function AppNav() {
+          return (
+            <nav>
+              <a href="/settings"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M0 0h16v16H0z" /></svg></a>
+            </nav>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['nav'], patternIds: ['sidebar'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'nav', path: '/settings', patternIds: ['sidebar'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-icon-link-label-missing')).toBe(true);
+  });
+
   it('flags unlabeled form controls during critique', () => {
     const report = critiqueSource({
       filePath: 'src/components/LoginForm.tsx',
