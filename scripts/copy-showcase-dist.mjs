@@ -59,9 +59,12 @@ if (!dryRun) {
   mkdirSync(targetRoot, { recursive: true });
   writeFileSync(join(targetRoot, 'manifest.json'), JSON.stringify(publicManifest, null, 2));
   writeFileSync(join(targetRoot, 'shortlist.json'), JSON.stringify(shortlistManifest, null, 2));
+  writeFileSync(join(targetRoot, 'shortlist-verification.json'), JSON.stringify(verificationReport, null, 2));
   console.log(`Wrote showcase metadata manifest -> apps/registry/public/showcase/manifest.json`);
   console.log(`Wrote showcase shortlist manifest -> apps/registry/public/showcase/shortlist.json`);
+  console.log(`Wrote showcase verification report -> apps/registry/public/showcase/shortlist-verification.json`);
 } else {
   console.log(`[dry-run] write showcase metadata manifest -> apps/registry/public/showcase/manifest.json`);
   console.log(`[dry-run] write showcase shortlist manifest -> apps/registry/public/showcase/shortlist.json`);
+  console.log(`[dry-run] write showcase verification report -> apps/registry/public/showcase/shortlist-verification.json`);
 }

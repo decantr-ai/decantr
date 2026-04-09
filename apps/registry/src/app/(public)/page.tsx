@@ -4,7 +4,10 @@ import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { KPIGrid } from '@/components/kpi-grid';
-import { listShortlistedShowcases } from '@/lib/showcase';
+import {
+  getShowcaseShortlistVerificationSummary,
+  listShortlistedShowcases,
+} from '@/lib/showcase';
 import {
   CONTENT_TYPES,
   CONTENT_TYPE_LABELS,
@@ -46,6 +49,25 @@ async function ShowcaseShortlist() {
     <ContentCardGrid
       items={items}
       emptyMessage="No shortlisted showcase blueprints are available yet."
+    />
+  );
+}
+
+function ShowcaseShortlistSummary() {
+  const summary = getShowcaseShortlistVerificationSummary();
+  if (!summary) {
+    return null;
+  }
+
+  return (
+    <KPIGrid
+      items={[
+        { label: 'Build Verified', value: summary.passedBuilds },
+        { label: 'Lower Drift', value: summary.lowerDriftCount },
+        { label: 'Moderate Drift', value: summary.moderateDriftCount },
+        { label: 'Elevated Drift', value: summary.elevatedDriftCount },
+        { label: 'Avg Build (ms)', value: summary.averageDurationMs },
+      ]}
     />
   );
 }
@@ -136,6 +158,8 @@ export default function HomePage() {
         <p className="mb-4 max-w-3xl text-sm text-d-muted">
           Provisional benchmark candidates from the Decantr showcase corpus. These blueprints currently have live showcase builds and passed the first shortlist verification sweep.
         </p>
+        <ShowcaseShortlistSummary />
+        <div className="h-4" />
         <Suspense fallback={<CardGridSkeleton />}>
           <ShowcaseShortlist />
         </Suspense>
