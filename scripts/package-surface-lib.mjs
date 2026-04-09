@@ -14,6 +14,18 @@ const RELEASE_WAVE_VALUES = ['foundation', 'delivery', 'experimental'];
 const RELEASE_WAVE_VALUE_SET = new Set(RELEASE_WAVE_VALUES);
 const RELEASE_WAVE_RANK = new Map(RELEASE_WAVE_VALUES.map((wave, index) => [wave, index]));
 const RETIREMENT_STATUS_VALUES = new Set(['retired', 'deprecated']);
+const SUPPORT_DESCRIPTIONS = {
+  'core-supported': 'part of the product nucleus and expected to track the vNext architecture closely',
+  'supported-secondary': 'still available, but not a strategic anchor for the main product story',
+  parked: 'intentionally paused and not expected to move with the main delivery cadence',
+  archived: 'preserved for history only and not expected to receive new product work',
+  extracted: 'moved out of the monorepo reset surface into a separate line',
+};
+const MATURITY_DESCRIPTIONS = {
+  stable: 'intended to publish under npm `latest`',
+  beta: 'public and supported, but still expected to evolve before stable graduation',
+  experimental: 'opt-in and not part of the default publish wave',
+};
 
 function isMeaningfulStringArray(value) {
   return Array.isArray(value) && value.every((entry) => typeof entry === 'string' && entry.trim().length > 0);
@@ -21,6 +33,10 @@ function isMeaningfulStringArray(value) {
 
 export function getRepoRoot() {
   return resolve(new URL('..', import.meta.url).pathname);
+}
+
+export function getPackageSupportMatrixPath(root = getRepoRoot()) {
+  return join(root, 'docs', 'reference', 'package-support-matrix.md');
 }
 
 export function loadPackageSurface(root = getRepoRoot()) {
@@ -181,6 +197,76 @@ export function summarizeReleaseReadiness(surface) {
   }
 
   return summary;
+}
+
+function escapeMarkdownCell(value) {
+  return String(value ?? '-').replace(/\|/g, '\\|').replace(/\n/g, ' ');
+}
+
+export function renderPackageSupportMatrix(surface, retirements) {
+  const activePackages = sortReleaseEntries(surface.packages);
+  const nucleusPackages = activePackages.filter((entry) => entry.support === 'core-supported' && entry.maturity !== 'experimental');
+  const retiredPackages = [...(retirements?.packages ?? [])].sort((left, right) => left.name.localeCompare(right.name));
+
+  const lines = [
+    '# Decantr Package Support Matrix',
+    '',
+    'Generated from `config/package-surface.json` and `config/package-retirements.json`.',
+    'Do not edit manually. Run `node scripts/sync-package-support-matrix.mjs` after package-surface changes.',
+    '',
+    'Release readiness audit: `pnpm audit:release-readiness`',
+    'Package surface audit: `pnpm audit:package-surface`',
+    '',
+    'This matrix defines which npm packages are part of the active Decantr vNext product surface on the reset branch.',
+    '',
+    '## Active Packages',
+    '',
+    '| Package | Support status | Maturity | Release wave | Default npm tag | Publish default | Summary |',
+    '| --- | --- | --- | --- | --- | --- | --- |',
+    ...activePackages.map((entry) => (
+      `| \`${escapeMarkdownCell(entry.name)}\` | ${escapeMarkdownCell(entry.support)} | ${escapeMarkdownCell(entry.maturity)} | \`${escapeMarkdownCell(entry.releaseWave)}\` (\`${escapeMarkdownCell(entry.publishOrder)}\`) | \`${escapeMarkdownCell(entry.defaultDistTag)}\` | \`${entry.publish === true ? 'true' : 'false'}\` | ${escapeMarkdownCell(entry.summary)} |`
+    )),
+    '',
+    '## Interpretation',
+    '',
+    ...Object.entries(SUPPORT_DESCRIPTIONS).map(([support, description]) => `- \`${support}\` means ${description}.`),
+    ...Object.entries(MATURITY_DESCRIPTIONS).map(([maturity, description]) => `- \`${maturity}\` means ${description}.`),
+    '- `release wave` defines the intended publish order for coordinated npm releases.',
+    '- `publish default` reflects whether the package participates in the default publish flow without opt-in overrides.',
+    '',
+    '## Current Product Nucleus',
+    '',
+    'The active Decantr product surface is:',
+    '',
+    ...nucleusPackages.map((entry) => `- \`${entry.name}\``),
+    '',
+    '## Explicitly Not Part of the Active Product Story',
+    '',
+    'These lines were removed from the monorepo reset branch and should not be treated as current product surfaces:',
+    '',
+    ...retiredPackages.map((entry) => `- \`${entry.name}\`${entry.replacement ? ` -> replacement: ${entry.replacement}` : ''}`),
+    '',
+    'That retirement path is now executable through:',
+    '',
+    '1. `config/package-retirements.json`',
+    '2. `pnpm package:retire:dry-run`',
+    '3. `node scripts/deprecate-retired-packages.mjs`',
+    '',
+    '## Working Rule',
+    '',
+    'Any future public package change should update all of:',
+    '',
+    '1. `config/package-surface.json`',
+    '2. `config/package-retirements.json` when a line is being removed',
+    '3. `node scripts/sync-package-support-matrix.mjs`',
+    '4. the relevant package README',
+    '5. publish/deprecation workflow behavior',
+    '',
+    'Beta packages now also need explicit `releaseReadiness.blockers` in `config/package-surface.json` until they are ready to graduate.',
+    '',
+  ];
+
+  return lines.join('\n');
 }
 
 export function createReleasePlan(surface, publicPackages, retirements) {

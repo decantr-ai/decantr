@@ -295,7 +295,7 @@ commit archaeology.
 - Added wave-aware release-plan and publish filtering so npm rehearsals can target a specific package wave instead of hand-picked package name lists.
 - Updated the GitHub npm publish workflow so manual runs can select a release wave, emit the computed release plan into the Actions summary, and rehearse with `dry_run_only=true`.
 - Added package-level README coverage for all active public packages.
-- Added a package support matrix and release-strategy runbook for the npm surface.
+- Added a generated package support matrix and release-strategy runbook for the npm surface, with `pnpm audit:package-surface` now enforcing that the matrix stays in sync with the manifest source of truth.
 - Cleared the remaining workspace dependency advisories by upgrading `hono`, `@hono/node-server`, and `@modelcontextprotocol/sdk`, then pinning patched `vite` and `path-to-regexp` resolutions through root `pnpm` overrides so `pnpm audit` now returns zero vulnerabilities.
 
 ## Verification Baseline

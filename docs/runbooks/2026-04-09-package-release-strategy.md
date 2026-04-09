@@ -16,6 +16,8 @@ This runbook defines how the Decantr reset branch should treat npm releases whil
 
 The package source of truth is `config/package-surface.json`.
 
+`docs/reference/package-support-matrix.md` is now generated from the package manifests via `node scripts/sync-package-support-matrix.mjs` and enforced by `pnpm audit:package-surface`.
+
 That file currently defines:
 
 - support status
@@ -135,7 +137,7 @@ When a package graduates:
 1. update `config/package-surface.json`
 2. decide whether it stays in its current release wave or moves into a later stable-delivery wave
 3. clear its `releaseReadiness.blockers` and mark it `stableCandidate: true`
-4. update this runbook and the package support matrix
+4. run `pnpm package-surface:sync` and update this runbook if policy changed
 5. update the package version if needed
 6. publish with the stable dist-tag
 

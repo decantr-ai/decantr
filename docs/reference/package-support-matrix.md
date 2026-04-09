@@ -1,55 +1,58 @@
 # Decantr Package Support Matrix
 
-Date: 2026-04-09
-Source of truth: `config/package-surface.json`
-Retirement manifest: `config/package-retirements.json`
+Generated from `config/package-surface.json` and `config/package-retirements.json`.
+Do not edit manually. Run `node scripts/sync-package-support-matrix.mjs` after package-surface changes.
+
 Release readiness audit: `pnpm audit:release-readiness`
+Package surface audit: `pnpm audit:package-surface`
 
 This matrix defines which npm packages are part of the active Decantr vNext product surface on the reset branch.
 
 ## Active Packages
 
-| Package | Support status | Maturity | Release wave | Default npm tag | Intended audience |
-|---|---|---|---|---|---|
-| `@decantr/cli` | core-supported | stable | `delivery` (`20`) | `latest` | app teams, local operators |
-| `@decantr/css` | core-supported | stable | `foundation` (`40`) | `latest` | generated projects and hand-authored Decantr apps |
-| `@decantr/essence-spec` | core-supported | beta | `foundation` (`10`) | `beta` | package consumers, validation tooling |
-| `@decantr/registry` | core-supported | beta | `foundation` (`20`) | `beta` | package consumers, API/browser clients |
-| `@decantr/core` | core-supported | beta | `foundation` (`30`) | `beta` | compiler and pack-aware integrations |
-| `@decantr/mcp-server` | core-supported | beta | `delivery` (`10`) | `beta` | AI coding assistants and MCP clients |
-| `@decantr/verifier` | core-supported | beta | `foundation` (`50`) | `beta` | CLI, MCP, CI, and hosted verification consumers |
-| `@decantr/vite-plugin` | supported-secondary | experimental | `experimental` (`10`) | `beta` | local dev experiments only |
+| Package | Support status | Maturity | Release wave | Default npm tag | Publish default | Summary |
+| --- | --- | --- | --- | --- | --- | --- |
+| `@decantr/essence-spec` | core-supported | beta | `foundation` (`10`) | `beta` | `true` | Essence schemas, validation, migration, and TypeScript types. |
+| `@decantr/registry` | core-supported | beta | `foundation` (`20`) | `beta` | `true` | Registry contracts, schemas, API client, and public content utilities. |
+| `@decantr/core` | core-supported | beta | `foundation` (`30`) | `beta` | `true` | Execution-pack compiler primitives and shared Decantr core utilities. |
+| `@decantr/css` | core-supported | stable | `foundation` (`40`) | `latest` | `true` | Framework-agnostic CSS atom runtime for Decantr projects. |
+| `@decantr/verifier` | core-supported | beta | `foundation` (`50`) | `beta` | `true` | Shared verification, critique, and report-schema engine. |
+| `@decantr/mcp-server` | core-supported | beta | `delivery` (`10`) | `beta` | `true` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
+| `@decantr/cli` | core-supported | stable | `delivery` (`20`) | `latest` | `true` | Local scaffold, audit, registry, and maintenance workflows for Decantr projects. |
+| `@decantr/vite-plugin` | supported-secondary | experimental | `experimental` (`10`) | `beta` | `false` | Experimental Vite overlay for Decantr guard feedback during local development. |
 
 ## Interpretation
 
 - `core-supported` means part of the product nucleus and expected to track the vNext architecture closely.
 - `supported-secondary` means still available, but not a strategic anchor for the main product story.
-- `stable` means the package is intended to publish under npm `latest`.
-- `beta` means the package is public and supported, but still expected to evolve before stable graduation.
+- `parked` means intentionally paused and not expected to move with the main delivery cadence.
+- `archived` means preserved for history only and not expected to receive new product work.
+- `extracted` means moved out of the monorepo reset surface into a separate line.
+- `stable` means intended to publish under npm `latest`.
+- `beta` means public and supported, but still expected to evolve before stable graduation.
 - `experimental` means opt-in and not part of the default publish wave.
 - `release wave` defines the intended publish order for coordinated npm releases.
+- `publish default` reflects whether the package participates in the default publish flow without opt-in overrides.
 
 ## Current Product Nucleus
 
 The active Decantr product surface is:
 
-- `@decantr/cli`
-- `@decantr/mcp-server`
 - `@decantr/essence-spec`
 - `@decantr/registry`
 - `@decantr/core`
-- `@decantr/verifier`
 - `@decantr/css`
+- `@decantr/verifier`
+- `@decantr/mcp-server`
+- `@decantr/cli`
 
 ## Explicitly Not Part of the Active Product Story
 
 These lines were removed from the monorepo reset branch and should not be treated as current product surfaces:
 
-- `@decantr/ui`
-- `@decantr/ui-chart`
-- `@decantr/ui-catalog`
-
-They still need npm deprecation/archive handling as a separate release-governance task, but they are no longer part of the active vNext story.
+- `@decantr/ui` -> replacement: @decantr/css, @decantr/cli, and the hosted Decantr registry/API surfaces
+- `@decantr/ui-catalog` -> replacement: registry.decantr.ai and the hosted registry/API surfaces
+- `@decantr/ui-chart` -> replacement: @decantr/css, @decantr/cli, and compiled execution packs
 
 That retirement path is now executable through:
 
@@ -63,7 +66,7 @@ Any future public package change should update all of:
 
 1. `config/package-surface.json`
 2. `config/package-retirements.json` when a line is being removed
-3. this matrix
+3. `node scripts/sync-package-support-matrix.mjs`
 4. the relevant package README
 5. publish/deprecation workflow behavior
 
