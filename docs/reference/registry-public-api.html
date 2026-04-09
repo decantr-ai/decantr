@@ -268,6 +268,38 @@ Content-Type: application/json
     </section>
 
     <section class="panel endpoint">
+      <h2>Hosted Project Audit</h2>
+      <pre>POST /audit/project?namespace=@official
+Content-Type: application/json
+
+{
+  "essence": {
+    "version": "2.0.0",
+    "archetype": "dashboard",
+    "theme": { "id": "clean", "mode": "light" },
+    "personality": ["professional"],
+    "platform": { "type": "spa", "routing": "history" },
+    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+    "features": ["auth"],
+    "density": { "level": "comfortable", "content_gap": "1.5rem" },
+    "guard": { "mode": "guided" },
+    "target": "react"
+  },
+  "dist": {
+    "indexHtml": "&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;&lt;title&gt;Audit&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;&lt;script type=&quot;module&quot; src=&quot;/assets/app.js&quot;&gt;&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;",
+    "assets": {
+      "/assets/app.js": "console.log(&quot;/&quot;);"
+    }
+  }
+}</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Run the shared Decantr project audit remotely by compiling hosted execution packs from the posted essence and optionally replaying runtime verification against a posted dist snapshot.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/project-audit-report.v1.json"><code>project-audit-report.v1.json</code></a></div>
+        <div><strong>Notes:</strong> The <code>dist</code> object is optional. Without it, hosted audit still checks schema, topology, and compiled-pack presence, but runtime verification remains pending.</div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
       <h2>Showcase Benchmark Surfaces</h2>
       <pre>GET /showcase/manifest
 GET /showcase/shortlist
@@ -296,6 +328,7 @@ decantr list blueprints --source authored
 decantr registry summary --namespace @official --json
 decantr registry compile-packs decantr.essence.json --namespace @official --json
 decantr registry critique-file src/pages/Home.tsx --namespace @official --json
+decantr registry audit-project --namespace @official --json
 pnpm audit:public-api</pre>
       <ul>
         <li><code>decantr_search_registry</code></li>
@@ -303,6 +336,7 @@ pnpm audit:public-api</pre>
         <li><code>decantr_get_showcase_benchmarks</code></li>
         <li><code>decantr_compile_execution_packs</code></li>
         <li><code>decantr_critique</code></li>
+        <li><code>decantr_audit_project</code></li>
       </ul>
     </section>
 

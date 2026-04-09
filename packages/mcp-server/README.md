@@ -77,7 +77,7 @@ The server exposes Decantr registry, context, benchmark, and verification tools.
 | `decantr_check_drift` | Check if generated code violates the design intent in the Essence spec | `{ "page_id": "overview", "components_used": ["Card", "LineChart"], "theme_used": "auradecantism" }` |
 | `decantr_get_execution_pack` | Read compiled scaffold, section, page, review, or mutation execution packs, with hosted fallback when local context is missing | `{ "pack_type": "page", "id": "overview", "format": "json" }` |
 | `decantr_compile_execution_packs` | Compile a hosted execution-pack bundle from a local or inline essence document | `{ "path": "./decantr.essence.json", "namespace": "@official" }` |
-| `decantr_audit_project` | Run the schema-backed Decantr project audit against essence and compiled packs | `{}` |
+| `decantr_audit_project` | Run the schema-backed Decantr project audit against essence and compiled packs, with hosted fallback when local pack artifacts are missing | `{ "namespace": "@official" }` |
 | `decantr_critique` | Critique a file against the compiled review contract, with hosted fallback when local review packs are missing | `{ "file_path": "./src/pages/Overview.tsx", "namespace": "@official" }` |
 | `decantr_get_showcase_benchmarks` | Read the audited showcase corpus manifest, shortlist, or verification report | `{ "view": "verification" }` |
 

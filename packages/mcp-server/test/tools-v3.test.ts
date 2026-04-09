@@ -244,6 +244,78 @@ describe('v3-aware tool tests', () => {
       expect(result.findings.some(finding => finding.id === 'review-pack-file-missing')).toBe(true);
     });
 
+    it('falls back to the hosted verifier for project audit when local packs are missing', async () => {
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+      await mkdir(join(testDir, 'dist', 'assets'), { recursive: true });
+      await writeFile(
+        join(testDir, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Hosted Audit</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+      );
+      await writeFile(join(testDir, 'dist', 'assets', 'app.js'), 'console.log("/");\n');
+
+      vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(
+        new Response(JSON.stringify({
+          $schema: 'https://decantr.ai/schemas/project-audit-report.v1.json',
+          projectRoot: '[hosted-audit]',
+          valid: true,
+          essence: makeV3Essence(),
+          reviewPack: null,
+          packManifest: null,
+          runtimeAudit: {
+            distPresent: true,
+            indexPresent: true,
+            checked: true,
+            passed: true,
+            rootDocumentOk: true,
+            titleOk: true,
+            langOk: true,
+            viewportOk: true,
+            assetCount: 1,
+            assetsPassed: 1,
+            routeHintsChecked: ['/'],
+            routeHintsMatched: 1,
+            routeDocumentsChecked: 1,
+            routeDocumentsPassed: 1,
+            totalAssetBytes: 1200,
+            jsAssetBytes: 1200,
+            cssAssetBytes: 0,
+            largestAssetPath: '/assets/app.js',
+            largestAssetBytes: 1200,
+            failures: [],
+          },
+          findings: [],
+          summary: {
+            errorCount: 0,
+            warnCount: 0,
+            infoCount: 0,
+            essenceVersion: '3.0.0',
+            reviewPackPresent: true,
+            packManifestPresent: true,
+            runtimeAuditChecked: true,
+            runtimePassed: true,
+            pageCount: 2,
+          },
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      ));
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_audit_project', {}) as {
+        $schema: string;
+        summary: { runtimeAuditChecked: boolean; reviewPackPresent: boolean };
+      };
+
+      expect(result.$schema).toBe('https://decantr.ai/schemas/project-audit-report.v1.json');
+      expect(result.summary.runtimeAuditChecked).toBe(true);
+      expect(result.summary.reviewPackPresent).toBe(true);
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/v1/audit/project'),
+        expect.objectContaining({ method: 'POST' }),
+      );
+    });
+
     it('returns a schema-backed file critique report', async () => {
       const contextDir = join(testDir, '.decantr', 'context');
       await mkdir(contextDir, { recursive: true });

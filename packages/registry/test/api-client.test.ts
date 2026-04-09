@@ -9,6 +9,87 @@ afterEach(() => {
 });
 
 describe('RegistryAPIClient showcase endpoints', () => {
+  it('requests hosted project audit reports', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        $schema: 'https://decantr.ai/schemas/project-audit-report.v1.json',
+        projectRoot: '[hosted-audit]',
+        valid: true,
+        essence: { version: '2.0.0' },
+        reviewPack: null,
+        packManifest: null,
+        runtimeAudit: {
+          distPresent: true,
+          indexPresent: true,
+          checked: true,
+          passed: true,
+          rootDocumentOk: true,
+          titleOk: true,
+          langOk: true,
+          viewportOk: true,
+          assetCount: 1,
+          assetsPassed: 1,
+          routeHintsChecked: ['/'],
+          routeHintsMatched: 1,
+          routeDocumentsChecked: 1,
+          routeDocumentsPassed: 1,
+          totalAssetBytes: 1200,
+          jsAssetBytes: 1200,
+          cssAssetBytes: 0,
+          largestAssetPath: '/assets/app.js',
+          largestAssetBytes: 1200,
+          failures: [],
+        },
+        findings: [],
+        summary: {
+          errorCount: 0,
+          warnCount: 0,
+          infoCount: 0,
+          essenceVersion: '2.0.0',
+          reviewPackPresent: true,
+          packManifestPresent: true,
+          runtimeAuditChecked: true,
+          runtimePassed: true,
+          pageCount: 1,
+        },
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const client = new RegistryAPIClient({ baseUrl: 'https://api.example.com/v1' });
+    const result = await client.auditProject({
+      essence: {
+        version: '2.0.0',
+        archetype: 'dashboard',
+        theme: { id: 'clean', mode: 'light' },
+        personality: ['professional'],
+        platform: { type: 'spa', routing: 'history' },
+        structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+        features: ['auth'],
+        density: { level: 'comfortable', content_gap: '1.5rem' },
+        guard: { mode: 'guided' },
+        target: 'react',
+      },
+      dist: {
+        indexHtml: '<!doctype html><html><head><title>Audit</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>',
+        assets: {
+          '/assets/app.js': 'console.log("/");',
+        },
+      },
+    }, { namespace: '@official' });
+
+    expect(result.$schema).toBe('https://decantr.ai/schemas/project-audit-report.v1.json');
+    expect(result.summary.runtimeAuditChecked).toBe(true);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://api.example.com/v1/audit/project?namespace=%40official',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
+  });
+
   it('requests hosted file critique reports', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({

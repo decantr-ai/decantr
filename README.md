@@ -94,6 +94,7 @@ Registry schemas are owned by `@decantr/registry/schema/*`, essence schemas by `
 Hosted registry intelligence rollup data is available at `https://api.decantr.ai/v1/intelligence/summary`.
 Hosted execution-pack compilation is available at `https://api.decantr.ai/v1/packs/compile`.
 Hosted file critique is surfaced at `https://api.decantr.ai/v1/critique/file` on the reset branch, with rollout state tracked by the public API audit and rollout runbook.
+Hosted project audit is surfaced at `https://api.decantr.ai/v1/audit/project` on the reset branch, with optional dist-snapshot input for runtime verification during rollout.
 Public registry API/filter examples live in `docs/reference/registry-public-api.md`, with a static docs page at `https://decantr.ai/reference/registry-public-api.html`.
 
 ## Packages

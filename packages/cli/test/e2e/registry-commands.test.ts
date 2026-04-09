@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { execFile, execSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -737,6 +737,147 @@ describe('registry commands (e2e)', () => {
           return posted.filePath === 'Home.tsx'
             && typeof posted.code === 'string'
             && posted.essence?.archetype === 'dashboard';
+        } catch {
+          return false;
+        }
+      }),
+    ).toBe(true);
+  });
+
+  it('registry audit-project posts essence and optional dist snapshot to the hosted verifier', async () => {
+    const requests: Array<{ url?: string; method?: string; body?: string }> = [];
+    const server = createServer((req, res) => {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        requests.push({ url: req.url, method: req.method, body });
+
+        if (req.method === 'POST' && req.url?.startsWith('/v1/audit/project')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            $schema: 'https://decantr.ai/schemas/project-audit-report.v1.json',
+            projectRoot: '[hosted-audit]',
+            valid: true,
+            essence: { version: '2.0.0' },
+            reviewPack: {
+              $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+              packVersion: '1.0.0',
+              packType: 'review',
+              objective: 'Review generated output against the compiled Decantr contract.',
+              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+              preset: null,
+              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+              requiredSetup: [],
+              allowedVocabulary: [],
+              examples: [],
+              antiPatterns: [],
+              successChecks: [],
+              tokenBudget: { target: 1400, max: 2200, strategy: [] },
+              data: {
+                reviewType: 'app',
+                shell: 'sidebar-main',
+                theme: { id: 'clean', mode: 'light', shape: null },
+                routing: 'history',
+                features: ['auth'],
+                routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+                focusAreas: ['route-topology'],
+                workflow: [],
+              },
+              renderedMarkdown: '# Review Pack\n',
+            },
+            packManifest: {
+              $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+              version: '1.0.0',
+              generatedAt: '2026-04-09T00:00:00.000Z',
+              scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+              review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+              sections: [],
+              pages: [{ id: 'home', markdown: 'page-home-pack.md', json: 'page-home-pack.json', sectionId: 'dashboard', sectionRole: 'primary' }],
+              mutations: [],
+            },
+            runtimeAudit: {
+              distPresent: true,
+              indexPresent: true,
+              checked: true,
+              passed: true,
+              rootDocumentOk: true,
+              titleOk: true,
+              langOk: true,
+              viewportOk: true,
+              assetCount: 1,
+              assetsPassed: 1,
+              routeHintsChecked: ['/'],
+              routeHintsMatched: 1,
+              routeDocumentsChecked: 1,
+              routeDocumentsPassed: 1,
+              totalAssetBytes: 1200,
+              jsAssetBytes: 1200,
+              cssAssetBytes: 0,
+              largestAssetPath: '/assets/app.js',
+              largestAssetBytes: 1200,
+              failures: [],
+            },
+            findings: [],
+            summary: {
+              errorCount: 0,
+              warnCount: 0,
+              infoCount: 0,
+              essenceVersion: '2.0.0',
+              reviewPackPresent: true,
+              packManifestPresent: true,
+              runtimeAuditChecked: true,
+              runtimePassed: true,
+              pageCount: 1,
+            },
+          }));
+          return;
+        }
+
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not found' }));
+      });
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const { port } = server.address() as AddressInfo;
+
+    writeFileSync(join(testDir, 'decantr.essence.json'), JSON.stringify({
+      version: '2.0.0',
+      archetype: 'dashboard',
+      theme: { id: 'clean', mode: 'light' },
+      personality: ['professional'],
+      platform: { type: 'spa', routing: 'history' },
+      structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+      features: ['auth'],
+      density: { level: 'comfortable', content_gap: '1.5rem' },
+      guard: { mode: 'guided' },
+      target: 'react',
+    }, null, 2));
+    mkdirSync(join(testDir, 'dist', 'assets'), { recursive: true });
+    writeFileSync(join(testDir, 'dist', 'index.html'), '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audit</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n', { encoding: 'utf-8' });
+    writeFileSync(join(testDir, 'dist', 'assets', 'app.js'), 'console.log("/");\n', { encoding: 'utf-8' });
+
+    const output = await runCliAsync(testDir, 'registry audit-project --namespace @official --json', {
+      DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
+      DECANTR_API_KEY: '',
+    });
+
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+
+    const json = JSON.parse(output);
+    expect(json.$schema).toBe('https://decantr.ai/schemas/project-audit-report.v1.json');
+    expect(
+      requests.some((request) => {
+        if (request.method !== 'POST' || !request.url?.includes('/v1/audit/project?namespace=%40official') || !request.body) {
+          return false;
+        }
+        try {
+          const posted = JSON.parse(request.body);
+          return posted.essence?.archetype === 'dashboard'
+            && typeof posted.dist?.indexHtml === 'string'
+            && posted.dist?.assets?.['/assets/app.js']?.includes('console.log');
         } catch {
           return false;
         }

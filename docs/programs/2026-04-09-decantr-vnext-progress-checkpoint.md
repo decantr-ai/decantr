@@ -178,6 +178,12 @@ commit archaeology.
   - CLI entrypoint via `decantr registry critique-file`
   - MCP hosted fallback when local review packs are missing
   - public API audit coverage is opt-in until rollout via `--include-hosted-critique`
+- Added a hosted project-audit surface on the reset branch:
+  - `POST /v1/audit/project`
+  - remote project audit from posted essence plus optional dist snapshot
+  - CLI entrypoint via `decantr registry audit-project`
+  - MCP hosted fallback when local pack artifacts are missing
+  - public API audit coverage is opt-in until rollout via `--include-hosted-project-audit`
 - Completed the official content rollout on 2026-04-09:
   - content workflow run `24192386163` synced `codex/decantr-vnext-resetmai` into the live registry
   - live `@official` content count is now `480`
@@ -247,6 +253,6 @@ now explicit in-repo as well through the Vercel workflow, portal audit, and runb
 
 1. Add richer golden verification beyond build/smoke into route/runtime behavior.
 2. Move execution packs deeper into hosted/API workflows instead of local scaffold-only artifacts.
-3. Roll out the hosted file-critique surface and make it green in live public API audits.
+3. Roll out the hosted verification surfaces (`/v1/critique/file` and `/v1/audit/project`) and make them green in live public API audits.
 4. Continue narrowing legacy `any`/implicit contracts in older CLI and MCP paths.
 5. Keep improving content intelligence quality and confidence scoring on top of the now-live hosted summary contract.

@@ -238,6 +238,43 @@ function resolveUserPath(inputPath: string, cwd: string = process.cwd()): string
   return isAbsolute(inputPath) ? inputPath : resolve(cwd, inputPath);
 }
 
+function extractHostedAssetPaths(indexHtml: string): string[] {
+  const assetPaths = new Set<string>();
+
+  for (const match of indexHtml.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)) {
+    const assetPath = match[1];
+    const assetsIndex = assetPath.indexOf('/assets/');
+    if (assetsIndex === -1) continue;
+    assetPaths.add(assetPath.slice(assetsIndex));
+  }
+
+  return [...assetPaths];
+}
+
+function readHostedDistSnapshot(distPath?: string): { indexHtml: string; assets?: Record<string, string> } | undefined {
+  const resolvedDistPath = distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist');
+  const indexPath = join(resolvedDistPath, 'index.html');
+  if (!existsSync(indexPath)) {
+    return undefined;
+  }
+
+  const indexHtml = readFileSync(indexPath, 'utf-8');
+  const assetPaths = extractHostedAssetPaths(indexHtml);
+  const assets: Record<string, string> = {};
+
+  for (const assetPath of assetPaths) {
+    const assetFilePath = join(resolvedDistPath, assetPath.replace(/^[/\\]+/, ''));
+    if (existsSync(assetFilePath)) {
+      assets[assetPath] = readFileSync(assetFilePath, 'utf-8');
+    }
+  }
+
+  return {
+    indexHtml,
+    assets,
+  };
+}
+
 async function getShowcaseBenchmarkView(
   view: 'manifest' | 'shortlist' | 'verification' = 'shortlist',
 ) {
@@ -478,6 +515,42 @@ async function printHostedFileCritique(
     console.log(`  Treatments: ${resolvedTreatmentsPath}`);
   }
   printFileCritiqueReport(report);
+}
+
+async function printHostedProjectAudit(
+  namespace?: string,
+  jsonOutput: boolean = false,
+  essencePath?: string,
+  distPath?: string,
+) {
+  const client = getPublicAPIClient();
+  const resolvedEssencePath = essencePath
+    ? resolveUserPath(essencePath)
+    : join(process.cwd(), 'decantr.essence.json');
+
+  if (!existsSync(resolvedEssencePath)) {
+    throw new Error(`Essence file not found at ${resolvedEssencePath}`);
+  }
+
+  const essence = JSON.parse(readFileSync(resolvedEssencePath, 'utf-8')) as EssenceFile;
+  const dist = readHostedDistSnapshot(distPath);
+  const report = await client.auditProject(
+    {
+      essence,
+      dist,
+    },
+    namespace ? { namespace } : undefined,
+  );
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+
+  console.log(heading('Hosted Project Audit'));
+  console.log(`  Essence: ${resolvedEssencePath}`);
+  console.log(`  Dist snapshot: ${dist ? (distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist')) : 'none'}`);
+  printProjectAuditReport(report as unknown as ProjectAuditReport);
 }
 
 // ── Commands ──
@@ -1585,6 +1658,7 @@ ${BOLD}Usage:${RESET}
   decantr registry summary [--namespace <namespace>] [--json]
   decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
+  decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>]
   decantr validate [path]
   decantr theme <subcommand>
   decantr create <type> <name>
@@ -1655,6 +1729,7 @@ ${BOLD}Examples:${RESET}
   decantr registry compile-packs decantr.essence.json --json
   decantr registry compile-packs decantr.essence.json --write-context
   decantr registry critique-file src/pages/Home.tsx --namespace @official --json
+  decantr registry audit-project --namespace @official --json
   decantr create pattern my-card
 `);
 }
@@ -1995,8 +2070,17 @@ async function main() {
           break;
         }
         await printHostedFileCritique(sourcePath, namespace, jsonOutput, essencePath, treatmentsPath);
+      } else if (subcommand === 'audit-project') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        const essenceIdx = args.indexOf('--essence');
+        const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
+        const distIdx = args.indexOf('--dist');
+        const distPath = distIdx !== -1 ? args[distIdx + 1] : undefined;
+        await printHostedProjectAudit(namespace, jsonOutput, essencePath, distPath);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>]${RESET}`);
         process.exitCode = 1;
       }
       break;

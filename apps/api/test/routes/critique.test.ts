@@ -171,3 +171,108 @@ describe('POST /v1/critique/file', () => {
     assertMatchesSchema('file-critique-report.v1.json', json);
   });
 });
+
+describe('POST /v1/audit/project', () => {
+  let app: ReturnType<typeof createTestApp>;
+
+  beforeEach(() => {
+    app = createTestApp();
+    mockCreateAdminClient.mockReset();
+    mockCreateAdminClient.mockReturnValue(createResolverClient({
+      'theme:clean': [
+        {
+          namespace: '@official',
+          slug: 'clean',
+          data: {
+            id: 'clean',
+            name: 'Clean',
+            modes: ['light', 'dark'],
+          },
+        },
+      ],
+      'pattern:hero': [
+        {
+          namespace: '@official',
+          slug: 'hero',
+          data: {
+            id: 'hero',
+            version: '1.0.0',
+            name: 'Hero',
+            description: 'Hero section',
+            tags: ['marketing'],
+            components: ['Hero'],
+            default_preset: 'landing',
+            presets: {
+              landing: {
+                description: 'Landing hero',
+                layout: {
+                  layout: 'stack',
+                  atoms: '_stack-md',
+                },
+              },
+            },
+          },
+        },
+      ],
+    }));
+  });
+
+  it('returns a schema-backed hosted project audit report without dist input', async () => {
+    const res = await app.request('/v1/audit/project?namespace=%40official', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    assertMatchesSchema('project-audit-report.v1.json', json);
+    expect(json.$schema).toBe('https://decantr.ai/schemas/project-audit-report.v1.json');
+    expect(json.projectRoot).toBe('[hosted-audit]');
+    expect(json.summary.reviewPackPresent).toBe(true);
+    expect(json.summary.packManifestPresent).toBe(true);
+    expect(json.summary.runtimeAuditChecked).toBe(false);
+  });
+
+  it('uses an optional dist snapshot for runtime verification', async () => {
+    const res = await app.request('/v1/audit/project?namespace=%40official', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+        dist: {
+          indexHtml: '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Hosted Audit</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>',
+          assets: {
+            '/assets/app.js': 'console.log("/");',
+          },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    assertMatchesSchema('project-audit-report.v1.json', json);
+    expect(json.runtimeAudit.distPresent).toBe(true);
+    expect(json.summary.runtimeAuditChecked).toBe(true);
+    expect(json.runtimeAudit.assetCount).toBe(1);
+    expect(json.runtimeAudit.langOk).toBe(true);
+    expect(json.runtimeAudit.viewportOk).toBe(true);
+  });
+
+  it('remains callable through the full app middleware stack', async () => {
+    const fullApp = createApp();
+    const res = await fullApp.request('/v1/audit/project?namespace=%40official', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    assertMatchesSchema('project-audit-report.v1.json', json);
+  });
+});

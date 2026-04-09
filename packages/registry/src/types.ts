@@ -610,6 +610,16 @@ export interface HostedFileCritiqueRequest {
   treatmentsCss?: string;
 }
 
+export interface HostedDistSnapshot {
+  indexHtml: string;
+  assets?: Record<string, string>;
+}
+
+export interface HostedProjectAuditRequest {
+  essence: EssenceFile;
+  dist?: HostedDistSnapshot;
+}
+
 export type ExecutionPackType = 'scaffold' | 'section' | 'page' | 'mutation' | 'review';
 
 export interface ExecutionPackTarget {
@@ -843,4 +853,51 @@ export interface FileCritiqueReport {
   findings: VerificationFinding[];
   focusAreas: string[];
   reviewPack: ReviewExecutionPack | null;
+}
+
+export interface ProjectAuditRuntimeAudit {
+  distPresent: boolean;
+  indexPresent: boolean;
+  checked: boolean;
+  passed: boolean | null;
+  rootDocumentOk: boolean;
+  titleOk: boolean;
+  langOk: boolean;
+  viewportOk: boolean;
+  assetCount: number;
+  assetsPassed: number;
+  routeHintsChecked: string[];
+  routeHintsMatched: number;
+  routeDocumentsChecked: number;
+  routeDocumentsPassed: number;
+  totalAssetBytes: number;
+  jsAssetBytes: number;
+  cssAssetBytes: number;
+  largestAssetPath: string | null;
+  largestAssetBytes: number;
+  failures: string[];
+}
+
+export interface ProjectAuditSummary {
+  errorCount: number;
+  warnCount: number;
+  infoCount: number;
+  essenceVersion: string | null;
+  reviewPackPresent: boolean;
+  packManifestPresent: boolean;
+  runtimeAuditChecked: boolean;
+  runtimePassed: boolean | null;
+  pageCount: number;
+}
+
+export interface ProjectAuditReport {
+  $schema: string;
+  projectRoot: string;
+  valid: boolean;
+  essence: EssenceFile | null;
+  reviewPack: ReviewExecutionPack | null;
+  packManifest: ExecutionPackManifest | null;
+  runtimeAudit: ProjectAuditRuntimeAudit;
+  findings: VerificationFinding[];
+  summary: ProjectAuditSummary;
 }

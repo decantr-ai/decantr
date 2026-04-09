@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://decantr.ai/schema/essence/2.0.json",
+  "$id": "https://decantr.ai/schemas/essence.v2.json",
   "title": "Decantr Essence v2",
   "description": "Design intent specification for AI-generated web applications",
   "oneOf": [

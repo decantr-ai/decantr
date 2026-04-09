@@ -21,7 +21,9 @@ import type {
   ShowcaseShortlistResponse,
   ShowcaseShortlistReport,
   HostedFileCritiqueRequest,
+  HostedProjectAuditRequest,
   FileCritiqueReport,
+  ProjectAuditReport,
   ExecutionPackBundleResponse,
 } from './types.js';
 import type { EssenceFile } from '@decantr/essence-spec';
@@ -403,6 +405,24 @@ export class RegistryAPIClient {
 
     return this.request<FileCritiqueReport>(
       `/critique/file${query ? `?${query}` : ''}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  async auditProject(
+    input: HostedProjectAuditRequest,
+    params?: { namespace?: string },
+  ): Promise<ProjectAuditReport> {
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+
+    return this.request<ProjectAuditReport>(
+      `/audit/project${query ? `?${query}` : ''}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

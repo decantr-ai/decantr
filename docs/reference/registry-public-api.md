@@ -165,6 +165,47 @@ Response schema:
 - `file-critique-report.v1.json`
 - `https://decantr.ai/schemas/file-critique-report.v1.json`
 
+## Hosted Project Audit
+
+```http
+POST /audit/project?namespace=@official
+Content-Type: application/json
+
+{
+  "essence": {
+    "version": "2.0.0",
+    "archetype": "dashboard",
+    "theme": { "id": "clean", "mode": "light" },
+    "personality": ["professional"],
+    "platform": { "type": "spa", "routing": "history" },
+    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+    "features": ["auth"],
+    "density": { "level": "comfortable", "content_gap": "1.5rem" },
+    "guard": { "mode": "guided" },
+    "target": "react"
+  },
+  "dist": {
+    "indexHtml": "<!doctype html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Audit</title></head><body><div id=\"root\"></div><script type=\"module\" src=\"/assets/app.js\"></script></body></html>",
+    "assets": {
+      "/assets/app.js": "console.log(\"/\");"
+    }
+  }
+}
+```
+
+Purpose:
+- run the shared Decantr project audit remotely by compiling hosted execution packs from the posted essence and optionally replaying runtime verification against a posted dist snapshot
+
+Notes:
+- request body must include a valid Decantr essence document on `essence`
+- `dist` is optional; without it the hosted audit still verifies schema, topology, and compiled-pack presence, but runtime checks stay pending
+- when `dist` is included, `indexHtml` is required and `assets` should provide the JS/CSS files referenced from that root document
+- `namespace` is optional and defaults to `@official`
+
+Response schema:
+- `project-audit-report.v1.json`
+- `https://decantr.ai/schemas/project-audit-report.v1.json`
+
 ## Showcase Benchmark Surfaces
 
 ```http
@@ -221,6 +262,7 @@ decantr list blueprints --source authored
 decantr registry summary --namespace @official --json
 decantr registry compile-packs decantr.essence.json --namespace @official --json
 decantr registry critique-file src/pages/Home.tsx --namespace @official --json
+decantr registry audit-project --namespace @official --json
 ```
 
 ## MCP Equivalents
@@ -230,11 +272,13 @@ decantr registry critique-file src/pages/Home.tsx --namespace @official --json
 - `decantr_get_showcase_benchmarks`
 - `decantr_compile_execution_packs`
 - `decantr_critique`
+- `decantr_audit_project`
 
 ## Notes
 
 - These endpoints are read-only public surfaces.
 - `POST /critique/file` is implemented on the reset branch; include `--include-hosted-critique` when using `pnpm audit:public-api` to verify it during rollout.
+- `POST /audit/project` is implemented on the reset branch; include `--include-hosted-project-audit` when using `pnpm audit:public-api` to verify it during rollout.
 - Intelligence metadata may lag behind repo-local changes until the hosted API and official content sync are deployed.
 - During rollout, the content-repo audits are the fastest way to see repo-vs-live mismatches.
 - For a lightweight hosted-surface smoke check from the monorepo, run `pnpm audit:public-api`.

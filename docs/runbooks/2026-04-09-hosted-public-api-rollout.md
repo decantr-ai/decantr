@@ -5,10 +5,11 @@ Status: Completed on 2026-04-09
 
 This runbook covers the safe rollout order for the Decantr vNext hosted public API surfaces now living on the `codex/decantr-vnext-reset` and `codex/decantr-vnext-resetmai` branches.
 
-It originally covered the public-read rollout for schema, showcase, and intelligence surfaces, and it now also tracks the hosted execution-pack compiler endpoint plus the hosted file-critique surface:
+It originally covered the public-read rollout for schema, showcase, and intelligence surfaces, and it now also tracks the hosted execution-pack compiler endpoint plus the hosted verification surfaces:
 
 - `POST /v1/packs/compile`
 - `POST /v1/critique/file`
+- `POST /v1/audit/project`
 
 ## Why This Exists
 
@@ -150,6 +151,7 @@ Surfaces included in this rollout:
   - `/v1/intelligence/summary`
   - `/v1/packs/compile`
   - `/v1/critique/file`
+  - `/v1/audit/project`
 
 Why first:
 
@@ -234,6 +236,7 @@ Expected convergence:
 - hosted public API surfaces all return `200`
 - hosted execution-pack compilation returns a schema-backed bundle
 - hosted file critique returns a schema-backed report when `pnpm audit:public-api --include-hosted-critique` is enabled
+- hosted project audit returns a schema-backed report when `pnpm audit:public-api --include-hosted-project-audit` is enabled
 - drift audit no longer reports stale `@official` extras
 - intelligence audit no longer reports filter-summary mismatches caused by outdated deployment state
 

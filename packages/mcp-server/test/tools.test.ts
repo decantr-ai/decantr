@@ -42,6 +42,8 @@ describe('MCP tool handlers', () => {
         'decantr_get_showcase_benchmarks',
         'decantr_get_registry_intelligence_summary',
         'decantr_compile_execution_packs',
+        'decantr_audit_project',
+        'decantr_critique',
       ];
       for (const name of networkToolNames) {
         const tool = TOOLS.find(t => t.name === name);
@@ -54,7 +56,6 @@ describe('MCP tool handlers', () => {
         'decantr_read_essence',
         'decantr_validate',
         'decantr_check_drift',
-        'decantr_audit_project',
         'decantr_get_scaffold_context',
         'decantr_get_page_context',
         'decantr_get_execution_pack',

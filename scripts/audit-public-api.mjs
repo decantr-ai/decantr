@@ -8,6 +8,7 @@
  *   node scripts/audit-public-api.mjs --report-json=./public-api-report.json
  *   node scripts/audit-public-api.mjs --summary-markdown=./public-api-summary.md
  *   node scripts/audit-public-api.mjs --include-hosted-critique
+ *   node scripts/audit-public-api.mjs --include-hosted-project-audit
  *   node scripts/audit-public-api.mjs --fail-on-error
  *
  * Environment variables:
@@ -15,6 +16,7 @@
  *   CONTENT_NAMESPACE - Namespace used for registry list/summary checks (default: @official)
  *   FAIL_ON_PUBLIC_API_ERROR - Set to "true" to exit non-zero when any check fails
  *   INCLUDE_HOSTED_CRITIQUE - Set to "true" to include POST /v1/critique/file in the audit set
+ *   INCLUDE_HOSTED_PROJECT_AUDIT - Set to "true" to include POST /v1/audit/project in the audit set
  */
 
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -31,6 +33,8 @@ const FAIL_ON_ERROR =
   args.includes('--fail-on-error') || process.env.FAIL_ON_PUBLIC_API_ERROR === 'true';
 const INCLUDE_HOSTED_CRITIQUE =
   args.includes('--include-hosted-critique') || process.env.INCLUDE_HOSTED_CRITIQUE === 'true';
+const INCLUDE_HOSTED_PROJECT_AUDIT =
+  args.includes('--include-hosted-project-audit') || process.env.INCLUDE_HOSTED_PROJECT_AUDIT === 'true';
 
 function ensureParentDir(path) {
   mkdirSync(dirname(path), { recursive: true });
@@ -161,6 +165,38 @@ const CHECKS = [
       details(response) {
         if (isObject(response.json)) {
           return `overall=${response.json.overall ?? 'n/a'} findings=${Array.isArray(response.json.findings) ? response.json.findings.length : 'n/a'}`;
+        }
+        return response.text;
+      },
+    },
+  ] : []),
+  ...(INCLUDE_HOSTED_PROJECT_AUDIT ? [
+    {
+      name: 'hosted-project-audit',
+      path: `/audit/project?namespace=${encodeURIComponent(CONTENT_NAMESPACE)}`,
+      init: {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          essence: SAMPLE_ESSENCE,
+          dist: {
+            indexHtml: '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audit</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>',
+            assets: {
+              '/assets/app.js': 'console.log("/");',
+            },
+          },
+        }),
+      },
+      validate(response) {
+        return response.ok &&
+          isObject(response.json) &&
+          response.json.$schema === 'https://decantr.ai/schemas/project-audit-report.v1.json';
+      },
+      details(response) {
+        if (isObject(response.json?.summary)) {
+          return `runtime_checked=${response.json.summary.runtimeAuditChecked ?? 'n/a'} warnings=${response.json.summary.warnCount ?? 'n/a'}`;
         }
         return response.text;
       },

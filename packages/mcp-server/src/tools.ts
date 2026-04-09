@@ -132,6 +132,61 @@ async function getHostedFileCritiquePayload(
   );
 }
 
+function extractHostedAssetPaths(indexHtml: string): string[] {
+  const assetPaths = new Set<string>();
+
+  for (const match of indexHtml.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)) {
+    const assetPath = match[1];
+    const assetsIndex = assetPath.indexOf('/assets/');
+    if (assetsIndex === -1) continue;
+    assetPaths.add(assetPath.slice(assetsIndex));
+  }
+
+  return [...assetPaths];
+}
+
+async function captureHostedDistSnapshot(projectRoot: string, distPathArg?: string) {
+  const distRoot = distPathArg
+    ? (isAbsolute(distPathArg) ? distPathArg : resolve(projectRoot, distPathArg))
+    : join(projectRoot, 'dist');
+  const indexPath = join(distRoot, 'index.html');
+
+  if (!existsSync(indexPath)) {
+    return undefined;
+  }
+
+  const indexHtml = readFileSync(indexPath, 'utf-8');
+  const assets: Record<string, string> = {};
+
+  for (const assetPath of extractHostedAssetPaths(indexHtml)) {
+    const assetFilePath = join(distRoot, assetPath.replace(/^[/\\]+/, ''));
+    if (existsSync(assetFilePath)) {
+      assets[assetPath] = readFileSync(assetFilePath, 'utf-8');
+    }
+  }
+
+  return {
+    indexHtml,
+    assets,
+  };
+}
+
+async function getHostedProjectAuditPayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const { essence } = await readEssenceFile(args.path as string | undefined);
+  const dist = await captureHostedDistSnapshot(process.cwd(), args.dist_path as string | undefined);
+
+  return client.auditProject(
+    {
+      essence,
+      dist,
+    },
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
 type HostedExecutionPackBundle = Awaited<ReturnType<typeof getHostedExecutionPackBundlePayload>>;
 type PackSource = 'local' | 'hosted_fallback';
 
@@ -159,6 +214,23 @@ async function loadHostedFileCritiqueFallback(args: Record<string, unknown>): Pr
   try {
     return {
       report: await getHostedFileCritiquePayload(args),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      report: null,
+      error: (error as Error).message,
+    };
+  }
+}
+
+async function loadHostedProjectAuditFallback(args: Record<string, unknown>): Promise<{
+  report: Awaited<ReturnType<typeof getHostedProjectAuditPayload>> | null;
+  error: string | null;
+}> {
+  try {
+    return {
+      report: await getHostedProjectAuditPayload(args),
       error: null,
     };
   } catch (error) {
@@ -648,16 +720,20 @@ export const TOOLS = [
     },
     annotations: READ_ONLY_NETWORK,
   },
-  // 20. decantr_audit_project — local read
+  // 20. decantr_audit_project — local read with hosted fallback
   {
     name: 'decantr_audit_project',
     title: 'Audit Project',
-    description: 'Audit the current project against the essence contract, guard rules, and compiled execution packs. Returns a schema-backed project audit report.',
+    description: 'Audit the current project against the essence contract, guard rules, and compiled execution packs. Falls back to the hosted verifier when local compiled pack artifacts are missing. Returns a schema-backed project audit report.',
     inputSchema: {
       type: 'object' as const,
-      properties: {},
+      properties: {
+        path: { type: 'string' as const, description: 'Optional path to the essence file for hosted fallback. Defaults to ./decantr.essence.json.' },
+        namespace: { type: 'string' as const, description: 'Optional preferred public namespace for hosted fallback. Defaults to "@official".' },
+        dist_path: { type: 'string' as const, description: 'Optional path to a local dist directory to snapshot for hosted runtime verification. Defaults to ./dist.' },
+      },
     },
-    annotations: READ_ONLY,
+    annotations: READ_ONLY_NETWORK,
   },
   // 21. decantr_critique — local read with hosted fallback
   {
@@ -1834,8 +1910,30 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
     }
 
     case 'decantr_audit_project': {
+      if (args.path != null && typeof args.path !== 'string') {
+        return { error: 'Invalid path. Must be a string when provided.' };
+      }
+      if (args.namespace != null && typeof args.namespace !== 'string') {
+        return { error: 'Invalid namespace. Must be a string when provided.' };
+      }
+      if (args.dist_path != null && typeof args.dist_path !== 'string') {
+        return { error: 'Invalid dist_path. Must be a string when provided.' };
+      }
       const { auditProject } = await import('@decantr/verifier');
-      return auditProject(process.cwd());
+      const projectRoot = process.cwd();
+      const hasReviewPack = existsSync(join(projectRoot, '.decantr', 'context', 'review-pack.json'));
+      const hasPackManifest = existsSync(join(projectRoot, '.decantr', 'context', 'pack-manifest.json'));
+
+      if (hasReviewPack && hasPackManifest) {
+        return auditProject(projectRoot);
+      }
+
+      const hosted = await loadHostedProjectAuditFallback(args);
+      if (hosted.report) {
+        return hosted.report;
+      }
+
+      return auditProject(projectRoot);
     }
 
     default:
