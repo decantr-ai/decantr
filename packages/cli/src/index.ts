@@ -10,11 +10,13 @@ import {
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
   isContentType as isGetContentType,
   isApiContentType,
+  isContentIntelligenceSource,
 } from '@decantr/registry';
 import type {
   ApiContentType,
   Blueprint as RegistryBlueprint,
   ComposeEntry,
+  ContentIntelligenceSource,
   ContentIntelligenceMetadata,
   ShowcaseManifestResponse,
   ShowcaseShortlistReport,
@@ -309,10 +311,22 @@ async function printShowcaseBenchmarks(
 
 // ── Commands ──
 
-async function cmdSearch(query: string, type?: string, sort?: string, recommended?: boolean) {
+async function cmdSearch(
+  query: string,
+  type?: string,
+  sort?: string,
+  recommended?: boolean,
+  intelligenceSource?: ContentIntelligenceSource,
+) {
   const apiClient = getAPIClient();
   try {
-    const response = await apiClient.search({ q: query, type, sort, recommended });
+    const response = await apiClient.search({
+      q: query,
+      type,
+      sort,
+      recommended,
+      intelligenceSource,
+    });
     const results = response.results;
 
     if (results.length === 0) {
@@ -528,7 +542,12 @@ async function cmdValidate(path?: string) {
   } catch { /* guard is optional */ }
 }
 
-async function cmdList(type: string, sort?: string, recommended?: boolean) {
+async function cmdList(
+  type: string,
+  sort?: string,
+  recommended?: boolean,
+  intelligenceSource?: ContentIntelligenceSource,
+) {
   if (!isApiContentType(type)) {
     console.error(error(`Invalid type "${type}". Must be one of: ${LIST_CONTENT_TYPES.join(', ')}`));
     process.exitCode = 1;
@@ -539,7 +558,13 @@ async function cmdList(type: string, sort?: string, recommended?: boolean) {
     cacheDir: join(process.cwd(), '.decantr', 'cache'),
   });
 
-  const result = await registryClient.fetchContentList(type, undefined, sort, recommended);
+  const result = await registryClient.fetchContentList(
+    type,
+    undefined,
+    sort,
+    recommended,
+    intelligenceSource,
+  );
   const items = result.data.items;
 
   if (items.length === 0) {
@@ -1369,10 +1394,10 @@ ${BOLD}Usage:${RESET}
   decantr migrate
   decantr check
   decantr sync-drift
-  decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--recommended]
+  decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr suggest <query> [--type <type>]
   decantr get <type> <id>
-  decantr list <type> [--sort <recommended|recent|name>] [--recommended]
+  decantr list <type> [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr showcase [manifest|shortlist|verification] [--json]
   decantr validate [path]
   decantr theme <subcommand>
@@ -1584,7 +1609,7 @@ async function main() {
     case 'search': {
       const query = args[1];
       if (!query) {
-        console.error(error('Usage: decantr search <query> [--type <type>] [--sort <recommended|recent|name>]'));
+        console.error(error('Usage: decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]'));
         process.exitCode = 1;
         return;
       }
@@ -1592,8 +1617,15 @@ async function main() {
       const type = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
       const sortIdx = args.indexOf('--sort');
       const sort = sortIdx !== -1 ? args[sortIdx + 1] : undefined;
+      const sourceIdx = args.indexOf('--source');
+      const intelligenceSource = sourceIdx !== -1 ? args[sourceIdx + 1] : undefined;
+      if (intelligenceSource && !isContentIntelligenceSource(intelligenceSource)) {
+        console.error(error(`Invalid source "${intelligenceSource}". Must be one of: authored, benchmark, hybrid.`));
+        process.exitCode = 1;
+        return;
+      }
       const recommended = args.includes('--recommended');
-      await cmdSearch(query, type, sort, recommended);
+      await cmdSearch(query, type, sort, recommended, intelligenceSource);
       break;
     }
 
@@ -1625,14 +1657,21 @@ async function main() {
     case 'list': {
       const type = args[1];
       if (!type) {
-        console.error(error('Usage: decantr list <type> [--sort <recommended|recent|name>]'));
+        console.error(error('Usage: decantr list <type> [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]'));
         process.exitCode = 1;
         return;
       }
       const sortIdx = args.indexOf('--sort');
       const sort = sortIdx !== -1 ? args[sortIdx + 1] : undefined;
+      const sourceIdx = args.indexOf('--source');
+      const intelligenceSource = sourceIdx !== -1 ? args[sourceIdx + 1] : undefined;
+      if (intelligenceSource && !isContentIntelligenceSource(intelligenceSource)) {
+        console.error(error(`Invalid source "${intelligenceSource}". Must be one of: authored, benchmark, hybrid.`));
+        process.exitCode = 1;
+        return;
+      }
       const recommended = args.includes('--recommended');
-      await cmdList(type, sort, recommended);
+      await cmdList(type, sort, recommended, intelligenceSource);
       break;
     }
 

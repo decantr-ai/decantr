@@ -1,4 +1,8 @@
 import { Hono } from 'hono';
+import {
+  isContentIntelligenceSource,
+  type ContentIntelligenceSource,
+} from '@decantr/registry';
 import type { Env } from '../types.js';
 import { PLURAL_TO_SINGULAR, isApiContentType, isContentType, parsePagination } from '../types.js';
 import type { ContentType } from '../types.js';
@@ -15,11 +19,21 @@ searchRoutes.get('/search', async (c) => {
   const namespace = c.req.query('namespace');
   const sort = c.req.query('sort') ?? undefined;
   const recommendedOnly = c.req.query('recommended') === 'true';
+  const rawIntelligenceSource = c.req.query('intelligence_source');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
 
   if (!query) {
     return c.json({ error: 'Query parameter "q" is required' }, 400);
   }
+
+  if (rawIntelligenceSource && !isContentIntelligenceSource(rawIntelligenceSource)) {
+    return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
+  }
+
+  const intelligenceSource: ContentIntelligenceSource | undefined =
+    rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
+      ? rawIntelligenceSource
+      : undefined;
 
   // Map plural type filter to singular
   let singularType: ContentType | null = null;
@@ -35,7 +49,8 @@ searchRoutes.get('/search', async (c) => {
   }
 
   const client = createAdminClient();
-  const requestedCount = recommendedOnly ? 500 : Math.min(limit + offset, 500);
+  const requestedCount =
+    recommendedOnly || intelligenceSource ? 500 : Math.min(limit + offset, 500);
 
   const { data, error } = await client.rpc('search_content', {
     search_query: query,
@@ -74,14 +89,13 @@ searchRoutes.get('/search', async (c) => {
     mappedResults,
     sort,
     recommendedOnly,
+    intelligenceSource,
     limit,
     offset,
   );
 
   return c.json({
-    total: recommendedOnly
-      ? mappedResults.filter((item) => item.intelligence?.recommended).length
-      : total,
+    total: recommendedOnly || intelligenceSource ? ordered.filteredTotal : total,
       limit,
       offset,
       results: ordered.items,

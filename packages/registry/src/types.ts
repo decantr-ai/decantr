@@ -359,7 +359,17 @@ export type ContentBenchmarkConfidence = 'none' | 'low' | 'medium' | 'high';
 
 export type ContentGoldenUsage = 'none' | 'showcase' | 'shortlisted';
 
+export const CONTENT_INTELLIGENCE_SOURCES = [
+  'authored',
+  'benchmark',
+  'hybrid',
+] as const;
+
 export type ContentIntelligenceSource = 'authored' | 'benchmark' | 'hybrid';
+
+export function isContentIntelligenceSource(value: string): value is ContentIntelligenceSource {
+  return CONTENT_INTELLIGENCE_SOURCES.includes(value as ContentIntelligenceSource);
+}
 
 export interface ContentIntelligenceMetadata {
   source: ContentIntelligenceSource;
@@ -454,6 +464,7 @@ export interface SearchParams {
   namespace?: string;
   sort?: string;
   recommended?: boolean;
+  intelligenceSource?: ContentIntelligenceSource;
   limit?: number;
   offset?: number;
 }

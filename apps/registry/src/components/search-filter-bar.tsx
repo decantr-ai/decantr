@@ -1,6 +1,11 @@
 'use client';
 
-import { normalizePublicContentSort } from '@decantr/registry/client';
+import {
+  CONTENT_INTELLIGENCE_SOURCES,
+  isContentIntelligenceSource,
+  normalizePublicContentSort,
+  type ContentIntelligenceSource,
+} from '@decantr/registry/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 import {
@@ -83,6 +88,12 @@ const SORT_OPTIONS = [
   { value: 'name', label: 'Name A-Z' },
 ] as const;
 
+const INTELLIGENCE_SOURCE_LABELS: Record<ContentIntelligenceSource, string> = {
+  authored: 'Authored',
+  benchmark: 'Benchmark',
+  hybrid: 'Hybrid',
+};
+
 interface SearchFilterBarProps {
   baseUrl?: string;
   showSort?: boolean;
@@ -105,6 +116,10 @@ export function SearchFilterBar({
   const currentQuery = searchParams.get('q') ?? '';
   const currentSort = normalizePublicContentSort(searchParams.get('sort'));
   const recommendedOnly = searchParams.get('recommended') === 'true';
+  const currentIntelligenceSource = (() => {
+    const rawValue = searchParams.get('intelligence_source');
+    return rawValue && isContentIntelligenceSource(rawValue) ? rawValue : '';
+  })();
 
   const [query, setQuery] = useState(currentQuery);
   const activeLabel =
@@ -156,6 +171,10 @@ export function SearchFilterBar({
 
   function handleRecommendedToggle() {
     navigate({ recommended: recommendedOnly ? '' : 'true' });
+  }
+
+  function handleIntelligenceSourceChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    navigate({ intelligence_source: e.target.value });
   }
 
   return (
@@ -247,6 +266,27 @@ export function SearchFilterBar({
               Recommended only
             </button>
           )}
+          <div className="flex items-center gap-2">
+            <span
+              className="text-sm whitespace-nowrap"
+              style={{ color: 'var(--d-text-muted)' }}
+            >
+              Intelligence
+            </span>
+            <select
+              value={currentIntelligenceSource}
+              onChange={handleIntelligenceSourceChange}
+              className="d-control"
+              style={{ minWidth: '9rem' }}
+            >
+              <option value="">All sources</option>
+              {CONTENT_INTELLIGENCE_SOURCES.map((source) => (
+                <option key={source} value={source}>
+                  {INTELLIGENCE_SOURCE_LABELS[source]}
+                </option>
+              ))}
+            </select>
+          </div>
           {showSort && (
             <div className="flex items-center gap-2">
               <span

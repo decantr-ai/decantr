@@ -3,8 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
-import { resolvePatternPreset } from '@decantr/registry';
+import { isContentIntelligenceSource, resolvePatternPreset } from '@decantr/registry';
 import type {
+  ContentIntelligenceSource,
   Pattern,
   ArchetypeRole,
   ComposeEntry,
@@ -226,6 +227,7 @@ export const TOOLS = [
         type: { type: 'string', description: 'Filter by type: pattern, archetype, theme, shell' },
         sort: { type: 'string', description: 'Optional sort: recommended, recent, or name.' },
         recommended: { type: 'boolean', description: 'When true, only return recommended items.' },
+        source: { type: 'string', description: 'Optional intelligence source filter: authored, benchmark, or hybrid.' },
       },
       required: ['query'],
     },
@@ -549,12 +551,16 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
     case 'decantr_search_registry': {
       const err = validateStringArg(args, 'query');
       if (err) return { error: err };
+      if (args.source && (typeof args.source !== 'string' || !isContentIntelligenceSource(args.source))) {
+        return { error: 'Invalid source. Must be one of: authored, benchmark, hybrid.' };
+      }
       try {
         const response = await apiClient.search({
           q: args.query as string,
           type: args.type as string | undefined,
           sort: args.sort as string | undefined,
           recommended: args.recommended === true,
+          intelligenceSource: args.source as ContentIntelligenceSource | undefined,
         });
         return {
           total: response.total,

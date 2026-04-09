@@ -161,7 +161,14 @@ export class RegistryAPIClient {
 
   async listContent<T = Record<string, unknown>>(
     type: ApiContentType,
-    params?: { namespace?: string; sort?: string; recommended?: boolean; limit?: number; offset?: number }
+    params?: {
+      namespace?: string;
+      sort?: string;
+      recommended?: boolean;
+      intelligenceSource?: SearchParams['intelligenceSource'];
+      limit?: number;
+      offset?: number;
+    }
   ): Promise<ContentListResponse<T>> {
     const cacheKey = `list:${type}:${JSON.stringify(params ?? {})}`;
     const cached = this.getCached<ContentListResponse<T>>(cacheKey);
@@ -171,6 +178,7 @@ export class RegistryAPIClient {
     if (params?.namespace) searchParams.set('namespace', params.namespace);
     if (params?.sort) searchParams.set('sort', params.sort);
     if (params?.recommended) searchParams.set('recommended', 'true');
+    if (params?.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
     if (params?.limit) searchParams.set('limit', String(params.limit));
     if (params?.offset) searchParams.set('offset', String(params.offset));
 
@@ -241,6 +249,7 @@ export class RegistryAPIClient {
     if (params.namespace) searchParams.set('namespace', params.namespace);
     if (params.sort) searchParams.set('sort', params.sort);
     if (params.recommended) searchParams.set('recommended', 'true');
+    if (params.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
     if (params.limit) searchParams.set('limit', String(params.limit));
     if (params.offset) searchParams.set('offset', String(params.offset));
 
@@ -259,7 +268,14 @@ export class RegistryAPIClient {
 
   async getPublicUserContent(
     username: string,
-    params?: { type?: string; sort?: string; recommended?: boolean; limit?: number; offset?: number },
+    params?: {
+      type?: string;
+      sort?: string;
+      recommended?: boolean;
+      intelligenceSource?: SearchParams['intelligenceSource'];
+      limit?: number;
+      offset?: number;
+    },
   ): Promise<ContentListResponse<PublicContentSummary>> {
     const cacheKey = `public-user-content:${username}:${JSON.stringify(params ?? {})}`;
     const cached = this.getCached<ContentListResponse<PublicContentSummary>>(cacheKey);
@@ -269,6 +285,7 @@ export class RegistryAPIClient {
     if (params?.type) searchParams.set('type', params.type);
     if (params?.sort) searchParams.set('sort', params.sort);
     if (params?.recommended) searchParams.set('recommended', 'true');
+    if (params?.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
     if (params?.limit != null) searchParams.set('limit', String(params.limit));
     if (params?.offset != null) searchParams.set('offset', String(params.offset));
 

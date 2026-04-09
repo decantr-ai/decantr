@@ -121,6 +121,7 @@ describe('MCP tool handlers', () => {
         query: 'portfolio',
         sort: 'name',
         recommended: true,
+        source: 'hybrid',
       }) as {
         total: number;
         results: Array<{ intelligence?: { recommended?: boolean; quality_score?: number } | null }>;
@@ -135,6 +136,10 @@ describe('MCP tool handlers', () => {
       );
       expect(fetchSpy).toHaveBeenCalledWith(
         expect.stringMatching(/recommended=true/),
+        expect.anything(),
+      );
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/intelligence_source=hybrid/),
         expect.anything(),
       );
     });

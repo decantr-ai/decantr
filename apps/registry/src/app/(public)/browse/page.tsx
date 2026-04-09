@@ -1,4 +1,8 @@
 import { Suspense } from 'react';
+import {
+  isContentIntelligenceSource,
+  type ContentIntelligenceSource,
+} from '@decantr/registry/client';
 import { listContent, searchContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
@@ -26,6 +30,7 @@ interface BrowsePageProps {
     namespace?: string;
     sort?: string;
     recommended?: string;
+    intelligence_source?: string;
     offset?: string;
   }>;
 }
@@ -40,6 +45,10 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const namespace = params.namespace;
   const sort = normalizePublicContentSort(params.sort);
   const recommended = params.recommended === 'true';
+  const intelligenceSource: ContentIntelligenceSource | undefined =
+    params.intelligence_source && isContentIntelligenceSource(params.intelligence_source)
+      ? params.intelligence_source
+      : undefined;
   const offset = parseInt(params.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -52,6 +61,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         namespace: namespace || undefined,
         sort,
         recommended,
+        intelligenceSource,
         limit: LIMIT,
         offset,
       });
@@ -62,6 +72,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         namespace: namespace || undefined,
         sort,
         recommended,
+        intelligenceSource,
         limit: LIMIT,
         offset,
       });
@@ -75,6 +86,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
             namespace: namespace || undefined,
             sort,
             recommended,
+            intelligenceSource,
             limit: requestedCount,
             offset: 0,
           })

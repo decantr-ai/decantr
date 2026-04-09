@@ -198,16 +198,16 @@ describe('registry commands (e2e)', () => {
       DECANTR_API_KEY: '',
     };
 
-    await runCliAsync(testDir, 'search portfolio --sort name --type blueprints --recommended', env);
-    await runCliAsync(testDir, 'list blueprints --sort recent --recommended', env);
+    await runCliAsync(testDir, 'search portfolio --sort name --type blueprints --recommended --source hybrid', env);
+    await runCliAsync(testDir, 'list blueprints --sort recent --recommended --source authored', env);
 
     await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
 
     expect(
-      requests.some((url) => url.includes('/v1/search') && url.includes('sort=name') && url.includes('recommended=true')),
+      requests.some((url) => url.includes('/v1/search') && url.includes('sort=name') && url.includes('recommended=true') && url.includes('intelligence_source=hybrid')),
     ).toBe(true);
     expect(
-      requests.some((url) => url.includes('/v1/blueprints') && url.includes('sort=recent') && url.includes('recommended=true')),
+      requests.some((url) => url.includes('/v1/blueprints') && url.includes('sort=recent') && url.includes('recommended=true') && url.includes('intelligence_source=authored')),
     ).toBe(true);
   });
 });

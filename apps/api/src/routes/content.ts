@@ -1,4 +1,8 @@
 import { Hono } from 'hono';
+import {
+  isContentIntelligenceSource,
+  type ContentIntelligenceSource,
+} from '@decantr/registry';
 import type { Env } from '../types.js';
 import { API_CONTENT_TYPES, PLURAL_TO_SINGULAR, isApiContentType, parsePagination } from '../types.js';
 import { createAdminClient } from '../db/client.js';
@@ -87,7 +91,17 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
     const namespace = c.req.query('namespace');
     const sort = c.req.query('sort') ?? undefined;
     const recommendedOnly = c.req.query('recommended') === 'true';
+    const rawIntelligenceSource = c.req.query('intelligence_source');
     const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+
+    if (rawIntelligenceSource && !isContentIntelligenceSource(rawIntelligenceSource)) {
+      return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
+    }
+
+    const intelligenceSource: ContentIntelligenceSource | undefined =
+      rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
+        ? rawIntelligenceSource
+        : undefined;
 
     const client = createAdminClient();
 
@@ -131,11 +145,16 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
         ),
       };
     });
-    const ordered = applyPublicContentOrdering(mappedItems, sort, recommendedOnly, limit, offset);
+    const ordered = applyPublicContentOrdering(
+      mappedItems,
+      sort,
+      recommendedOnly,
+      intelligenceSource,
+      limit,
+      offset,
+    );
     return c.json({
-      total: recommendedOnly
-        ? mappedItems.filter((item) => item.intelligence?.recommended).length
-        : (count ?? 0),
+      total: recommendedOnly || intelligenceSource ? ordered.filteredTotal : (count ?? 0),
       limit,
       offset,
       items: ordered.items,

@@ -165,6 +165,7 @@ export class RegistryClient {
     namespace?: string,
     sort?: string,
     recommended?: boolean,
+    intelligenceSource?: string,
   ): Promise<FetchResult<{ items: RegistryContentMap[T][]; total: number }>> {
     let apiItems: RegistryContentMap[T][] = [];
     let source: RegistrySource = { type: 'cache' };
@@ -176,6 +177,7 @@ export class RegistryClient {
           namespace,
           sort,
           recommended,
+          intelligenceSource,
         });
         apiItems = apiResult.items;
         source = { type: 'api', url: this.apiUrl };

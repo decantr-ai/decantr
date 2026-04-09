@@ -1,4 +1,8 @@
 import { Hono } from 'hono';
+import {
+  isContentIntelligenceSource,
+  type ContentIntelligenceSource,
+} from '@decantr/registry';
 import type { Env } from '../types.js';
 import { parsePagination } from '../types.js';
 import { CONTENT_TYPES } from '../types.js';
@@ -66,13 +70,22 @@ userRoutes.get('/users/:username/content', async (c) => {
   const rawTypeFilter = c.req.query('type');
   const sort = c.req.query('sort') ?? undefined;
   const recommendedOnly = c.req.query('recommended') === 'true';
+  const rawIntelligenceSource = c.req.query('intelligence_source');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
 
   if (rawTypeFilter && !CONTENT_TYPES.includes(rawTypeFilter as ContentType)) {
     return c.json({ error: `Invalid type filter: ${rawTypeFilter}` }, 400);
   }
 
+  if (rawIntelligenceSource && !isContentIntelligenceSource(rawIntelligenceSource)) {
+    return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
+  }
+
   const typeFilter = rawTypeFilter as ContentType | undefined;
+  const intelligenceSource: ContentIntelligenceSource | undefined =
+    rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
+      ? rawIntelligenceSource
+      : undefined;
 
   const client = createAdminClient();
 
@@ -128,14 +141,13 @@ userRoutes.get('/users/:username/content', async (c) => {
     mappedItems,
     sort,
     recommendedOnly,
+    intelligenceSource,
     limit,
     offset,
   );
 
   return c.json({
-    total: recommendedOnly
-      ? mappedItems.filter((item) => item.intelligence?.recommended).length
-      : (count ?? 0),
+    total: recommendedOnly || intelligenceSource ? ordered.filteredTotal : (count ?? 0),
     limit,
     offset,
     items: ordered.items,

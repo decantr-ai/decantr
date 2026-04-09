@@ -1,4 +1,8 @@
 import { Suspense } from 'react';
+import {
+  isContentIntelligenceSource,
+  type ContentIntelligenceSource,
+} from '@decantr/registry/client';
 import { notFound } from 'next/navigation';
 import { listContent, searchContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
@@ -23,6 +27,7 @@ interface BrowseTypePageProps {
     namespace?: string;
     sort?: string;
     recommended?: string;
+    intelligence_source?: string;
     offset?: string;
   }>;
 }
@@ -39,6 +44,10 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
   const namespace = sp.namespace;
   const sort = normalizePublicContentSort(sp.sort);
   const recommended = sp.recommended === 'true';
+  const intelligenceSource: ContentIntelligenceSource | undefined =
+    sp.intelligence_source && isContentIntelligenceSource(sp.intelligence_source)
+      ? sp.intelligence_source
+      : undefined;
   const offset = parseInt(sp.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -51,6 +60,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
         namespace: namespace || undefined,
         sort,
         recommended,
+        intelligenceSource,
         limit: LIMIT,
         offset,
       });
@@ -61,6 +71,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
         namespace: namespace || undefined,
         sort,
         recommended,
+        intelligenceSource,
         limit: LIMIT,
         offset,
       });
