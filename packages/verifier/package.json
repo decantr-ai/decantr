@@ -1,0 +1,34 @@
+{
+  "name": "@decantr/verifier",
+  "version": "1.0.0-beta.1",
+  "description": "Shared verification and critique engine for Decantr",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/decantr-ai/decantr.git",
+    "directory": "packages/verifier"
+  },
+  "homepage": "https://decantr.ai",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@decantr/core": "workspace:*",
+    "@decantr/essence-spec": "workspace:*"
+  }
+}

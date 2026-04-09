@@ -30,6 +30,7 @@
   "dependencies": {
     "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
-    "@decantr/registry": "workspace:*"
+    "@decantr/registry": "workspace:*",
+    "@decantr/verifier": "workspace:*"
   }
 }

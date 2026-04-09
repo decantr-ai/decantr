@@ -47,6 +47,13 @@ import {
   validateCustomTheme
 } from './theme-commands.js';
 import { saveCredentials, clearCredentials, getCredentials } from './auth.js';
+import {
+  auditProject,
+  critiqueFile as critiqueProjectFile,
+  type FileCritiqueReport,
+  type ProjectAuditReport,
+  type VerificationFinding,
+} from '@decantr/verifier';
 import { cmdPublish } from './commands/publish.js';
 import { cmdCreate } from './commands/create.js';
 import { cmdMigrate } from './commands/migrate.js';
@@ -937,59 +944,94 @@ async function cmdSync() {
 
 // ── Audit command ──
 
-async function cmdAudit() {
-  const projectRoot = process.cwd();
-  const essencePath = join(projectRoot, 'decantr.essence.json');
-
-  console.log(heading('Auditing project...'));
-
-  if (!existsSync(essencePath)) {
-    console.log(`${RED}No decantr.essence.json found.${RESET}`);
-    process.exitCode = 1;
+function printVerificationFindings(findings: VerificationFinding[]) {
+  if (findings.length === 0) {
+    console.log(success('No findings.'));
     return;
   }
 
-  try {
-    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
+  for (const finding of findings) {
+    const color = finding.severity === 'error'
+      ? RED
+      : finding.severity === 'warn'
+        ? YELLOW
+        : CYAN;
+    console.log(`  ${color}[${finding.severity.toUpperCase()}]${RESET} ${finding.category}: ${finding.message}`);
+    for (const evidence of finding.evidence) {
+      console.log(`    ${DIM}${evidence}${RESET}`);
+    }
+    if (finding.suggestedFix) {
+      console.log(`    ${DIM}Fix: ${finding.suggestedFix}${RESET}`);
+    }
+  }
+}
 
-    // Validate essence
-    const validation = validateEssence(essence);
-    if (!validation.valid) {
-      console.log(`${RED}Essence validation failed:${RESET}`);
-      for (const err of validation.errors) {
-        console.log(`  ${RED}${err}${RESET}`);
+function printProjectAuditReport(report: ProjectAuditReport) {
+  if (report.valid) {
+    console.log(success('Project contract is valid.'));
+  } else {
+    console.log(`${RED}Project audit found blocking issues.${RESET}`);
+  }
+
+  console.log('');
+  console.log(`${BOLD}Summary:${RESET}`);
+  console.log(`  Essence version: ${report.summary.essenceVersion ?? 'missing'}`);
+  console.log(`  Pages defined: ${report.summary.pageCount}`);
+  console.log(`  Pack manifest: ${report.summary.packManifestPresent ? 'present' : 'missing'}`);
+  console.log(`  Review pack: ${report.summary.reviewPackPresent ? 'present' : 'missing'}`);
+  console.log(`  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`);
+
+  console.log('');
+  console.log(`${BOLD}Findings:${RESET}`);
+  printVerificationFindings(report.findings);
+}
+
+function printFileCritiqueReport(report: FileCritiqueReport) {
+  console.log(success(`Critiqued ${report.file}`));
+  console.log('');
+  console.log(`${BOLD}Summary:${RESET}`);
+  console.log(`  Overall score: ${report.overall}/5`);
+  console.log(`  Focus areas: ${report.focusAreas.join(', ')}`);
+  console.log(`  Review pack: ${report.reviewPack ? 'present' : 'missing'}`);
+
+  console.log('');
+  console.log(`${BOLD}Scores:${RESET}`);
+  for (const score of report.scores) {
+    console.log(`  ${cyan(score.category.padEnd(20))} ${score.score}/5  ${dim(score.details)}`);
+  }
+
+  console.log('');
+  console.log(`${BOLD}Findings:${RESET}`);
+  printVerificationFindings(report.findings);
+}
+
+async function cmdAudit(filePath?: string) {
+  const projectRoot = process.cwd();
+
+  try {
+    if (filePath) {
+      console.log(heading(`Critiquing ${filePath}...`));
+      const report = await critiqueProjectFile(filePath, projectRoot);
+      printFileCritiqueReport(report);
+      if (report.findings.some(finding => finding.severity === 'error')) {
+        process.exitCode = 1;
       }
+      return;
+    }
+
+    console.log(heading('Auditing project...'));
+    const report = await auditProject(projectRoot);
+    printProjectAuditReport(report);
+
+    if (!report.valid) {
       process.exitCode = 1;
       return;
     }
 
-    console.log(success('Essence is valid.'));
-
-    // Build registry context for guard validation
-    const { themeRegistry, patternRegistry } = buildRegistryContext();
-    const violations = evaluateGuard(essence, { themeRegistry, patternRegistry });
-    if (violations.length > 0) {
+    if (report.findings.length > 0) {
       console.log('');
-      console.log(`${YELLOW}Guard violations:${RESET}`);
-      for (const v of violations) {
-        const vr = v as Record<string, string>;
-        console.log(`  ${YELLOW}[${vr.rule}]${RESET} ${vr.message}`);
-        if (vr.suggestion) {
-          console.log(`    ${DIM}Suggestion: ${vr.suggestion}${RESET}`);
-        }
-      }
-    } else {
-      console.log(success('No guard violations.'));
+      console.log(dim('Project audit completed with advisory findings.'));
     }
-
-    // Summary
-    console.log('');
-    console.log(`${BOLD}Summary:${RESET}`);
-    console.log(`  Pages defined: ${(essence.structure as Array<unknown>).length}`);
-    console.log(`  Guard mode: ${(essence.guard as Record<string, string>).mode}`);
-    const theme = essence.theme as Record<string, string>;
-    console.log(`  Theme: ${theme.id ?? ''}`);
-
   } catch (e) {
     console.log(`${RED}Error: ${(e as Error).message}${RESET}`);
     process.exitCode = 1;
@@ -1159,7 +1201,7 @@ ${BOLD}Usage:${RESET}
   decantr init [options]
   decantr status
   decantr sync
-  decantr audit
+  decantr audit [file]
   decantr migrate
   decantr check
   decantr sync-drift
@@ -1196,7 +1238,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('init')}        Initialize Decantr in an existing project (v3 essence by default)
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
   ${cyan('sync')}        Sync registry content from API
-  ${cyan('audit')}       Validate essence and check for drift
+  ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
   ${cyan('migrate')}     Migrate v2 essence to v3 format (with .v2.backup.json backup)
   ${cyan('check')}       Detect drift issues (validate + guard rules) [--telemetry]
   ${cyan('sync-drift')}  Review and resolve drift log entries
@@ -1222,6 +1264,8 @@ ${BOLD}Examples:${RESET}
   decantr init
   decantr init --blueprint=saas-dashboard --theme=luminarum --yes
   decantr status
+  decantr audit
+  decantr audit src/pages/HomePage.tsx
   decantr migrate
   decantr check
   decantr sync-drift
@@ -1365,7 +1409,7 @@ async function main() {
     }
 
     case 'audit': {
-      await cmdAudit();
+      await cmdAudit(args[1]);
       break;
     }
 

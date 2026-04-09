@@ -3,7 +3,7 @@
   "private": true,
   "description": "Design intelligence layer for AI-generated web applications",
   "scripts": {
-    "build:packages": "pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/css run build && pnpm --filter @decantr/core --filter @decantr/mcp-server --filter @decantr/cli --filter @decantr/vite-plugin run build",
+    "build:packages": "pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/css run build && pnpm --filter @decantr/core --filter @decantr/verifier --filter @decantr/mcp-server --filter @decantr/cli --filter @decantr/vite-plugin run build",
     "build:apps": "pnpm --filter './apps/api' --filter './apps/registry' run build",
     "build": "pnpm run build:packages && pnpm run build:apps",
     "test": "vitest run",
