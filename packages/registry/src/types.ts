@@ -343,6 +343,8 @@ export interface Theme {
 export interface ContentListResponse<T = Record<string, unknown>> {
   items: T[];
   total: number;
+  limit?: number;
+  offset?: number;
 }
 
 export type ContentVerificationStatus =
@@ -454,6 +456,8 @@ export interface SearchParams {
 export interface SearchResponse {
   results: PublicContentSummary[];
   total: number;
+  limit?: number;
+  offset?: number;
 }
 
 export interface UserProfile {

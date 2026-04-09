@@ -1,10 +1,15 @@
 import type { ContentType } from '../types.js';
 import commonSchema from '@decantr/registry/schema/common.v1.json';
+import contentIntelligenceSchema from '@decantr/registry/schema/content-intelligence.v1.json';
 import patternSchema from '@decantr/registry/schema/pattern.v2.json';
 import themeSchema from '@decantr/registry/schema/theme.v1.json';
 import blueprintSchema from '@decantr/registry/schema/blueprint.v1.json';
 import archetypeSchema from '@decantr/registry/schema/archetype.v2.json';
 import shellSchema from '@decantr/registry/schema/shell.v1.json';
+import publicContentSummarySchema from '@decantr/registry/schema/public-content-summary.v1.json';
+import publicContentRecordSchema from '@decantr/registry/schema/public-content-record.v1.json';
+import publicContentListSchema from '@decantr/registry/schema/public-content-list.v1.json';
+import searchResponseSchema from '@decantr/registry/schema/search-response.v1.json';
 import essenceV2Schema from '@decantr/essence-spec/schema/essence.v2.json';
 import essenceV3Schema from '@decantr/essence-spec/schema/essence.v3.json';
 import executionPackCommonSchema from '@decantr/core/schema/execution-pack.common.v1.json';
@@ -41,11 +46,16 @@ export const REGISTRY_SCHEMAS: Record<ContentType, JsonSchema> = {
 
 export const PUBLIC_SCHEMAS: Record<string, JsonSchema> = {
   'common.v1.json': COMMON_SCHEMA,
+  'content-intelligence.v1.json': contentIntelligenceSchema as JsonSchema,
   'pattern.v2.json': REGISTRY_SCHEMAS.pattern,
   'theme.v1.json': REGISTRY_SCHEMAS.theme,
   'blueprint.v1.json': REGISTRY_SCHEMAS.blueprint,
   'archetype.v2.json': REGISTRY_SCHEMAS.archetype,
   'shell.v1.json': REGISTRY_SCHEMAS.shell,
+  'public-content-summary.v1.json': publicContentSummarySchema as JsonSchema,
+  'public-content-record.v1.json': publicContentRecordSchema as JsonSchema,
+  'public-content-list.v1.json': publicContentListSchema as JsonSchema,
+  'search-response.v1.json': searchResponseSchema as JsonSchema,
   'essence.v2.json': essenceV2Schema as JsonSchema,
   'essence.v3.json': essenceV3Schema as JsonSchema,
   'execution-pack.common.v1.json': executionPackCommonSchema as JsonSchema,

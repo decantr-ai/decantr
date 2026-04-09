@@ -26,11 +26,16 @@
       "types": "./dist/content-types.d.ts"
     },
     "./schema/common.v1.json": "./schema/common.v1.json",
+    "./schema/content-intelligence.v1.json": "./schema/content-intelligence.v1.json",
     "./schema/pattern.v2.json": "./schema/pattern.v2.json",
     "./schema/theme.v1.json": "./schema/theme.v1.json",
     "./schema/blueprint.v1.json": "./schema/blueprint.v1.json",
     "./schema/archetype.v2.json": "./schema/archetype.v2.json",
-    "./schema/shell.v1.json": "./schema/shell.v1.json"
+    "./schema/shell.v1.json": "./schema/shell.v1.json",
+    "./schema/public-content-summary.v1.json": "./schema/public-content-summary.v1.json",
+    "./schema/public-content-record.v1.json": "./schema/public-content-record.v1.json",
+    "./schema/public-content-list.v1.json": "./schema/public-content-list.v1.json",
+    "./schema/search-response.v1.json": "./schema/search-response.v1.json"
   },
   "files": ["dist", "schema"],
   "publishConfig": {

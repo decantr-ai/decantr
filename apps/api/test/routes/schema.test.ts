@@ -37,6 +37,15 @@ describe('GET /v1/schema/:name', () => {
     expect(json.$id).toBe('https://decantr.ai/schemas/showcase-shortlist-report.v1.json');
   });
 
+  it('serves public registry response schemas', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/schema/public-content-record.v1.json');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$id).toBe('https://decantr.ai/schemas/public-content-record.v1.json');
+  });
+
   it('returns 404 for unknown schemas', async () => {
     const app = createTestApp();
     const res = await app.request('/v1/schema/nope.json');
@@ -48,5 +57,6 @@ describe('GET /v1/schema/:name', () => {
     expect(json.available).toContain('scaffold-pack.v1.json');
     expect(json.available).toContain('project-audit-report.v1.json');
     expect(json.available).toContain('showcase-shortlist-report.v1.json');
+    expect(json.available).toContain('public-content-record.v1.json');
   });
 });

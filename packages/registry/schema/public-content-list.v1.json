@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/public-content-list.v1.json",
+  "title": "Decantr Public Content List Response",
+  "type": "object",
+  "required": [
+    "items",
+    "total"
+  ],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/public-content-summary.v1.json"
+      }
+    },
+    "total": {
+      "type": "number"
+    },
+    "limit": {
+      "type": "number"
+    },
+    "offset": {
+      "type": "number"
+    }
+  },
+  "additionalProperties": false
+}
