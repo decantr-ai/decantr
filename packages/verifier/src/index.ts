@@ -352,7 +352,9 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     securityRiskPatterns: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
+    skipNavTargetIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
+    mainLandmarkIds: [],
     authSessionSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
@@ -385,6 +387,16 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
+    for (const targetId of signals.skipNavTargetIds) {
+      if (!summary.skipNavTargetIds.includes(targetId)) {
+        summary.skipNavTargetIds.push(targetId);
+      }
+    }
+    for (const landmarkId of signals.mainLandmarkIds) {
+      if (!summary.mainLandmarkIds.includes(landmarkId)) {
+        summary.mainLandmarkIds.push(landmarkId);
+      }
+    }
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
@@ -512,7 +524,9 @@ interface SourceAuditSummary {
   securityRiskPatterns: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
+  skipNavTargetIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
+  mainLandmarkIds: string[];
   authSessionSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
@@ -1305,6 +1319,25 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    essenceRequiresSkipNav(essence)
+    && sourceAudit.skipNavTargetIds.length > 0
+    && !sourceAudit.skipNavTargetIds.some((targetId) => sourceAudit.mainLandmarkIds.includes(targetId))
+  ) {
+    findings.push(makeFinding({
+      id: 'source-skip-nav-target-mismatch',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Skip-link targets do not line up with any detected main landmark id in the source tree.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Skip-nav targets: ${sourceAudit.skipNavTargetIds.join(', ')}`,
+        `Main landmark ids: ${sourceAudit.mainLandmarkIds.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Point skip-link href values at the id of the primary `<main>` landmark, or add a matching id to the existing main region.',
+    }));
+  }
+
   if (sourceAudit.interactionSafetyIssues.count > 0) {
     findings.push(makeFinding({
       id: 'source-interaction-safety-issues-present',
@@ -1551,7 +1584,9 @@ interface AstCritiqueSignals {
   formControlWithoutLabelCount: number;
   placeholderNavigationTargetCount: number;
   skipNavSignalCount: number;
+  skipNavTargetIds: string[];
   mainLandmarkCount: number;
+  mainLandmarkIds: string[];
   emailAutocompleteMissingCount: number;
   passwordAutocompleteMissingCount: number;
   buttonInFormWithoutTypeCount: number;
@@ -1757,6 +1792,23 @@ function hasMainLandmarkSignal(attributes: ts.JsxAttributes, tagName: string | n
   return roleValue?.trim().toLowerCase() === 'main';
 }
 
+function getMainLandmarkId(attributes: ts.JsxAttributes, tagName: string | null): string | null {
+  if (!hasMainLandmarkSignal(attributes, tagName)) return null;
+
+  const idValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'id'));
+  return idValue?.trim() ? idValue.trim() : null;
+}
+
+function getSkipNavTargetId(attributes: ts.JsxAttributes, tagName: string | null): string | null {
+  if (tagName !== 'a') return null;
+
+  const hrefValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'href', 'to'));
+  if (!hrefValue?.startsWith('#')) return null;
+
+  const targetId = hrefValue.slice(1).trim();
+  return targetId.length > 0 ? targetId : null;
+}
+
 function isAuthStorageKeyLiteral(node: ts.Expression | undefined): boolean {
   if (!node) return false;
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
@@ -1870,7 +1922,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     formControlWithoutLabelCount: 0,
     placeholderNavigationTargetCount: 0,
     skipNavSignalCount: countSkipNavSignals(code),
+    skipNavTargetIds: [],
     mainLandmarkCount: 0,
+    mainLandmarkIds: [],
     emailAutocompleteMissingCount: 0,
     passwordAutocompleteMissingCount: 0,
     buttonInFormWithoutTypeCount: 0,
@@ -1999,6 +2053,14 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (hasMainLandmarkSignal(node.attributes, tagName)) {
         signals.mainLandmarkCount += 1;
       }
+      const mainLandmarkId = getMainLandmarkId(node.attributes, tagName);
+      if (mainLandmarkId && !signals.mainLandmarkIds.includes(mainLandmarkId)) {
+        signals.mainLandmarkIds.push(mainLandmarkId);
+      }
+      const skipNavTargetId = getSkipNavTargetId(node.attributes, tagName);
+      if (skipNavTargetId && !signals.skipNavTargetIds.includes(skipNavTargetId)) {
+        signals.skipNavTargetIds.push(skipNavTargetId);
+      }
       if (tagName === 'button' && hasAncestorJsxTag(node, 'form') && !getJsxAttribute(node.attributes, 'type')) {
         signals.buttonInFormWithoutTypeCount += 1;
       }
@@ -2043,6 +2105,14 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
       if (hasMainLandmarkSignal(node.openingElement.attributes, tagName)) {
         signals.mainLandmarkCount += 1;
+      }
+      const mainLandmarkId = getMainLandmarkId(node.openingElement.attributes, tagName);
+      if (mainLandmarkId && !signals.mainLandmarkIds.includes(mainLandmarkId)) {
+        signals.mainLandmarkIds.push(mainLandmarkId);
+      }
+      const skipNavTargetId = getSkipNavTargetId(node.openingElement.attributes, tagName);
+      if (skipNavTargetId && !signals.skipNavTargetIds.includes(skipNavTargetId)) {
+        signals.skipNavTargetIds.push(skipNavTargetId);
       }
       if (tagName === 'button' && hasAncestorJsxTag(node, 'form') && !getJsxAttribute(node.openingElement.attributes, 'type')) {
         signals.buttonInFormWithoutTypeCount += 1;

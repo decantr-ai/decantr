@@ -86,6 +86,7 @@ commit archaeology.
 - Project audit now also warns when source files reference auth/session state but do not show a loading or pending state on those same surfaces while session resolution happens.
 - Project audit now also checks Decantr accessibility contract intent directly, including warning when `dna.accessibility.skip_nav=true` but the source tree does not expose a skip-link signal.
 - Project audit now also warns when `dna.accessibility.skip_nav=true` but the source tree still lacks a concrete main landmark (`<main>` / `role="main"`) for skip-link targeting.
+- Project audit now also warns when detected skip-link targets do not match any main landmark id, so a nominal skip-nav link cannot silently point at the wrong surface.
 - Project audit now also checks Decantr accessibility style intent directly, including warning when `dna.accessibility.focus_visible=true` but the project CSS does not define a focus-visible treatment.
 - Source and file critique now also flag auth-like credentials written into client-managed cookies, not just localStorage/sessionStorage.
 - Project audit now also warns when auth is declared but the source tree does not show an obvious sign-out or session-exit path.
