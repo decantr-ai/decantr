@@ -1470,9 +1470,6 @@ importers:
       '@decantr/essence-spec':
         specifier: workspace:*
         version: link:../essence-spec
-      '@decantr/verifier':
-        specifier: workspace:*
-        version: link:../verifier
 
   packages/verifier:
     dependencies:
