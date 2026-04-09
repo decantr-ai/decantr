@@ -98,6 +98,12 @@ commit archaeology.
 - Added a hosted intelligence summary surface so rollout state can be checked without crawling the entire public corpus.
 - Added dry-run reporting for official-content sync/prune behavior.
 
+### Hosted rollout visibility
+
+- Added a lightweight public API smoke audit script: `pnpm audit:public-api`
+- Added a GitHub Actions workflow for scheduled/manual public API audit reporting.
+- Added a human-readable public API reference page under `docs/reference/`.
+
 ## Verification Baseline
 
 The reset branch has repeatedly been verified with:
@@ -121,6 +127,7 @@ Observed from live audits against `https://api.decantr.ai/v1`:
 - hosted `intelligence_source=authored|benchmark|hybrid` currently behaves like an unfiltered response
 - live `@official` registry content is still missing the new intelligence metadata on deployed surfaces
 - stale `workbench`-era content still appears in live registry results
+- the hosted `schema`, `showcase`, and `intelligence/summary` surfaces are still not consistently public on the deployed API
 
 These are rollout/deployment issues, not local branch correctness issues.
 

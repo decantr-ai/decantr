@@ -12,6 +12,7 @@
     "clean": "pnpm -r exec rm -rf dist",
     "mcp": "node packages/mcp-server/dist/index.js",
     "schemas:sync": "node scripts/sync-schema-copies.mjs",
+    "audit:public-api": "node scripts/audit-public-api.mjs",
     "showcase:build": "node scripts/build-showcases.mjs",
     "showcase:build:shortlist": "SHOWCASE_GOLDEN_ONLY=1 node scripts/build-showcases.mjs",
     "showcase:copy": "node scripts/copy-showcase-dist.mjs",
