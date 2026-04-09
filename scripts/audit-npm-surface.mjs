@@ -21,7 +21,10 @@ const findings = results.flatMap((result) => {
       return `${result.name} is missing its expected npm dist-tag "${tag}".`;
     }
     if (finding.startsWith('beta version on latest ')) {
-      return `${result.name} is ${result.maturity} but npm latest currently points to prerelease ${result.tags.latest}.`;
+      const suffix = result.stableFallbackVersion
+        ? ` Suggested stable fallback: ${result.stableFallbackVersion}.`
+        : ' No stable npm version is published yet.';
+      return `${result.name} is ${result.maturity} but npm latest currently points to prerelease ${result.tags.latest}.${suffix}`;
     }
     return `${result.name}: ${finding}`;
   });

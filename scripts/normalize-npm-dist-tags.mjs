@@ -25,7 +25,11 @@ for (const result of results) {
         summary: `remove ${action.tag} from ${result.name}`,
       });
     } else if (action.type === 'manual-latest-retag') {
-      manualActions.push(`${result.name}: decide what should replace npm latest currently pointing to ${action.version}`);
+      if (action.recommendedVersion) {
+        manualActions.push(`${result.name}: decide whether npm latest should move from ${action.version} to stable ${action.recommendedVersion}`);
+      } else {
+        manualActions.push(`${result.name}: npm latest points to ${action.version}, but no stable published version exists yet`);
+      }
     }
   }
 }

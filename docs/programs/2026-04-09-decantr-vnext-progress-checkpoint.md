@@ -263,6 +263,7 @@ commit archaeology.
 - Added `pnpm audit:package-surface` and wired it into CI.
 - Added executable release-readiness metadata and `pnpm audit:release-readiness` so beta-to-stable graduation stops living only in docs.
 - Added `pnpm release:plan` plus `scripts/release-plan.mjs` so package publish intent, beta blockers, and retired replacements can be generated as Markdown or JSON from the manifest source of truth.
+- Improved npm surface tooling so dist-tag audits and normalization now distinguish between packages that merely need missing `beta` tags and packages whose `latest` retag is blocked because no stable published version exists yet.
 - Replaced the hardcoded publish loop with a manifest-backed publish script.
 - Added explicit release-wave and publish-order metadata so package planning, dry-runs, and publishes can execute in a stable foundation-to-delivery order instead of hand-curated lists.
 - Added wave-aware release-plan and publish filtering so npm rehearsals can target a specific package wave instead of hand-picked package name lists.

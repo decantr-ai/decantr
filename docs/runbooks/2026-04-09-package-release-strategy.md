@@ -115,6 +115,7 @@ The normalization script is intentionally dry-run first. It can safely automate:
 - removing stray unexpected dist-tags
 
 It does not automatically retag `latest`; that remains a deliberate manual release-wave decision.
+The npm audit and normalization tooling now also report whether a stable fallback version actually exists when `latest` is still pointing at a beta. As of April 9, 2026, the affected beta packages do not have an older stable publish to fall back to, so the `latest` retag work is blocked on intentional stable releases rather than simple dist-tag cleanup.
 When run with `--write`, it now also performs an npm auth preflight so broken credentials fail fast before any dist-tag mutation attempt starts.
 
 ## Stable Graduation Rule
