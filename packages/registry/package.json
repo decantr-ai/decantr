@@ -17,6 +17,10 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./content-types": {
+      "import": "./dist/content-types.js",
+      "types": "./dist/content-types.d.ts"
+    },
     "./schema/common.v1.json": "./schema/common.v1.json",
     "./schema/pattern.v2.json": "./schema/pattern.v2.json",
     "./schema/theme.v1.json": "./schema/theme.v1.json",

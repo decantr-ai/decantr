@@ -1,23 +1,24 @@
 import { Hono } from 'hono';
 import type { Env } from '../types.js';
-import { PLURAL_TO_SINGULAR, parsePagination } from '../types.js';
+import { API_CONTENT_TYPES, PLURAL_TO_SINGULAR, isApiContentType, parsePagination } from '../types.js';
 import { createAdminClient } from '../db/client.js';
 import { validateEssence, isV3 } from '@decantr/essence-spec';
 import { logger } from '../lib/logger.js';
 
 export const contentRoutes = new Hono<Env>();
+const CONTENT_ROUTE_PATTERN = API_CONTENT_TYPES.join('|');
 
 // GET /v1/:type/:namespace/:slug - Get single item (must be before list route)
-contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}/:namespace/:slug', async (c) => {
+contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, async (c) => {
   try {
     const pluralType = c.req.param('type');
     const namespace = c.req.param('namespace');
     const slug = c.req.param('slug');
-    const singularType = PLURAL_TO_SINGULAR[pluralType];
 
-    if (!singularType) {
+    if (!isApiContentType(pluralType)) {
       return c.json({ error: `Unknown content type: ${pluralType}` }, 400);
     }
+    const singularType = PLURAL_TO_SINGULAR[pluralType];
 
     const client = createAdminClient();
 
@@ -58,14 +59,14 @@ contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}/:namespa
 });
 
 // GET /v1/:type - List content (e.g., /v1/patterns, /v1/themes)
-contentRoutes.get('/:type{patterns|themes|blueprints|archetypes|shells}', async (c) => {
+contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
   try {
   const pluralType = c.req.param('type');
-  const singularType = PLURAL_TO_SINGULAR[pluralType];
 
-  if (!singularType) {
+  if (!isApiContentType(pluralType)) {
     return c.json({ error: `Unknown content type: ${pluralType}` }, 400);
   }
+  const singularType = PLURAL_TO_SINGULAR[pluralType];
 
   const namespace = c.req.query('namespace');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));

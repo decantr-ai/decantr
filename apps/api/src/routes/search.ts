@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../types.js';
-import { parsePagination } from '../types.js';
+import { PLURAL_TO_SINGULAR, isApiContentType, isContentType, parsePagination } from '../types.js';
 import type { ContentType } from '../types.js';
 import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
@@ -20,14 +20,11 @@ searchRoutes.get('/search', async (c) => {
   // Map plural type filter to singular
   let singularType: ContentType | null = null;
   if (typeFilter) {
-    const typeMap: Record<string, ContentType> = {
-      patterns: 'pattern', pattern: 'pattern',
-      themes: 'theme', theme: 'theme',
-      blueprints: 'blueprint', blueprint: 'blueprint',
-      archetypes: 'archetype', archetype: 'archetype',
-      shells: 'shell', shell: 'shell',
-    };
-    singularType = typeMap[typeFilter] ?? null;
+    singularType = isApiContentType(typeFilter)
+      ? PLURAL_TO_SINGULAR[typeFilter]
+      : isContentType(typeFilter)
+        ? typeFilter
+        : null;
     if (typeFilter && !singularType) {
       return c.json({ error: `Invalid type filter: ${typeFilter}` }, 400);
     }

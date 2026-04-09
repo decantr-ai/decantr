@@ -3,7 +3,14 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateEssence, evaluateGuard, isV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
-import { RegistryAPIClient } from '@decantr/registry';
+import {
+  RegistryAPIClient,
+  CONTENT_TYPES as GET_CONTENT_TYPES,
+  API_CONTENT_TYPES as LIST_CONTENT_TYPES,
+  CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  isContentType as isGetContentType,
+  isApiContentType,
+} from '@decantr/registry';
 import type { ApiContentType, Blueprint as RegistryBlueprint, ComposeEntry } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
@@ -64,22 +71,12 @@ const RED = '\x1b[31m';
 const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
-const GET_CONTENT_TYPES = ['pattern', 'archetype', 'theme', 'blueprint', 'shell'] as const;
-const LIST_CONTENT_TYPES: readonly ApiContentType[] = ['patterns', 'archetypes', 'themes', 'blueprints', 'shells'];
 
 function heading(text: string): string { return `\n${BOLD}${text}${RESET}\n`; }
 function success(text: string): string { return `${GREEN}${text}${RESET}`; }
 function error(text: string): string { return `${RED}${text}${RESET}`; }
 function dim(text: string): string { return `${DIM}${text}${RESET}`; }
 function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
-
-function isGetContentType(value: string): value is typeof GET_CONTENT_TYPES[number] {
-  return (GET_CONTENT_TYPES as readonly string[]).includes(value);
-}
-
-function isApiContentType(value: string): value is ApiContentType {
-  return (LIST_CONTENT_TYPES as readonly string[]).includes(value);
-}
 
 interface PromptContext {
   archetype: string;
@@ -222,15 +219,7 @@ async function cmdGet(type: string, id: string) {
     return;
   }
 
-  // Map singular type names to API plural form
-  const typeMap: Record<string, string> = {
-    pattern: 'patterns',
-    archetype: 'archetypes',
-    theme: 'themes',
-    blueprint: 'blueprints',
-    shell: 'shells',
-  };
-  const apiType = typeMap[type] as ApiContentType;
+  const apiType = CONTENT_TYPE_TO_API_CONTENT_TYPE[type];
 
   const registryClient = new RegistryClient({
     cacheDir: join(process.cwd(), '.decantr', 'cache'),

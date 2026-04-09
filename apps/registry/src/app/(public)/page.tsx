@@ -24,13 +24,9 @@ async function FeaturedContent() {
 }
 
 async function RegistryStats() {
-  const counts: Record<RegistryContentType, number> = {
-    patterns: 0,
-    themes: 0,
-    blueprints: 0,
-    archetypes: 0,
-    shells: 0,
-  };
+  const counts = Object.fromEntries(
+    CONTENT_TYPES.map((type) => [type, 0])
+  ) as Record<RegistryContentType, number>;
 
   try {
     const results = await Promise.allSettled(

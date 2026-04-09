@@ -27,15 +27,11 @@ interface BrowseTypePageProps {
   }>;
 }
 
-function isValidType(type: string): type is RegistryContentType {
-  return CONTENT_TYPES.includes(type as RegistryContentType);
-}
-
 export default async function BrowseTypePage({ params, searchParams }: BrowseTypePageProps) {
   const { type } = await params;
   const sp = await searchParams;
 
-  if (!isValidType(type)) {
+  if (!isRegistryContentType(type)) {
     notFound();
   }
 

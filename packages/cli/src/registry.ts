@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { RegistryAPIClient } from '@decantr/registry';
+import { RegistryAPIClient, API_CONTENT_TYPES } from '@decantr/registry';
 import type { ApiContentType, Archetype, Blueprint, Pattern, Shell, Theme } from '@decantr/registry';
 
 type RegistryContentMap = {
@@ -29,7 +29,7 @@ const DEFAULT_API_URL = 'https://api.decantr.ai/v1';
 /**
  * Content types that support custom overrides in .decantr/custom/
  */
-const ALL_CONTENT_TYPES = ['themes', 'patterns', 'blueprints', 'archetypes', 'shells'] as const;
+const ALL_CONTENT_TYPES = API_CONTENT_TYPES;
 
 /**
  * Load data from cache at .decantr/cache/{namespace}/{type}/

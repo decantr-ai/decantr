@@ -19,6 +19,7 @@ import type {
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 import type { RegistryClient } from './registry.js';
+import { API_CONTENT_TYPES } from '@decantr/registry';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -1733,7 +1734,7 @@ export function scaffoldMinimal(projectRoot: string): ScaffoldResult {
   const customDir = join(decantrDir, 'custom');
 
   // Create .decantr/custom/ directories for all 6 content types
-  const contentTypes = ['patterns', 'themes', 'blueprints', 'archetypes', 'shells'];
+  const contentTypes = API_CONTENT_TYPES;
   for (const type of contentTypes) {
     mkdirSync(join(customDir, type), { recursive: true });
   }

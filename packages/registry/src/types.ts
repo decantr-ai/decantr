@@ -245,7 +245,49 @@ export interface Shell {
 }
 
 // --- Content Resolution ---
-export type ContentType = 'pattern' | 'archetype' | 'theme' | 'blueprint' | 'shell';
+export const CONTENT_TYPES = [
+  'pattern',
+  'theme',
+  'blueprint',
+  'archetype',
+  'shell',
+] as const;
+
+export type ContentType = (typeof CONTENT_TYPES)[number];
+
+export const API_CONTENT_TYPES = [
+  'patterns',
+  'themes',
+  'blueprints',
+  'archetypes',
+  'shells',
+] as const;
+
+export type ApiContentType = (typeof API_CONTENT_TYPES)[number];
+
+export const CONTENT_TYPE_TO_API_CONTENT_TYPE: Record<ContentType, ApiContentType> = {
+  pattern: 'patterns',
+  theme: 'themes',
+  blueprint: 'blueprints',
+  archetype: 'archetypes',
+  shell: 'shells',
+};
+
+export const API_CONTENT_TYPE_TO_CONTENT_TYPE: Record<ApiContentType, ContentType> = {
+  patterns: 'pattern',
+  themes: 'theme',
+  blueprints: 'blueprint',
+  archetypes: 'archetype',
+  shells: 'shell',
+};
+
+export function isContentType(value: string): value is ContentType {
+  return CONTENT_TYPES.includes(value as ContentType);
+}
+
+export function isApiContentType(value: string): value is ApiContentType {
+  return API_CONTENT_TYPES.includes(value as ApiContentType);
+}
 
 export interface ResolvedContent<T> {
   item: T;
@@ -297,8 +339,6 @@ export interface Theme {
 }
 
 // --- API Client Types ---
-
-export type ApiContentType = 'patterns' | 'themes' | 'blueprints' | 'archetypes' | 'shells';
 
 export interface ContentListResponse<T = Record<string, unknown>> {
   items: T[];

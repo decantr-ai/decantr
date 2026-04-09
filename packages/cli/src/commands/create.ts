@@ -1,16 +1,12 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import {
+  CONTENT_TYPES,
+  CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  type ContentType,
+} from '@decantr/registry';
 
-const CONTENT_TYPES = ['pattern', 'theme', 'blueprint', 'archetype', 'shell'] as const;
-type ContentType = typeof CONTENT_TYPES[number];
-
-const PLURAL: Record<string, string> = {
-  pattern: 'patterns',
-  theme: 'themes',
-  blueprint: 'blueprints',
-  archetype: 'archetypes',
-  shell: 'shells',
-};
+const PLURAL = CONTENT_TYPE_TO_API_CONTENT_TYPE;
 
 function getSkeleton(type: ContentType, id: string, name: string): Record<string, unknown> {
   const base = {
@@ -46,7 +42,8 @@ export function cmdCreate(
     return;
   }
 
-  const plural = PLURAL[type]!;
+  const contentType = type as ContentType;
+  const plural = PLURAL[contentType];
   const customDir = join(projectRoot, '.decantr', 'custom', plural);
   const filePath = join(customDir, `${name}.json`);
 
@@ -58,7 +55,7 @@ export function cmdCreate(
 
   mkdirSync(customDir, { recursive: true });
 
-  const skeleton = getSkeleton(type as ContentType, name, name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+  const skeleton = getSkeleton(contentType, name, name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
   writeFileSync(filePath, JSON.stringify(skeleton, null, 2));
 
   console.log(`Created ${type} "${name}" at ${filePath}`);

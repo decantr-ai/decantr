@@ -1,12 +1,9 @@
-export const CONTENT_TYPES = [
-  'patterns',
-  'themes',
-  'blueprints',
-  'archetypes',
-  'shells',
-] as const;
+import { API_CONTENT_TYPES, isApiContentType } from '@decantr/registry/content-types';
+import type { ApiContentType } from '@decantr/registry/content-types';
 
-export type RegistryContentType = (typeof CONTENT_TYPES)[number];
+export const CONTENT_TYPES = API_CONTENT_TYPES;
+
+export type RegistryContentType = ApiContentType;
 
 export const CONTENT_TYPE_LABELS: Record<RegistryContentType, string> = {
   patterns: 'Patterns',
@@ -25,5 +22,5 @@ export const CONTENT_TYPE_DESCRIPTIONS: Record<RegistryContentType, string> = {
 };
 
 export function isRegistryContentType(value: string): value is RegistryContentType {
-  return CONTENT_TYPES.includes(value as RegistryContentType);
+  return isApiContentType(value);
 }
