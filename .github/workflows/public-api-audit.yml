@@ -20,7 +20,7 @@ jobs:
           REGISTRY_URL: ${{ vars.REGISTRY_URL || 'https://api.decantr.ai/v1' }}
           CONTENT_NAMESPACE: ${{ vars.CONTENT_NAMESPACE || '@official' }}
           FAIL_ON_PUBLIC_API_ERROR: ${{ vars.FAIL_ON_PUBLIC_API_ERROR || 'false' }}
-        run: node scripts/audit-public-api.mjs --report-json=public-api-report.json --summary-markdown=public-api-summary.md
+        run: node scripts/audit-public-api.mjs --include-hosted-pack-select --include-hosted-critique --include-hosted-project-audit --report-json=public-api-report.json --summary-markdown=public-api-summary.md
 
       - name: Publish audit summary
         run: cat public-api-summary.md >> "$GITHUB_STEP_SUMMARY"

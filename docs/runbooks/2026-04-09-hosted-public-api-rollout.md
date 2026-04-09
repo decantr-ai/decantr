@@ -73,6 +73,7 @@ As of 2026-04-09, the hosted rollout completed successfully:
     - `POST /v1/critique/file` as `200`
     - `POST /v1/audit/project` as `200`
   - the hosted selected-pack rollout gap is closed
+  - the root `pnpm audit:public-api` script and scheduled audit workflow were then updated to include those hosted pack/verifier surfaces by default
 
 Key fixes required during rollout:
 

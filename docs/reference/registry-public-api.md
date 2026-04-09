@@ -323,10 +323,11 @@ decantr registry audit-project --namespace @official --json
 ## Notes
 
 - These endpoints are read-only public surfaces.
-- Optional hosted mutation/verification checks can be included in the public audit with:
-  - `--include-hosted-pack-select`
-  - `--include-hosted-critique`
-  - `--include-hosted-project-audit`
+- `pnpm audit:public-api` now audits the full hosted surface by default, including:
+  - `POST /v1/packs/select`
+  - `POST /v1/critique/file`
+  - `POST /v1/audit/project`
+- The individual `--include-hosted-*` flags still exist for direct script use when needed.
 - Intelligence metadata may lag behind repo-local changes until the hosted API and official content sync are deployed.
 - During rollout, the content-repo audits are the fastest way to see repo-vs-live mismatches.
 - For a lightweight hosted-surface smoke check from the monorepo, run `pnpm audit:public-api`.
