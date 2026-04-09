@@ -4,8 +4,8 @@ import { validateStringArg, fuzzyScore } from '../src/helpers.js';
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
-    it('should define 13 tools', () => {
-      expect(TOOLS).toHaveLength(13);
+    it('should define 14 tools', () => {
+      expect(TOOLS).toHaveLength(14);
     });
 
     it('should have unique tool names', () => {
@@ -43,7 +43,7 @@ describe('MCP tool handlers', () => {
     });
 
     it('should have openWorldHint: false on local-only tools', () => {
-      const localToolNames = ['decantr_read_essence', 'decantr_validate', 'decantr_check_drift'];
+      const localToolNames = ['decantr_read_essence', 'decantr_validate', 'decantr_check_drift', 'decantr_get_execution_pack'];
       for (const name of localToolNames) {
         const tool = TOOLS.find(t => t.name === name);
         expect(tool?.annotations.openWorldHint).toBe(false);

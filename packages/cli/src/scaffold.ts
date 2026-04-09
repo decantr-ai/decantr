@@ -1951,6 +1951,20 @@ function writeExecutionPackArtifacts(
   return markdownPath;
 }
 
+interface PackManifestEntry {
+  id: string;
+  markdown: string;
+  json: string;
+}
+
+interface PackManifest {
+  version: '1.0.0';
+  generatedAt: string;
+  scaffold: PackManifestEntry | null;
+  sections: Array<PackManifestEntry & { pageIds: string[] }>;
+  pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
+}
+
 function listPackSections(essence: EssenceV3): SectionPackInput[] {
   const declaredSections = essence.blueprint.sections;
   if (declaredSections && declaredSections.length > 0) {
@@ -2026,6 +2040,11 @@ async function generatePackContexts(
     });
 
     const outputPaths: string[] = [];
+    const scaffoldManifest: PackManifestEntry = {
+      id: 'scaffold',
+      markdown: 'scaffold-pack.md',
+      json: 'scaffold-pack.json',
+    };
     const scaffoldPackPath = writeExecutionPackArtifacts(join(contextDir, 'scaffold-pack'), pack);
     outputPaths.push(scaffoldPackPath);
 
@@ -2035,6 +2054,7 @@ async function generatePackContexts(
       adapter: resolvePackAdapter(essence.meta.target, essence.meta.platform.type),
     };
 
+    const sectionManifestEntries: Array<PackManifestEntry & { pageIds: string[] }> = [];
     for (const section of listPackSections(essence)) {
       const sectionPack = buildSectionPack(pipeline.ir, section, {
         target: sharedTarget,
@@ -2044,8 +2064,15 @@ async function generatePackContexts(
         sectionPack,
       );
       outputPaths.push(sectionPackPath);
+      sectionManifestEntries.push({
+        id: section.id,
+        markdown: `section-${section.id}-pack.md`,
+        json: `section-${section.id}-pack.json`,
+        pageIds: section.pageIds,
+      });
     }
 
+    const pageManifestEntries: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }> = [];
     for (const page of listPackPages(essence)) {
       const pagePack = buildPagePack(pipeline.ir, page, {
         target: sharedTarget,
@@ -2055,7 +2082,25 @@ async function generatePackContexts(
         pagePack,
       );
       outputPaths.push(pagePackPath);
+      pageManifestEntries.push({
+        id: page.pageId,
+        markdown: `page-${page.pageId}-pack.md`,
+        json: `page-${page.pageId}-pack.json`,
+        sectionId: page.sectionId,
+        sectionRole: page.sectionRole,
+      });
     }
+
+    const manifest: PackManifest = {
+      version: '1.0.0',
+      generatedAt: new Date().toISOString(),
+      scaffold: scaffoldManifest,
+      sections: sectionManifestEntries,
+      pages: pageManifestEntries,
+    };
+    const manifestPath = join(contextDir, 'pack-manifest.json');
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+    outputPaths.push(manifestPath);
 
     return outputPaths;
   } catch {

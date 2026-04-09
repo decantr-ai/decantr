@@ -250,12 +250,14 @@ describe('v3 scaffold', () => {
     const sectionPackJsonPath = join(testDir, '.decantr', 'context', 'section-custom-pack.json');
     const pagePackPath = join(testDir, '.decantr', 'context', 'page-home-pack.md');
     const pagePackJsonPath = join(testDir, '.decantr', 'context', 'page-home-pack.json');
+    const manifestPath = join(testDir, '.decantr', 'context', 'pack-manifest.json');
     expect(existsSync(packPath)).toBe(true);
     expect(existsSync(packJsonPath)).toBe(true);
     expect(existsSync(sectionPackPath)).toBe(true);
     expect(existsSync(sectionPackJsonPath)).toBe(true);
     expect(existsSync(pagePackPath)).toBe(true);
     expect(existsSync(pagePackJsonPath)).toBe(true);
+    expect(existsSync(manifestPath)).toBe(true);
 
     const content = readFileSync(packPath, 'utf-8');
     const packJson = JSON.parse(readFileSync(packJsonPath, 'utf-8'));
@@ -263,6 +265,7 @@ describe('v3 scaffold', () => {
     const sectionPackJson = JSON.parse(readFileSync(sectionPackJsonPath, 'utf-8'));
     const pageContent = readFileSync(pagePackPath, 'utf-8');
     const pagePackJson = JSON.parse(readFileSync(pagePackJsonPath, 'utf-8'));
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
     expect(content).toContain('# Scaffold Pack');
     expect(content).toContain('react-vite (react)');
     expect(content).toContain('- / -> home [hero]');
@@ -300,6 +303,28 @@ describe('v3 scaffold', () => {
         alias: 'hero',
         preset: 'default',
         layout: 'hero',
+      },
+    ]);
+    expect(manifest.scaffold).toEqual({
+      id: 'scaffold',
+      markdown: 'scaffold-pack.md',
+      json: 'scaffold-pack.json',
+    });
+    expect(manifest.sections).toEqual([
+      {
+        id: 'custom',
+        markdown: 'section-custom-pack.md',
+        json: 'section-custom-pack.json',
+        pageIds: ['home'],
+      },
+    ]);
+    expect(manifest.pages).toEqual([
+      {
+        id: 'home',
+        markdown: 'page-home-pack.md',
+        json: 'page-home-pack.json',
+        sectionId: 'custom',
+        sectionRole: 'primary',
       },
     ]);
   });

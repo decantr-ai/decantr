@@ -47,6 +47,20 @@ interface RegistryPatternListItem {
   description?: string;
 }
 
+interface PackManifestEntry {
+  id: string;
+  markdown: string;
+  json: string;
+}
+
+interface PackManifest {
+  version: string;
+  generatedAt: string;
+  scaffold: PackManifestEntry | null;
+  sections: Array<PackManifestEntry & { pageIds: string[] }>;
+  pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
+}
+
 const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
 
 function deriveZones(inputs: ZoneInput[]): ComposedZone[] {
@@ -359,7 +373,33 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 14. decantr_critique — local read
+  // 14. decantr_get_execution_pack — local read
+  {
+    name: 'decantr_get_execution_pack',
+    title: 'Get Execution Pack',
+    description: 'Read compiled execution packs from .decantr/context. Returns the pack manifest by default, or a specific scaffold, section, or page pack in markdown, JSON, or both.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        pack_type: {
+          type: 'string',
+          enum: ['manifest', 'scaffold', 'section', 'page'],
+          description: 'Pack type to fetch. Defaults to manifest.',
+        },
+        id: {
+          type: 'string',
+          description: 'Required for section/page packs (for example "dashboard" or "overview").',
+        },
+        format: {
+          type: 'string',
+          enum: ['json', 'markdown', 'both'],
+          description: 'Return format for a specific pack. Defaults to both.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 15. decantr_critique — local read
   {
     name: 'decantr_critique',
     title: 'Design Critique',
@@ -1063,6 +1103,75 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
         note: 'Section context file not found. Run decantr refresh to generate it.',
       };
+    }
+
+    case 'decantr_get_execution_pack': {
+      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const manifestPath = join(contextDir, 'pack-manifest.json');
+      if (!existsSync(manifestPath)) {
+        return { error: 'Execution pack manifest not found. Run decantr refresh to generate compiled packs.' };
+      }
+
+      let manifest: PackManifest;
+      try {
+        manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as PackManifest;
+      } catch (e) {
+        return { error: `Failed to read pack manifest: ${(e as Error).message}` };
+      }
+
+      const packType = (args.pack_type as string | undefined) ?? 'manifest';
+      if (packType === 'manifest') {
+        return manifest;
+      }
+
+      const format = (args.format as string | undefined) ?? 'both';
+      let entry: PackManifestEntry | null = null;
+      let availableIds: string[] = [];
+
+      if (packType === 'scaffold') {
+        entry = manifest.scaffold;
+      } else if (packType === 'section') {
+        availableIds = manifest.sections.map(section => section.id);
+        const idErr = validateStringArg(args, 'id');
+        if (idErr) return { error: idErr, available_ids: availableIds };
+        entry = manifest.sections.find(section => section.id === args.id) ?? null;
+      } else if (packType === 'page') {
+        availableIds = manifest.pages.map(page => page.id);
+        const idErr = validateStringArg(args, 'id');
+        if (idErr) return { error: idErr, available_ids: availableIds };
+        entry = manifest.pages.find(page => page.id === args.id) ?? null;
+      } else {
+        return { error: `Unsupported pack type: ${packType}` };
+      }
+
+      if (!entry) {
+        return {
+          error: `Execution pack not found for type "${packType}"${args.id ? ` and id "${args.id as string}"` : ''}.`,
+          available_ids: availableIds,
+        };
+      }
+
+      const result: Record<string, unknown> = {
+        pack_type: packType,
+        id: entry.id,
+        manifest: entry,
+      };
+
+      if (format === 'markdown' || format === 'both') {
+        const markdownPath = join(contextDir, entry.markdown);
+        if (existsSync(markdownPath)) {
+          result.markdown = readFileSync(markdownPath, 'utf-8');
+        }
+      }
+
+      if (format === 'json' || format === 'both') {
+        const jsonPath = join(contextDir, entry.json);
+        if (existsSync(jsonPath)) {
+          result.json = JSON.parse(readFileSync(jsonPath, 'utf-8'));
+        }
+      }
+
+      return result;
     }
 
     case 'decantr_critique': {

@@ -58,6 +58,7 @@ function makeV2Essence() {
 }
 
 let testDir: string;
+const originalCwd = process.cwd();
 
 beforeEach(async () => {
   testDir = join(tmpdir(), `decantr-mcp-test-v3-${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -65,6 +66,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  process.chdir(originalCwd);
   await rm(testDir, { recursive: true, force: true });
 });
 
@@ -212,6 +214,68 @@ describe('v3-aware tool tests', () => {
 
       expect(result.archetype).toContain('ecommerce');
       expect(result.essence.meta.archetype).toContain('ecommerce');
+    });
+  });
+
+  describe('decantr_get_execution_pack', () => {
+    it('returns the pack manifest by default', async () => {
+      const contextDir = join(testDir, '.decantr', 'context');
+      await mkdir(contextDir, { recursive: true });
+      await writeFile(join(contextDir, 'pack-manifest.json'), JSON.stringify({
+        version: '1.0.0',
+        generatedAt: '2026-04-08T00:00:00.000Z',
+        scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        sections: [],
+        pages: [],
+      }));
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_execution_pack', {}) as { version: string; scaffold: { id: string } };
+
+      expect(result.version).toBe('1.0.0');
+      expect(result.scaffold.id).toBe('scaffold');
+    });
+
+    it('returns a specific page pack in markdown and json', async () => {
+      const contextDir = join(testDir, '.decantr', 'context');
+      await mkdir(contextDir, { recursive: true });
+      await writeFile(join(contextDir, 'pack-manifest.json'), JSON.stringify({
+        version: '1.0.0',
+        generatedAt: '2026-04-08T00:00:00.000Z',
+        scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        sections: [],
+        pages: [
+          {
+            id: 'overview',
+            markdown: 'page-overview-pack.md',
+            json: 'page-overview-pack.json',
+            sectionId: 'dashboard',
+            sectionRole: 'primary',
+          },
+        ],
+      }));
+      await writeFile(join(contextDir, 'page-overview-pack.md'), '# Page Pack\n\n- Page: overview\n');
+      await writeFile(join(contextDir, 'page-overview-pack.json'), JSON.stringify({
+        packType: 'page',
+        data: { pageId: 'overview', path: '/' },
+      }));
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_execution_pack', {
+        pack_type: 'page',
+        id: 'overview',
+      }) as {
+        pack_type: string;
+        id: string;
+        markdown: string;
+        json: { packType: string; data: { pageId: string } };
+      };
+
+      expect(result.pack_type).toBe('page');
+      expect(result.id).toBe('overview');
+      expect(result.markdown).toContain('# Page Pack');
+      expect(result.json.packType).toBe('page');
+      expect(result.json.data.pageId).toBe('overview');
     });
   });
 });
