@@ -1,6 +1,10 @@
 export type {
   ApiContentType,
   ContentListResponse,
+  ContentVerificationStatus,
+  ContentBenchmarkConfidence,
+  ContentGoldenUsage,
+  ContentIntelligenceMetadata,
   PublicContentSummary,
   PublicContentRecord,
   ContentItem,

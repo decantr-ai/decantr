@@ -104,6 +104,16 @@ describe('RegistryAPIClient showcase endpoints', () => {
         data: { name: 'Portfolio', routes: { home: { path: '/' } } },
         owner_name: 'Decantr',
         owner_username: 'decantr',
+        intelligence: {
+          verification_status: 'smoke-green',
+          benchmark_confidence: 'high',
+          golden_usage: 'shortlisted',
+          quality_score: 92,
+          confidence_score: 90,
+          recommended: true,
+          target_coverage: ['react-vite'],
+          evidence: ['live-showcase', 'smoke-verified'],
+        },
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -116,6 +126,8 @@ describe('RegistryAPIClient showcase endpoints', () => {
     expect(result.slug).toBe('portfolio');
     expect(result.data).toEqual({ name: 'Portfolio', routes: { home: { path: '/' } } });
     expect(result.owner_username).toBe('decantr');
+    expect(result.intelligence?.recommended).toBe(true);
+    expect(result.intelligence?.quality_score).toBe(92);
   });
 
   it('fetches public user profile and content summaries', async () => {
@@ -147,6 +159,7 @@ describe('RegistryAPIClient showcase endpoints', () => {
             name: 'Portfolio',
             description: 'Creator portfolio',
             published_at: '2026-04-09T00:00:00.000Z',
+            intelligence: null,
           }],
         }), {
           status: 200,

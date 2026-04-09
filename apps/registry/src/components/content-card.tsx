@@ -24,6 +24,29 @@ function formatId(id: string): string {
   return id.length > 12 ? id.slice(0, 12) : id;
 }
 
+function formatVerificationStatus(status?: string | null): string | null {
+  switch (status) {
+    case 'smoke-green':
+      return 'smoke verified';
+    case 'build-green':
+      return 'build verified';
+    case 'smoke-red':
+      return 'smoke failed';
+    case 'build-red':
+      return 'build failed';
+    case 'pending':
+      return 'verification pending';
+    default:
+      return null;
+  }
+}
+
+function verificationBadgeStatus(status?: string | null): 'success' | 'warning' | undefined {
+  if (status === 'smoke-green' || status === 'build-green') return 'success';
+  if (status === 'smoke-red' || status === 'build-red') return 'warning';
+  return undefined;
+}
+
 export function ContentCard({
   item,
   editable,
@@ -37,8 +60,16 @@ export function ContentCard({
   const typeColor = TYPE_COLORS[singular] ?? 'var(--d-primary)';
   const href = `/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`;
   const showcaseMeta = singular === 'blueprint' ? (showcaseMetadata ?? null) : null;
+  const intelligence = item.intelligence ?? null;
   const hasShortlistedShowcase = Boolean(showcaseMeta?.goldenCandidate);
   const showcaseVerification = showcaseMeta?.verification ?? null;
+  const verificationLabel =
+    formatVerificationStatus(intelligence?.verification_status) ??
+    (showcaseVerification?.smoke.passed
+      ? 'smoke verified'
+      : showcaseVerification?.build.passed
+        ? 'build verified'
+        : null);
 
   return (
     <div className="lum-card-outlined" data-type={singular}>
@@ -54,19 +85,27 @@ export function ContentCard({
           {singular}
         </span>
         <span className="d-annotation">{item.namespace}</span>
+        {intelligence?.recommended && (
+          <span className="d-annotation" data-status="success">
+            recommended
+          </span>
+        )}
         {showcaseMeta && (
           <span className="d-annotation" data-status={hasShortlistedShowcase ? 'success' : undefined}>
             {hasShortlistedShowcase ? 'shortlisted showcase' : 'live showcase'}
           </span>
         )}
-        {showcaseVerification?.smoke.passed && (
-          <span className="d-annotation" data-status="success">
-            smoke verified
+        {verificationLabel && (
+          <span
+            className="d-annotation"
+            data-status={verificationBadgeStatus(intelligence?.verification_status)}
+          >
+            {verificationLabel}
           </span>
         )}
-        {!showcaseVerification?.smoke.passed && showcaseVerification?.build.passed && (
-          <span className="d-annotation" data-status="success">
-            build verified
+        {intelligence?.benchmark_confidence && intelligence.benchmark_confidence !== 'none' && (
+          <span className="d-annotation">
+            {intelligence.benchmark_confidence} confidence
           </span>
         )}
       </div>
@@ -157,6 +196,14 @@ export function ContentCard({
               <span className="opacity-40">|</span>
               <span className="d-annotation">
                 drift {showcaseVerification.drift.signal}
+              </span>
+            </span>
+          )}
+          {intelligence?.quality_score != null && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <span className="d-annotation">
+                quality {intelligence.quality_score}
               </span>
             </span>
           )}

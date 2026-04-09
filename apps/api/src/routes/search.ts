@@ -4,6 +4,7 @@ import { PLURAL_TO_SINGULAR, isApiContentType, isContentType, parsePagination } 
 import type { ContentType } from '../types.js';
 import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
+import { getContentIntelligence } from '../lib/content-intelligence.js';
 
 export const searchRoutes = new Hono<Env>();
 
@@ -63,6 +64,7 @@ searchRoutes.get('/search', async (c) => {
       published_at: item.published_at ?? undefined,
       owner_name: item.owner_display_name || null,
       owner_username: item.owner_username || null,
+      intelligence: getContentIntelligence(item.type as ContentType, item.namespace, item.slug),
     })),
   });
 });

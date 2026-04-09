@@ -4,6 +4,7 @@ import { parsePagination } from '../types.js';
 import { CONTENT_TYPES } from '../types.js';
 import type { ContentType } from '../types.js';
 import { createAdminClient } from '../db/client.js';
+import { getContentIntelligence } from '../lib/content-intelligence.js';
 
 export const userRoutes = new Hono<Env>();
 
@@ -107,6 +108,7 @@ userRoutes.get('/users/:username/content', async (c) => {
       name: (item.data as Record<string, unknown>)?.name,
       description: (item.data as Record<string, unknown>)?.description,
       published_at: item.published_at,
+      intelligence: getContentIntelligence(item.type as ContentType, item.namespace, item.slug),
     })),
   });
 });

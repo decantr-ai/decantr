@@ -7,6 +7,7 @@ import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { validateEssence } from '@decantr/essence-spec';
 import { validateRegistryContent } from '../lib/content-validation.js';
+import { getContentIntelligence } from '../lib/content-intelligence.js';
 
 export const publishRoutes = new Hono<Env>();
 
@@ -55,6 +56,10 @@ publishRoutes.get('/my/content', async (c) => {
       created_at: item.created_at,
       updated_at: item.updated_at,
       published_at: item.published_at,
+      intelligence:
+        item.visibility === 'public' && item.status === 'published'
+          ? getContentIntelligence(item.type, item.namespace, item.slug)
+          : null,
     })),
   });
 });

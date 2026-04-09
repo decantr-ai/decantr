@@ -1,14 +1,13 @@
 import { Hono } from 'hono';
 import type { Env } from '../types.js';
-import showcaseManifest from '../../../showcase/manifest.json';
-import shortlistVerificationReport from '../../../showcase/reports/shortlist-verification.json';
-import type { ShowcaseManifestEntry, ShowcaseVerificationEntry } from '@decantr/registry';
+import {
+  SHOWCASE_MANIFEST_ENTRIES,
+  SHORTLISTED_SHOWCASE_ENTRIES,
+  SHOWCASE_SHORTLIST_REPORT,
+  SHOWCASE_VERIFICATION_MAP,
+} from '../lib/showcase-benchmarks.js';
 
-const SHOWCASE_ENTRIES = (showcaseManifest.apps as ShowcaseManifestEntry[]).filter(entry => entry.status === 'active');
-const SHOWCASE_VERIFICATION_RESULTS = (shortlistVerificationReport.results as ShowcaseVerificationEntry[] | undefined) ?? [];
-const SHOWCASE_VERIFICATION_MAP = new Map(SHOWCASE_VERIFICATION_RESULTS.map(entry => [entry.slug, entry]));
-const SHORTLISTED_SHOWCASES = SHOWCASE_ENTRIES
-  .filter(entry => Boolean(entry.goldenCandidate))
+const SHORTLISTED_SHOWCASES = SHORTLISTED_SHOWCASE_ENTRIES
   .map(entry => ({
     ...entry,
     verification: SHOWCASE_VERIFICATION_MAP.get(entry.slug) ?? null,
@@ -19,9 +18,9 @@ export const showcaseRoutes = new Hono<Env>();
 showcaseRoutes.get('/showcase/manifest', (c) => {
   c.header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
   return c.json({
-    total: SHOWCASE_ENTRIES.length,
+    total: SHOWCASE_MANIFEST_ENTRIES.length,
     shortlisted: SHORTLISTED_SHOWCASES.length,
-    apps: SHOWCASE_ENTRIES.map(entry => ({
+    apps: SHOWCASE_MANIFEST_ENTRIES.map(entry => ({
       ...entry,
       verification: SHOWCASE_VERIFICATION_MAP.get(entry.slug) ?? null,
     })),
@@ -31,13 +30,13 @@ showcaseRoutes.get('/showcase/manifest', (c) => {
 showcaseRoutes.get('/showcase/shortlist', (c) => {
   c.header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
   return c.json({
-    generatedAt: shortlistVerificationReport.generatedAt ?? null,
-    summary: shortlistVerificationReport.summary ?? null,
+    generatedAt: SHOWCASE_SHORTLIST_REPORT.generatedAt ?? null,
+    summary: SHOWCASE_SHORTLIST_REPORT.summary ?? null,
     apps: SHORTLISTED_SHOWCASES,
   });
 });
 
 showcaseRoutes.get('/showcase/shortlist-verification', (c) => {
   c.header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
-  return c.json(shortlistVerificationReport);
+  return c.json(SHOWCASE_SHORTLIST_REPORT);
 });

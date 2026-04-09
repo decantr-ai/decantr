@@ -345,6 +345,37 @@ export interface ContentListResponse<T = Record<string, unknown>> {
   total: number;
 }
 
+export type ContentVerificationStatus =
+  | 'unknown'
+  | 'pending'
+  | 'build-green'
+  | 'build-red'
+  | 'smoke-green'
+  | 'smoke-red';
+
+export type ContentBenchmarkConfidence = 'none' | 'low' | 'medium' | 'high';
+
+export type ContentGoldenUsage = 'none' | 'showcase' | 'shortlisted';
+
+export interface ContentIntelligenceMetadata {
+  verification_status: ContentVerificationStatus;
+  last_verified_at?: string | null;
+  target_coverage: string[];
+  benchmark_confidence: ContentBenchmarkConfidence;
+  golden_usage: ContentGoldenUsage;
+  quality_score: number | null;
+  confidence_score: number | null;
+  recommended: boolean;
+  evidence: string[];
+  benchmark?: {
+    classification?: ShowcaseVerificationEntry['classification'];
+    target?: string | null;
+    drift_signal?: ShowcaseVerificationEntry['drift']['signal'];
+    build_passed?: boolean | null;
+    smoke_passed?: boolean | null;
+  };
+}
+
 export interface PublicContentSummary {
   id: string;
   slug: string;
@@ -356,6 +387,7 @@ export interface PublicContentSummary {
   published_at?: string;
   owner_name?: string | null;
   owner_username?: string | null;
+  intelligence?: ContentIntelligenceMetadata | null;
 }
 
 export interface PublicContentRecord<TData = Record<string, unknown>> {
@@ -372,6 +404,7 @@ export interface PublicContentRecord<TData = Record<string, unknown>> {
   published_at?: string;
   owner_name?: string | null;
   owner_username?: string | null;
+  intelligence?: ContentIntelligenceMetadata | null;
 }
 
 export interface ContentItem extends PublicContentRecord<Record<string, unknown>> {}

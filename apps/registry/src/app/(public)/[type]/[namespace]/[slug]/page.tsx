@@ -39,6 +39,23 @@ function prettifyName(slug: string): string {
     .join(' ');
 }
 
+function formatVerificationLabel(status?: string | null): string | null {
+  switch (status) {
+    case 'smoke-green':
+      return 'smoke verified';
+    case 'build-green':
+      return 'build verified';
+    case 'smoke-red':
+      return 'smoke failed';
+    case 'build-red':
+      return 'build failed';
+    case 'pending':
+      return 'verification pending';
+    default:
+      return null;
+  }
+}
+
 interface DetailPageProps {
   params: Promise<{ type: string; namespace: string; slug: string }>;
 }
@@ -68,6 +85,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
     content.data?.description as string | undefined;
   const installCmd = `decantr get ${singular} ${namespace}/${slug}`;
   const tags = (content.data?.tags as string[] | undefined) ?? [];
+  const intelligence = content.intelligence ?? null;
   const showcaseMeta = singular === 'blueprint' ? await getShowcaseMetadata(slug) : null;
   const showcaseVerification = showcaseMeta?.verification ?? null;
 
@@ -240,6 +258,67 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
             </div>
           </div>
         </div>
+
+        {intelligence && (
+          <div className="d-surface" data-elevation="raised" style={{ marginTop: '1.25rem' }}>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                {intelligence.recommended && (
+                  <span className="d-annotation" data-status="success">
+                    recommended
+                  </span>
+                )}
+                <span className="d-annotation">
+                  quality {intelligence.quality_score ?? 'n/a'}
+                </span>
+                <span className="d-annotation">
+                  confidence {intelligence.confidence_score ?? 'n/a'}
+                </span>
+                <span className="d-annotation">
+                  {intelligence.benchmark_confidence} benchmark confidence
+                </span>
+                {formatVerificationLabel(intelligence.verification_status) && (
+                  <span
+                    className="d-annotation"
+                    data-status={
+                      intelligence.verification_status === 'smoke-green' ||
+                      intelligence.verification_status === 'build-green'
+                        ? 'success'
+                        : intelligence.verification_status === 'smoke-red' ||
+                            intelligence.verification_status === 'build-red'
+                          ? 'warning'
+                          : undefined
+                    }
+                  >
+                    {formatVerificationLabel(intelligence.verification_status)}
+                  </span>
+                )}
+                <span className="d-annotation">
+                  {intelligence.golden_usage === 'shortlisted' ? 'shortlisted benchmark' : 'live benchmark'}
+                </span>
+                {intelligence.benchmark?.target && (
+                  <span className="d-annotation">{intelligence.benchmark.target}</span>
+                )}
+              </div>
+              <p style={{ margin: 0, color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
+                {intelligence.recommended
+                  ? 'This item is currently one of the strongest Decantr benchmark-backed references for its workflow.'
+                  : 'This item has benchmark evidence attached in the Decantr corpus, but it is not currently marked as a recommended reference.'}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                {intelligence.target_coverage.length > 0 && (
+                  <span>Targets: {intelligence.target_coverage.join(', ')}</span>
+                )}
+                {intelligence.last_verified_at && (
+                  <span>Last verified: {formatDate(intelligence.last_verified_at)}</span>
+                )}
+                {intelligence.evidence.length > 0 && (
+                  <span>Evidence: {intelligence.evidence.join(', ')}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {showcaseMeta && (
           <div className="d-surface" data-elevation="raised" style={{ marginTop: '1.25rem' }}>
