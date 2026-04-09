@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { ContentItem } from '@/lib/api';
-import { getShowcaseMetadata, getShowcaseUrl } from '@/lib/showcase';
+import { getShowcaseUrl, type ShowcaseMetadata } from '@/lib/showcase';
 
 const TYPE_COLORS: Record<string, string> = {
   pattern: 'var(--d-coral)',
@@ -24,11 +24,19 @@ function formatId(id: string): string {
   return id.length > 12 ? id.slice(0, 12) : id;
 }
 
-export function ContentCard({ item, editable }: { item: ContentItem; editable?: boolean }) {
+export function ContentCard({
+  item,
+  editable,
+  showcaseMetadata,
+}: {
+  item: ContentItem;
+  editable?: boolean;
+  showcaseMetadata?: ShowcaseMetadata | null;
+}) {
   const singular = singularType(item.type);
   const typeColor = TYPE_COLORS[singular] ?? 'var(--d-primary)';
   const href = `/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`;
-  const showcaseMeta = singular === 'blueprint' ? getShowcaseMetadata(item.slug) : null;
+  const showcaseMeta = singular === 'blueprint' ? (showcaseMetadata ?? null) : null;
   const hasShortlistedShowcase = Boolean(showcaseMeta?.goldenCandidate);
   const showcaseVerification = showcaseMeta?.verification ?? null;
 

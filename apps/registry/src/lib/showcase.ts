@@ -1,55 +1,129 @@
-import showcaseManifest from '../../../showcase/manifest.json';
-import shortlistVerificationReport from '../../../showcase/reports/shortlist-verification.json';
-import type {
-  ShowcaseManifestEntry,
-  ShowcaseShortlistSummary as ShowcaseShortlistVerificationSummary,
-  ShowcaseVerificationEntry,
+import { unstable_cache } from 'next/cache';
+import {
+  RegistryAPIClient,
+  type ShowcaseManifestEntry,
+  type ShowcaseShortlistSummary as ShowcaseShortlistVerificationSummary,
+  type ShowcaseVerificationEntry,
 } from '@decantr/registry';
 
 export interface ShowcaseMetadata extends ShowcaseManifestEntry {
   verification: ShowcaseVerificationEntry | null;
 }
 
-const SHOWCASE_ENTRIES = (showcaseManifest.apps as ShowcaseManifestEntry[]).filter(entry => entry.status === 'active');
-const SHOWCASE_VERIFICATION_ENTRIES = (shortlistVerificationReport.results as ShowcaseVerificationEntry[] | undefined) ?? [];
-const SHOWCASE_VERIFICATION_SUMMARY = (shortlistVerificationReport.summary as ShowcaseShortlistVerificationSummary | undefined) ?? null;
-const SHOWCASE_VERIFICATION_MAP = new Map(SHOWCASE_VERIFICATION_ENTRIES.map(entry => [entry.slug, entry]));
-const SHOWCASE_ENTRY_MAP = new Map(
-  SHOWCASE_ENTRIES.map(entry => [
-    entry.slug,
-    {
-      ...entry,
-      verification: SHOWCASE_VERIFICATION_MAP.get(entry.slug) ?? null,
-    } satisfies ShowcaseMetadata,
-  ]),
-);
-const AVAILABLE_SHOWCASES = new Set(SHOWCASE_ENTRIES.map(entry => entry.slug));
-const SHORTLISTED_SHOWCASES = [...SHOWCASE_ENTRY_MAP.values()].filter(entry => Boolean(entry.goldenCandidate));
+interface ShowcaseDataset {
+  apps: ShowcaseMetadata[];
+  shortlisted: ShowcaseMetadata[];
+  summary: ShowcaseShortlistVerificationSummary | null;
+  bySlug: Record<string, ShowcaseMetadata>;
+}
 
-export function hasShowcase(blueprintSlug: string): boolean {
-  return AVAILABLE_SHOWCASES.has(blueprintSlug);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
+const SHOWCASE_REVALIDATE_SECONDS = 300;
+const EMPTY_SHOWCASE_DATASET: ShowcaseDataset = {
+  apps: [],
+  shortlisted: [],
+  summary: null,
+  bySlug: {},
+};
+
+function createRegistryApiClient(): RegistryAPIClient {
+  return new RegistryAPIClient({
+    baseUrl: API_URL,
+    cacheTtlMs: SHOWCASE_REVALIDATE_SECONDS * 1000,
+  });
+}
+
+function normalizeShowcaseEntry(entry: ShowcaseManifestEntry): ShowcaseMetadata {
+  return {
+    ...entry,
+    verification: entry.verification ?? null,
+  };
+}
+
+const fetchShowcaseDataset = unstable_cache(
+  async (): Promise<ShowcaseDataset> => {
+    try {
+      const client = createRegistryApiClient();
+      const [manifest, shortlist] = await Promise.all([
+        client.getShowcaseManifest(),
+        client.getShowcaseShortlist(),
+      ]);
+
+      const apps = manifest.apps
+        .filter((entry) => entry.status === 'active')
+        .map(normalizeShowcaseEntry);
+      const bySlug = Object.fromEntries(
+        apps.map((entry) => [entry.slug, entry]),
+      ) as Record<string, ShowcaseMetadata>;
+      const shortlisted = shortlist.apps
+        .filter((entry) => entry.status === 'active')
+        .map((entry) => bySlug[entry.slug] ?? normalizeShowcaseEntry(entry));
+
+      return {
+        apps,
+        shortlisted,
+        summary: shortlist.summary ?? null,
+        bySlug,
+      };
+    } catch {
+      return EMPTY_SHOWCASE_DATASET;
+    }
+  },
+  ['registry-showcase-benchmarks'],
+  { revalidate: SHOWCASE_REVALIDATE_SECONDS },
+);
+
+async function getShowcaseDataset(): Promise<ShowcaseDataset> {
+  return fetchShowcaseDataset();
 }
 
 export function getShowcaseUrl(blueprintSlug: string): string {
   return `/showcase/${blueprintSlug}/`;
 }
 
-export function getShowcaseMetadata(blueprintSlug: string): ShowcaseMetadata | null {
-  return SHOWCASE_ENTRY_MAP.get(blueprintSlug) ?? null;
+export async function hasShowcase(blueprintSlug: string): Promise<boolean> {
+  const { bySlug } = await getShowcaseDataset();
+  return blueprintSlug in bySlug;
 }
 
-export function isShortlistedShowcase(blueprintSlug: string): boolean {
-  return Boolean(SHOWCASE_ENTRY_MAP.get(blueprintSlug)?.goldenCandidate);
+export async function getShowcaseMetadata(blueprintSlug: string): Promise<ShowcaseMetadata | null> {
+  const { bySlug } = await getShowcaseDataset();
+  return bySlug[blueprintSlug] ?? null;
 }
 
-export function listAvailableShowcases(): ShowcaseMetadata[] {
-  return [...SHOWCASE_ENTRY_MAP.values()];
+export async function getShowcaseMetadataMap(
+  blueprintSlugs: string[],
+): Promise<Record<string, ShowcaseMetadata>> {
+  if (blueprintSlugs.length === 0) {
+    return {};
+  }
+
+  const uniqueBlueprintSlugs = [...new Set(blueprintSlugs)];
+  const { bySlug } = await getShowcaseDataset();
+
+  return Object.fromEntries(
+    uniqueBlueprintSlugs
+      .map((slug) => [slug, bySlug[slug] ?? null] as const)
+      .filter((entry): entry is [string, ShowcaseMetadata] => entry[1] !== null),
+  );
 }
 
-export function listShortlistedShowcases(): ShowcaseMetadata[] {
-  return SHORTLISTED_SHOWCASES;
+export async function isShortlistedShowcase(blueprintSlug: string): Promise<boolean> {
+  const showcase = await getShowcaseMetadata(blueprintSlug);
+  return Boolean(showcase?.goldenCandidate);
 }
 
-export function getShowcaseShortlistVerificationSummary(): ShowcaseShortlistVerificationSummary | null {
-  return SHOWCASE_VERIFICATION_SUMMARY;
+export async function listAvailableShowcases(): Promise<ShowcaseMetadata[]> {
+  const { apps } = await getShowcaseDataset();
+  return apps;
+}
+
+export async function listShortlistedShowcases(): Promise<ShowcaseMetadata[]> {
+  const { shortlisted } = await getShowcaseDataset();
+  return shortlisted;
+}
+
+export async function getShowcaseShortlistVerificationSummary(): Promise<ShowcaseShortlistVerificationSummary | null> {
+  const { summary } = await getShowcaseDataset();
+  return summary;
 }

@@ -28,7 +28,7 @@ async function FeaturedContent() {
 }
 
 async function ShowcaseShortlist() {
-  const shortlist = listShortlistedShowcases();
+  const shortlist = await listShortlistedShowcases();
   if (shortlist.length === 0) {
     return null;
   }
@@ -53,8 +53,8 @@ async function ShowcaseShortlist() {
   );
 }
 
-function ShowcaseShortlistSummary() {
-  const summary = getShowcaseShortlistVerificationSummary();
+async function ShowcaseShortlistSummary() {
+  const summary = await getShowcaseShortlistVerificationSummary();
   if (!summary) {
     return null;
   }
@@ -159,7 +159,9 @@ export default function HomePage() {
         <p className="mb-4 max-w-3xl text-sm text-d-muted">
           Provisional benchmark candidates from the Decantr showcase corpus. These blueprints currently have live showcase builds and a passing served-output smoke baseline.
         </p>
-        <ShowcaseShortlistSummary />
+        <Suspense>
+          <ShowcaseShortlistSummary />
+        </Suspense>
         <div className="h-4" />
         <Suspense fallback={<CardGridSkeleton />}>
           <ShowcaseShortlist />

@@ -69,7 +69,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
     content.description || (content.data?.description as string | undefined);
   const installCmd = `decantr get ${singular} ${namespace}/${slug}`;
   const tags = (content.data?.tags as string[] | undefined) ?? [];
-  const showcaseMeta = singular === 'blueprint' ? getShowcaseMetadata(slug) : null;
+  const showcaseMeta = singular === 'blueprint' ? await getShowcaseMetadata(slug) : null;
   const showcaseVerification = showcaseMeta?.verification ?? null;
 
   return (
