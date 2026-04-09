@@ -132,6 +132,21 @@ describe('v3-aware tool tests', () => {
       expect(result.focusAreas).toContain('theme-consistency');
       expect(result.findings.some(finding => finding.id === 'theme-consistency-weak')).toBe(true);
     });
+
+    it('returns showcase shortlist verification data', async () => {
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_showcase_benchmarks', {
+        view: 'verification',
+      }) as {
+        $schema: string;
+        summary: { passedBuilds: number };
+        results: Array<{ slug: string }>;
+      };
+
+      expect(result.$schema).toBe('https://decantr.ai/schemas/showcase-shortlist-report.v1.json');
+      expect(result.summary.passedBuilds).toBeGreaterThan(0);
+      expect(result.results.some(entry => entry.slug === 'portfolio')).toBe(true);
+    });
   });
 
   describe('decantr_read_essence — v3 layer filtering', () => {

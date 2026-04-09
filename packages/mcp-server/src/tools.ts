@@ -5,6 +5,8 @@ import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/es
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import { resolvePatternPreset } from '@decantr/registry';
 import type { Pattern, ArchetypeRole, ComposeEntry } from '@decantr/registry';
+import showcaseManifest from '../../../apps/showcase/manifest.json';
+import shortlistVerificationReport from '../../../apps/showcase/reports/shortlist-verification.json';
 import {
   validateStringArg,
   fuzzyScore,
@@ -62,6 +64,67 @@ interface PackManifest {
   sections: Array<PackManifestEntry & { pageIds: string[] }>;
   pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
   mutations?: Array<PackManifestEntry & { mutationType: string }>;
+}
+
+interface ShowcaseManifestEntry {
+  slug: string;
+  status: string;
+  classification: string;
+  target?: string;
+  goldenCandidate?: string | boolean;
+  notes?: string;
+}
+
+interface ShowcaseVerificationEntry {
+  slug: string;
+  verificationStatus: string;
+  build: {
+    passed: boolean | null;
+    durationMs: number;
+  };
+  drift: {
+    signal: string;
+    penalty: number;
+    inlineStyleCount: number;
+    hardcodedColorCount: number;
+    utilityLeakageCount: number;
+    decantrTreatmentCount: number;
+    hasPackManifest: boolean;
+    hasDist: boolean;
+  };
+}
+
+const SHOWCASE_ENTRIES = (showcaseManifest.apps as ShowcaseManifestEntry[]).filter(entry => entry.status === 'active');
+const SHOWCASE_VERIFICATION_RESULTS = (shortlistVerificationReport.results as ShowcaseVerificationEntry[] | undefined) ?? [];
+const SHOWCASE_VERIFICATION_MAP = new Map(SHOWCASE_VERIFICATION_RESULTS.map(entry => [entry.slug, entry]));
+const SHORTLISTED_SHOWCASES = SHOWCASE_ENTRIES
+  .filter(entry => Boolean(entry.goldenCandidate))
+  .map(entry => ({
+    ...entry,
+    verification: SHOWCASE_VERIFICATION_MAP.get(entry.slug) ?? null,
+  }));
+
+function getShowcaseBenchmarkPayload(view: string) {
+  if (view === 'manifest') {
+    return {
+      total: SHOWCASE_ENTRIES.length,
+      shortlisted: SHORTLISTED_SHOWCASES.length,
+      apps: SHOWCASE_ENTRIES.map(entry => ({
+        ...entry,
+        verification: SHOWCASE_VERIFICATION_MAP.get(entry.slug) ?? null,
+      })),
+    };
+  }
+
+  if (view === 'verification') {
+    return shortlistVerificationReport;
+  }
+
+  return {
+    generatedAt: shortlistVerificationReport.generatedAt ?? null,
+    summary: shortlistVerificationReport.summary ?? null,
+    apps: SHORTLISTED_SHOWCASES,
+  };
 }
 
 const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
@@ -427,7 +490,24 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 17. decantr_critique — local read
+  // 17. decantr_get_showcase_benchmarks — local read
+  {
+    name: 'decantr_get_showcase_benchmarks',
+    title: 'Get Showcase Benchmarks',
+    description: 'Read the audited Decantr showcase corpus metadata. Returns the active manifest, shortlisted benchmark set, or the schema-backed shortlist verification report.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        view: {
+          type: 'string',
+          enum: ['manifest', 'shortlist', 'verification'],
+          description: 'Which showcase benchmark view to return. Defaults to shortlist.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 18. decantr_audit_project — local read
   {
     name: 'decantr_audit_project',
     title: 'Audit Project',
@@ -438,7 +518,7 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 18. decantr_critique — local read
+  // 19. decantr_critique — local read
   {
     name: 'decantr_critique',
     title: 'Design Critique',
@@ -1333,6 +1413,15 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       return result;
+    }
+
+    case 'decantr_get_showcase_benchmarks': {
+      const view = (args.view as string | undefined) ?? 'shortlist';
+      if (!['manifest', 'shortlist', 'verification'].includes(view)) {
+        return { error: `Unsupported showcase benchmark view: ${view}` };
+      }
+
+      return getShowcaseBenchmarkPayload(view);
     }
 
     case 'decantr_critique': {
