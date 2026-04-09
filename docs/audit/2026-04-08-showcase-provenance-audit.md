@@ -22,6 +22,7 @@ Known facts:
 - the corpus is large enough to support benchmark and regression analysis
 - the corpus is currently unclassified, which makes it noisy instead of trustworthy
 - `apps/showcase/manifest.json` now exists as the operational inventory surface for this audit
+- `scripts/audit-showcases.mjs` now provides a repeatable signal sweep for inline styles, hardcoded colors, utility leakage, Decantr treatment usage, and pack-manifest presence
 - `workbench` has already been marked `removed` / `Class D` because it reinforced the removed standalone UI-framework line
 
 ## 3. New Classification Model
@@ -127,6 +128,18 @@ For each app, record:
 - presence of inline styles and hardcoded colors
 - framework-specific leakage
 - missing shell / route / state coverage
+
+Current automation support:
+- `pnpm showcase:audit`
+- optional JSON output: `pnpm showcase:audit -- --report-json=/tmp/showcase-audit.json`
+
+Baseline from the first branch run on 2026-04-08:
+- 38 active showcase apps audited
+- 16,302 inline-style signals
+- 1,985 hardcoded-color signals
+- 18 utility-leakage signals
+- 7,626 Decantr treatment signals
+- 0/38 with compiled pack manifests still present
 
 ### Phase 2: Classification
 
