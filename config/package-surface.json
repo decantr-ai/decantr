@@ -34,8 +34,8 @@
         "ciCovered": true,
         "productIntegrated": true,
         "blockers": [
-          "Execution-pack contracts are still expanding with hosted and mutation-centric workflows.",
-          "The public low-level integration story for @decantr/core still needs a more intentional stable API boundary."
+          "Execution-pack contracts are still expanding with selected-pack, mutation, and pack-first hosted workflow refinements.",
+          "The public low-level integration story for @decantr/core still needs a more intentional stable API boundary and compatibility policy."
         ]
       }
     },
@@ -94,8 +94,8 @@
         "ciCovered": true,
         "productIntegrated": true,
         "blockers": [
-          "The tool surface is still evolving alongside hosted fallback and verification expansion.",
-          "Auth, hosted critique, and long-term MCP contract guarantees need to settle before stable release."
+          "The MCP tool surface is still evolving alongside pack-select fallbacks and deeper verifier/runtime coverage.",
+          "Long-term MCP contract guarantees still need a stabilization pass now that hosted critique and project audit are live."
         ]
       }
     },
@@ -115,8 +115,8 @@
         "ciCovered": true,
         "productIntegrated": true,
         "blockers": [
-          "Registry content and hosted verification contracts are still being tightened across public API surfaces.",
-          "The stable browser/client contract should settle after the hosted verification and package-surface work completes."
+          "Registry content and hosted verification contracts are still being tightened across public API and client surfaces.",
+          "The stable browser/client contract should settle after pack-select, critique, and audit client expectations stop changing."
         ]
       }
     },
@@ -136,8 +136,8 @@
         "ciCovered": true,
         "productIntegrated": true,
         "blockers": [
-          "Runtime verification is stronger now but still expanding toward deeper auth, security, and hosted critique workflows.",
-          "The long-term stable verifier API should settle after the next hosted verification surface lands."
+          "Runtime verification is stronger now but still expanding toward deeper auth, security, and route-level assurance.",
+          "The long-term stable verifier API should settle after hosted consumers stop changing their report and findings expectations."
         ]
       }
     },
