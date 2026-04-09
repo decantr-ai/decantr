@@ -72,6 +72,7 @@ commit archaeology.
   - `RegistryAPIClient.compileExecutionPacks()`
   - `decantr registry compile-packs`
 - `decantr registry compile-packs --write-context` can now materialize the hosted pack bundle into local `.decantr/context` artifacts without waiting for a full refresh cycle.
+- Plain `decantr audit` now opportunistically hydrates missing local execution-pack artifacts from the hosted compiler before running local critique or project audit, so pack-first verification still works on partially initialized projects.
 
 ### Verification foundation
 
