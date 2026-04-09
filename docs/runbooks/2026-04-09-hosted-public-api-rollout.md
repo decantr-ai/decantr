@@ -1,6 +1,7 @@
 # Hosted Public API Rollout Runbook
 
 Date: 2026-04-09
+Status: Completed on 2026-04-09
 
 This runbook covers the safe rollout order for the Decantr vNext hosted public API surfaces now living on the `codex/decantr-vnext-reset` and `codex/decantr-vnext-resetmai` branches.
 
@@ -8,14 +9,14 @@ This runbook covers the safe rollout order for the Decantr vNext hosted public A
 
 Local code on the reset branches is ahead of the currently deployed public API.
 
-Live audits against `https://api.decantr.ai/v1` currently show:
+Live audits against `https://api.decantr.ai/v1` originally showed:
 
-- `search` and public content list endpoints are reachable
-- `schema`, `showcase`, and `intelligence/summary` are still returning `401`
-- `recommended=true` and `intelligence_source=*` behavior is still not aligned with live intelligence metadata
-- live `@official` content still includes stale entries such as `workbench`
+- `search` and public content list endpoints were reachable
+- `schema`, `showcase`, and `intelligence/summary` were still returning `401`
+- `recommended=true` and `intelligence_source=*` behavior was not aligned with live intelligence metadata
+- live `@official` content still included stale entries such as `workbench`
 
-That means rollout has to be done in the right order:
+That meant rollout had to be done in the right order:
 
 1. deploy the hosted API and registry portal changes
 2. verify public-read behavior
@@ -26,6 +27,36 @@ That means rollout has to be done in the right order:
 
 - monorepo: `codex/decantr-vnext-reset`
 - content repo: `codex/decantr-vnext-resetmai`
+
+## Final Outcome
+
+As of 2026-04-09, the hosted rollout completed successfully:
+
+- Fly is serving the API from image `runtime-intelligence-fix-20260409-0916`
+- `pnpm audit:public-api` passes against `https://api.decantr.ai/v1`
+- `decantr-content` workflow run `24192386163` completed successfully and synced official content from `codex/decantr-vnext-resetmai`
+- live `@official` content no longer includes stale `workbench`-era extras
+- live registry drift now reports:
+  - `matched: 480`
+  - `missing live: 0`
+  - `extra live: 0`
+  - `changed: 0`
+  - `failed: 0`
+- live intelligence audit now reports:
+  - `repo: 480`
+  - `live: 480`
+  - `intelligence: 480`
+  - `recommended: 224`
+
+Key fixes required during rollout:
+
+- repaired the Fly deploy path around `apps/api/fly.toml` and the workspace-aware root `Dockerfile`
+- replaced brittle packaged-schema JSON imports with runtime-safe schema loading in the API
+- hardened `/v1/intelligence/summary` to ignore retired legacy content types still present in hosted data during sync
+- fixed `decantr-content` GitHub workflows so they install dependencies before validation/sync
+- tightened the drift audit so it no longer reports version-only registry bookkeeping noise when repo items do not declare a version
+
+The remainder of this runbook is preserved as the canonical sequence that got the rollout from red to green.
 
 ## Step 1: Verify Local Branch Health
 

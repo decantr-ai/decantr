@@ -119,6 +119,15 @@ commit archaeology.
   - retired the old root `fly.toml`
   - removed the obsolete `apps/api/Dockerfile`
   - removed the stray `apps/api/package-lock.json`
+- Completed the hosted API rollout on 2026-04-09:
+  - Fly now serves the reset-branch API successfully
+  - `/v1/schema/*`, `/v1/showcase/*`, and `/v1/intelligence/summary` are publicly reachable
+  - `pnpm audit:public-api` now passes against `https://api.decantr.ai/v1`
+- Completed the official content rollout on 2026-04-09:
+  - content workflow run `24192386163` synced `codex/decantr-vnext-resetmai` into the live registry
+  - live `@official` content count is now `480`
+  - stale live extras were pruned
+  - live registry drift now reports zero missing, extra, or changed items
 
 ### Registry portal dogfooding
 
@@ -154,27 +163,24 @@ The reset branch has repeatedly been verified with:
 - `node scripts/audit-content-intelligence.js` in `decantr-content`
 - `node scripts/audit-registry-drift.js` in `decantr-content`
 
-## Known Live Rollout Gaps
+## Current Live State
 
-The repo-side architecture is ahead of the currently deployed public API.
+Observed from live audits against `https://api.decantr.ai/v1` on 2026-04-09:
 
-Observed from live audits against `https://api.decantr.ai/v1`:
+- hosted public API smoke audit is green
+- hosted intelligence summary is green
+- live `@official` content count matches repo count
+- live registry drift is clean after the official-content sync
+- showcase shortlist verification is publicly reachable
 
-- hosted `recommended=true` behavior still does not match metadata counts
-- hosted `intelligence_source=authored|benchmark|hybrid` currently behaves like an unfiltered response
-- live `@official` registry content is still missing the new intelligence metadata on deployed surfaces
-- stale `workbench`-era content still appears in live registry results
-- the hosted `schema`, `showcase`, and `intelligence/summary` surfaces are still not consistently public on the deployed API
-
-These are rollout/deployment issues, not local branch correctness issues.
-
-The hosted API path is now explicit in-repo. The registry portal deploy path is still
-external to this repository and remains a separate rollout concern.
+The hosted API path is now explicit and exercised in production. The registry portal deploy
+path is still external to this repository and remains a separate operational concern, but the
+public API contract required by the reset program is now live.
 
 ## Highest-Value Next Streams
 
-1. Deploy or stage the hosted API/registry changes so live audits start converging.
-2. Add a lightweight public API/reference doc for registry browse/search filters.
-3. Keep expanding golden verification beyond build/smoke into richer route/runtime checks.
-4. Move execution packs deeper into hosted/API workflows instead of local scaffold-only artifacts.
-5. Continue narrowing legacy `any`/implicit contracts in older CLI and MCP paths.
+1. Add richer golden verification beyond build/smoke into route/runtime behavior.
+2. Move execution packs deeper into hosted/API workflows instead of local scaffold-only artifacts.
+3. Continue narrowing legacy `any`/implicit contracts in older CLI and MCP paths.
+4. Make the registry portal deploy path as explicit and repeatable as the Fly API path.
+5. Keep improving content intelligence quality and confidence scoring on top of the now-live hosted summary contract.
