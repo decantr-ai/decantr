@@ -1,17 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { execFile, execSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
-function runCli(args: string, env?: NodeJS.ProcessEnv): string {
+function runCli(cwd: string, args: string, env?: NodeJS.ProcessEnv): string {
   const cliPath = join(__dirname, '..', '..', 'dist', 'bin.js');
   try {
     return execSync(`node ${cliPath} ${args}`, {
-      cwd: process.cwd(),
+      cwd,
       encoding: 'utf-8',
       timeout: 15000,
       env: { ...process.env, ...env },
@@ -22,13 +24,13 @@ function runCli(args: string, env?: NodeJS.ProcessEnv): string {
   }
 }
 
-async function runCliAsync(args: string, env?: NodeJS.ProcessEnv): Promise<string> {
+async function runCliAsync(cwd: string, args: string, env?: NodeJS.ProcessEnv): Promise<string> {
   const cliPath = join(__dirname, '..', '..', 'dist', 'bin.js');
   const argv = args.split(' ').filter(Boolean);
 
   try {
     const { stdout } = await execFileAsync('node', [cliPath, ...argv], {
-      cwd: process.cwd(),
+      cwd,
       encoding: 'utf-8',
       timeout: 15000,
       env: { ...process.env, ...env },
@@ -40,20 +42,30 @@ async function runCliAsync(args: string, env?: NodeJS.ProcessEnv): Promise<strin
 }
 
 describe('registry commands (e2e)', () => {
+  let testDir: string;
+
+  beforeEach(() => {
+    testDir = mkdtempSync(join(tmpdir(), 'decantr-registry-'));
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
   it('search returns output', () => {
-    const output = runCli('search dashboard');
+    const output = runCli(testDir, 'search dashboard');
     // Should produce some output — either results or an error message
     expect(output.length).toBeGreaterThan(0);
   });
 
   it('list blueprints returns items or empty message', () => {
-    const output = runCli('list blueprints');
+    const output = runCli(testDir, 'list blueprints');
     // Either "N blueprints found" or "No blueprints found."
     expect(output).toContain('blueprint');
   });
 
   it('get pattern hero returns JSON with correct slug', () => {
-    const output = runCli('get pattern hero');
+    const output = runCli(testDir, 'get pattern hero');
     const json = JSON.parse(output);
     // The API may return a UUID as `id` — check `slug` or `id` field
     const identifier = json.slug ?? json.id;
@@ -61,7 +73,7 @@ describe('registry commands (e2e)', () => {
   });
 
   it('list shells returns items or empty message', () => {
-    const output = runCli('list shells');
+    const output = runCli(testDir, 'list shells');
     // Either "N shells found" or "No shells found."
     expect(output).toContain('shells');
   });
@@ -127,7 +139,7 @@ describe('registry commands (e2e)', () => {
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
     const { port } = server.address() as AddressInfo;
 
-    const output = await runCliAsync('showcase verification --json', {
+    const output = await runCliAsync(testDir, 'showcase verification --json', {
       DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
       DECANTR_API_KEY: '',
     });
