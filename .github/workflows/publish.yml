@@ -4,12 +4,27 @@ on:
     tags: ['v*']
   workflow_dispatch:
     inputs:
+      release_wave:
+        description: Release wave to publish
+        required: false
+        type: choice
+        options:
+          - all
+          - foundation
+          - delivery
+          - experimental
+        default: all
       dist_tag:
         description: Optional dist-tag override for all selected packages
         required: false
         default: ''
       include_experimental:
         description: Include experimental packages such as @decantr/vite-plugin
+        required: false
+        type: boolean
+        default: false
+      dry_run_only:
+        description: Generate the release plan and run publish selection as a dry run only
         required: false
         type: boolean
         default: false
@@ -33,16 +48,35 @@ jobs:
       - run: pnpm build
       - run: pnpm test
       - run: pnpm audit:package-surface
-      - name: Publish packages with OIDC provenance
+      - run: pnpm audit:release-readiness
+      - name: Generate release plan summary
         env:
-          DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
-          INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
+          RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
         run: |
           ARGS=""
+          if [ "$RELEASE_WAVE" != "all" ]; then
+            ARGS="$ARGS --wave=$RELEASE_WAVE"
+          fi
+          node scripts/release-plan.mjs $ARGS --summary-markdown=/tmp/package-release-plan.md
+          cat /tmp/package-release-plan.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish packages with OIDC provenance
+        env:
+          RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
+          DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
+          INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
+          DRY_RUN_ONLY: ${{ github.event.inputs.dry_run_only || 'false' }}
+        run: |
+          ARGS=""
+          if [ "$RELEASE_WAVE" != "all" ]; then
+            ARGS="$ARGS --wave=$RELEASE_WAVE"
+          fi
           if [ -n "$DIST_TAG_OVERRIDE" ]; then
             ARGS="$ARGS --tag-override=$DIST_TAG_OVERRIDE"
           fi
           if [ "$INCLUDE_EXPERIMENTAL" = "true" ]; then
             ARGS="$ARGS --include-experimental"
+          fi
+          if [ "$DRY_RUN_ONLY" = "true" ]; then
+            ARGS="$ARGS --dry-run"
           fi
           node scripts/publish-packages.mjs $ARGS

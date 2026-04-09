@@ -329,6 +329,7 @@ describe('verifier', () => {
         `
           export function Home() {
             localStorage.setItem('auth_token', token);
+            document.cookie = \`auth_token=\${token}; path=/\`;
             return (
               <form>
                 <button>Save</button>
@@ -347,6 +348,7 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'source-security-risk-patterns-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-placeholder-route-targets-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-storage-writes-present')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'source-auth-cookie-writes-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-guard-signals-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-accessibility-issues-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-interaction-safety-issues-present')).toBe(true);
@@ -1080,6 +1082,7 @@ describe('verifier', () => {
         export function persistSession(token: string) {
           localStorage.setItem('auth_token', token);
           sessionStorage.jwt = token;
+          document.cookie = \`auth_token=\${token}; path=/\`;
         }
       `,
       reviewPack: {
@@ -1111,5 +1114,6 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'security-auth-storage-write')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'security-auth-cookie-write')).toBe(true);
   });
 });

@@ -81,6 +81,7 @@ commit archaeology.
 - Review packs now inform critique behavior.
 - Project audit now aggregates source-tree findings from `src/`, `app/`, `pages/`, and `components/` when they are present, including inline styles, risky HTML patterns, placeholder routes, auth storage writes, accessibility issues, and unsafe form/auth input behavior.
 - Project audit now also warns when auth is declared but the source tree does not show obvious protected-route, middleware, session-check, or auth-redirect behavior.
+- Source and file critique now also flag auth-like credentials written into client-managed cookies, not just localStorage/sessionStorage.
 - Project audit now includes shared runtime evidence when `dist/` exists:
   - root document validation
   - document title validation
@@ -257,6 +258,7 @@ commit archaeology.
 - Replaced the hardcoded publish loop with a manifest-backed publish script.
 - Added explicit release-wave and publish-order metadata so package planning, dry-runs, and publishes can execute in a stable foundation-to-delivery order instead of hand-curated lists.
 - Added wave-aware release-plan and publish filtering so npm rehearsals can target a specific package wave instead of hand-picked package name lists.
+- Updated the GitHub npm publish workflow so manual runs can select a release wave, emit the computed release plan into the Actions summary, and rehearse with `dry_run_only=true`.
 - Added package-level README coverage for all active public packages.
 - Added a package support matrix and release-strategy runbook for the npm surface.
 

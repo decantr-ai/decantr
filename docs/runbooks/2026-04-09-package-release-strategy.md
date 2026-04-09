@@ -73,16 +73,24 @@ Release planning now also has an executable source:
 - `node scripts/release-plan.mjs --json`
 - `node scripts/release-plan.mjs --wave=foundation`
 - `node scripts/release-plan.mjs --summary-markdown=/tmp/package-release-plan.md`
+- manual GitHub Actions publish runs can now choose:
+  - `release_wave`
+  - `dist_tag`
+  - `include_experimental`
+  - `dry_run_only`
 
 The workflow:
 
 - builds and tests the monorepo
 - runs `pnpm audit:package-surface`
+- runs `pnpm audit:release-readiness`
+- writes the selected release plan into the GitHub Actions step summary before publishing
 - publishes only the packages marked `publish: true`
 - skips experimental packages unless `include_experimental=true`
 - publishes in release-wave order from `config/package-surface.json`
 - supports `--wave=<wave>` for targeted publish rehearsals
 - supports a manual `dist_tag` override for coordinated release waves
+- supports `dry_run_only=true` in the publish workflow so a wave can be rehearsed in GitHub Actions without mutating npm
 
 Retired package handling now uses `config/package-retirements.json` plus:
 
@@ -163,3 +171,9 @@ node scripts/publish-packages.mjs --dry-run --wave=foundation
 node scripts/publish-packages.mjs --dry-run --include-experimental
 pnpm npm-surface:normalize:dry-run
 ```
+
+For GitHub Actions rehearsals, trigger `.github/workflows/publish.yml` with:
+
+- `release_wave=foundation` to publish or rehearse the dependency base first
+- `release_wave=delivery` for CLI/MCP delivery surfaces after the foundation wave is green
+- `dry_run_only=true` to exercise the selection logic and summary output without touching npm
