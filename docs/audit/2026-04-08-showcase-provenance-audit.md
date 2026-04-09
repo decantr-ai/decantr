@@ -136,6 +136,7 @@ Current automation support:
 - `pnpm showcase:shortlist`
 - `pnpm showcase:build:shortlist`
 - `pnpm showcase:copy:shortlist`
+- `pnpm showcase:verify:shortlist`
 - optional JSON output: `pnpm showcase:audit -- --report-json=/tmp/showcase-audit.json`
 
 Baseline from the first branch run on 2026-04-08:
@@ -157,6 +158,11 @@ Initial provisional shortlist produced from the same baseline:
 - `knowledge-base`
 
 These are now marked in `apps/showcase/manifest.json` as provisional `Class B` shortlist candidates. This does not mean they are full goldens yet. It means they are the lowest-noise current benchmark candidates to review first during the manual provenance pass.
+
+First shortlist verification run on 2026-04-08:
+- 8/8 shortlisted apps built successfully
+- average build duration: 2,104 ms
+- verification command: `pnpm showcase:verify:shortlist -- --report-json=/tmp/decantr-showcase-shortlist-verify.json`
 
 ### Phase 2: Classification
 

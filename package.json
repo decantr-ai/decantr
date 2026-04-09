@@ -19,6 +19,7 @@
     "showcase:validate": "node scripts/validate-showcase-manifest.mjs",
     "showcase:audit": "node scripts/audit-showcases.mjs",
     "showcase:shortlist": "node scripts/shortlist-showcases.mjs",
+    "showcase:verify:shortlist": "node scripts/verify-showcase-shortlist.mjs",
     "showcase": "pnpm run showcase:build && pnpm run showcase:copy"
   },
   "devDependencies": {
