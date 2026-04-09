@@ -90,7 +90,7 @@ describe('MCP tool handlers', () => {
     });
 
     it('returns intelligence metadata when the registry search surface provides it', async () => {
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
         new Response(JSON.stringify({
           total: 1,
           results: [{
@@ -118,6 +118,7 @@ describe('MCP tool handlers', () => {
 
       const result = await handleTool('decantr_search_registry', {
         query: 'portfolio',
+        sort: 'name',
       }) as {
         total: number;
         results: Array<{ intelligence?: { recommended?: boolean; quality_score?: number } | null }>;
@@ -126,6 +127,10 @@ describe('MCP tool handlers', () => {
       expect(result.total).toBe(1);
       expect(result.results[0]?.intelligence?.recommended).toBe(true);
       expect(result.results[0]?.intelligence?.quality_score).toBe(92);
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('sort=name'),
+        expect.anything(),
+      );
     });
   });
 

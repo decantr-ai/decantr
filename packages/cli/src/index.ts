@@ -295,10 +295,10 @@ async function printShowcaseBenchmarks(
 
 // ── Commands ──
 
-async function cmdSearch(query: string, type?: string) {
+async function cmdSearch(query: string, type?: string, sort?: string) {
   const apiClient = getAPIClient();
   try {
-    const response = await apiClient.search({ q: query, type });
+    const response = await apiClient.search({ q: query, type, sort });
     const results = response.results;
 
     if (results.length === 0) {
@@ -514,7 +514,7 @@ async function cmdValidate(path?: string) {
   } catch { /* guard is optional */ }
 }
 
-async function cmdList(type: string) {
+async function cmdList(type: string, sort?: string) {
   if (!isApiContentType(type)) {
     console.error(error(`Invalid type "${type}". Must be one of: ${LIST_CONTENT_TYPES.join(', ')}`));
     process.exitCode = 1;
@@ -525,7 +525,7 @@ async function cmdList(type: string) {
     cacheDir: join(process.cwd(), '.decantr', 'cache'),
   });
 
-  const result = await registryClient.fetchContentList(type);
+  const result = await registryClient.fetchContentList(type, undefined, sort);
   const items = result.data.items;
 
   if (items.length === 0) {
@@ -1355,10 +1355,10 @@ ${BOLD}Usage:${RESET}
   decantr migrate
   decantr check
   decantr sync-drift
-  decantr search <query> [--type <type>]
+  decantr search <query> [--type <type>] [--sort <recommended|recent|name>]
   decantr suggest <query> [--type <type>]
   decantr get <type> <id>
-  decantr list <type>
+  decantr list <type> [--sort <recommended|recent|name>]
   decantr showcase [manifest|shortlist|verification] [--json]
   decantr validate [path]
   decantr theme <subcommand>
@@ -1570,13 +1570,15 @@ async function main() {
     case 'search': {
       const query = args[1];
       if (!query) {
-        console.error(error('Usage: decantr search <query> [--type <type>]'));
+        console.error(error('Usage: decantr search <query> [--type <type>] [--sort <recommended|recent|name>]'));
         process.exitCode = 1;
         return;
       }
       const typeIdx = args.indexOf('--type');
       const type = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
-      await cmdSearch(query, type);
+      const sortIdx = args.indexOf('--sort');
+      const sort = sortIdx !== -1 ? args[sortIdx + 1] : undefined;
+      await cmdSearch(query, type, sort);
       break;
     }
 
@@ -1608,11 +1610,13 @@ async function main() {
     case 'list': {
       const type = args[1];
       if (!type) {
-        console.error(error('Usage: decantr list <type>'));
+        console.error(error('Usage: decantr list <type> [--sort <recommended|recent|name>]'));
         process.exitCode = 1;
         return;
       }
-      await cmdList(type);
+      const sortIdx = args.indexOf('--sort');
+      const sort = sortIdx !== -1 ? args[sortIdx + 1] : undefined;
+      await cmdList(type, sort);
       break;
     }
 

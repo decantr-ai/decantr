@@ -224,6 +224,7 @@ export const TOOLS = [
       properties: {
         query: { type: 'string', description: 'Search query (e.g. "kanban", "neon", "dashboard")' },
         type: { type: 'string', description: 'Filter by type: pattern, archetype, theme, shell' },
+        sort: { type: 'string', description: 'Optional sort: recommended, recent, or name.' },
       },
       required: ['query'],
     },
@@ -551,6 +552,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const response = await apiClient.search({
           q: args.query as string,
           type: args.type as string | undefined,
+          sort: args.sort as string | undefined,
         });
         return {
           total: response.total,

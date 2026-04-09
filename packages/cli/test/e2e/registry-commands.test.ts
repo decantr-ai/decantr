@@ -151,4 +151,59 @@ describe('registry commands (e2e)', () => {
     expect(Array.isArray(json.results)).toBe(true);
     expect(json.results.some((entry: { slug: string }) => entry.slug === 'portfolio')).toBe(true);
   });
+
+  it('forwards sort parameters for search and list commands', async () => {
+    const requests: string[] = [];
+    const server = createServer((req, res) => {
+      requests.push(req.url || '');
+
+      if (req.url?.startsWith('/v1/search')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          total: 1,
+          results: [{
+            type: 'blueprint',
+            slug: 'alpha',
+            namespace: '@official',
+            description: 'Alpha result',
+          }],
+        }));
+        return;
+      }
+
+      if (req.url?.startsWith('/v1/blueprints')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          total: 1,
+          items: [{
+            id: 'blueprint-1',
+            type: 'blueprint',
+            slug: 'alpha',
+            namespace: '@official',
+            name: 'Alpha',
+            description: 'Alpha blueprint',
+          }],
+        }));
+        return;
+      }
+
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Not found' }));
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const { port } = server.address() as AddressInfo;
+    const env = {
+      DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
+      DECANTR_API_KEY: '',
+    };
+
+    await runCliAsync(testDir, 'search portfolio --sort name --type blueprints', env);
+    await runCliAsync(testDir, 'list blueprints --sort recent', env);
+
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+
+    expect(requests.some((url) => url.includes('/v1/search') && url.includes('sort=name'))).toBe(true);
+    expect(requests.some((url) => url.includes('/v1/blueprints') && url.includes('sort=recent'))).toBe(true);
+  });
 });

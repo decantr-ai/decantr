@@ -99,11 +99,11 @@ export class RegistryClient {
   } = {}) {
     this.projectRoot = options.projectRoot || process.cwd();
     this.cacheDir = options.cacheDir || join(this.projectRoot, '.decantr', 'cache');
-    this.apiUrl = options.apiUrl || DEFAULT_API_URL;
+    this.apiUrl = options.apiUrl || process.env.DECANTR_API_URL || DEFAULT_API_URL;
     this.offline = options.offline || false;
     this.apiClient = new RegistryAPIClient({
       baseUrl: this.apiUrl,
-      apiKey: options.apiKey,
+      apiKey: options.apiKey || process.env.DECANTR_API_KEY || undefined,
     });
   }
 
@@ -162,7 +162,8 @@ export class RegistryClient {
    */
   async fetchContentList<T extends ApiContentType>(
     contentType: T,
-    namespace?: string
+    namespace?: string,
+    sort?: string,
   ): Promise<FetchResult<{ items: RegistryContentMap[T][]; total: number }>> {
     let apiItems: RegistryContentMap[T][] = [];
     let source: RegistrySource = { type: 'cache' };
@@ -170,7 +171,7 @@ export class RegistryClient {
     // Try API first
     if (!this.offline) {
       try {
-        const apiResult = await this.apiClient.listContent<RegistryContentMap[T]>(contentType, { namespace });
+        const apiResult = await this.apiClient.listContent<RegistryContentMap[T]>(contentType, { namespace, sort });
         apiItems = apiResult.items;
         source = { type: 'api', url: this.apiUrl };
         // Cache the result
