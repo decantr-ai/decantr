@@ -21,6 +21,8 @@ Known facts:
 - some apps include React / Tailwind / inline-style / hand-rolled deviations that were not part of the intended Decantr ideal
 - the corpus is large enough to support benchmark and regression analysis
 - the corpus is currently unclassified, which makes it noisy instead of trustworthy
+- `apps/showcase/manifest.json` now exists as the operational inventory surface for this audit
+- `workbench` has already been marked `archived` / `Class D` because it reinforces the removed standalone UI-framework line
 
 ## 3. New Classification Model
 

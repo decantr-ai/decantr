@@ -12,7 +12,7 @@
     "clean": "pnpm -r exec rm -rf dist",
     "mcp": "node packages/mcp-server/dist/index.js",
     "schemas:sync": "node scripts/sync-schema-copies.mjs",
-    "showcase:build": "pnpm --filter './apps/showcase/*' build",
+    "showcase:build": "node scripts/build-showcases.mjs",
     "showcase:copy": "node scripts/copy-showcase-dist.mjs",
     "showcase": "pnpm run showcase:build && pnpm run showcase:copy"
   },

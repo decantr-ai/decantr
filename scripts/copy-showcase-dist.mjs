@@ -1,26 +1,29 @@
-import { cpSync, mkdirSync, rmSync, readdirSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { getActiveShowcaseEntries, showcaseRoot, repoRoot } from './showcase-manifest.mjs';
 
-const showcaseRoot = join(import.meta.dirname, '..', 'apps', 'showcase');
-const targetRoot = join(import.meta.dirname, '..', 'apps', 'registry', 'public', 'showcase');
+const dryRun = process.argv.includes('--dry-run');
+const targetRoot = join(repoRoot, 'apps', 'registry', 'public', 'showcase');
 
-const entries = readdirSync(showcaseRoot, { withFileTypes: true });
-
-for (const entry of entries) {
-  if (!entry.isDirectory()) continue;
-
-  const distDir = join(showcaseRoot, entry.name, 'dist');
+for (const entry of getActiveShowcaseEntries()) {
+  const distDir = join(showcaseRoot, entry.slug, 'dist');
   if (!existsSync(distDir)) continue;
 
-  const targetDir = join(targetRoot, entry.name);
+  const targetDir = join(targetRoot, entry.slug);
 
   // Clean target directory
-  if (existsSync(targetDir)) {
+  if (!dryRun && existsSync(targetDir)) {
     rmSync(targetDir, { recursive: true });
   }
-  mkdirSync(targetDir, { recursive: true });
+  if (!dryRun) {
+    mkdirSync(targetDir, { recursive: true });
+  }
 
   // Copy dist contents
-  cpSync(distDir, targetDir, { recursive: true });
-  console.log(`Copied ${entry.name}/dist -> apps/registry/public/showcase/${entry.name}/`);
+  if (!dryRun) {
+    cpSync(distDir, targetDir, { recursive: true });
+    console.log(`Copied ${entry.slug}/dist -> apps/registry/public/showcase/${entry.slug}/`);
+  } else {
+    console.log(`[dry-run] copy ${entry.slug}/dist -> apps/registry/public/showcase/${entry.slug}/`);
+  }
 }
