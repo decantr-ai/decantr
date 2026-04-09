@@ -1657,6 +1657,49 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'accessibility-icon-link-label-missing')).toBe(true);
   });
 
+  it('flags iframes without titles during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/AnalyticsEmbed.tsx',
+      code: `
+        export function AnalyticsEmbed() {
+          return (
+            <section>
+              <iframe src="https://example.com/embed" />
+            </section>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['analytics'], patternIds: ['chart-grid'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'analytics', path: '/analytics', patternIds: ['chart-grid'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-iframe-title-missing')).toBe(true);
+  });
+
   it('flags unlabeled form controls during critique', () => {
     const report = critiqueSource({
       filePath: 'src/components/LoginForm.tsx',

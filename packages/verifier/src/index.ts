@@ -375,6 +375,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.iconOnlyLinkWithoutLabelCount
       + signals.clickableNonSemanticCount
       + signals.imageWithoutAltCount
+      + signals.iframeWithoutTitleCount
       + signals.formControlWithoutLabelCount;
     const securityRiskPatternCount = signals.dangerousHtmlCount
       + signals.rawHtmlInjectionCount
@@ -1582,6 +1583,7 @@ interface AstCritiqueSignals {
   iconOnlyLinkWithoutLabelCount: number;
   clickableNonSemanticCount: number;
   imageWithoutAltCount: number;
+  iframeWithoutTitleCount: number;
   externalBlankLinkWithoutRelCount: number;
   formControlWithoutLabelCount: number;
   placeholderNavigationTargetCount: number;
@@ -1927,6 +1929,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     iconOnlyLinkWithoutLabelCount: 0,
     clickableNonSemanticCount: 0,
     imageWithoutAltCount: 0,
+    iframeWithoutTitleCount: 0,
     externalBlankLinkWithoutRelCount: 0,
     formControlWithoutLabelCount: 0,
     placeholderNavigationTargetCount: 0,
@@ -2082,6 +2085,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'img' && !getJsxAttribute(node.attributes, 'alt')) {
         signals.imageWithoutAltCount += 1;
       }
+      if (tagName === 'iframe' && !getJsxAttribute(node.attributes, 'title')) {
+        signals.iframeWithoutTitleCount += 1;
+      }
       if (
         isNonSemanticInteractiveTag(tagName)
         && getJsxAttribute(node.attributes, 'onClick')
@@ -2137,6 +2143,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (tagName === 'img' && !getJsxAttribute(node.openingElement.attributes, 'alt')) {
         signals.imageWithoutAltCount += 1;
+      }
+      if (tagName === 'iframe' && !getJsxAttribute(node.openingElement.attributes, 'title')) {
+        signals.iframeWithoutTitleCount += 1;
       }
 
       if (
@@ -2244,6 +2253,7 @@ export function critiqueSource({
   const iconLinkIssues = astSignals.iconOnlyLinkWithoutLabelCount;
   const clickableNonSemanticIssues = astSignals.clickableNonSemanticCount;
   const imageAltIssues = astSignals.imageWithoutAltCount;
+  const iframeTitleIssues = astSignals.iframeWithoutTitleCount;
   const formControlLabelIssues = astSignals.formControlWithoutLabelCount;
   scores.push({
     category: 'Accessibility',
@@ -2260,10 +2270,11 @@ export function critiqueSource({
         - (iconLinkIssues > 0 ? 1 : 0)
         - (clickableNonSemanticIssues > 0 ? 1 : 0)
         - (imageAltIssues > 0 ? 1 : 0)
+        - (iframeTitleIssues > 0 ? 1 : 0)
         - (formControlLabelIssues > 0 ? 1 : 0),
       ),
     ),
-    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}, form controls without labels: ${formControlLabelIssues}`,
+    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}, iframes without title: ${iframeTitleIssues}, form controls without labels: ${formControlLabelIssues}`,
     suggestions: [
       ...(!hasAria ? ['Add ARIA roles or labels to interactive regions.'] : []),
       ...(!hasFocus ? ['Add visible focus styling for keyboard navigation.'] : []),
@@ -2272,6 +2283,7 @@ export function critiqueSource({
       ...(iconLinkIssues > 0 ? ['Add accessible labels to icon-only links via visible text or aria-label.'] : []),
       ...(clickableNonSemanticIssues > 0 ? ['Use semantic interactive elements or add role/tabIndex and keyboard handling to clickable non-semantic containers.'] : []),
       ...(imageAltIssues > 0 ? ['Add alt text to meaningful images and use alt="" only for decorative ones.'] : []),
+      ...(iframeTitleIssues > 0 ? ['Add descriptive title attributes to embedded iframes so assistive technologies can identify their purpose.'] : []),
       ...(formControlLabelIssues > 0 ? ['Add programmatic labels to form controls instead of relying on placeholders alone.'] : []),
     ],
   });
@@ -2340,6 +2352,17 @@ export function critiqueSource({
         evidence: [filePath, `Images without alt: ${imageAltIssues}`],
         file: filePath,
         suggestedFix: 'Add meaningful alt text for informative images, or use alt="" when the image is purely decorative.',
+      }));
+    }
+    if (iframeTitleIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-iframe-title-missing',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+        message: 'Iframe elements were detected without a descriptive `title` attribute.',
+        evidence: [filePath, `Iframes without title: ${iframeTitleIssues}`],
+        file: filePath,
+        suggestedFix: 'Add a concise title attribute to each iframe so assistive technologies can describe the embedded surface.',
       }));
     }
     if (formControlLabelIssues > 0) {
