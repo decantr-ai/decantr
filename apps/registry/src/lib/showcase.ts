@@ -1,10 +1,10 @@
 import { unstable_cache } from 'next/cache';
 import {
-  RegistryAPIClient,
   type ShowcaseManifestEntry,
   type ShowcaseShortlistSummary as ShowcaseShortlistVerificationSummary,
   type ShowcaseVerificationEntry,
-} from '@decantr/registry';
+} from '@decantr/registry/client';
+import { getPublicRegistryClient } from '@/lib/public-registry-client';
 
 export interface ShowcaseMetadata extends ShowcaseManifestEntry {
   verification: ShowcaseVerificationEntry | null;
@@ -17,20 +17,12 @@ interface ShowcaseDataset {
   bySlug: Record<string, ShowcaseMetadata>;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 const SHOWCASE_REVALIDATE_SECONDS = 300;
 const EMPTY_SHOWCASE_DATASET: ShowcaseDataset = {
   apps: [],
   shortlisted: [],
   summary: null,
   bySlug: {},
-};
-
-function createRegistryApiClient(): RegistryAPIClient {
-  return new RegistryAPIClient({
-    baseUrl: API_URL,
-    cacheTtlMs: SHOWCASE_REVALIDATE_SECONDS * 1000,
-  });
 }
 
 function normalizeShowcaseEntry(entry: ShowcaseManifestEntry): ShowcaseMetadata {
@@ -43,7 +35,7 @@ function normalizeShowcaseEntry(entry: ShowcaseManifestEntry): ShowcaseMetadata 
 const fetchShowcaseDataset = unstable_cache(
   async (): Promise<ShowcaseDataset> => {
     try {
-      const client = createRegistryApiClient();
+      const client = getPublicRegistryClient();
       const [manifest, shortlist] = await Promise.all([
         client.getShowcaseManifest(),
         client.getShowcaseShortlist(),

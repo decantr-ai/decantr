@@ -1,3 +1,5 @@
+import { getPublicRegistryClient, normalizeApiContentType } from '@/lib/public-registry-client';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 
 export interface ContentItem {
@@ -132,16 +134,14 @@ export const api = {
     const query = params ? `?${new URLSearchParams(params)}` : '';
     return apiFetch<{ total: number; items: ContentItem[] }>(`/users/${username}/content${query}`);
   },
-  listContent: (type: string, params?: Record<string, string>) => {
-    const query = params ? `?${new URLSearchParams(params)}` : '';
-    return apiFetch<{ total: number; items: any[] }>(`/${type}${query}`);
-  },
+  listContent: (type: string, params?: Record<string, string>) =>
+    getPublicRegistryClient().listContent<ContentItem>(normalizeApiContentType(type), params),
   getContent: (type: string, namespace: string, slug: string) =>
-    apiFetch<any>(`/${type}/${namespace}/${slug}`),
-  search: (q: string, params?: Record<string, string>) => {
-    const query = new URLSearchParams({ q, ...params });
-    return apiFetch<{ total: number; results: any[] }>(`/search?${query}`);
-  },
+    getPublicRegistryClient().getContent<ContentItem>(normalizeApiContentType(type), namespace, slug),
+  search: (q: string, params?: Record<string, string>) =>
+    getPublicRegistryClient()
+      .search({ q, type: params?.type, namespace: params?.namespace })
+      .then((result) => ({ total: result.total, results: result.results as ContentItem[] })),
 
   // Authenticated
   getMe: (token: string) => apiFetch<any>('/me', { token }),
@@ -205,12 +205,9 @@ export function listContent(
   type: string,
   params?: { namespace?: string; limit?: number; offset?: number }
 ) {
-  const query: Record<string, string> = {};
-  if (params?.namespace) query.namespace = params.namespace;
-  if (params?.limit != null) query.limit = String(params.limit);
-  if (params?.offset != null) query.offset = String(params.offset);
-  return apiFetch<{ total: number; items: ContentItem[] }>(
-    `/${type}${Object.keys(query).length ? `?${new URLSearchParams(query)}` : ''}`
+  return getPublicRegistryClient().listContent<ContentItem>(
+    normalizeApiContentType(type),
+    params,
   );
 }
 
@@ -218,18 +215,17 @@ export function searchContent(
   q: string,
   params?: { type?: string; namespace?: string }
 ) {
-  const query: Record<string, string> = { q };
-  if (params?.type) query.type = params.type;
-  if (params?.namespace) query.namespace = params.namespace;
-  return apiFetch<{ total: number; results: ContentItem[] }>(
-    `/search?${new URLSearchParams(query)}`
-  ).then(data => ({ total: data.total, items: data.results }));
+  return getPublicRegistryClient()
+    .search({ q, type: params?.type, namespace: params?.namespace })
+    .then((data) => ({ total: data.total, items: data.results as ContentItem[] }));
 }
 
 export function getContent(type: string, namespace: string, slug: string) {
-  // API uses plural routes (/patterns, /themes, etc.)
-  const plural = type.endsWith('s') ? type : `${type}s`;
-  return apiFetch<ContentItem>(`/${plural}/${namespace}/${slug}`);
+  return getPublicRegistryClient().getContent<ContentItem>(
+    normalizeApiContentType(type),
+    namespace,
+    slug,
+  );
 }
 
 export function getUserProfile(username: string) {
