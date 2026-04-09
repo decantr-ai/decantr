@@ -981,12 +981,27 @@ describe('v3-aware tool tests', () => {
         },
       })));
 
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify(makeHostedPackBundle()), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }),
-      );
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : String(input.url);
+        if (url.includes('/v1/packs/select')) {
+          const body = init?.body;
+          const parsed = typeof body === 'string' ? JSON.parse(body) as { pack_type?: string; id?: string } : {};
+          if (parsed.pack_type === 'page' && parsed.id === 'overview') {
+            return Promise.resolve(new Response(JSON.stringify(makeHostedSelectedPack('page', 'overview')), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }));
+          }
+          if (parsed.pack_type === 'section' && parsed.id === 'dashboard') {
+            return Promise.resolve(new Response(JSON.stringify(makeHostedSelectedPack('section', 'dashboard')), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }));
+          }
+        }
+
+        return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+      });
 
       process.chdir(testDir);
       const result = await handleTool('decantr_get_page_context', { page_id: 'overview' }) as {
@@ -1005,6 +1020,7 @@ describe('v3-aware tool tests', () => {
       expect(result.execution_pack.json.data.pageId).toBe('overview');
       expect(result.section_execution_pack.json.data.sectionId).toBe('dashboard');
       expect(result.note).toContain('hosted compiled execution-pack data');
+      expect(fetchSpy.mock.calls.filter(([input]) => typeof input === 'string' && input.includes('/v1/packs/select'))).toHaveLength(2);
     });
 
     it('returns a specific page pack in markdown and json', async () => {
@@ -1245,8 +1261,8 @@ describe('v3-aware tool tests', () => {
         },
       })));
 
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify(makeHostedPackBundle()), {
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify(makeHostedSelectedPack('section', 'dashboard')), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         }),
@@ -1266,6 +1282,10 @@ describe('v3-aware tool tests', () => {
       expect(result.execution_pack.json.packType).toBe('section');
       expect(result.execution_pack.json.data.sectionId).toBe('dashboard');
       expect(result.note).toContain('hosted compiled execution pack fallback');
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('/v1/packs/select'),
+        expect.anything(),
+      );
     });
   });
 });

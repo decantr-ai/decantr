@@ -1604,11 +1604,14 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       let hostedFallbackError: string | null = null;
 
       if (!executionPackSource) {
-        const hosted = await loadHostedExecutionPackBundleFallback(args);
+        const hosted = await loadHostedSelectedExecutionPackFallback({
+          ...args,
+          pack_type: 'section',
+          id: sectionId,
+        });
         hostedFallbackError = hosted.error;
-        const hostedSectionPack = hosted.bundle ? findHostedSectionPack(hosted.bundle, sectionId) : null;
-        if (hostedSectionPack) {
-          executionPack = toHostedExecutionPackPayload(hostedSectionPack);
+        if (hosted.selected) {
+          executionPack = toHostedExecutionPackPayload(hosted.selected.pack);
           executionPackSource = 'hosted_fallback';
         }
       }
@@ -1653,8 +1656,37 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const manifestPath = join(contextDir, 'pack-manifest.json');
       let manifest: PackManifest | null = null;
       let manifestSource: PackSource | null = null;
-      let hostedBundle: HostedExecutionPackBundle | null = null;
+      let hostedPageSelection: HostedSelectedExecutionPack | null = null;
+      let hostedSectionSelection: HostedSelectedExecutionPack | null = null;
       let hostedFallbackError: string | null = null;
+
+      const loadHostedPageSelection = async () => {
+        if (hostedPageSelection) {
+          return hostedPageSelection;
+        }
+        const hosted = await loadHostedSelectedExecutionPackFallback({
+          ...args,
+          pack_type: 'page',
+          id: pageId,
+        });
+        hostedFallbackError = hosted.error;
+        hostedPageSelection = hosted.selected;
+        return hostedPageSelection;
+      };
+
+      const loadHostedSectionSelection = async (sectionId: string) => {
+        if (hostedSectionSelection && hostedSectionSelection.selector.id === sectionId) {
+          return hostedSectionSelection;
+        }
+        const hosted = await loadHostedSelectedExecutionPackFallback({
+          ...args,
+          pack_type: 'section',
+          id: sectionId,
+        });
+        hostedFallbackError = hosted.error;
+        hostedSectionSelection = hosted.selected;
+        return hostedSectionSelection;
+      };
 
       if (existsSync(manifestPath)) {
         try {
@@ -1666,46 +1698,39 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       if (!manifest) {
-        const hosted = await loadHostedExecutionPackBundleFallback(args);
-        hostedBundle = hosted.bundle;
-        hostedFallbackError = hosted.error;
-        if (!hosted.bundle) {
+        const hosted = await loadHostedPageSelection();
+        if (!hosted) {
           return {
             error: 'Execution pack manifest not found. Run decantr refresh to generate compiled packs.',
-            hosted_fallback_error: hosted.error,
+            hosted_fallback_error: hostedFallbackError,
           };
         }
-        manifest = hosted.bundle.manifest as PackManifest;
+        manifest = hosted.manifest as PackManifest;
         manifestSource = 'hosted_fallback';
       }
 
-      const pageEntry = manifest.pages.find(page => page.id === pageId);
+      let pageEntry = manifest.pages.find(page => page.id === pageId) ?? null;
       if (!pageEntry) {
         if (manifestSource === 'local') {
-          const hosted = await loadHostedExecutionPackBundleFallback(args);
-          hostedBundle = hosted.bundle;
-          hostedFallbackError = hosted.error;
-          if (hosted.bundle) {
-            manifest = hosted.bundle.manifest as PackManifest;
+          const hosted = await loadHostedPageSelection();
+          if (hosted) {
+            manifest = hosted.manifest as PackManifest;
             manifestSource = 'hosted_fallback';
+            pageEntry = manifest.pages.find(page => page.id === pageId) ?? null;
           }
         }
 
-        const availableManifest = manifest;
-        const availablePageEntry = availableManifest.pages.find(page => page.id === pageId);
-        if (availablePageEntry) {
-          // Continue below with the hosted manifest copy.
-        } else {
+        if (!pageEntry) {
           return {
             error: `Page "${pageId}" not found in execution pack manifest.`,
-            available_pages: availableManifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
+            available_pages: manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
             hosted_fallback_error: manifestSource === 'hosted_fallback' ? undefined : hostedFallbackError,
           };
         }
       }
 
-      const resolvedPageEntry = manifest.pages.find(page => page.id === pageId)!;
-      const sectionEntry = resolvedPageEntry.sectionId
+      let resolvedPageEntry = pageEntry;
+      let sectionEntry = resolvedPageEntry.sectionId
         ? manifest.sections.find(section => section.id === resolvedPageEntry.sectionId) ?? null
         : null;
       const pageMarkdownPath = join(contextDir, resolvedPageEntry.markdown);
@@ -1724,14 +1749,15 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       let executionPackSource: PackSource | null = hasExecutionPackPayload(localPagePack) ? 'local' : null;
 
       if (!executionPackSource) {
-        if (!hostedBundle) {
-          const hosted = await loadHostedExecutionPackBundleFallback(args);
-          hostedBundle = hosted.bundle;
-          hostedFallbackError = hosted.error;
-        }
-        const hostedPagePack = hostedBundle ? findHostedPagePack(hostedBundle, pageId) : null;
-        if (hostedPagePack) {
-          executionPack = toHostedExecutionPackPayload(hostedPagePack);
+        const hosted = await loadHostedPageSelection();
+        if (hosted) {
+          manifest = hosted.manifest as PackManifest;
+          manifestSource = 'hosted_fallback';
+          resolvedPageEntry = manifest.pages.find(page => page.id === pageId) ?? resolvedPageEntry;
+          sectionEntry = resolvedPageEntry.sectionId
+            ? manifest.sections.find(section => section.id === resolvedPageEntry.sectionId) ?? sectionEntry
+            : null;
+          executionPack = toHostedExecutionPackPayload(hosted.pack);
           executionPackSource = 'hosted_fallback';
         }
       }
@@ -1746,14 +1772,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       let sectionExecutionPackSource: PackSource | null = localSectionPack && hasExecutionPackPayload(localSectionPack) ? 'local' : null;
 
       if (sectionEntry && !sectionExecutionPackSource) {
-        if (!hostedBundle) {
-          const hosted = await loadHostedExecutionPackBundleFallback(args);
-          hostedBundle = hosted.bundle;
-          hostedFallbackError = hosted.error;
-        }
-        const hostedSectionPack = hostedBundle ? findHostedSectionPack(hostedBundle, sectionEntry.id) : null;
-        if (hostedSectionPack) {
-          sectionExecutionPack = toHostedExecutionPackPayload(hostedSectionPack);
+        const hosted = await loadHostedSectionSelection(sectionEntry.id);
+        if (hosted) {
+          sectionExecutionPack = toHostedExecutionPackPayload(hosted.pack);
           sectionExecutionPackSource = 'hosted_fallback';
         }
       }
