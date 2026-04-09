@@ -112,9 +112,18 @@ commit archaeology.
 - Added a human-readable public API reference page under `docs/reference/`.
 - Added a manual Fly deploy workflow for the hosted API:
   - `.github/workflows/deploy-api-fly.yml`
+- Added an explicit Vercel deploy workflow for the registry portal:
+  - `.github/workflows/deploy-registry-vercel.yml`
+- Added a hosted registry portal audit surface:
+  - `pnpm audit:registry-portal`
+  - `.github/workflows/registry-portal-audit.yml`
 - Standardized the hosted API deploy contract around:
   - `apps/api/fly.toml`
   - the workspace-aware root `Dockerfile`
+- Standardized the registry portal deploy contract around:
+  - `apps/registry`
+  - `apps/registry/.env.example`
+  - `docs/runbooks/2026-04-09-registry-portal-deploy.md`
 - Removed stale deploy-path drift:
   - retired the old root `fly.toml`
   - removed the obsolete `apps/api/Dockerfile`
@@ -181,14 +190,12 @@ Observed from live audits against `https://api.decantr.ai/v1` on 2026-04-09:
 - live registry drift is clean after the official-content sync
 - showcase shortlist verification is publicly reachable
 
-The hosted API path is now explicit and exercised in production. The registry portal deploy
-path is still external to this repository and remains a separate operational concern, but the
-public API contract required by the reset program is now live.
+The hosted API path is explicit and exercised in production. The registry portal deploy path is
+now explicit in-repo as well through the Vercel workflow, portal audit, and runbook surfaces.
 
 ## Highest-Value Next Streams
 
 1. Add richer golden verification beyond build/smoke into route/runtime behavior.
 2. Move execution packs deeper into hosted/API workflows instead of local scaffold-only artifacts.
 3. Continue narrowing legacy `any`/implicit contracts in older CLI and MCP paths.
-4. Make the registry portal deploy path as explicit and repeatable as the Fly API path.
-5. Keep improving content intelligence quality and confidence scoring on top of the now-live hosted summary contract.
+4. Keep improving content intelligence quality and confidence scoring on top of the now-live hosted summary contract.

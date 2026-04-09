@@ -115,6 +115,7 @@ Support matrix: [docs/reference/package-support-matrix.md](docs/reference/packag
 | `@decantr/vite-plugin` | Verification-adjacent and still evolving |
 
 Release policy and dist-tag strategy live in [docs/runbooks/2026-04-09-package-release-strategy.md](docs/runbooks/2026-04-09-package-release-strategy.md).
+Registry portal deployment and health checks live in [docs/runbooks/2026-04-09-registry-portal-deploy.md](docs/runbooks/2026-04-09-registry-portal-deploy.md).
 
 ## Repo Layout
 

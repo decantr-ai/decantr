@@ -118,9 +118,15 @@ Canonical deploy contract:
 
 ### Current portal deploy status
 
-The API deploy path is now explicit in-repo.
+The API deploy path is explicit in-repo.
 
-The registry portal deploy path is still less explicit than the API path and should be treated as a separate rollout concern. Do not assume the portal is updated just because the API deploy completes.
+The registry portal deploy path is also now explicit in-repo through:
+
+- `.github/workflows/deploy-registry-vercel.yml`
+- `.github/workflows/registry-portal-audit.yml`
+- `docs/runbooks/2026-04-09-registry-portal-deploy.md`
+
+Do not assume the portal is updated just because the API deploy completes, but the operational contract is no longer implicit.
 
 Surfaces included in this rollout:
 

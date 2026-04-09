@@ -15,6 +15,7 @@ This reset branch treats only the vNext program, audits, and active implementati
 - `runbooks/`
   - Operational rollout and verification procedures for hosted surfaces.
   - Includes package release strategy and hosted rollout runbooks.
+  - Includes explicit runbooks for both API and registry portal deployment.
 
 Current active phase specs:
 - `specs/2026-04-08-vnext-phase-0-product-boundary-cleanup-design.md`
