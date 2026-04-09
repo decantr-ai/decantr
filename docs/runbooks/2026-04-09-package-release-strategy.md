@@ -108,6 +108,7 @@ The live npm dist-tag surface now also has an executable audit:
 
 - `pnpm audit:npm-surface`
 - `pnpm npm-surface:normalize:dry-run`
+- `pnpm npm-surface:normalize`
 
 That audit compares `config/package-surface.json` against the real npm registry and flags:
 
@@ -124,6 +125,19 @@ The normalization script is intentionally dry-run first. It can safely automate:
 It does not automatically retag `latest`; that remains a deliberate manual release-wave decision.
 The npm audit and normalization tooling now also report whether a stable fallback version actually exists when `latest` is still pointing at a beta. As of April 9, 2026, the affected beta packages do not have an older stable publish to fall back to, so the `latest` retag work is blocked on intentional stable releases rather than simple dist-tag cleanup.
 When run with `--write`, it now also performs an npm auth preflight so broken credentials fail fast before any dist-tag mutation attempt starts.
+
+A dedicated GitHub Actions workflow now exists for dist-tag normalization:
+
+- `.github/workflows/npm-surface-normalize.yml`
+
+That workflow supports:
+
+- dry-run reporting with no npm mutation
+- write mode through `NPM_TOKEN` for safe executable repairs such as:
+  - adding missing `beta` tags where `latest` already points at the intended prerelease
+  - removing stray unexpected dist-tags
+
+It intentionally does not retag `latest`; that remains a deliberate stable-release decision.
 
 ## Ongoing Audit Workflow
 
