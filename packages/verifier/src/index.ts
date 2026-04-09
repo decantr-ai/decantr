@@ -919,6 +919,7 @@ interface AstCritiqueSignals {
   clickableNonSemanticCount: number;
   imageWithoutAltCount: number;
   externalBlankLinkWithoutRelCount: number;
+  formControlWithoutLabelCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -1013,6 +1014,62 @@ function isNonSemanticInteractiveTag(tagName: string | null): boolean {
   return ['div', 'span', 'section', 'article', 'li'].includes(tagName ?? '');
 }
 
+function collectLabelForIds(root: ts.Node): Set<string> {
+  const ids = new Set<string>();
+
+  const walk = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
+      const tagName = getJsxTagName(node);
+      if (tagName === 'label') {
+        const htmlForValue = getJsxAttributeLiteralValue(getJsxAttribute(node.attributes, 'htmlFor', 'for'));
+        if (htmlForValue) {
+          ids.add(htmlForValue);
+        }
+      }
+    }
+
+    ts.forEachChild(node, walk);
+  };
+
+  walk(root);
+  return ids;
+}
+
+function isWrappedInJsxLabel(node: ts.Node): boolean {
+  let current: ts.Node | undefined = node.parent;
+  while (current) {
+    if (ts.isJsxElement(current) && getJsxTagName(current.openingElement) === 'label') {
+      return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
+function isLabelableFormControl(tagName: string | null, attributes: ts.JsxAttributes): boolean {
+  if (!tagName) return false;
+  if (tagName === 'select' || tagName === 'textarea') return true;
+  if (tagName !== 'input') return false;
+
+  const inputType = (getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'type')) ?? 'text').toLowerCase();
+  return !['hidden', 'submit', 'reset', 'button'].includes(inputType);
+}
+
+function hasFormControlLabel(
+  node: ts.Node,
+  tagName: string | null,
+  attributes: ts.JsxAttributes,
+  labelForIds: Set<string>,
+  textContent: string,
+): boolean {
+  if (!isLabelableFormControl(tagName, attributes)) return true;
+  if (hasAccessibleLabel(attributes, textContent)) return true;
+  if (isWrappedInJsxLabel(node)) return true;
+
+  const idValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'id'));
+  return Boolean(idValue && labelForIds.has(idValue));
+}
+
 function isExternalLinkTargetBlankWithoutRel(attributes: ts.JsxAttributes): boolean {
   const targetValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'target'));
   if (targetValue !== '_blank') return false;
@@ -1041,7 +1098,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     clickableNonSemanticCount: 0,
     imageWithoutAltCount: 0,
     externalBlankLinkWithoutRelCount: 0,
+    formControlWithoutLabelCount: 0,
   };
+  const labelForIds = collectLabelForIds(sourceFile);
 
   const walk = (node: ts.Node) => {
     if (ts.isJsxAttribute(node)) {
@@ -1111,6 +1170,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'a' && isExternalLinkTargetBlankWithoutRel(node.attributes)) {
         signals.externalBlankLinkWithoutRelCount += 1;
       }
+      if (!hasFormControlLabel(node, tagName, node.attributes, labelForIds, '')) {
+        signals.formControlWithoutLabelCount += 1;
+      }
     }
 
     if (ts.isJsxElement(node)) {
@@ -1134,6 +1196,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (tagName === 'a' && isExternalLinkTargetBlankWithoutRel(node.openingElement.attributes)) {
         signals.externalBlankLinkWithoutRelCount += 1;
+      }
+      if (!hasFormControlLabel(node, tagName, node.openingElement.attributes, labelForIds, textContent)) {
+        signals.formControlWithoutLabelCount += 1;
       }
     }
 
@@ -1212,6 +1277,7 @@ export function critiqueSource({
   const iconButtonIssues = astSignals.iconOnlyButtonWithoutLabelCount;
   const clickableNonSemanticIssues = astSignals.clickableNonSemanticCount;
   const imageAltIssues = astSignals.imageWithoutAltCount;
+  const formControlLabelIssues = astSignals.formControlWithoutLabelCount;
   scores.push({
     category: 'Accessibility',
     focusArea: 'accessibility',
@@ -1225,10 +1291,11 @@ export function critiqueSource({
         + (hasKeyboard ? 1 : 0)
         - (iconButtonIssues > 0 ? 1 : 0)
         - (clickableNonSemanticIssues > 0 ? 1 : 0)
-        - (imageAltIssues > 0 ? 1 : 0),
+        - (imageAltIssues > 0 ? 1 : 0)
+        - (formControlLabelIssues > 0 ? 1 : 0),
       ),
     ),
-    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}`,
+    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}, form controls without labels: ${formControlLabelIssues}`,
     suggestions: [
       ...(!hasAria ? ['Add ARIA roles or labels to interactive regions.'] : []),
       ...(!hasFocus ? ['Add visible focus styling for keyboard navigation.'] : []),
@@ -1236,6 +1303,7 @@ export function critiqueSource({
       ...(iconButtonIssues > 0 ? ['Add accessible labels to icon-only buttons via visible text or aria-label.'] : []),
       ...(clickableNonSemanticIssues > 0 ? ['Use semantic interactive elements or add role/tabIndex and keyboard handling to clickable non-semantic containers.'] : []),
       ...(imageAltIssues > 0 ? ['Add alt text to meaningful images and use alt="" only for decorative ones.'] : []),
+      ...(formControlLabelIssues > 0 ? ['Add programmatic labels to form controls instead of relying on placeholders alone.'] : []),
     ],
   });
   if (focusAreas.includes('accessibility')) {
@@ -1292,6 +1360,17 @@ export function critiqueSource({
         evidence: [filePath, `Images without alt: ${imageAltIssues}`],
         file: filePath,
         suggestedFix: 'Add meaningful alt text for informative images, or use alt="" when the image is purely decorative.',
+      }));
+    }
+    if (formControlLabelIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-form-control-label-missing',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'review-remediation']),
+        message: 'Form controls were detected without an associated accessible label.',
+        evidence: [filePath, `Form controls without labels: ${formControlLabelIssues}`],
+        file: filePath,
+        suggestedFix: 'Associate inputs with visible labels or use aria-label/aria-labelledby when a visible label is not appropriate.',
       }));
     }
   }
