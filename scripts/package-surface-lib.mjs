@@ -12,6 +12,10 @@ const SUPPORT_VALUES = new Set([
 const MATURITY_VALUES = new Set(['stable', 'beta', 'experimental']);
 const RETIREMENT_STATUS_VALUES = new Set(['retired', 'deprecated']);
 
+function isMeaningfulStringArray(value) {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string' && entry.trim().length > 0);
+}
+
 export function getRepoRoot() {
   return resolve(new URL('..', import.meta.url).pathname);
 }
@@ -73,6 +77,36 @@ export function validatePackageSurface(surface, publicPackages) {
     if (entry.maturity === 'experimental' && entry.publish !== false) {
       findings.push(`Experimental package ${entry.name} should not publish by default.`);
     }
+
+    const readiness = entry.releaseReadiness;
+    if (!readiness || typeof readiness !== 'object') {
+      findings.push(`Package ${entry.name} is missing releaseReadiness metadata.`);
+      continue;
+    }
+    for (const key of ['stableCandidate', 'docsAligned', 'ciCovered', 'productIntegrated']) {
+      if (typeof readiness[key] !== 'boolean') {
+        findings.push(`Package ${entry.name} releaseReadiness.${key} must be boolean.`);
+      }
+    }
+    if (!isMeaningfulStringArray(readiness.blockers)) {
+      findings.push(`Package ${entry.name} releaseReadiness.blockers must be a string array.`);
+    }
+
+    if (entry.maturity === 'stable') {
+      if (!readiness.stableCandidate) {
+        findings.push(`Stable package ${entry.name} must be marked releaseReadiness.stableCandidate=true.`);
+      }
+      if (!readiness.docsAligned || !readiness.ciCovered || !readiness.productIntegrated) {
+        findings.push(`Stable package ${entry.name} must have docsAligned, ciCovered, and productIntegrated set to true.`);
+      }
+      if ((readiness.blockers ?? []).length > 0) {
+        findings.push(`Stable package ${entry.name} must not carry outstanding release blockers.`);
+      }
+    }
+
+    if (entry.maturity === 'beta' && !readiness.stableCandidate && (readiness.blockers ?? []).length === 0) {
+      findings.push(`Beta package ${entry.name} must declare explicit release blockers until it is ready for stable graduation.`);
+    }
   }
 
   for (const pkg of publicPackages) {
@@ -82,6 +116,32 @@ export function validatePackageSurface(surface, publicPackages) {
   }
 
   return findings;
+}
+
+export function summarizeReleaseReadiness(surface) {
+  const summary = {
+    stableCandidates: [],
+    betaWithBlockers: [],
+    experimentalPackages: [],
+  };
+
+  for (const entry of surface.packages) {
+    const blockers = entry.releaseReadiness?.blockers ?? [];
+    if (entry.releaseReadiness?.stableCandidate) {
+      summary.stableCandidates.push(entry.name);
+    } else if (entry.maturity === 'beta') {
+      summary.betaWithBlockers.push({
+        name: entry.name,
+        blockers,
+      });
+    }
+
+    if (entry.maturity === 'experimental') {
+      summary.experimentalPackages.push(entry.name);
+    }
+  }
+
+  return summary;
 }
 
 export function validatePackageRetirements(surface, retirements) {

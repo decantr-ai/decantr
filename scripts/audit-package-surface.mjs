@@ -5,6 +5,7 @@ import {
   listPublicPackages,
   loadPackageRetirements,
   loadPackageSurface,
+  summarizeReleaseReadiness,
   validatePackageRetirements,
   validatePackageSurface,
 } from './package-surface-lib.mjs';
@@ -35,6 +36,7 @@ const supportCounts = surface.packages.reduce((acc, entry) => {
   acc[entry.support] = (acc[entry.support] || 0) + 1;
   return acc;
 }, {});
+const readiness = summarizeReleaseReadiness(surface);
 
 console.log('Package surface audit passed.');
 console.log(`Public packages: ${publicPackages.length}`);
@@ -43,3 +45,6 @@ console.log(`Retired package entries: ${(retirements.packages ?? []).length}`);
 for (const [support, count] of Object.entries(supportCounts)) {
   console.log(`- ${support}: ${count}`);
 }
+console.log(`Stable candidates: ${readiness.stableCandidates.join(', ') || 'none'}`);
+console.log(`Beta packages with blockers: ${readiness.betaWithBlockers.length}`);
+console.log(`Experimental packages: ${readiness.experimentalPackages.join(', ') || 'none'}`);

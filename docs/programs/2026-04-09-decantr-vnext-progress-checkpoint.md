@@ -203,6 +203,7 @@ commit archaeology.
 - Added `config/package-surface.json` as the package support and dist-tag source of truth.
 - Added `config/package-retirements.json` plus a retirement/deprecation script for removed npm lines such as `@decantr/ui`.
 - Added `pnpm audit:package-surface` and wired it into CI.
+- Added executable release-readiness metadata and `pnpm audit:release-readiness` so beta-to-stable graduation stops living only in docs.
 - Replaced the hardcoded publish loop with a manifest-backed publish script.
 - Added package-level README coverage for all active public packages.
 - Added a package support matrix and release-strategy runbook for the npm surface.

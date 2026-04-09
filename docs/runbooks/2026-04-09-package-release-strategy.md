@@ -22,6 +22,10 @@ That file currently defines:
 - maturity
 - whether a package publishes by default
 - default npm dist-tag
+- release-readiness state:
+  - stable-candidate flag
+  - docs / CI / product-integration checks
+  - explicit blockers for beta packages
 
 ## Current Dist-Tag Strategy
 
@@ -73,9 +77,10 @@ A package should move from `beta` to `latest` only when all of the following are
 When a package graduates:
 
 1. update `config/package-surface.json`
-2. update this runbook and the package support matrix
-3. update the package version if needed
-4. publish with the stable dist-tag
+2. clear its `releaseReadiness.blockers` and mark it `stableCandidate: true`
+3. update this runbook and the package support matrix
+4. update the package version if needed
+5. publish with the stable dist-tag
 
 ## Remaining Cleanup After This Runbook
 
@@ -93,6 +98,7 @@ pnpm build
 pnpm test
 pnpm lint
 pnpm audit:package-surface
+pnpm audit:release-readiness
 ```
 
 Dry-run the publish selection locally:

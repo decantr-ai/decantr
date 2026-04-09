@@ -14,6 +14,7 @@
     "schemas:sync": "node scripts/sync-schema-copies.mjs",
     "audit:docs-marketing": "node scripts/audit-docs-marketing.mjs",
     "audit:package-surface": "node scripts/audit-package-surface.mjs",
+    "audit:release-readiness": "node scripts/audit-release-readiness.mjs",
     "package:retire:dry-run": "node scripts/deprecate-retired-packages.mjs --dry-run",
     "audit:public-api": "node scripts/audit-public-api.mjs",
     "audit:registry-portal": "node scripts/audit-registry-portal.mjs",

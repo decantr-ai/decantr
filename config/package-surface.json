@@ -7,7 +7,14 @@
       "maturity": "stable",
       "publish": true,
       "defaultDistTag": "latest",
-      "summary": "Local scaffold, audit, registry, and maintenance workflows for Decantr projects."
+      "summary": "Local scaffold, audit, registry, and maintenance workflows for Decantr projects.",
+      "releaseReadiness": {
+        "stableCandidate": true,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": []
+      }
     },
     {
       "name": "@decantr/core",
@@ -16,7 +23,17 @@
       "maturity": "beta",
       "publish": true,
       "defaultDistTag": "beta",
-      "summary": "Execution-pack compiler primitives and shared Decantr core utilities."
+      "summary": "Execution-pack compiler primitives and shared Decantr core utilities.",
+      "releaseReadiness": {
+        "stableCandidate": false,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": [
+          "Execution-pack contracts are still expanding with hosted and mutation-centric workflows.",
+          "The public low-level integration story for @decantr/core still needs a more intentional stable API boundary."
+        ]
+      }
     },
     {
       "name": "@decantr/css",
@@ -25,7 +42,14 @@
       "maturity": "stable",
       "publish": true,
       "defaultDistTag": "latest",
-      "summary": "Framework-agnostic CSS atom runtime for Decantr projects."
+      "summary": "Framework-agnostic CSS atom runtime for Decantr projects.",
+      "releaseReadiness": {
+        "stableCandidate": true,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": []
+      }
     },
     {
       "name": "@decantr/essence-spec",
@@ -34,7 +58,17 @@
       "maturity": "beta",
       "publish": true,
       "defaultDistTag": "beta",
-      "summary": "Essence schemas, validation, migration, and TypeScript types."
+      "summary": "Essence schemas, validation, migration, and TypeScript types.",
+      "releaseReadiness": {
+        "stableCandidate": false,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": [
+          "The v3/v3.1 essence evolution and compatibility policy still needs a clearly frozen stable contract.",
+          "Schema consumers still need a more explicit migration and deprecation story before stable graduation."
+        ]
+      }
     },
     {
       "name": "@decantr/mcp-server",
@@ -43,7 +77,17 @@
       "maturity": "beta",
       "publish": true,
       "defaultDistTag": "beta",
-      "summary": "MCP delivery surface for Decantr design intelligence, packs, and verification."
+      "summary": "MCP delivery surface for Decantr design intelligence, packs, and verification.",
+      "releaseReadiness": {
+        "stableCandidate": false,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": [
+          "The tool surface is still evolving alongside hosted fallback and verification expansion.",
+          "Auth, hosted critique, and long-term MCP contract guarantees need to settle before stable release."
+        ]
+      }
     },
     {
       "name": "@decantr/registry",
@@ -52,7 +96,17 @@
       "maturity": "beta",
       "publish": true,
       "defaultDistTag": "beta",
-      "summary": "Registry contracts, schemas, API client, and public content utilities."
+      "summary": "Registry contracts, schemas, API client, and public content utilities.",
+      "releaseReadiness": {
+        "stableCandidate": false,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": [
+          "Registry content and hosted verification contracts are still being tightened across public API surfaces.",
+          "The stable browser/client contract should settle after the hosted verification and package-surface work completes."
+        ]
+      }
     },
     {
       "name": "@decantr/verifier",
@@ -61,7 +115,17 @@
       "maturity": "beta",
       "publish": true,
       "defaultDistTag": "beta",
-      "summary": "Shared verification, critique, and report-schema engine."
+      "summary": "Shared verification, critique, and report-schema engine.",
+      "releaseReadiness": {
+        "stableCandidate": false,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": [
+          "Runtime verification is stronger now but still expanding toward deeper auth, security, and hosted critique workflows.",
+          "The long-term stable verifier API should settle after the next hosted verification surface lands."
+        ]
+      }
     },
     {
       "name": "@decantr/vite-plugin",
@@ -70,7 +134,17 @@
       "maturity": "experimental",
       "publish": false,
       "defaultDistTag": "beta",
-      "summary": "Experimental Vite overlay for Decantr guard feedback during local development."
+      "summary": "Experimental Vite overlay for Decantr guard feedback during local development.",
+      "releaseReadiness": {
+        "stableCandidate": false,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": false,
+        "blockers": [
+          "The Vite overlay is still an experimental sidecar, not part of the product nucleus.",
+          "We still need to decide whether this package should graduate, remain experimental, or be archived."
+        ]
+      }
     }
   ]
 }
