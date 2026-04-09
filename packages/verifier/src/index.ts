@@ -237,10 +237,26 @@ function isAuditableSourceFile(filePath: string): boolean {
 }
 
 function collectProjectSourceFiles(projectRoot: string): string[] {
-  const candidates = ['src', 'app', 'pages', 'components']
+  const candidates = ['src', 'app', 'pages', 'components', 'lib', 'utils', 'hooks', 'providers', 'server']
     .map(dir => join(projectRoot, dir))
     .filter(dir => existsSync(dir));
-  const files: string[] = [];
+  const rootFileCandidates = [
+    'middleware.ts',
+    'middleware.tsx',
+    'middleware.js',
+    'middleware.jsx',
+    'middleware.mts',
+    'middleware.cts',
+    'proxy.ts',
+    'proxy.tsx',
+    'proxy.js',
+    'proxy.jsx',
+    'proxy.mts',
+    'proxy.cts',
+  ]
+    .map(file => join(projectRoot, file))
+    .filter(file => existsSync(file));
+  const files = new Set<string>();
   const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
 
   const walk = (dir: string) => {
@@ -253,7 +269,7 @@ function collectProjectSourceFiles(projectRoot: string): string[] {
       }
       if (!entry.isFile()) continue;
       if (!isAuditableSourceFile(absolutePath)) continue;
-      files.push(absolutePath);
+      files.add(absolutePath);
     }
   };
 
@@ -261,7 +277,13 @@ function collectProjectSourceFiles(projectRoot: string): string[] {
     walk(candidate);
   }
 
-  return files;
+  for (const file of rootFileCandidates) {
+    if (isAuditableSourceFile(file)) {
+      files.add(file);
+    }
+  }
+
+  return [...files].sort();
 }
 
 function buildSourceAuditEvidence(summary: SourceAuditSummary, bucket: SourceAuditBucket, label: string): string[] {

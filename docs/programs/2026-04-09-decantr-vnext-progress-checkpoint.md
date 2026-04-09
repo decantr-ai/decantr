@@ -80,6 +80,7 @@ commit archaeology.
 - CLI and MCP now share the verifier engine.
 - Review packs now inform critique behavior.
 - Project audit now aggregates source-tree findings from `src/`, `app/`, `pages/`, and `components/` when they are present, including inline styles, risky HTML patterns, placeholder routes, auth storage writes, accessibility issues, and unsafe form/auth input behavior.
+- Project audit now also scans common root implementation surfaces such as `lib/`, `hooks/`, `providers/`, `server/`, plus root `middleware.*` and `proxy.*`, so framework-level auth guards and session exits are not missed when they live outside `src/`.
 - Project audit now also warns when auth is declared but the source tree does not show obvious protected-route, middleware, session-check, or auth-redirect behavior.
 - Source and file critique now also flag auth-like credentials written into client-managed cookies, not just localStorage/sessionStorage.
 - Project audit now also warns when auth is declared but the source tree does not show an obvious sign-out or session-exit path.
