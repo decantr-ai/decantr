@@ -646,14 +646,15 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   } catch {}
 
   console.log(`\n${GREEN}${BOLD}Quality summary:${RESET}`);
-  console.log(`  Context files:   ${sectionCount} sections + scaffold.md + DECANTR.md`);
+  console.log(`  Context files:   ${sectionCount} sections + scaffold-pack.md + scaffold.md + DECANTR.md`);
   console.log(`  CSS:             tokens.css + treatments.css + global.css`);
   console.log(`  @layer cascade:  ${hasLayers ? GREEN + 'yes' + RESET : YELLOW + 'missing' + RESET}`);
 
   console.log('');
   console.log(`${BOLD} Ready!${RESET} Next steps:`);
   console.log(`   1. Read ${cyan('DECANTR.md')} to understand the design system`);
-  console.log(`   2. Read ${cyan('.decantr/context/scaffold.md')} for the full app overview`);
-  console.log(`   3. Start building pages from the route map`);
+  console.log(`   2. Read ${cyan('.decantr/context/scaffold-pack.md')} for the compact route and shell contract`);
+  console.log(`   3. Read ${cyan('.decantr/context/scaffold.md')} for the full app overview`);
+  console.log(`   4. Start building pages from the route map`);
   console.log('');
 }

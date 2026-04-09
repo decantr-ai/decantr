@@ -109,6 +109,7 @@ function generateCuratedPrompt(ctx: PromptContext): string {
   lines.push('Build this application using the Decantr design system.');
   lines.push('');
   lines.push('Read DECANTR.md for the design spec, CSS approach, and guard rules.');
+  lines.push('Read .decantr/context/scaffold-pack.md for the compact compiled shell and route contract.');
   lines.push('Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.');
   lines.push('Read each .decantr/context/section-*.md file before building that section\'s pages.');
   lines.push('Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
@@ -752,7 +753,8 @@ async function cmdInit(args: InitArgs) {
   console.log('');
   console.log('  Next steps:');
   console.log('    1. Review DECANTR.md for methodology');
-  console.log('    2. Explore more at decantr.ai/registry');
+  console.log('    2. Read .decantr/context/scaffold-pack.md for the compiled shell and route plan');
+  console.log('    3. Explore more at decantr.ai/registry');
   console.log('');
   console.log('  Commands:');
   console.log(`    ${cyan('decantr status')}     Project health`);

@@ -79,7 +79,8 @@ When a user request would violate guard rules:
 
 ### Initial scaffolding
 
-Read `.decantr/context/scaffold.md` for the full app overview, topology, and route map.
+Read `.decantr/context/scaffold-pack.md` for the compact compiled route and shell contract.
+Then read `.decantr/context/scaffold.md` for the fuller app overview, topology, and route map.
 
 ### Working on a section
 
