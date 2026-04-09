@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
 import { buildScaffoldPack, buildSectionPack, buildPagePack, runPipeline } from '@decantr/core';
-import type { PagePackInput, SectionPackInput } from '@decantr/core';
+import type { PagePackInput, ScaffoldExecutionPack, SectionPackInput } from '@decantr/core';
 import type { ExecutionPackBase } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
 import type {
@@ -1542,6 +1542,94 @@ function generateTaskContextV3(templateName: string, essence: EssenceV3): string
   return renderTemplate(template, vars);
 }
 
+function renderPackReferenceList(
+  title: string,
+  entries: string[],
+  fallback: string,
+  summaryPath = '.decantr/context/pack-manifest.json',
+): string {
+  if (entries.length === 0) {
+    return `### ${title}\n\n- ${fallback}`;
+  }
+
+  if (entries.length <= 6) {
+    return `### ${title}\n\n${entries.map(entry => `- ${entry}`).join('\n')}`;
+  }
+
+  return `### ${title}\n\n- ${entries.length} compiled references available. Use \`${summaryPath}\` to resolve the exact files for this scope.`;
+}
+
+function generateScaffoldTaskContext(
+  essence: EssenceV3,
+  scaffoldPack: ScaffoldExecutionPack | null,
+  manifest: PackManifest | null,
+): string {
+  if (!scaffoldPack) {
+    return generateTaskContextV3('task-scaffold.md.template', essence);
+  }
+
+  const themeShape = scaffoldPack.data.theme.shape || 'default';
+  const features = scaffoldPack.data.features.length > 0
+    ? scaffoldPack.data.features.join(', ')
+    : 'none';
+  const routePlan = scaffoldPack.data.routes.length > 0
+    ? scaffoldPack.data.routes.map(route => {
+        const patternSummary = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+        return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+      }).join('\n')
+    : '- No routes declared';
+  const successChecks = scaffoldPack.successChecks.map(check => `- [${check.severity}] ${check.label}`).join('\n');
+  const tokenStrategy = scaffoldPack.tokenBudget.strategy.map(item => `- ${item}`).join('\n');
+  const sectionRefs = manifest?.sections.map(section =>
+    `Section \`${section.id}\` -> \`.decantr/context/${section.markdown}\``
+  ) ?? [];
+  const pageRefs = manifest?.pages.map(page =>
+    `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``
+  ) ?? [];
+
+  return `# Task Context: Scaffolding
+
+**Enforcement Tier: Creative** — Guard rules are advisory during initial scaffolding.
+
+## Primary Compiled Contract
+
+- Start with \`.decantr/context/scaffold-pack.md\` for the compact route, shell, and theme contract.
+- Use \`.decantr/context/scaffold.md\` only as secondary detail when the compiled pack is not enough.
+- Read the route-local page packs before building each page so layout and wiring stay aligned with the compiled plan.
+
+## Generate This Application
+
+- Target: \`${scaffoldPack.target.adapter}\` (${scaffoldPack.target.framework || 'unknown framework'})
+- Shell: \`${scaffoldPack.data.shell}\`
+- Theme: \`${scaffoldPack.data.theme.id}\` (${scaffoldPack.data.theme.mode}, ${themeShape})
+- Routing: \`${scaffoldPack.data.routing}\`
+- Features: ${features}
+
+## Route Plan
+
+${routePlan}
+
+${renderPackReferenceList('Section Packs', sectionRefs, 'No section packs were generated for this scaffold.')}
+
+${renderPackReferenceList('Page Packs', pageRefs, 'No page packs were generated for this scaffold.')}
+
+## Success Checks
+
+${successChecks}
+
+## Token Budget
+
+- Target: ${scaffoldPack.tokenBudget.target} tokens
+- Max: ${scaffoldPack.tokenBudget.max} tokens
+${tokenStrategy}
+
+Post-scaffold enforcement mode: **${essence.meta.guard.mode.toUpperCase()}**.
+
+---
+
+*Task context generated from Decantr execution packs*`;
+}
+
 /**
  * Generate essence summary markdown from a V3 essence.
  * Used by refreshDerivedFiles to keep the summary in sync.
@@ -1661,14 +1749,9 @@ export async function scaffoldProject(
   }
   writeFileSync(projectJsonPath, JSON.stringify(projectJsonObj, null, 2));
 
-  // Write task context files using v3 essence directly
-  // Note: task-modify.md and task-add-page.md are skipped during initial scaffold
-  // (0% token usage during scaffolding). They are generated on first refresh/add/remove.
+  // Derived task/context files are generated during refreshDerivedFiles so the
+  // scaffold task can incorporate compiled execution packs after blueprint upgrades.
   const contextFiles: string[] = [];
-
-  const scaffoldPath = join(contextDir, 'task-scaffold.md');
-  writeFileSync(scaffoldPath, generateTaskContextV3('task-scaffold.md.template', essenceV3));
-  contextFiles.push(scaffoldPath);
 
   // V3.1 upgrade: if composedSections is provided, upgrade the essence
   if (composedSections) {
@@ -1965,6 +2048,12 @@ interface PackManifest {
   pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
 }
 
+interface GeneratedPackContexts {
+  paths: string[];
+  scaffoldPack: ScaffoldExecutionPack | null;
+  manifest: PackManifest | null;
+}
+
 function listPackSections(essence: EssenceV3): SectionPackInput[] {
   const declaredSections = essence.blueprint.sections;
   if (declaredSections && declaredSections.length > 0) {
@@ -2018,9 +2107,15 @@ async function generatePackContexts(
   projectRoot: string,
   contextDir: string,
   essence: EssenceV3,
-): Promise<string[]> {
+): Promise<GeneratedPackContexts> {
+  const emptyResult: GeneratedPackContexts = {
+    paths: [],
+    scaffoldPack: null,
+    manifest: null,
+  };
+
   const cacheRoot = join(projectRoot, '.decantr', 'cache', '@official');
-  if (!existsSync(cacheRoot)) return [];
+  if (!existsSync(cacheRoot)) return emptyResult;
 
   const customRoot = join(projectRoot, '.decantr', 'custom');
   const overridePaths = existsSync(customRoot) ? [customRoot] : undefined;
@@ -2102,9 +2197,13 @@ async function generatePackContexts(
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
     outputPaths.push(manifestPath);
 
-    return outputPaths;
+    return {
+      paths: outputPaths,
+      scaffoldPack: pack,
+      manifest,
+    };
   } catch {
-    return [];
+    return emptyResult;
   }
 }
 
@@ -2368,12 +2467,17 @@ export async function refreshDerivedFiles(
     contextFiles.push(summaryPath);
   }
 
+  const packContexts = await generatePackContexts(projectRoot, contextDir, essence);
+
+  const scaffoldTaskPath = join(contextDir, 'task-scaffold.md');
+  writeFileSync(
+    scaffoldTaskPath,
+    generateScaffoldTaskContext(essence, packContexts.scaffoldPack, packContexts.manifest),
+  );
+  contextFiles.push(scaffoldTaskPath);
+
   // ── Generate mutation task contexts (skipped during init, generated on refresh/add/remove) ──
   if (!options?.isInitialScaffold) {
-    const scaffoldTaskPath = join(contextDir, 'task-scaffold.md');
-    writeFileSync(scaffoldTaskPath, generateTaskContextV3('task-scaffold.md.template', essence));
-    contextFiles.push(scaffoldTaskPath);
-
     const addPagePath = join(contextDir, 'task-add-page.md');
     writeFileSync(addPagePath, generateTaskContextV3('task-add-page.md.template', essence));
     contextFiles.push(addPagePath);
@@ -2638,9 +2742,8 @@ export async function refreshDerivedFiles(
     contextFiles.push(sectionContextPath);
   }
 
-  const packContextPaths = await generatePackContexts(projectRoot, contextDir, essence);
-  if (packContextPaths.length > 0) {
-    contextFiles.push(...packContextPaths);
+  if (packContexts.paths.length > 0) {
+    contextFiles.push(...packContexts.paths);
   }
 
   return {

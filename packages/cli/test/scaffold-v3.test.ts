@@ -203,8 +203,10 @@ describe('v3 scaffold', () => {
     await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
 
     const contextDir = join(testDir, '.decantr', 'context');
+    const scaffoldTask = readFileSync(join(contextDir, 'task-scaffold.md'), 'utf-8');
     // task-scaffold.md should exist (always generated)
     expect(existsSync(join(contextDir, 'task-scaffold.md'))).toBe(true);
+    expect(scaffoldTask).toContain('## What to Generate');
     // Mutation task contexts should NOT exist during initial scaffold
     expect(existsSync(join(contextDir, 'task-modify.md'))).toBe(false);
     expect(existsSync(join(contextDir, 'task-add-page.md'))).toBe(false);
@@ -266,6 +268,7 @@ describe('v3 scaffold', () => {
     const pageContent = readFileSync(pagePackPath, 'utf-8');
     const pagePackJson = JSON.parse(readFileSync(pagePackJsonPath, 'utf-8'));
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+    const scaffoldTask = readFileSync(join(testDir, '.decantr', 'context', 'task-scaffold.md'), 'utf-8');
     expect(content).toContain('# Scaffold Pack');
     expect(content).toContain('react-vite (react)');
     expect(content).toContain('- / -> home [hero]');
@@ -327,5 +330,10 @@ describe('v3 scaffold', () => {
         sectionRole: 'primary',
       },
     ]);
+    expect(scaffoldTask).toContain('## Primary Compiled Contract');
+    expect(scaffoldTask).toContain('.decantr/context/scaffold-pack.md');
+    expect(scaffoldTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');
+    expect(scaffoldTask).toContain('- `/` -> `home` [hero]');
+    expect(scaffoldTask).toContain('Post-scaffold enforcement mode: **GUIDED**.');
   });
 });

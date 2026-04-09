@@ -359,7 +359,18 @@ export const TOOLS = [
     },
     annotations: WRITE_TOOL,
   },
-  // 13. decantr_get_section_context — local read
+  // 13. decantr_get_scaffold_context — local read
+  {
+    name: 'decantr_get_scaffold_context',
+    title: 'Get Scaffold Context',
+    description: 'Get the top-level scaffold context for the current project. Returns the scaffold task brief, scaffold overview, compiled scaffold execution pack, and pack manifest when available.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {},
+    },
+    annotations: READ_ONLY,
+  },
+  // 14. decantr_get_section_context — local read
   {
     name: 'decantr_get_section_context',
     title: 'Get Section Context',
@@ -373,7 +384,7 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 14. decantr_get_execution_pack — local read
+  // 15. decantr_get_execution_pack — local read
   {
     name: 'decantr_get_execution_pack',
     title: 'Get Execution Pack',
@@ -399,7 +410,7 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 15. decantr_critique — local read
+  // 16. decantr_critique — local read
   {
     name: 'decantr_critique',
     title: 'Design Critique',
@@ -1050,6 +1061,46 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       } catch (e) {
         return { error: `Failed to update essence: ${(e as Error).message}` };
       }
+    }
+
+    case 'decantr_get_scaffold_context': {
+      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const manifestPath = join(contextDir, 'pack-manifest.json');
+      const scaffoldContextPath = join(contextDir, 'scaffold.md');
+      const taskContextPath = join(contextDir, 'task-scaffold.md');
+      const packMarkdownPath = join(contextDir, 'scaffold-pack.md');
+      const packJsonPath = join(contextDir, 'scaffold-pack.json');
+
+      const hasAnyContext = existsSync(scaffoldContextPath)
+        || existsSync(taskContextPath)
+        || existsSync(packMarkdownPath)
+        || existsSync(packJsonPath)
+        || existsSync(manifestPath);
+
+      if (!hasAnyContext) {
+        return { error: 'Scaffold context not found. Run decantr refresh to generate scaffold context and execution packs.' };
+      }
+
+      let manifest: PackManifest | null = null;
+      if (existsSync(manifestPath)) {
+        try {
+          manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as PackManifest;
+        } catch (e) {
+          return { error: `Failed to read pack manifest: ${(e as Error).message}` };
+        }
+      }
+
+      return {
+        task_context: existsSync(taskContextPath) ? readFileSync(taskContextPath, 'utf-8') : null,
+        scaffold_context: existsSync(scaffoldContextPath) ? readFileSync(scaffoldContextPath, 'utf-8') : null,
+        execution_pack: {
+          markdown: existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null,
+          json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,
+        },
+        pack_manifest: manifest,
+        available_sections: manifest?.sections.map(section => ({ id: section.id, page_ids: section.pageIds })) ?? [],
+        available_pages: manifest?.pages.map(page => ({ id: page.id, section_id: page.sectionId })) ?? [],
+      };
     }
 
     case 'decantr_get_section_context': {

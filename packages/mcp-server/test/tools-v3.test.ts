@@ -218,6 +218,47 @@ describe('v3-aware tool tests', () => {
   });
 
   describe('decantr_get_execution_pack', () => {
+    it('returns scaffold task, scaffold overview, and compiled pack together', async () => {
+      const contextDir = join(testDir, '.decantr', 'context');
+      await mkdir(contextDir, { recursive: true });
+      await writeFile(join(contextDir, 'task-scaffold.md'), '# Task Context: Scaffolding\n');
+      await writeFile(join(contextDir, 'scaffold.md'), '# Scaffold Context\n');
+      await writeFile(join(contextDir, 'scaffold-pack.md'), '# Scaffold Pack\n');
+      await writeFile(join(contextDir, 'scaffold-pack.json'), JSON.stringify({
+        packType: 'scaffold',
+        data: { shell: 'sidebar-main' },
+      }));
+      await writeFile(join(contextDir, 'pack-manifest.json'), JSON.stringify({
+        version: '1.0.0',
+        generatedAt: '2026-04-08T00:00:00.000Z',
+        scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        sections: [
+          { id: 'dashboard', markdown: 'section-dashboard-pack.md', json: 'section-dashboard-pack.json', pageIds: ['overview'] },
+        ],
+        pages: [
+          { id: 'overview', markdown: 'page-overview-pack.md', json: 'page-overview-pack.json', sectionId: 'dashboard', sectionRole: 'primary' },
+        ],
+      }));
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_scaffold_context', {}) as {
+        task_context: string;
+        scaffold_context: string;
+        execution_pack: { markdown: string; json: { packType: string } };
+        pack_manifest: { version: string };
+        available_sections: Array<{ id: string; page_ids: string[] }>;
+        available_pages: Array<{ id: string; section_id: string | null }>;
+      };
+
+      expect(result.task_context).toContain('# Task Context: Scaffolding');
+      expect(result.scaffold_context).toContain('# Scaffold Context');
+      expect(result.execution_pack.markdown).toContain('# Scaffold Pack');
+      expect(result.execution_pack.json.packType).toBe('scaffold');
+      expect(result.pack_manifest.version).toBe('1.0.0');
+      expect(result.available_sections).toEqual([{ id: 'dashboard', page_ids: ['overview'] }]);
+      expect(result.available_pages).toEqual([{ id: 'overview', section_id: 'dashboard' }]);
+    });
+
     it('returns the pack manifest by default', async () => {
       const contextDir = join(testDir, '.decantr', 'context');
       await mkdir(contextDir, { recursive: true });
