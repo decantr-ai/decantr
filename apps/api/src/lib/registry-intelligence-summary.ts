@@ -7,7 +7,7 @@ import { CONTENT_TYPES } from '../types.js';
 import { getContentIntelligence } from './content-intelligence.js';
 
 type ContentRow = {
-  type: ContentType;
+  type: string;
   namespace: string;
   slug: string;
   data?: Record<string, unknown> | null;
@@ -80,13 +80,18 @@ export function buildRegistryIntelligenceSummary(
   const totals = createEmptyBucket();
 
   for (const row of rows) {
+    if (!(row.type in byType)) {
+      continue;
+    }
+
+    const type = row.type as ContentType;
     const intelligence = getContentIntelligence(
-      row.type,
+      type,
       row.namespace,
       row.slug,
       row.data ?? undefined,
     );
-    applyIntelligenceToBucket(byType[row.type], intelligence);
+    applyIntelligenceToBucket(byType[type], intelligence);
     applyIntelligenceToBucket(totals, intelligence);
   }
 

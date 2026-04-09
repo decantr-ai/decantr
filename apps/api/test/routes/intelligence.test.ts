@@ -124,4 +124,48 @@ describe('GET /v1/intelligence/summary', () => {
     expect(json.namespace).toBe('@official');
     expect(json.totals.total_public_items).toBe(1);
   });
+
+  it('ignores legacy content types still present in hosted data', async () => {
+    mockCreateAdminClient.mockReturnValue(createSummaryClient([
+      {
+        type: 'recipe',
+        slug: 'legacy-recipe',
+        namespace: '@official',
+        data: {
+          name: 'Legacy Recipe',
+        },
+      },
+      {
+        type: 'pattern',
+        slug: 'hero',
+        namespace: '@official',
+        data: {
+          name: 'Hero',
+          description: 'A hero section',
+          tags: ['marketing'],
+          components: ['Hero'],
+          presets: {
+            default: {
+              description: 'Default hero',
+              layout: {
+                layout: 'stack',
+                atoms: '_flex _col',
+              },
+              code: {
+                example: 'Hero()',
+              },
+            },
+          },
+        },
+      },
+    ]));
+
+    const res = await app.request('/v1/intelligence/summary?namespace=%40official');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    assertMatchesSchema('registry-intelligence-summary.v1.json', json);
+    expect(json.totals.total_public_items).toBe(1);
+    expect(json.by_type.pattern.total_public_items).toBe(1);
+  });
 });
