@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { auditProject, critiqueFile } from '../src/index.js';
+import { auditBuiltDist, auditProject, critiqueFile, extractRouteHintsFromEssence } from '../src/index.js';
 
 function createProjectRoot(): string {
   return mkdtempSync(join(tmpdir(), 'decantr-verifier-'));
@@ -101,6 +101,75 @@ describe('verifier', () => {
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
+  });
+
+  it('audits built dist directly with explicit route hints', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html><head><title>Showcase</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/dashboard");\n');
+
+      const report = await auditBuiltDist(projectRoot, {
+        routeHints: ['/', '/dashboard'],
+      });
+
+      expect(report.checked).toBe(true);
+      expect(report.distPresent).toBe(true);
+      expect(report.indexPresent).toBe(true);
+      expect(report.routeHintsChecked).toEqual(['/', '/dashboard']);
+      expect(report.passed).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('extracts normalized route hints from v3 essence files', () => {
+    const hints = extractRouteHintsFromEssence({
+      version: '3.0.0',
+      dna: {
+        theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+        spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+        typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+        color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+        radius: { philosophy: 'rounded', base: 8 },
+        elevation: { system: 'layered', max_levels: 3 },
+        motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+        accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+        personality: ['professional'],
+      },
+      blueprint: {
+        shell: 'sidebar-main',
+        sections: [
+          {
+            id: 'main',
+            role: 'main',
+            pages: [
+              { id: 'overview', route: '/overview', layout: ['hero'] },
+              { id: 'record', route: '/records/:id', layout: ['hero'] },
+            ],
+          },
+        ],
+        routes: {
+          '/settings/profile': { page: 'overview' },
+        },
+        features: [],
+      },
+      meta: {
+        archetype: 'marketing',
+        target: 'react',
+        platform: { type: 'spa', routing: 'pathname' },
+        guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+      },
+    } as never);
+
+    expect(hints).toContain('/');
+    expect(hints).toContain('/overview');
+    expect(hints).toContain('/records/');
+    expect(hints).toContain('/settings/profile');
   });
 
   it('critiques files against the compiled review contract', async () => {

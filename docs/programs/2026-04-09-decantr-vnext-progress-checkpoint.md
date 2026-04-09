@@ -87,6 +87,7 @@ commit archaeology.
 
 - Added showcase manifest validation and repeatable shortlist verification.
 - Added shortlist verification reports and schema contracts.
+- Moved shortlist verification onto the shared `@decantr/verifier` built-dist runtime audit path instead of keeping a showcase-only smoke helper.
 - Deepened shortlist verification beyond root/asset smoke with:
   - HTML title checks
   - route-document coverage checks

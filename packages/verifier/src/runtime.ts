@@ -1,7 +1,6 @@
 import { createServer } from 'node:http';
 import { existsSync, readFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
-import { showcaseRoot } from './showcase-manifest.mjs';
 
 const CONTENT_TYPES = {
   '.css': 'text/css; charset=utf-8',
@@ -13,14 +12,53 @@ const CONTENT_TYPES = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
-};
+} as const;
 
-function getContentType(pathname) {
-  return CONTENT_TYPES[extname(pathname)] ?? 'application/octet-stream';
+export interface RuntimeAudit {
+  distPresent: boolean;
+  indexPresent: boolean;
+  checked: boolean;
+  passed: boolean | null;
+  rootDocumentOk: boolean;
+  titleOk: boolean;
+  assetCount: number;
+  assetsPassed: number;
+  routeHintsChecked: string[];
+  routeHintsMatched: number;
+  routeDocumentsChecked: number;
+  routeDocumentsPassed: number;
+  failures: string[];
 }
 
-function extractAssetPaths(indexHtml) {
-  const assetPaths = new Set();
+export interface BuiltDistAuditOptions {
+  distDir?: string;
+  routeHints?: string[];
+}
+
+export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
+  return {
+    distPresent: false,
+    indexPresent: false,
+    checked: false,
+    passed: null,
+    rootDocumentOk: false,
+    titleOk: false,
+    assetCount: 0,
+    assetsPassed: 0,
+    routeHintsChecked: [],
+    routeHintsMatched: 0,
+    routeDocumentsChecked: 0,
+    routeDocumentsPassed: 0,
+    failures,
+  };
+}
+
+function getContentType(pathname: string): string {
+  return CONTENT_TYPES[extname(pathname) as keyof typeof CONTENT_TYPES] ?? 'application/octet-stream';
+}
+
+function extractAssetPaths(indexHtml: string): string[] {
+  const assetPaths = new Set<string>();
 
   for (const match of indexHtml.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)) {
     const assetPath = match[1];
@@ -32,7 +70,7 @@ function extractAssetPaths(indexHtml) {
   return [...assetPaths];
 }
 
-function normalizeRouteHint(route) {
+function normalizeRouteHint(route: string | null | undefined): string {
   if (!route || route === '/') return '/';
   const dynamicIndex = route.indexOf('/:');
   if (dynamicIndex !== -1) {
@@ -41,37 +79,7 @@ function normalizeRouteHint(route) {
   return route;
 }
 
-export function extractShowcaseRouteHints(entry) {
-  const essencePath = join(showcaseRoot, entry.slug, 'decantr.essence.json');
-  if (!existsSync(essencePath)) {
-    return ['/'];
-  }
-
-  try {
-    const essence = JSON.parse(readFileSync(essencePath, 'utf-8'));
-    const routes = new Set(['/']);
-
-    for (const section of essence.blueprint?.sections ?? []) {
-      for (const page of section.pages ?? []) {
-        if (typeof page.route === 'string' && page.route.length > 0) {
-          routes.add(normalizeRouteHint(page.route));
-        }
-      }
-    }
-
-    if (essence.blueprint?.routes && typeof essence.blueprint.routes === 'object') {
-      for (const route of Object.keys(essence.blueprint.routes)) {
-        routes.add(normalizeRouteHint(route));
-      }
-    }
-
-    return [...routes].filter(Boolean).slice(0, 6);
-  } catch {
-    return ['/'];
-  }
-}
-
-async function startStaticServer(rootDir) {
+async function startStaticServer(rootDir: string): Promise<{ baseUrl: string; close: () => Promise<void> }> {
   const server = createServer((req, res) => {
     const requestedUrl = new URL(req.url ?? '/', 'http://127.0.0.1');
     const pathname = requestedUrl.pathname === '/' ? '/index.html' : requestedUrl.pathname;
@@ -104,78 +112,61 @@ async function startStaticServer(rootDir) {
     }
   });
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolvePromise, reject) => {
     server.once('error', reject);
-    server.listen(0, '127.0.0.1', resolve);
+    server.listen(0, '127.0.0.1', () => resolvePromise());
   });
 
   const address = server.address();
   if (!address || typeof address === 'string') {
     server.close();
-    throw new Error('Failed to bind static smoke server.');
+    throw new Error('Failed to bind runtime audit server.');
   }
 
   return {
     baseUrl: `http://127.0.0.1:${address.port}`,
     async close() {
-      await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+      await new Promise<void>((resolvePromise, reject) => server.close(error => error ? reject(error) : resolvePromise()));
     },
   };
 }
 
-export async function runShowcaseSmoke(entry) {
-  const distDir = join(showcaseRoot, entry.slug, 'dist');
-  const failures = [];
-  const routeHints = extractShowcaseRouteHints(entry);
-
+export async function auditBuiltDist(projectRoot: string, options: BuiltDistAuditOptions = {}): Promise<RuntimeAudit> {
+  const distDir = options.distDir ?? join(projectRoot, 'dist');
   if (!existsSync(distDir)) {
-    return {
-      passed: false,
-      durationMs: 0,
-      rootDocumentOk: false,
-      titleOk: false,
-      assetCount: 0,
-      assetsPassed: 0,
-      routeHintsChecked: routeHints,
-      routeHintsMatched: 0,
-      routeDocumentsChecked: 0,
-      routeDocumentsPassed: 0,
-      failures: ['dist-missing'],
-    };
+    return emptyRuntimeAudit(['dist-missing']);
   }
 
   const indexPath = join(distDir, 'index.html');
   if (!existsSync(indexPath)) {
     return {
-      passed: false,
-      durationMs: 0,
-      rootDocumentOk: false,
-      titleOk: false,
-      assetCount: 0,
-      assetsPassed: 0,
-      routeHintsChecked: routeHints,
-      routeHintsMatched: 0,
-      routeDocumentsChecked: 0,
-      routeDocumentsPassed: 0,
-      failures: ['index-missing'],
+      ...emptyRuntimeAudit(['index-missing']),
+      distPresent: true,
     };
   }
 
+  const routeHints = Array.isArray(options.routeHints) && options.routeHints.length > 0
+    ? options.routeHints.map(route => normalizeRouteHint(route)).filter(Boolean).slice(0, 8)
+    : ['/'];
   const indexHtml = readFileSync(indexPath, 'utf-8');
   const assetPaths = extractAssetPaths(indexHtml);
-  const startedAt = Date.now();
   const server = await startStaticServer(distDir);
 
   try {
     const rootResponse = await fetch(`${server.baseUrl}/`);
     const rootHtml = await rootResponse.text();
+    const failures: string[] = [];
     const rootDocumentOk = rootResponse.ok && /id="root"/.test(rootHtml);
     const titleOk = /<title>[^<]+<\/title>/i.test(rootHtml);
+
     if (!rootDocumentOk) {
       failures.push('root-document-invalid');
     }
     if (!titleOk) {
       failures.push('root-title-missing');
+    }
+    if (assetPaths.length === 0) {
+      failures.push('assets-missing');
     }
 
     let assetsPassed = 0;
@@ -184,6 +175,7 @@ export async function runShowcaseSmoke(entry) {
     for (const assetPath of assetPaths) {
       const response = await fetch(`${server.baseUrl}${assetPath}`);
       const body = await response.text();
+
       if (response.ok && body.length > 0) {
         assetsPassed += 1;
       } else {
@@ -216,14 +208,18 @@ export async function runShowcaseSmoke(entry) {
       failures.push('route-documents-missing');
     }
 
+    const passed = rootDocumentOk
+      && titleOk
+      && assetPaths.length > 0
+      && assetsPassed === assetPaths.length
+      && (routeDocumentsChecked === 0 || routeDocumentsPassed >= Math.min(2, routeDocumentsChecked))
+      && (routeHints.length === 0 || routeHintsMatched >= Math.min(2, routeHints.length));
+
     return {
-      passed: rootDocumentOk
-        && titleOk
-        && assetPaths.length > 0
-        && assetsPassed === assetPaths.length
-        && (routeDocumentsChecked === 0 || routeDocumentsPassed >= Math.min(2, routeDocumentsChecked))
-        && (routeHints.length === 0 || routeHintsMatched >= Math.min(2, routeHints.length)),
-      durationMs: Date.now() - startedAt,
+      distPresent: true,
+      indexPresent: true,
+      checked: true,
+      passed,
       rootDocumentOk,
       titleOk,
       assetCount: assetPaths.length,

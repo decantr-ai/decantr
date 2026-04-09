@@ -172,17 +172,17 @@ Tracked shortlist verification baseline on 2026-04-08:
 - CI now runs shortlist verification and uploads the tracked report as an artifact on the primary Node 20 lane
 - surfaced through: registry homepage, `decantr showcase`, `/v1/showcase/*`, and `decantr_get_showcase_benchmarks`
 
-Tracked shortlist verification baseline on 2026-04-09 after the richer smoke-contract upgrade:
+Tracked shortlist verification baseline on 2026-04-09 after moving the shortlist onto the shared verifier runtime audit:
 - 8/8 shortlisted apps built successfully
 - 8/8 shortlisted apps passed the served-output smoke check
 - 8/8 shortlisted apps passed HTML title checks
 - 8/8 shortlisted apps passed route-document coverage checks
-- average build duration: `2570ms`
-- average smoke duration: `7ms`
+- average build duration: `1790ms`
+- average smoke duration: `8ms`
 - drift signals: `2 lower`, `4 moderate`, `2 elevated`
 - pack manifests present: `0/8`
 
-The shortlist verification report now records more than root-document and asset presence. It also records:
+The shortlist verification report now runs through the shared `@decantr/verifier` built-dist runtime audit and records more than root-document and asset presence. It also records:
 - HTML title presence
 - route-document coverage counts
 - route-hint coverage from bundled JS

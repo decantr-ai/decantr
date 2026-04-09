@@ -1,13 +1,14 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { auditBuiltDist, type RuntimeAudit } from '../packages/verifier/src/runtime.ts';
 import {
   getShortlistedShowcaseEntries,
   repoRoot,
   shortlistVerificationReportPath,
+  showcaseRoot,
 } from './showcase-manifest.mjs';
 import { auditShowcaseEntry, buildShowcaseVerificationResult } from './showcase-audit-lib.mjs';
-import { runShowcaseSmoke } from './showcase-smoke-lib.mjs';
 
 const SHOWCASE_SHORTLIST_REPORT_SCHEMA_URL = 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json';
 const reportJsonEqArg = process.argv.find(arg => arg.startsWith('--report-json='));
@@ -19,6 +20,67 @@ const requestedReportJsonPath = reportJsonEqArg
     : null;
 const reportJsonPath = requestedReportJsonPath ?? shortlistVerificationReportPath;
 const dryRun = process.argv.includes('--dry-run');
+
+function extractShowcaseRouteHints(entry: { slug: string }): string[] {
+  const essencePath = join(showcaseRoot, entry.slug, 'decantr.essence.json');
+  if (!existsSync(essencePath)) {
+    return ['/'];
+  }
+
+  try {
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8'));
+    const routes = new Set<string>(['/']);
+
+    for (const section of essence.blueprint?.sections ?? []) {
+      for (const page of section.pages ?? []) {
+        if (typeof page.route === 'string' && page.route.length > 0) {
+          routes.add(normalizeRouteHint(page.route));
+        }
+      }
+    }
+
+    for (const page of essence.blueprint?.pages ?? []) {
+      if (typeof page.route === 'string' && page.route.length > 0) {
+        routes.add(normalizeRouteHint(page.route));
+      }
+    }
+
+    if (essence.blueprint?.routes && typeof essence.blueprint.routes === 'object') {
+      for (const route of Object.keys(essence.blueprint.routes)) {
+        routes.add(normalizeRouteHint(route));
+      }
+    }
+
+    return [...routes].filter(Boolean).slice(0, 8);
+  } catch {
+    return ['/'];
+  }
+}
+
+function normalizeRouteHint(route: string | null | undefined): string {
+  if (!route || route === '/') return '/';
+  const dynamicIndex = route.indexOf('/:');
+  if (dynamicIndex !== -1) {
+    return route.slice(0, dynamicIndex + 1);
+  }
+  return route;
+}
+
+function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
+  return {
+    passed: runtimeAudit.passed,
+    durationMs,
+    rootDocumentOk: runtimeAudit.rootDocumentOk,
+    titleOk: runtimeAudit.titleOk,
+    assetCount: runtimeAudit.assetCount,
+    assetsPassed: runtimeAudit.assetsPassed,
+    routeHintsChecked: runtimeAudit.routeHintsChecked,
+    routeHintsMatched: runtimeAudit.routeHintsMatched,
+    routeDocumentsChecked: runtimeAudit.routeDocumentsChecked,
+    routeDocumentsPassed: runtimeAudit.routeDocumentsPassed,
+    failures: runtimeAudit.failures,
+  };
+}
 
 async function main() {
   const shortlisted = getShortlistedShowcaseEntries();
@@ -34,10 +96,11 @@ async function main() {
 
   for (const entry of shortlisted) {
     const filter = `./apps/showcase/${entry.slug}`;
+    const appRoot = join(showcaseRoot, entry.slug);
 
     if (dryRun) {
       console.log(`[dry-run] pnpm --filter "${filter}" build`);
-      console.log(`[dry-run] smoke ${entry.slug} dist output`);
+      console.log(`[dry-run] runtime audit ${entry.slug} dist output`);
       results.push(buildShowcaseVerificationResult(auditShowcaseEntry(entry), {
         buildPassed: null,
         durationMs: 0,
@@ -59,10 +122,14 @@ async function main() {
     if (!buildPassed) {
       failedBuilds += 1;
       console.error(`Build failed for ${entry.slug}`);
-      if (build.stdout) process.error.write(build.stdout);
-      if (build.stderr) process.error.write(build.stderr);
+      if (build.stdout) process.stderr.write(build.stdout);
+      if (build.stderr) process.stderr.write(build.stderr);
     } else {
-      smoke = await runShowcaseSmoke(entry);
+      const smokeStartedAt = Date.now();
+      const runtimeAudit = await auditBuiltDist(appRoot, {
+        routeHints: extractShowcaseRouteHints(entry),
+      });
+      smoke = buildSmokeResult(runtimeAudit, Date.now() - smokeStartedAt);
       if (!smoke.passed) {
         failedSmokes += 1;
         console.error(`Smoke check failed for ${entry.slug}: ${smoke.failures.join(', ')}`);
@@ -133,4 +200,7 @@ async function main() {
   }
 }
 
-await main();
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

@@ -1,15 +1,15 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-09T13:56:49.890Z",
+  "generatedAt": "2026-04-09T15:16:26.800Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 2570,
+    "averageDurationMs": 1790,
     "passedSmokes": 8,
     "failedSmokes": 0,
-    "averageSmokeDurationMs": 7,
+    "averageSmokeDurationMs": 8,
     "appsWithTitleOkCount": 8,
     "appsWithRouteCoverageCount": 8,
     "lowerDriftCount": 2,
@@ -25,11 +25,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 5395
+        "durationMs": 1785
       },
       "smoke": {
         "passed": true,
-        "durationMs": 28,
+        "durationMs": 33,
         "rootDocumentOk": true,
         "titleOk": true,
         "assetCount": 2,
@@ -40,11 +40,13 @@
           "/workspace/",
           "/copilot/config",
           "/login",
-          "/register"
+          "/register",
+          "/forgot-password",
+          "/settings"
         ],
-        "routeHintsMatched": 6,
-        "routeDocumentsChecked": 6,
-        "routeDocumentsPassed": 6,
+        "routeHintsMatched": 8,
+        "routeDocumentsChecked": 8,
+        "routeDocumentsPassed": 8,
         "failures": []
       },
       "drift": {
@@ -65,7 +67,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2338
+        "durationMs": 1773
       },
       "smoke": {
         "passed": true,
@@ -80,11 +82,13 @@
           "/chat",
           "/login",
           "/register",
-          "/forgot-password"
+          "/forgot-password",
+          "/reset-password",
+          "/verify-email"
         ],
-        "routeHintsMatched": 6,
-        "routeDocumentsChecked": 6,
-        "routeDocumentsPassed": 6,
+        "routeHintsMatched": 8,
+        "routeDocumentsChecked": 8,
+        "routeDocumentsPassed": 8,
         "failures": []
       },
       "drift": {
@@ -105,11 +109,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2118
+        "durationMs": 1824
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "assetCount": 2,
@@ -120,11 +124,13 @@
           "/articles/",
           "/categories",
           "/drafts",
-          "/drafts/"
+          "/drafts/",
+          "/published",
+          "/subscribe"
         ],
-        "routeHintsMatched": 6,
-        "routeDocumentsChecked": 6,
-        "routeDocumentsPassed": 6,
+        "routeHintsMatched": 8,
+        "routeDocumentsChecked": 8,
+        "routeDocumentsPassed": 8,
         "failures": []
       },
       "drift": {
@@ -145,11 +151,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2062
+        "durationMs": 1676
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 6,
         "rootDocumentOk": true,
         "titleOk": true,
         "assetCount": 2,
@@ -160,11 +166,13 @@
           "/projects/",
           "/about",
           "/skills",
-          "/contact"
+          "/contact",
+          "/blog",
+          "/blog/"
         ],
-        "routeHintsMatched": 6,
-        "routeDocumentsChecked": 6,
-        "routeDocumentsPassed": 6,
+        "routeHintsMatched": 8,
+        "routeDocumentsChecked": 8,
+        "routeDocumentsPassed": 8,
         "failures": []
       },
       "drift": {
@@ -185,11 +193,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2027
+        "durationMs": 1665
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "assetCount": 2,
@@ -200,11 +208,12 @@
           "/blog",
           "/blog/",
           "/resources",
-          "/privacy"
+          "/privacy",
+          "/terms"
         ],
-        "routeHintsMatched": 6,
-        "routeDocumentsChecked": 6,
-        "routeDocumentsPassed": 6,
+        "routeHintsMatched": 7,
+        "routeDocumentsChecked": 7,
+        "routeDocumentsPassed": 7,
         "failures": []
       },
       "drift": {
@@ -225,11 +234,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2211
+        "durationMs": 1935
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 3,
         "rootDocumentOk": true,
         "titleOk": true,
         "assetCount": 2,
@@ -240,11 +249,13 @@
           "/browse/",
           "/profile/",
           "/dashboard",
-          "/dashboard/content"
+          "/dashboard/content",
+          "/dashboard/content/new",
+          "/dashboard/api-keys"
         ],
-        "routeHintsMatched": 6,
-        "routeDocumentsChecked": 6,
-        "routeDocumentsPassed": 6,
+        "routeHintsMatched": 8,
+        "routeDocumentsChecked": 8,
+        "routeDocumentsPassed": 8,
         "failures": []
       },
       "drift": {
@@ -265,11 +276,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2263
+        "durationMs": 1874
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 3,
         "rootDocumentOk": true,
         "titleOk": true,
         "assetCount": 2,
@@ -280,11 +291,13 @@
           "/login",
           "/register",
           "/forgot-password",
-          "/reset-password"
+          "/reset-password",
+          "/verify-email",
+          "/about"
         ],
-        "routeHintsMatched": 6,
-        "routeDocumentsChecked": 6,
-        "routeDocumentsPassed": 6,
+        "routeHintsMatched": 8,
+        "routeDocumentsChecked": 8,
+        "routeDocumentsPassed": 8,
         "failures": []
       },
       "drift": {
@@ -305,7 +318,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2147
+        "durationMs": 1790
       },
       "smoke": {
         "passed": true,
@@ -320,11 +333,13 @@
           "/docs/",
           "/search",
           "/changelog",
-          "/changelog/"
+          "/changelog/",
+          "/api",
+          "/api/"
         ],
-        "routeHintsMatched": 6,
-        "routeDocumentsChecked": 6,
-        "routeDocumentsPassed": 6,
+        "routeHintsMatched": 8,
+        "routeDocumentsChecked": 8,
+        "routeDocumentsPassed": 8,
         "failures": []
       },
       "drift": {

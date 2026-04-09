@@ -1,7 +1,10 @@
+import { fileURLToPath } from 'node:url';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
-export const repoRoot = join(import.meta.dirname, '..');
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+
+export const repoRoot = join(scriptDir, '..');
 export const showcaseRoot = join(repoRoot, 'apps', 'showcase');
 export const showcaseManifestPath = join(showcaseRoot, 'manifest.json');
 export const showcaseReportsRoot = join(showcaseRoot, 'reports');

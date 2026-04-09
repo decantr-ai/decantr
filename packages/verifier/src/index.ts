@@ -1,10 +1,13 @@
-import { createServer } from 'node:http';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { extname, isAbsolute, join, normalize, resolve } from 'node:path';
+import { isAbsolute, join, resolve } from 'node:path';
 import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import type { ReviewExecutionPack } from '@decantr/core';
+import { auditBuiltDist, emptyRuntimeAudit, type RuntimeAudit } from './runtime.js';
+
+export { auditBuiltDist, emptyRuntimeAudit } from './runtime.js';
+export type { BuiltDistAuditOptions, RuntimeAudit } from './runtime.js';
 
 export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
@@ -39,22 +42,6 @@ interface PackManifestEntry {
   id: string;
   markdown: string;
   json: string;
-}
-
-export interface RuntimeAudit {
-  distPresent: boolean;
-  indexPresent: boolean;
-  checked: boolean;
-  passed: boolean | null;
-  rootDocumentOk: boolean;
-  titleOk: boolean;
-  assetCount: number;
-  assetsPassed: number;
-  routeHintsChecked: string[];
-  routeHintsMatched: number;
-  routeDocumentsChecked: number;
-  routeDocumentsPassed: number;
-  failures: string[];
 }
 
 export interface PackManifest {
@@ -163,18 +150,6 @@ const DEFAULT_FOCUS_AREAS = [
   'accessibility',
   'responsive-design',
 ];
-
-const CONTENT_TYPES = {
-  '.css': 'text/css; charset=utf-8',
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.webp': 'image/webp',
-} as const;
 
 const TREATMENT_CLASSES = ['d-interactive', 'd-surface', 'd-data', 'd-control', 'd-section', 'd-annotation', 'd-label'];
 const PERSONALITY_UTILS = ['neon-glow', 'neon-text-glow', 'neon-border-glow', 'mono-data', 'status-ring', 'entrance-fade'];
@@ -288,41 +263,6 @@ function makeFinding(input: VerificationFinding): VerificationFinding {
   return input;
 }
 
-function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
-  return {
-    distPresent: false,
-    indexPresent: false,
-    checked: false,
-    passed: null,
-    rootDocumentOk: false,
-    titleOk: false,
-    assetCount: 0,
-    assetsPassed: 0,
-    routeHintsChecked: [],
-    routeHintsMatched: 0,
-    routeDocumentsChecked: 0,
-    routeDocumentsPassed: 0,
-    failures,
-  };
-}
-
-function getContentType(pathname: string): string {
-  return CONTENT_TYPES[extname(pathname) as keyof typeof CONTENT_TYPES] ?? 'application/octet-stream';
-}
-
-function extractAssetPaths(indexHtml: string): string[] {
-  const assetPaths = new Set<string>();
-
-  for (const match of indexHtml.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)) {
-    const assetPath = match[1];
-    const assetsIndex = assetPath.indexOf('/assets/');
-    if (assetsIndex === -1) continue;
-    assetPaths.add(assetPath.slice(assetsIndex));
-  }
-
-  return [...assetPaths];
-}
-
 function normalizeRouteHint(route: string | null | undefined): string {
   if (!route || route === '/') return '/';
   const dynamicIndex = route.indexOf('/:');
@@ -332,7 +272,7 @@ function normalizeRouteHint(route: string | null | undefined): string {
   return route;
 }
 
-function extractProjectRouteHints(essence: EssenceFile | null): string[] {
+export function extractRouteHintsFromEssence(essence: EssenceFile | null): string[] {
   if (!essence) {
     return ['/'];
   }
@@ -372,158 +312,10 @@ function extractProjectRouteHints(essence: EssenceFile | null): string[] {
   return [...routes].filter(Boolean).slice(0, 8);
 }
 
-async function startStaticServer(rootDir: string): Promise<{ baseUrl: string; close: () => Promise<void> }> {
-  const server = createServer((req, res) => {
-    const requestedUrl = new URL(req.url ?? '/', 'http://127.0.0.1');
-    const pathname = requestedUrl.pathname === '/' ? '/index.html' : requestedUrl.pathname;
-    const relativePath = normalize(pathname)
-      .replace(/^[/\\]+/, '')
-      .replace(/^(\.\.[/\\])+/, '');
-    const filePath = join(rootDir, relativePath);
-    const fallbackPath = join(rootDir, 'index.html');
-
-    try {
-      if (existsSync(filePath)) {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', getContentType(filePath));
-        res.end(readFileSync(filePath));
-        return;
-      }
-
-      if (existsSync(fallbackPath)) {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.end(readFileSync(fallbackPath));
-        return;
-      }
-
-      res.statusCode = 404;
-      res.end('Not found');
-    } catch {
-      res.statusCode = 500;
-      res.end('Internal server error');
-    }
-  });
-
-  await new Promise<void>((resolvePromise, reject) => {
-    server.once('error', reject);
-    server.listen(0, '127.0.0.1', () => resolvePromise());
-  });
-
-  const address = server.address();
-  if (!address || typeof address === 'string') {
-    server.close();
-    throw new Error('Failed to bind runtime audit server.');
-  }
-
-  return {
-    baseUrl: `http://127.0.0.1:${address.port}`,
-    async close() {
-      await new Promise<void>((resolvePromise, reject) => server.close(error => error ? reject(error) : resolvePromise()));
-    },
-  };
-}
-
 async function runRuntimeAudit(projectRoot: string, essence: EssenceFile | null): Promise<RuntimeAudit> {
-  const distDir = join(projectRoot, 'dist');
-  if (!existsSync(distDir)) {
-    return emptyRuntimeAudit(['dist-missing']);
-  }
-
-  const indexPath = join(distDir, 'index.html');
-  if (!existsSync(indexPath)) {
-    return {
-      ...emptyRuntimeAudit(['index-missing']),
-      distPresent: true,
-    };
-  }
-
-  const routeHints = extractProjectRouteHints(essence);
-  const indexHtml = readFileSync(indexPath, 'utf-8');
-  const assetPaths = extractAssetPaths(indexHtml);
-  const server = await startStaticServer(distDir);
-
-  try {
-    const rootResponse = await fetch(`${server.baseUrl}/`);
-    const rootHtml = await rootResponse.text();
-    const failures: string[] = [];
-    const rootDocumentOk = rootResponse.ok && /id="root"/.test(rootHtml);
-    const titleOk = /<title>[^<]+<\/title>/i.test(rootHtml);
-
-    if (!rootDocumentOk) {
-      failures.push('root-document-invalid');
-    }
-    if (!titleOk) {
-      failures.push('root-title-missing');
-    }
-    if (assetPaths.length === 0) {
-      failures.push('assets-missing');
-    }
-
-    let assetsPassed = 0;
-    let combinedJs = '';
-
-    for (const assetPath of assetPaths) {
-      const response = await fetch(`${server.baseUrl}${assetPath}`);
-      const body = await response.text();
-
-      if (response.ok && body.length > 0) {
-        assetsPassed += 1;
-      } else {
-        failures.push(`asset-fetch-failed:${assetPath}`);
-      }
-
-      if (assetPath.endsWith('.js')) {
-        combinedJs += body;
-      }
-    }
-
-    const routeHintsMatched = routeHints.filter(routeHint => combinedJs.includes(routeHint)).length;
-    if (routeHints.length > 0 && routeHintsMatched < Math.min(2, routeHints.length)) {
-      failures.push('route-hints-missing');
-    }
-
-    let routeDocumentsPassed = 0;
-    for (const routeHint of routeHints) {
-      const routeResponse = await fetch(`${server.baseUrl}${routeHint}`);
-      const routeHtml = await routeResponse.text();
-      if (routeResponse.ok && /id="root"/.test(routeHtml)) {
-        routeDocumentsPassed += 1;
-      } else {
-        failures.push(`route-document-failed:${routeHint}`);
-      }
-    }
-
-    const routeDocumentsChecked = routeHints.length;
-    if (routeDocumentsChecked > 0 && routeDocumentsPassed < Math.min(2, routeDocumentsChecked)) {
-      failures.push('route-documents-missing');
-    }
-
-    const passed = rootDocumentOk
-      && titleOk
-      && assetPaths.length > 0
-      && assetsPassed === assetPaths.length
-      && (routeDocumentsChecked === 0 || routeDocumentsPassed >= Math.min(2, routeDocumentsChecked))
-      && (routeHints.length === 0 || routeHintsMatched >= Math.min(2, routeHints.length));
-
-    return {
-      distPresent: true,
-      indexPresent: true,
-      checked: true,
-      passed,
-      rootDocumentOk,
-      titleOk,
-      assetCount: assetPaths.length,
-      assetsPassed,
-      routeHintsChecked: routeHints,
-      routeHintsMatched,
-      routeDocumentsChecked,
-      routeDocumentsPassed,
-      failures,
-    };
-  } finally {
-    await server.close();
-  }
+  return auditBuiltDist(projectRoot, {
+    routeHints: extractRouteHintsFromEssence(essence),
+  });
 }
 
 function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudit: RuntimeAudit, projectRoot: string): void {

@@ -14,6 +14,7 @@ npm install @decantr/verifier
 ## What It Exports
 
 - `auditProject()` for project-level Decantr audits
+- `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
 - `critiqueFile()` for file-level review against compiled review-pack contracts
 - schema-backed report types for project audits, file critiques, and showcase verification
 - project audits include runtime evidence when a built `dist/` output is present:
