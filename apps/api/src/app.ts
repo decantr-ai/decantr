@@ -5,6 +5,7 @@ import { healthRoutes } from './routes/health.js';
 import { contentRoutes } from './routes/content.js';
 import { searchRoutes } from './routes/search.js';
 import { schemaRoutes } from './routes/schema.js';
+import { showcaseRoutes } from './routes/showcase.js';
 import { authRoutes } from './routes/auth.js';
 import { publishRoutes } from './routes/publish.js';
 import { orgRoutes } from './routes/orgs.js';
@@ -88,7 +89,7 @@ export function createApp(): Hono<Env> {
 
     // Skip auth for public read-only content endpoints (GET only)
     // These don't need auth — auth is only for publishing, moderation, billing
-    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|schema|health)/.test(path)) {
+    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|schema|showcase|health)/.test(path)) {
       c.set('auth', { user: null, isAuthenticated: false, isAdmin: false });
       return next();
     }
@@ -104,7 +105,7 @@ export function createApp(): Hono<Env> {
     if (path === '/v1/admin/sync' && method === 'POST') {
       return next();
     }
-    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|schema|health)/.test(path)) {
+    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|schema|showcase|health)/.test(path)) {
       return next();
     }
     await rateLimiter()(c, next);
@@ -116,6 +117,7 @@ export function createApp(): Hono<Env> {
   app.route('/v1', contentRoutes);
   app.route('/v1', searchRoutes);
   app.route('/v1', schemaRoutes);
+  app.route('/v1', showcaseRoutes);
   app.route('/v1', authRoutes);
   app.route('/v1', publishRoutes);
   app.route('/v1', orgRoutes);
