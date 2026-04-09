@@ -13,6 +13,7 @@ import searchResponseSchema from '@decantr/registry/schema/search-response.v1.js
 import showcaseManifestEntrySchema from '@decantr/registry/schema/showcase-manifest-entry.v1.json';
 import showcaseManifestSchema from '@decantr/registry/schema/showcase-manifest.v1.json';
 import showcaseShortlistSchema from '@decantr/registry/schema/showcase-shortlist.v1.json';
+import registryIntelligenceSummarySchema from '@decantr/registry/schema/registry-intelligence-summary.v1.json';
 import essenceV2Schema from '@decantr/essence-spec/schema/essence.v2.json';
 import essenceV3Schema from '@decantr/essence-spec/schema/essence.v3.json';
 import executionPackCommonSchema from '@decantr/core/schema/execution-pack.common.v1.json';
@@ -62,6 +63,7 @@ export const PUBLIC_SCHEMAS: Record<string, JsonSchema> = {
   'showcase-manifest-entry.v1.json': showcaseManifestEntrySchema as JsonSchema,
   'showcase-manifest.v1.json': showcaseManifestSchema as JsonSchema,
   'showcase-shortlist.v1.json': showcaseShortlistSchema as JsonSchema,
+  'registry-intelligence-summary.v1.json': registryIntelligenceSummarySchema as JsonSchema,
   'essence.v2.json': essenceV2Schema as JsonSchema,
   'essence.v3.json': essenceV3Schema as JsonSchema,
   'execution-pack.common.v1.json': executionPackCommonSchema as JsonSchema,

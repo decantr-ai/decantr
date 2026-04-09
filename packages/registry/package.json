@@ -38,7 +38,8 @@
     "./schema/search-response.v1.json": "./schema/search-response.v1.json",
     "./schema/showcase-manifest-entry.v1.json": "./schema/showcase-manifest-entry.v1.json",
     "./schema/showcase-manifest.v1.json": "./schema/showcase-manifest.v1.json",
-    "./schema/showcase-shortlist.v1.json": "./schema/showcase-shortlist.v1.json"
+    "./schema/showcase-shortlist.v1.json": "./schema/showcase-shortlist.v1.json",
+    "./schema/registry-intelligence-summary.v1.json": "./schema/registry-intelligence-summary.v1.json"
   },
   "files": ["dist", "schema"],
   "publishConfig": {

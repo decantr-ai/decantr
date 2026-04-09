@@ -89,6 +89,103 @@ describe('RegistryAPIClient showcase endpoints', () => {
     expect(result.results[0]?.smoke.passed).toBe(true);
   });
 
+  it('fetches the registry intelligence summary', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        $schema: 'https://decantr.ai/schemas/registry-intelligence-summary.v1.json',
+        generated_at: '2026-04-09T00:00:00.000Z',
+        namespace: '@official',
+        totals: {
+          total_public_items: 2,
+          with_intelligence: 2,
+          recommended: 1,
+          authored: 1,
+          benchmark: 0,
+          hybrid: 1,
+          missing_source: 0,
+          smoke_green: 1,
+          build_green: 0,
+          high_confidence: 1,
+        },
+        by_type: {
+          pattern: {
+            total_public_items: 1,
+            with_intelligence: 1,
+            recommended: 1,
+            authored: 1,
+            benchmark: 0,
+            hybrid: 0,
+            missing_source: 0,
+            smoke_green: 0,
+            build_green: 0,
+            high_confidence: 0,
+          },
+          theme: {
+            total_public_items: 0,
+            with_intelligence: 0,
+            recommended: 0,
+            authored: 0,
+            benchmark: 0,
+            hybrid: 0,
+            missing_source: 0,
+            smoke_green: 0,
+            build_green: 0,
+            high_confidence: 0,
+          },
+          blueprint: {
+            total_public_items: 1,
+            with_intelligence: 1,
+            recommended: 0,
+            authored: 0,
+            benchmark: 0,
+            hybrid: 1,
+            missing_source: 0,
+            smoke_green: 1,
+            build_green: 0,
+            high_confidence: 1,
+          },
+          archetype: {
+            total_public_items: 0,
+            with_intelligence: 0,
+            recommended: 0,
+            authored: 0,
+            benchmark: 0,
+            hybrid: 0,
+            missing_source: 0,
+            smoke_green: 0,
+            build_green: 0,
+            high_confidence: 0,
+          },
+          shell: {
+            total_public_items: 0,
+            with_intelligence: 0,
+            recommended: 0,
+            authored: 0,
+            benchmark: 0,
+            hybrid: 0,
+            missing_source: 0,
+            smoke_green: 0,
+            build_green: 0,
+            high_confidence: 0,
+          },
+        },
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const client = new RegistryAPIClient({ baseUrl: 'https://api.example.com/v1' });
+    const result = await client.getRegistryIntelligenceSummary({ namespace: '@official' });
+
+    expect(result.namespace).toBe('@official');
+    expect(result.totals.hybrid).toBe(1);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/\/intelligence\/summary\?namespace=%40official/),
+      expect.anything(),
+    );
+  });
+
   it('fetches a public content envelope without unwrapping', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({

@@ -84,6 +84,11 @@ async function getShowcaseBenchmarkPayload(view: string) {
   return client.getShowcaseShortlist();
 }
 
+async function getRegistryIntelligenceSummaryPayload(namespace?: string) {
+  const client = getPublicAPIClient();
+  return client.getRegistryIntelligenceSummary(namespace ? { namespace } : undefined);
+}
+
 const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
 
 function deriveZones(inputs: ZoneInput[]): ComposedZone[] {
@@ -467,7 +472,23 @@ export const TOOLS = [
     },
     annotations: READ_ONLY_NETWORK,
   },
-  // 18. decantr_audit_project — local read
+  // 18. decantr_get_registry_intelligence_summary — network read
+  {
+    name: 'decantr_get_registry_intelligence_summary',
+    title: 'Get Registry Intelligence Summary',
+    description: 'Read the hosted schema-backed registry intelligence summary. Useful for checking overall intelligence/recommendation coverage without crawling every item.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        namespace: {
+          type: 'string',
+          description: 'Optional namespace to scope the summary to, for example "@official".',
+        },
+      },
+    },
+    annotations: READ_ONLY_NETWORK,
+  },
+  // 19. decantr_audit_project — local read
   {
     name: 'decantr_audit_project',
     title: 'Audit Project',
@@ -478,7 +499,7 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 19. decantr_critique — local read
+  // 20. decantr_critique — local read
   {
     name: 'decantr_critique',
     title: 'Design Critique',
@@ -1389,6 +1410,14 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       return getShowcaseBenchmarkPayload(view);
+    }
+
+    case 'decantr_get_registry_intelligence_summary': {
+      if (args.namespace != null && typeof args.namespace !== 'string') {
+        return { error: 'Invalid namespace. Must be a string when provided.' };
+      }
+
+      return getRegistryIntelligenceSummaryPayload(args.namespace as string | undefined);
     }
 
     case 'decantr_critique': {

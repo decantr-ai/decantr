@@ -8,8 +8,8 @@ afterEach(() => {
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
-    it('should define 18 tools', () => {
-      expect(TOOLS).toHaveLength(18);
+    it('should define 19 tools', () => {
+      expect(TOOLS).toHaveLength(19);
     });
 
     it('should have unique tool names', () => {
@@ -40,6 +40,7 @@ describe('MCP tool handlers', () => {
         'decantr_resolve_blueprint', 'decantr_suggest_patterns',
         'decantr_create_essence',
         'decantr_get_showcase_benchmarks',
+        'decantr_get_registry_intelligence_summary',
       ];
       for (const name of networkToolNames) {
         const tool = TOOLS.find(t => t.name === name);
@@ -170,6 +171,109 @@ describe('MCP tool handlers', () => {
         id: 'nonexistent-archetype-xyz',
       }) as { found: boolean };
       expect(result.found).toBe(false);
+    });
+  });
+
+  describe('decantr_get_registry_intelligence_summary', () => {
+    it('returns hosted summary data and respects namespace filtering', async () => {
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({
+          $schema: 'https://decantr.ai/schemas/registry-intelligence-summary.v1.json',
+          generated_at: '2026-04-09T00:00:00.000Z',
+          namespace: '@official',
+          totals: {
+            total_public_items: 10,
+            with_intelligence: 8,
+            recommended: 4,
+            authored: 3,
+            benchmark: 2,
+            hybrid: 3,
+            missing_source: 0,
+            smoke_green: 2,
+            build_green: 5,
+            high_confidence: 2,
+          },
+          by_type: {
+            pattern: {
+              total_public_items: 0,
+              with_intelligence: 0,
+              recommended: 0,
+              authored: 0,
+              benchmark: 0,
+              hybrid: 0,
+              missing_source: 0,
+              smoke_green: 0,
+              build_green: 0,
+              high_confidence: 0,
+            },
+            theme: {
+              total_public_items: 0,
+              with_intelligence: 0,
+              recommended: 0,
+              authored: 0,
+              benchmark: 0,
+              hybrid: 0,
+              missing_source: 0,
+              smoke_green: 0,
+              build_green: 0,
+              high_confidence: 0,
+            },
+            blueprint: {
+              total_public_items: 4,
+              with_intelligence: 4,
+              recommended: 2,
+              authored: 1,
+              benchmark: 1,
+              hybrid: 2,
+              missing_source: 0,
+              smoke_green: 2,
+              build_green: 4,
+              high_confidence: 2,
+            },
+            archetype: {
+              total_public_items: 3,
+              with_intelligence: 2,
+              recommended: 1,
+              authored: 1,
+              benchmark: 0,
+              hybrid: 1,
+              missing_source: 0,
+              smoke_green: 0,
+              build_green: 1,
+              high_confidence: 0,
+            },
+            shell: {
+              total_public_items: 3,
+              with_intelligence: 2,
+              recommended: 1,
+              authored: 1,
+              benchmark: 1,
+              hybrid: 0,
+              missing_source: 0,
+              smoke_green: 0,
+              build_green: 0,
+              high_confidence: 0,
+            },
+          },
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      const result = await handleTool('decantr_get_registry_intelligence_summary', {
+        namespace: '@official',
+      }) as {
+        namespace: string;
+        totals: { recommended: number };
+      };
+
+      expect(result.namespace).toBe('@official');
+      expect(result.totals.recommended).toBe(4);
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/\/v1\/intelligence\/summary\?namespace=%40official/),
+        expect.anything(),
+      );
     });
   });
 

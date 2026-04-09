@@ -81,6 +81,8 @@ commit archaeology.
   - `authored`
   - `benchmark`
   - `hybrid`
+- Added a hosted schema-backed registry intelligence rollup endpoint:
+  - `/v1/intelligence/summary`
 - Added intelligence-source filtering across:
   - public API routes
   - registry portal browse surfaces
@@ -93,6 +95,7 @@ commit archaeology.
 - Added live registry drift audit in `decantr-content`.
 - Added content-intelligence audit in `decantr-content`.
 - Added provenance/source-filter audit coverage so live API rollout gaps are measurable.
+- Added a hosted intelligence summary surface so rollout state can be checked without crawling the entire public corpus.
 - Added dry-run reporting for official-content sync/prune behavior.
 
 ## Verification Baseline

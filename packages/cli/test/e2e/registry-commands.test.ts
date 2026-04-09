@@ -152,6 +152,112 @@ describe('registry commands (e2e)', () => {
     expect(json.results.some((entry: { slug: string }) => entry.slug === 'portfolio')).toBe(true);
   });
 
+  it('registry summary returns schema-backed JSON', async () => {
+    const server = createServer((req, res) => {
+      if (req.url?.startsWith('/v1/intelligence/summary')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          $schema: 'https://decantr.ai/schemas/registry-intelligence-summary.v1.json',
+          generated_at: '2026-04-09T00:00:00.000Z',
+          namespace: '@official',
+          totals: {
+            total_public_items: 2,
+            with_intelligence: 2,
+            recommended: 1,
+            authored: 1,
+            benchmark: 0,
+            hybrid: 1,
+            missing_source: 0,
+            smoke_green: 1,
+            build_green: 0,
+            high_confidence: 1,
+          },
+          by_type: {
+            pattern: {
+              total_public_items: 1,
+              with_intelligence: 1,
+              recommended: 1,
+              authored: 1,
+              benchmark: 0,
+              hybrid: 0,
+              missing_source: 0,
+              smoke_green: 0,
+              build_green: 0,
+              high_confidence: 0,
+            },
+            theme: {
+              total_public_items: 0,
+              with_intelligence: 0,
+              recommended: 0,
+              authored: 0,
+              benchmark: 0,
+              hybrid: 0,
+              missing_source: 0,
+              smoke_green: 0,
+              build_green: 0,
+              high_confidence: 0,
+            },
+            blueprint: {
+              total_public_items: 1,
+              with_intelligence: 1,
+              recommended: 0,
+              authored: 0,
+              benchmark: 0,
+              hybrid: 1,
+              missing_source: 0,
+              smoke_green: 1,
+              build_green: 0,
+              high_confidence: 1,
+            },
+            archetype: {
+              total_public_items: 0,
+              with_intelligence: 0,
+              recommended: 0,
+              authored: 0,
+              benchmark: 0,
+              hybrid: 0,
+              missing_source: 0,
+              smoke_green: 0,
+              build_green: 0,
+              high_confidence: 0,
+            },
+            shell: {
+              total_public_items: 0,
+              with_intelligence: 0,
+              recommended: 0,
+              authored: 0,
+              benchmark: 0,
+              hybrid: 0,
+              missing_source: 0,
+              smoke_green: 0,
+              build_green: 0,
+              high_confidence: 0,
+            },
+          },
+        }));
+        return;
+      }
+
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Not found' }));
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const { port } = server.address() as AddressInfo;
+
+    const output = await runCliAsync(testDir, 'registry summary --namespace @official --json', {
+      DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
+      DECANTR_API_KEY: '',
+    });
+
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+
+    const json = JSON.parse(output);
+    expect(json.$schema).toBe('https://decantr.ai/schemas/registry-intelligence-summary.v1.json');
+    expect(json.namespace).toBe('@official');
+    expect(json.totals.hybrid).toBe(1);
+  });
+
   it('forwards sort parameters for search and list commands', async () => {
     const requests: string[] = [];
     const server = createServer((req, res) => {

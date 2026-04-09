@@ -14,6 +14,7 @@ import type {
   PublishResponse,
   SearchParams,
   SearchResponse,
+  RegistryIntelligenceSummaryResponse,
   UserProfile,
   PublicUserProfile,
   ShowcaseManifestResponse,
@@ -349,6 +350,23 @@ export class RegistryAPIClient {
     if (cached) return cached;
 
     const result = await this.request<ShowcaseShortlistReport>('/showcase/shortlist-verification');
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async getRegistryIntelligenceSummary(
+    params?: { namespace?: string },
+  ): Promise<RegistryIntelligenceSummaryResponse> {
+    const cacheKey = `registry-intelligence-summary:${JSON.stringify(params ?? {})}`;
+    const cached = this.getCached<RegistryIntelligenceSummaryResponse>(cacheKey);
+    if (cached) return cached;
+
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+    const result = await this.request<RegistryIntelligenceSummaryResponse>(
+      `/intelligence/summary${query ? `?${query}` : ''}`,
+    );
     this.setCache(cacheKey, result);
     return result;
   }

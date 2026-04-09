@@ -476,6 +476,27 @@ export interface SearchResponse {
   offset?: number;
 }
 
+export interface RegistryIntelligenceSummaryBucket {
+  total_public_items: number;
+  with_intelligence: number;
+  recommended: number;
+  authored: number;
+  benchmark: number;
+  hybrid: number;
+  missing_source: number;
+  smoke_green: number;
+  build_green: number;
+  high_confidence: number;
+}
+
+export interface RegistryIntelligenceSummaryResponse {
+  $schema: string;
+  generated_at: string;
+  namespace: string | null;
+  totals: RegistryIntelligenceSummaryBucket;
+  by_type: Record<ContentType, RegistryIntelligenceSummaryBucket>;
+}
+
 export interface UserProfile {
   id: string;
   email: string;

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/registry-intelligence-summary.v1.json",
+  "title": "Decantr Registry Intelligence Summary",
+  "type": "object",
+  "required": [
+    "$schema",
+    "generated_at",
+    "namespace",
+    "totals",
+    "by_type"
+  ],
+  "$defs": {
+    "bucket": {
+      "type": "object",
+      "required": [
+        "total_public_items",
+        "with_intelligence",
+        "recommended",
+        "authored",
+        "benchmark",
+        "hybrid",
+        "missing_source",
+        "smoke_green",
+        "build_green",
+        "high_confidence"
+      ],
+      "properties": {
+        "total_public_items": { "type": "integer", "minimum": 0 },
+        "with_intelligence": { "type": "integer", "minimum": 0 },
+        "recommended": { "type": "integer", "minimum": 0 },
+        "authored": { "type": "integer", "minimum": 0 },
+        "benchmark": { "type": "integer", "minimum": 0 },
+        "hybrid": { "type": "integer", "minimum": 0 },
+        "missing_source": { "type": "integer", "minimum": 0 },
+        "smoke_green": { "type": "integer", "minimum": 0 },
+        "build_green": { "type": "integer", "minimum": 0 },
+        "high_confidence": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/registry-intelligence-summary.v1.json"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "namespace": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "totals": {
+      "$ref": "#/$defs/bucket"
+    },
+    "by_type": {
+      "type": "object",
+      "required": [
+        "pattern",
+        "theme",
+        "blueprint",
+        "archetype",
+        "shell"
+      ],
+      "properties": {
+        "pattern": { "$ref": "#/$defs/bucket" },
+        "theme": { "$ref": "#/$defs/bucket" },
+        "blueprint": { "$ref": "#/$defs/bucket" },
+        "archetype": { "$ref": "#/$defs/bucket" },
+        "shell": { "$ref": "#/$defs/bucket" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

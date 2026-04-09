@@ -18,6 +18,7 @@ import type {
   ComposeEntry,
   ContentIntelligenceSource,
   ContentIntelligenceMetadata,
+  RegistryIntelligenceSummaryResponse,
   ShowcaseManifestResponse,
   ShowcaseShortlistReport,
   ShowcaseShortlistResponse,
@@ -306,6 +307,42 @@ async function printShowcaseBenchmarks(
       ? `${verification.verificationStatus} | smoke ${verification.smoke.passed ? 'green' : verification.build.passed ? 'red' : 'pending'} | drift ${verification.drift.signal}`
       : 'verification pending';
     console.log(`  ${cyan(entry.slug)}  class ${entry.classification} | ${verificationSummary}`);
+  }
+}
+
+async function printRegistryIntelligenceSummary(
+  namespace?: string,
+  jsonOutput: boolean = false,
+) {
+  const client = getPublicAPIClient();
+  const summary = await client.getRegistryIntelligenceSummary(
+    namespace ? { namespace } : undefined,
+  );
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(summary, null, 2));
+    return;
+  }
+
+  const typedSummary = summary as RegistryIntelligenceSummaryResponse;
+  console.log(heading('Registry Intelligence Summary'));
+  console.log(`  Namespace: ${typedSummary.namespace ?? 'all public content'}`);
+  console.log(`  Generated: ${typedSummary.generated_at}`);
+  console.log(`  Public items: ${typedSummary.totals.total_public_items}`);
+  console.log(`  With intelligence: ${typedSummary.totals.with_intelligence}`);
+  console.log(`  Recommended: ${typedSummary.totals.recommended}`);
+  console.log(
+    `  Sources: authored ${typedSummary.totals.authored}, benchmark ${typedSummary.totals.benchmark}, hybrid ${typedSummary.totals.hybrid}, missing ${typedSummary.totals.missing_source}`,
+  );
+  console.log(
+    `  Verification: smoke green ${typedSummary.totals.smoke_green}, build green ${typedSummary.totals.build_green}, high confidence ${typedSummary.totals.high_confidence}`,
+  );
+  console.log('');
+
+  for (const [type, bucket] of Object.entries(typedSummary.by_type)) {
+    console.log(
+      `  ${cyan(type.padEnd(10))} total ${bucket.total_public_items} | intelligence ${bucket.with_intelligence} | recommended ${bucket.recommended} | authored ${bucket.authored} | benchmark ${bucket.benchmark} | hybrid ${bucket.hybrid}`,
+    );
   }
 }
 
@@ -1399,6 +1436,7 @@ ${BOLD}Usage:${RESET}
   decantr get <type> <id>
   decantr list <type> [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr showcase [manifest|shortlist|verification] [--json]
+  decantr registry summary [--namespace <namespace>] [--json]
   decantr validate [path]
   decantr theme <subcommand>
   decantr create <type> <name>
@@ -1445,7 +1483,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('logout')}      Remove stored credentials
   ${cyan('analyze')}     Scan existing project and produce analysis report
   ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
-  ${cyan('registry')}    Registry management (mirror)
+  ${cyan('registry')}    Registry management and intelligence summary
   ${cyan('upgrade')}     Check for content updates from registry
   ${cyan('help')}        Show this help
 
@@ -1465,6 +1503,7 @@ ${BOLD}Examples:${RESET}
   decantr list patterns
   decantr showcase shortlist
   decantr showcase verification --json
+  decantr registry summary --namespace @official
   decantr create pattern my-card
 `);
 }
@@ -1778,8 +1817,13 @@ async function main() {
         const typeIdx = args.indexOf('--type');
         const mirrorType = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
         await cmdRegistryMirror(process.cwd(), { type: mirrorType });
+      } else if (subcommand === 'summary') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        await printRegistryIntelligenceSummary(namespace, jsonOutput);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json]${RESET}`);
         process.exitCode = 1;
       }
       break;

@@ -54,6 +54,7 @@ decantr magic "describe your app"
 decantr check
 decantr refresh
 decantr status
+decantr registry summary --namespace @official --json
 decantr showcase verification --json
 ```
 
@@ -69,6 +70,7 @@ The MCP server exposes Decantr’s design intelligence directly to AI tools, inc
 
 - essence read and validation
 - registry search and content resolution
+- registry intelligence summaries
 - scoped context generation
 - showcase benchmark metadata
 - drift and critique tools
@@ -87,6 +89,7 @@ The official curated content source lives in `decantr-content` and syncs to the 
 
 Canonical Decantr schemas are published at `https://decantr.ai/schemas/`.
 Registry schemas are owned by `@decantr/registry/schema/*`, essence schemas by `@decantr/essence-spec/schema/*`, execution-pack schemas by `@decantr/core/schema/*`, and verification report schemas by `@decantr/verifier/schema/*`.
+Hosted registry intelligence rollup data is available at `https://api.decantr.ai/v1/intelligence/summary`.
 
 ## Packages
 

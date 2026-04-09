@@ -45,6 +45,8 @@ export type {
   PublishResponse,
   SearchParams,
   SearchResponse,
+  RegistryIntelligenceSummaryBucket,
+  RegistryIntelligenceSummaryResponse,
   UserProfile,
   ShowcaseVerificationEntry,
   ShowcaseShortlistSummary,
