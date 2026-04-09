@@ -131,6 +131,9 @@ For each app, record:
 
 Current automation support:
 - `pnpm showcase:audit`
+- `pnpm showcase:shortlist`
+- `pnpm showcase:build:shortlist`
+- `pnpm showcase:copy:shortlist`
 - optional JSON output: `pnpm showcase:audit -- --report-json=/tmp/showcase-audit.json`
 
 Baseline from the first branch run on 2026-04-08:
@@ -140,6 +143,18 @@ Baseline from the first branch run on 2026-04-08:
 - 18 utility-leakage signals
 - 7,626 Decantr treatment signals
 - 0/38 with compiled pack manifests still present
+
+Initial provisional shortlist produced from the same baseline:
+- `portfolio`
+- `ai-copilot-shell`
+- `spatial-collaboration`
+- `content-site`
+- `product-landing`
+- `carbon-ai-portal`
+- `registry-platform`
+- `knowledge-base`
+
+These are now marked in `apps/showcase/manifest.json` as provisional `Class B` shortlist candidates. This does not mean they are full goldens yet. It means they are the lowest-noise current benchmark candidates to review first during the manual provenance pass.
 
 ### Phase 2: Classification
 
