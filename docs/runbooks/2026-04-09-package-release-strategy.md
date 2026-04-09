@@ -117,6 +117,7 @@ This runbook improves forward release discipline, and retired-package handling i
   - `@decantr/essence-spec`, `@decantr/registry`, `@decantr/core`, and `@decantr/mcp-server` are still beta packages effectively riding `latest`
   - `@decantr/cli` has stray npm dist-tags (`latestnpm`, `latest.`)
   - `@decantr/verifier` is now part of the planned public surface but is not yet published
+  - `@decantr/verifier` tarball and package metadata now pass `npm publish --dry-run --tag beta`; the remaining blocker is npm auth/publish execution, not package shape
 - decide whether `@decantr/core` remains a public low-level package long-term or becomes a more intentionally documented integration surface
 - decide whether `@decantr/vite-plugin` should graduate, stay experimental, or be archived
 

@@ -5,7 +5,7 @@
   "author": "Decantr",
   "repository": {
     "type": "git",
-    "url": "https://github.com/decantr-ai/decantr.git",
+    "url": "git+https://github.com/decantr-ai/decantr.git",
     "directory": "packages/css"
   },
   "homepage": "https://decantr.ai",

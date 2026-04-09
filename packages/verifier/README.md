@@ -8,7 +8,7 @@ Shared Decantr verification, critique, and report-schema engine used by the CLI,
 ## Install
 
 ```bash
-npm install @decantr/verifier
+npm install @decantr/verifier@beta
 ```
 
 ## What It Exports
