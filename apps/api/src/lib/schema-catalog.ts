@@ -1,34 +1,43 @@
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import type { ContentType } from '../types.js';
-import commonSchema from '@decantr/registry/schema/common.v1.json' with { type: 'json' };
-import contentIntelligenceSchema from '@decantr/registry/schema/content-intelligence.v1.json' with { type: 'json' };
-import patternSchema from '@decantr/registry/schema/pattern.v2.json' with { type: 'json' };
-import themeSchema from '@decantr/registry/schema/theme.v1.json' with { type: 'json' };
-import blueprintSchema from '@decantr/registry/schema/blueprint.v1.json' with { type: 'json' };
-import archetypeSchema from '@decantr/registry/schema/archetype.v2.json' with { type: 'json' };
-import shellSchema from '@decantr/registry/schema/shell.v1.json' with { type: 'json' };
-import publicContentSummarySchema from '@decantr/registry/schema/public-content-summary.v1.json' with { type: 'json' };
-import publicContentRecordSchema from '@decantr/registry/schema/public-content-record.v1.json' with { type: 'json' };
-import publicContentListSchema from '@decantr/registry/schema/public-content-list.v1.json' with { type: 'json' };
-import searchResponseSchema from '@decantr/registry/schema/search-response.v1.json' with { type: 'json' };
-import showcaseManifestEntrySchema from '@decantr/registry/schema/showcase-manifest-entry.v1.json' with { type: 'json' };
-import showcaseManifestSchema from '@decantr/registry/schema/showcase-manifest.v1.json' with { type: 'json' };
-import showcaseShortlistSchema from '@decantr/registry/schema/showcase-shortlist.v1.json' with { type: 'json' };
-import registryIntelligenceSummarySchema from '@decantr/registry/schema/registry-intelligence-summary.v1.json' with { type: 'json' };
-import essenceV2Schema from '@decantr/essence-spec/schema/essence.v2.json' with { type: 'json' };
-import essenceV3Schema from '@decantr/essence-spec/schema/essence.v3.json' with { type: 'json' };
-import executionPackCommonSchema from '@decantr/core/schema/execution-pack.common.v1.json' with { type: 'json' };
-import scaffoldPackSchema from '@decantr/core/schema/scaffold-pack.v1.json' with { type: 'json' };
-import sectionPackSchema from '@decantr/core/schema/section-pack.v1.json' with { type: 'json' };
-import pagePackSchema from '@decantr/core/schema/page-pack.v1.json' with { type: 'json' };
-import mutationPackSchema from '@decantr/core/schema/mutation-pack.v1.json' with { type: 'json' };
-import reviewPackSchema from '@decantr/core/schema/review-pack.v1.json' with { type: 'json' };
-import packManifestSchema from '@decantr/core/schema/pack-manifest.v1.json' with { type: 'json' };
-import verificationReportCommonSchema from '@decantr/verifier/schema/verification-report.common.v1.json' with { type: 'json' };
-import projectAuditReportSchema from '@decantr/verifier/schema/project-audit-report.v1.json' with { type: 'json' };
-import fileCritiqueReportSchema from '@decantr/verifier/schema/file-critique-report.v1.json' with { type: 'json' };
-import showcaseShortlistReportSchema from '@decantr/verifier/schema/showcase-shortlist-report.v1.json' with { type: 'json' };
 
 export type JsonSchema = Record<string, unknown>;
+
+const require = createRequire(import.meta.url);
+
+function loadPackageSchema(specifier: string): JsonSchema {
+  return JSON.parse(readFileSync(require.resolve(specifier), 'utf8')) as JsonSchema;
+}
+
+const commonSchema = loadPackageSchema('@decantr/registry/schema/common.v1.json');
+const contentIntelligenceSchema = loadPackageSchema('@decantr/registry/schema/content-intelligence.v1.json');
+const patternSchema = loadPackageSchema('@decantr/registry/schema/pattern.v2.json');
+const themeSchema = loadPackageSchema('@decantr/registry/schema/theme.v1.json');
+const blueprintSchema = loadPackageSchema('@decantr/registry/schema/blueprint.v1.json');
+const archetypeSchema = loadPackageSchema('@decantr/registry/schema/archetype.v2.json');
+const shellSchema = loadPackageSchema('@decantr/registry/schema/shell.v1.json');
+const publicContentSummarySchema = loadPackageSchema('@decantr/registry/schema/public-content-summary.v1.json');
+const publicContentRecordSchema = loadPackageSchema('@decantr/registry/schema/public-content-record.v1.json');
+const publicContentListSchema = loadPackageSchema('@decantr/registry/schema/public-content-list.v1.json');
+const searchResponseSchema = loadPackageSchema('@decantr/registry/schema/search-response.v1.json');
+const showcaseManifestEntrySchema = loadPackageSchema('@decantr/registry/schema/showcase-manifest-entry.v1.json');
+const showcaseManifestSchema = loadPackageSchema('@decantr/registry/schema/showcase-manifest.v1.json');
+const showcaseShortlistSchema = loadPackageSchema('@decantr/registry/schema/showcase-shortlist.v1.json');
+const registryIntelligenceSummarySchema = loadPackageSchema('@decantr/registry/schema/registry-intelligence-summary.v1.json');
+const essenceV2Schema = loadPackageSchema('@decantr/essence-spec/schema/essence.v2.json');
+const essenceV3Schema = loadPackageSchema('@decantr/essence-spec/schema/essence.v3.json');
+const executionPackCommonSchema = loadPackageSchema('@decantr/core/schema/execution-pack.common.v1.json');
+const scaffoldPackSchema = loadPackageSchema('@decantr/core/schema/scaffold-pack.v1.json');
+const sectionPackSchema = loadPackageSchema('@decantr/core/schema/section-pack.v1.json');
+const pagePackSchema = loadPackageSchema('@decantr/core/schema/page-pack.v1.json');
+const mutationPackSchema = loadPackageSchema('@decantr/core/schema/mutation-pack.v1.json');
+const reviewPackSchema = loadPackageSchema('@decantr/core/schema/review-pack.v1.json');
+const packManifestSchema = loadPackageSchema('@decantr/core/schema/pack-manifest.v1.json');
+const verificationReportCommonSchema = loadPackageSchema('@decantr/verifier/schema/verification-report.common.v1.json');
+const projectAuditReportSchema = loadPackageSchema('@decantr/verifier/schema/project-audit-report.v1.json');
+const fileCritiqueReportSchema = loadPackageSchema('@decantr/verifier/schema/file-critique-report.v1.json');
+const showcaseShortlistReportSchema = loadPackageSchema('@decantr/verifier/schema/showcase-shortlist-report.v1.json');
 
 export const COMMON_SCHEMA = commonSchema as JsonSchema;
 
