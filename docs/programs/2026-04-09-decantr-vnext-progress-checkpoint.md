@@ -110,6 +110,15 @@ commit archaeology.
 - Added a lightweight public API smoke audit script: `pnpm audit:public-api`
 - Added a GitHub Actions workflow for scheduled/manual public API audit reporting.
 - Added a human-readable public API reference page under `docs/reference/`.
+- Added a manual Fly deploy workflow for the hosted API:
+  - `.github/workflows/deploy-api-fly.yml`
+- Standardized the hosted API deploy contract around:
+  - `apps/api/fly.toml`
+  - the workspace-aware root `Dockerfile`
+- Removed stale deploy-path drift:
+  - retired the old root `fly.toml`
+  - removed the obsolete `apps/api/Dockerfile`
+  - removed the stray `apps/api/package-lock.json`
 
 ### Registry portal dogfooding
 
@@ -158,6 +167,9 @@ Observed from live audits against `https://api.decantr.ai/v1`:
 - the hosted `schema`, `showcase`, and `intelligence/summary` surfaces are still not consistently public on the deployed API
 
 These are rollout/deployment issues, not local branch correctness issues.
+
+The hosted API path is now explicit in-repo. The registry portal deploy path is still
+external to this repository and remains a separate rollout concern.
 
 ## Highest-Value Next Streams
 

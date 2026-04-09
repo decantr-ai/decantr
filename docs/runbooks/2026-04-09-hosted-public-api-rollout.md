@@ -58,6 +58,39 @@ Expected before deployment:
 
 Deploy the monorepo branch to the hosted API and registry stack before touching official content sync.
 
+### API deploy path
+
+The reset branch now includes a manual GitHub Actions workflow for the hosted API:
+
+- workflow: `.github/workflows/deploy-api-fly.yml`
+- trigger: `workflow_dispatch`
+- secret required: `FLY_API_TOKEN`
+- post-deploy audit: optional but enabled by default
+
+Recommended trigger path:
+
+1. open the `Deploy API to Fly` workflow in GitHub Actions
+2. run it against `codex/decantr-vnext-reset`
+3. leave `run_public_audit=true`
+
+Expected result:
+
+- Fly deploy completes using `apps/api/fly.toml`
+- the workflow runs the hosted public API audit immediately after deployment
+- the workflow uploads `public-api-report.json` and `public-api-summary.md`
+
+Canonical deploy contract:
+
+- `apps/api/fly.toml` is the only Fly config that should exist for the hosted API
+- the old root-level `fly.toml` has been retired to avoid split deploy behavior
+- the workspace-aware root `Dockerfile` is the canonical build path used by Fly
+
+### Current portal deploy status
+
+The API deploy path is now explicit in-repo.
+
+The registry portal deploy path is still less explicit than the API path and should be treated as a separate rollout concern. Do not assume the portal is updated just because the API deploy completes.
+
 Surfaces included in this rollout:
 
 - `apps/api`
@@ -168,6 +201,7 @@ If content sync introduces unexpected drift:
 Rollout is complete only when all of the following are true:
 
 - `pnpm audit:public-api` passes with no failed checks
+- the `Deploy API to Fly` workflow succeeds with its post-deploy audit enabled
 - `audit-registry-drift.js` reports no unexpected live extras or changed official entries
 - `audit-content-intelligence.js` no longer reports filter/summary mismatches caused by rollout state
 - stale `workbench`-era official content is gone from the live registry
