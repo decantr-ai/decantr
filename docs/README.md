@@ -1,0 +1,25 @@
+# Decantr Docs
+
+This reset branch treats only the vNext program, audits, and active implementation specs as current source of truth.
+
+## Active Docs
+
+- `programs/`
+  - Branch-level product strategy and program structure.
+- `audit/`
+  - Baseline audits, keep/cut decisions, package surface review, and platform contract findings.
+- `specs/`
+  - Active implementation specs for the reset program.
+
+## Archived Docs
+
+- `archive/specs/`
+  - Pre-vNext design/spec documents kept for historical reference only.
+- `archive/plans/`
+  - Superseded execution plans from the pre-reset architecture.
+- `archive/remediation/`
+  - Older remediation notes retained as reference material.
+
+## Working Rule
+
+If an older document conflicts with a file under `programs/`, `audit/`, or the active `specs/` directory, treat the active vNext docs as authoritative on this branch.
