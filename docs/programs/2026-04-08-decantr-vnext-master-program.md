@@ -384,5 +384,12 @@ This master program depends on the following companion docs:
 - `docs/audit/2026-04-08-registry-content-api-contract-audit.md`
 - `docs/audit/2026-04-08-showcase-provenance-audit.md`
 - `docs/audit/2026-04-08-package-release-surface-audit.md`
+- `docs/specs/2026-04-08-vnext-phase-0-product-boundary-cleanup-design.md`
+- `docs/specs/2026-04-08-vnext-phase-1-registry-contract-normalization-design.md`
+- `docs/specs/2026-04-08-vnext-phase-2-contract-compiler-design.md`
+- `docs/specs/2026-04-08-vnext-phase-3-verification-and-golden-corpus-design.md`
+- `docs/specs/2026-04-08-vnext-phase-4-registry-intelligence-and-content-ops-design.md`
+- `docs/specs/2026-04-08-vnext-phase-5-portal-docs-and-package-surface-design.md`
+- `docs/specs/2026-04-08-vnext-phase-6-hosted-commercial-platform-design.md`
 
 These documents should be treated as the operating baseline for the first implementation wave.
