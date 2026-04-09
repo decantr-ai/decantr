@@ -33,6 +33,7 @@ Current branch progress already aligned with this phase:
 - project-audit and file-critique reports are schema-backed public contracts
 - CLI and MCP both consume the shared verifier surface
 - review packs can now influence critique severity and anti-pattern detection
+- project audits now include shared runtime evidence when built `dist/` output is present
 
 ## Goals
 

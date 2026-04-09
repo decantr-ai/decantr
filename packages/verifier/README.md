@@ -16,17 +16,19 @@ npm install @decantr/verifier
 - `auditProject()` for project-level Decantr audits
 - `critiqueFile()` for file-level review against compiled review-pack contracts
 - schema-backed report types for project audits, file critiques, and showcase verification
+- project audits include runtime evidence when a built `dist/` output is present:
+  - root document
+  - document title
+  - emitted assets
+  - route-document coverage
 
 ## Example
 
 ```ts
 import { auditProject, critiqueFile } from '@decantr/verifier';
 
-const audit = await auditProject({ projectRoot: process.cwd() });
-const critique = await critiqueFile({
-  filePath: './src/pages/overview.tsx',
-  projectRoot: process.cwd(),
-});
+const audit = await auditProject(process.cwd());
+const critique = await critiqueFile('./src/pages/overview.tsx', process.cwd());
 ```
 
 ## Schema Exports

@@ -1251,6 +1251,10 @@ function printProjectAuditReport(report: ProjectAuditReport) {
   console.log(`  Pages defined: ${report.summary.pageCount}`);
   console.log(`  Pack manifest: ${report.summary.packManifestPresent ? 'present' : 'missing'}`);
   console.log(`  Review pack: ${report.summary.reviewPackPresent ? 'present' : 'missing'}`);
+  const runtimeStatus = report.summary.runtimeAuditChecked
+    ? (report.summary.runtimePassed ? 'passed' : 'failed')
+    : (report.runtimeAudit.distPresent ? 'incomplete' : 'pending (no dist/)');
+  console.log(`  Runtime audit: ${runtimeStatus}`);
   console.log(`  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`);
 
   console.log('');

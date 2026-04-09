@@ -42,7 +42,62 @@ describe('verifier', () => {
       const report = await auditProject(projectRoot);
       expect(report.valid).toBe(true);
       expect(report.summary.reviewPackPresent).toBe(false);
+      expect(report.summary.runtimeAuditChecked).toBe(false);
+      expect(report.runtimeAudit.distPresent).toBe(false);
       expect(report.findings.some(finding => finding.id === 'review-pack-file-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-dist-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('audits built dist output and reports runtime title failures', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
+        version: '3.0.0',
+        dna: {
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+          personality: ['professional'],
+        },
+        blueprint: {
+          shell: 'sidebar-main',
+          sections: [
+            {
+              id: 'main',
+              role: 'main',
+              pages: [{ id: 'home', route: '/dashboard', layout: ['hero'] }],
+            },
+          ],
+          features: [],
+        },
+        meta: {
+          archetype: 'marketing',
+          target: 'react',
+          platform: { type: 'spa', routing: 'pathname' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+        },
+      }, null, 2));
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html><head></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/dashboard");\n');
+
+      const report = await auditProject(projectRoot);
+      expect(report.summary.runtimeAuditChecked).toBe(true);
+      expect(report.runtimeAudit.distPresent).toBe(true);
+      expect(report.runtimeAudit.indexPresent).toBe(true);
+      expect(report.runtimeAudit.passed).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'runtime-title-missing')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

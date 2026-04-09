@@ -77,6 +77,11 @@ commit archaeology.
 - Added schema-backed verifier report contracts.
 - CLI and MCP now share the verifier engine.
 - Review packs now inform critique behavior.
+- Project audit now includes shared runtime evidence when `dist/` exists:
+  - root document validation
+  - document title validation
+  - built asset fetch checks
+  - route-document coverage checks
 
 ### Showcase / golden corpus
 

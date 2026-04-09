@@ -3,7 +3,7 @@
   "$id": "https://decantr.ai/schemas/project-audit-report.v1.json",
   "title": "Decantr Project Audit Report",
   "type": "object",
-  "required": ["$schema", "projectRoot", "valid", "essence", "reviewPack", "packManifest", "findings", "summary"],
+  "required": ["$schema", "projectRoot", "valid", "essence", "reviewPack", "packManifest", "runtimeAudit", "findings", "summary"],
   "properties": {
     "$schema": {
       "const": "https://decantr.ai/schemas/project-audit-report.v1.json"
@@ -47,6 +47,77 @@
         }
       ]
     },
+    "runtimeAudit": {
+      "type": "object",
+      "required": [
+        "distPresent",
+        "indexPresent",
+        "checked",
+        "passed",
+        "rootDocumentOk",
+        "titleOk",
+        "assetCount",
+        "assetsPassed",
+        "routeHintsChecked",
+        "routeHintsMatched",
+        "routeDocumentsChecked",
+        "routeDocumentsPassed",
+        "failures"
+      ],
+      "properties": {
+        "distPresent": {
+          "type": "boolean"
+        },
+        "indexPresent": {
+          "type": "boolean"
+        },
+        "checked": {
+          "type": "boolean"
+        },
+        "passed": {
+          "type": ["boolean", "null"]
+        },
+        "rootDocumentOk": {
+          "type": "boolean"
+        },
+        "titleOk": {
+          "type": "boolean"
+        },
+        "assetCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assetsPassed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeHintsChecked": {
+          "type": "array",
+          "items": {
+            "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+          }
+        },
+        "routeHintsMatched": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeDocumentsChecked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeDocumentsPassed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failures": {
+          "type": "array",
+          "items": {
+            "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "findings": {
       "type": "array",
       "items": {
@@ -55,7 +126,7 @@
     },
     "summary": {
       "type": "object",
-      "required": ["errorCount", "warnCount", "infoCount", "essenceVersion", "reviewPackPresent", "packManifestPresent", "pageCount"],
+      "required": ["errorCount", "warnCount", "infoCount", "essenceVersion", "reviewPackPresent", "packManifestPresent", "runtimeAuditChecked", "runtimePassed", "pageCount"],
       "properties": {
         "errorCount": {
           "type": "integer",
@@ -77,6 +148,12 @@
         },
         "packManifestPresent": {
           "type": "boolean"
+        },
+        "runtimeAuditChecked": {
+          "type": "boolean"
+        },
+        "runtimePassed": {
+          "type": ["boolean", "null"]
         },
         "pageCount": {
           "type": "integer",
