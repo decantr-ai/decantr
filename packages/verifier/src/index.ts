@@ -479,6 +479,7 @@ async function runRuntimeAudit(projectRoot: string, essence: EssenceFile | null)
 function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudit: RuntimeAudit, projectRoot: string): void {
   const distPath = join(projectRoot, 'dist');
   const indexPath = join(distPath, 'index.html');
+  const rootDocument = readTextIfExists(indexPath);
 
   if (!runtimeAudit.distPresent) {
     findings.push(makeFinding({
@@ -546,6 +547,54 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
       evidence: [indexPath],
       suggestedFix: 'Emit `<meta name="viewport" content="width=device-width, initial-scale=1">` from the entry document or metadata layer.',
     }));
+  }
+
+  if (rootDocument) {
+    if (!/<meta[^>]+charset=/i.test(rootDocument)) {
+      findings.push(makeFinding({
+        id: 'runtime-charset-missing',
+        category: 'Document Hardening',
+        severity: 'info',
+        message: 'The built root document is missing an explicit charset declaration.',
+        evidence: [indexPath],
+        suggestedFix: 'Emit `<meta charset="utf-8">` from the entry document so encoding expectations stay explicit across hosts.',
+      }));
+    }
+
+    const inlineScriptCount = countInlineScriptTags(rootDocument);
+    if (inlineScriptCount > 0) {
+      findings.push(makeFinding({
+        id: 'runtime-inline-scripts-present',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Inline `<script>` blocks were detected in the built root document.',
+        evidence: [indexPath, `Inline script tags: ${inlineScriptCount}`],
+        suggestedFix: 'Prefer bundled external assets and avoid inline scripts so CSP headers or nonces remain practical.',
+      }));
+    }
+
+    const missingIntegrity = findExternalScriptTags(rootDocument).filter(entry => !entry.hasIntegrity);
+    if (missingIntegrity.length > 0) {
+      findings.push(makeFinding({
+        id: 'runtime-external-scripts-without-integrity',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Remote script tags were detected without Subresource Integrity metadata.',
+        evidence: missingIntegrity.slice(0, 4).map(entry => entry.src),
+        suggestedFix: 'Pin remote script tags with integrity/crossorigin metadata or serve the dependency through the trusted build pipeline.',
+      }));
+    }
+
+    if (!/<meta[^>]+http-equiv=(["'])Content-Security-Policy\1/i.test(rootDocument)) {
+      findings.push(makeFinding({
+        id: 'runtime-csp-signal-missing',
+        category: 'Security Hygiene',
+        severity: 'info',
+        message: 'No document-level Content Security Policy signal was detected in the built root document.',
+        evidence: [indexPath],
+        suggestedFix: 'Prefer a CSP response header, or emit a CSP meta policy for static hosts that cannot add security headers.',
+      }));
+    }
   }
 
   if (runtimeAudit.assetCount === 0) {
@@ -835,6 +884,22 @@ function findUtilityFrameworkSignals(code: string): string[] {
   return [...new Set(matches)];
 }
 
+function countInlineScriptTags(html: string): number {
+  return html.match(/<script\b(?:(?!\bsrc=)[^>])*>/gi)?.length ?? 0;
+}
+
+function findExternalScriptTags(html: string): Array<{ src: string; hasIntegrity: boolean }> {
+  return [...html.matchAll(/<script\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi)]
+    .map((match) => {
+      const attrs = `${match[1] ?? ''} ${match[4] ?? ''}`;
+      return {
+        src: match[3],
+        hasIntegrity: /\bintegrity\s*=/i.test(attrs),
+      };
+    })
+    .filter((entry) => /^https?:\/\//i.test(entry.src));
+}
+
 export function critiqueSource({
   filePath,
   code,
@@ -1025,6 +1090,56 @@ export function critiqueSource({
       evidence: [filePath, `Utility signals: ${utilitySignals.slice(0, 6).join(', ')}`],
       file: filePath,
       suggestedFix: 'Use Decantr treatments and decorators as the primary styling contract, with utilities only as supporting glue when necessary.',
+    }));
+  }
+
+  const hasDangerousHtml = /dangerouslySetInnerHTML\s*=/.test(code);
+  const hasRawHtmlInjection = /\binnerHTML\s*=|\binsertAdjacentHTML\s*\(/.test(code);
+  const hasDynamicEval = /\beval\s*\(|new\s+Function\s*\(/.test(code);
+  scores.push({
+    category: 'Security Hygiene',
+    focusArea: 'security-hygiene',
+    score: Math.max(1, 5 - (hasDangerousHtml ? 2 : 0) - (hasRawHtmlInjection ? 2 : 0) - (hasDynamicEval ? 2 : 0)),
+    details: `dangerouslySetInnerHTML: ${hasDangerousHtml ? 'yes' : 'no'}, raw HTML injection: ${hasRawHtmlInjection ? 'yes' : 'no'}, dynamic eval: ${hasDynamicEval ? 'yes' : 'no'}`,
+    suggestions: [
+      ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
+      ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
+    ],
+  });
+
+  if (hasDangerousHtml) {
+    findings.push(makeFinding({
+      id: 'security-dangerously-set-html',
+      category: 'Security Hygiene',
+      severity: 'error',
+      message: 'The reviewed file uses `dangerouslySetInnerHTML`.',
+      evidence: [filePath],
+      file: filePath,
+      suggestedFix: 'Render structured data through components instead of injecting raw HTML, or sanitize the content before it reaches the view layer.',
+    }));
+  }
+
+  if (hasRawHtmlInjection) {
+    findings.push(makeFinding({
+      id: 'security-raw-html-injection',
+      category: 'Security Hygiene',
+      severity: 'error',
+      message: 'The reviewed file writes raw HTML into the DOM.',
+      evidence: [filePath],
+      file: filePath,
+      suggestedFix: 'Avoid `innerHTML` and `insertAdjacentHTML`; render trusted structured nodes instead.',
+    }));
+  }
+
+  if (hasDynamicEval) {
+    findings.push(makeFinding({
+      id: 'security-dynamic-code-eval',
+      category: 'Security Hygiene',
+      severity: 'error',
+      message: 'The reviewed file uses `eval` or `new Function`, which weakens runtime trust boundaries.',
+      evidence: [filePath],
+      file: filePath,
+      suggestedFix: 'Replace dynamic code evaluation with explicit functions, lookup tables, or validated configuration data.',
     }));
   }
 

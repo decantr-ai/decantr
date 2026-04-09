@@ -85,8 +85,17 @@ commit archaeology.
   - document `lang` and `viewport` metadata checks
   - built asset fetch checks
   - route-document coverage checks
+- Project audit now adds document-hardening and runtime-security heuristics:
+  - charset declaration presence
+  - inline script detection
+  - external script integrity checks
+  - CSP signal detection
 - Project audit now also records built asset byte totals and warns on oversized JS/CSS/total bundle budgets.
 - Project audit now warns when an auth-declared essence lacks a clear gateway section or anonymous entry route.
+- File critique now flags higher-risk code patterns including:
+  - `dangerouslySetInnerHTML`
+  - raw DOM HTML injection
+  - `eval` / `new Function`
 
 ### Showcase / golden corpus
 

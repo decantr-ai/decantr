@@ -167,6 +167,54 @@ describe('verifier', () => {
     }
   });
 
+  it('reports document hardening risks in the built root document', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+            features: [],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Secure-ish App</title><script>window.__BOOTSTRAP__ = true;</script><script src="https://cdn.example.com/widget.js"></script></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/");\n');
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'runtime-charset-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-inline-scripts-present')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-external-scripts-without-integrity')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-csp-signal-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('reports missing auth topology surfaces from the essence contract', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -415,5 +463,27 @@ describe('verifier', () => {
     expect(report.reviewPack?.packType).toBe('review');
     expect(report.findings.some(finding => finding.id === 'anti-pattern-inline-styles')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'anti-pattern-hardcoded-colors')).toBe(true);
+  });
+
+  it('flags dangerous HTML injection and dynamic evaluation patterns during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/pages/Danger.tsx',
+      code: `
+        export function Danger({ html, expression }: { html: string; expression: string }) {
+          const output = eval(expression);
+          return (
+            <section>
+              <div dangerouslySetInnerHTML={{ __html: html }} />
+              <button onClick={() => document.body.innerHTML = "<p>bad</p>"}>{output}</button>
+            </section>
+          );
+        }
+      `,
+    });
+
+    expect(report.scores.some(score => score.category === 'Security Hygiene')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'security-dangerously-set-html')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'security-raw-html-injection')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'security-dynamic-code-eval')).toBe(true);
   });
 });
