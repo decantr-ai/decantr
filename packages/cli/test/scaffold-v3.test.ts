@@ -245,11 +245,17 @@ describe('v3 scaffold', () => {
     await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
 
     const packPath = join(testDir, '.decantr', 'context', 'scaffold-pack.md');
+    const sectionPackPath = join(testDir, '.decantr', 'context', 'section-custom-pack.md');
     expect(existsSync(packPath)).toBe(true);
+    expect(existsSync(sectionPackPath)).toBe(true);
 
     const content = readFileSync(packPath, 'utf-8');
+    const sectionContent = readFileSync(sectionPackPath, 'utf-8');
     expect(content).toContain('# Scaffold Pack');
     expect(content).toContain('react-vite (react)');
     expect(content).toContain('- / -> home [hero]');
+    expect(sectionContent).toContain('# Section Pack');
+    expect(sectionContent).toContain('- Section: custom');
+    expect(sectionContent).toContain('- / -> home [hero]');
   });
 });

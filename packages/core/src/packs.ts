@@ -80,6 +80,39 @@ export interface ScaffoldExecutionPack extends ExecutionPackBase<ScaffoldPackDat
   packType: 'scaffold';
 }
 
+export interface SectionPackInput {
+  id: string;
+  role: string;
+  shell: string;
+  description: string;
+  features: string[];
+  pageIds: string[];
+}
+
+export interface SectionPackRoute {
+  pageId: string;
+  path: string;
+  patternIds: string[];
+}
+
+export interface SectionPackData {
+  sectionId: string;
+  role: string;
+  shell: string;
+  description: string;
+  features: string[];
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routes: SectionPackRoute[];
+}
+
+export interface SectionExecutionPack extends ExecutionPackBase<SectionPackData> {
+  packType: 'section';
+}
+
 export interface ScaffoldPackBuilderOptions {
   objective?: string;
   target?: Partial<ExecutionPackTarget>;
@@ -90,6 +123,8 @@ export interface ScaffoldPackBuilderOptions {
   successChecks?: ExecutionPackSuccessCheck[];
   tokenBudget?: Partial<ExecutionPackTokenBudget>;
 }
+
+export interface SectionPackBuilderOptions extends ScaffoldPackBuilderOptions {}
 
 const DEFAULT_TARGET: ExecutionPackTarget = {
   platform: 'web',
@@ -126,6 +161,24 @@ const DEFAULT_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
   },
 ];
 
+const DEFAULT_SECTION_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
+  {
+    id: 'section-route-coherence',
+    label: 'Section pages and routes remain coherent with the compiled topology.',
+    severity: 'error',
+  },
+  {
+    id: 'section-shell-consistency',
+    label: 'The section shell contract stays consistent across its routes.',
+    severity: 'error',
+  },
+  {
+    id: 'section-pattern-coverage',
+    label: 'Primary section patterns are represented without adding off-contract filler sections.',
+    severity: 'warn',
+  },
+];
+
 function collectPatternIds(page: IRPageNode): string[] {
   const patternIds: string[] = [];
   walkIR(page, (node: IRNode) => {
@@ -146,6 +199,10 @@ function summarizeRoutes(appNode: IRAppNode): ScaffoldPackRoute[] {
       patternIds: collectPatternIds(pageNode),
     };
   });
+}
+
+function summarizeSectionRoutes(appNode: IRAppNode, input: SectionPackInput): SectionPackRoute[] {
+  return summarizeRoutes(appNode).filter(route => input.pageIds.includes(route.pageId));
 }
 
 function mergeTokenBudget(overrides?: Partial<ExecutionPackTokenBudget>): ExecutionPackTokenBudget {
@@ -184,6 +241,29 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
 
     lines.push('## Route Plan');
     for (const route of scaffoldPack.data.routes) {
+      const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+      lines.push(`- ${route.path} -> ${route.pageId} [${patterns}]`);
+    }
+    lines.push('');
+  }
+
+  if (pack.packType === 'section') {
+    const sectionPack = pack as SectionExecutionPack;
+    lines.push('## Section Contract');
+    lines.push(`- Section: ${sectionPack.data.sectionId}`);
+    lines.push(`- Role: ${sectionPack.data.role}`);
+    lines.push(`- Shell: ${sectionPack.data.shell}`);
+    lines.push(`- Theme: ${sectionPack.data.theme.id} (${sectionPack.data.theme.mode})`);
+    if (sectionPack.data.features.length > 0) {
+      lines.push(`- Features: ${sectionPack.data.features.join(', ')}`);
+    }
+    if (sectionPack.data.description) {
+      lines.push(`- Description: ${sectionPack.data.description}`);
+    }
+    lines.push('');
+
+    lines.push('## Section Routes');
+    for (const route of sectionPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
       lines.push(`- ${route.path} -> ${route.pageId} [${patterns}]`);
     }
@@ -264,6 +344,65 @@ export function buildScaffoldPack(
       },
       routing: appNode.routing,
       features: appNode.features,
+      routes,
+    },
+    renderedMarkdown: '',
+  };
+
+  pack.renderedMarkdown = renderExecutionPackMarkdown(pack);
+  return pack;
+}
+
+export function buildSectionPack(
+  appNode: IRAppNode,
+  input: SectionPackInput,
+  options: SectionPackBuilderOptions = {},
+): SectionExecutionPack {
+  const routes = summarizeSectionRoutes(appNode, input);
+  const scopePatternIds = [...new Set(routes.flatMap(route => route.patternIds))];
+
+  const pack: SectionExecutionPack = {
+    packVersion: '1.0.0',
+    packType: 'section',
+    objective: options.objective ?? `Implement the ${input.id} section using the compiled ${input.shell} shell contract.`,
+    target: {
+      ...DEFAULT_TARGET,
+      ...options.target,
+    },
+    preset: options.preset ?? null,
+    scope: {
+      appId: appNode.id,
+      pageIds: routes.map(route => route.pageId),
+      patternIds: scopePatternIds,
+    },
+    requiredSetup: options.requiredSetup ?? [
+      'Use the declared section routes as the source of truth for this slice of the app.',
+      'Keep the section shell consistent unless the task explicitly changes the shell contract.',
+    ],
+    allowedVocabulary: [...new Set([
+      input.id,
+      input.role,
+      input.shell,
+      appNode.theme.id,
+      appNode.theme.mode,
+      ...input.features,
+      ...scopePatternIds,
+    ])],
+    examples: options.examples ?? [],
+    antiPatterns: options.antiPatterns ?? [],
+    successChecks: options.successChecks ?? DEFAULT_SECTION_SUCCESS_CHECKS,
+    tokenBudget: mergeTokenBudget(options.tokenBudget),
+    data: {
+      sectionId: input.id,
+      role: input.role,
+      shell: input.shell,
+      description: input.description,
+      features: input.features,
+      theme: {
+        id: appNode.theme.id,
+        mode: appNode.theme.mode,
+        shape: appNode.theme.shape,
+      },
       routes,
     },
     renderedMarkdown: '',

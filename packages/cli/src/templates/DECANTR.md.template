@@ -84,7 +84,8 @@ Then read `.decantr/context/scaffold.md` for the fuller app overview, topology, 
 
 ### Working on a section
 
-Read `.decantr/context/section-{name}.md` for that section's complete context. Each section file contains guard rules, theme tokens, decorator classes, pattern specs with code examples, zone context, and routes. **Everything you need is in that one file.**
+Read `.decantr/context/section-{name}-pack.md` for the compact compiled section contract.
+Then read `.decantr/context/section-{name}.md` for the fuller context. Each section file contains guard rules, theme tokens, decorator classes, pattern specs with code examples, zone context, and routes. **Everything you need is in that one file.**
 
 ### Validation
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { buildScaffoldPack, runPipeline } from '../src/index.js';
+import { buildScaffoldPack, buildSectionPack, runPipeline } from '../src/index.js';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
@@ -65,5 +65,39 @@ describe('buildScaffoldPack', () => {
     expect(pack.tokenBudget.target).toBe(1400);
     expect(pack.renderedMarkdown).toContain('## Required Setup');
     expect(pack.renderedMarkdown).toContain('## Token Budget');
+  });
+
+  it('builds a section pack from a subset of routes', async () => {
+    const essence = loadFixture('essence-saas');
+    const result = await runPipeline(essence, { contentRoot });
+
+    const pack = buildSectionPack(result.ir, {
+      id: 'dashboard',
+      role: 'primary',
+      shell: 'sidebar-main',
+      description: 'Primary app section',
+      features: ['auth'],
+      pageIds: ['overview'],
+    }, {
+      target: {
+        framework: 'react',
+        runtime: 'vite',
+        adapter: 'react-vite',
+      },
+    });
+
+    expect(pack.packType).toBe('section');
+    expect(pack.data.sectionId).toBe('dashboard');
+    expect(pack.data.routes).toEqual([
+      {
+        pageId: 'overview',
+        path: '/',
+        patternIds: ['kpi-grid', 'filter-bar', 'data-table'],
+      },
+    ]);
+    expect(pack.allowedVocabulary).toContain('dashboard');
+    expect(pack.allowedVocabulary).toContain('sidebar-main');
+    expect(pack.renderedMarkdown).toContain('## Section Contract');
+    expect(pack.renderedMarkdown).toContain('- / -> overview [kpi-grid, filter-bar, data-table]');
   });
 });

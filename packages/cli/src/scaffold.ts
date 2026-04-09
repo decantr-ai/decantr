@@ -3,7 +3,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
-import { buildScaffoldPack, runPipeline } from '@decantr/core';
+import { buildScaffoldPack, buildSectionPack, runPipeline } from '@decantr/core';
+import type { SectionPackInput } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
 import type {
   ComposeEntry,
@@ -1938,13 +1939,37 @@ function resolvePackAdapter(target: string | undefined, platformType: string | u
   return 'generic-web';
 }
 
-async function generateScaffoldPackContext(
+function listPackSections(essence: EssenceV3): SectionPackInput[] {
+  const declaredSections = essence.blueprint.sections;
+  if (declaredSections && declaredSections.length > 0) {
+    return declaredSections.map(section => ({
+      id: section.id,
+      role: section.role,
+      shell: section.shell as string,
+      description: section.description,
+      features: section.features,
+      pageIds: section.pages.map(page => page.id),
+    }));
+  }
+
+  const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
+  return [{
+    id: essence.meta.archetype || 'default',
+    role: 'primary',
+    shell: (essence.blueprint.shell ?? 'sidebar-main') as string,
+    description: `${essence.meta.archetype || 'Application'} section`,
+    features: essence.blueprint.features || [],
+    pageIds: pages.map(page => page.id),
+  }];
+}
+
+async function generatePackContexts(
   projectRoot: string,
   contextDir: string,
   essence: EssenceV3,
-): Promise<string | null> {
+): Promise<string[]> {
   const cacheRoot = join(projectRoot, '.decantr', 'cache', '@official');
-  if (!existsSync(cacheRoot)) return null;
+  if (!existsSync(cacheRoot)) return [];
 
   const customRoot = join(projectRoot, '.decantr', 'custom');
   const overridePaths = existsSync(customRoot) ? [customRoot] : undefined;
@@ -1963,11 +1988,29 @@ async function generateScaffoldPackContext(
       },
     });
 
+    const outputPaths: string[] = [];
     const scaffoldPackPath = join(contextDir, 'scaffold-pack.md');
     writeFileSync(scaffoldPackPath, pack.renderedMarkdown);
-    return scaffoldPackPath;
+    outputPaths.push(scaffoldPackPath);
+
+    const sharedTarget = {
+      framework: essence.meta.target || null,
+      runtime: essence.meta.platform.type || null,
+      adapter: resolvePackAdapter(essence.meta.target, essence.meta.platform.type),
+    };
+
+    for (const section of listPackSections(essence)) {
+      const sectionPack = buildSectionPack(pipeline.ir, section, {
+        target: sharedTarget,
+      });
+      const sectionPackPath = join(contextDir, `section-${section.id}-pack.md`);
+      writeFileSync(sectionPackPath, sectionPack.renderedMarkdown);
+      outputPaths.push(sectionPackPath);
+    }
+
+    return outputPaths;
   } catch {
-    return null;
+    return [];
   }
 }
 
@@ -2501,9 +2544,9 @@ export async function refreshDerivedFiles(
     contextFiles.push(sectionContextPath);
   }
 
-  const scaffoldPackPath = await generateScaffoldPackContext(projectRoot, contextDir, essence);
-  if (scaffoldPackPath) {
-    contextFiles.push(scaffoldPackPath);
+  const packContextPaths = await generatePackContexts(projectRoot, contextDir, essence);
+  if (packContextPaths.length > 0) {
+    contextFiles.push(...packContextPaths);
   }
 
   return {

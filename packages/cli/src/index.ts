@@ -111,6 +111,7 @@ function generateCuratedPrompt(ctx: PromptContext): string {
   lines.push('Read DECANTR.md for the design spec, CSS approach, and guard rules.');
   lines.push('Read .decantr/context/scaffold-pack.md for the compact compiled shell and route contract.');
   lines.push('Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.');
+  lines.push('Read each .decantr/context/section-*-pack.md file for the compact section contract.');
   lines.push('Read each .decantr/context/section-*.md file before building that section\'s pages.');
   lines.push('Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
   lines.push('');
