@@ -413,7 +413,11 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
     recordSourceAudit(summary.accessibilityIssues, relativePath, accessibilityIssueCount);
-    recordSourceAudit(summary.interactionSafetyIssues, relativePath, signals.buttonInFormWithoutTypeCount);
+    recordSourceAudit(
+      summary.interactionSafetyIssues,
+      relativePath,
+      signals.buttonInFormWithoutTypeCount + signals.authFormWithoutSubmitCount,
+    );
     recordSourceAudit(summary.authInputHintIssues, relativePath, authInputHintIssueCount);
   }
 
@@ -1636,6 +1640,7 @@ interface AstCritiqueSignals {
   emailAutocompleteMissingCount: number;
   passwordAutocompleteMissingCount: number;
   buttonInFormWithoutTypeCount: number;
+  authFormWithoutSubmitCount: number;
   authEntrySignalCount: number;
   authSessionSignalCount: number;
   authLoadingSignalCount: number;
@@ -1892,6 +1897,71 @@ function hasInsecureAuthFormMethod(node: ts.JsxElement): boolean {
   return methodValue.trim().toLowerCase() === 'get';
 }
 
+function jsxTreeHasSubmitControl(node: ts.Node): boolean {
+  let found = false;
+
+  const visit = (current: ts.Node): void => {
+    if (found) return;
+
+    if (ts.isJsxSelfClosingElement(current)) {
+      const tagName = getJsxTagName(current);
+      if (tagName === 'button') {
+        const typeValue = getJsxAttributeLiteralValue(getJsxAttribute(current.attributes, 'type'))?.trim().toLowerCase();
+        if (!typeValue || typeValue === 'submit') {
+          found = true;
+        }
+      }
+      if (tagName === 'input') {
+        const inputType = getNormalizedInputType(current.attributes);
+        if (inputType === 'submit') {
+          found = true;
+        }
+      }
+      return;
+    }
+
+    if (ts.isJsxElement(current)) {
+      const tagName = getJsxTagName(current.openingElement);
+      if (tagName === 'button') {
+        const typeValue = getJsxAttributeLiteralValue(getJsxAttribute(current.openingElement.attributes, 'type'))?.trim().toLowerCase();
+        if (!typeValue || typeValue === 'submit') {
+          found = true;
+          return;
+        }
+      }
+      if (tagName === 'input') {
+        const inputType = getNormalizedInputType(current.openingElement.attributes);
+        if (inputType === 'submit') {
+          found = true;
+          return;
+        }
+      }
+      for (const child of current.children) {
+        visit(child);
+        if (found) return;
+      }
+      return;
+    }
+
+    if (ts.isJsxFragment(current)) {
+      for (const child of current.children) {
+        visit(child);
+        if (found) return;
+      }
+      return;
+    }
+
+    current.forEachChild(visit);
+  };
+
+  visit(node);
+  return found;
+}
+
+function hasAuthFormWithoutSubmitControl(node: ts.JsxElement): boolean {
+  return jsxTreeContainsAuthInput(node) && !jsxTreeHasSubmitControl(node);
+}
+
 function getExpressionLiteralValue(expression: ts.Expression | undefined): string | null {
   if (!expression) return null;
   if (ts.isStringLiteral(expression) || ts.isNoSubstitutionTemplateLiteral(expression)) {
@@ -2121,6 +2191,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     emailAutocompleteMissingCount: 0,
     passwordAutocompleteMissingCount: 0,
     buttonInFormWithoutTypeCount: 0,
+    authFormWithoutSubmitCount: 0,
     authEntrySignalCount: countAuthEntrySignals(code),
     authSessionSignalCount: countAuthSessionSignals(code),
     authLoadingSignalCount: countAuthLoadingSignals(code),
@@ -2375,6 +2446,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (tagName === 'form' && hasInsecureAuthFormMethod(node)) {
         signals.insecureAuthFormMethodCount += 1;
+      }
+      if (tagName === 'form' && hasAuthFormWithoutSubmitControl(node)) {
+        signals.authFormWithoutSubmitCount += 1;
       }
 
       if (
@@ -2631,14 +2705,16 @@ export function critiqueSource({
   const hasTransition = codeLower.includes('transition') || codeLower.includes('animate') || codeLower.includes('keyframe') || codeLower.includes('framer');
   const hasHover = codeLower.includes(':hover') || codeLower.includes('onmouseenter') || codeLower.includes('hover:');
   const buttonInFormWithoutTypeCount = astSignals.buttonInFormWithoutTypeCount;
+  const authFormWithoutSubmitCount = astSignals.authFormWithoutSubmitCount;
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
-    score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0))),
-    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}`,
+    score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0) - (authFormWithoutSubmitCount > 0 ? 1 : 0))),
+    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}`,
     suggestions: [
       ...(!hasTransition ? ['Add transitions for interactive state changes where appropriate.'] : []),
       ...(buttonInFormWithoutTypeCount > 0 ? ['Add explicit button types inside forms so non-submit actions do not accidentally submit.'] : []),
+      ...(authFormWithoutSubmitCount > 0 ? ['Auth-like forms should expose a clear submit control so users can actually complete the credential flow.'] : []),
     ],
   });
   if (buttonInFormWithoutTypeCount > 0) {
@@ -2650,6 +2726,18 @@ export function critiqueSource({
       evidence: [filePath, `Buttons inside forms without type: ${buttonInFormWithoutTypeCount}`],
       file: filePath,
       suggestedFix: 'Set `type=\"button\"` for non-submit actions and `type=\"submit\"` for the intended submit control.',
+    }));
+  }
+
+  if (authFormWithoutSubmitCount > 0) {
+    findings.push(makeFinding({
+      id: 'interaction-auth-submit-missing',
+      category: 'Interaction Safety',
+      severity: 'warn',
+      message: 'Auth-like forms were detected without any submit control.',
+      evidence: [filePath, `Auth forms without submit control: ${authFormWithoutSubmitCount}`],
+      file: filePath,
+      suggestedFix: 'Add an explicit submit button or submit input so users can complete the sign-in, registration, or recovery flow.',
     }));
   }
 
