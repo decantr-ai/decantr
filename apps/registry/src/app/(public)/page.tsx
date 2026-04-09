@@ -4,6 +4,7 @@ import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { KPIGrid } from '@/components/kpi-grid';
+import { compareContentItems } from '@/lib/content-ranking';
 import {
   getShowcaseShortlistVerificationSummary,
   listShortlistedShowcases,
@@ -18,13 +19,25 @@ async function FeaturedContent() {
   let items: ContentItem[] = [];
 
   try {
-    const result = await listContent('patterns', { limit: 9 });
-    items = result.items;
+    const results = await Promise.allSettled(
+      CONTENT_TYPES.map((type) => listContent(type, { limit: 6 })),
+    );
+
+    const featuredItems: ContentItem[] = [];
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        featuredItems.push(...result.value.items);
+      }
+    });
+
+    items = featuredItems
+      .sort(compareContentItems)
+      .slice(0, 9);
   } catch {
     // API unavailable
   }
 
-  return <ContentCardGrid items={items} emptyMessage="No patterns published yet." />;
+  return <ContentCardGrid items={items} emptyMessage="No featured registry content yet." />;
 }
 
 async function ShowcaseShortlist() {

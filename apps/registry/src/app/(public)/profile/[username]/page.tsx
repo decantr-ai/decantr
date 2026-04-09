@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getUserProfile, getUserContent } from '@/lib/api';
 import type { UserProfile, ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
+import { compareContentItems } from '@/lib/content-ranking';
 
 const TIER_STYLES: Record<string, string> = {
   free: 'bg-d-surface text-d-muted',
@@ -32,6 +33,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       getUserProfile(username),
       getUserContent(username, { limit: 12 }),
     ]);
+    items = items.sort(compareContentItems);
   } catch {
     notFound();
   }

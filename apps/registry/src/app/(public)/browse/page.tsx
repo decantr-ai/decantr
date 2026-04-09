@@ -4,6 +4,7 @@ import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { Pagination } from '@/components/pagination';
+import { compareContentItems } from '@/lib/content-ranking';
 import {
   CONTENT_TYPE_DESCRIPTIONS,
   CONTENT_TYPE_LABELS,
@@ -46,7 +47,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         type: selectedType,
         namespace: namespace || undefined,
       });
-      items = result.items;
+      items = result.items.sort(compareContentItems);
       total = result.total;
     } else if (selectedType) {
       const result = await listContent(selectedType, {
@@ -54,7 +55,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         limit: LIMIT,
         offset,
       });
-      items = result.items;
+      items = result.items.sort(compareContentItems);
       total = result.total;
     } else {
       const results = await Promise.allSettled(
@@ -76,11 +77,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       });
 
       items = mixedItems
-        .sort(
-          (a, b) =>
-            new Date(b.published_at ?? 0).getTime() -
-            new Date(a.published_at ?? 0).getTime()
-        )
+        .sort(compareContentItems)
         .slice(0, LIMIT);
     }
   } catch {

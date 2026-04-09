@@ -15,6 +15,7 @@ import type {
   ApiContentType,
   Blueprint as RegistryBlueprint,
   ComposeEntry,
+  ContentIntelligenceMetadata,
   ShowcaseManifestResponse,
   ShowcaseShortlistReport,
   ShowcaseShortlistResponse,
@@ -91,6 +92,47 @@ function success(text: string): string { return `${GREEN}${text}${RESET}`; }
 function error(text: string): string { return `${RED}${text}${RESET}`; }
 function dim(text: string): string { return `${DIM}${text}${RESET}`; }
 function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
+
+function formatIntelligenceSummary(
+  intelligence?: ContentIntelligenceMetadata | null,
+): string | null {
+  if (!intelligence) {
+    return null;
+  }
+
+  const parts: string[] = [];
+
+  if (intelligence.recommended) {
+    parts.push('recommended');
+  }
+
+  switch (intelligence.verification_status) {
+    case 'smoke-green':
+      parts.push('smoke verified');
+      break;
+    case 'build-green':
+      parts.push('build verified');
+      break;
+    case 'smoke-red':
+      parts.push('smoke failed');
+      break;
+    case 'build-red':
+      parts.push('build failed');
+      break;
+    default:
+      break;
+  }
+
+  if (intelligence.benchmark_confidence !== 'none') {
+    parts.push(`${intelligence.benchmark_confidence} confidence`);
+  }
+
+  if (intelligence.quality_score != null) {
+    parts.push(`quality ${intelligence.quality_score}`);
+  }
+
+  return parts.length > 0 ? parts.join(' | ') : null;
+}
 
 interface PromptContext {
   archetype: string;
@@ -268,6 +310,10 @@ async function cmdSearch(query: string, type?: string) {
     for (const r of results) {
       console.log(`  ${cyan(r.type.padEnd(12))} ${BOLD}${r.slug}${RESET}`);
       console.log(`  ${dim(r.description || '')}`);
+      const intelligenceSummary = formatIntelligenceSummary(r.intelligence);
+      if (intelligenceSummary) {
+        console.log(`  ${dim(intelligenceSummary)}`);
+      }
       console.log('');
     }
   } catch {
@@ -512,6 +558,12 @@ async function cmdList(type: string) {
     console.log(heading(`${items.length} ${type} found`));
     for (const item of items) {
       console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+      const intelligenceSummary = formatIntelligenceSummary(
+        (item as { intelligence?: ContentIntelligenceMetadata | null }).intelligence,
+      );
+      if (intelligenceSummary) {
+        console.log(`  ${dim(intelligenceSummary)}`);
+      }
     }
   }
 }

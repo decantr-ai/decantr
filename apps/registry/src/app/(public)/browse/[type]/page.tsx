@@ -5,6 +5,7 @@ import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { Pagination } from '@/components/pagination';
+import { compareContentItems } from '@/lib/content-ranking';
 import {
   CONTENT_TYPE_DESCRIPTIONS,
   CONTENT_TYPE_LABELS,
@@ -45,7 +46,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
   try {
     if (q) {
       const result = await searchContent(q, { type, namespace: namespace || undefined });
-      items = result.items;
+      items = result.items.sort(compareContentItems);
       total = result.total;
     } else {
       const result = await listContent(type, {
@@ -53,7 +54,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
         limit: LIMIT,
         offset,
       });
-      items = result.items;
+      items = result.items.sort(compareContentItems);
       total = result.total;
     }
   } catch {

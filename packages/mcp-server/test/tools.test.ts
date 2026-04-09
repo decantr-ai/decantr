@@ -1,6 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { handleTool, TOOLS } from '../src/tools.js';
 import { validateStringArg, fuzzyScore } from '../src/helpers.js';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
@@ -83,6 +87,45 @@ describe('MCP tool handlers', () => {
     it('should require query parameter', async () => {
       const result = await handleTool('decantr_search_registry', {});
       expect(result).toHaveProperty('error');
+    });
+
+    it('returns intelligence metadata when the registry search surface provides it', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({
+          total: 1,
+          results: [{
+            type: 'blueprint',
+            slug: 'portfolio',
+            namespace: '@official',
+            name: 'Portfolio',
+            description: 'Creator portfolio',
+            intelligence: {
+              verification_status: 'smoke-green',
+              benchmark_confidence: 'high',
+              golden_usage: 'shortlisted',
+              quality_score: 92,
+              confidence_score: 90,
+              recommended: true,
+              target_coverage: ['react-vite'],
+              evidence: ['live-showcase', 'smoke-verified'],
+            },
+          }],
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      const result = await handleTool('decantr_search_registry', {
+        query: 'portfolio',
+      }) as {
+        total: number;
+        results: Array<{ intelligence?: { recommended?: boolean; quality_score?: number } | null }>;
+      };
+
+      expect(result.total).toBe(1);
+      expect(result.results[0]?.intelligence?.recommended).toBe(true);
+      expect(result.results[0]?.intelligence?.quality_score).toBe(92);
     });
   });
 

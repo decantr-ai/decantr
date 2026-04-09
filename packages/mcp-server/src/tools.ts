@@ -561,6 +561,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
             name: r.name,
             description: r.description,
             install: `decantr get ${r.type} ${r.slug}`,
+            intelligence: r.intelligence ?? null,
           })),
         };
       } catch (e) {
