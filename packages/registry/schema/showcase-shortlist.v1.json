@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/showcase-shortlist.v1.json",
+  "title": "Decantr Showcase Shortlist Response",
+  "type": "object",
+  "required": [
+    "generatedAt",
+    "summary",
+    "apps"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "summary": {
+      "anyOf": [
+        {
+          "$ref": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json#/properties/summary"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "apps": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/showcase-manifest-entry.v1.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

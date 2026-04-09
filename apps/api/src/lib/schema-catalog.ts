@@ -10,6 +10,9 @@ import publicContentSummarySchema from '@decantr/registry/schema/public-content-
 import publicContentRecordSchema from '@decantr/registry/schema/public-content-record.v1.json';
 import publicContentListSchema from '@decantr/registry/schema/public-content-list.v1.json';
 import searchResponseSchema from '@decantr/registry/schema/search-response.v1.json';
+import showcaseManifestEntrySchema from '@decantr/registry/schema/showcase-manifest-entry.v1.json';
+import showcaseManifestSchema from '@decantr/registry/schema/showcase-manifest.v1.json';
+import showcaseShortlistSchema from '@decantr/registry/schema/showcase-shortlist.v1.json';
 import essenceV2Schema from '@decantr/essence-spec/schema/essence.v2.json';
 import essenceV3Schema from '@decantr/essence-spec/schema/essence.v3.json';
 import executionPackCommonSchema from '@decantr/core/schema/execution-pack.common.v1.json';
@@ -56,6 +59,9 @@ export const PUBLIC_SCHEMAS: Record<string, JsonSchema> = {
   'public-content-record.v1.json': publicContentRecordSchema as JsonSchema,
   'public-content-list.v1.json': publicContentListSchema as JsonSchema,
   'search-response.v1.json': searchResponseSchema as JsonSchema,
+  'showcase-manifest-entry.v1.json': showcaseManifestEntrySchema as JsonSchema,
+  'showcase-manifest.v1.json': showcaseManifestSchema as JsonSchema,
+  'showcase-shortlist.v1.json': showcaseShortlistSchema as JsonSchema,
   'essence.v2.json': essenceV2Schema as JsonSchema,
   'essence.v3.json': essenceV3Schema as JsonSchema,
   'execution-pack.common.v1.json': executionPackCommonSchema as JsonSchema,

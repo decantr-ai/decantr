@@ -517,6 +517,7 @@ export interface ShowcaseManifestEntry {
   slug: string;
   status: string;
   classification: string;
+  origin?: string | null;
   target?: string | null;
   goldenCandidate?: string | boolean;
   notes?: string | null;
