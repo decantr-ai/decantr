@@ -64,6 +64,7 @@
         "externalScriptsWithoutIntegrityCount",
         "jsEvalSignalCount",
         "jsHtmlInjectionSignalCount",
+        "jsInsecureTransportSignalCount",
         "assetCount",
         "assetsPassed",
         "routeHintsChecked",
@@ -124,6 +125,10 @@
           "minimum": 0
         },
         "jsHtmlInjectionSignalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jsInsecureTransportSignalCount": {
           "type": "integer",
           "minimum": 0
         },

@@ -121,6 +121,9 @@
             "cspSignalOk",
             "inlineScriptCount",
             "externalScriptsWithoutIntegrityCount",
+            "jsEvalSignalCount",
+            "jsHtmlInjectionSignalCount",
+            "jsInsecureTransportSignalCount",
             "assetCount",
             "assetsPassed",
             "routeHintsChecked",
@@ -168,6 +171,18 @@
               "minimum": 0
             },
             "externalScriptsWithoutIntegrityCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "jsEvalSignalCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "jsHtmlInjectionSignalCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "jsInsecureTransportSignalCount": {
               "type": "number",
               "minimum": 0
             },

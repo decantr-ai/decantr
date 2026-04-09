@@ -29,6 +29,7 @@ export interface RuntimeAudit {
   externalScriptsWithoutIntegrityCount: number;
   jsEvalSignalCount: number;
   jsHtmlInjectionSignalCount: number;
+  jsInsecureTransportSignalCount: number;
   assetCount: number;
   assetsPassed: number;
   routeHintsChecked: string[];
@@ -67,6 +68,7 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     externalScriptsWithoutIntegrityCount: 0,
     jsEvalSignalCount: 0,
     jsHtmlInjectionSignalCount: 0,
+    jsInsecureTransportSignalCount: 0,
     assetCount: 0,
     assetsPassed: 0,
     routeHintsChecked: [],
@@ -125,6 +127,10 @@ function countDynamicCodeSignals(js: string): number {
 
 function countHtmlInjectionSignals(js: string): number {
   return js.match(/\bdangerouslySetInnerHTML\b|\b(?:innerHTML|outerHTML)\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/g)?.length ?? 0;
+}
+
+function countInsecureTransportSignals(js: string): number {
+  return js.match(/\b(?:http|ws):\/\//g)?.length ?? 0;
 }
 
 function normalizeRouteHint(route: string | null | undefined): string {
@@ -277,6 +283,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const routeHintsCoverageOk = routeHints.length === 0 || routeHintsMatched === routeHints.length;
     const jsEvalSignalCount = countDynamicCodeSignals(combinedJs);
     const jsHtmlInjectionSignalCount = countHtmlInjectionSignals(combinedJs);
+    const jsInsecureTransportSignalCount = countInsecureTransportSignals(combinedJs);
     if (routeHints.length > 0 && routeHintsMatched < Math.min(2, routeHints.length)) {
       failures.push('route-hints-missing');
     }
@@ -321,6 +328,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       externalScriptsWithoutIntegrityCount,
       jsEvalSignalCount,
       jsHtmlInjectionSignalCount,
+      jsInsecureTransportSignalCount,
       assetCount: assetPaths.length,
       assetsPassed,
       routeHintsChecked: routeHints,

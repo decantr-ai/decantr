@@ -995,6 +995,17 @@ function appendRuntimeAuditFindings(
     }));
   }
 
+  if (runtimeAudit.jsInsecureTransportSignalCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-js-insecure-transport-signals',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Built JavaScript includes plain HTTP or insecure websocket transport markers.',
+      evidence: [distPath, `Insecure transport signals in built JS: ${runtimeAudit.jsInsecureTransportSignalCount}`],
+      suggestedFix: 'Remove plain HTTP and ws:// endpoints from shipped bundles; prefer HTTPS/WSS or route transport through a trusted server boundary.',
+    }));
+  }
+
   if (runtimeAudit.cspSignalOk === false) {
     findings.push(makeFinding({
       id: 'runtime-csp-signal-missing',
