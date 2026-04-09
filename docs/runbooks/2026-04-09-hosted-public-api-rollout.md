@@ -135,6 +135,7 @@ Expected result:
 
 - Fly deploy completes using `apps/api/fly.toml`
 - the workflow runs the hosted public API audit immediately after deployment
+- that post-deploy audit now includes the hosted pack-select, critique, and project-audit surfaces by default
 - the workflow uploads `public-api-report.json` and `public-api-summary.md`
 
 Canonical deploy contract:

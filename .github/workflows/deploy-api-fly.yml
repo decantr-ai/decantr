@@ -42,7 +42,7 @@ jobs:
         env:
           REGISTRY_URL: ${{ vars.REGISTRY_URL || 'https://api.decantr.ai/v1' }}
           CONTENT_NAMESPACE: ${{ vars.CONTENT_NAMESPACE || '@official' }}
-        run: node scripts/audit-public-api.mjs --fail-on-error --report-json=public-api-report.json --summary-markdown=public-api-summary.md
+        run: node scripts/audit-public-api.mjs --include-hosted-pack-select --include-hosted-critique --include-hosted-project-audit --fail-on-error --report-json=public-api-report.json --summary-markdown=public-api-summary.md
 
       - name: Publish post-deploy audit summary
         if: ${{ inputs.run_public_audit }}
