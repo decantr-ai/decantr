@@ -449,6 +449,7 @@ export interface SearchParams {
   q: string;
   type?: string;
   namespace?: string;
+  sort?: string;
   limit?: number;
   offset?: number;
 }

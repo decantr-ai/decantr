@@ -5,13 +5,11 @@ import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { Pagination } from '@/components/pagination';
-import { compareContentItems } from '@/lib/content-ranking';
+import { normalizePublicContentSort } from '@/lib/content-ranking';
 import {
   CONTENT_TYPE_DESCRIPTIONS,
   CONTENT_TYPE_LABELS,
-  CONTENT_TYPES,
   isRegistryContentType,
-  type RegistryContentType,
 } from '@/lib/content-types';
 
 export const dynamic = 'force-dynamic';
@@ -38,6 +36,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
 
   const q = sp.q ?? '';
   const namespace = sp.namespace;
+  const sort = normalizePublicContentSort(sp.sort);
   const offset = parseInt(sp.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -45,16 +44,23 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
 
   try {
     if (q) {
-      const result = await searchContent(q, { type, namespace: namespace || undefined });
-      items = result.items.sort(compareContentItems);
+      const result = await searchContent(q, {
+        type,
+        namespace: namespace || undefined,
+        sort,
+        limit: LIMIT,
+        offset,
+      });
+      items = result.items;
       total = result.total;
     } else {
       const result = await listContent(type, {
         namespace: namespace || undefined,
+        sort,
         limit: LIMIT,
         offset,
       });
-      items = result.items.sort(compareContentItems);
+      items = result.items;
       total = result.total;
     }
   } catch {

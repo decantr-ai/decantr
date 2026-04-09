@@ -126,7 +126,7 @@ export const api = {
     getPublicRegistryClient().getPublicContentRecord(normalizeApiContentType(type), namespace, slug),
   search: (q: string, params?: Record<string, string>) =>
     getPublicRegistryClient()
-      .search({ q, type: params?.type, namespace: params?.namespace })
+      .search({ q, type: params?.type, namespace: params?.namespace, sort: params?.sort })
       .then((result): SearchResponse => ({ total: result.total, results: result.results })),
 
   // Authenticated
@@ -189,7 +189,7 @@ export const api = {
 // Standalone exports for server components
 export function listContent(
   type: string,
-  params?: { namespace?: string; limit?: number; offset?: number }
+  params?: { namespace?: string; sort?: string; limit?: number; offset?: number }
 ) {
   return getPublicRegistryClient().listContent<ContentItem>(
     normalizeApiContentType(type),
@@ -199,10 +199,17 @@ export function listContent(
 
 export function searchContent(
   q: string,
-  params?: { type?: string; namespace?: string }
+  params?: { type?: string; namespace?: string; sort?: string; limit?: number; offset?: number }
 ) {
   return getPublicRegistryClient()
-    .search({ q, type: params?.type, namespace: params?.namespace })
+    .search({
+      q,
+      type: params?.type,
+      namespace: params?.namespace,
+      sort: params?.sort,
+      limit: params?.limit,
+      offset: params?.offset,
+    })
     .then((data) => ({ total: data.total, items: data.results }));
 }
 
@@ -220,7 +227,7 @@ export function getUserProfile(username: string) {
 
 export function getUserContent(
   username: string,
-  params?: { type?: string; limit?: number; offset?: number }
+  params?: { type?: string; sort?: string; limit?: number; offset?: number }
 ) {
   return getPublicRegistryClient().getPublicUserContent(username, params);
 }

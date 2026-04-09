@@ -33,9 +33,11 @@ export {
 } from './types.js';
 
 export { RegistryAPIClient, RegistryAPIError, createRegistryClient } from './api-client.js';
+export { comparePublicContent, normalizePublicContentSort, sortPublicContent } from './ranking.js';
 export type {
   RegistryAPIClientOptions,
   RegistryClientOptions,
   SearchResult,
   RegistryClient,
 } from './api-client.js';
+export type { PublicContentSort } from './ranking.js';

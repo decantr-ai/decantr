@@ -36,15 +36,16 @@ function createSingleContentClient(row: Record<string, unknown> | null) {
 }
 
 function createListContentClient(rows: Record<string, unknown>[], count: number) {
+  const result = Promise.resolve({
+    data: rows,
+    error: null,
+    count,
+  });
   const chain = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
-    range: vi.fn().mockResolvedValue({
-      data: rows,
-      error: null,
-      count,
-    }),
+    then: result.then.bind(result),
   };
 
   return {
@@ -235,5 +236,48 @@ describe('POST /v1/validate', () => {
     assertMatchesSchema('public-content-list.v1.json', json);
     expect(json.total).toBe(1);
     expect(json.items[0]?.slug).toBe('portfolio');
+  });
+
+  it('applies shared name sorting to public content lists before pagination', async () => {
+    mockCreateAdminClient.mockReturnValue(createListContentClient([
+      {
+        id: 'content-2',
+        type: 'blueprint',
+        slug: 'zeta',
+        namespace: '@community',
+        version: '1.0.0',
+        data: {
+          name: 'Zeta',
+          description: 'Second item',
+        },
+        published_at: '2026-04-09T00:00:00.000Z',
+        owner: {
+          display_name: 'Alice',
+          username: 'alice',
+        },
+      },
+      {
+        id: 'content-1',
+        type: 'blueprint',
+        slug: 'alpha',
+        namespace: '@community',
+        version: '1.0.0',
+        data: {
+          name: 'Alpha',
+          description: 'First item',
+        },
+        published_at: '2026-04-08T00:00:00.000Z',
+        owner: {
+          display_name: 'Alice',
+          username: 'alice',
+        },
+      },
+    ], 2));
+
+    const res = await app.request('/v1/blueprints?sort=name');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['alpha', 'zeta']);
   });
 });

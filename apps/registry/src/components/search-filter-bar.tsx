@@ -1,5 +1,6 @@
 'use client';
 
+import { normalizePublicContentSort } from '@decantr/registry/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 import {
@@ -77,9 +78,8 @@ const TYPES: { type?: RegistryContentType; label: string; icon: React.ReactNode 
 ];
 
 const SORT_OPTIONS = [
-  { value: 'popular', label: 'Popular' },
-  { value: 'newest', label: 'Most Downloaded' },
-  { value: 'recent', label: 'Recently Updated' },
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'recent', label: 'Recently Published' },
   { value: 'name', label: 'Name A-Z' },
 ] as const;
 
@@ -101,7 +101,7 @@ export function SearchFilterBar({
   const [isPending, startTransition] = useTransition();
 
   const currentQuery = searchParams.get('q') ?? '';
-  const currentSort = searchParams.get('sort') ?? 'popular';
+  const currentSort = normalizePublicContentSort(searchParams.get('sort'));
 
   const [query, setQuery] = useState(currentQuery);
   const activeLabel =

@@ -4,19 +4,20 @@ import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { Pagination } from '@/components/pagination';
-import { compareContentItems } from '@/lib/content-ranking';
+import {
+  normalizePublicContentSort,
+  sortContentItems,
+} from '@/lib/content-ranking';
 import {
   CONTENT_TYPE_DESCRIPTIONS,
   CONTENT_TYPE_LABELS,
   CONTENT_TYPES,
   isRegistryContentType,
-  type RegistryContentType,
 } from '@/lib/content-types';
 
 export const revalidate = 300; // ISR: revalidate every 5 minutes
 
 const LIMIT = 18;
-const MIXED_LIMIT_PER_TYPE = 4;
 
 interface BrowsePageProps {
   searchParams: Promise<{
@@ -36,6 +37,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     ? requestedType
     : undefined;
   const namespace = params.namespace;
+  const sort = normalizePublicContentSort(params.sort);
   const offset = parseInt(params.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -46,23 +48,29 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       const result = await searchContent(q, {
         type: selectedType,
         namespace: namespace || undefined,
+        sort,
+        limit: LIMIT,
+        offset,
       });
-      items = result.items.sort(compareContentItems);
+      items = result.items;
       total = result.total;
     } else if (selectedType) {
       const result = await listContent(selectedType, {
         namespace: namespace || undefined,
+        sort,
         limit: LIMIT,
         offset,
       });
-      items = result.items.sort(compareContentItems);
+      items = result.items;
       total = result.total;
     } else {
+      const requestedCount = LIMIT + offset;
       const results = await Promise.allSettled(
         CONTENT_TYPES.map((type) =>
           listContent(type, {
             namespace: namespace || undefined,
-            limit: MIXED_LIMIT_PER_TYPE,
+            sort,
+            limit: requestedCount,
             offset: 0,
           })
         )
@@ -76,9 +84,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         }
       });
 
-      items = mixedItems
-        .sort(compareContentItems)
-        .slice(0, LIMIT);
+      items = sortContentItems(mixedItems, sort).slice(offset, offset + LIMIT);
     }
   } catch {
     // API unavailable

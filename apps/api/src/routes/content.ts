@@ -5,9 +5,18 @@ import { createAdminClient } from '../db/client.js';
 import { validateEssence, isV3 } from '@decantr/essence-spec';
 import { logger } from '../lib/logger.js';
 import { getContentIntelligence } from '../lib/content-intelligence.js';
+import { applyPublicContentOrdering } from '../lib/public-content-ordering.js';
 
 export const contentRoutes = new Hono<Env>();
 const CONTENT_ROUTE_PATTERN = API_CONTENT_TYPES.join('|');
+
+function getSummaryText(
+  data: Record<string, unknown> | null | undefined,
+  key: 'name' | 'description',
+): string | undefined {
+  const value = data?.[key];
+  return typeof value === 'string' ? value : undefined;
+}
 
 // GET /v1/:type/:namespace/:slug - Get single item (must be before list route)
 contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, async (c) => {
@@ -71,6 +80,7 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
     const singularType = PLURAL_TO_SINGULAR[pluralType];
 
     const namespace = c.req.query('namespace');
+    const sort = c.req.query('sort') ?? undefined;
     const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
 
     const client = createAdminClient();
@@ -81,8 +91,7 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
       .eq('type', singularType)
       .eq('visibility', 'public')
       .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order('published_at', { ascending: false });
 
     if (namespace) {
       query = query.eq('namespace', namespace);
@@ -95,23 +104,28 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
     }
 
     c.header('Cache-Control', 'public, max-age=60, stale-while-revalidate=3600');
-    return c.json({
-      total: count ?? 0,
-      limit,
-      offset,
-      items: (data ?? []).map((item) => ({
+    const mappedItems = (data ?? []).map((item) => {
+      const itemData = item.data as Record<string, unknown> | null | undefined;
+      return {
         id: item.id,
         type: item.type,
         slug: item.slug,
         namespace: item.namespace,
         version: item.version,
-        name: (item.data as Record<string, unknown>)?.name,
-        description: (item.data as Record<string, unknown>)?.description,
-        published_at: item.published_at,
+        name: getSummaryText(itemData, 'name'),
+        description: getSummaryText(itemData, 'description'),
+        published_at: item.published_at ?? undefined,
         owner_name: (item as any).owner?.display_name || null,
         owner_username: (item as any).owner?.username || null,
         intelligence: getContentIntelligence(singularType, item.namespace, item.slug),
-      })),
+      };
+    });
+    const ordered = applyPublicContentOrdering(mappedItems, sort, limit, offset);
+    return c.json({
+      total: count ?? 0,
+      limit,
+      offset,
+      items: ordered.items,
     });
   } catch (e) {
     logger.error({ err: e }, 'Content list error');
