@@ -1287,6 +1287,22 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (topology.hasAuthFeature && topology.gatewayRoutes.length === 0 && sourceAudit.authEntrySignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'source-auth-entry-surface-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Authentication is declared, but the source tree does not show any obvious login, registration, or credential-entry surface.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        'Auth entry signals: 0',
+        'Gateway routes: none',
+        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Add an explicit login, registration, recovery, or reviewed SSO entry surface before protected routes become the primary way into the app.',
+    }));
+  }
+
   if (topology.hasAuthFeature && topology.gatewayRoutes.length > 0 && sourceAudit.authEntrySignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-entry-signals-missing',

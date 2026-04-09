@@ -119,6 +119,7 @@ commit archaeology.
 - File critique and source audit now also flag forms posting to plain `http://` endpoints, so insecure transport regressions show up before runtime review.
 - File critique and source audit now also flag plain `http://` / `ws://` client transport endpoints, so insecure outbound requests are caught before hosted/runtime verification.
 - File critique and source audit now also flag auth-like forms that default to GET semantics, so credential flows are forced onto explicit POST/server-action boundaries instead of URL-leaking defaults.
+- Source audit now also flags auth-enabled apps that still expose no obvious entry surface at all, even when the blueprint forgot to declare gateway routes.
 
 ### Showcase / golden corpus
 
