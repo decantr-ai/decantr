@@ -1,5 +1,5 @@
-import showcaseManifest from '../../../showcase/manifest.json';
-import shortlistVerificationReport from '../../../showcase/reports/shortlist-verification.json';
+import showcaseManifest from '../../../showcase/manifest.json' with { type: 'json' };
+import shortlistVerificationReport from '../../../showcase/reports/shortlist-verification.json' with { type: 'json' };
 import type {
   ShowcaseManifestEntry,
   ShowcaseShortlistReport,

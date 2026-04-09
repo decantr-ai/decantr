@@ -6,7 +6,7 @@ RUN corepack enable
 FROM base AS builder
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY packages/essence-spec/package.json ./packages/essence-spec/package.json
 COPY packages/registry/package.json ./packages/registry/package.json
@@ -16,6 +16,8 @@ COPY packages/verifier/package.json ./packages/verifier/package.json
 RUN pnpm install --frozen-lockfile --filter ./apps/api...
 
 COPY apps/api/ ./apps/api/
+COPY apps/showcase/manifest.json ./apps/showcase/manifest.json
+COPY apps/showcase/reports/shortlist-verification.json ./apps/showcase/reports/shortlist-verification.json
 COPY packages/essence-spec/ ./packages/essence-spec/
 COPY packages/registry/ ./packages/registry/
 COPY packages/core/ ./packages/core/
