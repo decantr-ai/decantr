@@ -125,6 +125,7 @@ commit archaeology.
 - File critique now also treats auth-like inputs with the wrong semantic type (`text` instead of `email`/`password`) as a credential-flow issue.
 - Runtime verification now also flags plain `http://` / `ws://` transport markers that survive into built JavaScript bundles.
 - Source audit now flags protected app-surface files that reference routes like `/dashboard` or `/settings` without co-located session or guard behavior, even when an auth helper exists elsewhere in the repo.
+- File critique now catches dialog accessibility gaps too, including missing dialog labels and missing modal hints on dialog-like surfaces.
 
 ### Showcase / golden corpus
 

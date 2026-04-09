@@ -2230,6 +2230,96 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-iframe-sandbox-missing')).toBe(true);
   });
 
+  it('flags dialogs without accessible labels or modal hints during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/AccountDialog.tsx',
+      code: `
+        export function AccountDialog() {
+          return (
+            <div role="dialog">
+              <h2>Account settings</h2>
+              <button type="button">Close</button>
+            </div>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['settings'], patternIds: ['dialog'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'settings', path: '/settings', patternIds: ['dialog'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-dialog-label-missing')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'accessibility-dialog-modal-hint-missing')).toBe(true);
+  });
+
+  it('does not flag dialogs when label and modal hints are present', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/AccountDialog.tsx',
+      code: `
+        export function AccountDialog() {
+          return (
+            <div role="dialog" aria-modal="true" aria-labelledby="account-dialog-title">
+              <h2 id="account-dialog-title">Account settings</h2>
+              <button type="button">Close</button>
+            </div>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['settings'], patternIds: ['dialog'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'settings', path: '/settings', patternIds: ['dialog'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-dialog-label-missing')).toBe(false);
+    expect(report.findings.some(finding => finding.id === 'accessibility-dialog-modal-hint-missing')).toBe(false);
+  });
+
   it('flags insecure http form actions during critique', () => {
     const report = critiqueSource({
       filePath: 'src/components/LegacyCheckout.tsx',
