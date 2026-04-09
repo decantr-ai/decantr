@@ -225,6 +225,7 @@ export const TOOLS = [
         query: { type: 'string', description: 'Search query (e.g. "kanban", "neon", "dashboard")' },
         type: { type: 'string', description: 'Filter by type: pattern, archetype, theme, shell' },
         sort: { type: 'string', description: 'Optional sort: recommended, recent, or name.' },
+        recommended: { type: 'boolean', description: 'When true, only return recommended items.' },
       },
       required: ['query'],
     },
@@ -553,6 +554,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           q: args.query as string,
           type: args.type as string | undefined,
           sort: args.sort as string | undefined,
+          recommended: args.recommended === true,
         });
         return {
           total: response.total,

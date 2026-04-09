@@ -164,6 +164,7 @@ export class RegistryClient {
     contentType: T,
     namespace?: string,
     sort?: string,
+    recommended?: boolean,
   ): Promise<FetchResult<{ items: RegistryContentMap[T][]; total: number }>> {
     let apiItems: RegistryContentMap[T][] = [];
     let source: RegistrySource = { type: 'cache' };
@@ -171,7 +172,11 @@ export class RegistryClient {
     // Try API first
     if (!this.offline) {
       try {
-        const apiResult = await this.apiClient.listContent<RegistryContentMap[T]>(contentType, { namespace, sort });
+        const apiResult = await this.apiClient.listContent<RegistryContentMap[T]>(contentType, {
+          namespace,
+          sort,
+          recommended,
+        });
         apiItems = apiResult.items;
         source = { type: 'api', url: this.apiUrl };
         // Cache the result

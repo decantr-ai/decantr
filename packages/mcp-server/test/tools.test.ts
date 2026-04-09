@@ -119,6 +119,7 @@ describe('MCP tool handlers', () => {
       const result = await handleTool('decantr_search_registry', {
         query: 'portfolio',
         sort: 'name',
+        recommended: true,
       }) as {
         total: number;
         results: Array<{ intelligence?: { recommended?: boolean; quality_score?: number } | null }>;
@@ -128,7 +129,11 @@ describe('MCP tool handlers', () => {
       expect(result.results[0]?.intelligence?.recommended).toBe(true);
       expect(result.results[0]?.intelligence?.quality_score).toBe(92);
       expect(fetchSpy).toHaveBeenCalledWith(
-        expect.stringContaining('sort=name'),
+        expect.stringMatching(/sort=name/),
+        expect.anything(),
+      );
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/recommended=true/),
         expect.anything(),
       );
     });
