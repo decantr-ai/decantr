@@ -640,4 +640,51 @@ describe('verifier', () => {
 
     expect(report.findings.some(finding => finding.id === 'accessibility-form-control-label-missing')).toBe(true);
   });
+
+  it('flags placeholder navigation targets during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/NavLinks.tsx',
+      code: `
+        export function NavLinks() {
+          return (
+            <nav>
+              <a href="#">Overview</a>
+              <Link to="javascript:void(0)">Settings</Link>
+            </nav>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['overview', 'settings'], patternIds: ['nav'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [
+            { pageId: 'overview', path: '/', patternIds: ['nav'] },
+            { pageId: 'settings', path: '/settings', patternIds: ['nav'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-placeholder-navigation-target')).toBe(true);
+  });
 });

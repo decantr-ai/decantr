@@ -290,7 +290,8 @@ now explicit in-repo as well through the Vercel workflow, portal audit, and runb
 The verifier layer has also moved beyond heuristic-only critique in this branch:
 
 - AST-backed security checks now detect `dangerouslySetInnerHTML`, raw DOM HTML injection, and dynamic eval patterns.
-- AST-backed accessibility checks now detect unlabeled icon-only buttons, clickable non-semantic controls, images without `alt`, unlabeled form controls, and external `_blank` links missing `rel="noopener noreferrer"`.
+- AST-backed accessibility checks now detect unlabeled icon-only buttons, clickable non-semantic controls, images without `alt`, and unlabeled form controls.
+- AST-backed route/security checks now catch external `_blank` links missing `rel="noopener noreferrer"` and placeholder navigation targets such as `href="#"` or `javascript:void(0)`.
 - Registry app lint now rebuilds `@decantr/registry` before typechecking so clean-checkout verification does not depend on stale generated package artifacts.
 
 ## Highest-Value Next Streams

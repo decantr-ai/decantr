@@ -920,6 +920,7 @@ interface AstCritiqueSignals {
   imageWithoutAltCount: number;
   externalBlankLinkWithoutRelCount: number;
   formControlWithoutLabelCount: number;
+  placeholderNavigationTargetCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -1081,6 +1082,18 @@ function isExternalLinkTargetBlankWithoutRel(attributes: ts.JsxAttributes): bool
   return !/\bnoopener\b/i.test(relValue) || !/\bnoreferrer\b/i.test(relValue);
 }
 
+function hasPlaceholderNavigationTarget(attributes: ts.JsxAttributes): boolean {
+  const targetValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'href', 'to'));
+  if (!targetValue) return false;
+
+  const normalized = targetValue.trim().toLowerCase();
+  return normalized === '#'
+    || normalized === '/#'
+    || normalized === 'javascript:'
+    || normalized === 'javascript:void(0)'
+    || normalized === 'javascript:void(0);';
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -1099,6 +1112,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     imageWithoutAltCount: 0,
     externalBlankLinkWithoutRelCount: 0,
     formControlWithoutLabelCount: 0,
+    placeholderNavigationTargetCount: 0,
   };
   const labelForIds = collectLabelForIds(sourceFile);
 
@@ -1170,6 +1184,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'a' && isExternalLinkTargetBlankWithoutRel(node.attributes)) {
         signals.externalBlankLinkWithoutRelCount += 1;
       }
+      if (hasPlaceholderNavigationTarget(node.attributes)) {
+        signals.placeholderNavigationTargetCount += 1;
+      }
       if (!hasFormControlLabel(node, tagName, node.attributes, labelForIds, '')) {
         signals.formControlWithoutLabelCount += 1;
       }
@@ -1196,6 +1213,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (tagName === 'a' && isExternalLinkTargetBlankWithoutRel(node.openingElement.attributes)) {
         signals.externalBlankLinkWithoutRelCount += 1;
+      }
+      if (hasPlaceholderNavigationTarget(node.openingElement.attributes)) {
+        signals.placeholderNavigationTargetCount += 1;
       }
       if (!hasFormControlLabel(node, tagName, node.openingElement.attributes, labelForIds, textContent)) {
         signals.formControlWithoutLabelCount += 1;
@@ -1407,16 +1427,20 @@ export function critiqueSource({
   });
 
   const knownRoutes = reviewPack?.data.routes.length ?? packManifest?.pages.length ?? 0;
+  const placeholderNavigationTargets = astSignals.placeholderNavigationTargetCount;
   scores.push({
     category: 'Topology Context',
     focusArea: 'route-topology',
-    score: reviewPack ? 5 : packManifest ? 4 : 1,
+    score: Math.max(1, (reviewPack ? 5 : packManifest ? 4 : 1) - (placeholderNavigationTargets > 0 ? 2 : 0)),
     details: reviewPack
-      ? `Compiled review contract covers ${knownRoutes} routes.`
+      ? `Compiled review contract covers ${knownRoutes} routes. Placeholder navigation targets: ${placeholderNavigationTargets}.`
       : packManifest
-        ? `Pack manifest is available for ${knownRoutes} pages, but the review pack is missing.`
-        : 'No compiled route context was available during critique.',
-    suggestions: reviewPack ? [] : ['Run `decantr refresh` so critique starts from a compiled review contract.'],
+        ? `Pack manifest is available for ${knownRoutes} pages, but the review pack is missing. Placeholder navigation targets: ${placeholderNavigationTargets}.`
+        : `No compiled route context was available during critique. Placeholder navigation targets: ${placeholderNavigationTargets}.`,
+    suggestions: [
+      ...(reviewPack ? [] : ['Run `decantr refresh` so critique starts from a compiled review contract.']),
+      ...(placeholderNavigationTargets > 0 ? ['Replace placeholder href/to targets with real route destinations from the compiled contract.'] : []),
+    ],
   });
   if (focusAreas.includes('route-topology') && !reviewPack) {
     findings.push(makeFinding({
@@ -1427,6 +1451,17 @@ export function critiqueSource({
       evidence: ['review-pack unavailable'],
       file: filePath,
       suggestedFix: 'Regenerate execution packs so critique findings can anchor to the compiled route contract.',
+    }));
+  }
+  if (focusAreas.includes('route-topology') && placeholderNavigationTargets > 0) {
+    findings.push(makeFinding({
+      id: 'route-placeholder-navigation-target',
+      category: 'Route Topology',
+      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['route-topology', 'page-route-contract', 'review-remediation']),
+      message: 'Placeholder navigation targets were detected in the reviewed file.',
+      evidence: [filePath, `Placeholder href/to targets: ${placeholderNavigationTargets}`],
+      file: filePath,
+      suggestedFix: 'Replace placeholder route targets like `#` or `javascript:void(0)` with the actual page paths from the compiled review contract.',
     }));
   }
 
