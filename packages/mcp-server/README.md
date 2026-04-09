@@ -70,6 +70,10 @@ Add to your Windsurf MCP config (`~/.windsurf/mcp.json`):
 | `decantr_resolve_blueprint` | Get a full app composition with page structure and personality traits | `{ "id": "ecommerce" }` |
 | `decantr_suggest_patterns` | Given a page description, get ranked pattern suggestions | `{ "description": "dashboard with metrics and charts" }` |
 | `decantr_check_drift` | Check if generated code violates the design intent in the Essence spec | `{ "page_id": "overview", "components_used": ["Card", "LineChart"], "theme_used": "auradecantism" }` |
+| `decantr_get_execution_pack` | Read compiled scaffold, section, page, review, or mutation execution packs | `{ "pack_type": "page", "id": "overview", "format": "json" }` |
+| `decantr_audit_project` | Run the schema-backed Decantr project audit against essence and compiled packs | `{}` |
+| `decantr_critique` | Critique a file against the compiled review contract | `{ "file_path": "./src/pages/Overview.tsx" }` |
+| `decantr_get_showcase_benchmarks` | Read the audited showcase corpus manifest, shortlist, or verification report | `{ "view": "verification" }` |
 
 ## How It Works
 
@@ -85,7 +89,9 @@ The AI assistant calls these tools behind the scenes:
 2. `decantr_resolve_archetype` -- pulls default pages, layouts, and features for a SaaS dashboard
 3. `decantr_suggest_patterns` -- recommends `kpi-grid`, `chart-grid`, `data-table`, and `form-sections` for the described pages
 4. `decantr_resolve_pattern` -- fetches layout specs and component lists for each pattern
-5. `decantr_check_drift` -- validates the generated code against the Essence spec before presenting it
+5. `decantr_get_execution_pack` -- loads the compiled scaffold/page/review packs as the task contract
+6. `decantr_check_drift` -- validates the generated code against the Essence spec before presenting it
+7. `decantr_audit_project` -- runs the stronger project-level audit once the implementation is in place
 
 The AI now generates code with the right layout structure, correct components, and consistent styling -- not a generic guess.
 

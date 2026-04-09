@@ -54,6 +54,7 @@ decantr magic "describe your app"
 decantr check
 decantr refresh
 decantr status
+decantr showcase verification --json
 ```
 
 ### MCP Server
@@ -69,6 +70,7 @@ The MCP server exposes Decantr’s design intelligence directly to AI tools, inc
 - essence read and validation
 - registry search and content resolution
 - scoped context generation
+- showcase benchmark metadata
 - drift and critique tools
 
 ### Registry
