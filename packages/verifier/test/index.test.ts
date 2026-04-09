@@ -398,7 +398,11 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'src', 'pages', 'Home.tsx'),
         `
+          'use client';
+
           export function Home() {
+            const leaked = "sk_live_1234567890";
+            const serviceRole = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
             localStorage.setItem('auth_token', token);
             document.cookie = \`auth_token=\${token}; path=/\`;
             fetch('/api/me', { headers: { Authorization: \`Bearer \${token}\` } });
@@ -3627,5 +3631,50 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-auth-storage-write')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'security-auth-cookie-write')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'security-auth-header-write')).toBe(true);
+  });
+
+  it('flags hardcoded secret literals and client-exposed secret env references during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/app/login/page.tsx',
+      code: `
+        'use client';
+
+        const leaked = "sk_live_1234567890";
+        const serviceRole = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+
+        export default function LoginPage() {
+          return <button>Continue</button>;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'login', path: '/', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-hardcoded-secret-literal')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'security-client-secret-env-reference')).toBe(true);
   });
 });

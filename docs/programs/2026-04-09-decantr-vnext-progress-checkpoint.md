@@ -370,6 +370,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Runtime verification now reports partial route drift when only some compiled route hints or route documents survive the built output, instead of only surfacing catastrophic misses.
 - Runtime verification and shortlist reports now also track strict full-route-coverage booleans for both compiled route hints and audited route documents, so the golden corpus can distinguish “some route coverage” from “the entire declared route contract survived.”
 - Runtime verification now also flags secret-like client-bundle leakage, including service-role key markers, live secret key patterns, and private-key material that survive into built JavaScript.
+- File critique and source audit now also flag hardcoded secret literals plus client-exposed secret env references, so privileged keys can be caught before they ever reach a compiled bundle.
 - Critique now also flags buttons inside forms that omit `type`, helping catch accidental-submit behavior before generated UI reaches review.
 - Critique now flags auth-like writes into `localStorage` and `sessionStorage`, helping catch insecure client-side token/session persistence earlier in review.
 - Hosted showcase summaries, CLI output, registry portal messaging, and benchmark-backed intelligence scoring now all surface that stricter full-route-coverage signal instead of treating partial route survival as fully verified.
