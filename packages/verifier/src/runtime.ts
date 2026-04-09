@@ -21,6 +21,8 @@ export interface RuntimeAudit {
   passed: boolean | null;
   rootDocumentOk: boolean;
   titleOk: boolean;
+  langOk: boolean;
+  viewportOk: boolean;
   assetCount: number;
   assetsPassed: number;
   routeHintsChecked: string[];
@@ -48,6 +50,8 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     passed: null,
     rootDocumentOk: false,
     titleOk: false,
+    langOk: false,
+    viewportOk: false,
     assetCount: 0,
     assetsPassed: 0,
     routeHintsChecked: [],
@@ -168,12 +172,20 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const failures: string[] = [];
     const rootDocumentOk = rootResponse.ok && /id="root"/.test(rootHtml);
     const titleOk = /<title>[^<]+<\/title>/i.test(rootHtml);
+    const langOk = /<html[^>]*\slang=(["'])[^"']+\1/i.test(rootHtml);
+    const viewportOk = /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(rootHtml);
 
     if (!rootDocumentOk) {
       failures.push('root-document-invalid');
     }
     if (!titleOk) {
       failures.push('root-title-missing');
+    }
+    if (!langOk) {
+      failures.push('root-lang-missing');
+    }
+    if (!viewportOk) {
+      failures.push('root-viewport-missing');
     }
     if (assetPaths.length === 0) {
       failures.push('assets-missing');
@@ -249,6 +261,8 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       passed,
       rootDocumentOk,
       titleOk,
+      langOk,
+      viewportOk,
       assetCount: assetPaths.length,
       assetsPassed,
       routeHintsChecked: routeHints,

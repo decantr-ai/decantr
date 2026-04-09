@@ -20,9 +20,11 @@ npm install @decantr/verifier
 - project audits include runtime evidence when a built `dist/` output is present:
   - root document
   - document title
+  - document `lang` and `viewport` metadata
   - emitted assets
   - route-document coverage
   - built asset byte budgets for JS, CSS, and total payload
+  - auth-topology warnings when the essence declares authentication without clear gateway or entry routes
 
 ## Example
 

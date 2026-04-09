@@ -82,9 +82,11 @@ commit archaeology.
 - Project audit now includes shared runtime evidence when `dist/` exists:
   - root document validation
   - document title validation
+  - document `lang` and `viewport` metadata checks
   - built asset fetch checks
   - route-document coverage checks
 - Project audit now also records built asset byte totals and warns on oversized JS/CSS/total bundle budgets.
+- Project audit now warns when an auth-declared essence lacks a clear gateway section or anonymous entry route.
 
 ### Showcase / golden corpus
 

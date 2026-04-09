@@ -97,9 +97,13 @@ describe('verifier', () => {
       expect(report.runtimeAudit.distPresent).toBe(true);
       expect(report.runtimeAudit.indexPresent).toBe(true);
       expect(report.runtimeAudit.passed).toBe(false);
+      expect(report.runtimeAudit.langOk).toBe(false);
+      expect(report.runtimeAudit.viewportOk).toBe(false);
       expect(report.runtimeAudit.jsAssetBytes).toBeGreaterThan(0);
       expect(report.runtimeAudit.totalAssetBytes).toBeGreaterThan(0);
       expect(report.findings.some(finding => finding.id === 'runtime-title-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-lang-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-viewport-missing')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -163,13 +167,61 @@ describe('verifier', () => {
     }
   });
 
+  it('reports missing auth topology surfaces from the essence contract', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'auth-gateway-section-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'auth-entry-route-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'auth-primary-section-missing')).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'auth-primary-routes-missing')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('audits built dist directly with explicit route hints', async () => {
     const projectRoot = createProjectRoot();
     try {
       mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
       writeFileSync(
         join(projectRoot, 'dist', 'index.html'),
-        '<!doctype html><html><head><title>Showcase</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Showcase</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
       );
       writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/dashboard");\n');
 
@@ -182,6 +234,8 @@ describe('verifier', () => {
       expect(report.indexPresent).toBe(true);
       expect(report.routeHintsChecked).toEqual(['/', '/dashboard']);
       expect(report.passed).toBe(true);
+      expect(report.langOk).toBe(true);
+      expect(report.viewportOk).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

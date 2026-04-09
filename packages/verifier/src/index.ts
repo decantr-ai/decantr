@@ -265,6 +265,14 @@ function countPages(essence: EssenceFile | null): number {
   return 0;
 }
 
+interface TopologySummary {
+  hasAuthFeature: boolean;
+  sectionRoles: string[];
+  gatewayRouteCount: number;
+  primaryRouteCount: number;
+  hasAnonymousEntryRoute: boolean;
+}
+
 function makeFinding(input: VerificationFinding): VerificationFinding {
   return input;
 }
@@ -328,6 +336,120 @@ export function extractRouteHintsFromEssence(essence: EssenceFile | null): strin
   return [...routes].filter(Boolean).slice(0, 8);
 }
 
+function summarizeTopology(essence: EssenceFile | null, reviewPack: ReviewExecutionPack | null): TopologySummary {
+  const features = new Set<string>(reviewPack?.data.features ?? []);
+  const sectionRoles = new Set<string>();
+  let gatewayRouteCount = 0;
+  let primaryRouteCount = 0;
+  let hasAnonymousEntryRoute = false;
+
+  if (essence && isV3(essence)) {
+    const v3 = essence as EssenceV3;
+    for (const feature of v3.blueprint.features ?? []) {
+      if (typeof feature === 'string' && feature.length > 0) {
+        features.add(feature);
+      }
+    }
+
+    for (const section of v3.blueprint.sections ?? []) {
+      const role = typeof section.role === 'string' && section.role.length > 0 ? section.role : 'unknown';
+      sectionRoles.add(role);
+
+      for (const page of section.pages ?? []) {
+        if (typeof page.route !== 'string' || page.route.length === 0) continue;
+        if (page.route === '/' && (role === 'public' || role === 'gateway')) {
+          hasAnonymousEntryRoute = true;
+        }
+        if (role === 'gateway') gatewayRouteCount += 1;
+        if (role === 'primary') primaryRouteCount += 1;
+      }
+    }
+  }
+
+  return {
+    hasAuthFeature: features.has('auth'),
+    sectionRoles: [...sectionRoles],
+    gatewayRouteCount,
+    primaryRouteCount,
+    hasAnonymousEntryRoute,
+  };
+}
+
+function appendTopologyFindings(
+  findings: VerificationFinding[],
+  essence: EssenceFile | null,
+  reviewPack: ReviewExecutionPack | null,
+): void {
+  const topology = summarizeTopology(essence, reviewPack);
+  if (!topology.hasAuthFeature) return;
+
+  if (!topology.sectionRoles.includes('gateway')) {
+    findings.push(makeFinding({
+      id: 'auth-gateway-section-missing',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Authentication is declared, but the essence topology does not define a gateway section.',
+      evidence: [
+        'Expected a gateway section for login, registration, or recovery flows.',
+        `Observed section roles: ${topology.sectionRoles.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Add a gateway section for authentication flows so anonymous users have a clear entry path before protected routes.',
+    }));
+  }
+
+  if (!topology.sectionRoles.includes('primary')) {
+    findings.push(makeFinding({
+      id: 'auth-primary-section-missing',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Authentication is declared, but no primary app section was found in the compiled topology.',
+      evidence: [
+        `Observed section roles: ${topology.sectionRoles.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Add a primary section so authenticated users have a clear post-auth destination.',
+    }));
+  }
+
+  if (topology.sectionRoles.includes('gateway') && topology.gatewayRouteCount === 0) {
+    findings.push(makeFinding({
+      id: 'auth-gateway-routes-missing',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'A gateway section exists, but none of its pages declare explicit routes.',
+      evidence: [
+        'Gateway pages should expose routable login, registration, or recovery paths.',
+      ],
+      suggestedFix: 'Give gateway pages explicit routes such as `/login`, `/register`, or `/forgot-password`.',
+    }));
+  }
+
+  if (topology.primaryRouteCount === 0) {
+    findings.push(makeFinding({
+      id: 'auth-primary-routes-missing',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Authentication is declared, but no primary section pages expose explicit routes.',
+      evidence: [
+        'Protected app surfaces need explicit routes so post-auth entry points are unambiguous.',
+      ],
+      suggestedFix: 'Add explicit primary routes such as `/dashboard` or `/app` for the authenticated experience.',
+    }));
+  }
+
+  if (!topology.hasAnonymousEntryRoute) {
+    findings.push(makeFinding({
+      id: 'auth-entry-route-missing',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Authentication is declared, but no public or gateway section exposes `/` as an anonymous entry route.',
+      evidence: [
+        'Anonymous users should have a stable landing or auth entry route before protected navigation begins.',
+      ],
+      suggestedFix: 'Route `/` to a public landing page or gateway entry so the initial user journey is explicit.',
+    }));
+  }
+}
+
 async function runRuntimeAudit(projectRoot: string, essence: EssenceFile | null): Promise<RuntimeAudit> {
   return auditBuiltDist(projectRoot, {
     routeHints: extractRouteHintsFromEssence(essence),
@@ -381,6 +503,28 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
       message: 'The built root document is missing a non-empty <title>.',
       evidence: [indexPath],
       suggestedFix: 'Emit a meaningful document title from the entry HTML or framework metadata layer.',
+    }));
+  }
+
+  if (runtimeAudit.langOk === false) {
+    findings.push(makeFinding({
+      id: 'runtime-lang-missing',
+      category: 'Runtime Verification',
+      severity: 'warn',
+      message: 'The built root document is missing an explicit `lang` attribute on `<html>`.',
+      evidence: [indexPath],
+      suggestedFix: 'Set `<html lang="en">` or the appropriate locale in the framework document shell so accessibility tooling and crawlers get the right language hint.',
+    }));
+  }
+
+  if (runtimeAudit.viewportOk === false) {
+    findings.push(makeFinding({
+      id: 'runtime-viewport-missing',
+      category: 'Runtime Verification',
+      severity: 'warn',
+      message: 'The built root document is missing a viewport meta tag.',
+      evidence: [indexPath],
+      suggestedFix: 'Emit `<meta name="viewport" content="width=device-width, initial-scale=1">` from the entry document or metadata layer.',
     }));
   }
 
@@ -557,6 +701,8 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
       findings.push(guardViolationToFinding(violation));
     }
   }
+
+  appendTopologyFindings(findings, essence, reviewPack);
 
   if (!packManifest) {
     findings.push(makeFinding({
