@@ -3,7 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
-import { buildScaffoldPack, buildSectionPack, buildPagePack, runPipeline } from '@decantr/core';
+import { buildScaffoldPack, buildSectionPack, buildPagePack, buildMutationPack, runPipeline } from '@decantr/core';
 import type { PagePackInput, ScaffoldExecutionPack, SectionPackInput } from '@decantr/core';
 import type { ExecutionPackBase } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
@@ -1658,7 +1658,8 @@ function generateAddPageTaskContext(
 
 ## Primary Compiled Contract
 
-- Start with \`.decantr/context/scaffold-pack.md\` for the current route, shell, and theme contract.
+- Start with \`.decantr/context/mutation-add-page-pack.md\` for the add-page workflow contract.
+- Use \`.decantr/context/scaffold-pack.md\` for the current route, shell, and theme contract.
 - Use \`.decantr/context/pack-manifest.json\` to choose the target section before you add a route.
 - After updating the essence, run \`npx @decantr/cli refresh\` so the new section/page packs exist before code generation.
 
@@ -1722,6 +1723,7 @@ function generateModifyTaskContext(
 
 ## Primary Compiled Contract
 
+- Start with \`.decantr/context/mutation-modify-pack.md\` for the strict modification workflow contract.
 - Start with \`decantr_get_page_context\` or the matching \`.decantr/context/page-*-pack.md\` file for the route you are editing.
 - Use \`decantr_get_section_context\` when you need the richer section contract behind that route.
 - If a change would alter route identity, shell identity, theme identity, or pattern contract, update the essence first and then refresh the packs.
@@ -2167,6 +2169,7 @@ interface PackManifest {
   scaffold: PackManifestEntry | null;
   sections: Array<PackManifestEntry & { pageIds: string[] }>;
   pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
+  mutations: Array<PackManifestEntry & { mutationType: string }>;
 }
 
 interface GeneratedPackContexts {
@@ -2307,12 +2310,32 @@ async function generatePackContexts(
       });
     }
 
+    const mutationManifestEntries: Array<PackManifestEntry & { mutationType: string }> = [];
+    for (const mutationType of ['add-page', 'modify'] as const) {
+      const mutationPack = buildMutationPack(pipeline.ir, {
+        mutationType,
+        target: sharedTarget,
+      });
+      const mutationPackPath = writeExecutionPackArtifacts(
+        join(contextDir, `mutation-${mutationType}-pack`),
+        mutationPack,
+      );
+      outputPaths.push(mutationPackPath);
+      mutationManifestEntries.push({
+        id: mutationType,
+        markdown: `mutation-${mutationType}-pack.md`,
+        json: `mutation-${mutationType}-pack.json`,
+        mutationType,
+      });
+    }
+
     const manifest: PackManifest = {
       version: '1.0.0',
       generatedAt: new Date().toISOString(),
       scaffold: scaffoldManifest,
       sections: sectionManifestEntries,
       pages: pageManifestEntries,
+      mutations: mutationManifestEntries,
     };
     const manifestPath = join(contextDir, 'pack-manifest.json');
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');

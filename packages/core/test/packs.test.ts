@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { buildPagePack, buildScaffoldPack, buildSectionPack, runPipeline } from '../src/index.js';
+import { buildMutationPack, buildPagePack, buildScaffoldPack, buildSectionPack, runPipeline } from '../src/index.js';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
@@ -147,5 +147,40 @@ describe('buildScaffoldPack', () => {
     expect(pack.renderedMarkdown).toContain('## Page Contract');
     expect(pack.renderedMarkdown).toContain('- Page: overview');
     expect(pack.renderedMarkdown).toContain('- filter-bar -> filter-bar [row | standard]');
+  });
+
+  it('builds mutation packs for add-page and modify workflows', async () => {
+    const essence = loadFixture('essence-saas');
+    const result = await runPipeline(essence, { contentRoot });
+
+    const addPagePack = buildMutationPack(result.ir, {
+      mutationType: 'add-page',
+      target: {
+        framework: 'react',
+        runtime: 'vite',
+        adapter: 'react-vite',
+      },
+    });
+    const modifyPack = buildMutationPack(result.ir, {
+      mutationType: 'modify',
+      target: {
+        framework: 'react',
+        runtime: 'vite',
+        adapter: 'react-vite',
+      },
+    });
+
+    expect(addPagePack.packType).toBe('mutation');
+    expect(addPagePack.data.mutationType).toBe('add-page');
+    expect(addPagePack.data.routes).toHaveLength(2);
+    expect(addPagePack.data.workflow[0]).toContain('Declare the new page');
+    expect(addPagePack.renderedMarkdown).toContain('## Mutation Contract');
+    expect(addPagePack.renderedMarkdown).toContain('- Operation: add-page');
+
+    expect(modifyPack.packType).toBe('mutation');
+    expect(modifyPack.data.mutationType).toBe('modify');
+    expect(modifyPack.successChecks[0].id).toBe('mutation-existing-topology');
+    expect(modifyPack.renderedMarkdown).toContain('- Operation: modify');
+    expect(modifyPack.renderedMarkdown).toContain('## Workflow');
   });
 });

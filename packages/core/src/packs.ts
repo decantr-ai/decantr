@@ -149,6 +149,26 @@ export interface PageExecutionPack extends ExecutionPackBase<PagePackData> {
   packType: 'page';
 }
 
+export type MutationPackKind = 'add-page' | 'modify';
+
+export interface MutationPackData {
+  mutationType: MutationPackKind;
+  shell: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routing: 'hash' | 'history';
+  features: string[];
+  routes: ScaffoldPackRoute[];
+  workflow: string[];
+}
+
+export interface MutationExecutionPack extends ExecutionPackBase<MutationPackData> {
+  packType: 'mutation';
+}
+
 export interface ScaffoldPackBuilderOptions {
   objective?: string;
   target?: Partial<ExecutionPackTarget>;
@@ -162,6 +182,10 @@ export interface ScaffoldPackBuilderOptions {
 
 export interface SectionPackBuilderOptions extends ScaffoldPackBuilderOptions {}
 export interface PagePackBuilderOptions extends ScaffoldPackBuilderOptions {}
+export interface MutationPackBuilderOptions extends ScaffoldPackBuilderOptions {
+  mutationType: MutationPackKind;
+  workflow?: string[];
+}
 
 const DEFAULT_TARGET: ExecutionPackTarget = {
   platform: 'web',
@@ -233,6 +257,43 @@ const DEFAULT_PAGE_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
     severity: 'warn',
   },
 ];
+
+const DEFAULT_MUTATION_SUCCESS_CHECKS: Record<MutationPackKind, ExecutionPackSuccessCheck[]> = {
+  'add-page': [
+    {
+      id: 'mutation-essence-first',
+      label: 'New pages are declared in the essence before any code generation begins.',
+      severity: 'error',
+    },
+    {
+      id: 'mutation-shell-contract',
+      label: 'New routes inherit an existing shell and section contract unless the essence changes first.',
+      severity: 'error',
+    },
+    {
+      id: 'mutation-refresh',
+      label: 'Refresh compiled packs after the mutation so downstream tasks read current topology.',
+      severity: 'warn',
+    },
+  ],
+  modify: [
+    {
+      id: 'mutation-existing-topology',
+      label: 'Modified routes remain coherent with the compiled topology unless the essence changes first.',
+      severity: 'error',
+    },
+    {
+      id: 'mutation-theme-contract',
+      label: 'Theme, shell, and page identity stay aligned with the current contract during edits.',
+      severity: 'error',
+    },
+    {
+      id: 'mutation-page-pack-first',
+      label: 'Route-local edits should start from the compiled page pack rather than improvised structure.',
+      severity: 'warn',
+    },
+  ],
+};
 
 function collectPatternIds(page: IRPageNode): string[] {
   const patternIds: string[] = [];
@@ -378,6 +439,34 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       lines.push('## Wiring Signals');
       for (const signal of pagePack.data.wiringSignals) {
         lines.push(`- ${signal}`);
+      }
+      lines.push('');
+    }
+  }
+
+  if (pack.packType === 'mutation') {
+    const mutationPack = pack as MutationExecutionPack;
+    lines.push('## Mutation Contract');
+    lines.push(`- Operation: ${mutationPack.data.mutationType}`);
+    lines.push(`- Shell: ${mutationPack.data.shell}`);
+    lines.push(`- Theme: ${mutationPack.data.theme.id} (${mutationPack.data.theme.mode})`);
+    lines.push(`- Routing: ${mutationPack.data.routing}`);
+    if (mutationPack.data.features.length > 0) {
+      lines.push(`- Features: ${mutationPack.data.features.join(', ')}`);
+    }
+    lines.push('');
+
+    lines.push('## Route Topology');
+    for (const route of mutationPack.data.routes) {
+      const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+      lines.push(`- ${route.path} -> ${route.pageId} [${patterns}]`);
+    }
+    lines.push('');
+
+    if (mutationPack.data.workflow.length > 0) {
+      lines.push('## Workflow');
+      for (const step of mutationPack.data.workflow) {
+        lines.push(`- ${step}`);
       }
       lines.push('');
     }
@@ -586,6 +675,74 @@ export function buildPagePack(
       },
       wiringSignals: pageNode.wiring?.signals.map(signal => signal.name) ?? [],
       patterns,
+    },
+    renderedMarkdown: '',
+  };
+
+  pack.renderedMarkdown = renderExecutionPackMarkdown(pack);
+  return pack;
+}
+
+export function buildMutationPack(
+  appNode: IRAppNode,
+  options: MutationPackBuilderOptions,
+): MutationExecutionPack {
+  const routes = summarizeRoutes(appNode);
+  const scopePatternIds = [...new Set(routes.flatMap(route => route.patternIds))];
+  const defaultWorkflow = options.mutationType === 'add-page'
+    ? [
+        'Declare the new page in the essence before generating code.',
+        'Refresh Decantr context so section and page packs include the new route.',
+        'Read the relevant section pack and new page pack before implementation.',
+      ]
+    : [
+        'Read the page pack for the route you are modifying first.',
+        'Stop and update the essence before changing route, shell, or pattern contracts.',
+        'Validate and check drift after code changes complete.',
+      ];
+
+  const pack: MutationExecutionPack = {
+    packVersion: '1.0.0',
+    packType: 'mutation',
+    objective: options.objective ?? `Execute the ${options.mutationType} workflow against the compiled app contract.`,
+    target: {
+      ...DEFAULT_TARGET,
+      ...options.target,
+    },
+    preset: options.preset ?? null,
+    scope: {
+      appId: appNode.id,
+      pageIds: routes.map(route => route.pageId),
+      patternIds: scopePatternIds,
+    },
+    requiredSetup: options.requiredSetup ?? [
+      'Treat the compiled topology as the source of truth until the essence changes.',
+      'Refresh Decantr context after structural mutations so downstream tasks read current packs.',
+    ],
+    allowedVocabulary: [...new Set([
+      options.mutationType,
+      appNode.shell.config.type,
+      appNode.theme.id,
+      appNode.theme.mode,
+      ...appNode.features,
+      ...scopePatternIds,
+    ])],
+    examples: options.examples ?? [],
+    antiPatterns: options.antiPatterns ?? [],
+    successChecks: options.successChecks ?? DEFAULT_MUTATION_SUCCESS_CHECKS[options.mutationType],
+    tokenBudget: mergeTokenBudget(options.tokenBudget),
+    data: {
+      mutationType: options.mutationType,
+      shell: appNode.shell.config.type,
+      theme: {
+        id: appNode.theme.id,
+        mode: appNode.theme.mode,
+        shape: appNode.theme.shape,
+      },
+      routing: appNode.routing,
+      features: appNode.features,
+      routes,
+      workflow: options.workflow ?? defaultWorkflow,
     },
     renderedMarkdown: '',
   };

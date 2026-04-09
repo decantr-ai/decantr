@@ -232,6 +232,9 @@ describe('v3-aware tool tests', () => {
         version: '1.0.0',
         generatedAt: '2026-04-08T00:00:00.000Z',
         scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        mutations: [
+          { id: 'add-page', markdown: 'mutation-add-page-pack.md', json: 'mutation-add-page-pack.json', mutationType: 'add-page' },
+        ],
         sections: [
           { id: 'dashboard', markdown: 'section-dashboard-pack.md', json: 'section-dashboard-pack.json', pageIds: ['overview'] },
         ],
@@ -248,6 +251,7 @@ describe('v3-aware tool tests', () => {
         pack_manifest: { version: string };
         available_sections: Array<{ id: string; page_ids: string[] }>;
         available_pages: Array<{ id: string; section_id: string | null }>;
+        available_mutations: Array<{ id: string; mutation_type: string }>;
       };
 
       expect(result.task_context).toContain('# Task Context: Scaffolding');
@@ -257,6 +261,7 @@ describe('v3-aware tool tests', () => {
       expect(result.pack_manifest.version).toBe('1.0.0');
       expect(result.available_sections).toEqual([{ id: 'dashboard', page_ids: ['overview'] }]);
       expect(result.available_pages).toEqual([{ id: 'overview', section_id: 'dashboard' }]);
+      expect(result.available_mutations).toEqual([{ id: 'add-page', mutation_type: 'add-page' }]);
     });
 
     it('returns the pack manifest by default', async () => {
@@ -266,6 +271,7 @@ describe('v3-aware tool tests', () => {
         version: '1.0.0',
         generatedAt: '2026-04-08T00:00:00.000Z',
         scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        mutations: [],
         sections: [],
         pages: [],
       }));
@@ -284,6 +290,7 @@ describe('v3-aware tool tests', () => {
         version: '1.0.0',
         generatedAt: '2026-04-08T00:00:00.000Z',
         scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        mutations: [],
         sections: [
           {
             id: 'dashboard',
@@ -344,6 +351,7 @@ describe('v3-aware tool tests', () => {
         version: '1.0.0',
         generatedAt: '2026-04-08T00:00:00.000Z',
         scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        mutations: [],
         sections: [],
         pages: [
           {
@@ -377,6 +385,48 @@ describe('v3-aware tool tests', () => {
       expect(result.markdown).toContain('# Page Pack');
       expect(result.json.packType).toBe('page');
       expect(result.json.data.pageId).toBe('overview');
+    });
+
+    it('returns a specific mutation pack in markdown and json', async () => {
+      const contextDir = join(testDir, '.decantr', 'context');
+      await mkdir(contextDir, { recursive: true });
+      await writeFile(join(contextDir, 'pack-manifest.json'), JSON.stringify({
+        version: '1.0.0',
+        generatedAt: '2026-04-08T00:00:00.000Z',
+        scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        mutations: [
+          {
+            id: 'modify',
+            markdown: 'mutation-modify-pack.md',
+            json: 'mutation-modify-pack.json',
+            mutationType: 'modify',
+          },
+        ],
+        sections: [],
+        pages: [],
+      }));
+      await writeFile(join(contextDir, 'mutation-modify-pack.md'), '# Mutation Pack\n\n- Operation: modify\n');
+      await writeFile(join(contextDir, 'mutation-modify-pack.json'), JSON.stringify({
+        packType: 'mutation',
+        data: { mutationType: 'modify' },
+      }));
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_execution_pack', {
+        pack_type: 'mutation',
+        id: 'modify',
+      }) as {
+        pack_type: string;
+        id: string;
+        markdown: string;
+        json: { packType: string; data: { mutationType: string } };
+      };
+
+      expect(result.pack_type).toBe('mutation');
+      expect(result.id).toBe('modify');
+      expect(result.markdown).toContain('# Mutation Pack');
+      expect(result.json.packType).toBe('mutation');
+      expect(result.json.data.mutationType).toBe('modify');
     });
   });
 

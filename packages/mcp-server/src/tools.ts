@@ -59,6 +59,7 @@ interface PackManifest {
   scaffold: PackManifestEntry | null;
   sections: Array<PackManifestEntry & { pageIds: string[] }>;
   pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
+  mutations?: Array<PackManifestEntry & { mutationType: string }>;
 }
 
 const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
@@ -402,13 +403,13 @@ export const TOOLS = [
   {
     name: 'decantr_get_execution_pack',
     title: 'Get Execution Pack',
-    description: 'Read compiled execution packs from .decantr/context. Returns the pack manifest by default, or a specific scaffold, section, or page pack in markdown, JSON, or both.',
+    description: 'Read compiled execution packs from .decantr/context. Returns the pack manifest by default, or a specific scaffold, mutation, section, or page pack in markdown, JSON, or both.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         pack_type: {
           type: 'string',
-          enum: ['manifest', 'scaffold', 'section', 'page'],
+          enum: ['manifest', 'scaffold', 'mutation', 'section', 'page'],
           description: 'Pack type to fetch. Defaults to manifest.',
         },
         id: {
@@ -1114,6 +1115,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         pack_manifest: manifest,
         available_sections: manifest?.sections.map(section => ({ id: section.id, page_ids: section.pageIds })) ?? [],
         available_pages: manifest?.pages.map(page => ({ id: page.id, section_id: page.sectionId })) ?? [],
+        available_mutations: manifest?.mutations?.map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })) ?? [],
       };
     }
 
@@ -1265,6 +1267,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       if (packType === 'scaffold') {
         entry = manifest.scaffold;
+      } else if (packType === 'mutation') {
+        availableIds = (manifest.mutations ?? []).map(mutation => mutation.id);
+        const idErr = validateStringArg(args, 'id');
+        if (idErr) return { error: idErr, available_ids: availableIds };
+        entry = (manifest.mutations ?? []).find(mutation => mutation.id === args.id) ?? null;
       } else if (packType === 'section') {
         availableIds = manifest.sections.map(section => section.id);
         const idErr = validateStringArg(args, 'id');

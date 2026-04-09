@@ -252,6 +252,10 @@ describe('v3 scaffold', () => {
     const sectionPackJsonPath = join(testDir, '.decantr', 'context', 'section-custom-pack.json');
     const pagePackPath = join(testDir, '.decantr', 'context', 'page-home-pack.md');
     const pagePackJsonPath = join(testDir, '.decantr', 'context', 'page-home-pack.json');
+    const addMutationPackPath = join(testDir, '.decantr', 'context', 'mutation-add-page-pack.md');
+    const addMutationPackJsonPath = join(testDir, '.decantr', 'context', 'mutation-add-page-pack.json');
+    const modifyMutationPackPath = join(testDir, '.decantr', 'context', 'mutation-modify-pack.md');
+    const modifyMutationPackJsonPath = join(testDir, '.decantr', 'context', 'mutation-modify-pack.json');
     const manifestPath = join(testDir, '.decantr', 'context', 'pack-manifest.json');
     expect(existsSync(packPath)).toBe(true);
     expect(existsSync(packJsonPath)).toBe(true);
@@ -259,6 +263,10 @@ describe('v3 scaffold', () => {
     expect(existsSync(sectionPackJsonPath)).toBe(true);
     expect(existsSync(pagePackPath)).toBe(true);
     expect(existsSync(pagePackJsonPath)).toBe(true);
+    expect(existsSync(addMutationPackPath)).toBe(true);
+    expect(existsSync(addMutationPackJsonPath)).toBe(true);
+    expect(existsSync(modifyMutationPackPath)).toBe(true);
+    expect(existsSync(modifyMutationPackJsonPath)).toBe(true);
     expect(existsSync(manifestPath)).toBe(true);
 
     const content = readFileSync(packPath, 'utf-8');
@@ -267,6 +275,10 @@ describe('v3 scaffold', () => {
     const sectionPackJson = JSON.parse(readFileSync(sectionPackJsonPath, 'utf-8'));
     const pageContent = readFileSync(pagePackPath, 'utf-8');
     const pagePackJson = JSON.parse(readFileSync(pagePackJsonPath, 'utf-8'));
+    const addMutationContent = readFileSync(addMutationPackPath, 'utf-8');
+    const addMutationJson = JSON.parse(readFileSync(addMutationPackJsonPath, 'utf-8'));
+    const modifyMutationContent = readFileSync(modifyMutationPackPath, 'utf-8');
+    const modifyMutationJson = JSON.parse(readFileSync(modifyMutationPackJsonPath, 'utf-8'));
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
     const scaffoldTask = readFileSync(join(testDir, '.decantr', 'context', 'task-scaffold.md'), 'utf-8');
     expect(content).toContain('# Scaffold Pack');
@@ -308,6 +320,12 @@ describe('v3 scaffold', () => {
         layout: 'hero',
       },
     ]);
+    expect(addMutationContent).toContain('# Mutation Pack');
+    expect(addMutationContent).toContain('- Operation: add-page');
+    expect(addMutationJson.packType).toBe('mutation');
+    expect(addMutationJson.data.mutationType).toBe('add-page');
+    expect(modifyMutationContent).toContain('- Operation: modify');
+    expect(modifyMutationJson.data.mutationType).toBe('modify');
     expect(manifest.scaffold).toEqual({
       id: 'scaffold',
       markdown: 'scaffold-pack.md',
@@ -328,6 +346,20 @@ describe('v3 scaffold', () => {
         json: 'page-home-pack.json',
         sectionId: 'custom',
         sectionRole: 'primary',
+      },
+    ]);
+    expect(manifest.mutations).toEqual([
+      {
+        id: 'add-page',
+        markdown: 'mutation-add-page-pack.md',
+        json: 'mutation-add-page-pack.json',
+        mutationType: 'add-page',
+      },
+      {
+        id: 'modify',
+        markdown: 'mutation-modify-pack.md',
+        json: 'mutation-modify-pack.json',
+        mutationType: 'modify',
       },
     ]);
     expect(scaffoldTask).toContain('## Primary Compiled Contract');
@@ -376,8 +408,10 @@ describe('v3 scaffold', () => {
     const modifyTask = readFileSync(join(contextDir, 'task-modify.md'), 'utf-8');
 
     expect(addPageTask).toContain('## Primary Compiled Contract');
+    expect(addPageTask).toContain('.decantr/context/mutation-add-page-pack.md');
     expect(addPageTask).toContain('.decantr/context/scaffold-pack.md');
     expect(addPageTask).toContain('Section `custom` -> `.decantr/context/section-custom-pack.md`');
+    expect(modifyTask).toContain('.decantr/context/mutation-modify-pack.md');
     expect(modifyTask).toContain('decantr_get_page_context');
     expect(modifyTask).toContain('## Strict Checks');
     expect(modifyTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');

@@ -45,6 +45,10 @@ export type {
   PagePackData,
   PageExecutionPack,
   PagePackBuilderOptions,
+  MutationPackKind,
+  MutationPackData,
+  MutationExecutionPack,
+  MutationPackBuilderOptions,
 } from './packs.js';
 
 export type { PipelineOptions, PipelineResult } from './pipeline.js';
@@ -54,4 +58,4 @@ export { resolveEssence, resolveVisualEffects } from './resolve.js';
 export type { ResolvedPage, ResolvedEssence } from './resolve.js';
 export { walkIR, findNodes, countPatterns, validateIR } from './ir-helpers.js';
 export { pascalCase } from './utils.js';
-export { buildScaffoldPack, buildSectionPack, buildPagePack, renderExecutionPackMarkdown } from './packs.js';
+export { buildScaffoldPack, buildSectionPack, buildPagePack, buildMutationPack, renderExecutionPackMarkdown } from './packs.js';
