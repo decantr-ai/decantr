@@ -302,6 +302,48 @@ function buildSourceAuditEvidence(summary: SourceAuditSummary, bucket: SourceAud
   ];
 }
 
+function isAuditableStyleFile(filePath: string): boolean {
+  return /\.css$/i.test(filePath);
+}
+
+function collectProjectStyleFiles(projectRoot: string): string[] {
+  const candidates = ['src', 'app', 'styles']
+    .map((dir) => join(projectRoot, dir))
+    .filter((dir) => existsSync(dir));
+  const files = new Set<string>();
+  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (ignoredDirNames.has(entry.name)) continue;
+      const absolutePath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(absolutePath);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!isAuditableStyleFile(absolutePath)) continue;
+      files.add(absolutePath);
+    }
+  };
+
+  for (const candidate of candidates) {
+    walk(candidate);
+  }
+
+  return [...files].sort();
+}
+
+function countFocusVisibleSignals(code: string): number {
+  const patterns = [
+    /:focus-visible\b/i,
+    /\.focus-visible\b/i,
+    /\[data-focus-visible-added\]/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
   const sourceFiles = collectProjectSourceFiles(projectRoot);
   const summary: SourceAuditSummary = {
@@ -351,6 +393,22 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.accessibilityIssues, relativePath, accessibilityIssueCount);
     recordSourceAudit(summary.interactionSafetyIssues, relativePath, signals.buttonInFormWithoutTypeCount);
     recordSourceAudit(summary.authInputHintIssues, relativePath, authInputHintIssueCount);
+  }
+
+  return summary;
+}
+
+function auditProjectStyleContracts(projectRoot: string): StyleAuditSummary {
+  const styleFiles = collectProjectStyleFiles(projectRoot);
+  const summary: StyleAuditSummary = {
+    filesChecked: styleFiles.length,
+    focusVisibleSignals: createSourceAuditBucket(),
+  };
+
+  for (const styleFile of styleFiles) {
+    const relativePath = relative(projectRoot, styleFile) || styleFile;
+    const css = readFileSync(styleFile, 'utf-8');
+    recordSourceAudit(summary.focusVisibleSignals, relativePath, countFocusVisibleSignals(css));
   }
 
   return summary;
@@ -464,6 +522,11 @@ interface SourceAuditSummary {
   authInputHintIssues: SourceAuditBucket;
 }
 
+interface StyleAuditSummary {
+  filesChecked: number;
+  focusVisibleSignals: SourceAuditBucket;
+}
+
 function makeFinding(input: VerificationFinding): VerificationFinding {
   return input;
 }
@@ -493,6 +556,15 @@ function isAuthLikeRoute(route: string): boolean {
 
 function isProtectedLikeRoute(route: string): boolean {
   return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/|$)/i.test(route);
+}
+
+function essenceRequiresFocusVisible(essence: EssenceFile | null): boolean {
+  if (!essence || !('dna' in essence)) return false;
+  const dna = (essence as { dna?: unknown }).dna;
+  if (!dna || typeof dna !== 'object') return false;
+  const accessibility = (dna as { accessibility?: unknown }).accessibility;
+  if (!accessibility || typeof accessibility !== 'object') return false;
+  return (accessibility as { focus_visible?: unknown }).focus_visible === true;
 }
 
 function essenceRequiresSkipNav(essence: EssenceFile | null): boolean {
@@ -1238,6 +1310,27 @@ function appendSourceAuditFindings(
   }
 }
 
+function appendStyleContractFindings(
+  findings: VerificationFinding[],
+  styleAudit: StyleAuditSummary,
+  essence: EssenceFile | null,
+): void {
+  if (essenceRequiresFocusVisible(essence) && styleAudit.focusVisibleSignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'style-focus-visible-signals-missing',
+      category: 'Style Contract',
+      severity: 'warn',
+      message: 'The essence contract requires visible focus treatment, but the project styles do not show a focus-visible signal.',
+      evidence: [
+        `Style files checked: ${styleAudit.filesChecked}`,
+        'Focus-visible requirement: true',
+        'Focus-visible signals: 0',
+      ],
+      suggestedFix: 'Add a clear `:focus-visible` treatment in the project CSS so keyboard focus remains visible across interactive surfaces.',
+    }));
+  }
+}
+
 export async function auditProject(projectRoot: string): Promise<ProjectAuditReport> {
   const essencePath = join(projectRoot, 'decantr.essence.json');
   const findings: VerificationFinding[] = [];
@@ -1371,6 +1464,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   const checkedRuntimeAudit = await runRuntimeAudit(projectRoot, essence);
   appendRuntimeAuditFindings(findings, checkedRuntimeAudit, projectRoot, summarizeTopology(essence, reviewPack));
   appendSourceAuditFindings(findings, auditProjectSourceTree(projectRoot), essence, reviewPack);
+  appendStyleContractFindings(findings, auditProjectStyleContracts(projectRoot), essence);
 
   const summary = {
     errorCount: findings.filter(finding => finding.severity === 'error').length,
