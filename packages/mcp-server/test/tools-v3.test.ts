@@ -212,6 +212,38 @@ function makeHostedPackBundle() {
   };
 }
 
+function makeHostedSelectedPack(
+  packType: 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+  id?: string,
+) {
+  const bundle = makeHostedPackBundle();
+  const pack = packType === 'scaffold'
+    ? bundle.scaffold
+    : packType === 'review'
+      ? bundle.review
+      : packType === 'section'
+        ? bundle.sections.find(entry => entry.data.sectionId === id) ?? null
+        : packType === 'page'
+          ? bundle.pages.find(entry => entry.data.pageId === id) ?? null
+          : bundle.mutations.find(entry => entry.data.mutationType === id) ?? null;
+
+  if (!pack) {
+    throw new Error(`Missing hosted pack for ${packType}${id ? `:${id}` : ''}`);
+  }
+
+  return {
+    $schema: 'https://decantr.ai/schemas/selected-execution-pack.v1.json',
+    generatedAt: bundle.generatedAt,
+    sourceEssenceVersion: bundle.sourceEssenceVersion,
+    manifest: bundle.manifest,
+    selector: {
+      packType,
+      id: id ?? null,
+    },
+    pack,
+  };
+}
+
 let testDir: string;
 const originalCwd = process.cwd();
 
@@ -1081,8 +1113,8 @@ describe('v3-aware tool tests', () => {
         },
       })));
 
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify(makeHostedPackBundle()), {
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify(makeHostedSelectedPack('review')), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         }),
@@ -1102,6 +1134,10 @@ describe('v3-aware tool tests', () => {
       expect(result.pack_type).toBe('review');
       expect(result.markdown).toContain('# Review Pack');
       expect(result.json.packType).toBe('review');
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('/v1/packs/select'),
+        expect.anything(),
+      );
     });
 
     it('returns the review pack in markdown and json', async () => {

@@ -59,6 +59,9 @@ export type {
   ReviewExecutionPack,
   ReviewPackBuilderOptions,
   ExecutionPackBundle,
+  SelectedExecutionPack,
+  ExecutionPackSelector,
+  SelectedExecutionPackResponse,
   CompileExecutionPackBundleOptions,
 } from './packs.js';
 
@@ -73,6 +76,7 @@ export {
   EXECUTION_PACK_SCHEMA_URLS,
   PACK_MANIFEST_SCHEMA_URL,
   EXECUTION_PACK_BUNDLE_SCHEMA_URL,
+  SELECTED_EXECUTION_PACK_SCHEMA_URL,
   buildScaffoldPack,
   buildSectionPack,
   buildPagePack,
@@ -82,5 +86,7 @@ export {
   listPackSections,
   listPackPages,
   compileExecutionPackBundle,
+  selectExecutionPackFromBundle,
+  compileSelectedExecutionPack,
   renderExecutionPackMarkdown,
 } from './packs.js';

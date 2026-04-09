@@ -247,6 +247,90 @@ describe('RegistryAPIClient showcase endpoints', () => {
     );
   });
 
+  it('requests a selected hosted execution pack from an essence document', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        $schema: 'https://decantr.ai/schemas/selected-execution-pack.v1.json',
+        generatedAt: '2026-04-09T00:00:00.000Z',
+        sourceEssenceVersion: '2.0.0',
+        manifest: {
+          $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+          version: '1.0.0',
+          generatedAt: '2026-04-09T00:00:00.000Z',
+          scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+          review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+          sections: [{ id: 'dashboard', markdown: 'section-dashboard-pack.md', json: 'section-dashboard-pack.json', pageIds: ['home'] }],
+          pages: [{ id: 'home', markdown: 'page-home-pack.md', json: 'page-home-pack.json', sectionId: 'dashboard', sectionRole: 'primary' }],
+          mutations: [{ id: 'modify', markdown: 'mutation-modify-pack.md', json: 'mutation-modify-pack.json', mutationType: 'modify' }],
+        },
+        selector: {
+          packType: 'page',
+          id: 'home',
+        },
+        pack: {
+          $schema: 'https://decantr.ai/schemas/page-pack.v1.json',
+          packVersion: '1.0.0',
+          packType: 'page',
+          objective: 'Implement the home route using the compiled page contract.',
+          target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+          preset: null,
+          scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+          requiredSetup: [],
+          allowedVocabulary: ['hero'],
+          examples: [],
+          antiPatterns: [],
+          successChecks: [],
+          tokenBudget: { target: 900, max: 1400, strategy: ['compact'] },
+          data: {
+            pageId: 'home',
+            path: '/',
+            shell: 'sidebar-main',
+            sectionId: 'dashboard',
+            sectionRole: 'primary',
+            features: ['auth'],
+            surface: 'home',
+            theme: { id: 'clean', mode: 'light', shape: null },
+            wiringSignals: [],
+            patterns: [{ id: 'hero', alias: 'hero', preset: 'landing', layout: 'stack' }],
+          },
+          renderedMarkdown: '# Page Pack\n',
+        },
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const client = new RegistryAPIClient({ baseUrl: 'https://api.example.com/v1' });
+    const result = await client.selectExecutionPack({
+      essence: {
+        version: '2.0.0',
+        archetype: 'dashboard',
+        theme: { id: 'clean', mode: 'light' },
+        personality: ['professional'],
+        platform: { type: 'spa', routing: 'history' },
+        structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+        features: ['auth'],
+        density: { level: 'comfortable', content_gap: '1.5rem' },
+        guard: { mode: 'guided' },
+        target: 'react',
+      },
+      pack_type: 'page',
+      id: 'home',
+    }, { namespace: '@official' });
+
+    expect(result.$schema).toBe('https://decantr.ai/schemas/selected-execution-pack.v1.json');
+    expect(result.selector.packType).toBe('page');
+    expect(result.selector.id).toBe('home');
+    expect(result.pack.packType).toBe('page');
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://api.example.com/v1/packs/select?namespace=%40official',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
+  });
+
   it('fetches the showcase manifest', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({

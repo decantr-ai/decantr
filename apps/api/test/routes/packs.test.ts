@@ -162,3 +162,101 @@ describe('POST /v1/packs/compile', () => {
     assertMatchesSchema('execution-pack-bundle.v1.json', json);
   });
 });
+
+describe('POST /v1/packs/select', () => {
+  let app: ReturnType<typeof createTestApp>;
+
+  beforeEach(() => {
+    app = createTestApp();
+    mockCreateAdminClient.mockReset();
+    mockCreateAdminClient.mockReturnValue(createResolverClient({
+      'theme:clean': [
+        {
+          namespace: '@official',
+          slug: 'clean',
+          data: {
+            id: 'clean',
+            name: 'Clean',
+            modes: ['light', 'dark'],
+          },
+        },
+      ],
+      'pattern:hero': [
+        {
+          namespace: '@official',
+          slug: 'hero',
+          data: {
+            id: 'hero',
+            version: '1.0.0',
+            name: 'Hero',
+            description: 'Hero section',
+            tags: ['marketing'],
+            components: ['Hero'],
+            default_preset: 'landing',
+            presets: {
+              landing: {
+                description: 'Landing hero',
+                layout: {
+                  layout: 'stack',
+                  atoms: '_stack-md',
+                },
+              },
+            },
+          },
+        },
+      ],
+    }));
+  });
+
+  it('returns a schema-backed selected execution pack for a requested page pack', async () => {
+    const res = await app.request('/v1/packs/select?namespace=%40official', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+        pack_type: 'page',
+        id: 'home',
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    assertMatchesSchema('selected-execution-pack.v1.json', json);
+    expect(json.$schema).toBe('https://decantr.ai/schemas/selected-execution-pack.v1.json');
+    expect(json.selector.packType).toBe('page');
+    expect(json.selector.id).toBe('home');
+    expect(json.pack.packType).toBe('page');
+    expect(json.pack.data.pageId).toBe('home');
+  });
+
+  it('rejects pack selections that require an id but do not include one', async () => {
+    const res = await app.request('/v1/packs/select', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+        pack_type: 'page',
+      }),
+    });
+
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toContain('Body must include id');
+  });
+
+  it('returns not found when the requested pack does not exist', async () => {
+    const res = await app.request('/v1/packs/select?namespace=%40official', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+        pack_type: 'section',
+        id: 'missing',
+      }),
+    });
+
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toBe('Requested section pack was not found.');
+  });
+});

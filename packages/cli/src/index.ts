@@ -24,6 +24,7 @@ import type {
   ShowcaseShortlistReport,
   ShowcaseShortlistResponse,
   ExecutionPackBundleResponse,
+  SelectedExecutionPackResponse,
 } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
@@ -512,6 +513,53 @@ async function printHostedExecutionPackBundle(
     const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
     console.log(`  ${cyan(route.path)} -> ${route.pageId} [${patterns}]`);
   }
+}
+
+async function printHostedSelectedExecutionPack(
+  packType: 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+  id?: string,
+  essencePath?: string,
+  namespace?: string,
+  jsonOutput: boolean = false,
+) {
+  const client = getPublicAPIClient();
+  const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
+
+  if (!existsSync(resolvedPath)) {
+    throw new Error(`Essence file not found at ${resolvedPath}`);
+  }
+
+  if ((packType === 'section' || packType === 'page' || packType === 'mutation') && !id) {
+    throw new Error(`Pack type "${packType}" requires an id.`);
+  }
+
+  const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
+  const selected = await client.selectExecutionPack(
+    {
+      essence,
+      pack_type: packType,
+      ...(id ? { id } : {}),
+    },
+    namespace ? { namespace } : undefined,
+  );
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(selected, null, 2));
+    return;
+  }
+
+  const typedSelected = selected as SelectedExecutionPackResponse;
+  console.log(heading('Hosted Execution Pack'));
+  console.log(`  Source essence: ${resolvedPath}`);
+  console.log(`  Generated: ${typedSelected.generatedAt}`);
+  console.log(`  Pack type: ${typedSelected.selector.packType}`);
+  if (typedSelected.selector.id) {
+    console.log(`  Pack id: ${typedSelected.selector.id}`);
+  }
+  console.log(`  Adapter: ${typedSelected.pack.target.adapter}`);
+  console.log(`  Objective: ${typedSelected.pack.objective}`);
+  console.log('');
+  process.stdout.write(typedSelected.pack.renderedMarkdown);
 }
 
 interface HostedPackHydrationResult {
@@ -1767,6 +1815,7 @@ ${BOLD}Usage:${RESET}
   decantr showcase [manifest|shortlist|verification] [--json]
   decantr registry summary [--namespace <namespace>] [--json]
   decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
+  decantr registry get-pack <scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
   decantr validate [path]
@@ -2166,6 +2215,26 @@ async function main() {
         const writeContext = args.includes('--write-context');
         const essencePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
         await printHostedExecutionPackBundle(essencePath, namespace, jsonOutput, writeContext);
+      } else if (subcommand === 'get-pack') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        const essenceIdx = args.indexOf('--essence');
+        const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
+        const packType = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
+        const id = args[3] && !args[3].startsWith('--') ? args[3] : undefined;
+        if (!packType || !['scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)) {
+          console.error(`${RED}Usage: decantr registry get-pack <scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>]${RESET}`);
+          process.exitCode = 1;
+          break;
+        }
+        await printHostedSelectedExecutionPack(
+          packType as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+          id,
+          essencePath,
+          namespace,
+          jsonOutput,
+        );
       } else if (subcommand === 'critique-file') {
         const namespaceIdx = args.indexOf('--namespace');
         const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
@@ -2193,7 +2262,7 @@ async function main() {
         const sourcesPath = sourcesIdx !== -1 ? args[sourcesIdx + 1] : undefined;
         await printHostedProjectAudit(namespace, jsonOutput, essencePath, distPath, sourcesPath);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`);
         process.exitCode = 1;
       }
       break;

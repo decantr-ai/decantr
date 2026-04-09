@@ -844,6 +844,29 @@ export interface ExecutionPackBundleResponse {
   mutations: MutationExecutionPack[];
 }
 
+export interface HostedSelectedExecutionPackRequest {
+  essence: EssenceFile;
+  pack_type: ExecutionPackType;
+  id?: string;
+}
+
+export interface SelectedExecutionPackResponse {
+  $schema: string;
+  generatedAt: string;
+  sourceEssenceVersion: string;
+  manifest: ExecutionPackManifest;
+  selector: {
+    packType: ExecutionPackType;
+    id: string | null;
+  };
+  pack:
+    | ScaffoldExecutionPack
+    | ReviewExecutionPack
+    | SectionExecutionPack
+    | PageExecutionPack
+    | MutationExecutionPack;
+}
+
 export type VerificationSeverity = 'error' | 'warn' | 'info';
 
 export interface VerificationFinding {

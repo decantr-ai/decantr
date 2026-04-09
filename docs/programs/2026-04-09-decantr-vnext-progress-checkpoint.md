@@ -61,17 +61,25 @@ commit archaeology.
   - pack manifest
 - Added a hosted execution-pack bundle contract:
   - `execution-pack-bundle.v1.json`
+- Added a hosted selected execution-pack contract:
+  - `selected-execution-pack.v1.json`
 - CLI now emits pack artifacts into scaffolded projects.
 - Shared core now compiles execution-pack bundles from essence as a reusable runtime primitive instead of only inside CLI scaffold glue.
+- Shared core now also selects one scaffold, review, section, page, or mutation pack from a compiled bundle as a reusable primitive.
 - MCP can read scaffold, section, page, mutation, and review pack context.
 - MCP context readers now fall back to hosted pack compilation when local `.decantr/context` artifacts are missing or incomplete.
 - Generated project guidance now points operators to packs first.
 - Hosted API now compiles execution packs from essence documents through:
   - `POST /v1/packs/compile`
+- Hosted API now also returns one selected execution pack plus manifest metadata through:
+  - `POST /v1/packs/select`
 - Public registry client and CLI now expose that hosted compiler surface:
   - `RegistryAPIClient.compileExecutionPacks()`
   - `decantr registry compile-packs`
+  - `RegistryAPIClient.selectExecutionPack()`
+  - `decantr registry get-pack`
 - `decantr registry compile-packs --write-context` can now materialize the hosted pack bundle into local `.decantr/context` artifacts without waiting for a full refresh cycle.
+- `decantr_get_execution_pack` now uses the hosted selected-pack surface for targeted remote pack reads instead of recompiling the full hosted bundle when local artifacts are missing.
 - Plain `decantr audit` now opportunistically hydrates missing local execution-pack artifacts from the hosted compiler before running local critique or project audit, so pack-first verification still works on partially initialized projects.
 
 ### Verification foundation

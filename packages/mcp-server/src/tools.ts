@@ -106,6 +106,27 @@ async function getHostedExecutionPackBundlePayload(
   );
 }
 
+async function getHostedSelectedExecutionPackPayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const essence = (() => {
+    if (typeof args.essence === 'object' && args.essence !== null && !Array.isArray(args.essence)) {
+      return args.essence as EssenceFile;
+    }
+    return readEssenceFile(args.path as string | undefined);
+  })();
+
+  return client.selectExecutionPack(
+    {
+      essence,
+      pack_type: args.pack_type as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+      ...(typeof args.id === 'string' ? { id: args.id } : {}),
+    },
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
 async function getHostedFileCritiquePayload(
   args: Record<string, unknown>,
 ) {
@@ -228,6 +249,7 @@ async function getHostedProjectAuditPayload(
 }
 
 type HostedExecutionPackBundle = Awaited<ReturnType<typeof getHostedExecutionPackBundlePayload>>;
+type HostedSelectedExecutionPack = Awaited<ReturnType<typeof getHostedSelectedExecutionPackPayload>>;
 type PackSource = 'local' | 'hosted_fallback';
 
 async function loadHostedExecutionPackBundleFallback(args: Record<string, unknown>): Promise<{
@@ -242,6 +264,23 @@ async function loadHostedExecutionPackBundleFallback(args: Record<string, unknow
   } catch (error) {
     return {
       bundle: null,
+      error: (error as Error).message,
+    };
+  }
+}
+
+async function loadHostedSelectedExecutionPackFallback(args: Record<string, unknown>): Promise<{
+  selected: HostedSelectedExecutionPack | null;
+  error: string | null;
+}> {
+  try {
+    return {
+      selected: await getHostedSelectedExecutionPackPayload(args),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      selected: null,
       error: (error as Error).message,
     };
   }
@@ -302,6 +341,27 @@ function findHostedPagePack(bundle: HostedExecutionPackBundle, pageId: string) {
 
 function findHostedMutationPack(bundle: HostedExecutionPackBundle, mutationId: string) {
   return bundle.mutations.find(mutation => mutation.data.mutationType === mutationId) ?? null;
+}
+
+function findManifestEntryForPack(
+  manifest: PackManifest,
+  packType: 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+  id?: string,
+): PackManifestEntry | null {
+  switch (packType) {
+    case 'scaffold':
+      return manifest.scaffold;
+    case 'review':
+      return manifest.review ?? null;
+    case 'section':
+      return id ? manifest.sections.find(section => section.id === id) ?? null : null;
+    case 'page':
+      return id ? manifest.pages.find(page => page.id === id) ?? null : null;
+    case 'mutation':
+      return id ? (manifest.mutations ?? []).find(mutation => mutation.id === id) ?? null : null;
+    default:
+      return null;
+  }
 }
 
 const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
@@ -673,7 +733,7 @@ export const TOOLS = [
   {
     name: 'decantr_get_execution_pack',
     title: 'Get Execution Pack',
-    description: 'Read compiled execution packs from .decantr/context. Returns the pack manifest by default, or a specific scaffold, mutation, section, or page pack in markdown, JSON, or both. Falls back to hosted execution-pack compilation when local pack artifacts are missing.',
+    description: 'Read compiled execution packs from .decantr/context. Returns the pack manifest by default, or a specific scaffold, review, mutation, section, or page pack in markdown, JSON, or both. Falls back to the hosted selected-pack surface for targeted reads when local pack artifacts are missing.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -684,7 +744,7 @@ export const TOOLS = [
         },
         id: {
           type: 'string',
-          description: 'Required for section/page packs (for example "dashboard" or "overview").',
+          description: 'Required for section/page/mutation packs (for example "dashboard", "overview", or "modify").',
         },
         format: {
           type: 'string',
@@ -1727,7 +1787,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       let manifest: PackManifest | null = null;
       let manifestSource: PackSource | null = null;
       let hostedBundle: HostedExecutionPackBundle | null = null;
+      let hostedSelectedPack: HostedSelectedExecutionPack | null = null;
       let hostedFallbackError: string | null = null;
+      const packType = (args.pack_type as string | undefined) ?? 'manifest';
 
       if (existsSync(manifestPath)) {
         try {
@@ -1738,7 +1800,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         }
       }
 
-      if (!manifest) {
+      if (!manifest && packType === 'manifest') {
         const hosted = await loadHostedExecutionPackBundleFallback(args);
         hostedBundle = hosted.bundle;
         hostedFallbackError = hosted.error;
@@ -1752,12 +1814,25 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         manifestSource = 'hosted_fallback';
       }
 
-      const packType = (args.pack_type as string | undefined) ?? 'manifest';
       if (packType === 'manifest') {
         return {
           ...manifest,
           source: manifestSource,
         };
+      }
+
+      if (!manifest) {
+        const hosted = await loadHostedSelectedExecutionPackFallback(args);
+        hostedSelectedPack = hosted.selected;
+        hostedFallbackError = hosted.error;
+        if (!hosted.selected) {
+          return {
+            error: 'Execution pack manifest not found. Run decantr refresh to generate compiled packs.',
+            hosted_fallback_error: hosted.error,
+          };
+        }
+        manifest = hosted.selected.manifest as PackManifest;
+        manifestSource = 'hosted_fallback';
       }
 
       const format = (args.format as string | undefined) ?? 'both';
@@ -1789,26 +1864,17 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       if (!entry) {
         if (manifestSource === 'local') {
-          const hosted = await loadHostedExecutionPackBundleFallback(args);
-          hostedBundle = hosted.bundle;
+          const hosted = await loadHostedSelectedExecutionPackFallback(args);
+          hostedSelectedPack = hosted.selected;
           hostedFallbackError = hosted.error;
-          if (hosted.bundle) {
-            manifest = hosted.bundle.manifest as PackManifest;
+          if (hosted.selected) {
+            manifest = hosted.selected.manifest as PackManifest;
             manifestSource = 'hosted_fallback';
-            if (packType === 'scaffold') {
-              entry = manifest.scaffold;
-            } else if (packType === 'review') {
-              entry = manifest.review ?? null;
-            } else if (packType === 'mutation') {
-              availableIds = (manifest.mutations ?? []).map(mutation => mutation.id);
-              entry = (manifest.mutations ?? []).find(mutation => mutation.id === args.id) ?? null;
-            } else if (packType === 'section') {
-              availableIds = manifest.sections.map(section => section.id);
-              entry = manifest.sections.find(section => section.id === args.id) ?? null;
-            } else if (packType === 'page') {
-              availableIds = manifest.pages.map(page => page.id);
-              entry = manifest.pages.find(page => page.id === args.id) ?? null;
-            }
+            entry = findManifestEntryForPack(
+              manifest,
+              packType as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+              args.id as string | undefined,
+            );
           }
         }
 
@@ -1859,29 +1925,22 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         return result;
       }
 
-      if (!hostedBundle) {
-        const hosted = await loadHostedExecutionPackBundleFallback(args);
-        hostedBundle = hosted.bundle;
+      if (!hostedSelectedPack) {
+        const hosted = await loadHostedSelectedExecutionPackFallback(args);
+        hostedSelectedPack = hosted.selected;
         hostedFallbackError = hosted.error;
       }
 
-      if (!hostedBundle) {
+      if (!hostedSelectedPack) {
         return {
           ...result,
           hosted_fallback_error: hostedFallbackError ?? undefined,
         };
       }
 
-      const hostedPack = packType === 'scaffold'
-        ? hostedBundle.scaffold
-        : packType === 'review'
-          ? hostedBundle.review
-          : packType === 'section'
-            ? findHostedSectionPack(hostedBundle, entry.id)
-            : packType === 'page'
-              ? findHostedPagePack(hostedBundle, entry.id)
-              : findHostedMutationPack(hostedBundle, entry.id);
-      const hostedPayload = toHostedExecutionPackPayload(hostedPack);
+      manifest = hostedSelectedPack.manifest as PackManifest;
+      manifestSource = 'hosted_fallback';
+      const hostedPayload = toHostedExecutionPackPayload(hostedSelectedPack.pack);
 
       if (format === 'markdown' || format === 'both') {
         result.markdown = hostedPayload.markdown;

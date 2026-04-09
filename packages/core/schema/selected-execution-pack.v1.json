@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/selected-execution-pack.v1.json",
+  "title": "Decantr Selected Execution Pack",
+  "type": "object",
+  "required": [
+    "$schema",
+    "generatedAt",
+    "sourceEssenceVersion",
+    "manifest",
+    "selector",
+    "pack"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/selected-execution-pack.v1.json"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sourceEssenceVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manifest": {
+      "$ref": "https://decantr.ai/schemas/pack-manifest.v1.json"
+    },
+    "selector": {
+      "type": "object",
+      "required": [
+        "packType",
+        "id"
+      ],
+      "properties": {
+        "packType": {
+          "enum": [
+            "scaffold",
+            "section",
+            "page",
+            "mutation",
+            "review"
+          ]
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "pack": {
+      "oneOf": [
+        {
+          "$ref": "https://decantr.ai/schemas/scaffold-pack.v1.json"
+        },
+        {
+          "$ref": "https://decantr.ai/schemas/section-pack.v1.json"
+        },
+        {
+          "$ref": "https://decantr.ai/schemas/page-pack.v1.json"
+        },
+        {
+          "$ref": "https://decantr.ai/schemas/mutation-pack.v1.json"
+        },
+        {
+          "$ref": "https://decantr.ai/schemas/review-pack.v1.json"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

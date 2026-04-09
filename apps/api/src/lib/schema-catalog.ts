@@ -35,6 +35,7 @@ const mutationPackSchema = loadPackageSchema('@decantr/core/schema/mutation-pack
 const reviewPackSchema = loadPackageSchema('@decantr/core/schema/review-pack.v1.json');
 const packManifestSchema = loadPackageSchema('@decantr/core/schema/pack-manifest.v1.json');
 const executionPackBundleSchema = loadPackageSchema('@decantr/core/schema/execution-pack-bundle.v1.json');
+const selectedExecutionPackSchema = loadPackageSchema('@decantr/core/schema/selected-execution-pack.v1.json');
 const verificationReportCommonSchema = loadPackageSchema('@decantr/verifier/schema/verification-report.common.v1.json');
 const projectAuditReportSchema = loadPackageSchema('@decantr/verifier/schema/project-audit-report.v1.json');
 const fileCritiqueReportSchema = loadPackageSchema('@decantr/verifier/schema/file-critique-report.v1.json');
@@ -84,6 +85,7 @@ export const PUBLIC_SCHEMAS: Record<string, JsonSchema> = {
   'review-pack.v1.json': reviewPackSchema as JsonSchema,
   'pack-manifest.v1.json': packManifestSchema as JsonSchema,
   'execution-pack-bundle.v1.json': executionPackBundleSchema as JsonSchema,
+  'selected-execution-pack.v1.json': selectedExecutionPackSchema as JsonSchema,
   'verification-report.common.v1.json': verificationReportCommonSchema as JsonSchema,
   'project-audit-report.v1.json': projectAuditReportSchema as JsonSchema,
   'file-critique-report.v1.json': fileCritiqueReportSchema as JsonSchema,

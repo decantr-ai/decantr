@@ -25,6 +25,8 @@ import type {
   FileCritiqueReport,
   ProjectAuditReport,
   ExecutionPackBundleResponse,
+  HostedSelectedExecutionPackRequest,
+  SelectedExecutionPackResponse,
 } from './types.js';
 import type { EssenceFile } from '@decantr/essence-spec';
 
@@ -391,6 +393,24 @@ export class RegistryAPIClient {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(essence),
+      },
+    );
+  }
+
+  async selectExecutionPack(
+    input: HostedSelectedExecutionPackRequest,
+    params?: { namespace?: string },
+  ): Promise<SelectedExecutionPackResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+
+    return this.request<SelectedExecutionPackResponse>(
+      `/packs/select${query ? `?${query}` : ''}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
       },
     );
   }

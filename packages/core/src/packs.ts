@@ -17,6 +17,7 @@ export const EXECUTION_PACK_SCHEMA_URLS = {
 
 export const PACK_MANIFEST_SCHEMA_URL = 'https://decantr.ai/schemas/pack-manifest.v1.json';
 export const EXECUTION_PACK_BUNDLE_SCHEMA_URL = 'https://decantr.ai/schemas/execution-pack-bundle.v1.json';
+export const SELECTED_EXECUTION_PACK_SCHEMA_URL = 'https://decantr.ai/schemas/selected-execution-pack.v1.json';
 
 export interface ExecutionPackTarget {
   platform: 'web';
@@ -246,6 +247,30 @@ export interface ExecutionPackBundle {
   sections: SectionExecutionPack[];
   pages: PageExecutionPack[];
   mutations: MutationExecutionPack[];
+}
+
+export type SelectedExecutionPack =
+  | ScaffoldExecutionPack
+  | ReviewExecutionPack
+  | SectionExecutionPack
+  | PageExecutionPack
+  | MutationExecutionPack;
+
+export interface ExecutionPackSelector {
+  packType: ExecutionPackType;
+  id?: string | null;
+}
+
+export interface SelectedExecutionPackResponse {
+  $schema: string;
+  generatedAt: string;
+  sourceEssenceVersion: string;
+  manifest: ExecutionPackManifest;
+  selector: {
+    packType: ExecutionPackType;
+    id: string | null;
+  };
+  pack: SelectedExecutionPack;
 }
 
 export interface ScaffoldPackBuilderOptions {
@@ -1132,4 +1157,58 @@ export async function compileExecutionPackBundle(
     pages,
     mutations,
   };
+}
+
+export function selectExecutionPackFromBundle(
+  bundle: ExecutionPackBundle,
+  selector: ExecutionPackSelector,
+): SelectedExecutionPackResponse | null {
+  const id = selector.id ?? null;
+  let pack: SelectedExecutionPack | null = null;
+
+  switch (selector.packType) {
+    case 'scaffold':
+      pack = bundle.scaffold;
+      break;
+    case 'review':
+      pack = bundle.review;
+      break;
+    case 'section':
+      pack = id ? bundle.sections.find((entry) => entry.data.sectionId === id) ?? null : null;
+      break;
+    case 'page':
+      pack = id ? bundle.pages.find((entry) => entry.data.pageId === id) ?? null : null;
+      break;
+    case 'mutation':
+      pack = id ? bundle.mutations.find((entry) => entry.data.mutationType === id) ?? null : null;
+      break;
+    default:
+      pack = null;
+      break;
+  }
+
+  if (!pack) {
+    return null;
+  }
+
+  return {
+    $schema: SELECTED_EXECUTION_PACK_SCHEMA_URL,
+    generatedAt: bundle.generatedAt,
+    sourceEssenceVersion: bundle.sourceEssenceVersion,
+    manifest: bundle.manifest,
+    selector: {
+      packType: selector.packType,
+      id,
+    },
+    pack,
+  };
+}
+
+export async function compileSelectedExecutionPack(
+  essence: EssenceFile,
+  selector: ExecutionPackSelector,
+  options: CompileExecutionPackBundleOptions = {},
+): Promise<SelectedExecutionPackResponse | null> {
+  const bundle = await compileExecutionPackBundle(essence, options);
+  return selectExecutionPackFromBundle(bundle, selector);
 }

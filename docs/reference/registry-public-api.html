@@ -239,6 +239,34 @@ Content-Type: application/json
     </section>
 
     <section class="panel endpoint">
+      <h2>Hosted Selected Execution Pack</h2>
+      <pre>POST /packs/select?namespace=@official
+Content-Type: application/json
+
+{
+  "essence": {
+    "version": "2.0.0",
+    "archetype": "dashboard",
+    "theme": { "id": "clean", "mode": "light" },
+    "personality": ["professional"],
+    "platform": { "type": "spa", "routing": "history" },
+    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+    "features": ["auth"],
+    "density": { "level": "comfortable", "content_gap": "1.5rem" },
+    "guard": { "mode": "guided" },
+    "target": "react"
+  },
+  "pack_type": "page",
+  "id": "home"
+}</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Compile and return one schema-backed execution pack plus the manifest metadata needed to place it in the broader bundle.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/selected-execution-pack.v1.json"><code>selected-execution-pack.v1.json</code></a></div>
+        <div><strong>Notes:</strong> Include a valid Decantr essence document on <code>essence</code>. <code>pack_type</code> must be one of <code>scaffold</code>, <code>review</code>, <code>section</code>, <code>page</code>, or <code>mutation</code>, and <code>id</code> is required for <code>section</code>, <code>page</code>, and <code>mutation</code> selection.</div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
       <h2>Hosted File Critique</h2>
       <pre>POST /critique/file?namespace=@official
 Content-Type: application/json
@@ -332,6 +360,7 @@ GET /showcase/shortlist-verification</pre>
 decantr list blueprints --source authored
 decantr registry summary --namespace @official --json
 decantr registry compile-packs decantr.essence.json --namespace @official --json
+decantr registry get-pack page home --namespace @official --json
 decantr registry critique-file src/pages/Home.tsx --namespace @official --json
 decantr registry audit-project --namespace @official --json
 pnpm audit:public-api</pre>
@@ -339,6 +368,7 @@ pnpm audit:public-api</pre>
         <li><code>decantr_search_registry</code></li>
         <li><code>decantr_get_registry_intelligence_summary</code></li>
         <li><code>decantr_get_showcase_benchmarks</code></li>
+        <li><code>decantr_get_execution_pack</code></li>
         <li><code>decantr_compile_execution_packs</code></li>
         <li><code>decantr_critique</code></li>
         <li><code>decantr_audit_project</code></li>

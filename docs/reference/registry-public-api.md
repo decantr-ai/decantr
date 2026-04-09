@@ -126,6 +126,44 @@ Response schema:
 - `execution-pack-bundle.v1.json`
 - `https://decantr.ai/schemas/execution-pack-bundle.v1.json`
 
+## Hosted Selected Execution Pack
+
+```http
+POST /packs/select?namespace=@official
+Content-Type: application/json
+
+{
+  "essence": {
+    "version": "2.0.0",
+    "archetype": "dashboard",
+    "theme": { "id": "clean", "mode": "light" },
+    "personality": ["professional"],
+    "platform": { "type": "spa", "routing": "history" },
+    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+    "features": ["auth"],
+    "density": { "level": "comfortable", "content_gap": "1.5rem" },
+    "guard": { "mode": "guided" },
+    "target": "react"
+  },
+  "pack_type": "page",
+  "id": "home"
+}
+```
+
+Purpose:
+- compile and return one schema-backed execution pack plus the manifest metadata needed to place it in the broader bundle
+
+Notes:
+- request body must include a valid Decantr essence document on `essence`
+- `pack_type` must be one of `scaffold`, `review`, `section`, `page`, or `mutation`
+- `id` is required for `section`, `page`, and `mutation` selection
+- `namespace` is optional and defaults to `@official`
+- this is the preferred hosted surface when a client already knows which pack it needs
+
+Response schema:
+- `selected-execution-pack.v1.json`
+- `https://decantr.ai/schemas/selected-execution-pack.v1.json`
+
 ## Hosted File Critique
 
 ```http
@@ -267,6 +305,7 @@ decantr search portfolio --type blueprint --sort recommended --recommended --sou
 decantr list blueprints --source authored
 decantr registry summary --namespace @official --json
 decantr registry compile-packs decantr.essence.json --namespace @official --json
+decantr registry get-pack page home --namespace @official --json
 decantr registry critique-file src/pages/Home.tsx --namespace @official --json
 decantr registry audit-project --namespace @official --json
 ```
@@ -276,6 +315,7 @@ decantr registry audit-project --namespace @official --json
 - `decantr_search_registry`
 - `decantr_get_registry_intelligence_summary`
 - `decantr_get_showcase_benchmarks`
+- `decantr_get_execution_pack`
 - `decantr_compile_execution_packs`
 - `decantr_critique`
 - `decantr_audit_project`
@@ -285,6 +325,7 @@ decantr registry audit-project --namespace @official --json
 - These endpoints are read-only public surfaces.
 - `POST /critique/file` is implemented on the reset branch; include `--include-hosted-critique` when using `pnpm audit:public-api` to verify it during rollout.
 - `POST /audit/project` is implemented on the reset branch; include `--include-hosted-project-audit` when using `pnpm audit:public-api` to verify it during rollout.
+- `POST /packs/select` is implemented on the reset branch; include `--include-hosted-pack-select` when using `pnpm audit:public-api` to verify it during rollout.
 - Intelligence metadata may lag behind repo-local changes until the hosted API and official content sync are deployed.
 - During rollout, the content-repo audits are the fastest way to see repo-vs-live mismatches.
 - For a lightweight hosted-surface smoke check from the monorepo, run `pnpm audit:public-api`.
