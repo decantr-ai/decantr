@@ -63,10 +63,11 @@ function ShowcaseShortlistSummary() {
     <KPIGrid
       items={[
         { label: 'Build Verified', value: summary.passedBuilds },
+        { label: 'Smoke Verified', value: summary.passedSmokes },
         { label: 'Lower Drift', value: summary.lowerDriftCount },
         { label: 'Moderate Drift', value: summary.moderateDriftCount },
         { label: 'Elevated Drift', value: summary.elevatedDriftCount },
-        { label: 'Avg Build (ms)', value: summary.averageDurationMs },
+        { label: 'Avg Smoke (ms)', value: summary.averageSmokeDurationMs },
       ]}
     />
   );
@@ -156,7 +157,7 @@ export default function HomePage() {
           Showcase Shortlist
         </span>
         <p className="mb-4 max-w-3xl text-sm text-d-muted">
-          Provisional benchmark candidates from the Decantr showcase corpus. These blueprints currently have live showcase builds and passed the first shortlist verification sweep.
+          Provisional benchmark candidates from the Decantr showcase corpus. These blueprints currently have live showcase builds and a passing served-output smoke baseline.
         </p>
         <ShowcaseShortlistSummary />
         <div className="h-4" />

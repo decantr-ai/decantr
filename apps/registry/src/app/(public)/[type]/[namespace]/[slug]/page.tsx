@@ -253,7 +253,12 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                 {showcaseMeta.target && (
                   <span className="d-annotation">{showcaseMeta.target}</span>
                 )}
-                {showcaseVerification?.build.passed && (
+                {showcaseVerification?.smoke.passed && (
+                  <span className="d-annotation" data-status="success">
+                    smoke verified
+                  </span>
+                )}
+                {!showcaseVerification?.smoke.passed && showcaseVerification?.build.passed && (
                   <span className="d-annotation" data-status="success">
                     build verified
                   </span>
@@ -267,7 +272,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
               </p>
               {showcaseVerification && (
                 <p style={{ margin: 0, color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
-                  Shortlist verification recorded a {showcaseVerification.verificationStatus === 'build-green' ? 'passing' : 'failing'} build in {showcaseVerification.build.durationMs} ms, with {showcaseVerification.drift.inlineStyleCount} inline-style signals and {showcaseVerification.drift.hardcodedColorCount} hardcoded-color signals.
+                  Shortlist verification recorded a {showcaseVerification.build.passed ? 'passing' : 'failing'} build in {showcaseVerification.build.durationMs} ms and a {showcaseVerification.smoke.passed ? 'passing' : 'failing'} smoke check in {showcaseVerification.smoke.durationMs} ms, with {showcaseVerification.drift.inlineStyleCount} inline-style signals and {showcaseVerification.drift.hardcodedColorCount} hardcoded-color signals.
                 </p>
               )}
             </div>

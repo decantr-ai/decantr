@@ -84,10 +84,20 @@ export interface ShowcaseShortlistVerificationEntry {
   slug: string;
   target: string | null;
   classification: 'pending' | 'A' | 'B' | 'C' | 'D';
-  verificationStatus: 'pending' | 'build-green' | 'build-red';
+  verificationStatus: 'pending' | 'build-green' | 'build-red' | 'smoke-green' | 'smoke-red';
   build: {
     passed: boolean | null;
     durationMs: number;
+  };
+  smoke: {
+    passed: boolean | null;
+    durationMs: number;
+    rootDocumentOk: boolean;
+    assetCount: number;
+    assetsPassed: number;
+    routeHintsChecked: string[];
+    routeHintsMatched: number;
+    failures: string[];
   };
   drift: {
     signal: 'lower' | 'moderate' | 'elevated';
@@ -110,6 +120,9 @@ export interface ShowcaseShortlistVerificationReport {
     passedBuilds: number;
     failedBuilds: number;
     averageDurationMs: number;
+    passedSmokes: number;
+    failedSmokes: number;
+    averageSmokeDurationMs: number;
     lowerDriftCount: number;
     moderateDriftCount: number;
     elevatedDriftCount: number;

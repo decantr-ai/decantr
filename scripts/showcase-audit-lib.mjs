@@ -122,11 +122,16 @@ export function getShowcaseDriftSignal(entry) {
 
 export function buildShowcaseVerificationResult(entry, options = {}) {
   const buildPassed = options.buildPassed === true;
+  const smokePassed = options.smoke?.passed === true;
   const buildStatus = options.buildPassed === null || options.buildPassed === undefined
     ? 'pending'
-    : buildPassed
-      ? 'build-green'
-      : 'build-red';
+    : !buildPassed
+      ? 'build-red'
+      : smokePassed
+        ? 'smoke-green'
+        : options.smoke?.passed === false
+          ? 'smoke-red'
+          : 'build-green';
   const durationMs = Number.isFinite(options.durationMs) ? options.durationMs : 0;
   const penalty = computeShowcasePenalty(entry);
   const driftSignal = getShowcaseDriftSignal(entry);
@@ -139,6 +144,16 @@ export function buildShowcaseVerificationResult(entry, options = {}) {
     build: {
       passed: options.buildPassed ?? null,
       durationMs,
+    },
+    smoke: {
+      passed: options.smoke?.passed ?? null,
+      durationMs: Number.isFinite(options.smoke?.durationMs) ? options.smoke.durationMs : 0,
+      rootDocumentOk: options.smoke?.rootDocumentOk ?? false,
+      assetCount: Number.isFinite(options.smoke?.assetCount) ? options.smoke.assetCount : 0,
+      assetsPassed: Number.isFinite(options.smoke?.assetsPassed) ? options.smoke.assetsPassed : 0,
+      routeHintsChecked: Array.isArray(options.smoke?.routeHintsChecked) ? options.smoke.routeHintsChecked : [],
+      routeHintsMatched: Number.isFinite(options.smoke?.routeHintsMatched) ? options.smoke.routeHintsMatched : 0,
+      failures: Array.isArray(options.smoke?.failures) ? options.smoke.failures : [],
     },
     drift: {
       signal: driftSignal,

@@ -9,7 +9,7 @@ import {
 const ALLOWED_STATUS = new Set(['active', 'removed']);
 const ALLOWED_CLASSIFICATIONS = new Set(['pending', 'A', 'B', 'C', 'D']);
 const ALLOWED_GOLDEN_CANDIDATE_VALUES = new Set(['shortlist']);
-const ALLOWED_VERIFICATION_STATUS = new Set(['pending', 'build-green', 'build-red']);
+const ALLOWED_VERIFICATION_STATUS = new Set(['pending', 'build-green', 'build-red', 'smoke-green', 'smoke-red']);
 const ALLOWED_DRIFT_SIGNALS = new Set(['lower', 'moderate', 'elevated']);
 const SHOWCASE_SHORTLIST_REPORT_SCHEMA_URL = 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json';
 
@@ -90,6 +90,28 @@ if (reportResults.length > 0) {
     errors.push(`Showcase shortlist report must declare $schema "${SHOWCASE_SHORTLIST_REPORT_SCHEMA_URL}".`);
   }
 
+  if (typeof shortlistReport.summary !== 'object' || shortlistReport.summary === null) {
+    errors.push('Showcase shortlist report must include a summary object.');
+  } else {
+    for (const key of [
+      'appCount',
+      'passedBuilds',
+      'failedBuilds',
+      'averageDurationMs',
+      'passedSmokes',
+      'failedSmokes',
+      'averageSmokeDurationMs',
+      'lowerDriftCount',
+      'moderateDriftCount',
+      'elevatedDriftCount',
+      'withPackManifestCount',
+    ]) {
+      if (!Number.isFinite(shortlistReport.summary[key]) || shortlistReport.summary[key] < 0) {
+        errors.push(`Showcase shortlist report summary.${key} must be a non-negative number.`);
+      }
+    }
+  }
+
   for (const entry of reportResults) {
     if (typeof entry.slug !== 'string' || entry.slug.length === 0) {
       errors.push('Every showcase shortlist report entry must have a non-empty slug.');
@@ -121,6 +143,31 @@ if (reportResults.length > 0) {
       }
       if (!Number.isFinite(entry.build.durationMs) || entry.build.durationMs < 0) {
         errors.push(`Showcase shortlist report entry "${entry.slug}" build.durationMs must be a non-negative number.`);
+      }
+    }
+
+    if (typeof entry.smoke !== 'object' || entry.smoke === null) {
+      errors.push(`Showcase shortlist report entry "${entry.slug}" must include a smoke object.`);
+    } else {
+      if (entry.smoke.passed !== null && typeof entry.smoke.passed !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.passed must be boolean or null.`);
+      }
+      if (!Number.isFinite(entry.smoke.durationMs) || entry.smoke.durationMs < 0) {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.durationMs must be a non-negative number.`);
+      }
+      if (typeof entry.smoke.rootDocumentOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.rootDocumentOk must be boolean.`);
+      }
+      for (const key of ['assetCount', 'assetsPassed', 'routeHintsMatched']) {
+        if (!Number.isFinite(entry.smoke[key]) || entry.smoke[key] < 0) {
+          errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.${key} must be a non-negative number.`);
+        }
+      }
+      if (!Array.isArray(entry.smoke.routeHintsChecked) || !entry.smoke.routeHintsChecked.every(value => typeof value === 'string')) {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.routeHintsChecked must be a string array.`);
+      }
+      if (!Array.isArray(entry.smoke.failures) || !entry.smoke.failures.every(value => typeof value === 'string')) {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.failures must be a string array.`);
       }
     }
 

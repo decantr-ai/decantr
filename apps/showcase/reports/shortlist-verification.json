@@ -1,12 +1,15 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-09T03:59:20.419Z",
+  "generatedAt": "2026-04-09T04:16:28.332Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1871,
+    "averageDurationMs": 1734,
+    "passedSmokes": 8,
+    "failedSmokes": 0,
+    "averageSmokeDurationMs": 5,
     "lowerDriftCount": 2,
     "moderateDriftCount": 4,
     "elevatedDriftCount": 2,
@@ -17,10 +20,27 @@
       "slug": "ai-copilot-shell",
       "target": "react-vite",
       "classification": "B",
-      "verificationStatus": "build-green",
+      "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2486
+        "durationMs": 1755
+      },
+      "smoke": {
+        "passed": true,
+        "durationMs": 15,
+        "rootDocumentOk": true,
+        "assetCount": 2,
+        "assetsPassed": 2,
+        "routeHintsChecked": [
+          "/",
+          "/workspace",
+          "/workspace/",
+          "/copilot/config",
+          "/login",
+          "/register"
+        ],
+        "routeHintsMatched": 6,
+        "failures": []
       },
       "drift": {
         "signal": "lower",
@@ -37,10 +57,27 @@
       "slug": "carbon-ai-portal",
       "target": "react-vite",
       "classification": "B",
-      "verificationStatus": "build-green",
+      "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1745
+        "durationMs": 1722
+      },
+      "smoke": {
+        "passed": true,
+        "durationMs": 6,
+        "rootDocumentOk": true,
+        "assetCount": 2,
+        "assetsPassed": 2,
+        "routeHintsChecked": [
+          "/",
+          "/chat/",
+          "/chat",
+          "/login",
+          "/register",
+          "/forgot-password"
+        ],
+        "routeHintsMatched": 6,
+        "failures": []
       },
       "drift": {
         "signal": "moderate",
@@ -57,10 +94,27 @@
       "slug": "content-site",
       "target": "react-vite",
       "classification": "B",
-      "verificationStatus": "build-green",
+      "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1801
+        "durationMs": 1733
+      },
+      "smoke": {
+        "passed": true,
+        "durationMs": 3,
+        "rootDocumentOk": true,
+        "assetCount": 2,
+        "assetsPassed": 2,
+        "routeHintsChecked": [
+          "/",
+          "/articles",
+          "/articles/",
+          "/categories",
+          "/drafts",
+          "/drafts/"
+        ],
+        "routeHintsMatched": 6,
+        "failures": []
       },
       "drift": {
         "signal": "moderate",
@@ -77,10 +131,27 @@
       "slug": "portfolio",
       "target": "react-vite",
       "classification": "B",
-      "verificationStatus": "build-green",
+      "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1712
+        "durationMs": 1631
+      },
+      "smoke": {
+        "passed": true,
+        "durationMs": 2,
+        "rootDocumentOk": true,
+        "assetCount": 2,
+        "assetsPassed": 2,
+        "routeHintsChecked": [
+          "/",
+          "/projects",
+          "/projects/",
+          "/about",
+          "/skills",
+          "/contact"
+        ],
+        "routeHintsMatched": 6,
+        "failures": []
       },
       "drift": {
         "signal": "lower",
@@ -97,10 +168,27 @@
       "slug": "product-landing",
       "target": "react-vite",
       "classification": "B",
-      "verificationStatus": "build-green",
+      "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1658
+        "durationMs": 1641
+      },
+      "smoke": {
+        "passed": true,
+        "durationMs": 2,
+        "rootDocumentOk": true,
+        "assetCount": 2,
+        "assetsPassed": 2,
+        "routeHintsChecked": [
+          "/",
+          "/demo",
+          "/blog",
+          "/blog/",
+          "/resources",
+          "/privacy"
+        ],
+        "routeHintsMatched": 6,
+        "failures": []
       },
       "drift": {
         "signal": "moderate",
@@ -117,10 +205,27 @@
       "slug": "registry-platform",
       "target": "react-vite",
       "classification": "B",
-      "verificationStatus": "build-green",
+      "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1896
+        "durationMs": 1876
+      },
+      "smoke": {
+        "passed": true,
+        "durationMs": 3,
+        "rootDocumentOk": true,
+        "assetCount": 2,
+        "assetsPassed": 2,
+        "routeHintsChecked": [
+          "/",
+          "/browse",
+          "/browse/",
+          "/profile/",
+          "/dashboard",
+          "/dashboard/content"
+        ],
+        "routeHintsMatched": 6,
+        "failures": []
       },
       "drift": {
         "signal": "elevated",
@@ -137,10 +242,27 @@
       "slug": "spatial-collaboration",
       "target": "react-vite",
       "classification": "B",
-      "verificationStatus": "build-green",
+      "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1913
+        "durationMs": 1787
+      },
+      "smoke": {
+        "passed": true,
+        "durationMs": 2,
+        "rootDocumentOk": true,
+        "assetCount": 2,
+        "assetsPassed": 2,
+        "routeHintsChecked": [
+          "/",
+          "/settings",
+          "/login",
+          "/register",
+          "/forgot-password",
+          "/reset-password"
+        ],
+        "routeHintsMatched": 6,
+        "failures": []
       },
       "drift": {
         "signal": "moderate",
@@ -157,10 +279,27 @@
       "slug": "knowledge-base",
       "target": "react-vite",
       "classification": "B",
-      "verificationStatus": "build-green",
+      "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1757
+        "durationMs": 1725
+      },
+      "smoke": {
+        "passed": true,
+        "durationMs": 3,
+        "rootDocumentOk": true,
+        "assetCount": 2,
+        "assetsPassed": 2,
+        "routeHintsChecked": [
+          "/",
+          "/docs",
+          "/docs/",
+          "/search",
+          "/changelog",
+          "/changelog/"
+        ],
+        "routeHintsMatched": 6,
+        "failures": []
       },
       "drift": {
         "signal": "elevated",

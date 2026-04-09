@@ -51,7 +51,12 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
             {hasShortlistedShowcase ? 'shortlisted showcase' : 'live showcase'}
           </span>
         )}
-        {showcaseVerification?.build.passed && (
+        {showcaseVerification?.smoke.passed && (
+          <span className="d-annotation" data-status="success">
+            smoke verified
+          </span>
+        )}
+        {!showcaseVerification?.smoke.passed && showcaseVerification?.build.passed && (
           <span className="d-annotation" data-status="success">
             build verified
           </span>
@@ -129,6 +134,14 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
               >
                 Open showcase
               </Link>
+            </span>
+          )}
+          {showcaseVerification && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <span className="d-annotation">
+                smoke {showcaseVerification.smoke.passed ? 'green' : showcaseVerification.build.passed ? 'red' : 'pending'}
+              </span>
             </span>
           )}
           {showcaseVerification && (

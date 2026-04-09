@@ -115,6 +115,16 @@ interface ShowcaseVerificationEntry {
     passed: boolean | null;
     durationMs: number;
   };
+  smoke: {
+    passed: boolean | null;
+    durationMs: number;
+    rootDocumentOk: boolean;
+    assetCount: number;
+    assetsPassed: number;
+    routeHintsChecked: string[];
+    routeHintsMatched: number;
+    failures: string[];
+  };
   drift: {
     signal: string;
     penalty: number;
@@ -252,6 +262,9 @@ function printShowcaseBenchmarks(view: 'manifest' | 'shortlist' | 'verification'
         passedBuilds: number;
         failedBuilds: number;
         averageDurationMs: number;
+        passedSmokes: number;
+        failedSmokes: number;
+        averageSmokeDurationMs: number;
         lowerDriftCount: number;
         moderateDriftCount: number;
         elevatedDriftCount: number;
@@ -266,12 +279,14 @@ function printShowcaseBenchmarks(view: 'manifest' | 'shortlist' | 'verification'
     if (report.summary) {
       console.log(`  Passed builds: ${report.summary.passedBuilds}/${report.summary.appCount}`);
       console.log(`  Avg build: ${report.summary.averageDurationMs} ms`);
+      console.log(`  Passed smokes: ${report.summary.passedSmokes}/${report.summary.appCount}`);
+      console.log(`  Avg smoke: ${report.summary.averageSmokeDurationMs} ms`);
       console.log(`  Drift: lower ${report.summary.lowerDriftCount}, moderate ${report.summary.moderateDriftCount}, elevated ${report.summary.elevatedDriftCount}`);
       console.log(`  Pack manifests: ${report.summary.withPackManifestCount}/${report.summary.appCount}`);
       console.log('');
     }
     for (const entry of report.results) {
-      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | drift ${entry.drift.signal} | ${entry.build.durationMs} ms`);
+      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`);
     }
     return;
   }
@@ -284,6 +299,7 @@ function printShowcaseBenchmarks(view: 'manifest' | 'shortlist' | 'verification'
       lowerDriftCount: number;
       moderateDriftCount: number;
       elevatedDriftCount: number;
+      passedSmokes: number;
     } | null;
     apps: Array<ShowcaseManifestEntry & { verification?: ShowcaseVerificationEntry | null }>;
   };
@@ -294,13 +310,14 @@ function printShowcaseBenchmarks(view: 'manifest' | 'shortlist' | 'verification'
   }
   if (shortlist.summary) {
     console.log(`  Passed builds: ${shortlist.summary.passedBuilds}/${shortlist.summary.appCount}`);
+    console.log(`  Passed smokes: ${shortlist.summary.passedSmokes}/${shortlist.summary.appCount}`);
     console.log(`  Drift mix: lower ${shortlist.summary.lowerDriftCount}, moderate ${shortlist.summary.moderateDriftCount}, elevated ${shortlist.summary.elevatedDriftCount}`);
     console.log('');
   }
   for (const entry of shortlist.apps) {
     const verification = entry.verification;
     const verificationSummary = verification
-      ? `${verification.verificationStatus} | drift ${verification.drift.signal}`
+      ? `${verification.verificationStatus} | smoke ${verification.smoke.passed ? 'green' : verification.build.passed ? 'red' : 'pending'} | drift ${verification.drift.signal}`
       : 'verification pending';
     console.log(`  ${cyan(entry.slug)}  class ${entry.classification} | ${verificationSummary}`);
   }

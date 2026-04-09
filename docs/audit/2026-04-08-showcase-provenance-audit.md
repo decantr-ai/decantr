@@ -162,7 +162,9 @@ These are now marked in `apps/showcase/manifest.json` as provisional `Class B` s
 
 Tracked shortlist verification baseline on 2026-04-08:
 - 8/8 shortlisted apps built successfully
+- 8/8 shortlisted apps passed the served-output smoke check
 - average build duration is recorded in the tracked shortlist report and will vary by run
+- average smoke duration is recorded in the tracked shortlist report and will vary by run
 - drift signals: `2 lower`, `4 moderate`, `2 elevated`
 - pack manifests present: `0/8`
 - tracked report: `apps/showcase/reports/shortlist-verification.json`

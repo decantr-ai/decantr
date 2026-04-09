@@ -19,6 +19,16 @@ export interface ShowcaseVerificationEntry {
     passed: boolean | null;
     durationMs: number;
   };
+  smoke: {
+    passed: boolean | null;
+    durationMs: number;
+    rootDocumentOk: boolean;
+    assetCount: number;
+    assetsPassed: number;
+    routeHintsChecked: string[];
+    routeHintsMatched: number;
+    failures: string[];
+  };
   drift: {
     signal: string;
     penalty: number;
@@ -36,6 +46,9 @@ export interface ShowcaseShortlistVerificationSummary {
   passedBuilds: number;
   failedBuilds: number;
   averageDurationMs: number;
+  passedSmokes: number;
+  failedSmokes: number;
+  averageSmokeDurationMs: number;
   lowerDriftCount: number;
   moderateDriftCount: number;
   elevatedDriftCount: number;

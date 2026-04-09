@@ -20,7 +20,7 @@ describe('GET /v1/showcase/*', () => {
     expect(Array.isArray(json.apps)).toBe(true);
     expect(json.apps.some((entry: { slug: string }) => entry.slug === 'portfolio')).toBe(true);
     const shortlistEntry = json.apps.find((entry: { slug: string }) => entry.slug === 'portfolio');
-    expect(shortlistEntry?.verification?.verificationStatus).toBe('build-green');
+    expect(shortlistEntry?.verification?.verificationStatus).toBe('smoke-green');
   });
 
   it('serves the shortlisted showcase set with verification summary', async () => {
@@ -31,6 +31,7 @@ describe('GET /v1/showcase/*', () => {
     const json = await res.json();
     expect(Array.isArray(json.apps)).toBe(true);
     expect(json.summary?.passedBuilds).toBeGreaterThan(0);
+    expect(json.summary?.passedSmokes).toBeGreaterThan(0);
     expect(json.apps.every((entry: { goldenCandidate?: string | boolean }) => Boolean(entry.goldenCandidate))).toBe(true);
   });
 

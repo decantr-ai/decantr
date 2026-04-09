@@ -21,6 +21,9 @@
         "passedBuilds",
         "failedBuilds",
         "averageDurationMs",
+        "passedSmokes",
+        "failedSmokes",
+        "averageSmokeDurationMs",
         "lowerDriftCount",
         "moderateDriftCount",
         "elevatedDriftCount",
@@ -31,6 +34,9 @@
         "passedBuilds": { "type": "number", "minimum": 0 },
         "failedBuilds": { "type": "number", "minimum": 0 },
         "averageDurationMs": { "type": "number", "minimum": 0 },
+        "passedSmokes": { "type": "number", "minimum": 0 },
+        "failedSmokes": { "type": "number", "minimum": 0 },
+        "averageSmokeDurationMs": { "type": "number", "minimum": 0 },
         "lowerDriftCount": { "type": "number", "minimum": 0 },
         "moderateDriftCount": { "type": "number", "minimum": 0 },
         "elevatedDriftCount": { "type": "number", "minimum": 0 },
@@ -48,7 +54,7 @@
   "$defs": {
     "showcaseShortlistEntry": {
       "type": "object",
-      "required": ["slug", "target", "classification", "verificationStatus", "build", "drift"],
+      "required": ["slug", "target", "classification", "verificationStatus", "build", "smoke", "drift"],
       "properties": {
         "slug": {
           "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
@@ -62,7 +68,7 @@
         },
         "verificationStatus": {
           "type": "string",
-          "enum": ["pending", "build-green", "build-red"]
+          "enum": ["pending", "build-green", "build-red", "smoke-green", "smoke-red"]
         },
         "build": {
           "type": "object",
@@ -74,6 +80,50 @@
             "durationMs": {
               "type": "number",
               "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "smoke": {
+          "type": "object",
+          "required": [
+            "passed",
+            "durationMs",
+            "rootDocumentOk",
+            "assetCount",
+            "assetsPassed",
+            "routeHintsChecked",
+            "routeHintsMatched",
+            "failures"
+          ],
+          "properties": {
+            "passed": {
+              "type": ["boolean", "null"]
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "rootDocumentOk": {
+              "type": "boolean"
+            },
+            "assetCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "assetsPassed": {
+              "type": "number",
+              "minimum": 0
+            },
+            "routeHintsChecked": {
+              "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+            },
+            "routeHintsMatched": {
+              "type": "number",
+              "minimum": 0
+            },
+            "failures": {
+              "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
             }
           },
           "additionalProperties": false
