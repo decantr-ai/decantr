@@ -121,6 +121,7 @@
             "cspSignalOk",
             "inlineScriptCount",
             "externalScriptsWithoutIntegrityCount",
+            "externalStylesheetsWithoutIntegrityCount",
             "jsEvalSignalCount",
             "jsHtmlInjectionSignalCount",
             "jsInsecureTransportSignalCount",
@@ -171,6 +172,10 @@
               "minimum": 0
             },
             "externalScriptsWithoutIntegrityCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalStylesheetsWithoutIntegrityCount": {
               "type": "number",
               "minimum": 0
             },

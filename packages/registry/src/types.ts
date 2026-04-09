@@ -530,6 +530,7 @@ export interface ShowcaseVerificationEntry {
     cspSignalOk: boolean;
     inlineScriptCount: number;
     externalScriptsWithoutIntegrityCount: number;
+    externalStylesheetsWithoutIntegrityCount: number;
     assetCount: number;
     assetsPassed: number;
     routeHintsChecked: string[];
@@ -885,6 +886,7 @@ export interface ProjectAuditRuntimeAudit {
   cspSignalOk: boolean;
   inlineScriptCount: number;
   externalScriptsWithoutIntegrityCount: number;
+  externalStylesheetsWithoutIntegrityCount: number;
   jsEvalSignalCount: number;
   jsHtmlInjectionSignalCount: number;
   assetCount: number;

@@ -27,6 +27,7 @@ export interface RuntimeAudit {
   cspSignalOk: boolean;
   inlineScriptCount: number;
   externalScriptsWithoutIntegrityCount: number;
+  externalStylesheetsWithoutIntegrityCount: number;
   jsEvalSignalCount: number;
   jsHtmlInjectionSignalCount: number;
   jsInsecureTransportSignalCount: number;
@@ -66,6 +67,7 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     cspSignalOk: false,
     inlineScriptCount: 0,
     externalScriptsWithoutIntegrityCount: 0,
+    externalStylesheetsWithoutIntegrityCount: 0,
     jsEvalSignalCount: 0,
     jsHtmlInjectionSignalCount: 0,
     jsInsecureTransportSignalCount: 0,
@@ -118,6 +120,22 @@ function countExternalScriptsWithoutIntegrity(html: string): number {
       };
     })
     .filter((entry) => /^https?:\/\//i.test(entry.src) && !entry.hasIntegrity)
+    .length;
+}
+
+function countExternalStylesheetsWithoutIntegrity(html: string): number {
+  return [...html.matchAll(/<link\b([^>]*?)\bhref=(["'])([^"']+)\2([^>]*)>/gi)]
+    .map((match) => {
+      const attrs = `${match[1] ?? ''} ${match[4] ?? ''}`;
+      const relMatch = attrs.match(/\brel=(["'])([^"']+)\1/i);
+      const relValue = relMatch?.[2]?.toLowerCase() ?? '';
+      return {
+        href: match[3],
+        relValue,
+        hasIntegrity: /\bintegrity\s*=/i.test(attrs),
+      };
+    })
+    .filter((entry) => /^https?:\/\//i.test(entry.href) && /\bstylesheet\b/i.test(entry.relValue) && !entry.hasIntegrity)
     .length;
 }
 
@@ -227,6 +245,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const cspSignalOk = /<meta[^>]+http-equiv=(["'])Content-Security-Policy\1/i.test(rootHtml);
     const inlineScriptCount = countInlineScriptTags(rootHtml);
     const externalScriptsWithoutIntegrityCount = countExternalScriptsWithoutIntegrity(rootHtml);
+    const externalStylesheetsWithoutIntegrityCount = countExternalStylesheetsWithoutIntegrity(rootHtml);
 
     if (!rootDocumentOk) {
       failures.push('root-document-invalid');
@@ -326,6 +345,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       cspSignalOk,
       inlineScriptCount,
       externalScriptsWithoutIntegrityCount,
+      externalStylesheetsWithoutIntegrityCount,
       jsEvalSignalCount,
       jsHtmlInjectionSignalCount,
       jsInsecureTransportSignalCount,

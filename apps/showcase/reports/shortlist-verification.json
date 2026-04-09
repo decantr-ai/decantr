@@ -1,12 +1,12 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-09T21:15:03.286Z",
+  "generatedAt": "2026-04-09T22:15:27.432Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1773,
+    "averageDurationMs": 1778,
     "passedSmokes": 8,
     "failedSmokes": 0,
     "averageSmokeDurationMs": 10,
@@ -35,7 +35,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1745
+        "durationMs": 1736
       },
       "smoke": {
         "passed": true,
@@ -48,6 +48,7 @@
         "cspSignalOk": false,
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithoutIntegrityCount": 1,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -94,7 +95,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1747
+        "durationMs": 1743
       },
       "smoke": {
         "passed": true,
@@ -107,6 +108,7 @@
         "cspSignalOk": false,
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithoutIntegrityCount": 1,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -153,7 +155,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1886
+        "durationMs": 1773
       },
       "smoke": {
         "passed": true,
@@ -166,6 +168,7 @@
         "cspSignalOk": false,
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithoutIntegrityCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -212,11 +215,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1674
+        "durationMs": 1716
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 7,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -225,6 +228,7 @@
         "cspSignalOk": false,
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithoutIntegrityCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -271,11 +275,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1678
+        "durationMs": 1646
       },
       "smoke": {
         "passed": true,
-        "durationMs": 7,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -284,6 +288,7 @@
         "cspSignalOk": false,
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithoutIntegrityCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -329,11 +334,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1855
+        "durationMs": 1900
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 6,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -342,6 +347,7 @@
         "cspSignalOk": false,
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithoutIntegrityCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -388,11 +394,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1838
+        "durationMs": 1873
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 6,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -401,6 +407,7 @@
         "cspSignalOk": false,
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithoutIntegrityCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -447,7 +454,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1759
+        "durationMs": 1834
       },
       "smoke": {
         "passed": true,
@@ -460,6 +467,7 @@
         "cspSignalOk": false,
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithoutIntegrityCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 18,
         "jsInsecureTransportSignalCount": 21,

@@ -1012,6 +1012,17 @@ function appendRuntimeAuditFindings(
     }));
   }
 
+  if (runtimeAudit.externalStylesheetsWithoutIntegrityCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-stylesheets-without-integrity',
+      category: 'Security Hygiene',
+      severity: 'info',
+      message: 'Remote stylesheet links were detected without Subresource Integrity metadata.',
+      evidence: [indexPath, `Remote stylesheets missing integrity: ${runtimeAudit.externalStylesheetsWithoutIntegrityCount}`],
+      suggestedFix: 'Pin remote stylesheet links with integrity/crossorigin metadata or serve the stylesheet through the trusted build pipeline.',
+    }));
+  }
+
   if (runtimeAudit.jsEvalSignalCount > 0) {
     findings.push(makeFinding({
       id: 'runtime-js-dynamic-code-signals',
