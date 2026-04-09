@@ -59,6 +59,12 @@ As of 2026-04-09, the hosted rollout completed successfully:
   - the API was redeployed from `codex/decantr-vnext-reset` via `flyctl deploy --config apps/api/fly.toml --remote-only`
   - `pnpm audit:public-api` now reports `POST /v1/packs/compile` as `200`
   - the hosted compiler gap is closed
+- after the hosted verification expansion landed later on 2026-04-09:
+  - the API was redeployed again from `codex/decantr-vnext-reset` via `flyctl deploy --config apps/api/fly.toml --remote-only`
+  - `pnpm audit:public-api --include-hosted-critique --include-hosted-project-audit` now reports:
+    - `POST /v1/critique/file` as `200`
+    - `POST /v1/audit/project` as `200`
+  - the hosted verification rollout gap is closed
 
 Key fixes required during rollout:
 

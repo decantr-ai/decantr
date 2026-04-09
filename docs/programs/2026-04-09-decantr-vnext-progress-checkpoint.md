@@ -193,6 +193,12 @@ commit archaeology.
   - CLI entrypoint via `decantr registry audit-project`
   - MCP hosted fallback when local pack artifacts are missing
   - public API audit coverage is opt-in until rollout via `--include-hosted-project-audit`
+- Completed the hosted verification rollout on 2026-04-09:
+  - Fly redeploy from `codex/decantr-vnext-reset` completed successfully after syncing the workspace lockfile
+  - `pnpm audit:public-api --include-hosted-critique --include-hosted-project-audit` now reports both hosted verification endpoints as `200`
+  - live hosted verification now covers:
+    - `POST /v1/critique/file`
+    - `POST /v1/audit/project`
 - Completed the official content rollout on 2026-04-09:
   - content workflow run `24192386163` synced `codex/decantr-vnext-resetmai` into the live registry
   - live `@official` content count is now `480`
