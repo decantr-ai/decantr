@@ -360,6 +360,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authEntrySignals: createSourceAuditBucket(),
     authSessionSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
+    authErrorSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
     authCookieWrites: createSourceAuditBucket(),
     authHeaderWrites: createSourceAuditBucket(),
@@ -418,6 +419,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authEntrySignals, relativePath, signals.authEntrySignalCount);
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
+    recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
     recordSourceAudit(summary.authCookieWrites, relativePath, signals.authCookieWriteCount);
     recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
@@ -555,6 +557,7 @@ interface SourceAuditSummary {
   authEntrySignals: SourceAuditBucket;
   authSessionSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
+  authErrorSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
   authCookieWrites: SourceAuditBucket;
   authHeaderWrites: SourceAuditBucket;
@@ -1341,6 +1344,28 @@ function appendSourceAuditFindings(
         `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
       ],
       suggestedFix: 'When auth or session state resolves asynchronously, render an explicit loading, skeleton, suspense fallback, or pending state before redirecting or rendering protected content.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && (sourceAudit.authSessionSignals.count > 0 || sourceAudit.authEntrySignals.count > 0)
+    && sourceAudit.authErrorSignals.count === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-error-signals-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Authentication surfaces do not show an obvious error or failure state for rejected sign-in, session refresh, or recovery flows.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth/session signals: ${sourceAudit.authSessionSignals.count}`,
+        `Auth entry signals: ${sourceAudit.authEntrySignals.count}`,
+        'Auth error signals: 0',
+        `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+        `Entry files: ${sourceAudit.authEntrySignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Expose a reviewed error state for failed sign-in, session refresh, or recovery paths with inline feedback, alert messaging, or another explicit failure affordance.',
     }));
   }
 
@@ -2308,6 +2333,17 @@ function countAuthLoadingSignals(code: string): number {
     /\b(?:isLoading|loading|isPending|pending|authLoading|sessionLoading)\b/,
     /\bstatus\s*===?\s*['"`]loading['"`]/,
     /\b(?:Suspense|fallback|Skeleton|Spinner)\b/,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
+function countAuthErrorSignals(code: string): number {
+  const patterns = [
+    /\bstatus\s*===?\s*['"`]error['"`]/,
+    /\b(?:authError|sessionError|loginError|signInError|signUpError|formError|errorMessage|setError)\b/,
+    /\bcatch\s*\(/,
+    /\b(?:toast|notify|notification|Alert|alert|ErrorBoundary)\b/,
   ];
 
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);

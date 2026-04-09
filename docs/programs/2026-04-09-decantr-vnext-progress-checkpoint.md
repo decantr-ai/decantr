@@ -125,6 +125,7 @@ commit archaeology.
 - File critique now also treats auth-like inputs with the wrong semantic type (`text` instead of `email`/`password`) as a credential-flow issue.
 - Runtime verification now also flags plain `http://` / `ws://` transport markers that survive into built JavaScript bundles.
 - Source audit now flags protected app-surface files that reference routes like `/dashboard` or `/settings` without co-located session or guard behavior, even when an auth helper exists elsewhere in the repo.
+- Source audit now also flags auth/session flows that never expose an obvious failure state, so generated credential handling is pushed toward explicit rejected-sign-in and session-refresh error affordances.
 - File critique now catches dialog accessibility gaps too, including missing dialog labels and missing modal hints on dialog-like surfaces.
 - Auth verification now flags guard/session files that redirect unauthenticated users toward protected destinations like `/dashboard` instead of anonymous entry routes.
 - Accessibility critique now catches table markup without headers or captions, so data-heavy generated UIs fail earlier when their structure is visually plausible but semantically incomplete.
