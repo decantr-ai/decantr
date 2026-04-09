@@ -9,6 +9,59 @@ afterEach(() => {
 });
 
 describe('RegistryAPIClient showcase endpoints', () => {
+  it('requests hosted file critique reports', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        $schema: 'https://decantr.ai/schemas/file-critique-report.v1.json',
+        file: 'src/pages/Home.tsx',
+        overall: 2.4,
+        scores: [],
+        findings: [
+          {
+            id: 'anti-pattern-inline-styles',
+            category: 'Anti-Patterns',
+            severity: 'warn',
+            message: 'Inline style literals were detected in the reviewed file.',
+            evidence: ['src/pages/Home.tsx'],
+            file: 'src/pages/Home.tsx',
+          },
+        ],
+        focusAreas: ['theme-consistency'],
+        reviewPack: null,
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const client = new RegistryAPIClient({ baseUrl: 'https://api.example.com/v1' });
+    const result = await client.critiqueFile({
+      essence: {
+        version: '2.0.0',
+        archetype: 'dashboard',
+        theme: { id: 'clean', mode: 'light' },
+        personality: ['professional'],
+        platform: { type: 'spa', routing: 'history' },
+        structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+        features: ['auth'],
+        density: { level: 'comfortable', content_gap: '1.5rem' },
+        guard: { mode: 'guided' },
+        target: 'react',
+      },
+      filePath: 'src/pages/Home.tsx',
+      code: '<button style={{ color: "#ff00ff" }}>Click me</button>',
+    }, { namespace: '@official' });
+
+    expect(result.$schema).toBe('https://decantr.ai/schemas/file-critique-report.v1.json');
+    expect(result.file).toBe('src/pages/Home.tsx');
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://api.example.com/v1/critique/file?namespace=%40official',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
+  });
+
   it('compiles hosted execution packs from an essence document', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({

@@ -1,3 +1,5 @@
+import type { EssenceFile } from '@decantr/essence-spec';
+
 // --- Pattern ---
 export interface PatternLayoutSpec {
   layout: string;
@@ -601,6 +603,13 @@ export interface ShowcaseShortlistReport {
   results: ShowcaseVerificationEntry[];
 }
 
+export interface HostedFileCritiqueRequest {
+  essence: EssenceFile;
+  code: string;
+  filePath?: string;
+  treatmentsCss?: string;
+}
+
 export type ExecutionPackType = 'scaffold' | 'section' | 'page' | 'mutation' | 'review';
 
 export interface ExecutionPackTarget {
@@ -802,4 +811,36 @@ export interface ExecutionPackBundleResponse {
   sections: SectionExecutionPack[];
   pages: PageExecutionPack[];
   mutations: MutationExecutionPack[];
+}
+
+export type VerificationSeverity = 'error' | 'warn' | 'info';
+
+export interface VerificationFinding {
+  id: string;
+  category: string;
+  severity: VerificationSeverity;
+  message: string;
+  evidence: string[];
+  target?: string;
+  file?: string;
+  rule?: string;
+  suggestedFix?: string;
+}
+
+export interface VerificationScore {
+  category: string;
+  focusArea: string;
+  score: number;
+  details: string;
+  suggestions: string[];
+}
+
+export interface FileCritiqueReport {
+  $schema: string;
+  file: string;
+  overall: number;
+  scores: VerificationScore[];
+  findings: VerificationFinding[];
+  focusAreas: string[];
+  reviewPack: ReviewExecutionPack | null;
 }

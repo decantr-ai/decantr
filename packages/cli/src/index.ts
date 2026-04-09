@@ -1,5 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateEssence, evaluateGuard, isV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
@@ -234,6 +234,10 @@ function getPublicAPIClient(): RegistryAPIClient {
   });
 }
 
+function resolveUserPath(inputPath: string, cwd: string = process.cwd()): string {
+  return isAbsolute(inputPath) ? inputPath : resolve(cwd, inputPath);
+}
+
 async function getShowcaseBenchmarkView(
   view: 'manifest' | 'shortlist' | 'verification' = 'shortlist',
 ) {
@@ -371,7 +375,7 @@ async function printHostedExecutionPackBundle(
   writeContext: boolean = false,
 ) {
   const client = getPublicAPIClient();
-  const resolvedPath = essencePath ? join(process.cwd(), essencePath) : join(process.cwd(), 'decantr.essence.json');
+  const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
 
   if (!existsSync(resolvedPath)) {
     throw new Error(`Essence file not found at ${resolvedPath}`);
@@ -420,6 +424,60 @@ async function printHostedExecutionPackBundle(
     const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
     console.log(`  ${cyan(route.path)} -> ${route.pageId} [${patterns}]`);
   }
+}
+
+async function printHostedFileCritique(
+  sourcePath: string,
+  namespace?: string,
+  jsonOutput: boolean = false,
+  essencePath?: string,
+  treatmentsPath?: string,
+) {
+  const client = getPublicAPIClient();
+  const resolvedSourcePath = resolveUserPath(sourcePath);
+  const resolvedEssencePath = essencePath
+    ? resolveUserPath(essencePath)
+    : join(process.cwd(), 'decantr.essence.json');
+  const resolvedTreatmentsPath = treatmentsPath
+    ? resolveUserPath(treatmentsPath)
+    : join(process.cwd(), 'src', 'styles', 'treatments.css');
+
+  if (!existsSync(resolvedSourcePath)) {
+    throw new Error(`Source file not found at ${resolvedSourcePath}`);
+  }
+
+  if (!existsSync(resolvedEssencePath)) {
+    throw new Error(`Essence file not found at ${resolvedEssencePath}`);
+  }
+
+  const code = readFileSync(resolvedSourcePath, 'utf-8');
+  const essence = JSON.parse(readFileSync(resolvedEssencePath, 'utf-8')) as EssenceFile;
+  const treatmentsCss = existsSync(resolvedTreatmentsPath)
+    ? readFileSync(resolvedTreatmentsPath, 'utf-8')
+    : undefined;
+
+  const report = await client.critiqueFile(
+    {
+      essence,
+      filePath: sourcePath,
+      code,
+      treatmentsCss,
+    },
+    namespace ? { namespace } : undefined,
+  );
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+
+  console.log(heading('Hosted File Critique'));
+  console.log(`  Source file: ${resolvedSourcePath}`);
+  console.log(`  Essence: ${resolvedEssencePath}`);
+  if (treatmentsCss) {
+    console.log(`  Treatments: ${resolvedTreatmentsPath}`);
+  }
+  printFileCritiqueReport(report);
 }
 
 // ── Commands ──
@@ -1526,6 +1584,7 @@ ${BOLD}Usage:${RESET}
   decantr showcase [manifest|shortlist|verification] [--json]
   decantr registry summary [--namespace <namespace>] [--json]
   decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
+  decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr validate [path]
   decantr theme <subcommand>
   decantr create <type> <name>
@@ -1595,6 +1654,7 @@ ${BOLD}Examples:${RESET}
   decantr registry summary --namespace @official
   decantr registry compile-packs decantr.essence.json --json
   decantr registry compile-packs decantr.essence.json --write-context
+  decantr registry critique-file src/pages/Home.tsx --namespace @official --json
   decantr create pattern my-card
 `);
 }
@@ -1920,8 +1980,23 @@ async function main() {
         const writeContext = args.includes('--write-context');
         const essencePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
         await printHostedExecutionPackBundle(essencePath, namespace, jsonOutput, writeContext);
+      } else if (subcommand === 'critique-file') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        const essenceIdx = args.indexOf('--essence');
+        const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
+        const treatmentsIdx = args.indexOf('--treatments');
+        const treatmentsPath = treatmentsIdx !== -1 ? args[treatmentsIdx + 1] : undefined;
+        const sourcePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
+        if (!sourcePath) {
+          console.error(`${RED}Usage: decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]${RESET}`);
+          process.exitCode = 1;
+          break;
+        }
+        await printHostedFileCritique(sourcePath, namespace, jsonOutput, essencePath, treatmentsPath);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]${RESET}`);
         process.exitCode = 1;
       }
       break;

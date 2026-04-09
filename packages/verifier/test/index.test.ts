@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { auditBuiltDist, auditProject, critiqueFile, extractRouteHintsFromEssence } from '../src/index.js';
+import { auditBuiltDist, auditProject, critiqueFile, critiqueSource, extractRouteHintsFromEssence } from '../src/index.js';
 
 function createProjectRoot(): string {
   return mkdtempSync(join(tmpdir(), 'decantr-verifier-'));
@@ -349,5 +349,71 @@ describe('verifier', () => {
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
+  });
+
+  it('critiques inline source with a provided hosted review contract', () => {
+    const report = critiqueSource({
+      filePath: 'src/pages/Home.tsx',
+      code: '<button className="plain" style={{ color: "#ff00ff" }}>Click me</button>\n',
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [
+          {
+            id: 'inline-styles',
+            summary: 'Avoid inline style literals as the primary styling path.',
+            guidance: 'Move visual styling into tokens.css and treatments.css instead of component-local style objects.',
+          },
+          {
+            id: 'hardcoded-colors',
+            summary: 'Avoid hardcoded color literals.',
+            guidance: 'Use CSS variables and theme decorators instead of hex, rgb, or hsl values.',
+          },
+        ],
+        successChecks: [
+          {
+            id: 'theme-consistency',
+            label: 'Theme identity and mode remain consistent across scaffolded routes.',
+            severity: 'warn',
+          },
+        ],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['theme-consistency', 'accessibility', 'responsive-design'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+      packManifest: {
+        $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+        version: '1.0.0',
+        generatedAt: '2026-04-09T00:00:00.000Z',
+        scaffold: null,
+        review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+        sections: [],
+        pages: [{ id: 'home', markdown: 'page-home-pack.md', json: 'page-home-pack.json', sectionId: 'main', sectionRole: 'primary' }],
+        mutations: [],
+      },
+      treatmentsCss: '.brand-accent { color: var(--d-primary); }\n',
+    });
+
+    expect(report.file).toBe('src/pages/Home.tsx');
+    expect(report.reviewPack?.packType).toBe('review');
+    expect(report.findings.some(finding => finding.id === 'anti-pattern-inline-styles')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'anti-pattern-hardcoded-colors')).toBe(true);
   });
 });

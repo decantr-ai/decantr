@@ -126,6 +126,45 @@ Response schema:
 - `execution-pack-bundle.v1.json`
 - `https://decantr.ai/schemas/execution-pack-bundle.v1.json`
 
+## Hosted File Critique
+
+```http
+POST /critique/file?namespace=@official
+Content-Type: application/json
+
+{
+  "essence": {
+    "version": "2.0.0",
+    "archetype": "dashboard",
+    "theme": { "id": "clean", "mode": "light" },
+    "personality": ["professional"],
+    "platform": { "type": "spa", "routing": "history" },
+    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+    "features": ["auth"],
+    "density": { "level": "comfortable", "content_gap": "1.5rem" },
+    "guard": { "mode": "guided" },
+    "target": "react"
+  },
+  "filePath": "src/pages/Home.tsx",
+  "code": "<button style={{ color: \"#ff00ff\" }}>Click me</button>",
+  "treatmentsCss": ".brand-accent { color: var(--d-primary); }"
+}
+```
+
+Purpose:
+- critique inline file contents against a hosted review-pack contract compiled from the posted essence document
+
+Notes:
+- request body must include a valid Decantr essence document on `essence`
+- request body must include a non-empty source string on `code`
+- `filePath` is optional but recommended so findings can anchor to a meaningful path
+- `treatmentsCss` is optional and lets hosted critique account for local decorator inventory
+- `namespace` is optional and defaults to `@official`
+
+Response schema:
+- `file-critique-report.v1.json`
+- `https://decantr.ai/schemas/file-critique-report.v1.json`
+
 ## Showcase Benchmark Surfaces
 
 ```http
@@ -181,6 +220,7 @@ decantr search portfolio --type blueprint --sort recommended --recommended --sou
 decantr list blueprints --source authored
 decantr registry summary --namespace @official --json
 decantr registry compile-packs decantr.essence.json --namespace @official --json
+decantr registry critique-file src/pages/Home.tsx --namespace @official --json
 ```
 
 ## MCP Equivalents
@@ -189,10 +229,12 @@ decantr registry compile-packs decantr.essence.json --namespace @official --json
 - `decantr_get_registry_intelligence_summary`
 - `decantr_get_showcase_benchmarks`
 - `decantr_compile_execution_packs`
+- `decantr_critique`
 
 ## Notes
 
 - These endpoints are read-only public surfaces.
+- `POST /critique/file` is implemented on the reset branch; include `--include-hosted-critique` when using `pnpm audit:public-api` to verify it during rollout.
 - Intelligence metadata may lag behind repo-local changes until the hosted API and official content sync are deployed.
 - During rollout, the content-repo audits are the fastest way to see repo-vs-live mismatches.
 - For a lightweight hosted-surface smoke check from the monorepo, run `pnpm audit:public-api`.

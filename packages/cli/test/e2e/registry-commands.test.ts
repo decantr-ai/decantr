@@ -663,6 +663,87 @@ describe('registry commands (e2e)', () => {
     expect(readFileSync(scaffoldPackPath, 'utf-8')).toContain('# Scaffold Pack');
   });
 
+  it('registry critique-file posts local source and essence to the hosted verifier', async () => {
+    const requests: Array<{ url?: string; method?: string; body?: string }> = [];
+    const server = createServer((req, res) => {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        requests.push({ url: req.url, method: req.method, body });
+
+        if (req.method === 'POST' && req.url?.startsWith('/v1/critique/file')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            $schema: 'https://decantr.ai/schemas/file-critique-report.v1.json',
+            file: 'Home.tsx',
+            overall: 2.4,
+            scores: [],
+            findings: [
+              {
+                id: 'anti-pattern-inline-styles',
+                category: 'Anti-Patterns',
+                severity: 'warn',
+                message: 'Inline style literals were detected in the reviewed file.',
+                evidence: ['Home.tsx'],
+                file: 'Home.tsx',
+              },
+            ],
+            focusAreas: ['theme-consistency'],
+            reviewPack: null,
+          }));
+          return;
+        }
+
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not found' }));
+      });
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const { port } = server.address() as AddressInfo;
+
+    writeFileSync(join(testDir, 'decantr.essence.json'), JSON.stringify({
+      version: '2.0.0',
+      archetype: 'dashboard',
+      theme: { id: 'clean', mode: 'light' },
+      personality: ['professional'],
+      platform: { type: 'spa', routing: 'history' },
+      structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+      features: ['auth'],
+      density: { level: 'comfortable', content_gap: '1.5rem' },
+      guard: { mode: 'guided' },
+      target: 'react',
+    }, null, 2));
+    writeFileSync(join(testDir, 'Home.tsx'), '<button style={{ color: "#ff00ff" }}>Click me</button>\n');
+
+    const output = await runCliAsync(testDir, 'registry critique-file Home.tsx --namespace @official --json', {
+      DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
+      DECANTR_API_KEY: '',
+    });
+
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+
+    const json = JSON.parse(output);
+    expect(json.$schema).toBe('https://decantr.ai/schemas/file-critique-report.v1.json');
+    expect(
+      requests.some((request) => {
+        if (request.method !== 'POST' || !request.url?.includes('/v1/critique/file?namespace=%40official') || !request.body) {
+          return false;
+        }
+        try {
+          const posted = JSON.parse(request.body);
+          return posted.filePath === 'Home.tsx'
+            && typeof posted.code === 'string'
+            && posted.essence?.archetype === 'dashboard';
+        } catch {
+          return false;
+        }
+      }),
+    ).toBe(true);
+  });
+
   it('forwards sort parameters for search and list commands', async () => {
     const requests: string[] = [];
     const server = createServer((req, res) => {

@@ -87,6 +87,14 @@ export interface FileCritiqueReport {
   reviewPack: ReviewExecutionPack | null;
 }
 
+export interface CritiqueSourceInput {
+  filePath: string;
+  code: string;
+  reviewPack?: ReviewExecutionPack | null;
+  packManifest?: PackManifest | null;
+  treatmentsCss?: string;
+}
+
 export interface ShowcaseShortlistVerificationEntry {
   slug: string;
   target: string | null;
@@ -827,12 +835,14 @@ function findUtilityFrameworkSignals(code: string): string[] {
   return [...new Set(matches)];
 }
 
-export async function critiqueFile(filePath: string, projectRoot: string): Promise<FileCritiqueReport> {
-  const resolvedPath = isAbsolute(filePath) ? filePath : resolve(projectRoot, filePath);
-  const code = await readFile(resolvedPath, 'utf-8');
+export function critiqueSource({
+  filePath,
+  code,
+  reviewPack = null,
+  packManifest = null,
+  treatmentsCss = '',
+}: CritiqueSourceInput): FileCritiqueReport {
   const codeLower = code.toLowerCase();
-  const treatmentsCss = readTextIfExists(join(projectRoot, 'src', 'styles', 'treatments.css'));
-  const reviewPack = loadReviewPack(projectRoot);
   const focusAreas = resolveFocusAreas(reviewPack);
   const findings: VerificationFinding[] = [];
   const scores: VerificationScore[] = [];
@@ -853,8 +863,8 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
       category: 'Treatment Usage',
       severity: resolveSeverityFromChecks(reviewPack, 'warn', ['page-pattern-contract', 'section-pattern-coverage']),
       message: 'No Decantr treatment classes were detected in the reviewed file.',
-      evidence: [resolvedPath, 'Expected tokens include d-interactive, d-surface, d-data, d-control, d-section, d-annotation, d-label.'],
-      file: resolvedPath,
+      evidence: [filePath, 'Expected tokens include d-interactive, d-surface, d-data, d-control, d-section, d-annotation, d-label.'],
+      file: filePath,
       suggestedFix: 'Apply the compiled treatment vocabulary instead of hand-rolled utility styling.',
     }));
   }
@@ -880,8 +890,8 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
       category: 'Theme Consistency',
       severity: resolveSeverityFromChecks(reviewPack, 'warn', ['theme-consistency', 'mutation-theme-contract']),
       message: 'The file does not appear to use theme decorators or CSS variables from the compiled contract.',
-      evidence: [resolvedPath, `Decorators available: ${decoratorNames.slice(0, 5).join(', ') || 'none'}`],
-      file: resolvedPath,
+      evidence: [filePath, `Decorators available: ${decoratorNames.slice(0, 5).join(', ') || 'none'}`],
+      file: filePath,
       suggestedFix: 'Anchor styling to tokens.css and treatments.css instead of local hardcoded values.',
     }));
   }
@@ -907,8 +917,8 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
         category: 'Accessibility',
         severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
         message: 'No ARIA roles or labels were detected in the reviewed file.',
-        evidence: [resolvedPath],
-        file: resolvedPath,
+        evidence: [filePath],
+        file: filePath,
         suggestedFix: 'Add ARIA metadata to interactive or landmark elements.',
       }));
     }
@@ -918,8 +928,8 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
         category: 'Accessibility',
         severity: resolveSeverityFromChecks(reviewPack, 'info', ['review-remediation']),
         message: 'No keyboard interaction handlers were detected in the reviewed file.',
-        evidence: [resolvedPath],
-        file: resolvedPath,
+        evidence: [filePath],
+        file: filePath,
         suggestedFix: 'Verify interactive elements remain usable from the keyboard.',
       }));
     }
@@ -940,8 +950,8 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
       category: 'Responsive Design',
       severity: resolveSeverityFromChecks(reviewPack, 'warn', ['page-pattern-contract']),
       message: 'No responsive breakpoint handling was detected in the reviewed file.',
-      evidence: [resolvedPath],
-      file: resolvedPath,
+      evidence: [filePath],
+      file: filePath,
       suggestedFix: 'Add responsive layout behavior that matches the compiled route contract.',
     }));
   }
@@ -956,7 +966,6 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
     suggestions: !hasTransition ? ['Add transitions for interactive state changes where appropriate.'] : [],
   });
 
-  const packManifest = loadPackManifest(projectRoot);
   const knownRoutes = reviewPack?.data.routes.length ?? packManifest?.pages.length ?? 0;
   scores.push({
     category: 'Topology Context',
@@ -975,8 +984,8 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
       category: 'Route Topology',
       severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'route-topology', 'page-route-contract']),
       message: 'Critique ran without a compiled review pack.',
-      evidence: [join(projectRoot, '.decantr', 'context', 'review-pack.json')],
-      file: resolvedPath,
+      evidence: ['review-pack unavailable'],
+      file: filePath,
       suggestedFix: 'Regenerate execution packs so critique findings can anchor to the compiled route contract.',
     }));
   }
@@ -987,8 +996,8 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
       category: 'Anti-Patterns',
       severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'theme-consistency']),
       message: 'Inline style literals were detected in the reviewed file.',
-      evidence: [resolvedPath],
-      file: resolvedPath,
+      evidence: [filePath],
+      file: filePath,
       suggestedFix: 'Replace inline visual values with treatments, decorators, and CSS variables from the compiled contract.',
     }));
   }
@@ -1000,8 +1009,8 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
       category: 'Anti-Patterns',
       severity: resolveSeverityFromChecks(reviewPack, 'warn', ['theme-consistency', 'mutation-theme-contract']),
       message: 'Hardcoded color literals were detected in the reviewed file.',
-      evidence: [resolvedPath, `Color literals: ${hardcodedColors.slice(0, 5).join(', ')}`],
-      file: resolvedPath,
+      evidence: [filePath, `Color literals: ${hardcodedColors.slice(0, 5).join(', ')}`],
+      file: filePath,
       suggestedFix: 'Replace hardcoded colors with CSS variables or theme decorators from Decantr.',
     }));
   }
@@ -1013,8 +1022,8 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
       category: 'Anti-Patterns',
       severity: 'info',
       message: 'Utility-framework class patterns appear to be carrying the primary visual system for this file.',
-      evidence: [resolvedPath, `Utility signals: ${utilitySignals.slice(0, 6).join(', ')}`],
-      file: resolvedPath,
+      evidence: [filePath, `Utility signals: ${utilitySignals.slice(0, 6).join(', ')}`],
+      file: filePath,
       suggestedFix: 'Use Decantr treatments and decorators as the primary styling contract, with utilities only as supporting glue when necessary.',
     }));
   }
@@ -1022,11 +1031,27 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
   const overall = Math.round((scores.reduce((sum, score) => sum + score.score, 0) / scores.length) * 10) / 10;
   return {
     $schema: VERIFICATION_SCHEMA_URLS.fileCritique,
-    file: resolvedPath,
+    file: filePath,
     overall,
     scores,
     findings,
     focusAreas,
     reviewPack,
   };
+}
+
+export async function critiqueFile(filePath: string, projectRoot: string): Promise<FileCritiqueReport> {
+  const resolvedPath = isAbsolute(filePath) ? filePath : resolve(projectRoot, filePath);
+  const code = await readFile(resolvedPath, 'utf-8');
+  const treatmentsCss = readTextIfExists(join(projectRoot, 'src', 'styles', 'treatments.css'));
+  const reviewPack = loadReviewPack(projectRoot);
+  const packManifest = loadPackManifest(projectRoot);
+
+  return critiqueSource({
+    filePath: resolvedPath,
+    code,
+    reviewPack,
+    packManifest,
+    treatmentsCss,
+  });
 }

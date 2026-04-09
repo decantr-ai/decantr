@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { join, dirname, isAbsolute, resolve } from 'node:path';
 import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import { isContentIntelligenceSource, resolvePatternPreset } from '@decantr/registry';
@@ -106,6 +106,32 @@ async function getHostedExecutionPackBundlePayload(
   );
 }
 
+async function getHostedFileCritiquePayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const filePath = args.file_path as string;
+  const resolvedFilePath = isAbsolute(filePath) ? filePath : resolve(process.cwd(), filePath);
+  const code = await readFile(resolvedFilePath, 'utf-8');
+  const { essence } = await readEssenceFile(args.path as string | undefined);
+  const treatmentsPath = typeof args.treatments_path === 'string'
+    ? (isAbsolute(args.treatments_path) ? args.treatments_path : resolve(process.cwd(), args.treatments_path))
+    : join(process.cwd(), 'src', 'styles', 'treatments.css');
+  const treatmentsCss = existsSync(treatmentsPath)
+    ? readFileSync(treatmentsPath, 'utf-8')
+    : undefined;
+
+  return client.critiqueFile(
+    {
+      essence,
+      filePath,
+      code,
+      treatmentsCss,
+    },
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
 type HostedExecutionPackBundle = Awaited<ReturnType<typeof getHostedExecutionPackBundlePayload>>;
 type PackSource = 'local' | 'hosted_fallback';
 
@@ -121,6 +147,23 @@ async function loadHostedExecutionPackBundleFallback(args: Record<string, unknow
   } catch (error) {
     return {
       bundle: null,
+      error: (error as Error).message,
+    };
+  }
+}
+
+async function loadHostedFileCritiqueFallback(args: Record<string, unknown>): Promise<{
+  report: Awaited<ReturnType<typeof getHostedFileCritiquePayload>> | null;
+  error: string | null;
+}> {
+  try {
+    return {
+      report: await getHostedFileCritiquePayload(args),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      report: null,
       error: (error as Error).message,
     };
   }
@@ -616,19 +659,22 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 21. decantr_critique — local read
+  // 21. decantr_critique — local read with hosted fallback
   {
     name: 'decantr_critique',
     title: 'Design Critique',
-    description: 'Critique a file against the compiled review contract and Decantr verification heuristics. Returns a schema-backed file critique report with scores, findings, and focus areas.',
+    description: 'Critique a file against the compiled review contract and Decantr verification heuristics. Falls back to the hosted verifier when local review packs are missing. Returns a schema-backed file critique report with scores, findings, and focus areas.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         file_path: { type: 'string' as const, description: 'Path to the component file to critique' },
+        path: { type: 'string' as const, description: 'Optional path to the essence file when using hosted fallback. Defaults to ./decantr.essence.json.' },
+        namespace: { type: 'string' as const, description: 'Optional preferred public namespace for hosted fallback. Defaults to "@official".' },
+        treatments_path: { type: 'string' as const, description: 'Optional path to treatments.css when using hosted fallback. Defaults to ./src/styles/treatments.css.' },
       },
       required: ['file_path'],
     },
-    annotations: READ_ONLY,
+    annotations: READ_ONLY_NETWORK,
   },
 ];
 
@@ -1762,7 +1808,28 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
     }
 
     case 'decantr_critique': {
+      const err = validateStringArg(args, 'file_path');
+      if (err) return { error: err };
+      if (args.path != null && typeof args.path !== 'string') {
+        return { error: 'Invalid path. Must be a string when provided.' };
+      }
+      if (args.namespace != null && typeof args.namespace !== 'string') {
+        return { error: 'Invalid namespace. Must be a string when provided.' };
+      }
+      if (args.treatments_path != null && typeof args.treatments_path !== 'string') {
+        return { error: 'Invalid treatments_path. Must be a string when provided.' };
+      }
       const { critiqueFile } = await import('./critique.js');
+      const localReviewPackPath = join(process.cwd(), '.decantr', 'context', 'review-pack.json');
+      if (existsSync(localReviewPackPath)) {
+        return critiqueFile(args.file_path as string, process.cwd());
+      }
+
+      const hosted = await loadHostedFileCritiqueFallback(args);
+      if (hosted.report) {
+        return hosted.report;
+      }
+
       return critiqueFile(args.file_path as string, process.cwd());
     }
 

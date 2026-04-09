@@ -7,12 +7,14 @@
  *   node scripts/audit-public-api.mjs
  *   node scripts/audit-public-api.mjs --report-json=./public-api-report.json
  *   node scripts/audit-public-api.mjs --summary-markdown=./public-api-summary.md
+ *   node scripts/audit-public-api.mjs --include-hosted-critique
  *   node scripts/audit-public-api.mjs --fail-on-error
  *
  * Environment variables:
  *   REGISTRY_URL - Public API base URL (default: https://api.decantr.ai/v1)
  *   CONTENT_NAMESPACE - Namespace used for registry list/summary checks (default: @official)
  *   FAIL_ON_PUBLIC_API_ERROR - Set to "true" to exit non-zero when any check fails
+ *   INCLUDE_HOSTED_CRITIQUE - Set to "true" to include POST /v1/critique/file in the audit set
  */
 
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -27,6 +29,8 @@ const SUMMARY_PATH =
   args.find((arg) => arg.startsWith('--summary-markdown='))?.slice('--summary-markdown='.length) || null;
 const FAIL_ON_ERROR =
   args.includes('--fail-on-error') || process.env.FAIL_ON_PUBLIC_API_ERROR === 'true';
+const INCLUDE_HOSTED_CRITIQUE =
+  args.includes('--include-hosted-critique') || process.env.INCLUDE_HOSTED_CRITIQUE === 'true';
 
 function ensureParentDir(path) {
   mkdirSync(dirname(path), { recursive: true });
@@ -134,6 +138,34 @@ const CHECKS = [
       return response.text;
     },
   },
+  ...(INCLUDE_HOSTED_CRITIQUE ? [
+    {
+      name: 'hosted-file-critique',
+      path: `/critique/file?namespace=${encodeURIComponent(CONTENT_NAMESPACE)}`,
+      init: {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          essence: SAMPLE_ESSENCE,
+          filePath: 'src/pages/Home.tsx',
+          code: '<button style={{ color: "#ff00ff" }}>Click me</button>',
+        }),
+      },
+      validate(response) {
+        return response.ok &&
+          isObject(response.json) &&
+          response.json.$schema === 'https://decantr.ai/schemas/file-critique-report.v1.json';
+      },
+      details(response) {
+        if (isObject(response.json)) {
+          return `overall=${response.json.overall ?? 'n/a'} findings=${Array.isArray(response.json.findings) ? response.json.findings.length : 'n/a'}`;
+        }
+        return response.text;
+      },
+    },
+  ] : []),
   {
     name: 'public-search',
     path: '/search?q=portfolio&type=blueprint&limit=1',

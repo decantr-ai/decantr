@@ -78,7 +78,7 @@ The server exposes Decantr registry, context, benchmark, and verification tools.
 | `decantr_get_execution_pack` | Read compiled scaffold, section, page, review, or mutation execution packs, with hosted fallback when local context is missing | `{ "pack_type": "page", "id": "overview", "format": "json" }` |
 | `decantr_compile_execution_packs` | Compile a hosted execution-pack bundle from a local or inline essence document | `{ "path": "./decantr.essence.json", "namespace": "@official" }` |
 | `decantr_audit_project` | Run the schema-backed Decantr project audit against essence and compiled packs | `{}` |
-| `decantr_critique` | Critique a file against the compiled review contract | `{ "file_path": "./src/pages/Overview.tsx" }` |
+| `decantr_critique` | Critique a file against the compiled review contract, with hosted fallback when local review packs are missing | `{ "file_path": "./src/pages/Overview.tsx", "namespace": "@official" }` |
 | `decantr_get_showcase_benchmarks` | Read the audited showcase corpus manifest, shortlist, or verification report | `{ "view": "verification" }` |
 
 For the broader product surface and support policy, see the root Decantr docs and package support matrix.
@@ -100,7 +100,8 @@ The AI assistant calls these tools behind the scenes:
 5. `decantr_get_execution_pack` -- loads the compiled scaffold/page/review packs as the task contract, falling back to hosted compilation when local pack artifacts are missing
 6. `decantr_compile_execution_packs` -- compiles the hosted pack bundle when the task needs a fresh remote contract from the essence document
 7. `decantr_check_drift` -- validates the generated code against the Essence spec before presenting it
-8. `decantr_audit_project` -- runs the stronger project-level audit once the implementation is in place
+8. `decantr_critique` -- critiques a specific file, falling back to the hosted verifier when the local review pack is missing
+9. `decantr_audit_project` -- runs the stronger project-level audit once the implementation is in place
 
 The AI now generates code with the right layout structure, correct components, and consistent styling -- not a generic guess.
 

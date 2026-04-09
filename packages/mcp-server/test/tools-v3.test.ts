@@ -290,6 +290,49 @@ describe('v3-aware tool tests', () => {
       expect(result.findings.some(finding => finding.id === 'theme-consistency-weak')).toBe(true);
     });
 
+    it('falls back to the hosted verifier when local review packs are missing', async () => {
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+      const filePath = join(testDir, 'Overview.tsx');
+      await writeFile(filePath, '<button style={{ color: "#ff00ff" }}>Click me</button>\n');
+
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({
+          $schema: 'https://decantr.ai/schemas/file-critique-report.v1.json',
+          file: filePath,
+          overall: 2.5,
+          scores: [],
+          findings: [
+            {
+              id: 'anti-pattern-inline-styles',
+              category: 'Anti-Patterns',
+              severity: 'warn',
+              message: 'Inline style literals were detected in the reviewed file.',
+              evidence: [filePath],
+              file: filePath,
+            },
+          ],
+          focusAreas: ['theme-consistency'],
+          reviewPack: null,
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_critique', { file_path: filePath }) as {
+        $schema: string;
+        findings: Array<{ id: string }>;
+      };
+
+      expect(result.$schema).toBe('https://decantr.ai/schemas/file-critique-report.v1.json');
+      expect(result.findings.some(finding => finding.id === 'anti-pattern-inline-styles')).toBe(true);
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/v1/critique/file'),
+        expect.objectContaining({ method: 'POST' }),
+      );
+    });
+
     it('returns showcase shortlist verification data', async () => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(
         new Response(JSON.stringify({

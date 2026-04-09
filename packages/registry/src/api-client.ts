@@ -20,6 +20,8 @@ import type {
   ShowcaseManifestResponse,
   ShowcaseShortlistResponse,
   ShowcaseShortlistReport,
+  HostedFileCritiqueRequest,
+  FileCritiqueReport,
   ExecutionPackBundleResponse,
 } from './types.js';
 import type { EssenceFile } from '@decantr/essence-spec';
@@ -387,6 +389,24 @@ export class RegistryAPIClient {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(essence),
+      },
+    );
+  }
+
+  async critiqueFile(
+    input: HostedFileCritiqueRequest,
+    params?: { namespace?: string },
+  ): Promise<FileCritiqueReport> {
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+
+    return this.request<FileCritiqueReport>(
+      `/critique/file${query ? `?${query}` : ''}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
       },
     );
   }

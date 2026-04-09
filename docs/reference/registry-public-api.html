@@ -239,6 +239,35 @@ Content-Type: application/json
     </section>
 
     <section class="panel endpoint">
+      <h2>Hosted File Critique</h2>
+      <pre>POST /critique/file?namespace=@official
+Content-Type: application/json
+
+{
+  "essence": {
+    "version": "2.0.0",
+    "archetype": "dashboard",
+    "theme": { "id": "clean", "mode": "light" },
+    "personality": ["professional"],
+    "platform": { "type": "spa", "routing": "history" },
+    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+    "features": ["auth"],
+    "density": { "level": "comfortable", "content_gap": "1.5rem" },
+    "guard": { "mode": "guided" },
+    "target": "react"
+  },
+  "filePath": "src/pages/Home.tsx",
+  "code": "&lt;button style={{ color: &quot;#ff00ff&quot; }}&gt;Click me&lt;/button&gt;",
+  "treatmentsCss": ".brand-accent { color: var(--d-primary); }"
+}</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Critique inline file contents against a hosted review-pack contract compiled from the posted essence document.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/file-critique-report.v1.json"><code>file-critique-report.v1.json</code></a></div>
+        <div><strong>Notes:</strong> Include a valid Decantr essence document on <code>essence</code> and a non-empty source string on <code>code</code>. <code>filePath</code> and <code>treatmentsCss</code> are optional but help the hosted critique stay aligned with local project context.</div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
       <h2>Showcase Benchmark Surfaces</h2>
       <pre>GET /showcase/manifest
 GET /showcase/shortlist
@@ -266,12 +295,14 @@ GET /showcase/shortlist-verification</pre>
 decantr list blueprints --source authored
 decantr registry summary --namespace @official --json
 decantr registry compile-packs decantr.essence.json --namespace @official --json
+decantr registry critique-file src/pages/Home.tsx --namespace @official --json
 pnpm audit:public-api</pre>
       <ul>
         <li><code>decantr_search_registry</code></li>
         <li><code>decantr_get_registry_intelligence_summary</code></li>
         <li><code>decantr_get_showcase_benchmarks</code></li>
         <li><code>decantr_compile_execution_packs</code></li>
+        <li><code>decantr_critique</code></li>
       </ul>
     </section>
 
