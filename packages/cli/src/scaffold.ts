@@ -1630,6 +1630,127 @@ Post-scaffold enforcement mode: **${essence.meta.guard.mode.toUpperCase()}**.
 *Task context generated from Decantr execution packs*`;
 }
 
+function generateAddPageTaskContext(
+  essence: EssenceV3,
+  scaffoldPack: ScaffoldExecutionPack | null,
+  manifest: PackManifest | null,
+): string {
+  if (!scaffoldPack) {
+    return generateTaskContextV3('task-add-page.md.template', essence);
+  }
+
+  const routePlan = scaffoldPack.data.routes.length > 0
+    ? scaffoldPack.data.routes.map(route => {
+        const patternSummary = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+        return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+      }).join('\n')
+    : '- No routes declared';
+  const sectionRefs = manifest?.sections.map(section =>
+    `Section \`${section.id}\` -> \`.decantr/context/${section.markdown}\``
+  ) ?? [];
+  const pageRefs = manifest?.pages.map(page =>
+    `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``
+  ) ?? [];
+
+  return `# Task Context: Adding Pages
+
+**Enforcement Tier: Guided**
+
+## Primary Compiled Contract
+
+- Start with \`.decantr/context/scaffold-pack.md\` for the current route, shell, and theme contract.
+- Use \`.decantr/context/pack-manifest.json\` to choose the target section before you add a route.
+- After updating the essence, run \`npx @decantr/cli refresh\` so the new section/page packs exist before code generation.
+
+## Current Scaffold Contract
+
+- Target: \`${scaffoldPack.target.adapter}\` (${scaffoldPack.target.framework || 'unknown framework'})
+- Shell: \`${scaffoldPack.data.shell}\`
+- Theme: \`${scaffoldPack.data.theme.id}\` (${scaffoldPack.data.theme.mode})
+- Existing routes: ${scaffoldPack.data.routes.length}
+
+## Existing Routes
+
+${routePlan}
+
+${renderPackReferenceList('Section Packs', sectionRefs, 'No section packs were generated for this scaffold.')}
+
+${renderPackReferenceList('Page Packs', pageRefs, 'No page packs were generated for this scaffold.')}
+
+## Required Workflow
+
+1. Add the new page to the essence before generating any code.
+2. Keep the new page inside a declared section and shell contract.
+3. Refresh derived files so Decantr recompiles the section and page packs.
+4. Read the relevant section pack and the new page pack before implementation.
+
+## Guided Checks
+
+- [error] Theme identity remains \`${scaffoldPack.data.theme.id}\` until the essence changes.
+- [error] The new page exists in the essence before code generation begins.
+- [error] New layouts only use registry-backed patterns.
+- [warn] New routes should fit the current shell and section topology instead of creating off-contract filler pages.
+
+---
+
+*Task context generated from Decantr execution packs*`;
+}
+
+function generateModifyTaskContext(
+  essence: EssenceV3,
+  scaffoldPack: ScaffoldExecutionPack | null,
+  manifest: PackManifest | null,
+): string {
+  if (!scaffoldPack) {
+    return generateTaskContextV3('task-modify.md.template', essence);
+  }
+
+  const routePlan = scaffoldPack.data.routes.length > 0
+    ? scaffoldPack.data.routes.map(route => {
+        const patternSummary = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+        return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+      }).join('\n')
+    : '- No routes declared';
+  const pageRefs = manifest?.pages.map(page =>
+    `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``
+  ) ?? [];
+  const successChecks = scaffoldPack.successChecks.map(check => `- [${check.severity}] ${check.label}`).join('\n');
+
+  return `# Task Context: Modifying Code
+
+**Enforcement Tier: Strict**
+
+## Primary Compiled Contract
+
+- Start with \`decantr_get_page_context\` or the matching \`.decantr/context/page-*-pack.md\` file for the route you are editing.
+- Use \`decantr_get_section_context\` when you need the richer section contract behind that route.
+- If a change would alter route identity, shell identity, theme identity, or pattern contract, update the essence first and then refresh the packs.
+
+## Current Route Topology
+
+${routePlan}
+
+${renderPackReferenceList('Page Packs', pageRefs, 'No page packs were generated for this scaffold.')}
+
+## Strict Workflow
+
+1. Identify the target page and read its compiled page pack first.
+2. Compare the planned edit against the compiled route, shell, and pattern contract.
+3. If the edit changes that contract, stop and update the essence before writing code.
+4. Run \`npx @decantr/cli validate\` and \`npx @decantr/cli check\` after the modification.
+
+## Strict Checks
+
+${successChecks}
+- [error] The page you modify must already exist in the compiled topology.
+- [error] Pattern order and shell usage should stay aligned with the page pack unless the essence changes first.
+- [warn] Use section context only as supporting detail; the page pack is the primary contract for route-local work.
+
+---
+
+*Task context generated from Decantr execution packs*`;
+}
+
 /**
  * Generate essence summary markdown from a V3 essence.
  * Used by refreshDerivedFiles to keep the summary in sync.
@@ -2479,11 +2600,17 @@ export async function refreshDerivedFiles(
   // ── Generate mutation task contexts (skipped during init, generated on refresh/add/remove) ──
   if (!options?.isInitialScaffold) {
     const addPagePath = join(contextDir, 'task-add-page.md');
-    writeFileSync(addPagePath, generateTaskContextV3('task-add-page.md.template', essence));
+    writeFileSync(
+      addPagePath,
+      generateAddPageTaskContext(essence, packContexts.scaffoldPack, packContexts.manifest),
+    );
     contextFiles.push(addPagePath);
 
     const modifyPath = join(contextDir, 'task-modify.md');
-    writeFileSync(modifyPath, generateTaskContextV3('task-modify.md.template', essence));
+    writeFileSync(
+      modifyPath,
+      generateModifyTaskContext(essence, packContexts.scaffoldPack, packContexts.manifest),
+    );
     contextFiles.push(modifyPath);
   }
 

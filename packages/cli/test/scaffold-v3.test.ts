@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { scaffoldProject, scaffoldMinimal, buildEssenceV3 } from '../src/scaffold.js';
+import { scaffoldProject, scaffoldMinimal, buildEssenceV3, refreshDerivedFiles } from '../src/scaffold.js';
 import type { ThemeData } from '../src/scaffold.js';
 import type { InitOptions } from '../src/prompts.js';
 import type { DetectedProject } from '../src/detect.js';
@@ -335,5 +335,51 @@ describe('v3 scaffold', () => {
     expect(scaffoldTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');
     expect(scaffoldTask).toContain('- `/` -> `home` [hero]');
     expect(scaffoldTask).toContain('Post-scaffold enforcement mode: **GUIDED**.');
+  });
+
+  it('refreshDerivedFiles emits pack-backed mutation task contexts when compiled packs exist', async () => {
+    const cacheRoot = join(testDir, '.decantr', 'cache', '@official');
+    mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
+    mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });
+
+    writeFileSync(join(cacheRoot, 'themes', 'luminarum.json'), JSON.stringify({
+      id: 'luminarum',
+      name: 'Luminarum',
+    }, null, 2));
+
+    writeFileSync(join(cacheRoot, 'patterns', 'hero.json'), JSON.stringify({
+      id: 'hero',
+      name: 'Hero',
+      contained: false,
+      components: [],
+      presets: {
+        default: {
+          layout: {
+            layout: 'hero',
+            atoms: '',
+          },
+          code: {
+            imports: '',
+            example: '<section />',
+          },
+        },
+      },
+    }, null, 2));
+
+    const result = await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
+    const essence = JSON.parse(readFileSync(result.essencePath, 'utf-8'));
+
+    await refreshDerivedFiles(testDir, essence, createMockRegistry());
+
+    const contextDir = join(testDir, '.decantr', 'context');
+    const addPageTask = readFileSync(join(contextDir, 'task-add-page.md'), 'utf-8');
+    const modifyTask = readFileSync(join(contextDir, 'task-modify.md'), 'utf-8');
+
+    expect(addPageTask).toContain('## Primary Compiled Contract');
+    expect(addPageTask).toContain('.decantr/context/scaffold-pack.md');
+    expect(addPageTask).toContain('Section `custom` -> `.decantr/context/section-custom-pack.md`');
+    expect(modifyTask).toContain('decantr_get_page_context');
+    expect(modifyTask).toContain('## Strict Checks');
+    expect(modifyTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');
   });
 });

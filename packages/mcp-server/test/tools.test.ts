@@ -4,8 +4,8 @@ import { validateStringArg, fuzzyScore } from '../src/helpers.js';
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
-    it('should define 15 tools', () => {
-      expect(TOOLS).toHaveLength(15);
+    it('should define 16 tools', () => {
+      expect(TOOLS).toHaveLength(16);
     });
 
     it('should have unique tool names', () => {
@@ -48,6 +48,7 @@ describe('MCP tool handlers', () => {
         'decantr_validate',
         'decantr_check_drift',
         'decantr_get_scaffold_context',
+        'decantr_get_page_context',
         'decantr_get_execution_pack',
       ];
       for (const name of localToolNames) {

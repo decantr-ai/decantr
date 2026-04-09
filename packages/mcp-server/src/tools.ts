@@ -384,7 +384,21 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 15. decantr_get_execution_pack — local read
+  // 15. decantr_get_page_context — local read
+  {
+    name: 'decantr_get_page_context',
+    title: 'Get Page Context',
+    description: 'Get the route-local context for a specific page. Returns the compiled page execution pack plus its parent section pack and section context when available.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        page_id: { type: 'string', description: 'Page ID (for example "overview", "settings", or "home").' },
+      },
+      required: ['page_id'],
+    },
+    annotations: READ_ONLY,
+  },
+  // 16. decantr_get_execution_pack — local read
   {
     name: 'decantr_get_execution_pack',
     title: 'Get Execution Pack',
@@ -410,7 +424,7 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 16. decantr_critique — local read
+  // 17. decantr_critique — local read
   {
     name: 'decantr_critique',
     title: 'Design Critique',
@@ -1163,6 +1177,66 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
         execution_pack: executionPack,
         note: 'Section context file not found. Run decantr refresh to generate it.',
+      };
+    }
+
+    case 'decantr_get_page_context': {
+      const err = validateStringArg(args, 'page_id');
+      if (err) return { error: err };
+      const pageId = args.page_id as string;
+      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const manifestPath = join(contextDir, 'pack-manifest.json');
+      if (!existsSync(manifestPath)) {
+        return { error: 'Execution pack manifest not found. Run decantr refresh to generate compiled packs.' };
+      }
+
+      let manifest: PackManifest;
+      try {
+        manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as PackManifest;
+      } catch (e) {
+        return { error: `Failed to read pack manifest: ${(e as Error).message}` };
+      }
+
+      const pageEntry = manifest.pages.find(page => page.id === pageId);
+      if (!pageEntry) {
+        return {
+          error: `Page "${pageId}" not found in execution pack manifest.`,
+          available_pages: manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
+        };
+      }
+
+      const sectionEntry = pageEntry.sectionId
+        ? manifest.sections.find(section => section.id === pageEntry.sectionId) ?? null
+        : null;
+      const pageMarkdownPath = join(contextDir, pageEntry.markdown);
+      const pageJsonPath = join(contextDir, pageEntry.json);
+      const sectionMarkdownPath = sectionEntry ? join(contextDir, sectionEntry.markdown) : null;
+      const sectionJsonPath = sectionEntry ? join(contextDir, sectionEntry.json) : null;
+      const sectionContextPath = pageEntry.sectionId
+        ? join(contextDir, `section-${pageEntry.sectionId}.md`)
+        : null;
+
+      return {
+        page_id: pageId,
+        section_id: pageEntry.sectionId,
+        section_role: pageEntry.sectionRole,
+        execution_pack: {
+          markdown: existsSync(pageMarkdownPath) ? readFileSync(pageMarkdownPath, 'utf-8') : null,
+          json: existsSync(pageJsonPath) ? JSON.parse(readFileSync(pageJsonPath, 'utf-8')) : null,
+        },
+        section_execution_pack: sectionEntry
+          ? {
+              markdown: sectionMarkdownPath && existsSync(sectionMarkdownPath) ? readFileSync(sectionMarkdownPath, 'utf-8') : null,
+              json: sectionJsonPath && existsSync(sectionJsonPath) ? JSON.parse(readFileSync(sectionJsonPath, 'utf-8')) : null,
+            }
+          : null,
+        section_context: sectionContextPath && existsSync(sectionContextPath)
+          ? readFileSync(sectionContextPath, 'utf-8')
+          : null,
+        manifest: {
+          page: pageEntry,
+          section: sectionEntry,
+        },
       };
     }
 
