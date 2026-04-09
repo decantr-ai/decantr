@@ -382,6 +382,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.rawHtmlInjectionCount
       + signals.dynamicEvalCount
       + signals.externalIframeWithoutSandboxCount
+      + signals.insecureFormActionCount
       + signals.externalBlankLinkWithoutRelCount;
     const authInputHintIssueCount = signals.emailAutocompleteMissingCount
       + signals.passwordAutocompleteMissingCount;
@@ -1599,6 +1600,7 @@ interface AstCritiqueSignals {
   rawHtmlInjectionCount: number;
   dynamicEvalCount: number;
   externalIframeWithoutSandboxCount: number;
+  insecureFormActionCount: number;
   iconOnlyButtonWithoutLabelCount: number;
   iconOnlyLinkWithoutLabelCount: number;
   clickableNonSemanticCount: number;
@@ -1804,6 +1806,11 @@ function isExternalLinkTargetBlankWithoutRel(attributes: ts.JsxAttributes): bool
   return !/\bnoopener\b/i.test(relValue) || !/\bnoreferrer\b/i.test(relValue);
 }
 
+function hasInsecureFormAction(attributes: ts.JsxAttributes): boolean {
+  const actionValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'action'));
+  return /^http:\/\//i.test(actionValue?.trim() ?? '');
+}
+
 function hasPlaceholderNavigationTarget(attributes: ts.JsxAttributes): boolean {
   const targetValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'href', 'to'));
   if (!targetValue) return false;
@@ -1962,6 +1969,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     rawHtmlInjectionCount: 0,
     dynamicEvalCount: 0,
     externalIframeWithoutSandboxCount: 0,
+    insecureFormActionCount: 0,
     iconOnlyButtonWithoutLabelCount: 0,
     iconOnlyLinkWithoutLabelCount: 0,
     clickableNonSemanticCount: 0,
@@ -2133,6 +2141,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       ) {
         signals.externalIframeWithoutSandboxCount += 1;
       }
+      if (tagName === 'form' && hasInsecureFormAction(node.attributes)) {
+        signals.insecureFormActionCount += 1;
+      }
       if (
         isNonSemanticInteractiveTag(tagName)
         && getJsxAttribute(node.attributes, 'onClick')
@@ -2198,6 +2209,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && !getJsxAttribute(node.openingElement.attributes, 'sandbox')
       ) {
         signals.externalIframeWithoutSandboxCount += 1;
+      }
+      if (tagName === 'form' && hasInsecureFormAction(node.openingElement.attributes)) {
+        signals.insecureFormActionCount += 1;
       }
 
       if (
@@ -2558,6 +2572,7 @@ export function critiqueSource({
   const rawHtmlInjectionCount = Math.max(astSignals.rawHtmlInjectionCount, /\binnerHTML\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/.test(code) ? 1 : 0);
   const dynamicEvalCount = Math.max(astSignals.dynamicEvalCount, /\beval\s*\(|new\s+Function\s*\(/.test(code) ? 1 : 0);
   const externalIframeWithoutSandboxCount = astSignals.externalIframeWithoutSandboxCount;
+  const insecureFormActionCount = astSignals.insecureFormActionCount;
   const externalBlankLinkWithoutRelCount = astSignals.externalBlankLinkWithoutRelCount;
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
@@ -2568,6 +2583,7 @@ export function critiqueSource({
   const hasRawHtmlInjection = rawHtmlInjectionCount > 0;
   const hasDynamicEval = dynamicEvalCount > 0;
   const hasExternalIframeWithoutSandbox = externalIframeWithoutSandboxCount > 0;
+  const hasInsecureFormAction = insecureFormActionCount > 0;
   const hasExternalBlankLinkWithoutRel = externalBlankLinkWithoutRelCount > 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0 || passwordAutocompleteMissingCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
@@ -2583,17 +2599,19 @@ export function critiqueSource({
       - (hasRawHtmlInjection ? 2 : 0)
       - (hasDynamicEval ? 2 : 0)
       - (hasExternalIframeWithoutSandbox ? 1 : 0)
+      - (hasInsecureFormAction ? 2 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
       ...(hasExternalIframeWithoutSandbox ? ['Sandbox external iframes unless a reviewed embed contract explicitly requires broader privileges.'] : []),
+      ...(hasInsecureFormAction ? ['Avoid posting forms to plain HTTP endpoints; use HTTPS or move the action behind a trusted server boundary.'] : []),
       ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, or `new-password` on auth-related inputs.'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
@@ -2659,6 +2677,18 @@ export function critiqueSource({
       evidence: [filePath, `External iframes without sandbox: ${externalIframeWithoutSandboxCount}`],
       file: filePath,
       suggestedFix: 'Add the narrowest practical sandbox policy to external iframes, and only loosen capabilities when the embed contract explicitly requires it.',
+    }));
+  }
+
+  if (hasInsecureFormAction) {
+    findings.push(makeFinding({
+      id: 'security-form-action-insecure',
+      category: 'Security Hygiene',
+      severity: 'error',
+      message: 'Forms were detected posting to plain HTTP endpoints.',
+      evidence: [filePath, `Forms with insecure HTTP action: ${insecureFormActionCount}`],
+      file: filePath,
+      suggestedFix: 'Use HTTPS form endpoints or route submissions through a trusted server action/API boundary that preserves transport security.',
     }));
   }
 

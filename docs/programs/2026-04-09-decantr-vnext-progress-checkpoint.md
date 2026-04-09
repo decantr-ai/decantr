@@ -116,6 +116,7 @@ commit archaeology.
 - File critique and source audit now also catch unlabeled icon-only links, not just icon-only buttons, so generated nav/icon surfaces are held to the same accessibility contract.
 - File critique and source audit now also flag iframes without descriptive `title` attributes, so embedded dashboards/docs do not slip past the accessibility baseline.
 - File critique and source audit now also flag external iframes without `sandbox`, so embeds are held to a safer default trust boundary.
+- File critique and source audit now also flag forms posting to plain `http://` endpoints, so insecure transport regressions show up before runtime review.
 
 ### Showcase / golden corpus
 
