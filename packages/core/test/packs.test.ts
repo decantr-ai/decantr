@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { buildMutationPack, buildPagePack, buildReviewPack, buildScaffoldPack, buildSectionPack, runPipeline } from '../src/index.js';
+import {
+  buildMutationPack,
+  buildPagePack,
+  buildReviewPack,
+  buildScaffoldPack,
+  buildSectionPack,
+  compileExecutionPackBundle,
+  runPipeline,
+} from '../src/index.js';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
@@ -210,5 +218,21 @@ describe('buildScaffoldPack', () => {
     expect(pack.renderedMarkdown).toContain('## Review Contract');
     expect(pack.renderedMarkdown).toContain('## Focus Areas');
     expect(pack.renderedMarkdown).toContain('## Review Workflow');
+  });
+
+  it('compiles a schema-backed execution pack bundle from essence', async () => {
+    const essence = loadFixture('essence-saas');
+    const bundle = await compileExecutionPackBundle(essence, { contentRoot });
+
+    expect(bundle.$schema).toBe('https://decantr.ai/schemas/execution-pack-bundle.v1.json');
+    expect(bundle.sourceEssenceVersion).toBe('2.0.0');
+    expect(bundle.manifest.$schema).toBe('https://decantr.ai/schemas/pack-manifest.v1.json');
+    expect(bundle.manifest.scaffold?.markdown).toBe('scaffold-pack.md');
+    expect(bundle.sections).toHaveLength(1);
+    expect(bundle.pages).toHaveLength(2);
+    expect(bundle.mutations).toHaveLength(2);
+    expect(bundle.review.packType).toBe('review');
+    expect(bundle.scaffold.target.adapter).toBe('decantr');
+    expect(bundle.pages[0]?.renderedMarkdown).toContain('## Page Contract');
   });
 });

@@ -31,6 +31,11 @@ export type {
   ExecutionPackSuccessCheck,
   ExecutionPackTokenBudget,
   ExecutionPackBase,
+  PackManifestEntry,
+  PackManifestSectionEntry,
+  PackManifestPageEntry,
+  PackManifestMutationEntry,
+  ExecutionPackManifest,
   ScaffoldPackRoute,
   ScaffoldPackData,
   ScaffoldExecutionPack,
@@ -53,6 +58,8 @@ export type {
   ReviewPackData,
   ReviewExecutionPack,
   ReviewPackBuilderOptions,
+  ExecutionPackBundle,
+  CompileExecutionPackBundleOptions,
 } from './packs.js';
 
 export type { PipelineOptions, PipelineResult } from './pipeline.js';
@@ -65,10 +72,15 @@ export { pascalCase } from './utils.js';
 export {
   EXECUTION_PACK_SCHEMA_URLS,
   PACK_MANIFEST_SCHEMA_URL,
+  EXECUTION_PACK_BUNDLE_SCHEMA_URL,
   buildScaffoldPack,
   buildSectionPack,
   buildPagePack,
   buildMutationPack,
   buildReviewPack,
+  resolvePackAdapter,
+  listPackSections,
+  listPackPages,
+  compileExecutionPackBundle,
   renderExecutionPackMarkdown,
 } from './packs.js';

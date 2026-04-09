@@ -3,9 +3,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
-import { PACK_MANIFEST_SCHEMA_URL, buildScaffoldPack, buildSectionPack, buildPagePack, buildMutationPack, buildReviewPack, runPipeline } from '@decantr/core';
-import type { PagePackInput, ScaffoldExecutionPack, SectionPackInput } from '@decantr/core';
-import type { ExecutionPackBase } from '@decantr/core';
+import { compileExecutionPackBundle } from '@decantr/core';
+import type { ExecutionPackBase, ExecutionPackBundle, ExecutionPackManifest, ScaffoldExecutionPack } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
 import type {
   ComposeEntry,
@@ -2137,15 +2136,6 @@ export interface RefreshResult {
   cssFiles: string[];
 }
 
-function resolvePackAdapter(target: string | undefined, platformType: string | undefined): string {
-  if (target === 'react' && platformType === 'spa') return 'react-vite';
-  if (target === 'react') return 'react-web';
-  if (target === 'vue' && platformType === 'spa') return 'vue-vite';
-  if (target === 'svelte' && platformType === 'spa') return 'sveltekit';
-  if (target) return target;
-  return 'generic-web';
-}
-
 function writeExecutionPackArtifacts(
   basePathWithoutExtension: string,
   pack: ExecutionPackBase<unknown>,
@@ -2157,76 +2147,10 @@ function writeExecutionPackArtifacts(
   return markdownPath;
 }
 
-interface PackManifestEntry {
-  id: string;
-  markdown: string;
-  json: string;
-}
-
-interface PackManifest {
-  $schema: string;
-  version: '1.0.0';
-  generatedAt: string;
-  scaffold: PackManifestEntry | null;
-  review: PackManifestEntry | null;
-  sections: Array<PackManifestEntry & { pageIds: string[] }>;
-  pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
-  mutations: Array<PackManifestEntry & { mutationType: string }>;
-}
-
 interface GeneratedPackContexts {
   paths: string[];
   scaffoldPack: ScaffoldExecutionPack | null;
-  manifest: PackManifest | null;
-}
-
-function listPackSections(essence: EssenceV3): SectionPackInput[] {
-  const declaredSections = essence.blueprint.sections;
-  if (declaredSections && declaredSections.length > 0) {
-    return declaredSections.map(section => ({
-      id: section.id,
-      role: section.role,
-      shell: section.shell as string,
-      description: section.description,
-      features: section.features,
-      pageIds: section.pages.map(page => page.id),
-    }));
-  }
-
-  const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
-  return [{
-    id: essence.meta.archetype || 'default',
-    role: 'primary',
-    shell: (essence.blueprint.shell ?? 'sidebar-main') as string,
-    description: `${essence.meta.archetype || 'Application'} section`,
-    features: essence.blueprint.features || [],
-    pageIds: pages.map(page => page.id),
-  }];
-}
-
-function listPackPages(essence: EssenceV3): PagePackInput[] {
-  const declaredSections = essence.blueprint.sections;
-  if (declaredSections && declaredSections.length > 0) {
-    return declaredSections.flatMap(section =>
-      section.pages.map(page => ({
-        pageId: page.id,
-        shell: (page.shell_override ?? section.shell) as string,
-        sectionId: section.id,
-        sectionRole: section.role,
-        features: section.features,
-      }))
-    );
-  }
-
-  const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
-  const defaultShell = (essence.blueprint.shell ?? 'sidebar-main') as string;
-  return pages.map(page => ({
-    pageId: page.id,
-    shell: (page.shell_override ?? defaultShell) as string,
-    sectionId: essence.meta.archetype || 'default',
-    sectionRole: 'primary',
-    features: essence.blueprint.features || [],
-  }));
+  manifest: ExecutionPackManifest | null;
 }
 
 async function generatePackContexts(
@@ -2247,123 +2171,50 @@ async function generatePackContexts(
   const overridePaths = existsSync(customRoot) ? [customRoot] : undefined;
 
   try {
-    const pipeline = await runPipeline(essence, {
+    const bundle: ExecutionPackBundle = await compileExecutionPackBundle(essence, {
       contentRoot: cacheRoot,
       overridePaths,
     });
 
-    const pack = buildScaffoldPack(pipeline.ir, {
-      target: {
-        framework: essence.meta.target || null,
-        runtime: essence.meta.platform.type || null,
-        adapter: resolvePackAdapter(essence.meta.target, essence.meta.platform.type),
-      },
-    });
-
     const outputPaths: string[] = [];
-    const scaffoldManifest: PackManifestEntry = {
-      id: 'scaffold',
-      markdown: 'scaffold-pack.md',
-      json: 'scaffold-pack.json',
-    };
-    const scaffoldPackPath = writeExecutionPackArtifacts(join(contextDir, 'scaffold-pack'), pack);
+    const scaffoldPackPath = writeExecutionPackArtifacts(join(contextDir, 'scaffold-pack'), bundle.scaffold);
     outputPaths.push(scaffoldPackPath);
 
-    const reviewPack = buildReviewPack(pipeline.ir, {
-      target: {
-        framework: essence.meta.target || null,
-        runtime: essence.meta.platform.type || null,
-        adapter: resolvePackAdapter(essence.meta.target, essence.meta.platform.type),
-      },
-    });
-    const reviewManifest: PackManifestEntry = {
-      id: 'review',
-      markdown: 'review-pack.md',
-      json: 'review-pack.json',
-    };
-    const reviewPackPath = writeExecutionPackArtifacts(join(contextDir, 'review-pack'), reviewPack);
+    const reviewPackPath = writeExecutionPackArtifacts(join(contextDir, 'review-pack'), bundle.review);
     outputPaths.push(reviewPackPath);
 
-    const sharedTarget = {
-      framework: essence.meta.target || null,
-      runtime: essence.meta.platform.type || null,
-      adapter: resolvePackAdapter(essence.meta.target, essence.meta.platform.type),
-    };
-
-    const sectionManifestEntries: Array<PackManifestEntry & { pageIds: string[] }> = [];
-    for (const section of listPackSections(essence)) {
-      const sectionPack = buildSectionPack(pipeline.ir, section, {
-        target: sharedTarget,
-      });
+    for (const sectionPack of bundle.sections) {
       const sectionPackPath = writeExecutionPackArtifacts(
-        join(contextDir, `section-${section.id}-pack`),
+        join(contextDir, `section-${sectionPack.data.sectionId}-pack`),
         sectionPack,
       );
       outputPaths.push(sectionPackPath);
-      sectionManifestEntries.push({
-        id: section.id,
-        markdown: `section-${section.id}-pack.md`,
-        json: `section-${section.id}-pack.json`,
-        pageIds: section.pageIds,
-      });
     }
 
-    const pageManifestEntries: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }> = [];
-    for (const page of listPackPages(essence)) {
-      const pagePack = buildPagePack(pipeline.ir, page, {
-        target: sharedTarget,
-      });
+    for (const pagePack of bundle.pages) {
       const pagePackPath = writeExecutionPackArtifacts(
-        join(contextDir, `page-${page.pageId}-pack`),
+        join(contextDir, `page-${pagePack.data.pageId}-pack`),
         pagePack,
       );
       outputPaths.push(pagePackPath);
-      pageManifestEntries.push({
-        id: page.pageId,
-        markdown: `page-${page.pageId}-pack.md`,
-        json: `page-${page.pageId}-pack.json`,
-        sectionId: page.sectionId,
-        sectionRole: page.sectionRole,
-      });
     }
 
-    const mutationManifestEntries: Array<PackManifestEntry & { mutationType: string }> = [];
-    for (const mutationType of ['add-page', 'modify'] as const) {
-      const mutationPack = buildMutationPack(pipeline.ir, {
-        mutationType,
-        target: sharedTarget,
-      });
+    for (const mutationPack of bundle.mutations) {
       const mutationPackPath = writeExecutionPackArtifacts(
-        join(contextDir, `mutation-${mutationType}-pack`),
+        join(contextDir, `mutation-${mutationPack.data.mutationType}-pack`),
         mutationPack,
       );
       outputPaths.push(mutationPackPath);
-      mutationManifestEntries.push({
-        id: mutationType,
-        markdown: `mutation-${mutationType}-pack.md`,
-        json: `mutation-${mutationType}-pack.json`,
-        mutationType,
-      });
     }
 
-    const manifest: PackManifest = {
-      $schema: PACK_MANIFEST_SCHEMA_URL,
-      version: '1.0.0',
-      generatedAt: new Date().toISOString(),
-      scaffold: scaffoldManifest,
-      review: reviewManifest,
-      sections: sectionManifestEntries,
-      pages: pageManifestEntries,
-      mutations: mutationManifestEntries,
-    };
     const manifestPath = join(contextDir, 'pack-manifest.json');
-    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+    writeFileSync(manifestPath, JSON.stringify(bundle.manifest, null, 2) + '\n');
     outputPaths.push(manifestPath);
 
     return {
       paths: outputPaths,
-      scaffoldPack: pack,
-      manifest,
+      scaffoldPack: bundle.scaffold,
+      manifest: bundle.manifest,
     };
   } catch {
     return emptyResult;

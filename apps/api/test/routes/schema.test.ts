@@ -56,6 +56,15 @@ describe('GET /v1/schema/:name', () => {
     expect(json.$id).toBe('https://decantr.ai/schemas/showcase-manifest.v1.json');
   });
 
+  it('serves hosted execution pack bundle schemas', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/schema/execution-pack-bundle.v1.json');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$id).toBe('https://decantr.ai/schemas/execution-pack-bundle.v1.json');
+  });
+
   it('remains publicly readable through the full app middleware stack', async () => {
     const app = createApp();
     const res = await app.request('/v1/schema/registry-intelligence-summary.v1.json');
@@ -78,5 +87,6 @@ describe('GET /v1/schema/:name', () => {
     expect(json.available).toContain('showcase-shortlist-report.v1.json');
     expect(json.available).toContain('public-content-record.v1.json');
     expect(json.available).toContain('showcase-manifest.v1.json');
+    expect(json.available).toContain('execution-pack-bundle.v1.json');
   });
 });

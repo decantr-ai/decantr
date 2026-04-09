@@ -23,7 +23,8 @@
     "./schema/page-pack.v1.json": "./schema/page-pack.v1.json",
     "./schema/mutation-pack.v1.json": "./schema/mutation-pack.v1.json",
     "./schema/review-pack.v1.json": "./schema/review-pack.v1.json",
-    "./schema/pack-manifest.v1.json": "./schema/pack-manifest.v1.json"
+    "./schema/pack-manifest.v1.json": "./schema/pack-manifest.v1.json",
+    "./schema/execution-pack-bundle.v1.json": "./schema/execution-pack-bundle.v1.json"
   },
   "files": ["dist", "schema"],
   "publishConfig": {

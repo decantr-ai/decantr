@@ -585,3 +585,206 @@ export interface ShowcaseShortlistReport {
   summary: ShowcaseShortlistSummary;
   results: ShowcaseVerificationEntry[];
 }
+
+export type ExecutionPackType = 'scaffold' | 'section' | 'page' | 'mutation' | 'review';
+
+export interface ExecutionPackTarget {
+  platform: 'web';
+  framework: string | null;
+  runtime: string | null;
+  adapter: string;
+}
+
+export interface ExecutionPackScope {
+  appId: string;
+  pageIds: string[];
+  patternIds: string[];
+}
+
+export interface ExecutionPackExample {
+  id: string;
+  label: string;
+  language: string;
+  snippet: string;
+}
+
+export interface ExecutionPackAntiPattern {
+  id: string;
+  summary: string;
+  guidance: string;
+}
+
+export interface ExecutionPackSuccessCheck {
+  id: string;
+  label: string;
+  severity: 'error' | 'warn' | 'info';
+}
+
+export interface ExecutionPackTokenBudget {
+  target: number;
+  max: number;
+  strategy: string[];
+}
+
+export interface ExecutionPackBase<TData = Record<string, unknown>> {
+  $schema: string;
+  packVersion: '1.0.0';
+  packType: ExecutionPackType;
+  objective: string;
+  target: ExecutionPackTarget;
+  preset: string | null;
+  scope: ExecutionPackScope;
+  requiredSetup: string[];
+  allowedVocabulary: string[];
+  examples: ExecutionPackExample[];
+  antiPatterns: ExecutionPackAntiPattern[];
+  successChecks: ExecutionPackSuccessCheck[];
+  tokenBudget: ExecutionPackTokenBudget;
+  data: TData;
+  renderedMarkdown: string;
+}
+
+export interface PackManifestEntry {
+  id: string;
+  markdown: string;
+  json: string;
+}
+
+export interface PackManifestSectionEntry extends PackManifestEntry {
+  pageIds: string[];
+}
+
+export interface PackManifestPageEntry extends PackManifestEntry {
+  sectionId: string | null;
+  sectionRole: string | null;
+}
+
+export interface PackManifestMutationEntry extends PackManifestEntry {
+  mutationType: 'add-page' | 'modify';
+}
+
+export interface ExecutionPackManifest {
+  $schema: string;
+  version: '1.0.0';
+  generatedAt: string;
+  scaffold: PackManifestEntry | null;
+  review: PackManifestEntry | null;
+  sections: PackManifestSectionEntry[];
+  pages: PackManifestPageEntry[];
+  mutations: PackManifestMutationEntry[];
+}
+
+export interface ScaffoldExecutionPack extends ExecutionPackBase<{
+  shell: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routing: 'hash' | 'history';
+  features: string[];
+  routes: Array<{
+    pageId: string;
+    path: string;
+    patternIds: string[];
+  }>;
+}> {
+  packType: 'scaffold';
+}
+
+export interface ReviewExecutionPack extends ExecutionPackBase<{
+  reviewType: 'app';
+  shell: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routing: 'hash' | 'history';
+  features: string[];
+  routes: Array<{
+    pageId: string;
+    path: string;
+    patternIds: string[];
+  }>;
+  focusAreas: string[];
+  workflow: string[];
+}> {
+  packType: 'review';
+}
+
+export interface SectionExecutionPack extends ExecutionPackBase<{
+  sectionId: string;
+  role: string;
+  shell: string;
+  description: string;
+  features: string[];
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routes: Array<{
+    pageId: string;
+    path: string;
+    patternIds: string[];
+  }>;
+}> {
+  packType: 'section';
+}
+
+export interface PageExecutionPack extends ExecutionPackBase<{
+  pageId: string;
+  path: string;
+  shell: string;
+  sectionId: string | null;
+  sectionRole: string | null;
+  features: string[];
+  surface: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  wiringSignals: string[];
+  patterns: Array<{
+    id: string;
+    alias: string;
+    preset: string;
+    layout: string;
+  }>;
+}> {
+  packType: 'page';
+}
+
+export interface MutationExecutionPack extends ExecutionPackBase<{
+  mutationType: 'add-page' | 'modify';
+  shell: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routing: 'hash' | 'history';
+  features: string[];
+  routes: Array<{
+    pageId: string;
+    path: string;
+    patternIds: string[];
+  }>;
+  workflow: string[];
+}> {
+  packType: 'mutation';
+}
+
+export interface ExecutionPackBundleResponse {
+  $schema: string;
+  generatedAt: string;
+  sourceEssenceVersion: string;
+  manifest: ExecutionPackManifest;
+  scaffold: ScaffoldExecutionPack;
+  review: ReviewExecutionPack;
+  sections: SectionExecutionPack[];
+  pages: PageExecutionPack[];
+  mutations: MutationExecutionPack[];
+}

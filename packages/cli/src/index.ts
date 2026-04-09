@@ -22,6 +22,7 @@ import type {
   ShowcaseManifestResponse,
   ShowcaseShortlistReport,
   ShowcaseShortlistResponse,
+  ExecutionPackBundleResponse,
 } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
@@ -346,6 +347,48 @@ async function printRegistryIntelligenceSummary(
     console.log(
       `  ${cyan(type.padEnd(10))} total ${bucket.total_public_items} | intelligence ${bucket.with_intelligence} | recommended ${bucket.recommended} | authored ${bucket.authored} | benchmark ${bucket.benchmark} | hybrid ${bucket.hybrid}`,
     );
+  }
+}
+
+async function printHostedExecutionPackBundle(
+  essencePath?: string,
+  namespace?: string,
+  jsonOutput: boolean = false,
+) {
+  const client = getPublicAPIClient();
+  const resolvedPath = essencePath ? join(process.cwd(), essencePath) : join(process.cwd(), 'decantr.essence.json');
+
+  if (!existsSync(resolvedPath)) {
+    throw new Error(`Essence file not found at ${resolvedPath}`);
+  }
+
+  const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
+  const bundle = await client.compileExecutionPacks(
+    essence,
+    namespace ? { namespace } : undefined,
+  );
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(bundle, null, 2));
+    return;
+  }
+
+  const typedBundle = bundle as ExecutionPackBundleResponse;
+  console.log(heading('Hosted Execution Packs'));
+  console.log(`  Source essence: ${resolvedPath}`);
+  console.log(`  Essence version: ${typedBundle.sourceEssenceVersion}`);
+  console.log(`  Generated: ${typedBundle.generatedAt}`);
+  console.log(`  Adapter: ${typedBundle.scaffold.target.adapter}`);
+  console.log(`  Shell: ${typedBundle.scaffold.data.shell}`);
+  console.log(`  Theme: ${typedBundle.scaffold.data.theme.id} (${typedBundle.scaffold.data.theme.mode})`);
+  console.log(`  Pages: ${typedBundle.pages.length}`);
+  console.log(`  Sections: ${typedBundle.sections.length}`);
+  console.log(`  Mutations: ${typedBundle.mutations.length}`);
+  console.log('');
+  console.log(`${BOLD}Route Plan:${RESET}`);
+  for (const route of typedBundle.scaffold.data.routes) {
+    const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+    console.log(`  ${cyan(route.path)} -> ${route.pageId} [${patterns}]`);
   }
 }
 
@@ -1440,6 +1483,7 @@ ${BOLD}Usage:${RESET}
   decantr list <type> [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr showcase [manifest|shortlist|verification] [--json]
   decantr registry summary [--namespace <namespace>] [--json]
+  decantr registry compile-packs [path] [--namespace <namespace>] [--json]
   decantr validate [path]
   decantr theme <subcommand>
   decantr create <type> <name>
@@ -1507,6 +1551,7 @@ ${BOLD}Examples:${RESET}
   decantr showcase shortlist
   decantr showcase verification --json
   decantr registry summary --namespace @official
+  decantr registry compile-packs decantr.essence.json --json
   decantr create pattern my-card
 `);
 }
@@ -1825,8 +1870,14 @@ async function main() {
         const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
         const jsonOutput = args.includes('--json');
         await printRegistryIntelligenceSummary(namespace, jsonOutput);
+      } else if (subcommand === 'compile-packs') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        const essencePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
+        await printHostedExecutionPackBundle(essencePath, namespace, jsonOutput);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json]${RESET}`);
         process.exitCode = 1;
       }
       break;

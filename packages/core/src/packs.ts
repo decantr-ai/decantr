@@ -1,4 +1,8 @@
+import { isV3, migrateV2ToV3 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
+import type { ContentResolver } from '@decantr/registry';
 import { walkIR } from './ir-helpers.js';
+import { runPipeline } from './pipeline.js';
 import type { IRAppNode, IRNode, IRPageNode, IRPatternNode } from './types.js';
 
 export type ExecutionPackType = 'scaffold' | 'section' | 'page' | 'mutation' | 'review';
@@ -12,6 +16,7 @@ export const EXECUTION_PACK_SCHEMA_URLS = {
 } as const;
 
 export const PACK_MANIFEST_SCHEMA_URL = 'https://decantr.ai/schemas/pack-manifest.v1.json';
+export const EXECUTION_PACK_BUNDLE_SCHEMA_URL = 'https://decantr.ai/schemas/execution-pack-bundle.v1.json';
 
 export interface ExecutionPackTarget {
   platform: 'web';
@@ -67,6 +72,36 @@ export interface ExecutionPackBase<TData> {
   tokenBudget: ExecutionPackTokenBudget;
   data: TData;
   renderedMarkdown: string;
+}
+
+export interface PackManifestEntry {
+  id: string;
+  markdown: string;
+  json: string;
+}
+
+export interface PackManifestSectionEntry extends PackManifestEntry {
+  pageIds: string[];
+}
+
+export interface PackManifestPageEntry extends PackManifestEntry {
+  sectionId: string | null;
+  sectionRole: string | null;
+}
+
+export interface PackManifestMutationEntry extends PackManifestEntry {
+  mutationType: MutationPackKind;
+}
+
+export interface ExecutionPackManifest {
+  $schema: string;
+  version: '1.0.0';
+  generatedAt: string;
+  scaffold: PackManifestEntry | null;
+  review: PackManifestEntry | null;
+  sections: PackManifestSectionEntry[];
+  pages: PackManifestPageEntry[];
+  mutations: PackManifestMutationEntry[];
 }
 
 export interface ScaffoldPackRoute {
@@ -201,6 +236,18 @@ export interface ReviewExecutionPack extends ExecutionPackBase<ReviewPackData> {
   packType: 'review';
 }
 
+export interface ExecutionPackBundle {
+  $schema: string;
+  generatedAt: string;
+  sourceEssenceVersion: string;
+  manifest: ExecutionPackManifest;
+  scaffold: ScaffoldExecutionPack;
+  review: ReviewExecutionPack;
+  sections: SectionExecutionPack[];
+  pages: PageExecutionPack[];
+  mutations: MutationExecutionPack[];
+}
+
 export interface ScaffoldPackBuilderOptions {
   objective?: string;
   target?: Partial<ExecutionPackTarget>;
@@ -222,6 +269,12 @@ export interface ReviewPackBuilderOptions extends ScaffoldPackBuilderOptions {
   reviewType?: ReviewPackKind;
   focusAreas?: string[];
   workflow?: string[];
+}
+
+export interface CompileExecutionPackBundleOptions {
+  contentRoot?: string;
+  overridePaths?: string[];
+  resolver?: ContentResolver;
 }
 
 const DEFAULT_TARGET: ExecutionPackTarget = {
@@ -610,6 +663,67 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
   return lines.join('\n').trimEnd() + '\n';
 }
 
+export function resolvePackAdapter(
+  target: string | undefined,
+  platformType: string | undefined,
+): string {
+  if (target === 'react' && platformType === 'spa') return 'react-vite';
+  if (target === 'react') return 'react-web';
+  if (target === 'vue' && platformType === 'spa') return 'vue-vite';
+  if (target === 'svelte' && platformType === 'spa') return 'sveltekit';
+  if (target) return target;
+  return 'generic-web';
+}
+
+export function listPackSections(essence: EssenceV3): SectionPackInput[] {
+  const declaredSections = essence.blueprint.sections;
+  if (declaredSections && declaredSections.length > 0) {
+    return declaredSections.map(section => ({
+      id: section.id,
+      role: section.role,
+      shell: section.shell as string,
+      description: section.description,
+      features: section.features,
+      pageIds: section.pages.map(page => page.id),
+    }));
+  }
+
+  const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
+  return [{
+    id: essence.meta.archetype || 'default',
+    role: 'primary',
+    shell: (essence.blueprint.shell ?? 'sidebar-main') as string,
+    description: `${essence.meta.archetype || 'Application'} section`,
+    features: essence.blueprint.features || [],
+    pageIds: pages.map(page => page.id),
+  }];
+}
+
+export function listPackPages(essence: EssenceV3): PagePackInput[] {
+  const declaredSections = essence.blueprint.sections;
+  if (declaredSections && declaredSections.length > 0) {
+    return declaredSections.flatMap(section =>
+      section.pages.map(page => ({
+        pageId: page.id,
+        shell: (page.shell_override ?? section.shell) as string,
+        sectionId: section.id,
+        sectionRole: section.role,
+        features: section.features,
+      })),
+    );
+  }
+
+  const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
+  const defaultShell = (essence.blueprint.shell ?? 'sidebar-main') as string;
+  return pages.map(page => ({
+    pageId: page.id,
+    shell: (page.shell_override ?? defaultShell) as string,
+    sectionId: essence.meta.archetype || 'default',
+    sectionRole: 'primary',
+    features: essence.blueprint.features || [],
+  }));
+}
+
 export function buildScaffoldPack(
   appNode: IRAppNode,
   options: ScaffoldPackBuilderOptions = {},
@@ -935,4 +1049,87 @@ export function buildReviewPack(
 
   pack.renderedMarkdown = renderExecutionPackMarkdown(pack);
   return pack;
+}
+
+export async function compileExecutionPackBundle(
+  essence: EssenceFile,
+  options: CompileExecutionPackBundleOptions = {},
+): Promise<ExecutionPackBundle> {
+  const effectiveEssence = isV3(essence) ? essence : migrateV2ToV3(essence);
+  const generatedAt = new Date().toISOString();
+  const sharedTarget = {
+    framework: effectiveEssence.meta.target || null,
+    runtime: effectiveEssence.meta.platform.type || null,
+    adapter: resolvePackAdapter(effectiveEssence.meta.target, effectiveEssence.meta.platform.type),
+  };
+
+  const pipeline = await runPipeline(essence, {
+    contentRoot: options.contentRoot,
+    overridePaths: options.overridePaths,
+    resolver: options.resolver,
+  });
+
+  const scaffold = buildScaffoldPack(pipeline.ir, {
+    target: sharedTarget,
+  });
+  const review = buildReviewPack(pipeline.ir, {
+    target: sharedTarget,
+  });
+  const sections = listPackSections(effectiveEssence).map(section => buildSectionPack(pipeline.ir, section, {
+    target: sharedTarget,
+  }));
+  const pages = listPackPages(effectiveEssence).map(page => buildPagePack(pipeline.ir, page, {
+    target: sharedTarget,
+  }));
+  const mutations = (['add-page', 'modify'] as const).map(mutationType => buildMutationPack(pipeline.ir, {
+    mutationType,
+    target: sharedTarget,
+  }));
+
+  const manifest: ExecutionPackManifest = {
+    $schema: PACK_MANIFEST_SCHEMA_URL,
+    version: '1.0.0',
+    generatedAt,
+    scaffold: {
+      id: 'scaffold',
+      markdown: 'scaffold-pack.md',
+      json: 'scaffold-pack.json',
+    },
+    review: {
+      id: 'review',
+      markdown: 'review-pack.md',
+      json: 'review-pack.json',
+    },
+    sections: listPackSections(effectiveEssence).map(section => ({
+      id: section.id,
+      markdown: `section-${section.id}-pack.md`,
+      json: `section-${section.id}-pack.json`,
+      pageIds: section.pageIds,
+    })),
+    pages: listPackPages(effectiveEssence).map(page => ({
+      id: page.pageId,
+      markdown: `page-${page.pageId}-pack.md`,
+      json: `page-${page.pageId}-pack.json`,
+      sectionId: page.sectionId,
+      sectionRole: page.sectionRole,
+    })),
+    mutations: (['add-page', 'modify'] as const).map(mutationType => ({
+      id: mutationType,
+      markdown: `mutation-${mutationType}-pack.md`,
+      json: `mutation-${mutationType}-pack.json`,
+      mutationType,
+    })),
+  };
+
+  return {
+    $schema: EXECUTION_PACK_BUNDLE_SCHEMA_URL,
+    generatedAt,
+    sourceEssenceVersion: essence.version,
+    manifest,
+    scaffold,
+    review,
+    sections,
+    pages,
+    mutations,
+  };
 }

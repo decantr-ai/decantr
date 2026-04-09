@@ -20,7 +20,9 @@ import type {
   ShowcaseManifestResponse,
   ShowcaseShortlistResponse,
   ShowcaseShortlistReport,
+  ExecutionPackBundleResponse,
 } from './types.js';
+import type { EssenceFile } from '@decantr/essence-spec';
 
 const DEFAULT_BASE_URL = 'https://api.decantr.ai/v1';
 const DEFAULT_TIMEOUT_MS = 30000;
@@ -369,6 +371,24 @@ export class RegistryAPIClient {
     );
     this.setCache(cacheKey, result);
     return result;
+  }
+
+  async compileExecutionPacks(
+    essence: EssenceFile,
+    params?: { namespace?: string },
+  ): Promise<ExecutionPackBundleResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+
+    return this.request<ExecutionPackBundleResponse>(
+      `/packs/compile${query ? `?${query}` : ''}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(essence),
+      },
+    );
   }
 }
 

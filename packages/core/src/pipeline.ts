@@ -2,6 +2,7 @@ import type { IRAppNode, IRShellNode, IRStoreNode, IRPageNode, IRLayer } from '.
 import type { EssenceFile } from '@decantr/essence-spec';
 import { validateEssence, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import { createResolver } from '@decantr/registry';
+import type { ContentResolver } from '@decantr/registry';
 import { resolveEssence } from './resolve.js';
 import { buildPageIR } from './ir.js';
 import { pascalCase } from './utils.js';
@@ -15,13 +16,16 @@ function extractRouting(essence: EssenceFile): 'hash' | 'history' {
 
 export interface PipelineOptions {
   /** Path to content directory (patterns, archetypes, themes) */
-  contentRoot: string;
+  contentRoot?: string;
 
   /** Override paths for local content resolution */
   overridePaths?: string[];
 
   /** Only resolve specific page(s) */
   pageFilter?: string;
+
+  /** Optional custom resolver for hosted or in-memory execution */
+  resolver?: ContentResolver;
 }
 
 export interface PipelineResult {
@@ -50,10 +54,16 @@ export async function runPipeline(
   const effectiveEssence = isV3(essence) ? essence : migrateV2ToV3(essence);
 
   // 3. Create resolver and resolve
-  const resolver = createResolver({
-    contentRoot: options.contentRoot,
-    overridePaths: options.overridePaths,
-  });
+  const resolver = options.resolver ?? (() => {
+    if (!options.contentRoot) {
+      throw new Error('Pipeline options must include either a contentRoot or a resolver.');
+    }
+
+    return createResolver({
+      contentRoot: options.contentRoot,
+      overridePaths: options.overridePaths,
+    });
+  })();
 
   const resolved = await resolveEssence(effectiveEssence, resolver);
 
