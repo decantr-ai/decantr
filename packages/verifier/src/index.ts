@@ -383,6 +383,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.dynamicEvalCount
       + signals.externalIframeWithoutSandboxCount
       + signals.insecureFormActionCount
+      + signals.insecureTransportEndpointCount
       + signals.externalBlankLinkWithoutRelCount;
     const authInputHintIssueCount = signals.emailAutocompleteMissingCount
       + signals.passwordAutocompleteMissingCount;
@@ -1601,6 +1602,7 @@ interface AstCritiqueSignals {
   dynamicEvalCount: number;
   externalIframeWithoutSandboxCount: number;
   insecureFormActionCount: number;
+  insecureTransportEndpointCount: number;
   iconOnlyButtonWithoutLabelCount: number;
   iconOnlyLinkWithoutLabelCount: number;
   clickableNonSemanticCount: number;
@@ -1811,6 +1813,59 @@ function hasInsecureFormAction(attributes: ts.JsxAttributes): boolean {
   return /^http:\/\//i.test(actionValue?.trim() ?? '');
 }
 
+function getExpressionLiteralValue(expression: ts.Expression | undefined): string | null {
+  if (!expression) return null;
+  if (ts.isStringLiteral(expression) || ts.isNoSubstitutionTemplateLiteral(expression)) {
+    return expression.text;
+  }
+  if (ts.isParenthesizedExpression(expression)) {
+    return getExpressionLiteralValue(expression.expression);
+  }
+  if (ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression)) {
+    return getExpressionLiteralValue(expression.expression);
+  }
+  return null;
+}
+
+function getObjectLiteralStringPropertyValue(
+  expression: ts.Expression | undefined,
+  ...propertyNames: string[]
+): string | null {
+  if (!expression || !ts.isObjectLiteralExpression(expression)) return null;
+  for (const property of expression.properties) {
+    if (!ts.isPropertyAssignment(property)) continue;
+    const propertyName = ts.isIdentifier(property.name)
+      ? property.name.text
+      : ts.isStringLiteral(property.name)
+        ? property.name.text
+        : null;
+    if (!propertyName || !propertyNames.includes(propertyName)) continue;
+    const value = getExpressionLiteralValue(property.initializer);
+    if (value) return value;
+  }
+  return null;
+}
+
+function isInsecureTransportUrl(value: string | null): boolean {
+  return typeof value === 'string' && /^(?:http|ws):\/\//i.test(value.trim());
+}
+
+function isFetchLikeCall(node: ts.CallExpression): boolean {
+  return (ts.isIdentifier(node.expression) && node.expression.text === 'fetch')
+    || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'fetch'));
+}
+
+function isAxiosLikeCall(node: ts.CallExpression): boolean {
+  if (!ts.isPropertyAccessExpression(node.expression)) return false;
+  return ts.isIdentifier(node.expression.expression)
+    && node.expression.expression.text === 'axios'
+    && isPropertyNamed(node.expression.name, 'get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'request');
+}
+
+function isAxiosConfigCall(node: ts.CallExpression): boolean {
+  return ts.isIdentifier(node.expression) && node.expression.text === 'axios';
+}
+
 function hasPlaceholderNavigationTarget(attributes: ts.JsxAttributes): boolean {
   const targetValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'href', 'to'));
   if (!targetValue) return false;
@@ -1970,6 +2025,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     dynamicEvalCount: 0,
     externalIframeWithoutSandboxCount: 0,
     insecureFormActionCount: 0,
+    insecureTransportEndpointCount: 0,
     iconOnlyButtonWithoutLabelCount: 0,
     iconOnlyLinkWithoutLabelCount: 0,
     clickableNonSemanticCount: 0,
@@ -2052,8 +2108,23 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     }
 
     if (ts.isCallExpression(node)) {
+      const firstArgumentLiteral = getExpressionLiteralValue(node.arguments[0]);
       if (ts.isIdentifier(node.expression) && node.expression.text === 'eval') {
         signals.dynamicEvalCount += 1;
+      }
+
+      if (
+        (isFetchLikeCall(node) || isAxiosLikeCall(node))
+        && isInsecureTransportUrl(firstArgumentLiteral)
+      ) {
+        signals.insecureTransportEndpointCount += 1;
+      }
+
+      if (
+        isAxiosConfigCall(node)
+        && isInsecureTransportUrl(getObjectLiteralStringPropertyValue(node.arguments[0], 'url', 'baseURL', 'baseUrl'))
+      ) {
+        signals.insecureTransportEndpointCount += 1;
       }
 
       if (ts.isPropertyAccessExpression(node.expression)) {
@@ -2104,6 +2175,15 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       && node.expression.text === 'Function'
     ) {
       signals.dynamicEvalCount += 1;
+    }
+
+    if (
+      ts.isNewExpression(node)
+      && ts.isIdentifier(node.expression)
+      && ['WebSocket', 'EventSource'].includes(node.expression.text)
+      && isInsecureTransportUrl(getExpressionLiteralValue(node.arguments?.[0]))
+    ) {
+      signals.insecureTransportEndpointCount += 1;
     }
 
     if (ts.isJsxSelfClosingElement(node)) {
@@ -2573,6 +2653,7 @@ export function critiqueSource({
   const dynamicEvalCount = Math.max(astSignals.dynamicEvalCount, /\beval\s*\(|new\s+Function\s*\(/.test(code) ? 1 : 0);
   const externalIframeWithoutSandboxCount = astSignals.externalIframeWithoutSandboxCount;
   const insecureFormActionCount = astSignals.insecureFormActionCount;
+  const insecureTransportEndpointCount = astSignals.insecureTransportEndpointCount;
   const externalBlankLinkWithoutRelCount = astSignals.externalBlankLinkWithoutRelCount;
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
@@ -2584,6 +2665,7 @@ export function critiqueSource({
   const hasDynamicEval = dynamicEvalCount > 0;
   const hasExternalIframeWithoutSandbox = externalIframeWithoutSandboxCount > 0;
   const hasInsecureFormAction = insecureFormActionCount > 0;
+  const hasInsecureTransportEndpoint = insecureTransportEndpointCount > 0;
   const hasExternalBlankLinkWithoutRel = externalBlankLinkWithoutRelCount > 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0 || passwordAutocompleteMissingCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
@@ -2600,18 +2682,20 @@ export function critiqueSource({
       - (hasDynamicEval ? 2 : 0)
       - (hasExternalIframeWithoutSandbox ? 1 : 0)
       - (hasInsecureFormAction ? 2 : 0)
+      - (hasInsecureTransportEndpoint ? 2 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
       ...(hasExternalIframeWithoutSandbox ? ['Sandbox external iframes unless a reviewed embed contract explicitly requires broader privileges.'] : []),
       ...(hasInsecureFormAction ? ['Avoid posting forms to plain HTTP endpoints; use HTTPS or move the action behind a trusted server boundary.'] : []),
+      ...(hasInsecureTransportEndpoint ? ['Avoid plain HTTP or ws:// client endpoints; use HTTPS/WSS transport or route the request behind a trusted server boundary.'] : []),
       ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, or `new-password` on auth-related inputs.'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
@@ -2689,6 +2773,18 @@ export function critiqueSource({
       evidence: [filePath, `Forms with insecure HTTP action: ${insecureFormActionCount}`],
       file: filePath,
       suggestedFix: 'Use HTTPS form endpoints or route submissions through a trusted server action/API boundary that preserves transport security.',
+    }));
+  }
+
+  if (hasInsecureTransportEndpoint) {
+    findings.push(makeFinding({
+      id: 'security-transport-endpoint-insecure',
+      category: 'Security Hygiene',
+      severity: 'error',
+      message: 'Client code was detected calling plain HTTP or insecure websocket endpoints.',
+      evidence: [filePath, `Insecure transport endpoints: ${insecureTransportEndpointCount}`],
+      file: filePath,
+      suggestedFix: 'Use HTTPS/WSS endpoints or move the transport boundary behind a trusted server action or API layer.',
     }));
   }
 

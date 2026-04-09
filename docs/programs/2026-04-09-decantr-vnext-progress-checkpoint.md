@@ -117,6 +117,7 @@ commit archaeology.
 - File critique and source audit now also flag iframes without descriptive `title` attributes, so embedded dashboards/docs do not slip past the accessibility baseline.
 - File critique and source audit now also flag external iframes without `sandbox`, so embeds are held to a safer default trust boundary.
 - File critique and source audit now also flag forms posting to plain `http://` endpoints, so insecure transport regressions show up before runtime review.
+- File critique and source audit now also flag plain `http://` / `ws://` client transport endpoints, so insecure outbound requests are caught before hosted/runtime verification.
 
 ### Showcase / golden corpus
 
