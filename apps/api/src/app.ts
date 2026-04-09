@@ -17,6 +17,7 @@ import { optionalAuth } from './middleware/auth.js';
 import { rateLimiter } from './middleware/rate-limit.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { logger } from './lib/logger.js';
+import { isAdminSyncRoute, isPublicReadOnlyRoute } from './lib/public-route-access.js';
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
@@ -84,13 +85,13 @@ export function createApp(): Hono<Env> {
     const method = c.req.method;
 
     // Skip auth for admin sync (uses X-Admin-Key)
-    if (path === '/v1/admin/sync' && method === 'POST') {
+    if (isAdminSyncRoute(method, path)) {
       return next();
     }
 
     // Skip auth for public read-only content endpoints (GET only)
     // These don't need auth — auth is only for publishing, moderation, billing
-    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|schema|showcase|intelligence|health)/.test(path)) {
+    if (isPublicReadOnlyRoute(method, path)) {
       c.set('auth', { user: null, isAuthenticated: false, isAdmin: false });
       return next();
     }
@@ -103,10 +104,10 @@ export function createApp(): Hono<Env> {
   app.use('/v1/*', async (c, next) => {
     const path = c.req.path;
     const method = c.req.method;
-    if (path === '/v1/admin/sync' && method === 'POST') {
+    if (isAdminSyncRoute(method, path)) {
       return next();
     }
-    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|schema|showcase|intelligence|health)/.test(path)) {
+    if (isPublicReadOnlyRoute(method, path)) {
       return next();
     }
     await rateLimiter()(c, next);
