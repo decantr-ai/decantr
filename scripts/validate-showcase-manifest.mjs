@@ -108,6 +108,7 @@ if (reportResults.length > 0) {
       'appsWithoutInlineScriptsCount',
       'appsWithCspSignalCount',
       'appsWithExternalScriptIntegrityCount',
+      'appsWithExternalStylesheetIntegrityCount',
       'appsWithRouteCoverageCount',
       'appsWithFullRouteCoverageCount',
       'averageTotalAssetBytes',

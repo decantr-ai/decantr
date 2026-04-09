@@ -83,6 +83,7 @@ async function ShowcaseShortlistSummary() {
         { label: 'Full Route Coverage', value: summary.appsWithFullRouteCoverageCount },
         { label: 'No Inline Scripts', value: summary.appsWithoutInlineScriptsCount },
         { label: 'CSP Signals', value: summary.appsWithCspSignalCount },
+        { label: 'External CSS Integrity', value: summary.appsWithExternalStylesheetIntegrityCount },
         { label: 'Lower Drift', value: summary.lowerDriftCount },
         { label: 'Elevated Drift', value: summary.elevatedDriftCount },
       ]}

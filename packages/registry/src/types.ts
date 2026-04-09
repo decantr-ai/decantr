@@ -574,6 +574,7 @@ export interface ShowcaseShortlistSummary {
   appsWithoutInlineScriptsCount: number;
   appsWithCspSignalCount: number;
   appsWithExternalScriptIntegrityCount: number;
+  appsWithExternalStylesheetIntegrityCount: number;
   appsWithRouteCoverageCount: number;
   appsWithFullRouteCoverageCount: number;
   averageTotalAssetBytes: number;

@@ -375,6 +375,7 @@ async function printShowcaseBenchmarks(
       console.log(`  No inline scripts: ${report.summary.appsWithoutInlineScriptsCount}/${report.summary.appCount}`);
       console.log(`  CSP signals: ${report.summary.appsWithCspSignalCount}/${report.summary.appCount}`);
       console.log(`  External script integrity ok: ${report.summary.appsWithExternalScriptIntegrityCount}/${report.summary.appCount}`);
+      console.log(`  External stylesheet integrity ok: ${report.summary.appsWithExternalStylesheetIntegrityCount}/${report.summary.appCount}`);
       console.log(`  Route coverage: ${report.summary.appsWithRouteCoverageCount}/${report.summary.appCount}`);
       console.log(`  Full route coverage: ${report.summary.appsWithFullRouteCoverageCount}/${report.summary.appCount}`);
       console.log(`  Avg assets: total ${fmtBytes(report.summary.averageTotalAssetBytes)} | js ${fmtBytes(report.summary.averageJsAssetBytes)} | css ${fmtBytes(report.summary.averageCssAssetBytes)}`);

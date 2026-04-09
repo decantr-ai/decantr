@@ -106,6 +106,7 @@ describe('registry commands (e2e)', () => {
           appsWithoutInlineScriptsCount: 1,
           appsWithCspSignalCount: 1,
           appsWithExternalScriptIntegrityCount: 1,
+          appsWithExternalStylesheetIntegrityCount: 1,
           appsWithRouteCoverageCount: 1,
           averageTotalAssetBytes: 42000,
           averageJsAssetBytes: 31000,

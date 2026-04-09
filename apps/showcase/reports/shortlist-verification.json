@@ -1,12 +1,12 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-09T22:15:27.432Z",
+  "generatedAt": "2026-04-09T22:17:45.609Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1778,
+    "averageDurationMs": 1789,
     "passedSmokes": 8,
     "failedSmokes": 0,
     "averageSmokeDurationMs": 10,
@@ -17,6 +17,7 @@
     "appsWithoutInlineScriptsCount": 8,
     "appsWithCspSignalCount": 0,
     "appsWithExternalScriptIntegrityCount": 8,
+    "appsWithExternalStylesheetIntegrityCount": 6,
     "appsWithRouteCoverageCount": 8,
     "appsWithFullRouteCoverageCount": 8,
     "averageTotalAssetBytes": 335362,
@@ -35,11 +36,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1736
+        "durationMs": 1718
       },
       "smoke": {
         "passed": true,
-        "durationMs": 37,
+        "durationMs": 40,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -95,11 +96,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1743
+        "durationMs": 1785
       },
       "smoke": {
         "passed": true,
-        "durationMs": 8,
+        "durationMs": 9,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -155,7 +156,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1773
+        "durationMs": 1729
       },
       "smoke": {
         "passed": true,
@@ -215,7 +216,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1716
+        "durationMs": 1700
       },
       "smoke": {
         "passed": true,
@@ -275,7 +276,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1646
+        "durationMs": 1668
       },
       "smoke": {
         "passed": true,
@@ -334,7 +335,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1900
+        "durationMs": 1967
       },
       "smoke": {
         "passed": true,
@@ -394,11 +395,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1873
+        "durationMs": 1905
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -454,7 +455,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1834
+        "durationMs": 1840
       },
       "smoke": {
         "passed": true,

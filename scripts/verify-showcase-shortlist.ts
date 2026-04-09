@@ -185,6 +185,7 @@ async function main() {
     appsWithoutInlineScriptsCount: results.filter(entry => entry.smoke.inlineScriptCount === 0).length,
     appsWithCspSignalCount: results.filter(entry => entry.smoke.cspSignalOk).length,
     appsWithExternalScriptIntegrityCount: results.filter(entry => entry.smoke.externalScriptsWithoutIntegrityCount === 0).length,
+    appsWithExternalStylesheetIntegrityCount: results.filter(entry => entry.smoke.externalStylesheetsWithoutIntegrityCount === 0).length,
     appsWithRouteCoverageCount: results.filter(entry => {
       const minimumRoutes = Math.min(2, entry.smoke.routeDocumentsChecked);
       return entry.smoke.routeDocumentsChecked === 0 || entry.smoke.routeDocumentsPassed >= minimumRoutes;
@@ -234,6 +235,7 @@ async function main() {
   console.log(`No inline scripts: ${summary.appsWithoutInlineScriptsCount}/${summary.appCount}`);
   console.log(`CSP signals present: ${summary.appsWithCspSignalCount}/${summary.appCount}`);
   console.log(`External script integrity ok: ${summary.appsWithExternalScriptIntegrityCount}/${summary.appCount}`);
+  console.log(`External stylesheet integrity ok: ${summary.appsWithExternalStylesheetIntegrityCount}/${summary.appCount}`);
   console.log(`Route coverage checks passed: ${summary.appsWithRouteCoverageCount}/${summary.appCount}`);
   console.log(`Full route coverage: ${summary.appsWithFullRouteCoverageCount}/${summary.appCount}`);
   console.log(`Average built assets: total ${summary.averageTotalAssetBytes} B, js ${summary.averageJsAssetBytes} B, css ${summary.averageCssAssetBytes} B`);
