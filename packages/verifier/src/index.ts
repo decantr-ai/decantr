@@ -431,6 +431,7 @@ function appendTopologyFindings(
 ): void {
   const topology = summarizeTopology(essence, reviewPack);
   if (!topology.hasAuthFeature) return;
+  const overlappingAuthRoutes = topology.gatewayRoutes.filter(route => topology.primaryRoutes.includes(route));
 
   if (!topology.sectionRoles.includes('gateway')) {
     findings.push(makeFinding({
@@ -546,6 +547,19 @@ function appendTopologyFindings(
         `Primary routes: ${topology.primaryRoutes.join(', ')}`,
       ],
       suggestedFix: 'Use at least one primary route like `/dashboard`, `/workspace`, `/settings`, or `/app` so the authenticated surface is explicit.',
+    }));
+  }
+
+  if (overlappingAuthRoutes.length > 0) {
+    findings.push(makeFinding({
+      id: 'auth-gateway-primary-route-overlap',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Gateway and primary sections expose overlapping routes, which blurs the anonymous-to-authenticated boundary.',
+      evidence: [
+        `Overlapping routes: ${overlappingAuthRoutes.join(', ')}`,
+      ],
+      suggestedFix: 'Keep gateway routes focused on anonymous entry flows and reserve primary routes for authenticated destinations so the route boundary stays explicit.',
     }));
   }
 
@@ -742,6 +756,18 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
       ],
       suggestedFix: 'Verify that route generation still covers the pages declared in the essence and compiled packs.',
     }));
+  } else if (runtimeAudit.routeHintsChecked.length > 0 && runtimeAudit.routeHintsMatched < runtimeAudit.routeHintsChecked.length) {
+    findings.push(makeFinding({
+      id: 'runtime-route-hints-partial',
+      category: 'Runtime Verification',
+      severity: 'info',
+      message: 'Built JS only reflected part of the expected route contract from the compiled app context.',
+      evidence: [
+        `Checked route hints: ${runtimeAudit.routeHintsChecked.join(', ')}`,
+        `Matched ${runtimeAudit.routeHintsMatched}/${runtimeAudit.routeHintsChecked.length} route hints in built JS assets.`,
+      ],
+      suggestedFix: 'Verify route generation for the missing pages and confirm code-split bundles still preserve the expected route contract.',
+    }));
   }
 
   if (runtimeAudit.routeDocumentsChecked > 0 && runtimeAudit.routeDocumentsPassed < Math.min(2, runtimeAudit.routeDocumentsChecked)) {
@@ -755,6 +781,18 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
         ...runtimeAudit.failures.filter(failure => failure.startsWith('route-document-failed:')),
       ],
       suggestedFix: 'Verify route fallbacks and build output so every declared route resolves to a usable root document.',
+    }));
+  } else if (runtimeAudit.routeDocumentsChecked > 0 && runtimeAudit.routeDocumentsPassed < runtimeAudit.routeDocumentsChecked) {
+    findings.push(makeFinding({
+      id: 'runtime-route-documents-partial',
+      category: 'Runtime Verification',
+      severity: 'warn',
+      message: 'Some expected routes resolved to a root document, but at least one still failed runtime verification.',
+      evidence: [
+        `Passed ${runtimeAudit.routeDocumentsPassed}/${runtimeAudit.routeDocumentsChecked} route document checks.`,
+        ...runtimeAudit.failures.filter(failure => failure.startsWith('route-document-failed:')),
+      ],
+      suggestedFix: 'Fix the failing route outputs so every declared destination resolves to the same usable root document contract.',
     }));
   }
 
