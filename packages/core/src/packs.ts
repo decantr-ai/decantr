@@ -350,6 +350,24 @@ const DEFAULT_REVIEW_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
   },
 ];
 
+const DEFAULT_REVIEW_ANTI_PATTERNS: ExecutionPackAntiPattern[] = [
+  {
+    id: 'inline-styles',
+    summary: 'Avoid inline style literals as the primary styling path.',
+    guidance: 'Move visual styling into tokens.css and treatments.css instead of component-local style objects.',
+  },
+  {
+    id: 'hardcoded-colors',
+    summary: 'Avoid hardcoded color literals.',
+    guidance: 'Use CSS variables and theme decorators instead of hex, rgb, or hsl values.',
+  },
+  {
+    id: 'utility-framework-leakage',
+    summary: 'Avoid utility-framework leakage as the primary design language.',
+    guidance: 'Prefer compiled Decantr treatments and contract vocabulary over ad hoc utility class stacks.',
+  },
+];
+
 function collectPatternIds(page: IRPageNode): string[] {
   const patternIds: string[] = [];
   walkIR(page, (node: IRNode) => {
@@ -895,7 +913,7 @@ export function buildReviewPack(
       ...focusAreas,
     ])],
     examples: options.examples ?? [],
-    antiPatterns: options.antiPatterns ?? [],
+    antiPatterns: options.antiPatterns ?? DEFAULT_REVIEW_ANTI_PATTERNS,
     successChecks: options.successChecks ?? DEFAULT_REVIEW_SUCCESS_CHECKS,
     tokenBudget: mergeTokenBudget(options.tokenBudget),
     data: {

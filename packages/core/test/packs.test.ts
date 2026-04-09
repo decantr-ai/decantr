@@ -205,6 +205,8 @@ describe('buildScaffoldPack', () => {
     expect(pack.data.reviewType).toBe('app');
     expect(pack.data.routes).toHaveLength(2);
     expect(pack.data.focusAreas).toContain('route-topology');
+    expect(pack.antiPatterns.map(entry => entry.id)).toContain('inline-styles');
+    expect(pack.antiPatterns.map(entry => entry.id)).toContain('hardcoded-colors');
     expect(pack.renderedMarkdown).toContain('## Review Contract');
     expect(pack.renderedMarkdown).toContain('## Focus Areas');
     expect(pack.renderedMarkdown).toContain('## Review Workflow');

@@ -356,6 +356,25 @@ function resolveFocusAreas(reviewPack: ReviewExecutionPack | null): string[] {
   return reviewPack?.data.focusAreas?.length ? reviewPack.data.focusAreas : DEFAULT_FOCUS_AREAS;
 }
 
+function resolveSeverityFromChecks(
+  reviewPack: ReviewExecutionPack | null,
+  fallback: VerificationSeverity,
+  checkIds: string[],
+): VerificationSeverity {
+  const match = reviewPack?.successChecks.find(check => checkIds.includes(check.id));
+  return match?.severity ?? fallback;
+}
+
+function findHardcodedColors(code: string): string[] {
+  const matches = code.match(/#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)/g) ?? [];
+  return [...new Set(matches)];
+}
+
+function findUtilityFrameworkSignals(code: string): string[] {
+  const matches = code.match(/\b(?:bg|text|border|shadow|rounded|px|py|mx|my|gap|grid-cols|col-span|row-span|sm|md|lg|xl|hover):[-\w/.[\]]+/g) ?? [];
+  return [...new Set(matches)];
+}
+
 export async function critiqueFile(filePath: string, projectRoot: string): Promise<FileCritiqueReport> {
   const resolvedPath = isAbsolute(filePath) ? filePath : resolve(projectRoot, filePath);
   const code = await readFile(resolvedPath, 'utf-8');
@@ -365,6 +384,7 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
   const focusAreas = resolveFocusAreas(reviewPack);
   const findings: VerificationFinding[] = [];
   const scores: VerificationScore[] = [];
+  const antiPatternIds = new Set(reviewPack?.antiPatterns.map(entry => entry.id) ?? []);
 
   const usedTreatments = TREATMENT_CLASSES.filter(token => code.includes(token));
   const treatmentSuggestions = TREATMENT_CLASSES.filter(token => !code.includes(token)).map(token => `Consider using \`${token}\` where appropriate.`);
@@ -379,7 +399,7 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
     findings.push(makeFinding({
       id: 'treatment-usage-missing',
       category: 'Treatment Usage',
-      severity: 'warn',
+      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['page-pattern-contract', 'section-pattern-coverage']),
       message: 'No Decantr treatment classes were detected in the reviewed file.',
       evidence: [resolvedPath, 'Expected tokens include d-interactive, d-surface, d-data, d-control, d-section, d-annotation, d-label.'],
       file: resolvedPath,
@@ -406,7 +426,7 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
     findings.push(makeFinding({
       id: 'theme-consistency-weak',
       category: 'Theme Consistency',
-      severity: 'warn',
+      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['theme-consistency', 'mutation-theme-contract']),
       message: 'The file does not appear to use theme decorators or CSS variables from the compiled contract.',
       evidence: [resolvedPath, `Decorators available: ${decoratorNames.slice(0, 5).join(', ') || 'none'}`],
       file: resolvedPath,
@@ -433,7 +453,7 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
       findings.push(makeFinding({
         id: 'accessibility-aria-missing',
         category: 'Accessibility',
-        severity: 'warn',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
         message: 'No ARIA roles or labels were detected in the reviewed file.',
         evidence: [resolvedPath],
         file: resolvedPath,
@@ -444,7 +464,7 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
       findings.push(makeFinding({
         id: 'accessibility-keyboard-missing',
         category: 'Accessibility',
-        severity: 'info',
+        severity: resolveSeverityFromChecks(reviewPack, 'info', ['review-remediation']),
         message: 'No keyboard interaction handlers were detected in the reviewed file.',
         evidence: [resolvedPath],
         file: resolvedPath,
@@ -466,7 +486,7 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
     findings.push(makeFinding({
       id: 'responsive-signals-missing',
       category: 'Responsive Design',
-      severity: 'warn',
+      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['page-pattern-contract']),
       message: 'No responsive breakpoint handling was detected in the reviewed file.',
       evidence: [resolvedPath],
       file: resolvedPath,
@@ -501,11 +521,49 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
     findings.push(makeFinding({
       id: 'review-pack-missing-for-critique',
       category: 'Route Topology',
-      severity: 'warn',
+      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'route-topology', 'page-route-contract']),
       message: 'Critique ran without a compiled review pack.',
       evidence: [join(projectRoot, '.decantr', 'context', 'review-pack.json')],
       file: resolvedPath,
       suggestedFix: 'Regenerate execution packs so critique findings can anchor to the compiled route contract.',
+    }));
+  }
+
+  if (antiPatternIds.has('inline-styles') && /style\s*=\s*(?:\{\{|["'])/.test(code)) {
+    findings.push(makeFinding({
+      id: 'anti-pattern-inline-styles',
+      category: 'Anti-Patterns',
+      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'theme-consistency']),
+      message: 'Inline style literals were detected in the reviewed file.',
+      evidence: [resolvedPath],
+      file: resolvedPath,
+      suggestedFix: 'Replace inline visual values with treatments, decorators, and CSS variables from the compiled contract.',
+    }));
+  }
+
+  const hardcodedColors = antiPatternIds.has('hardcoded-colors') ? findHardcodedColors(code) : [];
+  if (hardcodedColors.length > 0) {
+    findings.push(makeFinding({
+      id: 'anti-pattern-hardcoded-colors',
+      category: 'Anti-Patterns',
+      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['theme-consistency', 'mutation-theme-contract']),
+      message: 'Hardcoded color literals were detected in the reviewed file.',
+      evidence: [resolvedPath, `Color literals: ${hardcodedColors.slice(0, 5).join(', ')}`],
+      file: resolvedPath,
+      suggestedFix: 'Replace hardcoded colors with CSS variables or theme decorators from Decantr.',
+    }));
+  }
+
+  const utilitySignals = antiPatternIds.has('utility-framework-leakage') ? findUtilityFrameworkSignals(code) : [];
+  if (utilitySignals.length > 0 && usedTreatments.length === 0) {
+    findings.push(makeFinding({
+      id: 'anti-pattern-utility-framework-leakage',
+      category: 'Anti-Patterns',
+      severity: 'info',
+      message: 'Utility-framework class patterns appear to be carrying the primary visual system for this file.',
+      evidence: [resolvedPath, `Utility signals: ${utilitySignals.slice(0, 6).join(', ')}`],
+      file: resolvedPath,
+      suggestedFix: 'Use Decantr treatments and decorators as the primary styling contract, with utilities only as supporting glue when necessary.',
     }));
   }
 

@@ -64,8 +64,25 @@ describe('verifier', () => {
         requiredSetup: [],
         allowedVocabulary: [],
         examples: [],
-        antiPatterns: [],
-        successChecks: [],
+        antiPatterns: [
+          {
+            id: 'inline-styles',
+            summary: 'Avoid inline style literals as the primary styling path.',
+            guidance: 'Move visual styling into tokens.css and treatments.css instead of component-local style objects.',
+          },
+          {
+            id: 'hardcoded-colors',
+            summary: 'Avoid hardcoded color literals.',
+            guidance: 'Use CSS variables and theme decorators instead of hex, rgb, or hsl values.',
+          },
+        ],
+        successChecks: [
+          {
+            id: 'theme-consistency',
+            label: 'Theme identity and mode remain consistent across scaffolded routes.',
+            severity: 'warn',
+          },
+        ],
         tokenBudget: { target: 1400, max: 2200, strategy: [] },
         data: {
           reviewType: 'app',
@@ -81,12 +98,14 @@ describe('verifier', () => {
       }, null, 2));
       writeFileSync(join(projectRoot, 'src', 'styles', 'treatments.css'), '.brand-accent { color: var(--d-primary); }\n');
       const filePath = join(projectRoot, 'Example.tsx');
-      writeFileSync(filePath, '<button className="plain">Click me</button>\n');
+      writeFileSync(filePath, '<button className="plain" style={{ color: "#ff00ff" }}>Click me</button>\n');
 
       const report = await critiqueFile(filePath, projectRoot);
       expect(report.reviewPack?.packType).toBe('review');
       expect(report.focusAreas).toContain('accessibility');
       expect(report.findings.some(finding => finding.id === 'theme-consistency-weak')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'anti-pattern-inline-styles')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'anti-pattern-hardcoded-colors')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'responsive-signals-missing')).toBe(true);
       expect(report.scores.some(score => score.category === 'Topology Context')).toBe(true);
     } finally {
