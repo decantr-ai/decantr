@@ -9,6 +9,7 @@ export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
   projectAudit: 'https://decantr.ai/schemas/project-audit-report.v1.json',
   fileCritique: 'https://decantr.ai/schemas/file-critique-report.v1.json',
+  showcaseShortlist: 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',
 } as const;
 
 export type VerificationSeverity = 'error' | 'warn' | 'info';
@@ -77,6 +78,44 @@ export interface FileCritiqueReport {
   findings: VerificationFinding[];
   focusAreas: string[];
   reviewPack: ReviewExecutionPack | null;
+}
+
+export interface ShowcaseShortlistVerificationEntry {
+  slug: string;
+  target: string | null;
+  classification: 'pending' | 'A' | 'B' | 'C' | 'D';
+  verificationStatus: 'pending' | 'build-green' | 'build-red';
+  build: {
+    passed: boolean | null;
+    durationMs: number;
+  };
+  drift: {
+    signal: 'lower' | 'moderate' | 'elevated';
+    penalty: number;
+    inlineStyleCount: number;
+    hardcodedColorCount: number;
+    utilityLeakageCount: number;
+    decantrTreatmentCount: number;
+    hasPackManifest: boolean;
+    hasDist: boolean;
+  };
+}
+
+export interface ShowcaseShortlistVerificationReport {
+  $schema: string;
+  generatedAt: string;
+  dryRun: boolean;
+  summary: {
+    appCount: number;
+    passedBuilds: number;
+    failedBuilds: number;
+    averageDurationMs: number;
+    lowerDriftCount: number;
+    moderateDriftCount: number;
+    elevatedDriftCount: number;
+    withPackManifestCount: number;
+  };
+  results: ShowcaseShortlistVerificationEntry[];
 }
 
 const DEFAULT_FOCUS_AREAS = [

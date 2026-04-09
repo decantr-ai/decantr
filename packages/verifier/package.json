@@ -19,7 +19,8 @@
     },
     "./schema/verification-report.common.v1.json": "./schema/verification-report.common.v1.json",
     "./schema/project-audit-report.v1.json": "./schema/project-audit-report.v1.json",
-    "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json"
+    "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json",
+    "./schema/showcase-shortlist-report.v1.json": "./schema/showcase-shortlist-report.v1.json"
   },
   "files": ["dist", "schema"],
   "publishConfig": {

@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
+  "title": "Decantr Showcase Shortlist Verification Report",
+  "type": "object",
+  "required": ["$schema", "generatedAt", "dryRun", "summary", "results"],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json"
+    },
+    "generatedAt": {
+      "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+    },
+    "dryRun": {
+      "type": "boolean"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "appCount",
+        "passedBuilds",
+        "failedBuilds",
+        "averageDurationMs",
+        "lowerDriftCount",
+        "moderateDriftCount",
+        "elevatedDriftCount",
+        "withPackManifestCount"
+      ],
+      "properties": {
+        "appCount": { "type": "number", "minimum": 0 },
+        "passedBuilds": { "type": "number", "minimum": 0 },
+        "failedBuilds": { "type": "number", "minimum": 0 },
+        "averageDurationMs": { "type": "number", "minimum": 0 },
+        "lowerDriftCount": { "type": "number", "minimum": 0 },
+        "moderateDriftCount": { "type": "number", "minimum": 0 },
+        "elevatedDriftCount": { "type": "number", "minimum": 0 },
+        "withPackManifestCount": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/showcaseShortlistEntry"
+      }
+    }
+  },
+  "$defs": {
+    "showcaseShortlistEntry": {
+      "type": "object",
+      "required": ["slug", "target", "classification", "verificationStatus", "build", "drift"],
+      "properties": {
+        "slug": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "target": {
+          "type": ["string", "null"]
+        },
+        "classification": {
+          "type": "string",
+          "enum": ["pending", "A", "B", "C", "D"]
+        },
+        "verificationStatus": {
+          "type": "string",
+          "enum": ["pending", "build-green", "build-red"]
+        },
+        "build": {
+          "type": "object",
+          "required": ["passed", "durationMs"],
+          "properties": {
+            "passed": {
+              "type": ["boolean", "null"]
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "drift": {
+          "type": "object",
+          "required": [
+            "signal",
+            "penalty",
+            "inlineStyleCount",
+            "hardcodedColorCount",
+            "utilityLeakageCount",
+            "decantrTreatmentCount",
+            "hasPackManifest",
+            "hasDist"
+          ],
+          "properties": {
+            "signal": {
+              "type": "string",
+              "enum": ["lower", "moderate", "elevated"]
+            },
+            "penalty": {
+              "type": "number"
+            },
+            "inlineStyleCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "hardcodedColorCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "utilityLeakageCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "decantrTreatmentCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "hasPackManifest": {
+              "type": "boolean"
+            },
+            "hasDist": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,11 +1,12 @@
 {
-  "generatedAt": "2026-04-09T03:55:27.305Z",
+  "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
+  "generatedAt": "2026-04-09T03:59:20.419Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1546,
+    "averageDurationMs": 1871,
     "lowerDriftCount": 2,
     "moderateDriftCount": 4,
     "elevatedDriftCount": 2,
@@ -19,7 +20,7 @@
       "verificationStatus": "build-green",
       "build": {
         "passed": true,
-        "durationMs": 1514
+        "durationMs": 2486
       },
       "drift": {
         "signal": "lower",
@@ -39,7 +40,7 @@
       "verificationStatus": "build-green",
       "build": {
         "passed": true,
-        "durationMs": 1522
+        "durationMs": 1745
       },
       "drift": {
         "signal": "moderate",
@@ -59,7 +60,7 @@
       "verificationStatus": "build-green",
       "build": {
         "passed": true,
-        "durationMs": 1512
+        "durationMs": 1801
       },
       "drift": {
         "signal": "moderate",
@@ -79,7 +80,7 @@
       "verificationStatus": "build-green",
       "build": {
         "passed": true,
-        "durationMs": 1484
+        "durationMs": 1712
       },
       "drift": {
         "signal": "lower",
@@ -99,7 +100,7 @@
       "verificationStatus": "build-green",
       "build": {
         "passed": true,
-        "durationMs": 1471
+        "durationMs": 1658
       },
       "drift": {
         "signal": "moderate",
@@ -119,7 +120,7 @@
       "verificationStatus": "build-green",
       "build": {
         "passed": true,
-        "durationMs": 1659
+        "durationMs": 1896
       },
       "drift": {
         "signal": "elevated",
@@ -139,7 +140,7 @@
       "verificationStatus": "build-green",
       "build": {
         "passed": true,
-        "durationMs": 1636
+        "durationMs": 1913
       },
       "drift": {
         "signal": "moderate",
@@ -159,7 +160,7 @@
       "verificationStatus": "build-green",
       "build": {
         "passed": true,
-        "durationMs": 1569
+        "durationMs": 1757
       },
       "drift": {
         "signal": "elevated",

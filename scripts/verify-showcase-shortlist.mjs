@@ -8,6 +8,7 @@ import {
 } from './showcase-manifest.mjs';
 import { auditShowcaseEntry, buildShowcaseVerificationResult } from './showcase-audit-lib.mjs';
 
+const SHOWCASE_SHORTLIST_REPORT_SCHEMA_URL = 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json';
 const reportJsonEqArg = process.argv.find(arg => arg.startsWith('--report-json='));
 const reportJsonIndex = process.argv.indexOf('--report-json');
 const requestedReportJsonPath = reportJsonEqArg
@@ -86,6 +87,7 @@ console.log(`Pack manifests present: ${summary.withPackManifestCount}/${summary.
 if (reportJsonPath) {
   mkdirSync(dirname(reportJsonPath), { recursive: true });
   writeFileSync(reportJsonPath, JSON.stringify({
+    $schema: SHOWCASE_SHORTLIST_REPORT_SCHEMA_URL,
     generatedAt: new Date().toISOString(),
     dryRun,
     summary,
