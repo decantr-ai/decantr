@@ -355,6 +355,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     skipNavTargetIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
     mainLandmarkIds: [],
+    authEntrySignals: createSourceAuditBucket(),
     authSessionSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
@@ -400,6 +401,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
         summary.mainLandmarkIds.push(landmarkId);
       }
     }
+    recordSourceAudit(summary.authEntrySignals, relativePath, signals.authEntrySignalCount);
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
@@ -530,6 +532,7 @@ interface SourceAuditSummary {
   skipNavTargetIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
   mainLandmarkIds: string[];
+  authEntrySignals: SourceAuditBucket;
   authSessionSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
@@ -1281,6 +1284,21 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (topology.hasAuthFeature && topology.gatewayRoutes.length > 0 && sourceAudit.authEntrySignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'source-auth-entry-signals-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Authentication is declared and gateway routes exist, but the source tree does not show an obvious sign-in, registration, or credential-entry surface.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        'Auth entry signals: 0',
+        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Add a real login, registration, or recovery surface with credential inputs or explicit auth entry actions on the gateway routes.',
+    }));
+  }
+
   if (sourceAudit.accessibilityIssues.count > 0) {
     findings.push(makeFinding({
       id: 'source-accessibility-issues-present',
@@ -1596,6 +1614,7 @@ interface AstCritiqueSignals {
   emailAutocompleteMissingCount: number;
   passwordAutocompleteMissingCount: number;
   buttonInFormWithoutTypeCount: number;
+  authEntrySignalCount: number;
   authSessionSignalCount: number;
   authLoadingSignalCount: number;
   authStorageWriteCount: number;
@@ -1918,6 +1937,17 @@ function countAuthExitSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthEntrySignals(code: string): number {
+  const patterns = [
+    /\b(?:signIn|signin|logIn|login|register|signUp|signup|createAccount|forgotPassword|resetPassword)\s*\(/i,
+    />\s*(?:sign in|log in|register|sign up|create account|forgot password|reset password)\s*</i,
+    /\b(?:type|autoComplete|autocomplete)\s*=\s*["'{](?:email|username|current-password|new-password|password)/i,
+    /<form\b/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -1947,6 +1977,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     emailAutocompleteMissingCount: 0,
     passwordAutocompleteMissingCount: 0,
     buttonInFormWithoutTypeCount: 0,
+    authEntrySignalCount: countAuthEntrySignals(code),
     authSessionSignalCount: countAuthSessionSignals(code),
     authLoadingSignalCount: countAuthLoadingSignals(code),
     authStorageWriteCount: 0,

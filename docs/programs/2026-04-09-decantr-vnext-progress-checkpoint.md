@@ -90,6 +90,7 @@ commit archaeology.
 - Project audit now also checks Decantr accessibility style intent directly, including warning when `dna.accessibility.focus_visible=true` but the project CSS does not define a focus-visible treatment.
 - Source and file critique now also flag auth-like credentials written into client-managed cookies, not just localStorage/sessionStorage.
 - Project audit now also warns when auth is declared but the source tree does not show an obvious sign-out or session-exit path.
+- Project audit now also warns when auth gateway routes exist but the source tree never exposes a real sign-in, registration, or credential-entry surface.
 - Source and file critique now also flag auth-like authorization headers being assembled in client-side code.
 - Project audit now includes shared runtime evidence when `dist/` exists:
   - root document validation
