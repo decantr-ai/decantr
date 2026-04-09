@@ -28,6 +28,7 @@ Observed facts:
 - GitHub workflow validates content, then runs `scripts/sync-to-registry.js`
 - sync target defaults to `https://api.decantr.ai/v1`
 - sync uses `DECANTR_ADMIN_KEY`
+- the reset branch adds a read-only `scripts/audit-registry-drift.js` path plus a dedicated GitHub Actions drift-audit workflow
 
 ### 2.2 `decantr-monorepo/apps/api`
 
@@ -128,6 +129,7 @@ Notes:
 
 - `decantr-content` validates on push to `main`
 - after validation, it syncs official content to the hosted registry API
+- the reset branch also adds a read-only audit workflow so repo-vs-live drift can be inspected before a pruning sync
 
 ### 6.2 Docs site
 
@@ -174,6 +176,21 @@ Several public npm packages represent experimental or off-strategy surfaces. Eve
 ### 7.5 Legacy planning noise
 
 The repo contains multiple plans from multiple strategic directions. Without a reset program, implementation work will keep inheriting conflicting assumptions.
+
+### 7.6 Live official registry drift
+
+The new read-only audit surface on the reset branch shows that the live `@official` namespace is not yet in full lockstep with the source repo.
+
+Audit snapshot from 2026-04-08:
+
+- 480 repo items audited
+- 492 live `@official` items discovered
+- 249 exact matches
+- 12 stale extra live entries
+- 231 changed live entries
+- 0 audit failures
+
+This means Decantr already needed a first-class drift report, not just a sync job. The reset should assume that live registry state may lag or diverge until the new audit and reconciliation loop is part of regular operations.
 
 ## 8. Baseline Conclusions
 

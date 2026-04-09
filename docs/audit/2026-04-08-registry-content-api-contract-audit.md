@@ -134,6 +134,25 @@ The future contract compiler will need consistent data for:
 
 Some of this exists informally in content payloads today, but not yet as a locked, versioned contract.
 
+### 4.6 Live official registry drift is real, not theoretical
+
+The reset branch now includes a read-only audit script in `decantr-content` that compares repo content against the live `@official` namespace.
+
+Observed 2026-04-08 snapshot:
+
+- 480 repo items
+- 492 live `@official` items
+- 12 stale extra live entries
+- 231 changed live entries
+- 0 missing live entries
+- 0 audit failures
+
+Implications:
+
+- the official registry cannot be treated as automatically identical to the source repo
+- prune reporting and diff visibility need to be first-class product and ops surfaces
+- verification and reconciliation should be part of the content operating model, not an afterthought
+
 ## 5. vNext Contract Decisions
 
 ### 5.1 Create one canonical content contract
