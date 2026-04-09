@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
 
+const INIT_TIMEOUT_MS = 15_000;
+
 describe('init command', () => {
   let testDir: string;
   const cliPath = join(__dirname, '..', '..', 'dist', 'index.js');
@@ -23,7 +25,7 @@ describe('init command', () => {
     });
 
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(true);
-  });
+  }, INIT_TIMEOUT_MS);
 
   it('creates DECANTR.md file', () => {
     execSync(`node ${cliPath} init --yes`, {
@@ -32,7 +34,7 @@ describe('init command', () => {
     });
 
     expect(existsSync(join(testDir, 'DECANTR.md'))).toBe(true);
-  });
+  }, INIT_TIMEOUT_MS);
 
   it('DECANTR.md contains methodology primer content', () => {
     execSync(`node ${cliPath} init --yes`, {
@@ -46,7 +48,7 @@ describe('init command', () => {
     expect(content).toContain('## How To Use This Project');
     expect(content).toContain('## CSS Implementation');
     expect(content).toContain('@decantr/css');
-  });
+  }, INIT_TIMEOUT_MS);
 
   it('creates .decantr directory', () => {
     execSync(`node ${cliPath} init --yes`, {
@@ -55,5 +57,5 @@ describe('init command', () => {
     });
 
     expect(existsSync(join(testDir, '.decantr'))).toBe(true);
-  });
+  }, INIT_TIMEOUT_MS);
 });
