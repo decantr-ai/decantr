@@ -235,6 +235,10 @@ function recordSourceAudit(bucket: SourceAuditBucket, filePath: string, count: n
   }
 }
 
+function sourceAuditBucketsOverlap(a: SourceAuditBucket, b: SourceAuditBucket): boolean {
+  return a.files.some((file) => b.files.includes(file));
+}
+
 function isAuditableSourceFile(filePath: string): boolean {
   if (/\.d\.ts$/i.test(filePath)) return false;
   return /\.(?:[cm]?[jt]sx?)$/i.test(filePath);
@@ -305,6 +309,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     inlineStyles: createSourceAuditBucket(),
     securityRiskPatterns: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
+    authSessionSignals: createSourceAuditBucket(),
+    authLoadingSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
     authCookieWrites: createSourceAuditBucket(),
     authHeaderWrites: createSourceAuditBucket(),
@@ -333,6 +339,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.inlineStyles, relativePath, signals.inlineStyleAttributeCount);
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
+    recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
+    recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
     recordSourceAudit(summary.authCookieWrites, relativePath, signals.authCookieWriteCount);
     recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
@@ -441,6 +449,8 @@ interface SourceAuditSummary {
   inlineStyles: SourceAuditBucket;
   securityRiskPatterns: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
+  authSessionSignals: SourceAuditBucket;
+  authLoadingSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
   authCookieWrites: SourceAuditBucket;
   authHeaderWrites: SourceAuditBucket;
@@ -1084,6 +1094,27 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authSessionSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-loading-signals-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Source files reference auth/session state but do not show a clear loading or pending state while session resolution happens.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth/session signals: ${sourceAudit.authSessionSignals.count}`,
+        `Auth loading signals: ${sourceAudit.authLoadingSignals.count}`,
+        `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+        `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'When auth or session state resolves asynchronously, render an explicit loading, skeleton, suspense fallback, or pending state before redirecting or rendering protected content.',
+    }));
+  }
+
   if (topology.hasAuthFeature && sourceAudit.authExitSignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-exit-signals-missing',
@@ -1337,6 +1368,8 @@ interface AstCritiqueSignals {
   emailAutocompleteMissingCount: number;
   passwordAutocompleteMissingCount: number;
   buttonInFormWithoutTypeCount: number;
+  authSessionSignalCount: number;
+  authLoadingSignalCount: number;
   authStorageWriteCount: number;
   authCookieWriteCount: number;
   authHeaderWriteCount: number;
@@ -1583,6 +1616,26 @@ function countAuthGuardSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthSessionSignals(code: string): number {
+  const patterns = [
+    /\b(?:useAuth|useSession|getSession|getServerSession|sessionState|authState)\b/,
+    /\b(?:supabase\.auth\.getSession|auth\.getSession|session\.(?:user|token|status)|auth\.(?:user|session|status))\b/,
+    /\bstatus\s*===?\s*['"`](?:authenticated|unauthenticated|loading)['"`]/,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
+function countAuthLoadingSignals(code: string): number {
+  const patterns = [
+    /\b(?:isLoading|loading|isPending|pending|authLoading|sessionLoading)\b/,
+    /\bstatus\s*===?\s*['"`]loading['"`]/,
+    /\b(?:Suspense|fallback|Skeleton|Spinner)\b/,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function countAuthExitSignals(code: string): number {
   const patterns = [
     /\b(?:logout|logOut|signOut|signout|sign-out)\b/,
@@ -1615,6 +1668,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     emailAutocompleteMissingCount: 0,
     passwordAutocompleteMissingCount: 0,
     buttonInFormWithoutTypeCount: 0,
+    authSessionSignalCount: countAuthSessionSignals(code),
+    authLoadingSignalCount: countAuthLoadingSignals(code),
     authStorageWriteCount: 0,
     authCookieWriteCount: 0,
     authHeaderWriteCount: 0,
