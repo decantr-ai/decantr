@@ -23,6 +23,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
+      - run: pnpm audit:docs-marketing
       - run: pnpm run showcase:validate
         if: matrix.node-version == 20
       - run: pnpm run showcase:verify:shortlist
