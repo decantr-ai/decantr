@@ -548,4 +548,49 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'accessibility-icon-button-label-missing')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'accessibility-clickable-non-semantic')).toBe(true);
   });
+
+  it('flags missing image alt text and insecure target blank links during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/MarketingCard.tsx',
+      code: `
+        export function MarketingCard() {
+          return (
+            <section>
+              <img src="/hero.png" />
+              <a href="https://example.com/docs" target="_blank">Docs</a>
+            </section>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['marketing'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'marketing', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['accessibility', 'security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-image-alt-missing')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'security-target-blank-rel-missing')).toBe(true);
+  });
 });

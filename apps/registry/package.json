@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "lint": "pnpm --filter @decantr/registry build && tsc --noEmit"
   },
   "dependencies": {
     "@decantr/registry": "workspace:*",

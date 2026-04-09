@@ -281,14 +281,22 @@ Observed from live audits against `https://api.decantr.ai/v1` on 2026-04-09:
 - showcase shortlist verification is publicly reachable
 - hosted execution-pack compilation is publicly reachable
 - `POST /v1/packs/compile` returns `200`
+- `POST /v1/critique/file` returns `200`
+- `POST /v1/audit/project` returns `200`
 
 The hosted API path is explicit and exercised in production. The registry portal deploy path is
 now explicit in-repo as well through the Vercel workflow, portal audit, and runbook surfaces.
+
+The verifier layer has also moved beyond heuristic-only critique in this branch:
+
+- AST-backed security checks now detect `dangerouslySetInnerHTML`, raw DOM HTML injection, and dynamic eval patterns.
+- AST-backed accessibility checks now detect unlabeled icon-only buttons, clickable non-semantic controls, images without `alt`, and external `_blank` links missing `rel="noopener noreferrer"`.
+- Registry app lint now rebuilds `@decantr/registry` before typechecking so clean-checkout verification does not depend on stale generated package artifacts.
 
 ## Highest-Value Next Streams
 
 1. Add richer golden verification beyond build/smoke into route/runtime behavior.
 2. Move execution packs deeper into hosted/API workflows instead of local scaffold-only artifacts.
-3. Roll out the hosted verification surfaces (`/v1/critique/file` and `/v1/audit/project`) and make them green in live public API audits.
+3. Deepen verifier coverage further into auth, navigation, performance, and security checks beyond the current AST/runtime baseline.
 4. Continue narrowing legacy `any`/implicit contracts in older CLI and MCP paths.
 5. Keep improving content intelligence quality and confidence scoring on top of the now-live hosted summary contract.

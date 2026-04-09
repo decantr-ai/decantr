@@ -917,6 +917,8 @@ interface AstCritiqueSignals {
   dynamicEvalCount: number;
   iconOnlyButtonWithoutLabelCount: number;
   clickableNonSemanticCount: number;
+  imageWithoutAltCount: number;
+  externalBlankLinkWithoutRelCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -967,6 +969,21 @@ function getJsxTagName(node: ts.JsxOpeningLikeElement): string | null {
   return null;
 }
 
+function getJsxAttributeLiteralValue(attribute: ts.JsxAttribute | undefined): string | null {
+  if (!attribute?.initializer) return null;
+  if (ts.isStringLiteral(attribute.initializer)) {
+    return attribute.initializer.text;
+  }
+  if (ts.isJsxExpression(attribute.initializer)) {
+    const expression = attribute.initializer.expression;
+    if (!expression) return '';
+    if (ts.isStringLiteral(expression) || ts.isNoSubstitutionTemplateLiteral(expression)) {
+      return expression.text;
+    }
+  }
+  return null;
+}
+
 function getJsxTextContent(node: ts.Node): string {
   if (ts.isJsxText(node)) {
     return node.getText();
@@ -996,6 +1013,17 @@ function isNonSemanticInteractiveTag(tagName: string | null): boolean {
   return ['div', 'span', 'section', 'article', 'li'].includes(tagName ?? '');
 }
 
+function isExternalLinkTargetBlankWithoutRel(attributes: ts.JsxAttributes): boolean {
+  const targetValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'target'));
+  if (targetValue !== '_blank') return false;
+
+  const hrefValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'href'));
+  if (!hrefValue || !/^(?:https?:)?\/\//i.test(hrefValue)) return false;
+
+  const relValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'rel')) ?? '';
+  return !/\bnoopener\b/i.test(relValue) || !/\bnoreferrer\b/i.test(relValue);
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -1011,6 +1039,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     dynamicEvalCount: 0,
     iconOnlyButtonWithoutLabelCount: 0,
     clickableNonSemanticCount: 0,
+    imageWithoutAltCount: 0,
+    externalBlankLinkWithoutRelCount: 0,
   };
 
   const walk = (node: ts.Node) => {
@@ -1067,6 +1097,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'button' && !hasAccessibleLabel(node.attributes, '')) {
         signals.iconOnlyButtonWithoutLabelCount += 1;
       }
+      if (tagName === 'img' && !getJsxAttribute(node.attributes, 'alt')) {
+        signals.imageWithoutAltCount += 1;
+      }
       if (
         isNonSemanticInteractiveTag(tagName)
         && getJsxAttribute(node.attributes, 'onClick')
@@ -1074,6 +1107,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && !getJsxAttribute(node.attributes, 'tabIndex')
       ) {
         signals.clickableNonSemanticCount += 1;
+      }
+      if (tagName === 'a' && isExternalLinkTargetBlankWithoutRel(node.attributes)) {
+        signals.externalBlankLinkWithoutRelCount += 1;
       }
     }
 
@@ -1084,6 +1120,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'button' && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
         signals.iconOnlyButtonWithoutLabelCount += 1;
       }
+      if (tagName === 'img' && !getJsxAttribute(node.openingElement.attributes, 'alt')) {
+        signals.imageWithoutAltCount += 1;
+      }
 
       if (
         isNonSemanticInteractiveTag(tagName)
@@ -1092,6 +1131,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && !getJsxAttribute(node.openingElement.attributes, 'tabIndex')
       ) {
         signals.clickableNonSemanticCount += 1;
+      }
+      if (tagName === 'a' && isExternalLinkTargetBlankWithoutRel(node.openingElement.attributes)) {
+        signals.externalBlankLinkWithoutRelCount += 1;
       }
     }
 
@@ -1169,6 +1211,7 @@ export function critiqueSource({
   const hasKeyboard = codeLower.includes('onkeydown') || codeLower.includes('onkeyup');
   const iconButtonIssues = astSignals.iconOnlyButtonWithoutLabelCount;
   const clickableNonSemanticIssues = astSignals.clickableNonSemanticCount;
+  const imageAltIssues = astSignals.imageWithoutAltCount;
   scores.push({
     category: 'Accessibility',
     focusArea: 'accessibility',
@@ -1181,16 +1224,18 @@ export function critiqueSource({
         + (hasFocus ? 1 : 0)
         + (hasKeyboard ? 1 : 0)
         - (iconButtonIssues > 0 ? 1 : 0)
-        - (clickableNonSemanticIssues > 0 ? 1 : 0),
+        - (clickableNonSemanticIssues > 0 ? 1 : 0)
+        - (imageAltIssues > 0 ? 1 : 0),
       ),
     ),
-    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}`,
+    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}`,
     suggestions: [
       ...(!hasAria ? ['Add ARIA roles or labels to interactive regions.'] : []),
       ...(!hasFocus ? ['Add visible focus styling for keyboard navigation.'] : []),
       ...(!hasKeyboard ? ['Add keyboard handling where interactive behavior depends on pointer events.'] : []),
       ...(iconButtonIssues > 0 ? ['Add accessible labels to icon-only buttons via visible text or aria-label.'] : []),
       ...(clickableNonSemanticIssues > 0 ? ['Use semantic interactive elements or add role/tabIndex and keyboard handling to clickable non-semantic containers.'] : []),
+      ...(imageAltIssues > 0 ? ['Add alt text to meaningful images and use alt="" only for decorative ones.'] : []),
     ],
   });
   if (focusAreas.includes('accessibility')) {
@@ -1236,6 +1281,17 @@ export function critiqueSource({
         evidence: [filePath, `Clickable non-semantic elements without role/tabIndex: ${clickableNonSemanticIssues}`],
         file: filePath,
         suggestedFix: 'Prefer semantic controls like button/link, or add role, tabIndex, and keyboard handlers to non-semantic interactive containers.',
+      }));
+    }
+    if (imageAltIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-image-alt-missing',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+        message: 'Image elements were detected without an `alt` attribute.',
+        evidence: [filePath, `Images without alt: ${imageAltIssues}`],
+        file: filePath,
+        suggestedFix: 'Add meaningful alt text for informative images, or use alt="" when the image is purely decorative.',
       }));
     }
   }
@@ -1337,17 +1393,27 @@ export function critiqueSource({
   const dangerousHtmlCount = Math.max(astSignals.dangerousHtmlCount, /dangerouslySetInnerHTML\s*=/.test(code) ? 1 : 0);
   const rawHtmlInjectionCount = Math.max(astSignals.rawHtmlInjectionCount, /\binnerHTML\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/.test(code) ? 1 : 0);
   const dynamicEvalCount = Math.max(astSignals.dynamicEvalCount, /\beval\s*\(|new\s+Function\s*\(/.test(code) ? 1 : 0);
+  const externalBlankLinkWithoutRelCount = astSignals.externalBlankLinkWithoutRelCount;
   const hasDangerousHtml = dangerousHtmlCount > 0;
   const hasRawHtmlInjection = rawHtmlInjectionCount > 0;
   const hasDynamicEval = dynamicEvalCount > 0;
+  const hasExternalBlankLinkWithoutRel = externalBlankLinkWithoutRelCount > 0;
   scores.push({
     category: 'Security Hygiene',
     focusArea: 'security-hygiene',
-    score: Math.max(1, 5 - (hasDangerousHtml ? 2 : 0) - (hasRawHtmlInjection ? 2 : 0) - (hasDynamicEval ? 2 : 0)),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}`,
+    score: Math.max(
+      1,
+      5
+      - (hasDangerousHtml ? 2 : 0)
+      - (hasRawHtmlInjection ? 2 : 0)
+      - (hasDynamicEval ? 2 : 0)
+      - (hasExternalBlankLinkWithoutRel ? 1 : 0),
+    ),
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
+      ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
     ],
   });
 
@@ -1384,6 +1450,18 @@ export function critiqueSource({
       evidence: [filePath, `Occurrences: ${dynamicEvalCount}`],
       file: filePath,
       suggestedFix: 'Replace dynamic code evaluation with explicit functions, lookup tables, or validated configuration data.',
+    }));
+  }
+
+  if (hasExternalBlankLinkWithoutRel) {
+    findings.push(makeFinding({
+      id: 'security-target-blank-rel-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'External links open in a new tab without `rel=\"noopener noreferrer\"`.',
+      evidence: [filePath, `Occurrences: ${externalBlankLinkWithoutRelCount}`],
+      file: filePath,
+      suggestedFix: 'Add rel="noopener noreferrer" to external target="_blank" links to prevent tab-nabbing and preserve opener isolation.',
     }));
   }
 
