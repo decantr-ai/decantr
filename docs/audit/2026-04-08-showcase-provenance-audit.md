@@ -24,6 +24,7 @@ Known facts:
 - `apps/showcase/manifest.json` now exists as the operational inventory surface for this audit
 - `scripts/audit-showcases.mjs` now provides a repeatable signal sweep for inline styles, hardcoded colors, utility leakage, Decantr treatment usage, and pack-manifest presence
 - `scripts/validate-showcase-manifest.mjs` now protects the inventory from duplicate slugs and broken shortlist metadata
+- `scripts/copy-showcase-dist.mjs` now exports showcase metadata and shortlist manifests into `apps/registry/public/showcase/`
 - `workbench` has already been marked `removed` / `Class D` because it reinforced the removed standalone UI-framework line
 
 ## 3. New Classification Model

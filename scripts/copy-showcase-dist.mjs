@@ -1,11 +1,12 @@
-import { cpSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { getActiveShowcaseEntries, showcaseRoot, repoRoot } from './showcase-manifest.mjs';
 
 const dryRun = process.argv.includes('--dry-run');
 const targetRoot = join(repoRoot, 'apps', 'registry', 'public', 'showcase');
+const activeEntries = getActiveShowcaseEntries();
 
-for (const entry of getActiveShowcaseEntries()) {
+for (const entry of activeEntries) {
   const distDir = join(showcaseRoot, entry.slug, 'dist');
   if (!existsSync(distDir)) continue;
 
@@ -26,4 +27,33 @@ for (const entry of getActiveShowcaseEntries()) {
   } else {
     console.log(`[dry-run] copy ${entry.slug}/dist -> apps/registry/public/showcase/${entry.slug}/`);
   }
+}
+
+const publicManifest = {
+  generatedAt: new Date().toISOString(),
+  apps: activeEntries.map(entry => ({
+    slug: entry.slug,
+    status: entry.status,
+    classification: entry.classification,
+    target: entry.target ?? null,
+    goldenCandidate: entry.goldenCandidate ?? false,
+    notes: entry.notes ?? null,
+    url: `/showcase/${entry.slug}/`,
+  })),
+};
+
+const shortlistManifest = {
+  generatedAt: publicManifest.generatedAt,
+  apps: publicManifest.apps.filter(entry => entry.goldenCandidate),
+};
+
+if (!dryRun) {
+  mkdirSync(targetRoot, { recursive: true });
+  writeFileSync(join(targetRoot, 'manifest.json'), JSON.stringify(publicManifest, null, 2));
+  writeFileSync(join(targetRoot, 'shortlist.json'), JSON.stringify(shortlistManifest, null, 2));
+  console.log(`Wrote showcase metadata manifest -> apps/registry/public/showcase/manifest.json`);
+  console.log(`Wrote showcase shortlist manifest -> apps/registry/public/showcase/shortlist.json`);
+} else {
+  console.log(`[dry-run] write showcase metadata manifest -> apps/registry/public/showcase/manifest.json`);
+  console.log(`[dry-run] write showcase shortlist manifest -> apps/registry/public/showcase/shortlist.json`);
 }
