@@ -87,6 +87,10 @@ Then read `.decantr/context/scaffold.md` for the fuller app overview, topology, 
 Read `.decantr/context/section-{name}-pack.md` for the compact compiled section contract.
 Then read `.decantr/context/section-{name}.md` for the fuller context. Each section file contains guard rules, theme tokens, decorator classes, pattern specs with code examples, zone context, and routes. **Everything you need is in that one file.**
 
+### Working on a route
+
+Read `.decantr/context/page-{name}-pack.md` for the most local compiled route contract before editing a specific page.
+
 ### Validation
 
 Run `decantr check` to validate code against the spec.

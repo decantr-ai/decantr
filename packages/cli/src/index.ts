@@ -110,6 +110,7 @@ function generateCuratedPrompt(ctx: PromptContext): string {
   lines.push('');
   lines.push('Read DECANTR.md for the design spec, CSS approach, and guard rules.');
   lines.push('Read .decantr/context/scaffold-pack.md for the compact compiled shell and route contract.');
+  lines.push('Read .decantr/context/page-*-pack.md for route-local compiled page contracts.');
   lines.push('Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.');
   lines.push('Read each .decantr/context/section-*-pack.md file for the compact section contract.');
   lines.push('Read each .decantr/context/section-*.md file before building that section\'s pages.');
@@ -755,7 +756,8 @@ async function cmdInit(args: InitArgs) {
   console.log('  Next steps:');
   console.log('    1. Review DECANTR.md for methodology');
   console.log('    2. Read .decantr/context/scaffold-pack.md for the compiled shell and route plan');
-  console.log('    3. Explore more at decantr.ai/registry');
+  console.log('    3. Read .decantr/context/page-*-pack.md for route-local contracts');
+  console.log('    4. Explore more at decantr.ai/registry');
   console.log('');
   console.log('  Commands:');
   console.log(`    ${cyan('decantr status')}     Project health`);

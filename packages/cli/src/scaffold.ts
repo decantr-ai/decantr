@@ -3,8 +3,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
-import { buildScaffoldPack, buildSectionPack, runPipeline } from '@decantr/core';
-import type { SectionPackInput } from '@decantr/core';
+import { buildScaffoldPack, buildSectionPack, buildPagePack, runPipeline } from '@decantr/core';
+import type { PagePackInput, SectionPackInput } from '@decantr/core';
 import type { ExecutionPackBase } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
 import type {
@@ -1975,6 +1975,31 @@ function listPackSections(essence: EssenceV3): SectionPackInput[] {
   }];
 }
 
+function listPackPages(essence: EssenceV3): PagePackInput[] {
+  const declaredSections = essence.blueprint.sections;
+  if (declaredSections && declaredSections.length > 0) {
+    return declaredSections.flatMap(section =>
+      section.pages.map(page => ({
+        pageId: page.id,
+        shell: (page.shell_override ?? section.shell) as string,
+        sectionId: section.id,
+        sectionRole: section.role,
+        features: section.features,
+      }))
+    );
+  }
+
+  const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
+  const defaultShell = (essence.blueprint.shell ?? 'sidebar-main') as string;
+  return pages.map(page => ({
+    pageId: page.id,
+    shell: (page.shell_override ?? defaultShell) as string,
+    sectionId: essence.meta.archetype || 'default',
+    sectionRole: 'primary',
+    features: essence.blueprint.features || [],
+  }));
+}
+
 async function generatePackContexts(
   projectRoot: string,
   contextDir: string,
@@ -2019,6 +2044,17 @@ async function generatePackContexts(
         sectionPack,
       );
       outputPaths.push(sectionPackPath);
+    }
+
+    for (const page of listPackPages(essence)) {
+      const pagePack = buildPagePack(pipeline.ir, page, {
+        target: sharedTarget,
+      });
+      const pagePackPath = writeExecutionPackArtifacts(
+        join(contextDir, `page-${page.pageId}-pack`),
+        pagePack,
+      );
+      outputPaths.push(pagePackPath);
     }
 
     return outputPaths;

@@ -113,6 +113,42 @@ export interface SectionExecutionPack extends ExecutionPackBase<SectionPackData>
   packType: 'section';
 }
 
+export interface PagePackInput {
+  pageId: string;
+  shell: string;
+  sectionId: string | null;
+  sectionRole: string | null;
+  features: string[];
+}
+
+export interface PagePackPattern {
+  id: string;
+  alias: string;
+  preset: string;
+  layout: string;
+}
+
+export interface PagePackData {
+  pageId: string;
+  path: string;
+  shell: string;
+  sectionId: string | null;
+  sectionRole: string | null;
+  features: string[];
+  surface: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  wiringSignals: string[];
+  patterns: PagePackPattern[];
+}
+
+export interface PageExecutionPack extends ExecutionPackBase<PagePackData> {
+  packType: 'page';
+}
+
 export interface ScaffoldPackBuilderOptions {
   objective?: string;
   target?: Partial<ExecutionPackTarget>;
@@ -125,6 +161,7 @@ export interface ScaffoldPackBuilderOptions {
 }
 
 export interface SectionPackBuilderOptions extends ScaffoldPackBuilderOptions {}
+export interface PagePackBuilderOptions extends ScaffoldPackBuilderOptions {}
 
 const DEFAULT_TARGET: ExecutionPackTarget = {
   platform: 'web',
@@ -179,6 +216,24 @@ const DEFAULT_SECTION_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
   },
 ];
 
+const DEFAULT_PAGE_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
+  {
+    id: 'page-route-contract',
+    label: 'The page keeps the compiled route, shell, and section contract intact.',
+    severity: 'error',
+  },
+  {
+    id: 'page-pattern-contract',
+    label: 'The page preserves its primary compiled patterns instead of drifting into unrelated layouts.',
+    severity: 'error',
+  },
+  {
+    id: 'page-state-contract',
+    label: 'Any declared wiring signals remain coherent with the rendered page structure.',
+    severity: 'warn',
+  },
+];
+
 function collectPatternIds(page: IRPageNode): string[] {
   const patternIds: string[] = [];
   walkIR(page, (node: IRNode) => {
@@ -203,6 +258,30 @@ function summarizeRoutes(appNode: IRAppNode): ScaffoldPackRoute[] {
 
 function summarizeSectionRoutes(appNode: IRAppNode, input: SectionPackInput): SectionPackRoute[] {
   return summarizeRoutes(appNode).filter(route => input.pageIds.includes(route.pageId));
+}
+
+function summarizePageRoute(appNode: IRAppNode, pageId: string): ScaffoldPackRoute | null {
+  return summarizeRoutes(appNode).find(route => route.pageId === pageId) ?? null;
+}
+
+function findPageNode(appNode: IRAppNode, pageId: string): IRPageNode | null {
+  const page = appNode.children.find(node => (node as IRPageNode).pageId === pageId);
+  return page ? page as IRPageNode : null;
+}
+
+function collectPagePatterns(page: IRPageNode): PagePackPattern[] {
+  const patterns: PagePackPattern[] = [];
+  walkIR(page, (node: IRNode) => {
+    if (node.type !== 'pattern') return;
+    const patternNode = node as IRPatternNode;
+    patterns.push({
+      id: patternNode.pattern.patternId,
+      alias: patternNode.pattern.alias,
+      preset: patternNode.pattern.preset,
+      layout: patternNode.pattern.layout,
+    });
+  });
+  return patterns;
 }
 
 function mergeTokenBudget(overrides?: Partial<ExecutionPackTokenBudget>): ExecutionPackTokenBudget {
@@ -268,6 +347,40 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       lines.push(`- ${route.path} -> ${route.pageId} [${patterns}]`);
     }
     lines.push('');
+  }
+
+  if (pack.packType === 'page') {
+    const pagePack = pack as PageExecutionPack;
+    lines.push('## Page Contract');
+    lines.push(`- Page: ${pagePack.data.pageId}`);
+    lines.push(`- Path: ${pagePack.data.path}`);
+    lines.push(`- Shell: ${pagePack.data.shell}`);
+    if (pagePack.data.sectionId) {
+      const role = pagePack.data.sectionRole ? ` (${pagePack.data.sectionRole})` : '';
+      lines.push(`- Section: ${pagePack.data.sectionId}${role}`);
+    }
+    lines.push(`- Theme: ${pagePack.data.theme.id} (${pagePack.data.theme.mode})`);
+    if (pagePack.data.features.length > 0) {
+      lines.push(`- Features: ${pagePack.data.features.join(', ')}`);
+    }
+    if (pagePack.data.surface) {
+      lines.push(`- Surface: ${pagePack.data.surface}`);
+    }
+    lines.push('');
+
+    lines.push('## Page Patterns');
+    for (const pattern of pagePack.data.patterns) {
+      lines.push(`- ${pattern.alias} -> ${pattern.id} [${pattern.layout}${pattern.preset ? ` | ${pattern.preset}` : ''}]`);
+    }
+    lines.push('');
+
+    if (pagePack.data.wiringSignals.length > 0) {
+      lines.push('## Wiring Signals');
+      for (const signal of pagePack.data.wiringSignals) {
+        lines.push(`- ${signal}`);
+      }
+      lines.push('');
+    }
   }
 
   lines.push('## Required Setup');
@@ -404,6 +517,75 @@ export function buildSectionPack(
         shape: appNode.theme.shape,
       },
       routes,
+    },
+    renderedMarkdown: '',
+  };
+
+  pack.renderedMarkdown = renderExecutionPackMarkdown(pack);
+  return pack;
+}
+
+export function buildPagePack(
+  appNode: IRAppNode,
+  input: PagePackInput,
+  options: PagePackBuilderOptions = {},
+): PageExecutionPack {
+  const pageNode = findPageNode(appNode, input.pageId);
+  const route = summarizePageRoute(appNode, input.pageId);
+
+  if (!pageNode || !route) {
+    throw new Error(`Unknown page for page pack: ${input.pageId}`);
+  }
+
+  const patterns = collectPagePatterns(pageNode);
+
+  const pack: PageExecutionPack = {
+    packVersion: '1.0.0',
+    packType: 'page',
+    objective: options.objective ?? `Implement the ${input.pageId} route using the compiled page contract.`,
+    target: {
+      ...DEFAULT_TARGET,
+      ...options.target,
+    },
+    preset: options.preset ?? null,
+    scope: {
+      appId: appNode.id,
+      pageIds: [route.pageId],
+      patternIds: [...new Set(patterns.map(pattern => pattern.id))],
+    },
+    requiredSetup: options.requiredSetup ?? [
+      'Keep the compiled route and shell contract stable for this page.',
+      'Treat the listed page patterns as the primary structure for this route.',
+    ],
+    allowedVocabulary: [...new Set([
+      input.pageId,
+      input.shell,
+      input.sectionId ?? '',
+      input.sectionRole ?? '',
+      appNode.theme.id,
+      appNode.theme.mode,
+      ...input.features,
+      ...patterns.flatMap(pattern => [pattern.id, pattern.alias, pattern.layout]),
+    ].filter(Boolean))],
+    examples: options.examples ?? [],
+    antiPatterns: options.antiPatterns ?? [],
+    successChecks: options.successChecks ?? DEFAULT_PAGE_SUCCESS_CHECKS,
+    tokenBudget: mergeTokenBudget(options.tokenBudget),
+    data: {
+      pageId: route.pageId,
+      path: route.path,
+      shell: input.shell,
+      sectionId: input.sectionId,
+      sectionRole: input.sectionRole,
+      features: input.features,
+      surface: pageNode.surface,
+      theme: {
+        id: appNode.theme.id,
+        mode: appNode.theme.mode,
+        shape: appNode.theme.shape,
+      },
+      wiringSignals: pageNode.wiring?.signals.map(signal => signal.name) ?? [],
+      patterns,
     },
     renderedMarkdown: '',
   };

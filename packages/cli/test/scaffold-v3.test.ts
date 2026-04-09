@@ -210,7 +210,7 @@ describe('v3 scaffold', () => {
     expect(existsSync(join(contextDir, 'task-add-page.md'))).toBe(false);
   });
 
-  it('scaffoldProject emits scaffold-pack.md when cache contains required registry content', async () => {
+  it('scaffoldProject emits scaffold, section, and page packs when cache contains required registry content', async () => {
     const cacheRoot = join(testDir, '.decantr', 'cache', '@official');
     mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
     mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });
@@ -248,15 +248,21 @@ describe('v3 scaffold', () => {
     const packJsonPath = join(testDir, '.decantr', 'context', 'scaffold-pack.json');
     const sectionPackPath = join(testDir, '.decantr', 'context', 'section-custom-pack.md');
     const sectionPackJsonPath = join(testDir, '.decantr', 'context', 'section-custom-pack.json');
+    const pagePackPath = join(testDir, '.decantr', 'context', 'page-home-pack.md');
+    const pagePackJsonPath = join(testDir, '.decantr', 'context', 'page-home-pack.json');
     expect(existsSync(packPath)).toBe(true);
     expect(existsSync(packJsonPath)).toBe(true);
     expect(existsSync(sectionPackPath)).toBe(true);
     expect(existsSync(sectionPackJsonPath)).toBe(true);
+    expect(existsSync(pagePackPath)).toBe(true);
+    expect(existsSync(pagePackJsonPath)).toBe(true);
 
     const content = readFileSync(packPath, 'utf-8');
     const packJson = JSON.parse(readFileSync(packJsonPath, 'utf-8'));
     const sectionContent = readFileSync(sectionPackPath, 'utf-8');
     const sectionPackJson = JSON.parse(readFileSync(sectionPackJsonPath, 'utf-8'));
+    const pageContent = readFileSync(pagePackPath, 'utf-8');
+    const pagePackJson = JSON.parse(readFileSync(pagePackJsonPath, 'utf-8'));
     expect(content).toContain('# Scaffold Pack');
     expect(content).toContain('react-vite (react)');
     expect(content).toContain('- / -> home [hero]');
@@ -278,6 +284,22 @@ describe('v3 scaffold', () => {
         pageId: 'home',
         path: '/',
         patternIds: ['hero'],
+      },
+    ]);
+    expect(pageContent).toContain('# Page Pack');
+    expect(pageContent).toContain('- Page: home');
+    expect(pageContent).toContain('- Path: /');
+    expect(pageContent).toContain('- hero -> hero [hero | default]');
+    expect(pagePackJson.packType).toBe('page');
+    expect(pagePackJson.data.pageId).toBe('home');
+    expect(pagePackJson.data.path).toBe('/');
+    expect(pagePackJson.data.sectionId).toBe('custom');
+    expect(pagePackJson.data.patterns).toEqual([
+      {
+        id: 'hero',
+        alias: 'hero',
+        preset: 'default',
+        layout: 'hero',
       },
     ]);
   });

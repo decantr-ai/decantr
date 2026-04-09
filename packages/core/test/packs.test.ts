@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { buildScaffoldPack, buildSectionPack, runPipeline } from '../src/index.js';
+import { buildPagePack, buildScaffoldPack, buildSectionPack, runPipeline } from '../src/index.js';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
@@ -99,5 +99,53 @@ describe('buildScaffoldPack', () => {
     expect(pack.allowedVocabulary).toContain('sidebar-main');
     expect(pack.renderedMarkdown).toContain('## Section Contract');
     expect(pack.renderedMarkdown).toContain('- / -> overview [kpi-grid, filter-bar, data-table]');
+  });
+
+  it('builds a page pack with route-local patterns and wiring signals', async () => {
+    const essence = loadFixture('essence-saas');
+    const result = await runPipeline(essence, { contentRoot });
+
+    const pack = buildPagePack(result.ir, {
+      pageId: 'overview',
+      shell: 'sidebar-main',
+      sectionId: 'dashboard',
+      sectionRole: 'primary',
+      features: ['auth'],
+    }, {
+      target: {
+        framework: 'react',
+        runtime: 'vite',
+        adapter: 'react-vite',
+      },
+    });
+
+    expect(pack.packType).toBe('page');
+    expect(pack.data.pageId).toBe('overview');
+    expect(pack.data.path).toBe('/');
+    expect(pack.data.sectionId).toBe('dashboard');
+    expect(pack.data.patterns).toEqual([
+      {
+        id: 'kpi-grid',
+        alias: 'kpi-grid',
+        preset: 'dashboard',
+        layout: 'grid',
+      },
+      {
+        id: 'filter-bar',
+        alias: 'filter-bar',
+        preset: 'standard',
+        layout: 'row',
+      },
+      {
+        id: 'data-table',
+        alias: 'data-table',
+        preset: 'standard',
+        layout: 'column',
+      },
+    ]);
+    expect(pack.data.wiringSignals).toContain('pageSearch');
+    expect(pack.renderedMarkdown).toContain('## Page Contract');
+    expect(pack.renderedMarkdown).toContain('- Page: overview');
+    expect(pack.renderedMarkdown).toContain('- filter-bar -> filter-bar [row | standard]');
   });
 });
