@@ -56,6 +56,28 @@ function formatVerificationLabel(status?: string | null): string | null {
   }
 }
 
+function hasBenchmarkBackedIntelligence(intelligence: NonNullable<ContentRecord['intelligence']>): boolean {
+  return (
+    intelligence.golden_usage !== 'none' ||
+    intelligence.benchmark_confidence !== 'none' ||
+    intelligence.evidence.includes('live-showcase')
+  );
+}
+
+function getIntelligenceDescription(
+  intelligence: NonNullable<ContentRecord['intelligence']>,
+): string {
+  if (hasBenchmarkBackedIntelligence(intelligence)) {
+    return intelligence.recommended
+      ? 'This item is currently one of the strongest Decantr benchmark-backed references for its workflow.'
+      : 'This item has benchmark evidence attached in the Decantr corpus, but it is not currently marked as a recommended reference.';
+  }
+
+  return intelligence.recommended
+    ? 'This item is currently one of the strongest curated Decantr references based on authored completeness and registry intelligence signals.'
+    : 'This item carries registry intelligence metadata based on authored completeness and structured evidence, but it is not currently a recommended reference.';
+}
+
 interface DetailPageProps {
   params: Promise<{ type: string; namespace: string; slug: string }>;
 }
@@ -86,6 +108,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const installCmd = `decantr get ${singular} ${namespace}/${slug}`;
   const tags = (content.data?.tags as string[] | undefined) ?? [];
   const intelligence = content.intelligence ?? null;
+  const benchmarkBackedIntelligence = intelligence ? hasBenchmarkBackedIntelligence(intelligence) : false;
   const showcaseMeta = singular === 'blueprint' ? await getShowcaseMetadata(slug) : null;
   const showcaseVerification = showcaseMeta?.verification ?? null;
 
@@ -274,9 +297,15 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                 <span className="d-annotation">
                   confidence {intelligence.confidence_score ?? 'n/a'}
                 </span>
-                <span className="d-annotation">
-                  {intelligence.benchmark_confidence} benchmark confidence
-                </span>
+                {benchmarkBackedIntelligence ? (
+                  <span className="d-annotation">
+                    {intelligence.benchmark_confidence} benchmark confidence
+                  </span>
+                ) : (
+                  <span className="d-annotation">
+                    registry intelligence
+                  </span>
+                )}
                 {formatVerificationLabel(intelligence.verification_status) && (
                   <span
                     className="d-annotation"
@@ -293,17 +322,17 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                     {formatVerificationLabel(intelligence.verification_status)}
                   </span>
                 )}
-                <span className="d-annotation">
-                  {intelligence.golden_usage === 'shortlisted' ? 'shortlisted benchmark' : 'live benchmark'}
-                </span>
+                {benchmarkBackedIntelligence && (
+                  <span className="d-annotation">
+                    {intelligence.golden_usage === 'shortlisted' ? 'shortlisted benchmark' : 'live benchmark'}
+                  </span>
+                )}
                 {intelligence.benchmark?.target && (
                   <span className="d-annotation">{intelligence.benchmark.target}</span>
                 )}
               </div>
               <p style={{ margin: 0, color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
-                {intelligence.recommended
-                  ? 'This item is currently one of the strongest Decantr benchmark-backed references for its workflow.'
-                  : 'This item has benchmark evidence attached in the Decantr corpus, but it is not currently marked as a recommended reference.'}
+                {getIntelligenceDescription(intelligence)}
               </p>
               <div className="flex flex-wrap items-center gap-2 text-sm" style={{ color: 'var(--d-text-muted)' }}>
                 {intelligence.target_coverage.length > 0 && (
