@@ -14,13 +14,13 @@ function makeV3(overrides: Record<string, unknown> = {}): EssenceV3 {
 }
 
 describe('evaluateGuard - v3 layer metadata', () => {
-  it('style violation has layer=dna and autoFixable=false', () => {
+  it('theme violation has layer=dna and autoFixable=false', () => {
     const v3 = makeV3();
-    const violations = evaluateGuard(v3, { style: 'glassmorphism' });
-    const styleV = violations.find(v => v.rule === 'style');
-    expect(styleV).toBeDefined();
-    expect(styleV!.layer).toBe('dna');
-    expect(styleV!.autoFixable).toBe(false);
+    const violations = evaluateGuard(v3, { theme: 'glassmorphism' });
+    const themeV = violations.find(v => v.rule === 'theme');
+    expect(themeV).toBeDefined();
+    expect(themeV!.layer).toBe('dna');
+    expect(themeV!.autoFixable).toBe(false);
   });
 
   it('structure violation has layer=blueprint and autoFixable=true', () => {
@@ -78,10 +78,10 @@ describe('evaluateGuard - v3 layer metadata', () => {
 });
 
 describe('evaluateGuard - v3 reads from correct paths', () => {
-  it('reads style from dna.theme.id', () => {
+  it('reads theme from dna.theme.id', () => {
     const v3 = makeV3();
-    const violations = evaluateGuard(v3, { style: 'luminarum' });
-    expect(violations.filter(v => v.rule === 'style')).toHaveLength(0);
+    const violations = evaluateGuard(v3, { theme: 'luminarum' });
+    expect(violations.filter(v => v.rule === 'theme')).toHaveLength(0);
   });
 
   it('reads pages from blueprint.pages', () => {
@@ -100,7 +100,7 @@ describe('evaluateGuard - v3 reads from correct paths', () => {
     const creative = makeV3({
       meta: { ...VALID_V3.meta, guard: { mode: 'creative', dna_enforcement: 'off', blueprint_enforcement: 'off' } },
     });
-    const violations = evaluateGuard(creative, { style: 'wrong', pageId: 'nonexistent' });
+    const violations = evaluateGuard(creative, { theme: 'wrong', pageId: 'nonexistent' });
     expect(violations).toHaveLength(0);
   });
 
@@ -144,8 +144,8 @@ describe('evaluateGuard - v3 enforcement levels', () => {
     const v3 = makeV3({
       meta: { ...VALID_V3.meta, guard: { mode: 'strict', dna_enforcement: 'off', blueprint_enforcement: 'warn' } },
     });
-    // style is a DNA-layer violation
-    const violations = evaluateGuard(v3, { style: 'wrong', density_gap: '99' });
+    // theme is a DNA-layer violation
+    const violations = evaluateGuard(v3, { theme: 'wrong', density_gap: '99' });
     const dnaViolations = violations.filter(v => v.layer === 'dna');
     expect(dnaViolations).toHaveLength(0);
   });
@@ -163,7 +163,7 @@ describe('evaluateGuard - v3 enforcement levels', () => {
     const v3 = makeV3({
       meta: { ...VALID_V3.meta, guard: { mode: 'strict', dna_enforcement: 'warn', blueprint_enforcement: 'warn' } },
     });
-    const violations = evaluateGuard(v3, { style: 'wrong' });
+    const violations = evaluateGuard(v3, { theme: 'wrong' });
     const dnaViolations = violations.filter(v => v.layer === 'dna');
     expect(dnaViolations.length).toBeGreaterThan(0);
     expect(dnaViolations.every(v => v.severity === 'warning')).toBe(true);
@@ -184,10 +184,10 @@ describe('evaluateGuard - v2 backward compatibility', () => {
       guard: { mode: 'strict' as const },
       target: 'react',
     };
-    const violations = evaluateGuard(v2, { style: 'wrong' });
-    const styleV = violations.find(v => v.rule === 'style');
-    expect(styleV).toBeDefined();
-    expect(styleV!.layer).toBeUndefined();
-    expect(styleV!.autoFixable).toBeUndefined();
+    const violations = evaluateGuard(v2, { theme: 'wrong' });
+    const themeV = violations.find(v => v.rule === 'theme');
+    expect(themeV).toBeDefined();
+    expect(themeV!.layer).toBeUndefined();
+    expect(themeV!.autoFixable).toBeUndefined();
   });
 });

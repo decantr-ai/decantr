@@ -268,7 +268,7 @@ export const TOOLS = [
           items: { type: 'string' },
           description: 'List of component names used in the generated code. Checked against page layout patterns.',
         },
-        theme_used: { type: 'string', description: 'Theme/style name used in the generated code' },
+        theme_used: { type: 'string', description: 'Theme id used in the generated code' },
       },
     },
     annotations: READ_ONLY,
@@ -654,18 +654,18 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const violations: { rule: string; severity: string; message: string; layer?: string; autoFixable?: boolean; autoFix?: unknown }[] = [];
 
       if (args.theme_used && typeof args.theme_used === 'string') {
-        let expectedStyle: string | undefined;
+        let expectedThemeId: string | undefined;
         if (isV3(essence)) {
-          expectedStyle = essence.dna.theme.id;
+          expectedThemeId = essence.dna.theme.id;
         } else {
           const expectedTheme = (essence as Record<string, unknown>).theme as Record<string, string> | undefined;
-          expectedStyle = expectedTheme?.id ?? expectedTheme?.style;
+          expectedThemeId = expectedTheme?.id ?? expectedTheme?.style;
         }
-        if (expectedStyle && args.theme_used !== expectedStyle) {
+        if (expectedThemeId && args.theme_used !== expectedThemeId) {
           violations.push({
             rule: 'theme-match',
             severity: 'critical',
-            message: `Theme drift: code uses "${args.theme_used}" but Essence specifies "${expectedStyle}". Do not switch themes.`,
+            message: `Theme drift: code uses "${args.theme_used}" but Essence specifies "${expectedThemeId}". Do not switch themes.`,
             ...(isV3(essence) ? { layer: 'dna', autoFixable: false } : {}),
           });
         }
@@ -918,16 +918,16 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       // Check if any violations are DNA-layer; if so, require confirm_dna
       const hasDnaViolation = violations.some(v => {
         const rule = v.rule;
-        // DNA-layer rules: style, density, theme-mode, accessibility
-        return ['style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(rule);
+        // DNA-layer rules: theme, density, theme-mode, accessibility
+        return ['theme', 'style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(rule);
       });
 
       if (hasDnaViolation && resolution !== 'reject' && resolution !== 'defer' && !args.confirm_dna) {
         return {
-          error: 'DNA-layer violations detected. Set confirm_dna: true to accept changes to design axioms (theme, style, density, etc.).',
+          error: 'DNA-layer violations detected. Set confirm_dna: true to accept changes to design axioms (theme, density, accessibility, etc.).',
           requires_confirmation: true,
           dna_rules_affected: violations.filter(v =>
-            ['style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(v.rule)
+            ['theme', 'style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(v.rule)
           ).map(v => v.rule),
         };
       }
@@ -1087,6 +1087,7 @@ function applyDriftAcceptance(
 ): void {
   switch (violation.rule) {
     case 'theme-match':
+    case 'theme':
     case 'style': {
       // Accept a theme change: update the DNA theme id
       if (violation.details) {

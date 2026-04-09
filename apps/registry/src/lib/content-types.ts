@@ -1,9 +1,8 @@
 import { API_CONTENT_TYPES, isApiContentType } from '@decantr/registry/content-types';
-import type { ApiContentType } from '@decantr/registry/content-types';
 
 export const CONTENT_TYPES = API_CONTENT_TYPES;
 
-export type RegistryContentType = ApiContentType;
+export type RegistryContentType = (typeof CONTENT_TYPES)[number];
 
 export const CONTENT_TYPE_LABELS: Record<RegistryContentType, string> = {
   patterns: 'Patterns',

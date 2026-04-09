@@ -7,7 +7,7 @@ export interface AutoFix {
 }
 
 export interface GuardViolation {
-  rule: 'style' | 'structure' | 'layout' | 'density' | 'theme-mode' | 'pattern-exists' | 'accessibility';
+  rule: 'theme' | 'structure' | 'layout' | 'density' | 'theme-mode' | 'pattern-exists' | 'accessibility';
   severity: 'error' | 'warning';
   message: string;
   suggestion?: string;
@@ -18,6 +18,8 @@ export interface GuardViolation {
 
 export interface GuardContext {
   pageId?: string;
+  theme?: string;
+  /** @deprecated Use `theme` instead. */
   style?: string;
   layout?: string[];
   density_gap?: string;
@@ -193,20 +195,21 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
   const violations: GuardViolation[] = [];
   const isStrict = guard.mode === 'strict';
 
-  // Rule 1: Style guard
-  if (context.style) {
-    let essenceStyle: string | null;
+  // Rule 1: Theme guard
+  const requestedTheme = context.theme ?? context.style;
+  if (requestedTheme) {
+    let essenceThemeId: string | null;
     if (isV3(essence)) {
-      essenceStyle = essence.dna.theme.id;
+      essenceThemeId = essence.dna.theme.id;
     } else {
-      essenceStyle = isSimple(essence) ? essence.theme.id : null;
+      essenceThemeId = isSimple(essence) ? essence.theme.id : null;
     }
     const enforceStyle = isV3(essence) ? true : (guard as import('./types.js').Guard).enforce_style !== false;
-    if (essenceStyle && context.style !== essenceStyle && enforceStyle) {
+    if (essenceThemeId && requestedTheme !== essenceThemeId && enforceStyle) {
       violations.push({
-        rule: 'style',
+        rule: 'theme',
         severity: 'error',
-        message: `Style "${context.style}" does not match essence theme "${essenceStyle}". Change the essence theme first.`,
+        message: `Theme "${requestedTheme}" does not match essence theme "${essenceThemeId}". Change the essence theme first.`,
         ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
       });
     }
