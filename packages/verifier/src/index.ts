@@ -352,6 +352,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     securityRiskPatterns: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
+    mainLandmarkSignals: createSourceAuditBucket(),
     authSessionSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
@@ -383,6 +384,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
+    recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
@@ -510,6 +512,7 @@ interface SourceAuditSummary {
   securityRiskPatterns: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
+  mainLandmarkSignals: SourceAuditBucket;
   authSessionSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
@@ -1287,6 +1290,21 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (essenceRequiresSkipNav(essence) && sourceAudit.mainLandmarkSignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'source-main-landmark-signals-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'The essence contract requires skip navigation, but the source tree does not show a main landmark for skip-link targeting.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        'Skip-nav requirement: true',
+        'Main landmark signals: 0',
+      ],
+      suggestedFix: 'Add a `<main>` landmark or a container with `role=\"main\"` so skip navigation lands on a clear primary app region.',
+    }));
+  }
+
   if (sourceAudit.interactionSafetyIssues.count > 0) {
     findings.push(makeFinding({
       id: 'source-interaction-safety-issues-present',
@@ -1533,6 +1551,7 @@ interface AstCritiqueSignals {
   formControlWithoutLabelCount: number;
   placeholderNavigationTargetCount: number;
   skipNavSignalCount: number;
+  mainLandmarkCount: number;
   emailAutocompleteMissingCount: number;
   passwordAutocompleteMissingCount: number;
   buttonInFormWithoutTypeCount: number;
@@ -1731,6 +1750,13 @@ function hasPlaceholderNavigationTarget(attributes: ts.JsxAttributes): boolean {
     || normalized === 'javascript:void(0);';
 }
 
+function hasMainLandmarkSignal(attributes: ts.JsxAttributes, tagName: string | null): boolean {
+  if (tagName === 'main') return true;
+
+  const roleValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'role'));
+  return roleValue?.trim().toLowerCase() === 'main';
+}
+
 function isAuthStorageKeyLiteral(node: ts.Expression | undefined): boolean {
   if (!node) return false;
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
@@ -1844,6 +1870,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     formControlWithoutLabelCount: 0,
     placeholderNavigationTargetCount: 0,
     skipNavSignalCount: countSkipNavSignals(code),
+    mainLandmarkCount: 0,
     emailAutocompleteMissingCount: 0,
     passwordAutocompleteMissingCount: 0,
     buttonInFormWithoutTypeCount: 0,
@@ -1969,6 +1996,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
     if (ts.isJsxSelfClosingElement(node)) {
       const tagName = getJsxTagName(node);
+      if (hasMainLandmarkSignal(node.attributes, tagName)) {
+        signals.mainLandmarkCount += 1;
+      }
       if (tagName === 'button' && hasAncestorJsxTag(node, 'form') && !getJsxAttribute(node.attributes, 'type')) {
         signals.buttonInFormWithoutTypeCount += 1;
       }
@@ -2011,6 +2041,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       const tagName = getJsxTagName(node.openingElement);
       const textContent = getJsxTextContent(node).replace(/\s+/g, ' ').trim();
 
+      if (hasMainLandmarkSignal(node.openingElement.attributes, tagName)) {
+        signals.mainLandmarkCount += 1;
+      }
       if (tagName === 'button' && hasAncestorJsxTag(node, 'form') && !getJsxAttribute(node.openingElement.attributes, 'type')) {
         signals.buttonInFormWithoutTypeCount += 1;
       }
