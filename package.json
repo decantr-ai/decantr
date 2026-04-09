@@ -18,6 +18,7 @@
     "audit:npm-surface": "node scripts/audit-npm-surface.mjs",
     "npm-surface:normalize:dry-run": "node scripts/normalize-npm-dist-tags.mjs",
     "release:plan": "node scripts/release-plan.mjs",
+    "release:preflight": "node scripts/publish-packages.mjs --publish-dry-run",
     "package:retire:dry-run": "node scripts/deprecate-retired-packages.mjs --dry-run",
     "audit:public-api": "node scripts/audit-public-api.mjs",
     "audit:registry-portal": "node scripts/audit-registry-portal.mjs",

@@ -91,6 +91,9 @@ The workflow:
 - supports `--wave=<wave>` for targeted publish rehearsals
 - supports a manual `dist_tag` override for coordinated release waves
 - supports `dry_run_only=true` in the publish workflow so a wave can be rehearsed in GitHub Actions without mutating npm
+- now also supports `--publish-dry-run` for local artifact preflight:
+  - uses `npm publish --dry-run` for versions that are not yet published
+  - uses `npm pack --dry-run` for versions that are already on npm, so package-shape validation still works without failing on duplicate-version checks
 
 Retired package handling now uses `config/package-retirements.json` plus:
 
@@ -171,6 +174,14 @@ node scripts/publish-packages.mjs --dry-run
 node scripts/publish-packages.mjs --dry-run --wave=foundation
 node scripts/publish-packages.mjs --dry-run --include-experimental
 pnpm npm-surface:normalize:dry-run
+```
+
+Preflight the actual package artifacts without publishing:
+
+```bash
+pnpm release:preflight
+node scripts/publish-packages.mjs --publish-dry-run --wave=foundation
+node scripts/publish-packages.mjs --publish-dry-run --only=@decantr/verifier
 ```
 
 For GitHub Actions rehearsals, trigger `.github/workflows/publish.yml` with:
