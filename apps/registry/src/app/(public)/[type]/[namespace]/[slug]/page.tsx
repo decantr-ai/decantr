@@ -5,18 +5,19 @@ import type { ContentRecord } from '@/lib/api';
 import { JsonViewer } from '@/components/json-viewer';
 import { getShowcaseMetadata, getShowcaseUrl } from '@/lib/showcase';
 import { CopyInstallButton } from './copy-install-button';
+import styles from './page.module.css';
 
-const TYPE_COLORS: Record<string, string> = {
-  pattern: 'var(--d-coral)',
-  theme: 'var(--d-amber)',
-  blueprint: 'var(--d-cyan)',
-  shell: 'var(--d-green)',
-  archetype: 'var(--d-purple)',
-  patterns: 'var(--d-coral)',
-  themes: 'var(--d-amber)',
-  blueprints: 'var(--d-cyan)',
-  shells: 'var(--d-green)',
-  archetypes: 'var(--d-purple)',
+const TYPE_STYLES: Record<string, { canvas: string; badge: string }> = {
+  pattern: { canvas: styles.canvasPattern, badge: styles.typeBadgePattern },
+  theme: { canvas: styles.canvasTheme, badge: styles.typeBadgeTheme },
+  blueprint: { canvas: styles.canvasBlueprint, badge: styles.typeBadgeBlueprint },
+  shell: { canvas: styles.canvasShell, badge: styles.typeBadgeShell },
+  archetype: { canvas: styles.canvasArchetype, badge: styles.typeBadgeArchetype },
+  patterns: { canvas: styles.canvasPattern, badge: styles.typeBadgePattern },
+  themes: { canvas: styles.canvasTheme, badge: styles.typeBadgeTheme },
+  blueprints: { canvas: styles.canvasBlueprint, badge: styles.typeBadgeBlueprint },
+  shells: { canvas: styles.canvasShell, badge: styles.typeBadgeShell },
+  archetypes: { canvas: styles.canvasArchetype, badge: styles.typeBadgeArchetype },
 };
 
 function singularType(type: string): string {
@@ -101,7 +102,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   }
 
   const singular = singularType(type);
-  const typeColor = TYPE_COLORS[type] ?? 'var(--d-primary)';
+  const typeStyles = TYPE_STYLES[type] ?? TYPE_STYLES[singular] ?? TYPE_STYLES.blueprint;
   const name =
     (content.data?.name as string | undefined) ||
     prettifyName(slug);
@@ -115,59 +116,43 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const showcaseVerification = showcaseMeta?.verification ?? null;
 
   return (
-    <div
-      style={{
-        background: `linear-gradient(180deg, color-mix(in srgb, ${typeColor} 5%, transparent) 0%, transparent 100%)`,
-        minHeight: '100%',
-      }}
-    >
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <main className={`${styles.pageCanvas} ${typeStyles.canvas}`}>
+      <div className={styles.pageShellBreakpoint}>
         {/* Breadcrumb */}
         <nav
-          className="flex items-center gap-1.5 text-xs"
-          style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}
+          className={`flex items-center gap-1.5 text-xs ${styles.breadcrumbs}`}
           aria-label="Breadcrumb"
         >
           <Link
             href="/"
-            className="no-underline transition-colors hover:text-d-primary"
-            style={{ color: 'var(--d-text-muted)' }}
+            className={`no-underline transition-colors hover:text-d-primary ${styles.mutedLink}`}
           >
             Registry
           </Link>
           <span className="opacity-40">/</span>
           <Link
             href={`/browse/${type}`}
-            className="no-underline transition-colors hover:text-d-primary capitalize"
-            style={{ color: 'var(--d-text-muted)' }}
+            className={`no-underline transition-colors hover:text-d-primary capitalize ${styles.mutedLink}`}
           >
             {type.charAt(0).toUpperCase() + type.slice(1)}
           </Link>
           <span className="opacity-40">/</span>
           <Link
             href={`/browse?namespace=${encodeURIComponent(namespace)}`}
-            className="no-underline transition-colors hover:text-d-primary"
-            style={{ color: 'var(--d-text-muted)' }}
+            className={`no-underline transition-colors hover:text-d-primary ${styles.mutedLink}`}
           >
             {namespace}
           </Link>
           <span className="opacity-40">/</span>
-          <span style={{ color: 'var(--d-text)', fontWeight: 500 }}>{slug}</span>
+          <span className={styles.currentCrumb}>{slug}</span>
         </nav>
 
         {/* Hero card */}
-        <div className="d-surface" data-elevation="raised">
+        <section className="d-surface" data-elevation="raised" aria-labelledby="registry-detail-title">
           <div className="flex flex-col gap-4">
             {/* Type + namespace badges */}
             <div className="flex items-center gap-2">
-              <span
-                className="d-annotation"
-                style={{
-                  background: typeColor,
-                  color: '#141414',
-                  fontWeight: 600,
-                }}
-              >
+              <span className={`d-annotation ${styles.typeBadge} ${typeStyles.badge}`}>
                 {singular}
               </span>
               <span className="d-annotation">{namespace}</span>
@@ -180,74 +165,53 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
 
             {/* Name + version */}
             <div>
-              <h1
-                className="font-bold"
-                style={{
-                  margin: 0,
-                  fontSize: '1.5rem',
-                  color: 'var(--d-text)',
-                }}
-              >
+              <h1 id="registry-detail-title" className={`font-bold ${styles.heroTitle}`}>
                 {name}
               </h1>
-              <span
-                className="text-sm"
-                style={{
-                  color: 'var(--d-text-muted)',
-                  fontFamily: 'var(--d-font-mono, monospace)',
-                }}
-              >
+              <span className={`text-sm ${styles.versionText}`}>
                 v{content.version}
               </span>
             </div>
 
             {/* Description */}
             {description && (
-              <p
-                style={{
-                  margin: 0,
-                  color: 'var(--d-text-muted)',
-                  lineHeight: 1.6,
-                  maxWidth: '42rem',
-                }}
-              >
+              <p className={styles.description}>
                 {description}
               </p>
             )}
 
             {/* Meta row */}
-            <div className="flex items-center gap-4 flex-wrap text-sm">
+            <div className={styles.metaRow}>
               {content.owner_username && (
-                <div className="flex items-center gap-1.5">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--d-text-muted)' }}>
+                <div className={styles.metaItem}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.metaIcon}>
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                   <Link
                     href={`/profile/${content.owner_username}`}
-                    className="no-underline hover:text-d-primary transition-colors"
-                    style={{ color: 'var(--d-text)' }}
+                    className={`no-underline hover:text-d-primary transition-colors ${styles.textDefault}`}
                   >
                     {content.owner_name || content.owner_username}
                   </Link>
                 </div>
               )}
               {content.published_at && (
-                <div className="flex items-center gap-1.5">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--d-text-muted)' }}>
+                <div className={styles.metaItem}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.metaIcon}>
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                     <line x1="16" y1="2" x2="16" y2="6" />
                     <line x1="8" y1="2" x2="8" y2="6" />
                     <line x1="3" y1="10" x2="21" y2="10" />
                   </svg>
-                  <span style={{ color: 'var(--d-text-muted)' }}>
+                  <span className={styles.textMuted}>
                     {formatDate(content.published_at)}
                   </span>
                 </div>
               )}
               {tags.length > 0 && (
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--d-text-muted)' }}>
+                <div className={styles.metaWrap}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.metaIcon}>
                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                     <line x1="7" y1="7" x2="7.01" y2="7" />
                   </svg>
@@ -282,10 +246,10 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
               )}
             </div>
           </div>
-        </div>
+        </section>
 
         {intelligence && (
-          <div className="d-surface" data-elevation="raised" style={{ marginTop: '1.25rem' }}>
+          <section className={`d-surface ${styles.contentSectionSpacing}`} data-elevation="raised" aria-label="Registry intelligence summary">
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2 flex-wrap">
                 {intelligence.recommended && (
@@ -333,10 +297,10 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                   <span className="d-annotation">{intelligence.benchmark.target}</span>
                 )}
               </div>
-              <p style={{ margin: 0, color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
+              <p className={styles.supportingCopy}>
                 {getIntelligenceDescription(intelligence)}
               </p>
-              <div className="flex flex-wrap items-center gap-2 text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div className={styles.metricsRowBreakpoint}>
                 {intelligence.target_coverage.length > 0 && (
                   <span>Targets: {intelligence.target_coverage.join(', ')}</span>
                 )}
@@ -348,11 +312,11 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                 )}
               </div>
             </div>
-          </div>
+          </section>
         )}
 
         {showcaseMeta && (
-          <div className="d-surface" data-elevation="raised" style={{ marginTop: '1.25rem' }}>
+          <section className={`d-surface ${styles.contentSectionSpacing}`} data-elevation="raised" aria-label="Showcase verification summary">
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="d-annotation" data-status={showcaseMeta.goldenCandidate ? 'success' : undefined}>
@@ -376,21 +340,21 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                   <span className="d-annotation">drift {showcaseVerification.drift.signal}</span>
                 )}
               </div>
-              <p style={{ margin: 0, color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
+              <p className={styles.supportingCopy}>
                 {showcaseMeta.notes || 'This blueprint has a live showcase build in the audited Decantr corpus.'}
               </p>
               {showcaseVerification && (
-                <p style={{ margin: 0, color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
+                <p className={styles.supportingCopy}>
                   Shortlist verification recorded a {showcaseVerification.build.passed ? 'passing' : 'failing'} build in {showcaseVerification.build.durationMs} ms and a {showcaseVerification.smoke.passed ? 'passing' : 'failing'} smoke check in {showcaseVerification.smoke.durationMs} ms, with {showcaseVerification.drift.inlineStyleCount} inline-style signals and {showcaseVerification.drift.hardcodedColorCount} hardcoded-color signals.
                 </p>
               )}
             </div>
-          </div>
+          </section>
         )}
 
         {/* JSON viewer */}
         {content.data && (
-          <div style={{ marginTop: '2.5rem' }}>
+          <div className={styles.jsonSection}>
             <JsonViewer
               data={content.data}
               title={`${namespace}/${slug} — v${content.version}`}
@@ -398,6 +362,6 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

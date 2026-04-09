@@ -9,6 +9,7 @@ import {
   getShowcaseShortlistVerificationSummary,
   listShortlistedShowcases,
 } from '@/lib/showcase';
+import styles from './page.module.css';
 import {
   CONTENT_TYPES,
   CONTENT_TYPE_LABELS,
@@ -160,12 +161,12 @@ function CardGridSkeleton() {
 
 export default function HomePage() {
   return (
-    <div className="lum-canvas mx-auto max-w-6xl px-6 py-8">
-      <section className="entrance-fade">
-        <h2 className="mb-2 text-2xl font-semibold">
+    <main className={`lum-canvas ${styles.pageShellBreakpoint}`}>
+      <section className="entrance-fade" aria-labelledby="registry-home-heading">
+        <h1 id="registry-home-heading" className="mb-2 text-2xl font-semibold">
           Explore the Registry
-        </h2>
-        <p className="mb-6 text-sm text-d-muted">
+        </h1>
+        <p className={styles.heroCopy}>
           Browse, install, and publish patterns, themes, blueprints, archetypes, and shells.
         </p>
         <Suspense>
@@ -175,8 +176,8 @@ export default function HomePage() {
 
       <div className="lum-divider" />
 
-      <section>
-        <span className="d-label mb-4 block border-l-2 border-[var(--d-accent)] pl-3">
+      <section aria-labelledby="featured-registry-heading">
+        <span id="featured-registry-heading" className={`d-label ${styles.sectionLabelAccent}`}>
           Featured
         </span>
         <Suspense fallback={<CardGridSkeleton />}>
@@ -186,11 +187,11 @@ export default function HomePage() {
 
       <div className="lum-divider" />
 
-      <section>
-        <span className="d-label mb-4 block border-l-2 border-[var(--d-success)] pl-3">
+      <section aria-labelledby="showcase-shortlist-heading">
+        <span id="showcase-shortlist-heading" className={`d-label ${styles.sectionLabelSuccess}`}>
           Showcase Shortlist
         </span>
-        <p className="mb-4 max-w-3xl text-sm text-d-muted">
+        <p className={styles.sectionCopy}>
           Provisional benchmark candidates from the Decantr showcase corpus. These blueprints currently have live showcase builds and a passing served-output smoke baseline.
         </p>
         <Suspense>
@@ -204,17 +205,17 @@ export default function HomePage() {
 
       <div className="lum-divider" />
 
-      <section className="d-section py-8">
-        <span className="d-label mb-4 block border-l-2 border-[var(--d-accent)] pl-3">
+      <section className={`d-section ${styles.metricsSection}`} aria-labelledby="registry-stats-heading">
+        <span id="registry-stats-heading" className={`d-label ${styles.sectionLabelAccent}`}>
           Registry Stats
         </span>
-        <p className="mb-4 max-w-3xl text-sm text-d-muted">
+        <p className={styles.sectionCopy}>
           Live totals are sourced from the hosted public registry contracts, including aggregate intelligence and verification coverage where available.
         </p>
         <Suspense>
           <RegistryStats />
         </Suspense>
       </section>
-    </div>
+    </main>
   );
 }

@@ -36,7 +36,7 @@ For local development and showcases, wire all zone transitions with mock data:
 
 **App** — top-nav-main shell
   Archetypes: registry-browser, user-dashboard
-  Purpose: Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, recipes, and shells. Authenticated user area with content management, API key management, account settings, and activity overview.
+  Purpose: Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells. Authenticated user area with content management, API key management, account settings, and activity overview.
   Features: search, pagination, auth, api-keys
 
 **App (auxiliary)** — sidebar-main shell

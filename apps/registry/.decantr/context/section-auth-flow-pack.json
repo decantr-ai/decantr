@@ -1,0 +1,103 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the auth-flow section using the compiled centered shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "nextjs",
+    "runtime": "spa",
+    "adapter": "nextjs"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "login",
+      "register",
+      "forgot-password"
+    ],
+    "patternIds": [
+      "auth-form"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "auth-flow",
+    "gateway",
+    "centered",
+    "luminarum",
+    "dark",
+    "auth",
+    "auth-form"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "auth-flow",
+    "role": "gateway",
+    "shell": "centered",
+    "description": "Login, registration, and password recovery with OAuth support",
+    "features": [
+      "auth"
+    ],
+    "theme": {
+      "id": "luminarum",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "login",
+        "path": "/login",
+        "patternIds": [
+          "auth-form"
+        ]
+      },
+      {
+        "pageId": "register",
+        "path": "/register",
+        "patternIds": [
+          "auth-form"
+        ]
+      },
+      {
+        "pageId": "forgot-password",
+        "path": "/forgot-password",
+        "patternIds": [
+          "auth-form"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the auth-flow section using the compiled centered shell contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=login, register, forgot-password | patterns=auth-form\n\n## Section Contract\n- Section: auth-flow\n- Role: gateway\n- Shell: centered\n- Theme: luminarum (dark)\n- Features: auth\n- Description: Login, registration, and password recovery with OAuth support\n\n## Section Routes\n- /login -> login [auth-form]\n- /register -> register [auth-form]\n- /forgot-password -> forgot-password [auth-form]\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- auth-flow\n- gateway\n- centered\n- luminarum\n- dark\n- auth\n- auth-form\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

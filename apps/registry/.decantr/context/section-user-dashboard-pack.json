@@ -1,0 +1,160 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the user-dashboard section using the compiled sidebar-main shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "nextjs",
+    "runtime": "spa",
+    "adapter": "nextjs"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "overview",
+      "content",
+      "content-new",
+      "api-keys",
+      "settings",
+      "billing",
+      "team"
+    ],
+    "patternIds": [
+      "kpi-grid",
+      "reputation-badge",
+      "activity-feed",
+      "content-card-grid",
+      "form",
+      "json-viewer",
+      "api-key-row",
+      "account-settings",
+      "tier-upgrade-card",
+      "team-member-row"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "user-dashboard",
+    "primary",
+    "sidebar-main",
+    "luminarum",
+    "dark",
+    "auth",
+    "api-keys",
+    "kpi-grid",
+    "reputation-badge",
+    "activity-feed",
+    "content-card-grid",
+    "form",
+    "json-viewer",
+    "api-key-row",
+    "account-settings",
+    "tier-upgrade-card",
+    "team-member-row"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "user-dashboard",
+    "role": "primary",
+    "shell": "sidebar-main",
+    "description": "Authenticated user area with content management, API key management, account settings, and activity overview.",
+    "features": [
+      "auth",
+      "api-keys"
+    ],
+    "theme": {
+      "id": "luminarum",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "overview",
+        "path": "/overview",
+        "patternIds": [
+          "kpi-grid",
+          "reputation-badge",
+          "activity-feed"
+        ]
+      },
+      {
+        "pageId": "content",
+        "path": "/content",
+        "patternIds": [
+          "content-card-grid"
+        ]
+      },
+      {
+        "pageId": "content-new",
+        "path": "/content-new",
+        "patternIds": [
+          "form",
+          "json-viewer"
+        ]
+      },
+      {
+        "pageId": "api-keys",
+        "path": "/api-keys",
+        "patternIds": [
+          "api-key-row"
+        ]
+      },
+      {
+        "pageId": "settings",
+        "path": "/settings",
+        "patternIds": [
+          "account-settings"
+        ]
+      },
+      {
+        "pageId": "billing",
+        "path": "/billing",
+        "patternIds": [
+          "tier-upgrade-card",
+          "kpi-grid"
+        ]
+      },
+      {
+        "pageId": "team",
+        "path": "/team",
+        "patternIds": [
+          "kpi-grid",
+          "team-member-row"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the user-dashboard section using the compiled sidebar-main shell contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=overview, content, content-new, api-keys, settings, billing, team | patterns=kpi-grid, reputation-badge, activity-feed, content-card-grid, form, json-viewer, api-key-row, account-settings, tier-upgrade-card, team-member-row\n\n## Section Contract\n- Section: user-dashboard\n- Role: primary\n- Shell: sidebar-main\n- Theme: luminarum (dark)\n- Features: auth, api-keys\n- Description: Authenticated user area with content management, API key management, account settings, and activity overview.\n\n## Section Routes\n- /overview -> overview [kpi-grid, reputation-badge, activity-feed]\n- /content -> content [content-card-grid]\n- /content-new -> content-new [form, json-viewer]\n- /api-keys -> api-keys [api-key-row]\n- /settings -> settings [account-settings]\n- /billing -> billing [tier-upgrade-card, kpi-grid]\n- /team -> team [kpi-grid, team-member-row]\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- user-dashboard\n- primary\n- sidebar-main\n- luminarum\n- dark\n- auth\n- api-keys\n- kpi-grid\n- reputation-badge\n- activity-feed\n- content-card-grid\n- form\n- json-viewer\n- api-key-row\n- account-settings\n- tier-upgrade-card\n- team-member-row\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

@@ -116,6 +116,11 @@ When a user request would violate guard rules:
 - `decantr_check_drift` -- Check if planned changes violate rules
 - `decantr_accept_drift` -- Accept a detected drift as intentional
 - `decantr_update_essence` -- Update the essence spec to match desired changes
+- `decantr_audit_project` -- Audit the current project against the essence contract and compiled packs
+- `decantr_get_scaffold_context` -- Read the top-level scaffold task, scaffold overview, compiled scaffold pack, and review pack together
+- `decantr_get_page_context` -- Read a route-local page pack together with its parent section context when available
+- `decantr_get_execution_pack` -- Read compiled scaffold, review, mutation, section, and page packs
+- `decantr_get_section_context` -- Read the richer section context with compiled pack data when available
 
 ---
 
@@ -127,15 +132,21 @@ When a user request would violate guard rules:
 
 ### Initial scaffolding
 
-Read `.decantr/context/scaffold.md` for the full app overview, topology, and route map.
+Read `.decantr/context/scaffold-pack.md` for the compact compiled route and shell contract.
+Then read `.decantr/context/scaffold.md` for the fuller app overview, topology, and route map.
 
 ### Working on a section
 
-Read `.decantr/context/section-{name}.md` for that section's complete context. Each section file contains guard rules, theme tokens, decorator classes, pattern specs with code examples, zone context, and routes. **Everything you need is in that one file.**
+Read `.decantr/context/section-{name}-pack.md` for the compact compiled section contract.
+Then read `.decantr/context/section-{name}.md` for the fuller context. Each section file contains guard rules, theme tokens, decorator classes, pattern specs with code examples, zone context, and routes. **Everything you need is in that one file.**
+
+### Working on a route
+
+Read `.decantr/context/page-{name}-pack.md` for the most local compiled route contract before editing a specific page.
 
 ### Validation
 
-Run `decantr check` to validate code against the spec.
+Run `decantr audit` to audit the whole project contract and `decantr check` to detect drift violations while editing.
 
 ### Quick Commands
 

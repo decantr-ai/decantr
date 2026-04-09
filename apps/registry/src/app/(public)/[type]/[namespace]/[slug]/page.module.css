@@ -1,0 +1,163 @@
+.pageCanvas {
+  min-height: 100%;
+}
+
+.canvasPattern {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--d-coral) 5%, transparent) 0%, transparent 100%);
+}
+
+.canvasTheme {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--d-amber) 5%, transparent) 0%, transparent 100%);
+}
+
+.canvasBlueprint {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--d-cyan) 5%, transparent) 0%, transparent 100%);
+}
+
+.canvasShell {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--d-green) 5%, transparent) 0%, transparent 100%);
+}
+
+.canvasArchetype {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--d-purple) 5%, transparent) 0%, transparent 100%);
+}
+
+.pageShellBreakpoint {
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+.breadcrumbs {
+  margin-bottom: 1.5rem;
+  color: var(--d-text-muted);
+  flex-wrap: wrap;
+}
+
+.mutedLink {
+  color: var(--d-text-muted);
+}
+
+.currentCrumb {
+  color: var(--d-text);
+  font-weight: 500;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--d-text);
+}
+
+.versionText {
+  color: var(--d-text-muted);
+  font-family: var(--d-font-mono, monospace);
+}
+
+.typeBadge {
+  color: var(--d-surface-base);
+  font-weight: 600;
+}
+
+.typeBadgePattern {
+  background: var(--d-coral);
+}
+
+.typeBadgeTheme {
+  background: var(--d-amber);
+}
+
+.typeBadgeBlueprint {
+  background: var(--d-cyan);
+}
+
+.typeBadgeShell {
+  background: var(--d-green);
+}
+
+.typeBadgeArchetype {
+  background: var(--d-purple);
+}
+
+.description {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--d-text-muted);
+  line-height: 1.6;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.metaWrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.metaIcon {
+  flex: none;
+  color: var(--d-text-muted);
+}
+
+.textMuted {
+  color: var(--d-text-muted);
+}
+
+.textDefault {
+  color: var(--d-text);
+}
+
+.contentSectionSpacing {
+  margin-top: 1.25rem;
+}
+
+.supportingCopy {
+  margin: 0;
+  color: var(--d-text-muted);
+  line-height: 1.6;
+}
+
+.metricsRowBreakpoint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: var(--d-text-muted);
+}
+
+.jsonSection {
+  margin-top: 2.5rem;
+}
+
+@media (max-width: 768px) {
+  .pageShellBreakpoint {
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .heroTitle {
+    font-size: 1.375rem;
+  }
+
+  .metaRow {
+    gap: 0.75rem;
+  }
+
+  .metricsRowBreakpoint {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
