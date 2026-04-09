@@ -5,29 +5,111 @@ import {
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
   type ContentType,
 } from '@decantr/registry';
+import { getThemeSkeleton } from '../theme-templates.js';
 
 const PLURAL = CONTENT_TYPE_TO_API_CONTENT_TYPE;
+const SCHEMA_URLS: Record<ContentType, string> = {
+  pattern: 'https://decantr.ai/schemas/pattern.v2.json',
+  theme: 'https://decantr.ai/schemas/theme.v1.json',
+  blueprint: 'https://decantr.ai/schemas/blueprint.v1.json',
+  archetype: 'https://decantr.ai/schemas/archetype.v2.json',
+  shell: 'https://decantr.ai/schemas/shell.v1.json',
+};
+
+function humanizeId(id: string): string {
+  return id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
 
 function getSkeleton(type: ContentType, id: string, name: string): Record<string, unknown> {
   const base = {
+    $schema: SCHEMA_URLS[type],
     id,
     name,
-    description: '',
     version: '1.0.0',
-    source: 'custom',
   };
 
   switch (type) {
     case 'pattern':
-      return { ...base, components: [], presets: {}, layout: {} };
+      return {
+        ...base,
+        description: `Starter pattern for ${name}. Replace the preset layout, slots, and code examples before publishing.`,
+        tags: [],
+        components: [],
+        default_preset: 'standard',
+        presets: {
+          standard: {
+            description: 'Default starter preset. Replace the layout atoms and slots with the real structure for this pattern.',
+            layout: {
+              layout: 'stack',
+              atoms: '_flex _col _gap4',
+            },
+          },
+        },
+      };
     case 'theme':
-      return { ...base, seed: { primary: '#6500C6', secondary: '#0AF3EB', accent: '#F58882', background: '#0D0D1A' }, modes: ['dark'], shapes: ['rounded'] };
+      return getThemeSkeleton(id, name) as Record<string, unknown>;
     case 'blueprint':
-      return { ...base, compose: [], theme: {}, personality: [] };
+      return {
+        ...base,
+        description: `Starter blueprint for ${name}. Replace the theme, routes, and composed archetypes before publishing.`,
+        tags: [],
+        compose: ['starter-home'],
+        theme: {
+          id: 'carbon',
+          mode: 'dark',
+          shape: 'rounded',
+        },
+        personality: 'Calm, production-ready starter blueprint. Tailor the voice, routes, and composed archetypes to your product.',
+        routes: {
+          '/': {
+            page: 'home',
+            shell: 'top-nav-main',
+            archetype: 'starter-home',
+          },
+        },
+        overrides: {
+          features_add: [],
+          features_remove: [],
+          pages: {},
+          pages_remove: [],
+        },
+      };
     case 'archetype':
-      return { ...base, pages: [], features: [], suggested_theme: { ids: [], modes: [], shapes: [] } };
+      return {
+        ...base,
+        role: 'primary',
+        description: `Starter archetype for ${name}. Replace the sample page, pattern layout, and features before publishing.`,
+        tags: ['starter'],
+        pages: [
+          {
+            id: 'home',
+            description: 'Starter page for your primary flow.',
+            shell: 'top-nav-main',
+            patterns: [],
+            default_layout: [],
+          },
+        ],
+        features: [],
+        suggested_theme: {
+          ids: ['carbon'],
+          modes: ['dark'],
+          shapes: ['rounded'],
+        },
+      };
     case 'shell':
-      return { ...base, regions: [], layout: 'sidebar-main' };
+      return {
+        ...base,
+        description: `Starter shell for ${name}. Replace the regions, layout guidance, and internal structure before publishing.`,
+        layout: 'stack',
+        atoms: '_flex _col _h[100vh]',
+        config: {
+          regions: ['header', 'body'],
+        },
+        guidance: {
+          section_label_treatment: 'd-label',
+          section_density: 'comfortable',
+        },
+      };
   }
 }
 
@@ -55,7 +137,7 @@ export function cmdCreate(
 
   mkdirSync(customDir, { recursive: true });
 
-  const skeleton = getSkeleton(contentType, name, name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+  const skeleton = getSkeleton(contentType, name, humanizeId(name));
   writeFileSync(filePath, JSON.stringify(skeleton, null, 2));
 
   console.log(`Created ${type} "${name}" at ${filePath}`);

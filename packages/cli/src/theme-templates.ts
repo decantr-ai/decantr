@@ -3,7 +3,7 @@ export function getThemeSkeleton(id: string, name: string): object {
     $schema: 'https://decantr.ai/schemas/theme.v1.json',
     id,
     name,
-    description: '',
+    description: `Custom theme starter for ${name}. Replace the seed palette, personality, and treatments before publishing.`,
     tags: [],
     personality: '',
     seed: {
@@ -35,9 +35,10 @@ decantr theme create mytheme
 
 | Field | Required | Description |
 |-------|----------|-------------|
+| $schema | Yes | Must be \`https://decantr.ai/schemas/theme.v1.json\` |
 | id | Yes | Unique identifier (matches filename) |
 | name | Yes | Display name |
-| description | No | Brief description |
+| description | Yes | Brief description for humans and LLMs |
 | tags | No | Searchable tags |
 | personality | No | Short visual summary for LLMs |
 | seed | Yes | Core colors: primary, secondary, accent, background |

@@ -11,6 +11,7 @@ describe('validateCustomTheme', () => {
       $schema: THEME_SCHEMA_URL,
       id: 'test',
       name: 'Test',
+      description: 'A complete test theme.',
       seed: { primary: '#000', secondary: '#111', accent: '#222', background: '#fff' },
       modes: ['dark'],
       shapes: ['rounded'],
@@ -28,12 +29,13 @@ describe('validateCustomTheme', () => {
     const theme = {
       id: 'test',
       name: 'Test'
-      // missing seed, modes, shapes, decantr_compat, source
+      // missing description, seed, modes, shapes, decantr_compat, source
     };
 
     const result = validateCustomTheme(theme);
 
     expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Missing required field: description');
     expect(result.errors).toContain('Missing required field: seed');
     expect(result.errors).toContain('Missing required field: modes');
     expect(result.errors).toContain('Missing required field: shapes');
@@ -43,6 +45,7 @@ describe('validateCustomTheme', () => {
     const theme = {
       id: 'test',
       name: 'Test',
+      description: 'Missing some seed colors.',
       seed: { primary: '#000' }, // missing secondary, accent, background
       modes: ['dark'],
       shapes: ['rounded'],
@@ -62,6 +65,7 @@ describe('validateCustomTheme', () => {
     const theme = {
       id: 'test',
       name: 'Test',
+      description: 'Uses an invalid mode.',
       seed: { primary: '#000', secondary: '#111', accent: '#222', background: '#fff' },
       modes: ['auto'], // invalid
       shapes: ['rounded'],
@@ -79,6 +83,7 @@ describe('validateCustomTheme', () => {
     const theme = {
       id: 'test',
       name: 'Test',
+      description: 'Uses an invalid shape.',
       seed: { primary: '#000', secondary: '#111', accent: '#222', background: '#fff' },
       modes: ['dark'],
       shapes: ['oval'], // invalid
@@ -90,6 +95,25 @@ describe('validateCustomTheme', () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('Invalid shape "oval" - use: sharp, rounded, pill');
+  });
+
+  it('returns errors for blank description', () => {
+    const theme = {
+      $schema: THEME_SCHEMA_URL,
+      id: 'test',
+      name: 'Test',
+      description: '   ',
+      seed: { primary: '#000', secondary: '#111', accent: '#222', background: '#fff' },
+      modes: ['dark'],
+      shapes: ['rounded'],
+      decantr_compat: '>=1.0.0',
+      source: 'custom'
+    };
+
+    const result = validateCustomTheme(theme);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Field "description" must be a non-empty string');
   });
 });
 
@@ -214,6 +238,7 @@ describe('importTheme', () => {
       $schema: THEME_SCHEMA_URL,
       id: 'imported',
       name: 'Imported Theme',
+      description: 'Imported custom theme.',
       seed: { primary: '#000', secondary: '#111', accent: '#222', background: '#fff' },
       modes: ['dark'],
       shapes: ['rounded'],
