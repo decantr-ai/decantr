@@ -209,6 +209,96 @@ describe('v3-aware tool tests', () => {
       expect(result.summary.passedSmokes).toBeGreaterThan(0);
       expect(result.results.some(entry => entry.slug === 'portfolio')).toBe(true);
     });
+
+    it('compiles hosted execution packs from the local essence file', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({
+          $schema: 'https://decantr.ai/schemas/execution-pack-bundle.v1.json',
+          generatedAt: '2026-04-09T00:00:00.000Z',
+          sourceEssenceVersion: '3.0.0',
+          manifest: {
+            $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+            version: '1.0.0',
+            generatedAt: '2026-04-09T00:00:00.000Z',
+            scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+            review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+            sections: [],
+            pages: [{ id: 'overview', markdown: 'page-overview-pack.md', json: 'page-overview-pack.json', sectionId: 'saas-dashboard', sectionRole: 'primary' }],
+            mutations: [{ id: 'modify', markdown: 'mutation-modify-pack.md', json: 'mutation-modify-pack.json', mutationType: 'modify' }],
+          },
+          scaffold: {
+            $schema: 'https://decantr.ai/schemas/scaffold-pack.v1.json',
+            packVersion: '1.0.0',
+            packType: 'scaffold',
+            objective: 'Scaffold the app shell and declared routes.',
+            target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+            preset: null,
+            scope: { appId: 'app', pageIds: ['overview'], patternIds: ['kpi-grid'] },
+            requiredSetup: [],
+            allowedVocabulary: [],
+            examples: [],
+            antiPatterns: [],
+            successChecks: [],
+            tokenBudget: { target: 1400, max: 2200, strategy: [] },
+            data: {
+              shell: 'sidebar-main',
+              theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
+              routing: 'hash',
+              features: ['auth'],
+              routes: [{ pageId: 'overview', path: '/', patternIds: ['kpi-grid'] }],
+            },
+            renderedMarkdown: '# Scaffold Pack\n',
+          },
+          review: {
+            $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+            packVersion: '1.0.0',
+            packType: 'review',
+            objective: 'Review generated output against the compiled Decantr contract.',
+            target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+            preset: null,
+            scope: { appId: 'app', pageIds: ['overview'], patternIds: ['kpi-grid'] },
+            requiredSetup: [],
+            allowedVocabulary: [],
+            examples: [],
+            antiPatterns: [],
+            successChecks: [],
+            tokenBudget: { target: 1400, max: 2200, strategy: [] },
+            data: {
+              reviewType: 'app',
+              shell: 'sidebar-main',
+              theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
+              routing: 'hash',
+              features: ['auth'],
+              routes: [{ pageId: 'overview', path: '/', patternIds: ['kpi-grid'] }],
+              focusAreas: ['route-topology'],
+              workflow: ['Read the scaffold pack first.'],
+            },
+            renderedMarkdown: '# Review Pack\n',
+          },
+          sections: [],
+          pages: [],
+          mutations: [],
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_compile_execution_packs', {
+        namespace: '@official',
+      }) as {
+        $schema: string;
+        scaffold: { target: { adapter: string } };
+        manifest: { scaffold: { markdown: string } | null };
+      };
+
+      expect(result.$schema).toBe('https://decantr.ai/schemas/execution-pack-bundle.v1.json');
+      expect(result.scaffold.target.adapter).toBe('react-vite');
+      expect(result.manifest.scaffold?.markdown).toBe('scaffold-pack.md');
+    });
   });
 
   describe('decantr_read_essence — v3 layer filtering', () => {

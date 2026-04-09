@@ -36,8 +36,8 @@ function isObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-async function fetchJson(path) {
-  const response = await fetch(`${REGISTRY_URL}${path}`);
+async function fetchJson(path, init) {
+  const response = await fetch(`${REGISTRY_URL}${path}`, init);
   const text = await response.text();
   let json = null;
 
@@ -57,6 +57,36 @@ async function fetchJson(path) {
     text,
   };
 }
+
+const SAMPLE_ESSENCE = {
+  version: '2.0.0',
+  archetype: 'dashboard',
+  theme: {
+    id: 'clean',
+    mode: 'light',
+  },
+  personality: ['professional'],
+  platform: {
+    type: 'spa',
+    routing: 'history',
+  },
+  structure: [
+    {
+      id: 'home',
+      shell: 'sidebar-main',
+      layout: ['hero'],
+    },
+  ],
+  features: ['auth'],
+  density: {
+    level: 'comfortable',
+    content_gap: '1.5rem',
+  },
+  guard: {
+    mode: 'guided',
+  },
+  target: 'react',
+};
 
 function summarizeResult(check, response, passed, details) {
   return {
@@ -80,6 +110,28 @@ const CHECKS = [
     },
     details(response) {
       return response.json?.$id ?? response.text;
+    },
+  },
+  {
+    name: 'execution-pack-compile',
+    path: `/packs/compile?namespace=${encodeURIComponent(CONTENT_NAMESPACE)}`,
+    init: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(SAMPLE_ESSENCE),
+    },
+    validate(response) {
+      return response.ok &&
+        isObject(response.json) &&
+        response.json.$schema === 'https://decantr.ai/schemas/execution-pack-bundle.v1.json';
+    },
+    details(response) {
+      if (isObject(response.json?.scaffold?.target)) {
+        return `adapter=${response.json.scaffold.target.adapter ?? 'n/a'} pages=${Array.isArray(response.json?.pages) ? response.json.pages.length : 'n/a'}`;
+      }
+      return response.text;
     },
   },
   {
@@ -175,10 +227,10 @@ async function main() {
 
   for (const check of CHECKS) {
     try {
-      const response = await fetchJson(check.path);
-      const passed = check.validate(response);
-      const details = check.details(response);
-      const result = summarizeResult(check, response, passed, details);
+      const normalizedResponse = await fetchJson(check.path, check.init);
+      const passed = check.validate(normalizedResponse);
+      const details = check.details(normalizedResponse);
+      const result = summarizeResult(check, normalizedResponse, passed, details);
       results.push(result);
       if (!passed) {
         failures.push(result);

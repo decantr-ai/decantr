@@ -8,8 +8,8 @@ afterEach(() => {
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
-    it('should define 19 tools', () => {
-      expect(TOOLS).toHaveLength(19);
+    it('should define 20 tools', () => {
+      expect(TOOLS).toHaveLength(20);
     });
 
     it('should have unique tool names', () => {
@@ -41,6 +41,7 @@ describe('MCP tool handlers', () => {
         'decantr_create_essence',
         'decantr_get_showcase_benchmarks',
         'decantr_get_registry_intelligence_summary',
+        'decantr_compile_execution_packs',
       ];
       for (const name of networkToolNames) {
         const tool = TOOLS.find(t => t.name === name);

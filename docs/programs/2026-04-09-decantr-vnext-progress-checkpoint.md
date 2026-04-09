@@ -59,9 +59,17 @@ commit archaeology.
   - mutation
   - review
   - pack manifest
+- Added a hosted execution-pack bundle contract:
+  - `execution-pack-bundle.v1.json`
 - CLI now emits pack artifacts into scaffolded projects.
+- Shared core now compiles execution-pack bundles from essence as a reusable runtime primitive instead of only inside CLI scaffold glue.
 - MCP can read scaffold, section, page, mutation, and review pack context.
 - Generated project guidance now points operators to packs first.
+- Hosted API now compiles execution packs from essence documents through:
+  - `POST /v1/packs/compile`
+- Public registry client and CLI now expose that hosted compiler surface:
+  - `RegistryAPIClient.compileExecutionPacks()`
+  - `decantr registry compile-packs`
 
 ### Verification foundation
 
@@ -136,6 +144,10 @@ commit archaeology.
   - Fly now serves the reset-branch API successfully
   - `/v1/schema/*`, `/v1/showcase/*`, and `/v1/intelligence/summary` are publicly reachable
   - `pnpm audit:public-api` now passes against `https://api.decantr.ai/v1`
+- Extended the hosted public API contract again after rollout with:
+  - `POST /v1/packs/compile`
+  - audit coverage for hosted execution-pack compilation
+  - public docs/reference coverage for the hosted compiler surface
 - Completed the official content rollout on 2026-04-09:
   - content workflow run `24192386163` synced `codex/decantr-vnext-resetmai` into the live registry
   - live `@official` content count is now `480`
@@ -193,6 +205,9 @@ Observed from live audits against `https://api.decantr.ai/v1` on 2026-04-09:
 - live `@official` content count matches repo count
 - live registry drift is clean after the official-content sync
 - showcase shortlist verification is publicly reachable
+- the newly added hosted execution-pack compiler is not deployed yet:
+  - `POST /v1/packs/compile` still returns `401` on the live API
+  - local reset-branch code is green, so the remaining gap is rollout rather than implementation
 
 The hosted API path is explicit and exercised in production. The registry portal deploy path is
 now explicit in-repo as well through the Vercel workflow, portal audit, and runbook surfaces.
@@ -201,5 +216,6 @@ now explicit in-repo as well through the Vercel workflow, portal audit, and runb
 
 1. Add richer golden verification beyond build/smoke into route/runtime behavior.
 2. Move execution packs deeper into hosted/API workflows instead of local scaffold-only artifacts.
-3. Continue narrowing legacy `any`/implicit contracts in older CLI and MCP paths.
-4. Keep improving content intelligence quality and confidence scoring on top of the now-live hosted summary contract.
+3. Extend pack-first delivery beyond CLI and public API into richer MCP/hosted-agent workflows.
+4. Continue narrowing legacy `any`/implicit contracts in older CLI and MCP paths.
+5. Keep improving content intelligence quality and confidence scoring on top of the now-live hosted summary contract.

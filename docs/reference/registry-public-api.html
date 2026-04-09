@@ -154,7 +154,7 @@
   <main>
     <h1>Registry Public API</h1>
     <p class="lede">
-      The public, read-only registry contract for Decantr browse, search, detail, and intelligence-summary flows.
+      The public registry and hosted compiler contract for Decantr browse, search, detail, intelligence-summary, and execution-pack flows.
       These are the hosted endpoints used by the registry portal, CLI, MCP consumers, and external tooling.
     </p>
 
@@ -215,6 +215,30 @@ GET /schema/registry-intelligence-summary.v1.json</pre>
     </section>
 
     <section class="panel endpoint">
+      <h2>Hosted Execution Pack Compile</h2>
+      <pre>POST /packs/compile?namespace=@official
+Content-Type: application/json
+
+{
+  "version": "2.0.0",
+  "archetype": "dashboard",
+  "theme": { "id": "clean", "mode": "light" },
+  "personality": ["professional"],
+  "platform": { "type": "spa", "routing": "history" },
+  "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+  "features": ["auth"],
+  "density": { "level": "comfortable", "content_gap": "1.5rem" },
+  "guard": { "mode": "guided" },
+  "target": "react"
+}</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Compile a schema-backed execution-pack bundle from an essence document using hosted public registry content.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/execution-pack-bundle.v1.json"><code>execution-pack-bundle.v1.json</code></a></div>
+        <div><strong>Notes:</strong> <code>namespace</code> is optional and defaults to <code>@official</code>. The API prefers the requested namespace first, then falls back to <code>@official</code> for public content resolution.</div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
       <h2>Showcase Benchmark Surfaces</h2>
       <pre>GET /showcase/manifest
 GET /showcase/shortlist
@@ -241,11 +265,13 @@ GET /showcase/shortlist-verification</pre>
       <pre>decantr search portfolio --type blueprint --sort recommended --recommended --source hybrid
 decantr list blueprints --source authored
 decantr registry summary --namespace @official --json
+decantr registry compile-packs decantr.essence.json --namespace @official --json
 pnpm audit:public-api</pre>
       <ul>
         <li><code>decantr_search_registry</code></li>
         <li><code>decantr_get_registry_intelligence_summary</code></li>
         <li><code>decantr_get_showcase_benchmarks</code></li>
+        <li><code>decantr_compile_execution_packs</code></li>
       </ul>
     </section>
 

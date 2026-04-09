@@ -1,6 +1,6 @@
 # Registry Public API
 
-This reference describes the public, read-only registry endpoints that power the Decantr portal, CLI, MCP lookups, and external tooling.
+This reference describes the public registry and hosted compiler endpoints that power the Decantr portal, CLI, MCP lookups, and external tooling.
 
 Base URL:
 
@@ -94,6 +94,38 @@ Notes:
 - all canonical schemas are also browsable at `https://decantr.ai/schemas/`
 - schema names match the files served from that index
 
+## Hosted Execution Pack Compile
+
+```http
+POST /packs/compile?namespace=@official
+Content-Type: application/json
+
+{
+  "version": "2.0.0",
+  "archetype": "dashboard",
+  "theme": { "id": "clean", "mode": "light" },
+  "personality": ["professional"],
+  "platform": { "type": "spa", "routing": "history" },
+  "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+  "features": ["auth"],
+  "density": { "level": "comfortable", "content_gap": "1.5rem" },
+  "guard": { "mode": "guided" },
+  "target": "react"
+}
+```
+
+Purpose:
+- compile a schema-backed execution-pack bundle from an essence document using hosted public registry content
+
+Notes:
+- request body must be a valid Decantr essence document
+- `namespace` is optional and defaults to `@official`
+- the API prefers the requested namespace first, then falls back to `@official` for public content resolution
+
+Response schema:
+- `execution-pack-bundle.v1.json`
+- `https://decantr.ai/schemas/execution-pack-bundle.v1.json`
+
 ## Showcase Benchmark Surfaces
 
 ```http
@@ -148,6 +180,7 @@ This endpoint is intended for:
 decantr search portfolio --type blueprint --sort recommended --recommended --source hybrid
 decantr list blueprints --source authored
 decantr registry summary --namespace @official --json
+decantr registry compile-packs decantr.essence.json --namespace @official --json
 ```
 
 ## MCP Equivalents
@@ -155,6 +188,7 @@ decantr registry summary --namespace @official --json
 - `decantr_search_registry`
 - `decantr_get_registry_intelligence_summary`
 - `decantr_get_showcase_benchmarks`
+- `decantr_compile_execution_packs`
 
 ## Notes
 

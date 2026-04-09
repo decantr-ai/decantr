@@ -5,6 +5,10 @@ Status: Completed on 2026-04-09
 
 This runbook covers the safe rollout order for the Decantr vNext hosted public API surfaces now living on the `codex/decantr-vnext-reset` and `codex/decantr-vnext-resetmai` branches.
 
+It originally covered the public-read rollout for schema, showcase, and intelligence surfaces, and it now also tracks the hosted execution-pack compiler endpoint:
+
+- `POST /v1/packs/compile`
+
 ## Why This Exists
 
 Local code on the reset branches is ahead of the currently deployed public API.
@@ -34,6 +38,7 @@ As of 2026-04-09, the hosted rollout completed successfully:
 
 - Fly is serving the API from image `runtime-intelligence-fix-20260409-0916`
 - `pnpm audit:public-api` passes against `https://api.decantr.ai/v1`
+- hosted execution-pack compilation now responds from `POST /v1/packs/compile`
 - `decantr-content` workflow run `24192386163` completed successfully and synced official content from `codex/decantr-vnext-resetmai`
 - live `@official` content no longer includes stale `workbench`-era extras
 - live registry drift now reports:
@@ -47,6 +52,9 @@ As of 2026-04-09, the hosted rollout completed successfully:
   - `live: 480`
   - `intelligence: 480`
   - `recommended: 224`
+- after the hosted compiler extension landed locally later on 2026-04-09:
+  - `pnpm audit:public-api` reports `POST /v1/packs/compile` as `401 Unauthorized`
+  - this is a deployment gap, not a local implementation gap, because the reset branch passes root build/test/lint with the new endpoint enabled
 
 Key fixes required during rollout:
 
@@ -137,6 +145,7 @@ Surfaces included in this rollout:
   - `/v1/schema/*`
   - `/v1/showcase/*`
   - `/v1/intelligence/summary`
+  - `/v1/packs/compile`
 
 Why first:
 
@@ -155,6 +164,7 @@ pnpm audit:public-api
 Expected result:
 
 - `schema-search-response` returns `200`
+- `execution-pack-compile` returns `200`
 - `showcase-shortlist-verification` returns `200`
 - `registry-intelligence-summary` returns `200`
 - `public-search` and `public-blueprint-list` remain `200`
@@ -218,6 +228,7 @@ node scripts/audit-content-intelligence.js --fail-on-filter-mismatch --fail-on-s
 Expected convergence:
 
 - hosted public API surfaces all return `200`
+- hosted execution-pack compilation returns a schema-backed bundle
 - drift audit no longer reports stale `@official` extras
 - intelligence audit no longer reports filter-summary mismatches caused by outdated deployment state
 

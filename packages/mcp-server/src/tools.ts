@@ -89,6 +89,23 @@ async function getRegistryIntelligenceSummaryPayload(namespace?: string) {
   return client.getRegistryIntelligenceSummary(namespace ? { namespace } : undefined);
 }
 
+async function getHostedExecutionPackBundlePayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const essence = (() => {
+    if (typeof args.essence === 'object' && args.essence !== null && !Array.isArray(args.essence)) {
+      return args.essence as EssenceFile;
+    }
+    return readEssenceFile(args.path as string | undefined);
+  })();
+
+  return client.compileExecutionPacks(
+    essence,
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
 const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
 
 function deriveZones(inputs: ZoneInput[]): ComposedZone[] {
@@ -488,7 +505,31 @@ export const TOOLS = [
     },
     annotations: READ_ONLY_NETWORK,
   },
-  // 19. decantr_audit_project — local read
+  // 19. decantr_compile_execution_packs — network read
+  {
+    name: 'decantr_compile_execution_packs',
+    title: 'Compile Execution Packs',
+    description: 'Compile a hosted execution-pack bundle from an essence document using the public Decantr API. Reads the local essence file by default, or accepts an inline essence object.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Optional path to an essence file. Defaults to ./decantr.essence.json when essence is not provided.',
+        },
+        essence: {
+          type: 'object' as const,
+          description: 'Optional inline essence document to compile instead of reading from disk.',
+        },
+        namespace: {
+          type: 'string',
+          description: 'Optional preferred public namespace for content resolution. Defaults to "@official".',
+        },
+      },
+    },
+    annotations: READ_ONLY_NETWORK,
+  },
+  // 20. decantr_audit_project — local read
   {
     name: 'decantr_audit_project',
     title: 'Audit Project',
@@ -499,7 +540,7 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 20. decantr_critique — local read
+  // 21. decantr_critique — local read
   {
     name: 'decantr_critique',
     title: 'Design Critique',
@@ -1418,6 +1459,20 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       return getRegistryIntelligenceSummaryPayload(args.namespace as string | undefined);
+    }
+
+    case 'decantr_compile_execution_packs': {
+      if (args.path != null && typeof args.path !== 'string') {
+        return { error: 'Invalid path. Must be a string when provided.' };
+      }
+      if (args.namespace != null && typeof args.namespace !== 'string') {
+        return { error: 'Invalid namespace. Must be a string when provided.' };
+      }
+      if (args.essence != null && (typeof args.essence !== 'object' || Array.isArray(args.essence))) {
+        return { error: 'Invalid essence. Must be an object when provided.' };
+      }
+
+      return getHostedExecutionPackBundlePayload(args);
     }
 
     case 'decantr_critique': {
