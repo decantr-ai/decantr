@@ -5,15 +5,17 @@ import { readFileSync } from 'node:fs';
 const TOOL_SOURCE_PATH = 'packages/mcp-server/src/tools.ts';
 const DOCS_INDEX_PATH = 'docs/index.html';
 
-const EXPECTED_PACKAGES = [
-  '@decantr/cli',
-  '@decantr/mcp-server',
-  '@decantr/essence-spec',
-  '@decantr/registry',
-  '@decantr/core',
-  '@decantr/css',
-  '@decantr/verifier',
-];
+const EXPECTED_PACKAGE_PATHS = {
+  '@decantr/cli': 'packages/cli/package.json',
+  '@decantr/mcp-server': 'packages/mcp-server/package.json',
+  '@decantr/essence-spec': 'packages/essence-spec/package.json',
+  '@decantr/registry': 'packages/registry/package.json',
+  '@decantr/core': 'packages/core/package.json',
+  '@decantr/css': 'packages/css/package.json',
+  '@decantr/verifier': 'packages/verifier/package.json',
+};
+
+const EXPECTED_PACKAGES = Object.keys(EXPECTED_PACKAGE_PATHS);
 
 function extractToolNames(source) {
   return [...source.matchAll(/name:\s*'([^']+)'/g)].map((match) => match[1]);
@@ -25,6 +27,14 @@ function extractDocsToolNames(source) {
 
 function extractDocsPackageNames(source) {
   return [...source.matchAll(/@decantr\/[a-z-]+/g)].map((match) => match[0]);
+}
+
+function extractDocsPackageVersions(source) {
+  return [...source.matchAll(/<div class="pkg-name">(@decantr\/[a-z-]+)<\/div>[\s\S]*?<div class="pkg-version">v([^<]+)<\/div>/g)]
+    .reduce((acc, match) => {
+      acc[match[1]] = match[2];
+      return acc;
+    }, {});
 }
 
 function unique(values) {
@@ -42,6 +52,7 @@ const docsIndex = readFileSync(DOCS_INDEX_PATH, 'utf8');
 const toolNames = unique(extractToolNames(toolSource));
 const docsToolNames = unique(extractDocsToolNames(docsIndex));
 const docsPackageNames = unique(extractDocsPackageNames(docsIndex));
+const docsPackageVersions = extractDocsPackageVersions(docsIndex);
 
 const toolHeadingMatch = docsIndex.match(/>(\d+)\s+tools for your AI assistant</);
 const packageHeadingMatch = docsIndex.match(/>(\w+)\s+packages, one mission/);
@@ -100,6 +111,18 @@ if (extraPackages.length > 0) {
   failures.push(`Docs homepage lists unexpected package names: ${extraPackages.join(', ')}`);
 }
 
+for (const [pkg, packageJsonPath] of Object.entries(EXPECTED_PACKAGE_PATHS)) {
+  const packageVersion = JSON.parse(readFileSync(packageJsonPath, 'utf8')).version;
+  const docsVersion = docsPackageVersions[pkg];
+  if (!docsVersion) {
+    failures.push(`Docs homepage is missing a displayed version for ${pkg}.`);
+    continue;
+  }
+  if (docsVersion !== packageVersion) {
+    failures.push(`Docs homepage shows ${pkg} as v${docsVersion}, but package.json is v${packageVersion}.`);
+  }
+}
+
 if (failures.length > 0) {
   console.error('Docs marketing audit failed:\n');
   for (const failure of failures) {
@@ -108,4 +131,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`Docs marketing audit passed: ${toolNames.length} MCP tools and ${EXPECTED_PACKAGES.length} core packages are aligned.`);
+console.log(`Docs marketing audit passed: ${toolNames.length} MCP tools and ${EXPECTED_PACKAGES.length} core packages are aligned, including displayed versions.`);
