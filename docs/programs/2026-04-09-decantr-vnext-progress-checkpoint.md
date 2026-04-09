@@ -114,6 +114,7 @@ commit archaeology.
 - File critique now includes a first AST-backed static pass for supported TS/JSX input so inline-style and high-risk HTML/code-execution findings do not rely only on regex matching.
 - File critique and source audit now also catch unlabeled icon-only links, not just icon-only buttons, so generated nav/icon surfaces are held to the same accessibility contract.
 - File critique and source audit now also flag iframes without descriptive `title` attributes, so embedded dashboards/docs do not slip past the accessibility baseline.
+- File critique and source audit now also flag external iframes without `sandbox`, so embeds are held to a safer default trust boundary.
 
 ### Showcase / golden corpus
 

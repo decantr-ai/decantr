@@ -1698,6 +1698,7 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'accessibility-iframe-title-missing')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'security-iframe-sandbox-missing')).toBe(true);
   });
 
   it('flags unlabeled form controls during critique', () => {
