@@ -15,10 +15,9 @@ import type {
   ApiContentType,
   Blueprint as RegistryBlueprint,
   ComposeEntry,
-  ShowcaseManifestEntry,
+  ShowcaseManifestResponse,
   ShowcaseShortlistReport,
   ShowcaseShortlistResponse,
-  ShowcaseVerificationEntry,
 } from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
@@ -76,8 +75,6 @@ import { cmdExport } from './commands/export.js';
 import type { ExportTarget } from './commands/export.js';
 import { cmdRegistryMirror } from './commands/registry-mirror.js';
 import { cmdNewProject } from './commands/new-project.js';
-import showcaseManifest from '../../../apps/showcase/manifest.json';
-import shortlistVerificationReport from '../../../apps/showcase/reports/shortlist-verification.json';
 
 // ── Helpers ──
 
@@ -163,41 +160,33 @@ function getAPIClient(): RegistryAPIClient {
   });
 }
 
-function getShowcaseBenchmarkView(view: 'manifest' | 'shortlist' | 'verification' = 'shortlist') {
-  const activeEntries = (showcaseManifest.apps as ShowcaseManifestEntry[]).filter(entry => entry.status === 'active');
-  const verificationResults = (shortlistVerificationReport.results as ShowcaseVerificationEntry[] | undefined) ?? [];
-  const verificationMap = new Map(verificationResults.map(entry => [entry.slug, entry]));
-  const shortlisted = activeEntries
-    .filter(entry => Boolean(entry.goldenCandidate))
-    .map(entry => ({
-      ...entry,
-      verification: verificationMap.get(entry.slug) ?? null,
-    }));
+function getPublicAPIClient(): RegistryAPIClient {
+  return new RegistryAPIClient({
+    baseUrl: process.env.DECANTR_API_URL || undefined,
+  });
+}
+
+async function getShowcaseBenchmarkView(
+  view: 'manifest' | 'shortlist' | 'verification' = 'shortlist',
+) {
+  const client = getPublicAPIClient();
 
   if (view === 'manifest') {
-    return {
-      total: activeEntries.length,
-      shortlisted: shortlisted.length,
-      apps: activeEntries.map(entry => ({
-        ...entry,
-        verification: verificationMap.get(entry.slug) ?? null,
-      })),
-    };
+    return client.getShowcaseManifest();
   }
 
   if (view === 'verification') {
-    return shortlistVerificationReport;
+    return client.getShowcaseShortlistVerification();
   }
 
-  return {
-    generatedAt: shortlistVerificationReport.generatedAt ?? null,
-    summary: shortlistVerificationReport.summary ?? null,
-    apps: shortlisted,
-  };
+  return client.getShowcaseShortlist();
 }
 
-function printShowcaseBenchmarks(view: 'manifest' | 'shortlist' | 'verification', jsonOutput: boolean) {
-  const data = getShowcaseBenchmarkView(view);
+async function printShowcaseBenchmarks(
+  view: 'manifest' | 'shortlist' | 'verification',
+  jsonOutput: boolean,
+) {
+  const data = await getShowcaseBenchmarkView(view);
 
   if (jsonOutput) {
     console.log(JSON.stringify(data, null, 2));
@@ -205,11 +194,7 @@ function printShowcaseBenchmarks(view: 'manifest' | 'shortlist' | 'verification'
   }
 
   if (view === 'manifest') {
-    const manifest = data as {
-      total: number;
-      shortlisted: number;
-      apps: Array<ShowcaseManifestEntry & { verification?: ShowcaseVerificationEntry | null }>;
-    };
+    const manifest = data as ShowcaseManifestResponse;
     console.log(heading('Showcase Corpus'));
     console.log(`  Active apps: ${manifest.total}`);
     console.log(`  Shortlisted apps: ${manifest.shortlisted}`);
@@ -1587,7 +1572,7 @@ async function main() {
       const jsonOutput = args.includes('--json');
 
       if (requestedView && requestedView.startsWith('--')) {
-        printShowcaseBenchmarks('shortlist', jsonOutput);
+        await printShowcaseBenchmarks('shortlist', jsonOutput);
         break;
       }
 
@@ -1597,7 +1582,7 @@ async function main() {
         break;
       }
 
-      printShowcaseBenchmarks(view, jsonOutput);
+      await printShowcaseBenchmarks(view, jsonOutput);
       break;
     }
 

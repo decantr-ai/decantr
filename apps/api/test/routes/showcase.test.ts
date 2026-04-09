@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
 import type { Env } from '../../src/types.js';
+import { createApp } from '../../src/app.js';
 import { showcaseRoutes } from '../../src/routes/showcase.js';
 
 function createTestApp() {
@@ -44,5 +45,14 @@ describe('GET /v1/showcase/*', () => {
     expect(json.$schema).toBe('https://decantr.ai/schemas/showcase-shortlist-report.v1.json');
     expect(Array.isArray(json.results)).toBe(true);
     expect(json.results.length).toBeGreaterThan(0);
+  });
+
+  it('remains publicly readable through the full app middleware stack', async () => {
+    const app = createApp();
+    const res = await app.request('/v1/showcase/shortlist-verification');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$schema).toBe('https://decantr.ai/schemas/showcase-shortlist-report.v1.json');
   });
 });

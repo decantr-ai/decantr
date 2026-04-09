@@ -8,15 +8,12 @@ import type {
   Pattern,
   ArchetypeRole,
   ComposeEntry,
-  ShowcaseManifestEntry,
-  ShowcaseVerificationEntry,
 } from '@decantr/registry';
-import showcaseManifest from '../../../apps/showcase/manifest.json';
-import shortlistVerificationReport from '../../../apps/showcase/reports/shortlist-verification.json';
 import {
   validateStringArg,
   fuzzyScore,
   getAPIClient,
+  getPublicAPIClient,
   readEssenceFile,
   mutateEssenceFile,
   readDriftLog,
@@ -72,37 +69,18 @@ interface PackManifest {
   mutations?: Array<PackManifestEntry & { mutationType: string }>;
 }
 
-const SHOWCASE_ENTRIES = (showcaseManifest.apps as ShowcaseManifestEntry[]).filter(entry => entry.status === 'active');
-const SHOWCASE_VERIFICATION_RESULTS = (shortlistVerificationReport.results as ShowcaseVerificationEntry[] | undefined) ?? [];
-const SHOWCASE_VERIFICATION_MAP = new Map(SHOWCASE_VERIFICATION_RESULTS.map(entry => [entry.slug, entry]));
-const SHORTLISTED_SHOWCASES = SHOWCASE_ENTRIES
-  .filter(entry => Boolean(entry.goldenCandidate))
-  .map(entry => ({
-    ...entry,
-    verification: SHOWCASE_VERIFICATION_MAP.get(entry.slug) ?? null,
-  }));
+async function getShowcaseBenchmarkPayload(view: string) {
+  const client = getPublicAPIClient();
 
-function getShowcaseBenchmarkPayload(view: string) {
   if (view === 'manifest') {
-    return {
-      total: SHOWCASE_ENTRIES.length,
-      shortlisted: SHORTLISTED_SHOWCASES.length,
-      apps: SHOWCASE_ENTRIES.map(entry => ({
-        ...entry,
-        verification: SHOWCASE_VERIFICATION_MAP.get(entry.slug) ?? null,
-      })),
-    };
+    return client.getShowcaseManifest();
   }
 
   if (view === 'verification') {
-    return shortlistVerificationReport;
+    return client.getShowcaseShortlistVerification();
   }
 
-  return {
-    generatedAt: shortlistVerificationReport.generatedAt ?? null,
-    summary: shortlistVerificationReport.summary ?? null,
-    apps: SHORTLISTED_SHOWCASES,
-  };
+  return client.getShowcaseShortlist();
 }
 
 const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
@@ -468,7 +446,7 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 17. decantr_get_showcase_benchmarks — local read
+  // 17. decantr_get_showcase_benchmarks — network read
   {
     name: 'decantr_get_showcase_benchmarks',
     title: 'Get Showcase Benchmarks',
@@ -483,7 +461,7 @@ export const TOOLS = [
         },
       },
     },
-    annotations: READ_ONLY,
+    annotations: READ_ONLY_NETWORK,
   },
   // 18. decantr_audit_project — local read
   {

@@ -35,6 +35,7 @@ describe('MCP tool handlers', () => {
         'decantr_search_registry', 'decantr_resolve_pattern', 'decantr_resolve_archetype',
         'decantr_resolve_blueprint', 'decantr_suggest_patterns',
         'decantr_create_essence',
+        'decantr_get_showcase_benchmarks',
       ];
       for (const name of networkToolNames) {
         const tool = TOOLS.find(t => t.name === name);
@@ -51,7 +52,6 @@ describe('MCP tool handlers', () => {
         'decantr_get_scaffold_context',
         'decantr_get_page_context',
         'decantr_get_execution_pack',
-        'decantr_get_showcase_benchmarks',
       ];
       for (const name of localToolNames) {
         const tool = TOOLS.find(t => t.name === name);

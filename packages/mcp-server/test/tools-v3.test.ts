@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { writeFile, mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { handleTool } from '../src/tools.js';
+import { resetAPIClient } from '../src/helpers.js';
 import type { EssenceV3 } from '@decantr/essence-spec';
 
 function makeV3Essence(overrides?: Partial<EssenceV3>): EssenceV3 {
@@ -67,6 +68,8 @@ beforeEach(async () => {
 
 afterEach(async () => {
   process.chdir(originalCwd);
+  resetAPIClient();
+  vi.restoreAllMocks();
   await rm(testDir, { recursive: true, force: true });
 });
 
@@ -134,6 +137,59 @@ describe('v3-aware tool tests', () => {
     });
 
     it('returns showcase shortlist verification data', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({
+          $schema: 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',
+          generatedAt: '2026-04-09T00:00:00.000Z',
+          dryRun: false,
+          summary: {
+            appCount: 1,
+            passedBuilds: 1,
+            failedBuilds: 0,
+            averageDurationMs: 1100,
+            passedSmokes: 1,
+            failedSmokes: 0,
+            averageSmokeDurationMs: 4,
+            lowerDriftCount: 1,
+            moderateDriftCount: 0,
+            elevatedDriftCount: 0,
+            withPackManifestCount: 0,
+          },
+          results: [
+            {
+              slug: 'portfolio',
+              target: 'react-vite',
+              classification: 'B',
+              verificationStatus: 'smoke-green',
+              build: { passed: true, durationMs: 1100 },
+              smoke: {
+                passed: true,
+                durationMs: 4,
+                rootDocumentOk: true,
+                assetCount: 2,
+                assetsPassed: 2,
+                routeHintsChecked: ['/'],
+                routeHintsMatched: 1,
+                failures: [],
+              },
+              drift: {
+                signal: 'lower',
+                penalty: 100,
+                inlineStyleCount: 12,
+                hardcodedColorCount: 3,
+                utilityLeakageCount: 0,
+                decantrTreatmentCount: 42,
+                hasPackManifest: true,
+                hasDist: true,
+              },
+            },
+          ],
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
       process.chdir(testDir);
       const result = await handleTool('decantr_get_showcase_benchmarks', {
         view: 'verification',
