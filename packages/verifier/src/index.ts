@@ -344,6 +344,16 @@ function countFocusVisibleSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countReducedMotionSignals(code: string): number {
+  const patterns = [
+    /@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)/i,
+    /\[data-reduce-motion(?:=[^\]]+)?\]/i,
+    /\[data-motion(?:=[^\]]*reduce[^\]]*)\]/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
   const sourceFiles = collectProjectSourceFiles(projectRoot);
   const summary: SourceAuditSummary = {
@@ -445,12 +455,14 @@ function auditProjectStyleContracts(projectRoot: string): StyleAuditSummary {
   const summary: StyleAuditSummary = {
     filesChecked: styleFiles.length,
     focusVisibleSignals: createSourceAuditBucket(),
+    reducedMotionSignals: createSourceAuditBucket(),
   };
 
   for (const styleFile of styleFiles) {
     const relativePath = relative(projectRoot, styleFile) || styleFile;
     const css = readFileSync(styleFile, 'utf-8');
     recordSourceAudit(summary.focusVisibleSignals, relativePath, countFocusVisibleSignals(css));
+    recordSourceAudit(summary.reducedMotionSignals, relativePath, countReducedMotionSignals(css));
   }
 
   return summary;
@@ -574,6 +586,7 @@ interface SourceAuditSummary {
 interface StyleAuditSummary {
   filesChecked: number;
   focusVisibleSignals: SourceAuditBucket;
+  reducedMotionSignals: SourceAuditBucket;
 }
 
 function makeFinding(input: VerificationFinding): VerificationFinding {
@@ -614,6 +627,15 @@ function essenceRequiresFocusVisible(essence: EssenceFile | null): boolean {
   const accessibility = (dna as { accessibility?: unknown }).accessibility;
   if (!accessibility || typeof accessibility !== 'object') return false;
   return (accessibility as { focus_visible?: unknown }).focus_visible === true;
+}
+
+function essenceRequiresReducedMotion(essence: EssenceFile | null): boolean {
+  if (!essence || !('dna' in essence)) return false;
+  const dna = (essence as { dna?: unknown }).dna;
+  if (!dna || typeof dna !== 'object') return false;
+  const motion = (dna as { motion?: unknown }).motion;
+  if (!motion || typeof motion !== 'object') return false;
+  return (motion as { reduce_motion?: unknown }).reduce_motion === true;
 }
 
 function essenceRequiresSkipNav(essence: EssenceFile | null): boolean {
@@ -1519,6 +1541,21 @@ function appendStyleContractFindings(
         'Focus-visible signals: 0',
       ],
       suggestedFix: 'Add a clear `:focus-visible` treatment in the project CSS so keyboard focus remains visible across interactive surfaces.',
+    }));
+  }
+
+  if (essenceRequiresReducedMotion(essence) && styleAudit.reducedMotionSignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'style-reduced-motion-signals-missing',
+      category: 'Style Contract',
+      severity: 'info',
+      message: 'The essence contract requires reduced-motion support, but the project styles do not show a reduced-motion signal.',
+      evidence: [
+        `Style files checked: ${styleAudit.filesChecked}`,
+        'Reduced-motion requirement: true',
+        'Reduced-motion signals: 0',
+      ],
+      suggestedFix: 'Add a `prefers-reduced-motion: reduce` style path or an equivalent reviewed reduce-motion contract so motion-heavy surfaces can soften or disable non-essential animation.',
     }));
   }
 }
