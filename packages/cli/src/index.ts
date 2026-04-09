@@ -11,7 +11,15 @@ import {
   isContentType as isGetContentType,
   isApiContentType,
 } from '@decantr/registry';
-import type { ApiContentType, Blueprint as RegistryBlueprint, ComposeEntry } from '@decantr/registry';
+import type {
+  ApiContentType,
+  Blueprint as RegistryBlueprint,
+  ComposeEntry,
+  ShowcaseManifestEntry,
+  ShowcaseShortlistReport,
+  ShowcaseShortlistResponse,
+  ShowcaseVerificationEntry,
+} from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
 import {
@@ -97,44 +105,6 @@ interface PromptContext {
   personality: string[];
   features: string[];
   guard: string;
-}
-
-interface ShowcaseManifestEntry {
-  slug: string;
-  status: string;
-  classification: string;
-  target?: string;
-  goldenCandidate?: string | boolean;
-  notes?: string;
-}
-
-interface ShowcaseVerificationEntry {
-  slug: string;
-  verificationStatus: string;
-  build: {
-    passed: boolean | null;
-    durationMs: number;
-  };
-  smoke: {
-    passed: boolean | null;
-    durationMs: number;
-    rootDocumentOk: boolean;
-    assetCount: number;
-    assetsPassed: number;
-    routeHintsChecked: string[];
-    routeHintsMatched: number;
-    failures: string[];
-  };
-  drift: {
-    signal: string;
-    penalty: number;
-    inlineStyleCount: number;
-    hardcodedColorCount: number;
-    utilityLeakageCount: number;
-    decantrTreatmentCount: number;
-    hasPackManifest: boolean;
-    hasDist: boolean;
-  };
 }
 
 function extractPatternName(item: unknown): string {
@@ -255,23 +225,7 @@ function printShowcaseBenchmarks(view: 'manifest' | 'shortlist' | 'verification'
   }
 
   if (view === 'verification') {
-    const report = data as {
-      generatedAt?: string | null;
-      summary?: {
-        appCount: number;
-        passedBuilds: number;
-        failedBuilds: number;
-        averageDurationMs: number;
-        passedSmokes: number;
-        failedSmokes: number;
-        averageSmokeDurationMs: number;
-        lowerDriftCount: number;
-        moderateDriftCount: number;
-        elevatedDriftCount: number;
-        withPackManifestCount: number;
-      } | null;
-      results: ShowcaseVerificationEntry[];
-    };
+    const report = data as ShowcaseShortlistReport;
     console.log(heading('Showcase Verification'));
     if (report.generatedAt) {
       console.log(`  Generated: ${report.generatedAt}`);
@@ -291,18 +245,7 @@ function printShowcaseBenchmarks(view: 'manifest' | 'shortlist' | 'verification'
     return;
   }
 
-  const shortlist = data as {
-    generatedAt?: string | null;
-    summary?: {
-      passedBuilds: number;
-      appCount: number;
-      lowerDriftCount: number;
-      moderateDriftCount: number;
-      elevatedDriftCount: number;
-      passedSmokes: number;
-    } | null;
-    apps: Array<ShowcaseManifestEntry & { verification?: ShowcaseVerificationEntry | null }>;
-  };
+  const shortlist = data as ShowcaseShortlistResponse;
 
   console.log(heading('Showcase Shortlist'));
   if (shortlist.generatedAt) {

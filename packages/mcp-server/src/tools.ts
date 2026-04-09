@@ -4,7 +4,13 @@ import { join, dirname } from 'node:path';
 import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import { resolvePatternPreset } from '@decantr/registry';
-import type { Pattern, ArchetypeRole, ComposeEntry } from '@decantr/registry';
+import type {
+  Pattern,
+  ArchetypeRole,
+  ComposeEntry,
+  ShowcaseManifestEntry,
+  ShowcaseVerificationEntry,
+} from '@decantr/registry';
 import showcaseManifest from '../../../apps/showcase/manifest.json';
 import shortlistVerificationReport from '../../../apps/showcase/reports/shortlist-verification.json';
 import {
@@ -64,44 +70,6 @@ interface PackManifest {
   sections: Array<PackManifestEntry & { pageIds: string[] }>;
   pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
   mutations?: Array<PackManifestEntry & { mutationType: string }>;
-}
-
-interface ShowcaseManifestEntry {
-  slug: string;
-  status: string;
-  classification: string;
-  target?: string;
-  goldenCandidate?: string | boolean;
-  notes?: string;
-}
-
-interface ShowcaseVerificationEntry {
-  slug: string;
-  verificationStatus: string;
-  build: {
-    passed: boolean | null;
-    durationMs: number;
-  };
-  smoke: {
-    passed: boolean | null;
-    durationMs: number;
-    rootDocumentOk: boolean;
-    assetCount: number;
-    assetsPassed: number;
-    routeHintsChecked: string[];
-    routeHintsMatched: number;
-    failures: string[];
-  };
-  drift: {
-    signal: string;
-    penalty: number;
-    inlineStyleCount: number;
-    hardcodedColorCount: number;
-    utilityLeakageCount: number;
-    decantrTreatmentCount: number;
-    hasPackManifest: boolean;
-    hasDist: boolean;
-  };
 }
 
 const SHOWCASE_ENTRIES = (showcaseManifest.apps as ShowcaseManifestEntry[]).filter(entry => entry.status === 'active');

@@ -2,44 +2,7 @@ import { Hono } from 'hono';
 import type { Env } from '../types.js';
 import showcaseManifest from '../../../showcase/manifest.json';
 import shortlistVerificationReport from '../../../showcase/reports/shortlist-verification.json';
-
-type ShowcaseManifestEntry = {
-  slug: string;
-  status: string;
-  classification: string;
-  target?: string;
-  goldenCandidate?: string | boolean;
-  notes?: string;
-};
-
-type ShowcaseVerificationEntry = {
-  slug: string;
-  verificationStatus: string;
-  build: {
-    passed: boolean | null;
-    durationMs: number;
-  };
-  smoke: {
-    passed: boolean | null;
-    durationMs: number;
-    rootDocumentOk: boolean;
-    assetCount: number;
-    assetsPassed: number;
-    routeHintsChecked: string[];
-    routeHintsMatched: number;
-    failures: string[];
-  };
-  drift: {
-    signal: string;
-    penalty: number;
-    inlineStyleCount: number;
-    hardcodedColorCount: number;
-    utilityLeakageCount: number;
-    decantrTreatmentCount: number;
-    hasPackManifest: boolean;
-    hasDist: boolean;
-  };
-};
+import type { ShowcaseManifestEntry, ShowcaseVerificationEntry } from '@decantr/registry';
 
 const SHOWCASE_ENTRIES = (showcaseManifest.apps as ShowcaseManifestEntry[]).filter(entry => entry.status === 'active');
 const SHOWCASE_VERIFICATION_RESULTS = (shortlistVerificationReport.results as ShowcaseVerificationEntry[] | undefined) ?? [];

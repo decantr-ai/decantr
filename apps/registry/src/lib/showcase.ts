@@ -1,59 +1,10 @@
 import showcaseManifest from '../../../showcase/manifest.json';
 import shortlistVerificationReport from '../../../showcase/reports/shortlist-verification.json';
-
-export interface ShowcaseManifestEntry {
-  slug: string;
-  status: string;
-  classification: string;
-  target?: string;
-  goldenCandidate?: string | boolean;
-  notes?: string;
-}
-
-export interface ShowcaseVerificationEntry {
-  slug: string;
-  target?: string | null;
-  classification: string;
-  verificationStatus: string;
-  build: {
-    passed: boolean | null;
-    durationMs: number;
-  };
-  smoke: {
-    passed: boolean | null;
-    durationMs: number;
-    rootDocumentOk: boolean;
-    assetCount: number;
-    assetsPassed: number;
-    routeHintsChecked: string[];
-    routeHintsMatched: number;
-    failures: string[];
-  };
-  drift: {
-    signal: string;
-    penalty: number;
-    inlineStyleCount: number;
-    hardcodedColorCount: number;
-    utilityLeakageCount: number;
-    decantrTreatmentCount: number;
-    hasPackManifest: boolean;
-    hasDist: boolean;
-  };
-}
-
-export interface ShowcaseShortlistVerificationSummary {
-  appCount: number;
-  passedBuilds: number;
-  failedBuilds: number;
-  averageDurationMs: number;
-  passedSmokes: number;
-  failedSmokes: number;
-  averageSmokeDurationMs: number;
-  lowerDriftCount: number;
-  moderateDriftCount: number;
-  elevatedDriftCount: number;
-  withPackManifestCount: number;
-}
+import type {
+  ShowcaseManifestEntry,
+  ShowcaseShortlistSummary as ShowcaseShortlistVerificationSummary,
+  ShowcaseVerificationEntry,
+} from '@decantr/registry';
 
 export interface ShowcaseMetadata extends ShowcaseManifestEntry {
   verification: ShowcaseVerificationEntry | null;
