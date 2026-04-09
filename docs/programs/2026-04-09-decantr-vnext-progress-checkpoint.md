@@ -315,8 +315,10 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Project audit now also flags suspicious auth topology, including gateway sections that expose protected-looking routes, gateway sections that are not auth-like, primary sections that only expose auth-like destinations, and primary sections that do not include a clear post-auth application route.
 - Project audit now also warns when gateway and primary sections overlap on the same route, making the anonymous-to-authenticated boundary ambiguous.
 - Runtime verification now reports partial route drift when only some compiled route hints or route documents survive the built output, instead of only surfacing catastrophic misses.
+- Runtime verification and shortlist reports now also track strict full-route-coverage booleans for both compiled route hints and audited route documents, so the golden corpus can distinguish “some route coverage” from “the entire declared route contract survived.”
 - Critique now also flags buttons inside forms that omit `type`, helping catch accidental-submit behavior before generated UI reaches review.
 - Critique now flags auth-like writes into `localStorage` and `sessionStorage`, helping catch insecure client-side token/session persistence earlier in review.
+- Hosted showcase summaries, CLI output, registry portal messaging, and benchmark-backed intelligence scoring now all surface that stricter full-route-coverage signal instead of treating partial route survival as fully verified.
 - Registry app lint now rebuilds `@decantr/registry` before typechecking so clean-checkout verification does not depend on stale generated package artifacts.
 
 ## Highest-Value Next Streams

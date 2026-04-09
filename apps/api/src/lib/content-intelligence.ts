@@ -55,6 +55,10 @@ function hasCspSignal(verification: ShowcaseVerificationEntry | null): boolean {
   return Boolean(verification?.smoke.passed && verification.smoke.cspSignalOk);
 }
 
+function hasFullRouteCoverage(verification: ShowcaseVerificationEntry | null): boolean {
+  return Boolean(verification?.smoke.passed && verification.smoke.fullRouteCoverageOk);
+}
+
 function hasRuntimeHardeningBaseline(verification: ShowcaseVerificationEntry | null): boolean {
   return hasDocumentMetadataBaseline(verification)
     && hasCharsetBaseline(verification)
@@ -74,7 +78,12 @@ function deriveBenchmarkConfidence(
   showcase: ShowcaseManifestEntry,
   verification: ShowcaseVerificationEntry | null,
 ): ContentIntelligenceMetadata['benchmark_confidence'] {
-  if (verification?.verificationStatus === 'smoke-green' && hasRuntimeHardeningBaseline(verification) && isWithinRuntimeBudget(verification)) {
+  if (
+    verification?.verificationStatus === 'smoke-green'
+    && hasRuntimeHardeningBaseline(verification)
+    && hasFullRouteCoverage(verification)
+    && isWithinRuntimeBudget(verification)
+  ) {
     return 'high';
   }
   if (verification?.verificationStatus === 'smoke-green') return 'medium';
@@ -114,6 +123,7 @@ function deriveQualityScore(
   if (hasDocumentMetadataBaseline(verification)) score += 4;
   if (hasCharsetBaseline(verification)) score += 3;
   if (hasScriptHygieneBaseline(verification)) score += 4;
+  if (hasFullRouteCoverage(verification)) score += 5;
   if (hasCspSignal(verification)) score += 2;
   if (isWithinRuntimeBudget(verification)) score += 6;
 
@@ -141,6 +151,7 @@ function deriveConfidenceTier(input: {
   goldenUsage: ContentIntelligenceMetadata['golden_usage'];
   driftSignal?: ShowcaseVerificationEntry['drift']['signal'];
   runtimeHardeningOk: boolean;
+  fullRouteCoverageOk: boolean;
   runtimeBudgetOk: boolean;
 }): ContentIntelligenceMetadata['confidence_tier'] {
   if (
@@ -148,6 +159,7 @@ function deriveConfidenceTier(input: {
     && input.verificationStatus === 'smoke-green'
     && input.driftSignal !== 'elevated'
     && input.runtimeHardeningOk
+    && input.fullRouteCoverageOk
     && input.runtimeBudgetOk
   ) {
     return 'verified';
@@ -155,7 +167,7 @@ function deriveConfidenceTier(input: {
 
   if (
     input.confidenceScore >= 82
-    || (input.verificationStatus === 'smoke-green' && input.runtimeHardeningOk)
+    || (input.verificationStatus === 'smoke-green' && input.runtimeHardeningOk && input.fullRouteCoverageOk)
     || input.benchmarkConfidence === 'high'
   ) {
     return 'high';
@@ -215,6 +227,7 @@ function deriveConfidenceScore(
   if (hasDocumentMetadataBaseline(verification)) score += 5;
   if (hasCharsetBaseline(verification)) score += 4;
   if (hasScriptHygieneBaseline(verification)) score += 5;
+  if (hasFullRouteCoverage(verification)) score += 6;
   if (hasCspSignal(verification)) score += 2;
   if (isWithinRuntimeBudget(verification)) score += 8;
 
@@ -369,6 +382,7 @@ export function getContentIntelligence(
         verificationStatus: 'unknown',
         goldenUsage: 'none',
         runtimeHardeningOk: false,
+        fullRouteCoverageOk: false,
         runtimeBudgetOk: false,
       }),
       golden_usage: 'none',
@@ -406,6 +420,9 @@ export function getContentIntelligence(
   if (hasRuntimeHardeningBaseline(verification)) {
     evidence.add('runtime-hardening-verified');
   }
+  if (hasFullRouteCoverage(verification)) {
+    evidence.add('full-route-coverage-verified');
+  }
   if (hasCspSignal(verification)) {
     evidence.add('csp-signal-present');
   }
@@ -427,6 +444,7 @@ export function getContentIntelligence(
     goldenUsage === 'shortlisted' &&
     verificationStatus === 'smoke-green' &&
     hasRuntimeHardeningBaseline(verification) &&
+    hasFullRouteCoverage(verification) &&
     isWithinRuntimeBudget(verification) &&
     (verification?.drift.signal ?? 'elevated') !== 'elevated';
   const source: ContentIntelligenceMetadata['source'] = authoredSignals ? 'hybrid' : 'benchmark';
@@ -437,6 +455,7 @@ export function getContentIntelligence(
     goldenUsage,
     driftSignal: verification?.drift.signal,
     runtimeHardeningOk: hasRuntimeHardeningBaseline(verification),
+    fullRouteCoverageOk: hasFullRouteCoverage(verification),
     runtimeBudgetOk: isWithinRuntimeBudget(verification),
   });
 

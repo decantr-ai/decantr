@@ -109,6 +109,7 @@ if (reportResults.length > 0) {
       'appsWithCspSignalCount',
       'appsWithExternalScriptIntegrityCount',
       'appsWithRouteCoverageCount',
+      'appsWithFullRouteCoverageCount',
       'averageTotalAssetBytes',
       'averageJsAssetBytes',
       'averageCssAssetBytes',
@@ -183,6 +184,15 @@ if (reportResults.length > 0) {
       }
       if (typeof entry.smoke.cspSignalOk !== 'boolean') {
         errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.cspSignalOk must be boolean.`);
+      }
+      if (typeof entry.smoke.routeHintsCoverageOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.routeHintsCoverageOk must be boolean.`);
+      }
+      if (typeof entry.smoke.routeDocumentsCoverageOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.routeDocumentsCoverageOk must be boolean.`);
+      }
+      if (typeof entry.smoke.fullRouteCoverageOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.fullRouteCoverageOk must be boolean.`);
       }
       for (const key of ['inlineScriptCount', 'externalScriptsWithoutIntegrityCount', 'assetCount', 'assetsPassed', 'routeHintsMatched', 'routeDocumentsChecked', 'routeDocumentsPassed', 'totalAssetBytes', 'jsAssetBytes', 'cssAssetBytes', 'largestAssetBytes']) {
         if (!Number.isFinite(entry.smoke[key]) || entry.smoke[key] < 0) {

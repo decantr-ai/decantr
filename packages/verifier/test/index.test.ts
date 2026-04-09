@@ -97,6 +97,9 @@ describe('verifier', () => {
       expect(report.runtimeAudit.distPresent).toBe(true);
       expect(report.runtimeAudit.indexPresent).toBe(true);
       expect(report.runtimeAudit.passed).toBe(false);
+      expect(report.runtimeAudit.routeHintsCoverageOk).toBe(true);
+      expect(report.runtimeAudit.routeDocumentsCoverageOk).toBe(true);
+      expect(report.runtimeAudit.fullRouteCoverageOk).toBe(true);
       expect(report.runtimeAudit.langOk).toBe(false);
       expect(report.runtimeAudit.viewportOk).toBe(false);
       expect(report.runtimeAudit.jsAssetBytes).toBeGreaterThan(0);
@@ -278,7 +281,10 @@ describe('verifier', () => {
       const report = await auditProject(projectRoot);
       expect(report.runtimeAudit.routeHintsChecked).toEqual(['/', '/dashboard', '/settings']);
       expect(report.runtimeAudit.routeHintsMatched).toBe(2);
+      expect(report.runtimeAudit.routeHintsCoverageOk).toBe(false);
       expect(report.runtimeAudit.routeDocumentsPassed).toBe(2);
+      expect(report.runtimeAudit.routeDocumentsCoverageOk).toBe(false);
+      expect(report.runtimeAudit.fullRouteCoverageOk).toBe(false);
       expect(report.findings.some(finding => finding.id === 'runtime-route-hints-partial')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-route-documents-partial')).toBe(true);
     } finally {
@@ -669,6 +675,9 @@ describe('verifier', () => {
       expect(report.indexPresent).toBe(true);
       expect(report.routeHintsChecked).toEqual(['/', '/dashboard']);
       expect(report.passed).toBe(true);
+      expect(report.routeHintsCoverageOk).toBe(true);
+      expect(report.routeDocumentsCoverageOk).toBe(true);
+      expect(report.fullRouteCoverageOk).toBe(true);
       expect(report.langOk).toBe(true);
       expect(report.viewportOk).toBe(true);
       expect(report.charsetOk).toBe(false);

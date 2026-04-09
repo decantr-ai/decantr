@@ -33,8 +33,11 @@ export interface RuntimeAudit {
   assetsPassed: number;
   routeHintsChecked: string[];
   routeHintsMatched: number;
+  routeHintsCoverageOk: boolean;
   routeDocumentsChecked: number;
   routeDocumentsPassed: number;
+  routeDocumentsCoverageOk: boolean;
+  fullRouteCoverageOk: boolean;
   totalAssetBytes: number;
   jsAssetBytes: number;
   cssAssetBytes: number;
@@ -68,8 +71,11 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     assetsPassed: 0,
     routeHintsChecked: [],
     routeHintsMatched: 0,
+    routeHintsCoverageOk: false,
     routeDocumentsChecked: 0,
     routeDocumentsPassed: 0,
+    routeDocumentsCoverageOk: false,
+    fullRouteCoverageOk: false,
     totalAssetBytes: 0,
     jsAssetBytes: 0,
     cssAssetBytes: 0,
@@ -268,6 +274,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     }
 
     const routeHintsMatched = routeHints.filter(routeHint => combinedJs.includes(routeHint)).length;
+    const routeHintsCoverageOk = routeHints.length === 0 || routeHintsMatched === routeHints.length;
     const jsEvalSignalCount = countDynamicCodeSignals(combinedJs);
     const jsHtmlInjectionSignalCount = countHtmlInjectionSignals(combinedJs);
     if (routeHints.length > 0 && routeHintsMatched < Math.min(2, routeHints.length)) {
@@ -286,6 +293,8 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     }
 
     const routeDocumentsChecked = routeHints.length;
+    const routeDocumentsCoverageOk = routeDocumentsChecked === 0 || routeDocumentsPassed === routeDocumentsChecked;
+    const fullRouteCoverageOk = routeHintsCoverageOk && routeDocumentsCoverageOk;
     if (routeDocumentsChecked > 0 && routeDocumentsPassed < Math.min(2, routeDocumentsChecked)) {
       failures.push('route-documents-missing');
     }
@@ -316,8 +325,11 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       assetsPassed,
       routeHintsChecked: routeHints,
       routeHintsMatched,
+      routeHintsCoverageOk,
       routeDocumentsChecked,
       routeDocumentsPassed,
+      routeDocumentsCoverageOk,
+      fullRouteCoverageOk,
       totalAssetBytes,
       jsAssetBytes,
       cssAssetBytes,

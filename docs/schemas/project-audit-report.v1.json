@@ -68,8 +68,11 @@
         "assetsPassed",
         "routeHintsChecked",
         "routeHintsMatched",
+        "routeHintsCoverageOk",
         "routeDocumentsChecked",
         "routeDocumentsPassed",
+        "routeDocumentsCoverageOk",
+        "fullRouteCoverageOk",
         "totalAssetBytes",
         "jsAssetBytes",
         "cssAssetBytes",
@@ -142,6 +145,9 @@
           "type": "integer",
           "minimum": 0
         },
+        "routeHintsCoverageOk": {
+          "type": "boolean"
+        },
         "routeDocumentsChecked": {
           "type": "integer",
           "minimum": 0
@@ -149,6 +155,12 @@
         "routeDocumentsPassed": {
           "type": "integer",
           "minimum": 0
+        },
+        "routeDocumentsCoverageOk": {
+          "type": "boolean"
+        },
+        "fullRouteCoverageOk": {
+          "type": "boolean"
         },
         "totalAssetBytes": {
           "type": "integer",

@@ -376,13 +376,14 @@ async function printShowcaseBenchmarks(
       console.log(`  CSP signals: ${report.summary.appsWithCspSignalCount}/${report.summary.appCount}`);
       console.log(`  External script integrity ok: ${report.summary.appsWithExternalScriptIntegrityCount}/${report.summary.appCount}`);
       console.log(`  Route coverage: ${report.summary.appsWithRouteCoverageCount}/${report.summary.appCount}`);
+      console.log(`  Full route coverage: ${report.summary.appsWithFullRouteCoverageCount}/${report.summary.appCount}`);
       console.log(`  Avg assets: total ${fmtBytes(report.summary.averageTotalAssetBytes)} | js ${fmtBytes(report.summary.averageJsAssetBytes)} | css ${fmtBytes(report.summary.averageCssAssetBytes)}`);
       console.log(`  Drift: lower ${report.summary.lowerDriftCount}, moderate ${report.summary.moderateDriftCount}, elevated ${report.summary.elevatedDriftCount}`);
       console.log(`  Pack manifests: ${report.summary.withPackManifestCount}/${report.summary.appCount}`);
       console.log('');
     }
     for (const entry of report.results) {
-      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | routes ${entry.smoke.routeDocumentsPassed}/${entry.smoke.routeDocumentsChecked} | js ${fmtBytes(entry.smoke.jsAssetBytes)} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`);
+      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | routes ${entry.smoke.routeDocumentsPassed}/${entry.smoke.routeDocumentsChecked}${entry.smoke.fullRouteCoverageOk ? ' full' : ' partial'} | js ${fmtBytes(entry.smoke.jsAssetBytes)} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`);
     }
     return;
   }
@@ -397,6 +398,7 @@ async function printShowcaseBenchmarks(
     console.log(`  Passed builds: ${shortlist.summary.passedBuilds}/${shortlist.summary.appCount}`);
     console.log(`  Passed smokes: ${shortlist.summary.passedSmokes}/${shortlist.summary.appCount}`);
     console.log(`  Route coverage: ${shortlist.summary.appsWithRouteCoverageCount}/${shortlist.summary.appCount}`);
+    console.log(`  Full route coverage: ${shortlist.summary.appsWithFullRouteCoverageCount}/${shortlist.summary.appCount}`);
     console.log(`  Drift mix: lower ${shortlist.summary.lowerDriftCount}, moderate ${shortlist.summary.moderateDriftCount}, elevated ${shortlist.summary.elevatedDriftCount}`);
     console.log('');
   }

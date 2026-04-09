@@ -82,8 +82,11 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     assetsPassed: runtimeAudit.assetsPassed,
     routeHintsChecked: runtimeAudit.routeHintsChecked,
     routeHintsMatched: runtimeAudit.routeHintsMatched,
+    routeHintsCoverageOk: runtimeAudit.routeHintsCoverageOk,
     routeDocumentsChecked: runtimeAudit.routeDocumentsChecked,
     routeDocumentsPassed: runtimeAudit.routeDocumentsPassed,
+    routeDocumentsCoverageOk: runtimeAudit.routeDocumentsCoverageOk,
+    fullRouteCoverageOk: runtimeAudit.fullRouteCoverageOk,
     totalAssetBytes: runtimeAudit.totalAssetBytes,
     jsAssetBytes: runtimeAudit.jsAssetBytes,
     cssAssetBytes: runtimeAudit.cssAssetBytes,
@@ -182,6 +185,7 @@ async function main() {
       const minimumRoutes = Math.min(2, entry.smoke.routeDocumentsChecked);
       return entry.smoke.routeDocumentsChecked === 0 || entry.smoke.routeDocumentsPassed >= minimumRoutes;
     }).length,
+    appsWithFullRouteCoverageCount: results.filter(entry => entry.smoke.fullRouteCoverageOk).length,
     averageTotalAssetBytes: results.filter(entry => entry.smoke.passed !== null).length > 0
       ? Math.round(
         results
@@ -227,6 +231,7 @@ async function main() {
   console.log(`CSP signals present: ${summary.appsWithCspSignalCount}/${summary.appCount}`);
   console.log(`External script integrity ok: ${summary.appsWithExternalScriptIntegrityCount}/${summary.appCount}`);
   console.log(`Route coverage checks passed: ${summary.appsWithRouteCoverageCount}/${summary.appCount}`);
+  console.log(`Full route coverage: ${summary.appsWithFullRouteCoverageCount}/${summary.appCount}`);
   console.log(`Average built assets: total ${summary.averageTotalAssetBytes} B, js ${summary.averageJsAssetBytes} B, css ${summary.averageCssAssetBytes} B`);
   console.log(`Drift signals: lower ${summary.lowerDriftCount}, moderate ${summary.moderateDriftCount}, elevated ${summary.elevatedDriftCount}`);
   console.log(`Pack manifests present: ${summary.withPackManifestCount}/${summary.appCount}`);

@@ -534,8 +534,11 @@ export interface ShowcaseVerificationEntry {
     assetsPassed: number;
     routeHintsChecked: string[];
     routeHintsMatched: number;
+    routeHintsCoverageOk: boolean;
     routeDocumentsChecked: number;
     routeDocumentsPassed: number;
+    routeDocumentsCoverageOk: boolean;
+    fullRouteCoverageOk: boolean;
     totalAssetBytes: number;
     jsAssetBytes: number;
     cssAssetBytes: number;
@@ -571,6 +574,7 @@ export interface ShowcaseShortlistSummary {
   appsWithCspSignalCount: number;
   appsWithExternalScriptIntegrityCount: number;
   appsWithRouteCoverageCount: number;
+  appsWithFullRouteCoverageCount: number;
   averageTotalAssetBytes: number;
   averageJsAssetBytes: number;
   averageCssAssetBytes: number;
@@ -887,8 +891,11 @@ export interface ProjectAuditRuntimeAudit {
   assetsPassed: number;
   routeHintsChecked: string[];
   routeHintsMatched: number;
+  routeHintsCoverageOk: boolean;
   routeDocumentsChecked: number;
   routeDocumentsPassed: number;
+  routeDocumentsCoverageOk: boolean;
+  fullRouteCoverageOk: boolean;
   totalAssetBytes: number;
   jsAssetBytes: number;
   cssAssetBytes: number;

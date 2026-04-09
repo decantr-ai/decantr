@@ -1,15 +1,15 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-09T16:58:39.414Z",
+  "generatedAt": "2026-04-09T19:34:59.280Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1604,
+    "averageDurationMs": 2099,
     "passedSmokes": 8,
     "failedSmokes": 0,
-    "averageSmokeDurationMs": 9,
+    "averageSmokeDurationMs": 10,
     "appsWithTitleOkCount": 8,
     "appsWithLangOkCount": 8,
     "appsWithViewportOkCount": 8,
@@ -18,6 +18,7 @@
     "appsWithCspSignalCount": 0,
     "appsWithExternalScriptIntegrityCount": 8,
     "appsWithRouteCoverageCount": 8,
+    "appsWithFullRouteCoverageCount": 8,
     "averageTotalAssetBytes": 335362,
     "averageJsAssetBytes": 325759,
     "averageCssAssetBytes": 9602,
@@ -34,11 +35,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1665
+        "durationMs": 2245
       },
       "smoke": {
         "passed": true,
-        "durationMs": 32,
+        "durationMs": 39,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -60,8 +61,11 @@
           "/settings"
         ],
         "routeHintsMatched": 8,
+        "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsCoverageOk": true,
+        "fullRouteCoverageOk": true,
         "totalAssetBytes": 307899,
         "jsAssetBytes": 299799,
         "cssAssetBytes": 8100,
@@ -87,11 +91,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1640
+        "durationMs": 2043
       },
       "smoke": {
         "passed": true,
-        "durationMs": 7,
+        "durationMs": 8,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -113,8 +117,11 @@
           "/verify-email"
         ],
         "routeHintsMatched": 8,
+        "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsCoverageOk": true,
+        "fullRouteCoverageOk": true,
         "totalAssetBytes": 323107,
         "jsAssetBytes": 312723,
         "cssAssetBytes": 10384,
@@ -140,11 +147,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1571
+        "durationMs": 2106
       },
       "smoke": {
         "passed": true,
-        "durationMs": 11,
+        "durationMs": 6,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -166,8 +173,11 @@
           "/subscribe"
         ],
         "routeHintsMatched": 8,
+        "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsCoverageOk": true,
+        "fullRouteCoverageOk": true,
         "totalAssetBytes": 340557,
         "jsAssetBytes": 333523,
         "cssAssetBytes": 7034,
@@ -193,11 +203,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1525
+        "durationMs": 2007
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -219,8 +229,11 @@
           "/blog/"
         ],
         "routeHintsMatched": 8,
+        "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsCoverageOk": true,
+        "fullRouteCoverageOk": true,
         "totalAssetBytes": 331565,
         "jsAssetBytes": 322435,
         "cssAssetBytes": 9130,
@@ -246,7 +259,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1490
+        "durationMs": 1968
       },
       "smoke": {
         "passed": true,
@@ -271,8 +284,11 @@
           "/terms"
         ],
         "routeHintsMatched": 7,
+        "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 7,
         "routeDocumentsPassed": 7,
+        "routeDocumentsCoverageOk": true,
+        "fullRouteCoverageOk": true,
         "totalAssetBytes": 332075,
         "jsAssetBytes": 321571,
         "cssAssetBytes": 10504,
@@ -298,11 +314,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1699
+        "durationMs": 2190
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 6,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -324,8 +340,11 @@
           "/dashboard/api-keys"
         ],
         "routeHintsMatched": 8,
+        "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsCoverageOk": true,
+        "fullRouteCoverageOk": true,
         "totalAssetBytes": 356330,
         "jsAssetBytes": 344077,
         "cssAssetBytes": 12253,
@@ -351,11 +370,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1655
+        "durationMs": 2136
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -377,8 +396,11 @@
           "/about"
         ],
         "routeHintsMatched": 8,
+        "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsCoverageOk": true,
+        "fullRouteCoverageOk": true,
         "totalAssetBytes": 333301,
         "jsAssetBytes": 322630,
         "cssAssetBytes": 10671,
@@ -404,11 +426,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1585
+        "durationMs": 2094
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -430,8 +452,11 @@
           "/api/"
         ],
         "routeHintsMatched": 8,
+        "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsCoverageOk": true,
+        "fullRouteCoverageOk": true,
         "totalAssetBytes": 358058,
         "jsAssetBytes": 349315,
         "cssAssetBytes": 8743,
