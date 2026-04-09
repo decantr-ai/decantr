@@ -17,9 +17,8 @@ Auto-generated summary of `decantr.essence.json`.
 
 | Property | Value |
 |----------|-------|
-| Theme | {{THEME_STYLE}} |
+| Theme ID | {{THEME_ID}} |
 | Mode | {{THEME_MODE}} |
-| Theme ID | {{THEME_RECIPE}} |
 | Shape | {{SHAPE}} |
 
 ## Structure

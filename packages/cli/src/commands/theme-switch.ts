@@ -14,11 +14,6 @@ const RESET = '\x1b[0m';
 const VALID_THEME_SHAPES: ThemeShape[] = ['sharp', 'rounded', 'pill'];
 const VALID_THEME_MODES: ThemeMode[] = ['light', 'dark', 'auto'];
 
-type LegacyThemeCompat = EssenceV3['dna']['theme'] & {
-  style?: string;
-  recipe?: string;
-};
-
 /**
  * `decantr theme switch <themeName>` [--shape <shape>] [--mode <mode>]
  */
@@ -88,13 +83,8 @@ export async function cmdThemeSwitch(
   }
 
   // Update dna.theme
-  const legacyTheme = essence.dna.theme as LegacyThemeCompat;
-  const oldThemeId = legacyTheme.id || legacyTheme.style;
-  legacyTheme.id = themeName;
-  // Remove legacy style field if present
-  delete legacyTheme.style;
-  // Remove legacy recipe field if present
-  delete legacyTheme.recipe;
+  const oldThemeId = essence.dna.theme.id;
+  essence.dna.theme.id = themeName;
 
   if (shape) {
     essence.dna.theme.shape = shape as ThemeShape;

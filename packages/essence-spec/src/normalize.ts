@@ -2,7 +2,7 @@ import type { Essence, SectionedEssence, EssenceFile, EssenceV3, StructurePage, 
 
 export function normalizeEssence(input: Record<string, unknown>): EssenceFile {
   // v3: version-based detection only (no structural fallback to avoid false positives)
-  if (input.version === '3.0.0') {
+  if (input.version === '3.0.0' || input.version === '3.1.0') {
     return input as unknown as EssenceV3;
   }
 

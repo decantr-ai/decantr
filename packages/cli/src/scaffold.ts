@@ -49,18 +49,9 @@ export interface ArchetypeData {
   };
 }
 
-type LegacyThemeCompat = EssenceV3['dna']['theme'] & {
-  style?: string;
-  recipe?: string;
-};
-
 type LegacyMetaCompat = EssenceV3['meta'] & {
   blueprint?: string;
 };
-
-function getLegacyThemeCompat(theme: EssenceV3['dna']['theme']): LegacyThemeCompat {
-  return theme as LegacyThemeCompat;
-}
 
 function getLegacyBlueprintId(meta: EssenceV3['meta']): string | undefined {
   return (meta as LegacyMetaCompat).blueprint;
@@ -1535,9 +1526,8 @@ function generateTaskContextV3(templateName: string, essence: EssenceV3): string
 
   const vars: Record<string, string> = {
     TARGET: essence.meta.target || 'react',
-    THEME_STYLE: essence.dna.theme.id || '',
+    THEME_ID: essence.dna.theme.id || '',
     THEME_MODE: essence.dna.theme.mode,
-    THEME_RECIPE: essence.dna.theme.id || '',
     DEFAULT_SHELL: defaultShell as string,
     GUARD_MODE: essence.meta.guard.mode,
     LAYOUT: layout,
@@ -1584,9 +1574,8 @@ function generateEssenceSummaryV3(essence: EssenceV3): string {
     BLUEPRINT: '',
     PERSONALITY: (essence.dna.personality || []).join(', '),
     TARGET: (essence.meta.target ?? '') as string,
-    THEME_STYLE: (essence.dna.theme.id ?? '') as string,
+    THEME_ID: (essence.dna.theme.id ?? '') as string,
     THEME_MODE: essence.dna.theme.mode as string,
-    THEME_RECIPE: (essence.dna.theme.id ?? '') as string,
     SHAPE: (essence.dna.theme.shape ?? '') as string,
     PAGES_TABLE: pagesTable,
     FEATURES_LIST: featuresList,
@@ -2054,8 +2043,7 @@ export async function refreshDerivedFiles(
   }
 
   // ── Extract info from essence ──
-  const themeCompat = getLegacyThemeCompat(essence.dna.theme);
-  const themeName = themeCompat.id || themeCompat.style || 'default';
+  const themeName = essence.dna.theme.id || 'default';
   const mode = essence.dna.theme.mode as string;
   const guardMode = essence.meta.guard.mode;
   const guardConfig = {
@@ -2181,7 +2169,7 @@ export async function refreshDerivedFiles(
     blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || undefined,
     themeName,
     themeMode: mode,
-    themeShape: themeCompat.shape || undefined,
+    themeShape: essence.dna.theme.shape || undefined,
     personality,
     sections: sectionSummaries.length > 0 ? sectionSummaries : undefined,
     features: allFeatures.length > 0 ? allFeatures : undefined,
