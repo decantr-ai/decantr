@@ -309,6 +309,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     inlineStyles: createSourceAuditBucket(),
     securityRiskPatterns: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
+    skipNavSignals: createSourceAuditBucket(),
     authSessionSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
@@ -339,6 +340,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.inlineStyles, relativePath, signals.inlineStyleAttributeCount);
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
+    recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
@@ -449,6 +451,7 @@ interface SourceAuditSummary {
   inlineStyles: SourceAuditBucket;
   securityRiskPatterns: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
+  skipNavSignals: SourceAuditBucket;
   authSessionSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
@@ -490,6 +493,15 @@ function isAuthLikeRoute(route: string): boolean {
 
 function isProtectedLikeRoute(route: string): boolean {
   return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/|$)/i.test(route);
+}
+
+function essenceRequiresSkipNav(essence: EssenceFile | null): boolean {
+  if (!essence || !('dna' in essence)) return false;
+  const dna = (essence as { dna?: unknown }).dna;
+  if (!dna || typeof dna !== 'object') return false;
+  const accessibility = (dna as { accessibility?: unknown }).accessibility;
+  if (!accessibility || typeof accessibility !== 'object') return false;
+  return (accessibility as { skip_nav?: unknown }).skip_nav === true;
 }
 
 export function extractRouteHintsFromEssence(essence: EssenceFile | null): string[] {
@@ -1188,6 +1200,21 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (essenceRequiresSkipNav(essence) && sourceAudit.skipNavSignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'source-skip-nav-signals-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'The essence contract requires skip navigation, but the source tree does not show a skip-link signal.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        'Skip-nav requirement: true',
+        'Skip-nav signals: 0',
+      ],
+      suggestedFix: 'Add a visible-on-focus skip link such as `Skip to content` that targets the main app landmark before shipping the accessible surface.',
+    }));
+  }
+
   if (sourceAudit.interactionSafetyIssues.count > 0) {
     findings.push(makeFinding({
       id: 'source-interaction-safety-issues-present',
@@ -1411,6 +1438,7 @@ interface AstCritiqueSignals {
   externalBlankLinkWithoutRelCount: number;
   formControlWithoutLabelCount: number;
   placeholderNavigationTargetCount: number;
+  skipNavSignalCount: number;
   emailAutocompleteMissingCount: number;
   passwordAutocompleteMissingCount: number;
   buttonInFormWithoutTypeCount: number;
@@ -1662,6 +1690,16 @@ function countAuthGuardSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countSkipNavSignals(code: string): number {
+  const patterns = [
+    /\bskip(?:-| )?nav(?:igation)?\b/i,
+    /\bskip to (?:content|main|navigation)\b/i,
+    /href\s*=\s*["']#(?:main|content|main-content|app-main)["']/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function countAuthSessionSignals(code: string): number {
   const patterns = [
     /\b(?:useAuth|useSession|getSession|getServerSession|sessionState|authState)\b/,
@@ -1711,6 +1749,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     externalBlankLinkWithoutRelCount: 0,
     formControlWithoutLabelCount: 0,
     placeholderNavigationTargetCount: 0,
+    skipNavSignalCount: countSkipNavSignals(code),
     emailAutocompleteMissingCount: 0,
     passwordAutocompleteMissingCount: 0,
     buttonInFormWithoutTypeCount: 0,
