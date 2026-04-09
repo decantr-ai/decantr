@@ -1704,6 +1704,7 @@ interface AstCritiqueSignals {
   tableWithoutHeaderCount: number;
   tableWithoutCaptionCount: number;
   unlabeledNavigationLandmarkCount: number;
+  multipleMainLandmarkCount: number;
   externalBlankLinkWithoutRelCount: number;
   formControlWithoutLabelCount: number;
   placeholderNavigationTargetCount: number;
@@ -2379,6 +2380,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     tableWithoutHeaderCount: 0,
     tableWithoutCaptionCount: 0,
     unlabeledNavigationLandmarkCount: 0,
+    multipleMainLandmarkCount: 0,
     externalBlankLinkWithoutRelCount: 0,
     formControlWithoutLabelCount: 0,
     placeholderNavigationTargetCount: 0,
@@ -2737,6 +2739,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
   walk(sourceFile);
   signals.unlabeledNavigationLandmarkCount = navigationLandmarkCount > 1 ? unlabeledNavigationLandmarkCount : 0;
+  signals.multipleMainLandmarkCount = Math.max(0, signals.mainLandmarkCount - 1);
   return signals;
 }
 
@@ -2809,6 +2812,7 @@ export function critiqueSource({
   const iconLinkIssues = astSignals.iconOnlyLinkWithoutLabelCount;
   const clickableNonSemanticIssues = astSignals.clickableNonSemanticCount;
   const unlabeledNavigationLandmarkIssues = astSignals.unlabeledNavigationLandmarkCount;
+  const multipleMainLandmarkIssues = astSignals.multipleMainLandmarkCount;
   const imageAltIssues = astSignals.imageWithoutAltCount;
   const iframeTitleIssues = astSignals.iframeWithoutTitleCount;
   const dialogLabelIssues = astSignals.dialogWithoutLabelCount;
@@ -2831,6 +2835,7 @@ export function critiqueSource({
         - (iconLinkIssues > 0 ? 1 : 0)
         - (clickableNonSemanticIssues > 0 ? 1 : 0)
         - (unlabeledNavigationLandmarkIssues > 0 ? 1 : 0)
+        - (multipleMainLandmarkIssues > 0 ? 1 : 0)
         - (imageAltIssues > 0 ? 1 : 0)
         - (iframeTitleIssues > 0 ? 1 : 0)
         - (dialogLabelIssues > 0 ? 1 : 0)
@@ -2840,7 +2845,7 @@ export function critiqueSource({
         - (formControlLabelIssues > 0 ? 1 : 0),
       ),
     ),
-    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, unlabeled navigation landmarks: ${unlabeledNavigationLandmarkIssues}, images without alt: ${imageAltIssues}, iframes without title: ${iframeTitleIssues}, dialogs without label: ${dialogLabelIssues}, dialogs without modal hint: ${dialogModalHintIssues}, tables without headers: ${tableHeaderIssues}, tables without caption: ${tableCaptionIssues}, form controls without labels: ${formControlLabelIssues}`,
+    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, unlabeled navigation landmarks: ${unlabeledNavigationLandmarkIssues}, extra main landmarks: ${multipleMainLandmarkIssues}, images without alt: ${imageAltIssues}, iframes without title: ${iframeTitleIssues}, dialogs without label: ${dialogLabelIssues}, dialogs without modal hint: ${dialogModalHintIssues}, tables without headers: ${tableHeaderIssues}, tables without caption: ${tableCaptionIssues}, form controls without labels: ${formControlLabelIssues}`,
     suggestions: [
       ...(!hasAria ? ['Add ARIA roles or labels to interactive regions.'] : []),
       ...(!hasFocus ? ['Add visible focus styling for keyboard navigation.'] : []),
@@ -2849,6 +2854,7 @@ export function critiqueSource({
       ...(iconLinkIssues > 0 ? ['Add accessible labels to icon-only links via visible text or aria-label.'] : []),
       ...(clickableNonSemanticIssues > 0 ? ['Use semantic interactive elements or add role/tabIndex and keyboard handling to clickable non-semantic containers.'] : []),
       ...(unlabeledNavigationLandmarkIssues > 0 ? ['Give multiple navigation landmarks distinct labels so assistive technologies can differentiate primary, sidebar, and utility nav regions.'] : []),
+      ...(multipleMainLandmarkIssues > 0 ? ['Keep only one primary main landmark per rendered page or shell surface.'] : []),
       ...(imageAltIssues > 0 ? ['Add alt text to meaningful images and use alt="" only for decorative ones.'] : []),
       ...(iframeTitleIssues > 0 ? ['Add descriptive title attributes to embedded iframes so assistive technologies can identify their purpose.'] : []),
       ...(dialogLabelIssues > 0 ? ['Give dialogs an explicit accessible name via aria-label, aria-labelledby, or title.'] : []),
@@ -2923,6 +2929,17 @@ export function critiqueSource({
         evidence: [filePath, `Unlabeled navigation landmarks: ${unlabeledNavigationLandmarkIssues}`],
         file: filePath,
         suggestedFix: 'Label multiple nav regions with aria-label or aria-labelledby so assistive technologies can distinguish primary, sidebar, and utility navigation.',
+      }));
+    }
+    if (multipleMainLandmarkIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-multiple-main-landmarks',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+        message: 'Multiple main landmarks were detected in the reviewed file.',
+        evidence: [filePath, `Extra main landmarks beyond the first: ${multipleMainLandmarkIssues}`],
+        file: filePath,
+        suggestedFix: 'Render one primary `<main>` landmark per page or shell surface and move secondary regions into section/article/div containers instead.',
       }));
     }
     if (imageAltIssues > 0) {

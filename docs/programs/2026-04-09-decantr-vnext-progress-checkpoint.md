@@ -129,6 +129,7 @@ commit archaeology.
 - Auth verification now flags guard/session files that redirect unauthenticated users toward protected destinations like `/dashboard` instead of anonymous entry routes.
 - Accessibility critique now catches table markup without headers or captions, so data-heavy generated UIs fail earlier when their structure is visually plausible but semantically incomplete.
 - Accessibility critique now also catches multiple navigation landmarks without distinct labels, which is especially important for generated app shells with both sidebar and utility nav regions.
+- Accessibility critique now also flags files that render multiple main landmarks, helping generated page and shell structures keep a single clear primary content region for assistive technologies.
 
 ### Showcase / golden corpus
 

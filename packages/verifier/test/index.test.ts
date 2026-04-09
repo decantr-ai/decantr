@@ -2480,6 +2480,97 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'accessibility-navigation-landmark-label-missing')).toBe(true);
   });
 
+  it('flags multiple main landmarks during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/AppShell.tsx',
+      code: `
+        export function AppShell() {
+          return (
+            <>
+              <main>
+                <section>Primary</section>
+              </main>
+              <main>
+                <section>Secondary</section>
+              </main>
+            </>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['shell'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['shell'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-multiple-main-landmarks')).toBe(true);
+  });
+
+  it('does not flag a single main landmark during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/AppShell.tsx',
+      code: `
+        export function AppShell() {
+          return (
+            <main>
+              <section>Primary</section>
+            </main>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['shell'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['shell'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-multiple-main-landmarks')).toBe(false);
+  });
+
   it('does not flag navigation landmarks when multiple nav regions are labeled', () => {
     const report = critiqueSource({
       filePath: 'src/components/AppShell.tsx',
