@@ -330,6 +330,7 @@ describe('verifier', () => {
           export function Home() {
             localStorage.setItem('auth_token', token);
             document.cookie = \`auth_token=\${token}; path=/\`;
+            fetch('/api/me', { headers: { Authorization: \`Bearer \${token}\` } });
             return (
               <form>
                 <button>Save</button>
@@ -349,6 +350,7 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'source-placeholder-route-targets-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-storage-writes-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-cookie-writes-present')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'source-auth-header-writes-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-guard-signals-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-exit-signals-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-accessibility-issues-present')).toBe(true);
@@ -1089,6 +1091,7 @@ describe('verifier', () => {
           localStorage.setItem('auth_token', token);
           sessionStorage.jwt = token;
           document.cookie = \`auth_token=\${token}; path=/\`;
+          fetch('/api/me', { headers: { Authorization: \`Bearer \${token}\` } });
         }
       `,
       reviewPack: {
@@ -1121,5 +1124,6 @@ describe('verifier', () => {
 
     expect(report.findings.some(finding => finding.id === 'security-auth-storage-write')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'security-auth-cookie-write')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'security-auth-header-write')).toBe(true);
   });
 });

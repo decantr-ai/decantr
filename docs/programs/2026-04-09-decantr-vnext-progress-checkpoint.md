@@ -83,6 +83,7 @@ commit archaeology.
 - Project audit now also warns when auth is declared but the source tree does not show obvious protected-route, middleware, session-check, or auth-redirect behavior.
 - Source and file critique now also flag auth-like credentials written into client-managed cookies, not just localStorage/sessionStorage.
 - Project audit now also warns when auth is declared but the source tree does not show an obvious sign-out or session-exit path.
+- Source and file critique now also flag auth-like authorization headers being assembled in client-side code.
 - Project audit now includes shared runtime evidence when `dist/` exists:
   - root document validation
   - document title validation

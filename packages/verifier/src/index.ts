@@ -281,6 +281,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     placeholderRoutes: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
     authCookieWrites: createSourceAuditBucket(),
+    authHeaderWrites: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
     authExitSignals: createSourceAuditBucket(),
     accessibilityIssues: createSourceAuditBucket(),
@@ -308,6 +309,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
     recordSourceAudit(summary.authCookieWrites, relativePath, signals.authCookieWriteCount);
+    recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
     recordSourceAudit(summary.accessibilityIssues, relativePath, accessibilityIssueCount);
@@ -415,6 +417,7 @@ interface SourceAuditSummary {
   placeholderRoutes: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
   authCookieWrites: SourceAuditBucket;
+  authHeaderWrites: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
   authExitSignals: SourceAuditBucket;
   accessibilityIssues: SourceAuditBucket;
@@ -1027,6 +1030,17 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (sourceAudit.authHeaderWrites.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-auth-header-writes-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files construct auth-like authorization headers in client-side code.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authHeaderWrites, 'Auth header writes'),
+      suggestedFix: 'Avoid building bearer/session auth headers in client-rendered code; prefer server-managed session boundaries or a deliberate reviewed client-auth strategy.',
+    }));
+  }
+
   const topology = summarizeTopology(essence, reviewPack);
   if (topology.hasAuthFeature && sourceAudit.authGuardSignals.count === 0) {
     findings.push(makeFinding({
@@ -1299,6 +1313,7 @@ interface AstCritiqueSignals {
   buttonInFormWithoutTypeCount: number;
   authStorageWriteCount: number;
   authCookieWriteCount: number;
+  authHeaderWriteCount: number;
   authGuardSignalCount: number;
   authExitSignalCount: number;
 }
@@ -1515,6 +1530,20 @@ function hasAuthCredentialText(node: ts.Node, sourceFile: ts.SourceFile): boolea
   return /(?:token|auth|jwt|session|access_token|refresh_token)/i.test(node.getText(sourceFile));
 }
 
+function isAuthorizationHeaderName(node: ts.Node | undefined): boolean {
+  if (!node) return false;
+  if (ts.isIdentifier(node)) {
+    return /^authorization$/i.test(node.text);
+  }
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    return /^authorization$/i.test(node.text);
+  }
+  if (ts.isComputedPropertyName(node)) {
+    return isAuthorizationHeaderName(node.expression);
+  }
+  return false;
+}
+
 function countAuthGuardSignals(code: string): number {
   const patterns = [
     /\b(?:ProtectedRoute|AuthGuard|RequireAuth|withAuth|requireAuth|ensureAuth|useRequireAuth)\b/,
@@ -1562,6 +1591,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     buttonInFormWithoutTypeCount: 0,
     authStorageWriteCount: 0,
     authCookieWriteCount: 0,
+    authHeaderWriteCount: 0,
     authGuardSignalCount: countAuthGuardSignals(code),
     authExitSignalCount: countAuthExitSignals(code),
   };
@@ -1615,6 +1645,13 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       signals.authCookieWriteCount += 1;
     }
 
+    if (
+      ts.isPropertyAssignment(node)
+      && isAuthorizationHeaderName(node.name)
+    ) {
+      signals.authHeaderWriteCount += 1;
+    }
+
     if (ts.isCallExpression(node)) {
       if (ts.isIdentifier(node.expression) && node.expression.text === 'eval') {
         signals.dynamicEvalCount += 1;
@@ -1641,6 +1678,13 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           )
         ) {
           signals.authCookieWriteCount += 1;
+        }
+        if (
+          (isPropertyNamed(node.expression.name, 'set') || isPropertyNamed(node.expression.name, 'append'))
+          && node.arguments.length > 0
+          && isAuthorizationHeaderName(node.arguments[0])
+        ) {
+          signals.authHeaderWriteCount += 1;
         }
         if (
           ts.isIdentifier(node.expression.expression)
@@ -2051,6 +2095,7 @@ export function critiqueSource({
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
   const authStorageWriteCount = astSignals.authStorageWriteCount;
   const authCookieWriteCount = astSignals.authCookieWriteCount;
+  const authHeaderWriteCount = astSignals.authHeaderWriteCount;
   const hasDangerousHtml = dangerousHtmlCount > 0;
   const hasRawHtmlInjection = rawHtmlInjectionCount > 0;
   const hasDynamicEval = dynamicEvalCount > 0;
@@ -2058,6 +2103,7 @@ export function critiqueSource({
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0 || passwordAutocompleteMissingCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
   const hasAuthCookieWrites = authCookieWriteCount > 0;
+  const hasAuthHeaderWrites = authHeaderWriteCount > 0;
   scores.push({
     category: 'Security Hygiene',
     focusArea: 'security-hygiene',
@@ -2070,9 +2116,10 @@ export function critiqueSource({
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
-      - (hasAuthCookieWrites ? 2 : 0),
+      - (hasAuthCookieWrites ? 2 : 0)
+      - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -2080,6 +2127,7 @@ export function critiqueSource({
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, or `new-password` on auth-related inputs.'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
       ...(hasAuthCookieWrites ? ['Avoid setting auth cookies from client-side JavaScript; prefer server-issued HttpOnly cookies or other server-managed session boundaries.'] : []),
+      ...(hasAuthHeaderWrites ? ['Avoid constructing bearer/session authorization headers in client-rendered code unless the auth model is explicitly reviewed and intended.'] : []),
     ],
   });
 
@@ -2168,6 +2216,18 @@ export function critiqueSource({
       evidence: [filePath, `Auth-like cookie writes: ${authCookieWriteCount}`],
       file: filePath,
       suggestedFix: 'Avoid setting auth cookies from client-side code; prefer server-issued HttpOnly cookies or other server-managed session mechanisms.',
+    }));
+  }
+
+  if (hasAuthHeaderWrites) {
+    findings.push(makeFinding({
+      id: 'security-auth-header-write',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Auth-like authorization headers were constructed in client-side code.',
+      evidence: [filePath, `Auth-like header writes: ${authHeaderWriteCount}`],
+      file: filePath,
+      suggestedFix: 'Prefer server-managed sessions or a deliberately reviewed client-auth strategy instead of assembling bearer/session headers ad hoc in client-rendered code.',
     }));
   }
 
