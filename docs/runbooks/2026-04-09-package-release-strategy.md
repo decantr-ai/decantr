@@ -52,6 +52,12 @@ The compiler, schema, registry, MCP, and verifier layers are public and importan
 
 The npm publish workflow now uses `scripts/publish-packages.mjs`, backed by `config/package-surface.json`, instead of a hardcoded shell loop.
 
+Release planning now also has an executable source:
+
+- `pnpm release:plan`
+- `node scripts/release-plan.mjs --json`
+- `node scripts/release-plan.mjs --summary-markdown=/tmp/package-release-plan.md`
+
 The workflow:
 
 - builds and tests the monorepo
@@ -104,6 +110,8 @@ pnpm audit:release-readiness
 Dry-run the publish selection locally:
 
 ```bash
+pnpm release:plan
+node scripts/release-plan.mjs --json
 node scripts/publish-packages.mjs --dry-run
 node scripts/publish-packages.mjs --dry-run --include-experimental
 ```

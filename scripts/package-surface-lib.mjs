@@ -144,6 +144,89 @@ export function summarizeReleaseReadiness(surface) {
   return summary;
 }
 
+export function createReleasePlan(surface, publicPackages, retirements) {
+  const publicByName = new Map(publicPackages.map((entry) => [entry.name, entry]));
+  const retiredByName = new Map((retirements?.packages ?? []).map((entry) => [entry.name, entry]));
+  const packages = [];
+
+  for (const entry of surface.packages) {
+    const pkg = publicByName.get(entry.name) ?? null;
+    const blockers = entry.releaseReadiness?.blockers ?? [];
+    let recommendedAction = 'hold';
+    let releaseTag = null;
+
+    if (retiredByName.has(entry.name)) {
+      recommendedAction = 'retired';
+    } else if (entry.publish === false || entry.maturity === 'experimental') {
+      recommendedAction = 'hold-experimental';
+    } else if (entry.maturity === 'stable') {
+      recommendedAction = 'publish-latest';
+      releaseTag = 'latest';
+    } else if (entry.releaseReadiness?.stableCandidate && blockers.length === 0) {
+      recommendedAction = 'ready-to-graduate';
+      releaseTag = 'latest';
+    } else {
+      recommendedAction = 'publish-beta';
+      releaseTag = entry.defaultDistTag;
+    }
+
+    packages.push({
+      name: entry.name,
+      path: entry.path,
+      version: pkg?.version ?? null,
+      support: entry.support,
+      maturity: entry.maturity,
+      publish: entry.publish === true,
+      defaultDistTag: entry.defaultDistTag,
+      summary: entry.summary,
+      stableCandidate: entry.releaseReadiness?.stableCandidate === true,
+      blockers,
+      docsAligned: entry.releaseReadiness?.docsAligned === true,
+      ciCovered: entry.releaseReadiness?.ciCovered === true,
+      productIntegrated: entry.releaseReadiness?.productIntegrated === true,
+      recommendedAction,
+      releaseTag,
+      retirement: retiredByName.get(entry.name) ?? null,
+    });
+  }
+
+  for (const retirement of retirements?.packages ?? []) {
+    if (surface.packages.some((entry) => entry.name === retirement.name)) continue;
+    packages.push({
+      name: retirement.name,
+      path: null,
+      version: null,
+      support: 'retired',
+      maturity: 'retired',
+      publish: false,
+      defaultDistTag: null,
+      summary: retirement.message,
+      stableCandidate: false,
+      blockers: [],
+      docsAligned: true,
+      ciCovered: false,
+      productIntegrated: false,
+      recommendedAction: 'retired',
+      releaseTag: null,
+      retirement,
+    });
+  }
+
+  const counts = {
+    publishLatest: packages.filter((entry) => entry.recommendedAction === 'publish-latest').length,
+    publishBeta: packages.filter((entry) => entry.recommendedAction === 'publish-beta').length,
+    readyToGraduate: packages.filter((entry) => entry.recommendedAction === 'ready-to-graduate').length,
+    holdExperimental: packages.filter((entry) => entry.recommendedAction === 'hold-experimental').length,
+    retired: packages.filter((entry) => entry.recommendedAction === 'retired').length,
+  };
+
+  return {
+    generatedAt: new Date().toISOString(),
+    counts,
+    packages,
+  };
+}
+
 export function validatePackageRetirements(surface, retirements) {
   const findings = [];
   const activeNames = new Set(surface.packages.map((entry) => entry.name));
