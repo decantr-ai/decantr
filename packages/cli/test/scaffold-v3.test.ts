@@ -245,17 +245,40 @@ describe('v3 scaffold', () => {
     await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
 
     const packPath = join(testDir, '.decantr', 'context', 'scaffold-pack.md');
+    const packJsonPath = join(testDir, '.decantr', 'context', 'scaffold-pack.json');
     const sectionPackPath = join(testDir, '.decantr', 'context', 'section-custom-pack.md');
+    const sectionPackJsonPath = join(testDir, '.decantr', 'context', 'section-custom-pack.json');
     expect(existsSync(packPath)).toBe(true);
+    expect(existsSync(packJsonPath)).toBe(true);
     expect(existsSync(sectionPackPath)).toBe(true);
+    expect(existsSync(sectionPackJsonPath)).toBe(true);
 
     const content = readFileSync(packPath, 'utf-8');
+    const packJson = JSON.parse(readFileSync(packJsonPath, 'utf-8'));
     const sectionContent = readFileSync(sectionPackPath, 'utf-8');
+    const sectionPackJson = JSON.parse(readFileSync(sectionPackJsonPath, 'utf-8'));
     expect(content).toContain('# Scaffold Pack');
     expect(content).toContain('react-vite (react)');
     expect(content).toContain('- / -> home [hero]');
+    expect(packJson.packType).toBe('scaffold');
+    expect(packJson.data.routes).toEqual([
+      {
+        pageId: 'home',
+        path: '/',
+        patternIds: ['hero'],
+      },
+    ]);
     expect(sectionContent).toContain('# Section Pack');
     expect(sectionContent).toContain('- Section: custom');
     expect(sectionContent).toContain('- / -> home [hero]');
+    expect(sectionPackJson.packType).toBe('section');
+    expect(sectionPackJson.data.sectionId).toBe('custom');
+    expect(sectionPackJson.data.routes).toEqual([
+      {
+        pageId: 'home',
+        path: '/',
+        patternIds: ['hero'],
+      },
+    ]);
   });
 });

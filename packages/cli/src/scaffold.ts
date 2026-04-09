@@ -5,6 +5,7 @@ import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
 import { buildScaffoldPack, buildSectionPack, runPipeline } from '@decantr/core';
 import type { SectionPackInput } from '@decantr/core';
+import type { ExecutionPackBase } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
 import type {
   ComposeEntry,
@@ -1939,6 +1940,17 @@ function resolvePackAdapter(target: string | undefined, platformType: string | u
   return 'generic-web';
 }
 
+function writeExecutionPackArtifacts(
+  basePathWithoutExtension: string,
+  pack: ExecutionPackBase<unknown>,
+): string {
+  const markdownPath = `${basePathWithoutExtension}.md`;
+  const jsonPath = `${basePathWithoutExtension}.json`;
+  writeFileSync(markdownPath, pack.renderedMarkdown);
+  writeFileSync(jsonPath, JSON.stringify(pack, null, 2) + '\n');
+  return markdownPath;
+}
+
 function listPackSections(essence: EssenceV3): SectionPackInput[] {
   const declaredSections = essence.blueprint.sections;
   if (declaredSections && declaredSections.length > 0) {
@@ -1989,8 +2001,7 @@ async function generatePackContexts(
     });
 
     const outputPaths: string[] = [];
-    const scaffoldPackPath = join(contextDir, 'scaffold-pack.md');
-    writeFileSync(scaffoldPackPath, pack.renderedMarkdown);
+    const scaffoldPackPath = writeExecutionPackArtifacts(join(contextDir, 'scaffold-pack'), pack);
     outputPaths.push(scaffoldPackPath);
 
     const sharedTarget = {
@@ -2003,8 +2014,10 @@ async function generatePackContexts(
       const sectionPack = buildSectionPack(pipeline.ir, section, {
         target: sharedTarget,
       });
-      const sectionPackPath = join(contextDir, `section-${section.id}-pack.md`);
-      writeFileSync(sectionPackPath, sectionPack.renderedMarkdown);
+      const sectionPackPath = writeExecutionPackArtifacts(
+        join(contextDir, `section-${section.id}-pack`),
+        sectionPack,
+      );
       outputPaths.push(sectionPackPath);
     }
 
