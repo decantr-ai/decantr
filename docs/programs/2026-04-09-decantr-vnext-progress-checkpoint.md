@@ -126,6 +126,7 @@ commit archaeology.
 - Runtime verification now also flags plain `http://` / `ws://` transport markers that survive into built JavaScript bundles.
 - Source audit now flags protected app-surface files that reference routes like `/dashboard` or `/settings` without co-located session or guard behavior, even when an auth helper exists elsewhere in the repo.
 - File critique now catches dialog accessibility gaps too, including missing dialog labels and missing modal hints on dialog-like surfaces.
+- Auth verification now flags guard/session files that redirect unauthenticated users toward protected destinations like `/dashboard` instead of anonymous entry routes.
 
 ### Showcase / golden corpus
 

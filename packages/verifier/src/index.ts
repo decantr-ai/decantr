@@ -352,6 +352,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     securityRiskPatterns: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
     protectedSurfaceSignals: createSourceAuditBucket(),
+    authProtectedRedirectSignals: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
     skipNavTargetIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
@@ -398,6 +399,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
     recordSourceAudit(summary.protectedSurfaceSignals, relativePath, signals.protectedSurfaceSignalCount);
+    recordSourceAudit(summary.authProtectedRedirectSignals, relativePath, signals.authProtectedRedirectSignalCount);
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
     for (const targetId of signals.skipNavTargetIds) {
@@ -542,6 +544,7 @@ interface SourceAuditSummary {
   securityRiskPatterns: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
   protectedSurfaceSignals: SourceAuditBucket;
+  authProtectedRedirectSignals: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
   skipNavTargetIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
@@ -1298,6 +1301,27 @@ function appendSourceAuditFindings(
 
   if (
     topology.hasAuthFeature
+    && sourceAudit.authProtectedRedirectSignals.count > 0
+    && sourceAuditBucketsOverlap(sourceAudit.authProtectedRedirectSignals, sourceAudit.authGuardSignals)
+    && !sourceAuditBucketsOverlap(sourceAudit.authProtectedRedirectSignals, sourceAudit.authEntrySignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-guard-protected-redirect',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth guard logic appears to redirect users toward protected destinations instead of anonymous entry routes.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Protected redirect files: ${sourceAudit.authProtectedRedirectSignals.files.join(', ') || 'none'}`,
+        `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
+        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Send unauthenticated guard redirects to `/`, `/login`, `/register`, or another reviewed gateway route, and keep redirects to protected destinations for post-auth success flows only.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
     && sourceAudit.authSessionSignals.count > 0
     && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
   ) {
@@ -1691,6 +1715,7 @@ interface AstCritiqueSignals {
   authEntrySignalCount: number;
   authSessionSignalCount: number;
   authLoadingSignalCount: number;
+  authProtectedRedirectSignalCount: number;
   authStorageWriteCount: number;
   authCookieWriteCount: number;
   authHeaderWriteCount: number;
@@ -2259,6 +2284,15 @@ function countProtectedSurfaceSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthProtectedRedirectSignals(code: string): number {
+  const patterns = [
+    /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`]/i,
+    /\bNextResponse\.redirect\s*\(\s*['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`]/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -2300,6 +2334,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authEntrySignalCount: countAuthEntrySignals(code),
     authSessionSignalCount: countAuthSessionSignals(code),
     authLoadingSignalCount: countAuthLoadingSignals(code),
+    authProtectedRedirectSignalCount: countAuthProtectedRedirectSignals(code),
     authStorageWriteCount: 0,
     authCookieWriteCount: 0,
     authHeaderWriteCount: 0,
@@ -2869,15 +2904,17 @@ export function critiqueSource({
   const hasHover = codeLower.includes(':hover') || codeLower.includes('onmouseenter') || codeLower.includes('hover:');
   const buttonInFormWithoutTypeCount = astSignals.buttonInFormWithoutTypeCount;
   const authFormWithoutSubmitCount = astSignals.authFormWithoutSubmitCount;
+  const authProtectedRedirectSignalCount = astSignals.authProtectedRedirectSignalCount;
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
     score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0) - (authFormWithoutSubmitCount > 0 ? 1 : 0))),
-    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}`,
+    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}, auth redirects to protected routes: ${authProtectedRedirectSignalCount}`,
     suggestions: [
       ...(!hasTransition ? ['Add transitions for interactive state changes where appropriate.'] : []),
       ...(buttonInFormWithoutTypeCount > 0 ? ['Add explicit button types inside forms so non-submit actions do not accidentally submit.'] : []),
       ...(authFormWithoutSubmitCount > 0 ? ['Auth-like forms should expose a clear submit control so users can actually complete the credential flow.'] : []),
+      ...(authProtectedRedirectSignalCount > 0 ? ['Keep unauthenticated guard redirects pointed at anonymous entry routes, not protected destinations like `/dashboard` or `/app`.'] : []),
     ],
   });
   if (buttonInFormWithoutTypeCount > 0) {
@@ -2901,6 +2938,22 @@ export function critiqueSource({
       evidence: [filePath, `Auth forms without submit control: ${authFormWithoutSubmitCount}`],
       file: filePath,
       suggestedFix: 'Add an explicit submit button or submit input so users can complete the sign-in, registration, or recovery flow.',
+    }));
+  }
+
+  if (
+    authProtectedRedirectSignalCount > 0
+    && (astSignals.authGuardSignalCount > 0 || astSignals.authSessionSignalCount > 0)
+    && astSignals.authEntrySignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'route-auth-guard-protected-redirect',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Auth/session logic in the reviewed file redirects toward protected destinations instead of anonymous entry routes.',
+      evidence: [filePath, `Protected auth redirects: ${authProtectedRedirectSignalCount}`],
+      file: filePath,
+      suggestedFix: 'Redirect unauthenticated flows to `/`, `/login`, `/register`, or another gateway route, and reserve redirects to `/dashboard` or `/app` for reviewed post-auth success flows.',
     }));
   }
 
