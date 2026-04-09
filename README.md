@@ -42,7 +42,7 @@ Typical workflow:
 1. Scaffold a project from a blueprint or natural-language prompt.
 2. Let your AI assistant read the generated Decantr context files.
 3. Build with guardrails instead of improvising every design decision.
-4. Run `decantr check` to catch drift.
+4. Run `decantr audit` and `decantr check` to catch contract issues and drift.
 
 ## Core Surfaces
 
@@ -84,7 +84,7 @@ The official curated content source lives in `decantr-content` and syncs to the 
 - shells
 
 Canonical Decantr schemas are published at `https://decantr.ai/schemas/`.
-Registry schemas are owned by `@decantr/registry/schema/*` and essence schemas by `@decantr/essence-spec/schema/*`.
+Registry schemas are owned by `@decantr/registry/schema/*`, essence schemas by `@decantr/essence-spec/schema/*`, execution-pack schemas by `@decantr/core/schema/*`, and verification report schemas by `@decantr/verifier/schema/*`.
 
 ## Packages
 
@@ -97,6 +97,7 @@ Registry schemas are owned by `@decantr/registry/schema/*` and essence schemas b
 | `@decantr/essence-spec` | Schema, validation, and core Decantr types |
 | `@decantr/registry` | Registry model, resolution, and content access |
 | `@decantr/core` | Internal pipeline and compiler-adjacent foundation |
+| `@decantr/verifier` | Shared audit and critique engine with schema-backed reports |
 | `@decantr/css` | Framework-agnostic CSS atom runtime |
 
 ### Secondary surfaces

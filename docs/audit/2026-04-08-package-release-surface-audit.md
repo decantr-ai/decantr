@@ -22,6 +22,7 @@ This audit defines how package surfaces should be handled during the vNext reset
 | `@decantr/cli` | `1.7.5` | local scaffold and maintenance | Keep |
 | `@decantr/css` | `1.0.2` | framework-agnostic atom runtime | Keep |
 | `@decantr/core` | `1.0.0-beta.9` | internal pipeline / IR foundation | Keep pending scope cleanup |
+| `@decantr/verifier` | `1.0.0-beta.1` | shared verification and critique engine | Keep as new core package |
 | `@decantr/vite-plugin` | `0.1.0` | verification-related integration | Keep but defer |
 | `@decantr/ui` | `0.1.0` | standalone framework experiment | Removed from monorepo on reset branch |
 | `@decantr/ui-chart` | `0.1.0` | charting library tied to UI line | Removed from monorepo on reset branch |
@@ -90,6 +91,11 @@ Because there are no commercial users to preserve, the priority is not seamless 
 #### `@decantr/core`
 - keep provisionally
 - clarify whether it is a true compiler / IR foundation or an older internal abstraction that needs reshaping
+
+#### `@decantr/verifier`
+- keep as a new core vNext package
+- own schema-backed verification reports and shared critique/audit logic
+- serve CLI, MCP, and future CI or hosted verification surfaces from one engine
 
 ### 4.2 Packages to keep only after review
 
@@ -176,6 +182,7 @@ Once product-boundary decisions are locked:
 - update README package table
 - update docs references
 - remove outdated onboarding paths
+- include new core packages in package and schema documentation as they ship
 
 ## 7. Exit Criteria
 

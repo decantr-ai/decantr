@@ -72,6 +72,7 @@ Decantr currently spans multiple repos and deployed surfaces.
 | `@decantr/cli` | Local scaffold and maintenance entrypoint | Keep, slim, and clarify |
 | `@decantr/css` | Framework-agnostic atom runtime | Keep as core UI utility |
 | `@decantr/core` | Internal design pipeline / IR layer | Keep, but tighten scope |
+| `@decantr/verifier` | Shared verification engine and report contracts | Keep as core |
 | `apps/showcase/*` | 39 attempted full blueprint scaffolds with mixed provenance | Reclassify as benchmark corpus |
 | `@decantr/ui` line + related apps | Standalone framework experiment | Removed from reset branch; legacy line only |
 

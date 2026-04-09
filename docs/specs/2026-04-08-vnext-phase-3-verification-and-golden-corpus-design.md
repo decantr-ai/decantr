@@ -27,6 +27,13 @@ This phase introduces:
 - severity-based findings
 - first-pass quality metrics that mean something
 
+Current branch progress already aligned with this phase:
+
+- `packages/verifier` now exists as the shared audit and critique engine
+- project-audit and file-critique reports are schema-backed public contracts
+- CLI and MCP both consume the shared verifier surface
+- review packs can now influence critique severity and anti-pattern detection
+
 ## Goals
 
 - Replace heuristic-only critique with a layered verification engine.
