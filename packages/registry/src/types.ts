@@ -404,3 +404,78 @@ export interface UserProfile {
   reputation_score: number;
   trusted: boolean;
 }
+
+export interface ShowcaseVerificationEntry {
+  slug: string;
+  target: string | null;
+  classification: 'pending' | 'A' | 'B' | 'C' | 'D';
+  verificationStatus: 'pending' | 'build-green' | 'build-red' | 'smoke-green' | 'smoke-red';
+  build: {
+    passed: boolean | null;
+    durationMs: number;
+  };
+  smoke: {
+    passed: boolean | null;
+    durationMs: number;
+    rootDocumentOk: boolean;
+    assetCount: number;
+    assetsPassed: number;
+    routeHintsChecked: string[];
+    routeHintsMatched: number;
+    failures: string[];
+  };
+  drift: {
+    signal: 'lower' | 'moderate' | 'elevated';
+    penalty: number;
+    inlineStyleCount: number;
+    hardcodedColorCount: number;
+    utilityLeakageCount: number;
+    decantrTreatmentCount: number;
+    hasPackManifest: boolean;
+    hasDist: boolean;
+  };
+}
+
+export interface ShowcaseShortlistSummary {
+  appCount: number;
+  passedBuilds: number;
+  failedBuilds: number;
+  averageDurationMs: number;
+  passedSmokes: number;
+  failedSmokes: number;
+  averageSmokeDurationMs: number;
+  lowerDriftCount: number;
+  moderateDriftCount: number;
+  elevatedDriftCount: number;
+  withPackManifestCount: number;
+}
+
+export interface ShowcaseManifestEntry {
+  slug: string;
+  status: string;
+  classification: string;
+  target?: string | null;
+  goldenCandidate?: string | boolean;
+  notes?: string | null;
+  verification?: ShowcaseVerificationEntry | null;
+}
+
+export interface ShowcaseManifestResponse {
+  total: number;
+  shortlisted: number;
+  apps: ShowcaseManifestEntry[];
+}
+
+export interface ShowcaseShortlistResponse {
+  generatedAt: string | null;
+  summary: ShowcaseShortlistSummary | null;
+  apps: ShowcaseManifestEntry[];
+}
+
+export interface ShowcaseShortlistReport {
+  $schema: string;
+  generatedAt: string;
+  dryRun: boolean;
+  summary: ShowcaseShortlistSummary;
+  results: ShowcaseVerificationEntry[];
+}

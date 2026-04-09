@@ -12,6 +12,9 @@ import type {
   SearchParams,
   SearchResponse,
   UserProfile,
+  ShowcaseManifestResponse,
+  ShowcaseShortlistResponse,
+  ShowcaseShortlistReport,
 } from './types.js';
 
 const DEFAULT_BASE_URL = 'https://api.decantr.ai/v1';
@@ -244,6 +247,38 @@ export class RegistryAPIClient {
 
   async getSchema(name: string = 'essence.v3.json'): Promise<Record<string, unknown>> {
     return this.request<Record<string, unknown>>(`/schema/${name}`);
+  }
+
+  // ── Showcase benchmarks ──
+
+  async getShowcaseManifest(): Promise<ShowcaseManifestResponse> {
+    const cacheKey = 'showcase:manifest';
+    const cached = this.getCached<ShowcaseManifestResponse>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<ShowcaseManifestResponse>('/showcase/manifest');
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async getShowcaseShortlist(): Promise<ShowcaseShortlistResponse> {
+    const cacheKey = 'showcase:shortlist';
+    const cached = this.getCached<ShowcaseShortlistResponse>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<ShowcaseShortlistResponse>('/showcase/shortlist');
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async getShowcaseShortlistVerification(): Promise<ShowcaseShortlistReport> {
+    const cacheKey = 'showcase:shortlist-verification';
+    const cached = this.getCached<ShowcaseShortlistReport>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<ShowcaseShortlistReport>('/showcase/shortlist-verification');
+    this.setCache(cacheKey, result);
+    return result;
   }
 }
 

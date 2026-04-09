@@ -37,6 +37,12 @@ export type {
   SearchParams,
   SearchResponse,
   UserProfile,
+  ShowcaseVerificationEntry,
+  ShowcaseShortlistSummary,
+  ShowcaseManifestEntry,
+  ShowcaseManifestResponse,
+  ShowcaseShortlistResponse,
+  ShowcaseShortlistReport,
 } from './types.js';
 
 export {
