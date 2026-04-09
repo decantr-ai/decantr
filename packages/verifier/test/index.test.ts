@@ -687,4 +687,50 @@ describe('verifier', () => {
 
     expect(report.findings.some(finding => finding.id === 'route-placeholder-navigation-target')).toBe(true);
   });
+
+  it('flags auth inputs without autocomplete hints during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/AuthForm.tsx',
+      code: `
+        export function AuthForm() {
+          return (
+            <form>
+              <label htmlFor="email">Email</label>
+              <input id="email" type="email" />
+              <label htmlFor="password">Password</label>
+              <input id="password" type="password" />
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'login', path: '/', patternIds: ['form'] }],
+          focusAreas: ['accessibility', 'security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-autocomplete-missing')).toBe(true);
+  });
 });

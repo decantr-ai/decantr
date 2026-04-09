@@ -921,6 +921,8 @@ interface AstCritiqueSignals {
   externalBlankLinkWithoutRelCount: number;
   formControlWithoutLabelCount: number;
   placeholderNavigationTargetCount: number;
+  emailAutocompleteMissingCount: number;
+  passwordAutocompleteMissingCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -1056,6 +1058,10 @@ function isLabelableFormControl(tagName: string | null, attributes: ts.JsxAttrib
   return !['hidden', 'submit', 'reset', 'button'].includes(inputType);
 }
 
+function getNormalizedInputType(attributes: ts.JsxAttributes): string {
+  return (getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'type')) ?? 'text').trim().toLowerCase();
+}
+
 function hasFormControlLabel(
   node: ts.Node,
   tagName: string | null,
@@ -1113,6 +1119,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     externalBlankLinkWithoutRelCount: 0,
     formControlWithoutLabelCount: 0,
     placeholderNavigationTargetCount: 0,
+    emailAutocompleteMissingCount: 0,
+    passwordAutocompleteMissingCount: 0,
   };
   const labelForIds = collectLabelForIds(sourceFile);
 
@@ -1187,6 +1195,16 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (hasPlaceholderNavigationTarget(node.attributes)) {
         signals.placeholderNavigationTargetCount += 1;
       }
+      if (tagName === 'input') {
+        const inputType = getNormalizedInputType(node.attributes);
+        const hasAutocomplete = Boolean(getJsxAttribute(node.attributes, 'autocomplete', 'autoComplete'));
+        if (inputType === 'email' && !hasAutocomplete) {
+          signals.emailAutocompleteMissingCount += 1;
+        }
+        if (inputType === 'password' && !hasAutocomplete) {
+          signals.passwordAutocompleteMissingCount += 1;
+        }
+      }
       if (!hasFormControlLabel(node, tagName, node.attributes, labelForIds, '')) {
         signals.formControlWithoutLabelCount += 1;
       }
@@ -1216,6 +1234,16 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (hasPlaceholderNavigationTarget(node.openingElement.attributes)) {
         signals.placeholderNavigationTargetCount += 1;
+      }
+      if (tagName === 'input') {
+        const inputType = getNormalizedInputType(node.openingElement.attributes);
+        const hasAutocomplete = Boolean(getJsxAttribute(node.openingElement.attributes, 'autocomplete', 'autoComplete'));
+        if (inputType === 'email' && !hasAutocomplete) {
+          signals.emailAutocompleteMissingCount += 1;
+        }
+        if (inputType === 'password' && !hasAutocomplete) {
+          signals.passwordAutocompleteMissingCount += 1;
+        }
       }
       if (!hasFormControlLabel(node, tagName, node.openingElement.attributes, labelForIds, textContent)) {
         signals.formControlWithoutLabelCount += 1;
@@ -1508,10 +1536,13 @@ export function critiqueSource({
   const rawHtmlInjectionCount = Math.max(astSignals.rawHtmlInjectionCount, /\binnerHTML\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/.test(code) ? 1 : 0);
   const dynamicEvalCount = Math.max(astSignals.dynamicEvalCount, /\beval\s*\(|new\s+Function\s*\(/.test(code) ? 1 : 0);
   const externalBlankLinkWithoutRelCount = astSignals.externalBlankLinkWithoutRelCount;
+  const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
+  const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
   const hasDangerousHtml = dangerousHtmlCount > 0;
   const hasRawHtmlInjection = rawHtmlInjectionCount > 0;
   const hasDynamicEval = dynamicEvalCount > 0;
   const hasExternalBlankLinkWithoutRel = externalBlankLinkWithoutRelCount > 0;
+  const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0 || passwordAutocompleteMissingCount > 0;
   scores.push({
     category: 'Security Hygiene',
     focusArea: 'security-hygiene',
@@ -1521,13 +1552,15 @@ export function critiqueSource({
       - (hasDangerousHtml ? 2 : 0)
       - (hasRawHtmlInjection ? 2 : 0)
       - (hasDynamicEval ? 2 : 0)
-      - (hasExternalBlankLinkWithoutRel ? 1 : 0),
+      - (hasExternalBlankLinkWithoutRel ? 1 : 0)
+      - (hasAuthAutocompleteIssues ? 1 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
       ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
+      ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, or `new-password` on auth-related inputs.'] : []),
     ],
   });
 
@@ -1576,6 +1609,22 @@ export function critiqueSource({
       evidence: [filePath, `Occurrences: ${externalBlankLinkWithoutRelCount}`],
       file: filePath,
       suggestedFix: 'Add rel="noopener noreferrer" to external target="_blank" links to prevent tab-nabbing and preserve opener isolation.',
+    }));
+  }
+
+  if (hasAuthAutocompleteIssues) {
+    findings.push(makeFinding({
+      id: 'security-auth-autocomplete-missing',
+      category: 'Security Hygiene',
+      severity: 'info',
+      message: 'Auth-related inputs were detected without explicit `autocomplete` hints.',
+      evidence: [
+        filePath,
+        `Email inputs without autocomplete: ${emailAutocompleteMissingCount}`,
+        `Password inputs without autocomplete: ${passwordAutocompleteMissingCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'Add `autocomplete=\"email\"` or `autocomplete=\"username\"` to identity fields and `autocomplete=\"current-password\"` or `autocomplete=\"new-password\"` to password fields.',
     }));
   }
 
