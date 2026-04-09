@@ -84,6 +84,7 @@ commit archaeology.
   - document title validation
   - built asset fetch checks
   - route-document coverage checks
+- Project audit now also records built asset byte totals and warns on oversized JS/CSS/total bundle budgets.
 
 ### Showcase / golden corpus
 

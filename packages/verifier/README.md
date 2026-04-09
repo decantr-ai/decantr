@@ -22,6 +22,7 @@ npm install @decantr/verifier
   - document title
   - emitted assets
   - route-document coverage
+  - built asset byte budgets for JS, CSS, and total payload
 
 ## Example
 

@@ -1279,6 +1279,14 @@ function printProjectAuditReport(report: ProjectAuditReport) {
     ? (report.summary.runtimePassed ? 'passed' : 'failed')
     : (report.runtimeAudit.distPresent ? 'incomplete' : 'pending (no dist/)');
   console.log(`  Runtime audit: ${runtimeStatus}`);
+  if (report.summary.runtimeAuditChecked && report.runtimeAudit.assetCount > 0) {
+    const fmt = (bytes: number) => bytes >= 1_000_000
+      ? `${(bytes / 1_000_000).toFixed(2)} MB`
+      : `${Math.round(bytes / 1_000)} KB`;
+    console.log(
+      `  Built assets: total ${fmt(report.runtimeAudit.totalAssetBytes)} | js ${fmt(report.runtimeAudit.jsAssetBytes)} | css ${fmt(report.runtimeAudit.cssAssetBytes)}`,
+    );
+  }
   console.log(`  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`);
 
   console.log('');

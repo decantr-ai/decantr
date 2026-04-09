@@ -62,6 +62,11 @@
         "routeHintsMatched",
         "routeDocumentsChecked",
         "routeDocumentsPassed",
+        "totalAssetBytes",
+        "jsAssetBytes",
+        "cssAssetBytes",
+        "largestAssetPath",
+        "largestAssetBytes",
         "failures"
       ],
       "properties": {
@@ -106,6 +111,25 @@
           "minimum": 0
         },
         "routeDocumentsPassed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalAssetBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jsAssetBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cssAssetBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "largestAssetPath": {
+          "type": ["string", "null"]
+        },
+        "largestAssetBytes": {
           "type": "integer",
           "minimum": 0
         },

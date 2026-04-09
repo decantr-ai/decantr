@@ -153,6 +153,12 @@ const DEFAULT_FOCUS_AREAS = [
 
 const TREATMENT_CLASSES = ['d-interactive', 'd-surface', 'd-data', 'd-control', 'd-section', 'd-annotation', 'd-label'];
 const PERSONALITY_UTILS = ['neon-glow', 'neon-text-glow', 'neon-border-glow', 'mono-data', 'status-ring', 'entrance-fade'];
+const PERFORMANCE_BUDGETS = {
+  largestJsAssetWarnBytes: 350_000,
+  totalJsWarnBytes: 700_000,
+  totalCssWarnBytes: 150_000,
+  totalAssetsWarnBytes: 1_500_000,
+} as const;
 
 function scoreRatio(numerator: number, denominator: number): number {
   if (denominator <= 0) return 3;
@@ -261,6 +267,16 @@ function countPages(essence: EssenceFile | null): number {
 
 function makeFinding(input: VerificationFinding): VerificationFinding {
   return input;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes >= 1_000_000) {
+    return `${(bytes / 1_000_000).toFixed(2)} MB`;
+  }
+  if (bytes >= 1_000) {
+    return `${Math.round(bytes / 1_000)} KB`;
+  }
+  return `${bytes} B`;
 }
 
 function normalizeRouteHint(route: string | null | undefined): string {
@@ -416,6 +432,53 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
         ...runtimeAudit.failures.filter(failure => failure.startsWith('route-document-failed:')),
       ],
       suggestedFix: 'Verify route fallbacks and build output so every declared route resolves to a usable root document.',
+    }));
+  }
+
+  const largestIsJs = typeof runtimeAudit.largestAssetPath === 'string' && runtimeAudit.largestAssetPath.endsWith('.js');
+  if (
+    (largestIsJs && runtimeAudit.largestAssetBytes > PERFORMANCE_BUDGETS.largestJsAssetWarnBytes)
+    || runtimeAudit.jsAssetBytes > PERFORMANCE_BUDGETS.totalJsWarnBytes
+  ) {
+    findings.push(makeFinding({
+      id: 'runtime-js-bundle-large',
+      category: 'Performance Budget',
+      severity: 'warn',
+      message: 'The built JavaScript output is larger than the current Decantr performance budget.',
+      evidence: [
+        `Total JS: ${formatBytes(runtimeAudit.jsAssetBytes)}`,
+        `Largest asset: ${runtimeAudit.largestAssetPath ?? 'n/a'} (${formatBytes(runtimeAudit.largestAssetBytes)})`,
+      ],
+      suggestedFix: 'Split large route bundles, remove unnecessary client-only code, and prefer lighter patterns or deferred data surfaces.',
+    }));
+  }
+
+  if (runtimeAudit.cssAssetBytes > PERFORMANCE_BUDGETS.totalCssWarnBytes) {
+    findings.push(makeFinding({
+      id: 'runtime-css-bundle-large',
+      category: 'Performance Budget',
+      severity: 'warn',
+      message: 'The built CSS output is larger than the current Decantr performance budget.',
+      evidence: [
+        `Total CSS: ${formatBytes(runtimeAudit.cssAssetBytes)}`,
+        `Total assets: ${formatBytes(runtimeAudit.totalAssetBytes)}`,
+      ],
+      suggestedFix: 'Trim unused treatment layers, reduce generated CSS duplication, and prefer scoped styles over broad utility carryover.',
+    }));
+  }
+
+  if (runtimeAudit.totalAssetBytes > PERFORMANCE_BUDGETS.totalAssetsWarnBytes) {
+    findings.push(makeFinding({
+      id: 'runtime-total-assets-large',
+      category: 'Performance Budget',
+      severity: 'warn',
+      message: 'The built asset payload is larger than the current Decantr total asset budget.',
+      evidence: [
+        `Total assets: ${formatBytes(runtimeAudit.totalAssetBytes)}`,
+        `JS: ${formatBytes(runtimeAudit.jsAssetBytes)}`,
+        `CSS: ${formatBytes(runtimeAudit.cssAssetBytes)}`,
+      ],
+      suggestedFix: 'Reduce shipped assets, split infrequently used routes, and keep the showcase/app shell focused on essential interactive surfaces.',
     }));
   }
 }

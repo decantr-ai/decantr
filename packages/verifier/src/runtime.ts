@@ -27,6 +27,11 @@ export interface RuntimeAudit {
   routeHintsMatched: number;
   routeDocumentsChecked: number;
   routeDocumentsPassed: number;
+  totalAssetBytes: number;
+  jsAssetBytes: number;
+  cssAssetBytes: number;
+  largestAssetPath: string | null;
+  largestAssetBytes: number;
   failures: string[];
 }
 
@@ -49,6 +54,11 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     routeHintsMatched: 0,
     routeDocumentsChecked: 0,
     routeDocumentsPassed: 0,
+    totalAssetBytes: 0,
+    jsAssetBytes: 0,
+    cssAssetBytes: 0,
+    largestAssetPath: null,
+    largestAssetBytes: 0,
     failures,
   };
 }
@@ -171,13 +181,30 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
 
     let assetsPassed = 0;
     let combinedJs = '';
+    let totalAssetBytes = 0;
+    let jsAssetBytes = 0;
+    let cssAssetBytes = 0;
+    let largestAssetPath: string | null = null;
+    let largestAssetBytes = 0;
 
     for (const assetPath of assetPaths) {
       const response = await fetch(`${server.baseUrl}${assetPath}`);
       const body = await response.text();
+      const byteLength = Buffer.byteLength(body, 'utf-8');
 
       if (response.ok && body.length > 0) {
         assetsPassed += 1;
+        totalAssetBytes += byteLength;
+        if (assetPath.endsWith('.js')) {
+          jsAssetBytes += byteLength;
+        }
+        if (assetPath.endsWith('.css')) {
+          cssAssetBytes += byteLength;
+        }
+        if (byteLength > largestAssetBytes) {
+          largestAssetBytes = byteLength;
+          largestAssetPath = assetPath;
+        }
       } else {
         failures.push(`asset-fetch-failed:${assetPath}`);
       }
@@ -228,6 +255,11 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       routeHintsMatched,
       routeDocumentsChecked,
       routeDocumentsPassed,
+      totalAssetBytes,
+      jsAssetBytes,
+      cssAssetBytes,
+      largestAssetPath,
+      largestAssetBytes,
       failures,
     };
   } finally {
