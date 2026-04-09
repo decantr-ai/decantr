@@ -16,9 +16,15 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./schema/execution-pack.common.v1.json": "./schema/execution-pack.common.v1.json",
+    "./schema/scaffold-pack.v1.json": "./schema/scaffold-pack.v1.json",
+    "./schema/section-pack.v1.json": "./schema/section-pack.v1.json",
+    "./schema/page-pack.v1.json": "./schema/page-pack.v1.json",
+    "./schema/mutation-pack.v1.json": "./schema/mutation-pack.v1.json",
+    "./schema/pack-manifest.v1.json": "./schema/pack-manifest.v1.json"
   },
-  "files": ["dist"],
+  "files": ["dist", "schema"],
   "publishConfig": {
     "access": "public"
   },

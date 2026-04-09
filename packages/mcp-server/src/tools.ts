@@ -54,6 +54,7 @@ interface PackManifestEntry {
 }
 
 interface PackManifest {
+  $schema?: string;
   version: string;
   generatedAt: string;
   scaffold: PackManifestEntry | null;

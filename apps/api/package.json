@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
     "@decantr/registry": "workspace:*",
     "@hono/node-server": "^1.19.12",

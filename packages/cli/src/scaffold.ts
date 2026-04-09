@@ -3,7 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
-import { buildScaffoldPack, buildSectionPack, buildPagePack, buildMutationPack, runPipeline } from '@decantr/core';
+import { PACK_MANIFEST_SCHEMA_URL, buildScaffoldPack, buildSectionPack, buildPagePack, buildMutationPack, runPipeline } from '@decantr/core';
 import type { PagePackInput, ScaffoldExecutionPack, SectionPackInput } from '@decantr/core';
 import type { ExecutionPackBase } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
@@ -2164,6 +2164,7 @@ interface PackManifestEntry {
 }
 
 interface PackManifest {
+  $schema: string;
   version: '1.0.0';
   generatedAt: string;
   scaffold: PackManifestEntry | null;
@@ -2330,6 +2331,7 @@ async function generatePackContexts(
     }
 
     const manifest: PackManifest = {
+      $schema: PACK_MANIFEST_SCHEMA_URL,
       version: '1.0.0',
       generatedAt: new Date().toISOString(),
       scaffold: scaffoldManifest,

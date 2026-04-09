@@ -58,4 +58,12 @@ export { resolveEssence, resolveVisualEffects } from './resolve.js';
 export type { ResolvedPage, ResolvedEssence } from './resolve.js';
 export { walkIR, findNodes, countPatterns, validateIR } from './ir-helpers.js';
 export { pascalCase } from './utils.js';
-export { buildScaffoldPack, buildSectionPack, buildPagePack, buildMutationPack, renderExecutionPackMarkdown } from './packs.js';
+export {
+  EXECUTION_PACK_SCHEMA_URLS,
+  PACK_MANIFEST_SCHEMA_URL,
+  buildScaffoldPack,
+  buildSectionPack,
+  buildPagePack,
+  buildMutationPack,
+  renderExecutionPackMarkdown,
+} from './packs.js';

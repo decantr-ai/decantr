@@ -3,6 +3,15 @@ import type { IRAppNode, IRNode, IRPageNode, IRPatternNode } from './types.js';
 
 export type ExecutionPackType = 'scaffold' | 'section' | 'page' | 'mutation' | 'review';
 
+export const EXECUTION_PACK_SCHEMA_URLS = {
+  scaffold: 'https://decantr.ai/schemas/scaffold-pack.v1.json',
+  section: 'https://decantr.ai/schemas/section-pack.v1.json',
+  page: 'https://decantr.ai/schemas/page-pack.v1.json',
+  mutation: 'https://decantr.ai/schemas/mutation-pack.v1.json',
+} as const;
+
+export const PACK_MANIFEST_SCHEMA_URL = 'https://decantr.ai/schemas/pack-manifest.v1.json';
+
 export interface ExecutionPackTarget {
   platform: 'web';
   framework: string | null;
@@ -42,6 +51,7 @@ export interface ExecutionPackTokenBudget {
 }
 
 export interface ExecutionPackBase<TData> {
+  $schema: string;
   packVersion: '1.0.0';
   packType: ExecutionPackType;
   objective: string;
@@ -509,6 +519,7 @@ export function buildScaffoldPack(
   const scopePatternIds = [...new Set(routes.flatMap(route => route.patternIds))];
 
   const pack: ScaffoldExecutionPack = {
+    $schema: EXECUTION_PACK_SCHEMA_URLS.scaffold,
     packVersion: '1.0.0',
     packType: 'scaffold',
     objective: options.objective ?? `Scaffold the ${appNode.theme.id} app shell and declared routes.`,
@@ -564,6 +575,7 @@ export function buildSectionPack(
   const scopePatternIds = [...new Set(routes.flatMap(route => route.patternIds))];
 
   const pack: SectionExecutionPack = {
+    $schema: EXECUTION_PACK_SCHEMA_URLS.section,
     packVersion: '1.0.0',
     packType: 'section',
     objective: options.objective ?? `Implement the ${input.id} section using the compiled ${input.shell} shell contract.`,
@@ -629,6 +641,7 @@ export function buildPagePack(
   const patterns = collectPagePatterns(pageNode);
 
   const pack: PageExecutionPack = {
+    $schema: EXECUTION_PACK_SCHEMA_URLS.page,
     packVersion: '1.0.0',
     packType: 'page',
     objective: options.objective ?? `Implement the ${input.pageId} route using the compiled page contract.`,
@@ -702,6 +715,7 @@ export function buildMutationPack(
       ];
 
   const pack: MutationExecutionPack = {
+    $schema: EXECUTION_PACK_SCHEMA_URLS.mutation,
     packVersion: '1.0.0',
     packType: 'mutation',
     objective: options.objective ?? `Execute the ${options.mutationType} workflow against the compiled app contract.`,

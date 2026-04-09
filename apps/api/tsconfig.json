@@ -3,6 +3,10 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@decantr/core/schema/*": ["../../packages/core/schema/*"]
+    },
     "lib": ["ES2022"],
     "outDir": "dist",
     "rootDir": "src",

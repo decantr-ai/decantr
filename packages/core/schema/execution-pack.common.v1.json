@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/execution-pack.common.v1.json",
+  "title": "Decantr Execution Pack Common Definitions",
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "executionPackTarget": {
+      "type": "object",
+      "required": ["platform", "framework", "runtime", "adapter"],
+      "properties": {
+        "platform": {
+          "const": "web"
+        },
+        "framework": {
+          "type": ["string", "null"]
+        },
+        "runtime": {
+          "type": ["string", "null"]
+        },
+        "adapter": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "executionPackScope": {
+      "type": "object",
+      "required": ["appId", "pageIds", "patternIds"],
+      "properties": {
+        "appId": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "pageIds": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "patternIds": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "executionPackExample": {
+      "type": "object",
+      "required": ["id", "label", "language", "snippet"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "label": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "language": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "snippet": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "executionPackAntiPattern": {
+      "type": "object",
+      "required": ["id", "summary", "guidance"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "summary": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "guidance": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "executionPackSuccessCheck": {
+      "type": "object",
+      "required": ["id", "label", "severity"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "label": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warn", "info"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "executionPackTokenBudget": {
+      "type": "object",
+      "required": ["target", "max", "strategy"],
+      "properties": {
+        "target": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "strategy": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "themeRef": {
+      "type": "object",
+      "required": ["id", "mode", "shape"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "mode": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "shape": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "routeSummary": {
+      "type": "object",
+      "required": ["pageId", "path", "patternIds"],
+      "properties": {
+        "pageId": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "patternIds": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pagePattern": {
+      "type": "object",
+      "required": ["id", "alias", "preset", "layout"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "alias": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "preset": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "layout": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "manifestEntry": {
+      "type": "object",
+      "required": ["id", "markdown", "json"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "markdown": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "json": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

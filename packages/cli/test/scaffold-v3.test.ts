@@ -284,6 +284,7 @@ describe('v3 scaffold', () => {
     expect(content).toContain('# Scaffold Pack');
     expect(content).toContain('react-vite (react)');
     expect(content).toContain('- / -> home [hero]');
+    expect(packJson.$schema).toBe('https://decantr.ai/schemas/scaffold-pack.v1.json');
     expect(packJson.packType).toBe('scaffold');
     expect(packJson.data.routes).toEqual([
       {
@@ -295,6 +296,7 @@ describe('v3 scaffold', () => {
     expect(sectionContent).toContain('# Section Pack');
     expect(sectionContent).toContain('- Section: custom');
     expect(sectionContent).toContain('- / -> home [hero]');
+    expect(sectionPackJson.$schema).toBe('https://decantr.ai/schemas/section-pack.v1.json');
     expect(sectionPackJson.packType).toBe('section');
     expect(sectionPackJson.data.sectionId).toBe('custom');
     expect(sectionPackJson.data.routes).toEqual([
@@ -308,6 +310,7 @@ describe('v3 scaffold', () => {
     expect(pageContent).toContain('- Page: home');
     expect(pageContent).toContain('- Path: /');
     expect(pageContent).toContain('- hero -> hero [hero | default]');
+    expect(pagePackJson.$schema).toBe('https://decantr.ai/schemas/page-pack.v1.json');
     expect(pagePackJson.packType).toBe('page');
     expect(pagePackJson.data.pageId).toBe('home');
     expect(pagePackJson.data.path).toBe('/');
@@ -322,10 +325,13 @@ describe('v3 scaffold', () => {
     ]);
     expect(addMutationContent).toContain('# Mutation Pack');
     expect(addMutationContent).toContain('- Operation: add-page');
+    expect(addMutationJson.$schema).toBe('https://decantr.ai/schemas/mutation-pack.v1.json');
     expect(addMutationJson.packType).toBe('mutation');
     expect(addMutationJson.data.mutationType).toBe('add-page');
     expect(modifyMutationContent).toContain('- Operation: modify');
+    expect(modifyMutationJson.$schema).toBe('https://decantr.ai/schemas/mutation-pack.v1.json');
     expect(modifyMutationJson.data.mutationType).toBe('modify');
+    expect(manifest.$schema).toBe('https://decantr.ai/schemas/pack-manifest.v1.json');
     expect(manifest.scaffold).toEqual({
       id: 'scaffold',
       markdown: 'scaffold-pack.md',

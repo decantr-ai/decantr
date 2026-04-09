@@ -8,6 +8,11 @@ try {
 }
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@decantr/core/schema/': fileURLToPath(new URL('../../packages/core/schema/', import.meta.url)),
+    },
+  },
   test: {
     environment: 'node',
   },

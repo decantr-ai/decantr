@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/mutation-pack.v1.json",
+  "title": "Decantr Mutation Execution Pack",
+  "type": "object",
+  "required": ["$schema", "packVersion", "packType", "objective", "target", "preset", "scope", "requiredSetup", "allowedVocabulary", "examples", "antiPatterns", "successChecks", "tokenBudget", "data", "renderedMarkdown"],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/mutation-pack.v1.json"
+    },
+    "packVersion": {
+      "const": "1.0.0"
+    },
+    "packType": {
+      "const": "mutation"
+    },
+    "objective": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+    },
+    "target": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackTarget"
+    },
+    "preset": {
+      "type": ["string", "null"]
+    },
+    "scope": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackScope"
+    },
+    "requiredSetup": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+    },
+    "allowedVocabulary": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackExample"
+      }
+    },
+    "antiPatterns": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackAntiPattern"
+      }
+    },
+    "successChecks": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackSuccessCheck"
+      }
+    },
+    "tokenBudget": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackTokenBudget"
+    },
+    "data": {
+      "type": "object",
+      "required": ["mutationType", "shell", "theme", "routing", "features", "routes", "workflow"],
+      "properties": {
+        "mutationType": {
+          "type": "string",
+          "enum": ["add-page", "modify"]
+        },
+        "shell": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+        },
+        "theme": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/themeRef"
+        },
+        "routing": {
+          "type": "string",
+          "enum": ["hash", "history"]
+        },
+        "features": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/routeSummary"
+          }
+        },
+        "workflow": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "renderedMarkdown": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+    }
+  },
+  "additionalProperties": false
+}

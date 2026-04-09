@@ -12,11 +12,11 @@ function createTestApp() {
 describe('GET /v1/schema/:name', () => {
   it('serves known schemas', async () => {
     const app = createTestApp();
-    const res = await app.request('/v1/schema/theme.v1.json');
+    const res = await app.request('/v1/schema/scaffold-pack.v1.json');
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json.$id).toBe('https://decantr.ai/schemas/theme.v1.json');
+    expect(json.$id).toBe('https://decantr.ai/schemas/scaffold-pack.v1.json');
   });
 
   it('returns 404 for unknown schemas', async () => {
@@ -27,6 +27,6 @@ describe('GET /v1/schema/:name', () => {
     const json = await res.json();
     expect(json.error).toBe('Schema not found');
     expect(Array.isArray(json.available)).toBe(true);
-    expect(json.available).toContain('theme.v1.json');
+    expect(json.available).toContain('scaffold-pack.v1.json');
   });
 });

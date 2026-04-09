@@ -33,6 +33,7 @@ describe('buildScaffoldPack', () => {
     });
 
     expect(pack.packType).toBe('scaffold');
+    expect(pack.$schema).toBe('https://decantr.ai/schemas/scaffold-pack.v1.json');
     expect(pack.target.adapter).toBe('react-vite');
     expect(pack.data.shell).toBe('sidebar-main');
     expect(pack.data.theme.id).toBe('auradecantism');
@@ -87,6 +88,7 @@ describe('buildScaffoldPack', () => {
     });
 
     expect(pack.packType).toBe('section');
+    expect(pack.$schema).toBe('https://decantr.ai/schemas/section-pack.v1.json');
     expect(pack.data.sectionId).toBe('dashboard');
     expect(pack.data.routes).toEqual([
       {
@@ -120,6 +122,7 @@ describe('buildScaffoldPack', () => {
     });
 
     expect(pack.packType).toBe('page');
+    expect(pack.$schema).toBe('https://decantr.ai/schemas/page-pack.v1.json');
     expect(pack.data.pageId).toBe('overview');
     expect(pack.data.path).toBe('/');
     expect(pack.data.sectionId).toBe('dashboard');
@@ -171,6 +174,7 @@ describe('buildScaffoldPack', () => {
     });
 
     expect(addPagePack.packType).toBe('mutation');
+    expect(addPagePack.$schema).toBe('https://decantr.ai/schemas/mutation-pack.v1.json');
     expect(addPagePack.data.mutationType).toBe('add-page');
     expect(addPagePack.data.routes).toHaveLength(2);
     expect(addPagePack.data.workflow[0]).toContain('Declare the new page');

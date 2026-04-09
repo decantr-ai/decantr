@@ -7,6 +7,12 @@ import archetypeSchema from '@decantr/registry/schema/archetype.v2.json';
 import shellSchema from '@decantr/registry/schema/shell.v1.json';
 import essenceV2Schema from '@decantr/essence-spec/schema/essence.v2.json';
 import essenceV3Schema from '@decantr/essence-spec/schema/essence.v3.json';
+import executionPackCommonSchema from '@decantr/core/schema/execution-pack.common.v1.json';
+import scaffoldPackSchema from '@decantr/core/schema/scaffold-pack.v1.json';
+import sectionPackSchema from '@decantr/core/schema/section-pack.v1.json';
+import pagePackSchema from '@decantr/core/schema/page-pack.v1.json';
+import mutationPackSchema from '@decantr/core/schema/mutation-pack.v1.json';
+import packManifestSchema from '@decantr/core/schema/pack-manifest.v1.json';
 
 export type JsonSchema = Record<string, unknown>;
 
@@ -37,4 +43,10 @@ export const PUBLIC_SCHEMAS: Record<string, JsonSchema> = {
   'shell.v1.json': REGISTRY_SCHEMAS.shell,
   'essence.v2.json': essenceV2Schema as JsonSchema,
   'essence.v3.json': essenceV3Schema as JsonSchema,
+  'execution-pack.common.v1.json': executionPackCommonSchema as JsonSchema,
+  'scaffold-pack.v1.json': scaffoldPackSchema as JsonSchema,
+  'section-pack.v1.json': sectionPackSchema as JsonSchema,
+  'page-pack.v1.json': pagePackSchema as JsonSchema,
+  'mutation-pack.v1.json': mutationPackSchema as JsonSchema,
+  'pack-manifest.v1.json': packManifestSchema as JsonSchema,
 };
