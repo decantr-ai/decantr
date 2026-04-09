@@ -143,6 +143,9 @@ commit archaeology.
   - `verified`
 - Intelligence scoring now rewards shortlist runtime hardening evidence:
   - document `lang` / viewport metadata
+  - charset presence
+  - script hygiene without inline scripts or missing integrity
+  - optional CSP signal presence
   - healthy built asset budgets
   - not just build/smoke pass state
 - Added a hosted schema-backed registry intelligence rollup endpoint:

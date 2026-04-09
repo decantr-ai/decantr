@@ -16,6 +16,9 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.evidence).toContain('live-showcase');
     expect(intelligence?.evidence).toContain('smoke-verified');
     expect(intelligence?.evidence).toContain('document-metadata-verified');
+    expect(intelligence?.evidence).toContain('charset-verified');
+    expect(intelligence?.evidence).toContain('script-hygiene-verified');
+    expect(intelligence?.evidence).toContain('runtime-hardening-verified');
     expect(intelligence?.evidence).toContain('asset-budget-ok');
   });
 
@@ -104,5 +107,6 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.evidence).toContain('official-source');
     expect(intelligence?.evidence).toContain('live-showcase');
     expect(intelligence?.evidence).toContain('document-metadata-verified');
+    expect(intelligence?.evidence).toContain('runtime-hardening-verified');
   });
 });

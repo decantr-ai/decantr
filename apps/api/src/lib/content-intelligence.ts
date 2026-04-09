@@ -29,7 +29,7 @@ function clampScore(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
-function hasRuntimeHardeningBaseline(verification: ShowcaseVerificationEntry | null): boolean {
+function hasDocumentMetadataBaseline(verification: ShowcaseVerificationEntry | null): boolean {
   return Boolean(
     verification?.smoke.passed
     && verification.smoke.rootDocumentOk
@@ -37,6 +37,28 @@ function hasRuntimeHardeningBaseline(verification: ShowcaseVerificationEntry | n
     && verification.smoke.langOk
     && verification.smoke.viewportOk,
   );
+}
+
+function hasCharsetBaseline(verification: ShowcaseVerificationEntry | null): boolean {
+  return Boolean(verification?.smoke.passed && verification.smoke.charsetOk);
+}
+
+function hasScriptHygieneBaseline(verification: ShowcaseVerificationEntry | null): boolean {
+  return Boolean(
+    verification?.smoke.passed
+    && verification.smoke.inlineScriptCount === 0
+    && verification.smoke.externalScriptsWithoutIntegrityCount === 0,
+  );
+}
+
+function hasCspSignal(verification: ShowcaseVerificationEntry | null): boolean {
+  return Boolean(verification?.smoke.passed && verification.smoke.cspSignalOk);
+}
+
+function hasRuntimeHardeningBaseline(verification: ShowcaseVerificationEntry | null): boolean {
+  return hasDocumentMetadataBaseline(verification)
+    && hasCharsetBaseline(verification)
+    && hasScriptHygieneBaseline(verification);
 }
 
 function isWithinRuntimeBudget(verification: ShowcaseVerificationEntry | null): boolean {
@@ -89,7 +111,10 @@ function deriveQualityScore(
 
   if (verification?.build.passed) score += 15;
   if (verification?.smoke.passed) score += 20;
-  if (hasRuntimeHardeningBaseline(verification)) score += 6;
+  if (hasDocumentMetadataBaseline(verification)) score += 4;
+  if (hasCharsetBaseline(verification)) score += 3;
+  if (hasScriptHygieneBaseline(verification)) score += 4;
+  if (hasCspSignal(verification)) score += 2;
   if (isWithinRuntimeBudget(verification)) score += 6;
 
   switch (verification?.drift.signal) {
@@ -187,7 +212,10 @@ function deriveConfidenceScore(
       break;
   }
 
-  if (hasRuntimeHardeningBaseline(verification)) score += 8;
+  if (hasDocumentMetadataBaseline(verification)) score += 5;
+  if (hasCharsetBaseline(verification)) score += 4;
+  if (hasScriptHygieneBaseline(verification)) score += 5;
+  if (hasCspSignal(verification)) score += 2;
   if (isWithinRuntimeBudget(verification)) score += 8;
 
   return clampScore(score);
@@ -366,8 +394,20 @@ export function getContentIntelligence(
   if (verification?.smoke.passed) {
     evidence.add('smoke-verified');
   }
-  if (hasRuntimeHardeningBaseline(verification)) {
+  if (hasDocumentMetadataBaseline(verification)) {
     evidence.add('document-metadata-verified');
+  }
+  if (hasCharsetBaseline(verification)) {
+    evidence.add('charset-verified');
+  }
+  if (hasScriptHygieneBaseline(verification)) {
+    evidence.add('script-hygiene-verified');
+  }
+  if (hasRuntimeHardeningBaseline(verification)) {
+    evidence.add('runtime-hardening-verified');
+  }
+  if (hasCspSignal(verification)) {
+    evidence.add('csp-signal-present');
   }
   if (isWithinRuntimeBudget(verification)) {
     evidence.add('asset-budget-ok');
