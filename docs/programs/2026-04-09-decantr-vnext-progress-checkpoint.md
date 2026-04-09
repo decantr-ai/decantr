@@ -212,7 +212,7 @@ commit archaeology.
   - `POST /v1/audit/project`
   - remote project audit from posted essence plus optional dist and source snapshots
   - CLI entrypoint via `decantr registry audit-project`
-  - MCP hosted fallback when local pack artifacts are missing
+  - MCP hosted fallback when local pack artifacts are missing, with optional `sources_path` support for richer hosted source verification
   - public API audit coverage is opt-in until rollout via `--include-hosted-project-audit`
 - Completed the hosted verification rollout on 2026-04-09:
   - Fly redeploy from `codex/decantr-vnext-reset` completed successfully after syncing the workspace lockfile

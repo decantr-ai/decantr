@@ -248,11 +248,13 @@ describe('v3-aware tool tests', () => {
     it('falls back to the hosted verifier for project audit when local packs are missing', async () => {
       await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
       await mkdir(join(testDir, 'dist', 'assets'), { recursive: true });
+      await mkdir(join(testDir, 'src', 'pages'), { recursive: true });
       await writeFile(
         join(testDir, 'dist', 'index.html'),
         '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Hosted Audit</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
       );
       await writeFile(join(testDir, 'dist', 'assets', 'app.js'), 'console.log("/");\n');
+      await writeFile(join(testDir, 'src', 'pages', 'Home.tsx'), 'export function Home() { return <button style={{ color: "#ff00ff" }}>Hi</button>; }\n');
 
       vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(
         new Response(JSON.stringify({
@@ -309,7 +311,7 @@ describe('v3-aware tool tests', () => {
       ));
 
       process.chdir(testDir);
-      const result = await handleTool('decantr_audit_project', {}) as {
+      const result = await handleTool('decantr_audit_project', { sources_path: 'src' }) as {
         $schema: string;
         summary: { runtimeAuditChecked: boolean; reviewPackPresent: boolean };
       };
@@ -319,7 +321,10 @@ describe('v3-aware tool tests', () => {
       expect(result.summary.reviewPackPresent).toBe(true);
       expect(globalThis.fetch).toHaveBeenCalledWith(
         expect.stringContaining('/v1/audit/project'),
-        expect.objectContaining({ method: 'POST' }),
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('src/pages/Home.tsx'),
+        }),
       );
     });
 

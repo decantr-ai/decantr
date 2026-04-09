@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { join, dirname, isAbsolute, resolve } from 'node:path';
+import { basename, join, dirname, isAbsolute, resolve } from 'node:path';
 import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import { isContentIntelligenceSource, resolvePatternPreset } from '@decantr/registry';
@@ -171,17 +171,57 @@ async function captureHostedDistSnapshot(projectRoot: string, distPathArg?: stri
   };
 }
 
+function isHostedSourceSnapshotFile(path: string): boolean {
+  if (/\.d\.ts$/i.test(path)) return false;
+  return /\.(?:[cm]?[jt]sx?)$/i.test(path);
+}
+
+async function captureHostedSourceSnapshot(projectRoot: string, sourcesPathArg?: string) {
+  if (!sourcesPathArg) {
+    return undefined;
+  }
+
+  const sourcesRoot = isAbsolute(sourcesPathArg) ? sourcesPathArg : resolve(projectRoot, sourcesPathArg);
+  if (!existsSync(sourcesRoot)) {
+    return undefined;
+  }
+
+  const files: Record<string, string> = {};
+  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+  const rootPrefix = basename(sourcesRoot);
+
+  const walk = (absoluteDir: string, relativeDir: string) => {
+    for (const entry of readdirSync(absoluteDir, { withFileTypes: true })) {
+      if (ignoredDirNames.has(entry.name)) continue;
+      const absolutePath = join(absoluteDir, entry.name);
+      const relativePath = join(relativeDir, entry.name).replace(/\\/g, '/');
+      if (entry.isDirectory()) {
+        walk(absolutePath, relativePath);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!isHostedSourceSnapshotFile(relativePath)) continue;
+      files[relativePath] = readFileSync(absolutePath, 'utf-8');
+    }
+  };
+
+  walk(sourcesRoot, rootPrefix);
+  return Object.keys(files).length > 0 ? { files } : undefined;
+}
+
 async function getHostedProjectAuditPayload(
   args: Record<string, unknown>,
 ) {
   const client = getPublicAPIClient();
   const { essence } = await readEssenceFile(args.path as string | undefined);
   const dist = await captureHostedDistSnapshot(process.cwd(), args.dist_path as string | undefined);
+  const sources = await captureHostedSourceSnapshot(process.cwd(), args.sources_path as string | undefined);
 
   return client.auditProject(
     {
       essence,
       dist,
+      sources,
     },
     typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
   );
@@ -731,6 +771,7 @@ export const TOOLS = [
         path: { type: 'string' as const, description: 'Optional path to the essence file for hosted fallback. Defaults to ./decantr.essence.json.' },
         namespace: { type: 'string' as const, description: 'Optional preferred public namespace for hosted fallback. Defaults to "@official".' },
         dist_path: { type: 'string' as const, description: 'Optional path to a local dist directory to snapshot for hosted runtime verification. Defaults to ./dist.' },
+        sources_path: { type: 'string' as const, description: 'Optional path to a local source directory to snapshot for hosted source-level verification. For example `src` or `app`.' },
       },
     },
     annotations: READ_ONLY_NETWORK,
@@ -1918,6 +1959,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
       if (args.dist_path != null && typeof args.dist_path !== 'string') {
         return { error: 'Invalid dist_path. Must be a string when provided.' };
+      }
+      if (args.sources_path != null && typeof args.sources_path !== 'string') {
+        return { error: 'Invalid sources_path. Must be a string when provided.' };
       }
       const { auditProject } = await import('@decantr/verifier');
       const projectRoot = process.cwd();
