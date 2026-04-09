@@ -1,0 +1,41 @@
+name: Package Release Audit
+
+on:
+  schedule:
+    - cron: '0 14 * * 2'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm audit:package-surface
+      - run: pnpm audit:release-readiness
+
+      - name: Generate package release audit
+        run: node scripts/audit-release-surface.mjs --report-json=package-release-audit.json --summary-markdown=package-release-audit.md
+
+      - name: Publish package release audit summary
+        run: cat package-release-audit.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload package release audit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-release-audit
+          path: |
+            package-release-audit.json
+            package-release-audit.md
+          if-no-files-found: error

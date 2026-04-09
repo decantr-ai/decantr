@@ -15,6 +15,7 @@
     "audit:docs-marketing": "node scripts/audit-docs-marketing.mjs",
     "audit:package-surface": "node scripts/audit-package-surface.mjs",
     "audit:release-readiness": "node scripts/audit-release-readiness.mjs",
+    "audit:release-surface": "node scripts/audit-release-surface.mjs",
     "audit:npm-surface": "node scripts/audit-npm-surface.mjs",
     "package-surface:sync": "node scripts/sync-package-support-matrix.mjs",
     "npm-surface:normalize:dry-run": "node scripts/normalize-npm-dist-tags.mjs",

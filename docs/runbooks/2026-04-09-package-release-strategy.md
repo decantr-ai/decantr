@@ -71,10 +71,12 @@ The npm publish workflow now uses `scripts/publish-packages.mjs`, backed by `con
 Release planning now also has an executable source:
 
 - `pnpm release:plan`
+- `pnpm audit:release-surface`
 - `pnpm audit:npm-surface`
 - `node scripts/release-plan.mjs --json`
 - `node scripts/release-plan.mjs --wave=foundation`
 - `node scripts/release-plan.mjs --summary-markdown=/tmp/package-release-plan.md`
+- `node scripts/audit-release-surface.mjs --report-json=/tmp/package-release-audit.json --summary-markdown=/tmp/package-release-audit.md`
 - manual GitHub Actions publish runs can now choose:
   - `release_wave`
   - `dist_tag`
@@ -123,6 +125,22 @@ It does not automatically retag `latest`; that remains a deliberate manual relea
 The npm audit and normalization tooling now also report whether a stable fallback version actually exists when `latest` is still pointing at a beta. As of April 9, 2026, the affected beta packages do not have an older stable publish to fall back to, so the `latest` retag work is blocked on intentional stable releases rather than simple dist-tag cleanup.
 When run with `--write`, it now also performs an npm auth preflight so broken credentials fail fast before any dist-tag mutation attempt starts.
 
+## Ongoing Audit Workflow
+
+A dedicated GitHub Actions workflow now exists for package-governance reporting:
+
+- `.github/workflows/package-release-audit.yml`
+
+That workflow:
+
+- installs the monorepo
+- runs `pnpm audit:package-surface`
+- runs `pnpm audit:release-readiness`
+- generates a combined package release audit report through `pnpm audit:release-surface`
+- uploads JSON and Markdown artifacts for drift/release review without requiring npm publish credentials
+
+It is intentionally report-first: current npm surface drift remains visible in artifacts even when it is not yet being treated as a hard scheduling failure.
+
 ## Stable Graduation Rule
 
 A package should move from `beta` to `latest` only when all of the following are true:
@@ -163,6 +181,7 @@ pnpm test
 pnpm lint
 pnpm audit:package-surface
 pnpm audit:release-readiness
+pnpm audit:release-surface
 pnpm audit:npm-surface
 pnpm release:plan
 ```
