@@ -71,6 +71,69 @@ afterEach(async () => {
 });
 
 describe('v3-aware tool tests', () => {
+  describe('verification tools', () => {
+    it('returns a schema-backed project audit report', async () => {
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_audit_project', {}) as {
+        $schema: string;
+        summary: { reviewPackPresent: boolean };
+        findings: Array<{ id: string }>;
+      };
+
+      expect(result.$schema).toBe('https://decantr.ai/schemas/project-audit-report.v1.json');
+      expect(result.summary.reviewPackPresent).toBe(false);
+      expect(result.findings.some(finding => finding.id === 'review-pack-file-missing')).toBe(true);
+    });
+
+    it('returns a schema-backed file critique report', async () => {
+      const contextDir = join(testDir, '.decantr', 'context');
+      await mkdir(contextDir, { recursive: true });
+      await mkdir(join(testDir, 'src', 'styles'), { recursive: true });
+      await writeFile(join(testDir, '.decantr', 'context', 'review-pack.json'), JSON.stringify({
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['overview'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'overview', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['theme-consistency', 'responsive-design'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      }));
+      await writeFile(join(testDir, 'src', 'styles', 'treatments.css'), '.brand-accent { color: var(--d-primary); }\n');
+      const filePath = join(testDir, 'Overview.tsx');
+      await writeFile(filePath, '<section className="plain-panel">Overview</section>\n');
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_critique', { file_path: filePath }) as {
+        $schema: string;
+        focusAreas: string[];
+        findings: Array<{ id: string }>;
+      };
+
+      expect(result.$schema).toBe('https://decantr.ai/schemas/file-critique-report.v1.json');
+      expect(result.focusAreas).toContain('theme-consistency');
+      expect(result.findings.some(finding => finding.id === 'theme-consistency-weak')).toBe(true);
+    });
+  });
+
   describe('decantr_read_essence — v3 layer filtering', () => {
     it('should return full v3 essence by default', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');

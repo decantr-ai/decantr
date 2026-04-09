@@ -429,9 +429,20 @@ export const TOOLS = [
   },
   // 17. decantr_critique — local read
   {
+    name: 'decantr_audit_project',
+    title: 'Audit Project',
+    description: 'Audit the current project against the essence contract, guard rules, and compiled execution packs. Returns a schema-backed project audit report.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {},
+    },
+    annotations: READ_ONLY,
+  },
+  // 18. decantr_critique — local read
+  {
     name: 'decantr_critique',
     title: 'Design Critique',
-    description: 'Evaluate generated code against the essence spec for visual quality. Returns a scorecard covering treatment usage, decorator coverage, personality alignment, motion, accessibility, and responsiveness.',
+    description: 'Critique a file against the compiled review contract and Decantr verification heuristics. Returns a schema-backed file critique report with scores, findings, and focus areas.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -1326,12 +1337,12 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
     case 'decantr_critique': {
       const { critiqueFile } = await import('./critique.js');
-      const result = await critiqueFile(args.file_path as string, process.cwd());
-      const reviewPackPath = join(process.cwd(), '.decantr', 'context', 'review-pack.json');
-      return {
-        ...result,
-        review_pack: existsSync(reviewPackPath) ? JSON.parse(readFileSync(reviewPackPath, 'utf-8')) : null,
-      };
+      return critiqueFile(args.file_path as string, process.cwd());
+    }
+
+    case 'decantr_audit_project': {
+      const { auditProject } = await import('@decantr/verifier');
+      return auditProject(process.cwd());
     }
 
     default:

@@ -16,9 +16,12 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./schema/verification-report.common.v1.json": "./schema/verification-report.common.v1.json",
+    "./schema/project-audit-report.v1.json": "./schema/project-audit-report.v1.json",
+    "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json"
   },
-  "files": ["dist"],
+  "files": ["dist", "schema"],
   "publishConfig": {
     "access": "public"
   },

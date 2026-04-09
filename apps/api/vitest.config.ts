@@ -11,6 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@decantr/core/schema/': fileURLToPath(new URL('../../packages/core/schema/', import.meta.url)),
+      '@decantr/verifier/schema/': fileURLToPath(new URL('../../packages/verifier/schema/', import.meta.url)),
     },
   },
   test: {

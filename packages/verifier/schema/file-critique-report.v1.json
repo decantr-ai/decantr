@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/file-critique-report.v1.json",
+  "title": "Decantr File Critique Report",
+  "type": "object",
+  "required": ["$schema", "file", "overall", "scores", "findings", "focusAreas", "reviewPack"],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/file-critique-report.v1.json"
+    },
+    "file": {
+      "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+    },
+    "overall": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5
+    },
+    "scores": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/verificationScore"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/verificationFinding"
+      }
+    },
+    "focusAreas": {
+      "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+    },
+    "reviewPack": {
+      "anyOf": [
+        {
+          "$ref": "https://decantr.ai/schemas/review-pack.v1.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

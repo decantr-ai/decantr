@@ -5,6 +5,12 @@ import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import type { ReviewExecutionPack } from '@decantr/core';
 
+export const VERIFICATION_SCHEMA_URLS = {
+  common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
+  projectAudit: 'https://decantr.ai/schemas/project-audit-report.v1.json',
+  fileCritique: 'https://decantr.ai/schemas/file-critique-report.v1.json',
+} as const;
+
 export type VerificationSeverity = 'error' | 'warn' | 'info';
 
 export interface VerificationFinding {
@@ -45,6 +51,7 @@ export interface PackManifest {
 }
 
 export interface ProjectAuditReport {
+  $schema: string;
   projectRoot: string;
   valid: boolean;
   essence: EssenceFile | null;
@@ -63,6 +70,7 @@ export interface ProjectAuditReport {
 }
 
 export interface FileCritiqueReport {
+  $schema: string;
   file: string;
   overall: number;
   scores: VerificationScore[];
@@ -208,6 +216,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
     }));
 
     return {
+      $schema: VERIFICATION_SCHEMA_URLS.projectAudit,
       projectRoot,
       valid: false,
       essence: null,
@@ -325,6 +334,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   };
 
   return {
+    $schema: VERIFICATION_SCHEMA_URLS.projectAudit,
     projectRoot,
     valid: summary.errorCount === 0,
     essence,
@@ -501,6 +511,7 @@ export async function critiqueFile(filePath: string, projectRoot: string): Promi
 
   const overall = Math.round((scores.reduce((sum, score) => sum + score.score, 0) / scores.length) * 10) / 10;
   return {
+    $schema: VERIFICATION_SCHEMA_URLS.fileCritique,
     file: resolvedPath,
     overall,
     scores,
