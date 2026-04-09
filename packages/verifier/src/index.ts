@@ -381,6 +381,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.iframeWithoutTitleCount
       + signals.dialogWithoutLabelCount
       + signals.dialogWithoutModalHintCount
+      + signals.tableWithoutHeaderCount
+      + signals.tableWithoutCaptionCount
       + signals.formControlWithoutLabelCount;
     const securityRiskPatternCount = signals.dangerousHtmlCount
       + signals.rawHtmlInjectionCount
@@ -1698,6 +1700,8 @@ interface AstCritiqueSignals {
   iframeWithoutTitleCount: number;
   dialogWithoutLabelCount: number;
   dialogWithoutModalHintCount: number;
+  tableWithoutHeaderCount: number;
+  tableWithoutCaptionCount: number;
   externalBlankLinkWithoutRelCount: number;
   formControlWithoutLabelCount: number;
   placeholderNavigationTargetCount: number;
@@ -2073,6 +2077,49 @@ function jsxTreeHasSubmitControl(node: ts.Node): boolean {
   return found;
 }
 
+function jsxTreeHasTag(node: ts.Node, tagNames: string[]): boolean {
+  let found = false;
+  const wanted = new Set(tagNames);
+
+  const visit = (current: ts.Node): void => {
+    if (found) return;
+
+    if (ts.isJsxSelfClosingElement(current)) {
+      const tagName = getJsxTagName(current);
+      if (tagName && wanted.has(tagName)) {
+        found = true;
+      }
+      return;
+    }
+
+    if (ts.isJsxElement(current)) {
+      const tagName = getJsxTagName(current.openingElement);
+      if (tagName && wanted.has(tagName)) {
+        found = true;
+        return;
+      }
+      for (const child of current.children) {
+        visit(child);
+        if (found) return;
+      }
+      return;
+    }
+
+    if (ts.isJsxFragment(current)) {
+      for (const child of current.children) {
+        visit(child);
+        if (found) return;
+      }
+      return;
+    }
+
+    current.forEachChild(visit);
+  };
+
+  visit(node);
+  return found;
+}
+
 function hasAuthFormWithoutSubmitControl(node: ts.JsxElement): boolean {
   return jsxTreeContainsAuthInput(node) && !jsxTreeHasSubmitControl(node);
 }
@@ -2317,6 +2364,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     iframeWithoutTitleCount: 0,
     dialogWithoutLabelCount: 0,
     dialogWithoutModalHintCount: 0,
+    tableWithoutHeaderCount: 0,
+    tableWithoutCaptionCount: 0,
     externalBlankLinkWithoutRelCount: 0,
     formControlWithoutLabelCount: 0,
     placeholderNavigationTargetCount: 0,
@@ -2611,6 +2660,12 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'form' && hasAuthFormWithoutSubmitControl(node)) {
         signals.authFormWithoutSubmitCount += 1;
       }
+      if (tagName === 'table' && !jsxTreeHasTag(node, ['th'])) {
+        signals.tableWithoutHeaderCount += 1;
+      }
+      if (tagName === 'table' && !jsxTreeHasTag(node, ['caption'])) {
+        signals.tableWithoutCaptionCount += 1;
+      }
 
       if (
         isNonSemanticInteractiveTag(tagName)
@@ -2729,6 +2784,8 @@ export function critiqueSource({
   const iframeTitleIssues = astSignals.iframeWithoutTitleCount;
   const dialogLabelIssues = astSignals.dialogWithoutLabelCount;
   const dialogModalHintIssues = astSignals.dialogWithoutModalHintCount;
+  const tableHeaderIssues = astSignals.tableWithoutHeaderCount;
+  const tableCaptionIssues = astSignals.tableWithoutCaptionCount;
   const formControlLabelIssues = astSignals.formControlWithoutLabelCount;
   scores.push({
     category: 'Accessibility',
@@ -2748,10 +2805,12 @@ export function critiqueSource({
         - (iframeTitleIssues > 0 ? 1 : 0)
         - (dialogLabelIssues > 0 ? 1 : 0)
         - (dialogModalHintIssues > 0 ? 1 : 0)
+        - (tableHeaderIssues > 0 ? 1 : 0)
+        - (tableCaptionIssues > 0 ? 1 : 0)
         - (formControlLabelIssues > 0 ? 1 : 0),
       ),
     ),
-    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}, iframes without title: ${iframeTitleIssues}, dialogs without label: ${dialogLabelIssues}, dialogs without modal hint: ${dialogModalHintIssues}, form controls without labels: ${formControlLabelIssues}`,
+    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}, iframes without title: ${iframeTitleIssues}, dialogs without label: ${dialogLabelIssues}, dialogs without modal hint: ${dialogModalHintIssues}, tables without headers: ${tableHeaderIssues}, tables without caption: ${tableCaptionIssues}, form controls without labels: ${formControlLabelIssues}`,
     suggestions: [
       ...(!hasAria ? ['Add ARIA roles or labels to interactive regions.'] : []),
       ...(!hasFocus ? ['Add visible focus styling for keyboard navigation.'] : []),
@@ -2763,6 +2822,8 @@ export function critiqueSource({
       ...(iframeTitleIssues > 0 ? ['Add descriptive title attributes to embedded iframes so assistive technologies can identify their purpose.'] : []),
       ...(dialogLabelIssues > 0 ? ['Give dialogs an explicit accessible name via aria-label, aria-labelledby, or title.'] : []),
       ...(dialogModalHintIssues > 0 ? ['Expose modal intent on dialog surfaces with aria-modal="true" or a native open dialog contract.'] : []),
+      ...(tableHeaderIssues > 0 ? ['Give tables explicit header cells so assistive technologies can map data cells to column or row labels.'] : []),
+      ...(tableCaptionIssues > 0 ? ['Add a caption or equivalent programmatic summary so the table purpose is clear before users navigate its cells.'] : []),
       ...(formControlLabelIssues > 0 ? ['Add programmatic labels to form controls instead of relying on placeholders alone.'] : []),
     ],
   });
@@ -2864,6 +2925,28 @@ export function critiqueSource({
         evidence: [filePath, `Dialogs without aria-modal/open signal: ${dialogModalHintIssues}`],
         file: filePath,
         suggestedFix: 'Expose modal intent with aria-modal="true" for custom dialogs, or rely on a reviewed native dialog/open contract.',
+      }));
+    }
+    if (tableHeaderIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-table-headers-missing',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+        message: 'Table markup was detected without header cells.',
+        evidence: [filePath, `Tables without <th> headers: ${tableHeaderIssues}`],
+        file: filePath,
+        suggestedFix: 'Add <th> cells with appropriate scope or otherwise expose explicit table headers so assistive technologies can map the data grid correctly.',
+      }));
+    }
+    if (tableCaptionIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-table-caption-missing',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'info', ['review-remediation', 'review-contract-baseline']),
+        message: 'Table markup was detected without a caption or programmatic summary.',
+        evidence: [filePath, `Tables without caption: ${tableCaptionIssues}`],
+        file: filePath,
+        suggestedFix: 'Add a <caption> or equivalent summary so users understand the table purpose before navigating its cells.',
       }));
     }
     if (formControlLabelIssues > 0) {

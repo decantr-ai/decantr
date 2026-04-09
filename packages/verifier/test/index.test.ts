@@ -2383,6 +2383,111 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'accessibility-dialog-modal-hint-missing')).toBe(false);
   });
 
+  it('flags tables without headers or captions during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/DataTable.tsx',
+      code: `
+        export function DataTable() {
+          return (
+            <table>
+              <tbody>
+                <tr>
+                  <td>Revenue</td>
+                  <td>$420k</td>
+                </tr>
+              </tbody>
+            </table>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['data-table'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['data-table'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-table-headers-missing')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'accessibility-table-caption-missing')).toBe(true);
+  });
+
+  it('does not flag tables when headers and caption are present', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/DataTable.tsx',
+      code: `
+        export function DataTable() {
+          return (
+            <table>
+              <caption>Revenue by month</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Metric</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Revenue</td>
+                  <td>$420k</td>
+                </tr>
+              </tbody>
+            </table>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['data-table'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['data-table'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-table-headers-missing')).toBe(false);
+    expect(report.findings.some(finding => finding.id === 'accessibility-table-caption-missing')).toBe(false);
+  });
+
   it('flags insecure http form actions during critique', () => {
     const report = critiqueSource({
       filePath: 'src/components/LegacyCheckout.tsx',
