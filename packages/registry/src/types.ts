@@ -623,9 +623,14 @@ export interface HostedDistSnapshot {
   assets?: Record<string, string>;
 }
 
+export interface HostedSourceSnapshot {
+  files: Record<string, string>;
+}
+
 export interface HostedProjectAuditRequest {
   essence: EssenceFile;
   dist?: HostedDistSnapshot;
+  sources?: HostedSourceSnapshot;
 }
 
 export type ExecutionPackType = 'scaffold' | 'section' | 'page' | 'mutation' | 'review';

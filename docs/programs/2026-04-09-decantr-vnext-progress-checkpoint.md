@@ -79,6 +79,7 @@ commit archaeology.
 - Added schema-backed verifier report contracts.
 - CLI and MCP now share the verifier engine.
 - Review packs now inform critique behavior.
+- Project audit now aggregates source-tree findings from `src/`, `app/`, `pages/`, and `components/` when they are present, including inline styles, risky HTML patterns, placeholder routes, auth storage writes, accessibility issues, and unsafe form/auth input behavior.
 - Project audit now includes shared runtime evidence when `dist/` exists:
   - root document validation
   - document title validation
@@ -209,7 +210,7 @@ commit archaeology.
   - public API audit coverage is opt-in until rollout via `--include-hosted-critique`
 - Added a hosted project-audit surface on the reset branch:
   - `POST /v1/audit/project`
-  - remote project audit from posted essence plus optional dist snapshot
+  - remote project audit from posted essence plus optional dist and source snapshots
   - CLI entrypoint via `decantr registry audit-project`
   - MCP hosted fallback when local pack artifacts are missing
   - public API audit coverage is opt-in until rollout via `--include-hosted-project-audit`

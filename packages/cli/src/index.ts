@@ -1,5 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
-import { join, dirname, isAbsolute, resolve } from 'node:path';
+import { basename, join, dirname, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateEssence, evaluateGuard, isV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
@@ -275,6 +275,42 @@ function readHostedDistSnapshot(distPath?: string): { indexHtml: string; assets?
   };
 }
 
+function isHostedSourceSnapshotFile(path: string): boolean {
+  if (/\.d\.ts$/i.test(path)) return false;
+  return /\.(?:[cm]?[jt]sx?)$/i.test(path);
+}
+
+function readHostedSourceSnapshot(sourcePath?: string): { files: Record<string, string> } | undefined {
+  if (!sourcePath) return undefined;
+
+  const resolvedSourcePath = resolveUserPath(sourcePath);
+  if (!existsSync(resolvedSourcePath)) {
+    return undefined;
+  }
+
+  const files: Record<string, string> = {};
+  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+  const rootPrefix = basename(resolvedSourcePath);
+
+  const walk = (absoluteDir: string, relativeDir: string) => {
+    for (const entry of readdirSync(absoluteDir, { withFileTypes: true })) {
+      if (ignoredDirNames.has(entry.name)) continue;
+      const absolutePath = join(absoluteDir, entry.name);
+      const relativePath = join(relativeDir, entry.name).replace(/\\/g, '/');
+      if (entry.isDirectory()) {
+        walk(absolutePath, relativePath);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!isHostedSourceSnapshotFile(relativePath)) continue;
+      files[relativePath] = readFileSync(absolutePath, 'utf-8');
+    }
+  };
+
+  walk(resolvedSourcePath, rootPrefix);
+  return Object.keys(files).length > 0 ? { files } : undefined;
+}
+
 async function getShowcaseBenchmarkView(
   view: 'manifest' | 'shortlist' | 'verification' = 'shortlist',
 ) {
@@ -526,6 +562,7 @@ async function printHostedProjectAudit(
   jsonOutput: boolean = false,
   essencePath?: string,
   distPath?: string,
+  sourcesPath?: string,
 ) {
   const client = getPublicAPIClient();
   const resolvedEssencePath = essencePath
@@ -538,10 +575,12 @@ async function printHostedProjectAudit(
 
   const essence = JSON.parse(readFileSync(resolvedEssencePath, 'utf-8')) as EssenceFile;
   const dist = readHostedDistSnapshot(distPath);
+  const sources = readHostedSourceSnapshot(sourcesPath);
   const report = await client.auditProject(
     {
       essence,
       dist,
+      sources,
     },
     namespace ? { namespace } : undefined,
   );
@@ -554,6 +593,7 @@ async function printHostedProjectAudit(
   console.log(heading('Hosted Project Audit'));
   console.log(`  Essence: ${resolvedEssencePath}`);
   console.log(`  Dist snapshot: ${dist ? (distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist')) : 'none'}`);
+  console.log(`  Source snapshot: ${sources && sourcesPath ? resolveUserPath(sourcesPath) : 'none'}`);
   printProjectAuditReport(report as unknown as ProjectAuditReport);
 }
 
@@ -1671,7 +1711,7 @@ ${BOLD}Usage:${RESET}
   decantr registry summary [--namespace <namespace>] [--json]
   decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
-  decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>]
+  decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
   decantr validate [path]
   decantr theme <subcommand>
   decantr create <type> <name>
@@ -1743,6 +1783,7 @@ ${BOLD}Examples:${RESET}
   decantr registry compile-packs decantr.essence.json --write-context
   decantr registry critique-file src/pages/Home.tsx --namespace @official --json
   decantr registry audit-project --namespace @official --json
+  decantr registry audit-project --namespace @official --dist dist --sources src
   decantr create pattern my-card
 `);
 }
@@ -2091,9 +2132,11 @@ async function main() {
         const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
         const distIdx = args.indexOf('--dist');
         const distPath = distIdx !== -1 ? args[distIdx + 1] : undefined;
-        await printHostedProjectAudit(namespace, jsonOutput, essencePath, distPath);
+        const sourcesIdx = args.indexOf('--sources');
+        const sourcesPath = sourcesIdx !== -1 ? args[sourcesIdx + 1] : undefined;
+        await printHostedProjectAudit(namespace, jsonOutput, essencePath, distPath, sourcesPath);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`);
         process.exitCode = 1;
       }
       break;

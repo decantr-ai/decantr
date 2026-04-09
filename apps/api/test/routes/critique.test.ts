@@ -261,6 +261,56 @@ describe('POST /v1/audit/project', () => {
     expect(json.runtimeAudit.viewportOk).toBe(true);
   });
 
+  it('uses an optional source snapshot for source-level project findings', async () => {
+    const res = await app.request('/v1/audit/project?namespace=%40official', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+        sources: {
+          files: {
+            'src/pages/Home.tsx': `
+              export function Home() {
+                localStorage.setItem('auth_token', token);
+                return (
+                  <form>
+                    <button>Save</button>
+                    <a href="#">Broken</a>
+                    <img src="/hero.png" />
+                    <div dangerouslySetInnerHTML={{ __html: html }} style={{ color: '#ff00ff' }} />
+                    <input type="password" />
+                  </form>
+                );
+              }
+            `,
+          },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    assertMatchesSchema('project-audit-report.v1.json', json);
+    expect(json.findings.some((finding: { id: string }) => finding.id === 'source-inline-styles-present')).toBe(true);
+    expect(json.findings.some((finding: { id: string }) => finding.id === 'source-security-risk-patterns-present')).toBe(true);
+    expect(json.findings.some((finding: { id: string }) => finding.id === 'source-auth-storage-writes-present')).toBe(true);
+  });
+
+  it('rejects invalid source snapshot payloads', async () => {
+    const res = await app.request('/v1/audit/project', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+        sources: [],
+      }),
+    });
+
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toBe('sources must include a string-valued `files` object when provided.');
+  });
+
   it('remains callable through the full app middleware stack', async () => {
     const fullApp = createApp();
     const res = await fullApp.request('/v1/audit/project?namespace=%40official', {

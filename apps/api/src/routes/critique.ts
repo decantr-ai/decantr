@@ -32,8 +32,14 @@ function isDistSnapshot(value: unknown): value is { indexHtml: string; assets?: 
   return Object.values(value.assets).every(entry => typeof entry === 'string');
 }
 
-function normalizeSnapshotAssetPath(assetPath: string): string {
-  return normalize(assetPath)
+function isSourceSnapshot(value: unknown): value is { files: Record<string, string> } {
+  return isRecord(value)
+    && isRecord(value.files)
+    && Object.values(value.files).every(entry => typeof entry === 'string');
+}
+
+function normalizeSnapshotFilePath(filePath: string): string {
+  return normalize(filePath)
     .replace(/^[/\\]+/, '')
     .replace(/^(\.\.[/\\])+/, '');
 }
@@ -42,6 +48,7 @@ async function materializeHostedAuditProject(
   essence: EssenceFile,
   namespace: string,
   dist?: { indexHtml: string; assets?: Record<string, string> },
+  sources?: { files: Record<string, string> },
 ): Promise<string> {
   const projectRoot = await mkdtemp(join(tmpdir(), 'decantr-hosted-audit-'));
   const contextDir = join(projectRoot, '.decantr', 'context');
@@ -61,8 +68,17 @@ async function materializeHostedAuditProject(
     await writeFile(join(distDir, 'index.html'), dist.indexHtml, 'utf-8');
 
     for (const [assetPath, contents] of Object.entries(dist.assets ?? {})) {
-      const normalizedAssetPath = normalizeSnapshotAssetPath(assetPath);
+      const normalizedAssetPath = normalizeSnapshotFilePath(assetPath);
       const destination = join(distDir, normalizedAssetPath);
+      await mkdir(dirname(destination), { recursive: true });
+      await writeFile(destination, contents, 'utf-8');
+    }
+  }
+
+  if (sources) {
+    for (const [filePath, contents] of Object.entries(sources.files)) {
+      const normalizedFilePath = normalizeSnapshotFilePath(filePath);
+      const destination = join(projectRoot, normalizedFilePath);
       await mkdir(dirname(destination), { recursive: true });
       await writeFile(destination, contents, 'utf-8');
     }
@@ -148,6 +164,7 @@ critiqueRoutes.post('/audit/project', async (c) => {
 
   const essence = body.essence;
   const dist = body.dist;
+  const sources = body.sources;
 
   if (!isRecord(essence)) {
     return c.json({ error: 'Essence must be provided as an object on `essence`.' }, 400);
@@ -165,6 +182,10 @@ critiqueRoutes.post('/audit/project', async (c) => {
     return c.json({ error: 'dist must include string `indexHtml` and optional string-valued `assets`.' }, 400);
   }
 
+  if (sources != null && !isSourceSnapshot(sources)) {
+    return c.json({ error: 'sources must include a string-valued `files` object when provided.' }, 400);
+  }
+
   const preferredNamespace = c.req.query('namespace') || '@official';
 
   let projectRoot: string | null = null;
@@ -173,6 +194,7 @@ critiqueRoutes.post('/audit/project', async (c) => {
       essence as unknown as EssenceFile,
       preferredNamespace,
       dist as { indexHtml: string; assets?: Record<string, string> } | undefined,
+      sources as { files: Record<string, string> } | undefined,
     );
     const report = await auditProject(projectRoot);
 

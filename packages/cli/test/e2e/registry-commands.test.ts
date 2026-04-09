@@ -754,7 +754,7 @@ describe('registry commands (e2e)', () => {
     ).toBe(true);
   });
 
-  it('registry audit-project posts essence and optional dist snapshot to the hosted verifier', async () => {
+  it('registry audit-project posts essence, optional dist, and optional source snapshots to the hosted verifier', async () => {
     const requests: Array<{ url?: string; method?: string; body?: string }> = [];
     const server = createServer((req, res) => {
       let body = '';
@@ -872,10 +872,12 @@ describe('registry commands (e2e)', () => {
       target: 'react',
     }, null, 2));
     mkdirSync(join(testDir, 'dist', 'assets'), { recursive: true });
+    mkdirSync(join(testDir, 'src', 'pages'), { recursive: true });
     writeFileSync(join(testDir, 'dist', 'index.html'), '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audit</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n', { encoding: 'utf-8' });
     writeFileSync(join(testDir, 'dist', 'assets', 'app.js'), 'console.log("/");\n', { encoding: 'utf-8' });
+    writeFileSync(join(testDir, 'src', 'pages', 'Home.tsx'), 'export function Home() { return <button style={{ color: "#ff00ff" }}>Hi</button>; }\n', { encoding: 'utf-8' });
 
-    const output = await runCliAsync(testDir, 'registry audit-project --namespace @official --json', {
+    const output = await runCliAsync(testDir, 'registry audit-project --namespace @official --json --sources src', {
       DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
       DECANTR_API_KEY: '',
     });
@@ -893,7 +895,8 @@ describe('registry commands (e2e)', () => {
           const posted = JSON.parse(request.body);
           return posted.essence?.archetype === 'dashboard'
             && typeof posted.dist?.indexHtml === 'string'
-            && posted.dist?.assets?.['/assets/app.js']?.includes('console.log');
+            && posted.dist?.assets?.['/assets/app.js']?.includes('console.log')
+            && posted.sources?.files?.['src/pages/Home.tsx']?.includes('style');
         } catch {
           return false;
         }

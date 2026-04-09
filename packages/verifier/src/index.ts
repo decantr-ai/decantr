@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { extname, isAbsolute, join, resolve } from 'node:path';
+import { extname, isAbsolute, join, relative, resolve } from 'node:path';
 import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import type { ReviewExecutionPack } from '@decantr/core';
@@ -219,6 +219,99 @@ function readTextIfExists(path: string): string {
   }
 }
 
+function createSourceAuditBucket(): SourceAuditBucket {
+  return { count: 0, files: [] };
+}
+
+function recordSourceAudit(bucket: SourceAuditBucket, filePath: string, count: number): void {
+  if (count <= 0) return;
+  bucket.count += count;
+  if (!bucket.files.includes(filePath) && bucket.files.length < 4) {
+    bucket.files.push(filePath);
+  }
+}
+
+function isAuditableSourceFile(filePath: string): boolean {
+  if (/\.d\.ts$/i.test(filePath)) return false;
+  return /\.(?:[cm]?[jt]sx?)$/i.test(filePath);
+}
+
+function collectProjectSourceFiles(projectRoot: string): string[] {
+  const candidates = ['src', 'app', 'pages', 'components']
+    .map(dir => join(projectRoot, dir))
+    .filter(dir => existsSync(dir));
+  const files: string[] = [];
+  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (ignoredDirNames.has(entry.name)) continue;
+      const absolutePath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(absolutePath);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!isAuditableSourceFile(absolutePath)) continue;
+      files.push(absolutePath);
+    }
+  };
+
+  for (const candidate of candidates) {
+    walk(candidate);
+  }
+
+  return files;
+}
+
+function buildSourceAuditEvidence(summary: SourceAuditSummary, bucket: SourceAuditBucket, label: string): string[] {
+  return [
+    `Source files checked: ${summary.filesChecked}`,
+    `${label}: ${bucket.count}`,
+    `Affected files: ${bucket.files.join(', ')}`,
+  ];
+}
+
+function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
+  const sourceFiles = collectProjectSourceFiles(projectRoot);
+  const summary: SourceAuditSummary = {
+    filesChecked: sourceFiles.length,
+    inlineStyles: createSourceAuditBucket(),
+    securityRiskPatterns: createSourceAuditBucket(),
+    placeholderRoutes: createSourceAuditBucket(),
+    authStorageWrites: createSourceAuditBucket(),
+    accessibilityIssues: createSourceAuditBucket(),
+    interactionSafetyIssues: createSourceAuditBucket(),
+    authInputHintIssues: createSourceAuditBucket(),
+  };
+
+  for (const sourceFile of sourceFiles) {
+    const relativePath = relative(projectRoot, sourceFile) || sourceFile;
+    const code = readFileSync(sourceFile, 'utf-8');
+    const signals = analyzeAstSignals(relativePath, code);
+    const accessibilityIssueCount = signals.iconOnlyButtonWithoutLabelCount
+      + signals.clickableNonSemanticCount
+      + signals.imageWithoutAltCount
+      + signals.formControlWithoutLabelCount;
+    const securityRiskPatternCount = signals.dangerousHtmlCount
+      + signals.rawHtmlInjectionCount
+      + signals.dynamicEvalCount
+      + signals.externalBlankLinkWithoutRelCount;
+    const authInputHintIssueCount = signals.emailAutocompleteMissingCount
+      + signals.passwordAutocompleteMissingCount;
+
+    recordSourceAudit(summary.inlineStyles, relativePath, signals.inlineStyleAttributeCount);
+    recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
+    recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
+    recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
+    recordSourceAudit(summary.accessibilityIssues, relativePath, accessibilityIssueCount);
+    recordSourceAudit(summary.interactionSafetyIssues, relativePath, signals.buttonInFormWithoutTypeCount);
+    recordSourceAudit(summary.authInputHintIssues, relativePath, authInputHintIssueCount);
+  }
+
+  return summary;
+}
+
 function buildRegistryContext(projectRoot: string): {
   themeRegistry: Map<string, { modes: string[] }>;
   patternRegistry: Map<string, unknown>;
@@ -302,6 +395,22 @@ interface TopologySummary {
   hasAnonymousEntryRoute: boolean;
   gatewayRoutes: string[];
   primaryRoutes: string[];
+}
+
+interface SourceAuditBucket {
+  count: number;
+  files: string[];
+}
+
+interface SourceAuditSummary {
+  filesChecked: number;
+  inlineStyles: SourceAuditBucket;
+  securityRiskPatterns: SourceAuditBucket;
+  placeholderRoutes: SourceAuditBucket;
+  authStorageWrites: SourceAuditBucket;
+  accessibilityIssues: SourceAuditBucket;
+  interactionSafetyIssues: SourceAuditBucket;
+  authInputHintIssues: SourceAuditBucket;
 }
 
 function makeFinding(input: VerificationFinding): VerificationFinding {
@@ -844,6 +953,89 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
   }
 }
 
+function appendSourceAuditFindings(findings: VerificationFinding[], sourceAudit: SourceAuditSummary): void {
+  if (sourceAudit.filesChecked === 0) {
+    return;
+  }
+
+  if (sourceAudit.inlineStyles.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-inline-styles-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files still contain inline style attributes, which undermines the compiled treatment contract.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.inlineStyles, 'Inline style attributes'),
+      suggestedFix: 'Move inline styling into treatments, atoms, or design-token-backed classes so generation stays aligned with the Decantr contract.',
+    }));
+  }
+
+  if (sourceAudit.securityRiskPatterns.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-security-risk-patterns-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files include security-risk rendering or link patterns before the project is even built.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.securityRiskPatterns, 'Security-risk source patterns'),
+      suggestedFix: 'Remove dangerous HTML writes, dynamic code execution, and unsafe external link patterns from source before shipping.',
+    }));
+  }
+
+  if (sourceAudit.placeholderRoutes.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-placeholder-route-targets-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files still include placeholder navigation targets instead of real app routes.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.placeholderRoutes, 'Placeholder route targets'),
+      suggestedFix: 'Replace placeholder href/to values with the actual routes declared in the compiled packs and essence.',
+    }));
+  }
+
+  if (sourceAudit.authStorageWrites.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-auth-storage-writes-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files write auth-like credentials into browser storage.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authStorageWrites, 'Auth storage writes'),
+      suggestedFix: 'Avoid storing auth tokens in localStorage/sessionStorage and prefer secure server-managed session boundaries.',
+    }));
+  }
+
+  if (sourceAudit.accessibilityIssues.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-accessibility-issues-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files contain unlabeled or non-semantic interactive patterns that should be fixed before runtime verification.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.accessibilityIssues, 'Accessibility labeling issues'),
+      suggestedFix: 'Add explicit labels, semantic interactive elements, and missing alt text so accessibility issues do not accumulate across generated screens.',
+    }));
+  }
+
+  if (sourceAudit.interactionSafetyIssues.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-interaction-safety-issues-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files contain interaction patterns that can trigger accidental submissions or unsafe form behavior.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.interactionSafetyIssues, 'Interaction safety issues'),
+      suggestedFix: 'Give form buttons explicit types so interactive controls do exactly what the compiled task contract intends.',
+    }));
+  }
+
+  if (sourceAudit.authInputHintIssues.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-auth-input-hints-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Source auth flows are missing explicit autocomplete hints on credential inputs.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authInputHintIssues, 'Missing auth autocomplete hints'),
+      suggestedFix: 'Add explicit autocomplete values such as `email`, `username`, `current-password`, or `new-password` before auth flows ship.',
+    }));
+  }
+}
+
 export async function auditProject(projectRoot: string): Promise<ProjectAuditReport> {
   const essencePath = join(projectRoot, 'decantr.essence.json');
   const findings: VerificationFinding[] = [];
@@ -976,6 +1168,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
 
   const checkedRuntimeAudit = await runRuntimeAudit(projectRoot, essence);
   appendRuntimeAuditFindings(findings, checkedRuntimeAudit, projectRoot);
+  appendSourceAuditFindings(findings, auditProjectSourceTree(projectRoot));
 
   const summary = {
     errorCount: findings.filter(finding => finding.severity === 'error').length,
@@ -1238,7 +1431,7 @@ function hasPlaceholderNavigationTarget(attributes: ts.JsxAttributes): boolean {
 function isAuthStorageKeyLiteral(node: ts.Expression | undefined): boolean {
   if (!node) return false;
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-    return /\b(?:token|auth|jwt|session|access_token|refresh_token)\b/i.test(node.text);
+    return /(?:token|auth|jwt|session|access_token|refresh_token)/i.test(node.text);
   }
   return false;
 }

@@ -189,17 +189,23 @@ Content-Type: application/json
     "assets": {
       "/assets/app.js": "console.log(\"/\");"
     }
+  },
+  "sources": {
+    "files": {
+      "src/pages/Home.tsx": "export function Home() { return <button style={{ color: '#ff00ff' }}>Hi</button>; }"
+    }
   }
 }
 ```
 
 Purpose:
-- run the shared Decantr project audit remotely by compiling hosted execution packs from the posted essence and optionally replaying runtime verification against a posted dist snapshot
+- run the shared Decantr project audit remotely by compiling hosted execution packs from the posted essence and optionally replaying runtime verification against posted dist and source snapshots
 
 Notes:
 - request body must include a valid Decantr essence document on `essence`
 - `dist` is optional; without it the hosted audit still verifies schema, topology, and compiled-pack presence, but runtime checks stay pending
 - when `dist` is included, `indexHtml` is required and `assets` should provide the JS/CSS files referenced from that root document
+- `sources` is optional; when provided, `files` should contain relative source paths mapped to UTF-8 file contents so hosted audit can aggregate source-level verifier findings
 - `namespace` is optional and defaults to `@official`
 
 Response schema:
