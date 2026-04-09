@@ -20,9 +20,10 @@ Known facts:
 - provenance varies across apps
 - some apps include React / Tailwind / inline-style / hand-rolled deviations that were not part of the intended Decantr ideal
 - the corpus is large enough to support benchmark and regression analysis
-- the corpus is currently unclassified, which makes it noisy instead of trustworthy
+- the corpus was initially unclassified, which made it noisy instead of trustworthy
 - `apps/showcase/manifest.json` now exists as the operational inventory surface for this audit
 - `scripts/audit-showcases.mjs` now provides a repeatable signal sweep for inline styles, hardcoded colors, utility leakage, Decantr treatment usage, and pack-manifest presence
+- `scripts/validate-showcase-manifest.mjs` now protects the inventory from duplicate slugs and broken shortlist metadata
 - `workbench` has already been marked `removed` / `Class D` because it reinforced the removed standalone UI-framework line
 
 ## 3. New Classification Model
@@ -130,6 +131,7 @@ For each app, record:
 - missing shell / route / state coverage
 
 Current automation support:
+- `pnpm showcase:validate`
 - `pnpm showcase:audit`
 - `pnpm showcase:shortlist`
 - `pnpm showcase:build:shortlist`

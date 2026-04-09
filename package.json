@@ -16,6 +16,7 @@
     "showcase:build:shortlist": "SHOWCASE_GOLDEN_ONLY=1 node scripts/build-showcases.mjs",
     "showcase:copy": "node scripts/copy-showcase-dist.mjs",
     "showcase:copy:shortlist": "SHOWCASE_GOLDEN_ONLY=1 node scripts/copy-showcase-dist.mjs",
+    "showcase:validate": "node scripts/validate-showcase-manifest.mjs",
     "showcase:audit": "node scripts/audit-showcases.mjs",
     "showcase:shortlist": "node scripts/shortlist-showcases.mjs",
     "showcase": "pnpm run showcase:build && pnpm run showcase:copy"
