@@ -125,21 +125,21 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
         >
           <Link
             href="/"
-            className={`no-underline transition-colors hover:text-d-primary ${styles.mutedLink}`}
+            className={`no-underline transition-colors hover:text-d-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--d-primary)] ${styles.mutedLink}`}
           >
             Registry
           </Link>
           <span className="opacity-40">/</span>
           <Link
             href={`/browse/${type}`}
-            className={`no-underline transition-colors hover:text-d-primary capitalize ${styles.mutedLink}`}
+            className={`no-underline transition-colors hover:text-d-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--d-primary)] capitalize ${styles.mutedLink}`}
           >
             {type.charAt(0).toUpperCase() + type.slice(1)}
           </Link>
           <span className="opacity-40">/</span>
           <Link
             href={`/browse?namespace=${encodeURIComponent(namespace)}`}
-            className={`no-underline transition-colors hover:text-d-primary ${styles.mutedLink}`}
+            className={`no-underline transition-colors hover:text-d-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--d-primary)] ${styles.mutedLink}`}
           >
             {namespace}
           </Link>
@@ -190,7 +190,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                   </svg>
                   <Link
                     href={`/profile/${content.owner_username}`}
-                    className={`no-underline hover:text-d-primary transition-colors ${styles.textDefault}`}
+                    className={`no-underline hover:text-d-primary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--d-primary)] ${styles.textDefault}`}
                   >
                     {content.owner_name || content.owner_username}
                   </Link>
@@ -238,7 +238,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
               {showcaseMeta && (
                 <Link
                   href={getShowcaseUrl(slug)}
-                  className="d-interactive no-underline"
+                  className="d-interactive no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--d-primary)]"
                   data-variant="ghost"
                 >
                   Open Showcase

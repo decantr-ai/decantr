@@ -166,7 +166,7 @@ export default function HomePage() {
         <h1 id="registry-home-heading" className="mb-2 text-2xl font-semibold">
           Explore the Registry
         </h1>
-        <p className={styles.heroCopy}>
+        <p className={`${styles.heroCopy} text-[var(--d-text-muted)]`}>
           Browse, install, and publish patterns, themes, blueprints, archetypes, and shells.
         </p>
         <Suspense>
@@ -177,7 +177,10 @@ export default function HomePage() {
       <div className="lum-divider" />
 
       <section aria-labelledby="featured-registry-heading">
-        <span id="featured-registry-heading" className={`d-label ${styles.sectionLabelAccent}`}>
+        <span
+          id="featured-registry-heading"
+          className={`d-label ${styles.sectionLabelAccent} border-l-[var(--d-accent)]`}
+        >
           Featured
         </span>
         <Suspense fallback={<CardGridSkeleton />}>
@@ -188,10 +191,13 @@ export default function HomePage() {
       <div className="lum-divider" />
 
       <section aria-labelledby="showcase-shortlist-heading">
-        <span id="showcase-shortlist-heading" className={`d-label ${styles.sectionLabelSuccess}`}>
+        <span
+          id="showcase-shortlist-heading"
+          className={`d-label ${styles.sectionLabelSuccess} border-l-[var(--d-success)]`}
+        >
           Showcase Shortlist
         </span>
-        <p className={styles.sectionCopy}>
+        <p className={`${styles.sectionCopy} text-[var(--d-text-muted)]`}>
           Provisional benchmark candidates from the Decantr showcase corpus. These blueprints currently have live showcase builds and a passing served-output smoke baseline.
         </p>
         <Suspense>
@@ -206,10 +212,13 @@ export default function HomePage() {
       <div className="lum-divider" />
 
       <section className={`d-section ${styles.metricsSection}`} aria-labelledby="registry-stats-heading">
-        <span id="registry-stats-heading" className={`d-label ${styles.sectionLabelAccent}`}>
+        <span
+          id="registry-stats-heading"
+          className={`d-label ${styles.sectionLabelAccent} border-l-[var(--d-accent)]`}
+        >
           Registry Stats
         </span>
-        <p className={styles.sectionCopy}>
+        <p className={`${styles.sectionCopy} text-[var(--d-text-muted)]`}>
           Live totals are sourced from the hosted public registry contracts, including aggregate intelligence and verification coverage where available.
         </p>
         <Suspense>
