@@ -300,6 +300,8 @@ interface TopologySummary {
   gatewayRouteCount: number;
   primaryRouteCount: number;
   hasAnonymousEntryRoute: boolean;
+  gatewayRoutes: string[];
+  primaryRoutes: string[];
 }
 
 function makeFinding(input: VerificationFinding): VerificationFinding {
@@ -323,6 +325,14 @@ function normalizeRouteHint(route: string | null | undefined): string {
     return route.slice(0, dynamicIndex + 1);
   }
   return route;
+}
+
+function isAuthLikeRoute(route: string): boolean {
+  return /(?:^|\/)(?:auth|login|log-in|signin|sign-in|signup|sign-up|register|forgot-password|reset-password|password-reset)(?:\/|$)/i.test(route);
+}
+
+function isProtectedLikeRoute(route: string): boolean {
+  return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/|$)/i.test(route);
 }
 
 export function extractRouteHintsFromEssence(essence: EssenceFile | null): string[] {
@@ -368,6 +378,8 @@ export function extractRouteHintsFromEssence(essence: EssenceFile | null): strin
 function summarizeTopology(essence: EssenceFile | null, reviewPack: ReviewExecutionPack | null): TopologySummary {
   const features = new Set<string>(reviewPack?.data.features ?? []);
   const sectionRoles = new Set<string>();
+  const gatewayRoutes = new Set<string>();
+  const primaryRoutes = new Set<string>();
   let gatewayRouteCount = 0;
   let primaryRouteCount = 0;
   let hasAnonymousEntryRoute = false;
@@ -389,8 +401,14 @@ function summarizeTopology(essence: EssenceFile | null, reviewPack: ReviewExecut
         if (page.route === '/' && (role === 'public' || role === 'gateway')) {
           hasAnonymousEntryRoute = true;
         }
-        if (role === 'gateway') gatewayRouteCount += 1;
-        if (role === 'primary') primaryRouteCount += 1;
+        if (role === 'gateway') {
+          gatewayRouteCount += 1;
+          gatewayRoutes.add(normalizeRouteHint(page.route));
+        }
+        if (role === 'primary') {
+          primaryRouteCount += 1;
+          primaryRoutes.add(normalizeRouteHint(page.route));
+        }
       }
     }
   }
@@ -401,6 +419,8 @@ function summarizeTopology(essence: EssenceFile | null, reviewPack: ReviewExecut
     gatewayRouteCount,
     primaryRouteCount,
     hasAnonymousEntryRoute,
+    gatewayRoutes: [...gatewayRoutes],
+    primaryRoutes: [...primaryRoutes],
   };
 }
 
@@ -462,6 +482,38 @@ function appendTopologyFindings(
         'Protected app surfaces need explicit routes so post-auth entry points are unambiguous.',
       ],
       suggestedFix: 'Add explicit primary routes such as `/dashboard` or `/app` for the authenticated experience.',
+    }));
+  }
+
+  if (
+    topology.gatewayRoutes.length > 0
+    && topology.gatewayRoutes.some(route => route !== '/' && isProtectedLikeRoute(route))
+  ) {
+    findings.push(makeFinding({
+      id: 'auth-gateway-routes-look-protected',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Gateway routes include paths that look like authenticated app destinations.',
+      evidence: [
+        `Gateway routes: ${topology.gatewayRoutes.join(', ')}`,
+      ],
+      suggestedFix: 'Keep gateway routes focused on anonymous entry flows such as `/`, `/login`, `/register`, or `/forgot-password`, and move protected destinations into the primary section.',
+    }));
+  }
+
+  if (
+    topology.primaryRoutes.length > 0
+    && topology.primaryRoutes.every(route => isAuthLikeRoute(route))
+  ) {
+    findings.push(makeFinding({
+      id: 'auth-primary-routes-look-auth-only',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Primary routes only expose auth-like destinations and do not appear to include a post-auth application surface.',
+      evidence: [
+        `Primary routes: ${topology.primaryRoutes.join(', ')}`,
+      ],
+      suggestedFix: 'Keep login and registration routes in the gateway section, and add at least one primary app route such as `/dashboard`, `/workspace`, or `/app`.',
     }));
   }
 
