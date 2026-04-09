@@ -319,7 +319,9 @@ describe('verifier', () => {
 
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'auth-gateway-routes-look-protected')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'auth-gateway-routes-not-auth-like')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'auth-primary-routes-look-auth-only')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'auth-primary-routes-not-app-like')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

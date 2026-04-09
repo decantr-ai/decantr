@@ -502,6 +502,22 @@ function appendTopologyFindings(
   }
 
   if (
+    topology.gatewayRoutes.length > 0
+    && topology.gatewayRoutes.every(route => route !== '/' && !isAuthLikeRoute(route))
+  ) {
+    findings.push(makeFinding({
+      id: 'auth-gateway-routes-not-auth-like',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Gateway routes do not appear to expose anonymous entry or authentication-focused destinations.',
+      evidence: [
+        `Gateway routes: ${topology.gatewayRoutes.join(', ')}`,
+      ],
+      suggestedFix: 'Use gateway routes like `/`, `/login`, `/register`, or `/forgot-password` so the anonymous/auth entry surface is explicit.',
+    }));
+  }
+
+  if (
     topology.primaryRoutes.length > 0
     && topology.primaryRoutes.every(route => isAuthLikeRoute(route))
   ) {
@@ -514,6 +530,22 @@ function appendTopologyFindings(
         `Primary routes: ${topology.primaryRoutes.join(', ')}`,
       ],
       suggestedFix: 'Keep login and registration routes in the gateway section, and add at least one primary app route such as `/dashboard`, `/workspace`, or `/app`.',
+    }));
+  }
+
+  if (
+    topology.primaryRoutes.length > 0
+    && topology.primaryRoutes.every(route => !isProtectedLikeRoute(route))
+  ) {
+    findings.push(makeFinding({
+      id: 'auth-primary-routes-not-app-like',
+      category: 'Route Topology',
+      severity: 'warn',
+      message: 'Primary routes do not appear to include a clear post-auth application destination.',
+      evidence: [
+        `Primary routes: ${topology.primaryRoutes.join(', ')}`,
+      ],
+      suggestedFix: 'Use at least one primary route like `/dashboard`, `/workspace`, `/settings`, or `/app` so the authenticated surface is explicit.',
     }));
   }
 
