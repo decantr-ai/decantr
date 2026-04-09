@@ -740,6 +740,10 @@
     .tool-item:nth-child(13)::before { background: var(--green); }
     .tool-item:nth-child(14)::before { background: var(--yellow); }
     .tool-item:nth-child(15)::before { background: var(--orange); }
+    .tool-item:nth-child(16)::before { background: var(--purple); }
+    .tool-item:nth-child(17)::before { background: var(--pink); }
+    .tool-item:nth-child(18)::before { background: var(--crimson); }
+    .tool-item:nth-child(19)::before { background: var(--coral); }
 
     .tool-item:hover {
       background: rgba(255,255,255,0.05);
@@ -769,6 +773,10 @@
     .tool-item:nth-child(13) .tool-name { color: var(--green); }
     .tool-item:nth-child(14) .tool-name { color: var(--yellow); }
     .tool-item:nth-child(15) .tool-name { color: var(--orange); }
+    .tool-item:nth-child(16) .tool-name { color: var(--purple); }
+    .tool-item:nth-child(17) .tool-name { color: var(--pink); }
+    .tool-item:nth-child(18) .tool-name { color: var(--crimson); }
+    .tool-item:nth-child(19) .tool-name { color: var(--coral); }
 
     .tool-icon {
       width: 16px;
@@ -827,6 +835,10 @@
     .tool-item:nth-child(13) .tool-dot { background: var(--green); }
     .tool-item:nth-child(14) .tool-dot { background: var(--yellow); }
     .tool-item:nth-child(15) .tool-dot { background: var(--orange); }
+    .tool-item:nth-child(16) .tool-dot { background: var(--purple); }
+    .tool-item:nth-child(17) .tool-dot { background: var(--pink); }
+    .tool-item:nth-child(18) .tool-dot { background: var(--crimson); }
+    .tool-item:nth-child(19) .tool-dot { background: var(--coral); }
 
     .tool-desc {
       font-size: 0.82rem;
@@ -2005,6 +2017,30 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="tool-item">
         <div class="tool-name"><i data-lucide="star" class="tool-icon" style="color:var(--orange)"></i>decantr_critique</div>
         <p class="tool-desc">Evaluate generated code for visual quality scoring</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="layout-grid" class="tool-icon" style="color:var(--purple)"></i>decantr_get_scaffold_context</div>
+        <p class="tool-desc">Read the top-level scaffold context for the whole app</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-stack" class="tool-icon" style="color:var(--pink)"></i>decantr_get_page_context</div>
+        <p class="tool-desc">Get page-scoped context for one route or page id</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="package-search" class="tool-icon" style="color:var(--crimson)"></i>decantr_get_execution_pack</div>
+        <p class="tool-desc">Read compiled scaffold, page, section, review, or mutation packs</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="gallery-vertical-end" class="tool-icon" style="color:var(--coral)"></i>decantr_get_showcase_benchmarks</div>
+        <p class="tool-desc">Inspect shortlist, manifest, and showcase verification metadata</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="bar-chart-3" class="tool-icon" style="color:var(--amber)"></i>decantr_get_registry_intelligence_summary</div>
+        <p class="tool-desc">Read hosted aggregate intelligence coverage without crawling the registry</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="clipboard-check" class="tool-icon" style="color:var(--cyan)"></i>decantr_audit_project</div>
+        <p class="tool-desc">Run a schema-backed project audit against packs, guard rules, and drift checks</p>
       </div>
     </div>
 
