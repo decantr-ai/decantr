@@ -1,18 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import type { Env } from '../../src/types.js';
+import { assertMatchesSchema } from '../helpers/schema-assert.js';
+
+const mockCreateAdminClient = vi.fn();
 
 // Mock the db client before importing routes
 vi.mock('../../src/db/client.js', () => ({
-  createAdminClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      range: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null, error: null }),
-    })),
-  })),
+  createAdminClient: mockCreateAdminClient,
   createUserClient: vi.fn(),
 }));
 
@@ -25,11 +20,44 @@ function createTestApp() {
   return app;
 }
 
+function createSingleContentClient(row: Record<string, unknown> | null) {
+  const chain = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({
+      data: row,
+      error: row ? null : { message: 'not found' },
+    }),
+  };
+
+  return {
+    from: vi.fn(() => chain),
+  };
+}
+
+function createListContentClient(rows: Record<string, unknown>[], count: number) {
+  const chain = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    range: vi.fn().mockResolvedValue({
+      data: rows,
+      error: null,
+      count,
+    }),
+  };
+
+  return {
+    from: vi.fn(() => chain),
+  };
+}
+
 describe('POST /v1/validate', () => {
   let app: ReturnType<typeof createTestApp>;
 
   beforeEach(() => {
     app = createTestApp();
+    mockCreateAdminClient.mockReset();
   });
 
   it('should return error for invalid JSON body', async () => {
@@ -148,5 +176,64 @@ describe('POST /v1/validate', () => {
     expect(json.valid).toBe(false);
     expect(json.errors.length).toBeGreaterThan(0);
     expect(json.version).toBeNull();
+  });
+
+  it('serves public content detail responses that match the published schema', async () => {
+    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
+      id: 'content-1',
+      type: 'blueprint',
+      slug: 'portfolio',
+      namespace: '@official',
+      version: '1.0.0',
+      visibility: 'public',
+      status: 'published',
+      data: {
+        name: 'Portfolio',
+        description: 'Creator portfolio',
+      },
+      created_at: '2026-04-09T00:00:00.000Z',
+      updated_at: '2026-04-09T00:00:00.000Z',
+      published_at: '2026-04-09T00:00:00.000Z',
+      owner: {
+        display_name: 'Decantr',
+        username: 'decantr',
+      },
+    }));
+
+    const res = await app.request('/v1/blueprints/%40official/portfolio');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    assertMatchesSchema('public-content-record.v1.json', json);
+    expect(json.slug).toBe('portfolio');
+  });
+
+  it('serves public content list responses that match the published schema', async () => {
+    mockCreateAdminClient.mockReturnValue(createListContentClient([
+      {
+        id: 'content-1',
+        type: 'blueprint',
+        slug: 'portfolio',
+        namespace: '@official',
+        version: '1.0.0',
+        data: {
+          name: 'Portfolio',
+          description: 'Creator portfolio',
+        },
+        published_at: '2026-04-09T00:00:00.000Z',
+        owner: {
+          display_name: 'Decantr',
+          username: 'decantr',
+        },
+      },
+    ], 1));
+
+    const res = await app.request('/v1/blueprints');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    assertMatchesSchema('public-content-list.v1.json', json);
+    expect(json.total).toBe(1);
+    expect(json.items[0]?.slug).toBe('portfolio');
   });
 });

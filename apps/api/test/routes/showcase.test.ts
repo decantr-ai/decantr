@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import type { Env } from '../../src/types.js';
 import { createApp } from '../../src/app.js';
 import { showcaseRoutes } from '../../src/routes/showcase.js';
+import { assertMatchesSchema } from '../helpers/schema-assert.js';
 
 function createTestApp() {
   const app = new Hono<Env>();
@@ -17,6 +18,7 @@ describe('GET /v1/showcase/*', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
+    assertMatchesSchema('showcase-manifest.v1.json', json);
     expect(json.total).toBeGreaterThan(0);
     expect(Array.isArray(json.apps)).toBe(true);
     expect(json.apps.some((entry: { slug: string }) => entry.slug === 'portfolio')).toBe(true);
@@ -30,6 +32,7 @@ describe('GET /v1/showcase/*', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
+    assertMatchesSchema('showcase-shortlist.v1.json', json);
     expect(Array.isArray(json.apps)).toBe(true);
     expect(json.summary?.passedBuilds).toBeGreaterThan(0);
     expect(json.summary?.passedSmokes).toBeGreaterThan(0);
@@ -42,6 +45,7 @@ describe('GET /v1/showcase/*', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
+    assertMatchesSchema('showcase-shortlist-report.v1.json', json);
     expect(json.$schema).toBe('https://decantr.ai/schemas/showcase-shortlist-report.v1.json');
     expect(Array.isArray(json.results)).toBe(true);
     expect(json.results.length).toBeGreaterThan(0);
@@ -53,6 +57,7 @@ describe('GET /v1/showcase/*', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
+    assertMatchesSchema('showcase-shortlist-report.v1.json', json);
     expect(json.$schema).toBe('https://decantr.ai/schemas/showcase-shortlist-report.v1.json');
   });
 });
