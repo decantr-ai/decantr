@@ -105,6 +105,7 @@ describe('MCP tool handlers', () => {
               source: 'hybrid',
               verification_status: 'smoke-green',
               benchmark_confidence: 'high',
+              confidence_tier: 'verified',
               golden_usage: 'shortlisted',
               quality_score: 92,
               confidence_score: 90,
@@ -193,6 +194,7 @@ describe('MCP tool handlers', () => {
             smoke_green: 2,
             build_green: 5,
             high_confidence: 2,
+            verified_confidence: 2,
           },
           by_type: {
             pattern: {
@@ -206,6 +208,7 @@ describe('MCP tool handlers', () => {
               smoke_green: 0,
               build_green: 0,
               high_confidence: 0,
+              verified_confidence: 0,
             },
             theme: {
               total_public_items: 0,
@@ -218,6 +221,7 @@ describe('MCP tool handlers', () => {
               smoke_green: 0,
               build_green: 0,
               high_confidence: 0,
+              verified_confidence: 0,
             },
             blueprint: {
               total_public_items: 4,
@@ -230,6 +234,7 @@ describe('MCP tool handlers', () => {
               smoke_green: 2,
               build_green: 4,
               high_confidence: 2,
+              verified_confidence: 2,
             },
             archetype: {
               total_public_items: 3,
@@ -242,6 +247,7 @@ describe('MCP tool handlers', () => {
               smoke_green: 0,
               build_green: 1,
               high_confidence: 0,
+              verified_confidence: 0,
             },
             shell: {
               total_public_items: 3,
@@ -254,6 +260,7 @@ describe('MCP tool handlers', () => {
               smoke_green: 0,
               build_green: 0,
               high_confidence: 0,
+              verified_confidence: 0,
             },
           },
         }), {

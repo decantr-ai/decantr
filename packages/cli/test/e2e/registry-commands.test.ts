@@ -176,6 +176,7 @@ describe('registry commands (e2e)', () => {
             smoke_green: 1,
             build_green: 0,
             high_confidence: 1,
+            verified_confidence: 1,
           },
           by_type: {
             pattern: {
@@ -189,6 +190,7 @@ describe('registry commands (e2e)', () => {
               smoke_green: 0,
               build_green: 0,
               high_confidence: 0,
+              verified_confidence: 0,
             },
             theme: {
               total_public_items: 0,
@@ -201,6 +203,7 @@ describe('registry commands (e2e)', () => {
               smoke_green: 0,
               build_green: 0,
               high_confidence: 0,
+              verified_confidence: 0,
             },
             blueprint: {
               total_public_items: 1,
@@ -213,6 +216,7 @@ describe('registry commands (e2e)', () => {
               smoke_green: 1,
               build_green: 0,
               high_confidence: 1,
+              verified_confidence: 1,
             },
             archetype: {
               total_public_items: 0,
@@ -225,6 +229,7 @@ describe('registry commands (e2e)', () => {
               smoke_green: 0,
               build_green: 0,
               high_confidence: 0,
+              verified_confidence: 0,
             },
             shell: {
               total_public_items: 0,
@@ -237,6 +242,7 @@ describe('registry commands (e2e)', () => {
               smoke_green: 0,
               build_green: 0,
               high_confidence: 0,
+              verified_confidence: 0,
             },
           },
         }));

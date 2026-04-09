@@ -62,6 +62,21 @@ function getIntelligenceSourceLabel(
   }
 }
 
+function getConfidenceTierLabel(
+  tier?: NonNullable<ContentItem['intelligence']>['confidence_tier'],
+): string | null {
+  switch (tier) {
+    case 'verified':
+      return 'verified confidence';
+    case 'high':
+      return 'high confidence';
+    case 'medium':
+      return 'medium confidence';
+    default:
+      return null;
+  }
+}
+
 export function ContentCard({
   item,
   editable,
@@ -77,6 +92,7 @@ export function ContentCard({
   const showcaseMeta = singular === 'blueprint' ? (showcaseMetadata ?? null) : null;
   const intelligence = item.intelligence ?? null;
   const intelligenceSourceLabel = getIntelligenceSourceLabel(intelligence?.source);
+  const confidenceTierLabel = getConfidenceTierLabel(intelligence?.confidence_tier);
   const hasShortlistedShowcase = Boolean(showcaseMeta?.goldenCandidate);
   const showcaseVerification = showcaseMeta?.verification ?? null;
   const verificationLabel =
@@ -124,9 +140,9 @@ export function ContentCard({
             {verificationLabel}
           </span>
         )}
-        {intelligence?.benchmark_confidence && intelligence.benchmark_confidence !== 'none' && (
+        {confidenceTierLabel && (
           <span className="d-annotation">
-            {intelligence.benchmark_confidence} confidence
+            {confidenceTierLabel}
           </span>
         )}
       </div>

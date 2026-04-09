@@ -105,6 +105,11 @@ commit archaeology.
   - `authored`
   - `benchmark`
   - `hybrid`
+- Added explicit intelligence confidence tiers so recommendation quality is visible and rankable:
+  - `low`
+  - `medium`
+  - `high`
+  - `verified`
 - Added a hosted schema-backed registry intelligence rollup endpoint:
   - `/v1/intelligence/summary`
 - Added intelligence-source filtering across:

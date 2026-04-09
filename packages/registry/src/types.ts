@@ -356,6 +356,7 @@ export type ContentVerificationStatus =
   | 'smoke-red';
 
 export type ContentBenchmarkConfidence = 'none' | 'low' | 'medium' | 'high';
+export type ContentConfidenceTier = 'low' | 'medium' | 'high' | 'verified';
 
 export type ContentGoldenUsage = 'none' | 'showcase' | 'shortlisted';
 
@@ -377,6 +378,7 @@ export interface ContentIntelligenceMetadata {
   last_verified_at?: string | null;
   target_coverage: string[];
   benchmark_confidence: ContentBenchmarkConfidence;
+  confidence_tier: ContentConfidenceTier;
   golden_usage: ContentGoldenUsage;
   quality_score: number | null;
   confidence_score: number | null;
@@ -487,6 +489,7 @@ export interface RegistryIntelligenceSummaryBucket {
   smoke_green: number;
   build_green: number;
   high_confidence: number;
+  verified_confidence: number;
 }
 
 export interface RegistryIntelligenceSummaryResponse {

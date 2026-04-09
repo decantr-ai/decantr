@@ -31,6 +31,21 @@ function confidenceScore(level?: string | null): number {
   }
 }
 
+function confidenceTierScore(tier?: string | null): number {
+  switch (tier) {
+    case 'verified':
+      return 180;
+    case 'high':
+      return 120;
+    case 'medium':
+      return 60;
+    case 'low':
+      return 10;
+    default:
+      return 0;
+  }
+}
+
 function getRecommendedPriority(item: PublicContentSummary): number {
   const intelligence = item.intelligence;
   let score = 0;
@@ -51,6 +66,8 @@ function getRecommendedPriority(item: PublicContentSummary): number {
 
   score += verificationScore(intelligence.verification_status);
   score += confidenceScore(intelligence.benchmark_confidence);
+  score += confidenceTierScore(intelligence.confidence_tier);
+  score += Math.round((intelligence.confidence_score ?? 0) / 2);
   score += intelligence.quality_score ?? 0;
 
   return score;

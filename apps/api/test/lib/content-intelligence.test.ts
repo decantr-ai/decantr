@@ -10,6 +10,7 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.golden_usage).toBe('shortlisted');
     expect(intelligence?.verification_status).toBe('smoke-green');
     expect(intelligence?.benchmark_confidence).toBe('high');
+    expect(intelligence?.confidence_tier).toBe('verified');
     expect(intelligence?.recommended).toBe(true);
     expect(intelligence?.target_coverage).toContain('react-vite');
     expect(intelligence?.evidence).toContain('live-showcase');
@@ -57,6 +58,7 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.verification_status).toBe('unknown');
     expect(intelligence?.golden_usage).toBe('none');
     expect(intelligence?.benchmark_confidence).toBe('none');
+    expect(intelligence?.confidence_tier).toBe('high');
     expect(intelligence?.recommended).toBe(true);
     expect(intelligence?.quality_score).toBeGreaterThanOrEqual(74);
     expect(intelligence?.evidence).toContain('official-source');
@@ -78,6 +80,7 @@ describe('getContentIntelligence', () => {
     expect(intelligence?.recommended).toBe(false);
     expect(intelligence?.benchmark_confidence).toBe('none');
     expect(intelligence?.golden_usage).toBe('none');
+    expect(intelligence?.confidence_tier).toBe('low');
     expect(intelligence?.confidence_score).toBeLessThan(68);
   });
 
@@ -95,6 +98,7 @@ describe('getContentIntelligence', () => {
 
     expect(intelligence).not.toBeNull();
     expect(intelligence?.source).toBe('hybrid');
+    expect(intelligence?.confidence_tier).toBe('verified');
     expect(intelligence?.evidence).toContain('official-source');
     expect(intelligence?.evidence).toContain('live-showcase');
   });

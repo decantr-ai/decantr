@@ -209,6 +209,7 @@ describe('RegistryAPIClient showcase endpoints', () => {
           smoke_green: 1,
           build_green: 0,
           high_confidence: 1,
+          verified_confidence: 1,
         },
         by_type: {
           pattern: {
@@ -222,6 +223,7 @@ describe('RegistryAPIClient showcase endpoints', () => {
             smoke_green: 0,
             build_green: 0,
             high_confidence: 0,
+            verified_confidence: 0,
           },
           theme: {
             total_public_items: 0,
@@ -234,6 +236,7 @@ describe('RegistryAPIClient showcase endpoints', () => {
             smoke_green: 0,
             build_green: 0,
             high_confidence: 0,
+            verified_confidence: 0,
           },
           blueprint: {
             total_public_items: 1,
@@ -246,6 +249,7 @@ describe('RegistryAPIClient showcase endpoints', () => {
             smoke_green: 1,
             build_green: 0,
             high_confidence: 1,
+            verified_confidence: 1,
           },
           archetype: {
             total_public_items: 0,
@@ -258,6 +262,7 @@ describe('RegistryAPIClient showcase endpoints', () => {
             smoke_green: 0,
             build_green: 0,
             high_confidence: 0,
+            verified_confidence: 0,
           },
           shell: {
             total_public_items: 0,
@@ -270,6 +275,7 @@ describe('RegistryAPIClient showcase endpoints', () => {
             smoke_green: 0,
             build_green: 0,
             high_confidence: 0,
+            verified_confidence: 0,
           },
         },
       }), {
@@ -308,6 +314,7 @@ describe('RegistryAPIClient showcase endpoints', () => {
           source: 'hybrid',
           verification_status: 'smoke-green',
           benchmark_confidence: 'high',
+          confidence_tier: 'verified',
           golden_usage: 'shortlisted',
           quality_score: 92,
           confidence_score: 90,

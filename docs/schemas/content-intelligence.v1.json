@@ -8,6 +8,7 @@
     "verification_status",
     "target_coverage",
     "benchmark_confidence",
+    "confidence_tier",
     "golden_usage",
     "quality_score",
     "confidence_score",
@@ -47,6 +48,14 @@
         "low",
         "medium",
         "high"
+      ]
+    },
+    "confidence_tier": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "verified"
       ]
     },
     "golden_usage": {

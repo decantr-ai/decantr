@@ -23,7 +23,8 @@
         "missing_source",
         "smoke_green",
         "build_green",
-        "high_confidence"
+        "high_confidence",
+        "verified_confidence"
       ],
       "properties": {
         "total_public_items": { "type": "integer", "minimum": 0 },
@@ -35,7 +36,8 @@
         "missing_source": { "type": "integer", "minimum": 0 },
         "smoke_green": { "type": "integer", "minimum": 0 },
         "build_green": { "type": "integer", "minimum": 0 },
-        "high_confidence": { "type": "integer", "minimum": 0 }
+        "high_confidence": { "type": "integer", "minimum": 0 },
+        "verified_confidence": { "type": "integer", "minimum": 0 }
       },
       "additionalProperties": false
     }

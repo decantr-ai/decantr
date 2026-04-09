@@ -141,7 +141,13 @@ function formatIntelligenceSummary(
       break;
   }
 
-  if (intelligence.benchmark_confidence !== 'none') {
+  if (intelligence.confidence_tier === 'verified') {
+    parts.push('verified confidence');
+  } else if (intelligence.confidence_tier === 'high') {
+    parts.push('high confidence');
+  } else if (intelligence.confidence_tier === 'medium') {
+    parts.push('medium confidence');
+  } else if (intelligence.benchmark_confidence !== 'none') {
     parts.push(`${intelligence.benchmark_confidence} confidence`);
   }
 
@@ -339,7 +345,7 @@ async function printRegistryIntelligenceSummary(
     `  Sources: authored ${typedSummary.totals.authored}, benchmark ${typedSummary.totals.benchmark}, hybrid ${typedSummary.totals.hybrid}, missing ${typedSummary.totals.missing_source}`,
   );
   console.log(
-    `  Verification: smoke green ${typedSummary.totals.smoke_green}, build green ${typedSummary.totals.build_green}, high confidence ${typedSummary.totals.high_confidence}`,
+    `  Verification: smoke green ${typedSummary.totals.smoke_green}, build green ${typedSummary.totals.build_green}, high confidence ${typedSummary.totals.high_confidence}, verified ${typedSummary.totals.verified_confidence}`,
   );
   console.log('');
 

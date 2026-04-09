@@ -79,6 +79,40 @@ function deriveQualityScore(
   return clampScore(score);
 }
 
+function deriveConfidenceTier(input: {
+  benchmarkConfidence: ContentIntelligenceMetadata['benchmark_confidence'];
+  confidenceScore: number;
+  verificationStatus: ContentIntelligenceMetadata['verification_status'];
+  goldenUsage: ContentIntelligenceMetadata['golden_usage'];
+  driftSignal?: ShowcaseVerificationEntry['drift']['signal'];
+}): ContentIntelligenceMetadata['confidence_tier'] {
+  if (
+    input.goldenUsage === 'shortlisted'
+    && input.verificationStatus === 'smoke-green'
+    && input.driftSignal !== 'elevated'
+  ) {
+    return 'verified';
+  }
+
+  if (
+    input.confidenceScore >= 82
+    || input.verificationStatus === 'smoke-green'
+    || input.benchmarkConfidence === 'high'
+  ) {
+    return 'high';
+  }
+
+  if (
+    input.confidenceScore >= 60
+    || input.verificationStatus === 'build-green'
+    || input.benchmarkConfidence === 'medium'
+  ) {
+    return 'medium';
+  }
+
+  return 'low';
+}
+
 function deriveConfidenceScore(
   showcase: ShowcaseManifestEntry,
   verification: ShowcaseVerificationEntry | null,
@@ -264,6 +298,12 @@ export function getContentIntelligence(
       last_verified_at: null,
       target_coverage: [],
       benchmark_confidence: 'none',
+      confidence_tier: deriveConfidenceTier({
+        benchmarkConfidence: 'none',
+        confidenceScore: authoredSignals.confidenceScore,
+        verificationStatus: 'unknown',
+        goldenUsage: 'none',
+      }),
       golden_usage: 'none',
       quality_score: authoredSignals.qualityScore,
       confidence_score: authoredSignals.confidenceScore,
@@ -303,6 +343,13 @@ export function getContentIntelligence(
     verificationStatus === 'smoke-green' &&
     (verification?.drift.signal ?? 'elevated') !== 'elevated';
   const source: ContentIntelligenceMetadata['source'] = authoredSignals ? 'hybrid' : 'benchmark';
+  const confidenceTier = deriveConfidenceTier({
+    benchmarkConfidence,
+    confidenceScore,
+    verificationStatus,
+    goldenUsage,
+    driftSignal: verification?.drift.signal,
+  });
 
   return {
     source,
@@ -310,6 +357,7 @@ export function getContentIntelligence(
     last_verified_at: verification ? SHOWCASE_SHORTLIST_REPORT.generatedAt ?? null : null,
     target_coverage: targetCoverage,
     benchmark_confidence: benchmarkConfidence,
+    confidence_tier: confidenceTier,
     golden_usage: goldenUsage,
     quality_score: qualityScore,
     confidence_score: confidenceScore,

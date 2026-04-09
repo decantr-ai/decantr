@@ -25,6 +25,7 @@ function createEmptyBucket(): RegistryIntelligenceSummaryBucket {
     smoke_green: 0,
     build_green: 0,
     high_confidence: 0,
+    verified_confidence: 0,
   };
 }
 
@@ -65,7 +66,10 @@ function applyIntelligenceToBucket(
   if (intelligence.verification_status === 'build-green') {
     bucket.build_green += 1;
   }
-  if (intelligence.benchmark_confidence === 'high') {
+  if (intelligence.confidence_tier === 'verified') {
+    bucket.verified_confidence += 1;
+    bucket.high_confidence += 1;
+  } else if (intelligence.confidence_tier === 'high') {
     bucket.high_confidence += 1;
   }
 }
