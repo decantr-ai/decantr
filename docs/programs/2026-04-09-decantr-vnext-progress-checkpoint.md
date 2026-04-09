@@ -82,6 +82,7 @@ commit archaeology.
 - Project audit now aggregates source-tree findings from `src/`, `app/`, `pages/`, and `components/` when they are present, including inline styles, risky HTML patterns, placeholder routes, auth storage writes, accessibility issues, and unsafe form/auth input behavior.
 - Project audit now also warns when auth is declared but the source tree does not show obvious protected-route, middleware, session-check, or auth-redirect behavior.
 - Source and file critique now also flag auth-like credentials written into client-managed cookies, not just localStorage/sessionStorage.
+- Project audit now also warns when auth is declared but the source tree does not show an obvious sign-out or session-exit path.
 - Project audit now includes shared runtime evidence when `dist/` exists:
   - root document validation
   - document title validation

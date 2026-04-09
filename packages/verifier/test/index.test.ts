@@ -350,6 +350,7 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'source-auth-storage-writes-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-cookie-writes-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-guard-signals-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'source-auth-exit-signals-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-accessibility-issues-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-interaction-safety-issues-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-input-hints-missing')).toBe(true);
@@ -561,11 +562,16 @@ describe('verifier', () => {
             }
             return <>{children}</>;
           }
+
+          export async function signOutUser() {
+            await auth.signOut();
+          }
         `,
       );
 
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'source-auth-guard-signals-missing')).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'source-auth-exit-signals-missing')).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

@@ -282,6 +282,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authStorageWrites: createSourceAuditBucket(),
     authCookieWrites: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
+    authExitSignals: createSourceAuditBucket(),
     accessibilityIssues: createSourceAuditBucket(),
     interactionSafetyIssues: createSourceAuditBucket(),
     authInputHintIssues: createSourceAuditBucket(),
@@ -308,6 +309,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
     recordSourceAudit(summary.authCookieWrites, relativePath, signals.authCookieWriteCount);
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
+    recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
     recordSourceAudit(summary.accessibilityIssues, relativePath, accessibilityIssueCount);
     recordSourceAudit(summary.interactionSafetyIssues, relativePath, signals.buttonInFormWithoutTypeCount);
     recordSourceAudit(summary.authInputHintIssues, relativePath, authInputHintIssueCount);
@@ -414,6 +416,7 @@ interface SourceAuditSummary {
   authStorageWrites: SourceAuditBucket;
   authCookieWrites: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
+  authExitSignals: SourceAuditBucket;
   accessibilityIssues: SourceAuditBucket;
   interactionSafetyIssues: SourceAuditBucket;
   authInputHintIssues: SourceAuditBucket;
@@ -1041,6 +1044,22 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (topology.hasAuthFeature && sourceAudit.authExitSignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'source-auth-exit-signals-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Authentication is declared, but the source tree does not show an obvious sign-out or session-exit path.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        'Auth exit signals: 0',
+        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Expose an explicit sign-out/logout flow so authenticated users can intentionally end their session.',
+    }));
+  }
+
   if (sourceAudit.accessibilityIssues.count > 0) {
     findings.push(makeFinding({
       id: 'source-accessibility-issues-present',
@@ -1281,6 +1300,7 @@ interface AstCritiqueSignals {
   authStorageWriteCount: number;
   authCookieWriteCount: number;
   authGuardSignalCount: number;
+  authExitSignalCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -1508,6 +1528,16 @@ function countAuthGuardSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthExitSignals(code: string): number {
+  const patterns = [
+    /\b(?:logout|logOut|signOut|signout|sign-out)\b/,
+    /\b(?:supabase\.auth\.signOut|auth\.signOut|session\.signOut)\s*\(/,
+    /\/(?:logout|signout|sign-out)\b/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -1533,6 +1563,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authStorageWriteCount: 0,
     authCookieWriteCount: 0,
     authGuardSignalCount: countAuthGuardSignals(code),
+    authExitSignalCount: countAuthExitSignals(code),
   };
   const labelForIds = collectLabelForIds(sourceFile);
 
