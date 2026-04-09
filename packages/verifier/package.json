@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@decantr/core": "workspace:*",
-    "@decantr/essence-spec": "workspace:*"
+    "@decantr/essence-spec": "workspace:*",
+    "typescript": "^5.7.0"
   }
 }

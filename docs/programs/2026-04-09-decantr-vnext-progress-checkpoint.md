@@ -98,6 +98,7 @@ commit archaeology.
   - `dangerouslySetInnerHTML`
   - raw DOM HTML injection
   - `eval` / `new Function`
+- File critique now includes a first AST-backed static pass for supported TS/JSX input so inline-style and high-risk HTML/code-execution findings do not rely only on regex matching.
 
 ### Showcase / golden corpus
 

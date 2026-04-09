@@ -1479,6 +1479,9 @@ importers:
       '@decantr/essence-spec':
         specifier: workspace:*
         version: link:../essence-spec
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
 
   packages/vite-plugin:
     dependencies:

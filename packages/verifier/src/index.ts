@@ -1,9 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { isAbsolute, join, resolve } from 'node:path';
+import { extname, isAbsolute, join, resolve } from 'node:path';
 import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import type { ReviewExecutionPack } from '@decantr/core';
+import * as ts from 'typescript';
 import { auditBuiltDist, emptyRuntimeAudit, type RuntimeAudit } from './runtime.js';
 
 export { auditBuiltDist, emptyRuntimeAudit } from './runtime.js';
@@ -909,6 +910,113 @@ function findUtilityFrameworkSignals(code: string): string[] {
   return [...new Set(matches)];
 }
 
+interface AstCritiqueSignals {
+  inlineStyleAttributeCount: number;
+  dangerousHtmlCount: number;
+  rawHtmlInjectionCount: number;
+  dynamicEvalCount: number;
+}
+
+function getScriptKind(filePath: string): ts.ScriptKind {
+  switch (extname(filePath).toLowerCase()) {
+    case '.tsx':
+      return ts.ScriptKind.TSX;
+    case '.jsx':
+      return ts.ScriptKind.JSX;
+    case '.ts':
+      return ts.ScriptKind.TS;
+    case '.js':
+      return ts.ScriptKind.JS;
+    default:
+      return ts.ScriptKind.TSX;
+  }
+}
+
+function isPropertyNamed(node: ts.Node | undefined, ...names: string[]): boolean {
+  if (!node) return false;
+  if (ts.isIdentifier(node)) {
+    return names.includes(node.text);
+  }
+  if (ts.isPrivateIdentifier(node)) {
+    return names.includes(node.text);
+  }
+  if (ts.isStringLiteral(node)) {
+    return names.includes(node.text);
+  }
+  return false;
+}
+
+function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    code,
+    ts.ScriptTarget.Latest,
+    true,
+    getScriptKind(filePath),
+  );
+  const signals: AstCritiqueSignals = {
+    inlineStyleAttributeCount: 0,
+    dangerousHtmlCount: 0,
+    rawHtmlInjectionCount: 0,
+    dynamicEvalCount: 0,
+  };
+
+  const walk = (node: ts.Node) => {
+    if (ts.isJsxAttribute(node)) {
+      if (isPropertyNamed(node.name, 'style') && node.initializer) {
+        signals.inlineStyleAttributeCount += 1;
+      }
+      if (isPropertyNamed(node.name, 'dangerouslySetInnerHTML')) {
+        signals.dangerousHtmlCount += 1;
+      }
+    }
+
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && ts.isPropertyAccessExpression(node.left)
+      && isPropertyNamed(node.left.name, 'innerHTML', 'outerHTML')
+    ) {
+      signals.rawHtmlInjectionCount += 1;
+    }
+
+    if (ts.isCallExpression(node)) {
+      if (ts.isIdentifier(node.expression) && node.expression.text === 'eval') {
+        signals.dynamicEvalCount += 1;
+      }
+
+      if (ts.isPropertyAccessExpression(node.expression)) {
+        if (isPropertyNamed(node.expression.name, 'insertAdjacentHTML')) {
+          signals.rawHtmlInjectionCount += 1;
+        }
+        if (
+          ts.isIdentifier(node.expression.expression)
+          && node.expression.expression.text === 'document'
+          && isPropertyNamed(node.expression.name, 'write')
+        ) {
+          signals.rawHtmlInjectionCount += 1;
+        }
+        if (isPropertyNamed(node.expression.name, 'eval')) {
+          signals.dynamicEvalCount += 1;
+        }
+      }
+    }
+
+    if (
+      ts.isNewExpression(node)
+      && ts.isIdentifier(node.expression)
+      && node.expression.text === 'Function'
+    ) {
+      signals.dynamicEvalCount += 1;
+    }
+
+    ts.forEachChild(node, walk);
+  };
+
+  walk(sourceFile);
+  return signals;
+}
+
 export function critiqueSource({
   filePath,
   code,
@@ -917,6 +1025,7 @@ export function critiqueSource({
   treatmentsCss = '',
 }: CritiqueSourceInput): FileCritiqueReport {
   const codeLower = code.toLowerCase();
+  const astSignals = analyzeAstSignals(filePath, code);
   const focusAreas = resolveFocusAreas(reviewPack);
   const findings: VerificationFinding[] = [];
   const scores: VerificationScore[] = [];
@@ -1064,13 +1173,14 @@ export function critiqueSource({
     }));
   }
 
-  if (antiPatternIds.has('inline-styles') && /style\s*=\s*(?:\{\{|["'])/.test(code)) {
+  const hasInlineStyleLiterals = astSignals.inlineStyleAttributeCount > 0 || /style\s*=\s*(?:\{\{|["'])/.test(code);
+  if (antiPatternIds.has('inline-styles') && hasInlineStyleLiterals) {
     findings.push(makeFinding({
       id: 'anti-pattern-inline-styles',
       category: 'Anti-Patterns',
       severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'theme-consistency']),
       message: 'Inline style literals were detected in the reviewed file.',
-      evidence: [filePath],
+      evidence: [filePath, `Inline style attributes: ${astSignals.inlineStyleAttributeCount}`],
       file: filePath,
       suggestedFix: 'Replace inline visual values with treatments, decorators, and CSS variables from the compiled contract.',
     }));
@@ -1102,14 +1212,17 @@ export function critiqueSource({
     }));
   }
 
-  const hasDangerousHtml = /dangerouslySetInnerHTML\s*=/.test(code);
-  const hasRawHtmlInjection = /\binnerHTML\s*=|\binsertAdjacentHTML\s*\(/.test(code);
-  const hasDynamicEval = /\beval\s*\(|new\s+Function\s*\(/.test(code);
+  const dangerousHtmlCount = Math.max(astSignals.dangerousHtmlCount, /dangerouslySetInnerHTML\s*=/.test(code) ? 1 : 0);
+  const rawHtmlInjectionCount = Math.max(astSignals.rawHtmlInjectionCount, /\binnerHTML\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/.test(code) ? 1 : 0);
+  const dynamicEvalCount = Math.max(astSignals.dynamicEvalCount, /\beval\s*\(|new\s+Function\s*\(/.test(code) ? 1 : 0);
+  const hasDangerousHtml = dangerousHtmlCount > 0;
+  const hasRawHtmlInjection = rawHtmlInjectionCount > 0;
+  const hasDynamicEval = dynamicEvalCount > 0;
   scores.push({
     category: 'Security Hygiene',
     focusArea: 'security-hygiene',
     score: Math.max(1, 5 - (hasDangerousHtml ? 2 : 0) - (hasRawHtmlInjection ? 2 : 0) - (hasDynamicEval ? 2 : 0)),
-    details: `dangerouslySetInnerHTML: ${hasDangerousHtml ? 'yes' : 'no'}, raw HTML injection: ${hasRawHtmlInjection ? 'yes' : 'no'}, dynamic eval: ${hasDynamicEval ? 'yes' : 'no'}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -1122,7 +1235,7 @@ export function critiqueSource({
       category: 'Security Hygiene',
       severity: 'error',
       message: 'The reviewed file uses `dangerouslySetInnerHTML`.',
-      evidence: [filePath],
+      evidence: [filePath, `Occurrences: ${dangerousHtmlCount}`],
       file: filePath,
       suggestedFix: 'Render structured data through components instead of injecting raw HTML, or sanitize the content before it reaches the view layer.',
     }));
@@ -1134,7 +1247,7 @@ export function critiqueSource({
       category: 'Security Hygiene',
       severity: 'error',
       message: 'The reviewed file writes raw HTML into the DOM.',
-      evidence: [filePath],
+      evidence: [filePath, `Occurrences: ${rawHtmlInjectionCount}`],
       file: filePath,
       suggestedFix: 'Avoid `innerHTML` and `insertAdjacentHTML`; render trusted structured nodes instead.',
     }));
@@ -1146,7 +1259,7 @@ export function critiqueSource({
       category: 'Security Hygiene',
       severity: 'error',
       message: 'The reviewed file uses `eval` or `new Function`, which weakens runtime trust boundaries.',
-      evidence: [filePath],
+      evidence: [filePath, `Occurrences: ${dynamicEvalCount}`],
       file: filePath,
       suggestedFix: 'Replace dynamic code evaluation with explicit functions, lookup tables, or validated configuration data.',
     }));
