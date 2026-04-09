@@ -351,6 +351,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     inlineStyles: createSourceAuditBucket(),
     securityRiskPatterns: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
+    protectedSurfaceSignals: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
     skipNavTargetIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
@@ -394,6 +395,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.inlineStyles, relativePath, signals.inlineStyleAttributeCount);
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
+    recordSourceAudit(summary.protectedSurfaceSignals, relativePath, signals.protectedSurfaceSignalCount);
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
     for (const targetId of signals.skipNavTargetIds) {
@@ -537,6 +539,7 @@ interface SourceAuditSummary {
   inlineStyles: SourceAuditBucket;
   securityRiskPatterns: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
+  protectedSurfaceSignals: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
   skipNavTargetIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
@@ -1269,6 +1272,30 @@ function appendSourceAuditFindings(
 
   if (
     topology.hasAuthFeature
+    && topology.primaryRoutes.length > 0
+    && sourceAudit.protectedSurfaceSignals.count > 0
+    && sourceAudit.authGuardSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authGuardSignals)
+    && !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authSessionSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-protected-surface-auth-checks-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Files that expose protected app surfaces do not appear to co-locate session checks or guard behavior.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Protected surface files: ${sourceAudit.protectedSurfaceSignals.files.join(', ') || 'none'}`,
+        `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
+        `Auth session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Keep protected-route components, layouts, or loaders close to the session check or guard that protects them so authenticated surfaces do not look accidentally public.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
     && sourceAudit.authSessionSignals.count > 0
     && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
   ) {
@@ -1646,6 +1673,7 @@ interface AstCritiqueSignals {
   externalBlankLinkWithoutRelCount: number;
   formControlWithoutLabelCount: number;
   placeholderNavigationTargetCount: number;
+  protectedSurfaceSignalCount: number;
   skipNavSignalCount: number;
   skipNavTargetIds: string[];
   mainLandmarkCount: number;
@@ -2199,6 +2227,16 @@ function countAuthEntrySignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countProtectedSurfaceSignals(code: string): number {
+  const patterns = [
+    /['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`]/i,
+    /\b(?:href|to|route|path)\s*[:=]\s*['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`]/i,
+    /\b(?:navigate|redirect|push|replace)\s*\(\s*['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`]/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -2224,6 +2262,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     externalBlankLinkWithoutRelCount: 0,
     formControlWithoutLabelCount: 0,
     placeholderNavigationTargetCount: 0,
+    protectedSurfaceSignalCount: countProtectedSurfaceSignals(code),
     skipNavSignalCount: countSkipNavSignals(code),
     skipNavTargetIds: [],
     mainLandmarkCount: 0,
