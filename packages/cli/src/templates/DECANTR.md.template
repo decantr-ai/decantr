@@ -68,9 +68,9 @@ When a user request would violate guard rules:
 - `decantr_check_drift` -- Check if planned changes violate rules
 - `decantr_accept_drift` -- Accept a detected drift as intentional
 - `decantr_update_essence` -- Update the essence spec to match desired changes
-- `decantr_get_scaffold_context` -- Read the top-level scaffold task, scaffold overview, and compiled scaffold pack together
+- `decantr_get_scaffold_context` -- Read the top-level scaffold task, scaffold overview, compiled scaffold pack, and review pack together
 - `decantr_get_page_context` -- Read a route-local page pack together with its parent section context when available
-- `decantr_get_execution_pack` -- Read compiled scaffold, mutation, section, and page packs
+- `decantr_get_execution_pack` -- Read compiled scaffold, review, mutation, section, and page packs
 - `decantr_get_section_context` -- Read the richer section context with compiled pack data when available
 
 ---

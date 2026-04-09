@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { buildMutationPack, buildPagePack, buildScaffoldPack, buildSectionPack, runPipeline } from '../src/index.js';
+import { buildMutationPack, buildPagePack, buildReviewPack, buildScaffoldPack, buildSectionPack, runPipeline } from '../src/index.js';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
@@ -186,5 +186,27 @@ describe('buildScaffoldPack', () => {
     expect(modifyPack.successChecks[0].id).toBe('mutation-existing-topology');
     expect(modifyPack.renderedMarkdown).toContain('- Operation: modify');
     expect(modifyPack.renderedMarkdown).toContain('## Workflow');
+  });
+
+  it('builds a review pack with compiled focus areas and workflow', async () => {
+    const essence = loadFixture('essence-saas');
+    const result = await runPipeline(essence, { contentRoot });
+
+    const pack = buildReviewPack(result.ir, {
+      target: {
+        framework: 'react',
+        runtime: 'vite',
+        adapter: 'react-vite',
+      },
+    });
+
+    expect(pack.packType).toBe('review');
+    expect(pack.$schema).toBe('https://decantr.ai/schemas/review-pack.v1.json');
+    expect(pack.data.reviewType).toBe('app');
+    expect(pack.data.routes).toHaveLength(2);
+    expect(pack.data.focusAreas).toContain('route-topology');
+    expect(pack.renderedMarkdown).toContain('## Review Contract');
+    expect(pack.renderedMarkdown).toContain('## Focus Areas');
+    expect(pack.renderedMarkdown).toContain('## Review Workflow');
   });
 });

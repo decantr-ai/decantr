@@ -58,6 +58,7 @@ interface PackManifest {
   version: string;
   generatedAt: string;
   scaffold: PackManifestEntry | null;
+  review?: PackManifestEntry | null;
   sections: Array<PackManifestEntry & { pageIds: string[] }>;
   pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
   mutations?: Array<PackManifestEntry & { mutationType: string }>;
@@ -365,7 +366,7 @@ export const TOOLS = [
   {
     name: 'decantr_get_scaffold_context',
     title: 'Get Scaffold Context',
-    description: 'Get the top-level scaffold context for the current project. Returns the scaffold task brief, scaffold overview, compiled scaffold execution pack, and pack manifest when available.',
+    description: 'Get the top-level scaffold context for the current project. Returns the scaffold task brief, scaffold overview, compiled scaffold execution pack, compiled review pack, and pack manifest when available.',
     inputSchema: {
       type: 'object' as const,
       properties: {},
@@ -410,7 +411,7 @@ export const TOOLS = [
       properties: {
         pack_type: {
           type: 'string',
-          enum: ['manifest', 'scaffold', 'mutation', 'section', 'page'],
+          enum: ['manifest', 'scaffold', 'review', 'mutation', 'section', 'page'],
           description: 'Pack type to fetch. Defaults to manifest.',
         },
         id: {
@@ -1113,6 +1114,10 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           markdown: existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null,
           json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,
         },
+        review_pack: {
+          markdown: existsSync(join(contextDir, 'review-pack.md')) ? readFileSync(join(contextDir, 'review-pack.md'), 'utf-8') : null,
+          json: existsSync(join(contextDir, 'review-pack.json')) ? JSON.parse(readFileSync(join(contextDir, 'review-pack.json'), 'utf-8')) : null,
+        },
         pack_manifest: manifest,
         available_sections: manifest?.sections.map(section => ({ id: section.id, page_ids: section.pageIds })) ?? [],
         available_pages: manifest?.pages.map(page => ({ id: page.id, section_id: page.sectionId })) ?? [],
@@ -1268,6 +1273,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       if (packType === 'scaffold') {
         entry = manifest.scaffold;
+      } else if (packType === 'review') {
+        entry = manifest.review ?? null;
       } else if (packType === 'mutation') {
         availableIds = (manifest.mutations ?? []).map(mutation => mutation.id);
         const idErr = validateStringArg(args, 'id');
@@ -1320,7 +1327,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
     case 'decantr_critique': {
       const { critiqueFile } = await import('./critique.js');
       const result = await critiqueFile(args.file_path as string, process.cwd());
-      return result;
+      const reviewPackPath = join(process.cwd(), '.decantr', 'context', 'review-pack.json');
+      return {
+        ...result,
+        review_pack: existsSync(reviewPackPath) ? JSON.parse(readFileSync(reviewPackPath, 'utf-8')) : null,
+      };
     }
 
     default:

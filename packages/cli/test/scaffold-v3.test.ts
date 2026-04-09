@@ -252,6 +252,8 @@ describe('v3 scaffold', () => {
     const sectionPackJsonPath = join(testDir, '.decantr', 'context', 'section-custom-pack.json');
     const pagePackPath = join(testDir, '.decantr', 'context', 'page-home-pack.md');
     const pagePackJsonPath = join(testDir, '.decantr', 'context', 'page-home-pack.json');
+    const reviewPackPath = join(testDir, '.decantr', 'context', 'review-pack.md');
+    const reviewPackJsonPath = join(testDir, '.decantr', 'context', 'review-pack.json');
     const addMutationPackPath = join(testDir, '.decantr', 'context', 'mutation-add-page-pack.md');
     const addMutationPackJsonPath = join(testDir, '.decantr', 'context', 'mutation-add-page-pack.json');
     const modifyMutationPackPath = join(testDir, '.decantr', 'context', 'mutation-modify-pack.md');
@@ -263,6 +265,8 @@ describe('v3 scaffold', () => {
     expect(existsSync(sectionPackJsonPath)).toBe(true);
     expect(existsSync(pagePackPath)).toBe(true);
     expect(existsSync(pagePackJsonPath)).toBe(true);
+    expect(existsSync(reviewPackPath)).toBe(true);
+    expect(existsSync(reviewPackJsonPath)).toBe(true);
     expect(existsSync(addMutationPackPath)).toBe(true);
     expect(existsSync(addMutationPackJsonPath)).toBe(true);
     expect(existsSync(modifyMutationPackPath)).toBe(true);
@@ -275,6 +279,8 @@ describe('v3 scaffold', () => {
     const sectionPackJson = JSON.parse(readFileSync(sectionPackJsonPath, 'utf-8'));
     const pageContent = readFileSync(pagePackPath, 'utf-8');
     const pagePackJson = JSON.parse(readFileSync(pagePackJsonPath, 'utf-8'));
+    const reviewContent = readFileSync(reviewPackPath, 'utf-8');
+    const reviewJson = JSON.parse(readFileSync(reviewPackJsonPath, 'utf-8'));
     const addMutationContent = readFileSync(addMutationPackPath, 'utf-8');
     const addMutationJson = JSON.parse(readFileSync(addMutationPackJsonPath, 'utf-8'));
     const modifyMutationContent = readFileSync(modifyMutationPackPath, 'utf-8');
@@ -323,6 +329,11 @@ describe('v3 scaffold', () => {
         layout: 'hero',
       },
     ]);
+    expect(reviewContent).toContain('# Review Pack');
+    expect(reviewContent).toContain('## Focus Areas');
+    expect(reviewJson.$schema).toBe('https://decantr.ai/schemas/review-pack.v1.json');
+    expect(reviewJson.packType).toBe('review');
+    expect(reviewJson.data.reviewType).toBe('app');
     expect(addMutationContent).toContain('# Mutation Pack');
     expect(addMutationContent).toContain('- Operation: add-page');
     expect(addMutationJson.$schema).toBe('https://decantr.ai/schemas/mutation-pack.v1.json');
@@ -336,6 +347,11 @@ describe('v3 scaffold', () => {
       id: 'scaffold',
       markdown: 'scaffold-pack.md',
       json: 'scaffold-pack.json',
+    });
+    expect(manifest.review).toEqual({
+      id: 'review',
+      markdown: 'review-pack.md',
+      json: 'review-pack.json',
     });
     expect(manifest.sections).toEqual([
       {

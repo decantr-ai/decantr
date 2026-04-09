@@ -8,6 +8,7 @@ export const EXECUTION_PACK_SCHEMA_URLS = {
   section: 'https://decantr.ai/schemas/section-pack.v1.json',
   page: 'https://decantr.ai/schemas/page-pack.v1.json',
   mutation: 'https://decantr.ai/schemas/mutation-pack.v1.json',
+  review: 'https://decantr.ai/schemas/review-pack.v1.json',
 } as const;
 
 export const PACK_MANIFEST_SCHEMA_URL = 'https://decantr.ai/schemas/pack-manifest.v1.json';
@@ -179,6 +180,27 @@ export interface MutationExecutionPack extends ExecutionPackBase<MutationPackDat
   packType: 'mutation';
 }
 
+export type ReviewPackKind = 'app';
+
+export interface ReviewPackData {
+  reviewType: ReviewPackKind;
+  shell: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routing: 'hash' | 'history';
+  features: string[];
+  routes: ScaffoldPackRoute[];
+  focusAreas: string[];
+  workflow: string[];
+}
+
+export interface ReviewExecutionPack extends ExecutionPackBase<ReviewPackData> {
+  packType: 'review';
+}
+
 export interface ScaffoldPackBuilderOptions {
   objective?: string;
   target?: Partial<ExecutionPackTarget>;
@@ -194,6 +216,11 @@ export interface SectionPackBuilderOptions extends ScaffoldPackBuilderOptions {}
 export interface PagePackBuilderOptions extends ScaffoldPackBuilderOptions {}
 export interface MutationPackBuilderOptions extends ScaffoldPackBuilderOptions {
   mutationType: MutationPackKind;
+  workflow?: string[];
+}
+export interface ReviewPackBuilderOptions extends ScaffoldPackBuilderOptions {
+  reviewType?: ReviewPackKind;
+  focusAreas?: string[];
   workflow?: string[];
 }
 
@@ -304,6 +331,24 @@ const DEFAULT_MUTATION_SUCCESS_CHECKS: Record<MutationPackKind, ExecutionPackSuc
     },
   ],
 };
+
+const DEFAULT_REVIEW_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
+  {
+    id: 'review-contract-baseline',
+    label: 'Review findings should use the compiled route, shell, and theme contract as the baseline.',
+    severity: 'error',
+  },
+  {
+    id: 'review-evidence',
+    label: 'Each critique finding should cite concrete evidence from the generated workspace.',
+    severity: 'error',
+  },
+  {
+    id: 'review-remediation',
+    label: 'Suggested fixes should point back to code changes or essence updates when contract drift exists.',
+    severity: 'warn',
+  },
+];
 
 function collectPatternIds(page: IRPageNode): string[] {
   const patternIds: string[] = [];
@@ -476,6 +521,42 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     if (mutationPack.data.workflow.length > 0) {
       lines.push('## Workflow');
       for (const step of mutationPack.data.workflow) {
+        lines.push(`- ${step}`);
+      }
+      lines.push('');
+    }
+  }
+
+  if (pack.packType === 'review') {
+    const reviewPack = pack as ReviewExecutionPack;
+    lines.push('## Review Contract');
+    lines.push(`- Review Type: ${reviewPack.data.reviewType}`);
+    lines.push(`- Shell: ${reviewPack.data.shell}`);
+    lines.push(`- Theme: ${reviewPack.data.theme.id} (${reviewPack.data.theme.mode})`);
+    lines.push(`- Routing: ${reviewPack.data.routing}`);
+    if (reviewPack.data.features.length > 0) {
+      lines.push(`- Features: ${reviewPack.data.features.join(', ')}`);
+    }
+    lines.push('');
+
+    lines.push('## Review Topology');
+    for (const route of reviewPack.data.routes) {
+      const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+      lines.push(`- ${route.path} -> ${route.pageId} [${patterns}]`);
+    }
+    lines.push('');
+
+    if (reviewPack.data.focusAreas.length > 0) {
+      lines.push('## Focus Areas');
+      for (const focusArea of reviewPack.data.focusAreas) {
+        lines.push(`- ${focusArea}`);
+      }
+      lines.push('');
+    }
+
+    if (reviewPack.data.workflow.length > 0) {
+      lines.push('## Review Workflow');
+      for (const step of reviewPack.data.workflow) {
         lines.push(`- ${step}`);
       }
       lines.push('');
@@ -757,6 +838,79 @@ export function buildMutationPack(
       features: appNode.features,
       routes,
       workflow: options.workflow ?? defaultWorkflow,
+    },
+    renderedMarkdown: '',
+  };
+
+  pack.renderedMarkdown = renderExecutionPackMarkdown(pack);
+  return pack;
+}
+
+export function buildReviewPack(
+  appNode: IRAppNode,
+  options: ReviewPackBuilderOptions = {},
+): ReviewExecutionPack {
+  const routes = summarizeRoutes(appNode);
+  const scopePatternIds = [...new Set(routes.flatMap(route => route.patternIds))];
+  const reviewType = options.reviewType ?? 'app';
+  const focusAreas = options.focusAreas ?? [
+    'route-topology',
+    'theme-consistency',
+    'treatment-usage',
+    'accessibility',
+    'responsive-design',
+  ];
+  const workflow = options.workflow ?? [
+    'Read the scaffold pack and page packs before evaluating generated code.',
+    'Compare findings against the compiled route, shell, and theme contract first.',
+    'Escalate contract drift into essence updates when the requested output intentionally changes topology or theme identity.',
+  ];
+
+  const pack: ReviewExecutionPack = {
+    $schema: EXECUTION_PACK_SCHEMA_URLS.review,
+    packVersion: '1.0.0',
+    packType: 'review',
+    objective: options.objective ?? 'Review generated output against the compiled Decantr contract.',
+    target: {
+      ...DEFAULT_TARGET,
+      ...options.target,
+    },
+    preset: options.preset ?? null,
+    scope: {
+      appId: appNode.id,
+      pageIds: routes.map(route => route.pageId),
+      patternIds: scopePatternIds,
+    },
+    requiredSetup: options.requiredSetup ?? [
+      'Read the compiled scaffold and route packs before reviewing code.',
+      'Use concrete evidence from the workspace instead of purely stylistic intuition.',
+    ],
+    allowedVocabulary: [...new Set([
+      reviewType,
+      appNode.shell.config.type,
+      appNode.theme.id,
+      appNode.theme.mode,
+      ...appNode.features,
+      ...scopePatternIds,
+      ...focusAreas,
+    ])],
+    examples: options.examples ?? [],
+    antiPatterns: options.antiPatterns ?? [],
+    successChecks: options.successChecks ?? DEFAULT_REVIEW_SUCCESS_CHECKS,
+    tokenBudget: mergeTokenBudget(options.tokenBudget),
+    data: {
+      reviewType,
+      shell: appNode.shell.config.type,
+      theme: {
+        id: appNode.theme.id,
+        mode: appNode.theme.mode,
+        shape: appNode.theme.shape,
+      },
+      routing: appNode.routing,
+      features: appNode.features,
+      routes,
+      focusAreas,
+      workflow,
     },
     renderedMarkdown: '',
   };

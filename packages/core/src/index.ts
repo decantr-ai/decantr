@@ -49,6 +49,10 @@ export type {
   MutationPackData,
   MutationExecutionPack,
   MutationPackBuilderOptions,
+  ReviewPackKind,
+  ReviewPackData,
+  ReviewExecutionPack,
+  ReviewPackBuilderOptions,
 } from './packs.js';
 
 export type { PipelineOptions, PipelineResult } from './pipeline.js';
@@ -65,5 +69,6 @@ export {
   buildSectionPack,
   buildPagePack,
   buildMutationPack,
+  buildReviewPack,
   renderExecutionPackMarkdown,
 } from './packs.js';

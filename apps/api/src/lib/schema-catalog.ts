@@ -12,6 +12,7 @@ import scaffoldPackSchema from '@decantr/core/schema/scaffold-pack.v1.json';
 import sectionPackSchema from '@decantr/core/schema/section-pack.v1.json';
 import pagePackSchema from '@decantr/core/schema/page-pack.v1.json';
 import mutationPackSchema from '@decantr/core/schema/mutation-pack.v1.json';
+import reviewPackSchema from '@decantr/core/schema/review-pack.v1.json';
 import packManifestSchema from '@decantr/core/schema/pack-manifest.v1.json';
 
 export type JsonSchema = Record<string, unknown>;
@@ -48,5 +49,6 @@ export const PUBLIC_SCHEMAS: Record<string, JsonSchema> = {
   'section-pack.v1.json': sectionPackSchema as JsonSchema,
   'page-pack.v1.json': pagePackSchema as JsonSchema,
   'mutation-pack.v1.json': mutationPackSchema as JsonSchema,
+  'review-pack.v1.json': reviewPackSchema as JsonSchema,
   'pack-manifest.v1.json': packManifestSchema as JsonSchema,
 };

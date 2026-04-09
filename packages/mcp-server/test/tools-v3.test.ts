@@ -224,14 +224,20 @@ describe('v3-aware tool tests', () => {
       await writeFile(join(contextDir, 'task-scaffold.md'), '# Task Context: Scaffolding\n');
       await writeFile(join(contextDir, 'scaffold.md'), '# Scaffold Context\n');
       await writeFile(join(contextDir, 'scaffold-pack.md'), '# Scaffold Pack\n');
+      await writeFile(join(contextDir, 'review-pack.md'), '# Review Pack\n');
       await writeFile(join(contextDir, 'scaffold-pack.json'), JSON.stringify({
         packType: 'scaffold',
         data: { shell: 'sidebar-main' },
+      }));
+      await writeFile(join(contextDir, 'review-pack.json'), JSON.stringify({
+        packType: 'review',
+        data: { reviewType: 'app' },
       }));
       await writeFile(join(contextDir, 'pack-manifest.json'), JSON.stringify({
         version: '1.0.0',
         generatedAt: '2026-04-08T00:00:00.000Z',
         scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
         mutations: [
           { id: 'add-page', markdown: 'mutation-add-page-pack.md', json: 'mutation-add-page-pack.json', mutationType: 'add-page' },
         ],
@@ -248,6 +254,7 @@ describe('v3-aware tool tests', () => {
         task_context: string;
         scaffold_context: string;
         execution_pack: { markdown: string; json: { packType: string } };
+        review_pack: { markdown: string; json: { packType: string } };
         pack_manifest: { version: string };
         available_sections: Array<{ id: string; page_ids: string[] }>;
         available_pages: Array<{ id: string; section_id: string | null }>;
@@ -258,6 +265,8 @@ describe('v3-aware tool tests', () => {
       expect(result.scaffold_context).toContain('# Scaffold Context');
       expect(result.execution_pack.markdown).toContain('# Scaffold Pack');
       expect(result.execution_pack.json.packType).toBe('scaffold');
+      expect(result.review_pack.markdown).toContain('# Review Pack');
+      expect(result.review_pack.json.packType).toBe('review');
       expect(result.pack_manifest.version).toBe('1.0.0');
       expect(result.available_sections).toEqual([{ id: 'dashboard', page_ids: ['overview'] }]);
       expect(result.available_pages).toEqual([{ id: 'overview', section_id: 'dashboard' }]);
@@ -271,6 +280,7 @@ describe('v3-aware tool tests', () => {
         version: '1.0.0',
         generatedAt: '2026-04-08T00:00:00.000Z',
         scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        review: null,
         mutations: [],
         sections: [],
         pages: [],
@@ -290,6 +300,7 @@ describe('v3-aware tool tests', () => {
         version: '1.0.0',
         generatedAt: '2026-04-08T00:00:00.000Z',
         scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        review: null,
         mutations: [],
         sections: [
           {
@@ -351,6 +362,7 @@ describe('v3-aware tool tests', () => {
         version: '1.0.0',
         generatedAt: '2026-04-08T00:00:00.000Z',
         scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        review: null,
         mutations: [],
         sections: [],
         pages: [
@@ -394,6 +406,7 @@ describe('v3-aware tool tests', () => {
         version: '1.0.0',
         generatedAt: '2026-04-08T00:00:00.000Z',
         scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        review: null,
         mutations: [
           {
             id: 'modify',
@@ -427,6 +440,41 @@ describe('v3-aware tool tests', () => {
       expect(result.markdown).toContain('# Mutation Pack');
       expect(result.json.packType).toBe('mutation');
       expect(result.json.data.mutationType).toBe('modify');
+    });
+
+    it('returns the review pack in markdown and json', async () => {
+      const contextDir = join(testDir, '.decantr', 'context');
+      await mkdir(contextDir, { recursive: true });
+      await writeFile(join(contextDir, 'pack-manifest.json'), JSON.stringify({
+        version: '1.0.0',
+        generatedAt: '2026-04-08T00:00:00.000Z',
+        scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+        mutations: [],
+        sections: [],
+        pages: [],
+      }));
+      await writeFile(join(contextDir, 'review-pack.md'), '# Review Pack\n\n- Review Type: app\n');
+      await writeFile(join(contextDir, 'review-pack.json'), JSON.stringify({
+        packType: 'review',
+        data: { reviewType: 'app' },
+      }));
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_execution_pack', {
+        pack_type: 'review',
+      }) as {
+        pack_type: string;
+        id: string;
+        markdown: string;
+        json: { packType: string; data: { reviewType: string } };
+      };
+
+      expect(result.pack_type).toBe('review');
+      expect(result.id).toBe('review');
+      expect(result.markdown).toContain('# Review Pack');
+      expect(result.json.packType).toBe('review');
+      expect(result.json.data.reviewType).toBe('app');
     });
   });
 

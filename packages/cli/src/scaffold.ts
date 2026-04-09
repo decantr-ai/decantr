@@ -3,7 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
-import { PACK_MANIFEST_SCHEMA_URL, buildScaffoldPack, buildSectionPack, buildPagePack, buildMutationPack, runPipeline } from '@decantr/core';
+import { PACK_MANIFEST_SCHEMA_URL, buildScaffoldPack, buildSectionPack, buildPagePack, buildMutationPack, buildReviewPack, runPipeline } from '@decantr/core';
 import type { PagePackInput, ScaffoldExecutionPack, SectionPackInput } from '@decantr/core';
 import type { ExecutionPackBase } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
@@ -2168,6 +2168,7 @@ interface PackManifest {
   version: '1.0.0';
   generatedAt: string;
   scaffold: PackManifestEntry | null;
+  review: PackManifestEntry | null;
   sections: Array<PackManifestEntry & { pageIds: string[] }>;
   pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
   mutations: Array<PackManifestEntry & { mutationType: string }>;
@@ -2268,6 +2269,21 @@ async function generatePackContexts(
     const scaffoldPackPath = writeExecutionPackArtifacts(join(contextDir, 'scaffold-pack'), pack);
     outputPaths.push(scaffoldPackPath);
 
+    const reviewPack = buildReviewPack(pipeline.ir, {
+      target: {
+        framework: essence.meta.target || null,
+        runtime: essence.meta.platform.type || null,
+        adapter: resolvePackAdapter(essence.meta.target, essence.meta.platform.type),
+      },
+    });
+    const reviewManifest: PackManifestEntry = {
+      id: 'review',
+      markdown: 'review-pack.md',
+      json: 'review-pack.json',
+    };
+    const reviewPackPath = writeExecutionPackArtifacts(join(contextDir, 'review-pack'), reviewPack);
+    outputPaths.push(reviewPackPath);
+
     const sharedTarget = {
       framework: essence.meta.target || null,
       runtime: essence.meta.platform.type || null,
@@ -2335,6 +2351,7 @@ async function generatePackContexts(
       version: '1.0.0',
       generatedAt: new Date().toISOString(),
       scaffold: scaffoldManifest,
+      review: reviewManifest,
       sections: sectionManifestEntries,
       pages: pageManifestEntries,
       mutations: mutationManifestEntries,

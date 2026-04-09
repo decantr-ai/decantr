@@ -3,7 +3,7 @@
   "$id": "https://decantr.ai/schemas/pack-manifest.v1.json",
   "title": "Decantr Execution Pack Manifest",
   "type": "object",
-  "required": ["$schema", "version", "generatedAt", "scaffold", "sections", "pages", "mutations"],
+  "required": ["$schema", "version", "generatedAt", "scaffold", "review", "sections", "pages", "mutations"],
   "properties": {
     "$schema": {
       "const": "https://decantr.ai/schemas/pack-manifest.v1.json"
@@ -16,6 +16,16 @@
       "format": "date-time"
     },
     "scaffold": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/manifestEntry"
+        }
+      ]
+    },
+    "review": {
       "anyOf": [
         {
           "type": "null"
