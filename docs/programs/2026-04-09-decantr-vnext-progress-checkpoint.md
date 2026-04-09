@@ -128,6 +128,7 @@ commit archaeology.
 - File critique now catches dialog accessibility gaps too, including missing dialog labels and missing modal hints on dialog-like surfaces.
 - Auth verification now flags guard/session files that redirect unauthenticated users toward protected destinations like `/dashboard` instead of anonymous entry routes.
 - Accessibility critique now catches table markup without headers or captions, so data-heavy generated UIs fail earlier when their structure is visually plausible but semantically incomplete.
+- Accessibility critique now also catches multiple navigation landmarks without distinct labels, which is especially important for generated app shells with both sidebar and utility nav regions.
 
 ### Showcase / golden corpus
 

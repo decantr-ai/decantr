@@ -377,6 +377,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     const accessibilityIssueCount = signals.iconOnlyButtonWithoutLabelCount
       + signals.iconOnlyLinkWithoutLabelCount
       + signals.clickableNonSemanticCount
+      + signals.unlabeledNavigationLandmarkCount
       + signals.imageWithoutAltCount
       + signals.iframeWithoutTitleCount
       + signals.dialogWithoutLabelCount
@@ -1702,6 +1703,7 @@ interface AstCritiqueSignals {
   dialogWithoutModalHintCount: number;
   tableWithoutHeaderCount: number;
   tableWithoutCaptionCount: number;
+  unlabeledNavigationLandmarkCount: number;
   externalBlankLinkWithoutRelCount: number;
   formControlWithoutLabelCount: number;
   placeholderNavigationTargetCount: number;
@@ -1923,6 +1925,16 @@ function hasDialogModalHint(attributes: ts.JsxAttributes, tagName: string | null
   }
   const modalValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'aria-modal'))?.trim().toLowerCase();
   return modalValue === 'true';
+}
+
+function isNavigationLandmark(tagName: string | null, attributes: ts.JsxAttributes): boolean {
+  if (tagName === 'nav') return true;
+  const roleValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'role'))?.trim().toLowerCase();
+  return roleValue === 'navigation';
+}
+
+function hasNavigationLabel(attributes: ts.JsxAttributes): boolean {
+  return Boolean(getJsxAttribute(attributes, 'aria-label', 'aria-labelledby', 'title'));
 }
 
 function hasInsecureFormAction(attributes: ts.JsxAttributes): boolean {
@@ -2366,6 +2378,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     dialogWithoutModalHintCount: 0,
     tableWithoutHeaderCount: 0,
     tableWithoutCaptionCount: 0,
+    unlabeledNavigationLandmarkCount: 0,
     externalBlankLinkWithoutRelCount: 0,
     formControlWithoutLabelCount: 0,
     placeholderNavigationTargetCount: 0,
@@ -2391,6 +2404,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authExitSignalCount: countAuthExitSignals(code),
   };
   const labelForIds = collectLabelForIds(sourceFile);
+  let navigationLandmarkCount = 0;
+  let unlabeledNavigationLandmarkCount = 0;
 
   const walk = (node: ts.Node) => {
     if (ts.isJsxAttribute(node)) {
@@ -2531,6 +2546,12 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (hasMainLandmarkSignal(node.attributes, tagName)) {
         signals.mainLandmarkCount += 1;
       }
+      if (isNavigationLandmark(tagName, node.attributes)) {
+        navigationLandmarkCount += 1;
+        if (!hasNavigationLabel(node.attributes)) {
+          unlabeledNavigationLandmarkCount += 1;
+        }
+      }
       const mainLandmarkId = getMainLandmarkId(node.attributes, tagName);
       if (mainLandmarkId && !signals.mainLandmarkIds.includes(mainLandmarkId)) {
         signals.mainLandmarkIds.push(mainLandmarkId);
@@ -2614,6 +2635,12 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
       if (hasMainLandmarkSignal(node.openingElement.attributes, tagName)) {
         signals.mainLandmarkCount += 1;
+      }
+      if (isNavigationLandmark(tagName, node.openingElement.attributes)) {
+        navigationLandmarkCount += 1;
+        if (!hasNavigationLabel(node.openingElement.attributes)) {
+          unlabeledNavigationLandmarkCount += 1;
+        }
       }
       const mainLandmarkId = getMainLandmarkId(node.openingElement.attributes, tagName);
       if (mainLandmarkId && !signals.mainLandmarkIds.includes(mainLandmarkId)) {
@@ -2709,6 +2736,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   };
 
   walk(sourceFile);
+  signals.unlabeledNavigationLandmarkCount = navigationLandmarkCount > 1 ? unlabeledNavigationLandmarkCount : 0;
   return signals;
 }
 
@@ -2780,6 +2808,7 @@ export function critiqueSource({
   const iconButtonIssues = astSignals.iconOnlyButtonWithoutLabelCount;
   const iconLinkIssues = astSignals.iconOnlyLinkWithoutLabelCount;
   const clickableNonSemanticIssues = astSignals.clickableNonSemanticCount;
+  const unlabeledNavigationLandmarkIssues = astSignals.unlabeledNavigationLandmarkCount;
   const imageAltIssues = astSignals.imageWithoutAltCount;
   const iframeTitleIssues = astSignals.iframeWithoutTitleCount;
   const dialogLabelIssues = astSignals.dialogWithoutLabelCount;
@@ -2801,6 +2830,7 @@ export function critiqueSource({
         - (iconButtonIssues > 0 ? 1 : 0)
         - (iconLinkIssues > 0 ? 1 : 0)
         - (clickableNonSemanticIssues > 0 ? 1 : 0)
+        - (unlabeledNavigationLandmarkIssues > 0 ? 1 : 0)
         - (imageAltIssues > 0 ? 1 : 0)
         - (iframeTitleIssues > 0 ? 1 : 0)
         - (dialogLabelIssues > 0 ? 1 : 0)
@@ -2810,7 +2840,7 @@ export function critiqueSource({
         - (formControlLabelIssues > 0 ? 1 : 0),
       ),
     ),
-    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, images without alt: ${imageAltIssues}, iframes without title: ${iframeTitleIssues}, dialogs without label: ${dialogLabelIssues}, dialogs without modal hint: ${dialogModalHintIssues}, tables without headers: ${tableHeaderIssues}, tables without caption: ${tableCaptionIssues}, form controls without labels: ${formControlLabelIssues}`,
+    details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, unlabeled navigation landmarks: ${unlabeledNavigationLandmarkIssues}, images without alt: ${imageAltIssues}, iframes without title: ${iframeTitleIssues}, dialogs without label: ${dialogLabelIssues}, dialogs without modal hint: ${dialogModalHintIssues}, tables without headers: ${tableHeaderIssues}, tables without caption: ${tableCaptionIssues}, form controls without labels: ${formControlLabelIssues}`,
     suggestions: [
       ...(!hasAria ? ['Add ARIA roles or labels to interactive regions.'] : []),
       ...(!hasFocus ? ['Add visible focus styling for keyboard navigation.'] : []),
@@ -2818,6 +2848,7 @@ export function critiqueSource({
       ...(iconButtonIssues > 0 ? ['Add accessible labels to icon-only buttons via visible text or aria-label.'] : []),
       ...(iconLinkIssues > 0 ? ['Add accessible labels to icon-only links via visible text or aria-label.'] : []),
       ...(clickableNonSemanticIssues > 0 ? ['Use semantic interactive elements or add role/tabIndex and keyboard handling to clickable non-semantic containers.'] : []),
+      ...(unlabeledNavigationLandmarkIssues > 0 ? ['Give multiple navigation landmarks distinct labels so assistive technologies can differentiate primary, sidebar, and utility nav regions.'] : []),
       ...(imageAltIssues > 0 ? ['Add alt text to meaningful images and use alt="" only for decorative ones.'] : []),
       ...(iframeTitleIssues > 0 ? ['Add descriptive title attributes to embedded iframes so assistive technologies can identify their purpose.'] : []),
       ...(dialogLabelIssues > 0 ? ['Give dialogs an explicit accessible name via aria-label, aria-labelledby, or title.'] : []),
@@ -2881,6 +2912,17 @@ export function critiqueSource({
         evidence: [filePath, `Clickable non-semantic elements without role/tabIndex: ${clickableNonSemanticIssues}`],
         file: filePath,
         suggestedFix: 'Prefer semantic controls like button/link, or add role, tabIndex, and keyboard handlers to non-semantic interactive containers.',
+      }));
+    }
+    if (unlabeledNavigationLandmarkIssues > 0) {
+      findings.push(makeFinding({
+        id: 'accessibility-navigation-landmark-label-missing',
+        category: 'Accessibility',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+        message: 'Multiple navigation landmarks were detected without distinct accessible labels.',
+        evidence: [filePath, `Unlabeled navigation landmarks: ${unlabeledNavigationLandmarkIssues}`],
+        file: filePath,
+        suggestedFix: 'Label multiple nav regions with aria-label or aria-labelledby so assistive technologies can distinguish primary, sidebar, and utility navigation.',
       }));
     }
     if (imageAltIssues > 0) {
