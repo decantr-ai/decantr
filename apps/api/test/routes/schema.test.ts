@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
 import type { Env } from '../../src/types.js';
+import { createApp } from '../../src/app.js';
 import { schemaRoutes } from '../../src/routes/schema.js';
 
 function createTestApp() {
@@ -53,6 +54,15 @@ describe('GET /v1/schema/:name', () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.$id).toBe('https://decantr.ai/schemas/showcase-manifest.v1.json');
+  });
+
+  it('remains publicly readable through the full app middleware stack', async () => {
+    const app = createApp();
+    const res = await app.request('/v1/schema/registry-intelligence-summary.v1.json');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$id).toBe('https://decantr.ai/schemas/registry-intelligence-summary.v1.json');
   });
 
   it('returns 404 for unknown schemas', async () => {

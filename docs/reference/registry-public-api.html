@@ -205,6 +205,27 @@ GET /patterns/@official/hero</pre>
     </section>
 
     <section class="panel endpoint">
+      <h2>Public Schema Discovery</h2>
+      <pre>GET /schema/search-response.v1.json
+GET /schema/registry-intelligence-summary.v1.json</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Fetch the published JSON Schemas behind public Decantr contracts.</div>
+        <div><strong>Browse all schemas:</strong> <a href="/schemas/">/schemas/</a></div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Showcase Benchmark Surfaces</h2>
+      <pre>GET /showcase/manifest
+GET /showcase/shortlist
+GET /showcase/shortlist-verification</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Inspect the audited showcase corpus, shortlist metadata, and the schema-backed shortlist verification report.</div>
+        <div><strong>Schemas:</strong> <a href="/schemas/showcase-manifest.v1.json"><code>showcase-manifest.v1.json</code></a>, <a href="/schemas/showcase-shortlist.v1.json"><code>showcase-shortlist.v1.json</code></a>, <a href="/schemas/showcase-shortlist-report.v1.json"><code>showcase-shortlist-report.v1.json</code></a></div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
       <h2>Registry Intelligence Summary</h2>
       <pre>GET /intelligence/summary?namespace=@official</pre>
       <div class="meta">

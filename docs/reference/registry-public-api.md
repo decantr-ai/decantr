@@ -80,6 +80,36 @@ Response schema:
 - `public-content-record.v1.json`
 - `https://decantr.ai/schemas/public-content-record.v1.json`
 
+## Public Schema Discovery
+
+```http
+GET /schema/search-response.v1.json
+GET /schema/registry-intelligence-summary.v1.json
+```
+
+Purpose:
+- fetch the published JSON Schemas backing public Decantr contracts
+
+Notes:
+- all canonical schemas are also browsable at `https://decantr.ai/schemas/`
+- schema names match the files served from that index
+
+## Showcase Benchmark Surfaces
+
+```http
+GET /showcase/manifest
+GET /showcase/shortlist
+GET /showcase/shortlist-verification
+```
+
+Purpose:
+- inspect the audited showcase corpus, shortlist metadata, and schema-backed shortlist verification report
+
+Response schemas:
+- `showcase-manifest.v1.json`
+- `showcase-shortlist.v1.json`
+- `showcase-shortlist-report.v1.json`
+
 ## Registry Intelligence Summary
 
 ```http
