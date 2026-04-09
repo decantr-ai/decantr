@@ -278,4 +278,54 @@ describe('v3-aware tool tests', () => {
       expect(result.json.data.pageId).toBe('overview');
     });
   });
+
+  describe('decantr_get_section_context', () => {
+    it('includes compiled section pack data when available', async () => {
+      const essencePath = join(testDir, 'decantr.essence.json');
+      await writeFile(essencePath, JSON.stringify(makeV3Essence({
+        blueprint: {
+          features: ['auth'],
+          sections: [
+            {
+              id: 'dashboard',
+              role: 'primary',
+              shell: 'sidebar-main',
+              features: ['auth'],
+              description: 'Primary dashboard section',
+              pages: [
+                { id: 'overview', layout: ['kpi-grid'] },
+              ],
+            },
+          ],
+        },
+      })));
+
+      const contextDir = join(testDir, '.decantr', 'context');
+      await mkdir(contextDir, { recursive: true });
+      await writeFile(join(contextDir, 'section-dashboard.md'), '# Section: dashboard\n');
+      await writeFile(join(contextDir, 'section-dashboard-pack.md'), '# Section Pack\n\n- Section: dashboard\n');
+      await writeFile(join(contextDir, 'section-dashboard-pack.json'), JSON.stringify({
+        packType: 'section',
+        data: { sectionId: 'dashboard' },
+      }));
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_section_context', {
+        section_id: 'dashboard',
+      }) as {
+        section_id: string;
+        context: string;
+        execution_pack: {
+          markdown: string;
+          json: { packType: string; data: { sectionId: string } };
+        };
+      };
+
+      expect(result.section_id).toBe('dashboard');
+      expect(result.context).toContain('# Section: dashboard');
+      expect(result.execution_pack.markdown).toContain('# Section Pack');
+      expect(result.execution_pack.json.packType).toBe('section');
+      expect(result.execution_pack.json.data.sectionId).toBe('dashboard');
+    });
+  });
 });

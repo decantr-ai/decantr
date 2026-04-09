@@ -363,7 +363,7 @@ export const TOOLS = [
   {
     name: 'decantr_get_section_context',
     title: 'Get Section Context',
-    description: 'Get the self-contained context for a specific section of the project. Returns guard rules, theme tokens, visual treatments, pattern specs, zone context, and pages — everything an AI needs to work on that section.',
+    description: 'Get the self-contained context for a specific section of the project. Returns the richer section context file and, when available, the compiled section execution pack for a more compact contract-first view.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -1080,6 +1080,14 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         };
       }
 
+      const packBasePath = join(process.cwd(), '.decantr', 'context', `section-${sectionId}-pack`);
+      const packMarkdownPath = `${packBasePath}.md`;
+      const packJsonPath = `${packBasePath}.json`;
+      const executionPack = {
+        markdown: existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null,
+        json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,
+      };
+
       // Read the section context file if it exists
       const contextPath = join(process.cwd(), '.decantr', 'context', `section-${sectionId}.md`);
       if (existsSync(contextPath)) {
@@ -1090,6 +1098,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           features: section.features,
           pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
           context: readFileSync(contextPath, 'utf-8'),
+          execution_pack: executionPack,
         };
       }
 
@@ -1101,6 +1110,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         features: section.features,
         description: section.description,
         pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
+        execution_pack: executionPack,
         note: 'Section context file not found. Run decantr refresh to generate it.',
       };
     }
