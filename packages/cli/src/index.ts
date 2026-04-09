@@ -279,12 +279,14 @@ async function printShowcaseBenchmarks(
       console.log(`  Avg build: ${report.summary.averageDurationMs} ms`);
       console.log(`  Passed smokes: ${report.summary.passedSmokes}/${report.summary.appCount}`);
       console.log(`  Avg smoke: ${report.summary.averageSmokeDurationMs} ms`);
+      console.log(`  Title checks: ${report.summary.appsWithTitleOkCount}/${report.summary.appCount}`);
+      console.log(`  Route coverage: ${report.summary.appsWithRouteCoverageCount}/${report.summary.appCount}`);
       console.log(`  Drift: lower ${report.summary.lowerDriftCount}, moderate ${report.summary.moderateDriftCount}, elevated ${report.summary.elevatedDriftCount}`);
       console.log(`  Pack manifests: ${report.summary.withPackManifestCount}/${report.summary.appCount}`);
       console.log('');
     }
     for (const entry of report.results) {
-      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`);
+      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | routes ${entry.smoke.routeDocumentsPassed}/${entry.smoke.routeDocumentsChecked} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`);
     }
     return;
   }
@@ -298,6 +300,7 @@ async function printShowcaseBenchmarks(
   if (shortlist.summary) {
     console.log(`  Passed builds: ${shortlist.summary.passedBuilds}/${shortlist.summary.appCount}`);
     console.log(`  Passed smokes: ${shortlist.summary.passedSmokes}/${shortlist.summary.appCount}`);
+    console.log(`  Route coverage: ${shortlist.summary.appsWithRouteCoverageCount}/${shortlist.summary.appCount}`);
     console.log(`  Drift mix: lower ${shortlist.summary.lowerDriftCount}, moderate ${shortlist.summary.moderateDriftCount}, elevated ${shortlist.summary.elevatedDriftCount}`);
     console.log('');
   }

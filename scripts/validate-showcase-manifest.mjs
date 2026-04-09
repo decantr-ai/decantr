@@ -101,6 +101,8 @@ if (reportResults.length > 0) {
       'passedSmokes',
       'failedSmokes',
       'averageSmokeDurationMs',
+      'appsWithTitleOkCount',
+      'appsWithRouteCoverageCount',
       'lowerDriftCount',
       'moderateDriftCount',
       'elevatedDriftCount',
@@ -158,7 +160,10 @@ if (reportResults.length > 0) {
       if (typeof entry.smoke.rootDocumentOk !== 'boolean') {
         errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.rootDocumentOk must be boolean.`);
       }
-      for (const key of ['assetCount', 'assetsPassed', 'routeHintsMatched']) {
+      if (typeof entry.smoke.titleOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.titleOk must be boolean.`);
+      }
+      for (const key of ['assetCount', 'assetsPassed', 'routeHintsMatched', 'routeDocumentsChecked', 'routeDocumentsPassed']) {
         if (!Number.isFinite(entry.smoke[key]) || entry.smoke[key] < 0) {
           errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.${key} must be a non-negative number.`);
         }

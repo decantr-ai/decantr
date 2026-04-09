@@ -133,10 +133,13 @@ export async function runShowcaseSmoke(entry) {
       passed: false,
       durationMs: 0,
       rootDocumentOk: false,
+      titleOk: false,
       assetCount: 0,
       assetsPassed: 0,
       routeHintsChecked: routeHints,
       routeHintsMatched: 0,
+      routeDocumentsChecked: 0,
+      routeDocumentsPassed: 0,
       failures: ['dist-missing'],
     };
   }
@@ -147,10 +150,13 @@ export async function runShowcaseSmoke(entry) {
       passed: false,
       durationMs: 0,
       rootDocumentOk: false,
+      titleOk: false,
       assetCount: 0,
       assetsPassed: 0,
       routeHintsChecked: routeHints,
       routeHintsMatched: 0,
+      routeDocumentsChecked: 0,
+      routeDocumentsPassed: 0,
       failures: ['index-missing'],
     };
   }
@@ -164,8 +170,12 @@ export async function runShowcaseSmoke(entry) {
     const rootResponse = await fetch(`${server.baseUrl}/`);
     const rootHtml = await rootResponse.text();
     const rootDocumentOk = rootResponse.ok && /id="root"/.test(rootHtml);
+    const titleOk = /<title>[^<]+<\/title>/i.test(rootHtml);
     if (!rootDocumentOk) {
       failures.push('root-document-invalid');
+    }
+    if (!titleOk) {
+      failures.push('root-title-missing');
     }
 
     let assetsPassed = 0;
@@ -190,17 +200,38 @@ export async function runShowcaseSmoke(entry) {
       failures.push('route-hints-missing');
     }
 
+    let routeDocumentsPassed = 0;
+    for (const routeHint of routeHints) {
+      const routeResponse = await fetch(`${server.baseUrl}${routeHint}`);
+      const routeHtml = await routeResponse.text();
+      if (routeResponse.ok && /id="root"/.test(routeHtml)) {
+        routeDocumentsPassed += 1;
+      } else {
+        failures.push(`route-document-failed:${routeHint}`);
+      }
+    }
+
+    const routeDocumentsChecked = routeHints.length;
+    if (routeDocumentsChecked > 0 && routeDocumentsPassed < Math.min(2, routeDocumentsChecked)) {
+      failures.push('route-documents-missing');
+    }
+
     return {
       passed: rootDocumentOk
+        && titleOk
         && assetPaths.length > 0
         && assetsPassed === assetPaths.length
+        && (routeDocumentsChecked === 0 || routeDocumentsPassed >= Math.min(2, routeDocumentsChecked))
         && (routeHints.length === 0 || routeHintsMatched >= Math.min(2, routeHints.length)),
       durationMs: Date.now() - startedAt,
       rootDocumentOk,
+      titleOk,
       assetCount: assetPaths.length,
       assetsPassed,
       routeHintsChecked: routeHints,
       routeHintsMatched,
+      routeDocumentsChecked,
+      routeDocumentsPassed,
       failures,
     };
   } finally {

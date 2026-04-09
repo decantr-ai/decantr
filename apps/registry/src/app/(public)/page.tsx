@@ -79,6 +79,7 @@ async function ShowcaseShortlistSummary() {
       items={[
         { label: 'Build Verified', value: summary.passedBuilds },
         { label: 'Smoke Verified', value: summary.passedSmokes },
+        { label: 'Route Coverage', value: summary.appsWithRouteCoverageCount },
         { label: 'Lower Drift', value: summary.lowerDriftCount },
         { label: 'Moderate Drift', value: summary.moderateDriftCount },
         { label: 'Elevated Drift', value: summary.elevatedDriftCount },

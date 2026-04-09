@@ -93,6 +93,11 @@ async function main() {
         / results.filter(entry => entry.smoke.passed !== null).length
       )
       : 0,
+    appsWithTitleOkCount: results.filter(entry => entry.smoke.titleOk).length,
+    appsWithRouteCoverageCount: results.filter(entry => {
+      const minimumRoutes = Math.min(2, entry.smoke.routeDocumentsChecked);
+      return entry.smoke.routeDocumentsChecked === 0 || entry.smoke.routeDocumentsPassed >= minimumRoutes;
+    }).length,
     lowerDriftCount: results.filter(entry => entry.drift.signal === 'lower').length,
     moderateDriftCount: results.filter(entry => entry.drift.signal === 'moderate').length,
     elevatedDriftCount: results.filter(entry => entry.drift.signal === 'elevated').length,
@@ -106,6 +111,8 @@ async function main() {
   console.log(`Smoke passed: ${summary.passedSmokes}`);
   console.log(`Smoke failed: ${summary.failedSmokes}`);
   console.log(`Average smoke duration: ${summary.averageSmokeDurationMs}ms`);
+  console.log(`Title checks passed: ${summary.appsWithTitleOkCount}/${summary.appCount}`);
+  console.log(`Route coverage checks passed: ${summary.appsWithRouteCoverageCount}/${summary.appCount}`);
   console.log(`Drift signals: lower ${summary.lowerDriftCount}, moderate ${summary.moderateDriftCount}, elevated ${summary.elevatedDriftCount}`);
   console.log(`Pack manifests present: ${summary.withPackManifestCount}/${summary.appCount}`);
 

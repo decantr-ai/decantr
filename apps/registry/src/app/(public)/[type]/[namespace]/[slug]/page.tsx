@@ -345,7 +345,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
               </p>
               {showcaseVerification && (
                 <p className={styles.supportingCopy}>
-                  Shortlist verification recorded a {showcaseVerification.build.passed ? 'passing' : 'failing'} build in {showcaseVerification.build.durationMs} ms and a {showcaseVerification.smoke.passed ? 'passing' : 'failing'} smoke check in {showcaseVerification.smoke.durationMs} ms, with {showcaseVerification.drift.inlineStyleCount} inline-style signals and {showcaseVerification.drift.hardcodedColorCount} hardcoded-color signals.
+                  Shortlist verification recorded a {showcaseVerification.build.passed ? 'passing' : 'failing'} build in {showcaseVerification.build.durationMs} ms and a {showcaseVerification.smoke.passed ? 'passing' : 'failing'} smoke check in {showcaseVerification.smoke.durationMs} ms, covering {showcaseVerification.smoke.routeDocumentsPassed}/{showcaseVerification.smoke.routeDocumentsChecked} audited route documents with {showcaseVerification.drift.inlineStyleCount} inline-style signals and {showcaseVerification.drift.hardcodedColorCount} hardcoded-color signals.
                 </p>
               )}
             </div>

@@ -1,15 +1,17 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-09T04:16:28.332Z",
+  "generatedAt": "2026-04-09T13:56:49.890Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1734,
+    "averageDurationMs": 2570,
     "passedSmokes": 8,
     "failedSmokes": 0,
-    "averageSmokeDurationMs": 5,
+    "averageSmokeDurationMs": 7,
+    "appsWithTitleOkCount": 8,
+    "appsWithRouteCoverageCount": 8,
     "lowerDriftCount": 2,
     "moderateDriftCount": 4,
     "elevatedDriftCount": 2,
@@ -23,12 +25,13 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1755
+        "durationMs": 5395
       },
       "smoke": {
         "passed": true,
-        "durationMs": 15,
+        "durationMs": 28,
         "rootDocumentOk": true,
+        "titleOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -40,6 +43,8 @@
           "/register"
         ],
         "routeHintsMatched": 6,
+        "routeDocumentsChecked": 6,
+        "routeDocumentsPassed": 6,
         "failures": []
       },
       "drift": {
@@ -60,12 +65,13 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1722
+        "durationMs": 2338
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 7,
         "rootDocumentOk": true,
+        "titleOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -77,6 +83,8 @@
           "/forgot-password"
         ],
         "routeHintsMatched": 6,
+        "routeDocumentsChecked": 6,
+        "routeDocumentsPassed": 6,
         "failures": []
       },
       "drift": {
@@ -97,12 +105,13 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1733
+        "durationMs": 2118
       },
       "smoke": {
         "passed": true,
         "durationMs": 3,
         "rootDocumentOk": true,
+        "titleOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -114,6 +123,8 @@
           "/drafts/"
         ],
         "routeHintsMatched": 6,
+        "routeDocumentsChecked": 6,
+        "routeDocumentsPassed": 6,
         "failures": []
       },
       "drift": {
@@ -134,12 +145,13 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1631
+        "durationMs": 2062
       },
       "smoke": {
         "passed": true,
-        "durationMs": 2,
+        "durationMs": 3,
         "rootDocumentOk": true,
+        "titleOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -151,6 +163,8 @@
           "/contact"
         ],
         "routeHintsMatched": 6,
+        "routeDocumentsChecked": 6,
+        "routeDocumentsPassed": 6,
         "failures": []
       },
       "drift": {
@@ -171,12 +185,13 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1641
+        "durationMs": 2027
       },
       "smoke": {
         "passed": true,
-        "durationMs": 2,
+        "durationMs": 3,
         "rootDocumentOk": true,
+        "titleOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -188,6 +203,8 @@
           "/privacy"
         ],
         "routeHintsMatched": 6,
+        "routeDocumentsChecked": 6,
+        "routeDocumentsPassed": 6,
         "failures": []
       },
       "drift": {
@@ -208,12 +225,13 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1876
+        "durationMs": 2211
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 4,
         "rootDocumentOk": true,
+        "titleOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -225,6 +243,8 @@
           "/dashboard/content"
         ],
         "routeHintsMatched": 6,
+        "routeDocumentsChecked": 6,
+        "routeDocumentsPassed": 6,
         "failures": []
       },
       "drift": {
@@ -245,12 +265,13 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1787
+        "durationMs": 2263
       },
       "smoke": {
         "passed": true,
-        "durationMs": 2,
+        "durationMs": 5,
         "rootDocumentOk": true,
+        "titleOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -262,6 +283,8 @@
           "/reset-password"
         ],
         "routeHintsMatched": 6,
+        "routeDocumentsChecked": 6,
+        "routeDocumentsPassed": 6,
         "failures": []
       },
       "drift": {
@@ -282,12 +305,13 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1725
+        "durationMs": 2147
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 4,
         "rootDocumentOk": true,
+        "titleOk": true,
         "assetCount": 2,
         "assetsPassed": 2,
         "routeHintsChecked": [
@@ -299,6 +323,8 @@
           "/changelog/"
         ],
         "routeHintsMatched": 6,
+        "routeDocumentsChecked": 6,
+        "routeDocumentsPassed": 6,
         "failures": []
       },
       "drift": {

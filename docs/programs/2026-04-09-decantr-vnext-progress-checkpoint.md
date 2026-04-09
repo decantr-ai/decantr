@@ -74,6 +74,10 @@ commit archaeology.
 
 - Added showcase manifest validation and repeatable shortlist verification.
 - Added shortlist verification reports and schema contracts.
+- Deepened shortlist verification beyond root/asset smoke with:
+  - HTML title checks
+  - route-document coverage checks
+  - richer shortlist summary/report fields surfaced through shared contracts
 - Registry homepage and blueprint detail surfaces expose showcase benchmark metadata.
 - API, CLI, and MCP all expose showcase benchmark surfaces.
 - Registry app now dogfoods public showcase metadata from the hosted API path.

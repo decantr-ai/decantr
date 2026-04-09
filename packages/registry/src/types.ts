@@ -518,10 +518,13 @@ export interface ShowcaseVerificationEntry {
     passed: boolean | null;
     durationMs: number;
     rootDocumentOk: boolean;
+    titleOk: boolean;
     assetCount: number;
     assetsPassed: number;
     routeHintsChecked: string[];
     routeHintsMatched: number;
+    routeDocumentsChecked: number;
+    routeDocumentsPassed: number;
     failures: string[];
   };
   drift: {
@@ -544,6 +547,8 @@ export interface ShowcaseShortlistSummary {
   passedSmokes: number;
   failedSmokes: number;
   averageSmokeDurationMs: number;
+  appsWithTitleOkCount: number;
+  appsWithRouteCoverageCount: number;
   lowerDriftCount: number;
   moderateDriftCount: number;
   elevatedDriftCount: number;

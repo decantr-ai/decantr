@@ -24,6 +24,8 @@
         "passedSmokes",
         "failedSmokes",
         "averageSmokeDurationMs",
+        "appsWithTitleOkCount",
+        "appsWithRouteCoverageCount",
         "lowerDriftCount",
         "moderateDriftCount",
         "elevatedDriftCount",
@@ -37,6 +39,8 @@
         "passedSmokes": { "type": "number", "minimum": 0 },
         "failedSmokes": { "type": "number", "minimum": 0 },
         "averageSmokeDurationMs": { "type": "number", "minimum": 0 },
+        "appsWithTitleOkCount": { "type": "number", "minimum": 0 },
+        "appsWithRouteCoverageCount": { "type": "number", "minimum": 0 },
         "lowerDriftCount": { "type": "number", "minimum": 0 },
         "moderateDriftCount": { "type": "number", "minimum": 0 },
         "elevatedDriftCount": { "type": "number", "minimum": 0 },
@@ -90,10 +94,13 @@
             "passed",
             "durationMs",
             "rootDocumentOk",
+            "titleOk",
             "assetCount",
             "assetsPassed",
             "routeHintsChecked",
             "routeHintsMatched",
+            "routeDocumentsChecked",
+            "routeDocumentsPassed",
             "failures"
           ],
           "properties": {
@@ -105,6 +112,9 @@
               "minimum": 0
             },
             "rootDocumentOk": {
+              "type": "boolean"
+            },
+            "titleOk": {
               "type": "boolean"
             },
             "assetCount": {
@@ -119,6 +129,14 @@
               "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
             },
             "routeHintsMatched": {
+              "type": "number",
+              "minimum": 0
+            },
+            "routeDocumentsChecked": {
+              "type": "number",
+              "minimum": 0
+            },
+            "routeDocumentsPassed": {
               "type": "number",
               "minimum": 0
             },

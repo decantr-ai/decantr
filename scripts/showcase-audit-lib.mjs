@@ -149,10 +149,13 @@ export function buildShowcaseVerificationResult(entry, options = {}) {
       passed: options.smoke?.passed ?? null,
       durationMs: Number.isFinite(options.smoke?.durationMs) ? options.smoke.durationMs : 0,
       rootDocumentOk: options.smoke?.rootDocumentOk ?? false,
+      titleOk: options.smoke?.titleOk ?? false,
       assetCount: Number.isFinite(options.smoke?.assetCount) ? options.smoke.assetCount : 0,
       assetsPassed: Number.isFinite(options.smoke?.assetsPassed) ? options.smoke.assetsPassed : 0,
       routeHintsChecked: Array.isArray(options.smoke?.routeHintsChecked) ? options.smoke.routeHintsChecked : [],
       routeHintsMatched: Number.isFinite(options.smoke?.routeHintsMatched) ? options.smoke.routeHintsMatched : 0,
+      routeDocumentsChecked: Number.isFinite(options.smoke?.routeDocumentsChecked) ? options.smoke.routeDocumentsChecked : 0,
+      routeDocumentsPassed: Number.isFinite(options.smoke?.routeDocumentsPassed) ? options.smoke.routeDocumentsPassed : 0,
       failures: Array.isArray(options.smoke?.failures) ? options.smoke.failures : [],
     },
     drift: {
