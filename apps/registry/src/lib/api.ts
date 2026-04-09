@@ -1,32 +1,20 @@
+import type {
+  ContentItem as AuthenticatedContentItem,
+  ContentListResponse,
+  PublicContentRecord,
+  PublicContentSummary,
+  PublicUserProfile,
+  SearchResponse,
+  OwnedContentSummary,
+} from '@decantr/registry/client';
 import { getPublicRegistryClient, normalizeApiContentType } from '@/lib/public-registry-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 
-export interface ContentItem {
-  id: string;
-  type: string;
-  namespace: string;
-  slug: string;
-  version: string;
-  status?: string;
-  visibility?: string;
-  name?: string;
-  description?: string;
-  owner_name?: string;
-  owner_username?: string;
-  published_at?: string;
-  data?: Record<string, unknown>;
-}
-
-export interface UserProfile {
-  username: string;
-  display_name: string | null;
-  reputation_score: number;
-  tier: 'free' | 'pro' | 'team' | 'enterprise';
-  created_at: string;
-  content_count: number;
-  content_counts: Record<string, number>;
-}
+export type ContentItem = PublicContentSummary;
+export type ContentRecord<TData = Record<string, unknown>> = PublicContentRecord<TData>;
+export type UserProfile = PublicUserProfile;
+export type DashboardContentItem = OwnedContentSummary;
 
 export interface ApiKey {
   id: string;
@@ -129,23 +117,21 @@ async function adminFetch<T>(
 
 export const api = {
   // Public
-  getUserProfile: (username: string) => apiFetch<UserProfile>(`/users/${username}`),
-  getUserContent: (username: string, params?: Record<string, string>) => {
-    const query = params ? `?${new URLSearchParams(params)}` : '';
-    return apiFetch<{ total: number; items: ContentItem[] }>(`/users/${username}/content${query}`);
-  },
+  getUserProfile: (username: string) => getPublicRegistryClient().getPublicUserProfile(username),
+  getUserContent: (username: string, params?: Record<string, string>) =>
+    getPublicRegistryClient().getPublicUserContent(username, params),
   listContent: (type: string, params?: Record<string, string>) =>
     getPublicRegistryClient().listContent<ContentItem>(normalizeApiContentType(type), params),
   getContent: (type: string, namespace: string, slug: string) =>
-    getPublicRegistryClient().getContent<ContentItem>(normalizeApiContentType(type), namespace, slug),
+    getPublicRegistryClient().getPublicContentRecord(normalizeApiContentType(type), namespace, slug),
   search: (q: string, params?: Record<string, string>) =>
     getPublicRegistryClient()
       .search({ q, type: params?.type, namespace: params?.namespace })
-      .then((result) => ({ total: result.total, results: result.results as ContentItem[] })),
+      .then((result): SearchResponse => ({ total: result.total, results: result.results })),
 
   // Authenticated
   getMe: (token: string) => apiFetch<any>('/me', { token }),
-  getMyContent: (token: string) => apiFetch<any>('/my/content', { token }),
+  getMyContent: (token: string) => apiFetch<ContentListResponse<DashboardContentItem>>('/my/content', { token }),
   getApiKeys: (token: string) => apiFetch<any>('/api-keys', { token }),
   createApiKey: (token: string, body: any) =>
     apiFetch<any>('/api-keys', { token, method: 'POST', body: JSON.stringify(body) }),
@@ -217,11 +203,11 @@ export function searchContent(
 ) {
   return getPublicRegistryClient()
     .search({ q, type: params?.type, namespace: params?.namespace })
-    .then((data) => ({ total: data.total, items: data.results as ContentItem[] }));
+    .then((data) => ({ total: data.total, items: data.results }));
 }
 
 export function getContent(type: string, namespace: string, slug: string) {
-  return getPublicRegistryClient().getContent<ContentItem>(
+  return getPublicRegistryClient().getPublicContentRecord(
     normalizeApiContentType(type),
     namespace,
     slug,
@@ -229,18 +215,12 @@ export function getContent(type: string, namespace: string, slug: string) {
 }
 
 export function getUserProfile(username: string) {
-  return apiFetch<UserProfile>(`/users/${username}`);
+  return getPublicRegistryClient().getPublicUserProfile(username);
 }
 
 export function getUserContent(
   username: string,
   params?: { type?: string; limit?: number; offset?: number }
 ) {
-  const query: Record<string, string> = {};
-  if (params?.type) query.type = params.type;
-  if (params?.limit != null) query.limit = String(params.limit);
-  if (params?.offset != null) query.offset = String(params.offset);
-  return apiFetch<{ total: number; items: ContentItem[] }>(
-    `/users/${username}/content${Object.keys(query).length ? `?${new URLSearchParams(query)}` : ''}`
-  );
+  return getPublicRegistryClient().getPublicUserContent(username, params);
 }

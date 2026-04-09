@@ -6,12 +6,16 @@ import type {
   Shell,
   ApiContentType,
   ContentListResponse,
+  PublicContentSummary,
+  PublicContentRecord,
   ContentItem,
+  OwnedContentSummary,
   PublishPayload,
   PublishResponse,
   SearchParams,
   SearchResponse,
   UserProfile,
+  PublicUserProfile,
   ShowcaseManifestResponse,
   ShowcaseShortlistResponse,
   ShowcaseShortlistReport,
@@ -191,6 +195,20 @@ export class RegistryAPIClient {
     return unwrapped;
   }
 
+  async getPublicContentRecord<TData = Record<string, unknown>>(
+    type: ApiContentType,
+    namespace: string,
+    slug: string,
+  ): Promise<PublicContentRecord<TData>> {
+    const cacheKey = `public-record:${type}:${namespace}:${slug}`;
+    const cached = this.getCached<PublicContentRecord<TData>>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<PublicContentRecord<TData>>(`/${type}/${namespace}/${slug}`);
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
   // ── Typed convenience methods ──
 
   async getPattern(namespace: string, slug: string): Promise<Pattern> {
@@ -225,6 +243,37 @@ export class RegistryAPIClient {
     return this.request<SearchResponse>(`/search?${searchParams}`);
   }
 
+  async getPublicUserProfile(username: string): Promise<PublicUserProfile> {
+    const cacheKey = `public-user:${username}`;
+    const cached = this.getCached<PublicUserProfile>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<PublicUserProfile>(`/users/${encodeURIComponent(username)}`);
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async getPublicUserContent(
+    username: string,
+    params?: { type?: string; limit?: number; offset?: number },
+  ): Promise<ContentListResponse<PublicContentSummary>> {
+    const cacheKey = `public-user-content:${username}:${JSON.stringify(params ?? {})}`;
+    const cached = this.getCached<ContentListResponse<PublicContentSummary>>(cacheKey);
+    if (cached) return cached;
+
+    const searchParams = new URLSearchParams();
+    if (params?.type) searchParams.set('type', params.type);
+    if (params?.limit != null) searchParams.set('limit', String(params.limit));
+    if (params?.offset != null) searchParams.set('offset', String(params.offset));
+
+    const query = searchParams.toString();
+    const result = await this.request<ContentListResponse<PublicContentSummary>>(
+      `/users/${encodeURIComponent(username)}/content${query ? `?${query}` : ''}`,
+    );
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
   // ── Authenticated endpoints ──
 
   async getProfile(): Promise<UserProfile> {
@@ -239,8 +288,8 @@ export class RegistryAPIClient {
     });
   }
 
-  async getMyContent(): Promise<ContentListResponse<ContentItem>> {
-    return this.request<ContentListResponse<ContentItem>>('/my/content');
+  async getMyContent(): Promise<ContentListResponse<OwnedContentSummary>> {
+    return this.request<ContentListResponse<OwnedContentSummary>>('/my/content');
   }
 
   // ── Schema ──

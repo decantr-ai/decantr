@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getContent } from '@/lib/api';
-import type { ContentItem } from '@/lib/api';
+import type { ContentRecord } from '@/lib/api';
 import { JsonViewer } from '@/components/json-viewer';
 import { getShowcaseMetadata, getShowcaseUrl } from '@/lib/showcase';
 import { CopyInstallButton } from './copy-install-button';
@@ -47,7 +47,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const { type, namespace: rawNamespace, slug } = await params;
   const namespace = decodeURIComponent(rawNamespace);
 
-  let content: ContentItem | null = null;
+  let content: ContentRecord | null = null;
 
   try {
     content = await getContent(type, namespace, slug);
@@ -62,11 +62,10 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const singular = singularType(type);
   const typeColor = TYPE_COLORS[type] ?? 'var(--d-primary)';
   const name =
-    content.name ||
     (content.data?.name as string | undefined) ||
     prettifyName(slug);
   const description =
-    content.description || (content.data?.description as string | undefined);
+    content.data?.description as string | undefined;
   const installCmd = `decantr get ${singular} ${namespace}/${slug}`;
   const tags = (content.data?.tags as string[] | undefined) ?? [];
   const showcaseMeta = singular === 'blueprint' ? await getShowcaseMetadata(slug) : null;

@@ -88,4 +88,79 @@ describe('RegistryAPIClient showcase endpoints', () => {
     expect(result.summary.passedSmokes).toBe(1);
     expect(result.results[0]?.smoke.passed).toBe(true);
   });
+
+  it('fetches a public content envelope without unwrapping', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        id: 'row-1',
+        type: 'blueprint',
+        slug: 'portfolio',
+        namespace: '@official',
+        version: '1.0.0',
+        visibility: 'public',
+        status: 'published',
+        created_at: '2026-04-09T00:00:00.000Z',
+        updated_at: '2026-04-09T00:00:00.000Z',
+        data: { name: 'Portfolio', routes: { home: { path: '/' } } },
+        owner_name: 'Decantr',
+        owner_username: 'decantr',
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const client = new RegistryAPIClient({ baseUrl: 'https://api.example.com/v1' });
+    const result = await client.getPublicContentRecord('blueprints', '@official', 'portfolio');
+
+    expect(result.slug).toBe('portfolio');
+    expect(result.data).toEqual({ name: 'Portfolio', routes: { home: { path: '/' } } });
+    expect(result.owner_username).toBe('decantr');
+  });
+
+  it('fetches public user profile and content summaries', async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({
+          username: 'alice',
+          display_name: 'Alice',
+          reputation_score: 42,
+          tier: 'pro',
+          created_at: '2026-04-01T00:00:00.000Z',
+          content_count: 3,
+          content_counts: { blueprint: 2, pattern: 1 },
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({
+          total: 1,
+          items: [{
+            id: 'item-1',
+            type: 'blueprint',
+            slug: 'portfolio',
+            namespace: '@community',
+            version: '1.0.0',
+            name: 'Portfolio',
+            description: 'Creator portfolio',
+            published_at: '2026-04-09T00:00:00.000Z',
+          }],
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+    const client = new RegistryAPIClient({ baseUrl: 'https://api.example.com/v1' });
+    const profile = await client.getPublicUserProfile('alice');
+    const content = await client.getPublicUserContent('alice', { limit: 12 });
+
+    expect(profile.username).toBe('alice');
+    expect(profile.content_count).toBe(3);
+    expect(content.total).toBe(1);
+    expect(content.items[0]?.slug).toBe('portfolio');
+  });
 });

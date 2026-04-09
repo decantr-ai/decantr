@@ -1,7 +1,11 @@
 export type {
   ApiContentType,
   ContentListResponse,
+  PublicContentSummary,
+  PublicContentRecord,
   ContentItem,
+  OwnedContentSummary,
+  PublicUserProfile,
   PublishPayload,
   PublishResponse,
   SearchParams,

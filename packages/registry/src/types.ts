@@ -345,18 +345,52 @@ export interface ContentListResponse<T = Record<string, unknown>> {
   total: number;
 }
 
-export interface ContentItem {
+export interface PublicContentSummary {
+  id: string;
+  slug: string;
+  namespace: string;
+  type: string;
+  version?: string;
+  name?: string;
+  description?: string;
+  published_at?: string;
+  owner_name?: string | null;
+  owner_username?: string | null;
+}
+
+export interface PublicContentRecord<TData = Record<string, unknown>> {
   id: string;
   slug: string;
   namespace: string;
   type: string;
   version: string;
-  data: Record<string, unknown>;
+  data: TData;
   visibility: 'public' | 'private';
   status: 'pending' | 'approved' | 'rejected' | 'published';
   created_at: string;
   updated_at: string;
   published_at?: string;
+  owner_name?: string | null;
+  owner_username?: string | null;
+}
+
+export interface ContentItem extends PublicContentRecord<Record<string, unknown>> {}
+
+export interface OwnedContentSummary extends PublicContentSummary {
+  visibility: 'public' | 'private';
+  status: 'pending' | 'approved' | 'rejected' | 'published';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PublicUserProfile {
+  username: string;
+  display_name: string | null;
+  reputation_score: number;
+  tier: 'free' | 'pro' | 'team' | 'enterprise';
+  created_at: string;
+  content_count: number;
+  content_counts: Record<string, number>;
 }
 
 export interface PublishPayload {
@@ -385,15 +419,7 @@ export interface SearchParams {
 }
 
 export interface SearchResponse {
-  results: Array<{
-    id: string;
-    type: string;
-    slug: string;
-    namespace: string;
-    name: string;
-    description: string;
-    version: string;
-  }>;
+  results: PublicContentSummary[];
   total: number;
 }
 
