@@ -40,10 +40,10 @@
     { "slug": "two-sided-marketplace", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
     {
       "slug": "workbench",
-      "status": "archived",
+      "status": "removed",
       "classification": "D",
       "origin": "attempted-blueprint-scaffold",
-      "notes": "Retired from the active showcase corpus because it reinforces the removed standalone UI-framework direction."
+      "notes": "Retired from the active showcase corpus and removed from the repo because it reinforced the removed standalone UI-framework direction."
     }
   ]
 }

@@ -6,7 +6,7 @@ Scope: `apps/showcase/*`
 
 ## 1. Objective
 
-The `apps/showcase/*` directory contains 39 attempted full blueprint scaffolds generated with Decantr, with varying levels of post-generation editing and framework leakage.
+The showcase program began with 39 attempted full blueprint scaffolds generated with Decantr. After the vNext reset pruning, 38 remain in `apps/showcase/*`, with the off-strategy `workbench` example removed from the repo and retained only as historical audit context.
 
 This corpus is valuable, but only if it is treated as evidence and benchmark material rather than as an undifferentiated product asset.
 
@@ -22,7 +22,7 @@ Known facts:
 - the corpus is large enough to support benchmark and regression analysis
 - the corpus is currently unclassified, which makes it noisy instead of trustworthy
 - `apps/showcase/manifest.json` now exists as the operational inventory surface for this audit
-- `workbench` has already been marked `archived` / `Class D` because it reinforces the removed standalone UI-framework line
+- `workbench` has already been marked `removed` / `Class D` because it reinforced the removed standalone UI-framework line
 
 ## 3. New Classification Model
 
