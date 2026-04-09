@@ -90,6 +90,7 @@ The normalization script is intentionally dry-run first. It can safely automate:
 - removing stray unexpected dist-tags
 
 It does not automatically retag `latest`; that remains a deliberate manual release-wave decision.
+When run with `--write`, it now also performs an npm auth preflight so broken credentials fail fast before any dist-tag mutation attempt starts.
 
 ## Stable Graduation Rule
 

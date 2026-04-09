@@ -45,14 +45,45 @@ if (!write) {
   process.exit(0);
 }
 
-for (const action of executableActions) {
-  execFileSync(action.command[0], action.command.slice(1), {
+try {
+  execFileSync('npm', ['whoami'], {
     cwd: root,
-    stdio: 'inherit',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    encoding: 'utf8',
   });
+} catch {
+  console.error('npm dist-tag normalization could not start because npm authentication is not currently valid.');
+  console.error('Run `npm login` or refresh the active npm token before retrying with --write.');
+  process.exit(1);
 }
 
-console.log('npm dist-tag normalization applied.');
+const failures = [];
+
+for (const action of executableActions) {
+  try {
+    execFileSync(action.command[0], action.command.slice(1), {
+      cwd: root,
+      stdio: 'inherit',
+    });
+  } catch (error) {
+    const detail = error.stderr?.toString?.()?.trim()
+      || error.stdout?.toString?.()?.trim()
+      || error.message
+      || 'unknown npm dist-tag failure';
+    failures.push(`${action.summary}: ${detail}`);
+  }
+}
+
+if (failures.length === 0) {
+  console.log('npm dist-tag normalization applied.');
+} else {
+  console.error('npm dist-tag normalization completed with failures:\n');
+  for (const failure of failures) {
+    console.error(`- ${failure}`);
+  }
+  process.exitCode = 1;
+}
+
 if (manualActions.length > 0) {
   console.log('');
   console.log('Manual follow-up still required:');
