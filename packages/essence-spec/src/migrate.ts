@@ -203,7 +203,7 @@ export function migrateV30ToV31(essence: EssenceV3): EssenceV3 {
     role: 'primary',
     shell: essence.blueprint.shell ?? 'top-nav-main',
     features: essence.blueprint.features,
-    description: '',
+    description: `${essence.meta.archetype} primary section`,
     pages: essence.blueprint.pages ?? [],
   };
 

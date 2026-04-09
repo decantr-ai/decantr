@@ -8,7 +8,7 @@ import { validateEssence } from '../src/validate.js';
 import { evaluateGuard } from '../src/guard.js';
 import { migrateV2ToV3 } from '../src/migrate.js';
 import { isV3, isSimple } from '../src/types.js';
-import { VALID_V3, VALID_V2_SIMPLE, VALID_V2_SECTIONED } from './fixtures.js';
+import { VALID_V3, VALID_V31, VALID_V2_SIMPLE, VALID_V2_SECTIONED } from './fixtures.js';
 
 describe('v3 integration: full lifecycle', () => {
   it('v3 document passes through normalize → validate → guard without corruption', () => {
@@ -88,6 +88,19 @@ describe('v3 integration: full lifecycle', () => {
     expect(dnaViolations.every(v => v.severity === 'error')).toBe(true);
     // Blueprint violations are warnings for v3
     expect(blueprintViolations.every(v => v.severity === 'warning')).toBe(true);
+  });
+
+  it('v3.1 sectioned documents validate and flatten correctly for guard evaluation', () => {
+    const validation = validateEssence(VALID_V31);
+    expect(validation.valid).toBe(true);
+
+    const violations = evaluateGuard(VALID_V31, {
+      theme: 'luminarum',
+      pageId: 'settings',
+    });
+
+    expect(violations.filter(v => v.rule === 'theme')).toHaveLength(0);
+    expect(violations.filter(v => v.rule === 'structure')).toHaveLength(0);
   });
 
   it('normalize does NOT use structural fallback for v3 detection', () => {

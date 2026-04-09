@@ -186,6 +186,9 @@ describe('migrateV30ToV31', () => {
     ]);
     expect(v31.blueprint.pages).toBeUndefined();
     expect(v31.blueprint.routes).toEqual({});
+
+    const validation = validateEssence(v31);
+    expect(validation.valid).toBe(true);
   });
 
   it('preserves existing V3.1 essence unchanged', () => {

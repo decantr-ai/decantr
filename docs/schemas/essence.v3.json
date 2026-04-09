@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://decantr.ai/schema/essence/3.0.json",
+  "$id": "https://decantr.ai/schemas/essence.v3.json",
   "title": "Decantr Essence v3",
   "description": "Design intent specification with DNA/Blueprint/Meta split",
   "type": "object",
@@ -112,12 +112,21 @@
     },
     "Blueprint": {
       "type": "object",
-      "required": ["shell", "pages", "features"],
+      "required": ["features"],
       "additionalProperties": false,
+      "anyOf": [
+        { "required": ["shell", "pages"] },
+        { "required": ["sections"] }
+      ],
       "properties": {
         "shell": { "type": "string", "minLength": 1 },
         "pages": { "type": "array", "items": { "$ref": "#/$defs/BlueprintPage" }, "minItems": 1 },
+        "sections": { "type": "array", "items": { "$ref": "#/$defs/BlueprintSection" }, "minItems": 1 },
         "features": { "type": "array", "items": { "type": "string" } },
+        "routes": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/RouteEntry" }
+        },
         "icon_style": { "type": "string" },
         "avatar_style": { "type": "string" }
       }
@@ -128,10 +137,34 @@
       "additionalProperties": false,
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "route": { "type": "string", "minLength": 1 },
         "shell_override": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
         "layout": { "type": "array", "items": { "$ref": "#/$defs/LayoutItem" }, "minItems": 1 },
         "dna_overrides": { "$ref": "#/$defs/DNAOverrides" },
         "surface": { "type": "string" }
+      }
+    },
+    "BlueprintSection": {
+      "type": "object",
+      "required": ["id", "role", "shell", "features", "description", "pages"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "role": { "type": "string", "enum": ["primary", "gateway", "public", "auxiliary"] },
+        "shell": { "type": "string", "minLength": 1 },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string", "minLength": 1 },
+        "pages": { "type": "array", "items": { "$ref": "#/$defs/BlueprintPage" }, "minItems": 1 },
+        "dna_overrides": { "$ref": "#/$defs/DNAOverrides" }
+      }
+    },
+    "RouteEntry": {
+      "type": "object",
+      "required": ["section", "page"],
+      "additionalProperties": false,
+      "properties": {
+        "section": { "type": "string", "minLength": 1 },
+        "page": { "type": "string", "minLength": 1 }
       }
     },
     "DNAOverrides": {
@@ -179,7 +212,9 @@
         "archetype": { "type": "string", "minLength": 1 },
         "target": { "type": "string", "minLength": 1 },
         "platform": { "$ref": "#/$defs/Platform" },
-        "guard": { "$ref": "#/$defs/GuardV3" }
+        "guard": { "$ref": "#/$defs/GuardV3" },
+        "seo": { "$ref": "#/$defs/SeoHints" },
+        "navigation": { "$ref": "#/$defs/NavigationHints" }
       }
     },
     "Platform": {
@@ -199,6 +234,33 @@
         "mode": { "type": "string", "enum": ["creative", "guided", "strict"] },
         "dna_enforcement": { "type": "string", "enum": ["error", "warn", "off"] },
         "blueprint_enforcement": { "type": "string", "enum": ["warn", "off"] }
+      }
+    },
+    "SeoHints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_org": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "meta_priorities": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "NavigationHints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hotkeys": { "type": "array", "items": { "$ref": "#/$defs/NavigationHotkey" } },
+        "command_palette": { "type": "boolean" }
+      }
+    },
+    "NavigationHotkey": {
+      "type": "object",
+      "required": ["key", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "route": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 }
       }
     },
     "Impression": {
