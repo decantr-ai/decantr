@@ -10,6 +10,9 @@ const SUPPORT_VALUES = new Set([
 ]);
 
 const MATURITY_VALUES = new Set(['stable', 'beta', 'experimental']);
+const RELEASE_WAVE_VALUES = ['foundation', 'delivery', 'experimental'];
+const RELEASE_WAVE_VALUE_SET = new Set(RELEASE_WAVE_VALUES);
+const RELEASE_WAVE_RANK = new Map(RELEASE_WAVE_VALUES.map((wave, index) => [wave, index]));
 const RETIREMENT_STATUS_VALUES = new Set(['retired', 'deprecated']);
 
 function isMeaningfulStringArray(value) {
@@ -48,10 +51,24 @@ export function listPublicPackages(root = getRepoRoot()) {
     .filter((pkg) => !pkg.private);
 }
 
+export function sortReleaseEntries(entries) {
+  return [...entries].sort((left, right) => {
+    const waveRank = (RELEASE_WAVE_RANK.get(left.releaseWave) ?? Number.MAX_SAFE_INTEGER)
+      - (RELEASE_WAVE_RANK.get(right.releaseWave) ?? Number.MAX_SAFE_INTEGER);
+    if (waveRank !== 0) return waveRank;
+
+    const orderRank = (left.publishOrder ?? Number.MAX_SAFE_INTEGER) - (right.publishOrder ?? Number.MAX_SAFE_INTEGER);
+    if (orderRank !== 0) return orderRank;
+
+    return left.name.localeCompare(right.name);
+  });
+}
+
 export function validatePackageSurface(surface, publicPackages) {
   const findings = [];
   const byName = new Map(surface.packages.map((entry) => [entry.name, entry]));
   const publicByName = new Map(publicPackages.map((entry) => [entry.name, entry]));
+  const seenWaveOrders = new Map();
 
   for (const entry of surface.packages) {
     if (!SUPPORT_VALUES.has(entry.support)) {
@@ -59,6 +76,20 @@ export function validatePackageSurface(surface, publicPackages) {
     }
     if (!MATURITY_VALUES.has(entry.maturity)) {
       findings.push(`Unsupported maturity value for ${entry.name}: ${entry.maturity}`);
+    }
+    if (!RELEASE_WAVE_VALUE_SET.has(entry.releaseWave)) {
+      findings.push(`Unsupported releaseWave value for ${entry.name}: ${entry.releaseWave}`);
+    }
+    if (!Number.isInteger(entry.publishOrder) || entry.publishOrder < 1) {
+      findings.push(`Package ${entry.name} publishOrder must be a positive integer.`);
+    }
+    if (RELEASE_WAVE_VALUE_SET.has(entry.releaseWave) && Number.isInteger(entry.publishOrder) && entry.publishOrder > 0) {
+      const waveOrderKey = `${entry.releaseWave}:${entry.publishOrder}`;
+      if (seenWaveOrders.has(waveOrderKey)) {
+        findings.push(`Duplicate publish order ${entry.publishOrder} in release wave ${entry.releaseWave}: ${seenWaveOrders.get(waveOrderKey)} and ${entry.name}`);
+      } else {
+        seenWaveOrders.set(waveOrderKey, entry.name);
+      }
     }
     if (!publicByName.has(entry.name)) {
       findings.push(`Manifest includes ${entry.name} but no matching public package was found.`);
@@ -76,6 +107,12 @@ export function validatePackageSurface(surface, publicPackages) {
     }
     if (entry.maturity === 'experimental' && entry.publish !== false) {
       findings.push(`Experimental package ${entry.name} should not publish by default.`);
+    }
+    if (entry.maturity === 'experimental' && entry.releaseWave !== 'experimental') {
+      findings.push(`Experimental package ${entry.name} must live in the experimental release wave.`);
+    }
+    if (entry.maturity !== 'experimental' && entry.releaseWave === 'experimental') {
+      findings.push(`Non-experimental package ${entry.name} cannot live in the experimental release wave.`);
     }
 
     const readiness = entry.releaseReadiness;
@@ -123,10 +160,12 @@ export function summarizeReleaseReadiness(surface) {
     stableCandidates: [],
     betaWithBlockers: [],
     experimentalPackages: [],
+    releaseWaves: Object.fromEntries(RELEASE_WAVE_VALUES.map((wave) => [wave, []])),
   };
 
   for (const entry of surface.packages) {
     const blockers = entry.releaseReadiness?.blockers ?? [];
+    summary.releaseWaves[entry.releaseWave]?.push(entry.name);
     if (entry.releaseReadiness?.stableCandidate) {
       summary.stableCandidates.push(entry.name);
     } else if (entry.maturity === 'beta') {
@@ -177,6 +216,8 @@ export function createReleasePlan(surface, publicPackages, retirements) {
       support: entry.support,
       maturity: entry.maturity,
       publish: entry.publish === true,
+      releaseWave: entry.releaseWave,
+      publishOrder: entry.publishOrder,
       defaultDistTag: entry.defaultDistTag,
       summary: entry.summary,
       stableCandidate: entry.releaseReadiness?.stableCandidate === true,
@@ -199,6 +240,8 @@ export function createReleasePlan(surface, publicPackages, retirements) {
       support: 'retired',
       maturity: 'retired',
       publish: false,
+      releaseWave: 'retired',
+      publishOrder: Number.MAX_SAFE_INTEGER,
       defaultDistTag: null,
       summary: retirement.message,
       stableCandidate: false,
@@ -218,12 +261,22 @@ export function createReleasePlan(surface, publicPackages, retirements) {
     readyToGraduate: packages.filter((entry) => entry.recommendedAction === 'ready-to-graduate').length,
     holdExperimental: packages.filter((entry) => entry.recommendedAction === 'hold-experimental').length,
     retired: packages.filter((entry) => entry.recommendedAction === 'retired').length,
+    byWave: sortReleaseEntries(
+      RELEASE_WAVE_VALUES.map((wave, index) => ({
+        name: wave,
+        releaseWave: wave,
+        publishOrder: index + 1,
+      })),
+    ).reduce((acc, waveEntry) => {
+      acc[waveEntry.releaseWave] = packages.filter((entry) => entry.releaseWave === waveEntry.releaseWave).length;
+      return acc;
+    }, {}),
   };
 
   return {
     generatedAt: new Date().toISOString(),
     counts,
-    packages,
+    packages: sortReleaseEntries(packages),
   };
 }
 

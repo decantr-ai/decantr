@@ -280,6 +280,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     securityRiskPatterns: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
+    authGuardSignals: createSourceAuditBucket(),
     accessibilityIssues: createSourceAuditBucket(),
     interactionSafetyIssues: createSourceAuditBucket(),
     authInputHintIssues: createSourceAuditBucket(),
@@ -304,6 +305,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
+    recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.accessibilityIssues, relativePath, accessibilityIssueCount);
     recordSourceAudit(summary.interactionSafetyIssues, relativePath, signals.buttonInFormWithoutTypeCount);
     recordSourceAudit(summary.authInputHintIssues, relativePath, authInputHintIssueCount);
@@ -408,6 +410,7 @@ interface SourceAuditSummary {
   securityRiskPatterns: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
+  authGuardSignals: SourceAuditBucket;
   accessibilityIssues: SourceAuditBucket;
   interactionSafetyIssues: SourceAuditBucket;
   authInputHintIssues: SourceAuditBucket;
@@ -953,7 +956,12 @@ function appendRuntimeAuditFindings(findings: VerificationFinding[], runtimeAudi
   }
 }
 
-function appendSourceAuditFindings(findings: VerificationFinding[], sourceAudit: SourceAuditSummary): void {
+function appendSourceAuditFindings(
+  findings: VerificationFinding[],
+  sourceAudit: SourceAuditSummary,
+  essence: EssenceFile | null,
+  reviewPack: ReviewExecutionPack | null,
+): void {
   if (sourceAudit.filesChecked === 0) {
     return;
   }
@@ -999,6 +1007,23 @@ function appendSourceAuditFindings(findings: VerificationFinding[], sourceAudit:
       message: 'Source files write auth-like credentials into browser storage.',
       evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authStorageWrites, 'Auth storage writes'),
       suggestedFix: 'Avoid storing auth tokens in localStorage/sessionStorage and prefer secure server-managed session boundaries.',
+    }));
+  }
+
+  const topology = summarizeTopology(essence, reviewPack);
+  if (topology.hasAuthFeature && sourceAudit.authGuardSignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'source-auth-guard-signals-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Authentication is declared, but the source tree does not show clear auth-guard or redirect behavior.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        'Auth guard signals: 0',
+        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Add explicit protected-route wrappers, middleware, session checks, or redirects to login/register before authenticated surfaces render.',
     }));
   }
 
@@ -1168,7 +1193,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
 
   const checkedRuntimeAudit = await runRuntimeAudit(projectRoot, essence);
   appendRuntimeAuditFindings(findings, checkedRuntimeAudit, projectRoot);
-  appendSourceAuditFindings(findings, auditProjectSourceTree(projectRoot));
+  appendSourceAuditFindings(findings, auditProjectSourceTree(projectRoot), essence, reviewPack);
 
   const summary = {
     errorCount: findings.filter(finding => finding.severity === 'error').length,
@@ -1240,6 +1265,7 @@ interface AstCritiqueSignals {
   passwordAutocompleteMissingCount: number;
   buttonInFormWithoutTypeCount: number;
   authStorageWriteCount: number;
+  authGuardSignalCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -1440,6 +1466,19 @@ function isBrowserStorageObject(node: ts.Expression): boolean {
   return ts.isIdentifier(node) && (node.text === 'localStorage' || node.text === 'sessionStorage');
 }
 
+function countAuthGuardSignals(code: string): number {
+  const patterns = [
+    /\b(?:ProtectedRoute|AuthGuard|RequireAuth|withAuth|requireAuth|ensureAuth|useRequireAuth)\b/,
+    /\b(?:useAuth|useSession|getServerSession|authGuard|isAuthenticated|isSignedIn)\b/,
+    /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register|forgot-password|reset-password)[^'"`]*['"`]/i,
+    /\bNextResponse\.redirect\s*\(/,
+    /\bbeforeEnter\b/,
+    /\bmiddleware\b/,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -1463,6 +1502,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     passwordAutocompleteMissingCount: 0,
     buttonInFormWithoutTypeCount: 0,
     authStorageWriteCount: 0,
+    authGuardSignalCount: countAuthGuardSignals(code),
   };
   const labelForIds = collectLabelForIds(sourceFile);
 

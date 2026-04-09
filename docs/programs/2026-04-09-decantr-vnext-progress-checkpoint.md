@@ -80,6 +80,7 @@ commit archaeology.
 - CLI and MCP now share the verifier engine.
 - Review packs now inform critique behavior.
 - Project audit now aggregates source-tree findings from `src/`, `app/`, `pages/`, and `components/` when they are present, including inline styles, risky HTML patterns, placeholder routes, auth storage writes, accessibility issues, and unsafe form/auth input behavior.
+- Project audit now also warns when auth is declared but the source tree does not show obvious protected-route, middleware, session-check, or auth-redirect behavior.
 - Project audit now includes shared runtime evidence when `dist/` exists:
   - root document validation
   - document title validation
@@ -254,6 +255,8 @@ commit archaeology.
 - Added executable release-readiness metadata and `pnpm audit:release-readiness` so beta-to-stable graduation stops living only in docs.
 - Added `pnpm release:plan` plus `scripts/release-plan.mjs` so package publish intent, beta blockers, and retired replacements can be generated as Markdown or JSON from the manifest source of truth.
 - Replaced the hardcoded publish loop with a manifest-backed publish script.
+- Added explicit release-wave and publish-order metadata so package planning, dry-runs, and publishes can execute in a stable foundation-to-delivery order instead of hand-curated lists.
+- Added wave-aware release-plan and publish filtering so npm rehearsals can target a specific package wave instead of hand-picked package name lists.
 - Added package-level README coverage for all active public packages.
 - Added a package support matrix and release-strategy runbook for the npm surface.
 

@@ -17,6 +17,10 @@ if (findings.length > 0) {
 console.log('Release readiness audit passed.');
 console.log(`Stable candidates: ${readiness.stableCandidates.join(', ') || 'none'}`);
 console.log(`Experimental packages: ${readiness.experimentalPackages.join(', ') || 'none'}`);
+console.log('Release waves:');
+for (const [wave, packages] of Object.entries(readiness.releaseWaves)) {
+  console.log(`- ${wave}: ${packages.join(', ') || 'none'}`);
+}
 console.log('');
 console.log('Beta package blockers:');
 for (const entry of readiness.betaWithBlockers) {

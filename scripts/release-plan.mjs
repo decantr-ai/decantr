@@ -1,12 +1,14 @@
 import { writeFileSync } from 'node:fs';
-import { getRepoRoot, loadPackageSurface, loadPackageRetirements, listPublicPackages, createReleasePlan } from './package-surface-lib.mjs';
+import { createReleasePlan, getRepoRoot, listPublicPackages, loadPackageRetirements, loadPackageSurface } from './package-surface-lib.mjs';
 
 const args = new Set(process.argv.slice(2));
 const jsonOutput = args.has('--json');
 const reportJsonArg = [...args].find((arg) => arg.startsWith('--report-json='));
 const summaryMarkdownArg = [...args].find((arg) => arg.startsWith('--summary-markdown='));
 const supportArg = [...args].find((arg) => arg.startsWith('--support='));
+const waveArg = [...args].find((arg) => arg.startsWith('--wave='));
 const onlySupport = supportArg ? supportArg.split('=')[1] : null;
+const onlyWave = waveArg ? waveArg.split('=')[1] : null;
 
 const root = getRepoRoot();
 const surface = loadPackageSurface(root);
@@ -16,16 +18,23 @@ const plan = createReleasePlan(surface, publicPackages, retirements);
 const filteredPackages = onlySupport
   ? plan.packages.filter((entry) => entry.support === onlySupport)
   : plan.packages;
+const filteredByWave = onlyWave
+  ? filteredPackages.filter((entry) => entry.releaseWave === onlyWave)
+  : filteredPackages;
 
 const output = {
   ...plan,
-  packages: filteredPackages,
+  packages: filteredByWave,
   counts: {
-    publishLatest: filteredPackages.filter((entry) => entry.recommendedAction === 'publish-latest').length,
-    publishBeta: filteredPackages.filter((entry) => entry.recommendedAction === 'publish-beta').length,
-    readyToGraduate: filteredPackages.filter((entry) => entry.recommendedAction === 'ready-to-graduate').length,
-    holdExperimental: filteredPackages.filter((entry) => entry.recommendedAction === 'hold-experimental').length,
-    retired: filteredPackages.filter((entry) => entry.recommendedAction === 'retired').length,
+    publishLatest: filteredByWave.filter((entry) => entry.recommendedAction === 'publish-latest').length,
+    publishBeta: filteredByWave.filter((entry) => entry.recommendedAction === 'publish-beta').length,
+    readyToGraduate: filteredByWave.filter((entry) => entry.recommendedAction === 'ready-to-graduate').length,
+    holdExperimental: filteredByWave.filter((entry) => entry.recommendedAction === 'hold-experimental').length,
+    retired: filteredByWave.filter((entry) => entry.recommendedAction === 'retired').length,
+    byWave: filteredByWave.reduce((acc, entry) => {
+      acc[entry.releaseWave] = (acc[entry.releaseWave] || 0) + 1;
+      return acc;
+    }, {}),
   },
 };
 
@@ -34,21 +43,23 @@ const markdownLines = [
   '',
   `- Generated at: ${output.generatedAt}`,
   `- Packages in scope: ${output.packages.length}`,
+  `- Support filter: ${onlySupport ?? 'all'}`,
+  `- Release wave filter: ${onlyWave ?? 'all'}`,
   `- Publish latest: ${output.counts.publishLatest}`,
   `- Publish beta: ${output.counts.publishBeta}`,
   `- Ready to graduate: ${output.counts.readyToGraduate}`,
   `- Hold experimental: ${output.counts.holdExperimental}`,
   `- Retired: ${output.counts.retired}`,
   '',
-  '| Package | Version | Maturity | Action | Dist-tag | Notes |',
-  '| --- | --- | --- | --- | --- | --- |',
+  '| Package | Wave | Order | Version | Maturity | Action | Dist-tag | Notes |',
+  '| --- | --- | --- | --- | --- | --- | --- | --- |',
   ...output.packages.map((entry) => {
     const note = entry.recommendedAction === 'retired'
       ? (entry.retirement?.replacement ? `Replacement: ${entry.retirement.replacement}` : entry.summary)
       : entry.blockers.length > 0
         ? entry.blockers[0]
         : entry.summary;
-    return `| ${entry.name} | ${entry.version ?? '-'} | ${entry.maturity} | ${entry.recommendedAction} | ${entry.releaseTag ?? '-'} | ${note.replace(/\|/g, '\\|')} |`;
+    return `| ${entry.name} | ${entry.releaseWave} | ${entry.publishOrder} | ${entry.version ?? '-'} | ${entry.maturity} | ${entry.recommendedAction} | ${entry.releaseTag ?? '-'} | ${note.replace(/\|/g, '\\|')} |`;
   }),
   '',
 ];

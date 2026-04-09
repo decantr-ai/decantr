@@ -6,6 +6,8 @@
       "support": "core-supported",
       "maturity": "stable",
       "publish": true,
+      "releaseWave": "delivery",
+      "publishOrder": 20,
       "defaultDistTag": "latest",
       "summary": "Local scaffold, audit, registry, and maintenance workflows for Decantr projects.",
       "releaseReadiness": {
@@ -22,6 +24,8 @@
       "support": "core-supported",
       "maturity": "beta",
       "publish": true,
+      "releaseWave": "foundation",
+      "publishOrder": 30,
       "defaultDistTag": "beta",
       "summary": "Execution-pack compiler primitives and shared Decantr core utilities.",
       "releaseReadiness": {
@@ -41,6 +45,8 @@
       "support": "core-supported",
       "maturity": "stable",
       "publish": true,
+      "releaseWave": "foundation",
+      "publishOrder": 40,
       "defaultDistTag": "latest",
       "summary": "Framework-agnostic CSS atom runtime for Decantr projects.",
       "releaseReadiness": {
@@ -57,6 +63,8 @@
       "support": "core-supported",
       "maturity": "beta",
       "publish": true,
+      "releaseWave": "foundation",
+      "publishOrder": 10,
       "defaultDistTag": "beta",
       "summary": "Essence schemas, validation, migration, and TypeScript types.",
       "releaseReadiness": {
@@ -76,6 +84,8 @@
       "support": "core-supported",
       "maturity": "beta",
       "publish": true,
+      "releaseWave": "delivery",
+      "publishOrder": 10,
       "defaultDistTag": "beta",
       "summary": "MCP delivery surface for Decantr design intelligence, packs, and verification.",
       "releaseReadiness": {
@@ -95,6 +105,8 @@
       "support": "core-supported",
       "maturity": "beta",
       "publish": true,
+      "releaseWave": "foundation",
+      "publishOrder": 20,
       "defaultDistTag": "beta",
       "summary": "Registry contracts, schemas, API client, and public content utilities.",
       "releaseReadiness": {
@@ -114,6 +126,8 @@
       "support": "core-supported",
       "maturity": "beta",
       "publish": true,
+      "releaseWave": "foundation",
+      "publishOrder": 50,
       "defaultDistTag": "beta",
       "summary": "Shared verification, critique, and report-schema engine.",
       "releaseReadiness": {
@@ -133,6 +147,8 @@
       "support": "supported-secondary",
       "maturity": "experimental",
       "publish": false,
+      "releaseWave": "experimental",
+      "publishOrder": 10,
       "defaultDistTag": "beta",
       "summary": "Experimental Vite overlay for Decantr guard feedback during local development.",
       "releaseReadiness": {

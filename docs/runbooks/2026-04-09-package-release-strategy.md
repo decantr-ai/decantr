@@ -20,12 +20,26 @@ That file currently defines:
 
 - support status
 - maturity
+- release wave
+- publish order within the wave
 - whether a package publishes by default
 - default npm dist-tag
 - release-readiness state:
   - stable-candidate flag
   - docs / CI / product-integration checks
   - explicit blockers for beta packages
+
+## Current Release Waves
+
+The reset branch now treats npm releases as explicit waves instead of a flat publish list.
+
+| Wave | Publish order | Packages | Purpose |
+| --- | --- | --- | --- |
+| `foundation` | `10`-`50` | `@decantr/essence-spec`, `@decantr/registry`, `@decantr/core`, `@decantr/css`, `@decantr/verifier` | schemas, contracts, compiler/runtime, and verification primitives |
+| `delivery` | `10`-`20` | `@decantr/mcp-server`, `@decantr/cli` | user-facing delivery surfaces that depend on the foundation layer |
+| `experimental` | `10` | `@decantr/vite-plugin` | non-default experiments that should not ride normal publish waves |
+
+Release planning and publish tooling now respect this order automatically.
 
 ## Current Dist-Tag Strategy
 
@@ -57,6 +71,7 @@ Release planning now also has an executable source:
 - `pnpm release:plan`
 - `pnpm audit:npm-surface`
 - `node scripts/release-plan.mjs --json`
+- `node scripts/release-plan.mjs --wave=foundation`
 - `node scripts/release-plan.mjs --summary-markdown=/tmp/package-release-plan.md`
 
 The workflow:
@@ -65,6 +80,8 @@ The workflow:
 - runs `pnpm audit:package-surface`
 - publishes only the packages marked `publish: true`
 - skips experimental packages unless `include_experimental=true`
+- publishes in release-wave order from `config/package-surface.json`
+- supports `--wave=<wave>` for targeted publish rehearsals
 - supports a manual `dist_tag` override for coordinated release waves
 
 Retired package handling now uses `config/package-retirements.json` plus:
@@ -104,10 +121,11 @@ A package should move from `beta` to `latest` only when all of the following are
 When a package graduates:
 
 1. update `config/package-surface.json`
-2. clear its `releaseReadiness.blockers` and mark it `stableCandidate: true`
-3. update this runbook and the package support matrix
-4. update the package version if needed
-5. publish with the stable dist-tag
+2. decide whether it stays in its current release wave or moves into a later stable-delivery wave
+3. clear its `releaseReadiness.blockers` and mark it `stableCandidate: true`
+4. update this runbook and the package support matrix
+5. update the package version if needed
+6. publish with the stable dist-tag
 
 ## Remaining Cleanup After This Runbook
 
@@ -132,14 +150,16 @@ pnpm lint
 pnpm audit:package-surface
 pnpm audit:release-readiness
 pnpm audit:npm-surface
+pnpm release:plan
 ```
 
 Dry-run the publish selection locally:
 
 ```bash
-pnpm release:plan
 node scripts/release-plan.mjs --json
+node scripts/release-plan.mjs --wave=foundation
 node scripts/publish-packages.mjs --dry-run
+node scripts/publish-packages.mjs --dry-run --wave=foundation
 node scripts/publish-packages.mjs --dry-run --include-experimental
 pnpm npm-surface:normalize:dry-run
 ```

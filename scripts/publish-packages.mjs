@@ -1,13 +1,15 @@
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
-import { getRepoRoot, loadPackageSurface } from './package-surface-lib.mjs';
+import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
 
 const args = new Set(process.argv.slice(2));
 const tagOverrideArg = [...args].find((arg) => arg.startsWith('--tag-override='));
 const onlyArg = [...args].find((arg) => arg.startsWith('--only='));
+const waveArg = [...args].find((arg) => arg.startsWith('--wave='));
 const includeExperimental = args.has('--include-experimental');
 const dryRun = args.has('--dry-run');
 const tagOverride = tagOverrideArg ? tagOverrideArg.split('=')[1] : null;
+const onlyWave = waveArg ? waveArg.split('=')[1] : null;
 const onlyNames = new Set(
   onlyArg
     ? onlyArg
@@ -21,10 +23,11 @@ const onlyNames = new Set(
 const root = getRepoRoot();
 const surface = loadPackageSurface(root);
 
-const selected = surface.packages.filter((entry) => {
+const selected = sortReleaseEntries(surface.packages).filter((entry) => {
   if (!entry.publish) return false;
   if (!includeExperimental && entry.maturity === 'experimental') return false;
   if (onlyNames.size > 0 && !onlyNames.has(entry.name)) return false;
+  if (onlyWave && entry.releaseWave !== onlyWave) return false;
   return true;
 });
 
@@ -38,7 +41,7 @@ for (const entry of selected) {
   const cwd = join(root, entry.path);
   const cmd = ['publish', '--access', 'public', '--provenance', '--tag', distTag];
 
-  console.log(`${dryRun ? '[dry-run] ' : ''}Publishing ${entry.name} from ${entry.path} with tag ${distTag}`);
+  console.log(`${dryRun ? '[dry-run] ' : ''}Publishing ${entry.name} from ${entry.path} with tag ${distTag} (wave ${entry.releaseWave}, order ${entry.publishOrder})`);
 
   if (dryRun) continue;
 
