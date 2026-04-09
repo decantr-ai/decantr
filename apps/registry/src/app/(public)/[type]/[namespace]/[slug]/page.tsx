@@ -70,6 +70,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const installCmd = `decantr get ${singular} ${namespace}/${slug}`;
   const tags = (content.data?.tags as string[] | undefined) ?? [];
   const showcaseMeta = singular === 'blueprint' ? getShowcaseMetadata(slug) : null;
+  const showcaseVerification = showcaseMeta?.verification ?? null;
 
   return (
     <div
@@ -252,10 +253,23 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                 {showcaseMeta.target && (
                   <span className="d-annotation">{showcaseMeta.target}</span>
                 )}
+                {showcaseVerification?.build.passed && (
+                  <span className="d-annotation" data-status="success">
+                    build verified
+                  </span>
+                )}
+                {showcaseVerification && (
+                  <span className="d-annotation">drift {showcaseVerification.drift.signal}</span>
+                )}
               </div>
               <p style={{ margin: 0, color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
                 {showcaseMeta.notes || 'This blueprint has a live showcase build in the audited Decantr corpus.'}
               </p>
+              {showcaseVerification && (
+                <p style={{ margin: 0, color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
+                  Shortlist verification recorded a {showcaseVerification.verificationStatus === 'build-green' ? 'passing' : 'failing'} build in {showcaseVerification.build.durationMs} ms, with {showcaseVerification.drift.inlineStyleCount} inline-style signals and {showcaseVerification.drift.hardcodedColorCount} hardcoded-color signals.
+                </p>
+              )}
             </div>
           </div>
         )}

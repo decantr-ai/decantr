@@ -106,6 +106,53 @@ export function computeShowcasePenalty(entry) {
     - Math.round(entry.decantrTreatmentCount * 0.25);
 }
 
+export function getShowcaseDriftSignal(entry) {
+  const penalty = computeShowcasePenalty(entry);
+
+  if (entry.utilityLeakageCount > 0 || entry.hardcodedColorCount > 60 || penalty > 340) {
+    return 'elevated';
+  }
+
+  if (entry.inlineStyleCount <= 280 && entry.hardcodedColorCount <= 40 && penalty <= 300) {
+    return 'lower';
+  }
+
+  return 'moderate';
+}
+
+export function buildShowcaseVerificationResult(entry, options = {}) {
+  const buildPassed = options.buildPassed === true;
+  const buildStatus = options.buildPassed === null || options.buildPassed === undefined
+    ? 'pending'
+    : buildPassed
+      ? 'build-green'
+      : 'build-red';
+  const durationMs = Number.isFinite(options.durationMs) ? options.durationMs : 0;
+  const penalty = computeShowcasePenalty(entry);
+  const driftSignal = getShowcaseDriftSignal(entry);
+
+  return {
+    slug: entry.slug,
+    target: entry.target ?? null,
+    classification: entry.classification,
+    verificationStatus: buildStatus,
+    build: {
+      passed: options.buildPassed ?? null,
+      durationMs,
+    },
+    drift: {
+      signal: driftSignal,
+      penalty,
+      inlineStyleCount: entry.inlineStyleCount,
+      hardcodedColorCount: entry.hardcodedColorCount,
+      utilityLeakageCount: entry.utilityLeakageCount,
+      decantrTreatmentCount: entry.decantrTreatmentCount,
+      hasPackManifest: entry.hasPackManifest,
+      hasDist: entry.hasDist,
+    },
+  };
+}
+
 export function suggestShowcaseClassification(entry) {
   if (entry.status === 'removed') return 'D';
   if (!entry.hasDist) return 'D';

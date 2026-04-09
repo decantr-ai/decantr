@@ -1,9 +1,11 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export const repoRoot = join(import.meta.dirname, '..');
 export const showcaseRoot = join(repoRoot, 'apps', 'showcase');
 export const showcaseManifestPath = join(showcaseRoot, 'manifest.json');
+export const showcaseReportsRoot = join(showcaseRoot, 'reports');
+export const shortlistVerificationReportPath = join(showcaseReportsRoot, 'shortlist-verification.json');
 
 export function loadShowcaseManifest() {
   const raw = readFileSync(showcaseManifestPath, 'utf-8');
@@ -13,6 +15,26 @@ export function loadShowcaseManifest() {
   return {
     ...manifest,
     apps,
+  };
+}
+
+export function loadShortlistVerificationReport() {
+  if (!existsSync(shortlistVerificationReportPath)) {
+    return {
+      generatedAt: null,
+      dryRun: false,
+      summary: null,
+      results: [],
+    };
+  }
+
+  const raw = readFileSync(shortlistVerificationReportPath, 'utf-8');
+  const report = JSON.parse(raw);
+  const results = Array.isArray(report.results) ? report.results : [];
+
+  return {
+    ...report,
+    results,
   };
 }
 

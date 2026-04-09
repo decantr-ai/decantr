@@ -30,6 +30,7 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
   const href = `/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`;
   const showcaseMeta = singular === 'blueprint' ? getShowcaseMetadata(item.slug) : null;
   const hasShortlistedShowcase = Boolean(showcaseMeta?.goldenCandidate);
+  const showcaseVerification = showcaseMeta?.verification ?? null;
 
   return (
     <div className="lum-card-outlined" data-type={singular}>
@@ -48,6 +49,11 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
         {showcaseMeta && (
           <span className="d-annotation" data-status={hasShortlistedShowcase ? 'success' : undefined}>
             {hasShortlistedShowcase ? 'shortlisted showcase' : 'live showcase'}
+          </span>
+        )}
+        {showcaseVerification?.build.passed && (
+          <span className="d-annotation" data-status="success">
+            build verified
           </span>
         )}
       </div>
@@ -123,6 +129,14 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
               >
                 Open showcase
               </Link>
+            </span>
+          )}
+          {showcaseVerification && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <span className="d-annotation">
+                drift {showcaseVerification.drift.signal}
+              </span>
             </span>
           )}
         </div>

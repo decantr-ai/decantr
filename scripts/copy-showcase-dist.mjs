@@ -1,10 +1,17 @@
 import { cpSync, mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getActiveShowcaseEntries, showcaseRoot, repoRoot } from './showcase-manifest.mjs';
+import {
+  getActiveShowcaseEntries,
+  loadShortlistVerificationReport,
+  showcaseRoot,
+  repoRoot,
+} from './showcase-manifest.mjs';
 
 const dryRun = process.argv.includes('--dry-run');
 const targetRoot = join(repoRoot, 'apps', 'registry', 'public', 'showcase');
 const activeEntries = getActiveShowcaseEntries();
+const verificationReport = loadShortlistVerificationReport();
+const verificationBySlug = new Map(verificationReport.results.map(entry => [entry.slug, entry]));
 
 for (const entry of activeEntries) {
   const distDir = join(showcaseRoot, entry.slug, 'dist');
@@ -38,6 +45,7 @@ const publicManifest = {
     target: entry.target ?? null,
     goldenCandidate: entry.goldenCandidate ?? false,
     notes: entry.notes ?? null,
+    verification: verificationBySlug.get(entry.slug) ?? null,
     url: `/showcase/${entry.slug}/`,
   })),
 };

@@ -160,10 +160,13 @@ Initial provisional shortlist produced from the same baseline:
 
 These are now marked in `apps/showcase/manifest.json` as provisional `Class B` shortlist candidates. This does not mean they are full goldens yet. It means they are the lowest-noise current benchmark candidates to review first during the manual provenance pass.
 
-First shortlist verification run on 2026-04-08:
+Tracked shortlist verification baseline on 2026-04-08:
 - 8/8 shortlisted apps built successfully
-- average build duration: 2,104 ms
-- verification command: `pnpm showcase:verify:shortlist -- --report-json=/tmp/decantr-showcase-shortlist-verify.json`
+- average build duration: 1,546 ms
+- drift signals: `2 lower`, `4 moderate`, `2 elevated`
+- pack manifests present: `0/8`
+- tracked report: `apps/showcase/reports/shortlist-verification.json`
+- verification command: `pnpm showcase:verify:shortlist`
 
 ### Phase 2: Classification
 

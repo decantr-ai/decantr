@@ -1,0 +1,176 @@
+{
+  "generatedAt": "2026-04-09T03:55:27.305Z",
+  "dryRun": false,
+  "summary": {
+    "appCount": 8,
+    "passedBuilds": 8,
+    "failedBuilds": 0,
+    "averageDurationMs": 1546,
+    "lowerDriftCount": 2,
+    "moderateDriftCount": 4,
+    "elevatedDriftCount": 2,
+    "withPackManifestCount": 0
+  },
+  "results": [
+    {
+      "slug": "ai-copilot-shell",
+      "target": "react-vite",
+      "classification": "B",
+      "verificationStatus": "build-green",
+      "build": {
+        "passed": true,
+        "durationMs": 1514
+      },
+      "drift": {
+        "signal": "lower",
+        "penalty": 272,
+        "inlineStyleCount": 255,
+        "hardcodedColorCount": 27,
+        "utilityLeakageCount": 0,
+        "decantrTreatmentCount": 148,
+        "hasPackManifest": false,
+        "hasDist": true
+      }
+    },
+    {
+      "slug": "carbon-ai-portal",
+      "target": "react-vite",
+      "classification": "B",
+      "verificationStatus": "build-green",
+      "build": {
+        "passed": true,
+        "durationMs": 1522
+      },
+      "drift": {
+        "signal": "moderate",
+        "penalty": 333,
+        "inlineStyleCount": 321,
+        "hardcodedColorCount": 24,
+        "utilityLeakageCount": 0,
+        "decantrTreatmentCount": 142,
+        "hasPackManifest": false,
+        "hasDist": true
+      }
+    },
+    {
+      "slug": "content-site",
+      "target": "react-vite",
+      "classification": "B",
+      "verificationStatus": "build-green",
+      "build": {
+        "passed": true,
+        "durationMs": 1512
+      },
+      "drift": {
+        "signal": "moderate",
+        "penalty": 320,
+        "inlineStyleCount": 304,
+        "hardcodedColorCount": 26,
+        "utilityLeakageCount": 0,
+        "decantrTreatmentCount": 144,
+        "hasPackManifest": false,
+        "hasDist": true
+      }
+    },
+    {
+      "slug": "portfolio",
+      "target": "react-vite",
+      "classification": "B",
+      "verificationStatus": "build-green",
+      "build": {
+        "passed": true,
+        "durationMs": 1484
+      },
+      "drift": {
+        "signal": "lower",
+        "penalty": 258,
+        "inlineStyleCount": 217,
+        "hardcodedColorCount": 36,
+        "utilityLeakageCount": 0,
+        "decantrTreatmentCount": 123,
+        "hasPackManifest": false,
+        "hasDist": true
+      }
+    },
+    {
+      "slug": "product-landing",
+      "target": "react-vite",
+      "classification": "B",
+      "verificationStatus": "build-green",
+      "build": {
+        "passed": true,
+        "durationMs": 1471
+      },
+      "drift": {
+        "signal": "moderate",
+        "penalty": 332,
+        "inlineStyleCount": 252,
+        "hardcodedColorCount": 56,
+        "utilityLeakageCount": 0,
+        "decantrTreatmentCount": 129,
+        "hasPackManifest": false,
+        "hasDist": true
+      }
+    },
+    {
+      "slug": "registry-platform",
+      "target": "react-vite",
+      "classification": "B",
+      "verificationStatus": "build-green",
+      "build": {
+        "passed": true,
+        "durationMs": 1659
+      },
+      "drift": {
+        "signal": "elevated",
+        "penalty": 355,
+        "inlineStyleCount": 284,
+        "hardcodedColorCount": 62,
+        "utilityLeakageCount": 0,
+        "decantrTreatmentCount": 211,
+        "hasPackManifest": false,
+        "hasDist": true
+      }
+    },
+    {
+      "slug": "spatial-collaboration",
+      "target": "react-vite",
+      "classification": "B",
+      "verificationStatus": "build-green",
+      "build": {
+        "passed": true,
+        "durationMs": 1636
+      },
+      "drift": {
+        "signal": "moderate",
+        "penalty": 318,
+        "inlineStyleCount": 263,
+        "hardcodedColorCount": 47,
+        "utilityLeakageCount": 0,
+        "decantrTreatmentCount": 156,
+        "hasPackManifest": false,
+        "hasDist": true
+      }
+    },
+    {
+      "slug": "knowledge-base",
+      "target": "react-vite",
+      "classification": "B",
+      "verificationStatus": "build-green",
+      "build": {
+        "passed": true,
+        "durationMs": 1569
+      },
+      "drift": {
+        "signal": "elevated",
+        "penalty": 366,
+        "inlineStyleCount": 323,
+        "hardcodedColorCount": 45,
+        "utilityLeakageCount": 0,
+        "decantrTreatmentCount": 186,
+        "hasPackManifest": false,
+        "hasDist": true
+      }
+    }
+  ]
+}
