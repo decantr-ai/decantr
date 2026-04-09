@@ -14,6 +14,7 @@ searchRoutes.get('/search', async (c) => {
   const typeFilter = c.req.query('type');
   const namespace = c.req.query('namespace');
   const sort = c.req.query('sort') ?? undefined;
+  const recommendedOnly = c.req.query('recommended') === 'true';
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
 
   if (!query) {
@@ -34,7 +35,7 @@ searchRoutes.get('/search', async (c) => {
   }
 
   const client = createAdminClient();
-  const requestedCount = Math.min(limit + offset, 500);
+  const requestedCount = recommendedOnly ? 500 : Math.min(limit + offset, 500);
 
   const { data, error } = await client.rpc('search_content', {
     search_query: query,
@@ -69,12 +70,20 @@ searchRoutes.get('/search', async (c) => {
       item.data as Record<string, unknown> | null | undefined,
     ),
   }));
-  const ordered = applyPublicContentOrdering(mappedResults, sort, limit, offset);
-
-  return c.json({
-    total,
+  const ordered = applyPublicContentOrdering(
+    mappedResults,
+    sort,
+    recommendedOnly,
     limit,
     offset,
-    results: ordered.items,
+  );
+
+  return c.json({
+    total: recommendedOnly
+      ? mappedResults.filter((item) => item.intelligence?.recommended).length
+      : total,
+      limit,
+      offset,
+      results: ordered.items,
   });
 });

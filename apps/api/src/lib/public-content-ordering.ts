@@ -8,6 +8,7 @@ import {
 export function applyPublicContentOrdering<T extends PublicContentSummary>(
   items: T[],
   sortParam: string | undefined,
+  recommendedOnly: boolean,
   limit: number,
   offset: number,
 ): {
@@ -15,7 +16,10 @@ export function applyPublicContentOrdering<T extends PublicContentSummary>(
   items: T[];
 } {
   const sort = normalizePublicContentSort(sortParam);
-  const sorted = sortPublicContent(items, sort);
+  const filtered = recommendedOnly
+    ? items.filter((item) => item.intelligence?.recommended)
+    : items;
+  const sorted = sortPublicContent(filtered, sort);
 
   return {
     sort,

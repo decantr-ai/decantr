@@ -126,7 +126,13 @@ export const api = {
     getPublicRegistryClient().getPublicContentRecord(normalizeApiContentType(type), namespace, slug),
   search: (q: string, params?: Record<string, string>) =>
     getPublicRegistryClient()
-      .search({ q, type: params?.type, namespace: params?.namespace, sort: params?.sort })
+      .search({
+        q,
+        type: params?.type,
+        namespace: params?.namespace,
+        sort: params?.sort,
+        recommended: params?.recommended === 'true',
+      })
       .then((result): SearchResponse => ({ total: result.total, results: result.results })),
 
   // Authenticated
@@ -189,7 +195,7 @@ export const api = {
 // Standalone exports for server components
 export function listContent(
   type: string,
-  params?: { namespace?: string; sort?: string; limit?: number; offset?: number }
+  params?: { namespace?: string; sort?: string; recommended?: boolean; limit?: number; offset?: number }
 ) {
   return getPublicRegistryClient().listContent<ContentItem>(
     normalizeApiContentType(type),
@@ -199,7 +205,7 @@ export function listContent(
 
 export function searchContent(
   q: string,
-  params?: { type?: string; namespace?: string; sort?: string; limit?: number; offset?: number }
+  params?: { type?: string; namespace?: string; sort?: string; recommended?: boolean; limit?: number; offset?: number }
 ) {
   return getPublicRegistryClient()
     .search({
@@ -207,6 +213,7 @@ export function searchContent(
       type: params?.type,
       namespace: params?.namespace,
       sort: params?.sort,
+      recommended: params?.recommended,
       limit: params?.limit,
       offset: params?.offset,
     })
@@ -227,7 +234,7 @@ export function getUserProfile(username: string) {
 
 export function getUserContent(
   username: string,
-  params?: { type?: string; sort?: string; limit?: number; offset?: number }
+  params?: { type?: string; sort?: string; recommended?: boolean; limit?: number; offset?: number }
 ) {
   return getPublicRegistryClient().getPublicUserContent(username, params);
 }

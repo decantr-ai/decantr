@@ -65,6 +65,7 @@ userRoutes.get('/users/:username/content', async (c) => {
   const username = c.req.param('username').toLowerCase();
   const rawTypeFilter = c.req.query('type');
   const sort = c.req.query('sort') ?? undefined;
+  const recommendedOnly = c.req.query('recommended') === 'true';
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
 
   if (rawTypeFilter && !CONTENT_TYPES.includes(rawTypeFilter as ContentType)) {
@@ -123,10 +124,18 @@ userRoutes.get('/users/:username/content', async (c) => {
       ),
     };
   });
-  const ordered = applyPublicContentOrdering(mappedItems, sort, limit, offset);
+  const ordered = applyPublicContentOrdering(
+    mappedItems,
+    sort,
+    recommendedOnly,
+    limit,
+    offset,
+  );
 
   return c.json({
-    total: count ?? 0,
+    total: recommendedOnly
+      ? mappedItems.filter((item) => item.intelligence?.recommended).length
+      : (count ?? 0),
     limit,
     offset,
     items: ordered.items,

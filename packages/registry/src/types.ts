@@ -450,6 +450,7 @@ export interface SearchParams {
   type?: string;
   namespace?: string;
   sort?: string;
+  recommended?: boolean;
   limit?: number;
   offset?: number;
 }

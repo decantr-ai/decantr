@@ -280,4 +280,48 @@ describe('POST /v1/validate', () => {
     const json = await res.json();
     expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['alpha', 'zeta']);
   });
+
+  it('filters public content lists down to recommended items when requested', async () => {
+    mockCreateAdminClient.mockReturnValue(createListContentClient([
+      {
+        id: 'content-1',
+        type: 'blueprint',
+        slug: 'portfolio',
+        namespace: '@official',
+        version: '1.0.0',
+        data: {
+          name: 'Portfolio',
+          description: 'Creator portfolio',
+        },
+        published_at: '2026-04-09T00:00:00.000Z',
+        owner: {
+          display_name: 'Decantr',
+          username: 'decantr',
+        },
+      },
+      {
+        id: 'content-2',
+        type: 'blueprint',
+        slug: 'zeta',
+        namespace: '@community',
+        version: '1.0.0',
+        data: {
+          name: 'Zeta',
+          description: 'Community blueprint',
+        },
+        published_at: '2026-04-08T00:00:00.000Z',
+        owner: {
+          display_name: 'Alice',
+          username: 'alice',
+        },
+      },
+    ], 2));
+
+    const res = await app.request('/v1/blueprints?recommended=true');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.total).toBe(1);
+    expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
+  });
 });

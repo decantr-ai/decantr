@@ -148,7 +148,7 @@ export default function HomePage() {
           Browse, install, and publish patterns, themes, blueprints, archetypes, and shells.
         </p>
         <Suspense>
-          <SearchFilterBar baseUrl="/browse" showSort={false} activeType="all" />
+          <SearchFilterBar baseUrl="/browse" showSort={false} showRecommendedToggle={false} activeType="all" />
         </Suspense>
       </section>
 

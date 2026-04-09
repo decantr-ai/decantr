@@ -86,6 +86,7 @@ const SORT_OPTIONS = [
 interface SearchFilterBarProps {
   baseUrl?: string;
   showSort?: boolean;
+  showRecommendedToggle?: boolean;
   resultCount?: number;
   activeType?: RegistryContentType | 'all';
 }
@@ -93,6 +94,7 @@ interface SearchFilterBarProps {
 export function SearchFilterBar({
   baseUrl = '/browse',
   showSort = true,
+  showRecommendedToggle = true,
   resultCount,
   activeType = 'all',
 }: SearchFilterBarProps) {
@@ -102,6 +104,7 @@ export function SearchFilterBar({
 
   const currentQuery = searchParams.get('q') ?? '';
   const currentSort = normalizePublicContentSort(searchParams.get('sort'));
+  const recommendedOnly = searchParams.get('recommended') === 'true';
 
   const [query, setQuery] = useState(currentQuery);
   const activeLabel =
@@ -149,6 +152,10 @@ export function SearchFilterBar({
 
   function handleSortChange(e: React.ChangeEvent<HTMLSelectElement>) {
     navigate({ sort: e.target.value });
+  }
+
+  function handleRecommendedToggle() {
+    navigate({ recommended: recommendedOnly ? '' : 'true' });
   }
 
   return (
@@ -224,6 +231,21 @@ export function SearchFilterBar({
             <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
               {resultCount} results
             </span>
+          )}
+          {showRecommendedToggle && (
+            <button
+              type="button"
+              className="d-interactive"
+              data-variant={recommendedOnly ? 'primary' : 'ghost'}
+              onClick={handleRecommendedToggle}
+              style={{
+                borderRadius: 'var(--d-radius-full)',
+                fontSize: '0.8125rem',
+                padding: '0.25rem 0.75rem',
+              }}
+            >
+              Recommended only
+            </button>
           )}
           {showSort && (
             <div className="flex items-center gap-2">

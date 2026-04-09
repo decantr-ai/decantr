@@ -25,6 +25,7 @@ interface BrowsePageProps {
     type?: string;
     namespace?: string;
     sort?: string;
+    recommended?: string;
     offset?: string;
   }>;
 }
@@ -38,6 +39,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     : undefined;
   const namespace = params.namespace;
   const sort = normalizePublicContentSort(params.sort);
+  const recommended = params.recommended === 'true';
   const offset = parseInt(params.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -49,6 +51,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         type: selectedType,
         namespace: namespace || undefined,
         sort,
+        recommended,
         limit: LIMIT,
         offset,
       });
@@ -58,6 +61,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       const result = await listContent(selectedType, {
         namespace: namespace || undefined,
         sort,
+        recommended,
         limit: LIMIT,
         offset,
       });
@@ -70,6 +74,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
           listContent(type, {
             namespace: namespace || undefined,
             sort,
+            recommended,
             limit: requestedCount,
             offset: 0,
           })

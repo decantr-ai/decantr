@@ -22,6 +22,7 @@ interface BrowseTypePageProps {
     q?: string;
     namespace?: string;
     sort?: string;
+    recommended?: string;
     offset?: string;
   }>;
 }
@@ -37,6 +38,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
   const q = sp.q ?? '';
   const namespace = sp.namespace;
   const sort = normalizePublicContentSort(sp.sort);
+  const recommended = sp.recommended === 'true';
   const offset = parseInt(sp.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -48,6 +50,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
         type,
         namespace: namespace || undefined,
         sort,
+        recommended,
         limit: LIMIT,
         offset,
       });
@@ -57,6 +60,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
       const result = await listContent(type, {
         namespace: namespace || undefined,
         sort,
+        recommended,
         limit: LIMIT,
         offset,
       });
