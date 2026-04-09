@@ -383,6 +383,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.dynamicEvalCount
       + signals.externalIframeWithoutSandboxCount
       + signals.insecureFormActionCount
+      + signals.insecureAuthFormMethodCount
       + signals.insecureTransportEndpointCount
       + signals.externalBlankLinkWithoutRelCount;
     const authInputHintIssueCount = signals.emailAutocompleteMissingCount
@@ -1602,6 +1603,7 @@ interface AstCritiqueSignals {
   dynamicEvalCount: number;
   externalIframeWithoutSandboxCount: number;
   insecureFormActionCount: number;
+  insecureAuthFormMethodCount: number;
   insecureTransportEndpointCount: number;
   iconOnlyButtonWithoutLabelCount: number;
   iconOnlyLinkWithoutLabelCount: number;
@@ -1811,6 +1813,67 @@ function isExternalLinkTargetBlankWithoutRel(attributes: ts.JsxAttributes): bool
 function hasInsecureFormAction(attributes: ts.JsxAttributes): boolean {
   const actionValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'action'));
   return /^http:\/\//i.test(actionValue?.trim() ?? '');
+}
+
+function isAuthLikeInputAttributes(attributes: ts.JsxAttributes): boolean {
+  const inputType = getNormalizedInputType(attributes);
+  if (inputType === 'email' || inputType === 'password') {
+    return true;
+  }
+
+  const autocompleteValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'autocomplete', 'autoComplete'))
+    ?.trim()
+    .toLowerCase();
+  return ['email', 'username', 'current-password', 'new-password'].includes(autocompleteValue ?? '');
+}
+
+function jsxTreeContainsAuthInput(node: ts.Node): boolean {
+  let found = false;
+
+  const visit = (current: ts.Node): void => {
+    if (found) return;
+
+    if (ts.isJsxSelfClosingElement(current)) {
+      const tagName = getJsxTagName(current);
+      if (tagName === 'input' && isAuthLikeInputAttributes(current.attributes)) {
+        found = true;
+      }
+      return;
+    }
+
+    if (ts.isJsxElement(current)) {
+      const tagName = getJsxTagName(current.openingElement);
+      if (tagName === 'input' && isAuthLikeInputAttributes(current.openingElement.attributes)) {
+        found = true;
+        return;
+      }
+      for (const child of current.children) {
+        visit(child);
+        if (found) return;
+      }
+      return;
+    }
+
+    if (ts.isJsxFragment(current)) {
+      for (const child of current.children) {
+        visit(child);
+        if (found) return;
+      }
+      return;
+    }
+
+    current.forEachChild(visit);
+  };
+
+  visit(node);
+  return found;
+}
+
+function hasInsecureAuthFormMethod(node: ts.JsxElement): boolean {
+  if (!jsxTreeContainsAuthInput(node)) return false;
+  const methodValue = getJsxAttributeLiteralValue(getJsxAttribute(node.openingElement.attributes, 'method'));
+  if (!methodValue) return true;
+  return methodValue.trim().toLowerCase() === 'get';
 }
 
 function getExpressionLiteralValue(expression: ts.Expression | undefined): string | null {
@@ -2025,6 +2088,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     dynamicEvalCount: 0,
     externalIframeWithoutSandboxCount: 0,
     insecureFormActionCount: 0,
+    insecureAuthFormMethodCount: 0,
     insecureTransportEndpointCount: 0,
     iconOnlyButtonWithoutLabelCount: 0,
     iconOnlyLinkWithoutLabelCount: 0,
@@ -2292,6 +2356,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (tagName === 'form' && hasInsecureFormAction(node.openingElement.attributes)) {
         signals.insecureFormActionCount += 1;
+      }
+      if (tagName === 'form' && hasInsecureAuthFormMethod(node)) {
+        signals.insecureAuthFormMethodCount += 1;
       }
 
       if (
@@ -2653,6 +2720,7 @@ export function critiqueSource({
   const dynamicEvalCount = Math.max(astSignals.dynamicEvalCount, /\beval\s*\(|new\s+Function\s*\(/.test(code) ? 1 : 0);
   const externalIframeWithoutSandboxCount = astSignals.externalIframeWithoutSandboxCount;
   const insecureFormActionCount = astSignals.insecureFormActionCount;
+  const insecureAuthFormMethodCount = astSignals.insecureAuthFormMethodCount;
   const insecureTransportEndpointCount = astSignals.insecureTransportEndpointCount;
   const externalBlankLinkWithoutRelCount = astSignals.externalBlankLinkWithoutRelCount;
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
@@ -2665,6 +2733,7 @@ export function critiqueSource({
   const hasDynamicEval = dynamicEvalCount > 0;
   const hasExternalIframeWithoutSandbox = externalIframeWithoutSandboxCount > 0;
   const hasInsecureFormAction = insecureFormActionCount > 0;
+  const hasInsecureAuthFormMethod = insecureAuthFormMethodCount > 0;
   const hasInsecureTransportEndpoint = insecureTransportEndpointCount > 0;
   const hasExternalBlankLinkWithoutRel = externalBlankLinkWithoutRelCount > 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0 || passwordAutocompleteMissingCount > 0;
@@ -2682,6 +2751,7 @@ export function critiqueSource({
       - (hasDynamicEval ? 2 : 0)
       - (hasExternalIframeWithoutSandbox ? 1 : 0)
       - (hasInsecureFormAction ? 2 : 0)
+      - (hasInsecureAuthFormMethod ? 2 : 0)
       - (hasInsecureTransportEndpoint ? 2 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
@@ -2689,12 +2759,13 @@ export function critiqueSource({
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
       ...(hasExternalIframeWithoutSandbox ? ['Sandbox external iframes unless a reviewed embed contract explicitly requires broader privileges.'] : []),
       ...(hasInsecureFormAction ? ['Avoid posting forms to plain HTTP endpoints; use HTTPS or move the action behind a trusted server boundary.'] : []),
+      ...(hasInsecureAuthFormMethod ? ['Auth forms should submit with `method=\"post\"` or an explicit server action boundary instead of defaulting to GET semantics.'] : []),
       ...(hasInsecureTransportEndpoint ? ['Avoid plain HTTP or ws:// client endpoints; use HTTPS/WSS transport or route the request behind a trusted server boundary.'] : []),
       ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, or `new-password` on auth-related inputs.'] : []),
@@ -2773,6 +2844,18 @@ export function critiqueSource({
       evidence: [filePath, `Forms with insecure HTTP action: ${insecureFormActionCount}`],
       file: filePath,
       suggestedFix: 'Use HTTPS form endpoints or route submissions through a trusted server action/API boundary that preserves transport security.',
+    }));
+  }
+
+  if (hasInsecureAuthFormMethod) {
+    findings.push(makeFinding({
+      id: 'security-auth-form-method-insecure',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Auth-like forms were detected without an explicit POST-style submission method.',
+      evidence: [filePath, `Auth forms with insecure method: ${insecureAuthFormMethodCount}`],
+      file: filePath,
+      suggestedFix: 'Add `method=\"post\"` or move the submission behind an explicit server action boundary so credential flows do not default to GET semantics.',
     }));
   }
 
