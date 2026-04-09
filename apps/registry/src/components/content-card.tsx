@@ -47,6 +47,21 @@ function verificationBadgeStatus(status?: string | null): 'success' | 'warning' 
   return undefined;
 }
 
+function getIntelligenceSourceLabel(
+  source?: NonNullable<ContentItem['intelligence']>['source'],
+): string | null {
+  switch (source) {
+    case 'authored':
+      return 'authored intelligence';
+    case 'benchmark':
+      return 'benchmark-backed';
+    case 'hybrid':
+      return 'hybrid intelligence';
+    default:
+      return null;
+  }
+}
+
 export function ContentCard({
   item,
   editable,
@@ -61,6 +76,7 @@ export function ContentCard({
   const href = `/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`;
   const showcaseMeta = singular === 'blueprint' ? (showcaseMetadata ?? null) : null;
   const intelligence = item.intelligence ?? null;
+  const intelligenceSourceLabel = getIntelligenceSourceLabel(intelligence?.source);
   const hasShortlistedShowcase = Boolean(showcaseMeta?.goldenCandidate);
   const showcaseVerification = showcaseMeta?.verification ?? null;
   const verificationLabel =
@@ -88,6 +104,11 @@ export function ContentCard({
         {intelligence?.recommended && (
           <span className="d-annotation" data-status="success">
             recommended
+          </span>
+        )}
+        {intelligenceSourceLabel && (
+          <span className="d-annotation">
+            {intelligenceSourceLabel}
           </span>
         )}
         {showcaseMeta && (
