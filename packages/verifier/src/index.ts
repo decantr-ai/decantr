@@ -429,7 +429,9 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(
       summary.interactionSafetyIssues,
       relativePath,
-      signals.buttonInFormWithoutTypeCount + signals.authFormWithoutSubmitCount,
+      signals.buttonInFormWithoutTypeCount
+        + signals.authFormWithoutSubmitCount
+        + signals.authInputWithoutNameCount,
     );
     recordSourceAudit(summary.authInputHintIssues, relativePath, authInputHintIssueCount);
   }
@@ -1742,6 +1744,7 @@ interface AstCritiqueSignals {
   passwordAutocompleteMissingCount: number;
   authAutocompleteDisabledCount: number;
   authInputTypeMismatchCount: number;
+  authInputWithoutNameCount: number;
   buttonInFormWithoutTypeCount: number;
   authFormWithoutSubmitCount: number;
   authEntrySignalCount: number;
@@ -2429,6 +2432,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     passwordAutocompleteMissingCount: 0,
     authAutocompleteDisabledCount: 0,
     authInputTypeMismatchCount: 0,
+    authInputWithoutNameCount: 0,
     buttonInFormWithoutTypeCount: 0,
     authFormWithoutSubmitCount: 0,
     authEntrySignalCount: countAuthEntrySignals(code),
@@ -2661,6 +2665,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         if (hasAuthInputTypeMismatch(node.attributes)) {
           signals.authInputTypeMismatchCount += 1;
         }
+        if (hasAncestorJsxTag(node, 'form') && isAuthLikeInputAttributes(node.attributes) && !getJsxAttribute(node.attributes, 'name')) {
+          signals.authInputWithoutNameCount += 1;
+        }
       }
       if (!hasFormControlLabel(node, tagName, node.attributes, labelForIds, '')) {
         signals.formControlWithoutLabelCount += 1;
@@ -2763,6 +2770,13 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         }
         if (hasAuthInputTypeMismatch(node.openingElement.attributes)) {
           signals.authInputTypeMismatchCount += 1;
+        }
+        if (
+          hasAncestorJsxTag(node, 'form')
+          && isAuthLikeInputAttributes(node.openingElement.attributes)
+          && !getJsxAttribute(node.openingElement.attributes, 'name')
+        ) {
+          signals.authInputWithoutNameCount += 1;
         }
       }
       if (!hasFormControlLabel(node, tagName, node.openingElement.attributes, labelForIds, textContent)) {
@@ -3082,16 +3096,18 @@ export function critiqueSource({
   const hasHover = codeLower.includes(':hover') || codeLower.includes('onmouseenter') || codeLower.includes('hover:');
   const buttonInFormWithoutTypeCount = astSignals.buttonInFormWithoutTypeCount;
   const authFormWithoutSubmitCount = astSignals.authFormWithoutSubmitCount;
+  const authInputWithoutNameCount = astSignals.authInputWithoutNameCount;
   const authProtectedRedirectSignalCount = astSignals.authProtectedRedirectSignalCount;
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
-    score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0) - (authFormWithoutSubmitCount > 0 ? 1 : 0))),
-    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}, auth redirects to protected routes: ${authProtectedRedirectSignalCount}`,
+    score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0) - (authFormWithoutSubmitCount > 0 ? 1 : 0) - (authInputWithoutNameCount > 0 ? 1 : 0))),
+    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}, auth inputs without name: ${authInputWithoutNameCount}, auth redirects to protected routes: ${authProtectedRedirectSignalCount}`,
     suggestions: [
       ...(!hasTransition ? ['Add transitions for interactive state changes where appropriate.'] : []),
       ...(buttonInFormWithoutTypeCount > 0 ? ['Add explicit button types inside forms so non-submit actions do not accidentally submit.'] : []),
       ...(authFormWithoutSubmitCount > 0 ? ['Auth-like forms should expose a clear submit control so users can actually complete the credential flow.'] : []),
+      ...(authInputWithoutNameCount > 0 ? ['Give auth-related form inputs stable `name` attributes so browser form posts and FormData submissions include the credential values.'] : []),
       ...(authProtectedRedirectSignalCount > 0 ? ['Keep unauthenticated guard redirects pointed at anonymous entry routes, not protected destinations like `/dashboard` or `/app`.'] : []),
     ],
   });
@@ -3116,6 +3132,18 @@ export function critiqueSource({
       evidence: [filePath, `Auth forms without submit control: ${authFormWithoutSubmitCount}`],
       file: filePath,
       suggestedFix: 'Add an explicit submit button or submit input so users can complete the sign-in, registration, or recovery flow.',
+    }));
+  }
+
+  if (authInputWithoutNameCount > 0) {
+    findings.push(makeFinding({
+      id: 'interaction-auth-input-name-missing',
+      category: 'Interaction Safety',
+      severity: 'warn',
+      message: 'Auth-like form inputs were detected without a `name` attribute.',
+      evidence: [filePath, `Auth inputs without name: ${authInputWithoutNameCount}`],
+      file: filePath,
+      suggestedFix: 'Add stable name attributes such as `email`, `username`, or `password` so browser form submission and FormData handling include the credential values.',
     }));
   }
 
