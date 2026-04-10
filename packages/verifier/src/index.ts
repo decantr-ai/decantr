@@ -5371,6 +5371,24 @@ function expressionLooksLikeLocationMutationCall(
   );
 }
 
+function expressionLooksLikeWindowOpenCall(
+  expression: ts.LeftHandSideExpression | ts.SuperProperty | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+): boolean {
+  if (!expression) return false;
+
+  if (ts.isIdentifier(expression) && expression.text === 'open') {
+    return true;
+  }
+
+  return Boolean(
+    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessNamed(expression, 'open')
+    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, new Set())
+  );
+}
+
 function isRouteTransitionCall(node: ts.CallExpression): boolean {
   return (ts.isIdentifier(node.expression) && ['redirect', 'navigate'].includes(node.expression.text))
     || (
@@ -5807,6 +5825,29 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
       if (
         expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+        && isExternalUrl(firstArgumentLiteral)
+      ) {
+        signals.authExternalRedirectSignalCount += 1;
+        if (isAuthProviderUrlMissingState(firstArgumentLiteral)) {
+          signals.authProviderStateMissingCount += 1;
+        }
+        if (isAuthProviderCodeFlowMissingPkce(firstArgumentLiteral)) {
+          signals.authProviderPkceMissingCount += 1;
+        }
+        if (isAuthProviderIdTokenFlowMissingNonce(firstArgumentLiteral)) {
+          signals.authProviderNonceMissingCount += 1;
+        }
+      }
+
+      if (
+        expressionLooksLikeWindowOpenCall(node.expression, sourceFile, namedExpressionInitializers)
+        && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers, namedPropertyAliases)
+      ) {
+        signals.authOpenRedirectSignalCount += 1;
+      }
+
+      if (
+        expressionLooksLikeWindowOpenCall(node.expression, sourceFile, namedExpressionInitializers)
         && isExternalUrl(firstArgumentLiteral)
       ) {
         signals.authExternalRedirectSignalCount += 1;

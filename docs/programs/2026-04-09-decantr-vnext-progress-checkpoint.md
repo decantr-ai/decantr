@@ -530,6 +530,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Auth open-redirect tracing now also treats stringified reviewed URL carriers like `req.nextUrl.toString()` and `String(nextUrl)` as equivalent URL inputs, so middleware and route handlers cannot bypass redirect-param detection by stringifying a trusted request URL object and then reparsing it through `new URL(...)` before consuming `next`.
 - Auth open-redirect tracing now also treats `Object.fromEntries(searchParams)` as a reviewed query carrier, including destructured forms like `const { next } = Object.fromEntries(...)`, so auth flows cannot bypass redirect-param detection by converting reviewed search params into a plain object and then reading `query.next` before redirecting.
 - Auth open-redirect tracing now also follows normalized query carriers like `new URLSearchParams(window.location.search.slice(1))` and `new URLSearchParams(req.nextUrl.search.slice(1))`, so auth flows cannot bypass redirect-param detection just by stripping the leading `?` off a reviewed location/request query string before reading `next`.
+- Auth open-redirect tracing now also treats `open(...)` and `window.open(...)` as imperative navigation sinks, so auth flows cannot bypass redirect-param detection by forwarding raw `next` or `returnTo` values through browser popup or tab navigation instead of `redirect(...)`, router transitions, or direct location assignment.
 
 ## Highest-Value Next Streams
 
