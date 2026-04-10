@@ -3720,4 +3720,51 @@ describe('verifier', () => {
 
     expect(report.findings.some(finding => finding.id === 'security-postmessage-wildcard-origin')).toBe(true);
   });
+
+  it('flags imperative new-tab opens without noopener protections during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/OpenDocs.tsx',
+      code: `
+        export function OpenDocs() {
+          return (
+            <button
+              onClick={() => {
+                window.open('https://example.com/docs', '_blank');
+              }}
+            >
+              Open docs
+            </button>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-window-open-noopener-missing')).toBe(true);
+  });
 });

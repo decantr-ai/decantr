@@ -407,6 +407,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.hardcodedSecretSignalCount
       + signals.clientSecretEnvReferenceCount
       + signals.wildcardPostMessageCount
+      + signals.windowOpenWithoutNoopenerCount
       + signals.externalIframeWithoutSandboxCount
       + signals.insecureFormActionCount
       + signals.insecureAuthFormMethodCount
@@ -1788,6 +1789,7 @@ interface AstCritiqueSignals {
   hardcodedSecretSignalCount: number;
   clientSecretEnvReferenceCount: number;
   wildcardPostMessageCount: number;
+  windowOpenWithoutNoopenerCount: number;
   externalIframeWithoutSandboxCount: number;
   insecureFormActionCount: number;
   insecureAuthFormMethodCount: number;
@@ -2524,6 +2526,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     hardcodedSecretSignalCount: countHardcodedSecretSignals(code),
     clientSecretEnvReferenceCount: countClientSecretEnvReferenceSignals(code),
     wildcardPostMessageCount: countWildcardPostMessageSignals(code),
+    windowOpenWithoutNoopenerCount: 0,
     externalIframeWithoutSandboxCount: 0,
     insecureFormActionCount: 0,
     insecureAuthFormMethodCount: 0,
@@ -2651,6 +2654,24 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && secondArgumentLiteral === '*'
       ) {
         signals.wildcardPostMessageCount += 1;
+      }
+
+      if (
+        (
+          (ts.isIdentifier(node.expression) && node.expression.text === 'open')
+          || (
+            ts.isPropertyAccessExpression(node.expression)
+            && ts.isIdentifier(node.expression.expression)
+            && node.expression.expression.text === 'window'
+            && isPropertyNamed(node.expression.name, 'open')
+          )
+        )
+        && secondArgumentLiteral === '_blank'
+      ) {
+        const featureLiteral = getExpressionLiteralValue(node.arguments[2])?.toLowerCase() ?? '';
+        if (!featureLiteral.includes('noopener') || !featureLiteral.includes('noreferrer')) {
+          signals.windowOpenWithoutNoopenerCount += 1;
+        }
       }
 
       if (ts.isPropertyAccessExpression(node.expression)) {
@@ -3392,6 +3413,7 @@ export function critiqueSource({
   const hardcodedSecretSignalCount = astSignals.hardcodedSecretSignalCount;
   const clientSecretEnvReferenceCount = astSignals.clientSecretEnvReferenceCount;
   const wildcardPostMessageCount = astSignals.wildcardPostMessageCount;
+  const windowOpenWithoutNoopenerCount = astSignals.windowOpenWithoutNoopenerCount;
   const authStorageWriteCount = astSignals.authStorageWriteCount;
   const authCookieWriteCount = astSignals.authCookieWriteCount;
   const authHeaderWriteCount = astSignals.authHeaderWriteCount;
@@ -3411,6 +3433,7 @@ export function critiqueSource({
   const hasHardcodedSecretSignals = hardcodedSecretSignalCount > 0;
   const hasClientSecretEnvReferences = clientSecretEnvReferenceCount > 0;
   const hasWildcardPostMessage = wildcardPostMessageCount > 0;
+  const hasWindowOpenWithoutNoopener = windowOpenWithoutNoopenerCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
   const hasAuthCookieWrites = authCookieWriteCount > 0;
   const hasAuthHeaderWrites = authHeaderWriteCount > 0;
@@ -3430,19 +3453,21 @@ export function critiqueSource({
       - (hasHardcodedSecretSignals ? 3 : 0)
       - (hasClientSecretEnvReferences ? 3 : 0)
       - (hasWildcardPostMessage ? 2 : 0)
+      - (hasWindowOpenWithoutNoopener ? 1 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
       ...(hasHardcodedSecretSignals ? ['Remove hardcoded secret literals from source immediately and rotate any exposed credentials.'] : []),
       ...(hasClientSecretEnvReferences ? ['Do not reference service-role, secret, or private-key env vars from client-exposed code paths.'] : []),
       ...(hasWildcardPostMessage ? ['Avoid `postMessage(..., "*")`; target a reviewed explicit origin instead of broadcasting to any window origin.'] : []),
+      ...(hasWindowOpenWithoutNoopener ? ['When opening a new tab imperatively, include `noopener,noreferrer` features so the new page cannot retain opener access.'] : []),
       ...(hasExternalIframeWithoutSandbox ? ['Sandbox external iframes unless a reviewed embed contract explicitly requires broader privileges.'] : []),
       ...(hasInsecureFormAction ? ['Avoid posting forms to plain HTTP endpoints; use HTTPS or move the action behind a trusted server boundary.'] : []),
       ...(hasInsecureAuthFormMethod ? ['Auth forms should submit with `method=\"post\"` or an explicit server action boundary instead of defaulting to GET semantics.'] : []),
@@ -3524,6 +3549,18 @@ export function critiqueSource({
       evidence: [filePath, `Wildcard postMessage calls: ${wildcardPostMessageCount}`],
       file: filePath,
       suggestedFix: 'Replace `postMessage(..., "*")` with an explicit reviewed origin so messages only cross the intended trust boundary.',
+    }));
+  }
+
+  if (hasWindowOpenWithoutNoopener) {
+    findings.push(makeFinding({
+      id: 'security-window-open-noopener-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Imperative `window.open` usage targets a new tab without `noopener,noreferrer` protections.',
+      evidence: [filePath, `window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}`],
+      file: filePath,
+      suggestedFix: 'Use `window.open(url, "_blank", "noopener,noreferrer")` or equivalent reviewed features so the opened page cannot retain opener access.',
     }));
   }
 

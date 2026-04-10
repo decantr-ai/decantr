@@ -148,6 +148,7 @@ commit archaeology.
 - Auth verification now flags guard/session files that redirect unauthenticated users toward protected destinations like `/dashboard` instead of anonymous entry routes.
 - File critique now also flags auth-like form inputs that omit `name` attributes, so visually correct login forms do not silently fail browser submission or FormData handling.
 - Security critique now also flags credential inputs whose `autocomplete` values are semantically wrong for the field, closing another silent auth-form correctness gap beyond missing hints.
+- Security critique now also flags imperative `window.open(..., "_blank")` usage that omits `noopener,noreferrer`, so generated action handlers do not silently preserve opener access across trust boundaries.
 - Accessibility critique now catches table markup without headers or captions, so data-heavy generated UIs fail earlier when their structure is visually plausible but semantically incomplete.
 - Accessibility critique now also catches multiple navigation landmarks without distinct labels, which is especially important for generated app shells with both sidebar and utility nav regions.
 - Accessibility critique now also flags files that render multiple main landmarks, helping generated page and shell structures keep a single clear primary content region for assistive technologies.
