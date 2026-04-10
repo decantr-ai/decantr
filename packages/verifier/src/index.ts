@@ -2350,6 +2350,10 @@ function isInsecureExternalUrl(value: string | null): boolean {
   return /^http:\/\//i.test(value?.trim() ?? '');
 }
 
+function isImageLikeTag(tagName: string | null): boolean {
+  return tagName === 'img' || tagName === 'Image';
+}
+
 function isDialogLikeElement(attributes: ts.JsxAttributes, tagName: string | null): boolean {
   if (tagName === 'dialog') return true;
   const roleValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'role'))?.trim().toLowerCase();
@@ -3498,10 +3502,10 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'a' && !hasAccessibleLabel(node.attributes, '')) {
         signals.iconOnlyLinkWithoutLabelCount += 1;
       }
-      if (tagName === 'img' && !getJsxAttribute(node.attributes, 'alt')) {
+      if (isImageLikeTag(tagName) && !getJsxAttribute(node.attributes, 'alt')) {
         signals.imageWithoutAltCount += 1;
       }
-      if (tagName === 'img' && isInsecureExternalImage(node.attributes)) {
+      if (isImageLikeTag(tagName) && isInsecureExternalImage(node.attributes)) {
         signals.insecureExternalImageCount += 1;
       }
       if (tagName === 'iframe' && !getJsxAttribute(node.attributes, 'title')) {
@@ -3603,10 +3607,10 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'a' && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
         signals.iconOnlyLinkWithoutLabelCount += 1;
       }
-      if (tagName === 'img' && !getJsxAttribute(node.openingElement.attributes, 'alt')) {
+      if (isImageLikeTag(tagName) && !getJsxAttribute(node.openingElement.attributes, 'alt')) {
         signals.imageWithoutAltCount += 1;
       }
-      if (tagName === 'img' && isInsecureExternalImage(node.openingElement.attributes)) {
+      if (isImageLikeTag(tagName) && isInsecureExternalImage(node.openingElement.attributes)) {
         signals.insecureExternalImageCount += 1;
       }
       if (tagName === 'iframe' && !getJsxAttribute(node.openingElement.attributes, 'title')) {

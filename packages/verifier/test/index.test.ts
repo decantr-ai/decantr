@@ -3493,6 +3493,88 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-image-transport-insecure')).toBe(true);
   });
 
+  it('flags Next-style Image components without alt text during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/HeroImage.tsx',
+      code: `
+        import Image from 'next/image';
+
+        export function HeroImage() {
+          return <Image src="/hero.jpg" width={1200} height={630} />;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['marketing'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'marketing', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-image-alt-missing')).toBe(true);
+  });
+
+  it('flags insecure remote transport on Next-style Image components during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/LegacyImage.tsx',
+      code: `
+        import Image from 'next/image';
+
+        export function LegacyImage() {
+          return <Image src="http://cdn.example.com/hero.jpg" alt="Legacy hero" width={1200} height={630} />;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['marketing'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'marketing', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-image-transport-insecure')).toBe(true);
+  });
+
   it('does not flag secure remote image transport during critique', () => {
     const report = critiqueSource({
       filePath: 'src/components/ModernHero.tsx',
