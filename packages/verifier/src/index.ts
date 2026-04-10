@@ -4592,8 +4592,8 @@ function expressionContainsOpenRedirectSource(
 
   if (
     ts.isCallExpression(expression)
-    && ts.isPropertyAccessExpression(expression.expression)
-    && isPropertyNamed(expression.expression.name, 'get')
+    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    && isMemberAccessNamed(expression.expression, 'get')
     && expression.arguments.length > 0
     && isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers)
     && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
