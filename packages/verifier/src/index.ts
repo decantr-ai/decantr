@@ -399,6 +399,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authSuccessSignals: createSourceAuditBucket(),
     authCallbackTokenSignals: createSourceAuditBucket(),
     authCallbackErrorSignals: createSourceAuditBucket(),
+    authCallbackStateSignals: createSourceAuditBucket(),
+    authCallbackStateValidationSignals: createSourceAuditBucket(),
     authCallbackUrlScrubSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
     authStorageClears: createSourceAuditBucket(),
@@ -494,6 +496,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
     recordSourceAudit(summary.authCallbackTokenSignals, relativePath, countAuthCallbackTokenSignals(code, relativePath));
     recordSourceAudit(summary.authCallbackErrorSignals, relativePath, countAuthCallbackErrorSignals(code, relativePath));
+    recordSourceAudit(summary.authCallbackStateSignals, relativePath, countAuthCallbackStateSignals(code));
+    recordSourceAudit(summary.authCallbackStateValidationSignals, relativePath, countAuthCallbackStateValidationSignals(code));
     recordSourceAudit(summary.authCallbackUrlScrubSignals, relativePath, countAuthCallbackUrlScrubSignals(code));
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
     recordSourceAudit(summary.authStorageClears, relativePath, signals.authStorageClearCount);
@@ -657,6 +661,8 @@ interface SourceAuditSummary {
   authSuccessSignals: SourceAuditBucket;
   authCallbackTokenSignals: SourceAuditBucket;
   authCallbackErrorSignals: SourceAuditBucket;
+  authCallbackStateSignals: SourceAuditBucket;
+  authCallbackStateValidationSignals: SourceAuditBucket;
   authCallbackUrlScrubSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
   authStorageClears: SourceAuditBucket;
@@ -2067,6 +2073,25 @@ function appendSourceAuditFindings(
 
   if (
     topology.hasAuthFeature
+    && sourceAudit.authCallbackStateSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackStateSignals, sourceAudit.authCallbackStateValidationSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-callback-state-validation-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth callback code reads provider `state` on return but does not show an obvious validation step against a reviewed expected value.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Callback state signal files: ${sourceAudit.authCallbackStateSignals.files.join(', ') || 'none'}`,
+        `Callback state-validation signal files: ${sourceAudit.authCallbackStateValidationSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'When reviewed auth callback routes read a returned `state`, compare it against a stored or expected reviewed value before exchanging callback codes or continuing session setup.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
     && sourceAudit.authCallbackTokenSignals.count > 0
     && sourceAudit.authCallbackUrlScrubSignals.count === 0
   ) {
@@ -3426,6 +3451,47 @@ function countAuthCallbackErrorSignals(code: string, filePath: string): number {
   return count + (/callback/i.test(filePath) && /\b(?:error|failed|failure)\b/i.test(code) ? 1 : 0);
 }
 
+function countAuthCallbackStateSignals(code: string): number {
+  const patterns = [
+    /\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`]state['"`]\s*\)/gi,
+    /\b(?:router\.query|route\.query|query)\.state\b/gi,
+    /\bnew URLSearchParams\s*\(\s*(?:window\.)?location\.hash(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"`]state['"`]\s*\)/gi,
+  ];
+
+  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+}
+
+function countAuthCallbackStateValidationSignals(code: string): number {
+  let count = 0;
+
+  if (/\b(?:validateState|verifyState|assertState|compareState|checkState)\s*\(/i.test(code)) {
+    count += 1;
+  }
+
+  if (
+    /\b(?:sessionStorage|localStorage)\.getItem\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/i.test(code)
+    && /(?:state|providerState|callbackState|returnedState|expectedState|storedState|sessionState|oauthState|csrfState)\s*(?:===|==|!==|!=)/i.test(code)
+  ) {
+    count += 1;
+  }
+
+  if (
+    /\b(?:cookies?|cookieStore)\.(?:get|getAll)\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/i.test(code)
+    && /(?:state|providerState|callbackState|returnedState|expectedState|storedState|sessionState|oauthState|csrfState)\s*(?:===|==|!==|!=)/i.test(code)
+  ) {
+    count += 1;
+  }
+
+  if (
+    /\b(?:state|providerState|callbackState|returnedState)\b\s*(?:===|==|!==|!=)\s*\b(?:expectedState|storedState|sessionState|oauthState|csrfState)\b/i.test(code)
+    || /\b(?:expectedState|storedState|sessionState|oauthState|csrfState)\b\s*(?:===|==|!==|!=)\s*\b(?:state|providerState|callbackState|returnedState)\b/i.test(code)
+  ) {
+    count += 1;
+  }
+
+  return count;
+}
+
 function countAuthCallbackUrlScrubSignals(code: string): number {
   const patterns = [
     /\bhistory\.replaceState\s*\(/gi,
@@ -4657,6 +4723,8 @@ export function critiqueSource({
   const authSuccessSignalCount = countAuthSuccessSignals(code);
   const authCallbackTokenSignalCount = countAuthCallbackTokenSignals(code, filePath);
   const authCallbackErrorSignalCount = countAuthCallbackErrorSignals(code, filePath);
+  const authCallbackStateSignalCount = countAuthCallbackStateSignals(code);
+  const authCallbackStateValidationSignalCount = countAuthCallbackStateValidationSignals(code);
   const hasAuthCallbackErrorGap = authCallbackTokenSignalCount > 0 && authCallbackErrorSignalCount === 0;
   scores.push({
     category: 'Motion & Interaction',
@@ -5141,6 +5209,7 @@ export function critiqueSource({
   const hasAuthProviderStateMissing = authProviderStateMissingCount > 0;
   const hasAuthProviderPkceMissing = authProviderPkceMissingCount > 0;
   const hasAuthProviderNonceMissing = authProviderNonceMissingCount > 0;
+  const hasAuthCallbackStateValidationGap = authCallbackStateSignalCount > 0 && authCallbackStateValidationSignalCount === 0;
   const hasAuthCallbackUrlScrubGap = authCallbackTokenSignalCount > 0 && authCallbackUrlScrubSignalCount === 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0
     || passwordAutocompleteMissingCount > 0
@@ -5189,6 +5258,7 @@ export function critiqueSource({
       - (hasAuthProviderStateMissing ? 2 : 0)
       - (hasAuthProviderPkceMissing ? 2 : 0)
       - (hasAuthProviderNonceMissing ? 2 : 0)
+      - (hasAuthCallbackStateValidationGap ? 2 : 0)
       - (hasAuthCallbackUrlScrubGap ? 2 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
@@ -5196,7 +5266,7 @@ export function critiqueSource({
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, auth provider URLs missing state: ${authProviderStateMissingCount}, auth provider code flows missing PKCE: ${authProviderPkceMissingCount}, auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}, auth callback token reads: ${authCallbackTokenSignalCount}, auth callback URL scrub signals: ${authCallbackUrlScrubSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, auth provider URLs missing state: ${authProviderStateMissingCount}, auth provider code flows missing PKCE: ${authProviderPkceMissingCount}, auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}, auth callback state reads: ${authCallbackStateSignalCount}, auth callback state validation signals: ${authCallbackStateValidationSignalCount}, auth callback token reads: ${authCallbackTokenSignalCount}, auth callback URL scrub signals: ${authCallbackUrlScrubSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -5218,6 +5288,7 @@ export function critiqueSource({
       ...(hasAuthProviderStateMissing ? ['When auth flows hand off to a provider authorize URL, include a reviewed `state` value and validate it on return instead of hardcoding off-site auth entry without CSRF protection.'] : []),
       ...(hasAuthProviderPkceMissing ? ['When client-managed auth flows hand off to a provider code-flow authorize URL, include a reviewed PKCE `code_challenge` and verifier instead of hardcoding a bare authorization-code redirect from client code.'] : []),
       ...(hasAuthProviderNonceMissing ? ['When auth flows hand off to a provider authorize URL that requests `id_token`, include a reviewed `nonce` and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.'] : []),
+      ...(hasAuthCallbackStateValidationGap ? ['When callback routes read a returned provider `state`, validate it against a stored or expected reviewed value before exchanging callback codes or continuing auth setup.'] : []),
       ...(hasAuthCallbackUrlScrubGap ? ['After consuming auth callback codes or tokens from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, `new-password`, or `one-time-code` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
@@ -5491,6 +5562,22 @@ export function critiqueSource({
       evidence: [filePath, `Auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}`],
       file: filePath,
       suggestedFix: 'Add a reviewed `nonce` value to external provider authorize URLs that request `id_token`, and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.',
+    }));
+  }
+
+  if (hasAuthCallbackStateValidationGap) {
+    findings.push(makeFinding({
+      id: 'security-auth-callback-state-validation-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'The reviewed auth callback flow reads a returned provider `state` value but does not show an obvious validation step against a reviewed expected value.',
+      evidence: [
+        filePath,
+        `Auth callback state reads: ${authCallbackStateSignalCount}`,
+        `Auth callback state validation signals: ${authCallbackStateValidationSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'When callback routes read `state`, compare it against a stored or expected reviewed value before exchanging callback codes or continuing auth/session setup.',
     }));
   }
 

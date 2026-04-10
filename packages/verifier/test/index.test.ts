@@ -2633,6 +2633,142 @@ describe('verifier', () => {
     }
   });
 
+  it('flags auth callback flows that read provider state without validating it during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'callback', route: '/auth/callback', layout: ['form'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'AuthCallback.tsx'),
+        `
+          export function AuthCallback({ searchParams }) {
+            const state = searchParams.get('state');
+            const code = searchParams.get('code');
+            if (code) {
+              void auth.exchangeCodeForSession(code);
+            }
+
+            return <p data-state={state}>Signing you in…</p>;
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-callback-state-validation-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not flag auth callback flows when provider state is validated during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'callback', route: '/auth/callback', layout: ['form'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'AuthCallback.tsx'),
+        `
+          export function AuthCallback({ searchParams }) {
+            const returnedState = searchParams.get('state');
+            const expectedState = sessionStorage.getItem('oauth_state');
+            if (!returnedState || returnedState !== expectedState) {
+              return <p>Authentication failed. Please try again.</p>;
+            }
+
+            const code = searchParams.get('code');
+            if (code) {
+              void auth.exchangeCodeForSession(code);
+            }
+
+            history.replaceState({}, '', '/dashboard');
+            return redirect('/dashboard');
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-callback-state-validation-missing')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('does not flag auth callback flows when callback URLs are scrubbed during project audit', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -6792,6 +6928,102 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'state-auth-callback-error-missing')).toBe(false);
+  });
+
+  it('flags auth callback flows that read provider state without validating it during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/AuthCallback.tsx',
+      code: `
+        export function AuthCallback({ searchParams }) {
+          const state = searchParams.get('state');
+          const code = searchParams.get('code');
+          if (code) {
+            void auth.exchangeCodeForSession(code);
+          }
+
+          return <p data-state={state}>Signing you in...</p>;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['callback'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'callback', path: '/auth/callback', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene', 'route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-callback-state-validation-missing')).toBe(true);
+  });
+
+  it('does not flag auth callback flows when provider state is validated during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/AuthCallback.tsx',
+      code: `
+        export function AuthCallback({ searchParams }) {
+          const returnedState = searchParams.get('state');
+          const expectedState = sessionStorage.getItem('oauth_state');
+          if (!returnedState || returnedState !== expectedState) {
+            return <p>Authentication failed. Please try again.</p>;
+          }
+
+          const code = searchParams.get('code');
+          if (code) {
+            void auth.exchangeCodeForSession(code);
+            history.replaceState({}, '', '/dashboard');
+          }
+
+          return redirect('/dashboard');
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['callback'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'callback', path: '/auth/callback', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene', 'route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-callback-state-validation-missing')).toBe(false);
   });
 
   it('does not flag auth callback flows when callback URLs are scrubbed during critique', () => {
