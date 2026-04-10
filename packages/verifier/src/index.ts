@@ -4486,6 +4486,8 @@ const OPEN_REDIRECT_QUERY_CARRIER_REGEX = /\b(?:searchParams|router\.query|route
 const OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX = /\b(?:router|route)\b/i;
 const LOCATION_QUERY_SOURCE_REGEX = /\b(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
 const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:(?:window\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\s*\)/i;
+const NEXT_URL_SOURCE_REGEX = /\b(?:request|req)\.nextUrl\b/i;
+const REQUEST_OBJECT_SOURCE_REGEX = /\b(?:request|req)\b/i;
 
 function countAuthOpenRedirectSignals(code: string): number {
   const patterns = [
@@ -4799,6 +4801,77 @@ function expressionLooksLikeLocationUrlSource(
   return false;
 }
 
+function expressionLooksLikeRequestObjectSource(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+  if (REQUEST_OBJECT_SOURCE_REGEX.test(expression.getText(sourceFile))) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) return false;
+    seenIdentifiers.add(expression.text);
+    const result = expressionLooksLikeRequestObjectSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    seenIdentifiers.delete(expression.text);
+    return result;
+  }
+
+  return false;
+}
+
+function expressionLooksLikeNextUrlSource(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+  if (NEXT_URL_SOURCE_REGEX.test(expression.getText(sourceFile))) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'nextUrl')) {
+    return expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeNextUrlSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && propertyAlias.propertyName === 'nextUrl'
+      && expressionLooksLikeRequestObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  return false;
+}
+
 function expressionLooksLikeOpenRedirectSearchParamsCarrier(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
@@ -4826,7 +4899,8 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
   }
 
   if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'searchParams')) {
-    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+      || expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (ts.isIdentifier(expression)) {
@@ -4844,6 +4918,7 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
       && propertyAlias.propertyName === 'searchParams'
       && (
         expressionLooksLikeLocationUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+        || expressionLooksLikeNextUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
         || propertyPathLooksLikeOpenRedirectSearchParamsCarrier(propertyAlias.propertyPath)
       )
     ) {
