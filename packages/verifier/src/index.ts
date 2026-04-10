@@ -3592,6 +3592,16 @@ function getMemberAccessPropertyName(expression: ts.Expression | undefined): str
   return getExpressionLiteralValue(expression.argumentExpression);
 }
 
+interface ResolvedObjectLiteralExpression {
+  namedExpressions: Map<string, ts.Expression>;
+  objectLiteral: ts.ObjectLiteralExpression;
+}
+
+interface ResolvedTrackedFunctionLike {
+  functionLike: ts.FunctionLikeDeclarationBase;
+  namedExpressions: Map<string, ts.Expression>;
+}
+
 function getObjectLiteralPropertyExpression(
   objectLiteral: ts.ObjectLiteralExpression,
   propertyName: string,
@@ -3618,8 +3628,8 @@ function resolveObjectLiteralExpressionAtPropertyPath(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
   seenFunctions: Set<string>,
-): ts.ObjectLiteralExpression | null {
-  let objectLiteral = resolveObjectLiteralExpression(
+): ResolvedObjectLiteralExpression | null {
+  let resolvedObjectLiteral = resolveObjectLiteralExpression(
     expression,
     sourceFile,
     namedExpressions,
@@ -3627,23 +3637,27 @@ function resolveObjectLiteralExpressionAtPropertyPath(
     seenIdentifiers,
     seenFunctions,
   );
-  if (!objectLiteral) return null;
+  if (!resolvedObjectLiteral) return null;
 
   for (const propertyName of propertyPath) {
-    const propertyExpression = getObjectLiteralPropertyExpression(objectLiteral, propertyName, namedExpressions);
+    const propertyExpression = getObjectLiteralPropertyExpression(
+      resolvedObjectLiteral.objectLiteral,
+      propertyName,
+      resolvedObjectLiteral.namedExpressions,
+    );
     if (!propertyExpression) return null;
-    objectLiteral = resolveObjectLiteralExpression(
+    resolvedObjectLiteral = resolveObjectLiteralExpression(
       propertyExpression,
       sourceFile,
-      namedExpressions,
+      resolvedObjectLiteral.namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
       seenFunctions,
     );
-    if (!objectLiteral) return null;
+    if (!resolvedObjectLiteral) return null;
   }
 
-  return objectLiteral;
+  return resolvedObjectLiteral;
 }
 
 function resolveReturnedObjectLiteralExpression(
@@ -3654,7 +3668,7 @@ function resolveReturnedObjectLiteralExpression(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
   seenFunctions: Set<string>,
-): ts.ObjectLiteralExpression | null {
+): ResolvedObjectLiteralExpression | null {
   const functionKey = getFunctionLikeCacheKey(functionLike);
   if (seenFunctions.has(functionKey)) return null;
 
@@ -3686,7 +3700,7 @@ function resolveObjectLiteralExpression(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
   seenFunctions: Set<string> = new Set(),
-): ts.ObjectLiteralExpression | null {
+): ResolvedObjectLiteralExpression | null {
   if (!expression) return null;
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
@@ -3694,7 +3708,7 @@ function resolveObjectLiteralExpression(
   }
 
   if (ts.isObjectLiteralExpression(expression)) {
-    return expression;
+    return { objectLiteral: expression, namedExpressions };
   }
 
   if (ts.isIdentifier(expression)) {
@@ -3725,19 +3739,19 @@ function resolveObjectLiteralExpression(
   }
 
   if (isCallLikeExpression(expression)) {
-    const functionLike = resolveTrackedOpenRedirectFunctionLike(
+    const functionResolution = resolveTrackedOpenRedirectFunctionLike(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       new Set(),
     );
-    if (!functionLike) return null;
+    if (!functionResolution) return null;
     return resolveReturnedObjectLiteralExpression(
-      functionLike,
+      functionResolution.functionLike,
       expression.arguments,
       sourceFile,
-      namedExpressions,
+      functionResolution.namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
       seenFunctions,
@@ -3789,13 +3803,13 @@ function resolveTrackedOpenRedirectFunctionLike(
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
-): ts.FunctionLikeDeclarationBase | null {
+): ResolvedTrackedFunctionLike | null {
   if (!expression) return null;
 
   const namedFunctions = getCachedNamedFunctionLikeDeclarations(sourceFile);
   const directFunctionLike = resolveFunctionLikeHandler(expression, namedFunctions);
   if (directFunctionLike) {
-    return directFunctionLike;
+    return { functionLike: directFunctionLike, namedExpressions };
   }
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
@@ -3828,7 +3842,7 @@ function resolveTrackedOpenRedirectFunctionLike(
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (!propertyAlias) return null;
 
-    const objectLiteral = resolveObjectLiteralExpressionAtPropertyPath(
+    const resolvedObjectLiteral = resolveObjectLiteralExpressionAtPropertyPath(
       propertyAlias.initializer,
       sourceFile,
       propertyAlias.propertyPath.slice(0, -1),
@@ -3837,8 +3851,15 @@ function resolveTrackedOpenRedirectFunctionLike(
       new Set(),
       new Set(),
     );
-    if (!objectLiteral) return null;
-    return findFunctionLikeOnObjectLiteral(objectLiteral, propertyAlias.propertyName, namedFunctions);
+    if (!resolvedObjectLiteral) return null;
+    const functionLike = findFunctionLikeOnObjectLiteral(
+      resolvedObjectLiteral.objectLiteral,
+      propertyAlias.propertyName,
+      namedFunctions,
+    );
+    return functionLike
+      ? { functionLike, namedExpressions: resolvedObjectLiteral.namedExpressions }
+      : null;
   }
 
   if (!isMemberAccessExpression(expression)) {
@@ -3847,7 +3868,7 @@ function resolveTrackedOpenRedirectFunctionLike(
 
   const propertyName = getMemberAccessPropertyName(expression);
   if (!propertyName) return null;
-  const objectLiteral = resolveObjectLiteralExpression(
+  const resolvedObjectLiteral = resolveObjectLiteralExpression(
     expression.expression,
     sourceFile,
     namedExpressions,
@@ -3855,8 +3876,15 @@ function resolveTrackedOpenRedirectFunctionLike(
     new Set(),
     new Set(),
   );
-  if (!objectLiteral) return null;
-  return findFunctionLikeOnObjectLiteral(objectLiteral, propertyName, namedFunctions);
+  if (!resolvedObjectLiteral) return null;
+  const functionLike = findFunctionLikeOnObjectLiteral(
+    resolvedObjectLiteral.objectLiteral,
+    propertyName,
+    namedFunctions,
+  );
+  return functionLike
+    ? { functionLike, namedExpressions: resolvedObjectLiteral.namedExpressions }
+    : null;
 }
 
 function functionLikeReferencesOrigin(node: ts.FunctionLikeDeclarationBase): boolean {
@@ -5061,16 +5089,21 @@ function expressionContainsOpenRedirectSource(
   if (
     isCallLikeExpression(expression)
   ) {
-    const functionLike = resolveTrackedOpenRedirectFunctionLike(
+    const functionResolution = resolveTrackedOpenRedirectFunctionLike(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       new Set(),
     );
+    const functionLike = functionResolution?.functionLike ?? null;
     const functionKey = functionLike ? getFunctionLikeCacheKey(functionLike) : null;
-    if (functionLike && functionKey && !seenFunctions.has(functionKey)) {
-      const boundExpressions = bindFunctionLikeArguments(functionLike, expression.arguments, namedExpressions);
+    if (functionLike && functionKey && functionResolution && !seenFunctions.has(functionKey)) {
+      const boundExpressions = bindFunctionLikeArguments(
+        functionLike,
+        expression.arguments,
+        functionResolution.namedExpressions,
+      );
       const nextSeenFunctions = new Set(seenFunctions);
       nextSeenFunctions.add(functionKey);
       if (
