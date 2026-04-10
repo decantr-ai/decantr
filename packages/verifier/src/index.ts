@@ -3612,16 +3612,20 @@ function getObjectLiteralPropertyExpression(
 
 function resolveObjectLiteralExpressionAtPropertyPath(
   expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
   propertyPath: string[],
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
+  seenFunctions: Set<string>,
 ): ts.ObjectLiteralExpression | null {
   let objectLiteral = resolveObjectLiteralExpression(
     expression,
+    sourceFile,
     namedExpressions,
     namedPropertyAliases,
     seenIdentifiers,
+    seenFunctions,
   );
   if (!objectLiteral) return null;
 
@@ -3630,9 +3634,11 @@ function resolveObjectLiteralExpressionAtPropertyPath(
     if (!propertyExpression) return null;
     objectLiteral = resolveObjectLiteralExpression(
       propertyExpression,
+      sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
+      seenFunctions,
     );
     if (!objectLiteral) return null;
   }
@@ -3640,16 +3646,51 @@ function resolveObjectLiteralExpressionAtPropertyPath(
   return objectLiteral;
 }
 
-function resolveObjectLiteralExpression(
-  expression: ts.Expression | undefined,
+function resolveReturnedObjectLiteralExpression(
+  functionLike: ts.FunctionLikeDeclarationBase,
+  args: readonly ts.Expression[],
+  sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
+  seenFunctions: Set<string>,
+): ts.ObjectLiteralExpression | null {
+  const functionKey = getFunctionLikeCacheKey(functionLike);
+  if (seenFunctions.has(functionKey)) return null;
+
+  seenFunctions.add(functionKey);
+  const boundExpressions = bindFunctionLikeArguments(functionLike, args, namedExpressions);
+  for (const returnExpression of getFunctionLikeReturnExpressions(functionLike)) {
+    const objectLiteral = resolveObjectLiteralExpression(
+      returnExpression,
+      sourceFile,
+      boundExpressions,
+      namedPropertyAliases,
+      new Set(seenIdentifiers),
+      seenFunctions,
+    );
+    if (objectLiteral) {
+      seenFunctions.delete(functionKey);
+      return objectLiteral;
+    }
+  }
+
+  seenFunctions.delete(functionKey);
+  return null;
+}
+
+function resolveObjectLiteralExpression(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+  seenFunctions: Set<string> = new Set(),
 ): ts.ObjectLiteralExpression | null {
   if (!expression) return null;
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return resolveObjectLiteralExpression(expression.expression, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    return resolveObjectLiteralExpression(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
   }
 
   if (ts.isObjectLiteralExpression(expression)) {
@@ -3661,7 +3702,7 @@ function resolveObjectLiteralExpression(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = resolveObjectLiteralExpression(initializer, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = resolveObjectLiteralExpression(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
       seenIdentifiers.delete(expression.text);
       return result;
     }
@@ -3672,13 +3713,35 @@ function resolveObjectLiteralExpression(
     seenIdentifiers.add(expression.text);
     const result = resolveObjectLiteralExpressionAtPropertyPath(
       propertyAlias.initializer,
+      sourceFile,
       propertyAlias.propertyPath,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
+      seenFunctions,
     );
     seenIdentifiers.delete(expression.text);
     return result;
+  }
+
+  if (isCallLikeExpression(expression)) {
+    const functionLike = resolveTrackedOpenRedirectFunctionLike(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    );
+    if (!functionLike) return null;
+    return resolveReturnedObjectLiteralExpression(
+      functionLike,
+      expression.arguments,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    );
   }
 
   if (isMemberAccessExpression(expression)) {
@@ -3686,10 +3749,12 @@ function resolveObjectLiteralExpression(
     if (!propertyName) return null;
     return resolveObjectLiteralExpressionAtPropertyPath(
       expression.expression,
+      sourceFile,
       [propertyName],
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
+      seenFunctions,
     );
   }
 
@@ -3748,9 +3813,9 @@ function resolveTrackedOpenRedirectFunctionLike(
 
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
-      seenIdentifiers.add(expression.text);
-      const result = resolveTrackedOpenRedirectFunctionLike(
-        initializer,
+    seenIdentifiers.add(expression.text);
+    const result = resolveTrackedOpenRedirectFunctionLike(
+      initializer,
         sourceFile,
         namedExpressions,
         namedPropertyAliases,
@@ -3765,9 +3830,11 @@ function resolveTrackedOpenRedirectFunctionLike(
 
     const objectLiteral = resolveObjectLiteralExpressionAtPropertyPath(
       propertyAlias.initializer,
+      sourceFile,
       propertyAlias.propertyPath.slice(0, -1),
       namedExpressions,
       namedPropertyAliases,
+      new Set(),
       new Set(),
     );
     if (!objectLiteral) return null;
@@ -3782,8 +3849,10 @@ function resolveTrackedOpenRedirectFunctionLike(
   if (!propertyName) return null;
   const objectLiteral = resolveObjectLiteralExpression(
     expression.expression,
+    sourceFile,
     namedExpressions,
     namedPropertyAliases,
+    new Set(),
     new Set(),
   );
   if (!objectLiteral) return null;
