@@ -273,16 +273,16 @@ commit archaeology.
   - shared verifier-backed critique for inline source plus posted essence
   - CLI entrypoint via `decantr registry critique-file`
   - MCP hosted fallback when local review packs are missing
-  - public API audit coverage is opt-in until rollout via `--include-hosted-critique`
+  - the root `pnpm audit:public-api` path now covers the hosted critique surface by default
 - Added a hosted project-audit surface on the reset branch:
   - `POST /v1/audit/project`
   - remote project audit from posted essence plus optional dist and source snapshots
   - CLI entrypoint via `decantr registry audit-project`
   - MCP hosted fallback when local pack artifacts are missing, with optional `sources_path` support for richer hosted source verification
-  - public API audit coverage is opt-in until rollout via `--include-hosted-project-audit`
+  - the root `pnpm audit:public-api` path now covers the hosted project-audit surface by default
 - Completed the hosted verification rollout on 2026-04-09:
   - Fly redeploy from `codex/decantr-vnext-reset` completed successfully after syncing the workspace lockfile
-  - `pnpm audit:public-api --include-hosted-critique --include-hosted-project-audit` now reports both hosted verification endpoints as `200`
+  - `pnpm audit:public-api` now reports both hosted verification endpoints as `200`
   - live hosted verification now covers:
     - `POST /v1/critique/file`
     - `POST /v1/audit/project`
