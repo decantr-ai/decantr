@@ -7,18 +7,14 @@
  *   node scripts/audit-public-api.mjs
  *   node scripts/audit-public-api.mjs --report-json=./public-api-report.json
  *   node scripts/audit-public-api.mjs --summary-markdown=./public-api-summary.md
- *   node scripts/audit-public-api.mjs --include-hosted-pack-select
- *   node scripts/audit-public-api.mjs --include-hosted-critique
- *   node scripts/audit-public-api.mjs --include-hosted-project-audit
+ *   node scripts/audit-public-api.mjs --core-only
  *   node scripts/audit-public-api.mjs --fail-on-error
  *
  * Environment variables:
  *   REGISTRY_URL - Public API base URL (default: https://api.decantr.ai/v1)
  *   CONTENT_NAMESPACE - Namespace used for registry list/summary checks (default: @official)
  *   FAIL_ON_PUBLIC_API_ERROR - Set to "true" to exit non-zero when any check fails
- *   INCLUDE_HOSTED_PACK_SELECT - Set to "true" to include POST /v1/packs/select in the audit set
- *   INCLUDE_HOSTED_CRITIQUE - Set to "true" to include POST /v1/critique/file in the audit set
- *   INCLUDE_HOSTED_PROJECT_AUDIT - Set to "true" to include POST /v1/audit/project in the audit set
+ *   PUBLIC_API_AUDIT_CORE_ONLY - Set to "true" to skip hosted pack-select and verifier endpoints
  */
 
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -33,12 +29,11 @@ const SUMMARY_PATH =
   args.find((arg) => arg.startsWith('--summary-markdown='))?.slice('--summary-markdown='.length) || null;
 const FAIL_ON_ERROR =
   args.includes('--fail-on-error') || process.env.FAIL_ON_PUBLIC_API_ERROR === 'true';
-const INCLUDE_HOSTED_PACK_SELECT =
-  args.includes('--include-hosted-pack-select') || process.env.INCLUDE_HOSTED_PACK_SELECT === 'true';
-const INCLUDE_HOSTED_CRITIQUE =
-  args.includes('--include-hosted-critique') || process.env.INCLUDE_HOSTED_CRITIQUE === 'true';
-const INCLUDE_HOSTED_PROJECT_AUDIT =
-  args.includes('--include-hosted-project-audit') || process.env.INCLUDE_HOSTED_PROJECT_AUDIT === 'true';
+const CORE_ONLY =
+  args.includes('--core-only') || process.env.PUBLIC_API_AUDIT_CORE_ONLY === 'true';
+const INCLUDE_HOSTED_PACK_SELECT = !CORE_ONLY;
+const INCLUDE_HOSTED_CRITIQUE = !CORE_ONLY;
+const INCLUDE_HOSTED_PROJECT_AUDIT = !CORE_ONLY;
 
 function ensureParentDir(path) {
   mkdirSync(dirname(path), { recursive: true });

@@ -94,7 +94,7 @@ commit archaeology.
   - `POST /v1/packs/select`
   - `POST /v1/critique/file`
   - `POST /v1/audit/project`
-  - `pnpm audit:public-api --include-hosted-pack-select --include-hosted-critique --include-hosted-project-audit` passes against `https://api.decantr.ai/v1`
+  - `pnpm audit:public-api` passes against `https://api.decantr.ai/v1`
   - the root `pnpm audit:public-api` command now includes those hosted pack and verifier checks by default
 
 ### Verification foundation

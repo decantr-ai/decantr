@@ -23,7 +23,7 @@
     "release:graduation-plan": "node scripts/graduation-plan.mjs",
     "release:preflight": "node scripts/publish-packages.mjs --publish-dry-run",
     "package:retire:dry-run": "node scripts/deprecate-retired-packages.mjs --dry-run",
-    "audit:public-api": "node scripts/audit-public-api.mjs --include-hosted-pack-select --include-hosted-critique --include-hosted-project-audit",
+    "audit:public-api": "node scripts/audit-public-api.mjs",
     "audit:registry-portal": "node scripts/audit-registry-portal.mjs",
     "audit:registry-dogfood": "pnpm --filter ./apps/registry exec node ../../packages/cli/dist/index.js audit",
     "showcase:build": "node scripts/build-showcases.mjs",
