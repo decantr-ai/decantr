@@ -5509,12 +5509,75 @@ function expressionLooksLikeHistoryMutationCall(
   );
 }
 
-function isRouteTransitionCall(node: ts.CallExpression): boolean {
-  return (ts.isIdentifier(node.expression) && ['redirect', 'navigate'].includes(node.expression.text))
-    || (
-      (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
-      && isMemberAccessNamed(node.expression, 'push', 'replace', 'redirect', 'navigate')
+function expressionLooksLikeRouteTransitionCall(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeRouteTransitionCall(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (
+    ts.isCallExpression(expression)
+    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    && isMemberAccessNamed(expression.expression, 'bind')
+  ) {
+    return expressionLooksLikeRouteTransitionCall(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
     );
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (['redirect', 'navigate'].includes(expression.text)) {
+      return true;
+    }
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeRouteTransitionCall(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && ['redirect', 'navigate'].includes(propertyAlias.propertyName)
+    ) {
+      return true;
+    }
+    if (
+      propertyAlias
+      && ['push', 'replace'].includes(propertyAlias.propertyName)
+      && (
+        propertyPathLooksLikeOpenRedirectQueryContainerBase(propertyAlias.propertyPath.slice(0, -1))
+        || expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+      )
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  return Boolean(
+    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && (
+      isMemberAccessNamed(expression, 'redirect', 'navigate')
+      || (
+        isMemberAccessNamed(expression, 'push', 'replace')
+        && expressionLooksLikeOpenRedirectQueryContainerBase(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+      )
+    )
+  );
 }
 
 function getRouteTransitionTargetExpression(
@@ -5523,13 +5586,8 @@ function getRouteTransitionTargetExpression(
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
 ): ts.Expression | undefined {
-  if (ts.isIdentifier(node.expression) && ['redirect', 'navigate'].includes(node.expression.text)) {
-    return node.arguments[0];
-  }
-
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
-    && isMemberAccessNamed(node.expression, 'push', 'replace', 'redirect', 'navigate')
+    expressionLooksLikeRouteTransitionCall(node.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
     return node.arguments[0];
   }
@@ -5907,7 +5965,10 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         signals.authOpenRedirectSignalCount += 1;
       }
 
-      if (isRouteTransitionCall(node) && isExternalUrl(routeTransitionTargetLiteral ?? firstArgumentLiteral)) {
+      if (
+        expressionLooksLikeRouteTransitionCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
+        && isExternalUrl(routeTransitionTargetLiteral ?? firstArgumentLiteral)
+      ) {
         signals.authExternalRedirectSignalCount += 1;
         if (isAuthProviderUrlMissingState(routeTransitionTargetLiteral ?? firstArgumentLiteral)) {
           signals.authProviderStateMissingCount += 1;
