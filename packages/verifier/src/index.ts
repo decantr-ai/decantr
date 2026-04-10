@@ -3549,12 +3549,12 @@ function functionLikeReferencesOrigin(node: ts.FunctionLikeDeclarationBase): boo
   return found;
 }
 
-function isAddEventListenerCall(node: ts.CallExpression): boolean {
+function isAddEventListenerCall(node: CallLikeExpression): boolean {
   return (ts.isIdentifier(node.expression) && node.expression.text === 'addEventListener')
     || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'addEventListener'));
 }
 
-function isCookieMutationSetCall(node: ts.CallExpression): boolean {
+function isCookieMutationSetCall(node: CallLikeExpression): boolean {
   if (!ts.isPropertyAccessExpression(node.expression) || !isPropertyNamed(node.expression.name, 'set')) {
     return false;
   }
@@ -3628,12 +3628,38 @@ function isInsecureTransportUrl(value: string | null): boolean {
   return typeof value === 'string' && /^(?:http|ws):\/\//i.test(value.trim());
 }
 
+function isPropertyLikeAccessExpression(
+  node: ts.Node | undefined,
+): node is ts.PropertyAccessExpression | ts.PropertyAccessChain {
+  return Boolean(node && (ts.isPropertyAccessExpression(node) || ts.isPropertyAccessChain(node)));
+}
+
+function isElementLikeAccessExpression(
+  node: ts.Node | undefined,
+): node is ts.ElementAccessExpression | ts.ElementAccessChain {
+  return Boolean(node && (ts.isElementAccessExpression(node) || ts.isElementAccessChain(node)));
+}
+
+type CallLikeExpression = ts.CallExpression | ts.CallChain;
+
+function isMemberAccessExpression(
+  node: ts.Node | undefined,
+): node is ts.PropertyAccessExpression | ts.PropertyAccessChain | ts.ElementAccessExpression | ts.ElementAccessChain {
+  return isPropertyLikeAccessExpression(node) || isElementLikeAccessExpression(node);
+}
+
+function isCallLikeExpression(
+  node: ts.Node | undefined,
+): node is CallLikeExpression {
+  return Boolean(node && (ts.isCallExpression(node) || ts.isCallChain(node)));
+}
+
 function isMemberAccessNamed(node: ts.Node | undefined, ...names: string[]): boolean {
   if (!node) return false;
-  if (ts.isPropertyAccessExpression(node)) {
+  if (isPropertyLikeAccessExpression(node)) {
     return isPropertyNamed(node.name, ...names);
   }
-  if (ts.isElementAccessExpression(node)) {
+  if (isElementLikeAccessExpression(node)) {
     return isPropertyNamed(node.argumentExpression, ...names);
   }
   return false;
@@ -3662,19 +3688,19 @@ function isLocationAssignmentTarget(expression: ts.Expression): boolean {
   );
 }
 
-function isFetchLikeCall(node: ts.CallExpression): boolean {
+function isFetchLikeCall(node: CallLikeExpression): boolean {
   return (ts.isIdentifier(node.expression) && node.expression.text === 'fetch')
     || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'fetch'));
 }
 
-function isAxiosLikeCall(node: ts.CallExpression): boolean {
+function isAxiosLikeCall(node: CallLikeExpression): boolean {
   if (!ts.isPropertyAccessExpression(node.expression)) return false;
   return ts.isIdentifier(node.expression.expression)
     && node.expression.expression.text === 'axios'
     && isPropertyNamed(node.expression.name, 'get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'request');
 }
 
-function isAxiosConfigCall(node: ts.CallExpression): boolean {
+function isAxiosConfigCall(node: CallLikeExpression): boolean {
   return ts.isIdentifier(node.expression) && node.expression.text === 'axios';
 }
 
@@ -4603,15 +4629,15 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    ts.isPropertyAccessExpression(expression)
+    isPropertyLikeAccessExpression(expression)
     && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'get')
     && expression.arguments.length > 0
     && isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers)
@@ -4621,8 +4647,8 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'getAll')
     && expression.arguments.length > 0
     && isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers)
@@ -4632,21 +4658,21 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && expressionContainsOpenRedirectSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
   }
 
-  if (ts.isCallExpression(expression)) {
+  if (isCallLikeExpression(expression)) {
     return expression.arguments.some((argument) =>
       expressionContainsOpenRedirectSource(argument, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
     );
   }
 
   if (
-    ts.isPropertyAccessExpression(expression)
+    isPropertyLikeAccessExpression(expression)
     && OPEN_REDIRECT_QUERY_KEY_REGEX.test(expression.name.text)
     && expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
@@ -4654,7 +4680,7 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    ts.isElementAccessExpression(expression)
+    isElementLikeAccessExpression(expression)
     && isOpenRedirectQueryKeyExpression(expression.argumentExpression, namedExpressions, seenIdentifiers)
     && expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
@@ -4662,7 +4688,7 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    ts.isElementAccessExpression(expression)
+    isElementLikeAccessExpression(expression)
     && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
@@ -4741,8 +4767,8 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && ts.isPropertyAccessExpression(expression.expression)
+    isCallLikeExpression(expression)
+    && isPropertyLikeAccessExpression(expression.expression)
     && ts.isIdentifier(expression.expression.expression)
     && expression.expression.expression.text === 'Object'
     && isPropertyNamed(expression.expression.name, 'fromEntries')
@@ -4757,7 +4783,7 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
     }
   }
 
-  if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'query')) {
+  if (isPropertyLikeAccessExpression(expression) && isPropertyNamed(expression.name, 'query')) {
     return expressionLooksLikeOpenRedirectQueryContainerBase(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
@@ -4806,8 +4832,8 @@ function expressionLooksLikeOpenRedirectEntriesCarrier(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && ts.isPropertyAccessExpression(expression.expression)
+    isCallLikeExpression(expression)
+    && isPropertyLikeAccessExpression(expression.expression)
     && ts.isIdentifier(expression.expression.expression)
     && expression.expression.expression.text === 'Array'
     && isPropertyNamed(expression.expression.name, 'from')
@@ -4834,8 +4860,8 @@ function expressionLooksLikeOpenRedirectEntriesCarrier(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'entries')
     && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
@@ -4872,13 +4898,10 @@ function expressionLooksLikeOpenRedirectQueryContainerBase(
   }
 
   if (
-    ts.isCallExpression(expression)
+    isCallLikeExpression(expression)
     && (
       (ts.isIdentifier(expression.expression) && expression.expression.text === 'useRouter')
-      || (
-        (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
-        && isMemberAccessNamed(expression.expression, 'useRouter')
-      )
+      || (isMemberAccessExpression(expression.expression) && isMemberAccessNamed(expression.expression, 'useRouter'))
     )
   ) {
     return true;
@@ -4924,8 +4947,8 @@ function expressionLooksLikeLocationQuerySource(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'slice', 'substring', 'replace', 'trim')
     && expressionLooksLikeLocationQuerySource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
@@ -4933,7 +4956,7 @@ function expressionLooksLikeLocationQuerySource(
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'search', 'hash')
     && (
       expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
@@ -5015,20 +5038,17 @@ function expressionLooksLikeLocationObjectSource(
   }
 
   if (
-    ts.isCallExpression(expression)
+    isCallLikeExpression(expression)
     && (
       (ts.isIdentifier(expression.expression) && expression.expression.text === 'useLocation')
-      || (
-        (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
-        && isMemberAccessNamed(expression.expression, 'useLocation')
-      )
+      || (isMemberAccessExpression(expression.expression) && isMemberAccessNamed(expression.expression, 'useLocation'))
     )
   ) {
     return true;
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'location')
     && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
   ) {
@@ -5075,7 +5095,7 @@ function expressionLooksLikeHistoryObjectSource(
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'history')
     && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
   ) {
@@ -5162,7 +5182,7 @@ function expressionLooksLikeLocationUrlInput(
   }
 
   if (
-    ts.isCallExpression(expression)
+    isCallLikeExpression(expression)
     && ts.isIdentifier(expression.expression)
     && expression.expression.text === 'String'
     && expression.arguments.length > 0
@@ -5175,8 +5195,8 @@ function expressionLooksLikeLocationUrlInput(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'toString', 'toJSON')
     && (
       expressionLooksLikeLocationObjectSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
@@ -5187,7 +5207,7 @@ function expressionLooksLikeLocationUrlInput(
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'href', 'search', 'hash')
     && (
       expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
@@ -5198,7 +5218,7 @@ function expressionLooksLikeLocationUrlInput(
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'url')
     && expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
   ) {
@@ -5282,15 +5302,15 @@ function expressionLooksLikeNextUrlSource(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'clone')
     && expressionLooksLikeNextUrlSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
   }
 
-  if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'nextUrl')) {
+  if (isPropertyLikeAccessExpression(expression) && isPropertyNamed(expression.name, 'nextUrl')) {
     return expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
   }
 
@@ -5344,19 +5364,16 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
   }
 
   if (
-    ts.isCallExpression(expression)
+    isCallLikeExpression(expression)
     && (
       (ts.isIdentifier(expression.expression) && expression.expression.text === 'useSearchParams')
-      || (
-        (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
-        && isMemberAccessNamed(expression.expression, 'useSearchParams')
-      )
+      || (isMemberAccessExpression(expression.expression) && isMemberAccessNamed(expression.expression, 'useSearchParams'))
     )
   ) {
     return true;
   }
 
-  if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'searchParams')) {
+  if (isPropertyLikeAccessExpression(expression) && isPropertyNamed(expression.name, 'searchParams')) {
     return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
       || expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
@@ -5405,7 +5422,7 @@ function expressionLooksLikeLocationAssignmentTarget(
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'href')
     && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
@@ -5429,7 +5446,7 @@ function expressionLooksLikeLocationMutationCall(
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'call', 'apply')
   ) {
     return expressionLooksLikeLocationMutationCall(
@@ -5442,8 +5459,8 @@ function expressionLooksLikeLocationMutationCall(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'bind')
   ) {
     return expressionLooksLikeLocationMutationCall(
@@ -5477,7 +5494,7 @@ function expressionLooksLikeLocationMutationCall(
 
   return Boolean(
     expression
-    && (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'assign', 'replace')
     && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   );
@@ -5497,7 +5514,7 @@ function expressionLooksLikeWindowOpenCall(
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'call', 'apply')
   ) {
     return expressionLooksLikeWindowOpenCall(
@@ -5533,7 +5550,7 @@ function expressionLooksLikeWindowOpenCall(
   }
 
   return Boolean(
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'open')
     && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, new Set())
   );
@@ -5553,7 +5570,7 @@ function expressionLooksLikeHistoryMutationCall(
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'call', 'apply')
   ) {
     return expressionLooksLikeHistoryMutationCall(
@@ -5566,8 +5583,8 @@ function expressionLooksLikeHistoryMutationCall(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'bind')
   ) {
     return expressionLooksLikeHistoryMutationCall(
@@ -5600,7 +5617,7 @@ function expressionLooksLikeHistoryMutationCall(
   }
 
   return Boolean(
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'pushState', 'replaceState')
     && expressionLooksLikeHistoryObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   );
@@ -5620,7 +5637,7 @@ function expressionLooksLikeRouteTransitionCall(
   }
 
   if (
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && isMemberAccessNamed(expression, 'call', 'apply')
   ) {
     return expressionLooksLikeRouteTransitionCall(
@@ -5633,8 +5650,8 @@ function expressionLooksLikeRouteTransitionCall(
   }
 
   if (
-    ts.isCallExpression(expression)
-    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'bind')
   ) {
     return expressionLooksLikeRouteTransitionCall(
@@ -5679,7 +5696,7 @@ function expressionLooksLikeRouteTransitionCall(
   }
 
   return Boolean(
-    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    isMemberAccessExpression(expression)
     && (
       isMemberAccessNamed(expression, 'redirect', 'navigate')
       || (
@@ -5691,13 +5708,13 @@ function expressionLooksLikeRouteTransitionCall(
 }
 
 function getRouteTransitionTargetExpression(
-  node: ts.CallExpression,
+  node: CallLikeExpression,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
 ): ts.Expression | undefined {
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'call')
     && expressionLooksLikeRouteTransitionCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -5705,7 +5722,7 @@ function getRouteTransitionTargetExpression(
   }
 
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'apply')
     && expressionLooksLikeRouteTransitionCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -5713,7 +5730,7 @@ function getRouteTransitionTargetExpression(
   }
 
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'call')
     && expressionLooksLikeHistoryMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -5721,7 +5738,7 @@ function getRouteTransitionTargetExpression(
   }
 
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'apply')
     && expressionLooksLikeHistoryMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -5771,13 +5788,13 @@ function getAliasedApplyArgumentExpression(
 }
 
 function getLocationMutationTargetExpression(
-  node: ts.CallExpression,
+  node: CallLikeExpression,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
 ): ts.Expression | undefined {
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'call')
     && expressionLooksLikeLocationMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -5785,7 +5802,7 @@ function getLocationMutationTargetExpression(
   }
 
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'apply')
     && expressionLooksLikeLocationMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -5800,13 +5817,13 @@ function getLocationMutationTargetExpression(
 }
 
 function getWindowOpenTargetExpression(
-  node: ts.CallExpression,
+  node: CallLikeExpression,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
 ): ts.Expression | undefined {
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'call')
     && expressionLooksLikeWindowOpenCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -5814,7 +5831,7 @@ function getWindowOpenTargetExpression(
   }
 
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'apply')
     && expressionLooksLikeWindowOpenCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -6154,7 +6171,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       signals.authHeaderClearCount += 1;
     }
 
-    if (ts.isCallExpression(node)) {
+    if (isCallLikeExpression(node)) {
       const firstArgumentLiteral = getExpressionLiteralValue(node.arguments[0]);
       const secondArgumentLiteral = getExpressionLiteralValue(node.arguments[1]);
       const routeTransitionTargetExpression = getRouteTransitionTargetExpression(node, sourceFile, namedExpressionInitializers, namedPropertyAliases);
