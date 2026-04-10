@@ -4603,6 +4603,13 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
+    ts.isPropertyAccessExpression(expression)
+    && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (
     ts.isCallExpression(expression)
     && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
     && isMemberAccessNamed(expression.expression, 'get')
@@ -4611,6 +4618,31 @@ function expressionContainsOpenRedirectSource(
     && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
+  }
+
+  if (
+    ts.isCallExpression(expression)
+    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    && isMemberAccessNamed(expression.expression, 'getAll')
+    && expression.arguments.length > 0
+    && isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers)
+    && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isCallExpression(expression)
+    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    && expressionContainsOpenRedirectSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (ts.isCallExpression(expression)) {
+    return expression.arguments.some((argument) =>
+      expressionContainsOpenRedirectSource(argument, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    );
   }
 
   if (
@@ -4625,6 +4657,13 @@ function expressionContainsOpenRedirectSource(
     ts.isElementAccessExpression(expression)
     && isOpenRedirectQueryKeyExpression(expression.argumentExpression, namedExpressions, seenIdentifiers)
     && expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isElementAccessExpression(expression)
+    && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
   }
