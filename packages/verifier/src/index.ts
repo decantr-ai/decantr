@@ -398,6 +398,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authErrorSignals: createSourceAuditBucket(),
     authSuccessSignals: createSourceAuditBucket(),
     authCallbackTokenSignals: createSourceAuditBucket(),
+    authCallbackErrorSignals: createSourceAuditBucket(),
     authCallbackUrlScrubSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
     authStorageClears: createSourceAuditBucket(),
@@ -492,6 +493,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
     recordSourceAudit(summary.authCallbackTokenSignals, relativePath, countAuthCallbackTokenSignals(code, relativePath));
+    recordSourceAudit(summary.authCallbackErrorSignals, relativePath, countAuthCallbackErrorSignals(code, relativePath));
     recordSourceAudit(summary.authCallbackUrlScrubSignals, relativePath, countAuthCallbackUrlScrubSignals(code));
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
     recordSourceAudit(summary.authStorageClears, relativePath, signals.authStorageClearCount);
@@ -654,6 +656,7 @@ interface SourceAuditSummary {
   authErrorSignals: SourceAuditBucket;
   authSuccessSignals: SourceAuditBucket;
   authCallbackTokenSignals: SourceAuditBucket;
+  authCallbackErrorSignals: SourceAuditBucket;
   authCallbackUrlScrubSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
   authStorageClears: SourceAuditBucket;
@@ -2046,6 +2049,25 @@ function appendSourceAuditFindings(
   if (
     topology.hasAuthFeature
     && sourceAudit.authCallbackTokenSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackTokenSignals, sourceAudit.authCallbackErrorSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-callback-error-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Auth callback code appears to read provider return data without an obvious failure state for provider-denied or callback error returns.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Callback token signal files: ${sourceAudit.authCallbackTokenSignals.files.join(', ') || 'none'}`,
+        `Callback error-handling signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'When reviewed auth callback routes can receive provider error returns, branch on `error` or related callback params and show a reviewed failure state before or alongside the post-auth redirect handling.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authCallbackTokenSignals.count > 0
     && sourceAudit.authCallbackUrlScrubSignals.count === 0
   ) {
     findings.push(makeFinding({
@@ -3391,6 +3413,19 @@ function countAuthCallbackTokenSignals(code: string, filePath: string): number {
   return count + (/callback/i.test(filePath) ? 1 : 0);
 }
 
+function countAuthCallbackErrorSignals(code: string, filePath: string): number {
+  const patterns = [
+    /\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:error|error_description|error_code|error_uri)['"`]\s*\)/gi,
+    /\b(?:router\.query|route\.query|query)\.(?:error|error_description|error_code|error_uri)\b/gi,
+    /\b(?:callbackError|oauthError|providerError|authCallbackError)\b/gi,
+    /\b(?:toast|notify|notification)\.error\b/gi,
+    />\s*(?:authentication failed|sign in failed|login failed|oauth error|provider error|unable to sign you in)\s*</gi,
+  ];
+
+  const count = patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+  return count + (/callback/i.test(filePath) && /\b(?:error|failed|failure)\b/i.test(code) ? 1 : 0);
+}
+
 function countAuthCallbackUrlScrubSignals(code: string): number {
   const patterns = [
     /\bhistory\.replaceState\s*\(/gi,
@@ -4620,6 +4655,9 @@ export function critiqueSource({
   const authHeaderClearCount = astSignals.authHeaderClearCount;
   const authErrorSignalCount = countAuthErrorSignals(code);
   const authSuccessSignalCount = countAuthSuccessSignals(code);
+  const authCallbackTokenSignalCount = countAuthCallbackTokenSignals(code, filePath);
+  const authCallbackErrorSignalCount = countAuthCallbackErrorSignals(code, filePath);
+  const hasAuthCallbackErrorGap = authCallbackTokenSignalCount > 0 && authCallbackErrorSignalCount === 0;
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
@@ -4905,6 +4943,24 @@ export function critiqueSource({
   }
 
   if (
+    hasAuthCallbackErrorGap
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-callback-error-missing',
+      category: 'State Handling',
+      severity: 'info',
+      message: 'The reviewed auth callback flow does not show an obvious failure state for provider-denied or callback error returns.',
+      evidence: [
+        filePath,
+        `Auth callback token reads: ${authCallbackTokenSignalCount}`,
+        `Auth callback error signals: ${authCallbackErrorSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'When callback routes can receive `error`, `error_description`, or related provider-return params, branch on those values and show a reviewed failure state before or alongside success redirects.',
+    }));
+  }
+
+  if (
     (astSignals.authSessionSignalCount > 0 || astSignals.authEntrySignalCount > 0)
     && authErrorSignalCount === 0
   ) {
@@ -5056,7 +5112,6 @@ export function critiqueSource({
   const authProviderStateMissingCount = astSignals.authProviderStateMissingCount;
   const authProviderPkceMissingCount = astSignals.authProviderPkceMissingCount;
   const authProviderNonceMissingCount = astSignals.authProviderNonceMissingCount;
-  const authCallbackTokenSignalCount = countAuthCallbackTokenSignals(code, filePath);
   const authCallbackUrlScrubSignalCount = countAuthCallbackUrlScrubSignals(code);
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
