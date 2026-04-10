@@ -141,6 +141,12 @@ It does not automatically retag `latest`; that remains a deliberate manual relea
 The npm audit and normalization tooling now also report whether a stable fallback version actually exists when `latest` is still pointing at a beta. As of April 9, 2026, the affected beta packages do not have an older stable publish to fall back to, so the `latest` retag work is blocked on intentional stable releases rather than simple dist-tag cleanup.
 When run with `--write`, it now also performs an npm auth preflight so broken credentials fail fast before any dist-tag mutation attempt starts.
 
+As of April 9, 2026, the live npm audit also shows concrete drift that should stay visible during graduation review:
+
+- `@decantr/cli` still has stray npm dist-tags `latestnpm` and `latest.`
+- `@decantr/core`, `@decantr/essence-spec`, `@decantr/mcp-server`, and `@decantr/registry` are missing their expected `beta` dist-tags while `latest` still points at prerelease versions
+- `@decantr/verifier` is not yet published on npm at all
+
 A dedicated GitHub Actions workflow now exists for dist-tag normalization:
 
 - `.github/workflows/npm-surface-normalize.yml`
@@ -207,11 +213,12 @@ That workflow:
 - installs the monorepo
 - runs `pnpm audit:package-surface`
 - runs `pnpm audit:release-readiness`
+- runs `pnpm audit:npm-surface` in report-first mode and uploads the raw log even when live npm drift exists
 - generates a combined package release audit report through `pnpm audit:release-surface`
 - generates a dedicated graduation report through `pnpm release:graduation-plan`
 - runs real npm publish dry-run preflights for the `foundation` and `delivery` waves through `node scripts/publish-packages.mjs --publish-dry-run --wave=<wave>`
 - uploads JSON and Markdown artifacts for drift/release review without requiring npm publish credentials
-- uploads publish-preflight logs so graduation review includes actual package-pack/publish rehearsal output, not just static metadata
+- uploads npm-surface and publish-preflight logs so graduation review includes actual live-registry and package-pack/publish rehearsal output, not just static metadata
 
 It is intentionally report-first: current npm surface drift remains visible in artifacts even when it is not yet being treated as a hard scheduling failure.
 

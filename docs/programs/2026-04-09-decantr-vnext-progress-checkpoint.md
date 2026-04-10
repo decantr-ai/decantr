@@ -399,6 +399,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Registry app lint now rebuilds `@decantr/registry` before typechecking so clean-checkout verification does not depend on stale generated package artifacts.
 - Package graduation now has its own executable planning surface via `pnpm release:graduation-plan`, which classifies each public package as stable, ready, contract-blocked, npm-blocked, experimental, or retired.
 - The package governance GitHub Actions audit now publishes the graduation plan alongside the broader release-surface audit, so stable-vs-beta decisions are visible in CI artifacts instead of only from local scripts.
+- The package governance workflow now also captures the raw live npm-surface audit log, so stray dist-tags, missing `beta` tags, and unpublished packages stay visible in CI even while graduation remains report-first.
 
 ## Highest-Value Next Streams
 

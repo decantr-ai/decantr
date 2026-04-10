@@ -25,6 +25,10 @@ jobs:
       - run: pnpm audit:package-surface
       - run: pnpm audit:release-readiness
 
+      - name: Audit live npm surface
+        continue-on-error: true
+        run: pnpm audit:npm-surface 2>&1 | tee package-npm-surface.log
+
       - name: Generate package release audit
         run: node scripts/audit-release-surface.mjs --report-json=package-release-audit.json --summary-markdown=package-release-audit.md
 
@@ -42,7 +46,9 @@ jobs:
           cat package-release-audit.md >> "$GITHUB_STEP_SUMMARY"
           printf "\n" >> "$GITHUB_STEP_SUMMARY"
           cat package-graduation-plan.md >> "$GITHUB_STEP_SUMMARY"
-          printf "\n## Publish Preflight (Foundation)\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          printf "\n## Live npm Surface Audit\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-npm-surface.log >> "$GITHUB_STEP_SUMMARY"
+          printf "\n\`\`\`\n\n## Publish Preflight (Foundation)\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
           cat package-preflight-foundation.log >> "$GITHUB_STEP_SUMMARY"
           printf "\n\`\`\`\n\n## Publish Preflight (Delivery)\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
           cat package-preflight-delivery.log >> "$GITHUB_STEP_SUMMARY"
@@ -57,6 +63,7 @@ jobs:
             package-release-audit.md
             package-graduation-plan.json
             package-graduation-plan.md
+            package-npm-surface.log
             package-preflight-foundation.log
             package-preflight-delivery.log
           if-no-files-found: error
