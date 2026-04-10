@@ -51,15 +51,15 @@ const markdownLines = [
   `- Hold experimental: ${output.counts.holdExperimental}`,
   `- Retired: ${output.counts.retired}`,
   '',
-  '| Package | Wave | Order | Version | Maturity | Action | Dist-tag | Notes |',
-  '| --- | --- | --- | --- | --- | --- | --- | --- |',
+  '| Package | Wave | Order | Current version | Stable target | Maturity | Action | Dist-tag | Notes |',
+  '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   ...output.packages.map((entry) => {
     const note = entry.recommendedAction === 'retired'
       ? (entry.retirement?.replacement ? `Replacement: ${entry.retirement.replacement}` : entry.summary)
       : entry.blockers.length > 0
         ? entry.blockers[0]
         : entry.summary;
-    return `| ${entry.name} | ${entry.releaseWave} | ${entry.publishOrder} | ${entry.version ?? '-'} | ${entry.maturity} | ${entry.recommendedAction} | ${entry.releaseTag ?? '-'} | ${note.replace(/\|/g, '\\|')} |`;
+    return `| ${entry.name} | ${entry.releaseWave} | ${entry.publishOrder} | ${entry.version ?? '-'} | ${entry.stableTargetVersion ?? '-'} | ${entry.maturity} | ${entry.recommendedAction} | ${entry.releaseTag ?? '-'} | ${note.replace(/\|/g, '\\|')} |`;
   }),
   '',
 ];

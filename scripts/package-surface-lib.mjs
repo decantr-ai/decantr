@@ -27,6 +27,18 @@ const MATURITY_DESCRIPTIONS = {
   experimental: 'opt-in and not part of the default publish wave',
 };
 
+function isPrereleaseVersion(version) {
+  return typeof version === 'string' && /^\d+\.\d+\.\d+-.+/.test(version);
+}
+
+function toStableTargetVersion(version) {
+  if (typeof version !== 'string' || version.trim().length === 0) {
+    return null;
+  }
+
+  return version.replace(/-.+$/, '');
+}
+
 function describeGraduationLane(entry) {
   const blockers = entry.releaseReadiness?.blockers ?? [];
 
@@ -132,6 +144,12 @@ export function validatePackageSurface(surface, publicPackages) {
     const pkg = publicByName.get(entry.name);
     if (pkg.path !== entry.path) {
       findings.push(`Manifest path mismatch for ${entry.name}: expected ${pkg.path}, found ${entry.path}`);
+    }
+    if (entry.maturity === 'stable' && isPrereleaseVersion(pkg.version)) {
+      findings.push(`Stable package ${entry.name} must not use a prerelease semver version (${pkg.version}).`);
+    }
+    if (entry.maturity === 'beta' && !isPrereleaseVersion(pkg.version)) {
+      findings.push(`Beta package ${entry.name} must use a prerelease semver version until it graduates (${pkg.version}).`);
     }
     if (entry.maturity === 'stable' && entry.defaultDistTag !== 'latest') {
       findings.push(`Stable package ${entry.name} must default to the latest dist-tag.`);
@@ -357,6 +375,7 @@ export function createReleasePlan(surface, publicPackages, retirements) {
       name: entry.name,
       path: entry.path,
       version: pkg?.version ?? null,
+      stableTargetVersion: pkg?.version ? toStableTargetVersion(pkg.version) : null,
       support: entry.support,
       maturity: entry.maturity,
       publish: entry.publish === true,
@@ -381,6 +400,7 @@ export function createReleasePlan(surface, publicPackages, retirements) {
       name: retirement.name,
       path: null,
       version: null,
+      stableTargetVersion: null,
       support: 'retired',
       maturity: 'retired',
       publish: false,

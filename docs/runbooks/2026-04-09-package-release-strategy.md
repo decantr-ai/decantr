@@ -41,6 +41,9 @@ That file currently defines:
   - stable-candidate flag
   - docs / CI / product-integration checks
   - explicit blockers for beta packages
+  - semver intent:
+    - stable packages should publish non-prerelease versions
+    - beta packages should keep prerelease semver until graduation
 
 ## Current Release Waves
 

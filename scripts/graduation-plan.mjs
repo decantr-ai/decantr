@@ -169,6 +169,7 @@ if (stableNow.length === 0) {
 } else {
   for (const entry of stableNow) {
     markdownLines.push(`- \`${entry.name}\` (${entry.graduationStatus})`);
+    markdownLines.push(`  - current version: ${entry.version ?? 'unknown'}`);
     markdownLines.push(`  - next step: ${entry.nextStep}`);
   }
 }
@@ -179,6 +180,8 @@ if (readyNow.length === 0) {
 } else {
   for (const entry of readyNow) {
     markdownLines.push(`- \`${entry.name}\` (${entry.graduationStatus})`);
+    markdownLines.push(`  - current version: ${entry.version ?? 'unknown'}`);
+    markdownLines.push(`  - stable target: ${entry.stableTargetVersion ?? 'unknown'}`);
     markdownLines.push(`  - next step: ${entry.nextStep}`);
   }
 }
@@ -189,6 +192,10 @@ if (blocked.length === 0) {
 } else {
   for (const entry of blocked) {
     markdownLines.push(`- \`${entry.name}\` (${entry.graduationStatus})`);
+    markdownLines.push(`  - current version: ${entry.version ?? 'unknown'}`);
+    if (entry.maturity === 'beta') {
+      markdownLines.push(`  - stable target: ${entry.stableTargetVersion ?? 'unknown'}`);
+    }
     markdownLines.push(`  - next step: ${entry.nextStep}`);
     if (entry.blockers.length > 0) {
       for (const blocker of entry.blockers) {
@@ -219,10 +226,10 @@ if (experimentalOrRetired.length === 0) {
 }
 
 markdownLines.push('', '## Full Matrix');
-markdownLines.push('| Package | Wave | Maturity | Graduation status | Recommended action | Next step |');
-markdownLines.push('| --- | --- | --- | --- | --- | --- |');
+markdownLines.push('| Package | Wave | Current version | Stable target | Maturity | Graduation status | Recommended action | Next step |');
+markdownLines.push('| --- | --- | --- | --- | --- | --- | --- | --- |');
 for (const entry of packages) {
-  markdownLines.push(`| ${entry.name} | ${entry.releaseWave} | ${entry.maturity} | ${entry.graduationStatus} | ${entry.recommendedAction} | ${String(entry.nextStep).replace(/\|/g, '\\|')} |`);
+  markdownLines.push(`| ${entry.name} | ${entry.releaseWave} | ${entry.version ?? '-'} | ${entry.stableTargetVersion ?? '-'} | ${entry.maturity} | ${entry.graduationStatus} | ${entry.recommendedAction} | ${String(entry.nextStep).replace(/\|/g, '\\|')} |`);
 }
 markdownLines.push('');
 

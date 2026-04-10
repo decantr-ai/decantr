@@ -323,6 +323,8 @@ commit archaeology.
 - Added package-level README coverage for all active public packages.
 - Added a generated package support matrix and release-strategy runbook for the npm surface, with `pnpm audit:package-surface` now enforcing that the matrix stays in sync with the manifest source of truth.
 - The generated package support matrix now also includes an operator-facing graduation snapshot with stable-now, ready-next, beta-blocked, and experimental-hold lanes, so release planning is visible directly from manifest-backed docs instead of only from audit artifacts.
+- Package-surface validation now also enforces semver intent directly, so stable packages cannot silently keep prerelease versions and beta packages must keep prerelease semver until they intentionally graduate.
+- Graduation and release-plan output now also surface each package's current version and stable target version, making beta-to-latest planning more operational than a pure status label.
 - Cleared the remaining workspace dependency advisories by upgrading `hono`, `@hono/node-server`, and `@modelcontextprotocol/sdk`, then pinning patched `vite` and `path-to-regexp` resolutions through root `pnpm` overrides so `pnpm audit` now returns zero vulnerabilities.
 
 ## Verification Baseline
