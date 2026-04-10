@@ -4752,12 +4752,7 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
     if (expressionLooksLikeOpenRedirectSearchParamsCarrier(entriesExpression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)) {
       return true;
     }
-    if (
-      ts.isCallExpression(entriesExpression)
-      && (ts.isPropertyAccessExpression(entriesExpression.expression) || ts.isElementAccessExpression(entriesExpression.expression))
-      && isMemberAccessNamed(entriesExpression.expression, 'entries')
-      && expressionLooksLikeOpenRedirectSearchParamsCarrier(entriesExpression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-    ) {
+    if (expressionLooksLikeOpenRedirectEntriesCarrier(entriesExpression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)) {
       return true;
     }
   }
@@ -4792,6 +4787,41 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
       return true;
     }
     return false;
+  }
+
+  return false;
+}
+
+function expressionLooksLikeOpenRedirectEntriesCarrier(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeOpenRedirectEntriesCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (
+    ts.isCallExpression(expression)
+    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    && isMemberAccessNamed(expression.expression, 'entries')
+    && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) return false;
+    seenIdentifiers.add(expression.text);
+    const result = expressionLooksLikeOpenRedirectEntriesCarrier(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    seenIdentifiers.delete(expression.text);
+    return result;
   }
 
   return false;
