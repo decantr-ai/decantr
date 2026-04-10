@@ -565,6 +565,7 @@ async function printHostedSelectedExecutionPack(
 interface HostedPackHydrationResult {
   attempted: boolean;
   hydrated: boolean;
+  scope?: 'review' | 'bundle';
 }
 
 async function hydrateHostedExecutionPacksIfMissing(
@@ -593,7 +594,47 @@ async function hydrateHostedExecutionPacksIfMissing(
       contextDir,
       bundle as unknown as ExecutionPackBundle,
     );
-    return { attempted: true, hydrated: true };
+    return { attempted: true, hydrated: true, scope: 'bundle' };
+  } catch {
+    return { attempted: true, hydrated: false };
+  }
+}
+
+async function hydrateHostedReviewPackIfMissing(
+  projectRoot: string,
+  namespace: string = '@official',
+): Promise<HostedPackHydrationResult> {
+  const contextDir = join(projectRoot, '.decantr', 'context');
+  const reviewPackPath = join(contextDir, 'review-pack.json');
+  const manifestPath = join(contextDir, 'pack-manifest.json');
+
+  if (existsSync(reviewPackPath) && existsSync(manifestPath)) {
+    return { attempted: false, hydrated: false };
+  }
+
+  const essencePath = join(projectRoot, 'decantr.essence.json');
+  if (!existsSync(essencePath)) {
+    return { attempted: false, hydrated: false };
+  }
+
+  try {
+    const client = getPublicAPIClient();
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
+    const selected = await client.selectExecutionPack(
+      {
+        essence,
+        pack_type: 'review',
+      },
+      { namespace },
+    ) as SelectedExecutionPackResponse;
+
+    mkdirSync(contextDir, { recursive: true });
+    writeFileSync(join(contextDir, 'review-pack.md'), selected.pack.renderedMarkdown);
+    writeFileSync(join(contextDir, 'review-pack.json'), JSON.stringify(selected.pack, null, 2) + '\n');
+    if (!existsSync(manifestPath)) {
+      writeFileSync(manifestPath, JSON.stringify(selected.manifest, null, 2) + '\n');
+    }
+    return { attempted: true, hydrated: true, scope: 'review' };
   } catch {
     return { attempted: true, hydrated: false };
   }
@@ -1603,11 +1644,11 @@ async function cmdAudit(filePath?: string) {
   const projectRoot = process.cwd();
 
   try {
-    const hydration = await hydrateHostedExecutionPacksIfMissing(projectRoot);
     if (filePath) {
+      const hydration = await hydrateHostedReviewPackIfMissing(projectRoot);
       console.log(heading(`Critiquing ${filePath}...`));
       if (hydration.hydrated) {
-        console.log(dim('Hydrated missing execution packs from hosted registry.'));
+        console.log(dim('Hydrated missing review pack from hosted registry.'));
         console.log('');
       }
       const report = await critiqueProjectFile(filePath, projectRoot);
@@ -1618,6 +1659,7 @@ async function cmdAudit(filePath?: string) {
       return;
     }
 
+    const hydration = await hydrateHostedExecutionPacksIfMissing(projectRoot);
     console.log(heading('Auditing project...'));
     if (hydration.hydrated) {
       console.log(dim('Hydrated missing execution packs from hosted registry.'));

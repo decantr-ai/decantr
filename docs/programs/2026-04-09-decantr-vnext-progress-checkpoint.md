@@ -82,6 +82,7 @@ commit archaeology.
 - `decantr_get_execution_pack` now uses the hosted selected-pack surface for targeted remote pack reads instead of recompiling the full hosted bundle when local artifacts are missing.
 - `decantr_get_section_context` and `decantr_get_page_context` now also use hosted selected-pack reads for remote fallback, so MCP no longer recompiles the full hosted bundle when it only needs one page pack or one section pack.
 - Plain `decantr audit` now opportunistically hydrates missing local execution-pack artifacts from the hosted compiler before running local critique or project audit, so pack-first verification still works on partially initialized projects.
+- `decantr audit <file>` now hydrates just the hosted review pack plus manifest via pack select when local review context is missing, instead of recompiling and writing the full hosted bundle for single-file critique.
 - Live hosted rollout is now green for all current public pack and verification surfaces:
   - `POST /v1/packs/compile`
   - `POST /v1/packs/select`
