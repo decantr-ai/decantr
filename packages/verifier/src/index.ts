@@ -5110,6 +5110,28 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
 
   if (
     isCallLikeExpression(expression)
+    && expression.arguments.length > 0
+    && expressionLooksLikeBrowserGlobalBase64Helper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
     && (ts.isIdentifier(expression.expression) || isMemberAccessExpression(expression.expression))
     && expression.arguments.length > 0
     && expressionLooksLikeBufferFromHelper(
@@ -6427,6 +6449,68 @@ function expressionLooksLikeBufferFromHelper(
         namedPropertyAliases,
         seenIdentifiers,
       )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function expressionLooksLikeBrowserGlobalBase64Helper(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+
+  if (ts.isIdentifier(expression) && ['atob', 'btoa'].includes(expression.text)) {
+    return true;
+  }
+
+  if (
+    isMemberAccessExpression(expression)
+    && isMemberAccessNamed(expression, 'atob', 'btoa')
+    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'bind')
+    && expressionLooksLikeBrowserGlobalBase64Helper(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeBrowserGlobalBase64Helper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeBrowserGlobalBase64Helper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      if (result) return true;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && ['atob', 'btoa'].includes(propertyAlias.propertyName)
+      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
     ) {
       return true;
     }
