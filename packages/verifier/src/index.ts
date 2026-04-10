@@ -5650,13 +5650,8 @@ function getRouteTransitionTargetExpression(
     (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
     && isMemberAccessNamed(node.expression, 'apply')
     && expressionLooksLikeRouteTransitionCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
-    ) {
-    const applyArguments = node.arguments[1];
-    if (ts.isArrayLiteralExpression(applyArguments)) {
-      const firstArgument = applyArguments.elements[0];
-      return ts.isExpression(firstArgument) ? firstArgument : undefined;
-    }
-    return undefined;
+  ) {
+    return getAliasedApplyArgumentExpression(node.arguments[1], 0, namedExpressions, new Set());
   }
 
   if (
@@ -5672,12 +5667,7 @@ function getRouteTransitionTargetExpression(
     && isMemberAccessNamed(node.expression, 'apply')
     && expressionLooksLikeHistoryMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
-    const applyArguments = node.arguments[1];
-    if (ts.isArrayLiteralExpression(applyArguments)) {
-      const historyTarget = applyArguments.elements[2];
-      return ts.isExpression(historyTarget) ? historyTarget : undefined;
-    }
-    return undefined;
+    return getAliasedApplyArgumentExpression(node.arguments[1], 2, namedExpressions, new Set());
   }
 
   if (
@@ -5693,6 +5683,33 @@ function getRouteTransitionTargetExpression(
   }
 
   return undefined;
+}
+
+function getAliasedApplyArgumentExpression(
+  expression: ts.Expression | undefined,
+  index: number,
+  namedExpressions: Map<string, ts.Expression>,
+  seenIdentifiers: Set<string>,
+): ts.Expression | undefined {
+  if (!expression) return undefined;
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return getAliasedApplyArgumentExpression(expression.expression, index, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return undefined;
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) return undefined;
+    seenIdentifiers.add(expression.text);
+    const result = getAliasedApplyArgumentExpression(initializer, index, namedExpressions, seenIdentifiers);
+    seenIdentifiers.delete(expression.text);
+    return result;
+  }
+
+  if (!ts.isArrayLiteralExpression(expression)) return undefined;
+  const argument = expression.elements[index];
+  return ts.isExpression(argument) ? argument : undefined;
 }
 
 function getLocationMutationTargetExpression(
@@ -5714,12 +5731,7 @@ function getLocationMutationTargetExpression(
     && isMemberAccessNamed(node.expression, 'apply')
     && expressionLooksLikeLocationMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
-    const applyArguments = node.arguments[1];
-    if (ts.isArrayLiteralExpression(applyArguments)) {
-      const firstArgument = applyArguments.elements[0];
-      return ts.isExpression(firstArgument) ? firstArgument : undefined;
-    }
-    return undefined;
+    return getAliasedApplyArgumentExpression(node.arguments[1], 0, namedExpressions, new Set());
   }
 
   if (expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())) {
@@ -5748,12 +5760,7 @@ function getWindowOpenTargetExpression(
     && isMemberAccessNamed(node.expression, 'apply')
     && expressionLooksLikeWindowOpenCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
-    const applyArguments = node.arguments[1];
-    if (ts.isArrayLiteralExpression(applyArguments)) {
-      const firstArgument = applyArguments.elements[0];
-      return ts.isExpression(firstArgument) ? firstArgument : undefined;
-    }
-    return undefined;
+    return getAliasedApplyArgumentExpression(node.arguments[1], 0, namedExpressions, new Set());
   }
 
   if (expressionLooksLikeWindowOpenCall(node.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())) {
