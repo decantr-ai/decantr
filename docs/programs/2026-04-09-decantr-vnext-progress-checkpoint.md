@@ -467,6 +467,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Protected auth-loss and auth-loading detection now also treats `children`, `props.children`, `Outlet`, `Routes`, and `RouterProvider` pass-through branches as protected renders, so reviewed gates cannot leak nested protected content just by returning the outlet tree directly.
 - Protected auth-loss and auth-loading detection now also catches generic component renders that still receive auth-scoped props like `session`, `currentUser`, or `authUser`, so stale privileged state cannot hide behind neutral component names like `SummaryPanel`.
 - Protected auth-loss and auth-loading detection now also catches direct JSX interpolation of auth-scoped values like `session?.user?.email`, so stale privileged identity data cannot linger inside otherwise generic markup after reviewed gateway logic has supposedly left the protected state.
+- Protected auth-loss and auth-loading detection now also catches protected route links nested inside otherwise generic markup, so reviewed gateway branches cannot keep advertising `/dashboard` or other privileged destinations from a neutral `<section>` container.
 
 ## Highest-Value Next Streams
 
