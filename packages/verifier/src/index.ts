@@ -5067,6 +5067,19 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
     );
   }
 
+  if (ts.isTemplateExpression(expression)) {
+    return expression.templateSpans.some((span) =>
+      expressionLooksLikeOpenRedirectQueryGetterFunction(
+        span.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      )
+    );
+  }
+
   if (
     isCallLikeExpression(expression)
     && ts.isIdentifier(expression.expression)
