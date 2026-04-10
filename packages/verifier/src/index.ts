@@ -4992,11 +4992,37 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   namedExpressions: Map<string, ts.Expression> = new Map(),
   namedPropertyAliases: Map<string, NamedPropertyAlias> = new Map(),
   seenIdentifiers: Set<string> = new Set(),
+  seenFunctions: Set<string> = new Set(),
 ): boolean {
   if (!expression) return false;
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeOpenRedirectQueryGetterFunction(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    return expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    );
+  }
+
+  const namedFunctions = getCachedNamedFunctionLikeDeclarations(sourceFile);
+  const directFunctionLike = resolveFunctionLikeHandler(expression, namedFunctions);
+  const directFunctionKey = directFunctionLike ? getFunctionLikeCacheKey(directFunctionLike) : null;
+  if (directFunctionLike && directFunctionKey && !seenFunctions.has(directFunctionKey)) {
+    const nextSeenFunctions = new Set(seenFunctions);
+    nextSeenFunctions.add(directFunctionKey);
+    return getFunctionLikeReturnExpressions(directFunctionLike).some((returnedExpression) =>
+      expressionLooksLikeOpenRedirectQueryGetterFunction(
+        returnedExpression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        nextSeenFunctions,
+      )
+    );
   }
 
   if (
@@ -5009,9 +5035,57 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
+      seenFunctions,
     )
   ) {
     return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'get', 'getAll')
+    && expressionLooksLikeOpenRedirectSearchParamsCarrier(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
+  if (isCallLikeExpression(expression)) {
+    const functionResolution = resolveTrackedOpenRedirectFunctionLike(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+      seenFunctions,
+    );
+    const functionLike = functionResolution?.functionLike ?? null;
+    const functionKey = functionLike ? getFunctionLikeCacheKey(functionLike) : null;
+    if (functionLike && functionKey && functionResolution && !seenFunctions.has(functionKey)) {
+      const boundExpressions = bindFunctionLikeArguments(
+        functionLike,
+        expression.arguments,
+        functionResolution.namedExpressions,
+      );
+      const nextSeenFunctions = new Set(seenFunctions);
+      nextSeenFunctions.add(functionKey);
+      return getFunctionLikeReturnExpressions(functionLike).some((returnedExpression) =>
+        expressionLooksLikeOpenRedirectQueryGetterFunction(
+          returnedExpression,
+          sourceFile,
+          boundExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+          nextSeenFunctions,
+        )
+      );
+    }
   }
 
   if (
@@ -5040,6 +5114,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
         namedExpressions,
         namedPropertyAliases,
         seenIdentifiers,
+        seenFunctions,
       );
       seenIdentifiers.delete(expression.text);
       return result;
