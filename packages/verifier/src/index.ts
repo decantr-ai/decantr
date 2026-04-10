@@ -3421,6 +3421,16 @@ function collectNamedFunctionLikeDeclarations(root: ts.Node): Map<string, ts.Fun
   return declarations;
 }
 
+const namedFunctionLikeDeclarationCache = new WeakMap<ts.SourceFile, Map<string, ts.FunctionLikeDeclarationBase>>();
+
+function getCachedNamedFunctionLikeDeclarations(sourceFile: ts.SourceFile): Map<string, ts.FunctionLikeDeclarationBase> {
+  const cached = namedFunctionLikeDeclarationCache.get(sourceFile);
+  if (cached) return cached;
+  const declarations = collectNamedFunctionLikeDeclarations(sourceFile);
+  namedFunctionLikeDeclarationCache.set(sourceFile, declarations);
+  return declarations;
+}
+
 function collectNamedExpressionInitializers(root: ts.Node): Map<string, ts.Expression> {
   const initializers = new Map<string, ts.Expression>();
 
@@ -3513,6 +3523,61 @@ function resolveFunctionLikeHandler(
     return namedFunctions.get(expression.text) ?? null;
   }
   return null;
+}
+
+function getFunctionLikeReturnExpressions(node: ts.FunctionLikeDeclarationBase): ts.Expression[] {
+  if (ts.isArrowFunction(node) && !ts.isBlock(node.body)) {
+    return [node.body];
+  }
+
+  const body = node.body;
+  if (!body || !ts.isBlock(body)) {
+    return [];
+  }
+
+  const expressions: ts.Expression[] = [];
+  const visit = (current: ts.Node): void => {
+    if (
+      current !== body
+      && (
+        ts.isFunctionDeclaration(current)
+        || ts.isFunctionExpression(current)
+        || ts.isArrowFunction(current)
+        || ts.isMethodDeclaration(current)
+        || ts.isGetAccessorDeclaration(current)
+        || ts.isSetAccessorDeclaration(current)
+        || ts.isConstructorDeclaration(current)
+      )
+    ) {
+      return;
+    }
+
+    if (ts.isReturnStatement(current) && current.expression) {
+      expressions.push(current.expression);
+      return;
+    }
+
+    current.forEachChild(visit);
+  };
+
+  visit(body);
+  return expressions;
+}
+
+function bindFunctionLikeArguments(
+  functionLike: ts.FunctionLikeDeclarationBase,
+  args: readonly ts.Expression[],
+  namedExpressions: Map<string, ts.Expression>,
+): Map<string, ts.Expression> {
+  const boundExpressions = new Map(namedExpressions);
+
+  functionLike.parameters.forEach((parameter, index) => {
+    const argument = args[index];
+    if (!argument || !ts.isIdentifier(parameter.name)) return;
+    boundExpressions.set(parameter.name.text, argument);
+  });
+
+  return boundExpressions;
 }
 
 function functionLikeReferencesOrigin(node: ts.FunctionLikeDeclarationBase): boolean {
@@ -4644,6 +4709,7 @@ function expressionContainsOpenRedirectSource(
   namedExpressions: Map<string, ts.Expression> = new Map(),
   namedPropertyAliases: Map<string, NamedPropertyAlias> = new Map(),
   seenIdentifiers: Set<string> = new Set(),
+  seenFunctions: Set<string> = new Set(),
 ): boolean {
   if (!expression) return false;
   if (OPEN_REDIRECT_SOURCE_REGEX.test(expression.getText(sourceFile))) {
@@ -4651,56 +4717,56 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    return expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
   }
 
   if (ts.isBinaryExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.left, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      || expressionContainsOpenRedirectSource(expression.right, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    return expressionContainsOpenRedirectSource(expression.left, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
+      || expressionContainsOpenRedirectSource(expression.right, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
   }
 
   if (ts.isConditionalExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.condition, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      || expressionContainsOpenRedirectSource(expression.whenTrue, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      || expressionContainsOpenRedirectSource(expression.whenFalse, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    return expressionContainsOpenRedirectSource(expression.condition, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
+      || expressionContainsOpenRedirectSource(expression.whenTrue, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
+      || expressionContainsOpenRedirectSource(expression.whenFalse, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
   }
 
   if (ts.isTemplateExpression(expression)) {
     return expression.templateSpans.some((span) =>
-      expressionContainsOpenRedirectSource(span.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      expressionContainsOpenRedirectSource(span.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
     );
   }
 
   if (ts.isTaggedTemplateExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.template, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    return expressionContainsOpenRedirectSource(expression.template, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
   }
 
   if (ts.isNewExpression(expression)) {
     return (expression.arguments ?? []).some((argument) =>
-      expressionContainsOpenRedirectSource(argument, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      expressionContainsOpenRedirectSource(argument, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
     );
   }
 
   if (ts.isArrayLiteralExpression(expression)) {
     return expression.elements.some((element) => {
       if (ts.isSpreadElement(element)) {
-        return expressionContainsOpenRedirectSource(element.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+        return expressionContainsOpenRedirectSource(element.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
       }
       return ts.isExpression(element)
-        && expressionContainsOpenRedirectSource(element, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+        && expressionContainsOpenRedirectSource(element, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
     });
   }
 
   if (ts.isObjectLiteralExpression(expression)) {
     return expression.properties.some((property) => {
       if (ts.isPropertyAssignment(property)) {
-        return expressionContainsOpenRedirectSource(property.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+        return expressionContainsOpenRedirectSource(property.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
       }
       if (ts.isShorthandPropertyAssignment(property)) {
-        return expressionContainsOpenRedirectSource(property.name, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+        return expressionContainsOpenRedirectSource(property.name, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
       }
       if (ts.isSpreadAssignment(property)) {
-        return expressionContainsOpenRedirectSource(property.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+        return expressionContainsOpenRedirectSource(property.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
       }
       return false;
     });
@@ -4708,9 +4774,35 @@ function expressionContainsOpenRedirectSource(
 
   if (
     isPropertyLikeAccessExpression(expression)
-    && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
   ) {
     return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && ts.isIdentifier(expression.expression)
+  ) {
+    const functionLike = getCachedNamedFunctionLikeDeclarations(sourceFile).get(expression.expression.text);
+    if (functionLike && !seenFunctions.has(expression.expression.text)) {
+      const boundExpressions = bindFunctionLikeArguments(functionLike, expression.arguments, namedExpressions);
+      const nextSeenFunctions = new Set(seenFunctions);
+      nextSeenFunctions.add(expression.expression.text);
+      if (
+        getFunctionLikeReturnExpressions(functionLike).some((returnedExpression) =>
+          expressionContainsOpenRedirectSource(
+            returnedExpression,
+            sourceFile,
+            boundExpressions,
+            namedPropertyAliases,
+            seenIdentifiers,
+            nextSeenFunctions,
+          )
+        )
+      ) {
+        return true;
+      }
+    }
   }
 
   if (
@@ -4790,14 +4882,14 @@ function expressionContainsOpenRedirectSource(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
-    && expressionContainsOpenRedirectSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    && expressionContainsOpenRedirectSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
   ) {
     return true;
   }
 
   if (isCallLikeExpression(expression)) {
     return expression.arguments.some((argument) =>
-      expressionContainsOpenRedirectSource(argument, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      expressionContainsOpenRedirectSource(argument, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
     );
   }
 
@@ -4819,7 +4911,7 @@ function expressionContainsOpenRedirectSource(
 
   if (
     isElementLikeAccessExpression(expression)
-    && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
   ) {
     return true;
   }
@@ -4831,7 +4923,7 @@ function expressionContainsOpenRedirectSource(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionContainsOpenRedirectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionContainsOpenRedirectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
       seenIdentifiers.delete(expression.text);
       return result;
     }
