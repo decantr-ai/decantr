@@ -8612,6 +8612,186 @@ describe('verifier', () => {
     }
   });
 
+  it('flags auth redirects that trust snake-case search param keys during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'login', route: '/login', layout: ['form'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'LoginRedirect.tsx'),
+        `
+          export function LoginRedirect({ searchParams }) {
+            return redirect(searchParams.get('return_to') ?? '/dashboard');
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-open-redirect-risk')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('flags auth redirects that trust snake-case query aliases during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'login', route: '/login', layout: ['form'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'LoginRedirect.tsx'),
+        `
+          export function LoginRedirect({ router }) {
+            const queryKey = 'redirect_to';
+            return <Link to={{ pathname: router.query[queryKey] ?? '/dashboard' }}>Continue</Link>;
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-open-redirect-risk')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('flags auth redirects that trust snake-case callback URL params during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'login', route: '/login', layout: ['form'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'LoginRedirect.tsx'),
+        `
+          export function LoginRedirect() {
+            const queryKey = 'callback_url';
+            const next = new URLSearchParams(window.location.search).get(queryKey);
+            return redirect(next ?? '/dashboard');
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-open-redirect-risk')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('flags auth flows that redirect directly to external URLs during project audit', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -14915,6 +15095,126 @@ describe('verifier', () => {
       code: `
         export function LoginRedirect({ searchParams: { next } }) {
           return <Link to={\`\${next ?? '/dashboard'}\`}>Continue</Link>;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'login', path: '/login', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene', 'route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-open-redirect-risk')).toBe(true);
+  });
+
+  it('flags auth redirects that trust snake-case search param keys during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginRedirect.tsx',
+      code: `
+        export function LoginRedirect({ searchParams }) {
+          return redirect(searchParams.get('return_to') ?? '/dashboard');
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'login', path: '/login', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene', 'route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-open-redirect-risk')).toBe(true);
+  });
+
+  it('flags auth redirects that trust snake-case query aliases during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginRedirect.tsx',
+      code: `
+        export function LoginRedirect({ router }) {
+          const queryKey = 'redirect_to';
+          return <Link to={{ pathname: router.query[queryKey] ?? '/dashboard' }}>Continue</Link>;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'login', path: '/login', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene', 'route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-open-redirect-risk')).toBe(true);
+  });
+
+  it('flags auth redirects that trust snake-case callback URL params during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginRedirect.tsx',
+      code: `
+        export function LoginRedirect() {
+          const queryKey = 'callback_url';
+          const next = new URLSearchParams(window.location.search).get(queryKey);
+          return redirect(next ?? '/dashboard');
         }
       `,
       reviewPack: {
