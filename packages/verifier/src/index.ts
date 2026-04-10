@@ -6388,6 +6388,21 @@ function expressionLooksLikeBufferFromHelper(
     return true;
   }
 
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'bind')
+    && expressionLooksLikeBufferFromHelper(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
     return expressionLooksLikeBufferFromHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
