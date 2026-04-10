@@ -29,10 +29,15 @@
         "appsWithViewportOkCount",
         "appsWithCharsetOkCount",
         "appsWithoutInlineScriptsCount",
+        "appsWithoutInlineEventHandlersCount",
         "appsWithCspSignalCount",
         "appsWithExternalScriptIntegrityCount",
+        "appsWithExternalScriptCrossoriginCount",
+        "appsWithoutInsecureRemoteAssetTransportCount",
         "appsWithExternalStylesheetIntegrityCount",
+        "appsWithExternalStylesheetCrossoriginCount",
         "appsWithRouteCoverageCount",
+        "appsWithRouteDocumentHardeningCount",
         "appsWithFullRouteCoverageCount",
         "averageTotalAssetBytes",
         "averageJsAssetBytes",
@@ -55,10 +60,15 @@
         "appsWithViewportOkCount": { "type": "number", "minimum": 0 },
         "appsWithCharsetOkCount": { "type": "number", "minimum": 0 },
         "appsWithoutInlineScriptsCount": { "type": "number", "minimum": 0 },
+        "appsWithoutInlineEventHandlersCount": { "type": "number", "minimum": 0 },
         "appsWithCspSignalCount": { "type": "number", "minimum": 0 },
         "appsWithExternalScriptIntegrityCount": { "type": "number", "minimum": 0 },
+        "appsWithExternalScriptCrossoriginCount": { "type": "number", "minimum": 0 },
+        "appsWithoutInsecureRemoteAssetTransportCount": { "type": "number", "minimum": 0 },
         "appsWithExternalStylesheetIntegrityCount": { "type": "number", "minimum": 0 },
+        "appsWithExternalStylesheetCrossoriginCount": { "type": "number", "minimum": 0 },
         "appsWithRouteCoverageCount": { "type": "number", "minimum": 0 },
+        "appsWithRouteDocumentHardeningCount": { "type": "number", "minimum": 0 },
         "appsWithFullRouteCoverageCount": { "type": "number", "minimum": 0 },
         "averageTotalAssetBytes": { "type": "number", "minimum": 0 },
         "averageJsAssetBytes": { "type": "number", "minimum": 0 },
@@ -122,8 +132,13 @@
             "charsetOk",
             "cspSignalOk",
             "inlineScriptCount",
+            "inlineEventHandlerCount",
             "externalScriptsWithoutIntegrityCount",
+            "externalScriptsWithIntegrityMissingCrossoriginCount",
             "externalStylesheetsWithoutIntegrityCount",
+            "externalStylesheetsWithIntegrityMissingCrossoriginCount",
+            "externalScriptsWithInsecureTransportCount",
+            "externalStylesheetsWithInsecureTransportCount",
             "jsEvalSignalCount",
             "jsHtmlInjectionSignalCount",
             "jsInsecureTransportSignalCount",
@@ -135,7 +150,9 @@
             "routeHintsCoverageOk",
             "routeDocumentsChecked",
             "routeDocumentsPassed",
+            "routeDocumentsHardenedCount",
             "routeDocumentsCoverageOk",
+            "routeDocumentsHardeningOk",
             "fullRouteCoverageOk",
             "totalAssetBytes",
             "jsAssetBytes",
@@ -174,11 +191,31 @@
               "type": "number",
               "minimum": 0
             },
+            "inlineEventHandlerCount": {
+              "type": "number",
+              "minimum": 0
+            },
             "externalScriptsWithoutIntegrityCount": {
               "type": "number",
               "minimum": 0
             },
+            "externalScriptsWithIntegrityMissingCrossoriginCount": {
+              "type": "number",
+              "minimum": 0
+            },
             "externalStylesheetsWithoutIntegrityCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalStylesheetsWithIntegrityMissingCrossoriginCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalScriptsWithInsecureTransportCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalStylesheetsWithInsecureTransportCount": {
               "type": "number",
               "minimum": 0
             },
@@ -224,7 +261,14 @@
               "type": "number",
               "minimum": 0
             },
+            "routeDocumentsHardenedCount": {
+              "type": "number",
+              "minimum": 0
+            },
             "routeDocumentsCoverageOk": {
+              "type": "boolean"
+            },
+            "routeDocumentsHardeningOk": {
               "type": "boolean"
             },
             "fullRouteCoverageOk": {

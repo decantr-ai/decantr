@@ -115,8 +115,11 @@ export interface ShowcaseShortlistVerificationEntry {
     charsetOk: boolean;
     cspSignalOk: boolean;
     inlineScriptCount: number;
+    inlineEventHandlerCount: number;
     externalScriptsWithoutIntegrityCount: number;
+    externalScriptsWithIntegrityMissingCrossoriginCount: number;
     externalStylesheetsWithoutIntegrityCount: number;
+    externalStylesheetsWithIntegrityMissingCrossoriginCount: number;
     externalScriptsWithInsecureTransportCount: number;
     externalStylesheetsWithInsecureTransportCount: number;
     jsEvalSignalCount: number;
@@ -1050,6 +1053,17 @@ function appendRuntimeAuditFindings(
     }));
   }
 
+  if (runtimeAudit.externalScriptsWithIntegrityMissingCrossoriginCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-scripts-crossorigin-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Remote script tags declare Subresource Integrity without a matching `crossorigin` attribute.',
+      evidence: [indexPath, `Remote scripts with integrity but missing crossorigin: ${runtimeAudit.externalScriptsWithIntegrityMissingCrossoriginCount}`],
+      suggestedFix: 'Add a reviewed `crossorigin` attribute alongside script integrity metadata so SRI works consistently for remote script fetches.',
+    }));
+  }
+
   if (runtimeAudit.externalScriptsWithInsecureTransportCount > 0) {
     findings.push(makeFinding({
       id: 'runtime-external-scripts-insecure-transport',
@@ -1069,6 +1083,17 @@ function appendRuntimeAuditFindings(
       message: 'Remote stylesheet links were detected without Subresource Integrity metadata.',
       evidence: [indexPath, `Remote stylesheets missing integrity: ${runtimeAudit.externalStylesheetsWithoutIntegrityCount}`],
       suggestedFix: 'Pin remote stylesheet links with integrity/crossorigin metadata or serve the stylesheet through the trusted build pipeline.',
+    }));
+  }
+
+  if (runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-stylesheets-crossorigin-missing',
+      category: 'Security Hygiene',
+      severity: 'info',
+      message: 'Remote stylesheet links declare Subresource Integrity without a matching `crossorigin` attribute.',
+      evidence: [indexPath, `Remote stylesheets with integrity but missing crossorigin: ${runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount}`],
+      suggestedFix: 'Add a reviewed `crossorigin` attribute alongside stylesheet integrity metadata so SRI works consistently for remote stylesheet fetches.',
     }));
   }
 

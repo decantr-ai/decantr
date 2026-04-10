@@ -63,7 +63,9 @@
         "inlineScriptCount",
         "inlineEventHandlerCount",
         "externalScriptsWithoutIntegrityCount",
+        "externalScriptsWithIntegrityMissingCrossoriginCount",
         "externalStylesheetsWithoutIntegrityCount",
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount",
         "externalScriptsWithInsecureTransportCount",
         "externalStylesheetsWithInsecureTransportCount",
         "jsEvalSignalCount",
@@ -131,7 +133,15 @@
           "type": "integer",
           "minimum": 0
         },
+        "externalScriptsWithIntegrityMissingCrossoriginCount": {
+          "type": "integer",
+          "minimum": 0
+        },
         "externalStylesheetsWithoutIntegrityCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": {
           "type": "integer",
           "minimum": 0
         },

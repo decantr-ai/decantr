@@ -32,8 +32,10 @@
         "appsWithoutInlineEventHandlersCount",
         "appsWithCspSignalCount",
         "appsWithExternalScriptIntegrityCount",
+        "appsWithExternalScriptCrossoriginCount",
         "appsWithoutInsecureRemoteAssetTransportCount",
         "appsWithExternalStylesheetIntegrityCount",
+        "appsWithExternalStylesheetCrossoriginCount",
         "appsWithRouteCoverageCount",
         "appsWithRouteDocumentHardeningCount",
         "appsWithFullRouteCoverageCount",
@@ -61,8 +63,10 @@
         "appsWithoutInlineEventHandlersCount": { "type": "number", "minimum": 0 },
         "appsWithCspSignalCount": { "type": "number", "minimum": 0 },
         "appsWithExternalScriptIntegrityCount": { "type": "number", "minimum": 0 },
+        "appsWithExternalScriptCrossoriginCount": { "type": "number", "minimum": 0 },
         "appsWithoutInsecureRemoteAssetTransportCount": { "type": "number", "minimum": 0 },
         "appsWithExternalStylesheetIntegrityCount": { "type": "number", "minimum": 0 },
+        "appsWithExternalStylesheetCrossoriginCount": { "type": "number", "minimum": 0 },
         "appsWithRouteCoverageCount": { "type": "number", "minimum": 0 },
         "appsWithRouteDocumentHardeningCount": { "type": "number", "minimum": 0 },
         "appsWithFullRouteCoverageCount": { "type": "number", "minimum": 0 },
@@ -130,7 +134,9 @@
             "inlineScriptCount",
             "inlineEventHandlerCount",
             "externalScriptsWithoutIntegrityCount",
+            "externalScriptsWithIntegrityMissingCrossoriginCount",
             "externalStylesheetsWithoutIntegrityCount",
+            "externalStylesheetsWithIntegrityMissingCrossoriginCount",
             "externalScriptsWithInsecureTransportCount",
             "externalStylesheetsWithInsecureTransportCount",
             "jsEvalSignalCount",
@@ -193,7 +199,15 @@
               "type": "number",
               "minimum": 0
             },
+            "externalScriptsWithIntegrityMissingCrossoriginCount": {
+              "type": "number",
+              "minimum": 0
+            },
             "externalStylesheetsWithoutIntegrityCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalStylesheetsWithIntegrityMissingCrossoriginCount": {
               "type": "number",
               "minimum": 0
             },

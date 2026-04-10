@@ -79,7 +79,9 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     inlineScriptCount: runtimeAudit.inlineScriptCount,
     inlineEventHandlerCount: runtimeAudit.inlineEventHandlerCount,
     externalScriptsWithoutIntegrityCount: runtimeAudit.externalScriptsWithoutIntegrityCount,
+    externalScriptsWithIntegrityMissingCrossoriginCount: runtimeAudit.externalScriptsWithIntegrityMissingCrossoriginCount,
     externalStylesheetsWithoutIntegrityCount: runtimeAudit.externalStylesheetsWithoutIntegrityCount,
+    externalStylesheetsWithIntegrityMissingCrossoriginCount: runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount,
     externalScriptsWithInsecureTransportCount: runtimeAudit.externalScriptsWithInsecureTransportCount,
     externalStylesheetsWithInsecureTransportCount: runtimeAudit.externalStylesheetsWithInsecureTransportCount,
     jsEvalSignalCount: runtimeAudit.jsEvalSignalCount,
@@ -192,11 +194,13 @@ async function main() {
     appsWithoutInlineEventHandlersCount: results.filter(entry => entry.smoke.inlineEventHandlerCount === 0).length,
     appsWithCspSignalCount: results.filter(entry => entry.smoke.cspSignalOk).length,
     appsWithExternalScriptIntegrityCount: results.filter(entry => entry.smoke.externalScriptsWithoutIntegrityCount === 0).length,
+    appsWithExternalScriptCrossoriginCount: results.filter(entry => entry.smoke.externalScriptsWithIntegrityMissingCrossoriginCount === 0).length,
     appsWithoutInsecureRemoteAssetTransportCount: results.filter(
       entry => entry.smoke.externalScriptsWithInsecureTransportCount === 0
         && entry.smoke.externalStylesheetsWithInsecureTransportCount === 0,
     ).length,
     appsWithExternalStylesheetIntegrityCount: results.filter(entry => entry.smoke.externalStylesheetsWithoutIntegrityCount === 0).length,
+    appsWithExternalStylesheetCrossoriginCount: results.filter(entry => entry.smoke.externalStylesheetsWithIntegrityMissingCrossoriginCount === 0).length,
     appsWithRouteCoverageCount: results.filter(entry => {
       const minimumRoutes = Math.min(2, entry.smoke.routeDocumentsChecked);
       return entry.smoke.routeDocumentsChecked === 0 || entry.smoke.routeDocumentsPassed >= minimumRoutes;
@@ -247,8 +251,10 @@ async function main() {
   console.log(`No inline scripts: ${summary.appsWithoutInlineScriptsCount}/${summary.appCount}`);
   console.log(`CSP signals present: ${summary.appsWithCspSignalCount}/${summary.appCount}`);
   console.log(`External script integrity ok: ${summary.appsWithExternalScriptIntegrityCount}/${summary.appCount}`);
+  console.log(`External script crossorigin ok: ${summary.appsWithExternalScriptCrossoriginCount}/${summary.appCount}`);
   console.log(`No insecure remote asset transport: ${summary.appsWithoutInsecureRemoteAssetTransportCount}/${summary.appCount}`);
   console.log(`External stylesheet integrity ok: ${summary.appsWithExternalStylesheetIntegrityCount}/${summary.appCount}`);
+  console.log(`External stylesheet crossorigin ok: ${summary.appsWithExternalStylesheetCrossoriginCount}/${summary.appCount}`);
   console.log(`Route coverage checks passed: ${summary.appsWithRouteCoverageCount}/${summary.appCount}`);
   console.log(`Route document hardening preserved: ${summary.appsWithRouteDocumentHardeningCount}/${summary.appCount}`);
   console.log(`Full route coverage: ${summary.appsWithFullRouteCoverageCount}/${summary.appCount}`);

@@ -56,7 +56,9 @@ function hasScriptHygieneBaseline(verification: ShowcaseVerificationEntry | null
     && verification.smoke.inlineScriptCount === 0
     && verification.smoke.inlineEventHandlerCount === 0
     && verification.smoke.externalScriptsWithoutIntegrityCount === 0
+    && verification.smoke.externalScriptsWithIntegrityMissingCrossoriginCount === 0
     && verification.smoke.externalStylesheetsWithoutIntegrityCount === 0
+    && verification.smoke.externalStylesheetsWithIntegrityMissingCrossoriginCount === 0
     && verification.smoke.externalScriptsWithInsecureTransportCount === 0
     && verification.smoke.externalStylesheetsWithInsecureTransportCount === 0,
   );

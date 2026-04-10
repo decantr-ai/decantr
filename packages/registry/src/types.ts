@@ -533,7 +533,9 @@ export interface ShowcaseVerificationEntry {
     inlineScriptCount: number;
     inlineEventHandlerCount: number;
     externalScriptsWithoutIntegrityCount: number;
+    externalScriptsWithIntegrityMissingCrossoriginCount: number;
     externalStylesheetsWithoutIntegrityCount: number;
+    externalStylesheetsWithIntegrityMissingCrossoriginCount: number;
     externalScriptsWithInsecureTransportCount: number;
     externalStylesheetsWithInsecureTransportCount: number;
     jsEvalSignalCount: number;
@@ -585,7 +587,9 @@ export interface ShowcaseShortlistSummary {
   appsWithoutInlineScriptsCount: number;
   appsWithCspSignalCount: number;
   appsWithExternalScriptIntegrityCount: number;
+  appsWithExternalScriptCrossoriginCount: number;
   appsWithExternalStylesheetIntegrityCount: number;
+  appsWithExternalStylesheetCrossoriginCount: number;
   appsWithRouteCoverageCount: number;
   appsWithFullRouteCoverageCount: number;
   averageTotalAssetBytes: number;
@@ -922,7 +926,9 @@ export interface ProjectAuditRuntimeAudit {
   inlineScriptCount: number;
   inlineEventHandlerCount: number;
   externalScriptsWithoutIntegrityCount: number;
+  externalScriptsWithIntegrityMissingCrossoriginCount: number;
   externalStylesheetsWithoutIntegrityCount: number;
+  externalStylesheetsWithIntegrityMissingCrossoriginCount: number;
   externalScriptsWithInsecureTransportCount: number;
   externalStylesheetsWithInsecureTransportCount: number;
   jsEvalSignalCount: number;

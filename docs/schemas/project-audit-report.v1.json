@@ -61,8 +61,13 @@
         "charsetOk",
         "cspSignalOk",
         "inlineScriptCount",
+        "inlineEventHandlerCount",
         "externalScriptsWithoutIntegrityCount",
+        "externalScriptsWithIntegrityMissingCrossoriginCount",
         "externalStylesheetsWithoutIntegrityCount",
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount",
+        "externalScriptsWithInsecureTransportCount",
+        "externalStylesheetsWithInsecureTransportCount",
         "jsEvalSignalCount",
         "jsHtmlInjectionSignalCount",
         "jsInsecureTransportSignalCount",
@@ -74,7 +79,9 @@
         "routeHintsCoverageOk",
         "routeDocumentsChecked",
         "routeDocumentsPassed",
+        "routeDocumentsHardenedCount",
         "routeDocumentsCoverageOk",
+        "routeDocumentsHardeningOk",
         "fullRouteCoverageOk",
         "totalAssetBytes",
         "jsAssetBytes",
@@ -118,11 +125,31 @@
           "type": "integer",
           "minimum": 0
         },
+        "inlineEventHandlerCount": {
+          "type": "integer",
+          "minimum": 0
+        },
         "externalScriptsWithoutIntegrityCount": {
           "type": "integer",
           "minimum": 0
         },
+        "externalScriptsWithIntegrityMissingCrossoriginCount": {
+          "type": "integer",
+          "minimum": 0
+        },
         "externalStylesheetsWithoutIntegrityCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalScriptsWithInsecureTransportCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalStylesheetsWithInsecureTransportCount": {
           "type": "integer",
           "minimum": 0
         },
@@ -171,7 +198,14 @@
           "type": "integer",
           "minimum": 0
         },
+        "routeDocumentsHardenedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
         "routeDocumentsCoverageOk": {
+          "type": "boolean"
+        },
+        "routeDocumentsHardeningOk": {
           "type": "boolean"
         },
         "fullRouteCoverageOk": {

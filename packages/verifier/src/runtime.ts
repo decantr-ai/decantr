@@ -28,7 +28,9 @@ export interface RuntimeAudit {
   inlineScriptCount: number;
   inlineEventHandlerCount: number;
   externalScriptsWithoutIntegrityCount: number;
+  externalScriptsWithIntegrityMissingCrossoriginCount: number;
   externalStylesheetsWithoutIntegrityCount: number;
+  externalStylesheetsWithIntegrityMissingCrossoriginCount: number;
   externalScriptsWithInsecureTransportCount: number;
   externalStylesheetsWithInsecureTransportCount: number;
   jsEvalSignalCount: number;
@@ -74,7 +76,9 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     inlineScriptCount: 0,
     inlineEventHandlerCount: 0,
     externalScriptsWithoutIntegrityCount: 0,
+    externalScriptsWithIntegrityMissingCrossoriginCount: 0,
     externalStylesheetsWithoutIntegrityCount: 0,
+    externalStylesheetsWithIntegrityMissingCrossoriginCount: 0,
     externalScriptsWithInsecureTransportCount: 0,
     externalStylesheetsWithInsecureTransportCount: 0,
     jsEvalSignalCount: 0,
@@ -139,6 +143,20 @@ function countExternalScriptsWithoutIntegrity(html: string): number {
     .length;
 }
 
+function countExternalScriptsWithIntegrityMissingCrossorigin(html: string): number {
+  return [...html.matchAll(/<script\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi)]
+    .map((match) => {
+      const attrs = `${match[1] ?? ''} ${match[4] ?? ''}`;
+      return {
+        src: match[3],
+        hasIntegrity: /\bintegrity\s*=/i.test(attrs),
+        hasCrossorigin: /\bcrossorigin\s*=/i.test(attrs),
+      };
+    })
+    .filter((entry) => /^https?:\/\//i.test(entry.src) && entry.hasIntegrity && !entry.hasCrossorigin)
+    .length;
+}
+
 function countExternalScriptsWithInsecureTransport(html: string): number {
   return [...html.matchAll(/<script\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi)]
     .map((match) => match[3])
@@ -159,6 +177,23 @@ function countExternalStylesheetsWithoutIntegrity(html: string): number {
       };
     })
     .filter((entry) => /^https?:\/\//i.test(entry.href) && /\bstylesheet\b/i.test(entry.relValue) && !entry.hasIntegrity)
+    .length;
+}
+
+function countExternalStylesheetsWithIntegrityMissingCrossorigin(html: string): number {
+  return [...html.matchAll(/<link\b([^>]*?)\bhref=(["'])([^"']+)\2([^>]*)>/gi)]
+    .map((match) => {
+      const attrs = `${match[1] ?? ''} ${match[4] ?? ''}`;
+      const relMatch = attrs.match(/\brel=(["'])([^"']+)\1/i);
+      const relValue = relMatch?.[2]?.toLowerCase() ?? '';
+      return {
+        href: match[3],
+        relValue,
+        hasIntegrity: /\bintegrity\s*=/i.test(attrs),
+        hasCrossorigin: /\bcrossorigin\s*=/i.test(attrs),
+      };
+    })
+    .filter((entry) => /^https?:\/\//i.test(entry.href) && /\bstylesheet\b/i.test(entry.relValue) && entry.hasIntegrity && !entry.hasCrossorigin)
     .length;
 }
 
@@ -294,7 +329,9 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const inlineScriptCount = countInlineScriptTags(rootHtml);
     const inlineEventHandlerCount = countInlineEventHandlerAttributes(rootHtml);
     const externalScriptsWithoutIntegrityCount = countExternalScriptsWithoutIntegrity(rootHtml);
+    const externalScriptsWithIntegrityMissingCrossoriginCount = countExternalScriptsWithIntegrityMissingCrossorigin(rootHtml);
     const externalStylesheetsWithoutIntegrityCount = countExternalStylesheetsWithoutIntegrity(rootHtml);
+    const externalStylesheetsWithIntegrityMissingCrossoriginCount = countExternalStylesheetsWithIntegrityMissingCrossorigin(rootHtml);
     const externalScriptsWithInsecureTransportCount = countExternalScriptsWithInsecureTransport(rootHtml);
     const externalStylesheetsWithInsecureTransportCount = countExternalStylesheetsWithInsecureTransport(rootHtml);
 
@@ -413,7 +450,9 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       inlineScriptCount,
       inlineEventHandlerCount,
       externalScriptsWithoutIntegrityCount,
+      externalScriptsWithIntegrityMissingCrossoriginCount,
       externalStylesheetsWithoutIntegrityCount,
+      externalStylesheetsWithIntegrityMissingCrossoriginCount,
       externalScriptsWithInsecureTransportCount,
       externalStylesheetsWithInsecureTransportCount,
       jsEvalSignalCount,

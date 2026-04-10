@@ -157,7 +157,13 @@ export function buildShowcaseVerificationResult(entry, options = {}) {
       inlineScriptCount: Number.isFinite(options.smoke?.inlineScriptCount) ? options.smoke.inlineScriptCount : 0,
       inlineEventHandlerCount: Number.isFinite(options.smoke?.inlineEventHandlerCount) ? options.smoke.inlineEventHandlerCount : 0,
       externalScriptsWithoutIntegrityCount: Number.isFinite(options.smoke?.externalScriptsWithoutIntegrityCount) ? options.smoke.externalScriptsWithoutIntegrityCount : 0,
+      externalScriptsWithIntegrityMissingCrossoriginCount: Number.isFinite(options.smoke?.externalScriptsWithIntegrityMissingCrossoriginCount)
+        ? options.smoke.externalScriptsWithIntegrityMissingCrossoriginCount
+        : 0,
       externalStylesheetsWithoutIntegrityCount: Number.isFinite(options.smoke?.externalStylesheetsWithoutIntegrityCount) ? options.smoke.externalStylesheetsWithoutIntegrityCount : 0,
+      externalStylesheetsWithIntegrityMissingCrossoriginCount: Number.isFinite(options.smoke?.externalStylesheetsWithIntegrityMissingCrossoriginCount)
+        ? options.smoke.externalStylesheetsWithIntegrityMissingCrossoriginCount
+        : 0,
       externalScriptsWithInsecureTransportCount: Number.isFinite(options.smoke?.externalScriptsWithInsecureTransportCount) ? options.smoke.externalScriptsWithInsecureTransportCount : 0,
       externalStylesheetsWithInsecureTransportCount: Number.isFinite(options.smoke?.externalStylesheetsWithInsecureTransportCount) ? options.smoke.externalStylesheetsWithInsecureTransportCount : 0,
       jsEvalSignalCount: Number.isFinite(options.smoke?.jsEvalSignalCount) ? options.smoke.jsEvalSignalCount : 0,

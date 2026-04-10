@@ -1,12 +1,12 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-10T01:29:38.331Z",
+  "generatedAt": "2026-04-10T01:44:12.951Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1727,
+    "averageDurationMs": 1552,
     "passedSmokes": 8,
     "failedSmokes": 0,
     "averageSmokeDurationMs": 9,
@@ -18,8 +18,10 @@
     "appsWithoutInlineEventHandlersCount": 8,
     "appsWithCspSignalCount": 0,
     "appsWithExternalScriptIntegrityCount": 8,
+    "appsWithExternalScriptCrossoriginCount": 8,
     "appsWithoutInsecureRemoteAssetTransportCount": 8,
     "appsWithExternalStylesheetIntegrityCount": 6,
+    "appsWithExternalStylesheetCrossoriginCount": 8,
     "appsWithRouteCoverageCount": 8,
     "appsWithRouteDocumentHardeningCount": 8,
     "appsWithFullRouteCoverageCount": 8,
@@ -39,11 +41,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1747
+        "durationMs": 1559
       },
       "smoke": {
         "passed": true,
-        "durationMs": 36,
+        "durationMs": 31,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -53,7 +55,9 @@
         "inlineScriptCount": 0,
         "inlineEventHandlerCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalScriptsWithIntegrityMissingCrossoriginCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 1,
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
@@ -105,11 +109,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1670
+        "durationMs": 1552
       },
       "smoke": {
         "passed": true,
-        "durationMs": 8,
+        "durationMs": 7,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -119,7 +123,9 @@
         "inlineScriptCount": 0,
         "inlineEventHandlerCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalScriptsWithIntegrityMissingCrossoriginCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 1,
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
@@ -171,7 +177,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1714
+        "durationMs": 1527
       },
       "smoke": {
         "passed": true,
@@ -185,7 +191,9 @@
         "inlineScriptCount": 0,
         "inlineEventHandlerCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalScriptsWithIntegrityMissingCrossoriginCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
@@ -237,7 +245,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1637
+        "durationMs": 1469
       },
       "smoke": {
         "passed": true,
@@ -251,7 +259,9 @@
         "inlineScriptCount": 0,
         "inlineEventHandlerCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalScriptsWithIntegrityMissingCrossoriginCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
@@ -303,11 +313,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1632
+        "durationMs": 1457
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -317,7 +327,9 @@
         "inlineScriptCount": 0,
         "inlineEventHandlerCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalScriptsWithIntegrityMissingCrossoriginCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
@@ -368,7 +380,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1860
+        "durationMs": 1662
       },
       "smoke": {
         "passed": true,
@@ -382,7 +394,9 @@
         "inlineScriptCount": 0,
         "inlineEventHandlerCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalScriptsWithIntegrityMissingCrossoriginCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
@@ -434,7 +448,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1790
+        "durationMs": 1614
       },
       "smoke": {
         "passed": true,
@@ -448,7 +462,9 @@
         "inlineScriptCount": 0,
         "inlineEventHandlerCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalScriptsWithIntegrityMissingCrossoriginCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
@@ -500,7 +516,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1764
+        "durationMs": 1576
       },
       "smoke": {
         "passed": true,
@@ -514,7 +530,9 @@
         "inlineScriptCount": 0,
         "inlineEventHandlerCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
+        "externalScriptsWithIntegrityMissingCrossoriginCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
