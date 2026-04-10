@@ -4920,6 +4920,19 @@ function expressionLooksLikeLocationObjectSource(
   }
 
   if (
+    ts.isCallExpression(expression)
+    && (
+      (ts.isIdentifier(expression.expression) && expression.expression.text === 'useLocation')
+      || (
+        (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+        && isMemberAccessNamed(expression.expression, 'useLocation')
+      )
+    )
+  ) {
+    return true;
+  }
+
+  if (
     (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
     && isMemberAccessNamed(expression, 'location')
     && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
