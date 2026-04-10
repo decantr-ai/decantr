@@ -3802,6 +3802,10 @@ function countAuthProtectedLoadingRenderSignals(code: string): number {
     /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*{[\s\S]{0,320}?return\s*<App[A-Z][A-Za-z0-9]*\b[^>]*>/g,
     /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*return\s*<(?:Dashboard|Workspace|Admin|Billing|Account|Profile|Protected)[A-Z][A-Za-z0-9]*\b[^>]*>/g,
     /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*return\s*<App[A-Z][A-Za-z0-9]*\b[^>]*>/g,
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*{[\s\S]{0,220}?return\s*(?:children|props\.children|<>\s*{?\s*(?:children|props\.children)\s*}?\s*<\/>)\s*;?/gi,
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*return\s*(?:children|props\.children|<>\s*{?\s*(?:children|props\.children)\s*}?\s*<\/>)\s*;?/gi,
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*{[\s\S]{0,220}?return\s*<(?:Outlet|Routes|RouterProvider)\b[^>]*>/g,
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*return\s*<(?:Outlet|Routes|RouterProvider)\b[^>]*>/g,
   ];
 
   return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
@@ -3837,6 +3841,10 @@ function countAuthProtectedUnauthenticatedRenderSignals(code: string): number {
     /\bif\s*\(\s*(?:!\s*(?:session|user|currentUser|currentSession|authUser)|(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)|status\s*===?\s*['"`]unauthenticated['"`]|status\s*!==?\s*['"`]authenticated['"`])\s*\)\s*{[\s\S]{0,320}?return\s*<App[A-Z][A-Za-z0-9]*\b[^>]*>/g,
     /\bif\s*\(\s*(?:!\s*(?:session|user|currentUser|currentSession|authUser)|(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)|status\s*===?\s*['"`]unauthenticated['"`]|status\s*!==?\s*['"`]authenticated['"`])\s*\)\s*return\s*<(?:Dashboard|Workspace|Admin|Billing|Account|Profile|Protected)[A-Z][A-Za-z0-9]*\b[^>]*>/g,
     /\bif\s*\(\s*(?:!\s*(?:session|user|currentUser|currentSession|authUser)|(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)|status\s*===?\s*['"`]unauthenticated['"`]|status\s*!==?\s*['"`]authenticated['"`])\s*\)\s*return\s*<App[A-Z][A-Za-z0-9]*\b[^>]*>/g,
+    /\bif\s*\(\s*(?:!\s*(?:session|user|currentUser|currentSession|authUser)|(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)|status\s*===?\s*['"`]unauthenticated['"`]|status\s*!==?\s*['"`]authenticated['"`])\s*\)\s*{[\s\S]{0,220}?return\s*(?:children|props\.children|<>\s*{?\s*(?:children|props\.children)\s*}?\s*<\/>)\s*;?/gi,
+    /\bif\s*\(\s*(?:!\s*(?:session|user|currentUser|currentSession|authUser)|(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)|status\s*===?\s*['"`]unauthenticated['"`]|status\s*!==?\s*['"`]authenticated['"`])\s*\)\s*return\s*(?:children|props\.children|<>\s*{?\s*(?:children|props\.children)\s*}?\s*<\/>)\s*;?/gi,
+    /\bif\s*\(\s*(?:!\s*(?:session|user|currentUser|currentSession|authUser)|(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)|status\s*===?\s*['"`]unauthenticated['"`]|status\s*!==?\s*['"`]authenticated['"`])\s*\)\s*{[\s\S]{0,220}?return\s*<(?:Outlet|Routes|RouterProvider)\b[^>]*>/g,
+    /\bif\s*\(\s*(?:!\s*(?:session|user|currentUser|currentSession|authUser)|(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)|status\s*===?\s*['"`]unauthenticated['"`]|status\s*!==?\s*['"`]authenticated['"`])\s*\)\s*return\s*<(?:Outlet|Routes|RouterProvider)\b[^>]*>/g,
   ];
 
   return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);

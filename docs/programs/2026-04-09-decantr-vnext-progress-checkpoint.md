@@ -464,6 +464,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Project audit and file critique now also flag unauthenticated branches that still render dashboard/app shells, so reviewed protected surfaces cannot acknowledge auth loss and then keep rendering privileged structure anyway.
 - Protected-shell detection for auth-loss branches now also catches protected-looking shell component names even when they omit explicit `path="/dashboard"`-style route props, so dashboard/workspace/admin shells do not evade review just by relying on component identity alone.
 - Protected auth-loss render detection now also catches protected-looking child component names such as dashboard/workspace/admin summaries or panels even when they are not literally `*Shell` surfaces, so privileged child renders cannot slip through the unauthenticated branch under softer component naming.
+- Protected auth-loss and auth-loading detection now also treats `children`, `props.children`, `Outlet`, `Routes`, and `RouterProvider` pass-through branches as protected renders, so reviewed gates cannot leak nested protected content just by returning the outlet tree directly.
 
 ## Highest-Value Next Streams
 
