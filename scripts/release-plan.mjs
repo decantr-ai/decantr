@@ -1,5 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { createReleasePlan, getRepoRoot, listPublicPackages, loadPackageRetirements, loadPackageSurface } from './package-surface-lib.mjs';
+import { readNpmAuthState } from './npm-surface-lib.mjs';
 
 const args = new Set(process.argv.slice(2));
 const jsonOutput = args.has('--json');
@@ -15,6 +16,7 @@ const surface = loadPackageSurface(root);
 const retirements = loadPackageRetirements(root);
 const publicPackages = listPublicPackages(root);
 const plan = createReleasePlan(surface, publicPackages, retirements);
+const npmAuth = readNpmAuthState();
 const filteredPackages = onlySupport
   ? plan.packages.filter((entry) => entry.support === onlySupport)
   : plan.packages;
@@ -24,6 +26,7 @@ const filteredByWave = onlyWave
 
 const output = {
   ...plan,
+  npmAuth,
   packages: filteredByWave,
   counts: {
     publishLatest: filteredByWave.filter((entry) => entry.recommendedAction === 'publish-latest').length,
@@ -45,11 +48,18 @@ const markdownLines = [
   `- Packages in scope: ${output.packages.length}`,
   `- Support filter: ${onlySupport ?? 'all'}`,
   `- Release wave filter: ${onlyWave ?? 'all'}`,
+  `- npm auth: ${npmAuth.authenticated ? `authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}` : 'not authenticated'}`,
   `- Publish latest: ${output.counts.publishLatest}`,
   `- Publish beta: ${output.counts.publishBeta}`,
   `- Ready to graduate: ${output.counts.readyToGraduate}`,
   `- Hold experimental: ${output.counts.holdExperimental}`,
   `- Retired: ${output.counts.retired}`,
+  '',
+  '## npm Auth',
+  '',
+  npmAuth.authenticated
+    ? `- authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}`
+    : `- not authenticated: ${npmAuth.error}`,
   '',
   '| Package | Wave | Order | Current version | Stable target | Maturity | Action | Dist-tag | Notes |',
   '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',

@@ -189,6 +189,10 @@ The executable graduation view is now:
 
 - `pnpm release:graduation-plan`
 
+The plain release-wave planning view is now also npm-auth-aware:
+
+- `pnpm release:plan`
+
 That report combines:
 
 - release-wave order
@@ -196,6 +200,7 @@ That report combines:
 - stable-vs-beta intent
 - current blockers
 - npm drift and tag actions
+- npm authentication health
 
 It answers four questions directly:
 

@@ -159,6 +159,7 @@ commit archaeology.
 - File critique now also flags auth/session files that omit explicit loading and failure states, so reviewed login/session components surface missing pending/error handling directly instead of relying only on project-audit aggregation.
 - Package graduation audits now report npm authentication health explicitly, so release readiness can distinguish repo-side blockers from "npm credentials are not currently usable" operational blockers.
 - The standalone graduation plan now also reports npm authentication health, so package graduation can be reviewed from one operator-facing report instead of requiring a second release-surface audit to expose auth failures.
+- The plain release-wave plan now also reports npm authentication health, so all three package-governance views (`release:plan`, `release:graduation-plan`, and `audit:release-surface`) expose the same operational blocker without requiring cross-checking separate reports.
 - File critique now also flags sign-in flows that omit an obvious path to a declared recovery route, so compiled auth contracts can enforce recovery completeness instead of leaving it implicit.
 - File critique now also flags recovery flows that omit an obvious path back to a declared anonymous entry route, so compiled auth contracts can enforce recovery completeness in both directions.
 - File critique now also flags sign-in and sign-up surfaces that omit obvious cross-links when the compiled auth contract declares both routes, so gateway entry flows no longer drift into isolated dead ends.
