@@ -3436,6 +3436,38 @@ function collectNamedExpressionInitializers(root: ts.Node): Map<string, ts.Expre
   return initializers;
 }
 
+interface NamedPropertyAlias {
+  initializer: ts.Expression;
+  propertyName: string;
+}
+
+function getPropertyNameText(name: ts.PropertyName | ts.BindingName | undefined): string | null {
+  if (!name) return null;
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name)) {
+    return name.text;
+  }
+  return null;
+}
+
+function collectNamedPropertyAliases(root: ts.Node): Map<string, NamedPropertyAlias> {
+  const aliases = new Map<string, NamedPropertyAlias>();
+
+  const visit = (node: ts.Node): void => {
+    if (ts.isVariableDeclaration(node) && ts.isObjectBindingPattern(node.name) && node.initializer) {
+      for (const element of node.name.elements) {
+        if (element.dotDotDotToken || !ts.isIdentifier(element.name)) continue;
+        const propertyName = getPropertyNameText(element.propertyName) ?? element.name.text;
+        aliases.set(element.name.text, { initializer: node.initializer, propertyName });
+      }
+    }
+
+    node.forEachChild(visit);
+  };
+
+  visit(root);
+  return aliases;
+}
+
 function resolveFunctionLikeHandler(
   expression: ts.Expression | undefined,
   namedFunctions: Map<string, ts.FunctionLikeDeclarationBase>,
@@ -4429,8 +4461,9 @@ const OPEN_REDIRECT_QUERY_KEY_PATTERN = String.raw`next|redirect(?:To)?|returnTo
 const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})\b|\b(?:new\s+)?URLSearchParams\s*\(\s*(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)`;
 const OPEN_REDIRECT_SOURCE_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'i');
 const OPEN_REDIRECT_QUERY_KEY_REGEX = new RegExp(`^(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})$`, 'i');
+const OPEN_REDIRECT_QUERY_CARRIER_REGEX = /\b(?:router\.query|route\.query|query)\b/i;
 const LOCATION_QUERY_SOURCE_REGEX = /\b(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
-const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:window\.)?location\.(?:href|search|hash)\s*\)\b/i;
+const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:window\.)?location\.(?:href|search|hash)\s*\)/i;
 
 function countAuthOpenRedirectSignals(code: string): number {
   const patterns = [
@@ -4445,6 +4478,7 @@ function expressionContainsOpenRedirectSource(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression> = new Map(),
+  namedPropertyAliases: Map<string, NamedPropertyAlias> = new Map(),
   seenIdentifiers: Set<string> = new Set(),
 ): boolean {
   if (!expression) return false;
@@ -4453,18 +4487,18 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (ts.isBinaryExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.left, sourceFile, namedExpressions, seenIdentifiers)
-      || expressionContainsOpenRedirectSource(expression.right, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionContainsOpenRedirectSource(expression.left, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      || expressionContainsOpenRedirectSource(expression.right, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (ts.isConditionalExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.condition, sourceFile, namedExpressions, seenIdentifiers)
-      || expressionContainsOpenRedirectSource(expression.whenTrue, sourceFile, namedExpressions, seenIdentifiers)
-      || expressionContainsOpenRedirectSource(expression.whenFalse, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionContainsOpenRedirectSource(expression.condition, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      || expressionContainsOpenRedirectSource(expression.whenTrue, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      || expressionContainsOpenRedirectSource(expression.whenFalse, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (
@@ -4472,8 +4506,8 @@ function expressionContainsOpenRedirectSource(
     && ts.isPropertyAccessExpression(expression.expression)
     && isPropertyNamed(expression.expression.name, 'get')
     && expression.arguments.length > 0
-    && isOpenRedirectQueryKeyExpression(expression.arguments[0])
-    && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    && isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers)
+    && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
   }
@@ -4483,11 +4517,47 @@ function expressionContainsOpenRedirectSource(
       return false;
     }
     const initializer = namedExpressions.get(expression.text);
-    if (!initializer) {
-      return false;
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionContainsOpenRedirectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
     }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && OPEN_REDIRECT_QUERY_KEY_REGEX.test(propertyAlias.propertyName)
+      && expressionLooksLikeOpenRedirectQueryCarrier(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  return false;
+}
+
+function isOpenRedirectQueryKeyExpression(
+  expression: ts.Expression | undefined,
+  namedExpressions: Map<string, ts.Expression> = new Map(),
+  seenIdentifiers: Set<string> = new Set(),
+): boolean {
+  const value = getExpressionLiteralValue(expression);
+  if (typeof value === 'string' && OPEN_REDIRECT_QUERY_KEY_REGEX.test(value)) {
+    return true;
+  }
+
+  if (!expression) return false;
+  if (ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression) || ts.isParenthesizedExpression(expression)) {
+    return isOpenRedirectQueryKeyExpression(expression.expression, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) return false;
     seenIdentifiers.add(expression.text);
-    const result = expressionContainsOpenRedirectSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    const result = isOpenRedirectQueryKeyExpression(initializer, namedExpressions, seenIdentifiers);
     seenIdentifiers.delete(expression.text);
     return result;
   }
@@ -4495,9 +4565,32 @@ function expressionContainsOpenRedirectSource(
   return false;
 }
 
-function isOpenRedirectQueryKeyExpression(expression: ts.Expression | undefined): boolean {
-  const value = getExpressionLiteralValue(expression);
-  return typeof value === 'string' && OPEN_REDIRECT_QUERY_KEY_REGEX.test(value);
+function expressionLooksLikeOpenRedirectQueryCarrier(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+  if (OPEN_REDIRECT_QUERY_CARRIER_REGEX.test(expression.getText(sourceFile))) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) return false;
+    seenIdentifiers.add(expression.text);
+    const result = expressionLooksLikeOpenRedirectQueryCarrier(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    seenIdentifiers.delete(expression.text);
+    return result;
+  }
+
+  return false;
 }
 
 function expressionLooksLikeLocationQuerySource(
@@ -4560,6 +4653,7 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
 ): boolean {
   if (!expression) return false;
@@ -4570,7 +4664,7 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
   }
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (
@@ -4588,11 +4682,21 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) return false;
     const initializer = namedExpressions.get(expression.text);
-    if (!initializer) return false;
-    seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeOpenRedirectSearchParamsCarrier(initializer, sourceFile, namedExpressions, seenIdentifiers);
-    seenIdentifiers.delete(expression.text);
-    return result;
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeOpenRedirectSearchParamsCarrier(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && propertyAlias.propertyName === 'searchParams'
+      && expressionLooksLikeLocationUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+    ) {
+      return true;
+    }
+    return false;
   }
 
   return false;
@@ -4760,6 +4864,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   };
   const namedFunctionDeclarations = collectNamedFunctionLikeDeclarations(sourceFile);
   const namedExpressionInitializers = collectNamedExpressionInitializers(sourceFile);
+  const namedPropertyAliases = collectNamedPropertyAliases(sourceFile);
   const labelForIds = collectLabelForIds(sourceFile);
   let navigationLandmarkCount = 0;
   let unlabeledNavigationLandmarkCount = 0;
@@ -4776,7 +4881,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         isPropertyNamed(node.name, 'href', 'to')
         && node.initializer
         && ts.isJsxExpression(node.initializer)
-        && expressionContainsOpenRedirectSource(node.initializer.expression, sourceFile, namedExpressionInitializers)
+        && expressionContainsOpenRedirectSource(node.initializer.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
@@ -4816,7 +4921,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       ts.isBinaryExpression(node)
       && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
       && isLocationAssignmentTarget(node.left)
-      && expressionContainsOpenRedirectSource(node.right, sourceFile, namedExpressionInitializers)
+      && expressionContainsOpenRedirectSource(node.right, sourceFile, namedExpressionInitializers, namedPropertyAliases)
     ) {
       signals.authOpenRedirectSignalCount += 1;
     }
@@ -4852,7 +4957,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       ts.isBinaryExpression(node)
       && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
       && isLocationAssignmentTarget(node.left)
-      && expressionContainsOpenRedirectSource(node.right, sourceFile)
+      && expressionContainsOpenRedirectSource(node.right, sourceFile, namedExpressionInitializers, namedPropertyAliases)
     ) {
       signals.authOpenRedirectSignalCount += 1;
     }
@@ -4957,7 +5062,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         signals.insecureTransportEndpointCount += 1;
       }
 
-      if (isRouteTransitionCall(node) && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers)) {
+      if (isRouteTransitionCall(node) && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers, namedPropertyAliases)) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
@@ -4985,7 +5090,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         ts.isPropertyAccessExpression(node.expression)
         && isLocationObjectExpression(node.expression.expression)
         && isPropertyNamed(node.expression.name, 'assign', 'replace')
-        && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers)
+        && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers, namedPropertyAliases)
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
