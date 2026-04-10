@@ -4461,7 +4461,7 @@ const OPEN_REDIRECT_QUERY_KEY_PATTERN = String.raw`next|redirect(?:To)?|returnTo
 const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})\b|\b(?:new\s+)?URLSearchParams\s*\(\s*(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\bnew\s+URL\(\s*(?:request|req)\.url\s*\)\.searchParams\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)`;
 const OPEN_REDIRECT_SOURCE_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'i');
 const OPEN_REDIRECT_QUERY_KEY_REGEX = new RegExp(`^(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})$`, 'i');
-const OPEN_REDIRECT_QUERY_CARRIER_REGEX = /\b(?:router\.query|route\.query|query)\b/i;
+const OPEN_REDIRECT_QUERY_CARRIER_REGEX = /\b(?:searchParams|router\.query|route\.query|query)\b/i;
 const OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX = /\b(?:router|route)\b/i;
 const LOCATION_QUERY_SOURCE_REGEX = /\b(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
 const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:(?:window\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\s*\)/i;
@@ -4639,8 +4639,13 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
       propertyAlias
-      && propertyAlias.propertyName === 'query'
-      && expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      && (
+        propertyAlias.propertyName === 'searchParams'
+        || (
+          propertyAlias.propertyName === 'query'
+          && expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+        )
+      )
     ) {
       return true;
     }

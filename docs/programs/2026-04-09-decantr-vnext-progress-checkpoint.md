@@ -502,6 +502,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Auth open-redirect tracing now also follows destructured `query` carriers like `const { query: params } = router` and bracket-access reads like `query[queryKey]`, so auth flows cannot evade redirect-param detection just by swapping dot access for destructuring or indexed query lookups before calling `redirect(...)` or similar route transitions.
 - Auth open-redirect tracing now also recurses into object-shaped route descriptors like `navigate({ pathname: next ?? '/dashboard' })` and `<Link to={{ pathname: next ?? '/dashboard' }}>`, so aliased redirect params cannot slip past the verifier just by being wrapped inside router object payloads before the transition call or JSX route prop.
 - Auth open-redirect tracing now also follows server handler URL parsing like `new URL(request.url).searchParams.get('next')` and `new URL(req.url).searchParams.get('next')`, so route handlers and server auth callbacks cannot bypass redirect-param detection by pulling the same untrusted destination out of the incoming request URL instead of browser location state.
+- Auth open-redirect tracing now also treats plain `searchParams` object props as redirect carriers, so server-rendered login routes like `redirect(searchParams.next ?? '/dashboard')` and aliased/indexed variants like `const { searchParams: params } = props; params[queryKey]` get caught too instead of only the `searchParams.get('next')` family.
 
 ## Highest-Value Next Streams
 
