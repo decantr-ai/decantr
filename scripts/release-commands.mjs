@@ -1,20 +1,18 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
-import { readNpmAuthState, readNpmVersions } from './npm-surface-lib.mjs';
+import { planNpmSurfaceRepairs, readNpmAuthState, readNpmVersions } from './npm-surface-lib.mjs';
 
-const args = new Set(process.argv.slice(2));
+const rawArgs = process.argv.slice(2);
+const args = new Set(rawArgs);
 const jsonOutput = args.has('--json');
-const onlyArg = [...args].find((arg) => arg.startsWith('--only='));
-const waveArg = [...args].find((arg) => arg.startsWith('--wave='));
-const tagOverrideArg = [...args].find((arg) => arg.startsWith('--tag-override='));
 const includeExperimental = args.has('--include-experimental');
-const onlyWave = waveArg ? waveArg.split('=')[1] : null;
-const tagOverride = tagOverrideArg ? tagOverrideArg.split('=')[1] : null;
+const onlyWave = readArgValue(rawArgs, 'wave');
+const tagOverride = readArgValue(rawArgs, 'tag-override');
 const onlyNames = new Set(
-  onlyArg
-    ? onlyArg
-        .split('=')[1]
+  readArgValue(rawArgs, 'only')
+    ? readArgValue(rawArgs, 'only')
         .split(',')
         .map((value) => value.trim())
         .filter(Boolean)
@@ -24,6 +22,7 @@ const onlyNames = new Set(
 const root = getRepoRoot();
 const surface = loadPackageSurface(root);
 const npmAuth = readNpmAuthState();
+const repairPlan = planNpmSurfaceRepairs(surface);
 
 const selected = sortReleaseEntries(surface.packages).filter((entry) => {
   if (!entry.publish) return false;
@@ -60,6 +59,37 @@ const commands = selected.map((entry) => {
   };
 });
 
+const selectedNames = new Set(commands.map((entry) => entry.name));
+const selectedRepairs = repairPlan
+  .filter((result) => selectedNames.has(result.name))
+  .map((result) => {
+    const executableCommands = result.actions.flatMap((action) => {
+      if (action.type === 'add-dist-tag') {
+        return [`npm dist-tag add ${result.name}@${action.version} ${action.tag}`];
+      }
+      if (action.type === 'remove-dist-tag') {
+        return [`npm dist-tag rm ${result.name} ${action.tag}`];
+      }
+      return [];
+    });
+    const manualSteps = result.actions.flatMap((action) => {
+      if (action.type !== 'manual-latest-retag') return [];
+      return [
+        action.recommendedVersion
+          ? `Decide whether npm latest should move from ${action.version} to stable ${action.recommendedVersion} for ${result.name}.`
+          : `Publish a stable version for ${result.name} before moving npm latest away from prerelease ${action.version}.`,
+      ];
+    });
+
+    return {
+      name: result.name,
+      findings: result.findings,
+      executableCommands,
+      manualSteps,
+    };
+  })
+  .filter((result) => result.findings.length > 0);
+
 const output = {
   generatedAt: new Date().toISOString(),
   npmAuth,
@@ -70,6 +100,7 @@ const output = {
     tagOverride,
   },
   commands,
+  npmRepairs: selectedRepairs,
 };
 
 if (jsonOutput) {
@@ -86,6 +117,7 @@ const lines = [
   `- Only filter: ${onlyNames.size > 0 ? [...onlyNames].join(', ') : 'all'}`,
   `- Include experimental: ${includeExperimental ? 'yes' : 'no'}`,
   `- Tag override: ${tagOverride ?? 'none'}`,
+  `- Auth check: \`npm whoami\``,
   '',
 ];
 
@@ -100,6 +132,25 @@ if (commands.length === 0) {
     lines.push(`- already published: ${entry.versionAlreadyPublished ? 'yes' : 'no'}`);
     lines.push(`- preflight: \`${entry.preflight}\``);
     lines.push(`- publish: \`${entry.publish}\``);
+    lines.push('');
+  }
+}
+
+lines.push('## npm Repair Commands', '');
+if (selectedRepairs.length === 0) {
+  lines.push('- No npm dist-tag repair steps are currently needed for the selected packages.');
+} else {
+  for (const repair of selectedRepairs) {
+    lines.push(`## ${repair.name} npm repairs`);
+    for (const finding of repair.findings) {
+      lines.push(`- finding: ${finding}`);
+    }
+    for (const command of repair.executableCommands) {
+      lines.push(`- command: \`${command}\``);
+    }
+    for (const step of repair.manualSteps) {
+      lines.push(`- manual: ${step}`);
+    }
     lines.push('');
   }
 }

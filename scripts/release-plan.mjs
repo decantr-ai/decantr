@@ -1,15 +1,15 @@
 import { writeFileSync } from 'node:fs';
+import { readArgValue } from './cli-arg-lib.mjs';
 import { createReleasePlan, getRepoRoot, listPublicPackages, loadPackageRetirements, loadPackageSurface } from './package-surface-lib.mjs';
 import { readNpmAuthState } from './npm-surface-lib.mjs';
 
-const args = new Set(process.argv.slice(2));
+const rawArgs = process.argv.slice(2);
+const args = new Set(rawArgs);
 const jsonOutput = args.has('--json');
-const reportJsonArg = [...args].find((arg) => arg.startsWith('--report-json='));
-const summaryMarkdownArg = [...args].find((arg) => arg.startsWith('--summary-markdown='));
-const supportArg = [...args].find((arg) => arg.startsWith('--support='));
-const waveArg = [...args].find((arg) => arg.startsWith('--wave='));
-const onlySupport = supportArg ? supportArg.split('=')[1] : null;
-const onlyWave = waveArg ? waveArg.split('=')[1] : null;
+const reportJsonValue = readArgValue(rawArgs, 'report-json');
+const summaryMarkdownValue = readArgValue(rawArgs, 'summary-markdown');
+const onlySupport = readArgValue(rawArgs, 'support');
+const onlyWave = readArgValue(rawArgs, 'wave');
 
 const root = getRepoRoot();
 const surface = loadPackageSurface(root);
@@ -75,12 +75,12 @@ const markdownLines = [
 ];
 const markdown = `${markdownLines.join('\n')}\n`;
 
-if (reportJsonArg) {
-  writeFileSync(reportJsonArg.split('=')[1], `${JSON.stringify(output, null, 2)}\n`, 'utf8');
+if (reportJsonValue) {
+  writeFileSync(reportJsonValue, `${JSON.stringify(output, null, 2)}\n`, 'utf8');
 }
 
-if (summaryMarkdownArg) {
-  writeFileSync(summaryMarkdownArg.split('=')[1], markdown, 'utf8');
+if (summaryMarkdownValue) {
+  writeFileSync(summaryMarkdownValue, markdown, 'utf8');
 }
 
 if (jsonOutput) {

@@ -431,6 +431,8 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Runtime verification now also distinguishes remote assets that declare integrity but omit `crossorigin`, and that signal flows through shortlist benchmarks, intelligence scoring, CLI summaries, registry UI copy, and public schemas.
 - MCP scaffold/section/page context tools now reuse hosted selected packs as readable fallback context, so missing local `.decantr/context` markdown no longer forces consumers to reconstruct human-readable context from JSON alone.
 - Release operations now have a command-level handoff too: `pnpm release:commands` prints exact preflight and publish commands for the selected package wave, so npm publishing can move from “audit says it’s ready” to “run these commands” without manual translation.
+- `pnpm release:commands` now also prints exact npm dist-tag repair commands for the selected package wave, so the same handoff covers both publish execution and the live npm cleanup still blocking package graduation.
+- The release planning and publish scripts now also accept both `--wave foundation` and `--wave=foundation` style flags, so the operator commands in the runbooks work exactly as documented.
 
 ## Highest-Value Next Streams
 

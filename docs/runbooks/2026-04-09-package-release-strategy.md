@@ -207,6 +207,9 @@ That report combines:
 - current blockers
 - npm drift and tag actions
 - npm authentication health
+- exact executable npm dist-tag repair commands when the selected wave still has live npm drift
+
+The release planning and publish scripts now accept both `--wave foundation` and `--wave=foundation` style arguments, so the operator examples in this runbook match real shell usage.
 
 It answers four questions directly:
 

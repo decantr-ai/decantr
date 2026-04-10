@@ -1,22 +1,20 @@
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
 import { readNpmVersions } from './npm-surface-lib.mjs';
 
-const args = new Set(process.argv.slice(2));
-const tagOverrideArg = [...args].find((arg) => arg.startsWith('--tag-override='));
-const onlyArg = [...args].find((arg) => arg.startsWith('--only='));
-const waveArg = [...args].find((arg) => arg.startsWith('--wave='));
+const rawArgs = process.argv.slice(2);
+const args = new Set(rawArgs);
 const includeExperimental = args.has('--include-experimental');
 const dryRun = args.has('--dry-run');
 const publishDryRun = args.has('--publish-dry-run');
-const tagOverride = tagOverrideArg ? tagOverrideArg.split('=')[1] : null;
-const onlyWave = waveArg ? waveArg.split('=')[1] : null;
+const tagOverride = readArgValue(rawArgs, 'tag-override');
+const onlyWave = readArgValue(rawArgs, 'wave');
 const onlyNames = new Set(
-  onlyArg
-    ? onlyArg
-        .split('=')[1]
+  readArgValue(rawArgs, 'only')
+    ? readArgValue(rawArgs, 'only')
         .split(',')
         .map((value) => value.trim())
         .filter(Boolean)
