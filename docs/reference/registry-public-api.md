@@ -305,6 +305,7 @@ decantr search portfolio --type blueprint --sort recommended --recommended --sou
 decantr list blueprints --source authored
 decantr registry summary --namespace @official --json
 decantr registry compile-packs decantr.essence.json --namespace @official --json
+decantr registry get-pack manifest --namespace @official --json
 decantr registry get-pack page home --namespace @official --json
 decantr registry critique-file src/pages/Home.tsx --namespace @official --json
 decantr registry audit-project --namespace @official --json

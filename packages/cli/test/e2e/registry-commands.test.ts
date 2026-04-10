@@ -583,6 +583,111 @@ describe('registry commands (e2e)', () => {
     ).toBe(true);
   });
 
+  it('registry get-pack manifest returns only the hosted manifest via pack select', async () => {
+    const requests: Array<{ url?: string; method?: string; body?: string }> = [];
+    const server = createServer((req, res) => {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        requests.push({ url: req.url, method: req.method, body });
+
+        if (req.method === 'POST' && req.url?.startsWith('/v1/packs/select')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            $schema: 'https://decantr.ai/schemas/selected-execution-pack.v1.json',
+            generatedAt: '2026-04-09T00:00:00.000Z',
+            sourceEssenceVersion: '2.0.0',
+            manifest: {
+              $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+              version: '1.0.0',
+              generatedAt: '2026-04-09T00:00:00.000Z',
+              scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+              review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+              sections: [],
+              pages: [{ id: 'home', markdown: 'page-home-pack.md', json: 'page-home-pack.json', sectionId: 'dashboard', sectionRole: 'primary' }],
+              mutations: [],
+            },
+            selector: {
+              packType: 'scaffold',
+              id: null,
+            },
+            pack: {
+              $schema: 'https://decantr.ai/schemas/scaffold-pack.v1.json',
+              packVersion: '1.0.0',
+              packType: 'scaffold',
+              objective: 'Scaffold the clean app shell and declared routes.',
+              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+              preset: null,
+              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+              requiredSetup: [],
+              allowedVocabulary: [],
+              examples: [],
+              antiPatterns: [],
+              successChecks: [],
+              tokenBudget: { target: 900, max: 1400, strategy: ['compact'] },
+              data: {
+                shell: 'sidebar-main',
+                theme: { id: 'clean', mode: 'light', shape: null },
+                routing: 'history',
+                features: ['auth'],
+                routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+              },
+              renderedMarkdown: '# Scaffold Pack\n',
+            },
+          }));
+          return;
+        }
+
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not found' }));
+      });
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const { port } = server.address() as AddressInfo;
+
+    const essencePath = join(testDir, 'decantr.essence.json');
+    writeFileSync(essencePath, JSON.stringify({
+      version: '2.0.0',
+      archetype: 'dashboard',
+      theme: { id: 'clean', mode: 'light' },
+      personality: ['professional'],
+      platform: { type: 'spa', routing: 'history' },
+      structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+      features: ['auth'],
+      density: { level: 'comfortable', content_gap: '1.5rem' },
+      guard: { mode: 'guided' },
+      target: 'react',
+    }, null, 2));
+
+    const output = await runCliAsync(testDir, 'registry get-pack manifest --namespace @official --json', {
+      DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
+      DECANTR_API_KEY: '',
+    });
+
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+
+    const json = JSON.parse(output);
+    expect(json.$schema).toBe('https://decantr.ai/schemas/pack-manifest.v1.json');
+    expect(json.version).toBe('1.0.0');
+    expect(Array.isArray(json.pages)).toBe(true);
+    expect(
+      requests.some((request) => {
+        if (request.method !== 'POST' || !request.url?.includes('/v1/packs/select?namespace=%40official') || !request.body) {
+          return false;
+        }
+        try {
+          const posted = JSON.parse(request.body);
+          return posted.pack_type === 'scaffold' && !('id' in posted) && posted.essence?.archetype === 'dashboard';
+        } catch {
+          return false;
+        }
+      }),
+    ).toBe(true);
+  });
+
   it('registry compile-packs can write hosted pack artifacts into .decantr/context', async () => {
     const server = createServer((req, res) => {
       let body = '';

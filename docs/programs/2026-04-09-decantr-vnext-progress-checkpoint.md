@@ -78,6 +78,7 @@ commit archaeology.
   - `decantr registry compile-packs`
   - `RegistryAPIClient.selectExecutionPack()`
   - `decantr registry get-pack`
+- `decantr registry get-pack manifest` now uses the smaller hosted selected-pack path and returns just the manifest metadata without requiring a full hosted bundle compile.
 - `decantr registry compile-packs --write-context` can now materialize the hosted pack bundle into local `.decantr/context` artifacts without waiting for a full refresh cycle.
 - `decantr_get_execution_pack` now uses the hosted selected-pack surface for targeted remote pack reads instead of recompiling the full hosted bundle when local artifacts are missing.
 - `decantr_get_section_context` and `decantr_get_page_context` now also use hosted selected-pack reads for remote fallback, so MCP no longer recompiles the full hosted bundle when it only needs one page pack or one section pack.

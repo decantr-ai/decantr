@@ -562,6 +562,43 @@ async function printHostedSelectedExecutionPack(
   process.stdout.write(typedSelected.pack.renderedMarkdown);
 }
 
+async function printHostedExecutionPackManifest(
+  essencePath?: string,
+  namespace?: string,
+  jsonOutput: boolean = false,
+) {
+  const client = getPublicAPIClient();
+  const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
+
+  if (!existsSync(resolvedPath)) {
+    throw new Error(`Essence file not found at ${resolvedPath}`);
+  }
+
+  const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
+  const selected = await client.selectExecutionPack(
+    {
+      essence,
+      pack_type: 'scaffold',
+    },
+    namespace ? { namespace } : undefined,
+  ) as SelectedExecutionPackResponse;
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(selected.manifest, null, 2));
+    return;
+  }
+
+  console.log(heading('Hosted Pack Manifest'));
+  console.log(`  Source essence: ${resolvedPath}`);
+  console.log(`  Generated: ${selected.manifest.generatedAt}`);
+  console.log(`  Version: ${selected.manifest.version}`);
+  console.log(`  Scaffold: ${selected.manifest.scaffold ? 'present' : 'missing'}`);
+  console.log(`  Review: ${selected.manifest.review ? 'present' : 'missing'}`);
+  console.log(`  Sections: ${selected.manifest.sections.length}`);
+  console.log(`  Pages: ${selected.manifest.pages.length}`);
+  console.log(`  Mutations: ${selected.manifest.mutations.length}`);
+}
+
 interface HostedPackHydrationResult {
   attempted: boolean;
   hydrated: boolean;
@@ -1866,7 +1903,7 @@ ${BOLD}Usage:${RESET}
   decantr showcase [manifest|shortlist|verification] [--json]
   decantr registry summary [--namespace <namespace>] [--json]
   decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
-  decantr registry get-pack <scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>]
+  decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
   decantr validate [path]
@@ -1938,6 +1975,7 @@ ${BOLD}Examples:${RESET}
   decantr registry summary --namespace @official
   decantr registry compile-packs decantr.essence.json --json
   decantr registry compile-packs decantr.essence.json --write-context
+  decantr registry get-pack manifest --namespace @official --json
   decantr registry critique-file src/pages/Home.tsx --namespace @official --json
   decantr registry audit-project --namespace @official --json
   decantr registry audit-project --namespace @official --dist dist --sources src
@@ -2274,9 +2312,13 @@ async function main() {
         const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
         const packType = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
         const id = args[3] && !args[3].startsWith('--') ? args[3] : undefined;
-        if (!packType || !['scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)) {
-          console.error(`${RED}Usage: decantr registry get-pack <scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>]${RESET}`);
+        if (!packType || !['manifest', 'scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)) {
+          console.error(`${RED}Usage: decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>]${RESET}`);
           process.exitCode = 1;
+          break;
+        }
+        if (packType === 'manifest') {
+          await printHostedExecutionPackManifest(essencePath, namespace, jsonOutput);
           break;
         }
         await printHostedSelectedExecutionPack(
@@ -2313,7 +2355,7 @@ async function main() {
         const sourcesPath = sourcesIdx !== -1 ? args[sourcesIdx + 1] : undefined;
         await printHostedProjectAudit(namespace, jsonOutput, essencePath, distPath, sourcesPath);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`);
         process.exitCode = 1;
       }
       break;
