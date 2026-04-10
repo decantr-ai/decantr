@@ -3450,6 +3450,92 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-target-blank-rel-missing')).toBe(true);
   });
 
+  it('flags insecure remote image transport during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/LegacyHero.tsx',
+      code: `
+        export function LegacyHero() {
+          return (
+            <section>
+              <img src="http://cdn.example.com/hero.jpg" alt="Legacy hero" />
+            </section>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['marketing'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'marketing', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-image-transport-insecure')).toBe(true);
+  });
+
+  it('does not flag secure remote image transport during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/ModernHero.tsx',
+      code: `
+        export function ModernHero() {
+          return (
+            <section>
+              <img src="https://cdn.example.com/hero.jpg" alt="Modern hero" />
+            </section>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['marketing'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'marketing', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-image-transport-insecure')).toBe(false);
+  });
+
   it('flags unlabeled icon-only links during critique', () => {
     const report = critiqueSource({
       filePath: 'src/components/AppNav.tsx',
