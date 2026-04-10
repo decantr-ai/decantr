@@ -5094,7 +5094,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && ts.isIdentifier(expression.expression)
-    && ['String', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent'].includes(expression.expression.text)
+    && ['String', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape'].includes(expression.expression.text)
     && expression.arguments.length > 0
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
@@ -5111,7 +5111,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent')
+    && isMemberAccessNamed(expression.expression, 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape')
     && expression.arguments.length > 0
     && expressionLooksLikeWindowObjectSource(
       expression.expression.expression,
