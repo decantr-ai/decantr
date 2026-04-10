@@ -5026,6 +5026,30 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
+    ts.isBinaryExpression(expression)
+    && (
+      expression.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken
+      || expression.operatorToken.kind === ts.SyntaxKind.BarBarToken
+    )
+  ) {
+    return expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.left,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    ) || expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.right,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    );
+  }
+
+  if (
     isCallLikeExpression(expression)
     && ts.isIdentifier(expression.expression)
     && expression.expression.text === 'String'
