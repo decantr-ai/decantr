@@ -473,6 +473,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Protected auth-loss and auth-loading detection now also catches browser redirects like `window.location.assign('/dashboard')` inside nested callbacks, so reviewed gateway branches cannot preserve privileged navigation by bypassing router helpers entirely.
 - Protected auth-loss and auth-loading detection now also catches hidden redirect payloads like `<input type="hidden" value="/dashboard" />` inside nested markup, so reviewed gateway branches cannot stash privileged destinations in invisible form state after auth loss.
 - Protected auth-loss and auth-loading detection now also catches `data-redirect` / `data-next` style metadata carrying reviewed protected routes, so reviewed gateway branches cannot preserve privileged destinations by hiding them in seemingly neutral markup attributes.
+- Protected auth-loss and auth-loading detection now also catches neutral component props like `redirectTo="/dashboard"` or `returnTo="/dashboard"`, so reviewed gateway branches cannot smuggle privileged destinations through helper components after auth loss.
 
 ## Highest-Value Next Streams
 
