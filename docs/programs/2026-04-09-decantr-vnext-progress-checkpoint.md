@@ -461,6 +461,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Project audit and file critique now also flag protected session-aware surfaces that use the loading branch to render the protected shell itself, so reviewed dashboard shells cannot flash or hydrate privileged UI before session resolution completes.
 - Project audit and file critique now also flag auth/session loading branches that return `null` or an empty fragment instead of an explicit pending boundary, so reviewed auth-aware shells cannot hide loading races behind a blank frame.
 - Project audit and file critique now also flag auth/session loading branches that redirect straight to anonymous routes before session resolution finishes, so reviewed gateway logic cannot bounce real users to `/login` while a valid session is still loading.
+- Project audit and file critique now also flag unauthenticated branches that still render dashboard/app shells, so reviewed protected surfaces cannot acknowledge auth loss and then keep rendering privileged structure anyway.
 
 ## Highest-Value Next Streams
 

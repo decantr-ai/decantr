@@ -399,6 +399,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authProtectedLoadingRenderSignals: createSourceAuditBucket(),
     authBlankLoadingRenderSignals: createSourceAuditBucket(),
     authAnonymousLoadingRedirectSignals: createSourceAuditBucket(),
+    authProtectedUnauthenticatedRenderSignals: createSourceAuditBucket(),
     authErrorSignals: createSourceAuditBucket(),
     authSuccessSignals: createSourceAuditBucket(),
     authCallbackTokenSignals: createSourceAuditBucket(),
@@ -512,6 +513,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authProtectedLoadingRenderSignals, relativePath, signals.authProtectedLoadingRenderCount);
     recordSourceAudit(summary.authBlankLoadingRenderSignals, relativePath, signals.authBlankLoadingRenderCount);
     recordSourceAudit(summary.authAnonymousLoadingRedirectSignals, relativePath, signals.authAnonymousLoadingRedirectCount);
+    recordSourceAudit(summary.authProtectedUnauthenticatedRenderSignals, relativePath, signals.authProtectedUnauthenticatedRenderCount);
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
     recordSourceAudit(summary.authCallbackTokenSignals, relativePath, countAuthCallbackTokenSignals(code, relativePath));
@@ -693,6 +695,7 @@ interface SourceAuditSummary {
   authProtectedLoadingRenderSignals: SourceAuditBucket;
   authBlankLoadingRenderSignals: SourceAuditBucket;
   authAnonymousLoadingRedirectSignals: SourceAuditBucket;
+  authProtectedUnauthenticatedRenderSignals: SourceAuditBucket;
   authErrorSignals: SourceAuditBucket;
   authSuccessSignals: SourceAuditBucket;
   authCallbackTokenSignals: SourceAuditBucket;
@@ -1924,6 +1927,27 @@ function appendSourceAuditFindings(
   if (
     topology.hasAuthFeature
     && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
+    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
+    && sourceAudit.authProtectedUnauthenticatedRenderSignals.count > 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-session-loss-protected-render',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Protected source surfaces branch on auth loss but still appear to render a protected destination in the unauthenticated branch.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+        `Unauthenticated branch files: ${sourceAudit.authUnauthenticatedBranchSignals.files.join(', ') || 'none'}`,
+        `Protected unauthenticated render files: ${sourceAudit.authProtectedUnauthenticatedRenderSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'When a protected surface detects a null or unauthenticated session, redirect to a reviewed anonymous route or render a neutral guard boundary instead of returning a dashboard/app shell.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
     && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
   ) {
     findings.push(makeFinding({
@@ -2812,6 +2836,7 @@ interface AstCritiqueSignals {
   authProtectedLoadingRenderCount: number;
   authBlankLoadingRenderCount: number;
   authAnonymousLoadingRedirectCount: number;
+  authProtectedUnauthenticatedRenderCount: number;
   authProtectedRedirectSignalCount: number;
   authAnonymousRedirectSignalCount: number;
   authOpenRedirectSignalCount: number;
@@ -3792,6 +3817,15 @@ function countAuthAnonymousLoadingRedirectSignals(code: string): number {
   return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
 }
 
+function countAuthProtectedUnauthenticatedRenderSignals(code: string): number {
+  const patterns = [
+    /\bif\s*\(\s*(?:!\s*(?:session|user|currentUser|currentSession|authUser)|(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)|status\s*===?\s*['"`]unauthenticated['"`]|status\s*!==?\s*['"`]authenticated['"`])\s*\)\s*{[\s\S]{0,320}?return\s*<[\w.:-]+[^>]*(?:path|href|to)\s*=\s*['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`][^>]*>/gi,
+    /\bif\s*\(\s*(?:!\s*(?:session|user|currentUser|currentSession|authUser)|(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)|status\s*===?\s*['"`]unauthenticated['"`]|status\s*!==?\s*['"`]authenticated['"`])\s*\)\s*return\s*<[\w.:-]+[^>]*(?:path|href|to)\s*=\s*['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`][^>]*>/gi,
+  ];
+
+  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAuthErrorSignals(code: string): number {
   const patterns = [
     /\bstatus\s*===?\s*['"`]error['"`]/,
@@ -4304,6 +4338,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authProtectedLoadingRenderCount: countAuthProtectedLoadingRenderSignals(code),
     authBlankLoadingRenderCount: countAuthBlankLoadingRenderSignals(code),
     authAnonymousLoadingRedirectCount: countAuthAnonymousLoadingRedirectSignals(code),
+    authProtectedUnauthenticatedRenderCount: countAuthProtectedUnauthenticatedRenderSignals(code),
     authProtectedRedirectSignalCount: countAuthProtectedRedirectSignals(code),
     authAnonymousRedirectSignalCount: countAuthAnonymousRedirectSignals(code),
     authOpenRedirectSignalCount: countAuthOpenRedirectSignals(code),
@@ -5723,6 +5758,29 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'While auth/session state is still loading, render a pending boundary instead of redirecting to `/login`, `/`, or another anonymous route. Only redirect after the session resolves as unauthenticated.',
+    }));
+  }
+
+  if (
+    astSignals.protectedSurfaceSignalCount > 0
+    && astSignals.authSessionSignalCount > 0
+    && authUnauthenticatedBranchSignalCount > 0
+    && astSignals.authProtectedUnauthenticatedRenderCount > 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-session-loss-protected-render',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed protected surface branches on auth loss but still appears to render a protected destination in the unauthenticated branch.',
+      evidence: [
+        filePath,
+        `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
+        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+        `Unauthenticated branch signals: ${authUnauthenticatedBranchSignalCount}`,
+        `Protected unauthenticated renders: ${astSignals.authProtectedUnauthenticatedRenderCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'When a protected surface detects a null or unauthenticated session, redirect to a reviewed anonymous route or render a neutral guard boundary instead of returning a dashboard/app shell.',
     }));
   }
 
