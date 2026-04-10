@@ -372,6 +372,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     protectedSurfaceSignals: createSourceAuditBucket(),
     authProtectedRedirectSignals: createSourceAuditBucket(),
     authAnonymousRedirectSignals: createSourceAuditBucket(),
+    authOpenRedirectSignals: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
     skipNavTargetIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
@@ -417,6 +418,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.insecureAuthFormMethodCount
       + signals.insecureTransportEndpointCount
       + signals.authCookieMissingHardeningCount
+      + signals.authOpenRedirectSignalCount
       + signals.externalBlankLinkWithoutRelCount;
     const authInputHintIssueCount = signals.emailAutocompleteMissingCount
       + signals.passwordAutocompleteMissingCount
@@ -430,6 +432,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.protectedSurfaceSignals, relativePath, signals.protectedSurfaceSignalCount);
     recordSourceAudit(summary.authProtectedRedirectSignals, relativePath, signals.authProtectedRedirectSignalCount);
     recordSourceAudit(summary.authAnonymousRedirectSignals, relativePath, signals.authAnonymousRedirectSignalCount);
+    recordSourceAudit(summary.authOpenRedirectSignals, relativePath, signals.authOpenRedirectSignalCount);
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
     for (const targetId of signals.skipNavTargetIds) {
@@ -581,6 +584,7 @@ interface SourceAuditSummary {
   protectedSurfaceSignals: SourceAuditBucket;
   authProtectedRedirectSignals: SourceAuditBucket;
   authAnonymousRedirectSignals: SourceAuditBucket;
+  authOpenRedirectSignals: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
   skipNavTargetIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
@@ -1535,6 +1539,17 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (sourceAudit.authOpenRedirectSignals.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-auth-open-redirect-risk',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files appear to trust next/returnTo-style redirect parameters during auth or route-transition flows.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authOpenRedirectSignals, 'Auth/query redirect signals'),
+      suggestedFix: 'Resolve post-auth or route-transition redirects through a reviewed allowlist of internal routes instead of redirecting directly from raw `next`, `returnTo`, `callbackUrl`, or similar query parameters.',
+    }));
+  }
+
   if (topology.hasAuthFeature && topology.gatewayRoutes.length === 0 && sourceAudit.authEntrySignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-entry-surface-missing',
@@ -1921,6 +1936,7 @@ interface AstCritiqueSignals {
   authLoadingSignalCount: number;
   authProtectedRedirectSignalCount: number;
   authAnonymousRedirectSignalCount: number;
+  authOpenRedirectSignalCount: number;
   authStorageWriteCount: number;
   authCookieWriteCount: number;
   authCookieMissingHardeningCount: number;
@@ -2786,6 +2802,16 @@ function countAuthAnonymousRedirectSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthOpenRedirectSignals(code: string): number {
+  const patterns = [
+    /\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)['"`]\s*\)[^)]*\)/gi,
+    /\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*\b(?:router\.query|route\.query|query)\.(?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)\b[^)]*\)/gi,
+    /\bwindow\.location(?:\.href)?\s*=\s*[^;\n]*\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)['"`]\s*\)/gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countHardcodedSecretSignals(code: string): number {
   const patterns = [
     /\bsk_live_[0-9A-Za-z]+\b/g,
@@ -2865,6 +2891,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authLoadingSignalCount: countAuthLoadingSignals(code),
     authProtectedRedirectSignalCount: countAuthProtectedRedirectSignals(code),
     authAnonymousRedirectSignalCount: countAuthAnonymousRedirectSignals(code),
+    authOpenRedirectSignalCount: countAuthOpenRedirectSignals(code),
     authStorageWriteCount: 0,
     authCookieWriteCount: 0,
     authCookieMissingHardeningCount: 0,
@@ -3815,6 +3842,7 @@ export function critiqueSource({
   const insecureAuthFormMethodCount = astSignals.insecureAuthFormMethodCount;
   const insecureTransportEndpointCount = astSignals.insecureTransportEndpointCount;
   const externalBlankLinkWithoutRelCount = astSignals.externalBlankLinkWithoutRelCount;
+  const authOpenRedirectSignalCount = astSignals.authOpenRedirectSignalCount;
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
   const authAutocompleteDisabledCount = astSignals.authAutocompleteDisabledCount;
@@ -3837,6 +3865,7 @@ export function critiqueSource({
   const hasInsecureAuthFormMethod = insecureAuthFormMethodCount > 0;
   const hasInsecureTransportEndpoint = insecureTransportEndpointCount > 0;
   const hasExternalBlankLinkWithoutRel = externalBlankLinkWithoutRelCount > 0;
+  const hasAuthOpenRedirectSignals = authOpenRedirectSignalCount > 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0
     || passwordAutocompleteMissingCount > 0
     || authAutocompleteDisabledCount > 0
@@ -3870,13 +3899,14 @@ export function critiqueSource({
       - (hasMessageListenerWithoutOriginCheck ? 2 : 0)
       - (hasWindowOpenWithoutNoopener ? 1 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
+      - (hasAuthOpenRedirectSignals ? 2 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -3890,6 +3920,7 @@ export function critiqueSource({
       ...(hasInsecureAuthFormMethod ? ['Auth forms should submit with `method=\"post\"` or an explicit server action boundary instead of defaulting to GET semantics.'] : []),
       ...(hasInsecureTransportEndpoint ? ['Avoid plain HTTP or ws:// client endpoints; use HTTPS/WSS transport or route the request behind a trusted server boundary.'] : []),
       ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
+      ...(hasAuthOpenRedirectSignals ? ['Resolve auth or route-transition redirects through a reviewed allowlist of internal routes instead of trusting raw `next`, `returnTo`, `callbackUrl`, or similar query params.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, or `new-password` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
       ...(hasAuthCookieWrites ? ['Avoid setting auth cookies from client-side JavaScript; prefer server-issued HttpOnly cookies or other server-managed session boundaries.'] : []),
@@ -4051,6 +4082,18 @@ export function critiqueSource({
       evidence: [filePath, `Insecure transport endpoints: ${insecureTransportEndpointCount}`],
       file: filePath,
       suggestedFix: 'Use HTTPS/WSS endpoints and reviewed secure redirects, or move the transport boundary behind a trusted server action or API layer.',
+    }));
+  }
+
+  if (hasAuthOpenRedirectSignals) {
+    findings.push(makeFinding({
+      id: 'security-auth-open-redirect-risk',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Redirect logic appears to trust next/returnTo-style query parameters without an obvious reviewed allowlist.',
+      evidence: [filePath, `Auth/query redirect signals: ${authOpenRedirectSignalCount}`],
+      file: filePath,
+      suggestedFix: 'Resolve post-auth and route-transition redirects through a reviewed internal allowlist instead of redirecting directly from raw `next`, `returnTo`, `callbackUrl`, or similar query parameters.',
     }));
   }
 

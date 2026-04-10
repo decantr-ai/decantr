@@ -403,6 +403,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - The package governance GitHub Actions audit now publishes the graduation plan alongside the broader release-surface audit, so stable-vs-beta decisions are visible in CI artifacts instead of only from local scripts.
 - The package governance workflow now also captures the raw live npm-surface audit log, so stray dist-tags, missing `beta` tags, and unpublished packages stay visible in CI even while graduation remains report-first.
 - The package governance workflow now also captures the npm dist-tag normalization dry-run preview, so CI artifacts show both the live npm drift and the safe executable repair plan in one place.
+- The verifier now flags auth and route-transition flows that trust raw `next`/`returnTo`-style redirect params, so open-redirect risk shows up in both project audit and file critique before shipping.
 
 ## Highest-Value Next Streams
 
