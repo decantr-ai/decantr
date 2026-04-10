@@ -418,6 +418,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authRefreshClears: createSourceAuditBucket(),
     authRealtimeSignals: createSourceAuditBucket(),
     authRealtimeClears: createSourceAuditBucket(),
+    authCoordinationSignals: createSourceAuditBucket(),
+    authCoordinationClears: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
     authExitSignals: createSourceAuditBucket(),
     authSessionTeardownSignals: createSourceAuditBucket(),
@@ -525,6 +527,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authRefreshClears, relativePath, signals.authRefreshClearCount);
     recordSourceAudit(summary.authRealtimeSignals, relativePath, countAuthRealtimeSignals(code));
     recordSourceAudit(summary.authRealtimeClears, relativePath, countAuthRealtimeClearSignals(code));
+    recordSourceAudit(summary.authCoordinationSignals, relativePath, countAuthCoordinationSignals(code));
+    recordSourceAudit(summary.authCoordinationClears, relativePath, countAuthCoordinationClearSignals(code));
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
     recordSourceAudit(summary.authSessionTeardownSignals, relativePath, signals.authSessionTeardownSignalCount);
@@ -700,6 +704,8 @@ interface SourceAuditSummary {
   authRefreshClears: SourceAuditBucket;
   authRealtimeSignals: SourceAuditBucket;
   authRealtimeClears: SourceAuditBucket;
+  authCoordinationSignals: SourceAuditBucket;
+  authCoordinationClears: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
   authExitSignals: SourceAuditBucket;
   authSessionTeardownSignals: SourceAuditBucket;
@@ -1730,6 +1736,31 @@ function appendSourceAuditFindings(
         `Auth realtime clear files: ${sourceAudit.authRealtimeClears.files.join(', ') || 'none'}`,
       ],
       suggestedFix: 'If protected data arrives over websockets, SSE, or realtime channels, close or unsubscribe those connections during sign-out before returning users to an anonymous route.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authCoordinationSignals.count > 0
+    && sourceAudit.authExitSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authCoordinationSignals, sourceAudit.authCoordinationClears)
+    && (
+      sourceAuditBucketsOverlap(sourceAudit.authCoordinationSignals, sourceAudit.protectedSurfaceSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authCoordinationSignals, sourceAudit.authSessionSignals)
+    )
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-coordination-teardown-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth exit flows exist, but the source tree does not show cross-tab auth coordination channels or storage listeners being torn down during sign-out.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth coordination files: ${sourceAudit.authCoordinationSignals.files.join(', ') || 'none'}`,
+        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+        `Auth coordination clear files: ${sourceAudit.authCoordinationClears.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'If auth state is coordinated across tabs with BroadcastChannel or storage listeners, close those channels and remove those listeners during sign-out before returning users to an anonymous route.',
     }));
   }
 
@@ -3869,6 +3900,26 @@ function countAuthRealtimeClearSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
 }
 
+function countAuthCoordinationSignals(code: string): number {
+  const patterns = [
+    /\bnew\s+BroadcastChannel\s*\(/gi,
+    /\b(?:window\.)?addEventListener\s*\(\s*['"`]storage['"`]/gi,
+    /\b(?:window\.)?onstorage\s*=/gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
+function countAuthCoordinationClearSignals(code: string): number {
+  const patterns = [
+    /\b(?:auth|session|sync|broadcast)[A-Za-z0-9_$]*\.close\s*\(/gi,
+    /\b(?:window\.)?removeEventListener\s*\(\s*['"`]storage['"`]/gi,
+    /\b(?:window\.)?onstorage\s*=\s*null\b/gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAuthEntrySignals(code: string): number {
   const patterns = [
     /\b(?:signIn|signin|logIn|login|register|signUp|signup|createAccount|forgotPassword|resetPassword)\s*\(/i,
@@ -5052,6 +5103,8 @@ export function critiqueSource({
   const authRefreshClearCount = astSignals.authRefreshClearCount;
   const authRealtimeSignalCount = countAuthRealtimeSignals(code);
   const authRealtimeClearCount = countAuthRealtimeClearSignals(code);
+  const authCoordinationSignalCount = countAuthCoordinationSignals(code);
+  const authCoordinationClearCount = countAuthCoordinationClearSignals(code);
   const authErrorSignalCount = countAuthErrorSignals(code);
   const authSuccessSignalCount = countAuthSuccessSignals(code);
   const authCallbackTokenSignalCount = countAuthCallbackTokenSignals(code, filePath);
@@ -5257,6 +5310,23 @@ export function critiqueSource({
       evidence: [filePath, `Auth realtime signals: ${authRealtimeSignalCount}`, `Auth realtime clears: ${authRealtimeClearCount}`],
       file: filePath,
       suggestedFix: 'If protected data arrives over websockets, SSE, or realtime channels, close or unsubscribe those connections during sign-out before redirecting users back to an anonymous route.',
+    }));
+  }
+
+  if (
+    authExitSignalCount > 0
+    && authCoordinationSignalCount > 0
+    && authCoordinationClearCount === 0
+    && (astSignals.protectedSurfaceSignalCount > 0 || astSignals.authSessionSignalCount > 0)
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-coordination-teardown-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed auth exit flow coordinates auth state across tabs but does not show those channels or listeners being torn down during sign-out.',
+      evidence: [filePath, `Auth coordination signals: ${authCoordinationSignalCount}`, `Auth coordination clears: ${authCoordinationClearCount}`],
+      file: filePath,
+      suggestedFix: 'If auth state is coordinated across tabs with BroadcastChannel or storage listeners, close those channels and remove those listeners during sign-out before redirecting users back to an anonymous route.',
     }));
   }
 
