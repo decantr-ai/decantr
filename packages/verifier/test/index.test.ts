@@ -2868,6 +2868,153 @@ describe('verifier', () => {
     }
   });
 
+  it('flags registration flows that show neither success state nor protected transition during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [
+                  { id: 'login', route: '/login', layout: ['form'] },
+                  { id: 'register', route: '/register', layout: ['form'] },
+                ],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'RegisterPage.tsx'),
+        `
+          export function RegisterPage() {
+            async function handleSubmit(event) {
+              event.preventDefault();
+              await createAccount();
+            }
+
+            return (
+              <form onSubmit={handleSubmit}>
+                <input type="email" name="email" autoComplete="email" />
+                <input type="password" name="password" autoComplete="new-password" />
+                <button type="submit">Create account</button>
+              </form>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-registration-success-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not flag registration success gaps when project auth flows navigate into the protected app', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [
+                  { id: 'login', route: '/login', layout: ['form'] },
+                  { id: 'register', route: '/register', layout: ['form'] },
+                ],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'RegisterPage.tsx'),
+        `
+          export function RegisterPage() {
+            async function handleSubmit(event) {
+              event.preventDefault();
+              await createAccount();
+              return redirect('/dashboard');
+            }
+
+            return (
+              <form onSubmit={handleSubmit}>
+                <input type="email" name="email" autoComplete="email" />
+                <input type="password" name="password" autoComplete="new-password" />
+                <button type="submit">Create account</button>
+              </form>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-registration-success-missing')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('detects auth middleware and exit signals from root middleware and lib directories', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -5105,6 +5252,113 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'state-auth-recovery-success-missing')).toBe(false);
+  });
+
+  it('flags registration critique files that show neither success state nor protected transition', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/RegisterPage.tsx',
+      code: `
+        export function RegisterPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await createAccount();
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="new-password" />
+              <button type="submit">Create account</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['register', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'register', path: '/register', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['state-handling', 'route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'state-auth-registration-success-missing')).toBe(true);
+  });
+
+  it('does not flag registration critique files when they transition into the protected app', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/RegisterPage.tsx',
+      code: `
+        export function RegisterPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await createAccount();
+            return redirect('/dashboard');
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="new-password" />
+              <button type="submit">Create account</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['register', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'register', path: '/register', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['state-handling', 'route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'state-auth-registration-success-missing')).toBe(false);
   });
 
   it('flags auth inputs that disable autocomplete during critique', () => {

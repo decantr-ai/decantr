@@ -1582,7 +1582,7 @@ function appendSourceAuditFindings(
   if (
     topology.hasAuthFeature
     && sourceAudit.recoveryFlowSignals.count > 0
-    && sourceAudit.authSuccessSignals.count === 0
+    && !sourceAuditBucketsOverlap(sourceAudit.recoveryFlowSignals, sourceAudit.authSuccessSignals)
   ) {
     findings.push(makeFinding({
       id: 'source-auth-recovery-success-missing',
@@ -1596,6 +1596,28 @@ function appendSourceAuditFindings(
         `Recovery files: ${sourceAudit.recoveryFlowSignals.files.join(', ') || 'none'}`,
       ],
       suggestedFix: 'After password-reset or recovery submission succeeds, show a reviewed confirmation state such as "check your email", "reset link sent", or another explicit success affordance.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.signUpFlowSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.signUpFlowSignals, sourceAudit.authProtectedRedirectSignals)
+    && !sourceAuditBucketsOverlap(sourceAudit.signUpFlowSignals, sourceAudit.authSuccessSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-registration-success-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Registration flows exist, but the source tree does not show either a reviewed post-auth transition or an explicit success/verification state.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Registration flow signals: ${sourceAudit.signUpFlowSignals.count}`,
+        `Protected auth redirects: ${sourceAudit.authProtectedRedirectSignals.count}`,
+        `Auth success signals: ${sourceAudit.authSuccessSignals.count}`,
+        `Registration files: ${sourceAudit.signUpFlowSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'After registration succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state such as "account created" or "check your email" before the next auth step.',
     }));
   }
 
@@ -4204,6 +4226,27 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'After recovery or reset submission succeeds, show a reviewed confirmation state such as "check your email", "reset link sent", or another explicit success affordance.',
+    }));
+  }
+
+  if (
+    signUpFlowSignals > 0
+    && authProtectedRedirectSignalCount === 0
+    && authSuccessSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-registration-success-missing',
+      category: 'State Handling',
+      severity: 'info',
+      message: 'The reviewed registration flow does not show either a protected post-auth transition or an explicit success/verification state.',
+      evidence: [
+        filePath,
+        `Registration flow signals: ${signUpFlowSignals}`,
+        `Protected auth redirects: ${authProtectedRedirectSignalCount}`,
+        `Auth success signals: ${authSuccessSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'After registration succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state such as "account created" or "check your email" before the next auth step.',
     }));
   }
 
