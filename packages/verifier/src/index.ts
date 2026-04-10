@@ -6568,6 +6568,16 @@ function getRouteTransitionTargetExpression(
 ): ts.Expression | undefined {
   if (
     isMemberAccessExpression(node.expression)
+    && ts.isIdentifier(node.expression.expression)
+    && node.expression.expression.text === 'Reflect'
+    && isMemberAccessNamed(node.expression, 'apply')
+    && expressionLooksLikeRouteTransitionCall(node.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, new Set())
+  ) {
+    return getAliasedApplyArgumentExpression(node.arguments[2], 0, namedExpressions, new Set());
+  }
+
+  if (
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'call')
     && expressionLooksLikeRouteTransitionCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -6596,6 +6606,16 @@ function getRouteTransitionTargetExpression(
     && expressionLooksLikeHistoryMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
     return getAliasedApplyArgumentExpression(node.arguments[1], 2, namedExpressions, new Set());
+  }
+
+  if (
+    isMemberAccessExpression(node.expression)
+    && ts.isIdentifier(node.expression.expression)
+    && node.expression.expression.text === 'Reflect'
+    && isMemberAccessNamed(node.expression, 'apply')
+    && expressionLooksLikeHistoryMutationCall(node.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, new Set())
+  ) {
+    return getAliasedApplyArgumentExpression(node.arguments[2], 2, namedExpressions, new Set());
   }
 
   if (
@@ -6648,6 +6668,16 @@ function getLocationMutationTargetExpression(
 ): ts.Expression | undefined {
   if (
     isMemberAccessExpression(node.expression)
+    && ts.isIdentifier(node.expression.expression)
+    && node.expression.expression.text === 'Reflect'
+    && isMemberAccessNamed(node.expression, 'apply')
+    && expressionLooksLikeLocationMutationCall(node.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, new Set())
+  ) {
+    return getAliasedApplyArgumentExpression(node.arguments[2], 0, namedExpressions, new Set());
+  }
+
+  if (
+    isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'call')
     && expressionLooksLikeLocationMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
@@ -6675,6 +6705,16 @@ function getWindowOpenTargetExpression(
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
 ): ts.Expression | undefined {
+  if (
+    isMemberAccessExpression(node.expression)
+    && ts.isIdentifier(node.expression.expression)
+    && node.expression.expression.text === 'Reflect'
+    && isMemberAccessNamed(node.expression, 'apply')
+    && expressionLooksLikeWindowOpenCall(node.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, new Set())
+  ) {
+    return getAliasedApplyArgumentExpression(node.arguments[2], 0, namedExpressions, new Set());
+  }
+
   if (
     isMemberAccessExpression(node.expression)
     && isMemberAccessNamed(node.expression, 'call')
