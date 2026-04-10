@@ -477,6 +477,8 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Protected auth-loss and auth-loading detection now also catches nested object props like `state={{ redirectTo: '/dashboard' }}` or `options={{ returnTo: '/dashboard' }}`, so reviewed gateway branches cannot preserve privileged destinations inside seemingly generic helper payloads.
 - Protected auth-loss and auth-loading detection now also catches generic config payloads like `config={{ to: '/dashboard' }}` or `config={{ path: '/dashboard' }}`, so reviewed gateway branches cannot hide privileged route intent inside neutral helper objects after auth loss.
 - Protected auth-loss and auth-loading detection now also catches serialized route payloads like `payload={JSON.stringify({ redirectTo: '/dashboard' })}`, so reviewed gateway branches cannot preserve privileged destinations by wrapping them in stringified helper configs after auth loss.
+- Protected auth-loss and auth-loading detection now also catches querystring-encoded helper payloads like `payload={new URLSearchParams({ next: '/dashboard' }).toString()}`, so reviewed gateway branches cannot preserve privileged destinations by hiding them inside encoded helper state after auth loss.
+- Protected auth-loss and auth-loading detection now also catches router-helper payloads like `payload={createSearchParams({ next: '/dashboard' }).toString()}`, so reviewed gateway branches cannot preserve privileged destinations by relying on framework query helpers instead of native `URLSearchParams`.
 
 ## Highest-Value Next Streams
 
