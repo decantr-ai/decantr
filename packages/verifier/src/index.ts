@@ -3592,15 +3592,64 @@ function getMemberAccessPropertyName(expression: ts.Expression | undefined): str
   return getExpressionLiteralValue(expression.argumentExpression);
 }
 
+function getObjectLiteralPropertyExpression(
+  objectLiteral: ts.ObjectLiteralExpression,
+  propertyName: string,
+  namedExpressions: Map<string, ts.Expression>,
+): ts.Expression | null {
+  for (const property of objectLiteral.properties) {
+    if (ts.isPropertyAssignment(property) && getPropertyNameText(property.name) === propertyName) {
+      return property.initializer;
+    }
+
+    if (ts.isShorthandPropertyAssignment(property) && property.name.text === propertyName) {
+      return namedExpressions.get(property.name.text) ?? null;
+    }
+  }
+
+  return null;
+}
+
+function resolveObjectLiteralExpressionAtPropertyPath(
+  expression: ts.Expression | undefined,
+  propertyPath: string[],
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): ts.ObjectLiteralExpression | null {
+  let objectLiteral = resolveObjectLiteralExpression(
+    expression,
+    namedExpressions,
+    namedPropertyAliases,
+    seenIdentifiers,
+  );
+  if (!objectLiteral) return null;
+
+  for (const propertyName of propertyPath) {
+    const propertyExpression = getObjectLiteralPropertyExpression(objectLiteral, propertyName, namedExpressions);
+    if (!propertyExpression) return null;
+    objectLiteral = resolveObjectLiteralExpression(
+      propertyExpression,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
+    if (!objectLiteral) return null;
+  }
+
+  return objectLiteral;
+}
+
 function resolveObjectLiteralExpression(
   expression: ts.Expression | undefined,
   namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
 ): ts.ObjectLiteralExpression | null {
   if (!expression) return null;
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return resolveObjectLiteralExpression(expression.expression, namedExpressions, seenIdentifiers);
+    return resolveObjectLiteralExpression(expression.expression, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (ts.isObjectLiteralExpression(expression)) {
@@ -3610,11 +3659,38 @@ function resolveObjectLiteralExpression(
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) return null;
     const initializer = namedExpressions.get(expression.text);
-    if (!initializer) return null;
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = resolveObjectLiteralExpression(initializer, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (!propertyAlias) return null;
+
     seenIdentifiers.add(expression.text);
-    const result = resolveObjectLiteralExpression(initializer, namedExpressions, seenIdentifiers);
+    const result = resolveObjectLiteralExpressionAtPropertyPath(
+      propertyAlias.initializer,
+      propertyAlias.propertyPath,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
     seenIdentifiers.delete(expression.text);
     return result;
+  }
+
+  if (isMemberAccessExpression(expression)) {
+    const propertyName = getMemberAccessPropertyName(expression);
+    if (!propertyName) return null;
+    return resolveObjectLiteralExpressionAtPropertyPath(
+      expression.expression,
+      [propertyName],
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   return null;
@@ -3687,7 +3763,13 @@ function resolveTrackedOpenRedirectFunctionLike(
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (!propertyAlias) return null;
 
-    const objectLiteral = resolveObjectLiteralExpression(propertyAlias.initializer, namedExpressions, new Set());
+    const objectLiteral = resolveObjectLiteralExpressionAtPropertyPath(
+      propertyAlias.initializer,
+      propertyAlias.propertyPath.slice(0, -1),
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    );
     if (!objectLiteral) return null;
     return findFunctionLikeOnObjectLiteral(objectLiteral, propertyAlias.propertyName, namedFunctions);
   }
@@ -3698,7 +3780,12 @@ function resolveTrackedOpenRedirectFunctionLike(
 
   const propertyName = getMemberAccessPropertyName(expression);
   if (!propertyName) return null;
-  const objectLiteral = resolveObjectLiteralExpression(expression.expression, namedExpressions, new Set());
+  const objectLiteral = resolveObjectLiteralExpression(
+    expression.expression,
+    namedExpressions,
+    namedPropertyAliases,
+    new Set(),
+  );
   if (!objectLiteral) return null;
   return findFunctionLikeOnObjectLiteral(objectLiteral, propertyName, namedFunctions);
 }
