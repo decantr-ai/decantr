@@ -148,6 +148,7 @@ commit archaeology.
 - File critique and source audit now also flag auth-like forms without any submit control, so credential surfaces are not accidentally left non-functional.
 - File critique now also treats `autocomplete=\"off\"` on auth inputs as a credential-flow issue, not just missing autocomplete hints.
 - File critique now also treats auth-like inputs with the wrong semantic type (`text` instead of `email`/`password`) as a credential-flow issue.
+- Source audit and file critique now also flag localhost-style endpoints such as `localhost`, `127.0.0.1`, and `0.0.0.0`, so generated client code does not quietly ship development-only URLs into production.
 - Runtime verification now also flags plain `http://` / `ws://` transport markers that survive into built JavaScript bundles.
 - Runtime verification now also flags root-document remote scripts and stylesheets loaded over plain `http://`, so insecure external asset transport is caught separately from missing integrity metadata.
 - Source audit now flags protected app-surface files that reference routes like `/dashboard` or `/settings` without co-located session or guard behavior, even when an auth helper exists elsewhere in the repo.

@@ -371,6 +371,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     filesChecked: sourceFiles.length,
     inlineStyles: createSourceAuditBucket(),
     securityRiskPatterns: createSourceAuditBucket(),
+    localhostEndpointSignals: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
     protectedSurfaceSignals: createSourceAuditBucket(),
     authProtectedRedirectSignals: createSourceAuditBucket(),
@@ -414,6 +415,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.dynamicEvalCount
       + signals.hardcodedSecretSignalCount
       + signals.clientSecretEnvReferenceCount
+      + signals.localhostEndpointCount
       + signals.wildcardPostMessageCount
       + signals.windowOpenWithoutNoopenerCount
       + signals.externalIframeWithoutSandboxCount
@@ -431,6 +433,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
 
     recordSourceAudit(summary.inlineStyles, relativePath, signals.inlineStyleAttributeCount);
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
+    recordSourceAudit(summary.localhostEndpointSignals, relativePath, signals.localhostEndpointCount);
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
     recordSourceAudit(summary.protectedSurfaceSignals, relativePath, signals.protectedSurfaceSignalCount);
     recordSourceAudit(summary.authProtectedRedirectSignals, relativePath, signals.authProtectedRedirectSignalCount);
@@ -583,6 +586,7 @@ interface SourceAuditSummary {
   filesChecked: number;
   inlineStyles: SourceAuditBucket;
   securityRiskPatterns: SourceAuditBucket;
+  localhostEndpointSignals: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
   protectedSurfaceSignals: SourceAuditBucket;
   authProtectedRedirectSignals: SourceAuditBucket;
@@ -1374,7 +1378,18 @@ function appendSourceAuditFindings(
       severity: 'warn',
       message: 'Source files include security-risk rendering or link patterns before the project is even built.',
       evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.securityRiskPatterns, 'Security-risk source patterns'),
-      suggestedFix: 'Remove dangerous HTML writes, client-exposed secret references, wildcard postMessage targets, dynamic code execution, and unsafe external link patterns from source before shipping.',
+      suggestedFix: 'Remove dangerous HTML writes, client-exposed secret references, localhost/dev endpoints, wildcard postMessage targets, dynamic code execution, and unsafe external link patterns from source before shipping.',
+    }));
+  }
+
+  if (sourceAudit.localhostEndpointSignals.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-localhost-endpoints-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files still reference localhost-style endpoints that will not survive a real production deployment.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.localhostEndpointSignals, 'Localhost endpoint signals'),
+      suggestedFix: 'Replace localhost, 127.0.0.1, or 0.0.0.0 client endpoints with reviewed environment-backed URLs or route them behind a trusted server boundary before shipping.',
     }));
   }
 
@@ -1943,6 +1958,7 @@ interface AstCritiqueSignals {
   dynamicEvalCount: number;
   hardcodedSecretSignalCount: number;
   clientSecretEnvReferenceCount: number;
+  localhostEndpointCount: number;
   wildcardPostMessageCount: number;
   windowOpenWithoutNoopenerCount: number;
   messageListenerWithoutOriginCheckCount: number;
@@ -2879,6 +2895,10 @@ function countClientSecretEnvReferenceSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0) + useClientCount;
 }
 
+function countLocalhostEndpointSignals(code: string): number {
+  return code.match(/\b(?:(?:https?|wss?):\/\/)?(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d+)?(?:\/[^\s'"`]*)?/gi)?.length ?? 0;
+}
+
 function countWildcardPostMessageSignals(code: string): number {
   return code.match(/\bpostMessage\s*\([^)]*,\s*['"`]\*['"`]/g)?.length ?? 0;
 }
@@ -2898,6 +2918,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     dynamicEvalCount: 0,
     hardcodedSecretSignalCount: countHardcodedSecretSignals(code),
     clientSecretEnvReferenceCount: countClientSecretEnvReferenceSignals(code),
+    localhostEndpointCount: countLocalhostEndpointSignals(code),
     wildcardPostMessageCount: countWildcardPostMessageSignals(code),
     windowOpenWithoutNoopenerCount: 0,
     messageListenerWithoutOriginCheckCount: 0,
@@ -3896,6 +3917,7 @@ export function critiqueSource({
   const authInputTypeMismatchCount = astSignals.authInputTypeMismatchCount;
   const hardcodedSecretSignalCount = astSignals.hardcodedSecretSignalCount;
   const clientSecretEnvReferenceCount = astSignals.clientSecretEnvReferenceCount;
+  const localhostEndpointCount = astSignals.localhostEndpointCount;
   const wildcardPostMessageCount = astSignals.wildcardPostMessageCount;
   const windowOpenWithoutNoopenerCount = astSignals.windowOpenWithoutNoopenerCount;
   const messageListenerWithoutOriginCheckCount = astSignals.messageListenerWithoutOriginCheckCount;
@@ -3919,6 +3941,7 @@ export function critiqueSource({
     || authInputTypeMismatchCount > 0;
   const hasHardcodedSecretSignals = hardcodedSecretSignalCount > 0;
   const hasClientSecretEnvReferences = clientSecretEnvReferenceCount > 0;
+  const hasLocalhostEndpoints = localhostEndpointCount > 0;
   const hasWildcardPostMessage = wildcardPostMessageCount > 0;
   const hasWindowOpenWithoutNoopener = windowOpenWithoutNoopenerCount > 0;
   const hasMessageListenerWithoutOriginCheck = messageListenerWithoutOriginCheckCount > 0;
@@ -3941,6 +3964,7 @@ export function critiqueSource({
       - (hasInsecureTransportEndpoint ? 2 : 0)
       - (hasHardcodedSecretSignals ? 3 : 0)
       - (hasClientSecretEnvReferences ? 3 : 0)
+      - (hasLocalhostEndpoints ? 2 : 0)
       - (hasWildcardPostMessage ? 2 : 0)
       - (hasMessageListenerWithoutOriginCheck ? 2 : 0)
       - (hasWindowOpenWithoutNoopener ? 1 : 0)
@@ -3952,12 +3976,13 @@ export function critiqueSource({
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
       ...(hasHardcodedSecretSignals ? ['Remove hardcoded secret literals from source immediately and rotate any exposed credentials.'] : []),
       ...(hasClientSecretEnvReferences ? ['Do not reference service-role, secret, or private-key env vars from client-exposed code paths.'] : []),
+      ...(hasLocalhostEndpoints ? ['Replace localhost-style client endpoints with reviewed environment-backed URLs or move those calls behind a trusted server boundary before shipping.'] : []),
       ...(hasWildcardPostMessage ? ['Avoid `postMessage(..., "*")`; target a reviewed explicit origin instead of broadcasting to any window origin.'] : []),
       ...(hasMessageListenerWithoutOriginCheck ? ['Validate `event.origin` inside `message` event handlers before trusting or acting on cross-window data.'] : []),
       ...(hasWindowOpenWithoutNoopener ? ['When opening a new tab imperatively, include `noopener,noreferrer` features so the new page cannot retain opener access.'] : []),
@@ -4032,6 +4057,18 @@ export function critiqueSource({
       evidence: [filePath, `Client-exposed secret env references: ${clientSecretEnvReferenceCount}`],
       file: filePath,
       suggestedFix: 'Remove secret-bearing env references from client code and move privileged access behind a reviewed server boundary or server-only module.',
+    }));
+  }
+
+  if (hasLocalhostEndpoints) {
+    findings.push(makeFinding({
+      id: 'security-localhost-endpoint-present',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'The reviewed file still references localhost-style endpoints.',
+      evidence: [filePath, `Localhost endpoint signals: ${localhostEndpointCount}`],
+      file: filePath,
+      suggestedFix: 'Replace localhost, 127.0.0.1, or 0.0.0.0 endpoints with reviewed environment-backed URLs or move the client call behind a trusted server boundary.',
     }));
   }
 
