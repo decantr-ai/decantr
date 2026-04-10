@@ -428,6 +428,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - The verifier now flags auth and route-transition flows that trust raw `next`/`returnTo`-style redirect params, so open-redirect risk shows up in both project audit and file critique before shipping.
 - Runtime verification now also distinguishes remote assets that declare integrity but omit `crossorigin`, and that signal flows through shortlist benchmarks, intelligence scoring, CLI summaries, registry UI copy, and public schemas.
 - MCP scaffold/section/page context tools now reuse hosted selected packs as readable fallback context, so missing local `.decantr/context` markdown no longer forces consumers to reconstruct human-readable context from JSON alone.
+- Release operations now have a command-level handoff too: `pnpm release:commands` prints exact preflight and publish commands for the selected package wave, so npm publishing can move from “audit says it’s ready” to “run these commands” without manual translation.
 
 ## Highest-Value Next Streams
 

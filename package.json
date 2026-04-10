@@ -22,6 +22,7 @@
     "npm-surface:normalize:dry-run": "node scripts/normalize-npm-dist-tags.mjs",
     "release:plan": "node scripts/release-plan.mjs",
     "release:graduation-plan": "node scripts/graduation-plan.mjs",
+    "release:commands": "node scripts/release-commands.mjs",
     "release:preflight": "node scripts/publish-packages.mjs --publish-dry-run",
     "package:retire:dry-run": "node scripts/deprecate-retired-packages.mjs --dry-run",
     "audit:public-api": "node scripts/audit-public-api.mjs",

@@ -86,11 +86,13 @@ Release planning now also has an executable source:
 
 - `pnpm release:plan`
 - `pnpm release:graduation-plan`
+- `pnpm release:commands`
 - `pnpm audit:release-surface`
 - `pnpm audit:npm-auth`
 - `pnpm audit:npm-surface`
 - `node scripts/release-plan.mjs --json`
 - `node scripts/release-plan.mjs --wave=foundation`
+- `node scripts/release-commands.mjs --wave=foundation`
 - `node scripts/release-plan.mjs --summary-markdown=/tmp/package-release-plan.md`
 - `node scripts/audit-release-surface.mjs --report-json=/tmp/package-release-audit.json --summary-markdown=/tmp/package-release-audit.md`
 - manual GitHub Actions publish runs can now choose:
@@ -192,6 +194,10 @@ The executable graduation view is now:
 The plain release-wave planning view is now also npm-auth-aware:
 
 - `pnpm release:plan`
+
+And the operator-facing publish handoff is now explicit too:
+
+- `pnpm release:commands --wave foundation`
 
 That report combines:
 
