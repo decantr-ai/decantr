@@ -4485,6 +4485,7 @@ const OPEN_REDIRECT_QUERY_KEY_REGEX = new RegExp(`^(?:${OPEN_REDIRECT_QUERY_KEY_
 const OPEN_REDIRECT_QUERY_CARRIER_REGEX = /\b(?:searchParams|router\.query|route\.query|query)\b/i;
 const OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX = /\b(?:router|route)\b/i;
 const LOCATION_QUERY_SOURCE_REGEX = /\b(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
+const LOCATION_URL_INPUT_REGEX = /\b(?:(?:window\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\b/i;
 const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:(?:window\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\s*\)/i;
 const NEXT_URL_SOURCE_REGEX = /\b(?:request|req)\.nextUrl\b/i;
 const REQUEST_OBJECT_SOURCE_REGEX = /\b(?:request|req)\b/i;
@@ -4794,12 +4795,48 @@ function expressionLooksLikeLocationUrlSource(
     return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
   }
 
+  if (
+    ts.isNewExpression(expression)
+    && ts.isIdentifier(expression.expression)
+    && expression.expression.text === 'URL'
+  ) {
+    return expressionLooksLikeLocationUrlInput(expression.arguments?.[0], sourceFile, namedExpressions, seenIdentifiers);
+  }
+
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) return false;
     const initializer = namedExpressions.get(expression.text);
     if (!initializer) return false;
     seenIdentifiers.add(expression.text);
     const result = expressionLooksLikeLocationUrlSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    seenIdentifiers.delete(expression.text);
+    return result;
+  }
+
+  return false;
+}
+
+function expressionLooksLikeLocationUrlInput(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+  if (LOCATION_URL_INPUT_REGEX.test(expression.getText(sourceFile))) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeLocationUrlInput(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) return false;
+    seenIdentifiers.add(expression.text);
+    const result = expressionLooksLikeLocationUrlInput(initializer, sourceFile, namedExpressions, seenIdentifiers);
     seenIdentifiers.delete(expression.text);
     return result;
   }
