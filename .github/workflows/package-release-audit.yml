@@ -29,6 +29,9 @@ jobs:
         continue-on-error: true
         run: pnpm audit:npm-surface 2>&1 | tee package-npm-surface.log
 
+      - name: Preview npm dist-tag normalization
+        run: pnpm npm-surface:normalize:dry-run 2>&1 | tee package-npm-normalize-dry-run.log
+
       - name: Generate package release audit
         run: node scripts/audit-release-surface.mjs --report-json=package-release-audit.json --summary-markdown=package-release-audit.md
 
@@ -48,6 +51,8 @@ jobs:
           cat package-graduation-plan.md >> "$GITHUB_STEP_SUMMARY"
           printf "\n## Live npm Surface Audit\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
           cat package-npm-surface.log >> "$GITHUB_STEP_SUMMARY"
+          printf "\n\`\`\`\n\n## npm Dist-Tag Normalization Preview\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-npm-normalize-dry-run.log >> "$GITHUB_STEP_SUMMARY"
           printf "\n\`\`\`\n\n## Publish Preflight (Foundation)\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
           cat package-preflight-foundation.log >> "$GITHUB_STEP_SUMMARY"
           printf "\n\`\`\`\n\n## Publish Preflight (Delivery)\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
@@ -64,6 +69,7 @@ jobs:
             package-graduation-plan.json
             package-graduation-plan.md
             package-npm-surface.log
+            package-npm-normalize-dry-run.log
             package-preflight-foundation.log
             package-preflight-delivery.log
           if-no-files-found: error
