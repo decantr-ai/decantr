@@ -5056,6 +5056,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
     return true;
   }
 
+  if (
+    isElementLikeAccessExpression(expression)
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
   if (isCallLikeExpression(expression)) {
     const functionResolution = resolveTrackedOpenRedirectFunctionLike(
       expression.expression,
