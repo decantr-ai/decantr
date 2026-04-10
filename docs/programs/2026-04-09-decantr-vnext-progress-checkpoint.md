@@ -469,6 +469,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Protected auth-loss and auth-loading detection now also catches direct JSX interpolation of auth-scoped values like `session?.user?.email`, so stale privileged identity data cannot linger inside otherwise generic markup after reviewed gateway logic has supposedly left the protected state.
 - Protected auth-loss and auth-loading detection now also catches protected route links nested inside otherwise generic markup, so reviewed gateway branches cannot keep advertising `/dashboard` or other privileged destinations from a neutral `<section>` container.
 - Protected auth-loss and auth-loading detection now also catches protected route actions hidden behind nested buttons or callback handlers, so reviewed gateway branches cannot keep a stale “continue to dashboard” button alive just by replacing a link with `navigate('/dashboard')`.
+- Protected auth-loss and auth-loading detection now also catches nested form submissions into protected routes like `action="/dashboard"`, so reviewed gateway branches cannot preserve privileged navigation by swapping a link or button callback for a form post.
 
 ## Highest-Value Next Streams
 
