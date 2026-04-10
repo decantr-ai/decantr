@@ -454,6 +454,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - The release planning and publish scripts now also accept both `--wave foundation` and `--wave=foundation` style flags, so the operator commands in the runbooks work exactly as documented.
 - Project audit and file critique now also flag logout flows that leave client-side query or data caches alive, so reviewed auth exits are expected to reset React Query/Apollo/SWR-style caches before returning users to an anonymous route.
 - Project audit and file critique now also flag logout flows that leave background auth refresh timers or subscriptions alive, so session refresh work is expected to stop alongside sign-out instead of continuing after users return to anonymous routes.
+- Project audit and file critique now also flag logout flows that leave realtime sockets or channels alive, so protected live data streams are expected to close during sign-out instead of continuing after users return to anonymous routes.
 
 ## Highest-Value Next Streams
 

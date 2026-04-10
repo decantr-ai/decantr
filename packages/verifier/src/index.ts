@@ -416,6 +416,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authCacheClears: createSourceAuditBucket(),
     authRefreshSignals: createSourceAuditBucket(),
     authRefreshClears: createSourceAuditBucket(),
+    authRealtimeSignals: createSourceAuditBucket(),
+    authRealtimeClears: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
     authExitSignals: createSourceAuditBucket(),
     authSessionTeardownSignals: createSourceAuditBucket(),
@@ -521,6 +523,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authCacheClears, relativePath, signals.authCacheClearCount);
     recordSourceAudit(summary.authRefreshSignals, relativePath, signals.authRefreshSignalCount);
     recordSourceAudit(summary.authRefreshClears, relativePath, signals.authRefreshClearCount);
+    recordSourceAudit(summary.authRealtimeSignals, relativePath, countAuthRealtimeSignals(code));
+    recordSourceAudit(summary.authRealtimeClears, relativePath, countAuthRealtimeClearSignals(code));
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
     recordSourceAudit(summary.authSessionTeardownSignals, relativePath, signals.authSessionTeardownSignalCount);
@@ -694,6 +698,8 @@ interface SourceAuditSummary {
   authCacheClears: SourceAuditBucket;
   authRefreshSignals: SourceAuditBucket;
   authRefreshClears: SourceAuditBucket;
+  authRealtimeSignals: SourceAuditBucket;
+  authRealtimeClears: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
   authExitSignals: SourceAuditBucket;
   authSessionTeardownSignals: SourceAuditBucket;
@@ -1699,6 +1705,31 @@ function appendSourceAuditFindings(
         `Auth refresh clear files: ${sourceAudit.authRefreshClears.files.join(', ') || 'none'}`,
       ],
       suggestedFix: 'If auth/session refresh runs on timers or subscriptions, clear those intervals, timeouts, or listeners during sign-out before returning users to an anonymous route.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authRealtimeSignals.count > 0
+    && sourceAudit.authExitSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authRealtimeSignals, sourceAudit.authRealtimeClears)
+    && (
+      sourceAuditBucketsOverlap(sourceAudit.authRealtimeSignals, sourceAudit.protectedSurfaceSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authRealtimeSignals, sourceAudit.authSessionSignals)
+    )
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-realtime-teardown-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth exit flows exist, but the source tree does not show realtime channels or sockets being torn down during sign-out.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth realtime files: ${sourceAudit.authRealtimeSignals.files.join(', ') || 'none'}`,
+        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+        `Auth realtime clear files: ${sourceAudit.authRealtimeClears.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'If protected data arrives over websockets, SSE, or realtime channels, close or unsubscribe those connections during sign-out before returning users to an anonymous route.',
     }));
   }
 
@@ -3815,6 +3846,29 @@ function countAuthRefreshClearSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
 }
 
+function countAuthRealtimeSignals(code: string): number {
+  const patterns = [
+    /\bnew\s+WebSocket\s*\(/gi,
+    /\bnew\s+EventSource\s*\(/gi,
+    /\bsupabase\.channel\s*\(/gi,
+    /\bpusher\.subscribe\s*\(/gi,
+    /\becho\.(?:private|channel|join)\s*\(/gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
+function countAuthRealtimeClearSignals(code: string): number {
+  const patterns = [
+    /\b(?:socket|ws|channel|subscription|realtime|eventSource)\.(?:close|disconnect|unsubscribe|remove|stop)\s*\(/gi,
+    /\bsupabase\.removeChannel\s*\(/gi,
+    /\bpusher\.unsubscribe\s*\(/gi,
+    /\becho\.(?:leave|leaveChannel|disconnect)\s*\(/gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAuthEntrySignals(code: string): number {
   const patterns = [
     /\b(?:signIn|signin|logIn|login|register|signUp|signup|createAccount|forgotPassword|resetPassword)\s*\(/i,
@@ -4996,6 +5050,8 @@ export function critiqueSource({
   const authCacheClearCount = astSignals.authCacheClearCount;
   const authRefreshSignalCount = astSignals.authRefreshSignalCount;
   const authRefreshClearCount = astSignals.authRefreshClearCount;
+  const authRealtimeSignalCount = countAuthRealtimeSignals(code);
+  const authRealtimeClearCount = countAuthRealtimeClearSignals(code);
   const authErrorSignalCount = countAuthErrorSignals(code);
   const authSuccessSignalCount = countAuthSuccessSignals(code);
   const authCallbackTokenSignalCount = countAuthCallbackTokenSignals(code, filePath);
@@ -5184,6 +5240,23 @@ export function critiqueSource({
       evidence: [filePath, `Auth refresh signals: ${authRefreshSignalCount}`, `Auth refresh clears: ${authRefreshClearCount}`],
       file: filePath,
       suggestedFix: 'If auth/session refresh runs on timers or subscriptions, clear those intervals, timeouts, or listeners during sign-out before redirecting users back to an anonymous route.',
+    }));
+  }
+
+  if (
+    authExitSignalCount > 0
+    && authRealtimeSignalCount > 0
+    && authRealtimeClearCount === 0
+    && (astSignals.protectedSurfaceSignalCount > 0 || astSignals.authSessionSignalCount > 0)
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-realtime-teardown-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed auth exit flow starts realtime channels or sockets but does not show them being torn down during sign-out.',
+      evidence: [filePath, `Auth realtime signals: ${authRealtimeSignalCount}`, `Auth realtime clears: ${authRealtimeClearCount}`],
+      file: filePath,
+      suggestedFix: 'If protected data arrives over websockets, SSE, or realtime channels, close or unsubscribe those connections during sign-out before redirecting users back to an anonymous route.',
     }));
   }
 
