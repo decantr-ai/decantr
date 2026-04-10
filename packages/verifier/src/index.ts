@@ -388,6 +388,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authSessionSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
     authErrorSignals: createSourceAuditBucket(),
+    authSuccessSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
     authCookieWrites: createSourceAuditBucket(),
     authHeaderWrites: createSourceAuditBucket(),
@@ -464,6 +465,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
+    recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
     recordSourceAudit(summary.authCookieWrites, relativePath, signals.authCookieWriteCount);
     recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
@@ -615,6 +617,7 @@ interface SourceAuditSummary {
   authSessionSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
   authErrorSignals: SourceAuditBucket;
+  authSuccessSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
   authCookieWrites: SourceAuditBucket;
   authHeaderWrites: SourceAuditBucket;
@@ -1573,6 +1576,26 @@ function appendSourceAuditFindings(
         `Entry files: ${sourceAudit.authEntrySignals.files.join(', ') || 'none'}`,
       ],
       suggestedFix: 'Expose a reviewed error state for failed sign-in, session refresh, or recovery paths with inline feedback, alert messaging, or another explicit failure affordance.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.recoveryFlowSignals.count > 0
+    && sourceAudit.authSuccessSignals.count === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-recovery-success-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Recovery flows exist, but the source tree does not show an obvious success or confirmation state after a reset request completes.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Recovery flow signals: ${sourceAudit.recoveryFlowSignals.count}`,
+        'Auth success signals: 0',
+        `Recovery files: ${sourceAudit.recoveryFlowSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'After password-reset or recovery submission succeeds, show a reviewed confirmation state such as "check your email", "reset link sent", or another explicit success affordance.',
     }));
   }
 
@@ -2913,6 +2936,17 @@ function countAuthErrorSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthSuccessSignals(code: string): number {
+  const patterns = [
+    /\bstatus\s*===?\s*['"`]success['"`]/,
+    /\b(?:authSuccess|recoverySuccess|resetSuccess|passwordResetSent|resetEmailSent|verificationSent|emailSent|successMessage|setSuccess)\b/i,
+    /\b(?:toast|notify|notification)\.success\b/i,
+    />\s*(?:check your email|email sent|reset link sent|password reset email sent|verification email sent|password updated|account created)\s*</i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function countAuthExitSignals(code: string): number {
   const patterns = [
     /\b(?:logout|logOut|signOut|signout|sign-out)\b/,
@@ -3916,6 +3950,7 @@ export function critiqueSource({
   const authAnonymousRedirectSignalCount = astSignals.authAnonymousRedirectSignalCount;
   const authExitSignalCount = astSignals.authExitSignalCount;
   const authErrorSignalCount = countAuthErrorSignals(code);
+  const authSuccessSignalCount = countAuthSuccessSignals(code);
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
@@ -4150,6 +4185,25 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'Expose reviewed error handling with inline feedback, alert messaging, or another explicit failure affordance for sign-in, recovery, or session refresh failures.',
+    }));
+  }
+
+  if (
+    recoveryFlowSignals > 0
+    && authSuccessSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-recovery-success-missing',
+      category: 'State Handling',
+      severity: 'info',
+      message: 'The reviewed recovery flow does not show an obvious success or confirmation state after the reset request completes.',
+      evidence: [
+        filePath,
+        `Recovery flow signals: ${recoveryFlowSignals}`,
+        `Auth success signals: ${authSuccessSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'After recovery or reset submission succeeds, show a reviewed confirmation state such as "check your email", "reset link sent", or another explicit success affordance.',
     }));
   }
 
