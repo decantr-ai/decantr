@@ -3797,12 +3797,43 @@ function findFunctionLikeOnObjectLiteral(
   return null;
 }
 
+function resolveReturnedTrackedFunctionLike(
+  functionLike: ts.FunctionLikeDeclarationBase,
+  args: readonly ts.Expression[],
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+  seenFunctions: Set<string>,
+): ResolvedTrackedFunctionLike | null {
+  const functionKey = getFunctionLikeCacheKey(functionLike);
+  if (seenFunctions.has(functionKey)) return null;
+
+  const nextSeenFunctions = new Set(seenFunctions);
+  nextSeenFunctions.add(functionKey);
+  const boundExpressions = bindFunctionLikeArguments(functionLike, args, namedExpressions);
+  for (const returnExpression of getFunctionLikeReturnExpressions(functionLike)) {
+    const result = resolveTrackedOpenRedirectFunctionLike(
+      returnExpression,
+      sourceFile,
+      boundExpressions,
+      namedPropertyAliases,
+      new Set(seenIdentifiers),
+      nextSeenFunctions,
+    );
+    if (result) return result;
+  }
+
+  return null;
+}
+
 function resolveTrackedOpenRedirectFunctionLike(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
+  seenFunctions: Set<string> = new Set(),
 ): ResolvedTrackedFunctionLike | null {
   if (!expression) return null;
 
@@ -3819,6 +3850,28 @@ function resolveTrackedOpenRedirectFunctionLike(
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
+      seenFunctions,
+    );
+  }
+
+  if (isCallLikeExpression(expression)) {
+    const functionResolution = resolveTrackedOpenRedirectFunctionLike(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+      seenFunctions,
+    );
+    if (!functionResolution) return null;
+    return resolveReturnedTrackedFunctionLike(
+      functionResolution.functionLike,
+      expression.arguments,
+      sourceFile,
+      functionResolution.namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
     );
   }
 
@@ -3827,13 +3880,14 @@ function resolveTrackedOpenRedirectFunctionLike(
 
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
-    seenIdentifiers.add(expression.text);
-    const result = resolveTrackedOpenRedirectFunctionLike(
-      initializer,
+      seenIdentifiers.add(expression.text);
+      const result = resolveTrackedOpenRedirectFunctionLike(
+        initializer,
         sourceFile,
         namedExpressions,
         namedPropertyAliases,
         seenIdentifiers,
+        seenFunctions,
       );
       seenIdentifiers.delete(expression.text);
       if (result) return result;
