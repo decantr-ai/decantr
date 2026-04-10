@@ -4756,6 +4756,7 @@ function expressionLooksLikeLocationQuerySource(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
 ): boolean {
   if (!expression) return false;
@@ -4764,7 +4765,45 @@ function expressionLooksLikeLocationQuerySource(
   }
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeLocationQuerySource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeLocationQuerySource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeLocationQuerySource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && ['search', 'hash'].includes(propertyAlias.propertyName)
+      && expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function expressionLooksLikeWindowObjectSource(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+
+  if (ts.isIdentifier(expression) && expression.text === 'window') {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
   }
 
   if (ts.isIdentifier(expression)) {
@@ -4772,9 +4811,48 @@ function expressionLooksLikeLocationQuerySource(
     const initializer = namedExpressions.get(expression.text);
     if (!initializer) return false;
     seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeLocationQuerySource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    const result = expressionLooksLikeWindowObjectSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
     seenIdentifiers.delete(expression.text);
     return result;
+  }
+
+  return false;
+}
+
+function expressionLooksLikeLocationObjectSource(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+
+  if (isLocationObjectExpression(expression)) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeLocationObjectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && propertyAlias.propertyName === 'location'
+      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+    ) {
+      return true;
+    }
   }
 
   return false;
@@ -4784,6 +4862,7 @@ function expressionLooksLikeLocationUrlSource(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
 ): boolean {
   if (!expression) return false;
@@ -4792,7 +4871,7 @@ function expressionLooksLikeLocationUrlSource(
   }
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (
@@ -4800,7 +4879,7 @@ function expressionLooksLikeLocationUrlSource(
     && ts.isIdentifier(expression.expression)
     && expression.expression.text === 'URL'
   ) {
-    return expressionLooksLikeLocationUrlInput(expression.arguments?.[0], sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeLocationUrlInput(expression.arguments?.[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (ts.isIdentifier(expression)) {
@@ -4808,7 +4887,7 @@ function expressionLooksLikeLocationUrlSource(
     const initializer = namedExpressions.get(expression.text);
     if (!initializer) return false;
     seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeLocationUrlSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    const result = expressionLooksLikeLocationUrlSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
     seenIdentifiers.delete(expression.text);
     return result;
   }
@@ -4820,6 +4899,7 @@ function expressionLooksLikeLocationUrlInput(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
 ): boolean {
   if (!expression) return false;
@@ -4828,17 +4908,33 @@ function expressionLooksLikeLocationUrlInput(
   }
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeLocationUrlInput(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeLocationUrlInput(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) return false;
     const initializer = namedExpressions.get(expression.text);
-    if (!initializer) return false;
-    seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeLocationUrlInput(initializer, sourceFile, namedExpressions, seenIdentifiers);
-    seenIdentifiers.delete(expression.text);
-    return result;
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeLocationUrlInput(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && ['href', 'search', 'hash'].includes(propertyAlias.propertyName)
+      && expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    ) {
+      return true;
+    }
+    if (
+      propertyAlias
+      && propertyAlias.propertyName === 'url'
+      && expressionLooksLikeRequestObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+    ) {
+      return true;
+    }
   }
 
   return false;
@@ -4938,11 +5034,11 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
     && ts.isIdentifier(expression.expression)
     && expression.expression.text === 'URLSearchParams'
   ) {
-    return expressionLooksLikeLocationQuerySource(expression.arguments?.[0], sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeLocationQuerySource(expression.arguments?.[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'searchParams')) {
-    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
       || expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
@@ -4960,7 +5056,7 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
       propertyAlias
       && propertyAlias.propertyName === 'searchParams'
       && (
-        expressionLooksLikeLocationUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+        expressionLooksLikeLocationUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
         || expressionLooksLikeNextUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
         || propertyPathLooksLikeOpenRedirectSearchParamsCarrier(propertyAlias.propertyPath)
       )
