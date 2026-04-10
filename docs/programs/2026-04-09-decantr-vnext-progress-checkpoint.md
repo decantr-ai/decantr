@@ -84,6 +84,7 @@ commit archaeology.
 - Plain `decantr audit` now opportunistically hydrates missing local execution-pack artifacts from the hosted compiler before running local critique or project audit, so pack-first verification still works on partially initialized projects.
 - `decantr audit <file>` now hydrates just the hosted review pack plus manifest via pack select when local review context is missing, instead of recompiling and writing the full hosted bundle for single-file critique.
 - MCP scaffold-context fallback now prefers hosted selected scaffold/review packs plus manifest before falling back to a full hosted bundle, reducing remote context payload size when local scaffold artifacts are missing.
+- MCP manifest-only execution-pack reads now also prefer a hosted selected scaffold pack plus manifest before falling back to full hosted bundle compilation, keeping default remote manifest reads aligned with the smaller pack-first path.
 - Live hosted rollout is now green for all current public pack and verification surfaces:
   - `POST /v1/packs/compile`
   - `POST /v1/packs/select`

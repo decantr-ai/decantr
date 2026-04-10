@@ -911,6 +911,57 @@ describe('v3-aware tool tests', () => {
       expect(result.scaffold.id).toBe('scaffold');
     });
 
+    it('falls back to a hosted selected scaffold pack when the local manifest is missing', async () => {
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence({
+        blueprint: {
+          features: ['auth'],
+          sections: [
+            {
+              id: 'dashboard',
+              role: 'primary',
+              shell: 'sidebar-main',
+              features: ['auth'],
+              description: 'Primary dashboard section',
+              pages: [
+                { id: 'overview', route: '/', layout: ['kpi-grid'] },
+              ],
+            },
+          ],
+        },
+      })));
+
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : String(input.url);
+        if (url.includes('/v1/packs/select')) {
+          return Promise.resolve(new Response(JSON.stringify(makeHostedSelectedPack('scaffold')), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }));
+        }
+
+        return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+      });
+
+      process.chdir(testDir);
+      const result = await handleTool('decantr_get_execution_pack', {}) as {
+        version: string;
+        scaffold: { id: string };
+        source: string;
+      };
+
+      expect(result.version).toBe('1.0.0');
+      expect(result.scaffold.id).toBe('scaffold');
+      expect(result.source).toBe('hosted_fallback');
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('/v1/packs/select'),
+        expect.anything(),
+      );
+      expect(fetchSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining('/v1/packs/compile'),
+        expect.anything(),
+      );
+    });
+
     it('returns a page pack together with parent section context when available', async () => {
       const contextDir = join(testDir, '.decantr', 'context');
       await mkdir(contextDir, { recursive: true });

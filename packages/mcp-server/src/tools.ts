@@ -286,6 +286,27 @@ async function loadHostedSelectedExecutionPackFallback(args: Record<string, unkn
   }
 }
 
+async function loadHostedSelectedExecutionPackByType(
+  args: Record<string, unknown>,
+  packType: 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+  id?: string,
+): Promise<{
+  selected: HostedSelectedExecutionPack | null;
+  error: string | null;
+}> {
+  const selectedArgs: Record<string, unknown> = {
+    ...args,
+    pack_type: packType,
+  };
+
+  delete selectedArgs.id;
+  if (typeof id === 'string') {
+    selectedArgs.id = id;
+  }
+
+  return loadHostedSelectedExecutionPackFallback(selectedArgs);
+}
+
 async function loadHostedFileCritiqueFallback(args: Record<string, unknown>): Promise<{
   report: Awaited<ReturnType<typeof getHostedFileCritiquePayload>> | null;
   error: string | null;
@@ -1850,17 +1871,26 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       if (!manifest && packType === 'manifest') {
-        const hosted = await loadHostedExecutionPackBundleFallback(args);
-        hostedBundle = hosted.bundle;
-        hostedFallbackError = hosted.error;
-        if (!hosted.bundle) {
-          return {
-            error: 'Execution pack manifest not found. Run decantr refresh to generate compiled packs.',
-            hosted_fallback_error: hosted.error,
-          };
+        const selected = await loadHostedSelectedExecutionPackByType(args, 'scaffold');
+        hostedSelectedPack = selected.selected;
+        hostedFallbackError = selected.error;
+
+        if (selected.selected) {
+          manifest = selected.selected.manifest as PackManifest;
+          manifestSource = 'hosted_fallback';
+        } else {
+          const hosted = await loadHostedExecutionPackBundleFallback(args);
+          hostedBundle = hosted.bundle;
+          hostedFallbackError = hosted.error;
+          if (!hosted.bundle) {
+            return {
+              error: 'Execution pack manifest not found. Run decantr refresh to generate compiled packs.',
+              hosted_fallback_error: hosted.error,
+            };
+          }
+          manifest = hosted.bundle.manifest as PackManifest;
+          manifestSource = 'hosted_fallback';
         }
-        manifest = hosted.bundle.manifest as PackManifest;
-        manifestSource = 'hosted_fallback';
       }
 
       if (packType === 'manifest') {
