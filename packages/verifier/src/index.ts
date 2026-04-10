@@ -1743,7 +1743,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
       severity: 'warn',
       message: 'The compiled review pack file is missing.',
       evidence: [join(projectRoot, '.decantr', 'context', 'review-pack.json')],
-      suggestedFix: 'Regenerate context so critique consumers can anchor findings to the compiled review contract.',
+      suggestedFix: 'Regenerate context with `decantr refresh`, or hydrate the hosted review contract with `decantr registry get-pack review --write-context`, so critique consumers can anchor findings to the compiled review contract.',
     }));
   }
 

@@ -1601,7 +1601,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const hosted = await loadHostedExecutionPackBundleFallback(args);
         if (!hosted.bundle) {
           return {
-            error: 'Scaffold context not found. Run decantr refresh to generate scaffold context and execution packs.',
+            error: 'Scaffold context not found. Run `decantr refresh` or `decantr registry compile-packs --write-context` to materialize scaffold context and execution packs.',
             hosted_fallback_error: hosted.error ?? hostedScaffold.error ?? hostedReview.error,
           };
         }
@@ -1727,7 +1727,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         execution_pack: executionPack,
         note: executionPackSource === 'hosted_fallback'
           ? 'Section context file not found. Using hosted compiled execution pack fallback.'
-          : 'Section context file not found. Run decantr refresh to generate it.',
+          : `Section context file not found. Run \`decantr refresh\` or \`decantr registry get-pack section ${sectionId} --write-context\` to generate it.`,
         hosted_fallback_error: executionPackSource ? undefined : hostedFallbackError,
       };
     }
@@ -1785,7 +1785,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const hosted = await loadHostedPageSelection();
         if (!hosted) {
           return {
-            error: 'Execution pack manifest not found. Run decantr refresh to generate compiled packs.',
+            error: 'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
             hosted_fallback_error: hostedFallbackError,
           };
         }
@@ -1918,7 +1918,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           hostedFallbackError = hosted.error;
           if (!hosted.bundle) {
             return {
-              error: 'Execution pack manifest not found. Run decantr refresh to generate compiled packs.',
+              error: 'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
               hosted_fallback_error: hosted.error,
             };
           }
@@ -1940,7 +1940,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         hostedFallbackError = hosted.error;
         if (!hosted.selected) {
           return {
-            error: 'Execution pack manifest not found. Run decantr refresh to generate compiled packs.',
+            error: 'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
             hosted_fallback_error: hosted.error,
           };
         }
