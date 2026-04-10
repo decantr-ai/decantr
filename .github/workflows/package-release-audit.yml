@@ -31,11 +31,22 @@ jobs:
       - name: Generate package graduation plan
         run: node scripts/graduation-plan.mjs --report-json=package-graduation-plan.json --summary-markdown=package-graduation-plan.md
 
+      - name: Run foundation publish preflight
+        run: node scripts/publish-packages.mjs --publish-dry-run --wave=foundation | tee package-preflight-foundation.log
+
+      - name: Run delivery publish preflight
+        run: node scripts/publish-packages.mjs --publish-dry-run --wave=delivery | tee package-preflight-delivery.log
+
       - name: Publish package release audit summary
         run: |
           cat package-release-audit.md >> "$GITHUB_STEP_SUMMARY"
           printf "\n" >> "$GITHUB_STEP_SUMMARY"
           cat package-graduation-plan.md >> "$GITHUB_STEP_SUMMARY"
+          printf "\n## Publish Preflight (Foundation)\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-preflight-foundation.log >> "$GITHUB_STEP_SUMMARY"
+          printf "\n\`\`\`\n\n## Publish Preflight (Delivery)\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-preflight-delivery.log >> "$GITHUB_STEP_SUMMARY"
+          printf "\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload package release audit artifacts
         uses: actions/upload-artifact@v4
@@ -46,4 +57,6 @@ jobs:
             package-release-audit.md
             package-graduation-plan.json
             package-graduation-plan.md
+            package-preflight-foundation.log
+            package-preflight-delivery.log
           if-no-files-found: error

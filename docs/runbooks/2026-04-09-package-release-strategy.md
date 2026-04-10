@@ -209,7 +209,9 @@ That workflow:
 - runs `pnpm audit:release-readiness`
 - generates a combined package release audit report through `pnpm audit:release-surface`
 - generates a dedicated graduation report through `pnpm release:graduation-plan`
+- runs real npm publish dry-run preflights for the `foundation` and `delivery` waves through `node scripts/publish-packages.mjs --publish-dry-run --wave=<wave>`
 - uploads JSON and Markdown artifacts for drift/release review without requiring npm publish credentials
+- uploads publish-preflight logs so graduation review includes actual package-pack/publish rehearsal output, not just static metadata
 
 It is intentionally report-first: current npm surface drift remains visible in artifacts even when it is not yet being treated as a hard scheduling failure.
 

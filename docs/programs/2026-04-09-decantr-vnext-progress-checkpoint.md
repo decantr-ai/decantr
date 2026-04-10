@@ -163,6 +163,7 @@ commit archaeology.
 - Accessibility critique now also catches multiple navigation landmarks without distinct labels, which is especially important for generated app shells with both sidebar and utility nav regions.
 - Accessibility critique now also flags files that render multiple main landmarks, helping generated page and shell structures keep a single clear primary content region for assistive technologies.
 - Package graduation now also audits publish metadata quality directly, including `license`, `homepage`, `repository.directory`, `files`, `publishConfig.access`, and normalized `bin` paths, so stable-readiness is enforced in code instead of left to npm auto-correction.
+- Package release auditing now also runs real `npm publish --dry-run` style preflights for the `foundation` and `delivery` waves, so graduation review captures actual packaging/publish rehearsal output instead of stopping at metadata and dist-tag checks.
 
 ### Showcase / golden corpus
 
