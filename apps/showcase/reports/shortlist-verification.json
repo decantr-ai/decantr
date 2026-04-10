@@ -1,15 +1,15 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-10T01:44:12.951Z",
+  "generatedAt": "2026-04-10T03:30:25.009Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1552,
+    "averageDurationMs": 1763,
     "passedSmokes": 8,
     "failedSmokes": 0,
-    "averageSmokeDurationMs": 9,
+    "averageSmokeDurationMs": 10,
     "appsWithTitleOkCount": 8,
     "appsWithLangOkCount": 8,
     "appsWithViewportOkCount": 8,
@@ -41,11 +41,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1559
+        "durationMs": 1747
       },
       "smoke": {
         "passed": true,
-        "durationMs": 31,
+        "durationMs": 35,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -60,6 +60,7 @@
         "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
+        "externalMediaSourcesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -109,11 +110,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1552
+        "durationMs": 1774
       },
       "smoke": {
         "passed": true,
-        "durationMs": 7,
+        "durationMs": 9,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -128,6 +129,7 @@
         "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
+        "externalMediaSourcesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -177,11 +179,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1527
+        "durationMs": 1810
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 7,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -196,6 +198,7 @@
         "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
+        "externalMediaSourcesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -245,7 +248,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1469
+        "durationMs": 1703
       },
       "smoke": {
         "passed": true,
@@ -264,6 +267,7 @@
         "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
+        "externalMediaSourcesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -313,11 +317,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1457
+        "durationMs": 1636
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 7,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -332,6 +336,7 @@
         "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
+        "externalMediaSourcesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -380,11 +385,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1662
+        "durationMs": 1869
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 6,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -399,6 +404,7 @@
         "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
+        "externalMediaSourcesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -448,7 +454,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1614
+        "durationMs": 1810
       },
       "smoke": {
         "passed": true,
@@ -467,6 +473,7 @@
         "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
+        "externalMediaSourcesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -516,7 +523,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1576
+        "durationMs": 1752
       },
       "smoke": {
         "passed": true,
@@ -535,6 +542,7 @@
         "externalStylesheetsWithIntegrityMissingCrossoriginCount": 0,
         "externalScriptsWithInsecureTransportCount": 0,
         "externalStylesheetsWithInsecureTransportCount": 0,
+        "externalMediaSourcesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 18,
         "jsInsecureTransportSignalCount": 21,

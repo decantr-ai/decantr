@@ -84,6 +84,7 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     externalStylesheetsWithIntegrityMissingCrossoriginCount: runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount,
     externalScriptsWithInsecureTransportCount: runtimeAudit.externalScriptsWithInsecureTransportCount,
     externalStylesheetsWithInsecureTransportCount: runtimeAudit.externalStylesheetsWithInsecureTransportCount,
+    externalMediaSourcesWithInsecureTransportCount: runtimeAudit.externalMediaSourcesWithInsecureTransportCount,
     jsEvalSignalCount: runtimeAudit.jsEvalSignalCount,
     jsHtmlInjectionSignalCount: runtimeAudit.jsHtmlInjectionSignalCount,
     jsInsecureTransportSignalCount: runtimeAudit.jsInsecureTransportSignalCount,
@@ -197,7 +198,8 @@ async function main() {
     appsWithExternalScriptCrossoriginCount: results.filter(entry => entry.smoke.externalScriptsWithIntegrityMissingCrossoriginCount === 0).length,
     appsWithoutInsecureRemoteAssetTransportCount: results.filter(
       entry => entry.smoke.externalScriptsWithInsecureTransportCount === 0
-        && entry.smoke.externalStylesheetsWithInsecureTransportCount === 0,
+        && entry.smoke.externalStylesheetsWithInsecureTransportCount === 0
+        && entry.smoke.externalMediaSourcesWithInsecureTransportCount === 0,
     ).length,
     appsWithExternalStylesheetIntegrityCount: results.filter(entry => entry.smoke.externalStylesheetsWithoutIntegrityCount === 0).length,
     appsWithExternalStylesheetCrossoriginCount: results.filter(entry => entry.smoke.externalStylesheetsWithIntegrityMissingCrossoriginCount === 0).length,

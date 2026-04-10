@@ -204,7 +204,7 @@ describe('verifier', () => {
       );
       writeFileSync(
         join(projectRoot, 'dist', 'index.html'),
-        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Secure-ish App</title><link rel="stylesheet" href="http://cdn.example.com/widget.css"><link rel="stylesheet" href="https://cdn.example.com/widget-safe.css" integrity="sha384-stylehash"><script>window.__BOOTSTRAP__ = true;</script><script src="http://cdn.example.com/widget.js"></script><script src="https://cdn.example.com/widget-safe.js" integrity="sha384-scripthash"></script></head><body onload="bootLegacy()"><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Secure-ish App</title><link rel="stylesheet" href="http://cdn.example.com/widget.css"><link rel="stylesheet" href="https://cdn.example.com/widget-safe.css" integrity="sha384-stylehash"><script>window.__BOOTSTRAP__ = true;</script><script src="http://cdn.example.com/widget.js"></script><script src="https://cdn.example.com/widget-safe.js" integrity="sha384-scripthash"></script></head><body onload="bootLegacy()"><img srcset="http://cdn.example.com/hero@2x.jpg 2x, https://cdn.example.com/hero.jpg 1x" alt="Legacy hero"><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
       );
       writeFileSync(
         join(projectRoot, 'dist', 'assets', 'app.js'),
@@ -222,6 +222,7 @@ describe('verifier', () => {
       expect(report.runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount).toBe(1);
       expect(report.runtimeAudit.externalScriptsWithInsecureTransportCount).toBe(1);
       expect(report.runtimeAudit.externalStylesheetsWithInsecureTransportCount).toBe(1);
+      expect(report.runtimeAudit.externalMediaSourcesWithInsecureTransportCount).toBe(1);
       expect(report.runtimeAudit.jsEvalSignalCount).toBe(1);
       expect(report.runtimeAudit.jsHtmlInjectionSignalCount).toBe(1);
       expect(report.runtimeAudit.jsInsecureTransportSignalCount).toBe(2);
@@ -235,6 +236,7 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'runtime-external-stylesheets-crossorigin-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-external-scripts-insecure-transport')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-external-stylesheets-insecure-transport')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-external-media-insecure-transport')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-js-dynamic-code-signals')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-js-html-injection-signals')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-js-insecure-transport-signals')).toBe(true);
@@ -3183,6 +3185,7 @@ describe('verifier', () => {
       expect(report.inlineEventHandlerCount).toBe(0);
       expect(report.externalScriptsWithoutIntegrityCount).toBe(0);
       expect(report.externalStylesheetsWithoutIntegrityCount).toBe(0);
+      expect(report.externalMediaSourcesWithInsecureTransportCount).toBe(0);
       expect(report.jsEvalSignalCount).toBe(0);
       expect(report.jsHtmlInjectionSignalCount).toBe(0);
       expect(report.jsInsecureTransportSignalCount).toBe(0);

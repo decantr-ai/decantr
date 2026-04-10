@@ -139,6 +139,7 @@
             "externalStylesheetsWithIntegrityMissingCrossoriginCount",
             "externalScriptsWithInsecureTransportCount",
             "externalStylesheetsWithInsecureTransportCount",
+            "externalMediaSourcesWithInsecureTransportCount",
             "jsEvalSignalCount",
             "jsHtmlInjectionSignalCount",
             "jsInsecureTransportSignalCount",
@@ -216,6 +217,10 @@
               "minimum": 0
             },
             "externalStylesheetsWithInsecureTransportCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalMediaSourcesWithInsecureTransportCount": {
               "type": "number",
               "minimum": 0
             },

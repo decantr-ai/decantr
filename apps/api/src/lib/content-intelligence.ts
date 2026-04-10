@@ -60,7 +60,8 @@ function hasScriptHygieneBaseline(verification: ShowcaseVerificationEntry | null
     && verification.smoke.externalStylesheetsWithoutIntegrityCount === 0
     && verification.smoke.externalStylesheetsWithIntegrityMissingCrossoriginCount === 0
     && verification.smoke.externalScriptsWithInsecureTransportCount === 0
-    && verification.smoke.externalStylesheetsWithInsecureTransportCount === 0,
+    && verification.smoke.externalStylesheetsWithInsecureTransportCount === 0
+    && verification.smoke.externalMediaSourcesWithInsecureTransportCount === 0,
   );
 }
 

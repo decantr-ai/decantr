@@ -33,6 +33,7 @@ export interface RuntimeAudit {
   externalStylesheetsWithIntegrityMissingCrossoriginCount: number;
   externalScriptsWithInsecureTransportCount: number;
   externalStylesheetsWithInsecureTransportCount: number;
+  externalMediaSourcesWithInsecureTransportCount: number;
   jsEvalSignalCount: number;
   jsHtmlInjectionSignalCount: number;
   jsInsecureTransportSignalCount: number;
@@ -81,6 +82,7 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     externalStylesheetsWithIntegrityMissingCrossoriginCount: 0,
     externalScriptsWithInsecureTransportCount: 0,
     externalStylesheetsWithInsecureTransportCount: 0,
+    externalMediaSourcesWithInsecureTransportCount: 0,
     jsEvalSignalCount: 0,
     jsHtmlInjectionSignalCount: 0,
     jsInsecureTransportSignalCount: 0,
@@ -212,6 +214,46 @@ function countExternalStylesheetsWithInsecureTransport(html: string): number {
     .length;
 }
 
+function extractHtmlAttributeValues(attrs: string, attributeNames: string[]): string[] {
+  const values: string[] = [];
+  for (const attributeName of attributeNames) {
+    const pattern = new RegExp(`\\b${attributeName}\\s*=\\s*([\"'])([^\"']+)\\1`, 'gi');
+    for (const match of attrs.matchAll(pattern)) {
+      values.push(match[2]);
+    }
+  }
+  return values;
+}
+
+function valueContainsInsecureRemoteAsset(value: string | null | undefined): boolean {
+  if (!value) return false;
+  return value
+    .split(',')
+    .map((candidate) => candidate.trim().split(/\s+/)[0] ?? '')
+    .some((candidate) => /^http:\/\//i.test(candidate));
+}
+
+function countExternalMediaSourcesWithInsecureTransport(html: string): number {
+  let count = 0;
+
+  for (const match of html.matchAll(/<(img|source|video|audio)\b([^>]*)>/gi)) {
+    const tagName = match[1]?.toLowerCase();
+    const attrs = match[2] ?? '';
+    const attributeNames = tagName === 'video'
+      ? ['src', 'poster']
+      : tagName === 'audio'
+        ? ['src']
+        : ['src', 'srcset'];
+    const hasInsecureTransport = extractHtmlAttributeValues(attrs, attributeNames)
+      .some((value) => valueContainsInsecureRemoteAsset(value));
+    if (hasInsecureTransport) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
 function countDynamicCodeSignals(js: string): number {
   return js.match(/\beval\s*\(|\bnew Function\s*\(/g)?.length ?? 0;
 }
@@ -334,6 +376,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const externalStylesheetsWithIntegrityMissingCrossoriginCount = countExternalStylesheetsWithIntegrityMissingCrossorigin(rootHtml);
     const externalScriptsWithInsecureTransportCount = countExternalScriptsWithInsecureTransport(rootHtml);
     const externalStylesheetsWithInsecureTransportCount = countExternalStylesheetsWithInsecureTransport(rootHtml);
+    const externalMediaSourcesWithInsecureTransportCount = countExternalMediaSourcesWithInsecureTransport(rootHtml);
 
     if (!rootDocumentOk) {
       failures.push('root-document-invalid');
@@ -455,6 +498,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       externalStylesheetsWithIntegrityMissingCrossoriginCount,
       externalScriptsWithInsecureTransportCount,
       externalStylesheetsWithInsecureTransportCount,
+      externalMediaSourcesWithInsecureTransportCount,
       jsEvalSignalCount,
       jsHtmlInjectionSignalCount,
       jsInsecureTransportSignalCount,

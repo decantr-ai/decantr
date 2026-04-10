@@ -166,6 +166,7 @@ export function buildShowcaseVerificationResult(entry, options = {}) {
         : 0,
       externalScriptsWithInsecureTransportCount: Number.isFinite(options.smoke?.externalScriptsWithInsecureTransportCount) ? options.smoke.externalScriptsWithInsecureTransportCount : 0,
       externalStylesheetsWithInsecureTransportCount: Number.isFinite(options.smoke?.externalStylesheetsWithInsecureTransportCount) ? options.smoke.externalStylesheetsWithInsecureTransportCount : 0,
+      externalMediaSourcesWithInsecureTransportCount: Number.isFinite(options.smoke?.externalMediaSourcesWithInsecureTransportCount) ? options.smoke.externalMediaSourcesWithInsecureTransportCount : 0,
       jsEvalSignalCount: Number.isFinite(options.smoke?.jsEvalSignalCount) ? options.smoke.jsEvalSignalCount : 0,
       jsHtmlInjectionSignalCount: Number.isFinite(options.smoke?.jsHtmlInjectionSignalCount) ? options.smoke.jsHtmlInjectionSignalCount : 0,
       jsInsecureTransportSignalCount: Number.isFinite(options.smoke?.jsInsecureTransportSignalCount) ? options.smoke.jsInsecureTransportSignalCount : 0,

@@ -122,6 +122,7 @@ export interface ShowcaseShortlistVerificationEntry {
     externalStylesheetsWithIntegrityMissingCrossoriginCount: number;
     externalScriptsWithInsecureTransportCount: number;
     externalStylesheetsWithInsecureTransportCount: number;
+    externalMediaSourcesWithInsecureTransportCount: number;
     jsEvalSignalCount: number;
     jsHtmlInjectionSignalCount: number;
     jsInsecureTransportSignalCount: number;
@@ -1149,6 +1150,17 @@ function appendRuntimeAuditFindings(
       message: 'Remote stylesheet links were detected over plain HTTP.',
       evidence: [indexPath, `Remote stylesheets over insecure transport: ${runtimeAudit.externalStylesheetsWithInsecureTransportCount}`],
       suggestedFix: 'Serve remote stylesheets over HTTPS with integrity/crossorigin metadata, or move them into the trusted build pipeline.',
+    }));
+  }
+
+  if (runtimeAudit.externalMediaSourcesWithInsecureTransportCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-media-insecure-transport',
+      category: 'Security Hygiene',
+      severity: 'info',
+      message: 'Remote image or media sources were detected over plain HTTP in the built root document.',
+      evidence: [indexPath, `Remote media sources over insecure transport: ${runtimeAudit.externalMediaSourcesWithInsecureTransportCount}`],
+      suggestedFix: 'Serve remote image and media sources over HTTPS or move them behind a reviewed trusted asset boundary before shipping.',
     }));
   }
 
