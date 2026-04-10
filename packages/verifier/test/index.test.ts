@@ -1315,6 +1315,80 @@ describe('verifier', () => {
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'source-auth-guard-signals-missing')).toBe(false);
       expect(report.findings.some(finding => finding.id === 'source-auth-exit-signals-missing')).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'source-auth-exit-redirect-missing')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not flag auth exit redirect gaps when logout returns users to an anonymous route', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      mkdirSync(join(projectRoot, 'lib'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'login', route: '/login', layout: ['form'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'middleware.ts'),
+        `
+          export function middleware(request: { auth?: { user?: unknown } }) {
+            if (!request.auth?.user) {
+              return redirect('/login');
+            }
+            return NextResponse.next();
+          }
+        `,
+      );
+      writeFileSync(
+        join(projectRoot, 'lib', 'auth.ts'),
+        `
+          export async function logout() {
+            await auth.signOut();
+            return redirect('/login');
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-exit-signals-missing')).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'source-auth-exit-redirect-missing')).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -3318,6 +3392,105 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'route-auth-guard-protected-redirect')).toBe(true);
+  });
+
+  it('flags auth/session exit logic that never returns users to an anonymous route during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/UserMenu.tsx',
+      code: `
+        export function UserMenu() {
+          const { status } = useSession();
+
+          async function handleLogout() {
+            await auth.signOut();
+          }
+
+          if (status === 'loading') {
+            return <Spinner />;
+          }
+
+          return <button onClick={handleLogout}>Sign out</button>;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['sidebar'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['sidebar'] }],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-exit-redirect-missing')).toBe(true);
+  });
+
+  it('does not flag auth/session exit logic when logout returns users to an anonymous route during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/UserMenu.tsx',
+      code: `
+        export function UserMenu() {
+          const { status } = useSession();
+
+          async function handleLogout() {
+            await auth.signOut();
+            return redirect('/login');
+          }
+
+          if (status === 'loading') {
+            return <Spinner />;
+          }
+
+          return <button onClick={handleLogout}>Sign out</button>;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['sidebar'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['sidebar'] }],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-exit-redirect-missing')).toBe(false);
   });
 
   it('flags auth inputs that disable autocomplete during critique', () => {

@@ -371,6 +371,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     placeholderRoutes: createSourceAuditBucket(),
     protectedSurfaceSignals: createSourceAuditBucket(),
     authProtectedRedirectSignals: createSourceAuditBucket(),
+    authAnonymousRedirectSignals: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
     skipNavTargetIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
@@ -428,6 +429,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
     recordSourceAudit(summary.protectedSurfaceSignals, relativePath, signals.protectedSurfaceSignalCount);
     recordSourceAudit(summary.authProtectedRedirectSignals, relativePath, signals.authProtectedRedirectSignalCount);
+    recordSourceAudit(summary.authAnonymousRedirectSignals, relativePath, signals.authAnonymousRedirectSignalCount);
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
     for (const targetId of signals.skipNavTargetIds) {
@@ -578,6 +580,7 @@ interface SourceAuditSummary {
   placeholderRoutes: SourceAuditBucket;
   protectedSurfaceSignals: SourceAuditBucket;
   authProtectedRedirectSignals: SourceAuditBucket;
+  authAnonymousRedirectSignals: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
   skipNavTargetIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
@@ -1467,6 +1470,27 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && topology.hasAnonymousEntryRoute
+    && sourceAudit.authExitSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authExitSignals, sourceAudit.authAnonymousRedirectSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-exit-redirect-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Authentication exit flows do not show an obvious redirect back to an anonymous entry route.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+        `Anonymous redirect files: ${sourceAudit.authAnonymousRedirectSignals.files.join(', ') || 'none'}`,
+        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'After sign-out or session exit, redirect users back to `/`, `/login`, `/register`, or another reviewed anonymous entry route so protected shells do not linger after logout.',
+    }));
+  }
+
   if (topology.hasAuthFeature && topology.gatewayRoutes.length === 0 && sourceAudit.authEntrySignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-entry-surface-missing',
@@ -1852,6 +1876,7 @@ interface AstCritiqueSignals {
   authSessionSignalCount: number;
   authLoadingSignalCount: number;
   authProtectedRedirectSignalCount: number;
+  authAnonymousRedirectSignalCount: number;
   authStorageWriteCount: number;
   authCookieWriteCount: number;
   authCookieMissingHardeningCount: number;
@@ -2708,6 +2733,15 @@ function countAuthProtectedRedirectSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthAnonymousRedirectSignals(code: string): number {
+  const patterns = [
+    /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register|forgot-password|reset-password)?(?:[/?#][^'"`]*)?['"`]/i,
+    /\bNextResponse\.redirect\s*\(\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register|forgot-password|reset-password)?(?:[/?#][^'"`]*)?['"`]/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function countHardcodedSecretSignals(code: string): number {
   const patterns = [
     /\bsk_live_[0-9A-Za-z]+\b/g,
@@ -2786,6 +2820,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authSessionSignalCount: countAuthSessionSignals(code),
     authLoadingSignalCount: countAuthLoadingSignals(code),
     authProtectedRedirectSignalCount: countAuthProtectedRedirectSignals(code),
+    authAnonymousRedirectSignalCount: countAuthAnonymousRedirectSignals(code),
     authStorageWriteCount: 0,
     authCookieWriteCount: 0,
     authCookieMissingHardeningCount: 0,
@@ -3566,17 +3601,20 @@ export function critiqueSource({
   const authFormWithoutSubmitCount = astSignals.authFormWithoutSubmitCount;
   const authInputWithoutNameCount = astSignals.authInputWithoutNameCount;
   const authProtectedRedirectSignalCount = astSignals.authProtectedRedirectSignalCount;
+  const authAnonymousRedirectSignalCount = astSignals.authAnonymousRedirectSignalCount;
+  const authExitSignalCount = astSignals.authExitSignalCount;
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
     score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0) - (authFormWithoutSubmitCount > 0 ? 1 : 0) - (authInputWithoutNameCount > 0 ? 1 : 0))),
-    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}, auth inputs without name: ${authInputWithoutNameCount}, auth redirects to protected routes: ${authProtectedRedirectSignalCount}`,
+    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}, auth inputs without name: ${authInputWithoutNameCount}, auth redirects to protected routes: ${authProtectedRedirectSignalCount}, auth exits without anonymous redirect: ${authExitSignalCount > 0 && authAnonymousRedirectSignalCount === 0 ? 1 : 0}`,
     suggestions: [
       ...(!hasTransition ? ['Add transitions for interactive state changes where appropriate.'] : []),
       ...(buttonInFormWithoutTypeCount > 0 ? ['Add explicit button types inside forms so non-submit actions do not accidentally submit.'] : []),
       ...(authFormWithoutSubmitCount > 0 ? ['Auth-like forms should expose a clear submit control so users can actually complete the credential flow.'] : []),
       ...(authInputWithoutNameCount > 0 ? ['Give auth-related form inputs stable `name` attributes so browser form posts and FormData submissions include the credential values.'] : []),
       ...(authProtectedRedirectSignalCount > 0 ? ['Keep unauthenticated guard redirects pointed at anonymous entry routes, not protected destinations like `/dashboard` or `/app`.'] : []),
+      ...(authExitSignalCount > 0 && authAnonymousRedirectSignalCount === 0 ? ['After sign-out, return users to an anonymous entry route instead of leaving the protected shell in place.'] : []),
     ],
   });
   if (buttonInFormWithoutTypeCount > 0) {
@@ -3628,6 +3666,22 @@ export function critiqueSource({
       evidence: [filePath, `Protected auth redirects: ${authProtectedRedirectSignalCount}`],
       file: filePath,
       suggestedFix: 'Redirect unauthenticated flows to `/`, `/login`, `/register`, or another gateway route, and reserve redirects to `/dashboard` or `/app` for reviewed post-auth success flows.',
+    }));
+  }
+
+  if (
+    authExitSignalCount > 0
+    && (astSignals.authSessionSignalCount > 0 || astSignals.authGuardSignalCount > 0)
+    && authAnonymousRedirectSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'route-auth-exit-redirect-missing',
+      category: 'Route Topology',
+      severity: 'info',
+      message: 'Auth/session exit logic does not show an obvious redirect back to an anonymous entry route.',
+      evidence: [filePath, `Auth exit signals: ${authExitSignalCount}`, `Anonymous auth redirects: ${authAnonymousRedirectSignalCount}`],
+      file: filePath,
+      suggestedFix: 'After logout or session exit, navigate users to `/`, `/login`, `/register`, or another reviewed anonymous entry route so protected shells do not linger after sign-out.',
     }));
   }
 
