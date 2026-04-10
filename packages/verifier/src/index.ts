@@ -4768,6 +4768,14 @@ function expressionLooksLikeLocationQuerySource(
     return expressionLooksLikeLocationQuerySource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
+  if (
+    ts.isPropertyAccessExpression(expression)
+    && isPropertyNamed(expression.name, 'search', 'hash')
+    && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) return false;
     const initializer = namedExpressions.get(expression.text);
@@ -4909,6 +4917,22 @@ function expressionLooksLikeLocationUrlInput(
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
     return expressionLooksLikeLocationUrlInput(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (
+    ts.isPropertyAccessExpression(expression)
+    && ['href', 'search', 'hash'].includes(expression.name.text)
+    && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isPropertyAccessExpression(expression)
+    && isPropertyNamed(expression.name, 'url')
+    && expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+  ) {
+    return true;
   }
 
   if (ts.isIdentifier(expression)) {
@@ -5064,6 +5088,33 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
       return true;
     }
     return false;
+  }
+
+  return false;
+}
+
+function expressionLooksLikeLocationAssignmentTarget(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+  if (isLocationAssignmentTarget(expression)) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeLocationAssignmentTarget(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (
+    ts.isPropertyAccessExpression(expression)
+    && isPropertyNamed(expression.name, 'href')
+    && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
   }
 
   return false;
@@ -5287,7 +5338,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     if (
       ts.isBinaryExpression(node)
       && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && isLocationAssignmentTarget(node.left)
+      && expressionLooksLikeLocationAssignmentTarget(node.left, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
       && expressionContainsOpenRedirectSource(node.right, sourceFile, namedExpressionInitializers, namedPropertyAliases)
     ) {
       signals.authOpenRedirectSignalCount += 1;
@@ -5296,7 +5347,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     if (
       ts.isBinaryExpression(node)
       && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && isLocationAssignmentTarget(node.left)
+      && expressionLooksLikeLocationAssignmentTarget(node.left, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
       && isInsecureTransportUrl(getExpressionLiteralValue(node.right))
     ) {
       signals.insecureTransportEndpointCount += 1;
@@ -5305,7 +5356,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     if (
       ts.isBinaryExpression(node)
       && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && isLocationAssignmentTarget(node.left)
+      && expressionLooksLikeLocationAssignmentTarget(node.left, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
       && isExternalUrl(getExpressionLiteralValue(node.right))
     ) {
       signals.authExternalRedirectSignalCount += 1;
@@ -5323,7 +5374,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     if (
       ts.isBinaryExpression(node)
       && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && isLocationAssignmentTarget(node.left)
+      && expressionLooksLikeLocationAssignmentTarget(node.left, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
       && expressionContainsOpenRedirectSource(node.right, sourceFile, namedExpressionInitializers, namedPropertyAliases)
     ) {
       signals.authOpenRedirectSignalCount += 1;
@@ -5455,7 +5506,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
       if (
         ts.isPropertyAccessExpression(node.expression)
-        && isLocationObjectExpression(node.expression.expression)
+        && expressionLooksLikeLocationObjectSource(node.expression.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
         && isPropertyNamed(node.expression.name, 'assign', 'replace')
         && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers, namedPropertyAliases)
       ) {
@@ -5464,7 +5515,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
       if (
         ts.isPropertyAccessExpression(node.expression)
-        && isLocationObjectExpression(node.expression.expression)
+        && expressionLooksLikeLocationObjectSource(node.expression.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
         && isPropertyNamed(node.expression.name, 'assign', 'replace')
         && isInsecureTransportUrl(firstArgumentLiteral)
       ) {
@@ -5473,7 +5524,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
       if (
         ts.isPropertyAccessExpression(node.expression)
-        && isLocationObjectExpression(node.expression.expression)
+        && expressionLooksLikeLocationObjectSource(node.expression.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
         && isPropertyNamed(node.expression.name, 'assign', 'replace')
         && isExternalUrl(firstArgumentLiteral)
       ) {
