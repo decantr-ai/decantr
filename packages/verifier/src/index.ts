@@ -5155,7 +5155,10 @@ function expressionLooksLikeLocationMutationCall(
 
 function isRouteTransitionCall(node: ts.CallExpression): boolean {
   return (ts.isIdentifier(node.expression) && ['redirect', 'navigate'].includes(node.expression.text))
-    || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'push', 'replace', 'redirect', 'navigate'));
+    || (
+      (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+      && isMemberAccessNamed(node.expression, 'push', 'replace', 'redirect', 'navigate')
+    );
 }
 
 function countAuthRecoveryRouteSignals(code: string): number {

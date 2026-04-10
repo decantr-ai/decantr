@@ -519,6 +519,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Auth open-redirect tracing now also follows bracketed location access like `self['location']['search']`, `self['location']['assign'](...)`, `parent['location']`, and `frameLocation['href'] = next ?? '/dashboard'`, so auth flows cannot bypass redirect-param detection just by swapping dot access for element-access syntax on browser location carriers and sinks.
 - Auth open-redirect tracing now also follows bracketed query getter calls like `req['nextUrl']['searchParams']['get']('next')` and `searchParams['get']('next')`, so auth flows cannot bypass redirect-param detection by swapping `params.get(...)` for element-access calls on the same reviewed query carrier.
 - Auth open-redirect tracing now also follows bracketed location access through aliased browser/frame bases like `const browser = window; browser['location']['assign'](...)`, so auth flows cannot bypass redirect-param detection by hoisting `window`, `self`, or `parent` into a local alias before reading `['location']` and forwarding the same untrusted destination.
+- Auth open-redirect tracing now also treats bracketed route-transition sinks like `router['push'](...)` and `router['replace'](...)` the same as dot-access router calls, so auth flows cannot bypass redirect-param detection just by swapping `router.push(next)` for element-access syntax before navigating into a privileged destination.
 
 ## Highest-Value Next Streams
 
