@@ -3437,8 +3437,9 @@ function collectNamedExpressionInitializers(root: ts.Node): Map<string, ts.Expre
 }
 
 interface NamedPropertyAlias {
-  initializer: ts.Expression;
+  initializer?: ts.Expression;
   propertyName: string;
+  propertyPath: string[];
 }
 
 function getPropertyNameText(name: ts.PropertyName | ts.BindingName | undefined): string | null {
@@ -3452,13 +3453,33 @@ function getPropertyNameText(name: ts.PropertyName | ts.BindingName | undefined)
 function collectNamedPropertyAliases(root: ts.Node): Map<string, NamedPropertyAlias> {
   const aliases = new Map<string, NamedPropertyAlias>();
 
+  const collectFromBindingPattern = (
+    pattern: ts.ObjectBindingPattern,
+    initializer: ts.Expression | undefined,
+    propertyPath: string[],
+  ): void => {
+    for (const element of pattern.elements) {
+      if (element.dotDotDotToken) continue;
+      const propertyName = getPropertyNameText(element.propertyName) ?? getPropertyNameText(element.name);
+      if (!propertyName) continue;
+      const nextPath = [...propertyPath, propertyName];
+      if (ts.isIdentifier(element.name)) {
+        aliases.set(element.name.text, { initializer, propertyName, propertyPath: nextPath });
+        continue;
+      }
+      if (ts.isObjectBindingPattern(element.name)) {
+        collectFromBindingPattern(element.name, initializer, nextPath);
+      }
+    }
+  };
+
   const visit = (node: ts.Node): void => {
     if (ts.isVariableDeclaration(node) && ts.isObjectBindingPattern(node.name) && node.initializer) {
-      for (const element of node.name.elements) {
-        if (element.dotDotDotToken || !ts.isIdentifier(element.name)) continue;
-        const propertyName = getPropertyNameText(element.propertyName) ?? element.name.text;
-        aliases.set(element.name.text, { initializer: node.initializer, propertyName });
-      }
+      collectFromBindingPattern(node.name, node.initializer, []);
+    }
+
+    if (ts.isParameter(node) && ts.isObjectBindingPattern(node.name)) {
+      collectFromBindingPattern(node.name, undefined, []);
     }
 
     node.forEachChild(visit);
@@ -4475,6 +4496,18 @@ function countAuthOpenRedirectSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
 }
 
+function propertyPathLooksLikeOpenRedirectQueryCarrier(propertyPath: string[]): boolean {
+  return propertyPath.length > 0 && OPEN_REDIRECT_QUERY_CARRIER_REGEX.test(propertyPath.join('.'));
+}
+
+function propertyPathLooksLikeOpenRedirectSearchParamsCarrier(propertyPath: string[]): boolean {
+  return propertyPath.length > 0 && propertyPath[propertyPath.length - 1] === 'searchParams';
+}
+
+function propertyPathLooksLikeOpenRedirectQueryContainerBase(propertyPath: string[]): boolean {
+  return propertyPath.length > 0 && OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX.test(propertyPath.join('.'));
+}
+
 function expressionContainsOpenRedirectSource(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
@@ -4569,7 +4602,10 @@ function expressionContainsOpenRedirectSource(
     if (
       propertyAlias
       && OPEN_REDIRECT_QUERY_KEY_REGEX.test(propertyAlias.propertyName)
-      && expressionLooksLikeOpenRedirectQueryCarrier(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      && (
+        expressionLooksLikeOpenRedirectQueryCarrier(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+        || propertyPathLooksLikeOpenRedirectQueryCarrier(propertyAlias.propertyPath.slice(0, -1))
+      )
     ) {
       return true;
     }
@@ -4640,10 +4676,13 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
     if (
       propertyAlias
       && (
-        propertyAlias.propertyName === 'searchParams'
+        propertyPathLooksLikeOpenRedirectQueryCarrier(propertyAlias.propertyPath)
         || (
           propertyAlias.propertyName === 'query'
-          && expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+          && (
+            expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+            || propertyPathLooksLikeOpenRedirectQueryContainerBase(propertyAlias.propertyPath.slice(0, -1))
+          )
         )
       )
     ) {
@@ -4682,6 +4721,9 @@ function expressionLooksLikeOpenRedirectQueryContainerBase(
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (!propertyAlias) return false;
+    if (propertyPathLooksLikeOpenRedirectQueryContainerBase(propertyAlias.propertyPath)) {
+      return true;
+    }
     seenIdentifiers.add(expression.text);
     const result = expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
     seenIdentifiers.delete(expression.text);
@@ -4790,7 +4832,10 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
     if (
       propertyAlias
       && propertyAlias.propertyName === 'searchParams'
-      && expressionLooksLikeLocationUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      && (
+        expressionLooksLikeLocationUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+        || propertyPathLooksLikeOpenRedirectSearchParamsCarrier(propertyAlias.propertyPath)
+      )
     ) {
       return true;
     }
