@@ -4535,6 +4535,16 @@ function expressionContainsOpenRedirectSource(
       || expressionContainsOpenRedirectSource(expression.whenFalse, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
+  if (ts.isTemplateExpression(expression)) {
+    return expression.templateSpans.some((span) =>
+      expressionContainsOpenRedirectSource(span.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    );
+  }
+
+  if (ts.isTaggedTemplateExpression(expression)) {
+    return expressionContainsOpenRedirectSource(expression.template, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
   if (ts.isArrayLiteralExpression(expression)) {
     return expression.elements.some((element) => {
       if (ts.isSpreadElement(element)) {
