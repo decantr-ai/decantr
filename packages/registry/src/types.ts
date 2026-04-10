@@ -531,6 +531,7 @@ export interface ShowcaseVerificationEntry {
     charsetOk: boolean;
     cspSignalOk: boolean;
     inlineScriptCount: number;
+    inlineEventHandlerCount: number;
     externalScriptsWithoutIntegrityCount: number;
     externalStylesheetsWithoutIntegrityCount: number;
     externalScriptsWithInsecureTransportCount: number;
@@ -917,6 +918,7 @@ export interface ProjectAuditRuntimeAudit {
   charsetOk: boolean;
   cspSignalOk: boolean;
   inlineScriptCount: number;
+  inlineEventHandlerCount: number;
   externalScriptsWithoutIntegrityCount: number;
   externalStylesheetsWithoutIntegrityCount: number;
   externalScriptsWithInsecureTransportCount: number;

@@ -155,6 +155,7 @@ export function buildShowcaseVerificationResult(entry, options = {}) {
       charsetOk: options.smoke?.charsetOk ?? false,
       cspSignalOk: options.smoke?.cspSignalOk ?? false,
       inlineScriptCount: Number.isFinite(options.smoke?.inlineScriptCount) ? options.smoke.inlineScriptCount : 0,
+      inlineEventHandlerCount: Number.isFinite(options.smoke?.inlineEventHandlerCount) ? options.smoke.inlineEventHandlerCount : 0,
       externalScriptsWithoutIntegrityCount: Number.isFinite(options.smoke?.externalScriptsWithoutIntegrityCount) ? options.smoke.externalScriptsWithoutIntegrityCount : 0,
       externalStylesheetsWithoutIntegrityCount: Number.isFinite(options.smoke?.externalStylesheetsWithoutIntegrityCount) ? options.smoke.externalStylesheetsWithoutIntegrityCount : 0,
       externalScriptsWithInsecureTransportCount: Number.isFinite(options.smoke?.externalScriptsWithInsecureTransportCount) ? options.smoke.externalScriptsWithInsecureTransportCount : 0,

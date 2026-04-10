@@ -61,6 +61,7 @@
         "charsetOk",
         "cspSignalOk",
         "inlineScriptCount",
+        "inlineEventHandlerCount",
         "externalScriptsWithoutIntegrityCount",
         "externalStylesheetsWithoutIntegrityCount",
         "externalScriptsWithInsecureTransportCount",
@@ -117,6 +118,10 @@
           "type": "boolean"
         },
         "inlineScriptCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inlineEventHandlerCount": {
           "type": "integer",
           "minimum": 0
         },

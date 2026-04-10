@@ -1017,6 +1017,17 @@ function appendRuntimeAuditFindings(
     }));
   }
 
+  if (runtimeAudit.inlineEventHandlerCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-inline-event-handlers-present',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Inline DOM event handler attributes were detected in the built root document.',
+      evidence: [indexPath, `Inline event handler attributes: ${runtimeAudit.inlineEventHandlerCount}`],
+      suggestedFix: 'Remove inline `onclick`/`onload`-style handlers from built HTML and route behavior through the reviewed application bundle so CSP remains practical.',
+    }));
+  }
+
   if (runtimeAudit.externalScriptsWithoutIntegrityCount > 0) {
     findings.push(makeFinding({
       id: 'runtime-external-scripts-without-integrity',

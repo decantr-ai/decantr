@@ -29,6 +29,7 @@
         "appsWithViewportOkCount",
         "appsWithCharsetOkCount",
         "appsWithoutInlineScriptsCount",
+        "appsWithoutInlineEventHandlersCount",
         "appsWithCspSignalCount",
         "appsWithExternalScriptIntegrityCount",
         "appsWithoutInsecureRemoteAssetTransportCount",
@@ -56,6 +57,7 @@
         "appsWithViewportOkCount": { "type": "number", "minimum": 0 },
         "appsWithCharsetOkCount": { "type": "number", "minimum": 0 },
         "appsWithoutInlineScriptsCount": { "type": "number", "minimum": 0 },
+        "appsWithoutInlineEventHandlersCount": { "type": "number", "minimum": 0 },
         "appsWithCspSignalCount": { "type": "number", "minimum": 0 },
         "appsWithExternalScriptIntegrityCount": { "type": "number", "minimum": 0 },
         "appsWithoutInsecureRemoteAssetTransportCount": { "type": "number", "minimum": 0 },
@@ -124,6 +126,7 @@
             "charsetOk",
             "cspSignalOk",
             "inlineScriptCount",
+            "inlineEventHandlerCount",
             "externalScriptsWithoutIntegrityCount",
             "externalStylesheetsWithoutIntegrityCount",
             "externalScriptsWithInsecureTransportCount",
@@ -175,6 +178,10 @@
               "type": "boolean"
             },
             "inlineScriptCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "inlineEventHandlerCount": {
               "type": "number",
               "minimum": 0
             },

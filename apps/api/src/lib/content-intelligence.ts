@@ -54,6 +54,7 @@ function hasScriptHygieneBaseline(verification: ShowcaseVerificationEntry | null
   return Boolean(
     verification?.smoke.passed
     && verification.smoke.inlineScriptCount === 0
+    && verification.smoke.inlineEventHandlerCount === 0
     && verification.smoke.externalScriptsWithoutIntegrityCount === 0
     && verification.smoke.externalStylesheetsWithoutIntegrityCount === 0
     && verification.smoke.externalScriptsWithInsecureTransportCount === 0

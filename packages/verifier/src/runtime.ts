@@ -26,6 +26,7 @@ export interface RuntimeAudit {
   charsetOk: boolean;
   cspSignalOk: boolean;
   inlineScriptCount: number;
+  inlineEventHandlerCount: number;
   externalScriptsWithoutIntegrityCount: number;
   externalStylesheetsWithoutIntegrityCount: number;
   externalScriptsWithInsecureTransportCount: number;
@@ -69,6 +70,7 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     charsetOk: false,
     cspSignalOk: false,
     inlineScriptCount: 0,
+    inlineEventHandlerCount: 0,
     externalScriptsWithoutIntegrityCount: 0,
     externalStylesheetsWithoutIntegrityCount: 0,
     externalScriptsWithInsecureTransportCount: 0,
@@ -114,6 +116,10 @@ function extractAssetPaths(indexHtml: string): string[] {
 
 function countInlineScriptTags(html: string): number {
   return html.match(/<script\b(?:(?!\bsrc=)[^>])*>/gi)?.length ?? 0;
+}
+
+function countInlineEventHandlerAttributes(html: string): number {
+  return html.match(/\son[a-z][a-z0-9_-]*\s*=/gi)?.length ?? 0;
 }
 
 function countExternalScriptsWithoutIntegrity(html: string): number {
@@ -282,6 +288,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const charsetOk = /<meta[^>]+charset=/i.test(rootHtml);
     const cspSignalOk = /<meta[^>]+http-equiv=(["'])Content-Security-Policy\1/i.test(rootHtml);
     const inlineScriptCount = countInlineScriptTags(rootHtml);
+    const inlineEventHandlerCount = countInlineEventHandlerAttributes(rootHtml);
     const externalScriptsWithoutIntegrityCount = countExternalScriptsWithoutIntegrity(rootHtml);
     const externalStylesheetsWithoutIntegrityCount = countExternalStylesheetsWithoutIntegrity(rootHtml);
     const externalScriptsWithInsecureTransportCount = countExternalScriptsWithInsecureTransport(rootHtml);
@@ -385,6 +392,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       charsetOk,
       cspSignalOk,
       inlineScriptCount,
+      inlineEventHandlerCount,
       externalScriptsWithoutIntegrityCount,
       externalStylesheetsWithoutIntegrityCount,
       externalScriptsWithInsecureTransportCount,

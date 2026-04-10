@@ -77,6 +77,7 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     charsetOk: runtimeAudit.charsetOk,
     cspSignalOk: runtimeAudit.cspSignalOk,
     inlineScriptCount: runtimeAudit.inlineScriptCount,
+    inlineEventHandlerCount: runtimeAudit.inlineEventHandlerCount,
     externalScriptsWithoutIntegrityCount: runtimeAudit.externalScriptsWithoutIntegrityCount,
     externalStylesheetsWithoutIntegrityCount: runtimeAudit.externalStylesheetsWithoutIntegrityCount,
     externalScriptsWithInsecureTransportCount: runtimeAudit.externalScriptsWithInsecureTransportCount,
@@ -186,6 +187,7 @@ async function main() {
     appsWithViewportOkCount: results.filter(entry => entry.smoke.viewportOk).length,
     appsWithCharsetOkCount: results.filter(entry => entry.smoke.charsetOk).length,
     appsWithoutInlineScriptsCount: results.filter(entry => entry.smoke.inlineScriptCount === 0).length,
+    appsWithoutInlineEventHandlersCount: results.filter(entry => entry.smoke.inlineEventHandlerCount === 0).length,
     appsWithCspSignalCount: results.filter(entry => entry.smoke.cspSignalOk).length,
     appsWithExternalScriptIntegrityCount: results.filter(entry => entry.smoke.externalScriptsWithoutIntegrityCount === 0).length,
     appsWithoutInsecureRemoteAssetTransportCount: results.filter(
