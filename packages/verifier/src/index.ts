@@ -398,6 +398,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authErrorSignals: createSourceAuditBucket(),
     authSuccessSignals: createSourceAuditBucket(),
     authCallbackTokenSignals: createSourceAuditBucket(),
+    authCallbackExchangeSignals: createSourceAuditBucket(),
+    authCallbackExchangeErrorSignals: createSourceAuditBucket(),
     authCallbackErrorSignals: createSourceAuditBucket(),
     authCallbackStateSignals: createSourceAuditBucket(),
     authCallbackStateValidationSignals: createSourceAuditBucket(),
@@ -497,6 +499,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
     recordSourceAudit(summary.authCallbackTokenSignals, relativePath, countAuthCallbackTokenSignals(code, relativePath));
+    recordSourceAudit(summary.authCallbackExchangeSignals, relativePath, countAuthCallbackExchangeSignals(code));
+    recordSourceAudit(summary.authCallbackExchangeErrorSignals, relativePath, countAuthCallbackExchangeErrorSignals(code));
     recordSourceAudit(summary.authCallbackErrorSignals, relativePath, countAuthCallbackErrorSignals(code, relativePath));
     recordSourceAudit(summary.authCallbackStateSignals, relativePath, countAuthCallbackStateSignals(code));
     recordSourceAudit(summary.authCallbackStateValidationSignals, relativePath, countAuthCallbackStateValidationSignals(code));
@@ -664,6 +668,8 @@ interface SourceAuditSummary {
   authErrorSignals: SourceAuditBucket;
   authSuccessSignals: SourceAuditBucket;
   authCallbackTokenSignals: SourceAuditBucket;
+  authCallbackExchangeSignals: SourceAuditBucket;
+  authCallbackExchangeErrorSignals: SourceAuditBucket;
   authCallbackErrorSignals: SourceAuditBucket;
   authCallbackStateSignals: SourceAuditBucket;
   authCallbackStateValidationSignals: SourceAuditBucket;
@@ -1805,6 +1811,25 @@ function appendSourceAuditFindings(
         `Auth success signals: ${sourceAudit.authSuccessSignals.count}`,
       ],
       suggestedFix: 'After callback validation or code exchange succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success/verification state before the next auth step.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authCallbackExchangeSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackExchangeSignals, sourceAudit.authCallbackExchangeErrorSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-callback-exchange-error-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth callback exchange logic exists, but the source tree does not show explicit failure handling if the code/session exchange rejects.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth callback exchange files: ${sourceAudit.authCallbackExchangeSignals.files.join(', ') || 'none'}`,
+        `Callback exchange error-handling files: ${sourceAudit.authCallbackExchangeErrorSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Wrap callback code/session exchange in reviewed catch handling or explicit exchange-error state so failed callback completion does not strand users on an indefinite pending path.',
     }));
   }
 
@@ -3509,6 +3534,25 @@ function countAuthCallbackTokenSignals(code: string, filePath: string): number {
   return count + (/callback/i.test(filePath) ? 1 : 0);
 }
 
+function countAuthCallbackExchangeSignals(code: string): number {
+  const patterns = [
+    /\b(?:exchangeCodeForSession|exchangeTokenForSession|completeAuthCallback|finalizeAuthCallback|handleAuthCallback)\b/gi,
+    /\b(?:auth|supabase\.auth)\.[A-Za-z0-9_]*exchange[A-Za-z0-9_]*\s*\(/gi,
+  ];
+
+  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+}
+
+function countAuthCallbackExchangeErrorSignals(code: string): number {
+  const patterns = [
+    /\b(?:exchangeCodeForSession|exchangeTokenForSession|completeAuthCallback|finalizeAuthCallback|handleAuthCallback)\b[\s\S]{0,240}\.catch\s*\(/gi,
+    /try\s*{[\s\S]{0,240}\b(?:exchangeCodeForSession|exchangeTokenForSession|completeAuthCallback|finalizeAuthCallback|handleAuthCallback)\b[\s\S]{0,240}catch\s*\(/gi,
+    /\b(?:exchangeError|callbackExchangeError|tokenExchangeError|sessionExchangeError)\b/gi,
+  ];
+
+  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAuthCallbackErrorSignals(code: string, filePath: string): number {
   const patterns = [
     /\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:error|error_description|error_code|error_uri)['"`]\s*\)/gi,
@@ -4813,6 +4857,8 @@ export function critiqueSource({
   const authErrorSignalCount = countAuthErrorSignals(code);
   const authSuccessSignalCount = countAuthSuccessSignals(code);
   const authCallbackTokenSignalCount = countAuthCallbackTokenSignals(code, filePath);
+  const authCallbackExchangeSignalCount = countAuthCallbackExchangeSignals(code);
+  const authCallbackExchangeErrorSignalCount = countAuthCallbackExchangeErrorSignals(code);
   const authCallbackErrorSignalCount = countAuthCallbackErrorSignals(code, filePath);
   const authCallbackStateSignalCount = countAuthCallbackStateSignals(code);
   const authCallbackStateValidationSignalCount = countAuthCallbackStateValidationSignals(code);
@@ -5223,6 +5269,25 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'After callback validation or code exchange succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state before the next auth step.',
+    }));
+  }
+
+  if (
+    authCallbackExchangeSignalCount > 0
+    && authCallbackExchangeErrorSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-callback-exchange-error-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed auth callback exchange does not show explicit failure handling if session completion rejects.',
+      evidence: [
+        filePath,
+        `Auth callback exchange signals: ${authCallbackExchangeSignalCount}`,
+        `Auth callback exchange error signals: ${authCallbackExchangeErrorSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'Wrap reviewed callback code/session exchange in catch handling or explicit exchange-error state so failures do not leave users stuck on an indefinite callback surface.',
     }));
   }
 
