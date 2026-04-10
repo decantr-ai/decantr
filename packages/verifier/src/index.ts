@@ -647,6 +647,10 @@ function isRecoveryLikeRoute(route: string): boolean {
   return /(?:^|\/)(?:forgot-password|reset-password|password-reset|recover|recovery)(?:\/|$)/i.test(route);
 }
 
+function isAnonymousEntryLikeRoute(route: string): boolean {
+  return route === '/' || /(?:^|\/)(?:auth|login|log-in|signin|sign-in|signup|sign-up|register)(?:\/|$)/i.test(route);
+}
+
 function isProtectedLikeRoute(route: string): boolean {
   return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/|$)/i.test(route);
 }
@@ -2851,6 +2855,17 @@ function countSignInFlowSignals(code: string, filePath: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0), 0);
 }
 
+function countRecoveryFlowSignals(code: string, filePath: string): number {
+  const patterns = [
+    /\b(?:forgotPassword|resetPassword|sendPasswordReset|requestPasswordReset|recoverAccount|recoverPassword)\s*\(/i,
+    />\s*(?:forgot password|reset password|recover account)\s*</i,
+    /\bnew-password\b/i,
+    /(?:^|\/)(?:forgot-password|reset-password|password-reset|recover|recovery)(?:\/|\.|$)/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0), 0);
+}
+
 function countProtectedSurfaceSignals(code: string): number {
   const patterns = [
     /['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`]/i,
@@ -2895,6 +2910,17 @@ function countAuthRecoveryRouteSignals(code: string): number {
     /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:forgot-password|reset-password|password-reset|recover)(?:[/?#][^'"`]*)?['"`]/gi,
     /\bwindow\.location(?:\.href)?\s*=\s*['"`]\/(?:forgot-password|reset-password|password-reset|recover)(?:[/?#][^'"`]*)?['"`]/gi,
     />\s*(?:forgot password|reset password|recover account)\s*</gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
+function countAnonymousEntryRouteSignals(code: string): number {
+  const patterns = [
+    /\b(?:href|to|route|path)\s*[:=]\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register)?(?:[/?#][^'"`]*)?['"`]/gi,
+    /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register)?(?:[/?#][^'"`]*)?['"`]/gi,
+    /\bwindow\.location(?:\.href)?\s*=\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register)?(?:[/?#][^'"`]*)?['"`]/gi,
+    />\s*(?:back to sign in|back to login|return to sign in|return to login|sign in|log in)\s*</gi,
   ];
 
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
@@ -3852,8 +3878,11 @@ export function critiqueSource({
 
   const hasProtectedRouteInReview = reviewPack?.data.routes.some(route => isProtectedLikeRoute(route.path)) ?? false;
   const hasRecoveryRouteInReview = reviewPack?.data.routes.some(route => isRecoveryLikeRoute(route.path)) ?? false;
+  const hasAnonymousEntryRouteInReview = reviewPack?.data.routes.some(route => isAnonymousEntryLikeRoute(route.path)) ?? false;
   const signInFlowSignals = countSignInFlowSignals(code, filePath);
+  const recoveryFlowSignals = countRecoveryFlowSignals(code, filePath);
   const authRecoveryRouteSignalCount = countAuthRecoveryRouteSignals(code);
+  const anonymousEntryRouteSignalCount = countAnonymousEntryRouteSignals(code);
   if (
     astSignals.authEntrySignalCount > 0
     && hasProtectedRouteInReview
@@ -3892,6 +3921,27 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'Link sign-in users to the reviewed recovery route, such as `/forgot-password` or `/reset-password`, whenever the compiled route contract declares one.',
+    }));
+  }
+
+  if (
+    recoveryFlowSignals > 0
+    && hasAnonymousEntryRouteInReview
+    && anonymousEntryRouteSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'route-auth-entry-return-missing',
+      category: 'Route Topology',
+      severity: 'info',
+      message: 'The reviewed recovery flow does not show an obvious path back into the declared anonymous entry route.',
+      evidence: [
+        filePath,
+        `Recovery flow signals: ${recoveryFlowSignals}`,
+        `Reviewed anonymous entry routes: ${reviewPack?.data.routes.filter(route => isAnonymousEntryLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
+        `Anonymous entry route signals: ${anonymousEntryRouteSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'Link recovery users back to a reviewed anonymous entry route, such as `/login`, `/register`, or `/`, whenever the compiled route contract declares one.',
     }));
   }
 

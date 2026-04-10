@@ -159,6 +159,7 @@ commit archaeology.
 - File critique now also flags auth/session files that omit explicit loading and failure states, so reviewed login/session components surface missing pending/error handling directly instead of relying only on project-audit aggregation.
 - Package graduation audits now report npm authentication health explicitly, so release readiness can distinguish repo-side blockers from "npm credentials are not currently usable" operational blockers.
 - File critique now also flags sign-in flows that omit an obvious path to a declared recovery route, so compiled auth contracts can enforce recovery completeness instead of leaving it implicit.
+- File critique now also flags recovery flows that omit an obvious path back to a declared anonymous entry route, so compiled auth contracts can enforce recovery completeness in both directions.
 - File critique now catches dialog accessibility gaps too, including missing dialog labels and missing modal hints on dialog-like surfaces.
 - Auth verification now flags guard/session files that redirect unauthenticated users toward protected destinations like `/dashboard` instead of anonymous entry routes.
 - File critique now also flags auth-like form inputs that omit `name` attributes, so visually correct login forms do not silently fail browser submission or FormData handling.
