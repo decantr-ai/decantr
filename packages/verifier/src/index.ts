@@ -5358,11 +5358,38 @@ function expressionLooksLikeLocationAssignmentTarget(
 }
 
 function expressionLooksLikeLocationMutationCall(
-  expression: ts.LeftHandSideExpression | ts.SuperProperty | undefined,
+  expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
 ): boolean {
+  if (!expression) return false;
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeLocationMutationCall(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeLocationMutationCall(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && ['assign', 'replace'].includes(propertyAlias.propertyName)
+      && expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   return Boolean(
     expression
     && (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
@@ -5835,21 +5862,21 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
 
       if (
-        expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+        expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
         && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers, namedPropertyAliases)
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
       if (
-        expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+        expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
         && isInsecureTransportUrl(firstArgumentLiteral)
       ) {
         signals.insecureTransportEndpointCount += 1;
       }
 
       if (
-        expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+        expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
         && isExternalUrl(firstArgumentLiteral)
       ) {
         signals.authExternalRedirectSignalCount += 1;
