@@ -1790,6 +1790,7 @@ interface AstCritiqueSignals {
   clientSecretEnvReferenceCount: number;
   wildcardPostMessageCount: number;
   windowOpenWithoutNoopenerCount: number;
+  messageListenerWithoutOriginCheckCount: number;
   externalIframeWithoutSandboxCount: number;
   insecureFormActionCount: number;
   insecureAuthFormMethodCount: number;
@@ -2291,6 +2292,80 @@ function getObjectLiteralStringPropertyValue(
   return null;
 }
 
+function collectNamedFunctionLikeDeclarations(root: ts.Node): Map<string, ts.FunctionLikeDeclarationBase> {
+  const declarations = new Map<string, ts.FunctionLikeDeclarationBase>();
+
+  const visit = (node: ts.Node): void => {
+    if (ts.isFunctionDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
+      declarations.set(node.name.text, node);
+    }
+
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
+      if (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer)) {
+        declarations.set(node.name.text, node.initializer);
+      }
+    }
+
+    node.forEachChild(visit);
+  };
+
+  visit(root);
+  return declarations;
+}
+
+function resolveFunctionLikeHandler(
+  expression: ts.Expression | undefined,
+  namedFunctions: Map<string, ts.FunctionLikeDeclarationBase>,
+): ts.FunctionLikeDeclarationBase | null {
+  if (!expression) return null;
+  if (ts.isArrowFunction(expression) || ts.isFunctionExpression(expression)) {
+    return expression;
+  }
+  if (ts.isIdentifier(expression)) {
+    return namedFunctions.get(expression.text) ?? null;
+  }
+  return null;
+}
+
+function functionLikeReferencesOrigin(node: ts.FunctionLikeDeclarationBase): boolean {
+  let found = false;
+
+  const visit = (current: ts.Node): void => {
+    if (found) return;
+
+    if (ts.isPropertyAccessExpression(current) && isPropertyNamed(current.name, 'origin')) {
+      found = true;
+      return;
+    }
+
+    if (ts.isIdentifier(current) && current.text === 'origin') {
+      found = true;
+      return;
+    }
+
+    if (ts.isBindingElement(current)) {
+      if (ts.isIdentifier(current.name) && current.name.text === 'origin') {
+        found = true;
+        return;
+      }
+      if (current.propertyName && isPropertyNamed(current.propertyName, 'origin')) {
+        found = true;
+        return;
+      }
+    }
+
+    current.forEachChild(visit);
+  };
+
+  node.forEachChild(visit);
+  return found;
+}
+
+function isAddEventListenerCall(node: ts.CallExpression): boolean {
+  return (ts.isIdentifier(node.expression) && node.expression.text === 'addEventListener')
+    || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'addEventListener'));
+}
+
 function isInsecureTransportUrl(value: string | null): boolean {
   return typeof value === 'string' && /^(?:http|ws):\/\//i.test(value.trim());
 }
@@ -2527,6 +2602,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     clientSecretEnvReferenceCount: countClientSecretEnvReferenceSignals(code),
     wildcardPostMessageCount: countWildcardPostMessageSignals(code),
     windowOpenWithoutNoopenerCount: 0,
+    messageListenerWithoutOriginCheckCount: 0,
     externalIframeWithoutSandboxCount: 0,
     insecureFormActionCount: 0,
     insecureAuthFormMethodCount: 0,
@@ -2568,6 +2644,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authGuardSignalCount: countAuthGuardSignals(code),
     authExitSignalCount: countAuthExitSignals(code),
   };
+  const namedFunctionDeclarations = collectNamedFunctionLikeDeclarations(sourceFile);
   const labelForIds = collectLabelForIds(sourceFile);
   let navigationLandmarkCount = 0;
   let unlabeledNavigationLandmarkCount = 0;
@@ -2589,6 +2666,18 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       && isPropertyNamed(node.left.name, 'innerHTML', 'outerHTML')
     ) {
       signals.rawHtmlInjectionCount += 1;
+    }
+
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && ts.isPropertyAccessExpression(node.left)
+      && isPropertyNamed(node.left.name, 'onmessage')
+    ) {
+      const handler = resolveFunctionLikeHandler(node.right, namedFunctionDeclarations);
+      if (handler && !functionLikeReferencesOrigin(handler)) {
+        signals.messageListenerWithoutOriginCheckCount += 1;
+      }
     }
 
     if (
@@ -2654,6 +2743,13 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && secondArgumentLiteral === '*'
       ) {
         signals.wildcardPostMessageCount += 1;
+      }
+
+      if (isAddEventListenerCall(node) && firstArgumentLiteral === 'message') {
+        const handler = resolveFunctionLikeHandler(node.arguments[1], namedFunctionDeclarations);
+        if (handler && !functionLikeReferencesOrigin(handler)) {
+          signals.messageListenerWithoutOriginCheckCount += 1;
+        }
       }
 
       if (
@@ -3414,6 +3510,7 @@ export function critiqueSource({
   const clientSecretEnvReferenceCount = astSignals.clientSecretEnvReferenceCount;
   const wildcardPostMessageCount = astSignals.wildcardPostMessageCount;
   const windowOpenWithoutNoopenerCount = astSignals.windowOpenWithoutNoopenerCount;
+  const messageListenerWithoutOriginCheckCount = astSignals.messageListenerWithoutOriginCheckCount;
   const authStorageWriteCount = astSignals.authStorageWriteCount;
   const authCookieWriteCount = astSignals.authCookieWriteCount;
   const authHeaderWriteCount = astSignals.authHeaderWriteCount;
@@ -3434,6 +3531,7 @@ export function critiqueSource({
   const hasClientSecretEnvReferences = clientSecretEnvReferenceCount > 0;
   const hasWildcardPostMessage = wildcardPostMessageCount > 0;
   const hasWindowOpenWithoutNoopener = windowOpenWithoutNoopenerCount > 0;
+  const hasMessageListenerWithoutOriginCheck = messageListenerWithoutOriginCheckCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
   const hasAuthCookieWrites = authCookieWriteCount > 0;
   const hasAuthHeaderWrites = authHeaderWriteCount > 0;
@@ -3453,6 +3551,7 @@ export function critiqueSource({
       - (hasHardcodedSecretSignals ? 3 : 0)
       - (hasClientSecretEnvReferences ? 3 : 0)
       - (hasWildcardPostMessage ? 2 : 0)
+      - (hasMessageListenerWithoutOriginCheck ? 2 : 0)
       - (hasWindowOpenWithoutNoopener ? 1 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
@@ -3460,13 +3559,14 @@ export function critiqueSource({
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
       ...(hasHardcodedSecretSignals ? ['Remove hardcoded secret literals from source immediately and rotate any exposed credentials.'] : []),
       ...(hasClientSecretEnvReferences ? ['Do not reference service-role, secret, or private-key env vars from client-exposed code paths.'] : []),
       ...(hasWildcardPostMessage ? ['Avoid `postMessage(..., "*")`; target a reviewed explicit origin instead of broadcasting to any window origin.'] : []),
+      ...(hasMessageListenerWithoutOriginCheck ? ['Validate `event.origin` inside `message` event handlers before trusting or acting on cross-window data.'] : []),
       ...(hasWindowOpenWithoutNoopener ? ['When opening a new tab imperatively, include `noopener,noreferrer` features so the new page cannot retain opener access.'] : []),
       ...(hasExternalIframeWithoutSandbox ? ['Sandbox external iframes unless a reviewed embed contract explicitly requires broader privileges.'] : []),
       ...(hasInsecureFormAction ? ['Avoid posting forms to plain HTTP endpoints; use HTTPS or move the action behind a trusted server boundary.'] : []),
@@ -3549,6 +3649,18 @@ export function critiqueSource({
       evidence: [filePath, `Wildcard postMessage calls: ${wildcardPostMessageCount}`],
       file: filePath,
       suggestedFix: 'Replace `postMessage(..., "*")` with an explicit reviewed origin so messages only cross the intended trust boundary.',
+    }));
+  }
+
+  if (hasMessageListenerWithoutOriginCheck) {
+    findings.push(makeFinding({
+      id: 'security-message-listener-origin-check-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Cross-window message handlers do not appear to validate `event.origin` before trusting inbound messages.',
+      evidence: [filePath, `Message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}`],
+      file: filePath,
+      suggestedFix: 'Check `event.origin` against an explicit reviewed allowlist or expected origin before acting on `message` event payloads.',
     }));
   }
 
