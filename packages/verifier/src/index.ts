@@ -3421,6 +3421,21 @@ function collectNamedFunctionLikeDeclarations(root: ts.Node): Map<string, ts.Fun
   return declarations;
 }
 
+function collectNamedExpressionInitializers(root: ts.Node): Map<string, ts.Expression> {
+  const initializers = new Map<string, ts.Expression>();
+
+  const visit = (node: ts.Node): void => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
+      initializers.set(node.name.text, node.initializer);
+    }
+
+    node.forEachChild(visit);
+  };
+
+  visit(root);
+  return initializers;
+}
+
 function resolveFunctionLikeHandler(
   expression: ts.Expression | undefined,
   namedFunctions: Map<string, ts.FunctionLikeDeclarationBase>,
@@ -4427,9 +4442,44 @@ function countAuthOpenRedirectSignals(code: string): number {
 function expressionContainsOpenRedirectSource(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression> = new Map(),
+  seenIdentifiers: Set<string> = new Set(),
 ): boolean {
   if (!expression) return false;
-  return OPEN_REDIRECT_SOURCE_REGEX.test(expression.getText(sourceFile));
+  if (OPEN_REDIRECT_SOURCE_REGEX.test(expression.getText(sourceFile))) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isBinaryExpression(expression)) {
+    return expressionContainsOpenRedirectSource(expression.left, sourceFile, namedExpressions, seenIdentifiers)
+      || expressionContainsOpenRedirectSource(expression.right, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isConditionalExpression(expression)) {
+    return expressionContainsOpenRedirectSource(expression.condition, sourceFile, namedExpressions, seenIdentifiers)
+      || expressionContainsOpenRedirectSource(expression.whenTrue, sourceFile, namedExpressions, seenIdentifiers)
+      || expressionContainsOpenRedirectSource(expression.whenFalse, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) {
+      return false;
+    }
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) {
+      return false;
+    }
+    seenIdentifiers.add(expression.text);
+    const result = expressionContainsOpenRedirectSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    seenIdentifiers.delete(expression.text);
+    return result;
+  }
+
+  return false;
 }
 
 function isRouteTransitionCall(node: ts.CallExpression): boolean {
@@ -4593,6 +4643,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authSessionTeardownSignalCount: countAuthSessionTeardownSignals(code),
   };
   const namedFunctionDeclarations = collectNamedFunctionLikeDeclarations(sourceFile);
+  const namedExpressionInitializers = collectNamedExpressionInitializers(sourceFile);
   const labelForIds = collectLabelForIds(sourceFile);
   let navigationLandmarkCount = 0;
   let unlabeledNavigationLandmarkCount = 0;
@@ -4609,7 +4660,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         isPropertyNamed(node.name, 'href', 'to')
         && node.initializer
         && ts.isJsxExpression(node.initializer)
-        && expressionContainsOpenRedirectSource(node.initializer.expression, sourceFile)
+        && expressionContainsOpenRedirectSource(node.initializer.expression, sourceFile, namedExpressionInitializers)
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
@@ -4781,7 +4832,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         signals.insecureTransportEndpointCount += 1;
       }
 
-      if (isRouteTransitionCall(node) && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile)) {
+      if (isRouteTransitionCall(node) && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers)) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
