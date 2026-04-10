@@ -384,6 +384,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authExternalRedirectSignals: createSourceAuditBucket(),
     authProviderStateSignals: createSourceAuditBucket(),
     authProviderPkceSignals: createSourceAuditBucket(),
+    authProviderNonceSignals: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
     skipNavTargetIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
@@ -447,6 +448,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.authExternalRedirectSignalCount
       + signals.authProviderStateMissingCount
       + signals.authProviderPkceMissingCount
+      + signals.authProviderNonceMissingCount
       + signals.externalBlankLinkWithoutRelCount;
     const authInputHintIssueCount = signals.emailAutocompleteMissingCount
       + signals.passwordAutocompleteMissingCount
@@ -466,6 +468,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authExternalRedirectSignals, relativePath, signals.authExternalRedirectSignalCount);
     recordSourceAudit(summary.authProviderStateSignals, relativePath, signals.authProviderStateMissingCount);
     recordSourceAudit(summary.authProviderPkceSignals, relativePath, signals.authProviderPkceMissingCount);
+    recordSourceAudit(summary.authProviderNonceSignals, relativePath, signals.authProviderNonceMissingCount);
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
     for (const targetId of signals.skipNavTargetIds) {
@@ -633,6 +636,7 @@ interface SourceAuditSummary {
   authExternalRedirectSignals: SourceAuditBucket;
   authProviderStateSignals: SourceAuditBucket;
   authProviderPkceSignals: SourceAuditBucket;
+  authProviderNonceSignals: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
   skipNavTargetIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
@@ -1889,6 +1893,27 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authProviderNonceSignals.count > 0
+    && (
+      sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.authEntrySignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.signInFlowSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.signUpFlowSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.recoveryFlowSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.authExitSignals)
+    )
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-provider-nonce-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files hardcode provider-style OIDC id_token URLs without a `nonce` parameter.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authProviderNonceSignals, 'Auth provider id_token flows missing nonce'),
+      suggestedFix: 'When auth flows hand off to an external provider authorize URL that requests `id_token`, include a reviewed `nonce` and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.',
+    }));
+  }
+
   if (topology.hasAuthFeature && topology.gatewayRoutes.length === 0 && sourceAudit.authEntrySignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-entry-surface-missing',
@@ -2375,6 +2400,7 @@ interface AstCritiqueSignals {
   authExternalRedirectSignalCount: number;
   authProviderStateMissingCount: number;
   authProviderPkceMissingCount: number;
+  authProviderNonceMissingCount: number;
   authStorageWriteCount: number;
   authStorageClearCount: number;
   authCookieWriteCount: number;
@@ -3170,6 +3196,15 @@ function isAuthProviderCodeFlowMissingPkce(value: string | null): boolean {
   return !url.searchParams.has('code_challenge');
 }
 
+function isAuthProviderIdTokenFlowMissingNonce(value: string | null): boolean {
+  const url = parseExternalUrl(value);
+  if (!url || !isProviderAuthorizeUrl(url)) return false;
+
+  const responseType = url.searchParams.get('response_type')?.toLowerCase() ?? '';
+  if (!responseType.includes('id_token')) return false;
+  return !url.searchParams.has('nonce');
+}
+
 function hasMainLandmarkSignal(attributes: ts.JsxAttributes, tagName: string | null): boolean {
   if (tagName === 'main') return true;
 
@@ -3589,6 +3624,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authExternalRedirectSignalCount: 0,
     authProviderStateMissingCount: 0,
     authProviderPkceMissingCount: 0,
+    authProviderNonceMissingCount: 0,
     authStorageWriteCount: 0,
     authStorageClearCount: countAuthStorageClearSignals(code),
     authCookieWriteCount: 0,
@@ -3635,6 +3671,13 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       ) {
         signals.authProviderPkceMissingCount += 1;
       }
+
+      if (
+        isPropertyNamed(node.name, 'href', 'to')
+        && isAuthProviderIdTokenFlowMissingNonce(getJsxAttributeLiteralValue(node))
+      ) {
+        signals.authProviderNonceMissingCount += 1;
+      }
     }
 
     if (
@@ -3667,6 +3710,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (isAuthProviderCodeFlowMissingPkce(getExpressionLiteralValue(node.right))) {
         signals.authProviderPkceMissingCount += 1;
+      }
+      if (isAuthProviderIdTokenFlowMissingNonce(getExpressionLiteralValue(node.right))) {
+        signals.authProviderNonceMissingCount += 1;
       }
     }
 
@@ -3791,6 +3837,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         if (isAuthProviderCodeFlowMissingPkce(firstArgumentLiteral)) {
           signals.authProviderPkceMissingCount += 1;
         }
+        if (isAuthProviderIdTokenFlowMissingNonce(firstArgumentLiteral)) {
+          signals.authProviderNonceMissingCount += 1;
+        }
       }
 
       if (
@@ -3821,6 +3870,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         }
         if (isAuthProviderCodeFlowMissingPkce(firstArgumentLiteral)) {
           signals.authProviderPkceMissingCount += 1;
+        }
+        if (isAuthProviderIdTokenFlowMissingNonce(firstArgumentLiteral)) {
+          signals.authProviderNonceMissingCount += 1;
         }
       }
 
@@ -4952,6 +5004,7 @@ export function critiqueSource({
   const authExternalRedirectSignalCount = astSignals.authExternalRedirectSignalCount;
   const authProviderStateMissingCount = astSignals.authProviderStateMissingCount;
   const authProviderPkceMissingCount = astSignals.authProviderPkceMissingCount;
+  const authProviderNonceMissingCount = astSignals.authProviderNonceMissingCount;
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
   const otpAutocompleteMissingCount = astSignals.otpAutocompleteMissingCount;
@@ -4979,6 +5032,7 @@ export function critiqueSource({
   const hasAuthExternalRedirectSignals = authExternalRedirectSignalCount > 0;
   const hasAuthProviderStateMissing = authProviderStateMissingCount > 0;
   const hasAuthProviderPkceMissing = authProviderPkceMissingCount > 0;
+  const hasAuthProviderNonceMissing = authProviderNonceMissingCount > 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0
     || passwordAutocompleteMissingCount > 0
     || otpAutocompleteMissingCount > 0
@@ -5025,13 +5079,14 @@ export function critiqueSource({
       - (hasAuthExternalRedirectSignals ? 2 : 0)
       - (hasAuthProviderStateMissing ? 2 : 0)
       - (hasAuthProviderPkceMissing ? 2 : 0)
+      - (hasAuthProviderNonceMissing ? 2 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, auth provider URLs missing state: ${authProviderStateMissingCount}, auth provider code flows missing PKCE: ${authProviderPkceMissingCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, auth provider URLs missing state: ${authProviderStateMissingCount}, auth provider code flows missing PKCE: ${authProviderPkceMissingCount}, auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -5052,6 +5107,7 @@ export function critiqueSource({
       ...(hasAuthExternalRedirectSignals ? ['Avoid hard-redirecting auth flows to external URLs from app code. Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration.'] : []),
       ...(hasAuthProviderStateMissing ? ['When auth flows hand off to a provider authorize URL, include a reviewed `state` value and validate it on return instead of hardcoding off-site auth entry without CSRF protection.'] : []),
       ...(hasAuthProviderPkceMissing ? ['When client-managed auth flows hand off to a provider code-flow authorize URL, include a reviewed PKCE `code_challenge` and verifier instead of hardcoding a bare authorization-code redirect from client code.'] : []),
+      ...(hasAuthProviderNonceMissing ? ['When auth flows hand off to a provider authorize URL that requests `id_token`, include a reviewed `nonce` and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, `new-password`, or `one-time-code` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
       ...(hasAuthStorageClearGap ? ['If auth data is stored in browser storage, explicitly remove those auth/session keys during sign-out instead of relying on redirects or generic sign-out helpers alone.'] : []),
@@ -5309,6 +5365,21 @@ export function critiqueSource({
       evidence: [filePath, `Auth provider code flows missing PKCE: ${authProviderPkceMissingCount}`],
       file: filePath,
       suggestedFix: 'Add a reviewed PKCE `code_challenge` and verifier to external provider code flows instead of hardcoding a bare authorization-code redirect from client code.',
+    }));
+  }
+
+  if (
+    hasAuthProviderNonceMissing
+    && (signInFlowSignals > 0 || signUpFlowSignals > 0 || recoveryFlowSignals > 0 || authExitSignalCount > 0)
+  ) {
+    findings.push(makeFinding({
+      id: 'security-auth-provider-nonce-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'The reviewed auth flow hardcodes a provider-style OIDC id_token URL without a `nonce` parameter.',
+      evidence: [filePath, `Auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}`],
+      file: filePath,
+      suggestedFix: 'Add a reviewed `nonce` value to external provider authorize URLs that request `id_token`, and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.',
     }));
   }
 
