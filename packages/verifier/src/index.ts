@@ -4410,11 +4410,15 @@ function countAuthAnonymousRedirectSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+const OPEN_REDIRECT_QUERY_KEY_PATTERN = String.raw`next|redirect(?:To)?|returnTo|callbackUrl|continue|from`;
+const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})\b|\b(?:new\s+)?URLSearchParams\s*\(\s*(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)`;
+const OPEN_REDIRECT_SOURCE_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'i');
+const OPEN_REDIRECT_SOURCE_GLOBAL_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'gi');
+
 function countAuthOpenRedirectSignals(code: string): number {
   const patterns = [
-    /\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)['"`]\s*\)[^)]*\)/gi,
-    /\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*\b(?:router\.query|route\.query|query)\.(?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)\b[^)]*\)/gi,
-    /\bwindow\.location(?:\.href)?\s*=\s*[^;\n]*\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)['"`]\s*\)/gi,
+    new RegExp(String.raw`\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*(?:${OPEN_REDIRECT_SOURCE_PATTERN})[^)]*\)`, 'gi'),
+    new RegExp(String.raw`\bwindow\.location(?:\.href)?\s*=\s*[^;\n]*(?:${OPEN_REDIRECT_SOURCE_PATTERN})`, 'gi'),
   ];
 
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
@@ -4425,8 +4429,7 @@ function expressionContainsOpenRedirectSource(
   sourceFile: ts.SourceFile,
 ): boolean {
   if (!expression) return false;
-  return /\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)['"`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)\b/i
-    .test(expression.getText(sourceFile));
+  return OPEN_REDIRECT_SOURCE_REGEX.test(expression.getText(sourceFile));
 }
 
 function isRouteTransitionCall(node: ts.CallExpression): boolean {
