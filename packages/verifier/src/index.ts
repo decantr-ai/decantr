@@ -4807,6 +4807,34 @@ function expressionLooksLikeOpenRedirectEntriesCarrier(
 
   if (
     ts.isCallExpression(expression)
+    && ts.isPropertyAccessExpression(expression.expression)
+    && ts.isIdentifier(expression.expression.expression)
+    && expression.expression.expression.text === 'Array'
+    && isPropertyNamed(expression.expression.name, 'from')
+    && expression.arguments.length > 0
+    && (
+      expressionLooksLikeOpenRedirectEntriesCarrier(expression.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      || expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isArrayLiteralExpression(expression)
+    && expression.elements.some((element) =>
+      ts.isSpreadElement(element)
+      && (
+        expressionLooksLikeOpenRedirectEntriesCarrier(element.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+        || expressionLooksLikeOpenRedirectSearchParamsCarrier(element.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      )
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isCallExpression(expression)
     && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
     && isMemberAccessNamed(expression.expression, 'entries')
     && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
