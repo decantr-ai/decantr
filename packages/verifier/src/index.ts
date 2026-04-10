@@ -5182,6 +5182,42 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
     return true;
   }
 
+  if (
+    isCallLikeExpression(expression)
+    && isPropertyLikeAccessExpression(expression.expression)
+    && ts.isIdentifier(expression.expression.expression)
+    && expression.expression.expression.text === 'Array'
+    && isPropertyNamed(expression.expression.name, 'from')
+    && expression.arguments.length > 0
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isArrayLiteralExpression(expression)
+    && expression.elements.some((element) =>
+      ts.isSpreadElement(element)
+      && expressionLooksLikeOpenRedirectQueryGetterFunction(
+        element.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      )
+    )
+  ) {
+    return true;
+  }
+
   if (isCallLikeExpression(expression)) {
     const functionResolution = resolveTrackedOpenRedirectFunctionLike(
       expression.expression,
