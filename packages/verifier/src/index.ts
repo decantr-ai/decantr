@@ -6696,13 +6696,13 @@ function expressionLooksLikeBrowserGlobalUriCodecHelper(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isIdentifier(expression) && ['decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent'].includes(expression.text)) {
+  if (ts.isIdentifier(expression) && ['decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape'].includes(expression.text)) {
     return true;
   }
 
   if (
     isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent')
+    && isMemberAccessNamed(expression, 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape')
     && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
   ) {
     return true;
@@ -6739,7 +6739,7 @@ function expressionLooksLikeBrowserGlobalUriCodecHelper(
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
       propertyAlias
-      && ['decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent'].includes(propertyAlias.propertyName)
+      && ['decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape'].includes(propertyAlias.propertyName)
       && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
     ) {
       return true;
