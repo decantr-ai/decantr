@@ -5049,6 +5049,24 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
     );
   }
 
+  if (ts.isConditionalExpression(expression)) {
+    return expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.whenTrue,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    ) || expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.whenFalse,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    );
+  }
+
   if (
     isCallLikeExpression(expression)
     && ts.isIdentifier(expression.expression)
