@@ -5124,7 +5124,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'reverse', 'toReversed', 'sort', 'toSorted', 'concat', 'flat', 'flatMap')
+    && isMemberAccessNamed(expression.expression, 'reverse', 'toReversed', 'sort', 'toSorted', 'concat', 'flat', 'map', 'flatMap')
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
