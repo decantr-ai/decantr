@@ -4403,6 +4403,125 @@ describe('verifier', () => {
     }
   });
 
+  it('flags auth-loading branches that still expose URLSearchParams payload objects in route arrays during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              { id: 'gateway', role: 'gateway', pages: [{ id: 'login', route: '/login', layout: ['form'] }] },
+              { id: 'workspace', role: 'primary', pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }] },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'DashboardGate.tsx'),
+        `
+          export function DashboardGate() {
+            const { status, data: session } = useSession();
+
+            if (status === 'loading') {
+              return <QuickNav items={[{ payload: new URLSearchParams({ next: '/dashboard' }), label: 'Dashboard' }]} />;
+            }
+
+            return <DashboardShell session={session} path="/dashboard" />;
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-loading-protected-render')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('flags unauthenticated branches that still expose direct URLSearchParams auth payload objects during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              { id: 'gateway', role: 'gateway', pages: [{ id: 'login', route: '/login', layout: ['form'] }] },
+              { id: 'workspace', role: 'primary', pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }] },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'DashboardGate.tsx'),
+        `
+          export function DashboardGate() {
+            const { status, data: session } = useSession();
+            const currentUser = session?.user;
+
+            if (status === 'loading') {
+              return <Spinner />;
+            }
+
+            if (!session) {
+              return <StatusCard payload={new URLSearchParams({ email: currentUser?.email })} />;
+            }
+
+            return <DashboardShell session={session} path="/dashboard" />;
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-session-loss-protected-render')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('flags auth-loading branches that still expose protected route props through JSX expressions during project audit', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -15344,6 +15463,101 @@ describe('verifier', () => {
 
           if (!session) {
             return <StatusCard payload={createSearchParams({ email: currentUser?.email }).toString()} />;
+          }
+
+          return <DashboardShell session={session} path="/dashboard" />;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['sidebar'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['sidebar'] }],
+          focusAreas: ['route-topology', 'state-handling'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'state-auth-session-loss-protected-render')).toBe(true);
+  });
+
+  it('flags auth-loading branches that still expose URLSearchParams payload objects in route arrays during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/DashboardGate.tsx',
+      code: `
+        export function DashboardGate() {
+          const { status, data: session } = useSession();
+
+          if (status === 'loading') {
+            return <QuickNav items={[{ payload: new URLSearchParams({ next: '/dashboard' }), label: 'Dashboard' }]} />;
+          }
+
+          return <DashboardShell session={session} path="/dashboard" />;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['sidebar'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['sidebar'] }],
+          focusAreas: ['route-topology', 'state-handling'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'state-auth-loading-protected-render')).toBe(true);
+  });
+
+  it('flags unauthenticated branches that still expose direct URLSearchParams auth payload objects during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/DashboardGate.tsx',
+      code: `
+        export function DashboardGate() {
+          const { status, data: session } = useSession();
+          const currentUser = session?.user;
+
+          if (status === 'loading') {
+            return <Spinner />;
+          }
+
+          if (!session) {
+            return <StatusCard payload={new URLSearchParams({ email: currentUser?.email })} />;
           }
 
           return <DashboardShell session={session} path="/dashboard" />;
