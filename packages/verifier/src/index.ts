@@ -5441,6 +5441,46 @@ function expressionLooksLikeWindowOpenCall(
   );
 }
 
+function expressionLooksLikeHistoryMutationCall(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeHistoryMutationCall(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeHistoryMutationCall(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && ['pushState', 'replaceState'].includes(propertyAlias.propertyName)
+      && expressionLooksLikeHistoryObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  return Boolean(
+    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessNamed(expression, 'pushState', 'replaceState')
+    && expressionLooksLikeHistoryObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+  );
+}
+
 function isRouteTransitionCall(node: ts.CallExpression): boolean {
   return (ts.isIdentifier(node.expression) && ['redirect', 'navigate'].includes(node.expression.text))
     || (
@@ -5467,9 +5507,7 @@ function getRouteTransitionTargetExpression(
   }
 
   if (
-    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
-    && isMemberAccessNamed(node.expression, 'pushState', 'replaceState')
-    && expressionLooksLikeHistoryObjectSource(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    expressionLooksLikeHistoryMutationCall(node.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
     return node.arguments[2];
   }
