@@ -2168,9 +2168,18 @@ function appendSourceAuditFindings(
   if (
     topology.hasAuthFeature
     && topology.gatewayRoutes.some(route => isSignInLikeRoute(route))
-    && (sourceAudit.authCallbackTokenSignals.count > 0 || sourceAudit.authCallbackStateSignals.count > 0)
-    && sourceAudit.authCallbackErrorSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackErrorSignals, sourceAudit.signInRouteSignals)
+    && (
+      (
+        (sourceAudit.authCallbackTokenSignals.count > 0 || sourceAudit.authCallbackStateSignals.count > 0)
+        && sourceAudit.authCallbackErrorSignals.count > 0
+        && !sourceAuditBucketsOverlap(sourceAudit.authCallbackErrorSignals, sourceAudit.signInRouteSignals)
+      )
+      || (
+        sourceAudit.authCallbackExchangeSignals.count > 0
+        && sourceAudit.authCallbackExchangeErrorSignals.count > 0
+        && !sourceAuditBucketsOverlap(sourceAudit.authCallbackExchangeErrorSignals, sourceAudit.signInRouteSignals)
+      )
+    )
   ) {
     findings.push(makeFinding({
       id: 'source-auth-callback-entry-return-missing',
@@ -2180,9 +2189,10 @@ function appendSourceAuditFindings(
       evidence: [
         `Source files checked: ${sourceAudit.filesChecked}`,
         `Callback error-handling signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
+        `Callback exchange error-handling files: ${sourceAudit.authCallbackExchangeErrorSignals.files.join(', ') || 'none'}`,
         `Sign-in route signal files: ${sourceAudit.signInRouteSignals.files.join(', ') || 'none'}`,
       ],
-      suggestedFix: 'When reviewed callback handling fails, link or redirect users back to the declared sign-in route, such as `/login` or `/sign-in`, instead of leaving the callback failure state isolated.',
+      suggestedFix: 'When reviewed callback handling or callback session exchange fails, link or redirect users back to the declared sign-in route, such as `/login` or `/sign-in`, instead of leaving the callback failure state isolated.',
     }));
   }
 
@@ -5132,8 +5142,16 @@ export function critiqueSource({
   }
 
   if (
-    (authCallbackTokenSignalCount > 0 || authCallbackStateSignalCount > 0)
-    && authCallbackErrorSignalCount > 0
+    (
+      (
+        (authCallbackTokenSignalCount > 0 || authCallbackStateSignalCount > 0)
+        && authCallbackErrorSignalCount > 0
+      )
+      || (
+        authCallbackExchangeSignalCount > 0
+        && authCallbackExchangeErrorSignalCount > 0
+      )
+    )
     && hasSignInRouteInReview
     && signInRouteSignalCount === 0
   ) {
@@ -5146,11 +5164,13 @@ export function critiqueSource({
         filePath,
         `Auth callback token reads: ${authCallbackTokenSignalCount}`,
         `Auth callback error signals: ${authCallbackErrorSignalCount}`,
+        `Auth callback exchange signals: ${authCallbackExchangeSignalCount}`,
+        `Auth callback exchange error signals: ${authCallbackExchangeErrorSignalCount}`,
         `Reviewed sign-in routes: ${reviewPack?.data.routes.filter(route => isSignInLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
         `Sign-in route signals: ${signInRouteSignalCount}`,
       ],
       file: filePath,
-      suggestedFix: 'When callback handling fails, link or redirect users back to a reviewed sign-in route such as `/login` or `/sign-in` instead of leaving them on an isolated callback error state.',
+      suggestedFix: 'When callback handling or callback session exchange fails, link or redirect users back to a reviewed sign-in route such as `/login` or `/sign-in` instead of leaving users on an isolated callback failure state.',
     }));
   }
 
