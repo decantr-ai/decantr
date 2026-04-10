@@ -1784,6 +1784,30 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && (sourceAudit.authCallbackTokenSignals.count > 0 || sourceAudit.authCallbackStateSignals.count > 0)
+    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackTokenSignals, sourceAudit.authProtectedRedirectSignals)
+    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackTokenSignals, sourceAudit.authSuccessSignals)
+    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackStateSignals, sourceAudit.authProtectedRedirectSignals)
+    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackStateSignals, sourceAudit.authSuccessSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-callback-success-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Auth callback handling exists, but the source tree does not show either a reviewed protected transition or an explicit success state after callback exchange completes.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth callback token files: ${sourceAudit.authCallbackTokenSignals.files.join(', ') || 'none'}`,
+        `Auth callback state files: ${sourceAudit.authCallbackStateSignals.files.join(', ') || 'none'}`,
+        `Protected auth redirects: ${sourceAudit.authProtectedRedirectSignals.count}`,
+        `Auth success signals: ${sourceAudit.authSuccessSignals.count}`,
+      ],
+      suggestedFix: 'After callback validation or code exchange succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success/verification state before the next auth step.',
+    }));
+  }
+
   if (topology.hasAuthFeature && sourceAudit.authExitSignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-exit-signals-missing',
@@ -5177,6 +5201,28 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'After registration succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state such as "account created" or "check your email" before the next auth step.',
+    }));
+  }
+
+  if (
+    (authCallbackTokenSignalCount > 0 || authCallbackStateSignalCount > 0)
+    && authProtectedRedirectSignalCount === 0
+    && authSuccessSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-callback-success-missing',
+      category: 'State Handling',
+      severity: 'info',
+      message: 'The reviewed auth callback flow does not show either a protected post-auth transition or an explicit success/verification state.',
+      evidence: [
+        filePath,
+        `Auth callback token reads: ${authCallbackTokenSignalCount}`,
+        `Auth callback state reads: ${authCallbackStateSignalCount}`,
+        `Protected auth redirects: ${authProtectedRedirectSignalCount}`,
+        `Auth success signals: ${authSuccessSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'After callback validation or code exchange succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state before the next auth step.',
     }));
   }
 
