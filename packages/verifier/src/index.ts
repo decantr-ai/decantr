@@ -414,6 +414,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authHeaderClears: createSourceAuditBucket(),
     authCacheClients: createSourceAuditBucket(),
     authCacheClears: createSourceAuditBucket(),
+    authRefreshSignals: createSourceAuditBucket(),
+    authRefreshClears: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
     authExitSignals: createSourceAuditBucket(),
     authSessionTeardownSignals: createSourceAuditBucket(),
@@ -517,6 +519,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authHeaderClears, relativePath, signals.authHeaderClearCount);
     recordSourceAudit(summary.authCacheClients, relativePath, signals.authCacheClientCount);
     recordSourceAudit(summary.authCacheClears, relativePath, signals.authCacheClearCount);
+    recordSourceAudit(summary.authRefreshSignals, relativePath, signals.authRefreshSignalCount);
+    recordSourceAudit(summary.authRefreshClears, relativePath, signals.authRefreshClearCount);
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
     recordSourceAudit(summary.authSessionTeardownSignals, relativePath, signals.authSessionTeardownSignalCount);
@@ -688,6 +692,8 @@ interface SourceAuditSummary {
   authHeaderClears: SourceAuditBucket;
   authCacheClients: SourceAuditBucket;
   authCacheClears: SourceAuditBucket;
+  authRefreshSignals: SourceAuditBucket;
+  authRefreshClears: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
   authExitSignals: SourceAuditBucket;
   authSessionTeardownSignals: SourceAuditBucket;
@@ -1675,6 +1681,27 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authRefreshSignals.count > 0
+    && sourceAudit.authExitSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authRefreshSignals, sourceAudit.authRefreshClears)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-refresh-teardown-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth exit flows exist, but the source tree does not show background auth refresh timers or subscriptions being torn down during sign-out.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth refresh files: ${sourceAudit.authRefreshSignals.files.join(', ') || 'none'}`,
+        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+        `Auth refresh clear files: ${sourceAudit.authRefreshClears.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'If auth/session refresh runs on timers or subscriptions, clear those intervals, timeouts, or listeners during sign-out before returning users to an anonymous route.',
+    }));
+  }
+
   if (topology.hasAuthFeature && sourceAudit.authGuardSignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-guard-signals-missing',
@@ -2620,6 +2647,8 @@ interface AstCritiqueSignals {
   authHeaderClearCount: number;
   authCacheClientCount: number;
   authCacheClearCount: number;
+  authRefreshSignalCount: number;
+  authRefreshClearCount: number;
   authGuardSignalCount: number;
   authExitSignalCount: number;
   authSessionTeardownSignalCount: number;
@@ -3754,6 +3783,38 @@ function countAuthCacheClearSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
 }
 
+function countAuthRefreshSignals(code: string): number {
+  let count = 0;
+
+  if (
+    /\b(?:setInterval|setTimeout)\s*\(/i.test(code)
+    && /\b(?:refreshSession|refreshToken|renewSession|getSession|startAutoRefresh)\b/i.test(code)
+  ) {
+    count += 1;
+  }
+
+  if (/\b(?:supabase\.auth|auth)\.onAuthStateChange\s*\(/i.test(code)) {
+    count += 1;
+  }
+
+  if (/\bstartAutoRefresh\s*\(/i.test(code)) {
+    count += 1;
+  }
+
+  return count;
+}
+
+function countAuthRefreshClearSignals(code: string): number {
+  const patterns = [
+    /\bclearInterval\s*\(/gi,
+    /\bclearTimeout\s*\(/gi,
+    /\b(?:subscription|authSubscription|authListener)\.unsubscribe\s*\(/gi,
+    /\bstopAutoRefresh\s*\(/gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAuthEntrySignals(code: string): number {
   const patterns = [
     /\b(?:signIn|signin|logIn|login|register|signUp|signup|createAccount|forgotPassword|resetPassword)\s*\(/i,
@@ -3994,6 +4055,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authHeaderClearCount: 0,
     authCacheClientCount: countAuthCacheClientSignals(code),
     authCacheClearCount: countAuthCacheClearSignals(code),
+    authRefreshSignalCount: countAuthRefreshSignals(code),
+    authRefreshClearCount: countAuthRefreshClearSignals(code),
     authGuardSignalCount: countAuthGuardSignals(code),
     authExitSignalCount: countAuthExitSignals(code),
     authSessionTeardownSignalCount: countAuthSessionTeardownSignals(code),
@@ -4931,6 +4994,8 @@ export function critiqueSource({
   const authHeaderClearCount = astSignals.authHeaderClearCount;
   const authCacheClientCount = astSignals.authCacheClientCount;
   const authCacheClearCount = astSignals.authCacheClearCount;
+  const authRefreshSignalCount = astSignals.authRefreshSignalCount;
+  const authRefreshClearCount = astSignals.authRefreshClearCount;
   const authErrorSignalCount = countAuthErrorSignals(code);
   const authSuccessSignalCount = countAuthSuccessSignals(code);
   const authCallbackTokenSignalCount = countAuthCallbackTokenSignals(code, filePath);
@@ -5103,6 +5168,22 @@ export function critiqueSource({
       evidence: [filePath, `Auth cache clients: ${authCacheClientCount}`, `Auth cache clears: ${authCacheClearCount}`],
       file: filePath,
       suggestedFix: 'If protected data is cached in query clients or client data stores, clear or reset those caches during sign-out before redirecting users back to an anonymous route.',
+    }));
+  }
+
+  if (
+    authExitSignalCount > 0
+    && authRefreshSignalCount > 0
+    && authRefreshClearCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-refresh-teardown-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed auth exit flow starts background auth refresh work but does not show it being torn down during sign-out.',
+      evidence: [filePath, `Auth refresh signals: ${authRefreshSignalCount}`, `Auth refresh clears: ${authRefreshClearCount}`],
+      file: filePath,
+      suggestedFix: 'If auth/session refresh runs on timers or subscriptions, clear those intervals, timeouts, or listeners during sign-out before redirecting users back to an anonymous route.',
     }));
   }
 
