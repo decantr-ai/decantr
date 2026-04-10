@@ -5110,7 +5110,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
 
   if (
     isCallLikeExpression(expression)
-    && ts.isIdentifier(expression.expression)
+    && (ts.isIdentifier(expression.expression) || isMemberAccessExpression(expression.expression))
     && expression.arguments.length > 0
     && expressionLooksLikeBufferFromHelper(
       expression.expression,
@@ -6249,6 +6249,7 @@ function expressionLooksLikeBufferObjectSource(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
 ): boolean {
   if (!expression) return false;
@@ -6258,17 +6259,34 @@ function expressionLooksLikeBufferObjectSource(
   }
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBufferObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeBufferObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (
+    isMemberAccessExpression(expression)
+    && isMemberAccessNamed(expression, 'Buffer')
+    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+  ) {
+    return true;
   }
 
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) return false;
     const initializer = namedExpressions.get(expression.text);
-    if (!initializer) return false;
-    seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeBufferObjectSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
-    seenIdentifiers.delete(expression.text);
-    return result;
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeBufferObjectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      if (result) return true;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && propertyAlias.propertyName === 'Buffer'
+      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+    ) {
+      return true;
+    }
   }
 
   return false;
@@ -6290,6 +6308,7 @@ function expressionLooksLikeBufferFromHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
+      namedPropertyAliases,
       seenIdentifiers,
     )
   ) {
@@ -6317,6 +6336,7 @@ function expressionLooksLikeBufferFromHelper(
         propertyAlias.initializer,
         sourceFile,
         namedExpressions,
+        namedPropertyAliases,
         seenIdentifiers,
       )
     ) {
