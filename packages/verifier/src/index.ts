@@ -4428,7 +4428,9 @@ function countAuthAnonymousRedirectSignals(code: string): number {
 const OPEN_REDIRECT_QUERY_KEY_PATTERN = String.raw`next|redirect(?:To)?|returnTo|callbackUrl|continue|from`;
 const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})\b|\b(?:new\s+)?URLSearchParams\s*\(\s*(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)`;
 const OPEN_REDIRECT_SOURCE_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'i');
-const OPEN_REDIRECT_SOURCE_GLOBAL_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'gi');
+const OPEN_REDIRECT_QUERY_KEY_REGEX = new RegExp(`^(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})$`, 'i');
+const LOCATION_QUERY_SOURCE_REGEX = /\b(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
+const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:window\.)?location\.(?:href|search|hash)\s*\)\b/i;
 
 function countAuthOpenRedirectSignals(code: string): number {
   const patterns = [
@@ -4465,6 +4467,17 @@ function expressionContainsOpenRedirectSource(
       || expressionContainsOpenRedirectSource(expression.whenFalse, sourceFile, namedExpressions, seenIdentifiers);
   }
 
+  if (
+    ts.isCallExpression(expression)
+    && ts.isPropertyAccessExpression(expression.expression)
+    && isPropertyNamed(expression.expression.name, 'get')
+    && expression.arguments.length > 0
+    && isOpenRedirectQueryKeyExpression(expression.arguments[0])
+    && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+  ) {
+    return true;
+  }
+
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) {
       return false;
@@ -4475,6 +4488,109 @@ function expressionContainsOpenRedirectSource(
     }
     seenIdentifiers.add(expression.text);
     const result = expressionContainsOpenRedirectSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    seenIdentifiers.delete(expression.text);
+    return result;
+  }
+
+  return false;
+}
+
+function isOpenRedirectQueryKeyExpression(expression: ts.Expression | undefined): boolean {
+  const value = getExpressionLiteralValue(expression);
+  return typeof value === 'string' && OPEN_REDIRECT_QUERY_KEY_REGEX.test(value);
+}
+
+function expressionLooksLikeLocationQuerySource(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+  if (LOCATION_QUERY_SOURCE_REGEX.test(expression.getText(sourceFile))) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeLocationQuerySource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) return false;
+    seenIdentifiers.add(expression.text);
+    const result = expressionLooksLikeLocationQuerySource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    seenIdentifiers.delete(expression.text);
+    return result;
+  }
+
+  return false;
+}
+
+function expressionLooksLikeLocationUrlSource(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+  if (LOCATION_URL_SOURCE_REGEX.test(expression.getText(sourceFile))) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) return false;
+    seenIdentifiers.add(expression.text);
+    const result = expressionLooksLikeLocationUrlSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    seenIdentifiers.delete(expression.text);
+    return result;
+  }
+
+  return false;
+}
+
+function expressionLooksLikeOpenRedirectSearchParamsCarrier(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+
+  const text = expression.getText(sourceFile);
+  if (/\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\b/i.test(text)) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (
+    ts.isNewExpression(expression)
+    && ts.isIdentifier(expression.expression)
+    && expression.expression.text === 'URLSearchParams'
+  ) {
+    return expressionLooksLikeLocationQuerySource(expression.arguments?.[0], sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'searchParams')) {
+    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (!initializer) return false;
+    seenIdentifiers.add(expression.text);
+    const result = expressionLooksLikeOpenRedirectSearchParamsCarrier(initializer, sourceFile, namedExpressions, seenIdentifiers);
     seenIdentifiers.delete(expression.text);
     return result;
   }
