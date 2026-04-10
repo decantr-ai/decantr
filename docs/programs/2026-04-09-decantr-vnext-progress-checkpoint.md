@@ -486,6 +486,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Protected auth-loss and auth-loading detection now also catches helper-generated `pathname` route objects like `to={{ pathname: generatePath('/dashboard') }}` and `navigate({ pathname: createPath({ pathname: '/dashboard' }) })`, so guarded branches cannot smuggle protected destinations through route-object wrappers after auth loss.
 - Protected auth-loss and auth-loading detection now also catches array-carried route payloads like `items={[{ to: '/dashboard' }]}` and `links={[{ href: '/dashboard' }]}`, so reviewed gateway branches cannot preserve privileged destinations by tucking them into nav/config collections after auth loss.
 - Protected auth-loss and auth-loading detection now also catches helper-generated destinations inside nav/config arrays like `items={[{ to: generatePath('/dashboard') }]}` and `links={[{ pathname: createPath({ pathname: '/dashboard' }) }]}`, so reviewed gateway branches cannot preserve privileged destinations by combining array-carried configs with router helper APIs after auth loss.
+- Protected auth-loss and auth-loading detection now also catches helper-style redirect props inside nav/config arrays like `items={[{ redirectTo: '/dashboard' }]}` and `links={[{ returnTo: generatePath('/dashboard') }]}`, so reviewed gateway branches cannot preserve privileged destinations by swapping route keys for helper-prop keys inside array-carried configs after auth loss.
 
 ## Highest-Value Next Streams
 
