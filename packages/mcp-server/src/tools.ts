@@ -1584,17 +1584,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const scaffoldSelected = hostedScaffold.selected;
         const reviewSelected = hostedReview.selected;
         if (scaffoldSelected && reviewSelected) {
+          const scaffoldPayload = toHostedExecutionPackPayload(scaffoldSelected.pack);
+          const reviewPayload = toHostedExecutionPackPayload(reviewSelected.pack);
           return {
             source: 'hosted_fallback' as PackSource,
             task_context: null,
-            scaffold_context: null,
-            execution_pack: toHostedExecutionPackPayload(scaffoldSelected.pack),
-            review_pack: toHostedExecutionPackPayload(reviewSelected.pack),
+            scaffold_context: scaffoldPayload.markdown,
+            execution_pack: scaffoldPayload,
+            review_pack: reviewPayload,
             pack_manifest: scaffoldSelected.manifest,
             available_sections: scaffoldSelected.manifest.sections.map(section => ({ id: section.id, page_ids: section.pageIds })),
             available_pages: scaffoldSelected.manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
             available_mutations: (scaffoldSelected.manifest.mutations ?? []).map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })),
-            note: 'Using hosted selected execution packs because local scaffold context artifacts were not found.',
+            note: 'Using hosted selected execution packs because local scaffold context artifacts were not found; scaffold pack markdown is being reused as readable scaffold context.',
           };
         }
 
@@ -1606,17 +1608,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           };
         }
 
+        const scaffoldPayload = toHostedExecutionPackPayload(hosted.bundle.scaffold);
+        const reviewPayload = toHostedExecutionPackPayload(hosted.bundle.review);
         return {
           source: 'hosted_fallback' as PackSource,
           task_context: null,
-          scaffold_context: null,
-          execution_pack: toHostedExecutionPackPayload(hosted.bundle.scaffold),
-          review_pack: toHostedExecutionPackPayload(hosted.bundle.review),
+          scaffold_context: scaffoldPayload.markdown,
+          execution_pack: scaffoldPayload,
+          review_pack: reviewPayload,
           pack_manifest: hosted.bundle.manifest,
           available_sections: hosted.bundle.manifest.sections.map(section => ({ id: section.id, page_ids: section.pageIds })),
           available_pages: hosted.bundle.manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
           available_mutations: (hosted.bundle.manifest.mutations ?? []).map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })),
-          note: 'Using hosted compiled execution packs because local scaffold context artifacts were not found.',
+          note: 'Using hosted compiled execution packs because local scaffold context artifacts were not found; scaffold pack markdown is being reused as readable scaffold context.',
         };
       }
 
@@ -1632,7 +1636,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       return {
         source: 'local' as PackSource,
         task_context: existsSync(taskContextPath) ? readFileSync(taskContextPath, 'utf-8') : null,
-        scaffold_context: existsSync(scaffoldContextPath) ? readFileSync(scaffoldContextPath, 'utf-8') : null,
+        scaffold_context: existsSync(scaffoldContextPath)
+          ? readFileSync(scaffoldContextPath, 'utf-8')
+          : (existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null),
         execution_pack: {
           markdown: existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null,
           json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,

@@ -405,7 +405,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - The package governance workflow now also captures the npm dist-tag normalization dry-run preview, so CI artifacts show both the live npm drift and the safe executable repair plan in one place.
 - The verifier now flags auth and route-transition flows that trust raw `next`/`returnTo`-style redirect params, so open-redirect risk shows up in both project audit and file critique before shipping.
 - Runtime verification now also distinguishes remote assets that declare integrity but omit `crossorigin`, and that signal flows through shortlist benchmarks, intelligence scoring, CLI summaries, registry UI copy, and public schemas.
-- MCP section/page context tools now reuse hosted selected packs as readable fallback context, so missing local `.decantr/context` markdown no longer forces consumers to reconstruct human-readable context from JSON alone.
+- MCP scaffold/section/page context tools now reuse hosted selected packs as readable fallback context, so missing local `.decantr/context` markdown no longer forces consumers to reconstruct human-readable context from JSON alone.
 
 ## Highest-Value Next Streams
 

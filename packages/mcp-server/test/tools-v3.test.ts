@@ -876,6 +876,7 @@ describe('v3-aware tool tests', () => {
       process.chdir(testDir);
       const result = await handleTool('decantr_get_scaffold_context', {}) as {
         source: string;
+        scaffold_context: string;
         execution_pack: { markdown: string; json: { packType: string } };
         review_pack: { markdown: string; json: { packType: string } };
         pack_manifest: { version: string };
@@ -883,6 +884,7 @@ describe('v3-aware tool tests', () => {
       };
 
       expect(result.source).toBe('hosted_fallback');
+      expect(result.scaffold_context).toContain('# Scaffold Pack');
       expect(result.execution_pack.markdown).toContain('# Scaffold Pack');
       expect(result.execution_pack.json.packType).toBe('scaffold');
       expect(result.review_pack.json.packType).toBe('review');
