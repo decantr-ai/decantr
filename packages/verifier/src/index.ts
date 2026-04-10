@@ -4560,6 +4560,84 @@ function propertyPathLooksLikeOpenRedirectQueryContainerBase(propertyPath: strin
   return propertyPath.length > 0 && OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX.test(propertyPath.join('.'));
 }
 
+function expressionLooksLikeOpenRedirectQueryGetterFunction(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression> = new Map(),
+  namedPropertyAliases: Map<string, NamedPropertyAlias> = new Map(),
+  seenIdentifiers: Set<string> = new Set(),
+): boolean {
+  if (!expression) return false;
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeOpenRedirectQueryGetterFunction(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'bind')
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isMemberAccessExpression(expression)
+    && isMemberAccessNamed(expression, 'get', 'getAll')
+    && expressionLooksLikeOpenRedirectSearchParamsCarrier(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeOpenRedirectQueryGetterFunction(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && ['get', 'getAll'].includes(propertyAlias.propertyName)
+      && expressionLooksLikeOpenRedirectSearchParamsCarrier(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function expressionContainsOpenRedirectSource(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
@@ -4631,6 +4709,58 @@ function expressionContainsOpenRedirectSource(
   if (
     isPropertyLikeAccessExpression(expression)
     && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'call')
+    && expression.arguments.length > 1
+    && isOpenRedirectQueryKeyExpression(expression.arguments[1], namedExpressions, seenIdentifiers)
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'apply')
+    && isOpenRedirectQueryKeyExpression(
+      getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
+      namedExpressions,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && expression.arguments.length > 0
+    && isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers)
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
