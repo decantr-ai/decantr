@@ -419,6 +419,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Critique now flags auth-like writes into `localStorage` and `sessionStorage`, helping catch insecure client-side token/session persistence earlier in review.
 - Critique now also flags auth cookie issuance that omits explicit `httpOnly`, `secure`, or `sameSite` options across both `cookies.set(...)` and `Set-Cookie` header issuance, so server-managed session flows are held to a hardened baseline instead of relying on ambient framework defaults.
 - Project audit and file critique now also flag auth exit flows that never return users to an anonymous route after logout, so protected shells do not quietly linger after session teardown.
+- Project audit and file critique now also distinguish redirect-only logout from a real sign-out boundary, so auth exit flows have to actually invalidate session state instead of merely bouncing users back to `/login`.
 - Hosted showcase summaries, CLI output, registry portal messaging, and benchmark-backed intelligence scoring now all surface that stricter full-route-coverage signal instead of treating partial route survival as fully verified.
 - Showcase manifest, shortlist, and shortlist-report surfaces are now kept in sync with the runtime security contract, so new smoke fields cannot silently land in verifier output while API and registry serializers keep emitting stale payloads.
 - Registry app lint now rebuilds `@decantr/registry` before typechecking so clean-checkout verification does not depend on stale generated package artifacts.

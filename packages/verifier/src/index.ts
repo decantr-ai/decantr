@@ -395,6 +395,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authHeaderWrites: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
     authExitSignals: createSourceAuditBucket(),
+    authSessionTeardownSignals: createSourceAuditBucket(),
     signInRouteSignals: createSourceAuditBucket(),
     registrationRouteSignals: createSourceAuditBucket(),
     recoveryRouteSignals: createSourceAuditBucket(),
@@ -475,6 +476,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
+    recordSourceAudit(summary.authSessionTeardownSignals, relativePath, signals.authSessionTeardownSignalCount);
     recordSourceAudit(summary.signInRouteSignals, relativePath, countSignInRouteSignals(code));
     recordSourceAudit(summary.registrationRouteSignals, relativePath, countRegistrationRouteSignals(code));
     recordSourceAudit(summary.recoveryRouteSignals, relativePath, countAuthRecoveryRouteSignals(code));
@@ -627,6 +629,7 @@ interface SourceAuditSummary {
   authHeaderWrites: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
   authExitSignals: SourceAuditBucket;
+  authSessionTeardownSignals: SourceAuditBucket;
   signInRouteSignals: SourceAuditBucket;
   registrationRouteSignals: SourceAuditBucket;
   recoveryRouteSignals: SourceAuditBucket;
@@ -1673,6 +1676,25 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authExitSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authExitSignals, sourceAudit.authSessionTeardownSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-exit-teardown-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Authentication exit flows exist, but the source tree does not show an obvious session teardown or sign-out boundary.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+        `Session teardown files: ${sourceAudit.authSessionTeardownSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Before redirecting users out of the protected shell, explicitly sign out or invalidate the reviewed session state instead of relying on navigation alone.',
+    }));
+  }
+
   if (sourceAudit.authOpenRedirectSignals.count > 0) {
     findings.push(makeFinding({
       id: 'source-auth-open-redirect-risk',
@@ -2169,10 +2191,11 @@ interface AstCritiqueSignals {
   authOpenRedirectSignalCount: number;
   authStorageWriteCount: number;
   authCookieWriteCount: number;
-  authCookieMissingHardeningCount: number;
-  authHeaderWriteCount: number;
-  authGuardSignalCount: number;
-  authExitSignalCount: number;
+    authCookieMissingHardeningCount: number;
+    authHeaderWriteCount: number;
+    authGuardSignalCount: number;
+    authExitSignalCount: number;
+    authSessionTeardownSignalCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -3054,9 +3077,21 @@ function countAuthSuccessSignals(code: string): number {
 
 function countAuthExitSignals(code: string): number {
   const patterns = [
-    /\b(?:logout|logOut|signOut|signout|sign-out)\b/,
+    /\b(?:log\s*out|logout|sign\s*out|signout|sign-out)\b/i,
     /\b(?:supabase\.auth\.signOut|auth\.signOut|session\.signOut)\s*\(/,
     /\/(?:logout|signout|sign-out)\b/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
+function countAuthSessionTeardownSignals(code: string): number {
+  const patterns = [
+    /\b(?:supabase\.auth\.signOut|auth\.signOut|session\.signOut)\s*\(/,
+    /\b(?:clearSession|resetSession|destroySession|invalidateSession|revokeSession|endSession|terminateSession|removeSession)\s*\(/,
+    /\b(?:deleteCookie|clearCookie|removeCookie)\s*\(\s*['"`]?(?:auth|session|token|accessToken|refreshToken|user)[^'"`)]*['"`]?\s*\)/i,
+    /\b(?:cookies?|cookieStore)\.(?:delete|remove)\s*\(\s*['"`]?(?:auth|session|token|accessToken|refreshToken|user)[^'"`)]*['"`]?\s*\)/i,
+    /\b(?:localStorage|sessionStorage)\.removeItem\s*\(\s*['"`]?(?:auth|session|token|accessToken|refreshToken|user)[^'"`)]*['"`]?\s*\)/i,
   ];
 
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
@@ -3295,6 +3330,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authHeaderWriteCount: 0,
     authGuardSignalCount: countAuthGuardSignals(code),
     authExitSignalCount: countAuthExitSignals(code),
+    authSessionTeardownSignalCount: countAuthSessionTeardownSignals(code),
   };
   const namedFunctionDeclarations = collectNamedFunctionLikeDeclarations(sourceFile);
   const labelForIds = collectLabelForIds(sourceFile);
@@ -4116,13 +4152,14 @@ export function critiqueSource({
   const authProtectedRedirectSignalCount = astSignals.authProtectedRedirectSignalCount;
   const authAnonymousRedirectSignalCount = astSignals.authAnonymousRedirectSignalCount;
   const authExitSignalCount = astSignals.authExitSignalCount;
+  const authSessionTeardownSignalCount = astSignals.authSessionTeardownSignalCount;
   const authErrorSignalCount = countAuthErrorSignals(code);
   const authSuccessSignalCount = countAuthSuccessSignals(code);
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
-    score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0) - (authFormWithoutSubmitCount > 0 ? 1 : 0) - (authInputWithoutNameCount > 0 ? 1 : 0))),
-    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}, auth inputs without name: ${authInputWithoutNameCount}, auth redirects to protected routes: ${authProtectedRedirectSignalCount}, auth exits without anonymous redirect: ${authExitSignalCount > 0 && authAnonymousRedirectSignalCount === 0 ? 1 : 0}`,
+    score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0) - (authFormWithoutSubmitCount > 0 ? 1 : 0) - (authInputWithoutNameCount > 0 ? 1 : 0) - (authExitSignalCount > 0 && authSessionTeardownSignalCount === 0 ? 1 : 0))),
+    details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}, auth inputs without name: ${authInputWithoutNameCount}, auth redirects to protected routes: ${authProtectedRedirectSignalCount}, auth exits without anonymous redirect: ${authExitSignalCount > 0 && authAnonymousRedirectSignalCount === 0 ? 1 : 0}, auth exits without teardown: ${authExitSignalCount > 0 && authSessionTeardownSignalCount === 0 ? 1 : 0}`,
     suggestions: [
       ...(!hasTransition ? ['Add transitions for interactive state changes where appropriate.'] : []),
       ...(buttonInFormWithoutTypeCount > 0 ? ['Add explicit button types inside forms so non-submit actions do not accidentally submit.'] : []),
@@ -4130,6 +4167,7 @@ export function critiqueSource({
       ...(authInputWithoutNameCount > 0 ? ['Give auth-related form inputs stable `name` attributes so browser form posts and FormData submissions include the credential values.'] : []),
       ...(authProtectedRedirectSignalCount > 0 ? ['Keep unauthenticated guard redirects pointed at anonymous entry routes, not protected destinations like `/dashboard` or `/app`.'] : []),
       ...(authExitSignalCount > 0 && authAnonymousRedirectSignalCount === 0 ? ['After sign-out, return users to an anonymous entry route instead of leaving the protected shell in place.'] : []),
+      ...(authExitSignalCount > 0 && authSessionTeardownSignalCount === 0 ? ['Do not treat redirect-only logout as a complete sign-out. Explicitly invalidate the reviewed session before returning users to an anonymous route.'] : []),
     ],
   });
   if (buttonInFormWithoutTypeCount > 0) {
@@ -4197,6 +4235,22 @@ export function critiqueSource({
       evidence: [filePath, `Auth exit signals: ${authExitSignalCount}`, `Anonymous auth redirects: ${authAnonymousRedirectSignalCount}`],
       file: filePath,
       suggestedFix: 'After logout or session exit, navigate users to `/`, `/login`, `/register`, or another reviewed anonymous entry route so protected shells do not linger after sign-out.',
+    }));
+  }
+
+  if (
+    authExitSignalCount > 0
+    && (astSignals.authSessionSignalCount > 0 || astSignals.authGuardSignalCount > 0)
+    && authSessionTeardownSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-exit-teardown-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'Auth/session exit logic redirects users away but does not show an obvious session teardown or sign-out boundary.',
+      evidence: [filePath, `Auth exit signals: ${authExitSignalCount}`, `Session teardown signals: ${authSessionTeardownSignalCount}`],
+      file: filePath,
+      suggestedFix: 'Before redirecting users to `/login` or another anonymous route, explicitly sign out or invalidate the reviewed session state.',
     }));
   }
 
