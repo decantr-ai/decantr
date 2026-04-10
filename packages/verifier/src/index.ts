@@ -4740,6 +4740,28 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
     return expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
+  if (
+    ts.isCallExpression(expression)
+    && ts.isPropertyAccessExpression(expression.expression)
+    && ts.isIdentifier(expression.expression.expression)
+    && expression.expression.expression.text === 'Object'
+    && isPropertyNamed(expression.expression.name, 'fromEntries')
+    && expression.arguments.length > 0
+  ) {
+    const entriesExpression = expression.arguments[0];
+    if (expressionLooksLikeOpenRedirectSearchParamsCarrier(entriesExpression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)) {
+      return true;
+    }
+    if (
+      ts.isCallExpression(entriesExpression)
+      && (ts.isPropertyAccessExpression(entriesExpression.expression) || ts.isElementAccessExpression(entriesExpression.expression))
+      && isMemberAccessNamed(entriesExpression.expression, 'entries')
+      && expressionLooksLikeOpenRedirectSearchParamsCarrier(entriesExpression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    ) {
+      return true;
+    }
+  }
+
   if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'query')) {
     return expressionLooksLikeOpenRedirectQueryContainerBase(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
