@@ -5111,7 +5111,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape')
+    && isMemberAccessNamed(expression.expression, 'String', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape')
     && expression.arguments.length > 0
     && expressionLooksLikeWindowObjectSource(
       expression.expression.expression,
