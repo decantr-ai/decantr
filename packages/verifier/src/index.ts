@@ -3505,6 +3505,7 @@ function countAuthLoadingSignals(code: string): number {
     /\b(?:isLoading|loading|isPending|pending|authLoading|sessionLoading)\b/,
     /\bstatus\s*===?\s*['"`]loading['"`]/,
     /\b(?:Suspense|fallback|Skeleton|Spinner)\b/,
+    />\s*(?:signing you in|redirecting|authenticating|verifying your session|checking your session|loading your workspace|finishing sign in)(?:[.!…]+)?\s*</i,
   ];
 
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
