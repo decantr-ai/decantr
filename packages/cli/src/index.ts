@@ -521,6 +521,7 @@ async function printHostedSelectedExecutionPack(
   essencePath?: string,
   namespace?: string,
   jsonOutput: boolean = false,
+  writeContext: boolean = false,
 ) {
   const client = getPublicAPIClient();
   const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
@@ -543,6 +544,29 @@ async function printHostedSelectedExecutionPack(
     namespace ? { namespace } : undefined,
   );
 
+  let writtenContextDir: string | null = null;
+  if (writeContext) {
+    const contextDir = join(process.cwd(), '.decantr', 'context');
+    mkdirSync(contextDir, { recursive: true });
+    writeFileSync(join(contextDir, 'pack-manifest.json'), JSON.stringify(selected.manifest, null, 2) + '\n');
+
+    const manifestEntry = selected.selector.packType === 'scaffold'
+      ? selected.manifest.scaffold
+      : selected.selector.packType === 'review'
+        ? selected.manifest.review
+        : selected.selector.packType === 'section'
+          ? selected.manifest.sections.find((entry) => entry.id === selected.selector.id)
+          : selected.selector.packType === 'page'
+            ? selected.manifest.pages.find((entry) => entry.id === selected.selector.id)
+            : selected.manifest.mutations.find((entry) => entry.id === selected.selector.id);
+
+    const markdownFile = manifestEntry?.markdown ?? `${selected.selector.packType}${selected.selector.id ? `-${selected.selector.id}` : ''}-pack.md`;
+    const jsonFile = manifestEntry?.json ?? `${selected.selector.packType}${selected.selector.id ? `-${selected.selector.id}` : ''}-pack.json`;
+    writeFileSync(join(contextDir, markdownFile), selected.pack.renderedMarkdown);
+    writeFileSync(join(contextDir, jsonFile), JSON.stringify(selected.pack, null, 2) + '\n');
+    writtenContextDir = contextDir;
+  }
+
   if (jsonOutput) {
     console.log(JSON.stringify(selected, null, 2));
     return;
@@ -558,6 +582,9 @@ async function printHostedSelectedExecutionPack(
   }
   console.log(`  Adapter: ${typedSelected.pack.target.adapter}`);
   console.log(`  Objective: ${typedSelected.pack.objective}`);
+  if (writtenContextDir) {
+    console.log(`  Context artifact: ${writtenContextDir}`);
+  }
   console.log('');
   process.stdout.write(typedSelected.pack.renderedMarkdown);
 }
@@ -566,6 +593,7 @@ async function printHostedExecutionPackManifest(
   essencePath?: string,
   namespace?: string,
   jsonOutput: boolean = false,
+  writeContext: boolean = false,
 ) {
   const client = getPublicAPIClient();
   const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
@@ -579,6 +607,14 @@ async function printHostedExecutionPackManifest(
     essence,
     namespace ? { namespace } : undefined,
   );
+
+  let writtenContextDir: string | null = null;
+  if (writeContext) {
+    const contextDir = join(process.cwd(), '.decantr', 'context');
+    mkdirSync(contextDir, { recursive: true });
+    writeFileSync(join(contextDir, 'pack-manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+    writtenContextDir = contextDir;
+  }
 
   if (jsonOutput) {
     console.log(JSON.stringify(manifest, null, 2));
@@ -594,6 +630,9 @@ async function printHostedExecutionPackManifest(
   console.log(`  Sections: ${manifest.sections.length}`);
   console.log(`  Pages: ${manifest.pages.length}`);
   console.log(`  Mutations: ${manifest.mutations.length}`);
+  if (writtenContextDir) {
+    console.log(`  Context artifact: ${writtenContextDir}`);
+  }
 }
 
 interface HostedPackHydrationResult {
@@ -1900,7 +1939,7 @@ ${BOLD}Usage:${RESET}
   decantr showcase [manifest|shortlist|verification] [--json]
   decantr registry summary [--namespace <namespace>] [--json]
   decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
-  decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>]
+  decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
   decantr validate [path]
@@ -1973,6 +2012,7 @@ ${BOLD}Examples:${RESET}
   decantr registry compile-packs decantr.essence.json --json
   decantr registry compile-packs decantr.essence.json --write-context
   decantr registry get-pack manifest --namespace @official --json
+  decantr registry get-pack review --namespace @official --write-context
   decantr registry critique-file src/pages/Home.tsx --namespace @official --json
   decantr registry audit-project --namespace @official --json
   decantr registry audit-project --namespace @official --dist dist --sources src
@@ -2305,17 +2345,18 @@ async function main() {
         const namespaceIdx = args.indexOf('--namespace');
         const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
         const jsonOutput = args.includes('--json');
+        const writeContext = args.includes('--write-context');
         const essenceIdx = args.indexOf('--essence');
         const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
         const packType = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
         const id = args[3] && !args[3].startsWith('--') ? args[3] : undefined;
         if (!packType || !['manifest', 'scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)) {
-          console.error(`${RED}Usage: decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>]${RESET}`);
+          console.error(`${RED}Usage: decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]${RESET}`);
           process.exitCode = 1;
           break;
         }
         if (packType === 'manifest') {
-          await printHostedExecutionPackManifest(essencePath, namespace, jsonOutput);
+          await printHostedExecutionPackManifest(essencePath, namespace, jsonOutput, writeContext);
           break;
         }
         await printHostedSelectedExecutionPack(
@@ -2324,6 +2365,7 @@ async function main() {
           essencePath,
           namespace,
           jsonOutput,
+          writeContext,
         );
       } else if (subcommand === 'critique-file') {
         const namespaceIdx = args.indexOf('--namespace');
@@ -2352,7 +2394,7 @@ async function main() {
         const sourcesPath = sourcesIdx !== -1 ? args[sourcesIdx + 1] : undefined;
         await printHostedProjectAudit(namespace, jsonOutput, essencePath, distPath, sourcesPath);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`);
         process.exitCode = 1;
       }
       break;

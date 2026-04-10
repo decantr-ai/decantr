@@ -688,6 +688,193 @@ describe('registry commands (e2e)', () => {
     ).toBe(true);
   });
 
+  it('registry get-pack manifest can write the hosted manifest into .decantr/context', async () => {
+    const server = createServer((req, res) => {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        if (req.method === 'POST' && req.url?.startsWith('/v1/packs/select')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            $schema: 'https://decantr.ai/schemas/selected-execution-pack.v1.json',
+            generatedAt: '2026-04-09T00:00:00.000Z',
+            sourceEssenceVersion: '2.0.0',
+            manifest: {
+              $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+              version: '1.0.0',
+              generatedAt: '2026-04-09T00:00:00.000Z',
+              scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+              review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+              sections: [],
+              pages: [],
+              mutations: [],
+            },
+            selector: {
+              packType: 'scaffold',
+              id: null,
+            },
+            pack: {
+              $schema: 'https://decantr.ai/schemas/scaffold-pack.v1.json',
+              packVersion: '1.0.0',
+              packType: 'scaffold',
+              objective: 'Scaffold the clean app shell and declared routes.',
+              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+              preset: null,
+              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+              requiredSetup: [],
+              allowedVocabulary: [],
+              examples: [],
+              antiPatterns: [],
+              successChecks: [],
+              tokenBudget: { target: 900, max: 1400, strategy: ['compact'] },
+              data: {
+                shell: 'sidebar-main',
+                theme: { id: 'clean', mode: 'light', shape: null },
+                routing: 'history',
+                features: ['auth'],
+                routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+              },
+              renderedMarkdown: '# Scaffold Pack\n',
+            },
+          }));
+          return;
+        }
+
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not found' }));
+      });
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const { port } = server.address() as AddressInfo;
+
+    const essencePath = join(testDir, 'decantr.essence.json');
+    writeFileSync(essencePath, JSON.stringify({
+      version: '2.0.0',
+      archetype: 'dashboard',
+      theme: { id: 'clean', mode: 'light' },
+      personality: ['professional'],
+      platform: { type: 'spa', routing: 'history' },
+      structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+      features: ['auth'],
+      density: { level: 'comfortable', content_gap: '1.5rem' },
+      guard: { mode: 'guided' },
+      target: 'react',
+    }, null, 2));
+
+    await runCliAsync(testDir, 'registry get-pack manifest --namespace @official --write-context', {
+      DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
+      DECANTR_API_KEY: '',
+    });
+
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+
+    const manifestPath = join(testDir, '.decantr', 'context', 'pack-manifest.json');
+    expect(existsSync(manifestPath)).toBe(true);
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    expect(manifest.version).toBe('1.0.0');
+  });
+
+  it('registry get-pack can write a selected hosted pack into .decantr/context', async () => {
+    const server = createServer((req, res) => {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        if (req.method === 'POST' && req.url?.startsWith('/v1/packs/select')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            $schema: 'https://decantr.ai/schemas/selected-execution-pack.v1.json',
+            generatedAt: '2026-04-09T00:00:00.000Z',
+            sourceEssenceVersion: '2.0.0',
+            manifest: {
+              $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+              version: '1.0.0',
+              generatedAt: '2026-04-09T00:00:00.000Z',
+              scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+              review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+              sections: [],
+              pages: [{ id: 'home', markdown: 'page-home-pack.md', json: 'page-home-pack.json', sectionId: 'dashboard', sectionRole: 'primary' }],
+              mutations: [],
+            },
+            selector: {
+              packType: 'page',
+              id: 'home',
+            },
+            pack: {
+              $schema: 'https://decantr.ai/schemas/page-pack.v1.json',
+              packVersion: '1.0.0',
+              packType: 'page',
+              objective: 'Build the home page.',
+              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+              preset: null,
+              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+              requiredSetup: [],
+              allowedVocabulary: [],
+              examples: [],
+              antiPatterns: [],
+              successChecks: [],
+              tokenBudget: { target: 1000, max: 1500, strategy: ['compact'] },
+              data: {
+                pageId: 'home',
+                path: '/',
+                shell: 'sidebar-main',
+                sectionId: 'dashboard',
+                sectionRole: 'primary',
+                features: ['auth'],
+                surface: 'home',
+                theme: { id: 'clean', mode: 'light', shape: null },
+                wiringSignals: [],
+                patterns: [{ id: 'hero', alias: 'hero', preset: 'landing', layout: 'stack' }],
+              },
+              renderedMarkdown: '# Page Pack\n',
+            },
+          }));
+          return;
+        }
+
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not found' }));
+      });
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const { port } = server.address() as AddressInfo;
+
+    const essencePath = join(testDir, 'decantr.essence.json');
+    writeFileSync(essencePath, JSON.stringify({
+      version: '2.0.0',
+      archetype: 'dashboard',
+      theme: { id: 'clean', mode: 'light' },
+      personality: ['professional'],
+      platform: { type: 'spa', routing: 'history' },
+      structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+      features: ['auth'],
+      density: { level: 'comfortable', content_gap: '1.5rem' },
+      guard: { mode: 'guided' },
+      target: 'react',
+    }, null, 2));
+
+    await runCliAsync(testDir, 'registry get-pack page home --namespace @official --write-context', {
+      DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
+      DECANTR_API_KEY: '',
+    });
+
+    await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+
+    const contextDir = join(testDir, '.decantr', 'context');
+    expect(existsSync(join(contextDir, 'pack-manifest.json'))).toBe(true);
+    expect(existsSync(join(contextDir, 'page-home-pack.md'))).toBe(true);
+    expect(existsSync(join(contextDir, 'page-home-pack.json'))).toBe(true);
+
+    const pagePack = JSON.parse(readFileSync(join(contextDir, 'page-home-pack.json'), 'utf8'));
+    expect(pagePack.packType).toBe('page');
+    expect(pagePack.data.pageId).toBe('home');
+  });
+
   it('registry compile-packs can write hosted pack artifacts into .decantr/context', async () => {
     const server = createServer((req, res) => {
       let body = '';
