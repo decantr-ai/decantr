@@ -1,15 +1,15 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-10T00:57:06.468Z",
+  "generatedAt": "2026-04-10T00:58:57.758Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1602,
+    "averageDurationMs": 1743,
     "passedSmokes": 8,
     "failedSmokes": 0,
-    "averageSmokeDurationMs": 9,
+    "averageSmokeDurationMs": 10,
     "appsWithTitleOkCount": 8,
     "appsWithLangOkCount": 8,
     "appsWithViewportOkCount": 8,
@@ -17,6 +17,7 @@
     "appsWithoutInlineScriptsCount": 8,
     "appsWithCspSignalCount": 0,
     "appsWithExternalScriptIntegrityCount": 8,
+    "appsWithoutInsecureRemoteAssetTransportCount": 8,
     "appsWithExternalStylesheetIntegrityCount": 6,
     "appsWithRouteCoverageCount": 8,
     "appsWithFullRouteCoverageCount": 8,
@@ -36,11 +37,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1605
+        "durationMs": 1704
       },
       "smoke": {
         "passed": true,
-        "durationMs": 33,
+        "durationMs": 35,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -99,7 +100,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1556
+        "durationMs": 1722
       },
       "smoke": {
         "passed": true,
@@ -162,7 +163,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1575
+        "durationMs": 1789
       },
       "smoke": {
         "passed": true,
@@ -225,7 +226,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1529
+        "durationMs": 1676
       },
       "smoke": {
         "passed": true,
@@ -288,11 +289,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1484
+        "durationMs": 1642
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 8,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -350,11 +351,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1711
+        "durationMs": 1868
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 6,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -413,11 +414,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1648
+        "durationMs": 1803
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -476,11 +477,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1707
+        "durationMs": 1736
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,

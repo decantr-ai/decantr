@@ -170,6 +170,7 @@ export interface ShowcaseShortlistVerificationReport {
     appsWithoutInlineScriptsCount: number;
     appsWithCspSignalCount: number;
     appsWithExternalScriptIntegrityCount: number;
+    appsWithoutInsecureRemoteAssetTransportCount: number;
     appsWithRouteCoverageCount: number;
     appsWithFullRouteCoverageCount: number;
     averageTotalAssetBytes: number;

@@ -188,6 +188,7 @@ commit archaeology.
   - 8/8 title / `lang` / viewport / charset checks passing
   - 8/8 with no inline script tags
   - 8/8 with no external scripts missing integrity
+  - 8/8 with no insecure remote asset transport
   - 0/8 with CSP signals present
   - average build duration `1604ms`
   - average smoke duration `9ms`

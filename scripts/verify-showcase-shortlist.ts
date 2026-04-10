@@ -188,6 +188,10 @@ async function main() {
     appsWithoutInlineScriptsCount: results.filter(entry => entry.smoke.inlineScriptCount === 0).length,
     appsWithCspSignalCount: results.filter(entry => entry.smoke.cspSignalOk).length,
     appsWithExternalScriptIntegrityCount: results.filter(entry => entry.smoke.externalScriptsWithoutIntegrityCount === 0).length,
+    appsWithoutInsecureRemoteAssetTransportCount: results.filter(
+      entry => entry.smoke.externalScriptsWithInsecureTransportCount === 0
+        && entry.smoke.externalStylesheetsWithInsecureTransportCount === 0,
+    ).length,
     appsWithExternalStylesheetIntegrityCount: results.filter(entry => entry.smoke.externalStylesheetsWithoutIntegrityCount === 0).length,
     appsWithRouteCoverageCount: results.filter(entry => {
       const minimumRoutes = Math.min(2, entry.smoke.routeDocumentsChecked);
@@ -238,6 +242,7 @@ async function main() {
   console.log(`No inline scripts: ${summary.appsWithoutInlineScriptsCount}/${summary.appCount}`);
   console.log(`CSP signals present: ${summary.appsWithCspSignalCount}/${summary.appCount}`);
   console.log(`External script integrity ok: ${summary.appsWithExternalScriptIntegrityCount}/${summary.appCount}`);
+  console.log(`No insecure remote asset transport: ${summary.appsWithoutInsecureRemoteAssetTransportCount}/${summary.appCount}`);
   console.log(`External stylesheet integrity ok: ${summary.appsWithExternalStylesheetIntegrityCount}/${summary.appCount}`);
   console.log(`Route coverage checks passed: ${summary.appsWithRouteCoverageCount}/${summary.appCount}`);
   console.log(`Full route coverage: ${summary.appsWithFullRouteCoverageCount}/${summary.appCount}`);

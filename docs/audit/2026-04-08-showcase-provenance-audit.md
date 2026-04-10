@@ -182,6 +182,7 @@ Tracked shortlist verification baseline on 2026-04-09 after moving the shortlist
 - 8/8 shortlisted apps shipped with no inline script tags
 - 0/8 shortlisted apps emitted a CSP signal in the built root document
 - 8/8 shortlisted apps avoided external scripts without integrity
+- 8/8 shortlisted apps avoided insecure remote asset transport
 - 8/8 shortlisted apps passed route-document coverage checks
 - average build duration: `1604ms`
 - average smoke duration: `9ms`
@@ -195,6 +196,7 @@ The shortlist verification report now runs through the shared `@decantr/verifier
 - charset declaration presence
 - inline script counts
 - external script integrity gaps
+- insecure remote asset transport counts
 - CSP signal presence
 - route-document coverage counts
 - route-hint coverage from bundled JS
