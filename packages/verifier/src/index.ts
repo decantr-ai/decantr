@@ -5372,14 +5372,39 @@ function expressionLooksLikeLocationMutationCall(
 }
 
 function expressionLooksLikeWindowOpenCall(
-  expression: ts.LeftHandSideExpression | ts.SuperProperty | undefined,
+  expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
 ): boolean {
   if (!expression) return false;
 
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeWindowOpenCall(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
   if (ts.isIdentifier(expression) && expression.text === 'open') {
     return true;
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeWindowOpenCall(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && propertyAlias.propertyName === 'open'
+      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, new Set())
+    ) {
+      return true;
+    }
   }
 
   return Boolean(
@@ -5840,14 +5865,14 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
 
       if (
-        expressionLooksLikeWindowOpenCall(node.expression, sourceFile, namedExpressionInitializers)
+        expressionLooksLikeWindowOpenCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
         && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers, namedPropertyAliases)
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
       if (
-        expressionLooksLikeWindowOpenCall(node.expression, sourceFile, namedExpressionInitializers)
+        expressionLooksLikeWindowOpenCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
         && isExternalUrl(firstArgumentLiteral)
       ) {
         signals.authExternalRedirectSignalCount += 1;

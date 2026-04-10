@@ -531,6 +531,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Auth open-redirect tracing now also treats `Object.fromEntries(searchParams)` as a reviewed query carrier, including destructured forms like `const { next } = Object.fromEntries(...)`, so auth flows cannot bypass redirect-param detection by converting reviewed search params into a plain object and then reading `query.next` before redirecting.
 - Auth open-redirect tracing now also follows normalized query carriers like `new URLSearchParams(window.location.search.slice(1))` and `new URLSearchParams(req.nextUrl.search.slice(1))`, so auth flows cannot bypass redirect-param detection just by stripping the leading `?` off a reviewed location/request query string before reading `next`.
 - Auth open-redirect tracing now also treats `open(...)` and `window.open(...)` as imperative navigation sinks, so auth flows cannot bypass redirect-param detection by forwarding raw `next` or `returnTo` values through browser popup or tab navigation instead of `redirect(...)`, router transitions, or direct location assignment.
+- Auth open-redirect tracing now also follows aliased and destructured `window.open` sinks like `const popup = window.open` and `const { open: popup } = window`, so auth flows cannot bypass redirect-param detection just by hoisting browser-open navigation into a local helper before forwarding the same untrusted destination.
 
 ## Highest-Value Next Streams
 
