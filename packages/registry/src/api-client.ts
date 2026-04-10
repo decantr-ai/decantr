@@ -24,6 +24,7 @@ import type {
   HostedProjectAuditRequest,
   FileCritiqueReport,
   ProjectAuditReport,
+  ExecutionPackManifest,
   ExecutionPackBundleResponse,
   HostedSelectedExecutionPackRequest,
   SelectedExecutionPackResponse,
@@ -413,6 +414,21 @@ export class RegistryAPIClient {
         body: JSON.stringify(input),
       },
     );
+  }
+
+  async getExecutionPackManifest(
+    essence: EssenceFile,
+    params?: { namespace?: string },
+  ): Promise<ExecutionPackManifest> {
+    const selected = await this.selectExecutionPack(
+      {
+        essence,
+        pack_type: 'scaffold',
+      },
+      params,
+    );
+
+    return selected.manifest;
   }
 
   async critiqueFile(

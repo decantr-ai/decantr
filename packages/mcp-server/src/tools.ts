@@ -127,6 +127,23 @@ async function getHostedSelectedExecutionPackPayload(
   );
 }
 
+async function getHostedExecutionPackManifestPayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const essence = (() => {
+    if (typeof args.essence === 'object' && args.essence !== null && !Array.isArray(args.essence)) {
+      return args.essence as EssenceFile;
+    }
+    return readEssenceFile(args.path as string | undefined);
+  })();
+
+  return client.getExecutionPackManifest(
+    essence,
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
 async function getHostedFileCritiquePayload(
   args: Record<string, unknown>,
 ) {
@@ -250,6 +267,7 @@ async function getHostedProjectAuditPayload(
 
 type HostedExecutionPackBundle = Awaited<ReturnType<typeof getHostedExecutionPackBundlePayload>>;
 type HostedSelectedExecutionPack = Awaited<ReturnType<typeof getHostedSelectedExecutionPackPayload>>;
+type HostedExecutionPackManifest = Awaited<ReturnType<typeof getHostedExecutionPackManifestPayload>>;
 type PackSource = 'local' | 'hosted_fallback';
 
 async function loadHostedExecutionPackBundleFallback(args: Record<string, unknown>): Promise<{
@@ -264,6 +282,23 @@ async function loadHostedExecutionPackBundleFallback(args: Record<string, unknow
   } catch (error) {
     return {
       bundle: null,
+      error: (error as Error).message,
+    };
+  }
+}
+
+async function loadHostedExecutionPackManifestFallback(args: Record<string, unknown>): Promise<{
+  manifest: HostedExecutionPackManifest | null;
+  error: string | null;
+}> {
+  try {
+    return {
+      manifest: await getHostedExecutionPackManifestPayload(args),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      manifest: null,
       error: (error as Error).message,
     };
   }
@@ -1871,12 +1906,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       if (!manifest && packType === 'manifest') {
-        const selected = await loadHostedSelectedExecutionPackByType(args, 'scaffold');
-        hostedSelectedPack = selected.selected;
-        hostedFallbackError = selected.error;
+        const hostedManifest = await loadHostedExecutionPackManifestFallback(args);
+        hostedFallbackError = hostedManifest.error;
 
-        if (selected.selected) {
-          manifest = selected.selected.manifest as PackManifest;
+        if (hostedManifest.manifest) {
+          manifest = hostedManifest.manifest as PackManifest;
           manifestSource = 'hosted_fallback';
         } else {
           const hosted = await loadHostedExecutionPackBundleFallback(args);

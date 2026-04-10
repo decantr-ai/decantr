@@ -331,6 +331,79 @@ describe('RegistryAPIClient showcase endpoints', () => {
     );
   });
 
+  it('requests a hosted execution pack manifest through the selected-pack surface', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({
+        $schema: 'https://decantr.ai/schemas/selected-execution-pack.v1.json',
+        generatedAt: '2026-04-09T00:00:00.000Z',
+        sourceEssenceVersion: '2.0.0',
+        manifest: {
+          $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+          version: '1.0.0',
+          generatedAt: '2026-04-09T00:00:00.000Z',
+          scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+          review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+          sections: [],
+          pages: [],
+          mutations: [],
+        },
+        selector: {
+          packType: 'scaffold',
+          id: null,
+        },
+        pack: {
+          $schema: 'https://decantr.ai/schemas/scaffold-pack.v1.json',
+          packVersion: '1.0.0',
+          packType: 'scaffold',
+          objective: 'Scaffold the clean app shell and declared routes.',
+          target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+          preset: null,
+          scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+          requiredSetup: [],
+          allowedVocabulary: [],
+          examples: [],
+          antiPatterns: [],
+          successChecks: [],
+          tokenBudget: { target: 1400, max: 2200, strategy: ['compact'] },
+          data: {
+            shell: 'sidebar-main',
+            theme: { id: 'clean', mode: 'light', shape: null },
+            routing: 'history',
+            features: ['auth'],
+            routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+          },
+          renderedMarkdown: '# Scaffold Pack\n',
+        },
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+
+    const client = new RegistryAPIClient({ baseUrl: 'https://api.example.com/v1' });
+    const result = await client.getExecutionPackManifest({
+      version: '2.0.0',
+      archetype: 'dashboard',
+      theme: { id: 'clean', mode: 'light' },
+      personality: ['professional'],
+      platform: { type: 'spa', routing: 'history' },
+      structure: [{ id: 'home', shell: 'sidebar-main', layout: ['hero'] }],
+      features: ['auth'],
+      density: { level: 'comfortable', content_gap: '1.5rem' },
+      guard: { mode: 'guided' },
+      target: 'react',
+    }, { namespace: '@official' });
+
+    expect(result.$schema).toBe('https://decantr.ai/schemas/pack-manifest.v1.json');
+    expect(result.scaffold?.markdown).toBe('scaffold-pack.md');
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://api.example.com/v1/packs/select?namespace=%40official',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
+  });
+
   it('fetches the showcase manifest', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({

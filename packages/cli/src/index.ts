@@ -575,28 +575,25 @@ async function printHostedExecutionPackManifest(
   }
 
   const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
-  const selected = await client.selectExecutionPack(
-    {
-      essence,
-      pack_type: 'scaffold',
-    },
+  const manifest = await client.getExecutionPackManifest(
+    essence,
     namespace ? { namespace } : undefined,
-  ) as SelectedExecutionPackResponse;
+  );
 
   if (jsonOutput) {
-    console.log(JSON.stringify(selected.manifest, null, 2));
+    console.log(JSON.stringify(manifest, null, 2));
     return;
   }
 
   console.log(heading('Hosted Pack Manifest'));
   console.log(`  Source essence: ${resolvedPath}`);
-  console.log(`  Generated: ${selected.manifest.generatedAt}`);
-  console.log(`  Version: ${selected.manifest.version}`);
-  console.log(`  Scaffold: ${selected.manifest.scaffold ? 'present' : 'missing'}`);
-  console.log(`  Review: ${selected.manifest.review ? 'present' : 'missing'}`);
-  console.log(`  Sections: ${selected.manifest.sections.length}`);
-  console.log(`  Pages: ${selected.manifest.pages.length}`);
-  console.log(`  Mutations: ${selected.manifest.mutations.length}`);
+  console.log(`  Generated: ${manifest.generatedAt}`);
+  console.log(`  Version: ${manifest.version}`);
+  console.log(`  Scaffold: ${manifest.scaffold ? 'present' : 'missing'}`);
+  console.log(`  Review: ${manifest.review ? 'present' : 'missing'}`);
+  console.log(`  Sections: ${manifest.sections.length}`);
+  console.log(`  Pages: ${manifest.pages.length}`);
+  console.log(`  Mutations: ${manifest.mutations.length}`);
 }
 
 interface HostedPackHydrationResult {
