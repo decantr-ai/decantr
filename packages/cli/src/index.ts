@@ -1692,7 +1692,7 @@ function printProjectAuditReport(report: ProjectAuditReport) {
       `  Script hygiene: inline scripts ${report.runtimeAudit.inlineScriptCount} | inline event handlers ${report.runtimeAudit.inlineEventHandlerCount} | scripts without integrity ${report.runtimeAudit.externalScriptsWithoutIntegrityCount} | scripts missing crossorigin ${report.runtimeAudit.externalScriptsWithIntegrityMissingCrossoriginCount} | stylesheets without integrity ${report.runtimeAudit.externalStylesheetsWithoutIntegrityCount} | stylesheets missing crossorigin ${report.runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount} | insecure external scripts ${report.runtimeAudit.externalScriptsWithInsecureTransportCount} | insecure external stylesheets ${report.runtimeAudit.externalStylesheetsWithInsecureTransportCount}`,
     );
     console.log(
-      `  JS risk signals: dynamic code ${report.runtimeAudit.jsEvalSignalCount} | html injection ${report.runtimeAudit.jsHtmlInjectionSignalCount} | insecure transport ${report.runtimeAudit.jsInsecureTransportSignalCount} | secret markers ${report.runtimeAudit.jsSecretSignalCount}`,
+      `  JS risk signals: dynamic code ${report.runtimeAudit.jsEvalSignalCount} | html injection ${report.runtimeAudit.jsHtmlInjectionSignalCount} | insecure/dev transport ${report.runtimeAudit.jsInsecureTransportSignalCount} | secret markers ${report.runtimeAudit.jsSecretSignalCount}`,
     );
   }
   console.log(`  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`);

@@ -1139,9 +1139,9 @@ function appendRuntimeAuditFindings(
       id: 'runtime-js-insecure-transport-signals',
       category: 'Security Hygiene',
       severity: 'warn',
-      message: 'Built JavaScript includes plain HTTP or insecure websocket transport markers.',
-      evidence: [distPath, `Insecure transport signals in built JS: ${runtimeAudit.jsInsecureTransportSignalCount}`],
-      suggestedFix: 'Remove plain HTTP and ws:// endpoints from shipped bundles; prefer HTTPS/WSS or route transport through a trusted server boundary.',
+      message: 'Built JavaScript includes insecure transport or localhost-style development endpoint markers.',
+      evidence: [distPath, `Insecure or localhost transport signals in built JS: ${runtimeAudit.jsInsecureTransportSignalCount}`],
+      suggestedFix: 'Remove plain HTTP, ws://, and localhost-style endpoints from shipped bundles; prefer HTTPS/WSS and reviewed environment-backed URLs or route transport through a trusted server boundary.',
     }));
   }
 

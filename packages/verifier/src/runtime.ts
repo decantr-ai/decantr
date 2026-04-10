@@ -221,7 +221,7 @@ function countHtmlInjectionSignals(js: string): number {
 }
 
 function countInsecureTransportSignals(js: string): number {
-  return js.match(/\b(?:http|ws):\/\//g)?.length ?? 0;
+  return js.match(/\b(?:http|ws):\/\/[^\s'"`]+|\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d+)?(?:\/[^\s'"`]*)?/g)?.length ?? 0;
 }
 
 function countSecretLeakSignals(js: string): number {

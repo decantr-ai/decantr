@@ -208,7 +208,7 @@ describe('verifier', () => {
       );
       writeFileSync(
         join(projectRoot, 'dist', 'assets', 'app.js'),
-        'eval("boot()"); document.write("<p>unsafe</p>"); fetch("http://legacy.example.com/api"); const leaked = "SUPABASE_SERVICE_ROLE_KEY"; const stripe = "sk_live_1234567890"; console.log("/");\n',
+        'eval("boot()"); document.write("<p>unsafe</p>"); fetch("http://legacy.example.com/api"); const devBase = "http://localhost:3000/api"; const leaked = "SUPABASE_SERVICE_ROLE_KEY"; const stripe = "sk_live_1234567890"; console.log("/");\n',
       );
 
       const report = await auditProject(projectRoot);
@@ -224,7 +224,7 @@ describe('verifier', () => {
       expect(report.runtimeAudit.externalStylesheetsWithInsecureTransportCount).toBe(1);
       expect(report.runtimeAudit.jsEvalSignalCount).toBe(1);
       expect(report.runtimeAudit.jsHtmlInjectionSignalCount).toBe(1);
-      expect(report.runtimeAudit.jsInsecureTransportSignalCount).toBe(1);
+      expect(report.runtimeAudit.jsInsecureTransportSignalCount).toBe(2);
       expect(report.runtimeAudit.jsSecretSignalCount).toBe(2);
       expect(report.findings.some(finding => finding.id === 'runtime-charset-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-inline-scripts-present')).toBe(true);
