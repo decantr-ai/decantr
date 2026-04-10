@@ -5523,6 +5523,19 @@ function expressionLooksLikeRouteTransitionCall(
   }
 
   if (
+    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessNamed(expression, 'call', 'apply')
+  ) {
+    return expressionLooksLikeRouteTransitionCall(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
+  }
+
+  if (
     ts.isCallExpression(expression)
     && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
     && isMemberAccessNamed(expression.expression, 'bind')
@@ -5586,6 +5599,27 @@ function getRouteTransitionTargetExpression(
   namedExpressions: Map<string, ts.Expression>,
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
 ): ts.Expression | undefined {
+  if (
+    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    && isMemberAccessNamed(node.expression, 'call')
+    && expressionLooksLikeRouteTransitionCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+  ) {
+    return node.arguments[1];
+  }
+
+  if (
+    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    && isMemberAccessNamed(node.expression, 'apply')
+    && expressionLooksLikeRouteTransitionCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+  ) {
+    const applyArguments = node.arguments[1];
+    if (ts.isArrayLiteralExpression(applyArguments)) {
+      const firstArgument = applyArguments.elements[0];
+      return ts.isExpression(firstArgument) ? firstArgument : undefined;
+    }
+    return undefined;
+  }
+
   if (
     expressionLooksLikeRouteTransitionCall(node.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
   ) {
