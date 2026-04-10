@@ -436,6 +436,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.externalBlankLinkWithoutRelCount;
     const authInputHintIssueCount = signals.emailAutocompleteMissingCount
       + signals.passwordAutocompleteMissingCount
+      + signals.otpAutocompleteMissingCount
       + signals.authAutocompleteDisabledCount
       + signals.authAutocompleteSemanticMismatchCount
       + signals.authInputTypeMismatchCount;
@@ -2141,6 +2142,7 @@ interface AstCritiqueSignals {
   mainLandmarkIds: string[];
   emailAutocompleteMissingCount: number;
   passwordAutocompleteMissingCount: number;
+  otpAutocompleteMissingCount: number;
   authAutocompleteDisabledCount: number;
   authAutocompleteSemanticMismatchCount: number;
   authInputTypeMismatchCount: number;
@@ -2400,7 +2402,35 @@ function isAuthLikeInputAttributes(attributes: ts.JsxAttributes): boolean {
   const autocompleteValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'autocomplete', 'autoComplete'))
     ?.trim()
     .toLowerCase();
-  return ['email', 'username', 'current-password', 'new-password'].includes(autocompleteValue ?? '');
+  return ['email', 'username', 'current-password', 'new-password', 'one-time-code'].includes(autocompleteValue ?? '')
+    || isOtpLikeInputAttributes(attributes);
+}
+
+function getInputIdentityText(attributes: ts.JsxAttributes): string {
+  return [
+    getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'name')),
+    getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'id')),
+    getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'placeholder')),
+    getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'aria-label')),
+    getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'autocomplete', 'autoComplete')),
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(' ')
+    .toLowerCase();
+}
+
+function isOtpLikeInputAttributes(attributes: ts.JsxAttributes): boolean {
+  const identityText = getInputIdentityText(attributes);
+  if (!identityText) return false;
+  return /(?:one[- ]time|otp|verification(?:[-_ ]?code)?|authenticator|2fa|mfa|totp|passcode)/i.test(identityText);
+}
+
+function hasOtpAutocompleteIssue(attributes: ts.JsxAttributes): boolean {
+  if (!isOtpLikeInputAttributes(attributes)) return false;
+  const autocompleteValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'autocomplete', 'autoComplete'))
+    ?.trim()
+    .toLowerCase();
+  return autocompleteValue !== 'one-time-code';
 }
 
 function hasAuthInputTypeMismatch(attributes: ts.JsxAttributes): boolean {
@@ -3203,6 +3233,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     mainLandmarkIds: [],
     emailAutocompleteMissingCount: 0,
     passwordAutocompleteMissingCount: 0,
+    otpAutocompleteMissingCount: 0,
     authAutocompleteDisabledCount: 0,
     authAutocompleteSemanticMismatchCount: 0,
     authInputTypeMismatchCount: 0,
@@ -3559,6 +3590,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         if (inputType === 'password' && !hasAutocomplete) {
           signals.passwordAutocompleteMissingCount += 1;
         }
+        if (hasOtpAutocompleteIssue(node.attributes)) {
+          signals.otpAutocompleteMissingCount += 1;
+        }
         if ((inputType === 'email' || inputType === 'password') && autocompleteValue === 'off') {
           signals.authAutocompleteDisabledCount += 1;
         }
@@ -3676,6 +3710,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         }
         if (inputType === 'password' && !hasAutocomplete) {
           signals.passwordAutocompleteMissingCount += 1;
+        }
+        if (hasOtpAutocompleteIssue(node.openingElement.attributes)) {
+          signals.otpAutocompleteMissingCount += 1;
         }
         if ((inputType === 'email' || inputType === 'password') && autocompleteValue === 'off') {
           signals.authAutocompleteDisabledCount += 1;
@@ -4386,6 +4423,7 @@ export function critiqueSource({
   const authOpenRedirectSignalCount = astSignals.authOpenRedirectSignalCount;
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
+  const otpAutocompleteMissingCount = astSignals.otpAutocompleteMissingCount;
   const authAutocompleteDisabledCount = astSignals.authAutocompleteDisabledCount;
   const authAutocompleteSemanticMismatchCount = astSignals.authAutocompleteSemanticMismatchCount;
   const authInputTypeMismatchCount = astSignals.authInputTypeMismatchCount;
@@ -4412,6 +4450,7 @@ export function critiqueSource({
   const hasAuthOpenRedirectSignals = authOpenRedirectSignalCount > 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0
     || passwordAutocompleteMissingCount > 0
+    || otpAutocompleteMissingCount > 0
     || authAutocompleteDisabledCount > 0
     || authAutocompleteSemanticMismatchCount > 0
     || authInputTypeMismatchCount > 0;
@@ -4455,7 +4494,7 @@ export function critiqueSource({
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -4473,7 +4512,7 @@ export function critiqueSource({
       ...(hasInsecureExternalImage ? ['Avoid loading remote images over plain HTTP; use HTTPS or move the image behind a reviewed trusted asset boundary.'] : []),
       ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
       ...(hasAuthOpenRedirectSignals ? ['Resolve auth or route-transition redirects through a reviewed allowlist of internal routes instead of trusting raw `next`, `returnTo`, `callbackUrl`, or similar query params.'] : []),
-      ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, or `new-password` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
+      ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, `new-password`, or `one-time-code` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
       ...(hasAuthCookieWrites ? ['Avoid setting auth cookies from client-side JavaScript; prefer server-issued HttpOnly cookies or other server-managed session boundaries.'] : []),
       ...(hasAuthCookieMissingHardening ? ['When issuing auth cookies, set explicit `httpOnly`, `secure`, and `sameSite` options instead of relying on framework defaults or partial options.'] : []),
@@ -4695,12 +4734,13 @@ export function critiqueSource({
         filePath,
         `Email inputs without autocomplete: ${emailAutocompleteMissingCount}`,
         `Password inputs without autocomplete: ${passwordAutocompleteMissingCount}`,
+        `OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}`,
         `Auth inputs with autocomplete off: ${authAutocompleteDisabledCount}`,
         `Auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}`,
         `Auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}`,
       ],
       file: filePath,
-      suggestedFix: 'Add `autocomplete=\"email\"` or `autocomplete=\"username\"` to identity fields, `autocomplete=\"current-password\"` or `autocomplete=\"new-password\"` to password fields, keep those autocomplete values aligned with the field purpose, do not disable autocomplete on credential inputs, and keep credential field types semantically correct.',
+      suggestedFix: 'Add `autocomplete=\"email\"` or `autocomplete=\"username\"` to identity fields, `autocomplete=\"current-password\"` or `autocomplete=\"new-password\"` to password fields, `autocomplete=\"one-time-code\"` to OTP and verification-code inputs, keep those autocomplete values aligned with the field purpose, do not disable autocomplete on credential inputs, and keep credential field types semantically correct.',
     }));
   }
 

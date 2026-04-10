@@ -5856,6 +5856,102 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-auth-autocomplete-missing')).toBe(true);
   });
 
+  it('flags OTP inputs without one-time-code autocomplete during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/VerifyCodeForm.tsx',
+      code: `
+        export function VerifyCodeForm() {
+          return (
+            <form method="post">
+              <label htmlFor="verification-code">Verification code</label>
+              <input id="verification-code" name="verificationCode" type="text" />
+              <button type="submit">Verify</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['verify'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'verify', path: '/verify', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-autocomplete-missing')).toBe(true);
+  });
+
+  it('accepts OTP inputs with one-time-code autocomplete during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/VerifyCodeForm.tsx',
+      code: `
+        export function VerifyCodeForm() {
+          return (
+            <form method="post">
+              <label htmlFor="verification-code">Verification code</label>
+              <input
+                id="verification-code"
+                name="verificationCode"
+                type="text"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+              />
+              <button type="submit">Verify</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['verify'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'verify', path: '/verify', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-autocomplete-missing')).toBe(false);
+  });
+
   it('flags buttons inside forms that omit an explicit type', () => {
     const report = critiqueSource({
       filePath: 'src/components/ProfileForm.tsx',

@@ -400,6 +400,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - AST-backed security checks now detect `dangerouslySetInnerHTML`, raw DOM HTML injection, and dynamic eval patterns.
 - AST-backed accessibility checks now detect unlabeled icon-only buttons, clickable non-semantic controls, images without `alt`, and unlabeled form controls.
 - AST-backed route/security checks now catch external `_blank` links missing `rel="noopener noreferrer"`, placeholder navigation targets such as `href="#"` or `javascript:void(0)`, and auth-related inputs missing explicit `autocomplete` hints.
+- Auth-input hardening now also treats OTP and verification-code fields as first-class auth surfaces, so generated one-time-code flows are reviewed for `autocomplete="one-time-code"` instead of slipping past the password/email-focused checks.
 - Project audit now also flags suspicious auth topology, including gateway sections that expose protected-looking routes, gateway sections that are not auth-like, primary sections that only expose auth-like destinations, and primary sections that do not include a clear post-auth application route.
 - Project audit now also warns when gateway and primary sections overlap on the same route, making the anonymous-to-authenticated boundary ambiguous.
 - Runtime verification now reports partial route drift when only some compiled route hints or route documents survive the built output, instead of only surfacing catastrophic misses.
