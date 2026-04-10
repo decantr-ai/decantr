@@ -412,6 +412,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.insecureFormActionCount
       + signals.insecureAuthFormMethodCount
       + signals.insecureTransportEndpointCount
+      + signals.authCookieMissingHardeningCount
       + signals.externalBlankLinkWithoutRelCount;
     const authInputHintIssueCount = signals.emailAutocompleteMissingCount
       + signals.passwordAutocompleteMissingCount
@@ -1828,6 +1829,7 @@ interface AstCritiqueSignals {
   authProtectedRedirectSignalCount: number;
   authStorageWriteCount: number;
   authCookieWriteCount: number;
+  authCookieMissingHardeningCount: number;
   authHeaderWriteCount: number;
   authGuardSignalCount: number;
   authExitSignalCount: number;
@@ -2292,6 +2294,25 @@ function getObjectLiteralStringPropertyValue(
   return null;
 }
 
+function getObjectLiteralBooleanPropertyValue(
+  expression: ts.Expression | undefined,
+  ...propertyNames: string[]
+): boolean | null {
+  if (!expression || !ts.isObjectLiteralExpression(expression)) return null;
+  for (const property of expression.properties) {
+    if (!ts.isPropertyAssignment(property)) continue;
+    const propertyName = ts.isIdentifier(property.name)
+      ? property.name.text
+      : ts.isStringLiteral(property.name)
+        ? property.name.text
+        : null;
+    if (!propertyName || !propertyNames.includes(propertyName)) continue;
+    if (property.initializer.kind === ts.SyntaxKind.TrueKeyword) return true;
+    if (property.initializer.kind === ts.SyntaxKind.FalseKeyword) return false;
+  }
+  return null;
+}
+
 function collectNamedFunctionLikeDeclarations(root: ts.Node): Map<string, ts.FunctionLikeDeclarationBase> {
   const declarations = new Map<string, ts.FunctionLikeDeclarationBase>();
 
@@ -2364,6 +2385,49 @@ function functionLikeReferencesOrigin(node: ts.FunctionLikeDeclarationBase): boo
 function isAddEventListenerCall(node: ts.CallExpression): boolean {
   return (ts.isIdentifier(node.expression) && node.expression.text === 'addEventListener')
     || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'addEventListener'));
+}
+
+function isCookieMutationSetCall(node: ts.CallExpression): boolean {
+  if (!ts.isPropertyAccessExpression(node.expression) || !isPropertyNamed(node.expression.name, 'set')) {
+    return false;
+  }
+
+  return (ts.isIdentifier(node.expression.expression) && ['Cookies', 'cookieStore', 'cookies'].includes(node.expression.expression.text))
+    || (ts.isPropertyAccessExpression(node.expression.expression) && isPropertyNamed(node.expression.expression.name, 'cookies', 'cookieStore'));
+}
+
+function expressionLooksLikeAuthCookieName(node: ts.Expression | undefined, sourceFile: ts.SourceFile): boolean {
+  if (!node) return false;
+  if (isAuthStorageKeyLiteral(node)) return true;
+  return hasAuthCredentialText(node, sourceFile);
+}
+
+function objectLiteralLooksLikeAuthCookieConfig(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+): boolean {
+  if (!expression || !ts.isObjectLiteralExpression(expression)) return false;
+  for (const property of expression.properties) {
+    if (!ts.isPropertyAssignment(property)) continue;
+    const propertyName = ts.isIdentifier(property.name)
+      ? property.name.text
+      : ts.isStringLiteral(property.name)
+        ? property.name.text
+        : null;
+    if (!propertyName || !['name', 'key', 'cookie'].includes(propertyName)) continue;
+    return expressionLooksLikeAuthCookieName(property.initializer, sourceFile);
+  }
+  return false;
+}
+
+function hasExplicitAuthCookieHardening(expression: ts.Expression | undefined): boolean {
+  if (!expression || !ts.isObjectLiteralExpression(expression)) return false;
+
+  const httpOnly = getObjectLiteralBooleanPropertyValue(expression, 'httpOnly', 'http_only');
+  const secure = getObjectLiteralBooleanPropertyValue(expression, 'secure');
+  const sameSite = getObjectLiteralStringPropertyValue(expression, 'sameSite', 'same_site');
+
+  return httpOnly === true && secure === true && Boolean(sameSite?.trim());
 }
 
 function isInsecureTransportUrl(value: string | null): boolean {
@@ -2640,6 +2704,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authProtectedRedirectSignalCount: countAuthProtectedRedirectSignals(code),
     authStorageWriteCount: 0,
     authCookieWriteCount: 0,
+    authCookieMissingHardeningCount: 0,
     authHeaderWriteCount: 0,
     authGuardSignalCount: countAuthGuardSignals(code),
     authExitSignalCount: countAuthExitSignals(code),
@@ -2782,15 +2847,20 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           signals.authStorageWriteCount += 1;
         }
         if (
-          isPropertyNamed(node.expression.name, 'set')
-          && node.arguments.length > 0
-          && hasAuthCredentialText(node.arguments[0], sourceFile)
-          && (
-            (ts.isIdentifier(node.expression.expression) && ['Cookies', 'cookieStore', 'cookies'].includes(node.expression.expression.text))
-            || (ts.isPropertyAccessExpression(node.expression.expression) && isPropertyNamed(node.expression.expression.name, 'cookies', 'cookieStore'))
-          )
+          isCookieMutationSetCall(node)
         ) {
-          signals.authCookieWriteCount += 1;
+          const firstArgument = node.arguments[0];
+          const isObjectConfigCall = ts.isObjectLiteralExpression(firstArgument);
+          const isAuthCookieWrite = isObjectConfigCall
+            ? objectLiteralLooksLikeAuthCookieConfig(firstArgument, sourceFile)
+            : expressionLooksLikeAuthCookieName(firstArgument, sourceFile);
+          if (isAuthCookieWrite) {
+            signals.authCookieWriteCount += 1;
+            const hardeningSource = isObjectConfigCall ? firstArgument : node.arguments[2];
+            if (!hasExplicitAuthCookieHardening(hardeningSource)) {
+              signals.authCookieMissingHardeningCount += 1;
+            }
+          }
         }
         if (
           (isPropertyNamed(node.expression.name, 'set') || isPropertyNamed(node.expression.name, 'append'))
@@ -3513,6 +3583,7 @@ export function critiqueSource({
   const messageListenerWithoutOriginCheckCount = astSignals.messageListenerWithoutOriginCheckCount;
   const authStorageWriteCount = astSignals.authStorageWriteCount;
   const authCookieWriteCount = astSignals.authCookieWriteCount;
+  const authCookieMissingHardeningCount = astSignals.authCookieMissingHardeningCount;
   const authHeaderWriteCount = astSignals.authHeaderWriteCount;
   const hasDangerousHtml = dangerousHtmlCount > 0;
   const hasRawHtmlInjection = rawHtmlInjectionCount > 0;
@@ -3534,6 +3605,7 @@ export function critiqueSource({
   const hasMessageListenerWithoutOriginCheck = messageListenerWithoutOriginCheckCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
   const hasAuthCookieWrites = authCookieWriteCount > 0;
+  const hasAuthCookieMissingHardening = authCookieMissingHardeningCount > 0;
   const hasAuthHeaderWrites = authHeaderWriteCount > 0;
   scores.push({
     category: 'Security Hygiene',
@@ -3557,9 +3629,10 @@ export function critiqueSource({
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
+      - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -3576,6 +3649,7 @@ export function critiqueSource({
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, or `new-password` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
       ...(hasAuthCookieWrites ? ['Avoid setting auth cookies from client-side JavaScript; prefer server-issued HttpOnly cookies or other server-managed session boundaries.'] : []),
+      ...(hasAuthCookieMissingHardening ? ['When issuing auth cookies, set explicit `httpOnly`, `secure`, and `sameSite` options instead of relying on framework defaults or partial options.'] : []),
       ...(hasAuthHeaderWrites ? ['Avoid constructing bearer/session authorization headers in client-rendered code unless the auth model is explicitly reviewed and intended.'] : []),
     ],
   });
@@ -3776,6 +3850,18 @@ export function critiqueSource({
       evidence: [filePath, `Auth-like cookie writes: ${authCookieWriteCount}`],
       file: filePath,
       suggestedFix: 'Avoid setting auth cookies from client-side code; prefer server-issued HttpOnly cookies or other server-managed session mechanisms.',
+    }));
+  }
+
+  if (hasAuthCookieMissingHardening) {
+    findings.push(makeFinding({
+      id: 'security-auth-cookie-hardening-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Auth cookies are being issued without explicit `httpOnly`, `secure`, and `sameSite` hardening.',
+      evidence: [filePath, `Auth cookies missing hardening: ${authCookieMissingHardeningCount}`],
+      file: filePath,
+      suggestedFix: 'Set auth cookies with explicit `httpOnly: true`, `secure: true`, and a reviewed `sameSite` value so session boundaries do not rely on ambient defaults.',
     }));
   }
 
