@@ -2430,6 +2430,33 @@ function hasExplicitAuthCookieHardening(expression: ts.Expression | undefined): 
   return httpOnly === true && secure === true && Boolean(sameSite?.trim());
 }
 
+function isSetCookieHeaderName(node: ts.Expression | undefined): boolean {
+  const literal = getExpressionLiteralValue(node)?.trim().toLowerCase();
+  return literal === 'set-cookie';
+}
+
+function cookieHeaderStringLooksAuthLike(value: string): boolean {
+  return /\b(?:auth|session|token|jwt|refresh_token|access_token)[^=]*=/i.test(value);
+}
+
+function cookieHeaderStringHasHardening(value: string): boolean {
+  return /;\s*httponly\b/i.test(value)
+    && /;\s*secure\b/i.test(value)
+    && /;\s*samesite=/i.test(value);
+}
+
+function collectCookieHeaderStrings(expression: ts.Expression | undefined): string[] {
+  if (!expression) return [];
+  const literal = getExpressionLiteralValue(expression);
+  if (literal !== null) return [literal];
+  if (ts.isArrayLiteralExpression(expression)) {
+    return expression.elements
+      .map((element) => ts.isExpression(element) ? getExpressionLiteralValue(element) : null)
+      .filter((value): value is string => value !== null);
+  }
+  return [];
+}
+
 function isInsecureTransportUrl(value: string | null): boolean {
   return typeof value === 'string' && /^(?:http|ws):\/\//i.test(value.trim());
 }
@@ -2819,6 +2846,27 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         const handler = resolveFunctionLikeHandler(node.arguments[1], namedFunctionDeclarations);
         if (handler && !functionLikeReferencesOrigin(handler)) {
           signals.messageListenerWithoutOriginCheckCount += 1;
+        }
+      }
+
+      if (
+        ts.isPropertyAccessExpression(node.expression)
+        && isPropertyNamed(node.expression.name, 'setHeader', 'append', 'set')
+        && isSetCookieHeaderName(node.arguments[0])
+      ) {
+        const cookieStrings = collectCookieHeaderStrings(node.arguments[1]);
+        const authCookieStrings = cookieStrings.filter(cookieHeaderStringLooksAuthLike);
+        if (authCookieStrings.length > 0) {
+          signals.authCookieWriteCount += authCookieStrings.length;
+          signals.authCookieMissingHardeningCount += authCookieStrings.filter(value => !cookieHeaderStringHasHardening(value)).length;
+        } else {
+          const cookieHeaderSource = node.arguments[1]?.getText(sourceFile) ?? '';
+          if (cookieHeaderStringLooksAuthLike(cookieHeaderSource)) {
+            signals.authCookieWriteCount += 1;
+            if (!cookieHeaderStringHasHardening(cookieHeaderSource)) {
+              signals.authCookieMissingHardeningCount += 1;
+            }
+          }
         }
       }
 

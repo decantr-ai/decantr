@@ -3892,4 +3892,44 @@ describe('verifier', () => {
 
     expect(report.findings.some(finding => finding.id === 'security-transport-endpoint-insecure')).toBe(true);
   });
+
+  it('flags under-hardened auth set-cookie headers during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/server/route.ts',
+      code: `
+        export function issueSession(res, token) {
+          res.setHeader('Set-Cookie', 'session_token=' + token + '; Path=/; Secure');
+          return res;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-cookie-hardening-missing')).toBe(true);
+  });
 });
