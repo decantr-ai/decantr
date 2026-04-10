@@ -5080,6 +5080,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
     );
   }
 
+  if (ts.isTaggedTemplateExpression(expression)) {
+    return expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.template,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    );
+  }
+
   if (
     isCallLikeExpression(expression)
     && ts.isIdentifier(expression.expression)
