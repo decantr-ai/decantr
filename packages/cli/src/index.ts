@@ -1686,10 +1686,10 @@ function printProjectAuditReport(report: ProjectAuditReport) {
       `  Document hardening: lang ${report.runtimeAudit.langOk ? 'ok' : 'missing'} | viewport ${report.runtimeAudit.viewportOk ? 'ok' : 'missing'} | charset ${report.runtimeAudit.charsetOk ? 'ok' : 'missing'} | csp ${report.runtimeAudit.cspSignalOk ? 'present' : 'missing'}`,
     );
     console.log(
-      `  Script hygiene: inline ${report.runtimeAudit.inlineScriptCount} | external without integrity ${report.runtimeAudit.externalScriptsWithoutIntegrityCount}`,
+      `  Script hygiene: inline ${report.runtimeAudit.inlineScriptCount} | scripts without integrity ${report.runtimeAudit.externalScriptsWithoutIntegrityCount} | stylesheets without integrity ${report.runtimeAudit.externalStylesheetsWithoutIntegrityCount} | insecure external scripts ${report.runtimeAudit.externalScriptsWithInsecureTransportCount} | insecure external stylesheets ${report.runtimeAudit.externalStylesheetsWithInsecureTransportCount}`,
     );
     console.log(
-      `  JS risk signals: dynamic code ${report.runtimeAudit.jsEvalSignalCount} | html injection ${report.runtimeAudit.jsHtmlInjectionSignalCount}`,
+      `  JS risk signals: dynamic code ${report.runtimeAudit.jsEvalSignalCount} | html injection ${report.runtimeAudit.jsHtmlInjectionSignalCount} | insecure transport ${report.runtimeAudit.jsInsecureTransportSignalCount} | secret markers ${report.runtimeAudit.jsSecretSignalCount}`,
     );
   }
   console.log(`  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`);
