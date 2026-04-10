@@ -90,7 +90,7 @@ describe('audit command (e2e)', () => {
     expect(output).toContain('review pack file is missing');
   });
 
-  it('hydrates missing execution packs from the hosted compiler before auditing', async () => {
+  it('hydrates the hosted review pack and manifest before auditing', async () => {
     const requests: Array<{ url?: string; method?: string; body?: string }> = [];
     const server = createServer((req, res) => {
       let body = '';
@@ -99,10 +99,10 @@ describe('audit command (e2e)', () => {
       });
       req.on('end', () => {
         requests.push({ url: req.url, method: req.method, body });
-        if (req.method === 'POST' && req.url?.startsWith('/v1/packs/compile')) {
+        if (req.method === 'POST' && req.url?.startsWith('/v1/packs/select')) {
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({
-            $schema: 'https://decantr.ai/schemas/execution-pack-bundle.v1.json',
+            $schema: 'https://decantr.ai/schemas/selected-execution-pack.v1.json',
             generatedAt: '2026-04-09T00:00:00.000Z',
             sourceEssenceVersion: '3.0.0',
             manifest: {
@@ -115,30 +115,11 @@ describe('audit command (e2e)', () => {
               pages: [],
               mutations: [],
             },
-            scaffold: {
-              $schema: 'https://decantr.ai/schemas/scaffold-pack.v1.json',
-              packVersion: '1.0.0',
-              packType: 'scaffold',
-              objective: 'Scaffold the clean app shell and declared routes.',
-              target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
-              preset: null,
-              scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
-              requiredSetup: [],
-              allowedVocabulary: [],
-              examples: [],
-              antiPatterns: [],
-              successChecks: [],
-              tokenBudget: { target: 1400, max: 2200, strategy: ['compact'] },
-              data: {
-                shell: 'sidebar-main',
-                theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
-                routing: 'hash',
-                features: [],
-                routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
-              },
-              renderedMarkdown: '# Scaffold Pack\n',
+            selector: {
+              packType: 'review',
+              id: null,
             },
-            review: {
+            pack: {
               $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
               packVersion: '1.0.0',
               packType: 'review',
@@ -164,9 +145,6 @@ describe('audit command (e2e)', () => {
               },
               renderedMarkdown: '# Review Pack\n',
             },
-            sections: [],
-            pages: [],
-            mutations: [],
           }));
           return;
         }
@@ -217,8 +195,8 @@ describe('audit command (e2e)', () => {
 
     expect(requests).toHaveLength(1);
     expect(requests[0]?.method).toBe('POST');
-    expect(requests[0]?.url).toContain('/v1/packs/compile');
-    expect(output).toContain('Hydrated missing execution packs from hosted registry.');
+    expect(requests[0]?.url).toContain('/v1/packs/select');
+    expect(output).toContain('Hydrated missing review pack and manifest from hosted registry.');
     expect(output).toContain('Review pack: present');
   });
 

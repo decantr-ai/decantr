@@ -585,6 +585,11 @@ async function hydrateHostedExecutionPacksIfMissing(
     return { attempted: false, hydrated: false };
   }
 
+  const reviewHydration = await hydrateHostedReviewPackIfMissing(projectRoot, namespace);
+  if (reviewHydration.hydrated || !reviewHydration.attempted) {
+    return reviewHydration;
+  }
+
   try {
     const client = getPublicAPIClient();
     const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
@@ -1662,7 +1667,11 @@ async function cmdAudit(filePath?: string) {
     const hydration = await hydrateHostedExecutionPacksIfMissing(projectRoot);
     console.log(heading('Auditing project...'));
     if (hydration.hydrated) {
-      console.log(dim('Hydrated missing execution packs from hosted registry.'));
+      console.log(dim(
+        hydration.scope === 'bundle'
+          ? 'Hydrated missing execution packs from hosted registry.'
+          : 'Hydrated missing review pack and manifest from hosted registry.',
+      ));
       console.log('');
     }
     const report = await auditProject(projectRoot);
