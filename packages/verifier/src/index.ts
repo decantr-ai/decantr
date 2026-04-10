@@ -382,6 +382,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authAnonymousRedirectSignals: createSourceAuditBucket(),
     authOpenRedirectSignals: createSourceAuditBucket(),
     authExternalRedirectSignals: createSourceAuditBucket(),
+    authProviderStateSignals: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
     skipNavTargetIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
@@ -443,6 +444,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.authCookieMissingHardeningCount
       + signals.authOpenRedirectSignalCount
       + signals.authExternalRedirectSignalCount
+      + signals.authProviderStateMissingCount
       + signals.externalBlankLinkWithoutRelCount;
     const authInputHintIssueCount = signals.emailAutocompleteMissingCount
       + signals.passwordAutocompleteMissingCount
@@ -460,6 +462,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authAnonymousRedirectSignals, relativePath, signals.authAnonymousRedirectSignalCount);
     recordSourceAudit(summary.authOpenRedirectSignals, relativePath, signals.authOpenRedirectSignalCount);
     recordSourceAudit(summary.authExternalRedirectSignals, relativePath, signals.authExternalRedirectSignalCount);
+    recordSourceAudit(summary.authProviderStateSignals, relativePath, signals.authProviderStateMissingCount);
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
     for (const targetId of signals.skipNavTargetIds) {
@@ -625,6 +628,7 @@ interface SourceAuditSummary {
   authAnonymousRedirectSignals: SourceAuditBucket;
   authOpenRedirectSignals: SourceAuditBucket;
   authExternalRedirectSignals: SourceAuditBucket;
+  authProviderStateSignals: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
   skipNavTargetIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
@@ -1839,6 +1843,27 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authProviderStateSignals.count > 0
+    && (
+      sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.authEntrySignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.signInFlowSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.signUpFlowSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.recoveryFlowSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.authExitSignals)
+    )
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-provider-state-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files hardcode provider-style auth authorize URLs without a `state` parameter.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authProviderStateSignals, 'Auth provider URLs missing state'),
+      suggestedFix: 'When auth flows hand off to an external provider authorize URL, include a reviewed `state` value and validate it on return instead of hardcoding off-site auth entry without CSRF protection.',
+    }));
+  }
+
   if (topology.hasAuthFeature && topology.gatewayRoutes.length === 0 && sourceAudit.authEntrySignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-entry-surface-missing',
@@ -2323,6 +2348,7 @@ interface AstCritiqueSignals {
   authAnonymousRedirectSignalCount: number;
   authOpenRedirectSignalCount: number;
   authExternalRedirectSignalCount: number;
+  authProviderStateMissingCount: number;
   authStorageWriteCount: number;
   authStorageClearCount: number;
   authCookieWriteCount: number;
@@ -3083,6 +3109,32 @@ function isExternalUrl(value: string | null): boolean {
   return typeof value === 'string' && /^(?:https?:)?\/\//i.test(value.trim());
 }
 
+function parseExternalUrl(value: string | null): URL | null {
+  if (!isExternalUrl(value)) return null;
+
+  const normalized = value?.trim() ?? '';
+  const input = normalized.startsWith('//') ? `https:${normalized}` : normalized;
+  try {
+    return new URL(input);
+  } catch {
+    return null;
+  }
+}
+
+function isProviderAuthorizeUrl(url: URL): boolean {
+  const hostAndPath = `${url.hostname}${url.pathname}`.toLowerCase();
+  const hasAuthorizeLikePath = /(?:oauth|authorize|openid|sso|login\/oauth)/i.test(hostAndPath);
+  const hasProviderQuery = ['client_id', 'redirect_uri', 'response_type', 'scope'].some((param) => url.searchParams.has(param));
+  return (hasAuthorizeLikePath && hasProviderQuery)
+    || (url.searchParams.has('client_id') && url.searchParams.has('redirect_uri'));
+}
+
+function isAuthProviderUrlMissingState(value: string | null): boolean {
+  const url = parseExternalUrl(value);
+  if (!url || !isProviderAuthorizeUrl(url)) return false;
+  return !url.searchParams.has('state');
+}
+
 function hasMainLandmarkSignal(attributes: ts.JsxAttributes, tagName: string | null): boolean {
   if (tagName === 'main') return true;
 
@@ -3500,6 +3552,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authAnonymousRedirectSignalCount: countAuthAnonymousRedirectSignals(code),
     authOpenRedirectSignalCount: countAuthOpenRedirectSignals(code),
     authExternalRedirectSignalCount: 0,
+    authProviderStateMissingCount: 0,
     authStorageWriteCount: 0,
     authStorageClearCount: countAuthStorageClearSignals(code),
     authCookieWriteCount: 0,
@@ -3532,6 +3585,13 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
+
+      if (
+        isPropertyNamed(node.name, 'href', 'to')
+        && isAuthProviderUrlMissingState(getJsxAttributeLiteralValue(node))
+      ) {
+        signals.authProviderStateMissingCount += 1;
+      }
     }
 
     if (
@@ -3559,6 +3619,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       && isExternalUrl(getExpressionLiteralValue(node.right))
     ) {
       signals.authExternalRedirectSignalCount += 1;
+      if (isAuthProviderUrlMissingState(getExpressionLiteralValue(node.right))) {
+        signals.authProviderStateMissingCount += 1;
+      }
     }
 
     if (
@@ -3676,6 +3739,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
       if (isRouteTransitionCall(node) && isExternalUrl(firstArgumentLiteral)) {
         signals.authExternalRedirectSignalCount += 1;
+        if (isAuthProviderUrlMissingState(firstArgumentLiteral)) {
+          signals.authProviderStateMissingCount += 1;
+        }
       }
 
       if (
@@ -3701,6 +3767,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && isExternalUrl(firstArgumentLiteral)
       ) {
         signals.authExternalRedirectSignalCount += 1;
+        if (isAuthProviderUrlMissingState(firstArgumentLiteral)) {
+          signals.authProviderStateMissingCount += 1;
+        }
       }
 
       if (
@@ -4829,6 +4898,7 @@ export function critiqueSource({
   const externalBlankLinkWithoutRelCount = astSignals.externalBlankLinkWithoutRelCount;
   const authOpenRedirectSignalCount = astSignals.authOpenRedirectSignalCount;
   const authExternalRedirectSignalCount = astSignals.authExternalRedirectSignalCount;
+  const authProviderStateMissingCount = astSignals.authProviderStateMissingCount;
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
   const otpAutocompleteMissingCount = astSignals.otpAutocompleteMissingCount;
@@ -4854,6 +4924,7 @@ export function critiqueSource({
   const hasExternalBlankLinkWithoutRel = externalBlankLinkWithoutRelCount > 0;
   const hasAuthOpenRedirectSignals = authOpenRedirectSignalCount > 0;
   const hasAuthExternalRedirectSignals = authExternalRedirectSignalCount > 0;
+  const hasAuthProviderStateMissing = authProviderStateMissingCount > 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0
     || passwordAutocompleteMissingCount > 0
     || otpAutocompleteMissingCount > 0
@@ -4898,13 +4969,14 @@ export function critiqueSource({
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthOpenRedirectSignals ? 2 : 0)
       - (hasAuthExternalRedirectSignals ? 2 : 0)
+      - (hasAuthProviderStateMissing ? 2 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, auth provider URLs missing state: ${authProviderStateMissingCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -4923,6 +4995,7 @@ export function critiqueSource({
       ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
       ...(hasAuthOpenRedirectSignals ? ['Resolve auth or route-transition redirects through a reviewed allowlist of internal routes instead of trusting raw `next`, `returnTo`, `callbackUrl`, or similar query params.'] : []),
       ...(hasAuthExternalRedirectSignals ? ['Avoid hard-redirecting auth flows to external URLs from app code. Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration.'] : []),
+      ...(hasAuthProviderStateMissing ? ['When auth flows hand off to a provider authorize URL, include a reviewed `state` value and validate it on return instead of hardcoding off-site auth entry without CSRF protection.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, `new-password`, or `one-time-code` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
       ...(hasAuthStorageClearGap ? ['If auth data is stored in browser storage, explicitly remove those auth/session keys during sign-out instead of relying on redirects or generic sign-out helpers alone.'] : []),
@@ -5150,6 +5223,21 @@ export function critiqueSource({
       evidence: [filePath, `Auth external redirects: ${authExternalRedirectSignalCount}`],
       file: filePath,
       suggestedFix: 'Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration instead of hardcoding off-site destinations in app code.',
+    }));
+  }
+
+  if (
+    hasAuthProviderStateMissing
+    && (signInFlowSignals > 0 || signUpFlowSignals > 0 || recoveryFlowSignals > 0 || authExitSignalCount > 0)
+  ) {
+    findings.push(makeFinding({
+      id: 'security-auth-provider-state-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'The reviewed auth flow hardcodes a provider-style authorize URL without a `state` parameter.',
+      evidence: [filePath, `Auth provider URLs missing state: ${authProviderStateMissingCount}`],
+      file: filePath,
+      suggestedFix: 'Add a reviewed `state` value to external provider authorize URLs and validate it on return instead of hardcoding off-site auth entry without CSRF protection.',
     }));
   }
 
