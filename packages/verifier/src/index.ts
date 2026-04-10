@@ -5108,6 +5108,22 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'slice')
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'bind')
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
