@@ -5159,6 +5159,79 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
     && expression.expression.expression.text === 'Reflect'
     && isMemberAccessNamed(expression.expression, 'apply')
     && expression.arguments.length > 2
+    && expressionLooksLikeBrowserGlobalUriCodecHelper(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'call')
+    && expression.arguments.length > 1
+    && expressionLooksLikeBrowserGlobalUriCodecHelper(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[1],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'apply')
+    && expressionLooksLikeBrowserGlobalUriCodecHelper(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && ts.isIdentifier(expression.expression.expression)
+    && expression.expression.expression.text === 'Reflect'
+    && isMemberAccessNamed(expression.expression, 'apply')
+    && expression.arguments.length > 2
     && expressionLooksLikeBrowserGlobalBase64Helper(
       expression.arguments[0],
       sourceFile,
