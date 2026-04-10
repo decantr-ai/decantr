@@ -5073,6 +5073,31 @@ function expressionLooksLikeLocationUrlInput(
   }
 
   if (
+    ts.isCallExpression(expression)
+    && ts.isIdentifier(expression.expression)
+    && expression.expression.text === 'String'
+    && expression.arguments.length > 0
+    && (
+      expressionLooksLikeLocationObjectSource(expression.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      || expressionLooksLikeNextUrlSource(expression.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isCallExpression(expression)
+    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    && isMemberAccessNamed(expression.expression, 'toString', 'toJSON')
+    && (
+      expressionLooksLikeLocationObjectSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      || expressionLooksLikeNextUrlSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    )
+  ) {
+    return true;
+  }
+
+  if (
     (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
     && isMemberAccessNamed(expression, 'href', 'search', 'hash')
     && (
