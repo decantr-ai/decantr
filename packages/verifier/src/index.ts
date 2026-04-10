@@ -3131,6 +3131,20 @@ function countAuthOpenRedirectSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
 }
 
+function expressionContainsOpenRedirectSource(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+): boolean {
+  if (!expression) return false;
+  return /\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)['"`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)\b/i
+    .test(expression.getText(sourceFile));
+}
+
+function isRouteTransitionCall(node: ts.CallExpression): boolean {
+  return (ts.isIdentifier(node.expression) && ['redirect', 'navigate'].includes(node.expression.text))
+    || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'push', 'replace', 'redirect', 'navigate'));
+}
+
 function countAuthRecoveryRouteSignals(code: string): number {
   const patterns = [
     /\b(?:href|to|route|path)\s*[:=]\s*['"`]\/(?:forgot-password|reset-password|password-reset|recover)(?:[/?#][^'"`]*)?['"`]/gi,
@@ -3283,6 +3297,14 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (isPropertyNamed(node.name, 'dangerouslySetInnerHTML')) {
         signals.dangerousHtmlCount += 1;
       }
+      if (
+        isPropertyNamed(node.name, 'href', 'to')
+        && node.initializer
+        && ts.isJsxExpression(node.initializer)
+        && expressionContainsOpenRedirectSource(node.initializer.expression, sourceFile)
+      ) {
+        signals.authOpenRedirectSignalCount += 1;
+      }
     }
 
     if (
@@ -3301,6 +3323,15 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       && isInsecureTransportUrl(getExpressionLiteralValue(node.right))
     ) {
       signals.insecureTransportEndpointCount += 1;
+    }
+
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && isLocationAssignmentTarget(node.left)
+      && expressionContainsOpenRedirectSource(node.right, sourceFile)
+    ) {
+      signals.authOpenRedirectSignalCount += 1;
     }
 
     if (
@@ -3378,6 +3409,10 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && isInsecureTransportUrl(firstArgumentLiteral)
       ) {
         signals.insecureTransportEndpointCount += 1;
+      }
+
+      if (isRouteTransitionCall(node) && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile)) {
+        signals.authOpenRedirectSignalCount += 1;
       }
 
       if (
