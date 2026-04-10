@@ -5140,6 +5140,22 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'values', 'next')
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'bind')
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
@@ -5170,6 +5186,21 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
 
   if (
     isElementLikeAccessExpression(expression)
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isMemberAccessExpression(expression)
+    && isMemberAccessNamed(expression, 'value')
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression,
       sourceFile,
