@@ -3770,6 +3770,59 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'route-auth-exit-redirect-missing')).toBe(true);
   });
 
+  it('flags auth entry flows that never transition into the protected app during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginPage.tsx',
+      code: `
+        export function LoginPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await auth.signIn();
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="current-password" />
+              <button type="submit">Sign in</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'login', path: '/login', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-success-redirect-missing')).toBe(true);
+  });
+
   it('flags auth flows that trust raw redirect query params during critique', () => {
     const report = critiqueSource({
       filePath: 'src/routes/LoginRedirect.tsx',
@@ -3857,6 +3910,60 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'route-auth-exit-redirect-missing')).toBe(false);
+  });
+
+  it('does not flag auth entry flows when success transitions into the protected app during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginPage.tsx',
+      code: `
+        export function LoginPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await auth.signIn();
+            return redirect('/dashboard');
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="current-password" />
+              <button type="submit">Sign in</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'login', path: '/login', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-success-redirect-missing')).toBe(false);
   });
 
   it('flags auth inputs that disable autocomplete during critique', () => {

@@ -3823,6 +3823,27 @@ export function critiqueSource({
     }));
   }
 
+  const hasProtectedRouteInReview = reviewPack?.data.routes.some(route => isProtectedLikeRoute(route.path)) ?? false;
+  if (
+    astSignals.authEntrySignalCount > 0
+    && hasProtectedRouteInReview
+    && authProtectedRedirectSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'route-auth-success-redirect-missing',
+      category: 'Route Topology',
+      severity: 'info',
+      message: 'The reviewed auth entry flow does not show an obvious transition into the protected application surface.',
+      evidence: [
+        filePath,
+        `Auth entry signals: ${astSignals.authEntrySignalCount}`,
+        `Protected auth redirects: ${authProtectedRedirectSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'After reviewed sign-in, registration, or recovery success, navigate users to a protected route like `/dashboard`, `/app`, or another primary destination declared in the compiled route contract.',
+    }));
+  }
+
   const knownRoutes = reviewPack?.data.routes.length ?? packManifest?.pages.length ?? 0;
   const placeholderNavigationTargets = astSignals.placeholderNavigationTargetCount;
   scores.push({
