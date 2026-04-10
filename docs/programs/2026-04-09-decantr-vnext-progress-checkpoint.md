@@ -152,6 +152,7 @@ commit archaeology.
 - Runtime verification now also flags root-document remote scripts and stylesheets loaded over plain `http://`, so insecure external asset transport is caught separately from missing integrity metadata.
 - Source audit now flags protected app-surface files that reference routes like `/dashboard` or `/settings` without co-located session or guard behavior, even when an auth helper exists elsewhere in the repo.
 - Source audit now also flags auth/session flows that never expose an obvious failure state, so generated credential handling is pushed toward explicit rejected-sign-in and session-refresh error affordances.
+- Source audit now also flags auth entry surfaces that never show an obvious post-auth transition into the protected app, so login or registration flows do not silently stop before a primary route like `/dashboard` or `/app`.
 - File critique now catches dialog accessibility gaps too, including missing dialog labels and missing modal hints on dialog-like surfaces.
 - Auth verification now flags guard/session files that redirect unauthenticated users toward protected destinations like `/dashboard` instead of anonymous entry routes.
 - File critique now also flags auth-like form inputs that omit `name` attributes, so visually correct login forms do not silently fail browser submission or FormData handling.

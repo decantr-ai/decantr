@@ -1606,6 +1606,27 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && topology.primaryRoutes.length > 0
+    && sourceAudit.authEntrySignals.count > 0
+    && sourceAudit.authProtectedRedirectSignals.count === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-success-redirect-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Authentication entry surfaces exist, but the source tree does not show an obvious transition into the protected app after success.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth entry signals: ${sourceAudit.authEntrySignals.count}`,
+        'Protected auth redirects: 0',
+        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'After reviewed sign-in, registration, or recovery success, route users into a primary app surface such as `/dashboard`, `/app`, or another protected destination instead of leaving the post-auth transition implicit.',
+    }));
+  }
+
   if (sourceAudit.accessibilityIssues.count > 0) {
     findings.push(makeFinding({
       id: 'source-accessibility-issues-present',
