@@ -394,7 +394,9 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authErrorSignals: createSourceAuditBucket(),
     authSuccessSignals: createSourceAuditBucket(),
     authStorageWrites: createSourceAuditBucket(),
+    authStorageClears: createSourceAuditBucket(),
     authCookieWrites: createSourceAuditBucket(),
+    authCookieClears: createSourceAuditBucket(),
     authHeaderWrites: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
     authExitSignals: createSourceAuditBucket(),
@@ -475,7 +477,9 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
+    recordSourceAudit(summary.authStorageClears, relativePath, signals.authStorageClearCount);
     recordSourceAudit(summary.authCookieWrites, relativePath, signals.authCookieWriteCount);
+    recordSourceAudit(summary.authCookieClears, relativePath, signals.authCookieClearCount);
     recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
@@ -628,7 +632,9 @@ interface SourceAuditSummary {
   authErrorSignals: SourceAuditBucket;
   authSuccessSignals: SourceAuditBucket;
   authStorageWrites: SourceAuditBucket;
+  authStorageClears: SourceAuditBucket;
   authCookieWrites: SourceAuditBucket;
+  authCookieClears: SourceAuditBucket;
   authHeaderWrites: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
   authExitSignals: SourceAuditBucket;
@@ -1529,6 +1535,48 @@ function appendSourceAuditFindings(
   }
 
   const topology = summarizeTopology(essence, reviewPack);
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authStorageWrites.count > 0
+    && sourceAudit.authExitSignals.count > 0
+    && sourceAudit.authStorageClears.count === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-storage-teardown-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth exit flows exist, but the source tree does not show client-managed auth storage being cleared during sign-out.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth storage write files: ${sourceAudit.authStorageWrites.files.join(', ') || 'none'}`,
+        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+        'Auth storage clear files: none',
+      ],
+      suggestedFix: 'If auth data is ever stored in browser storage, remove those auth/session keys during sign-out before returning users to an anonymous route.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authCookieWrites.count > 0
+    && sourceAudit.authExitSignals.count > 0
+    && sourceAudit.authCookieClears.count === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-cookie-teardown-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth exit flows exist, but the source tree does not show client-managed auth cookies being cleared during sign-out.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth cookie write files: ${sourceAudit.authCookieWrites.files.join(', ') || 'none'}`,
+        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+        'Auth cookie clear files: none',
+      ],
+      suggestedFix: 'If auth cookies are issued from reviewed source surfaces, explicitly expire or delete them during sign-out before returning users to an anonymous route.',
+    }));
+  }
+
   if (topology.hasAuthFeature && sourceAudit.authGuardSignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-guard-signals-missing',
@@ -2226,12 +2274,14 @@ interface AstCritiqueSignals {
   authAnonymousRedirectSignalCount: number;
   authOpenRedirectSignalCount: number;
   authStorageWriteCount: number;
+  authStorageClearCount: number;
   authCookieWriteCount: number;
-    authCookieMissingHardeningCount: number;
-    authHeaderWriteCount: number;
-    authGuardSignalCount: number;
-    authExitSignalCount: number;
-    authSessionTeardownSignalCount: number;
+  authCookieClearCount: number;
+  authCookieMissingHardeningCount: number;
+  authHeaderWriteCount: number;
+  authGuardSignalCount: number;
+  authExitSignalCount: number;
+  authSessionTeardownSignalCount: number;
 }
 
 function getScriptKind(filePath: string): ts.ScriptKind {
@@ -3133,6 +3183,25 @@ function countAuthSessionTeardownSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthStorageClearSignals(code: string): number {
+  const patterns = [
+    /\b(?:localStorage|sessionStorage)\.removeItem\s*\(\s*['"`]?(?:auth|session|token|accessToken|refreshToken|user)[^'"`)]*['"`]?\s*\)/i,
+    /\b(?:localStorage|sessionStorage)\.clear\s*\(/,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
+function countAuthCookieClearSignals(code: string): number {
+  const patterns = [
+    /\b(?:deleteCookie|clearCookie|removeCookie)\s*\(\s*['"`]?(?:auth|session|token|accessToken|refreshToken|user)[^'"`)]*['"`]?\s*\)/i,
+    /\b(?:cookies?|cookieStore)\.(?:delete|remove)\s*\(\s*['"`]?(?:auth|session|token|accessToken|refreshToken|user)[^'"`)]*['"`]?\s*\)/i,
+    /\bdocument\.cookie\s*=\s*[^;\n]*(?:auth|session|token|accessToken|refreshToken|user)[^;\n]*(?:expires\s*=\s*Thu,\s*01 Jan 1970|max-age\s*=\s*0)/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function countAuthEntrySignals(code: string): number {
   const patterns = [
     /\b(?:signIn|signin|logIn|login|register|signUp|signup|createAccount|forgotPassword|resetPassword)\s*\(/i,
@@ -3361,7 +3430,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authAnonymousRedirectSignalCount: countAuthAnonymousRedirectSignals(code),
     authOpenRedirectSignalCount: countAuthOpenRedirectSignals(code),
     authStorageWriteCount: 0,
+    authStorageClearCount: countAuthStorageClearSignals(code),
     authCookieWriteCount: 0,
+    authCookieClearCount: countAuthCookieClearSignals(code),
     authCookieMissingHardeningCount: 0,
     authHeaderWriteCount: 0,
     authGuardSignalCount: countAuthGuardSignals(code),
@@ -4189,6 +4260,10 @@ export function critiqueSource({
   const authAnonymousRedirectSignalCount = astSignals.authAnonymousRedirectSignalCount;
   const authExitSignalCount = astSignals.authExitSignalCount;
   const authSessionTeardownSignalCount = astSignals.authSessionTeardownSignalCount;
+  const authStorageWriteCount = astSignals.authStorageWriteCount;
+  const authStorageClearCount = astSignals.authStorageClearCount;
+  const authCookieWriteCount = astSignals.authCookieWriteCount;
+  const authCookieClearCount = astSignals.authCookieClearCount;
   const authErrorSignalCount = countAuthErrorSignals(code);
   const authSuccessSignalCount = countAuthSuccessSignals(code);
   scores.push({
@@ -4287,6 +4362,38 @@ export function critiqueSource({
       evidence: [filePath, `Auth exit signals: ${authExitSignalCount}`, `Session teardown signals: ${authSessionTeardownSignalCount}`],
       file: filePath,
       suggestedFix: 'Before redirecting users to `/login` or another anonymous route, explicitly sign out or invalidate the reviewed session state.',
+    }));
+  }
+
+  if (
+    authExitSignalCount > 0
+    && authStorageWriteCount > 0
+    && authStorageClearCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-storage-teardown-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed auth exit flow writes auth data into browser storage but does not show that storage being cleared during sign-out.',
+      evidence: [filePath, `Auth storage writes: ${authStorageWriteCount}`, `Auth storage clears: ${authStorageClearCount}`],
+      file: filePath,
+      suggestedFix: 'If this flow stores auth/session data in browser storage, remove those auth keys during sign-out before redirecting users back to an anonymous route.',
+    }));
+  }
+
+  if (
+    authExitSignalCount > 0
+    && authCookieWriteCount > 0
+    && authCookieClearCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-cookie-teardown-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed auth exit flow issues auth-like cookies but does not show them being cleared during sign-out.',
+      evidence: [filePath, `Auth cookie writes: ${authCookieWriteCount}`, `Auth cookie clears: ${authCookieClearCount}`],
+      file: filePath,
+      suggestedFix: 'If this flow issues auth cookies from reviewed source code, explicitly expire or delete those cookies during sign-out before redirecting users back to an anonymous route.',
     }));
   }
 
@@ -4587,8 +4694,6 @@ export function critiqueSource({
   const wildcardPostMessageCount = astSignals.wildcardPostMessageCount;
   const windowOpenWithoutNoopenerCount = astSignals.windowOpenWithoutNoopenerCount;
   const messageListenerWithoutOriginCheckCount = astSignals.messageListenerWithoutOriginCheckCount;
-  const authStorageWriteCount = astSignals.authStorageWriteCount;
-  const authCookieWriteCount = astSignals.authCookieWriteCount;
   const authCookieMissingHardeningCount = astSignals.authCookieMissingHardeningCount;
   const authHeaderWriteCount = astSignals.authHeaderWriteCount;
   const insecureExternalIframeCount = astSignals.insecureExternalIframeCount;
@@ -4616,7 +4721,9 @@ export function critiqueSource({
   const hasMessageListenerWithoutOriginCheck = messageListenerWithoutOriginCheckCount > 0;
   const hasInsecureExternalIframe = insecureExternalIframeCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
+  const hasAuthStorageClearGap = authExitSignalCount > 0 && authStorageWriteCount > 0 && authStorageClearCount === 0;
   const hasAuthCookieWrites = authCookieWriteCount > 0;
+  const hasAuthCookieClearGap = authExitSignalCount > 0 && authCookieWriteCount > 0 && authCookieClearCount === 0;
   const hasAuthCookieMissingHardening = authCookieMissingHardeningCount > 0;
   const hasAuthHeaderWrites = authHeaderWriteCount > 0;
   scores.push({
@@ -4648,7 +4755,7 @@ export function critiqueSource({
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -4668,7 +4775,9 @@ export function critiqueSource({
       ...(hasAuthOpenRedirectSignals ? ['Resolve auth or route-transition redirects through a reviewed allowlist of internal routes instead of trusting raw `next`, `returnTo`, `callbackUrl`, or similar query params.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, `new-password`, or `one-time-code` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
+      ...(hasAuthStorageClearGap ? ['If auth data is stored in browser storage, explicitly remove those auth/session keys during sign-out instead of relying on redirects or generic sign-out helpers alone.'] : []),
       ...(hasAuthCookieWrites ? ['Avoid setting auth cookies from client-side JavaScript; prefer server-issued HttpOnly cookies or other server-managed session boundaries.'] : []),
+      ...(hasAuthCookieClearGap ? ['If reviewed source surfaces issue auth cookies, explicitly expire or delete them during sign-out instead of assuming redirects or generic sign-out helpers will clear them.'] : []),
       ...(hasAuthCookieMissingHardening ? ['When issuing auth cookies, set explicit `httpOnly`, `secure`, and `sameSite` options instead of relying on framework defaults or partial options.'] : []),
       ...(hasAuthHeaderWrites ? ['Avoid constructing bearer/session authorization headers in client-rendered code unless the auth model is explicitly reviewed and intended.'] : []),
     ],
