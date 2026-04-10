@@ -2450,6 +2450,11 @@ function isAxiosConfigCall(node: ts.CallExpression): boolean {
   return ts.isIdentifier(node.expression) && node.expression.text === 'axios';
 }
 
+function isRealtimeTransportConstructor(node: ts.NewExpression): boolean {
+  return ts.isIdentifier(node.expression)
+    && (node.expression.text === 'WebSocket' || node.expression.text === 'EventSource');
+}
+
 function hasPlaceholderNavigationTarget(attributes: ts.JsxAttributes): boolean {
   const targetValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'href', 'to'));
   if (!targetValue) return false;
@@ -2880,6 +2885,14 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           signals.dynamicEvalCount += 1;
         }
       }
+    }
+
+    if (
+      ts.isNewExpression(node)
+      && isRealtimeTransportConstructor(node)
+      && isInsecureTransportUrl(getExpressionLiteralValue(node.arguments?.[0]))
+    ) {
+      signals.insecureTransportEndpointCount += 1;
     }
 
     if (

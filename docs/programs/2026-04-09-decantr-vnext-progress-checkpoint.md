@@ -135,7 +135,7 @@ commit archaeology.
 - File critique and source audit now also flag iframes without descriptive `title` attributes, so embedded dashboards/docs do not slip past the accessibility baseline.
 - File critique and source audit now also flag external iframes without `sandbox`, so embeds are held to a safer default trust boundary.
 - File critique and source audit now also flag forms posting to plain `http://` endpoints, so insecure transport regressions show up before runtime review.
-- File critique and source audit now also flag plain `http://` / `ws://` client transport endpoints, so insecure outbound requests are caught before hosted/runtime verification.
+- File critique and source audit now also flag plain `http://` / `ws://` client transport endpoints across fetch, axios, WebSocket, and EventSource usage, so insecure outbound requests are caught before hosted/runtime verification.
 - File critique and source audit now also flag auth-like forms that default to GET semantics, so credential flows are forced onto explicit POST/server-action boundaries instead of URL-leaking defaults.
 - Source audit now also flags auth-enabled apps that still expose no obvious entry surface at all, even when the blueprint forgot to declare gateway routes.
 - File critique and source audit now also flag auth-like forms without any submit control, so credential surfaces are not accidentally left non-functional.
