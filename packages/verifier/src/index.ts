@@ -5111,6 +5111,29 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent')
+    && expression.arguments.length > 0
+    && expressionLooksLikeWindowObjectSource(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'exec')
     && expression.arguments.length > 0
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
