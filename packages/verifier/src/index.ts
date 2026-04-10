@@ -5094,7 +5094,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && ts.isIdentifier(expression.expression)
-    && expression.expression.text === 'String'
+    && ['String', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent'].includes(expression.expression.text)
     && expression.arguments.length > 0
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
