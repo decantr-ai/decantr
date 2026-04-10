@@ -484,6 +484,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Protected auth-loss and auth-loading detection now also catches callback navigation objects like `navigate({ pathname: '/dashboard' })` inside returned UI, so reviewed gateway branches cannot preserve privileged navigation by swapping string route callbacks for router descriptor objects after auth loss.
 - Protected auth-loss and auth-loading detection now also catches helper-generated destinations like `generatePath('/dashboard')` and `createPath({ pathname: '/dashboard' })`, so reviewed gateway branches cannot preserve privileged navigation by synthesizing protected routes through router helper APIs after auth loss.
 - Protected auth-loss and auth-loading detection now also catches helper-generated `pathname` route objects like `to={{ pathname: generatePath('/dashboard') }}` and `navigate({ pathname: createPath({ pathname: '/dashboard' }) })`, so guarded branches cannot smuggle protected destinations through route-object wrappers after auth loss.
+- Protected auth-loss and auth-loading detection now also catches array-carried route payloads like `items={[{ to: '/dashboard' }]}` and `links={[{ href: '/dashboard' }]}`, so reviewed gateway branches cannot preserve privileged destinations by tucking them into nav/config collections after auth loss.
 
 ## Highest-Value Next Streams
 
