@@ -4885,6 +4885,53 @@ function expressionLooksLikeLocationObjectSource(
   return false;
 }
 
+function expressionLooksLikeHistoryObjectSource(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+
+  if (ts.isIdentifier(expression) && expression.text === 'history') {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeHistoryObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (
+    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessNamed(expression, 'history')
+    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeHistoryObjectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && propertyAlias.propertyName === 'history'
+      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function expressionLooksLikeLocationUrlSource(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
@@ -5159,6 +5206,34 @@ function isRouteTransitionCall(node: ts.CallExpression): boolean {
       (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
       && isMemberAccessNamed(node.expression, 'push', 'replace', 'redirect', 'navigate')
     );
+}
+
+function getRouteTransitionTargetExpression(
+  node: ts.CallExpression,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+): ts.Expression | undefined {
+  if (ts.isIdentifier(node.expression) && ['redirect', 'navigate'].includes(node.expression.text)) {
+    return node.arguments[0];
+  }
+
+  if (
+    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    && isMemberAccessNamed(node.expression, 'push', 'replace', 'redirect', 'navigate')
+  ) {
+    return node.arguments[0];
+  }
+
+  if (
+    (ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression))
+    && isMemberAccessNamed(node.expression, 'pushState', 'replaceState')
+    && expressionLooksLikeHistoryObjectSource(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+  ) {
+    return node.arguments[2];
+  }
+
+  return undefined;
 }
 
 function countAuthRecoveryRouteSignals(code: string): number {
@@ -5490,6 +5565,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     if (ts.isCallExpression(node)) {
       const firstArgumentLiteral = getExpressionLiteralValue(node.arguments[0]);
       const secondArgumentLiteral = getExpressionLiteralValue(node.arguments[1]);
+      const routeTransitionTargetExpression = getRouteTransitionTargetExpression(node, sourceFile, namedExpressionInitializers, namedPropertyAliases);
+      const routeTransitionTargetLiteral = getExpressionLiteralValue(routeTransitionTargetExpression);
       if (ts.isIdentifier(node.expression) && node.expression.text === 'eval') {
         signals.dynamicEvalCount += 1;
       }
@@ -5516,19 +5593,22 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         signals.insecureTransportEndpointCount += 1;
       }
 
-      if (isRouteTransitionCall(node) && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers, namedPropertyAliases)) {
+      if (
+        routeTransitionTargetExpression
+        && expressionContainsOpenRedirectSource(routeTransitionTargetExpression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+      ) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
-      if (isRouteTransitionCall(node) && isExternalUrl(firstArgumentLiteral)) {
+      if (isRouteTransitionCall(node) && isExternalUrl(routeTransitionTargetLiteral ?? firstArgumentLiteral)) {
         signals.authExternalRedirectSignalCount += 1;
-        if (isAuthProviderUrlMissingState(firstArgumentLiteral)) {
+        if (isAuthProviderUrlMissingState(routeTransitionTargetLiteral ?? firstArgumentLiteral)) {
           signals.authProviderStateMissingCount += 1;
         }
-        if (isAuthProviderCodeFlowMissingPkce(firstArgumentLiteral)) {
+        if (isAuthProviderCodeFlowMissingPkce(routeTransitionTargetLiteral ?? firstArgumentLiteral)) {
           signals.authProviderPkceMissingCount += 1;
         }
-        if (isAuthProviderIdTokenFlowMissingNonce(firstArgumentLiteral)) {
+        if (isAuthProviderIdTokenFlowMissingNonce(routeTransitionTargetLiteral ?? firstArgumentLiteral)) {
           signals.authProviderNonceMissingCount += 1;
         }
       }
