@@ -398,6 +398,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authCookieWrites: createSourceAuditBucket(),
     authCookieClears: createSourceAuditBucket(),
     authHeaderWrites: createSourceAuditBucket(),
+    authHeaderClears: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
     authExitSignals: createSourceAuditBucket(),
     authSessionTeardownSignals: createSourceAuditBucket(),
@@ -481,6 +482,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authCookieWrites, relativePath, signals.authCookieWriteCount);
     recordSourceAudit(summary.authCookieClears, relativePath, signals.authCookieClearCount);
     recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
+    recordSourceAudit(summary.authHeaderClears, relativePath, signals.authHeaderClearCount);
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
     recordSourceAudit(summary.authSessionTeardownSignals, relativePath, signals.authSessionTeardownSignalCount);
@@ -636,6 +638,7 @@ interface SourceAuditSummary {
   authCookieWrites: SourceAuditBucket;
   authCookieClears: SourceAuditBucket;
   authHeaderWrites: SourceAuditBucket;
+  authHeaderClears: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
   authExitSignals: SourceAuditBucket;
   authSessionTeardownSignals: SourceAuditBucket;
@@ -1577,6 +1580,27 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authHeaderWrites.count > 0
+    && sourceAudit.authExitSignals.count > 0
+    && sourceAudit.authHeaderClears.count === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-header-teardown-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth exit flows exist, but the source tree does not show client-managed auth headers being cleared during sign-out.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth header write files: ${sourceAudit.authHeaderWrites.files.join(', ') || 'none'}`,
+        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+        'Auth header clear files: none',
+      ],
+      suggestedFix: 'If reviewed source code constructs auth-like authorization headers, explicitly delete or reset those header values during sign-out before returning users to an anonymous route.',
+    }));
+  }
+
   if (topology.hasAuthFeature && sourceAudit.authGuardSignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-guard-signals-missing',
@@ -2279,6 +2303,7 @@ interface AstCritiqueSignals {
   authCookieClearCount: number;
   authCookieMissingHardeningCount: number;
   authHeaderWriteCount: number;
+  authHeaderClearCount: number;
   authGuardSignalCount: number;
   authExitSignalCount: number;
   authSessionTeardownSignalCount: number;
@@ -3096,6 +3121,25 @@ function isAuthorizationHeaderName(node: ts.Node | undefined): boolean {
   return false;
 }
 
+function isAuthorizationHeaderAccess(node: ts.Expression | undefined): boolean {
+  if (!node) return false;
+  return (
+    (ts.isPropertyAccessExpression(node) && isAuthorizationHeaderName(node.name))
+    || (ts.isElementAccessExpression(node) && isAuthorizationHeaderName(node.argumentExpression))
+  );
+}
+
+function isHeaderClearValue(node: ts.Expression | undefined): boolean {
+  if (!node) return false;
+  const literal = getExpressionLiteralValue(node);
+  if (literal !== null) {
+    return literal.trim().length === 0;
+  }
+  return node.kind === ts.SyntaxKind.NullKeyword
+    || node.kind === ts.SyntaxKind.UndefinedKeyword
+    || (ts.isIdentifier(node) && node.text === 'undefined');
+}
+
 function countAuthGuardSignals(code: string): number {
   const patterns = [
     /\b(?:ProtectedRoute|AuthGuard|RequireAuth|withAuth|requireAuth|ensureAuth|useRequireAuth)\b/,
@@ -3435,6 +3479,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authCookieClearCount: countAuthCookieClearSignals(code),
     authCookieMissingHardeningCount: 0,
     authHeaderWriteCount: 0,
+    authHeaderClearCount: 0,
     authGuardSignalCount: countAuthGuardSignals(code),
     authExitSignalCount: countAuthExitSignals(code),
     authSessionTeardownSignalCount: countAuthSessionTeardownSignals(code),
@@ -3531,10 +3576,33 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     }
 
     if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && isAuthorizationHeaderAccess(node.left)
+    ) {
+      if (isHeaderClearValue(node.right)) {
+        signals.authHeaderClearCount += 1;
+      } else {
+        signals.authHeaderWriteCount += 1;
+      }
+    }
+
+    if (
       ts.isPropertyAssignment(node)
       && isAuthorizationHeaderName(node.name)
     ) {
-      signals.authHeaderWriteCount += 1;
+      if (isHeaderClearValue(node.initializer)) {
+        signals.authHeaderClearCount += 1;
+      } else {
+        signals.authHeaderWriteCount += 1;
+      }
+    }
+
+    if (
+      ts.isDeleteExpression(node)
+      && isAuthorizationHeaderAccess(node.expression)
+    ) {
+      signals.authHeaderClearCount += 1;
     }
 
     if (ts.isCallExpression(node)) {
@@ -3668,11 +3736,22 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           }
         }
         if (
+          isPropertyNamed(node.expression.name, 'delete')
+          && node.arguments.length > 0
+          && isAuthorizationHeaderName(node.arguments[0])
+        ) {
+          signals.authHeaderClearCount += 1;
+        }
+        if (
           (isPropertyNamed(node.expression.name, 'set') || isPropertyNamed(node.expression.name, 'append'))
           && node.arguments.length > 0
           && isAuthorizationHeaderName(node.arguments[0])
         ) {
-          signals.authHeaderWriteCount += 1;
+          if (isHeaderClearValue(node.arguments[1])) {
+            signals.authHeaderClearCount += 1;
+          } else {
+            signals.authHeaderWriteCount += 1;
+          }
         }
         if (
           ts.isIdentifier(node.expression.expression)
@@ -4264,6 +4343,8 @@ export function critiqueSource({
   const authStorageClearCount = astSignals.authStorageClearCount;
   const authCookieWriteCount = astSignals.authCookieWriteCount;
   const authCookieClearCount = astSignals.authCookieClearCount;
+  const authHeaderWriteCount = astSignals.authHeaderWriteCount;
+  const authHeaderClearCount = astSignals.authHeaderClearCount;
   const authErrorSignalCount = countAuthErrorSignals(code);
   const authSuccessSignalCount = countAuthSuccessSignals(code);
   scores.push({
@@ -4394,6 +4475,22 @@ export function critiqueSource({
       evidence: [filePath, `Auth cookie writes: ${authCookieWriteCount}`, `Auth cookie clears: ${authCookieClearCount}`],
       file: filePath,
       suggestedFix: 'If this flow issues auth cookies from reviewed source code, explicitly expire or delete those cookies during sign-out before redirecting users back to an anonymous route.',
+    }));
+  }
+
+  if (
+    authExitSignalCount > 0
+    && authHeaderWriteCount > 0
+    && authHeaderClearCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-header-teardown-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed auth exit flow constructs auth-like headers but does not show them being cleared during sign-out.',
+      evidence: [filePath, `Auth header writes: ${authHeaderWriteCount}`, `Auth header clears: ${authHeaderClearCount}`],
+      file: filePath,
+      suggestedFix: 'If this flow constructs auth/session headers in reviewed source code, explicitly delete or reset those header values during sign-out before redirecting users back to an anonymous route.',
     }));
   }
 
@@ -4695,7 +4792,6 @@ export function critiqueSource({
   const windowOpenWithoutNoopenerCount = astSignals.windowOpenWithoutNoopenerCount;
   const messageListenerWithoutOriginCheckCount = astSignals.messageListenerWithoutOriginCheckCount;
   const authCookieMissingHardeningCount = astSignals.authCookieMissingHardeningCount;
-  const authHeaderWriteCount = astSignals.authHeaderWriteCount;
   const insecureExternalIframeCount = astSignals.insecureExternalIframeCount;
   const hasDangerousHtml = dangerousHtmlCount > 0;
   const hasRawHtmlInjection = rawHtmlInjectionCount > 0;
@@ -4726,6 +4822,7 @@ export function critiqueSource({
   const hasAuthCookieClearGap = authExitSignalCount > 0 && authCookieWriteCount > 0 && authCookieClearCount === 0;
   const hasAuthCookieMissingHardening = authCookieMissingHardeningCount > 0;
   const hasAuthHeaderWrites = authHeaderWriteCount > 0;
+  const hasAuthHeaderClearGap = authExitSignalCount > 0 && authHeaderWriteCount > 0 && authHeaderClearCount === 0;
   scores.push({
     category: 'Security Hygiene',
     focusArea: 'security-hygiene',
@@ -4755,7 +4852,7 @@ export function critiqueSource({
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -4780,6 +4877,7 @@ export function critiqueSource({
       ...(hasAuthCookieClearGap ? ['If reviewed source surfaces issue auth cookies, explicitly expire or delete them during sign-out instead of assuming redirects or generic sign-out helpers will clear them.'] : []),
       ...(hasAuthCookieMissingHardening ? ['When issuing auth cookies, set explicit `httpOnly`, `secure`, and `sameSite` options instead of relying on framework defaults or partial options.'] : []),
       ...(hasAuthHeaderWrites ? ['Avoid constructing bearer/session authorization headers in client-rendered code unless the auth model is explicitly reviewed and intended.'] : []),
+      ...(hasAuthHeaderClearGap ? ['If reviewed source code constructs auth-like authorization headers, explicitly delete or reset those header values during sign-out instead of assuming redirects or generic sign-out helpers will clear them.'] : []),
     ],
   });
 

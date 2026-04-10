@@ -1632,6 +1632,7 @@ describe('verifier', () => {
           export function SessionActions({ token }) {
             localStorage.setItem('auth_token', token);
             document.cookie = \`auth_token=\${token}; path=/\`;
+            fetch('/api/me', { headers: { Authorization: \`Bearer \${token}\` } });
 
             async function handleLogout() {
               await auth.signOut();
@@ -1646,6 +1647,7 @@ describe('verifier', () => {
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'source-auth-storage-teardown-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-cookie-teardown-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'source-auth-header-teardown-missing')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -5791,6 +5793,7 @@ describe('verifier', () => {
         export function UserMenu({ token }) {
           localStorage.setItem('auth_token', token);
           document.cookie = \`auth_token=\${token}; path=/\`;
+          fetch('/api/me', { headers: { Authorization: \`Bearer \${token}\` } });
 
           async function handleLogout() {
             await auth.signOut();
@@ -5830,6 +5833,7 @@ describe('verifier', () => {
 
     expect(report.findings.some(finding => finding.id === 'state-auth-storage-teardown-missing')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'state-auth-cookie-teardown-missing')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'state-auth-header-teardown-missing')).toBe(true);
   });
 
   it('does not flag auth entry flows when success transitions into the protected app during critique', () => {
