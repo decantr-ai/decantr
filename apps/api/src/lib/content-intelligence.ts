@@ -62,7 +62,9 @@ function hasScriptHygieneBaseline(verification: ShowcaseVerificationEntry | null
     && verification.smoke.externalScriptsWithInsecureTransportCount === 0
     && verification.smoke.externalStylesheetsWithInsecureTransportCount === 0
     && verification.smoke.externalMediaSourcesWithInsecureTransportCount === 0
-    && verification.smoke.externalBlankLinksWithoutRelCount === 0,
+    && verification.smoke.externalBlankLinksWithoutRelCount === 0
+    && verification.smoke.externalIframesWithoutSandboxCount === 0
+    && verification.smoke.externalIframesWithInsecureTransportCount === 0,
   );
 }
 

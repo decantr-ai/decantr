@@ -86,6 +86,8 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     externalStylesheetsWithInsecureTransportCount: runtimeAudit.externalStylesheetsWithInsecureTransportCount,
     externalMediaSourcesWithInsecureTransportCount: runtimeAudit.externalMediaSourcesWithInsecureTransportCount,
     externalBlankLinksWithoutRelCount: runtimeAudit.externalBlankLinksWithoutRelCount,
+    externalIframesWithoutSandboxCount: runtimeAudit.externalIframesWithoutSandboxCount,
+    externalIframesWithInsecureTransportCount: runtimeAudit.externalIframesWithInsecureTransportCount,
     jsEvalSignalCount: runtimeAudit.jsEvalSignalCount,
     jsHtmlInjectionSignalCount: runtimeAudit.jsHtmlInjectionSignalCount,
     jsInsecureTransportSignalCount: runtimeAudit.jsInsecureTransportSignalCount,
@@ -203,6 +205,8 @@ async function main() {
         && entry.smoke.externalMediaSourcesWithInsecureTransportCount === 0,
     ).length,
     appsWithSafeExternalBlankLinksCount: results.filter(entry => entry.smoke.externalBlankLinksWithoutRelCount === 0).length,
+    appsWithSandboxedExternalIframesCount: results.filter(entry => entry.smoke.externalIframesWithoutSandboxCount === 0).length,
+    appsWithoutInsecureExternalIframesCount: results.filter(entry => entry.smoke.externalIframesWithInsecureTransportCount === 0).length,
     appsWithExternalStylesheetIntegrityCount: results.filter(entry => entry.smoke.externalStylesheetsWithoutIntegrityCount === 0).length,
     appsWithExternalStylesheetCrossoriginCount: results.filter(entry => entry.smoke.externalStylesheetsWithIntegrityMissingCrossoriginCount === 0).length,
     appsWithRouteCoverageCount: results.filter(entry => {

@@ -124,6 +124,8 @@ export interface ShowcaseShortlistVerificationEntry {
     externalStylesheetsWithInsecureTransportCount: number;
     externalMediaSourcesWithInsecureTransportCount: number;
     externalBlankLinksWithoutRelCount: number;
+    externalIframesWithoutSandboxCount: number;
+    externalIframesWithInsecureTransportCount: number;
     jsEvalSignalCount: number;
     jsHtmlInjectionSignalCount: number;
     jsInsecureTransportSignalCount: number;
@@ -1176,6 +1178,28 @@ function appendRuntimeAuditFindings(
       message: 'External links in the built root document open new tabs without `rel=\"noopener noreferrer\"` protections.',
       evidence: [indexPath, `External target=\"_blank\" links missing rel protections: ${runtimeAudit.externalBlankLinksWithoutRelCount}`],
       suggestedFix: 'Add `rel=\"noopener noreferrer\"` to built external links that open a new tab so opener access does not survive into production HTML.',
+    }));
+  }
+
+  if (runtimeAudit.externalIframesWithoutSandboxCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-iframes-sandbox-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'External iframe embeds in the built root document are missing a `sandbox` attribute.',
+      evidence: [indexPath, `External iframes without sandbox: ${runtimeAudit.externalIframesWithoutSandboxCount}`],
+      suggestedFix: 'Add the narrowest reviewed sandbox policy to external iframes before shipping built HTML.',
+    }));
+  }
+
+  if (runtimeAudit.externalIframesWithInsecureTransportCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-iframes-insecure-transport',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'External iframe embeds in the built root document are loaded over plain HTTP.',
+      evidence: [indexPath, `External iframes over insecure transport: ${runtimeAudit.externalIframesWithInsecureTransportCount}`],
+      suggestedFix: 'Serve embedded iframes over HTTPS or move the integration behind a reviewed trusted boundary before shipping built HTML.',
     }));
   }
 

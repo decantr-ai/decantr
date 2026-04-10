@@ -35,6 +35,8 @@ export interface RuntimeAudit {
   externalStylesheetsWithInsecureTransportCount: number;
   externalMediaSourcesWithInsecureTransportCount: number;
   externalBlankLinksWithoutRelCount: number;
+  externalIframesWithoutSandboxCount: number;
+  externalIframesWithInsecureTransportCount: number;
   jsEvalSignalCount: number;
   jsHtmlInjectionSignalCount: number;
   jsInsecureTransportSignalCount: number;
@@ -85,6 +87,8 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     externalStylesheetsWithInsecureTransportCount: 0,
     externalMediaSourcesWithInsecureTransportCount: 0,
     externalBlankLinksWithoutRelCount: 0,
+    externalIframesWithoutSandboxCount: 0,
+    externalIframesWithInsecureTransportCount: 0,
     jsEvalSignalCount: 0,
     jsHtmlInjectionSignalCount: 0,
     jsInsecureTransportSignalCount: 0,
@@ -273,6 +277,26 @@ function countExternalBlankLinksWithoutRel(html: string): number {
     .length;
 }
 
+function countExternalIframesWithoutSandbox(html: string): number {
+  return [...html.matchAll(/<iframe\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi)]
+    .map((match) => {
+      const attrs = `${match[1] ?? ''} ${match[4] ?? ''}`;
+      return {
+        src: match[3],
+        hasSandbox: /\bsandbox(?:\s*=|\b)/i.test(attrs),
+      };
+    })
+    .filter((entry) => /^https?:\/\//i.test(entry.src) && !entry.hasSandbox)
+    .length;
+}
+
+function countExternalIframesWithInsecureTransport(html: string): number {
+  return [...html.matchAll(/<iframe\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi)]
+    .map((match) => match[3])
+    .filter((src) => /^http:\/\//i.test(src))
+    .length;
+}
+
 function countDynamicCodeSignals(js: string): number {
   return js.match(/\beval\s*\(|\bnew Function\s*\(/g)?.length ?? 0;
 }
@@ -397,6 +421,8 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const externalStylesheetsWithInsecureTransportCount = countExternalStylesheetsWithInsecureTransport(rootHtml);
     const externalMediaSourcesWithInsecureTransportCount = countExternalMediaSourcesWithInsecureTransport(rootHtml);
     const externalBlankLinksWithoutRelCount = countExternalBlankLinksWithoutRel(rootHtml);
+    const externalIframesWithoutSandboxCount = countExternalIframesWithoutSandbox(rootHtml);
+    const externalIframesWithInsecureTransportCount = countExternalIframesWithInsecureTransport(rootHtml);
 
     if (!rootDocumentOk) {
       failures.push('root-document-invalid');
@@ -520,6 +546,8 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       externalStylesheetsWithInsecureTransportCount,
       externalMediaSourcesWithInsecureTransportCount,
       externalBlankLinksWithoutRelCount,
+      externalIframesWithoutSandboxCount,
+      externalIframesWithInsecureTransportCount,
       jsEvalSignalCount,
       jsHtmlInjectionSignalCount,
       jsInsecureTransportSignalCount,

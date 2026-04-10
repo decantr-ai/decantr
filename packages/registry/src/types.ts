@@ -540,6 +540,8 @@ export interface ShowcaseVerificationEntry {
     externalStylesheetsWithInsecureTransportCount: number;
     externalMediaSourcesWithInsecureTransportCount: number;
     externalBlankLinksWithoutRelCount: number;
+    externalIframesWithoutSandboxCount: number;
+    externalIframesWithInsecureTransportCount: number;
     jsEvalSignalCount: number;
     jsHtmlInjectionSignalCount: number;
     jsInsecureTransportSignalCount: number;
@@ -935,6 +937,8 @@ export interface ProjectAuditRuntimeAudit {
   externalStylesheetsWithInsecureTransportCount: number;
   externalMediaSourcesWithInsecureTransportCount: number;
   externalBlankLinksWithoutRelCount: number;
+  externalIframesWithoutSandboxCount: number;
+  externalIframesWithInsecureTransportCount: number;
   jsEvalSignalCount: number;
   jsHtmlInjectionSignalCount: number;
   jsInsecureTransportSignalCount: number;

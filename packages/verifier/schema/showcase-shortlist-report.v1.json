@@ -35,6 +35,8 @@
         "appsWithExternalScriptCrossoriginCount",
         "appsWithoutInsecureRemoteAssetTransportCount",
         "appsWithSafeExternalBlankLinksCount",
+        "appsWithSandboxedExternalIframesCount",
+        "appsWithoutInsecureExternalIframesCount",
         "appsWithExternalStylesheetIntegrityCount",
         "appsWithExternalStylesheetCrossoriginCount",
         "appsWithRouteCoverageCount",
@@ -67,6 +69,8 @@
         "appsWithExternalScriptCrossoriginCount": { "type": "number", "minimum": 0 },
         "appsWithoutInsecureRemoteAssetTransportCount": { "type": "number", "minimum": 0 },
         "appsWithSafeExternalBlankLinksCount": { "type": "number", "minimum": 0 },
+        "appsWithSandboxedExternalIframesCount": { "type": "number", "minimum": 0 },
+        "appsWithoutInsecureExternalIframesCount": { "type": "number", "minimum": 0 },
         "appsWithExternalStylesheetIntegrityCount": { "type": "number", "minimum": 0 },
         "appsWithExternalStylesheetCrossoriginCount": { "type": "number", "minimum": 0 },
         "appsWithRouteCoverageCount": { "type": "number", "minimum": 0 },
@@ -143,6 +147,8 @@
             "externalStylesheetsWithInsecureTransportCount",
             "externalMediaSourcesWithInsecureTransportCount",
             "externalBlankLinksWithoutRelCount",
+            "externalIframesWithoutSandboxCount",
+            "externalIframesWithInsecureTransportCount",
             "jsEvalSignalCount",
             "jsHtmlInjectionSignalCount",
             "jsInsecureTransportSignalCount",
@@ -228,6 +234,14 @@
               "minimum": 0
             },
             "externalBlankLinksWithoutRelCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalIframesWithoutSandboxCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalIframesWithInsecureTransportCount": {
               "type": "number",
               "minimum": 0
             },

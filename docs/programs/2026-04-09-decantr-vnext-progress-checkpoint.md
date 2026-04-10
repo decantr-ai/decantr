@@ -152,6 +152,7 @@ commit archaeology.
 - Runtime verification now also treats localhost-style development endpoints in built JavaScript as transport-risk signals, so development-only bundle markers are caught even when they survive minification or only appear post-build.
 - Runtime verification now also flags plain `http://` / `ws://` transport markers that survive into built JavaScript bundles.
 - Runtime verification now also flags root-document remote scripts and stylesheets loaded over plain `http://`, so insecure external asset transport is caught separately from missing integrity metadata.
+- Runtime verification now also flags external iframes in built HTML that omit sandboxing or still load over plain `http://`, so embed trust boundaries and embed transport are carried through shortlist benchmarks, intelligence scoring, CLI summaries, registry UI copy, and public schemas alongside the existing source-level iframe review.
 - Source audit now flags protected app-surface files that reference routes like `/dashboard` or `/settings` without co-located session or guard behavior, even when an auth helper exists elsewhere in the repo.
 - Source audit now also flags auth/session flows that never expose an obvious failure state, so generated credential handling is pushed toward explicit rejected-sign-in and session-refresh error affordances.
 - Source audit now also flags auth entry surfaces that never show an obvious post-auth transition into the protected app, so login or registration flows do not silently stop before a primary route like `/dashboard` or `/app`.
@@ -208,9 +209,11 @@ commit archaeology.
   - 8/8 with no inline script tags
   - 8/8 with no external scripts missing integrity
   - 8/8 with no insecure remote asset transport
+  - 8/8 with sandboxed external iframes
+  - 8/8 with no insecure external iframes
   - 0/8 with CSP signals present
-  - average build duration `1604ms`
-  - average smoke duration `9ms`
+  - average build duration `1908ms`
+  - average smoke duration `12ms`
   - average assets `335362 B total`, `325759 B JS`, `9602 B CSS`
 
 ### Registry intelligence

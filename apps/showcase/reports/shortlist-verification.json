@@ -1,15 +1,15 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-10T03:44:38.273Z",
+  "generatedAt": "2026-04-10T03:48:10.922Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1905,
+    "averageDurationMs": 1908,
     "passedSmokes": 8,
     "failedSmokes": 0,
-    "averageSmokeDurationMs": 11,
+    "averageSmokeDurationMs": 12,
     "appsWithTitleOkCount": 8,
     "appsWithLangOkCount": 8,
     "appsWithViewportOkCount": 8,
@@ -21,6 +21,8 @@
     "appsWithExternalScriptCrossoriginCount": 8,
     "appsWithoutInsecureRemoteAssetTransportCount": 8,
     "appsWithSafeExternalBlankLinksCount": 8,
+    "appsWithSandboxedExternalIframesCount": 8,
+    "appsWithoutInsecureExternalIframesCount": 8,
     "appsWithExternalStylesheetIntegrityCount": 6,
     "appsWithExternalStylesheetCrossoriginCount": 8,
     "appsWithRouteCoverageCount": 8,
@@ -42,7 +44,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1934
+        "durationMs": 1882
       },
       "smoke": {
         "passed": true,
@@ -63,6 +65,8 @@
         "externalStylesheetsWithInsecureTransportCount": 0,
         "externalMediaSourcesWithInsecureTransportCount": 0,
         "externalBlankLinksWithoutRelCount": 0,
+        "externalIframesWithoutSandboxCount": 0,
+        "externalIframesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -112,11 +116,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2142
+        "durationMs": 2276
       },
       "smoke": {
         "passed": true,
-        "durationMs": 9,
+        "durationMs": 11,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -133,6 +137,8 @@
         "externalStylesheetsWithInsecureTransportCount": 0,
         "externalMediaSourcesWithInsecureTransportCount": 0,
         "externalBlankLinksWithoutRelCount": 0,
+        "externalIframesWithoutSandboxCount": 0,
+        "externalIframesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -182,7 +188,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 2205
+        "durationMs": 2163
       },
       "smoke": {
         "passed": true,
@@ -203,6 +209,8 @@
         "externalStylesheetsWithInsecureTransportCount": 0,
         "externalMediaSourcesWithInsecureTransportCount": 0,
         "externalBlankLinksWithoutRelCount": 0,
+        "externalIframesWithoutSandboxCount": 0,
+        "externalIframesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -252,11 +260,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1867
+        "durationMs": 1759
       },
       "smoke": {
         "passed": true,
-        "durationMs": 8,
+        "durationMs": 7,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -273,6 +281,8 @@
         "externalStylesheetsWithInsecureTransportCount": 0,
         "externalMediaSourcesWithInsecureTransportCount": 0,
         "externalBlankLinksWithoutRelCount": 0,
+        "externalIframesWithoutSandboxCount": 0,
+        "externalIframesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -322,11 +332,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1694
+        "durationMs": 1729
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 7,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -343,6 +353,8 @@
         "externalStylesheetsWithInsecureTransportCount": 0,
         "externalMediaSourcesWithInsecureTransportCount": 0,
         "externalBlankLinksWithoutRelCount": 0,
+        "externalIframesWithoutSandboxCount": 0,
+        "externalIframesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -391,7 +403,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1841
+        "durationMs": 1909
       },
       "smoke": {
         "passed": true,
@@ -412,6 +424,8 @@
         "externalStylesheetsWithInsecureTransportCount": 0,
         "externalMediaSourcesWithInsecureTransportCount": 0,
         "externalBlankLinksWithoutRelCount": 0,
+        "externalIframesWithoutSandboxCount": 0,
+        "externalIframesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -461,7 +475,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1789
+        "durationMs": 1802
       },
       "smoke": {
         "passed": true,
@@ -482,6 +496,8 @@
         "externalStylesheetsWithInsecureTransportCount": 0,
         "externalMediaSourcesWithInsecureTransportCount": 0,
         "externalBlankLinksWithoutRelCount": 0,
+        "externalIframesWithoutSandboxCount": 0,
+        "externalIframesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -531,11 +547,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1764
+        "durationMs": 1744
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -552,6 +568,8 @@
         "externalStylesheetsWithInsecureTransportCount": 0,
         "externalMediaSourcesWithInsecureTransportCount": 0,
         "externalBlankLinksWithoutRelCount": 0,
+        "externalIframesWithoutSandboxCount": 0,
+        "externalIframesWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 18,
         "jsInsecureTransportSignalCount": 21,
