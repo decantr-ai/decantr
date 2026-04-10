@@ -3621,6 +3621,50 @@ describe('verifier', () => {
 
     expect(report.findings.some(finding => finding.id === 'accessibility-iframe-title-missing')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'security-iframe-sandbox-missing')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'security-iframe-transport-insecure')).toBe(false);
+  });
+
+  it('flags insecure external iframe transport during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/LegacyEmbed.tsx',
+      code: `
+        export function LegacyEmbed() {
+          return (
+            <section>
+              <iframe title="Legacy analytics" src="http://example.com/embed" sandbox="" />
+            </section>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['analytics'], patternIds: ['chart-grid'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'analytics', path: '/analytics', patternIds: ['chart-grid'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-iframe-transport-insecure')).toBe(true);
   });
 
   it('flags dialogs without accessible labels or modal hints during critique', () => {

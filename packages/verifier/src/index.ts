@@ -426,6 +426,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.wildcardPostMessageCount
       + signals.windowOpenWithoutNoopenerCount
       + signals.externalIframeWithoutSandboxCount
+      + signals.insecureExternalIframeCount
       + signals.insecureFormActionCount
       + signals.insecureAuthFormMethodCount
       + signals.insecureTransportEndpointCount
@@ -2114,6 +2115,7 @@ interface AstCritiqueSignals {
   windowOpenWithoutNoopenerCount: number;
   messageListenerWithoutOriginCheckCount: number;
   externalIframeWithoutSandboxCount: number;
+  insecureExternalIframeCount: number;
   insecureFormActionCount: number;
   insecureAuthFormMethodCount: number;
   insecureTransportEndpointCount: number;
@@ -2342,6 +2344,10 @@ function isExternalLinkTargetBlankWithoutRel(attributes: ts.JsxAttributes): bool
 function isInsecureExternalImage(attributes: ts.JsxAttributes): boolean {
   const srcValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'src'));
   return /^http:\/\//i.test(srcValue?.trim() ?? '');
+}
+
+function isInsecureExternalUrl(value: string | null): boolean {
+  return /^http:\/\//i.test(value?.trim() ?? '');
 }
 
 function isDialogLikeElement(attributes: ts.JsxAttributes, tagName: string | null): boolean {
@@ -3167,6 +3173,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     windowOpenWithoutNoopenerCount: 0,
     messageListenerWithoutOriginCheckCount: 0,
     externalIframeWithoutSandboxCount: 0,
+    insecureExternalIframeCount: 0,
     insecureFormActionCount: 0,
     insecureAuthFormMethodCount: 0,
     insecureTransportEndpointCount: 0,
@@ -3513,6 +3520,12 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       ) {
         signals.externalIframeWithoutSandboxCount += 1;
       }
+      if (
+        tagName === 'iframe'
+        && isInsecureExternalUrl(getJsxAttributeLiteralValue(getJsxAttribute(node.attributes, 'src')))
+      ) {
+        signals.insecureExternalIframeCount += 1;
+      }
       if (tagName === 'form' && hasInsecureFormAction(node.attributes)) {
         signals.insecureFormActionCount += 1;
       }
@@ -3611,6 +3624,12 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && !getJsxAttribute(node.openingElement.attributes, 'sandbox')
       ) {
         signals.externalIframeWithoutSandboxCount += 1;
+      }
+      if (
+        tagName === 'iframe'
+        && isInsecureExternalUrl(getJsxAttributeLiteralValue(getJsxAttribute(node.openingElement.attributes, 'src')))
+      ) {
+        signals.insecureExternalIframeCount += 1;
       }
       if (tagName === 'form' && hasInsecureFormAction(node.openingElement.attributes)) {
         signals.insecureFormActionCount += 1;
@@ -4376,6 +4395,7 @@ export function critiqueSource({
   const authCookieWriteCount = astSignals.authCookieWriteCount;
   const authCookieMissingHardeningCount = astSignals.authCookieMissingHardeningCount;
   const authHeaderWriteCount = astSignals.authHeaderWriteCount;
+  const insecureExternalIframeCount = astSignals.insecureExternalIframeCount;
   const hasDangerousHtml = dangerousHtmlCount > 0;
   const hasRawHtmlInjection = rawHtmlInjectionCount > 0;
   const hasDynamicEval = dynamicEvalCount > 0;
@@ -4397,6 +4417,7 @@ export function critiqueSource({
   const hasWildcardPostMessage = wildcardPostMessageCount > 0;
   const hasWindowOpenWithoutNoopener = windowOpenWithoutNoopenerCount > 0;
   const hasMessageListenerWithoutOriginCheck = messageListenerWithoutOriginCheckCount > 0;
+  const hasInsecureExternalIframe = insecureExternalIframeCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
   const hasAuthCookieWrites = authCookieWriteCount > 0;
   const hasAuthCookieMissingHardening = authCookieMissingHardeningCount > 0;
@@ -4421,6 +4442,7 @@ export function critiqueSource({
       - (hasWildcardPostMessage ? 2 : 0)
       - (hasMessageListenerWithoutOriginCheck ? 2 : 0)
       - (hasWindowOpenWithoutNoopener ? 1 : 0)
+      - (hasInsecureExternalIframe ? 1 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthOpenRedirectSignals ? 2 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
@@ -4429,7 +4451,7 @@ export function critiqueSource({
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -4440,6 +4462,7 @@ export function critiqueSource({
       ...(hasMessageListenerWithoutOriginCheck ? ['Validate `event.origin` inside `message` event handlers before trusting or acting on cross-window data.'] : []),
       ...(hasWindowOpenWithoutNoopener ? ['When opening a new tab imperatively, include `noopener,noreferrer` features so the new page cannot retain opener access.'] : []),
       ...(hasExternalIframeWithoutSandbox ? ['Sandbox external iframes unless a reviewed embed contract explicitly requires broader privileges.'] : []),
+      ...(hasInsecureExternalIframe ? ['Avoid embedding remote iframes over plain HTTP; use HTTPS or move the integration behind a reviewed trusted boundary.'] : []),
       ...(hasInsecureFormAction ? ['Avoid posting forms to plain HTTP endpoints; use HTTPS or move the action behind a trusted server boundary.'] : []),
       ...(hasInsecureAuthFormMethod ? ['Auth forms should submit with `method=\"post\"` or an explicit server action boundary instead of defaulting to GET semantics.'] : []),
       ...(hasInsecureTransportEndpoint ? ['Avoid plain HTTP or ws:// client endpoints; use HTTPS/WSS transport or route the request behind a trusted server boundary.'] : []),
@@ -4595,6 +4618,18 @@ export function critiqueSource({
       evidence: [filePath, `External iframes without sandbox: ${externalIframeWithoutSandboxCount}`],
       file: filePath,
       suggestedFix: 'Add the narrowest practical sandbox policy to external iframes, and only loosen capabilities when the embed contract explicitly requires it.',
+    }));
+  }
+
+  if (hasInsecureExternalIframe) {
+    findings.push(makeFinding({
+      id: 'security-iframe-transport-insecure',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'The reviewed file embeds one or more remote iframes over plain HTTP.',
+      evidence: [filePath, `Insecure external iframes: ${insecureExternalIframeCount}`],
+      file: filePath,
+      suggestedFix: 'Serve embedded iframes over HTTPS or move the integration behind a reviewed trusted boundary before shipping.',
     }));
   }
 
