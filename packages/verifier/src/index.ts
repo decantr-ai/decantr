@@ -5417,6 +5417,28 @@ function expressionContainsOpenRedirectSource(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
+    && ts.isIdentifier(expression.expression.expression)
+    && expression.expression.expression.text === 'Reflect'
+    && isMemberAccessNamed(expression.expression, 'apply')
+    && isOpenRedirectQueryKeyExpression(
+      getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
+      namedExpressions,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'call')
     && expression.arguments.length > 1
     && isOpenRedirectQueryKeyExpression(expression.arguments[1], namedExpressions, seenIdentifiers)
