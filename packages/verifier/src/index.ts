@@ -643,6 +643,10 @@ function isAuthLikeRoute(route: string): boolean {
   return /(?:^|\/)(?:auth|login|log-in|signin|sign-in|signup|sign-up|register|forgot-password|reset-password|password-reset)(?:\/|$)/i.test(route);
 }
 
+function isRecoveryLikeRoute(route: string): boolean {
+  return /(?:^|\/)(?:forgot-password|reset-password|password-reset|recover|recovery)(?:\/|$)/i.test(route);
+}
+
 function isProtectedLikeRoute(route: string): boolean {
   return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/|$)/i.test(route);
 }
@@ -2836,6 +2840,17 @@ function countAuthEntrySignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countSignInFlowSignals(code: string, filePath: string): number {
+  const patterns = [
+    /\b(?:signIn|signin|logIn|login)\s*\(/i,
+    />\s*(?:sign in|log in)\s*</i,
+    /\bcurrent-password\b/i,
+    /(?:^|\/)(?:login|log-?in|sign-?in)(?:\/|\.|$)/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0), 0);
+}
+
 function countProtectedSurfaceSignals(code: string): number {
   const patterns = [
     /['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`]/i,
@@ -2869,6 +2884,17 @@ function countAuthOpenRedirectSignals(code: string): number {
     /\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)['"`]\s*\)[^)]*\)/gi,
     /\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*\b(?:router\.query|route\.query|query)\.(?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)\b[^)]*\)/gi,
     /\bwindow\.location(?:\.href)?\s*=\s*[^;\n]*\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"`](?:next|redirect(?:To)?|returnTo|callbackUrl|continue|from)['"`]\s*\)/gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
+function countAuthRecoveryRouteSignals(code: string): number {
+  const patterns = [
+    /\b(?:href|to|route|path)\s*[:=]\s*['"`]\/(?:forgot-password|reset-password|password-reset|recover)(?:[/?#][^'"`]*)?['"`]/gi,
+    /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:forgot-password|reset-password|password-reset|recover)(?:[/?#][^'"`]*)?['"`]/gi,
+    /\bwindow\.location(?:\.href)?\s*=\s*['"`]\/(?:forgot-password|reset-password|password-reset|recover)(?:[/?#][^'"`]*)?['"`]/gi,
+    />\s*(?:forgot password|reset password|recover account)\s*</gi,
   ];
 
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
@@ -3825,6 +3851,9 @@ export function critiqueSource({
   }
 
   const hasProtectedRouteInReview = reviewPack?.data.routes.some(route => isProtectedLikeRoute(route.path)) ?? false;
+  const hasRecoveryRouteInReview = reviewPack?.data.routes.some(route => isRecoveryLikeRoute(route.path)) ?? false;
+  const signInFlowSignals = countSignInFlowSignals(code, filePath);
+  const authRecoveryRouteSignalCount = countAuthRecoveryRouteSignals(code);
   if (
     astSignals.authEntrySignalCount > 0
     && hasProtectedRouteInReview
@@ -3842,6 +3871,27 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'After reviewed sign-in, registration, or recovery success, navigate users to a protected route like `/dashboard`, `/app`, or another primary destination declared in the compiled route contract.',
+    }));
+  }
+
+  if (
+    signInFlowSignals > 0
+    && hasRecoveryRouteInReview
+    && authRecoveryRouteSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'route-auth-recovery-link-missing',
+      category: 'Route Topology',
+      severity: 'info',
+      message: 'The reviewed sign-in flow does not show an obvious path into the declared account-recovery route.',
+      evidence: [
+        filePath,
+        `Sign-in flow signals: ${signInFlowSignals}`,
+        `Reviewed recovery routes: ${reviewPack?.data.routes.filter(route => isRecoveryLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
+        `Recovery route signals: ${authRecoveryRouteSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'Link sign-in users to the reviewed recovery route, such as `/forgot-password` or `/reset-password`, whenever the compiled route contract declares one.',
     }));
   }
 

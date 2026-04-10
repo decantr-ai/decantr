@@ -3866,6 +3866,117 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'state-auth-loading-missing')).toBe(true);
   });
 
+  it('flags sign-in critique files that omit a route to the declared recovery flow', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginPage.tsx',
+      code: `
+        export function LoginPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await auth.signIn();
+            return redirect('/dashboard');
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="current-password" />
+              <button type="submit">Sign in</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login', 'forgot-password', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'login', path: '/login', patternIds: ['form'] },
+            { pageId: 'forgot-password', path: '/forgot-password', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-recovery-link-missing')).toBe(true);
+  });
+
+  it('does not flag recovery-link gaps when the sign-in flow links to the declared recovery route', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginPage.tsx',
+      code: `
+        export function LoginPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await auth.signIn();
+            return redirect('/dashboard');
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="current-password" />
+              <a href="/forgot-password">Forgot password?</a>
+              <button type="submit">Sign in</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login', 'forgot-password', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'login', path: '/login', patternIds: ['form'] },
+            { pageId: 'forgot-password', path: '/forgot-password', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-recovery-link-missing')).toBe(false);
+  });
+
   it('flags auth entry critique files that omit a failure state', () => {
     const report = critiqueSource({
       filePath: 'src/routes/LoginPage.tsx',
