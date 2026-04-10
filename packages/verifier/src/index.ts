@@ -3622,7 +3622,7 @@ function isLocationObjectExpression(expression: ts.Expression): boolean {
     || (
       ts.isPropertyAccessExpression(expression)
       && ts.isIdentifier(expression.expression)
-      && expression.expression.text === 'window'
+      && ['window', 'globalThis'].includes(expression.expression.text)
       && isPropertyNamed(expression.name, 'location')
     )
   );
@@ -4479,21 +4479,21 @@ function countAuthAnonymousRedirectSignals(code: string): number {
 }
 
 const OPEN_REDIRECT_QUERY_KEY_PATTERN = String.raw`next|redirect(?:To|[_-]to)?|return(?:To|[_-]to)?|callback(?:Url|[_-]url)?|continue(?:Url|[_-]url)?|from`;
-const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|(?:request|req)\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})\b|\b(?:new\s+)?URLSearchParams\s*\(\s*(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\bnew\s+URL\(\s*(?:request|req)\.url\s*\)\.searchParams\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)`;
+const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|(?:request|req)\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})\b|\b(?:new\s+)?URLSearchParams\s*\(\s*(?:(?:window|globalThis)\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\bnew\s+URL\(\s*(?:request|req)\.url\s*\)\.searchParams\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)`;
 const OPEN_REDIRECT_SOURCE_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'i');
 const OPEN_REDIRECT_QUERY_KEY_REGEX = new RegExp(`^(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})$`, 'i');
 const OPEN_REDIRECT_QUERY_CARRIER_REGEX = /\b(?:searchParams|router\.query|route\.query|query)\b/i;
 const OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX = /\b(?:router|route)\b/i;
-const LOCATION_QUERY_SOURCE_REGEX = /\b(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
-const LOCATION_URL_INPUT_REGEX = /\b(?:(?:window\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\b/i;
-const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:(?:window\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\s*\)/i;
+const LOCATION_QUERY_SOURCE_REGEX = /\b(?:(?:window|globalThis)\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
+const LOCATION_URL_INPUT_REGEX = /\b(?:(?:(?:window|globalThis)\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\b/i;
+const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:(?:(?:window|globalThis)\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\s*\)/i;
 const NEXT_URL_SOURCE_REGEX = /\b(?:request|req)\.nextUrl\b/i;
 const REQUEST_OBJECT_SOURCE_REGEX = /\b(?:request|req)\b/i;
 
 function countAuthOpenRedirectSignals(code: string): number {
   const patterns = [
     new RegExp(String.raw`\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*(?:${OPEN_REDIRECT_SOURCE_PATTERN})[^)]*\)`, 'gi'),
-    new RegExp(String.raw`\bwindow\.location(?:\.href)?\s*=\s*[^;\n]*(?:${OPEN_REDIRECT_SOURCE_PATTERN})`, 'gi'),
+    new RegExp(String.raw`\b(?:window|globalThis)\.location(?:\.href)?\s*=\s*[^;\n]*(?:${OPEN_REDIRECT_SOURCE_PATTERN})`, 'gi'),
   ];
 
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
@@ -4798,7 +4798,7 @@ function expressionLooksLikeWindowObjectSource(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isIdentifier(expression) && expression.text === 'window') {
+  if (ts.isIdentifier(expression) && ['window', 'globalThis'].includes(expression.text)) {
     return true;
   }
 
