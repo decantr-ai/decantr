@@ -394,6 +394,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     signUpFlowSignals: createSourceAuditBucket(),
     recoveryFlowSignals: createSourceAuditBucket(),
     authSessionSignals: createSourceAuditBucket(),
+    authUnauthenticatedBranchSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
     authErrorSignals: createSourceAuditBucket(),
     authSuccessSignals: createSourceAuditBucket(),
@@ -503,6 +504,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.signUpFlowSignals, relativePath, countSignUpFlowSignals(code, relativePath));
     recordSourceAudit(summary.recoveryFlowSignals, relativePath, countRecoveryFlowSignals(code, relativePath));
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
+    recordSourceAudit(summary.authUnauthenticatedBranchSignals, relativePath, countAuthUnauthenticatedBranchSignals(code));
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
@@ -680,6 +682,7 @@ interface SourceAuditSummary {
   signUpFlowSignals: SourceAuditBucket;
   recoveryFlowSignals: SourceAuditBucket;
   authSessionSignals: SourceAuditBucket;
+  authUnauthenticatedBranchSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
   authErrorSignals: SourceAuditBucket;
   authSuccessSignals: SourceAuditBucket;
@@ -1843,6 +1846,26 @@ function appendSourceAuditFindings(
         `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
       ],
       suggestedFix: 'When auth or session state resolves asynchronously, render an explicit loading, skeleton, suspense fallback, or pending state before redirecting or rendering protected content.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
+    && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-session-loss-handling-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Protected source surfaces read auth/session state but do not show an explicit unauthenticated branch when session resolution fails or the user signs out.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+        `Unauthenticated branch files: ${sourceAudit.authUnauthenticatedBranchSignals.files.join(', ') || 'none'}`,
+        `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'When protected surfaces read session state directly, branch on unauthenticated/null-session cases and redirect to a reviewed anonymous route or return a guard boundary before protected content renders.',
     }));
   }
 
@@ -3624,6 +3647,17 @@ function countAuthSessionSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthUnauthenticatedBranchSignals(code: string): number {
+  const patterns = [
+    /\bif\s*\(\s*!\s*(?:session|user|currentUser|currentSession|authUser)\b/i,
+    /\bif\s*\(\s*(?:session|user|currentUser|currentSession|authUser)\s*(?:==|===)\s*(?:null|undefined)\s*\)/i,
+    /\bstatus\s*===?\s*['"`]unauthenticated['"`]/i,
+    /\bstatus\s*!==?\s*['"`]authenticated['"`]/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
+}
+
 function countAuthLoadingSignals(code: string): number {
   const patterns = [
     /\b(?:isLoading|loading|isPending|pending|authLoading|sessionLoading)\b/,
@@ -5115,6 +5149,7 @@ export function critiqueSource({
   const authCallbackStateValidationSignalCount = countAuthCallbackStateValidationSignals(code);
   const authCallbackStateStorageSignalCount = countAuthCallbackStateStorageSignals(code);
   const authCallbackStateStorageClearSignalCount = countAuthCallbackStateStorageClearSignals(code);
+  const authUnauthenticatedBranchSignalCount = countAuthUnauthenticatedBranchSignals(code);
   const hasAuthCallbackErrorGap = authCallbackTokenSignalCount > 0 && authCallbackErrorSignalCount === 0;
   scores.push({
     category: 'Motion & Interaction',
@@ -5497,6 +5532,28 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'Render an explicit loading, pending, skeleton, or suspense fallback while auth or session state resolves so protected content does not flash or race.',
+    }));
+  }
+
+  if (
+    astSignals.protectedSurfaceSignalCount > 0
+    && astSignals.authSessionSignalCount > 0
+    && authUnauthenticatedBranchSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-session-loss-handling-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed protected surface reads auth/session state but does not show an explicit unauthenticated branch when session resolution fails or the user signs out.',
+      evidence: [
+        filePath,
+        `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
+        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+        `Unauthenticated branch signals: ${authUnauthenticatedBranchSignalCount}`,
+        `Auth guard signals: ${astSignals.authGuardSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'When protected surfaces read session state directly, branch on unauthenticated/null-session cases and redirect to a reviewed anonymous route or return a guard boundary before protected content renders.',
     }));
   }
 
