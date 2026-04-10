@@ -2969,7 +2969,7 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'accessibility-table-caption-missing')).toBe(false);
   });
 
-  it('flags insecure http form actions during critique', () => {
+  it('flags insecure or unsafe form actions during critique', () => {
     const report = critiqueSource({
       filePath: 'src/components/LegacyCheckout.tsx',
       code: `
@@ -2978,6 +2978,50 @@ describe('verifier', () => {
             <form action="http://legacy.example.com/checkout" method="post">
               <input type="email" name="email" />
               <button type="submit">Pay now</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['billing'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['billing'],
+          routes: [{ pageId: 'billing', path: '/billing', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-form-action-insecure')).toBe(true);
+  });
+
+  it('flags javascript form actions during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/UnsafeAction.tsx',
+      code: `
+        export function UnsafeAction() {
+          return (
+            <form action="javascript:alert('owned')" method="post">
+              <input type="email" name="email" />
+              <button type="submit">Continue</button>
             </form>
           );
         }

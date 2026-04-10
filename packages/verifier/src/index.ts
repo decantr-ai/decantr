@@ -2070,7 +2070,11 @@ function hasNavigationLabel(attributes: ts.JsxAttributes): boolean {
 
 function hasInsecureFormAction(attributes: ts.JsxAttributes): boolean {
   const actionValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'action'));
-  return /^http:\/\//i.test(actionValue?.trim() ?? '');
+  const normalized = actionValue?.trim().toLowerCase() ?? '';
+  return /^http:\/\//i.test(normalized)
+    || /^javascript:/i.test(normalized)
+    || /^mailto:/i.test(normalized)
+    || /^data:/i.test(normalized);
 }
 
 function isAuthLikeInputAttributes(attributes: ts.JsxAttributes): boolean {
@@ -3921,10 +3925,10 @@ export function critiqueSource({
       id: 'security-form-action-insecure',
       category: 'Security Hygiene',
       severity: 'error',
-      message: 'Forms were detected posting to plain HTTP endpoints.',
-      evidence: [filePath, `Forms with insecure HTTP action: ${insecureFormActionCount}`],
+      message: 'Forms were detected using insecure or unsafe action targets.',
+      evidence: [filePath, `Forms with insecure or unsafe action target: ${insecureFormActionCount}`],
       file: filePath,
-      suggestedFix: 'Use HTTPS form endpoints or route submissions through a trusted server action/API boundary that preserves transport security.',
+      suggestedFix: 'Use HTTPS form endpoints or route submissions through a trusted server action/API boundary; do not use javascript:, mailto:, data:, or plain HTTP form actions for production flows.',
     }));
   }
 
