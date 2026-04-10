@@ -856,12 +856,22 @@ describe('v3-aware tool tests', () => {
         },
       })));
 
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify(makeHostedPackBundle()), {
-          status: 200,
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+        const url = String(input);
+        if (url.includes('/v1/packs/select')) {
+          const body = JSON.parse((init as RequestInit | undefined)?.body as string);
+          const packType = body.pack_type as 'scaffold' | 'review';
+          return new Response(JSON.stringify(makeHostedSelectedPack(packType)), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        return new Response(JSON.stringify({ error: 'unexpected endpoint' }), {
+          status: 500,
           headers: { 'Content-Type': 'application/json' },
-        }),
-      );
+        });
+      });
 
       process.chdir(testDir);
       const result = await handleTool('decantr_get_scaffold_context', {}) as {
@@ -877,7 +887,8 @@ describe('v3-aware tool tests', () => {
       expect(result.execution_pack.json.packType).toBe('scaffold');
       expect(result.review_pack.json.packType).toBe('review');
       expect(result.pack_manifest.version).toBe('1.0.0');
-      expect(result.note).toContain('hosted compiled execution packs');
+      expect(result.note).toContain('hosted selected execution packs');
+      expect(fetchSpy.mock.calls.filter(([input]) => String(input).includes('/v1/packs/select'))).toHaveLength(2);
     });
 
     it('returns the pack manifest by default', async () => {

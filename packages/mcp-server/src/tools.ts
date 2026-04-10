@@ -1514,11 +1514,39 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         || existsSync(manifestPath);
 
       if (!hasAnyContext) {
+        const [hostedScaffold, hostedReview] = await Promise.all([
+          loadHostedSelectedExecutionPackFallback({
+            ...args,
+            pack_type: 'scaffold',
+          }),
+          loadHostedSelectedExecutionPackFallback({
+            ...args,
+            pack_type: 'review',
+          }),
+        ]);
+
+        const scaffoldSelected = hostedScaffold.selected;
+        const reviewSelected = hostedReview.selected;
+        if (scaffoldSelected && reviewSelected) {
+          return {
+            source: 'hosted_fallback' as PackSource,
+            task_context: null,
+            scaffold_context: null,
+            execution_pack: toHostedExecutionPackPayload(scaffoldSelected.pack),
+            review_pack: toHostedExecutionPackPayload(reviewSelected.pack),
+            pack_manifest: scaffoldSelected.manifest,
+            available_sections: scaffoldSelected.manifest.sections.map(section => ({ id: section.id, page_ids: section.pageIds })),
+            available_pages: scaffoldSelected.manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
+            available_mutations: (scaffoldSelected.manifest.mutations ?? []).map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })),
+            note: 'Using hosted selected execution packs because local scaffold context artifacts were not found.',
+          };
+        }
+
         const hosted = await loadHostedExecutionPackBundleFallback(args);
         if (!hosted.bundle) {
           return {
             error: 'Scaffold context not found. Run decantr refresh to generate scaffold context and execution packs.',
-            hosted_fallback_error: hosted.error,
+            hosted_fallback_error: hosted.error ?? hostedScaffold.error ?? hostedReview.error,
           };
         }
 
