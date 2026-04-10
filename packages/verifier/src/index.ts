@@ -5151,6 +5151,15 @@ function expressionLooksLikeNextUrlSource(
     return expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
+  if (
+    ts.isCallExpression(expression)
+    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    && isMemberAccessNamed(expression.expression, 'clone')
+    && expressionLooksLikeNextUrlSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
   if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'nextUrl')) {
     return expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
   }
