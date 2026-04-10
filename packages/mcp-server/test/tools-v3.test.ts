@@ -1067,19 +1067,23 @@ describe('v3-aware tool tests', () => {
 
       process.chdir(testDir);
       const result = await handleTool('decantr_get_page_context', { page_id: 'overview' }) as {
+        page_context: string;
         manifest_source: string;
         execution_pack_source: string;
         section_execution_pack_source: string;
         execution_pack: { markdown: string; json: { packType: string; data: { pageId: string } } };
         section_execution_pack: { markdown: string; json: { packType: string; data: { sectionId: string } } };
+        section_context: string;
         note: string;
       };
 
       expect(result.manifest_source).toBe('hosted_fallback');
       expect(result.execution_pack_source).toBe('hosted_fallback');
       expect(result.section_execution_pack_source).toBe('hosted_fallback');
+      expect(result.page_context).toContain('# Page Pack');
       expect(result.execution_pack.markdown).toContain('# Page Pack');
       expect(result.execution_pack.json.data.pageId).toBe('overview');
+      expect(result.section_context).toContain('# Section Pack');
       expect(result.section_execution_pack.json.data.sectionId).toBe('dashboard');
       expect(result.note).toContain('hosted compiled execution-pack data');
       expect(fetchSpy.mock.calls.filter(([input]) => typeof input === 'string' && input.includes('/v1/packs/select'))).toHaveLength(2);
@@ -1334,12 +1338,14 @@ describe('v3-aware tool tests', () => {
       const result = await handleTool('decantr_get_section_context', {
         section_id: 'dashboard',
       }) as {
+        context: string;
         execution_pack_source: string;
         execution_pack: { markdown: string; json: { packType: string; data: { sectionId: string } } };
         note: string;
       };
 
       expect(result.execution_pack_source).toBe('hosted_fallback');
+      expect(result.context).toContain('# Section Pack');
       expect(result.execution_pack.markdown).toContain('# Section Pack');
       expect(result.execution_pack.json.packType).toBe('section');
       expect(result.execution_pack.json.data.sectionId).toBe('dashboard');

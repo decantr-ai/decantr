@@ -1716,6 +1716,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       // Fallback: return structured section data
+      const derivedContext = executionPack.markdown;
       return {
         section_id: sectionId,
         role: section.role,
@@ -1723,10 +1724,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         features: section.features,
         description: section.description,
         pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
+        context: derivedContext,
         execution_pack_source: executionPackSource,
         execution_pack: executionPack,
         note: executionPackSource === 'hosted_fallback'
-          ? 'Section context file not found. Using hosted compiled execution pack fallback.'
+          ? 'Section context file not found. Using hosted compiled execution pack fallback as the readable section context.'
           : `Section context file not found. Run \`decantr refresh\` or \`decantr registry get-pack section ${sectionId} --write-context\` to generate it.`,
         hosted_fallback_error: executionPackSource ? undefined : hostedFallbackError,
       };
@@ -1865,6 +1867,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       return {
         page_id: pageId,
+        page_context: executionPack.markdown,
         section_id: resolvedPageEntry.sectionId,
         section_role: resolvedPageEntry.sectionRole,
         manifest_source: manifestSource,
@@ -1874,7 +1877,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         section_execution_pack: sectionExecutionPack,
         section_context: sectionContextPath && existsSync(sectionContextPath)
           ? readFileSync(sectionContextPath, 'utf-8')
-          : null,
+          : sectionExecutionPack?.markdown ?? null,
         manifest: {
           page: resolvedPageEntry,
           section: sectionEntry,
