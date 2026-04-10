@@ -5186,6 +5186,30 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
 
   if (
     isElementLikeAccessExpression(expression)
+    && ts.isNumericLiteral(expression.argumentExpression)
+    && expression.argumentExpression.text === '1'
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'value')
+    && isCallLikeExpression(expression.expression.expression)
+    && isMemberAccessExpression(expression.expression.expression.expression)
+    && isMemberAccessNamed(expression.expression.expression.expression, 'next')
+    && isCallLikeExpression(expression.expression.expression.expression.expression)
+    && isMemberAccessExpression(expression.expression.expression.expression.expression.expression)
+    && isMemberAccessNamed(expression.expression.expression.expression.expression.expression, 'entries')
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.expression.expression.expression.expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isElementLikeAccessExpression(expression)
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression,
       sourceFile,
