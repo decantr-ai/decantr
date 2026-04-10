@@ -4502,6 +4502,31 @@ function expressionContainsOpenRedirectSource(
       || expressionContainsOpenRedirectSource(expression.whenFalse, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
+  if (ts.isArrayLiteralExpression(expression)) {
+    return expression.elements.some((element) => {
+      if (ts.isSpreadElement(element)) {
+        return expressionContainsOpenRedirectSource(element.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      }
+      return ts.isExpression(element)
+        && expressionContainsOpenRedirectSource(element, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    });
+  }
+
+  if (ts.isObjectLiteralExpression(expression)) {
+    return expression.properties.some((property) => {
+      if (ts.isPropertyAssignment(property)) {
+        return expressionContainsOpenRedirectSource(property.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      }
+      if (ts.isShorthandPropertyAssignment(property)) {
+        return expressionContainsOpenRedirectSource(property.name, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      }
+      if (ts.isSpreadAssignment(property)) {
+        return expressionContainsOpenRedirectSource(property.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      }
+      return false;
+    });
+  }
+
   if (
     ts.isCallExpression(expression)
     && ts.isPropertyAccessExpression(expression.expression)
