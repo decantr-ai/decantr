@@ -123,6 +123,7 @@ export interface ShowcaseShortlistVerificationEntry {
     externalScriptsWithInsecureTransportCount: number;
     externalStylesheetsWithInsecureTransportCount: number;
     externalMediaSourcesWithInsecureTransportCount: number;
+    externalBlankLinksWithoutRelCount: number;
     jsEvalSignalCount: number;
     jsHtmlInjectionSignalCount: number;
     jsInsecureTransportSignalCount: number;
@@ -1164,6 +1165,17 @@ function appendRuntimeAuditFindings(
       message: 'Remote image or media sources were detected over plain HTTP in the built root document.',
       evidence: [indexPath, `Remote media sources over insecure transport: ${runtimeAudit.externalMediaSourcesWithInsecureTransportCount}`],
       suggestedFix: 'Serve remote image and media sources over HTTPS or move them behind a reviewed trusted asset boundary before shipping.',
+    }));
+  }
+
+  if (runtimeAudit.externalBlankLinksWithoutRelCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-links-noopener-missing',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'External links in the built root document open new tabs without `rel=\"noopener noreferrer\"` protections.',
+      evidence: [indexPath, `External target=\"_blank\" links missing rel protections: ${runtimeAudit.externalBlankLinksWithoutRelCount}`],
+      suggestedFix: 'Add `rel=\"noopener noreferrer\"` to built external links that open a new tab so opener access does not survive into production HTML.',
     }));
   }
 

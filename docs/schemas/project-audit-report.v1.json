@@ -69,6 +69,7 @@
         "externalScriptsWithInsecureTransportCount",
         "externalStylesheetsWithInsecureTransportCount",
         "externalMediaSourcesWithInsecureTransportCount",
+        "externalBlankLinksWithoutRelCount",
         "jsEvalSignalCount",
         "jsHtmlInjectionSignalCount",
         "jsInsecureTransportSignalCount",
@@ -155,6 +156,10 @@
           "minimum": 0
         },
         "externalMediaSourcesWithInsecureTransportCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalBlankLinksWithoutRelCount": {
           "type": "integer",
           "minimum": 0
         },

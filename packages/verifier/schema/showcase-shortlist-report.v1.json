@@ -34,6 +34,7 @@
         "appsWithExternalScriptIntegrityCount",
         "appsWithExternalScriptCrossoriginCount",
         "appsWithoutInsecureRemoteAssetTransportCount",
+        "appsWithSafeExternalBlankLinksCount",
         "appsWithExternalStylesheetIntegrityCount",
         "appsWithExternalStylesheetCrossoriginCount",
         "appsWithRouteCoverageCount",
@@ -65,6 +66,7 @@
         "appsWithExternalScriptIntegrityCount": { "type": "number", "minimum": 0 },
         "appsWithExternalScriptCrossoriginCount": { "type": "number", "minimum": 0 },
         "appsWithoutInsecureRemoteAssetTransportCount": { "type": "number", "minimum": 0 },
+        "appsWithSafeExternalBlankLinksCount": { "type": "number", "minimum": 0 },
         "appsWithExternalStylesheetIntegrityCount": { "type": "number", "minimum": 0 },
         "appsWithExternalStylesheetCrossoriginCount": { "type": "number", "minimum": 0 },
         "appsWithRouteCoverageCount": { "type": "number", "minimum": 0 },
@@ -140,6 +142,7 @@
             "externalScriptsWithInsecureTransportCount",
             "externalStylesheetsWithInsecureTransportCount",
             "externalMediaSourcesWithInsecureTransportCount",
+            "externalBlankLinksWithoutRelCount",
             "jsEvalSignalCount",
             "jsHtmlInjectionSignalCount",
             "jsInsecureTransportSignalCount",
@@ -221,6 +224,10 @@
               "minimum": 0
             },
             "externalMediaSourcesWithInsecureTransportCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalBlankLinksWithoutRelCount": {
               "type": "number",
               "minimum": 0
             },

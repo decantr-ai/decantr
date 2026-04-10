@@ -34,6 +34,7 @@ export interface RuntimeAudit {
   externalScriptsWithInsecureTransportCount: number;
   externalStylesheetsWithInsecureTransportCount: number;
   externalMediaSourcesWithInsecureTransportCount: number;
+  externalBlankLinksWithoutRelCount: number;
   jsEvalSignalCount: number;
   jsHtmlInjectionSignalCount: number;
   jsInsecureTransportSignalCount: number;
@@ -83,6 +84,7 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     externalScriptsWithInsecureTransportCount: 0,
     externalStylesheetsWithInsecureTransportCount: 0,
     externalMediaSourcesWithInsecureTransportCount: 0,
+    externalBlankLinksWithoutRelCount: 0,
     jsEvalSignalCount: 0,
     jsHtmlInjectionSignalCount: 0,
     jsInsecureTransportSignalCount: 0,
@@ -254,6 +256,23 @@ function countExternalMediaSourcesWithInsecureTransport(html: string): number {
   return count;
 }
 
+function countExternalBlankLinksWithoutRel(html: string): number {
+  return [...html.matchAll(/<a\b([^>]*?)\bhref=(["'])([^"']+)\2([^>]*)>/gi)]
+    .map((match) => {
+      const attrs = `${match[1] ?? ''} ${match[4] ?? ''}`;
+      const targetMatch = attrs.match(/\btarget=(["'])([^"']+)\1/i);
+      const relMatch = attrs.match(/\brel=(["'])([^"']+)\1/i);
+      return {
+        href: match[3],
+        target: targetMatch?.[2]?.toLowerCase() ?? '',
+        rel: relMatch?.[2] ?? '',
+      };
+    })
+    .filter((entry) => /^https?:\/\//i.test(entry.href) && entry.target === '_blank')
+    .filter((entry) => !/\bnoopener\b/i.test(entry.rel) || !/\bnoreferrer\b/i.test(entry.rel))
+    .length;
+}
+
 function countDynamicCodeSignals(js: string): number {
   return js.match(/\beval\s*\(|\bnew Function\s*\(/g)?.length ?? 0;
 }
@@ -377,6 +396,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const externalScriptsWithInsecureTransportCount = countExternalScriptsWithInsecureTransport(rootHtml);
     const externalStylesheetsWithInsecureTransportCount = countExternalStylesheetsWithInsecureTransport(rootHtml);
     const externalMediaSourcesWithInsecureTransportCount = countExternalMediaSourcesWithInsecureTransport(rootHtml);
+    const externalBlankLinksWithoutRelCount = countExternalBlankLinksWithoutRel(rootHtml);
 
     if (!rootDocumentOk) {
       failures.push('root-document-invalid');
@@ -499,6 +519,7 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       externalScriptsWithInsecureTransportCount,
       externalStylesheetsWithInsecureTransportCount,
       externalMediaSourcesWithInsecureTransportCount,
+      externalBlankLinksWithoutRelCount,
       jsEvalSignalCount,
       jsHtmlInjectionSignalCount,
       jsInsecureTransportSignalCount,
