@@ -160,6 +160,7 @@ commit archaeology.
 - Accessibility critique now catches table markup without headers or captions, so data-heavy generated UIs fail earlier when their structure is visually plausible but semantically incomplete.
 - Accessibility critique now also catches multiple navigation landmarks without distinct labels, which is especially important for generated app shells with both sidebar and utility nav regions.
 - Accessibility critique now also flags files that render multiple main landmarks, helping generated page and shell structures keep a single clear primary content region for assistive technologies.
+- Package graduation now also audits publish metadata quality directly, including `license`, `homepage`, `repository.directory`, `files`, `publishConfig.access`, and normalized `bin` paths, so stable-readiness is enforced in code instead of left to npm auto-correction.
 
 ### Showcase / golden corpus
 

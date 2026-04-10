@@ -11,7 +11,7 @@
   "homepage": "https://decantr.ai",
   "type": "module",
   "bin": {
-    "decantr": "./dist/bin.js"
+    "decantr": "dist/bin.js"
   },
   "main": "dist/index.js",
   "files": [

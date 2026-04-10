@@ -90,6 +90,12 @@ export function listPublicPackages(root = getRepoRoot()) {
         name: pkg.name,
         version: pkg.version,
         description: pkg.description,
+        license: pkg.license,
+        homepage: pkg.homepage,
+        repository: pkg.repository,
+        publishConfig: pkg.publishConfig,
+        bin: pkg.bin,
+        files: pkg.files,
         private: pkg.private === true,
         path: path.replace(`${root}/`, '').replace(/\/package\.json$/, ''),
       };
@@ -144,6 +150,45 @@ export function validatePackageSurface(surface, publicPackages) {
     const pkg = publicByName.get(entry.name);
     if (pkg.path !== entry.path) {
       findings.push(`Manifest path mismatch for ${entry.name}: expected ${pkg.path}, found ${entry.path}`);
+    }
+    if (typeof pkg.license !== 'string' || pkg.license.trim().length === 0) {
+      findings.push(`Public package ${entry.name} must declare a non-empty license.`);
+    }
+    if (pkg.homepage !== 'https://decantr.ai') {
+      findings.push(`Public package ${entry.name} must declare homepage https://decantr.ai.`);
+    }
+    if (!pkg.repository || typeof pkg.repository !== 'object') {
+      findings.push(`Public package ${entry.name} must declare repository metadata.`);
+    } else {
+      if (pkg.repository.type !== 'git') {
+        findings.push(`Public package ${entry.name} repository.type must be git.`);
+      }
+      if (pkg.repository.url !== 'git+https://github.com/decantr-ai/decantr.git') {
+        findings.push(`Public package ${entry.name} repository.url must point at git+https://github.com/decantr-ai/decantr.git.`);
+      }
+      if (pkg.repository.directory !== entry.path) {
+        findings.push(`Public package ${entry.name} repository.directory must match ${entry.path}.`);
+      }
+    }
+    if (!isMeaningfulStringArray(pkg.files)) {
+      findings.push(`Public package ${entry.name} must declare a non-empty files allowlist.`);
+    }
+    if (entry.publish === true && pkg.publishConfig?.access !== 'public') {
+      findings.push(`Publishable package ${entry.name} must declare publishConfig.access="public".`);
+    }
+    if (pkg.bin && typeof pkg.bin === 'object') {
+      for (const [binName, binPath] of Object.entries(pkg.bin)) {
+        if (typeof binPath !== 'string' || binPath.trim().length === 0) {
+          findings.push(`Package ${entry.name} bin ${binName} must point to a non-empty path.`);
+          continue;
+        }
+        if (binPath.startsWith('./')) {
+          findings.push(`Package ${entry.name} bin ${binName} should use normalized relative paths without a leading ./ (${binPath}).`);
+        }
+      }
+      if (!pkg.files?.includes('dist')) {
+        findings.push(`Package ${entry.name} exposes a bin but does not include dist in files.`);
+      }
     }
     if (entry.maturity === 'stable' && isPrereleaseVersion(pkg.version)) {
       findings.push(`Stable package ${entry.name} must not use a prerelease semver version (${pkg.version}).`);

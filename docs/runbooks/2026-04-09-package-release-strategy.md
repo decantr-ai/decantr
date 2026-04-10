@@ -166,6 +166,13 @@ A package is only truly graduated when:
    - expected dist-tags exist
    - stray dist-tags are removed
    - `latest` is not accidentally pointing at a prerelease
+   - package metadata is publish-clean:
+     - `license`
+     - `homepage`
+     - `repository.directory`
+     - `files`
+     - `publishConfig.access`
+     - normalized `bin` paths when applicable
 4. the package can be released in the right wave without confusing the product story
 
 The executable graduation view is now:
