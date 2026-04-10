@@ -396,6 +396,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authSessionSignals: createSourceAuditBucket(),
     authUnauthenticatedBranchSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
+    authProtectedLoadingRenderSignals: createSourceAuditBucket(),
     authErrorSignals: createSourceAuditBucket(),
     authSuccessSignals: createSourceAuditBucket(),
     authCallbackTokenSignals: createSourceAuditBucket(),
@@ -506,6 +507,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
     recordSourceAudit(summary.authUnauthenticatedBranchSignals, relativePath, countAuthUnauthenticatedBranchSignals(code));
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
+    recordSourceAudit(summary.authProtectedLoadingRenderSignals, relativePath, signals.authProtectedLoadingRenderCount);
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
     recordSourceAudit(summary.authCallbackTokenSignals, relativePath, countAuthCallbackTokenSignals(code, relativePath));
@@ -684,6 +686,7 @@ interface SourceAuditSummary {
   authSessionSignals: SourceAuditBucket;
   authUnauthenticatedBranchSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
+  authProtectedLoadingRenderSignals: SourceAuditBucket;
   authErrorSignals: SourceAuditBucket;
   authSuccessSignals: SourceAuditBucket;
   authCallbackTokenSignals: SourceAuditBucket;
@@ -1852,6 +1855,27 @@ function appendSourceAuditFindings(
   if (
     topology.hasAuthFeature
     && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
+    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
+    && sourceAudit.authProtectedLoadingRenderSignals.count > 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-loading-protected-render',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Protected source surfaces show a loading branch, but that branch still appears to render a protected destination while session resolution is pending.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+        `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
+        `Protected loading render files: ${sourceAudit.authProtectedLoadingRenderSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'While auth/session state is loading, render a neutral spinner, skeleton, suspense fallback, or guard boundary instead of returning a dashboard/app shell before the session is confirmed.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
     && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
   ) {
     findings.push(makeFinding({
@@ -2737,6 +2761,7 @@ interface AstCritiqueSignals {
   authEntrySignalCount: number;
   authSessionSignalCount: number;
   authLoadingSignalCount: number;
+  authProtectedLoadingRenderCount: number;
   authProtectedRedirectSignalCount: number;
   authAnonymousRedirectSignalCount: number;
   authOpenRedirectSignalCount: number;
@@ -3690,6 +3715,15 @@ function countAuthLoadingSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthProtectedLoadingRenderSignals(code: string): number {
+  const patterns = [
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*{[\s\S]{0,320}?return\s*<[\w.:-]+[^>]*(?:path|href|to)\s*=\s*['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`][^>]*>/gi,
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*return\s*<[\w.:-]+[^>]*(?:path|href|to)\s*=\s*['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`][^>]*>/gi,
+  ];
+
+  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAuthErrorSignals(code: string): number {
   const patterns = [
     /\bstatus\s*===?\s*['"`]error['"`]/,
@@ -4199,6 +4233,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authEntrySignalCount: countAuthEntrySignals(code),
     authSessionSignalCount: countAuthSessionSignals(code),
     authLoadingSignalCount: countAuthLoadingSignals(code),
+    authProtectedLoadingRenderCount: countAuthProtectedLoadingRenderSignals(code),
     authProtectedRedirectSignalCount: countAuthProtectedRedirectSignals(code),
     authAnonymousRedirectSignalCount: countAuthAnonymousRedirectSignals(code),
     authOpenRedirectSignalCount: countAuthOpenRedirectSignals(code),
@@ -5553,6 +5588,29 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'Render an explicit loading, pending, skeleton, or suspense fallback while auth or session state resolves so protected content does not flash or race.',
+    }));
+  }
+
+  if (
+    astSignals.protectedSurfaceSignalCount > 0
+    && astSignals.authSessionSignalCount > 0
+    && astSignals.authLoadingSignalCount > 0
+    && astSignals.authProtectedLoadingRenderCount > 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-loading-protected-render',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed protected surface shows a loading branch, but that branch still appears to render a protected destination while session state is unresolved.',
+      evidence: [
+        filePath,
+        `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
+        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+        `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
+        `Protected loading renders: ${astSignals.authProtectedLoadingRenderCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'While auth/session state is loading, render a neutral spinner, skeleton, suspense fallback, or guard boundary instead of returning a dashboard/app shell before the session is confirmed.',
     }));
   }
 

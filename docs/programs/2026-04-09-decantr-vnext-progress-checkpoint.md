@@ -458,6 +458,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Project audit and file critique now also flag logout flows that leave cross-tab auth coordination channels or storage listeners alive, so BroadcastChannel and storage-based session sync work is expected to stop alongside sign-out instead of lingering after users return to anonymous routes.
 - Project audit and file critique now also flag protected session-aware surfaces that never branch on unauthenticated state, so reviewed dashboard shells cannot quietly keep rendering after session loss just because they only handled the loading path.
 - Project audit and file critique now also flag protected session-aware surfaces that handle auth loss by returning nothing instead of routing users back to an anonymous entry point, so reviewed dashboard shells cannot quietly go blank after session loss without re-establishing the gateway boundary.
+- Project audit and file critique now also flag protected session-aware surfaces that use the loading branch to render the protected shell itself, so reviewed dashboard shells cannot flash or hydrate privileged UI before session resolution completes.
 
 ## Highest-Value Next Streams
 
