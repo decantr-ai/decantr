@@ -476,6 +476,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Protected auth-loss and auth-loading detection now also catches neutral component props like `redirectTo="/dashboard"` or `returnTo="/dashboard"`, so reviewed gateway branches cannot smuggle privileged destinations through helper components after auth loss.
 - Protected auth-loss and auth-loading detection now also catches nested object props like `state={{ redirectTo: '/dashboard' }}` or `options={{ returnTo: '/dashboard' }}`, so reviewed gateway branches cannot preserve privileged destinations inside seemingly generic helper payloads.
 - Protected auth-loss and auth-loading detection now also catches generic config payloads like `config={{ to: '/dashboard' }}` or `config={{ path: '/dashboard' }}`, so reviewed gateway branches cannot hide privileged route intent inside neutral helper objects after auth loss.
+- Protected auth-loss and auth-loading detection now also catches serialized route payloads like `payload={JSON.stringify({ redirectTo: '/dashboard' })}`, so reviewed gateway branches cannot preserve privileged destinations by wrapping them in stringified helper configs after auth loss.
 
 ## Highest-Value Next Streams
 
