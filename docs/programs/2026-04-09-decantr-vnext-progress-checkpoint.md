@@ -376,6 +376,8 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Hosted showcase summaries, CLI output, registry portal messaging, and benchmark-backed intelligence scoring now all surface that stricter full-route-coverage signal instead of treating partial route survival as fully verified.
 - Showcase manifest, shortlist, and shortlist-report surfaces are now kept in sync with the runtime security contract, so new smoke fields cannot silently land in verifier output while API and registry serializers keep emitting stale payloads.
 - Registry app lint now rebuilds `@decantr/registry` before typechecking so clean-checkout verification does not depend on stale generated package artifacts.
+- Package graduation now has its own executable planning surface via `pnpm release:graduation-plan`, which classifies each public package as stable, ready, contract-blocked, npm-blocked, experimental, or retired.
+- The package governance GitHub Actions audit now publishes the graduation plan alongside the broader release-surface audit, so stable-vs-beta decisions are visible in CI artifacts instead of only from local scripts.
 
 ## Highest-Value Next Streams
 

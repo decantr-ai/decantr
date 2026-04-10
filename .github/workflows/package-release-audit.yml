@@ -28,8 +28,14 @@ jobs:
       - name: Generate package release audit
         run: node scripts/audit-release-surface.mjs --report-json=package-release-audit.json --summary-markdown=package-release-audit.md
 
+      - name: Generate package graduation plan
+        run: node scripts/graduation-plan.mjs --report-json=package-graduation-plan.json --summary-markdown=package-graduation-plan.md
+
       - name: Publish package release audit summary
-        run: cat package-release-audit.md >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          cat package-release-audit.md >> "$GITHUB_STEP_SUMMARY"
+          printf "\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-graduation-plan.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload package release audit artifacts
         uses: actions/upload-artifact@v4
@@ -38,4 +44,6 @@ jobs:
           path: |
             package-release-audit.json
             package-release-audit.md
+            package-graduation-plan.json
+            package-graduation-plan.md
           if-no-files-found: error

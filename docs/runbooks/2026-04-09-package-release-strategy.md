@@ -71,6 +71,7 @@ The npm publish workflow now uses `scripts/publish-packages.mjs`, backed by `con
 Release planning now also has an executable source:
 
 - `pnpm release:plan`
+- `pnpm release:graduation-plan`
 - `pnpm audit:release-surface`
 - `pnpm audit:npm-surface`
 - `node scripts/release-plan.mjs --json`
@@ -139,6 +140,39 @@ That workflow supports:
 
 It intentionally does not retag `latest`; that remains a deliberate stable-release decision.
 
+## What Package Graduation Means
+
+On this branch, package graduation means more than “publish a version.”
+
+A package is only truly graduated when:
+
+1. its public contract is stable enough to move from prerelease semantics to `latest`
+2. its blockers in `config/package-surface.json` are cleared intentionally
+3. its npm surface is healthy:
+   - expected dist-tags exist
+   - stray dist-tags are removed
+   - `latest` is not accidentally pointing at a prerelease
+4. the package can be released in the right wave without confusing the product story
+
+The executable graduation view is now:
+
+- `pnpm release:graduation-plan`
+
+That report combines:
+
+- release-wave order
+- package maturity
+- stable-vs-beta intent
+- current blockers
+- npm drift and tag actions
+
+It answers four questions directly:
+
+1. which packages are already stable
+2. which packages are ready to graduate now
+3. which packages are blocked by contract churn
+4. which packages are blocked by npm state even if the code is otherwise close
+
 ## Ongoing Audit Workflow
 
 A dedicated GitHub Actions workflow now exists for package-governance reporting:
@@ -151,6 +185,7 @@ That workflow:
 - runs `pnpm audit:package-surface`
 - runs `pnpm audit:release-readiness`
 - generates a combined package release audit report through `pnpm audit:release-surface`
+- generates a dedicated graduation report through `pnpm release:graduation-plan`
 - uploads JSON and Markdown artifacts for drift/release review without requiring npm publish credentials
 
 It is intentionally report-first: current npm surface drift remains visible in artifacts even when it is not yet being treated as a hard scheduling failure.
@@ -198,6 +233,7 @@ pnpm audit:release-readiness
 pnpm audit:release-surface
 pnpm audit:npm-surface
 pnpm release:plan
+pnpm release:graduation-plan
 ```
 
 Dry-run the publish selection locally:

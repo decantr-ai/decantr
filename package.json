@@ -20,6 +20,7 @@
     "package-surface:sync": "node scripts/sync-package-support-matrix.mjs",
     "npm-surface:normalize:dry-run": "node scripts/normalize-npm-dist-tags.mjs",
     "release:plan": "node scripts/release-plan.mjs",
+    "release:graduation-plan": "node scripts/graduation-plan.mjs",
     "release:preflight": "node scripts/publish-packages.mjs --publish-dry-run",
     "package:retire:dry-run": "node scripts/deprecate-retired-packages.mjs --dry-run",
     "audit:public-api": "node scripts/audit-public-api.mjs --include-hosted-pack-select --include-hosted-critique --include-hosted-project-audit",
