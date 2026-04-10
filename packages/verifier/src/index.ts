@@ -4700,6 +4700,15 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       ts.isBinaryExpression(node)
       && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
       && isLocationAssignmentTarget(node.left)
+      && expressionContainsOpenRedirectSource(node.right, sourceFile, namedExpressionInitializers)
+    ) {
+      signals.authOpenRedirectSignalCount += 1;
+    }
+
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && isLocationAssignmentTarget(node.left)
       && isInsecureTransportUrl(getExpressionLiteralValue(node.right))
     ) {
       signals.insecureTransportEndpointCount += 1;
@@ -4854,6 +4863,15 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && isInsecureTransportUrl(getObjectLiteralStringPropertyValue(node.arguments[0], 'url', 'baseURL', 'baseUrl'))
       ) {
         signals.insecureTransportEndpointCount += 1;
+      }
+
+      if (
+        ts.isPropertyAccessExpression(node.expression)
+        && isLocationObjectExpression(node.expression.expression)
+        && isPropertyNamed(node.expression.name, 'assign', 'replace')
+        && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers)
+      ) {
+        signals.authOpenRedirectSignalCount += 1;
       }
 
       if (
