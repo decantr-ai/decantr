@@ -5173,7 +5173,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'trim', 'trimStart', 'trimLeft', 'trimEnd', 'trimRight', 'padStart', 'padEnd', 'repeat', 'replace', 'replaceAll', 'slice', 'split', 'substr', 'substring', 'toLowerCase', 'toUpperCase', 'toLocaleLowerCase', 'toLocaleUpperCase', 'toString', 'valueOf', 'normalize')
+    && isMemberAccessNamed(expression.expression, 'trim', 'trimStart', 'trimLeft', 'trimEnd', 'trimRight', 'padStart', 'padEnd', 'repeat', 'replace', 'replaceAll', 'slice', 'split', 'substr', 'substring', 'toLowerCase', 'toUpperCase', 'toLocaleLowerCase', 'toLocaleUpperCase', 'toLocaleString', 'toString', 'valueOf', 'normalize')
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
