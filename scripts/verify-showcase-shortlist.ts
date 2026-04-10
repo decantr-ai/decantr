@@ -93,7 +93,9 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     routeHintsCoverageOk: runtimeAudit.routeHintsCoverageOk,
     routeDocumentsChecked: runtimeAudit.routeDocumentsChecked,
     routeDocumentsPassed: runtimeAudit.routeDocumentsPassed,
+    routeDocumentsHardenedCount: runtimeAudit.routeDocumentsHardenedCount,
     routeDocumentsCoverageOk: runtimeAudit.routeDocumentsCoverageOk,
+    routeDocumentsHardeningOk: runtimeAudit.routeDocumentsHardeningOk,
     fullRouteCoverageOk: runtimeAudit.fullRouteCoverageOk,
     totalAssetBytes: runtimeAudit.totalAssetBytes,
     jsAssetBytes: runtimeAudit.jsAssetBytes,
@@ -199,6 +201,7 @@ async function main() {
       const minimumRoutes = Math.min(2, entry.smoke.routeDocumentsChecked);
       return entry.smoke.routeDocumentsChecked === 0 || entry.smoke.routeDocumentsPassed >= minimumRoutes;
     }).length,
+    appsWithRouteDocumentHardeningCount: results.filter(entry => entry.smoke.routeDocumentsHardeningOk).length,
     appsWithFullRouteCoverageCount: results.filter(entry => entry.smoke.fullRouteCoverageOk).length,
     averageTotalAssetBytes: results.filter(entry => entry.smoke.passed !== null).length > 0
       ? Math.round(
@@ -247,6 +250,7 @@ async function main() {
   console.log(`No insecure remote asset transport: ${summary.appsWithoutInsecureRemoteAssetTransportCount}/${summary.appCount}`);
   console.log(`External stylesheet integrity ok: ${summary.appsWithExternalStylesheetIntegrityCount}/${summary.appCount}`);
   console.log(`Route coverage checks passed: ${summary.appsWithRouteCoverageCount}/${summary.appCount}`);
+  console.log(`Route document hardening preserved: ${summary.appsWithRouteDocumentHardeningCount}/${summary.appCount}`);
   console.log(`Full route coverage: ${summary.appsWithFullRouteCoverageCount}/${summary.appCount}`);
   console.log(`Average built assets: total ${summary.averageTotalAssetBytes} B, js ${summary.averageJsAssetBytes} B, css ${summary.averageCssAssetBytes} B`);
   console.log(`Drift signals: lower ${summary.lowerDriftCount}, moderate ${summary.moderateDriftCount}, elevated ${summary.elevatedDriftCount}`);

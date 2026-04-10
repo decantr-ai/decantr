@@ -1686,6 +1686,9 @@ function printProjectAuditReport(report: ProjectAuditReport) {
       `  Document hardening: lang ${report.runtimeAudit.langOk ? 'ok' : 'missing'} | viewport ${report.runtimeAudit.viewportOk ? 'ok' : 'missing'} | charset ${report.runtimeAudit.charsetOk ? 'ok' : 'missing'} | csp ${report.runtimeAudit.cspSignalOk ? 'present' : 'missing'}`,
     );
     console.log(
+      `  Route document shell: root docs ${report.runtimeAudit.routeDocumentsPassed}/${report.runtimeAudit.routeDocumentsChecked} | hardened docs ${report.runtimeAudit.routeDocumentsHardenedCount}/${report.runtimeAudit.routeDocumentsChecked}`,
+    );
+    console.log(
       `  Script hygiene: inline scripts ${report.runtimeAudit.inlineScriptCount} | inline event handlers ${report.runtimeAudit.inlineEventHandlerCount} | scripts without integrity ${report.runtimeAudit.externalScriptsWithoutIntegrityCount} | stylesheets without integrity ${report.runtimeAudit.externalStylesheetsWithoutIntegrityCount} | insecure external scripts ${report.runtimeAudit.externalScriptsWithInsecureTransportCount} | insecure external stylesheets ${report.runtimeAudit.externalStylesheetsWithInsecureTransportCount}`,
     );
     console.log(

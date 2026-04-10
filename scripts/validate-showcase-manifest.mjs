@@ -111,6 +111,7 @@ if (reportResults.length > 0) {
       'appsWithExternalScriptIntegrityCount',
       'appsWithExternalStylesheetIntegrityCount',
       'appsWithRouteCoverageCount',
+      'appsWithRouteDocumentHardeningCount',
       'appsWithFullRouteCoverageCount',
       'averageTotalAssetBytes',
       'averageJsAssetBytes',
@@ -196,10 +197,13 @@ if (reportResults.length > 0) {
       if (typeof entry.smoke.fullRouteCoverageOk !== 'boolean') {
         errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.fullRouteCoverageOk must be boolean.`);
       }
-      for (const key of ['inlineScriptCount', 'inlineEventHandlerCount', 'externalScriptsWithoutIntegrityCount', 'externalStylesheetsWithoutIntegrityCount', 'externalScriptsWithInsecureTransportCount', 'externalStylesheetsWithInsecureTransportCount', 'jsEvalSignalCount', 'jsHtmlInjectionSignalCount', 'jsInsecureTransportSignalCount', 'jsSecretSignalCount', 'assetCount', 'assetsPassed', 'routeHintsMatched', 'routeDocumentsChecked', 'routeDocumentsPassed', 'totalAssetBytes', 'jsAssetBytes', 'cssAssetBytes', 'largestAssetBytes']) {
+      for (const key of ['inlineScriptCount', 'inlineEventHandlerCount', 'externalScriptsWithoutIntegrityCount', 'externalStylesheetsWithoutIntegrityCount', 'externalScriptsWithInsecureTransportCount', 'externalStylesheetsWithInsecureTransportCount', 'jsEvalSignalCount', 'jsHtmlInjectionSignalCount', 'jsInsecureTransportSignalCount', 'jsSecretSignalCount', 'assetCount', 'assetsPassed', 'routeHintsMatched', 'routeDocumentsChecked', 'routeDocumentsPassed', 'routeDocumentsHardenedCount', 'totalAssetBytes', 'jsAssetBytes', 'cssAssetBytes', 'largestAssetBytes']) {
         if (!Number.isFinite(entry.smoke[key]) || entry.smoke[key] < 0) {
           errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.${key} must be a non-negative number.`);
         }
+      }
+      if (typeof entry.smoke.routeDocumentsHardeningOk !== 'boolean') {
+        errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.routeDocumentsHardeningOk must be boolean.`);
       }
       if (entry.smoke.largestAssetPath !== null && typeof entry.smoke.largestAssetPath !== 'string') {
         errors.push(`Showcase shortlist report entry "${entry.slug}" smoke.largestAssetPath must be string or null.`);

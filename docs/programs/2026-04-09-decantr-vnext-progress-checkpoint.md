@@ -386,6 +386,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Project audit now also warns when gateway and primary sections overlap on the same route, making the anonymous-to-authenticated boundary ambiguous.
 - Runtime verification now reports partial route drift when only some compiled route hints or route documents survive the built output, instead of only surfacing catastrophic misses.
 - Runtime verification and shortlist reports now also track strict full-route-coverage booleans for both compiled route hints and audited route documents, so the golden corpus can distinguish “some route coverage” from “the entire declared route contract survived.”
+- Runtime verification and shortlist reports now also track route-document hardening coverage separately from route existence, so Decantr can distinguish “the route rendered” from “the route preserved a hardened document shell.”
 - Runtime verification now also flags secret-like client-bundle leakage, including service-role key markers, live secret key patterns, and private-key material that survive into built JavaScript.
 - Runtime verification now also flags inline DOM event-handler attributes that survive into built HTML, so golden verification and hosted audits catch `onclick`/`onload`-style leakage alongside inline scripts and remote asset hardening issues.
 - File critique and source audit now also flag hardcoded secret literals plus client-exposed secret env references, so privileged keys can be caught before they ever reach a compiled bundle.

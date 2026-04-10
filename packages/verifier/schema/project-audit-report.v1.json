@@ -77,7 +77,9 @@
         "routeHintsCoverageOk",
         "routeDocumentsChecked",
         "routeDocumentsPassed",
+        "routeDocumentsHardenedCount",
         "routeDocumentsCoverageOk",
+        "routeDocumentsHardeningOk",
         "fullRouteCoverageOk",
         "totalAssetBytes",
         "jsAssetBytes",
@@ -186,7 +188,14 @@
           "type": "integer",
           "minimum": 0
         },
+        "routeDocumentsHardenedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
         "routeDocumentsCoverageOk": {
+          "type": "boolean"
+        },
+        "routeDocumentsHardeningOk": {
           "type": "boolean"
         },
         "fullRouteCoverageOk": {

@@ -35,6 +35,7 @@
         "appsWithoutInsecureRemoteAssetTransportCount",
         "appsWithExternalStylesheetIntegrityCount",
         "appsWithRouteCoverageCount",
+        "appsWithRouteDocumentHardeningCount",
         "appsWithFullRouteCoverageCount",
         "averageTotalAssetBytes",
         "averageJsAssetBytes",
@@ -63,6 +64,7 @@
         "appsWithoutInsecureRemoteAssetTransportCount": { "type": "number", "minimum": 0 },
         "appsWithExternalStylesheetIntegrityCount": { "type": "number", "minimum": 0 },
         "appsWithRouteCoverageCount": { "type": "number", "minimum": 0 },
+        "appsWithRouteDocumentHardeningCount": { "type": "number", "minimum": 0 },
         "appsWithFullRouteCoverageCount": { "type": "number", "minimum": 0 },
         "averageTotalAssetBytes": { "type": "number", "minimum": 0 },
         "averageJsAssetBytes": { "type": "number", "minimum": 0 },
@@ -142,7 +144,9 @@
             "routeHintsCoverageOk",
             "routeDocumentsChecked",
             "routeDocumentsPassed",
+            "routeDocumentsHardenedCount",
             "routeDocumentsCoverageOk",
+            "routeDocumentsHardeningOk",
             "fullRouteCoverageOk",
             "totalAssetBytes",
             "jsAssetBytes",
@@ -243,7 +247,14 @@
               "type": "number",
               "minimum": 0
             },
+            "routeDocumentsHardenedCount": {
+              "type": "number",
+              "minimum": 0
+            },
             "routeDocumentsCoverageOk": {
+              "type": "boolean"
+            },
+            "routeDocumentsHardeningOk": {
               "type": "boolean"
             },
             "fullRouteCoverageOk": {

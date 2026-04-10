@@ -42,7 +42,9 @@ export interface RuntimeAudit {
   routeHintsCoverageOk: boolean;
   routeDocumentsChecked: number;
   routeDocumentsPassed: number;
+  routeDocumentsHardenedCount: number;
   routeDocumentsCoverageOk: boolean;
+  routeDocumentsHardeningOk: boolean;
   fullRouteCoverageOk: boolean;
   totalAssetBytes: number;
   jsAssetBytes: number;
@@ -86,7 +88,9 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
     routeHintsCoverageOk: false,
     routeDocumentsChecked: 0,
     routeDocumentsPassed: 0,
+    routeDocumentsHardenedCount: 0,
     routeDocumentsCoverageOk: false,
+    routeDocumentsHardeningOk: false,
     fullRouteCoverageOk: false,
     totalAssetBytes: 0,
     jsAssetBytes: 0,
@@ -356,11 +360,22 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     }
 
     let routeDocumentsPassed = 0;
+    let routeDocumentsHardenedCount = 0;
     for (const routeHint of routeHints) {
       const routeResponse = await fetch(`${server.baseUrl}${routeHint}`);
       const routeHtml = await routeResponse.text();
-      if (routeResponse.ok && /id="root"/.test(routeHtml)) {
+      const routeRootDocumentOk = routeResponse.ok && /id="root"/.test(routeHtml);
+      const routeTitleOk = /<title>[^<]+<\/title>/i.test(routeHtml);
+      const routeLangOk = /<html[^>]*\slang=(["'])[^"']+\1/i.test(routeHtml);
+      const routeViewportOk = /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(routeHtml);
+      const routeCharsetOk = /<meta[^>]+charset=/i.test(routeHtml);
+      if (routeRootDocumentOk) {
         routeDocumentsPassed += 1;
+        if (routeTitleOk && routeLangOk && routeViewportOk && routeCharsetOk) {
+          routeDocumentsHardenedCount += 1;
+        } else {
+          failures.push(`route-document-hardening-failed:${routeHint}`);
+        }
       } else {
         failures.push(`route-document-failed:${routeHint}`);
       }
@@ -368,9 +383,13 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
 
     const routeDocumentsChecked = routeHints.length;
     const routeDocumentsCoverageOk = routeDocumentsChecked === 0 || routeDocumentsPassed === routeDocumentsChecked;
+    const routeDocumentsHardeningOk = routeDocumentsChecked === 0 || routeDocumentsHardenedCount === routeDocumentsChecked;
     const fullRouteCoverageOk = routeHintsCoverageOk && routeDocumentsCoverageOk;
     if (routeDocumentsChecked > 0 && routeDocumentsPassed < Math.min(2, routeDocumentsChecked)) {
       failures.push('route-documents-missing');
+    }
+    if (routeDocumentsChecked > 0 && routeDocumentsHardenedCount < Math.min(2, routeDocumentsChecked)) {
+      failures.push('route-documents-hardening-missing');
     }
 
     const passed = rootDocumentOk
@@ -408,7 +427,9 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       routeHintsCoverageOk,
       routeDocumentsChecked,
       routeDocumentsPassed,
+      routeDocumentsHardenedCount,
       routeDocumentsCoverageOk,
+      routeDocumentsHardeningOk,
       fullRouteCoverageOk,
       totalAssetBytes,
       jsAssetBytes,

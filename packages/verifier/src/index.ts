@@ -918,6 +918,13 @@ function extractFailedRouteDocuments(runtimeAudit: RuntimeAudit): string[] {
     .filter(Boolean);
 }
 
+function extractFailedRouteDocumentHardening(runtimeAudit: RuntimeAudit): string[] {
+  return runtimeAudit.failures
+    .filter((failure) => failure.startsWith('route-document-hardening-failed:'))
+    .map((failure) => normalizeRouteHint(failure.slice('route-document-hardening-failed:'.length)))
+    .filter(Boolean);
+}
+
 function appendRuntimeAuditFindings(
   findings: VerificationFinding[],
   runtimeAudit: RuntimeAudit,
@@ -1199,6 +1206,32 @@ function appendRuntimeAuditFindings(
         ...runtimeAudit.failures.filter(failure => failure.startsWith('route-document-failed:')),
       ],
       suggestedFix: 'Fix the failing route outputs so every declared destination resolves to the same usable root document contract.',
+    }));
+  }
+
+  if (runtimeAudit.routeDocumentsChecked > 0 && runtimeAudit.routeDocumentsHardenedCount < Math.min(2, runtimeAudit.routeDocumentsChecked)) {
+    findings.push(makeFinding({
+      id: 'runtime-route-document-hardening-missing',
+      category: 'Document Hardening',
+      severity: 'warn',
+      message: 'Too few reviewed routes preserved a fully hardened document shell.',
+      evidence: [
+        `Hardened route documents: ${runtimeAudit.routeDocumentsHardenedCount}/${runtimeAudit.routeDocumentsChecked}`,
+        ...extractFailedRouteDocumentHardening(runtimeAudit),
+      ],
+      suggestedFix: 'Keep title, lang, viewport, and charset metadata intact for every reviewed route document, not just the root entry shell.',
+    }));
+  } else if (runtimeAudit.routeDocumentsChecked > 0 && runtimeAudit.routeDocumentsHardenedCount < runtimeAudit.routeDocumentsChecked) {
+    findings.push(makeFinding({
+      id: 'runtime-route-document-hardening-partial',
+      category: 'Document Hardening',
+      severity: 'info',
+      message: 'Some reviewed routes preserved a hardened document shell, but at least one still dropped critical document metadata.',
+      evidence: [
+        `Hardened route documents: ${runtimeAudit.routeDocumentsHardenedCount}/${runtimeAudit.routeDocumentsChecked}`,
+        ...extractFailedRouteDocumentHardening(runtimeAudit),
+      ],
+      suggestedFix: 'Make sure every reviewed route document keeps title, lang, viewport, and charset metadata intact across route-level rendering.',
     }));
   }
 

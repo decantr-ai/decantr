@@ -70,10 +70,15 @@ function hasFullRouteCoverage(verification: ShowcaseVerificationEntry | null): b
   return Boolean(verification?.smoke.passed && verification.smoke.fullRouteCoverageOk);
 }
 
+function hasRouteDocumentHardening(verification: ShowcaseVerificationEntry | null): boolean {
+  return Boolean(verification?.smoke.passed && verification.smoke.routeDocumentsHardeningOk);
+}
+
 function hasRuntimeHardeningBaseline(verification: ShowcaseVerificationEntry | null): boolean {
   return hasDocumentMetadataBaseline(verification)
     && hasCharsetBaseline(verification)
-    && hasScriptHygieneBaseline(verification);
+    && hasScriptHygieneBaseline(verification)
+    && hasRouteDocumentHardening(verification);
 }
 
 function isWithinRuntimeBudget(verification: ShowcaseVerificationEntry | null): boolean {
@@ -135,6 +140,7 @@ function deriveQualityScore(
   if (hasCharsetBaseline(verification)) score += 3;
   if (hasScriptHygieneBaseline(verification)) score += 4;
   if (hasFullRouteCoverage(verification)) score += 5;
+  if (hasRouteDocumentHardening(verification)) score += 3;
   if (hasCspSignal(verification)) score += 2;
   if (isWithinRuntimeBudget(verification)) score += 6;
 

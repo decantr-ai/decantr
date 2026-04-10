@@ -1,12 +1,12 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-10T01:18:04.557Z",
+  "generatedAt": "2026-04-10T01:29:38.331Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1569,
+    "averageDurationMs": 1727,
     "passedSmokes": 8,
     "failedSmokes": 0,
     "averageSmokeDurationMs": 9,
@@ -21,6 +21,7 @@
     "appsWithoutInsecureRemoteAssetTransportCount": 8,
     "appsWithExternalStylesheetIntegrityCount": 6,
     "appsWithRouteCoverageCount": 8,
+    "appsWithRouteDocumentHardeningCount": 8,
     "appsWithFullRouteCoverageCount": 8,
     "averageTotalAssetBytes": 335362,
     "averageJsAssetBytes": 325759,
@@ -38,11 +39,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1562
+        "durationMs": 1747
       },
       "smoke": {
         "passed": true,
-        "durationMs": 33,
+        "durationMs": 36,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -75,7 +76,9 @@
         "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsHardenedCount": 8,
         "routeDocumentsCoverageOk": true,
+        "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
         "totalAssetBytes": 307899,
         "jsAssetBytes": 299799,
@@ -102,11 +105,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1531
+        "durationMs": 1670
       },
       "smoke": {
         "passed": true,
-        "durationMs": 7,
+        "durationMs": 8,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -139,7 +142,9 @@
         "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsHardenedCount": 8,
         "routeDocumentsCoverageOk": true,
+        "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
         "totalAssetBytes": 323107,
         "jsAssetBytes": 312723,
@@ -166,7 +171,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1565
+        "durationMs": 1714
       },
       "smoke": {
         "passed": true,
@@ -203,7 +208,9 @@
         "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsHardenedCount": 8,
         "routeDocumentsCoverageOk": true,
+        "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
         "totalAssetBytes": 340557,
         "jsAssetBytes": 333523,
@@ -230,7 +237,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1509
+        "durationMs": 1637
       },
       "smoke": {
         "passed": true,
@@ -267,7 +274,9 @@
         "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsHardenedCount": 8,
         "routeDocumentsCoverageOk": true,
+        "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
         "totalAssetBytes": 331565,
         "jsAssetBytes": 322435,
@@ -294,7 +303,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1473
+        "durationMs": 1632
       },
       "smoke": {
         "passed": true,
@@ -330,7 +339,9 @@
         "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 7,
         "routeDocumentsPassed": 7,
+        "routeDocumentsHardenedCount": 7,
         "routeDocumentsCoverageOk": true,
+        "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
         "totalAssetBytes": 332075,
         "jsAssetBytes": 321571,
@@ -357,11 +368,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1694
+        "durationMs": 1860
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -394,7 +405,9 @@
         "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsHardenedCount": 8,
         "routeDocumentsCoverageOk": true,
+        "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
         "totalAssetBytes": 356330,
         "jsAssetBytes": 344077,
@@ -421,7 +434,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1638
+        "durationMs": 1790
       },
       "smoke": {
         "passed": true,
@@ -458,7 +471,9 @@
         "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsHardenedCount": 8,
         "routeDocumentsCoverageOk": true,
+        "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
         "totalAssetBytes": 333301,
         "jsAssetBytes": 322630,
@@ -485,11 +500,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1582
+        "durationMs": 1764
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -522,7 +537,9 @@
         "routeHintsCoverageOk": true,
         "routeDocumentsChecked": 8,
         "routeDocumentsPassed": 8,
+        "routeDocumentsHardenedCount": 8,
         "routeDocumentsCoverageOk": true,
+        "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
         "totalAssetBytes": 358058,
         "jsAssetBytes": 349315,

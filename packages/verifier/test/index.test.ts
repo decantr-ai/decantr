@@ -2270,6 +2270,8 @@ describe('verifier', () => {
       expect(report.passed).toBe(true);
       expect(report.routeHintsCoverageOk).toBe(true);
       expect(report.routeDocumentsCoverageOk).toBe(true);
+      expect(report.routeDocumentsHardeningOk).toBe(false);
+      expect(report.routeDocumentsHardenedCount).toBe(0);
       expect(report.fullRouteCoverageOk).toBe(true);
       expect(report.langOk).toBe(true);
       expect(report.viewportOk).toBe(true);
@@ -2283,6 +2285,36 @@ describe('verifier', () => {
       expect(report.jsHtmlInjectionSignalCount).toBe(0);
       expect(report.jsInsecureTransportSignalCount).toBe(0);
       expect(report.jsSecretSignalCount).toBe(0);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('reports partial route document hardening when a reviewed route drops document metadata', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Showcase</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'dist', 'dashboard'),
+        '<!doctype html><html lang="en"><head><title>Dashboard</title></head><body><div id="root"></div></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/"); console.log("/dashboard");\n');
+
+      const report = await auditBuiltDist(projectRoot, {
+        routeHints: ['/', '/dashboard'],
+      });
+
+      expect(report.checked).toBe(true);
+      expect(report.routeDocumentsCoverageOk).toBe(true);
+      expect(report.routeDocumentsPassed).toBe(2);
+      expect(report.routeDocumentsHardenedCount).toBe(1);
+      expect(report.routeDocumentsHardeningOk).toBe(false);
+      expect(report.failures).toContain('route-document-hardening-failed:/dashboard');
+      expect(report.failures).toContain('route-documents-hardening-missing');
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

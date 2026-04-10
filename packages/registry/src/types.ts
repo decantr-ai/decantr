@@ -547,7 +547,9 @@ export interface ShowcaseVerificationEntry {
     routeHintsCoverageOk: boolean;
     routeDocumentsChecked: number;
     routeDocumentsPassed: number;
+    routeDocumentsHardenedCount: number;
     routeDocumentsCoverageOk: boolean;
+    routeDocumentsHardeningOk: boolean;
     fullRouteCoverageOk: boolean;
     totalAssetBytes: number;
     jsAssetBytes: number;
@@ -934,7 +936,9 @@ export interface ProjectAuditRuntimeAudit {
   routeHintsCoverageOk: boolean;
   routeDocumentsChecked: number;
   routeDocumentsPassed: number;
+  routeDocumentsHardenedCount: number;
   routeDocumentsCoverageOk: boolean;
+  routeDocumentsHardeningOk: boolean;
   fullRouteCoverageOk: boolean;
   totalAssetBytes: number;
   jsAssetBytes: number;
