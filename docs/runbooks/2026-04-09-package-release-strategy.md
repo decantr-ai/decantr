@@ -18,6 +18,17 @@ The package source of truth is `config/package-surface.json`.
 
 `docs/reference/package-support-matrix.md` is now generated from the package manifests via `node scripts/sync-package-support-matrix.mjs` and enforced by `pnpm audit:package-surface`.
 
+That generated matrix now also acts as the fastest operator-facing graduation view:
+
+- package release wave and publish order
+- stable-candidate flag
+- declared blocker count
+- graduation lane:
+  - `stable-now`
+  - `ready-next`
+  - `beta-blocked`
+  - `experimental-hold`
+
 That file currently defines:
 
 - support status
@@ -172,6 +183,8 @@ It answers four questions directly:
 2. which packages are ready to graduate now
 3. which packages are blocked by contract churn
 4. which packages are blocked by npm state even if the code is otherwise close
+
+The generated support matrix complements that report by showing the same graduation story directly from `config/package-surface.json`, even before npm-state findings are layered in.
 
 ## Ongoing Audit Workflow
 

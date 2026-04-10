@@ -10,16 +10,16 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 
 ## Active Packages
 
-| Package | Support status | Maturity | Release wave | Default npm tag | Publish default | Summary |
-| --- | --- | --- | --- | --- | --- | --- |
-| `@decantr/essence-spec` | core-supported | beta | `foundation` (`10`) | `beta` | `true` | Essence schemas, validation, migration, and TypeScript types. |
-| `@decantr/registry` | core-supported | beta | `foundation` (`20`) | `beta` | `true` | Registry contracts, schemas, API client, and public content utilities. |
-| `@decantr/core` | core-supported | beta | `foundation` (`30`) | `beta` | `true` | Execution-pack compiler primitives and shared Decantr core utilities. |
-| `@decantr/css` | core-supported | stable | `foundation` (`40`) | `latest` | `true` | Framework-agnostic CSS atom runtime for Decantr projects. |
-| `@decantr/verifier` | core-supported | beta | `foundation` (`50`) | `beta` | `true` | Shared verification, critique, and report-schema engine. |
-| `@decantr/mcp-server` | core-supported | beta | `delivery` (`10`) | `beta` | `true` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
-| `@decantr/cli` | core-supported | stable | `delivery` (`20`) | `latest` | `true` | Local scaffold, audit, registry, and maintenance workflows for Decantr projects. |
-| `@decantr/vite-plugin` | supported-secondary | experimental | `experimental` (`10`) | `beta` | `false` | Experimental Vite overlay for Decantr guard feedback during local development. |
+| Package | Support status | Maturity | Release wave | Default npm tag | Publish default | Stable candidate | Blockers | Graduation lane | Summary |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `@decantr/essence-spec` | core-supported | beta | `foundation` (`10`) | `beta` | `true` | `false` | `2` | `beta-blocked` | Essence schemas, validation, migration, and TypeScript types. |
+| `@decantr/registry` | core-supported | beta | `foundation` (`20`) | `beta` | `true` | `false` | `2` | `beta-blocked` | Registry contracts, schemas, API client, and public content utilities. |
+| `@decantr/core` | core-supported | beta | `foundation` (`30`) | `beta` | `true` | `false` | `2` | `beta-blocked` | Execution-pack compiler primitives and shared Decantr core utilities. |
+| `@decantr/css` | core-supported | stable | `foundation` (`40`) | `latest` | `true` | `true` | `0` | `stable-now` | Framework-agnostic CSS atom runtime for Decantr projects. |
+| `@decantr/verifier` | core-supported | beta | `foundation` (`50`) | `beta` | `true` | `false` | `2` | `beta-blocked` | Shared verification, critique, and report-schema engine. |
+| `@decantr/mcp-server` | core-supported | beta | `delivery` (`10`) | `beta` | `true` | `false` | `2` | `beta-blocked` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
+| `@decantr/cli` | core-supported | stable | `delivery` (`20`) | `latest` | `true` | `true` | `0` | `stable-now` | Local scaffold, audit, registry, and maintenance workflows for Decantr projects. |
+| `@decantr/vite-plugin` | supported-secondary | experimental | `experimental` (`10`) | `beta` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite overlay for Decantr guard feedback during local development. |
 
 ## Interpretation
 
@@ -33,6 +33,36 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 - `experimental` means opt-in and not part of the default publish wave.
 - `release wave` defines the intended publish order for coordinated npm releases.
 - `publish default` reflects whether the package participates in the default publish flow without opt-in overrides.
+- `stable candidate` means the package is intended to be eligible for stable graduation once its blockers reach zero.
+- `graduation lane` is the operator-facing bucket for release planning: `stable-now`, `ready-next`, `beta-blocked`, or `experimental-hold`.
+
+## Graduation Snapshot
+
+- Stable now: 2
+- Ready next: 0
+- Beta blocked: 5
+- Experimental hold: 1
+
+### Stable Now
+
+- `@decantr/css` in `foundation` wave
+- `@decantr/cli` in `delivery` wave
+
+### Ready Next
+
+- none
+
+### Beta Blocked
+
+- `@decantr/essence-spec`: The v3/v3.1 essence evolution and compatibility policy still needs a clearly frozen stable contract.
+- `@decantr/registry`: Registry content and hosted verification contracts are still being tightened across public API and client surfaces.
+- `@decantr/core`: Execution-pack contracts are still expanding with selected-pack, mutation, and pack-first hosted workflow refinements.
+- `@decantr/verifier`: Runtime verification is stronger now but still expanding toward deeper auth, security, and route-level assurance.
+- `@decantr/mcp-server`: The MCP tool surface is still evolving alongside pack-select fallbacks and deeper verifier/runtime coverage.
+
+### Experimental Hold
+
+- `@decantr/vite-plugin` stays outside the default graduation path
 
 ## Current Product Nucleus
 

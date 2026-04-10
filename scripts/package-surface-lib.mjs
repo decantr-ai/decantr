@@ -27,6 +27,24 @@ const MATURITY_DESCRIPTIONS = {
   experimental: 'opt-in and not part of the default publish wave',
 };
 
+function describeGraduationLane(entry) {
+  const blockers = entry.releaseReadiness?.blockers ?? [];
+
+  if (entry.maturity === 'stable') {
+    return 'stable-now';
+  }
+
+  if (entry.maturity === 'experimental' || entry.publish === false) {
+    return 'experimental-hold';
+  }
+
+  if (entry.releaseReadiness?.stableCandidate === true && blockers.length === 0) {
+    return 'ready-next';
+  }
+
+  return 'beta-blocked';
+}
+
 function isMeaningfulStringArray(value) {
   return Array.isArray(value) && value.every((entry) => typeof entry === 'string' && entry.trim().length > 0);
 }
@@ -207,6 +225,10 @@ export function renderPackageSupportMatrix(surface, retirements) {
   const activePackages = sortReleaseEntries(surface.packages);
   const nucleusPackages = activePackages.filter((entry) => entry.support === 'core-supported' && entry.maturity !== 'experimental');
   const retiredPackages = [...(retirements?.packages ?? [])].sort((left, right) => left.name.localeCompare(right.name));
+  const stableNow = activePackages.filter((entry) => describeGraduationLane(entry) === 'stable-now');
+  const readyNext = activePackages.filter((entry) => describeGraduationLane(entry) === 'ready-next');
+  const betaBlocked = activePackages.filter((entry) => describeGraduationLane(entry) === 'beta-blocked');
+  const experimentalHold = activePackages.filter((entry) => describeGraduationLane(entry) === 'experimental-hold');
 
   const lines = [
     '# Decantr Package Support Matrix',
@@ -221,10 +243,10 @@ export function renderPackageSupportMatrix(surface, retirements) {
     '',
     '## Active Packages',
     '',
-    '| Package | Support status | Maturity | Release wave | Default npm tag | Publish default | Summary |',
-    '| --- | --- | --- | --- | --- | --- | --- |',
+    '| Package | Support status | Maturity | Release wave | Default npm tag | Publish default | Stable candidate | Blockers | Graduation lane | Summary |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
     ...activePackages.map((entry) => (
-      `| \`${escapeMarkdownCell(entry.name)}\` | ${escapeMarkdownCell(entry.support)} | ${escapeMarkdownCell(entry.maturity)} | \`${escapeMarkdownCell(entry.releaseWave)}\` (\`${escapeMarkdownCell(entry.publishOrder)}\`) | \`${escapeMarkdownCell(entry.defaultDistTag)}\` | \`${entry.publish === true ? 'true' : 'false'}\` | ${escapeMarkdownCell(entry.summary)} |`
+      `| \`${escapeMarkdownCell(entry.name)}\` | ${escapeMarkdownCell(entry.support)} | ${escapeMarkdownCell(entry.maturity)} | \`${escapeMarkdownCell(entry.releaseWave)}\` (\`${escapeMarkdownCell(entry.publishOrder)}\`) | \`${escapeMarkdownCell(entry.defaultDistTag)}\` | \`${entry.publish === true ? 'true' : 'false'}\` | \`${entry.releaseReadiness?.stableCandidate === true ? 'true' : 'false'}\` | \`${escapeMarkdownCell((entry.releaseReadiness?.blockers ?? []).length)}\` | \`${describeGraduationLane(entry)}\` | ${escapeMarkdownCell(entry.summary)} |`
     )),
     '',
     '## Interpretation',
@@ -233,6 +255,42 @@ export function renderPackageSupportMatrix(surface, retirements) {
     ...Object.entries(MATURITY_DESCRIPTIONS).map(([maturity, description]) => `- \`${maturity}\` means ${description}.`),
     '- `release wave` defines the intended publish order for coordinated npm releases.',
     '- `publish default` reflects whether the package participates in the default publish flow without opt-in overrides.',
+    '- `stable candidate` means the package is intended to be eligible for stable graduation once its blockers reach zero.',
+    '- `graduation lane` is the operator-facing bucket for release planning: `stable-now`, `ready-next`, `beta-blocked`, or `experimental-hold`.',
+    '',
+    '## Graduation Snapshot',
+    '',
+    `- Stable now: ${stableNow.length}`,
+    `- Ready next: ${readyNext.length}`,
+    `- Beta blocked: ${betaBlocked.length}`,
+    `- Experimental hold: ${experimentalHold.length}`,
+    '',
+    '### Stable Now',
+    '',
+    ...(stableNow.length > 0
+      ? stableNow.map((entry) => `- \`${entry.name}\` in \`${entry.releaseWave}\` wave`)
+      : ['- none']),
+    '',
+    '### Ready Next',
+    '',
+    ...(readyNext.length > 0
+      ? readyNext.map((entry) => `- \`${entry.name}\` is a stable candidate with no declared blockers`)
+      : ['- none']),
+    '',
+    '### Beta Blocked',
+    '',
+    ...(betaBlocked.length > 0
+      ? betaBlocked.map((entry) => {
+        const blockers = entry.releaseReadiness?.blockers ?? [];
+        return `- \`${entry.name}\`: ${blockers[0] ?? 'blockers still need to be cleared before stable graduation'}`;
+      })
+      : ['- none']),
+    '',
+    '### Experimental Hold',
+    '',
+    ...(experimentalHold.length > 0
+      ? experimentalHold.map((entry) => `- \`${entry.name}\` stays outside the default graduation path`)
+      : ['- none']),
     '',
     '## Current Product Nucleus',
     '',
