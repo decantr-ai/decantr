@@ -1871,6 +1871,27 @@ function appendSourceAuditFindings(
 
   if (
     topology.hasAuthFeature
+    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
+    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
+    && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authAnonymousRedirectSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-session-loss-redirect-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Protected source surfaces branch on auth loss but do not show an obvious redirect back to an anonymous route.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+        `Unauthenticated branch files: ${sourceAudit.authUnauthenticatedBranchSignals.files.join(', ') || 'none'}`,
+        `Anonymous redirect files: ${sourceAudit.authAnonymousRedirectSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'When a protected surface detects a null or unauthenticated session, redirect users to `/`, `/login`, `/register`, or another reviewed anonymous route instead of returning `null` or leaving the protected shell blank.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
     && (sourceAudit.authSessionSignals.count > 0 || sourceAudit.authEntrySignals.count > 0)
     && sourceAudit.authErrorSignals.count === 0
   ) {
@@ -5554,6 +5575,29 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'When protected surfaces read session state directly, branch on unauthenticated/null-session cases and redirect to a reviewed anonymous route or return a guard boundary before protected content renders.',
+    }));
+  }
+
+  if (
+    astSignals.protectedSurfaceSignalCount > 0
+    && astSignals.authSessionSignalCount > 0
+    && authUnauthenticatedBranchSignalCount > 0
+    && authAnonymousRedirectSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-session-loss-redirect-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed protected surface branches on auth loss but does not show an obvious redirect back to an anonymous route.',
+      evidence: [
+        filePath,
+        `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
+        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+        `Unauthenticated branch signals: ${authUnauthenticatedBranchSignalCount}`,
+        `Anonymous redirect signals: ${authAnonymousRedirectSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'When a protected surface detects a null or unauthenticated session, redirect users to `/`, `/login`, `/register`, or another reviewed anonymous route instead of returning `null` or leaving the protected shell blank.',
     }));
   }
 
