@@ -480,6 +480,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Protected auth-loss and auth-loading detection now also catches querystring-encoded helper payloads like `payload={new URLSearchParams({ next: '/dashboard' }).toString()}`, so reviewed gateway branches cannot preserve privileged destinations by hiding them inside encoded helper state after auth loss.
 - Protected auth-loss and auth-loading detection now also catches router-helper payloads like `payload={createSearchParams({ next: '/dashboard' }).toString()}`, so reviewed gateway branches cannot preserve privileged destinations by relying on framework query helpers instead of native `URLSearchParams`.
 - Protected auth-loss and auth-loading detection now also catches JSX expression-wrapped route props like `to={'/dashboard'}` or ``redirectTo={`/dashboard`}``, so reviewed gateway branches cannot evade route leakage checks just by wrapping privileged destinations in JSX expressions instead of plain string props.
+- Protected auth-loss and auth-loading detection now also catches route-object props like `to={{ pathname: '/dashboard' }}` or `redirect={{ pathname: '/dashboard' }}`, so reviewed gateway branches cannot preserve privileged destinations by hiding them inside router descriptor objects after auth loss.
 
 ## Highest-Value Next Streams
 
