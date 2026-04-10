@@ -2461,6 +2461,29 @@ function isInsecureTransportUrl(value: string | null): boolean {
   return typeof value === 'string' && /^(?:http|ws):\/\//i.test(value.trim());
 }
 
+function isLocationObjectExpression(expression: ts.Expression): boolean {
+  return (
+    (ts.isIdentifier(expression) && expression.text === 'location')
+    || (
+      ts.isPropertyAccessExpression(expression)
+      && ts.isIdentifier(expression.expression)
+      && expression.expression.text === 'window'
+      && isPropertyNamed(expression.name, 'location')
+    )
+  );
+}
+
+function isLocationAssignmentTarget(expression: ts.Expression): boolean {
+  return (
+    isLocationObjectExpression(expression)
+    || (
+      ts.isPropertyAccessExpression(expression)
+      && isLocationObjectExpression(expression.expression)
+      && isPropertyNamed(expression.name, 'href')
+    )
+  );
+}
+
 function isFetchLikeCall(node: ts.CallExpression): boolean {
   return (ts.isIdentifier(node.expression) && node.expression.text === 'fetch')
     || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'fetch'));
@@ -2768,6 +2791,15 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     if (
       ts.isBinaryExpression(node)
       && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && isLocationAssignmentTarget(node.left)
+      && isInsecureTransportUrl(getExpressionLiteralValue(node.right))
+    ) {
+      signals.insecureTransportEndpointCount += 1;
+    }
+
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
       && ts.isPropertyAccessExpression(node.left)
       && isPropertyNamed(node.left.name, 'onmessage')
     ) {
@@ -2845,6 +2877,15 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (
         isAxiosConfigCall(node)
         && isInsecureTransportUrl(getObjectLiteralStringPropertyValue(node.arguments[0], 'url', 'baseURL', 'baseUrl'))
+      ) {
+        signals.insecureTransportEndpointCount += 1;
+      }
+
+      if (
+        ts.isPropertyAccessExpression(node.expression)
+        && isLocationObjectExpression(node.expression.expression)
+        && isPropertyNamed(node.expression.name, 'assign', 'replace')
+        && isInsecureTransportUrl(firstArgumentLiteral)
       ) {
         signals.insecureTransportEndpointCount += 1;
       }
@@ -3879,10 +3920,10 @@ export function critiqueSource({
       id: 'security-transport-endpoint-insecure',
       category: 'Security Hygiene',
       severity: 'error',
-      message: 'Client code was detected calling plain HTTP or insecure websocket endpoints.',
+      message: 'Client code was detected calling or navigating to plain HTTP or insecure websocket endpoints.',
       evidence: [filePath, `Insecure transport endpoints: ${insecureTransportEndpointCount}`],
       file: filePath,
-      suggestedFix: 'Use HTTPS/WSS endpoints or move the transport boundary behind a trusted server action or API layer.',
+      suggestedFix: 'Use HTTPS/WSS endpoints and reviewed secure redirects, or move the transport boundary behind a trusted server action or API layer.',
     }));
   }
 

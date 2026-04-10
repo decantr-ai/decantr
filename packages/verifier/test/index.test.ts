@@ -3015,6 +3015,7 @@ describe('verifier', () => {
       code: `
         export async function loadProfile() {
           await fetch('http://legacy.example.com/api/profile');
+          window.location.assign('http://legacy.example.com/login');
           return new WebSocket('ws://legacy.example.com/live');
         }
       `,

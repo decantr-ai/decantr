@@ -154,6 +154,7 @@ commit archaeology.
 - File critique now also flags auth-like form inputs that omit `name` attributes, so visually correct login forms do not silently fail browser submission or FormData handling.
 - Security critique now also flags credential inputs whose `autocomplete` values are semantically wrong for the field, closing another silent auth-form correctness gap beyond missing hints.
 - Security critique now also treats string-based `setTimeout` / `setInterval` execution like other dynamic-eval patterns, so timer strings do not slip past the AST-backed runtime-trust checks.
+- Security critique now also treats insecure client-side redirects like other transport hygiene failures, catching `location.href` / `location.assign` / `location.replace` paths that still point at plain `http://` destinations.
 - Security critique now also flags imperative `window.open(..., "_blank")` usage that omits `noopener,noreferrer`, so generated action handlers do not silently preserve opener access across trust boundaries.
 - Accessibility critique now catches table markup without headers or captions, so data-heavy generated UIs fail earlier when their structure is visually plausible but semantically incomplete.
 - Accessibility critique now also catches multiple navigation landmarks without distinct labels, which is especially important for generated app shells with both sidebar and utility nav regions.
