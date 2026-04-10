@@ -2347,9 +2347,18 @@ function isLinkLikeTag(tagName: string | null): boolean {
   return tagName === 'a' || tagName === 'Link' || tagName === 'NavLink';
 }
 
+function valueContainsInsecureRemoteAsset(value: string | null): boolean {
+  if (!value) return false;
+  return value
+    .split(',')
+    .map((candidate) => candidate.trim().split(/\s+/)[0] ?? '')
+    .some((candidate) => /^http:\/\//i.test(candidate));
+}
+
 function isInsecureExternalImage(attributes: ts.JsxAttributes): boolean {
   const srcValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'src'));
-  return /^http:\/\//i.test(srcValue?.trim() ?? '');
+  const srcSetValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'srcSet', 'srcset'));
+  return valueContainsInsecureRemoteAsset(srcValue) || valueContainsInsecureRemoteAsset(srcSetValue);
 }
 
 function isInsecureExternalUrl(value: string | null): boolean {
@@ -2358,6 +2367,10 @@ function isInsecureExternalUrl(value: string | null): boolean {
 
 function isImageLikeTag(tagName: string | null): boolean {
   return tagName === 'img' || tagName === 'Image';
+}
+
+function isImageSourceLikeTag(tagName: string | null): boolean {
+  return isImageLikeTag(tagName) || tagName === 'source';
 }
 
 function isDialogLikeElement(attributes: ts.JsxAttributes, tagName: string | null): boolean {
@@ -3540,7 +3553,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (isImageLikeTag(tagName) && !getJsxAttribute(node.attributes, 'alt')) {
         signals.imageWithoutAltCount += 1;
       }
-      if (isImageLikeTag(tagName) && isInsecureExternalImage(node.attributes)) {
+      if (isImageSourceLikeTag(tagName) && isInsecureExternalImage(node.attributes)) {
         signals.insecureExternalImageCount += 1;
       }
       if (tagName === 'iframe' && !getJsxAttribute(node.attributes, 'title')) {
@@ -3648,7 +3661,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (isImageLikeTag(tagName) && !getJsxAttribute(node.openingElement.attributes, 'alt')) {
         signals.imageWithoutAltCount += 1;
       }
-      if (isImageLikeTag(tagName) && isInsecureExternalImage(node.openingElement.attributes)) {
+      if (isImageSourceLikeTag(tagName) && isInsecureExternalImage(node.openingElement.attributes)) {
         signals.insecureExternalImageCount += 1;
       }
       if (tagName === 'iframe' && !getJsxAttribute(node.openingElement.attributes, 'title')) {

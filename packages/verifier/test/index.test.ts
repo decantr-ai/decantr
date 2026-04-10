@@ -3616,6 +3616,50 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-image-transport-insecure')).toBe(true);
   });
 
+  it('flags insecure remote picture sources during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/ResponsiveHero.tsx',
+      code: `
+        export function ResponsiveHero() {
+          return (
+            <picture>
+              <source media="(min-width: 768px)" srcSet="http://cdn.example.com/hero@2x.jpg 2x, https://cdn.example.com/hero.jpg 1x" />
+              <img src="/hero-mobile.jpg" alt="Responsive hero" />
+            </picture>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['marketing'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'marketing', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-image-transport-insecure')).toBe(true);
+  });
+
   it('does not flag secure remote image transport during critique', () => {
     const report = critiqueSource({
       filePath: 'src/components/ModernHero.tsx',
