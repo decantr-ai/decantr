@@ -3823,6 +3823,103 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'route-auth-success-redirect-missing')).toBe(true);
   });
 
+  it('flags auth/session critique files that omit a loading state', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/DashboardGuard.tsx',
+      code: `
+        export function DashboardGuard() {
+          const { data: session } = useSession();
+          if (!session) {
+            return redirect('/login');
+          }
+          return <Dashboard />;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] }],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'state-auth-loading-missing')).toBe(true);
+  });
+
+  it('flags auth entry critique files that omit a failure state', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginPage.tsx',
+      code: `
+        export function LoginPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await auth.signIn();
+            return redirect('/dashboard');
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="current-password" />
+              <button type="submit">Sign in</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'login', path: '/login', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'state-auth-error-missing')).toBe(true);
+  });
+
   it('flags auth flows that trust raw redirect query params during critique', () => {
     const report = critiqueSource({
       filePath: 'src/routes/LoginRedirect.tsx',
@@ -3964,6 +4061,71 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'route-auth-success-redirect-missing')).toBe(false);
+  });
+
+  it('does not flag auth/session critique files when loading and error states are present', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/DashboardGuard.tsx',
+      code: `
+        export function DashboardGuard() {
+          const { data: session, status } = useSession();
+          const [errorMessage, setErrorMessage] = useState('');
+
+          async function handleRefresh() {
+            try {
+              await auth.refresh();
+            } catch (error) {
+              setErrorMessage(String(error));
+            }
+          }
+
+          if (status === 'loading') {
+            return <Spinner />;
+          }
+
+          if (!session) {
+            return redirect('/login');
+          }
+
+          return (
+            <>
+              {errorMessage ? <p role="alert">{errorMessage}</p> : null}
+              <button onClick={handleRefresh}>Refresh</button>
+              <Dashboard />
+            </>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] }],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'state-auth-loading-missing')).toBe(false);
+    expect(report.findings.some(finding => finding.id === 'state-auth-error-missing')).toBe(false);
   });
 
   it('flags auth inputs that disable autocomplete during critique', () => {

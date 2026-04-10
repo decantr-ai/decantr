@@ -3741,6 +3741,7 @@ export function critiqueSource({
   const authProtectedRedirectSignalCount = astSignals.authProtectedRedirectSignalCount;
   const authAnonymousRedirectSignalCount = astSignals.authAnonymousRedirectSignalCount;
   const authExitSignalCount = astSignals.authExitSignalCount;
+  const authErrorSignalCount = countAuthErrorSignals(code);
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
@@ -3841,6 +3842,45 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'After reviewed sign-in, registration, or recovery success, navigate users to a protected route like `/dashboard`, `/app`, or another primary destination declared in the compiled route contract.',
+    }));
+  }
+
+  if (
+    astSignals.authSessionSignalCount > 0
+    && astSignals.authLoadingSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-loading-missing',
+      category: 'State Handling',
+      severity: 'info',
+      message: 'The reviewed auth/session flow does not show an obvious loading or pending state while session resolution happens.',
+      evidence: [
+        filePath,
+        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+        `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'Render an explicit loading, pending, skeleton, or suspense fallback while auth or session state resolves so protected content does not flash or race.',
+    }));
+  }
+
+  if (
+    (astSignals.authSessionSignalCount > 0 || astSignals.authEntrySignalCount > 0)
+    && authErrorSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-error-missing',
+      category: 'State Handling',
+      severity: 'info',
+      message: 'The reviewed auth flow does not show an obvious failure state for rejected sign-in, recovery, or session refresh paths.',
+      evidence: [
+        filePath,
+        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+        `Auth entry signals: ${astSignals.authEntrySignalCount}`,
+        `Auth error signals: ${authErrorSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'Expose reviewed error handling with inline feedback, alert messaging, or another explicit failure affordance for sign-in, recovery, or session refresh failures.',
     }));
   }
 
