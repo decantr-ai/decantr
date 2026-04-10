@@ -507,6 +507,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Auth open-redirect tracing now also recurses into template-wrapped route handoffs like ``redirect(`${next ?? '/dashboard'}`)`` and `<Link to={`${next ?? '/dashboard'}`}>`, so aliased redirect params cannot bypass the verifier just by being interpolated into template strings before the transition sink.
 - Auth open-redirect tracing now also treats common snake/kebab redirect keys like `return_to`, `redirect_to`, and `callback_url` as first-class redirect carriers, so auth flows cannot evade review simply by switching from camel-case query names like `returnTo` to more backend-shaped parameter names before redirecting into `/dashboard`.
 - Auth open-redirect tracing now also follows `req.nextUrl.searchParams.get(...)` in addition to `request.nextUrl.searchParams.get(...)` and `new URL(req.url).searchParams.get(...)`, so server auth handlers cannot bypass redirect-param detection just by renaming the request object while still trusting the same incoming Next.js query state.
+- Auth open-redirect tracing now also follows aliased `req.nextUrl.searchParams` containers like `const params = req.nextUrl.searchParams; params.get(queryKey)`, so server auth handlers cannot evade review by lifting Next.js query state into a local alias before consuming `next` in a redirect sink.
 
 ## Highest-Value Next Streams
 

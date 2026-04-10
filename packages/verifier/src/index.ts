@@ -4809,7 +4809,7 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
   if (!expression) return false;
 
   const text = expression.getText(sourceFile);
-  if (/\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\b/i.test(text)) {
+  if (/\b(?:searchParams|(?:request|req)\.nextUrl\.searchParams|url\.searchParams)\b/i.test(text)) {
     return true;
   }
 
