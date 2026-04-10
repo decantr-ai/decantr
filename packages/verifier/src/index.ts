@@ -4462,6 +4462,7 @@ const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|request\.nextU
 const OPEN_REDIRECT_SOURCE_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'i');
 const OPEN_REDIRECT_QUERY_KEY_REGEX = new RegExp(`^(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})$`, 'i');
 const OPEN_REDIRECT_QUERY_CARRIER_REGEX = /\b(?:router\.query|route\.query|query)\b/i;
+const OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX = /\b(?:router|route)\b/i;
 const LOCATION_QUERY_SOURCE_REGEX = /\b(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
 const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:window\.)?location\.(?:href|search|hash)\s*\)/i;
 
@@ -4512,6 +4513,22 @@ function expressionContainsOpenRedirectSource(
     return true;
   }
 
+  if (
+    ts.isPropertyAccessExpression(expression)
+    && OPEN_REDIRECT_QUERY_KEY_REGEX.test(expression.name.text)
+    && expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isElementAccessExpression(expression)
+    && isOpenRedirectQueryKeyExpression(expression.argumentExpression, namedExpressions, seenIdentifiers)
+    && expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) {
       return false;
@@ -4527,7 +4544,7 @@ function expressionContainsOpenRedirectSource(
     if (
       propertyAlias
       && OPEN_REDIRECT_QUERY_KEY_REGEX.test(propertyAlias.propertyName)
-      && expressionLooksLikeOpenRedirectQueryCarrier(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      && expressionLooksLikeOpenRedirectQueryCarrier(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
     ) {
       return true;
     }
@@ -4569,6 +4586,7 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
   namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
 ): boolean {
   if (!expression) return false;
@@ -4577,15 +4595,65 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
   }
 
   if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'query')) {
+    return expressionLooksLikeOpenRedirectQueryContainerBase(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) return false;
     const initializer = namedExpressions.get(expression.text);
-    if (!initializer) return false;
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeOpenRedirectQueryCarrier(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && propertyAlias.propertyName === 'query'
+      && expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  return false;
+}
+
+function expressionLooksLikeOpenRedirectQueryContainerBase(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+  if (OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX.test(expression.getText(sourceFile))) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeOpenRedirectQueryContainerBase(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeOpenRedirectQueryContainerBase(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      return result;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (!propertyAlias) return false;
     seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeOpenRedirectQueryCarrier(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    const result = expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
     seenIdentifiers.delete(expression.text);
     return result;
   }
