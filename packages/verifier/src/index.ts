@@ -2118,6 +2118,27 @@ function appendSourceAuditFindings(
 
   if (
     topology.hasAuthFeature
+    && topology.gatewayRoutes.some(route => isSignInLikeRoute(route))
+    && (sourceAudit.authCallbackTokenSignals.count > 0 || sourceAudit.authCallbackStateSignals.count > 0)
+    && sourceAudit.authCallbackErrorSignals.count > 0
+    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackErrorSignals, sourceAudit.signInRouteSignals)
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-callback-entry-return-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Auth callback failure handling exists, but the source tree does not show an obvious path back to the declared sign-in route.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Callback error-handling signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
+        `Sign-in route signal files: ${sourceAudit.signInRouteSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'When reviewed callback handling fails, link or redirect users back to the declared sign-in route, such as `/login` or `/sign-in`, instead of leaving the callback failure state isolated.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
     && sourceAudit.authCallbackTokenSignals.count > 0
     && sourceAudit.authCallbackUrlScrubSignals.count === 0
   ) {
@@ -5036,6 +5057,29 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'Link registration users back to the reviewed sign-in route, such as `/login` or `/sign-in`, whenever the compiled route contract declares one.',
+    }));
+  }
+
+  if (
+    (authCallbackTokenSignalCount > 0 || authCallbackStateSignalCount > 0)
+    && authCallbackErrorSignalCount > 0
+    && hasSignInRouteInReview
+    && signInRouteSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'route-auth-callback-entry-return-missing',
+      category: 'Route Topology',
+      severity: 'info',
+      message: 'The reviewed auth callback failure path does not show an obvious route back to the declared sign-in surface.',
+      evidence: [
+        filePath,
+        `Auth callback token reads: ${authCallbackTokenSignalCount}`,
+        `Auth callback error signals: ${authCallbackErrorSignalCount}`,
+        `Reviewed sign-in routes: ${reviewPack?.data.routes.filter(route => isSignInLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
+        `Sign-in route signals: ${signInRouteSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'When callback handling fails, link or redirect users back to a reviewed sign-in route such as `/login` or `/sign-in` instead of leaving them on an isolated callback error state.',
     }));
   }
 
