@@ -3429,6 +3429,18 @@ function collectNamedExpressionInitializers(root: ts.Node): Map<string, ts.Expre
       initializers.set(node.name.text, node.initializer);
     }
 
+    if (ts.isVariableDeclaration(node) && ts.isArrayBindingPattern(node.name) && node.initializer) {
+      const firstElement = node.name.elements[0];
+      if (
+        firstElement
+        && !ts.isOmittedExpression(firstElement)
+        && ts.isBindingElement(firstElement)
+        && ts.isIdentifier(firstElement.name)
+      ) {
+        initializers.set(firstElement.name.text, node.initializer);
+      }
+    }
+
     node.forEachChild(visit);
   };
 
@@ -5125,6 +5137,19 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
     && expression.expression.text === 'URLSearchParams'
   ) {
     return expressionLooksLikeLocationQuerySource(expression.arguments?.[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (
+    ts.isCallExpression(expression)
+    && (
+      (ts.isIdentifier(expression.expression) && expression.expression.text === 'useSearchParams')
+      || (
+        (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+        && isMemberAccessNamed(expression.expression, 'useSearchParams')
+      )
+    )
+  ) {
+    return true;
   }
 
   if (ts.isPropertyAccessExpression(expression) && isPropertyNamed(expression.name, 'searchParams')) {
