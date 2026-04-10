@@ -412,6 +412,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authCookieClears: createSourceAuditBucket(),
     authHeaderWrites: createSourceAuditBucket(),
     authHeaderClears: createSourceAuditBucket(),
+    authCacheClients: createSourceAuditBucket(),
+    authCacheClears: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
     authExitSignals: createSourceAuditBucket(),
     authSessionTeardownSignals: createSourceAuditBucket(),
@@ -513,6 +515,8 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authCookieClears, relativePath, signals.authCookieClearCount);
     recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
     recordSourceAudit(summary.authHeaderClears, relativePath, signals.authHeaderClearCount);
+    recordSourceAudit(summary.authCacheClients, relativePath, signals.authCacheClientCount);
+    recordSourceAudit(summary.authCacheClears, relativePath, signals.authCacheClearCount);
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
     recordSourceAudit(summary.authSessionTeardownSignals, relativePath, signals.authSessionTeardownSignalCount);
@@ -682,6 +686,8 @@ interface SourceAuditSummary {
   authCookieClears: SourceAuditBucket;
   authHeaderWrites: SourceAuditBucket;
   authHeaderClears: SourceAuditBucket;
+  authCacheClients: SourceAuditBucket;
+  authCacheClears: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
   authExitSignals: SourceAuditBucket;
   authSessionTeardownSignals: SourceAuditBucket;
@@ -1644,6 +1650,31 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authCacheClients.count > 0
+    && sourceAudit.authExitSignals.count > 0
+    && sourceAudit.authCacheClears.count === 0
+    && (
+      sourceAuditBucketsOverlap(sourceAudit.authCacheClients, sourceAudit.protectedSurfaceSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authCacheClients, sourceAudit.authSessionSignals)
+    )
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-cache-teardown-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth exit flows exist, but the source tree does not show client-side data caches being cleared during sign-out.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Auth cache client files: ${sourceAudit.authCacheClients.files.join(', ') || 'none'}`,
+        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+        'Auth cache clear files: none',
+      ],
+      suggestedFix: 'If protected data is cached in query clients or client data stores, clear or reset those caches during sign-out before redirecting users back to an anonymous route.',
+    }));
+  }
+
   if (topology.hasAuthFeature && sourceAudit.authGuardSignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-guard-signals-missing',
@@ -2587,6 +2618,8 @@ interface AstCritiqueSignals {
   authCookieMissingHardeningCount: number;
   authHeaderWriteCount: number;
   authHeaderClearCount: number;
+  authCacheClientCount: number;
+  authCacheClearCount: number;
   authGuardSignalCount: number;
   authExitSignalCount: number;
   authSessionTeardownSignalCount: number;
@@ -3693,6 +3726,34 @@ function countAuthCookieClearSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+function countAuthCacheClientSignals(code: string): number {
+  const patterns = [
+    /from\s+['"`](?:@tanstack\/react-query|react-query)['"`]/gi,
+    /\b(?:useQueryClient|queryClient|QueryClient)\b/g,
+    /from\s+['"`]@apollo\/client['"`]/gi,
+    /\b(?:useApolloClient|apolloClient|ApolloClient|InMemoryCache)\b/g,
+    /from\s+['"`](?:urql|@urql\/core)['"`]/gi,
+    /\b(?:urqlClient|cacheExchange)\b/g,
+    /from\s+['"`]swr['"`]/gi,
+    /\buseSWRConfig\b/g,
+    /\bapi\.util\.resetApiState\b/g,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
+function countAuthCacheClearSignals(code: string): number {
+  const patterns = [
+    /\b(?:queryClient|useQueryClient\s*\(\s*\))\.(?:clear|removeQueries|resetQueries|invalidateQueries|cancelQueries)\s*\(/gi,
+    /\b(?:apolloClient|client)\.(?:resetStore|clearStore|stop)\s*\(/gi,
+    /\b(?:cache|apolloClient\.cache)\.(?:evict|gc|modify)\s*\(/gi,
+    /\b(?:mutate|useSWRConfig\s*\(\s*\)\.mutate)\s*\([^,\n]+,\s*(?:undefined|null|false)\b/gi,
+    /\b(?:dispatch|store\.dispatch)\s*\(\s*api\.util\.resetApiState\s*\(\s*\)\s*\)/gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAuthEntrySignals(code: string): number {
   const patterns = [
     /\b(?:signIn|signin|logIn|login|register|signUp|signup|createAccount|forgotPassword|resetPassword)\s*\(/i,
@@ -3931,6 +3992,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authCookieMissingHardeningCount: 0,
     authHeaderWriteCount: 0,
     authHeaderClearCount: 0,
+    authCacheClientCount: countAuthCacheClientSignals(code),
+    authCacheClearCount: countAuthCacheClearSignals(code),
     authGuardSignalCount: countAuthGuardSignals(code),
     authExitSignalCount: countAuthExitSignals(code),
     authSessionTeardownSignalCount: countAuthSessionTeardownSignals(code),
@@ -4866,6 +4929,8 @@ export function critiqueSource({
   const authCookieClearCount = astSignals.authCookieClearCount;
   const authHeaderWriteCount = astSignals.authHeaderWriteCount;
   const authHeaderClearCount = astSignals.authHeaderClearCount;
+  const authCacheClientCount = astSignals.authCacheClientCount;
+  const authCacheClearCount = astSignals.authCacheClearCount;
   const authErrorSignalCount = countAuthErrorSignals(code);
   const authSuccessSignalCount = countAuthSuccessSignals(code);
   const authCallbackTokenSignalCount = countAuthCallbackTokenSignals(code, filePath);
@@ -5021,6 +5086,23 @@ export function critiqueSource({
       evidence: [filePath, `Auth header writes: ${authHeaderWriteCount}`, `Auth header clears: ${authHeaderClearCount}`],
       file: filePath,
       suggestedFix: 'If this flow constructs auth/session headers in reviewed source code, explicitly delete or reset those header values during sign-out before redirecting users back to an anonymous route.',
+    }));
+  }
+
+  if (
+    authExitSignalCount > 0
+    && authCacheClientCount > 0
+    && authCacheClearCount === 0
+    && (astSignals.protectedSurfaceSignalCount > 0 || astSignals.authSessionSignalCount > 0)
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-cache-teardown-missing',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed auth exit flow uses client-side data caches but does not show them being cleared during sign-out.',
+      evidence: [filePath, `Auth cache clients: ${authCacheClientCount}`, `Auth cache clears: ${authCacheClearCount}`],
+      file: filePath,
+      suggestedFix: 'If protected data is cached in query clients or client data stores, clear or reset those caches during sign-out before redirecting users back to an anonymous route.',
     }));
   }
 
@@ -5457,6 +5539,8 @@ export function critiqueSource({
   const hasAuthCookieMissingHardening = authCookieMissingHardeningCount > 0;
   const hasAuthHeaderWrites = authHeaderWriteCount > 0;
   const hasAuthHeaderClearGap = authExitSignalCount > 0 && authHeaderWriteCount > 0 && authHeaderClearCount === 0;
+  const hasAuthCacheClients = authCacheClientCount > 0;
+  const hasAuthCacheClearGap = authExitSignalCount > 0 && authCacheClientCount > 0 && authCacheClearCount === 0;
   scores.push({
     category: 'Security Hygiene',
     focusArea: 'security-hygiene',
@@ -5491,9 +5575,10 @@ export function critiqueSource({
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthCookieMissingHardening ? 2 : 0)
-      - (hasAuthHeaderWrites ? 2 : 0),
+      - (hasAuthHeaderWrites ? 2 : 0)
+      - (hasAuthCacheClearGap ? 1 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, auth provider URLs missing state: ${authProviderStateMissingCount}, auth provider code flows missing PKCE: ${authProviderPkceMissingCount}, auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}, auth callback state reads: ${authCallbackStateSignalCount}, auth callback state validation signals: ${authCallbackStateValidationSignalCount}, auth callback state storage reads: ${authCallbackStateStorageSignalCount}, auth callback state storage clears: ${authCallbackStateStorageClearSignalCount}, auth callback token reads: ${authCallbackTokenSignalCount}, auth callback URL scrub signals: ${authCallbackUrlScrubSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, auth provider URLs missing state: ${authProviderStateMissingCount}, auth provider code flows missing PKCE: ${authProviderPkceMissingCount}, auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}, auth callback state reads: ${authCallbackStateSignalCount}, auth callback state validation signals: ${authCallbackStateValidationSignalCount}, auth callback state storage reads: ${authCallbackStateStorageSignalCount}, auth callback state storage clears: ${authCallbackStateStorageClearSignalCount}, auth callback token reads: ${authCallbackTokenSignalCount}, auth callback URL scrub signals: ${authCallbackUrlScrubSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}, auth cache clients: ${authCacheClientCount}, auth cache clears: ${authCacheClearCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -5526,6 +5611,7 @@ export function critiqueSource({
       ...(hasAuthCookieMissingHardening ? ['When issuing auth cookies, set explicit `httpOnly`, `secure`, and `sameSite` options instead of relying on framework defaults or partial options.'] : []),
       ...(hasAuthHeaderWrites ? ['Avoid constructing bearer/session authorization headers in client-rendered code unless the auth model is explicitly reviewed and intended.'] : []),
       ...(hasAuthHeaderClearGap ? ['If reviewed source code constructs auth-like authorization headers, explicitly delete or reset those header values during sign-out instead of assuming redirects or generic sign-out helpers will clear them.'] : []),
+      ...(hasAuthCacheClients && hasAuthCacheClearGap ? ['If protected data is cached in query clients or client stores, clear or reset those caches during sign-out so privileged data does not linger after logout.'] : []),
     ],
   });
 

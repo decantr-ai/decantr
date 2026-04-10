@@ -452,6 +452,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Release operations now have a command-level handoff too: `pnpm release:commands` prints exact preflight and publish commands for the selected package wave, so npm publishing can move from “audit says it’s ready” to “run these commands” without manual translation.
 - `pnpm release:commands` now also prints exact npm dist-tag repair commands for the selected package wave, so the same handoff covers both publish execution and the live npm cleanup still blocking package graduation.
 - The release planning and publish scripts now also accept both `--wave foundation` and `--wave=foundation` style flags, so the operator commands in the runbooks work exactly as documented.
+- Project audit and file critique now also flag logout flows that leave client-side query or data caches alive, so reviewed auth exits are expected to reset React Query/Apollo/SWR-style caches before returning users to an anonymous route.
 
 ## Highest-Value Next Streams
 
