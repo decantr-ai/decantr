@@ -5370,6 +5370,20 @@ function expressionLooksLikeLocationMutationCall(
     return expressionLooksLikeLocationMutationCall(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
+  if (
+    ts.isCallExpression(expression)
+    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    && isMemberAccessNamed(expression.expression, 'bind')
+  ) {
+    return expressionLooksLikeLocationMutationCall(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
+  }
+
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) return false;
     const initializer = namedExpressions.get(expression.text);
