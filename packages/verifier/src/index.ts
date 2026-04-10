@@ -4752,6 +4752,19 @@ function expressionLooksLikeOpenRedirectQueryContainerBase(
     return expressionLooksLikeOpenRedirectQueryContainerBase(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
+  if (
+    ts.isCallExpression(expression)
+    && (
+      (ts.isIdentifier(expression.expression) && expression.expression.text === 'useRouter')
+      || (
+        (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+        && isMemberAccessNamed(expression.expression, 'useRouter')
+      )
+    )
+  ) {
+    return true;
+  }
+
   if (ts.isIdentifier(expression)) {
     if (seenIdentifiers.has(expression.text)) return false;
     const initializer = namedExpressions.get(expression.text);

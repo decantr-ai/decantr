@@ -522,6 +522,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Auth open-redirect tracing now also treats bracketed route-transition sinks like `router['push'](...)` and `router['replace'](...)` the same as dot-access router calls, so auth flows cannot bypass redirect-param detection just by swapping `router.push(next)` for element-access syntax before navigating into a privileged destination.
 - Auth open-redirect tracing now also treats History API transitions like `history.pushState(...)`, `history.replaceState(...)`, and aliased `window.history` calls as reviewed route-transition sinks, so auth flows cannot bypass redirect-param detection just by mutating the browser URL through the History API instead of router helpers or redirect functions.
 - Auth open-redirect tracing now also treats `useSearchParams()` hook results, including tuple-destructured forms like `const [params] = useSearchParams()`, as reviewed query carriers, so auth flows cannot bypass redirect-param detection by pulling `next` from framework hook state instead of props, router query objects, or raw request/browser URL helpers.
+- Auth open-redirect tracing now also treats `useRouter()` hook results as reviewed query-container bases, including renamed forms like `const appRouter = useRouter()` and destructured aliases like `const { query: params } = useRouter()`, so auth flows cannot bypass redirect-param detection just by hiding `query.next` behind framework hook output instead of a prop literally named `router`.
 
 ## Highest-Value Next Streams
 
