@@ -526,6 +526,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Auth open-redirect tracing now also follows redirect params through common transformations like `decodeURIComponent(searchParams.get('next'))`, chained helper access, and repeated-query reads like `searchParams.getAll('next')[0]`, so auth flows cannot bypass redirect-param detection just by wrapping or indexing the same unreviewed destination before handing it to a redirect sink.
 - Auth open-redirect tracing now also treats `useLocation()` hook results as reviewed location carriers, including aliased forms like `const routeLocation = useLocation()` and destructured forms like `const { search } = useLocation()`, so router-driven auth entry routes cannot bypass redirect-param detection by reading `next` from hook-managed route state instead of raw `window.location`.
 - Auth open-redirect tracing now also follows cloned Next.js request URLs like `req.nextUrl.clone()`, including aliased `searchParams` reads off the cloned object, so middleware and route handlers cannot bypass redirect-param detection just by copying the incoming request URL before consuming `next`.
+- Auth open-redirect tracing now also treats Next.js `nextUrl.search` and `nextUrl.href` as reviewed URL carriers, so middleware and route handlers cannot bypass redirect-param detection by reparsing the same incoming request URL through `new URLSearchParams(req.nextUrl.search)` or `new URL(nextUrl.href)` before redirecting.
 
 ## Highest-Value Next Streams
 

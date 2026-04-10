@@ -4846,7 +4846,10 @@ function expressionLooksLikeLocationQuerySource(
   if (
     (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
     && isMemberAccessNamed(expression, 'search', 'hash')
-    && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    && (
+      expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      || expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    )
   ) {
     return true;
   }
@@ -4864,7 +4867,10 @@ function expressionLooksLikeLocationQuerySource(
     if (
       propertyAlias
       && ['search', 'hash'].includes(propertyAlias.propertyName)
-      && expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      && (
+        expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+        || expressionLooksLikeNextUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      )
     ) {
       return true;
     }
@@ -5062,10 +5068,17 @@ function expressionLooksLikeLocationUrlInput(
     return expressionLooksLikeLocationUrlInput(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
+  if (expressionLooksLikeNextUrlSource(expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)) {
+    return true;
+  }
+
   if (
     (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
     && isMemberAccessNamed(expression, 'href', 'search', 'hash')
-    && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    && (
+      expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      || expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    )
   ) {
     return true;
   }
@@ -5091,7 +5104,10 @@ function expressionLooksLikeLocationUrlInput(
     if (
       propertyAlias
       && ['href', 'search', 'hash'].includes(propertyAlias.propertyName)
-      && expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      && (
+        expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+        || expressionLooksLikeNextUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      )
     ) {
       return true;
     }
