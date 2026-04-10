@@ -2188,20 +2188,21 @@ function appendSourceAuditFindings(
 
   if (
     topology.hasAuthFeature
-    && sourceAudit.authCallbackTokenSignals.count > 0
+    && (sourceAudit.authCallbackTokenSignals.count > 0 || sourceAudit.authCallbackErrorSignals.count > 0)
     && sourceAudit.authCallbackUrlScrubSignals.count === 0
   ) {
     findings.push(makeFinding({
       id: 'source-auth-callback-url-scrub-missing',
       category: 'Source Audit',
       severity: 'warn',
-      message: 'Auth callback code appears to read tokens or codes from the URL without scrubbing them back out of browser history.',
+      message: 'Auth callback code appears to read tokens, codes, or provider error params from the URL without scrubbing them back out of browser history.',
       evidence: [
         `Source files checked: ${sourceAudit.filesChecked}`,
         `Callback token signal files: ${sourceAudit.authCallbackTokenSignals.files.join(', ') || 'none'}`,
+        `Callback error signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
         'Callback URL scrub signals: 0',
       ],
-      suggestedFix: 'After consuming auth callback codes or tokens from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.',
+      suggestedFix: 'After consuming auth callback codes, tokens, or provider error params from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.',
     }));
   }
 
@@ -5414,7 +5415,7 @@ export function critiqueSource({
   const hasAuthProviderNonceMissing = authProviderNonceMissingCount > 0;
   const hasAuthCallbackStateValidationGap = authCallbackStateSignalCount > 0 && authCallbackStateValidationSignalCount === 0;
   const hasAuthCallbackStateTeardownGap = authCallbackStateValidationSignalCount > 0 && authCallbackStateStorageSignalCount > 0 && authCallbackStateStorageClearSignalCount === 0;
-  const hasAuthCallbackUrlScrubGap = authCallbackTokenSignalCount > 0 && authCallbackUrlScrubSignalCount === 0;
+  const hasAuthCallbackUrlScrubGap = (authCallbackTokenSignalCount > 0 || authCallbackErrorSignalCount > 0) && authCallbackUrlScrubSignalCount === 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0
     || passwordAutocompleteMissingCount > 0
     || otpAutocompleteMissingCount > 0
@@ -5495,7 +5496,7 @@ export function critiqueSource({
       ...(hasAuthProviderNonceMissing ? ['When auth flows hand off to a provider authorize URL that requests `id_token`, include a reviewed `nonce` and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.'] : []),
       ...(hasAuthCallbackStateValidationGap ? ['When callback routes read a returned provider `state`, validate it against a stored or expected reviewed value before exchanging callback codes or continuing auth setup.'] : []),
       ...(hasAuthCallbackStateTeardownGap ? ['After validating callback `state`, clear the reviewed `oauth_state` or CSRF state key from browser storage or cookies so stale callback state does not linger beyond the auth exchange.'] : []),
-      ...(hasAuthCallbackUrlScrubGap ? ['After consuming auth callback codes or tokens from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.'] : []),
+      ...(hasAuthCallbackUrlScrubGap ? ['After consuming auth callback codes, tokens, or provider error params from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, `new-password`, or `one-time-code` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
       ...(hasAuthStorageClearGap ? ['If auth data is stored in browser storage, explicitly remove those auth/session keys during sign-out instead of relying on redirects or generic sign-out helpers alone.'] : []),
@@ -5808,14 +5809,15 @@ export function critiqueSource({
       id: 'security-auth-callback-url-scrub-missing',
       category: 'Security Hygiene',
       severity: 'warn',
-      message: 'The reviewed auth callback flow appears to read codes or tokens from the URL without scrubbing them back out of browser history.',
+      message: 'The reviewed auth callback flow appears to read codes, tokens, or provider error params from the URL without scrubbing them back out of browser history.',
       evidence: [
         filePath,
         `Auth callback token reads: ${authCallbackTokenSignalCount}`,
+        `Auth callback error signals: ${authCallbackErrorSignalCount}`,
         `Auth callback URL scrub signals: ${authCallbackUrlScrubSignalCount}`,
       ],
       file: filePath,
-      suggestedFix: 'After consuming callback codes or tokens from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.',
+      suggestedFix: 'After consuming callback codes, tokens, or provider error params from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.',
     }));
   }
 
