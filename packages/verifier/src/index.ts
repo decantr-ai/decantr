@@ -5151,6 +5151,25 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'from')
+    && ts.isIdentifier(expression.expression.expression)
+    && expression.expression.expression.text === 'Buffer'
+    && expression.arguments.length > 0
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
     && isMemberAccessNamed(expression.expression, 'at')
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
