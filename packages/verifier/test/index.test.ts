@@ -3677,4 +3677,47 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-hardcoded-secret-literal')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'security-client-secret-env-reference')).toBe(true);
   });
+
+  it('flags wildcard postMessage target origins during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/EmbedBridge.tsx',
+      code: `
+        export function EmbedBridge() {
+          function sendReady(payload: unknown) {
+            window.parent.postMessage({ type: 'ready', payload }, '*');
+          }
+
+          return <button onClick={() => sendReady({ ok: true })}>Send</button>;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['home'], patternIds: ['hero'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-postmessage-wildcard-origin')).toBe(true);
+  });
 });

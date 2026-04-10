@@ -406,6 +406,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.dynamicEvalCount
       + signals.hardcodedSecretSignalCount
       + signals.clientSecretEnvReferenceCount
+      + signals.wildcardPostMessageCount
       + signals.externalIframeWithoutSandboxCount
       + signals.insecureFormActionCount
       + signals.insecureAuthFormMethodCount
@@ -1270,7 +1271,7 @@ function appendSourceAuditFindings(
       severity: 'warn',
       message: 'Source files include security-risk rendering or link patterns before the project is even built.',
       evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.securityRiskPatterns, 'Security-risk source patterns'),
-      suggestedFix: 'Remove dangerous HTML writes, client-exposed secret references, dynamic code execution, and unsafe external link patterns from source before shipping.',
+      suggestedFix: 'Remove dangerous HTML writes, client-exposed secret references, wildcard postMessage targets, dynamic code execution, and unsafe external link patterns from source before shipping.',
     }));
   }
 
@@ -1786,6 +1787,7 @@ interface AstCritiqueSignals {
   dynamicEvalCount: number;
   hardcodedSecretSignalCount: number;
   clientSecretEnvReferenceCount: number;
+  wildcardPostMessageCount: number;
   externalIframeWithoutSandboxCount: number;
   insecureFormActionCount: number;
   insecureAuthFormMethodCount: number;
@@ -2502,6 +2504,10 @@ function countClientSecretEnvReferenceSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0) + useClientCount;
 }
 
+function countWildcardPostMessageSignals(code: string): number {
+  return code.match(/\bpostMessage\s*\([^)]*,\s*['"`]\*['"`]/g)?.length ?? 0;
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -2517,6 +2523,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     dynamicEvalCount: 0,
     hardcodedSecretSignalCount: countHardcodedSecretSignals(code),
     clientSecretEnvReferenceCount: countClientSecretEnvReferenceSignals(code),
+    wildcardPostMessageCount: countWildcardPostMessageSignals(code),
     externalIframeWithoutSandboxCount: 0,
     insecureFormActionCount: 0,
     insecureAuthFormMethodCount: 0,
@@ -2619,6 +2626,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
 
     if (ts.isCallExpression(node)) {
       const firstArgumentLiteral = getExpressionLiteralValue(node.arguments[0]);
+      const secondArgumentLiteral = getExpressionLiteralValue(node.arguments[1]);
       if (ts.isIdentifier(node.expression) && node.expression.text === 'eval') {
         signals.dynamicEvalCount += 1;
       }
@@ -2635,6 +2643,14 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && isInsecureTransportUrl(getObjectLiteralStringPropertyValue(node.arguments[0], 'url', 'baseURL', 'baseUrl'))
       ) {
         signals.insecureTransportEndpointCount += 1;
+      }
+
+      if (
+        ts.isPropertyAccessExpression(node.expression)
+        && isPropertyNamed(node.expression.name, 'postMessage')
+        && secondArgumentLiteral === '*'
+      ) {
+        signals.wildcardPostMessageCount += 1;
       }
 
       if (ts.isPropertyAccessExpression(node.expression)) {
@@ -3375,6 +3391,7 @@ export function critiqueSource({
   const authInputTypeMismatchCount = astSignals.authInputTypeMismatchCount;
   const hardcodedSecretSignalCount = astSignals.hardcodedSecretSignalCount;
   const clientSecretEnvReferenceCount = astSignals.clientSecretEnvReferenceCount;
+  const wildcardPostMessageCount = astSignals.wildcardPostMessageCount;
   const authStorageWriteCount = astSignals.authStorageWriteCount;
   const authCookieWriteCount = astSignals.authCookieWriteCount;
   const authHeaderWriteCount = astSignals.authHeaderWriteCount;
@@ -3393,6 +3410,7 @@ export function critiqueSource({
     || authInputTypeMismatchCount > 0;
   const hasHardcodedSecretSignals = hardcodedSecretSignalCount > 0;
   const hasClientSecretEnvReferences = clientSecretEnvReferenceCount > 0;
+  const hasWildcardPostMessage = wildcardPostMessageCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
   const hasAuthCookieWrites = authCookieWriteCount > 0;
   const hasAuthHeaderWrites = authHeaderWriteCount > 0;
@@ -3411,18 +3429,20 @@ export function critiqueSource({
       - (hasInsecureTransportEndpoint ? 2 : 0)
       - (hasHardcodedSecretSignals ? 3 : 0)
       - (hasClientSecretEnvReferences ? 3 : 0)
+      - (hasWildcardPostMessage ? 2 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth cookie writes: ${authCookieWriteCount}, auth header writes: ${authHeaderWriteCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
       ...(hasHardcodedSecretSignals ? ['Remove hardcoded secret literals from source immediately and rotate any exposed credentials.'] : []),
       ...(hasClientSecretEnvReferences ? ['Do not reference service-role, secret, or private-key env vars from client-exposed code paths.'] : []),
+      ...(hasWildcardPostMessage ? ['Avoid `postMessage(..., "*")`; target a reviewed explicit origin instead of broadcasting to any window origin.'] : []),
       ...(hasExternalIframeWithoutSandbox ? ['Sandbox external iframes unless a reviewed embed contract explicitly requires broader privileges.'] : []),
       ...(hasInsecureFormAction ? ['Avoid posting forms to plain HTTP endpoints; use HTTPS or move the action behind a trusted server boundary.'] : []),
       ...(hasInsecureAuthFormMethod ? ['Auth forms should submit with `method=\"post\"` or an explicit server action boundary instead of defaulting to GET semantics.'] : []),
@@ -3492,6 +3512,18 @@ export function critiqueSource({
       evidence: [filePath, `Client-exposed secret env references: ${clientSecretEnvReferenceCount}`],
       file: filePath,
       suggestedFix: 'Remove secret-bearing env references from client code and move privileged access behind a reviewed server boundary or server-only module.',
+    }));
+  }
+
+  if (hasWildcardPostMessage) {
+    findings.push(makeFinding({
+      id: 'security-postmessage-wildcard-origin',
+      category: 'Security Hygiene',
+      severity: 'error',
+      message: 'Cross-window messaging uses `postMessage` with a wildcard target origin.',
+      evidence: [filePath, `Wildcard postMessage calls: ${wildcardPostMessageCount}`],
+      file: filePath,
+      suggestedFix: 'Replace `postMessage(..., "*")` with an explicit reviewed origin so messages only cross the intended trust boundary.',
     }));
   }
 
