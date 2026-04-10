@@ -79,6 +79,8 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
     inlineScriptCount: runtimeAudit.inlineScriptCount,
     externalScriptsWithoutIntegrityCount: runtimeAudit.externalScriptsWithoutIntegrityCount,
     externalStylesheetsWithoutIntegrityCount: runtimeAudit.externalStylesheetsWithoutIntegrityCount,
+    externalScriptsWithInsecureTransportCount: runtimeAudit.externalScriptsWithInsecureTransportCount,
+    externalStylesheetsWithInsecureTransportCount: runtimeAudit.externalStylesheetsWithInsecureTransportCount,
     jsEvalSignalCount: runtimeAudit.jsEvalSignalCount,
     jsHtmlInjectionSignalCount: runtimeAudit.jsHtmlInjectionSignalCount,
     jsInsecureTransportSignalCount: runtimeAudit.jsInsecureTransportSignalCount,

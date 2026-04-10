@@ -117,6 +117,8 @@ export interface ShowcaseShortlistVerificationEntry {
     inlineScriptCount: number;
     externalScriptsWithoutIntegrityCount: number;
     externalStylesheetsWithoutIntegrityCount: number;
+    externalScriptsWithInsecureTransportCount: number;
+    externalStylesheetsWithInsecureTransportCount: number;
     jsEvalSignalCount: number;
     jsHtmlInjectionSignalCount: number;
     jsInsecureTransportSignalCount: number;
@@ -1022,6 +1024,17 @@ function appendRuntimeAuditFindings(
     }));
   }
 
+  if (runtimeAudit.externalScriptsWithInsecureTransportCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-scripts-insecure-transport',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'Remote script tags were detected over plain HTTP.',
+      evidence: [indexPath, `Remote scripts over insecure transport: ${runtimeAudit.externalScriptsWithInsecureTransportCount}`],
+      suggestedFix: 'Serve remote scripts over HTTPS with integrity/crossorigin metadata, or move them into the trusted build pipeline.',
+    }));
+  }
+
   if (runtimeAudit.externalStylesheetsWithoutIntegrityCount > 0) {
     findings.push(makeFinding({
       id: 'runtime-external-stylesheets-without-integrity',
@@ -1030,6 +1043,17 @@ function appendRuntimeAuditFindings(
       message: 'Remote stylesheet links were detected without Subresource Integrity metadata.',
       evidence: [indexPath, `Remote stylesheets missing integrity: ${runtimeAudit.externalStylesheetsWithoutIntegrityCount}`],
       suggestedFix: 'Pin remote stylesheet links with integrity/crossorigin metadata or serve the stylesheet through the trusted build pipeline.',
+    }));
+  }
+
+  if (runtimeAudit.externalStylesheetsWithInsecureTransportCount > 0) {
+    findings.push(makeFinding({
+      id: 'runtime-external-stylesheets-insecure-transport',
+      category: 'Security Hygiene',
+      severity: 'info',
+      message: 'Remote stylesheet links were detected over plain HTTP.',
+      evidence: [indexPath, `Remote stylesheets over insecure transport: ${runtimeAudit.externalStylesheetsWithInsecureTransportCount}`],
+      suggestedFix: 'Serve remote stylesheets over HTTPS with integrity/crossorigin metadata, or move them into the trusted build pipeline.',
     }));
   }
 

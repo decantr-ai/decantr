@@ -63,6 +63,8 @@
         "inlineScriptCount",
         "externalScriptsWithoutIntegrityCount",
         "externalStylesheetsWithoutIntegrityCount",
+        "externalScriptsWithInsecureTransportCount",
+        "externalStylesheetsWithInsecureTransportCount",
         "jsEvalSignalCount",
         "jsHtmlInjectionSignalCount",
         "jsInsecureTransportSignalCount",
@@ -123,6 +125,14 @@
           "minimum": 0
         },
         "externalStylesheetsWithoutIntegrityCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalScriptsWithInsecureTransportCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalStylesheetsWithInsecureTransportCount": {
           "type": "integer",
           "minimum": 0
         },

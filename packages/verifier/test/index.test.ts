@@ -204,7 +204,7 @@ describe('verifier', () => {
       );
       writeFileSync(
         join(projectRoot, 'dist', 'index.html'),
-        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Secure-ish App</title><link rel="stylesheet" href="https://cdn.example.com/widget.css"><script>window.__BOOTSTRAP__ = true;</script><script src="https://cdn.example.com/widget.js"></script></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Secure-ish App</title><link rel="stylesheet" href="http://cdn.example.com/widget.css"><script>window.__BOOTSTRAP__ = true;</script><script src="http://cdn.example.com/widget.js"></script></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
       );
       writeFileSync(
         join(projectRoot, 'dist', 'assets', 'app.js'),
@@ -217,6 +217,8 @@ describe('verifier', () => {
       expect(report.runtimeAudit.inlineScriptCount).toBe(1);
       expect(report.runtimeAudit.externalScriptsWithoutIntegrityCount).toBe(1);
       expect(report.runtimeAudit.externalStylesheetsWithoutIntegrityCount).toBe(1);
+      expect(report.runtimeAudit.externalScriptsWithInsecureTransportCount).toBe(1);
+      expect(report.runtimeAudit.externalStylesheetsWithInsecureTransportCount).toBe(1);
       expect(report.runtimeAudit.jsEvalSignalCount).toBe(1);
       expect(report.runtimeAudit.jsHtmlInjectionSignalCount).toBe(1);
       expect(report.runtimeAudit.jsInsecureTransportSignalCount).toBe(1);
@@ -225,6 +227,8 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'runtime-inline-scripts-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-external-scripts-without-integrity')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-external-stylesheets-without-integrity')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-external-scripts-insecure-transport')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-external-stylesheets-insecure-transport')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-js-dynamic-code-signals')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-js-html-injection-signals')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-js-insecure-transport-signals')).toBe(true);

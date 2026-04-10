@@ -1,15 +1,15 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-04-09T23:49:50.519Z",
+  "generatedAt": "2026-04-10T00:57:06.468Z",
   "dryRun": false,
   "summary": {
     "appCount": 8,
     "passedBuilds": 8,
     "failedBuilds": 0,
-    "averageDurationMs": 1816,
+    "averageDurationMs": 1602,
     "passedSmokes": 8,
     "failedSmokes": 0,
-    "averageSmokeDurationMs": 11,
+    "averageSmokeDurationMs": 9,
     "appsWithTitleOkCount": 8,
     "appsWithLangOkCount": 8,
     "appsWithViewportOkCount": 8,
@@ -36,11 +36,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1823
+        "durationMs": 1605
       },
       "smoke": {
         "passed": true,
-        "durationMs": 41,
+        "durationMs": 33,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -50,6 +50,8 @@
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 1,
+        "externalScriptsWithInsecureTransportCount": 0,
+        "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -97,11 +99,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1811
+        "durationMs": 1556
       },
       "smoke": {
         "passed": true,
-        "durationMs": 9,
+        "durationMs": 8,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -111,6 +113,8 @@
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 1,
+        "externalScriptsWithInsecureTransportCount": 0,
+        "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -158,7 +162,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1805
+        "durationMs": 1575
       },
       "smoke": {
         "passed": true,
@@ -172,6 +176,8 @@
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalScriptsWithInsecureTransportCount": 0,
+        "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -219,7 +225,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1722
+        "durationMs": 1529
       },
       "smoke": {
         "passed": true,
@@ -233,6 +239,8 @@
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalScriptsWithInsecureTransportCount": 0,
+        "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -280,11 +288,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1720
+        "durationMs": 1484
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -294,6 +302,8 @@
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalScriptsWithInsecureTransportCount": 0,
+        "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -340,11 +350,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1945
+        "durationMs": 1711
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -354,6 +364,8 @@
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalScriptsWithInsecureTransportCount": 0,
+        "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -401,11 +413,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1880
+        "durationMs": 1648
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -415,6 +427,8 @@
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalScriptsWithInsecureTransportCount": 0,
+        "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 15,
         "jsInsecureTransportSignalCount": 20,
@@ -462,11 +476,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 1825
+        "durationMs": 1707
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -476,6 +490,8 @@
         "inlineScriptCount": 0,
         "externalScriptsWithoutIntegrityCount": 0,
         "externalStylesheetsWithoutIntegrityCount": 0,
+        "externalScriptsWithInsecureTransportCount": 0,
+        "externalStylesheetsWithInsecureTransportCount": 0,
         "jsEvalSignalCount": 0,
         "jsHtmlInjectionSignalCount": 18,
         "jsInsecureTransportSignalCount": 21,
