@@ -4547,6 +4547,12 @@ function expressionContainsOpenRedirectSource(
     return expressionContainsOpenRedirectSource(expression.template, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
   }
 
+  if (ts.isNewExpression(expression)) {
+    return (expression.arguments ?? []).some((argument) =>
+      expressionContainsOpenRedirectSource(argument, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    );
+  }
+
   if (ts.isArrayLiteralExpression(expression)) {
     return expression.elements.some((element) => {
       if (ts.isSpreadElement(element)) {

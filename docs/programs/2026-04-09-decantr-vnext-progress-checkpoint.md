@@ -509,6 +509,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Auth open-redirect tracing now also follows `req.nextUrl.searchParams.get(...)` in addition to `request.nextUrl.searchParams.get(...)` and `new URL(req.url).searchParams.get(...)`, so server auth handlers cannot bypass redirect-param detection just by renaming the request object while still trusting the same incoming Next.js query state.
 - Auth open-redirect tracing now also follows aliased `req.nextUrl.searchParams` containers like `const params = req.nextUrl.searchParams; params.get(queryKey)`, so server auth handlers cannot evade review by lifting Next.js query state into a local alias before consuming `next` in a redirect sink.
 - Auth open-redirect tracing now also follows aliased and destructured `req.nextUrl` bases like `const nextUrl = req.nextUrl` and `const { nextUrl } = req`, so server auth handlers cannot bypass redirect-param detection by hoisting the Next.js URL object first and only reading `nextUrl.searchParams` later.
+- Auth open-redirect tracing now also recurses through URL-constructor wrappers like `NextResponse.redirect(new URL(next ?? '/dashboard', req.url))`, so server handlers cannot hide the same raw `next` redirect source just by normalizing it through `new URL(...)` before returning the response.
 
 ## Highest-Value Next Streams
 
