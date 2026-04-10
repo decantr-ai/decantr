@@ -87,6 +87,7 @@ Release planning now also has an executable source:
 - `pnpm release:plan`
 - `pnpm release:graduation-plan`
 - `pnpm audit:release-surface`
+- `pnpm audit:npm-auth`
 - `pnpm audit:npm-surface`
 - `node scripts/release-plan.mjs --json`
 - `node scripts/release-plan.mjs --wave=foundation`
@@ -121,9 +122,12 @@ Retired package handling now uses `config/package-retirements.json` plus:
 
 The live npm dist-tag surface now also has an executable audit:
 
+- `pnpm audit:npm-auth`
 - `pnpm audit:npm-surface`
 - `pnpm npm-surface:normalize:dry-run`
 - `pnpm npm-surface:normalize`
+
+`pnpm audit:npm-auth` is the fast operational gate for package graduation. It answers the simple question "can this environment actually talk to npm as an authenticated publisher right now?" before dist-tag repair or real publish steps start.
 
 That audit compares `config/package-surface.json` against the real npm registry and flags:
 
@@ -213,6 +217,7 @@ That workflow:
 - installs the monorepo
 - runs `pnpm audit:package-surface`
 - runs `pnpm audit:release-readiness`
+- runs `pnpm audit:npm-auth` in report-first mode so missing or invalid npm credentials show up as an explicit operational blocker
 - runs `pnpm audit:npm-surface` in report-first mode and uploads the raw log even when live npm drift exists
 - runs `pnpm npm-surface:normalize:dry-run` so the package audit artifacts include the safe executable dist-tag repair preview alongside the raw npm drift report
 - generates a combined package release audit report through `pnpm audit:release-surface`
@@ -264,6 +269,7 @@ pnpm lint
 pnpm audit:package-surface
 pnpm audit:release-readiness
 pnpm audit:release-surface
+pnpm audit:npm-auth
 pnpm audit:npm-surface
 pnpm release:plan
 pnpm release:graduation-plan
@@ -277,6 +283,7 @@ node scripts/release-plan.mjs --wave=foundation
 node scripts/publish-packages.mjs --dry-run
 node scripts/publish-packages.mjs --dry-run --wave=foundation
 node scripts/publish-packages.mjs --dry-run --include-experimental
+pnpm audit:npm-auth
 pnpm npm-surface:normalize:dry-run
 ```
 

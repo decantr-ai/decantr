@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { getRepoRoot, loadPackageRetirements, loadPackageSurface, listPublicPackages, validatePackageSurface, summarizeReleaseReadiness, createReleasePlan } from './package-surface-lib.mjs';
-import { planNpmSurfaceRepairs } from './npm-surface-lib.mjs';
+import { planNpmSurfaceRepairs, readNpmAuthState } from './npm-surface-lib.mjs';
 
 const args = new Set(process.argv.slice(2));
 const reportJsonArg = [...args].find((arg) => arg.startsWith('--report-json='));
@@ -15,6 +15,7 @@ const publicPackages = listPublicPackages(root);
 const packageSurfaceFindings = validatePackageSurface(surface, publicPackages);
 const releaseReadiness = summarizeReleaseReadiness(surface);
 const releasePlan = createReleasePlan(surface, publicPackages, retirements);
+const npmAuth = readNpmAuthState();
 const npmSurfaceResults = planNpmSurfaceRepairs(surface);
 
 function describeNpmFinding(result, finding) {
@@ -61,6 +62,7 @@ const output = {
   },
   releaseReadiness,
   releasePlan,
+  npmAuth,
   npmSurface: {
     findings: npmSurfaceFindings,
     executableActions: npmExecutableActions,
@@ -79,6 +81,7 @@ const markdownLines = [
   `- npm surface findings: ${npmSurfaceFindings.length}`,
   `- npm executable actions: ${npmExecutableActions.length}`,
   `- npm manual actions: ${npmManualActions.length}`,
+  `- npm auth: ${npmAuth.authenticated ? `authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}` : 'not authenticated'}`,
   '',
   '## Release Waves',
   ...Object.entries(releaseReadiness.releaseWaves).map(([wave, packages]) => `- ${wave}: ${packages.join(', ') || 'none'}`),
@@ -113,6 +116,14 @@ if (releaseReadiness.betaWithBlockers.length === 0) {
       markdownLines.push(`  - ${blocker}`);
     }
   }
+}
+markdownLines.push('');
+
+markdownLines.push('## npm Auth');
+if (npmAuth.authenticated) {
+  markdownLines.push(`- authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}`);
+} else {
+  markdownLines.push(`- not authenticated: ${npmAuth.error}`);
 }
 markdownLines.push('');
 

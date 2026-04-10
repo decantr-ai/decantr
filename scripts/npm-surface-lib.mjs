@@ -1,5 +1,38 @@
 import { execFileSync } from 'node:child_process';
 
+function normalizeNpmCliOutput(value) {
+  return value
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter((line) => !/^npm warn Unknown env config\b/i.test(line))
+    .filter(Boolean)
+    .join('\n')
+    .trim();
+}
+
+export function readNpmAuthState() {
+  try {
+    const username = execFileSync('npm', ['whoami'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+    return {
+      authenticated: true,
+      username: username || null,
+      error: null,
+    };
+  } catch (error) {
+    const stdout = normalizeNpmCliOutput(error.stdout?.toString?.() ?? '');
+    const stderr = normalizeNpmCliOutput(error.stderr?.toString?.() ?? '');
+    const combined = stdout || stderr || error.message || 'unknown npm auth failure';
+    return {
+      authenticated: false,
+      username: null,
+      error: combined,
+    };
+  }
+}
+
 export function readNpmDistTags(packageName) {
   try {
     const stdout = execFileSync('npm', ['view', packageName, 'dist-tags', '--json'], {
@@ -12,8 +45,8 @@ export function readNpmDistTags(packageName) {
       error: null,
     };
   } catch (error) {
-    const stdout = error.stdout?.toString?.() ?? '';
-    const stderr = error.stderr?.toString?.() ?? '';
+    const stdout = normalizeNpmCliOutput(error.stdout?.toString?.() ?? '');
+    const stderr = normalizeNpmCliOutput(error.stderr?.toString?.() ?? '');
     const combined = stdout || stderr;
 
     try {
@@ -55,8 +88,8 @@ export function readNpmVersions(packageName) {
       error: null,
     };
   } catch (error) {
-    const stdout = error.stdout?.toString?.() ?? '';
-    const stderr = error.stderr?.toString?.() ?? '';
+    const stdout = normalizeNpmCliOutput(error.stdout?.toString?.() ?? '');
+    const stderr = normalizeNpmCliOutput(error.stderr?.toString?.() ?? '');
     const combined = stdout || stderr;
 
     try {
