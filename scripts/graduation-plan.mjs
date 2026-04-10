@@ -6,7 +6,7 @@ import {
   loadPackageRetirements,
   loadPackageSurface,
 } from './package-surface-lib.mjs';
-import { planNpmSurfaceRepairs } from './npm-surface-lib.mjs';
+import { planNpmSurfaceRepairs, readNpmAuthState } from './npm-surface-lib.mjs';
 
 function describeNpmAction(result, action) {
   if (action.type === 'add-dist-tag') {
@@ -119,6 +119,7 @@ const surface = loadPackageSurface(root);
 const retirements = loadPackageRetirements(root);
 const publicPackages = listPublicPackages(root);
 const releasePlan = createReleasePlan(surface, publicPackages, retirements);
+const npmAuth = readNpmAuthState();
 const npmSurfaceResults = planNpmSurfaceRepairs(surface);
 const npmByName = new Map(npmSurfaceResults.map((result) => [result.name, result]));
 
@@ -141,6 +142,7 @@ const counts = packages.reduce((acc, entry) => {
 
 const output = {
   generatedAt: new Date().toISOString(),
+  npmAuth,
   counts,
   packages,
 };
@@ -158,11 +160,23 @@ const markdownLines = [
   `- Ready to graduate: ${readyNow.length}`,
   `- Still blocked: ${blocked.length}`,
   `- Experimental or retired: ${experimentalOrRetired.length}`,
+  `- npm auth: ${npmAuth.authenticated ? `authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}` : 'not authenticated'}`,
   '',
   'Package graduation means moving a package from prerelease/public-beta semantics into an intentional `latest` contract with a stable npm tag, cleared blockers, and an explicit publish wave.',
   '',
-  '## Stable Now',
+  '## npm Auth',
 ];
+
+if (npmAuth.authenticated) {
+  markdownLines.push(`- authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}`);
+} else {
+  markdownLines.push(`- not authenticated: ${npmAuth.error}`);
+}
+
+markdownLines.push(
+  '',
+  '## Stable Now',
+);
 
 if (stableNow.length === 0) {
   markdownLines.push('- none');
