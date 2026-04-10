@@ -3616,14 +3616,25 @@ function isInsecureTransportUrl(value: string | null): boolean {
   return typeof value === 'string' && /^(?:http|ws):\/\//i.test(value.trim());
 }
 
+function isMemberAccessNamed(node: ts.Node | undefined, ...names: string[]): boolean {
+  if (!node) return false;
+  if (ts.isPropertyAccessExpression(node)) {
+    return isPropertyNamed(node.name, ...names);
+  }
+  if (ts.isElementAccessExpression(node)) {
+    return isPropertyNamed(node.argumentExpression, ...names);
+  }
+  return false;
+}
+
 function isLocationObjectExpression(expression: ts.Expression): boolean {
   return (
     (ts.isIdentifier(expression) && expression.text === 'location')
     || (
-      ts.isPropertyAccessExpression(expression)
+      (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
       && ts.isIdentifier(expression.expression)
       && ['window', 'globalThis', 'document', 'self', 'parent', 'top'].includes(expression.expression.text)
-      && isPropertyNamed(expression.name, 'location')
+      && isMemberAccessNamed(expression, 'location')
     )
   );
 }
@@ -3632,9 +3643,9 @@ function isLocationAssignmentTarget(expression: ts.Expression): boolean {
   return (
     isLocationObjectExpression(expression)
     || (
-      ts.isPropertyAccessExpression(expression)
+      (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
       && isLocationObjectExpression(expression.expression)
-      && isPropertyNamed(expression.name, 'href')
+      && isMemberAccessNamed(expression, 'href')
     )
   );
 }
@@ -4769,8 +4780,8 @@ function expressionLooksLikeLocationQuerySource(
   }
 
   if (
-    ts.isPropertyAccessExpression(expression)
-    && isPropertyNamed(expression.name, 'search', 'hash')
+    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessNamed(expression, 'search', 'hash')
     && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
@@ -4920,16 +4931,16 @@ function expressionLooksLikeLocationUrlInput(
   }
 
   if (
-    ts.isPropertyAccessExpression(expression)
-    && ['href', 'search', 'hash'].includes(expression.name.text)
+    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessNamed(expression, 'href', 'search', 'hash')
     && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
   }
 
   if (
-    ts.isPropertyAccessExpression(expression)
-    && isPropertyNamed(expression.name, 'url')
+    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessNamed(expression, 'url')
     && expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
   ) {
     return true;
@@ -5110,14 +5121,28 @@ function expressionLooksLikeLocationAssignmentTarget(
   }
 
   if (
-    ts.isPropertyAccessExpression(expression)
-    && isPropertyNamed(expression.name, 'href')
+    (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessNamed(expression, 'href')
     && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
   }
 
   return false;
+}
+
+function expressionLooksLikeLocationMutationCall(
+  expression: ts.LeftHandSideExpression | ts.SuperProperty | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+): boolean {
+  return Boolean(
+    expression
+    && (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
+    && isMemberAccessNamed(expression, 'assign', 'replace')
+    && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+  );
 }
 
 function isRouteTransitionCall(node: ts.CallExpression): boolean {
@@ -5505,27 +5530,21 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
 
       if (
-        ts.isPropertyAccessExpression(node.expression)
-        && expressionLooksLikeLocationObjectSource(node.expression.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
-        && isPropertyNamed(node.expression.name, 'assign', 'replace')
+        expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
         && expressionContainsOpenRedirectSource(node.arguments[0], sourceFile, namedExpressionInitializers, namedPropertyAliases)
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
       if (
-        ts.isPropertyAccessExpression(node.expression)
-        && expressionLooksLikeLocationObjectSource(node.expression.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
-        && isPropertyNamed(node.expression.name, 'assign', 'replace')
+        expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
         && isInsecureTransportUrl(firstArgumentLiteral)
       ) {
         signals.insecureTransportEndpointCount += 1;
       }
 
       if (
-        ts.isPropertyAccessExpression(node.expression)
-        && expressionLooksLikeLocationObjectSource(node.expression.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
-        && isPropertyNamed(node.expression.name, 'assign', 'replace')
+        expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
         && isExternalUrl(firstArgumentLiteral)
       ) {
         signals.authExternalRedirectSignalCount += 1;
