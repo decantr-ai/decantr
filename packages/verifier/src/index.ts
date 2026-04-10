@@ -1767,7 +1767,14 @@ function appendSourceAuditFindings(
   if (
     topology.hasAuthFeature
     && topology.primaryRoutes.length > 0
-    && sourceAudit.authEntrySignals.count > 0
+    && (
+      sourceAudit.signInFlowSignals.count > 0
+      || (
+        sourceAudit.authEntrySignals.count > 0
+        && sourceAudit.signUpFlowSignals.count === 0
+        && sourceAudit.recoveryFlowSignals.count === 0
+      )
+    )
     && sourceAudit.authProtectedRedirectSignals.count === 0
   ) {
     findings.push(makeFinding({
@@ -4063,12 +4070,14 @@ export function critiqueSource({
   const signInFlowSignals = countSignInFlowSignals(code, filePath);
   const recoveryFlowSignals = countRecoveryFlowSignals(code, filePath);
   const signUpFlowSignals = countSignUpFlowSignals(code, filePath);
+  const requiresProtectedSuccessTransition = signInFlowSignals > 0
+    || (astSignals.authEntrySignalCount > 0 && signUpFlowSignals === 0 && recoveryFlowSignals === 0);
   const authRecoveryRouteSignalCount = countAuthRecoveryRouteSignals(code);
   const registrationRouteSignalCount = countRegistrationRouteSignals(code);
   const anonymousEntryRouteSignalCount = countAnonymousEntryRouteSignals(code);
   const signInRouteSignalCount = countSignInRouteSignals(code);
   if (
-    astSignals.authEntrySignalCount > 0
+    requiresProtectedSuccessTransition
     && hasProtectedRouteInReview
     && authProtectedRedirectSignalCount === 0
   ) {

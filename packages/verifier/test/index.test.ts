@@ -2787,6 +2787,7 @@ describe('verifier', () => {
 
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'source-auth-recovery-success-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'source-auth-success-redirect-missing')).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -2863,6 +2864,7 @@ describe('verifier', () => {
 
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'source-auth-recovery-success-missing')).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'source-auth-success-redirect-missing')).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -2936,6 +2938,7 @@ describe('verifier', () => {
 
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'source-auth-registration-success-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'source-auth-success-redirect-missing')).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -3010,6 +3013,7 @@ describe('verifier', () => {
 
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'source-auth-registration-success-missing')).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'source-auth-success-redirect-missing')).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -5199,6 +5203,7 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'state-auth-recovery-success-missing')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'route-auth-success-redirect-missing')).toBe(false);
   });
 
   it('does not flag recovery critique files when confirmation state is present', () => {
@@ -5252,6 +5257,7 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'state-auth-recovery-success-missing')).toBe(false);
+    expect(report.findings.some(finding => finding.id === 'route-auth-success-redirect-missing')).toBe(false);
   });
 
   it('flags registration critique files that show neither success state nor protected transition', () => {
@@ -5305,6 +5311,7 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'state-auth-registration-success-missing')).toBe(true);
+    expect(report.findings.some(finding => finding.id === 'route-auth-success-redirect-missing')).toBe(false);
   });
 
   it('does not flag registration critique files when they transition into the protected app', () => {
@@ -5359,6 +5366,7 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'state-auth-registration-success-missing')).toBe(false);
+    expect(report.findings.some(finding => finding.id === 'route-auth-success-redirect-missing')).toBe(false);
   });
 
   it('flags auth inputs that disable autocomplete during critique', () => {
