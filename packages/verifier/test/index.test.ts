@@ -2389,6 +2389,7 @@ describe('verifier', () => {
       code: `
         export function Danger({ html, expression }: { html: string; expression: string }) {
           const output = eval(expression);
+          setTimeout("console.log('bad')", 100);
           return (
             <section>
               <div dangerouslySetInnerHTML={{ __html: html }} />

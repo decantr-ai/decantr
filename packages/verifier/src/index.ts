@@ -2821,6 +2821,21 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
 
       if (
+        (
+          (ts.isIdentifier(node.expression) && ['setTimeout', 'setInterval'].includes(node.expression.text))
+          || (
+            ts.isPropertyAccessExpression(node.expression)
+            && ts.isIdentifier(node.expression.expression)
+            && node.expression.expression.text === 'window'
+            && isPropertyNamed(node.expression.name, 'setTimeout', 'setInterval')
+          )
+        )
+        && typeof firstArgumentLiteral === 'string'
+      ) {
+        signals.dynamicEvalCount += 1;
+      }
+
+      if (
         (isFetchLikeCall(node) || isAxiosLikeCall(node))
         && isInsecureTransportUrl(firstArgumentLiteral)
       ) {
@@ -3744,10 +3759,10 @@ export function critiqueSource({
       id: 'security-dynamic-code-eval',
       category: 'Security Hygiene',
       severity: 'error',
-      message: 'The reviewed file uses `eval` or `new Function`, which weakens runtime trust boundaries.',
+      message: 'The reviewed file uses dynamic code execution patterns such as `eval`, `new Function`, or string-based timers.',
       evidence: [filePath, `Occurrences: ${dynamicEvalCount}`],
       file: filePath,
-      suggestedFix: 'Replace dynamic code evaluation with explicit functions, lookup tables, or validated configuration data.',
+      suggestedFix: 'Replace dynamic code execution with explicit functions, lookup tables, or validated configuration data; avoid passing strings into timers.',
     }));
   }
 
